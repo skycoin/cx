@@ -181,27 +181,106 @@ type Statement struct {
 	outputs []int //Positions in the state
 }
 
-func (stat *Statement) Execute(state *State) *State {
+func addInt32(nums ...int32) (int32) {
+	total := int32(0)
+	for _, num := range nums {
+		total += num
+	}
+	return total
+}
+
+func allClear(e []error) bool {
+	for i := 1; i < len(e); i++ {
+		if e[i] != nil {
+			return false
+		}
+	}
+	return true
+}
+
+func (stat *Statement) Execute(state *State) {
 	// Applies a series of operators to state
 	lm_name := stat.lambda.name.name
+	
+	inputs := make([]*Datum, len(stat.inputs))
+	outputs := make([]*Datum, len(stat.outputs))
+
+	//Datum inputs
+	for i := 0; i < len(stat.inputs); i++ {
+		//inputs[i] = &(*state)[stat.inputs[i]]
+		inputs[i] = &(*state)[stat.inputs[i]]
+	}
+	//Datum outputs
+	for i := 0; i < len(stat.outputs); i++ {
+		//outputs[i] = &(*state)[stat.outputs[i]]
+		outputs[i] = &(*state)[stat.outputs[i]]
+	}
 
 	// checking for native functions
 	switch lm_name {
-	case "ADD":
-		arg1, err1 := (*state)[stat.inputs[0]].ReadInt32()
-		arg2, err2 := (*state)[stat.inputs[1]].ReadInt32()
-		if err1 == nil && err2 == nil {
-			(*state)[stat.outputs[0]].WriteInt32(arg1 + arg2)
+	case "addInt32":
+		// arg1, err1 := (*state)[stat.inputs[0]].ReadInt32()
+		// arg2, err2 := (*state)[stat.inputs[1]].ReadInt32()
+
+		args := make([]int32, len(inputs))
+		errs := make([]error, len(inputs))
+		
+		for i := 0; i < len(inputs); i++ {
+			args[i], errs[i] = inputs[i].ReadInt32()
 		}
+
+		if allClear(errs) {
+			for i := 0; i < len(outputs); i++ {
+				outputs[i].WriteInt32(addInt32(args...))
+			}
+		}
+		
+		//(*state)[stat.outputs[0]].WriteInt32(addInt32(args...))
 	}
 
-	return state
 
+
+
+	
+	// var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
+	// 	sigin: []DataType{_int32},
+	// 	sigout: []DataType{_int32},
+	// 	statements: make([]Statement, 1)}
+	
+	// statement2 := Statement{lambda: &lm_addInt32,
+	// 	inputs: []int{0, 0},
+	// 	outputs: []int{1}}
+	// lm_times2Int32.statements[0] = statement2
+
+
+	
 	// if not native, we need to execute current lambda statements
+
+
+	//*[1][2][3][4][5][6]
+	//substate := State(append(inputs, outputs...))
+	//stat.lambda.Execute(&substate)
+	stat.lambda.Execute(state)
 }
 
-func (lm *Lambda) Run() () {
-	// Maybe not necessary. Only Statement.Execute
+	// var s_times2Int32 Symbol = Symbol{name: "times2"}
+	// var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
+	// 	sigin: []DataType{_int32},
+	// 	sigout: []DataType{_int32}}
+	
+	// statement2 := Statement{lambda: &lm_addInt32,
+	// 	inputs: []int{0, 0},
+	// 	outputs: []int{1}}
+	// lm_times2Int32.statements[0] = statement2
+
+func (lm *Lambda) Execute(state *State) {
+	for i := 0; i < len(lm.statements); i++ {
+		lm.statements[i].Execute(state)
+	}
+	
+	// we don't need to return the state, we simply examine its contents in the
+	// context where we defined it
+	//return state
 }
 
 func (lm *Lambda) Defun() (*Lambda) {
@@ -300,7 +379,19 @@ func dbg(elt string) {
 }
 
 func main() {
-	fmt.Println(".")
+
+	var state State
+	var dat1 Datum
+	var dat2 Datum
+	var dat3 Datum
+	dat1.WriteInt32(int32(50))
+	dat2.WriteInt32(int32(20))
+	dat3.WriteInt32(int32(3300))
+	
+	state = append(state, dat1)
+	state = append(state, dat2)
+	state = append(state, dat3)
+	
 	foo := Symbol{name: "foo"}
 	bar := Symbol{name: "bar"}
 	tar := Symbol{name: "tar"}
@@ -327,11 +418,11 @@ func main() {
 	fmt.Println(len(sum))
 	//fmt.Printf("%x", h.Sum(nil))
 
-// type Datum struct {
-// 	dtype DataType
-// 	value [DATUM_LENGTH]byte
-// }
-// type State []Datum
+	// type Datum struct {
+	// 	dtype DataType
+	// 	value [DATUM_LENGTH]byte
+	// }
+	// type State []Datum
 
 	//bs := make([]byte, 100)
 	//value := int64(10)
@@ -356,76 +447,68 @@ func main() {
 		fmt.Println(val32 + 1)
 	}
 
-// type Lambda struct {
-// 	//name *Symbol
-// 	//change to Symbol later
-// 	name string
-// 	//offset int //Necessary?
-// 	sigin []DataType
-// 	sigout []DataType
-// 	statements []Statement
+	// type Lambda struct {
+	// 	//name *Symbol
+	// 	//change to Symbol later
+	// 	name string
+	// 	//offset int //Necessary?
+	// 	sigin []DataType
+	// 	sigout []DataType
+	// 	statements []Statement
 	// }
 
-	var s_add Symbol = Symbol{name: "ADD"}
-	
-	var lm Lambda = Lambda{name: s_add.Intern(),
+	var s_addInt32 Symbol = Symbol{name: "addInt32"}	
+
+	// This IS required in order to initialize the system with native functions
+	var lm_addInt32 Lambda = Lambda{name: s_addInt32.Intern(),
 		sigin: []DataType{_int32, _int32},
 		sigout: []DataType{_int32}}
-
-	// var statement Statement
-	statement := Statement{lambda: &lm,
+	
+	statement1 := Statement{lambda: &lm_addInt32,
 		inputs: []int{0, 1},
 		outputs: []int{2}}
-	
-	fmt.Println(statement.lambda.name.name)
-	
-	dbg(".....")
-	fmt.Println(lm)
-	
-// type Statement struct {
-// 	lambda *Lambda
-// 	inputs []int //Positions in the state
-// 	outputs []int //Positions in the state
-// }
 
-	var state State
-	var dat1 Datum
-	var dat2 Datum
-	var dat3 Datum
-	dat1.WriteInt32(int32(10))
-	dat2.WriteInt32(int32(20))
-	dat3.WriteInt32(int32(30))
-	dat3.WriteInt32(int32(10))
+	//statements are linked to their current context (space) in a lambda
+	//in this case, the statement below ONLY works for times2 lambda OR
+	//for another lambda where the state has a similar structure
+	var s_times2Int32 Symbol = Symbol{name: "times2"}
+	var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
+		sigin: []DataType{_int32},
+		sigout: []DataType{_int32},
+		statements: make([]Statement, 1)}
 	
-	state = append(state, dat1)
-	state = append(state, dat2)
-	state = append(state, dat3)
+	statement2 := Statement{lambda: &lm_addInt32,
+		inputs: []int{0, 0},
+		outputs: []int{1}}
+	lm_times2Int32.statements[0] = statement2
+
+	dbg(".....")
+	lm_times2Int32.Execute(&state)
+	fmt.Println(state)
+
+	//Problem with space: calling a lambda inside another lambda
+	//Solution: we need to create another array of *Datums (subspace)
+
+	
+	
+
+	
+
+	fmt.Println(statement2)
+	
+	fmt.Println(statement1.lambda.name.name)
+		
+	fmt.Println(lm_addInt32)
+	
+	// type Statement struct {
+	// 	lambda *Lambda
+	// 	inputs []int //Positions in the state
+	// 	outputs []int //Positions in the state
+	// }
 
 	fmt.Println(state)
-	
-
-	statement.Execute(&state)
-	
-	// var num1 uint16 = 130
-	// var num2 uint16 = 132
-	// vbuff.buffer = new(bytes.Buffer)
-	// binary.Write(vbuff.buffer, binary.LittleEndian, num1)
-	// //fmt.Println(vbuff.buffer.Next(2))
-	// binary.Write(vbuff.buffer, binary.LittleEndian, num2)
-	// //fmt.Println(vbuff.buffer.Bytes())
-
-
-
-	// delimw := make([]byte, (32 - len("foo")))
-	// //var delimr byte = 0
-	// Symbol_vt.buffer.Write([]byte("foo"))
-	// Symbol_vt.buffer.Write(delimw)
-	// Symbol_vt.buffer.Write([]byte("bar"))
-	// Symbol_vt.buffer.Write(delimw)
-	// Symbol_vt.buffer.Write([]byte("car"))
-	// Symbol_vt.buffer.Write(delimw)
-	// Symbol_vt.buffer.Write([]byte("mar"))
-	// Symbol_vt.buffer.Write(delimw)
+	statement1.Execute(&state)
+	fmt.Println(state)
 	
 	// //fmt.Println(Symbol_vt.buffer.Bytes())
 	// //fmt.Fprintf(Symbol_vt.buffer, "hello")

@@ -2,3 +2,4 @@ _
 _main.go
 lexer
 parser
+.DS_Store
