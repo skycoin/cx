@@ -90,10 +90,33 @@ func (vt *vtable) Delegate() (*vtable) {
 var Object_vt *vtable = &vtable{space: make([]byte, 0)}
 var Symbol_vt *vtable = &vtable{space: make([]byte, 0)}
 
-// type Datum struct {
-// 	dtype DataType
-// 	value [DATUM_LENGTH]byte
-// }
+func (datum *Datum) ReadBool () (bool, error) {
+	if datum.dtype == _bool {
+		if datum.value[0] == byte(1) {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	}
+	return false, errors.New("Datum is not of type Bool")
+}
+
+func (datum *Datum) WriteBool (b bool) (*Datum) {
+	var bs [DATUM_LENGTH]byte
+	
+	datum.dtype = _bool
+	
+	if b {
+		bs[0] = byte(1)
+		
+	} else {
+		bs[0] = byte(0)
+	}
+	
+	datum.value = bs
+	
+	return datum
+}
 
 // Extremely inefficient way, but enough for testing. Change to bit math maybe
 func (datum *Datum) ReadInt32 () (int32, error) {
@@ -165,7 +188,7 @@ type Datum struct {
 	dtype DataType
 	value [DATUM_LENGTH]byte
 }
-type State []Datum
+type State []*Datum
 
 type Lambda struct {
 	name *Symbol
@@ -199,8 +222,7 @@ func allClear(e []error) bool {
 }
 
 func (stat *Statement) Execute(state *State) {
-	// Applies a series of operators to state
-	lm_name := stat.lambda.name.name
+	lm_name := stat.lambda.name.name // A statement ALWAYS needs a lambda. Check for this
 	
 	inputs := make([]*Datum, len(stat.inputs))
 	outputs := make([]*Datum, len(stat.outputs))
@@ -208,20 +230,17 @@ func (stat *Statement) Execute(state *State) {
 	//Datum inputs
 	for i := 0; i < len(stat.inputs); i++ {
 		//inputs[i] = &(*state)[stat.inputs[i]]
-		inputs[i] = &(*state)[stat.inputs[i]]
+		inputs[i] = (*state)[stat.inputs[i]]
 	}
 	//Datum outputs
 	for i := 0; i < len(stat.outputs); i++ {
 		//outputs[i] = &(*state)[stat.outputs[i]]
-		outputs[i] = &(*state)[stat.outputs[i]]
+		outputs[i] = (*state)[stat.outputs[i]]
 	}
 
 	// checking for native functions
 	switch lm_name {
 	case "addInt32":
-		// arg1, err1 := (*state)[stat.inputs[0]].ReadInt32()
-		// arg2, err2 := (*state)[stat.inputs[1]].ReadInt32()
-
 		args := make([]int32, len(inputs))
 		errs := make([]error, len(inputs))
 		
@@ -234,53 +253,74 @@ func (stat *Statement) Execute(state *State) {
 				outputs[i].WriteInt32(addInt32(args...))
 			}
 		}
+
+	case ">":
+		args := make([]int32, len(inputs))
+		errs := make([]error, len(inputs))
+
+		for i := 0; i < len(inputs); i++ {
+			args[i], errs[i] = inputs[i].ReadInt32()
+		}
+
+		if allClear(errs) {
+			for i := 0; i < len(outputs); i++ {
+				outputs[i].WriteBool(args[0] > args[1])
+			}
+		}
+	case "if":
 		
-		//(*state)[stat.outputs[0]].WriteInt32(addInt32(args...))
+	default:
+		// not native function. executing lambda with substate
+		substate := State(append(inputs, outputs...))
+		stat.lambda.Execute(&substate)
 	}
-
-
-
-
-	
-	// var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
-	// 	sigin: []DataType{_int32},
-	// 	sigout: []DataType{_int32},
-	// 	statements: make([]Statement, 1)}
-	
-	// statement2 := Statement{lambda: &lm_addInt32,
-	// 	inputs: []int{0, 0},
-	// 	outputs: []int{1}}
-	// lm_times2Int32.statements[0] = statement2
-
-
-	
-	// if not native, we need to execute current lambda statements
-
-
-	//*[1][2][3][4][5][6]
-	//substate := State(append(inputs, outputs...))
-	//stat.lambda.Execute(&substate)
-	stat.lambda.Execute(state)
 }
 
-	// var s_times2Int32 Symbol = Symbol{name: "times2"}
-	// var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
-	// 	sigin: []DataType{_int32},
-	// 	sigout: []DataType{_int32}}
-	
-	// statement2 := Statement{lambda: &lm_addInt32,
-	// 	inputs: []int{0, 0},
-	// 	outputs: []int{1}}
-	// lm_times2Int32.statements[0] = statement2
-
 func (lm *Lambda) Execute(state *State) {
-	for i := 0; i < len(lm.statements); i++ {
-		lm.statements[i].Execute(state)
+	lm_name := ""
+	if lm.name != nil {
+		lm_name = lm.name.name
 	}
+	
+	switch lm_name {
+		// If statement could never be treated as a single statement, as it is actually a group of statements (this Lambda.Execute needs to handle it)
+	case "if":
+		stat := lm.statements[0] //It NEEDS to be the first statement of an if
+		inputs := make([]*Datum, len(stat.inputs))
+		outputs := make([]*Datum, len(stat.outputs))
+
+		for i := 0; i < len(stat.inputs); i++ {
+			inputs[i] = (*state)[stat.inputs[i]]
+		}
+		for i := 0; i < len(stat.outputs); i++ {
+			outputs[i] = (*state)[stat.outputs[i]]
+		}
+		
+		var predicate_result *Datum = new(Datum)
+		predicate_result.dtype = _bool
+		var tmp_state State = append(inputs, predicate_result)
+
+		stat.outputs = []int{2}
+		stat.Execute(&tmp_state)
+
+		result, err := tmp_state[2].ReadBool()
+		
+		if err == nil {
+			if result {
+				lm.statements[1].Execute(state)
+			} else {
+				lm.statements[2].Execute(state)
+			}
+		}
+	default:
+		for i := 0; i < len(lm.statements); i++ {
+			lm.statements[i].Execute(state)
+		}
+	}
+	
 	
 	// we don't need to return the state, we simply examine its contents in the
 	// context where we defined it
-	//return state
 }
 
 func (lm *Lambda) Defun() (*Lambda) {
@@ -352,25 +392,6 @@ func (lm *Lambda) Defun() (*Lambda) {
 	//////// In general programming, we are going to parse the symbols into register indexes (R[1...3])
 	/////// This means that we need to be able to manage a variable amount of registers (i.e. len(registers) != len(inputs), as in classic LGP)
 
-
-
-
-	
-	
-	
-
-
-	// In a signature space, for example (int32, int32, int32) (int32)
-
-
-	
-	// &vtable{space: make([]byte, 0),
-	// 	sigin: lm.sigin,
-	// 	sigout: lm.sigout}
-
-	//lm_vt := Lambdas[sig]
-
-
 	return nil
 }
 
@@ -378,40 +399,40 @@ func dbg(elt string) {
 	fmt.Println(elt)
 }
 
-func main() {
+func dbgState(s *State, desc string) {
+	dbg(desc)
 
-	var state State
-	var dat1 Datum
-	var dat2 Datum
-	var dat3 Datum
-	dat1.WriteInt32(int32(50))
-	dat2.WriteInt32(int32(20))
-	dat3.WriteInt32(int32(3300))
+	// determining bytes used in byte slice
+	// can and should be used later in other parts of the code
+	// (or maybe not? seems slow)
 	
-	state = append(state, dat1)
-	state = append(state, dat2)
-	state = append(state, dat3)
-	
+	for i:= 0; i < len((*s)); i++ {
+		var j int
+		for j = 0; j < len((*s)[i].value); j++ {
+			if (*s)[i].value[j] == byte(0) {
+				break
+			}
+		}
+		fmt.Println(string((*s)[i].value[:j]))
+	}
+}
+
+func main() {
+	var state State =
+		[]*Datum {
+		new(Datum).WriteInt32(int32(50)),
+		new(Datum).WriteInt32(int32(20)),
+		new(Datum).WriteInt32(int32(3300))}
+
 	foo := Symbol{name: "foo"}
 	bar := Symbol{name: "bar"}
 	tar := Symbol{name: "tar"}
 	mar := Symbol{name: "mar"}
+	
 	foo.Intern()
 	bar.Intern()
 	tar.Intern()
-	fmt.Println(mar.Intern())
-
-	fmt.Println(Symbol_vt.Delegate())
-	
-
-	fun := Lambda{name: &foo,
-		sigin: []DataType{_uint32, _float32},
-		sigout: []DataType{_uint32}}
-	
-	fmt.Println(fun)
-
-	fun.Defun()
-
+	mar.Intern()
 
 	// crypto
 	sum := sha256.Sum256([]byte("123"))
@@ -447,30 +468,21 @@ func main() {
 		fmt.Println(val32 + 1)
 	}
 
-	// type Lambda struct {
-	// 	//name *Symbol
-	// 	//change to Symbol later
-	// 	name string
-	// 	//offset int //Necessary?
-	// 	sigin []DataType
-	// 	sigout []DataType
-	// 	statements []Statement
-	// }
-
-	var s_addInt32 Symbol = Symbol{name: "addInt32"}	
-
-	// This IS required in order to initialize the system with native functions
+	// This is required in order to initialize the system with native functions
+	/* Start Native Function addInt32 */
+	var s_addInt32 Symbol = Symbol{name: "addInt32"}
 	var lm_addInt32 Lambda = Lambda{name: s_addInt32.Intern(),
 		sigin: []DataType{_int32, _int32},
 		sigout: []DataType{_int32}}
-	
-	statement1 := Statement{lambda: &lm_addInt32,
-		inputs: []int{0, 1},
-		outputs: []int{2}}
+	/* End Native Function addInt32 */
+		
 
 	//statements are linked to their current context (space) in a lambda
 	//in this case, the statement below ONLY works for times2 lambda OR
 	//for another lambda where the state has a similar structure
+
+
+	/* Start Function Times2Int32 */
 	var s_times2Int32 Symbol = Symbol{name: "times2"}
 	var lm_times2Int32 Lambda = Lambda{name: s_times2Int32.Intern(),
 		sigin: []DataType{_int32},
@@ -481,49 +493,130 @@ func main() {
 		inputs: []int{0, 0},
 		outputs: []int{1}}
 	lm_times2Int32.statements[0] = statement2
+	/* End Function Times2Int32 */
+
+	/* Start Native Function >, greater than (gt) */
+	var s_gt Symbol = Symbol{name: ">"}
+	var lm_gt Lambda = Lambda{name: s_gt.Intern(),
+		sigin: []DataType{_int32, _int32},
+		sigout: []DataType{_bool}}
+	/* End Native Function >, greater than (gt) */
 
 	dbg(".....")
-	lm_times2Int32.Execute(&state)
-	fmt.Println(state)
 
-	//Problem with space: calling a lambda inside another lambda
-	//Solution: we need to create another array of *Datums (subspace)
-
+	//Testing calling a single statement
+	statement1 := Statement{lambda: &lm_addInt32,
+		inputs: []int{0, 1},
+		outputs: []int{2}}
 	
+	dbgState(&state, "Initial state")
 	
-
-	
-
-	fmt.Println(statement2)
-	
-	fmt.Println(statement1.lambda.name.name)
-		
-	fmt.Println(lm_addInt32)
-	
-	// type Statement struct {
-	// 	lambda *Lambda
-	// 	inputs []int //Positions in the state
-	// 	outputs []int //Positions in the state
-	// }
-
-	fmt.Println(state)
 	statement1.Execute(&state)
-	fmt.Println(state)
-	
-	// //fmt.Println(Symbol_vt.buffer.Bytes())
-	// //fmt.Fprintf(Symbol_vt.buffer, "hello")
-	// //Symbol_vt.buffer.WriteTo(os.Stdout)
 
+	dbgState(&state, "Sum of first and second inputs")
+
+	//Testing calling a lambda
 	
-	// // sym, err := Symbol_vt.buffer.ReadString(delimr)
-	// // if err == nil {
-	// // 	fmt.Println(sym[0:len(sym)-1])
-	// // }
+	lm_times2Int32.Execute(&state)
+
+	dbgState(&state, "Double of first input and writes to second slot in state")
+
+	//Lambda which doubles each of two inputs and then sums them
+
+	var state_sumDoubles State =
+		[]*Datum {
+		new(Datum).WriteInt32(int32(10)),
+		new(Datum).WriteInt32(int32(30)),
+		new(Datum).WriteInt32(int32(0))}
 	
-	// // Symbol_vt.buffer.WriteTo(os.Stdout)
-	// //binary.Write(Symbol_vt.buffer)
+	var s_sumDoublesInt32 Symbol = Symbol{name: "sumDoubles"}
+	var lm_sumDoublesInt32 Lambda = Lambda{name: s_sumDoublesInt32.Intern(),
+		sigin: []DataType{_int32, _int32},
+		sigout: []DataType{_int32},
+		statements: make([]Statement, 3)}
+	
+	stat_times2 := Statement{lambda: &lm_times2Int32}
+	stat_sum := Statement{lambda: &lm_addInt32}
+
+	// Doubling first input
+	stat_times2.inputs = []int{0}
+	stat_times2.outputs = []int{0}
+	lm_sumDoublesInt32.statements[0] = stat_times2
+	// Doubling second input
+	stat_times2.inputs = []int{1}
+	stat_times2.outputs = []int{1}
+	lm_sumDoublesInt32.statements[1] = stat_times2
+
+	// Summing input1 and input2
+	stat_sum.inputs = []int{0, 1}
+	stat_sum.outputs = []int{2} // Writing result to third datum
+	lm_sumDoublesInt32.statements[2] = stat_sum
+
+	dbgState(&state_sumDoubles, "Created another state")
+	lm_sumDoublesInt32.Execute(&state_sumDoubles)
+	dbgState(&state_sumDoubles, "Doubles each input, then sums both inputs and writes the sum to third slot")
+
+	// testing lambda without a name (duh, an actual lambda)
+	var lambda Lambda = Lambda{//name: symbol.Intern(),
+		sigin: []DataType{_int32},
+		sigout: []DataType{_int32},
+		statements: make([]Statement, 10)}
+
+	// Doubling input
+	stat_times2.inputs = []int{0}
+	stat_times2.outputs = []int{0}
+	// doubling first input 10 times
+	for i := 0; i < len(lambda.statements); i++ {
+		lambda.statements[i] = stat_times2
+	}
+
+	// sending same state as previous example for convenience
+	lambda.Execute(&state_sumDoubles)
+	dbgState(&state_sumDoubles, "Testing nameless function (actual lambda), doubles first slot 10 times and writes each result to first slot")
+
+	fmt.Println("Testing Boolean datums")
+	true_dat := new(Datum).WriteBool(true)
+	fmt.Println(true_dat.ReadBool())
+	false_dat := new(Datum).WriteBool(false)
+	fmt.Println(false_dat.ReadBool())
 
 
-	// var symb *Symbol
-	// symb.Intern("bar")
+	fmt.Println("Testing if statement")
+
+	// Creating another state to test if statement
+	var state_if State =
+		[]*Datum {
+		new(Datum).WriteInt32(int32(100)),
+		new(Datum).WriteInt32(int32(300))} // Notice that we don't need a third slot to hold the result of predicate. This result is stored in a new, temporary state
+	
+	// if temporary prototype
+	var s_if Symbol = Symbol{name: "if"}
+	var lm_if Lambda = Lambda{name: s_if.Intern(),
+		sigin: []DataType{}, // bool input, or maybe no input. if won't change main state
+		sigout: []DataType{}, // no output, as "if" itself won't change state
+		statements: make([]Statement, 3)} // This could actually work: we are making room for 3 statements that every if lambda should have, but we haven't initialized them
+
+	// predicate
+	stat_boolean := Statement{lambda: &lm_gt,
+		inputs: []int{0, 1},
+		//outputs: []int{2} // We won't use this, as it's going to be used for an if statement
+		// If we wanted to store the value, we need to provide an output slot
+		// If it's not for an if statement and we don't provide an output, the result should simply be discarded
+	}
+	// if slot0 > slot1, then we double slot0
+	stat_ifthen := Statement{lambda: &lm_times2Int32,
+		inputs: []int{0},
+		outputs: []int{0}}
+	// if not, then we double slot1
+	stat_else := Statement{lambda: &lm_times2Int32,
+		inputs: []int{1},
+		outputs: []int{1}}
+	
+	lm_if.statements[0] = stat_boolean
+	lm_if.statements[1] = stat_ifthen
+	lm_if.statements[2] = stat_else
+
+	dbgState(&state_if, "New state for testing if statement")
+	lm_if.Execute(&state_if)
+	dbgState(&state_if, "")
 }
