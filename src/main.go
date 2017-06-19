@@ -4,11 +4,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	//"generator"
+	//"parser"
+	//"lexer"
+	//"go/token"
+	//"go/ast"
+	//"go/printer"
 	
 	"bytes"
 	"errors"
 	"strconv"
-	//"encoding/binary"
 	"strings"
 	"crypto/sha256"
 )
@@ -222,23 +228,29 @@ func allClear(e []error) bool {
 }
 
 func (stat *Statement) Execute(state *State) {
-	lm_name := stat.lambda.name.name // A statement ALWAYS needs a lambda. Check for this
+	if stat.lambda == nil {
+		return // A statement ALWAYS needs a lambda
+	}
+	lm_name := stat.lambda.name.name
+
+	if stat.outputs == nil {
+		return
+	}
 	
 	inputs := make([]*Datum, len(stat.inputs))
 	outputs := make([]*Datum, len(stat.outputs))
-
+	
 	//Datum inputs
 	for i := 0; i < len(stat.inputs); i++ {
-		//inputs[i] = &(*state)[stat.inputs[i]]
 		inputs[i] = (*state)[stat.inputs[i]]
 	}
 	//Datum outputs
 	for i := 0; i < len(stat.outputs); i++ {
-		//outputs[i] = &(*state)[stat.outputs[i]]
 		outputs[i] = (*state)[stat.outputs[i]]
 	}
 
 	// checking for native functions
+	// this part is getting very bloated with repetitive code. refactor
 	switch lm_name {
 	case "addInt32":
 		args := make([]int32, len(inputs))
@@ -253,7 +265,19 @@ func (stat *Statement) Execute(state *State) {
 				outputs[i].WriteInt32(addInt32(args...))
 			}
 		}
+	case "timesInt32":
+		args := make([]int32, len(inputs))
+		errs := make([]error, len(inputs))
+		
+		for i := 0; i < len(inputs); i++ {
+			args[i], errs[i] = inputs[i].ReadInt32()
+		}
 
+		if allClear(errs) {
+			for i := 0; i < len(outputs); i++ {
+				outputs[i].WriteInt32(args[0] * args[1])
+			}
+		}
 	case ">":
 		args := make([]int32, len(inputs))
 		errs := make([]error, len(inputs))
@@ -267,8 +291,19 @@ func (stat *Statement) Execute(state *State) {
 				outputs[i].WriteBool(args[0] > args[1])
 			}
 		}
-	case "if":
-		
+	case "==":
+		args := make([]int32, len(inputs))
+		errs := make([]error, len(inputs))
+
+		for i := 0; i < len(inputs); i++ {
+			args[i], errs[i] = inputs[i].ReadInt32()
+		}
+
+		if allClear(errs) {
+			for i := 0; i < len(outputs); i++ {
+				outputs[i].WriteBool(args[0] == args[1])
+			}
+		}
 	default:
 		// not native function. executing lambda with substate
 		substate := State(append(inputs, outputs...))
@@ -283,7 +318,7 @@ func (lm *Lambda) Execute(state *State) {
 	}
 	
 	switch lm_name {
-		// If statement could never be treated as a single statement, as it is actually a group of statements (this Lambda.Execute needs to handle it)
+		// If statement could never be treated as a single statement, as it is actually defined by a group of statements (thus Lambda.Execute needs to handle it)
 	case "if":
 		stat := lm.statements[0] //It NEEDS to be the first statement of an if
 		inputs := make([]*Datum, len(stat.inputs))
@@ -304,11 +339,13 @@ func (lm *Lambda) Execute(state *State) {
 		stat.Execute(&tmp_state)
 
 		result, err := tmp_state[2].ReadBool()
-		
+
 		if err == nil {
 			if result {
-				lm.statements[1].Execute(state)
-			} else {
+				if lm.statements[1].lambda != nil {
+					lm.statements[1].Execute(state)
+				}
+			} else if lm.statements[2].lambda != nil {
 				lm.statements[2].Execute(state)
 			}
 		}
@@ -418,12 +455,6 @@ func dbgState(s *State, desc string) {
 }
 
 func main() {
-	var state State =
-		[]*Datum {
-		new(Datum).WriteInt32(int32(50)),
-		new(Datum).WriteInt32(int32(20)),
-		new(Datum).WriteInt32(int32(3300))}
-
 	foo := Symbol{name: "foo"}
 	bar := Symbol{name: "bar"}
 	tar := Symbol{name: "tar"}
@@ -475,7 +506,7 @@ func main() {
 		sigin: []DataType{_int32, _int32},
 		sigout: []DataType{_int32}}
 	/* End Native Function addInt32 */
-		
+	
 
 	//statements are linked to their current context (space) in a lambda
 	//in this case, the statement below ONLY works for times2 lambda OR
@@ -504,8 +535,14 @@ func main() {
 
 	dbg(".....")
 
+	var state State =
+		[]*Datum {
+		new(Datum).WriteInt32(int32(50)),
+		new(Datum).WriteInt32(int32(20)),
+		new(Datum).WriteInt32(int32(3300))}
+
 	//Testing calling a single statement
-	statement1 := Statement{lambda: &lm_addInt32,
+	statement1 := Statement{//lambda: &lm_addInt32,
 		inputs: []int{0, 1},
 		outputs: []int{2}}
 	
@@ -587,7 +624,7 @@ func main() {
 	var state_if State =
 		[]*Datum {
 		new(Datum).WriteInt32(int32(100)),
-		new(Datum).WriteInt32(int32(300))} // Notice that we don't need a third slot to hold the result of predicate. This result is stored in a new, temporary state
+		new(Datum).WriteInt32(int32(30))} // Notice that we don't need a third slot to hold the result of predicate. This result is stored in a new, temporary state
 	
 	// if temporary prototype
 	var s_if Symbol = Symbol{name: "if"}
@@ -611,12 +648,99 @@ func main() {
 	stat_else := Statement{lambda: &lm_times2Int32,
 		inputs: []int{1},
 		outputs: []int{1}}
-	
+
 	lm_if.statements[0] = stat_boolean
 	lm_if.statements[1] = stat_ifthen
 	lm_if.statements[2] = stat_else
 
 	dbgState(&state_if, "New state for testing if statement")
 	lm_if.Execute(&state_if)
-	dbgState(&state_if, "")
+	dbgState(&state_if, "If slot1 is greater than slot 2, double slot1, if not, double slot2")
+
+
+
+	
+	var state_factorial State =
+		[]*Datum {
+		new(Datum).WriteInt32(int32(5)),
+		new(Datum).WriteInt32(int32(4)),
+		
+		new(Datum).WriteInt32(int32(-1)),
+		new(Datum).WriteInt32(int32(0))} // We should only need 2 slots, but we can't use non-slot values at the moment. For example, if we need the value of PI = 3.14159, this value needs to be in a slot in a state
+
+	// Move these to initialization
+	var lm_timesInt32 Lambda = Lambda{name: (&Symbol{name: "*"}).Intern(),
+		sigin: []DataType{_int32, _int32},
+		sigout: []DataType{_int32}}
+	
+	var lm_equalInt32 Lambda = Lambda{name: (&Symbol{name: "=="}).Intern(),
+		sigin: []DataType{_int32, _int32},
+		sigout: []DataType{_int32}}
+
+	stat_equal := Statement{lambda: &lm_equalInt32,
+		inputs: []int{1, 3},
+		//outputs: []int{1} //for if statement
+	}
+	
+	stat_times := Statement{lambda: &lm_timesInt32,
+		inputs: []int{0, 1},
+		outputs: []int{0}}
+
+	stat_decrement := Statement{lambda: &lm_addInt32,
+		inputs: []int{1, 2},
+		outputs: []int{1}}
+
+	var lm_factorial Lambda = Lambda{name: (&Symbol{name: "factorial"}).Intern(),
+		sigin: []DataType{_int32, _int32, _int32, _int32}, // we should only need 2, but we need extra features (see above)
+		sigout: []DataType{_int32},
+		statements: make([]Statement, 3)}
+
+	stat_factorial := Statement{lambda: &lm_factorial,
+		inputs: []int{0, 1, 2, 3},
+		outputs: []int{0}}
+	
+	// re-using if lambda from above
+	lm_if.statements[0] = stat_equal
+	lm_if.statements[1] = Statement{} // clearing ifthen statement
+	lm_if.statements[2] = stat_factorial
+
+	lm_factorial.statements[0] = stat_times
+	lm_factorial.statements[1] = stat_decrement
+	lm_factorial.statements[2] = stat_factorial
+
+	dbgState(&state_factorial, "New state for testing factorial lambda")
+	//lm_if.Execute(&state_factorial)
+	dbgState(&state_factorial, "Slot0 should be 120")
+
+
+
+	// l := lexer.Lex("hello", "(+ hello 10)")
+	// // fmt.Println(l.NextItem())
+	// // fmt.Println(l.NextItem())
+	// // fmt.Println(l.NextItem())
+	// p := parser.Parse(l)
+	// a := generator.EvalExprs(p)
+	// fset := token.NewFileSet()
+	// ast.Print(fset, a)
+
+	// var buf bytes.Buffer
+	// printer.Fprint(&buf, fset, a)
+	// //fmt.Printf("%s\n", buf.String())
+
+	
+	// func factorial (slot0 int32, slot1 int32) (slot0 int32) {
+	// 	slot0 := slot0 * slot1
+	// 	dec(slot1) // This will be slot1 := slot1 - slot2 for now
+	// 	if x == 0 {
+			
+	// 	} else {
+	// 		factorial(slot0, slot1)
+	// 	}
+	// }
+
+	// // We allocate a state or scope with two slots: 5 and 4, and send this state to factorial
+	// factorial(5, 4) 
+	
+	// print(slot0)	
+
 }
