@@ -16,7 +16,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"crypto/sha256"
+	//"crypto/sha256"
 )
 
 const SYMBOL_LENGTH int = 32
@@ -466,27 +466,9 @@ func main() {
 	mar.Intern()
 
 	// crypto
-	sum := sha256.Sum256([]byte("123"))
-	fmt.Println(len(sum))
+	//sum := sha256.Sum256([]byte("123"))
+	//fmt.Println(len(sum))
 	//fmt.Printf("%x", h.Sum(nil))
-
-	// type Datum struct {
-	// 	dtype DataType
-	// 	value [DATUM_LENGTH]byte
-	// }
-	// type State []Datum
-
-	//bs := make([]byte, 100)
-	//value := int64(10)
-	//binary.LittleEndian.PutUint64(bs, value)
-	//binary.Write(bs, binary.LittleEndian, value)
-
-	value := strconv.FormatInt(10, 10)
-	
-	fmt.Println([]byte(value))
-	fmt.Println(strconv.Atoi(string([]byte(value))))
-	
-	//func (datum *Datum) WriteInt32 (num int32) (*Datum) {
 
 	var dat *Datum = new(Datum)
 	dat.WriteInt32(int32(1234567890))
@@ -542,7 +524,7 @@ func main() {
 		new(Datum).WriteInt32(int32(3300))}
 
 	//Testing calling a single statement
-	statement1 := Statement{//lambda: &lm_addInt32,
+	statement1 := Statement{lambda: &lm_addInt32,
 		inputs: []int{0, 1},
 		outputs: []int{2}}
 	
