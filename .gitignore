@@ -1,6 +1,12 @@
 _
-_main.go
+_ast.go
 lexer
 parser
 generator
 .DS_Store
+bin*
+pkg*
+gisp
+ex.gsp
+gisp.go
+.#*
