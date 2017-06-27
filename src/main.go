@@ -46,6 +46,19 @@ func dbg(elt string) {
 	fmt.Println(elt)
 }
 
+//type bar func()
+
+// type affordance struct {
+// 	Typ cxType
+// 	Fn []byte //hmmmm
+// }
+
+func foo() func() {
+	return func () {
+		fmt.Println("hello")
+	}
+}
+
 func main() {
 	i32 := MakeType("i32")
 	ident := MakeType("ident")
@@ -63,7 +76,62 @@ func main() {
 		AddExpression(MakeExpression(addI32).
 		AddArgument(MakeArgument(&num, ident)).
 		AddArgument(MakeArgument(&num, ident))) // => (+ num num)
+
+
+	// // Start of new way
+
+	// // With the new way, it would be like this:
+
+	// double := MakeFunction().AddName(MakeName("hello")).
+	// 	AddInput(MakeParameter().AddName(MakeName("num")).AddType(MakeType("i32"))).
+	// 	AddOutput(Ma)
+
+	// double := MakeFunction().AddName(MakeName("hello")).
+	// 	AddInput().AddName().
+	// 	AddOutput(Ma)
+
+	// double := MakeFunction().AddName(MakeName("hello")).
+	// 	AddInput().AddInput().
+	// 	AddOutput(Ma)
+
+
+	// // We construct the program over a null object
+	// context.AddFunction().AddName().AddInput().AddType().AddInput().AddType().AddExpression().AddFunction()
+	// 	// Then we add the leaves, which are going to be applied to the first structure that makes sense OR see the other way which is compatible with this model
+	// 	MakeName("sum").MakeName("num1").MakeName("num2")
+	// //The makers are for: fn name, input1 name, input2 name
+
+	// // This way is totally compatible because the makers are applied to the first non-null field that makes sense
+	// context.AddFunction().MakeName("sum").AddInput().MakeName("num1").AddType()
+
+	// // We can determine the object over we will apply the adder by using getters internally (the programmer can also use them)
+	// // For example, we can do the following
+	// context.AddFunction().AddInput().MakeName("num1")
+	// // This MakeName would use a (cxt *cxContext) GetUnnamed() and add "num1" to the first unnamed "nameable" object
 	
+	// // In the case of MakeValue, we would use a GetUnvalued() method and it would add the value to the first unvalued "valuable" object
+
+	// // There will only be MakeName and MakeValue.
+	// // The adders will provide the logic of the program, and the programmer only needs to provide names for the definitions and what values they are going to hold
+
+	// // In the end, we are only providing a program structure and values (names and values for these definitions; and we could actually omit the names)
+	
+	// // This would throw an error, because there is no appropriate object to apply the function_on
+	// context.AddInput()
+
+
+	// // The functions_of can give us, the programmers, what are the possible actions and what's the structure of the program
+	// // For now, the most interesting part are the functions_on
+
+
+
+
+
+
+	
+	// double.GetAffordances() => Should it print
+
+
 	// failed, a struct needs to have basic type fields
 	////// fmt.Println(encoder.Serialize(*MakeExpression(addI32)))
 	
@@ -73,7 +141,7 @@ func main() {
 	num2 := encoder.SerializeAtomic(int32(40))
 	inum1 := []byte("num1")
 	//inum2 := []byte("num2")
-	
+
 	mod := MakeModule("main").
 		AddDefinition(MakeDefinition("num1", &num1, i32)).
 		AddDefinition(MakeDefinition("num2", &num2, i32)).
@@ -92,5 +160,13 @@ func main() {
 			
 			Execute(mod.Definitions).Value)
 
+	foo()()
+
+	fmt.Println(MakeFunction("something").GetAffordances())
+
+	var myfunc = foo()
+	
+	myfunc()
+	
 	fmt.Println("\n...")
 }

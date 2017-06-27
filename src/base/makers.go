@@ -4,6 +4,14 @@ import (
 	
 )
 
+// func MakeValue ()
+
+// func MakeValue ()
+
+
+
+
+
 func MakeModule (name string) *cxModule {
 	return &cxModule{
 		Name: name,
@@ -43,15 +51,15 @@ func MakeArgument(value *[]byte, typ *cxType) *cxArgument {
 	return &cxArgument{Typ: typ, Value: value}
 }
 
-func MakeTypes(names []string) []*cxType {
-	types := make([]*cxType, len(names))
+// func MakeTypes(names []string) []*cxType {
+// 	types := make([]*cxType, len(names))
 
-	for i := 0; i < len(names); i++ {
-		types = append(types, MakeType(names[i]))
-	}
+// 	for i := 0; i < len(names); i++ {
+// 		types = append(types, MakeType(names[i]))
+// 	}
 	
-	return types
-}
+// 	return types
+// }
 
 func MakeType(name string) *cxType {
 	return &cxType{Name: name}

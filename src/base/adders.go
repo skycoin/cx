@@ -34,11 +34,6 @@ func (fn *cxFunction) AddExpression (expr *cxExpression) *cxFunction {
 	return fn
 }
 
-func (expr *cxExpression) AddArgument(arg *cxArgument) *cxExpression {
-	expr.Arguments = append(expr.Arguments, arg)
-	return expr
-}
-
 func (fn *cxFunction) AddInput(param *cxParameter) *cxFunction {
 	fn.Inputs = append(fn.Inputs, param)
 	return fn
@@ -47,4 +42,22 @@ func (fn *cxFunction) AddInput(param *cxParameter) *cxFunction {
 func (fn *cxFunction) AddOutput(param *cxParameter) *cxFunction {
 	fn.Output = param
 	return fn
+}
+
+func (expr *cxExpression) AddArgument(arg *cxArgument) *cxExpression {
+	expr.Arguments = append(expr.Arguments, arg)
+	return expr
+}
+
+
+// Adders for Affordances
+
+func (param *cxParameter) AddName (name string) *cxParameter {
+	param.Name = name
+	return param
+}
+
+func (param *cxParameter) AddType (name string) *cxParameter {
+	param.Name = name
+	return param
 }
