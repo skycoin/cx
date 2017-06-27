@@ -1,0 +1,103 @@
+%\vfill\eject
+\chapter{Basic concepts}
+\label{basicchapter}
+
+\section{Variables, syntactic keywords, and regions}
+\label{specialformsection}
+\label{variablesection}
+
+\section{Disjointness of types}
+\label{disjointness}
+
+\begin{scheme}
+boolean?          bytevector?
+char?             eof-object?
+null?             number?
+pair?             port?
+procedure?        string?
+symbol?           vector?
+\end{scheme}
+
+\section{External representations}
+\label{externalreps}
+
+\section{Storage model}
+\label{storagemodel}
+
+\begin{rationale}
+In many systems it is desirable for constants\index{constant} (i.e. the values of
+literal expressions) to reside in read-only memory.
+Making it an error to alter constants permits this implementation strategy,
+while not requiring other systems to distinguish between
+mutable and immutable objects.
+\end{rationale}
+
+\section{Proper tail recursion}
+\label{proper tail recursion}
+
+\begin{itemize}
+\item The last expression within the body of a lambda expression,
+  shown as \hyper{tail expression} below, occurs in a tail context.
+  The same is true of all the bodies of {\cf case-lambda} expressions.
+\begin{grammar}%
+(l\=ambda \meta{formals}
+  \>\arbno{\meta{definition}} \arbno{\meta{expression}} \meta{tail expression})
+
+(case-lambda \arbno{(\meta{formals} \meta{tail body})})
+\end{grammar}%
+
+\begin{grammar}%
+(if \meta{expression} \meta{tail expression} \meta{tail expression})
+(if \meta{expression} \meta{tail expression})
+
+(cond \atleastone{\meta{cond clause}})
+(cond \arbno{\meta{cond clause}} (else \meta{tail sequence}))
+
+(c\=ase \meta{expression}
+  \>\atleastone{\meta{case clause}})
+(c\=ase \meta{expression}
+  \>\arbno{\meta{case clause}}
+  \>(else \meta{tail sequence}))
+
+(and \arbno{\meta{expression}} \meta{tail expression})
+(or \arbno{\meta{expression}} \meta{tail expression})
+
+(when \meta{test} \meta{tail sequence})
+(unless \meta{test} \meta{tail sequence})
+
+(let (\arbno{\meta{binding spec}}) \meta{tail body})
+(let \meta{variable} (\arbno{\meta{binding spec}}) \meta{tail body})
+(let* (\arbno{\meta{binding spec}}) \meta{tail body})
+(letrec (\arbno{\meta{binding spec}}) \meta{tail body})
+(letrec* (\arbno{\meta{binding spec}}) \meta{tail body})
+(let-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
+(let*-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
+
+(let-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
+(letrec-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
+
+(begin \meta{tail sequence})
+
+(d\=o \=(\arbno{\meta{iteration spec}})
+  \>  \>(\meta{test} \meta{tail sequence})
+  \>\arbno{\meta{expression}})
+
+{\rm where}
+
+\meta{cond clause} \: (\meta{test} \meta{tail sequence})
+\meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
+
+\meta{tail body} \: \arbno{\meta{definition}} \meta{tail sequence}
+\meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}
+\end{grammar}%
+
+\end{itemize}
+
+\begin{scheme}%
+(lambda ()
+  (if (g)
+      (let ((x (h)))
+        x)
+      (and (g) (f))))
+\end{scheme}%
+

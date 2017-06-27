@@ -1,0 +1,72 @@
+% Lexical structure
+
+%%\vfill\eject
+\chapter{Lexical conventions}
+
+\section{Identifiers}
+\label{syntaxsection}
+
+\begin{scheme}
+!\ \$ \% \verb"&" * + - . / :\ < = > ? @ \verb"^" \verb"_" \verb"~" %
+\end{scheme}
+
+\begin{scheme}
+...                      {+}
++soup+                   <=?
+->string                 a34kTMNs
+lambda                   list->vector
+q                        V17a
+|two words|              |two\backwhack{}x20;words|
+the-word-recursion-has-many-meanings%
+\end{scheme}
+
+\begin{entry}{%
+{\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
+{\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
+
+These directives can appear anywhere comments are permitted (see
+section~\ref{wscommentsection}) but must be followed by a delimiter.
+They are treated as comments, except that they affect the reading
+of subsequent data from the same port. The {\cf{}\#!fold-case} directive causes
+subsequent identifiers and character names to be case-folded
+as if by {\cf string-foldcase} (see section~\ref{stringsection}).
+It has no effect on character
+literals.  The {\cf{}\#!no-fold-case} directive
+causes a return to the default, non-folding behavior.
+\end{entry}
+
+
+
+\section{Whitespace and comments}
+\label{wscommentsection}
+
+\begin{scheme}
+\#|
+   The FACT procedure computes the factorial
+   of a non-negative integer.
+|\#
+(define fact
+  (lambda (n)
+    (if (= n 0)
+        \#;(= n 1)
+        1        ;Base case: return 1
+        (* n (fact (- n 1))))))%
+\end{scheme}
+
+
+\section{Other notations}
+
+\section{Datum labels}\unsection
+\label{labelsection}
+
+\begin{scheme}
+(let ((x (list 'a 'b 'c)))
+  (set-cdr! (cddr x) x)
+  x)                       \ev \#0=(a b c . \#0\#)
+\end{scheme}
+
+\begin{scheme}
+\#1=(begin (display \#\backwhack{}x) \#1\#)
+                       \ev \scherror%
+\end{scheme}
+
