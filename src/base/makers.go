@@ -1,16 +1,20 @@
 package base
 
 import (
-	
+	"fmt"
 )
 
-// func MakeValue ()
+var counter int = 0
+func MakeGenSym () string {
+	gensym := fmt.Sprintf("%s%d", "var", counter)
+	counter++
+	
+	return gensym
+}
 
-// func MakeValue ()
-
-
-
-
+func MakeContext () *cxContext {
+	return &cxContext{}
+}
 
 func MakeModule (name string) *cxModule {
 	return &cxModule{
@@ -32,10 +36,6 @@ func MakeField (name string, typ *cxType) *cxField {
 
 func MakeStruct (name string) *cxStruct {
 	return &cxStruct{Name: name}
-}
-
-func MakeContext () {
-	
 }
 
 func MakeParameter(name string, typ *cxType) *cxParameter {

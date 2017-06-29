@@ -1,35 +1,15 @@
 package base
 
 import (
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	//"github.com/skycoin/skycoin/src/cipher/encoder"
+	"fmt"
+	"bytes"
 )
 
-// These would be part of the "functions_of"
 
-func (strct *cxStruct) GetFields() []*cxField {
-	return strct.Fields
-}
+// FUNCTION -> ListAffordances -> ApplyAffordance -> FUNCTION
+// Affordance <=> Adder(fixed) -> Maker(variable: types, literals)
 
-func (mod *cxModule) GetFunctions() []*cxFunction {
-	funcs := make([]*cxFunction, len(mod.Functions))
-	i := 0
-	for _, v := range mod.Functions {
-		funcs[i] = v
-		i++
-	}
-	return funcs
-}
-
-
-
-// This is one idea
-func (mod *cxModule) ApplyAffordance(aff *cxAffordance) *cxModule {
-	return nil
-}
-
-func (mod *cxFunction) ApplyAffordance(aff *cxAffordance) *cxFunction {
-	return nil
-}
 
 // all cxStructures could have a field Affordances
 // this way: fn.PopulateAffordances().ApplyAffordance()
@@ -79,68 +59,182 @@ func (mod *cxFunction) ApplyAffordance(aff *cxAffordance) *cxFunction {
 // 2. The program itself wants to know: It will simply call ApplyAffordances
 
 
-// Needs to be a private method
-func (fn *cxFunction) updateAffordances() *cxFunction {
-	num1 := encoder.SerializeAtomic(int32(25))
-	
-	// Next step: how do we determine these available actions
-	/// Some are fixed: addargument, addinput, addoutput
-	aff1 := &cxAffordance{Action: acAddArgument,
-		// The values can vary, as well as type
-		// How can we help the programmer make an argument
-		// We'll think about that later I guess
-		Input: MakeArgument(&num1, MakeType("i32"))}
-
-	aff2 := &cxAffordance{Action: acAddInput,
-		Input: MakeParameter("something1", MakeType("i32"))}
-
-	aff3 := &cxAffordance{Action: acAddOutput,
-		Input: MakeParameter("something2", MakeType("i32"))}
-
-	fn.Affordances = append(fn.Affordances, aff1)
-	fn.Affordances = append(fn.Affordances, aff2)
-	fn.Affordances = append(fn.Affordances, aff3)
-	
-	return fn
-	//AddExpression // This could be type, but name it Action
-	//cxExpression
-
-	// Action // These are fixed: "AddExpression", "AddField", "AddArgument"
-	// Input
-}
-
-
-
-
-
-func (fn *cxFunction) GetAffordances() []*cxAffordance {
-	// Can be parameter (input and output) and expression
-	//fn.Affordances =
-	return fn.Affordances
-}
-
-// Operators
-// Functions
-// int32 => add, sub, mul, div
-
 // In the end, we can only return funcs or structs!!
 /// We could return makers and adders
 // I think we can stick with returning funcs
 
-func (mod *cxModule) GetAffordances() {
+// 1. We can keep the idea of adding the affordances to the object
+// 2.
+
+// func (mod *cxModule) ApplyAffordance(int idx) *cxModule {
 	
+// }
+
+// func (cxt *cxContext) ShowAffordances () *cxContext {
+// 	for idx, aff := range cxt.Affordances {
+// 		fmt.Printf("%d%+v\n", idx, aff)
+// 	}
+	
+// 	return cxt
+// }
+
+// Another possibility is to mix some ideas from the abandoned branch:
+// Always apply affordances over contexts
+// This isn't a terrible idea, as the programmer or any agent won't really know
+/// on what object to ask affordances
+
+// Are getters affordances too? (most likely yes)
+
+//MakeModule("Something").ShowAffordances() // Purely user
+
+//MakeModule("Something").GetAffordances(fn) // This could receive a function or something
+// This function would be an "agent"
+// This agent can automatically select an affordance for you
+// This agent could decide on an affordance in other ways
+
+// Notes about what I thought a few hours ago:
+// DONE We take subtrees using selectors
+// DONE Every node needs a reference to cxt (except: cxType, cxContext, cxAffordance)
+// Select (subtree) -> Affordances? -> Apply
+// ---- Let's create ContextAffordances(), ModuleAffordances()
+// DONE No, let's make selectors return the selected object
+
+
+
+
+
+
+// We can now: Select
+// Every required structure now has a reference to context
+////// Ah, let's quickly modify adders
+///////// No, let's do this when needed
+// Now, on to the structure for an affordance:
+/// Options were: to return functions
+//// Can we do this now?? (This would be the best)
+
+
+// Every (*cxModule)GetAffordances would be eg: AddFunction () (cxModule)
+// Functions are: func()()
+// This adds an empty function (with gensym name) and sets current function to this
+// Returns the module
+
+// (*cxFunction)GetAffordances    :   AddExpression
+
+// We need these structs: ModuleAffordance, ContextAffordance, etc. so they hold funcs
+/// of different types
+// An affordance struct would have a pointer to a function or ACTION (they don't receive args, always return module, context, function, etc.)
+// They would also have a description:
+/// AddExpression (+ DEF3 INP2)
+/// AddExpression (+ INP1 INP7)
+/// AddInput INP2 I32
+/// AddOutput OUT1 I32
+
+
+func concat (str1 string, str2 string) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(str1)
+	buffer.WriteString(str2)
+	return buffer.String()
 }
 
-func (typ *cxType) GetAffordances() {
-	// if cxType.Name == "i32" {}
-
-	// returns what cx functions are using this type
-	/// we would need a list/map/array of all functions by type
-	
+func PrintAffordances (affs []*cxAffordance) {
+	for _, aff := range affs {
+		fmt.Println(aff.Description)
+	}
 }
 
-func (strct *cxStruct) GetAffordances() {
-	
+func (aff *cxAffordance) ApplyAffordance () {
+	aff.Action()
 }
 
+func (cxt *cxContext) GetAffordances() []*cxAffordance {
+	affs := make([]*cxAffordance, 0)
 
+	gensym := MakeGenSym()
+	affs = append(affs, &cxAffordance{
+		//Typ: MakeType("ContextAffordance"),
+		Description: concat("AddModule ", gensym),
+		// actions will be closures
+		Action: func() {
+			mod := MakeModule(gensym)
+			cxt.Modules = append(cxt.Modules, mod)
+			cxt.CurrentModule = mod
+		}})
+	
+	return affs
+}
+
+// func (cxt *cxContext) oldGetAffordances() *cxContext {
+// 	affs := make([]*cxAffordance, 0)
+
+// 	// We can add a module to the current context
+// 	affs = append(affs, &cxAffordance{
+// 		Action: acAddModule,
+// 		Object: cxt,
+// 		Input: &cxModule{Name: MakeGenSym()},
+// 	})
+
+// 	// fixed
+// 	for _, module := range cxt.Modules {
+// 		affs = append(affs, &cxAffordance{
+// 			Action: acSelectModule,
+// 			Object: cxt,
+// 			Input: module.Name,
+// 		})
+// 	}
+// 	cxt.Affordances = affs
+// 	return cxt
+// }
+
+// func (mod *cxModule) getAffordances() {
+// 	affs := make([]*cxAffordance, 0)
+
+// 	// var
+// 	affs = append(affs, &cxAffordance{
+// 		Action: acAddDefinition,
+// 		Input: &cxDefinition{},
+// 		// We need to populate these when we apply the Affordance
+// 	})
+
+// 	// var
+// 	affs = append(affs, &cxAffordance{
+// 		Action: acAddFunction,
+// 		Input: &cxFunction{},
+// 	})
+
+
+// 	// This will only get the affordances
+// 	// We then apply the affordance
+
+// 	// var
+// 	affs = append(affs, &cxAffordance{
+// 		Action: acAddStruct,
+// 		Input: &cxStruct{},
+// 	})
+
+// 	// fixed
+// 	// for _, module := range mod.Context.Modules {
+// 	// 	affs = append(affs, &cxAffordance{
+// 	// 		Action: acAddImport,
+// 	// 		Input: module,
+// 	// 	})
+// 	// }
+
+// 	mod.Affordances = affs
+// }
+
+// These would be part of the "functions_of"
+
+func (strct *cxStruct) GetFields() []*cxField {
+	return strct.Fields
+}
+
+func (mod *cxModule) GetFunctions() []*cxFunction {
+	funcs := make([]*cxFunction, len(mod.Functions))
+	i := 0
+	for _, v := range mod.Functions {
+		funcs[i] = v
+		i++
+	}
+	return funcs
+}

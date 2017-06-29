@@ -1,29 +1,43 @@
 package base
 
-type cxAction string
-const (
-	acAddArgument cxAction = "AddArgument"
-	acAddDefinition cxAction = "AddDefinition"
-	acAddExpression cxAction = "AddExpression"
-	acAddInput cxAction = "AddInput"
-	acAddOutput cxAction = "AddOutput"
-)
+// type cxAction string
+// const (
+// 	// adders
+// 	acAddArgument cxAction = "AddArgument"
+// 	acAddModule cxAction = "AddModule"
+// 	acAddDefinition cxAction = "AddDefinition"
+// 	acAddFunction cxAction = "AddFunction"
+// 	acAddStruct cxAction = "AddStruct"
+// 	acAddImport cxAction = "AddImport"
+// 	acAddExpression cxAction = "AddExpression"
+// 	acAddInput cxAction = "AddInput"
+// 	acAddOutput cxAction = "AddOutput"
+
+// 	// selectors
+// 	acSelectModule cxAction = "SelectModule"
+// 	acSelectFunction cxAction = "SelectFunction"
+// 	acSelectStruct cxAction = "SelectStruct"
+// 	//acSelectExpression cxAction = "SelectExpression"
+// 	// How do we handle arguments in expressions??
+// 	// We would need to show every single combination with definitions
+// 	//// Maybe this is the correct way
+// 	//// If this is the case, then we don't need to select expressions
+// )
 
 type cxType struct {
 	Name string
-	Affordances []*cxAffordance
 }
 
 type cxField struct {
 	Name string
 	Typ *cxType
-	Affordances []*cxAffordance
 }
 
 type cxStruct struct {
 	Name string
 	Fields []*cxField
-	Affordances []*cxAffordance
+
+	Context *cxContext
 }
 
 /*
@@ -33,9 +47,7 @@ type cxStruct struct {
 type cxContext struct {
 	Modules []*cxModule
 	CurrentModule *cxModule
-	CurrentFunction *cxFunction
-	Scopes [][]*cxDefinition
-	Affordances []*cxAffordance
+	//Scopes [][]*cxDefinition
 }
 
 /*
@@ -45,19 +57,16 @@ type cxContext struct {
 type cxParameter struct {
 	Name string
 	Typ *cxType
-	Affordances []*cxAffordance
 }
 
 type cxArgument struct {
 	Typ *cxType
 	Value *[]byte
-	Affordances []*cxAffordance
 }
 
 type cxExpression struct {
 	Fn *cxFunction
 	Arguments []*cxArgument
-	Affordances []*cxAffordance
 }
 
 type cxFunction struct {
@@ -65,7 +74,8 @@ type cxFunction struct {
 	Inputs []*cxParameter
 	Output *cxParameter
 	Expressions []*cxExpression
-	Affordances []*cxAffordance
+
+	Context *cxContext
 }
 
 /*
@@ -76,7 +86,8 @@ type cxDefinition struct {
 	Name string
 	Typ *cxType
 	Value *[]byte
-	Affordances []*cxAffordance
+
+	Context *cxContext
 }
 
 type cxModule struct {
@@ -85,7 +96,11 @@ type cxModule struct {
 	Functions map[string]*cxFunction
 	Structs map[string]*cxStruct
 	Definitions map[string]*cxDefinition
-	Affordances []*cxAffordance
+
+	Types map[string]*cxType
+	CurrentFunction *cxFunction
+	CurrentStruct *cxStruct
+	Context *cxContext
 }
 
 /*
@@ -93,6 +108,11 @@ type cxModule struct {
 */
 
 type cxAffordance struct {
-	Action cxAction
-	Input interface{}
+	//Typ *cxType // determines how to cast action // might not be needed actually, let's see
+	Description string
+	Action func() // func()*cxContext, func()*cxModule, etc
+	//Object interface{} // to what object are we going to apply the action
+	// might not be needed either, as this is a closure having everything needed
+	// e.g. *cxModule{}, *cxFunction{}, etc.
 }
+
