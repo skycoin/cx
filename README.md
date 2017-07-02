@@ -156,7 +156,7 @@ current object the program is acting on: for example,
 which means that any call to `AddFunction`, `AddStruct` or
 `AddDefinition` will add objects to this module.
 
-Let's create a "root" object or context and call its `GetAffordances`
+Let's create a "roto" object or context and call its `GetAffordances`
 method:
 
 ```
@@ -190,7 +190,7 @@ descriptions of the provided affordances. For example:
 ```
 FilterAffordances(cxt.GetAffordances(),
     "AddExpression", "write")
-    ```
+```
 
 this filter will return all the affordances which involve adding an
 expression with operators containing the "write" keyword.
