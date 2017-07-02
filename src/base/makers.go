@@ -38,7 +38,7 @@ func MakeStruct (name string) *cxStruct {
 	return &cxStruct{Name: name}
 }
 
-func MakeParameter(name string, typ *cxType) *cxParameter {
+func MakeParameter (name string, typ *cxType) *cxParameter {
 	return &cxParameter{Name: name,
 		Typ: typ}
 }
@@ -47,14 +47,19 @@ func MakeExpression (fn *cxFunction) *cxExpression {
 	return &cxExpression{Operator: fn}
 }
 
-func MakeArgument(value *[]byte, typ *cxType) *cxArgument {
+func MakeArgument (value *[]byte, typ *cxType) *cxArgument {
 	return &cxArgument{Typ: typ, Value: value}
 }
 
-func MakeType(name string) *cxType {
+func MakeType (name string) *cxType {
 	return &cxType{Name: name}
 }
 
-func MakeFunction(name string) *cxFunction {
+func MakeFunction (name string) *cxFunction {
 	return &cxFunction{Name: name}
+}
+
+func MakeValue (value string) *[]byte {
+	byts := []byte(value)
+	return &byts
 }

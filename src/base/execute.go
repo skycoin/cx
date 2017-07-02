@@ -4,6 +4,8 @@ import (
 	
 )
 
+// It should be cxt.Execute()
+
 func (expr *cxExpression) Execute(state map[string]*cxDefinition) *cxArgument {
 	fn := expr.Operator
 	args := expr.Arguments
