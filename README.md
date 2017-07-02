@@ -344,7 +344,7 @@ Context
 		 * 3.- AddOutput Stream
 ```
 
-## Randomly Generated Program
+## Randomly Generating a Program
 
 A function which continually applies affordances to an empty program
 is provided. This function, `RandomProgram`, receives a number that
@@ -354,7 +354,7 @@ generated context. For example, by running
 ```
     cxt := RandomProgram(100)
     cxt.PrintProgram(false)
-    ```
+```
 
 we get an output similar to this:
 
