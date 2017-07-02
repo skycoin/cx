@@ -4,136 +4,114 @@ import (
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
 	"fmt"
 	"bytes"
+	"regexp"
+	"strconv"
+	"math/rand"
+	"time"
 )
 
+func random(min, max int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return rand.Intn(max - min) + min
+}
 
-// FUNCTION -> ListAffordances -> ApplyAffordance -> FUNCTION
-// Affordance <=> Adder(fixed) -> Maker(variable: types, literals)
+func RandomProgram (numberAffordances int) *cxContext {
+	cxt := MakeContext()
 
+	// Basic initialization to not waste affordances in these
+	// FilterAffordances(cxt.GetAffordances(),
+	// 	"AddModule")[0].ApplyAffordance()
+	// FilterAffordances(cxt.GetCurrentModule().GetAffordances(),
+	// 	"AddFunction")[0].ApplyAffordance()
+	// FilterAffordances(cxt.GetCurrentModule().GetAffordances(),
+	// 	"AddStruct")[0].ApplyAffordance()
+	// FilterAffordances(cxt.GetCurrentModule().GetAffordances(),
+	// 	"AddDefinition")[0].ApplyAffordance()
 
-// all cxStructures could have a field Affordances
-// this way: fn.PopulateAffordances().ApplyAffordance()
-// populating a cxStructure with its affordances would be automatically, so we don't need a PopulateAffordances method
-
-// everytime we call a maker or an adder, we can populate affordances for each object
-// or maybe not, because other processes could add new affordances and these would need to be recalculated anyway
-// the best approach would be to recalculate everytime we require them
-
-
-// if I receive an affordance with a cxFunction, what does this mean? that I can call it on this object? Is this always going to be the case?
-// for example, if I receive an expression for a function, what does this mean: I can add it to this function
-
-//list of possible affordances:
-// module: AddDefinition
-// apparently, we should focus on adders, makers and already defined stuff
-
-
-
-// how can we get the current module? only by using context?
-//// There's always only one context object, so we could use this
-//*****
-//// Or every cxStructure could have a pointer to its module, an expression a pointer to its function, etc. this would contribute to reflection
-//*****
-
-// should GetAffordances() print the options to the user? i.e. should it work only with side effects?
-// no, it should return the affordances, because: what if we want to create a function which takes a decision based on the affordances it returns
-// again, we can bypass this by populating the cxStructure with the affordances. If we require a function which operates on the affordances of a cxStructure, we only access them via cxStructure.Affordances
-
-
-
-// Now, how do we apply an affordance?
-// ApplyAffordance should be on an object, i.e. func (fn *cxFunction) ApplyAffordance()
-// And it should return the same object, and thus, we can call ApplyAffordance several times
-///// How do we tell the method what affordance to appyl?
-//////// The first solution is to use an index
-//////// Another solution is to describe the affordance, but this doesn't make sense, because we're not supposed to know anything about an afordance, the programming language should tell us
-
-// we need another method which is UpdateAffordanecs. GetAffordances would be part of the reflection functions, Populate and Apply would be part of the affordance.go file
-
-
-// The idea is to call UpdateAffordances() and then access the struct's affordances field
-
-
-// These are the scenarios:
-// 1. The programmer wants to know the affordances: He will call GetAffordances to know, then call ApplyAffordance
-// 2. The program itself wants to know: It will simply call ApplyAffordances
-
-
-// In the end, we can only return funcs or structs!!
-/// We could return makers and adders
-// I think we can stick with returning funcs
-
-// 1. We can keep the idea of adding the affordances to the object
-// 2.
-
-// func (mod *cxModule) ApplyAffordance(int idx) *cxModule {
+	// We could could randomly choose among the select operators
+	// Then we apply a random affordance to that selection
 	
-// }
+	for i := 0; i < numberAffordances; i++ {
+		randomCase := random(0, 100)
+		// 0: Affordances on Context // Merge case 0 and 1
+		// 1: Affordances on Module
+		// 2: Affordances on Function
+		// 3: Affordances on Struct
+		// 4: Affordances on Expression
 
-// func (cxt *cxContext) ShowAffordances () *cxContext {
-// 	for idx, aff := range cxt.Affordances {
-// 		fmt.Printf("%d%+v\n", idx, aff)
-// 	}
-	
-// 	return cxt
-// }
+		// let's give different weights to the options
+		
+		switch {
+		case randomCase >= 0 && randomCase < 5:
+			affs := cxt.GetAffordances()
+			if len(affs) > 0 {
+				affs[random(0, len(affs))].ApplyAffordance()
+			}
+		case randomCase >= 5 && randomCase < 15 :
+			mod := cxt.GetCurrentModule()
+			affs := make([]*cxAffordance, 0)
+			if mod != nil {
+				affs = mod.GetAffordances()
+			}
+			if len(affs) > 0 {
+				affs[random(0, len(affs))].ApplyAffordance()
+			}
+		case randomCase >= 15 && randomCase < 30:
+			fn := cxt.GetCurrentFunction()
+			affs := make([]*cxAffordance, 0)
+			if fn != nil {
+				affs = fn.GetAffordances()
+			}
+			if len(affs) > 0 {
+				affs[random(0, len(affs))].ApplyAffordance()
+			}
+		case randomCase >= 50 && randomCase < 60:
+			strct := cxt.GetCurrentStruct()
+			affs := make([]*cxAffordance, 0)
+			if strct != nil {
+				affs = strct.GetAffordances()
+			}
+			
+			if len(affs) > 0 {
+				affs[random(0, len(affs))].ApplyAffordance()
+			}
+		case randomCase >= 60 && randomCase < 100:
+			expr := cxt.GetCurrentExpression()
+			affs := make([]*cxAffordance, 0)
+			if expr != nil {
+				affs = expr.GetAffordances()
+			}
+			if len(affs) > 0 {
+				affs[random(0, len(affs))].ApplyAffordance()
+			}
+		}
+	}
 
-// Another possibility is to mix some ideas from the abandoned branch:
-// Always apply affordances over contexts
-// This isn't a terrible idea, as the programmer or any agent won't really know
-/// on what object to ask affordances
+	return cxt
+}
 
-// Are getters affordances too? (most likely yes)
+func FilterAffordances(affs []*cxAffordance, filters ...string) []*cxAffordance {
+	filteredAffs := make([]*cxAffordance, 0)
+	for _, filter := range filters {
+		re := regexp.MustCompile(filter)
+		for _, aff := range affs {
+			if re.FindString(aff.Description) != "" {
+				filteredAffs = append(filteredAffs, aff)
+			}
+		}
+		affs = filteredAffs
+		filteredAffs = make([]*cxAffordance, 0)
+	}
+	return affs
+}
 
-//MakeModule("Something").ShowAffordances() // Purely user
-
-//MakeModule("Something").GetAffordances(fn) // This could receive a function or something
-// This function would be an "agent"
-// This agent can automatically select an affordance for you
-// This agent could decide on an affordance in other ways
-
-// Notes about what I thought a few hours ago:
-// DONE We take subtrees using selectors
-// DONE Every node needs a reference to cxt (except: cxType, cxContext, cxAffordance)
-// Select (subtree) -> Affordances? -> Apply
-// ---- Let's create ContextAffordances(), ModuleAffordances()
-// DONE No, let's make selectors return the selected object
-
-
-
-
-
-
-// We can now: Select
-// Every required structure now has a reference to context
-////// Ah, let's quickly modify adders
-///////// No, let's do this when needed
-// Now, on to the structure for an affordance:
-/// Options were: to return functions
-//// Can we do this now?? (This would be the best)
-
-
-// Every (*cxModule)GetAffordances would be eg: AddFunction () (cxModule)
-// Functions are: func()()
-// This adds an empty function (with gensym name) and sets current function to this
-// Returns the module
-
-// (*cxFunction)GetAffordances    :   AddExpression
-
-// We need these structs: ModuleAffordance, ContextAffordance, etc. so they hold funcs
-/// of different types
-// An affordance struct would have a pointer to a function or ACTION (they don't receive args, always return module, context, function, etc.)
-// They would also have a description:
-/// AddExpression (+ DEF3 INP2)
-/// AddExpression (+ INP1 INP7)
-/// AddInput INP2 I32
-/// AddOutput OUT1 I32
-
-
-func concat (str1 string, str2 string) string {
+func concat (strs ...string) string {
 	var buffer bytes.Buffer
-	buffer.WriteString(str1)
-	buffer.WriteString(str2)
+	
+	for i := 0; i < len(strs); i++ {
+		buffer.WriteString(strs[i])
+	}
+	
 	return buffer.String()
 }
 
@@ -147,81 +125,445 @@ func (aff *cxAffordance) ApplyAffordance () {
 	aff.Action()
 }
 
-func (cxt *cxContext) GetAffordances() []*cxAffordance {
+// Just a function to debug for myself. Not meant to be used in production nor meant to be efficient/maintanable
+func (cxt *cxContext) PrintProgram(withAffs bool) {
+
+	fmt.Println("Context")
+	if withAffs {
+		for i, aff := range cxt.GetAffordances() {
+			fmt.Printf(" * %d.- %s\n", i, aff.Description)
+		}
+	}
+	
+	for i, mod := range cxt.Modules {
+		fmt.Printf("%d.- Module: %s\n", i, mod.Name)
+
+		if withAffs {
+			for i, aff := range mod.GetAffordances() {
+				fmt.Printf("\t * %d.- %s\n", i, aff.Description)
+			}
+		}
+
+		if len(mod.Definitions) > 0 {
+			fmt.Println("\tDefinitions")
+		}
+		
+		j := 0
+		for _, v := range mod.Definitions {
+			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ.Name)
+			j++
+		}
+
+		if len(mod.Structs) > 0 {
+			fmt.Println("\tStructs")
+		}
+
+		j = 0
+		for _, strct := range mod.Structs {
+			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
+
+			if withAffs {
+				for i, aff := range strct.GetAffordances() {
+					fmt.Printf("\t\t * %d.- %s\n", i, aff.Description)
+				}
+			}
+
+			for k, fld := range strct.Fields {
+				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
+					k, fld.Name, fld.Typ.Name)
+			}
+			
+			j++
+		}
+
+		if len(mod.Functions) > 0 {
+			fmt.Println("\tFunctions")
+		}
+
+		j = 0
+		for _, fn := range mod.Functions {
+
+			inOuts := make(map[string]string)
+			for _, in := range fn.Inputs {
+				inOuts[in.Name] = in.Typ.Name
+			}
+			
+			
+			var inps bytes.Buffer
+			//inps.WriteString(" ")
+			for i, inp := range fn.Inputs {
+				if i == len(fn.Inputs) - 1 {
+					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name))
+				} else {
+					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name, ", "))
+				}
+				
+			}
+
+			out := ""
+			if fn.Output != nil {
+				if (fn.Output.Name != "") {
+					out = concat(fn.Output.Name, " ", fn.Output.Typ.Name)
+					inOuts[fn.Output.Name] = fn.Output.Typ.Name
+				} else {
+					out = fn.Output.Typ.Name
+				}
+			}
+			
+			fmt.Printf("\t\t%d.- Function: %s (%s) %s\n",
+				j, fn.Name, inps.String(), out)
+
+			if withAffs {
+				for i, aff := range fn.GetAffordances() {
+					fmt.Printf("\t\t * %d.- %s\n", i, aff.Description)
+				}
+			}
+
+			k := 0
+			for _, expr := range fn.Expressions {
+				//Arguments
+				var args bytes.Buffer
+
+				for i, arg := range expr.Arguments {
+					typ := ""
+					if arg.Typ.Name == "ident" {
+						if arg.Typ != nil &&
+							inOuts[string(*arg.Value)] != "" {
+							typ = inOuts[string(*arg.Value)]
+						} else if arg.Value != nil &&
+							mod.Definitions[string(*arg.Value)] != nil &&
+							mod.Definitions[string(*arg.Value)].Typ.Name != "" {
+							typ = mod.Definitions[string(*arg.Value)].Typ.Name
+						} else {
+							typ = arg.Typ.Name
+						}
+					}
+
+					if i == len(expr.Arguments) - 1 {
+						args.WriteString(concat(string(*arg.Value), " ", typ))
+					} else {
+						args.WriteString(concat(string(*arg.Value), " ", typ, ", "))
+					}
+					
+				}
+
+				fmt.Printf("\t\t\t%d.- Expression: %s(%s)\n",
+					k, expr.Operator.Name, args.String())
+
+				if withAffs {
+					for i, aff := range expr.GetAffordances() {
+						fmt.Printf("\t\t\t * %d.- %s\n", i, aff.Description)
+					}
+				}
+				
+				k++
+			}
+			j++
+		}
+	}
+}
+
+func (strct *cxStruct) GetAffordances() []*cxAffordance {
+	affs := make([]*cxAffordance, 0)
+	mod := strct.Module
+
+	types := make([]string, len(basicTypes))
+	copy(types, basicTypes)
+	
+	for name, _ := range mod.Structs {
+		types = append(types, name)
+	}
+
+	// Getting types from imported modules
+	for impName, imp := range mod.Imports {
+		for _, strct := range imp.Structs {
+			types = append(types, concat(impName, ".", strct.Name))
+		}
+	}
+
+	// definitions for each available type
+	for _, typ := range types {
+		fldGensym := MakeGenSym("fld")
+		fldType := MakeType(typ)
+		
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddField ", fldGensym, " ", typ),
+			Action: func() {
+				strct.AddField(MakeField(fldGensym, fldType))
+			}})
+	}
+
+	return affs
+}
+
+func (expr *cxExpression) GetAffordances() []*cxAffordance {
+	op := expr.Operator
 	affs := make([]*cxAffordance, 0)
 
-	gensym := MakeGenSym()
+	// The operator for this function doesn't require arguments
+	if len(op.Inputs) < 1 {
+		return affs
+	}
+	if len(expr.Arguments) >= len(op.Inputs) {
+		return affs
+	}
+	
+	fn := expr.Function
+	mod := expr.Module
+	reqType := op.Inputs[len(expr.Arguments)].Typ.Name // Required type for the current op's input
+	defsTypes := make([]string, 0)
+	args := make([]*cxArgument, 0)
+	identType := MakeType("ident")
+
+	inOutNames := make([]string, len(fn.Inputs) + 1)
+	
+	// Adding inputs and outputs as definitions
+	for i, param := range fn.Inputs {
+		if reqType == param.Typ.Name {
+			inOutNames[i] = param.Name
+			defsTypes = append(defsTypes, param.Typ.Name)
+			identName := []byte(param.Name)
+			args = append(args, &cxArgument{
+				Typ: identType,
+				Value: &identName})
+		}
+	}
+
+	if fn.Output != nil &&
+		fn.Output.Name != "" &&
+		fn.Output.Typ.Name == reqType {
+
+		inOutNames[len(inOutNames)] = fn.Output.Name
+		defsTypes = append(defsTypes, fn.Output.Typ.Name)
+		identName := []byte(fn.Output.Name)
+		args = append(args, &cxArgument{
+			Typ: identType,
+			Value: &identName})
+	}
+
+	// Adding definitions (global vars)
+	for _, def := range mod.Definitions {
+		if reqType == def.Typ.Name {
+			// we could have a var with the same name and type in global and local
+			// contexts. We only want to show 1 affordance for this name
+			notDuplicated := true
+			for _, name := range inOutNames {
+				if name == def.Name {
+					notDuplicated = false
+					break
+				}
+			}
+			
+			if notDuplicated {
+				defsTypes = append(defsTypes, def.Typ.Name)
+				identName := []byte(def.Name)
+				args = append(args, &cxArgument{
+					Typ: identType,
+					Value: &identName})
+			}
+		}
+	}
+
+	for i, arg := range args {
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
+			Action: func() {
+				expr.AddArgument(arg)
+			}})
+	}
+
+	return affs
+}
+
+func (fn *cxFunction) GetAffordances() []*cxAffordance {
+	affs := make([]*cxAffordance, 0)
+	mod := fn.Module
+	opsNames := make([]string, 0)
+	ops := make([]*cxFunction, 0)
+
+	types := make([]string, len(basicTypes))
+	copy(types, basicTypes)
+	for name, _ := range mod.Structs {
+		types = append(types, name)
+	}
+
+	// Getting types from imported modules
+	for impName, imp := range mod.Imports {
+		for _, strct := range imp.Structs {
+			types = append(types, concat(impName, ".", strct.Name))
+		}
+	}
+
+	// Getting operators from current module
+	for opName, op := range mod.Functions {
+		if fn.Name != opName {
+			ops = append(ops, op)
+			opsNames = append(opsNames, opName)
+		}
+	}
+
+	// Getting operators from imported modules
+	for impName, imp := range mod.Imports {
+		for opName, op := range imp.Functions {
+			ops = append(ops, op)
+			opsNames = append(opsNames, concat(impName, ".", opName))
+		}
+	}
+
+	// Inputs
+	for _, typ := range types {
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddInput ", typ),
+			Action: func() {
+				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+		}})
+	}
+
+	// Output. We can only add one output
+	if fn.Output == nil {
+		for _, typ := range types {
+			affs = append(affs, &cxAffordance{
+				Description: concat("AddOutput ", typ),
+				Action: func() {
+					fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+				}})
+		}
+	}
+
+	// Expressions
+	for i, op := range ops {
+		theOp := op // or will keep reference to last op
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddExpression ", opsNames[i]),
+			Action: func() {
+				fn.AddExpression(MakeExpression(theOp))
+		}})
+	}
+
+	return affs
+}
+
+func (mod *cxModule) GetAffordances() []*cxAffordance {
+	affs := make([]*cxAffordance, 0)
+	types := make([]string, len(basicTypes))
+	copy(types, basicTypes)
+
+	if len(mod.Structs) > 0 {
+		for name, _ := range mod.Structs {
+			types = append(types, name)
+		}
+	}
+
+	// Getting types from imported modules
+	for impName, imp := range mod.Imports {
+		for _, strct := range imp.Structs {
+			types = append(types, concat(impName, ".", strct.Name))
+		}
+	}
+
+	// definitions for each available type
+	for _, typ := range types {
+		defGensym := MakeGenSym("def")
+		defType := MakeType(typ)
+		value := []byte{}
+		
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddDefinition ", defGensym, " ", typ),
+			Action: func() {
+				mod.AddDefinition(MakeDefinition(defGensym, &value, defType))
+			}})
+	}
+
+	// add imports
+	for _, imp := range mod.Context.Modules {
+		if imp.Name != mod.Name {
+			affs = append(affs, &cxAffordance{
+				Description: concat("AddImport ", imp.Name),
+				Action: func() {
+					mod.AddImport(imp)
+				}})
+		}
+	}
+	
+	// add function
+	fnGensym := MakeGenSym("fn")
 	affs = append(affs, &cxAffordance{
-		//Typ: MakeType("ContextAffordance"),
-		Description: concat("AddModule ", gensym),
-		// actions will be closures
+		Description: concat("AddFunction ", fnGensym),
 		Action: func() {
-			mod := MakeModule(gensym)
-			cxt.Modules = append(cxt.Modules, mod)
-			cxt.CurrentModule = mod
+			mod.AddFunction(MakeFunction(fnGensym))
+		}})
+
+	// add structure
+	strctGensym := MakeGenSym("strct")
+	affs = append(affs, &cxAffordance{
+		Description: concat("AddStruct ", strctGensym),
+		Action: func() {
+			mod.AddStruct(MakeStruct(strctGensym))
 		}})
 	
 	return affs
 }
 
-// func (cxt *cxContext) oldGetAffordances() *cxContext {
-// 	affs := make([]*cxAffordance, 0)
+func (cxt *cxContext) GetAffordances() []*cxAffordance {
+	affs := make([]*cxAffordance, 0)
+	modGensym := MakeGenSym("mod")
+	
+	affs = append(affs, &cxAffordance {
+		Description: concat("AddModule ", modGensym),
+		Action: func() {
+			cxt.AddModule(MakeModule(modGensym))
+		}})
 
-// 	// We can add a module to the current context
-// 	affs = append(affs, &cxAffordance{
-// 		Action: acAddModule,
-// 		Object: cxt,
-// 		Input: &cxModule{Name: MakeGenSym()},
-// 	})
+	// Select module
+	for _, mod := range cxt.Modules {
+		modName := mod.Name
+		affs = append(affs, &cxAffordance {
+			Description: concat("SelectModule ", modName),
+			Action: func() {
+				cxt.SelectModule(modName)
+			}})
+	}
 
-// 	// fixed
-// 	for _, module := range cxt.Modules {
-// 		affs = append(affs, &cxAffordance{
-// 			Action: acSelectModule,
-// 			Object: cxt,
-// 			Input: module.Name,
-// 		})
-// 	}
-// 	cxt.Affordances = affs
-// 	return cxt
-// }
+	// Select function from current module
+	if cxt.CurrentModule != nil {
+		for _, fn := range cxt.CurrentModule.Functions {
+			fnName := fn.Name
+			affs = append(affs, &cxAffordance {
+				Description: concat("SelectFunction ", fnName),
+				Action: func() {
+					cxt.SelectFunction(fnName)
+				}})
+		}
+	}
 
-// func (mod *cxModule) getAffordances() {
-// 	affs := make([]*cxAffordance, 0)
+	// Select struct from current module
+	if cxt.CurrentModule != nil {
+		for _, strct := range cxt.CurrentModule.Structs {
+			strctName := strct.Name
+			affs = append(affs, &cxAffordance {
+				Description: concat("SelectStruct ", strctName),
+				Action: func() {
+					cxt.SelectStruct(strctName)
+				}})
+		}
+	}
 
-// 	// var
-// 	affs = append(affs, &cxAffordance{
-// 		Action: acAddDefinition,
-// 		Input: &cxDefinition{},
-// 		// We need to populate these when we apply the Affordance
-// 	})
-
-// 	// var
-// 	affs = append(affs, &cxAffordance{
-// 		Action: acAddFunction,
-// 		Input: &cxFunction{},
-// 	})
-
-
-// 	// This will only get the affordances
-// 	// We then apply the affordance
-
-// 	// var
-// 	affs = append(affs, &cxAffordance{
-// 		Action: acAddStruct,
-// 		Input: &cxStruct{},
-// 	})
-
-// 	// fixed
-// 	// for _, module := range mod.Context.Modules {
-// 	// 	affs = append(affs, &cxAffordance{
-// 	// 		Action: acAddImport,
-// 	// 		Input: module,
-// 	// 	})
-// 	// }
-
-// 	mod.Affordances = affs
-// }
+	// Select expression from current function
+	if cxt.CurrentModule != nil && cxt.CurrentModule.CurrentFunction != nil {
+		for _, expr := range cxt.CurrentModule.CurrentFunction.Expressions {
+			lineNumber := expr.Line
+			line := strconv.Itoa(expr.Line)
+			
+			affs = append(affs, &cxAffordance {
+				Description: concat("SelectExpression Line # ", line),
+				Action: func() {
+					cxt.SelectExpression(lineNumber)
+				}})
+		}
+	}
+	
+	return affs
+}
 
 // These would be part of the "functions_of"
 

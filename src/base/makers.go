@@ -5,8 +5,8 @@ import (
 )
 
 var counter int = 0
-func MakeGenSym () string {
-	gensym := fmt.Sprintf("%s%d", "var", counter)
+func MakeGenSym (name string) string {
+	gensym := fmt.Sprintf("%s%d", name, counter)
 	counter++
 	
 	return gensym
@@ -19,10 +19,10 @@ func MakeContext () *cxContext {
 func MakeModule (name string) *cxModule {
 	return &cxModule{
 		Name: name,
-		Definitions: make(map[string]*cxDefinition),
-		Imports: make(map[string]*cxModule),
-		Functions: make(map[string]*cxFunction),
-		Structs: make(map[string]*cxStruct),
+		Definitions: make(map[string]*cxDefinition, 0),
+		Imports: make(map[string]*cxModule, 0),
+		Functions: make(map[string]*cxFunction, 0),
+		Structs: make(map[string]*cxStruct, 0),
 	}
 }
 
@@ -44,22 +44,12 @@ func MakeParameter(name string, typ *cxType) *cxParameter {
 }
 
 func MakeExpression (fn *cxFunction) *cxExpression {
-	return &cxExpression{Fn: fn}
+	return &cxExpression{Operator: fn}
 }
 
 func MakeArgument(value *[]byte, typ *cxType) *cxArgument {
 	return &cxArgument{Typ: typ, Value: value}
 }
-
-// func MakeTypes(names []string) []*cxType {
-// 	types := make([]*cxType, len(names))
-
-// 	for i := 0; i < len(names); i++ {
-// 		types = append(types, MakeType(names[i]))
-// 	}
-	
-// 	return types
-// }
 
 func MakeType(name string) *cxType {
 	return &cxType{Name: name}

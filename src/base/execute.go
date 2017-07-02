@@ -5,7 +5,7 @@ import (
 )
 
 func (expr *cxExpression) Execute(state map[string]*cxDefinition) *cxArgument {
-	fn := expr.Fn
+	fn := expr.Operator
 	args := expr.Arguments
 	fnName := fn.Name
 

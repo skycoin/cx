@@ -1,32 +1,10 @@
 package base
 
-// type cxAction string
-// const (
-// 	// adders
-// 	acAddArgument cxAction = "AddArgument"
-// 	acAddModule cxAction = "AddModule"
-// 	acAddDefinition cxAction = "AddDefinition"
-// 	acAddFunction cxAction = "AddFunction"
-// 	acAddStruct cxAction = "AddStruct"
-// 	acAddImport cxAction = "AddImport"
-// 	acAddExpression cxAction = "AddExpression"
-// 	acAddInput cxAction = "AddInput"
-// 	acAddOutput cxAction = "AddOutput"
-
-// 	// selectors
-// 	acSelectModule cxAction = "SelectModule"
-// 	acSelectFunction cxAction = "SelectFunction"
-// 	acSelectStruct cxAction = "SelectStruct"
-// 	//acSelectExpression cxAction = "SelectExpression"
-// 	// How do we handle arguments in expressions??
-// 	// We would need to show every single combination with definitions
-// 	//// Maybe this is the correct way
-// 	//// If this is the case, then we don't need to select expressions
-// )
-
 type cxType struct {
 	Name string
 }
+// used for affordances (and maybe other stuff)
+var basicTypes = []string{"i32"}
 
 type cxField struct {
 	Name string
@@ -38,6 +16,7 @@ type cxStruct struct {
 	Fields []*cxField
 
 	Context *cxContext
+	Module *cxModule
 }
 
 /*
@@ -65,8 +44,13 @@ type cxArgument struct {
 }
 
 type cxExpression struct {
-	Fn *cxFunction
+	Operator *cxFunction
 	Arguments []*cxArgument
+
+	Line int
+	Function *cxFunction
+	Module *cxModule
+	Context *cxContext
 }
 
 type cxFunction struct {
@@ -75,6 +59,8 @@ type cxFunction struct {
 	Output *cxParameter
 	Expressions []*cxExpression
 
+	CurrentExpression *cxExpression
+	Module *cxModule
 	Context *cxContext
 }
 
@@ -87,6 +73,7 @@ type cxDefinition struct {
 	Typ *cxType
 	Value *[]byte
 
+	Module *cxModule
 	Context *cxContext
 }
 
@@ -97,7 +84,6 @@ type cxModule struct {
 	Structs map[string]*cxStruct
 	Definitions map[string]*cxDefinition
 
-	Types map[string]*cxType
 	CurrentFunction *cxFunction
 	CurrentStruct *cxStruct
 	Context *cxContext

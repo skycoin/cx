@@ -12,16 +12,25 @@ func (cxt *cxContext) AddModule (mod *cxModule) *cxContext {
 }
 
 func (mod *cxModule) AddDefinition (def *cxDefinition) *cxModule {
+	def.Context = mod.Context
+	def.Module = mod
 	mod.Definitions[def.Name] = def
 	return mod
 }
 
 func (mod *cxModule) AddFunction (fn *cxFunction) *cxModule {
+	fn.Context = mod.Context
+	fn.Module = mod
+	mod.CurrentFunction = fn
 	mod.Functions[fn.Name] = fn
 	return mod
 }
 
 func (mod *cxModule) AddStruct (strct *cxStruct) *cxModule {
+	cxt := mod.Context
+	strct.Context = cxt
+	strct.Module = mod
+	mod.CurrentStruct = strct
 	mod.Structs[strct.Name] = strct
 	return mod
 }
@@ -37,6 +46,10 @@ func (strct *cxStruct) AddField (field *cxField) *cxStruct {
 }
 
 func (fn *cxFunction) AddExpression (expr *cxExpression) *cxFunction {
+	expr.Context = fn.Context
+	expr.Module = fn.Module
+	expr.Function = fn
+	expr.Line = len(fn.Expressions)
 	fn.Expressions = append(fn.Expressions, expr)
 	return fn
 }
