@@ -156,7 +156,7 @@ current object the program is acting on: for example,
 which means that any call to `AddFunction`, `AddStruct` or
 `AddDefinition` will add objects to this module.
 
-Let's create a "roto" object or context and call its `GetAffordances`
+Let's create a "root" object or context and call its `GetAffordances`
 method:
 
 ```
