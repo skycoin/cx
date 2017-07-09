@@ -48,41 +48,49 @@ func RandomProgram (numberAffordances int) *cxContext {
 				affs[random(0, len(affs))].ApplyAffordance()
 			}
 		case randomCase >= 5 && randomCase < 15 :
-			mod := cxt.GetCurrentModule()
-			affs := make([]*cxAffordance, 0)
-			if mod != nil {
-				affs = mod.GetAffordances()
-			}
-			if len(affs) > 0 {
-				affs[random(0, len(affs))].ApplyAffordance()
+			mod, err := cxt.GetCurrentModule()
+			if err == nil {
+				affs := make([]*cxAffordance, 0)
+				if mod != nil {
+					affs = mod.GetAffordances()
+				}
+				if len(affs) > 0 {
+					affs[random(0, len(affs))].ApplyAffordance()
+				}
 			}
 		case randomCase >= 15 && randomCase < 30:
-			fn := cxt.GetCurrentFunction()
-			affs := make([]*cxAffordance, 0)
-			if fn != nil {
-				affs = fn.GetAffordances()
-			}
-			if len(affs) > 0 {
-				affs[random(0, len(affs))].ApplyAffordance()
+			fn, err := cxt.GetCurrentFunction()
+			if err == nil {
+				affs := make([]*cxAffordance, 0)
+				if fn != nil {
+					affs = fn.GetAffordances()
+				}
+				if len(affs) > 0 {
+					affs[random(0, len(affs))].ApplyAffordance()
+				}
 			}
 		case randomCase >= 50 && randomCase < 60:
-			strct := cxt.GetCurrentStruct()
-			affs := make([]*cxAffordance, 0)
-			if strct != nil {
-				affs = strct.GetAffordances()
-			}
-			
-			if len(affs) > 0 {
-				affs[random(0, len(affs))].ApplyAffordance()
+			strct, err := cxt.GetCurrentStruct()
+			if err == nil {
+				affs := make([]*cxAffordance, 0)
+				if strct != nil {
+					affs = strct.GetAffordances()
+				}
+				
+				if len(affs) > 0 {
+					affs[random(0, len(affs))].ApplyAffordance()
+				}
 			}
 		case randomCase >= 60 && randomCase < 100:
-			expr := cxt.GetCurrentExpression()
-			affs := make([]*cxAffordance, 0)
-			if expr != nil {
-				affs = expr.GetAffordances()
-			}
-			if len(affs) > 0 {
-				affs[random(0, len(affs))].ApplyAffordance()
+			expr, err := cxt.GetCurrentExpression()
+			if err == nil {
+				affs := make([]*cxAffordance, 0)
+				if expr != nil {
+					affs = expr.GetAffordances()
+				}
+				if len(affs) > 0 {
+					affs[random(0, len(affs))].ApplyAffordance()
+				}
 			}
 		}
 	}
@@ -436,7 +444,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 		affs = append(affs, &cxAffordance{
 			Description: concat("AddExpression ", opsNames[i]),
 			Action: func() {
-				fn.AddExpression(MakeExpression(theOp))
+				fn.AddExpression(MakeExpression("output", theOp))
 		}})
 	}
 
@@ -552,7 +560,7 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 	if cxt.CurrentModule != nil && cxt.CurrentModule.CurrentFunction != nil {
 		for _, expr := range cxt.CurrentModule.CurrentFunction.Expressions {
 			lineNumber := expr.Line
-			line := strconv.Itoa(expr.Line)
+			line := strconv.Itoa(lineNumber)
 			
 			affs = append(affs, &cxAffordance {
 				Description: concat("SelectExpression Line # ", line),
@@ -563,20 +571,4 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 	}
 	
 	return affs
-}
-
-// These would be part of the "functions_of"
-
-func (strct *cxStruct) GetFields() []*cxField {
-	return strct.Fields
-}
-
-func (mod *cxModule) GetFunctions() []*cxFunction {
-	funcs := make([]*cxFunction, len(mod.Functions))
-	i := 0
-	for _, v := range mod.Functions {
-		funcs[i] = v
-		i++
-	}
-	return funcs
 }

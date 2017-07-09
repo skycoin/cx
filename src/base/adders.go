@@ -7,7 +7,8 @@ import (
 func (cxt *cxContext) AddModule (mod *cxModule) *cxContext {
 	mod.Context = cxt
 	cxt.CurrentModule = mod
-	cxt.Modules = append(cxt.Modules, mod)
+	//cxt.Modules = append(cxt.Modules, mod)
+	cxt.Modules[mod.Name] = mod
 	return cxt
 }
 

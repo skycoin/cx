@@ -1,12 +1,10 @@
 package base
 
 import (
-	//"github.com/skycoin/skycoin/src/cipher/encoder"
-	//"fmt"
 	"errors"
 )
 
-func (cxt *cxContext) SelectModule (name string) *cxModule {
+func (cxt *cxContext) SelectModule (name string) (*cxModule, error) {
 	var found *cxModule
 	for _, mod := range cxt.Modules {
 		if mod.Name == name {
@@ -16,18 +14,22 @@ func (cxt *cxContext) SelectModule (name string) *cxModule {
 	}
 
 	if found == nil {
-		// if not found, we return last current module
-		// this is not the desired behaviour. we need to throw an error
-		// the same applies for the other selectors
-		found = cxt.CurrentModule
+		return nil, errors.New("Desired module does not exist")
 	}
 
-	return found
+	return found, nil
 }
 
-// If called form a context
-func (cxt *cxContext) SelectFunction (name string) *cxFunction {
-	mod := cxt.CurrentModule
+func (cxt *cxContext) SelectFunction (name string) (*cxFunction, error) {
+	mod, err := cxt.GetCurrentModule()
+	if err == nil {
+		return mod.SelectFunction(name)
+	} else {
+		return nil, err
+	}
+}
+
+func (mod *cxModule) SelectFunction (name string) (*cxFunction, error) {
 	var found *cxFunction
 	for _, fn := range mod.Functions {
 		if fn.Name == name {
@@ -37,14 +39,22 @@ func (cxt *cxContext) SelectFunction (name string) *cxFunction {
 	}
 
 	if found == nil {
-		found = mod.CurrentFunction
+		return nil, errors.New("Desired function does not exist")
 	}
 
-	return found
+	return found, nil
 }
 
-func (cxt *cxContext) SelectStruct (name string) *cxStruct {
-	mod := cxt.CurrentModule
+func (cxt *cxContext) SelectStruct (name string) (*cxStruct, error) {
+	mod, err := cxt.GetCurrentModule()
+	if err == nil {
+		return mod.SelectStruct(name)
+	} else {
+		return nil, err
+	}
+}
+
+func (mod *cxModule) SelectStruct (name string) (*cxStruct, error) {
 	var found *cxStruct
 	for _, strct := range mod.Structs {
 		if strct.Name == name {
@@ -54,82 +64,45 @@ func (cxt *cxContext) SelectStruct (name string) *cxStruct {
 	}
 
 	if found == nil {
-		// if not found, we return last current module
-		// this is not the desired behaviour. we need to throw an error
-		// the same applies for the other selectors
-		found = mod.CurrentStruct
+		return nil, errors.New("Desired structure does not exist")
 	}
 
-	return found
-}
-
-// If called form a module
-func (mod *cxModule) SelectFunction (name string) *cxFunction {
-	var found *cxFunction
-	for _, fn := range mod.Functions {
-		if fn.Name == name {
-			mod.CurrentFunction = fn
-			found = fn
-		}
-	}
-
-	if found == nil {
-		found = mod.CurrentFunction
-	}
-
-	return found
-}
-
-// Does this mean that these structures are the only ones
-// that can have affordances??
-// No, this means that these are "root" nodes that can have other structures
-// which can have further affordances
-// hmm, wait
-// we can't have affordances (the ones we are focusing at the moment. we are going to have other types of affordances, like remove, change) of: cxType, cxField
-// yes, this means these structures are the ones that can have the current type of
-// affordances (adders)
-// we won't have adders on cxTypes, cxFields, etc
-
-func (mod *cxModule) SelectStruct (name string) *cxStruct {
-	var found *cxStruct
-	for _, strct := range mod.Structs {
-		if strct.Name == name {
-			mod.CurrentStruct = strct
-			found = strct
-		}
-	}
-
-	if found == nil {
-		found = mod.CurrentStruct
-	}
-
-	return found
+	return found, nil
 }
 
 func (cxt *cxContext) SelectExpression (line int) (*cxExpression, error) {
-	fn := cxt.CurrentModule.CurrentFunction
+	mod, err := cxt.GetCurrentModule()
+	if err == nil {
+		return mod.SelectExpression(line)
+	} else {
+		return nil, err
+	}
+}
 
-	//expr, err := fn.SelectExpression(line)
-
-	return fn.SelectExpression(line)
-	
-	//return expr, nil
+func (mod *cxModule) SelectExpression (line int) (*cxExpression, error) {
+	fn, err := mod.GetCurrentFunction()
+	if err == nil {
+		return fn.SelectExpression(line)
+	} else {
+		return nil, err
+	}
 }
 
 func (fn *cxFunction) SelectExpression (line int) (*cxExpression, error) {
 	if len(fn.Expressions) == 0 {
-		return nil, errors.New("No expressions this function")
+		return nil, errors.New("There are no expressions in this function")
 	}
 	
 	if line >= len(fn.Expressions) {
 		line = len(fn.Expressions) - 1
 	}
+
+	if line < 0 {
+		line = 0
+	}
+	
 	expr := fn.Expressions[line]
 	fn.CurrentExpression = expr
 	
 	return expr, nil
 }
-
-// Expressions will be a more difficult case later on because expressions can contain other expressions
-// Unless we stick with "literal" arguments (identifiers, terminals)
-// This might be a good idea actually. If expressions can contain other expressions, affordances could be infinite: (+ (+ (+ (+ (+ (+ (+)))))))

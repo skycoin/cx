@@ -35,166 +35,126 @@ func main() {
 	_ = i64
 	
 	ident := MakeType("ident")
-	
-	// native functions only need a name to reference them
-	addI32 := MakeFunction("addI32")
-	
-	// function which uses native function "addI32"
-	double := MakeFunction("double").
-		  AddInput(MakeParameter("num", i32)).
-		  AddOutput(MakeParameter("", i32)).
-		
-		  AddExpression(MakeExpression(addI32).
-		                AddArgument(MakeArgument(MakeValue("num"), ident)).
-				AddArgument(MakeArgument(MakeValue("num"), ident)))
-
-
-	
-	// double.GetAffordances() => Should it print
-
-
-	// failed, a struct needs to have basic type fields
-	////// fmt.Println(encoder.Serialize(*MakeExpression(addI32)))
 
 	num1 := encoder.SerializeAtomic(int32(25))
 	num2 := encoder.SerializeAtomic(int32(40))
-	inum1 := []byte("num1")
+	//inum1 := []byte("num1")
 	//inum2 := []byte("num2")
 
-	mod := MakeModule("main").
+	cxt := MakeContext().AddModule(MakeModule("main").
 		AddDefinition(MakeDefinition("num1", &num1, i32)).
-		AddDefinition(MakeDefinition("num2", &num2, i32)).
-		AddFunction(double)
+		AddDefinition(MakeDefinition("num2", &num2, i32)))
+
+
+	addI32 := MakeFunction("addI32")
+	double := MakeFunction("double").
+		AddInput(MakeParameter("n", i32)).
+		AddOutput(MakeParameter("out", i32)).
+		AddExpression(
+		MakeExpression("notOut", addI32).
+			AddArgument(MakeArgument(MakeValue("n"), ident)).
+			AddArgument(MakeArgument(MakeValue("n"), ident))).
+		AddExpression(
+		MakeExpression("out", addI32).
+			AddArgument(MakeArgument(MakeValue("notOut"), ident)).
+			AddArgument(MakeArgument(MakeValue("num1"), ident)))
+
+	quad := MakeFunction("quad").
+		AddInput(MakeParameter("n", i32)).
+		AddOutput(MakeParameter("out", i32)).
+		AddExpression(MakeExpression("n", double).
+		  AddArgument(MakeArgument(MakeValue("n"), ident))).
+		AddExpression(MakeExpression("out", double).
+		AddArgument(MakeArgument(MakeValue("n"), ident)))
+
+	sumQuads := MakeFunction("sumQuads").
+		AddInput(MakeParameter("n1", i32)).
+		AddInput(MakeParameter("n2", i32)).
+		AddOutput(MakeParameter("result", i32)).
+		AddExpression(MakeExpression("quad1", quad).
+		AddArgument(MakeArgument(MakeValue("n1"), ident))).
+		AddExpression(MakeExpression("quad2", quad).
+		AddArgument(MakeArgument(MakeValue("n2"), ident))).
+		AddExpression(MakeExpression("result", addI32).
+		AddArgument(MakeArgument(MakeValue("quad1"), ident)).
+		AddArgument(MakeArgument(MakeValue("quad2"), ident)))
+
+	main := MakeFunction("main").
+		AddExpression(MakeExpression("outputMain", sumQuads).
+		AddArgument(MakeArgument(MakeValue("num1"), ident)).
+		//AddArgument(MakeArgument(&num2, i32)).
+		AddArgument(MakeArgument(&num2, i32)))
+
+
+
 
 	
-	fmt.Println(
-		MakeExpression(addI32).
-			AddArgument(MakeArgument(&inum1, ident)).
-			AddArgument(MakeArgument(&num2, i32)).
-			
-			Execute(mod.Definitions).Value)
-
-	fmt.Println(
-		MakeExpression(double).
-			AddArgument(MakeArgument(&num1, i32)).
-			
-			Execute(mod.Definitions).Value)
-	
-	fmt.Println(MakeContext().AddModule(MakeModule("Math")).AddModule(MakeModule("StdLib")))
-
-	fmt.Println("\nTesting Selectors")
-
-	fmt.Println(MakeContext().AddModule(MakeModule("Math")).AddModule(MakeModule("StdLib")).
-		CurrentModule)
-	fmt.Println(MakeContext().AddModule(MakeModule("Math")).AddModule(MakeModule("StdLib")).
-		SelectModule("Math"))
-
 	
 
-	
-	fmt.Println("\nTesting Affordances")
-	fmt.Println("\n---Context Affordances")
-	
-	cxt := MakeContext()
-	
-	affs := cxt.GetAffordances()
-	
-	PrintAffordances(affs)
-	
-	fmt.Println(cxt.Modules)
-	affs[0].ApplyAffordance() // This should add a module
 
-	fmt.Println(cxt.Modules[0].Name)
-	PrintAffordances(cxt.GetAffordances())
 
-	fmt.Println("\n---Module Affordances")
-	
-	cxt.AddModule(MakeModule("Math"))
-	imp := MakeModule("StdLib")
-	cxt.AddModule(imp)
-	//cxt.AddModule(MakeModule("Bytes"))
-	//cxt.AddModule(MakeModule("HTTP"))
-	affs = cxt.SelectModule("Math").
-		AddStruct(MakeStruct("List")).
-		AddStruct(MakeStruct("Complex")).
-		AddImport(imp).
-		GetAffordances()
-	
-	PrintAffordances(affs)
-	fmt.Println(cxt.GetCurrentModule().Definitions)
-	affs[0].ApplyAffordance()
-	affs[1].ApplyAffordance()
-	fmt.Println(cxt.GetCurrentModule().Definitions["def2"].Typ)
-
-	fmt.Println("Functions before:")
-	fmt.Println(cxt.GetCurrentModule().Functions)
-	fmt.Println("Functions after:")
-	affs[len(affs) - 2].ApplyAffordance() // Adding a function
-	affs[len(affs) - 2].ApplyAffordance() // This would redefine the last function
-
-	affs = cxt.GetCurrentModule().GetAffordances()
-	affs[len(affs) - 2].ApplyAffordance()
-	cxt.SelectModule("StdLib").
-		AddStruct(MakeStruct("Stream"))
-	affs = cxt.GetCurrentModule().GetAffordances()
-	affs[len(affs) - 2].ApplyAffordance() // Adding a function
-	//affs = cxt.GetCurrentFunction().
-	cxt.SelectModule("Math")
-
-	fmt.Println(cxt.GetCurrentModule().Functions)
-	fmt.Println(cxt.GetCurrentFunction())
-
-	fmt.Println("\n---Function Affordances")
-	affs = cxt.SelectFunction("fn5").GetAffordances()
-	PrintAffordances(affs)
-	affs[0].ApplyAffordance() // Adds an input
-	affs[6].ApplyAffordance()
-	// fmt.Println(cxt.GetCurrentFunction().Expressions[0].Operator.Module)
-	// fmt.Println(cxt.GetCurrentFunction().Expressions[0].Operator.Name)
-	// fmt.Println(cxt.GetCurrentFunction().Expressions[0].Arguments)
-
-	// cxt.GetCurrentModule().AddDefinition(MakeDefinition("num1", nil, i32))
-	// cxt.GetCurrentModule().AddDefinition(MakeDefinition("num2", nil, i32))
-	// cxt.GetCurrentModule().AddDefinition(MakeDefinition("sum", nil, i32))
-	cxt.GetCurrentModule().AddDefinition(MakeDefinition("hugs", nil, i32))
-	cxt.GetCurrentModule().AddDefinition(MakeDefinition("items", nil, MakeType("StdLib.Stream")))
-	cxt.GetCurrentModule().AddDefinition(MakeDefinition("views", nil, i64))
-
-	cxt.GetCurrentFunction().AddInput(MakeParameter("num1", i32))
-	cxt.GetCurrentFunction().AddInput(MakeParameter("num2", i32))
-	cxt.GetCurrentFunction().AddOutput(MakeParameter("sum", i32))
-
-	cxt.SelectFunction("fn10")
-	cxt.GetCurrentFunction().AddInput(MakeParameter("items", MakeType("StdLib.Stream")))
-	FilterAffordances(cxt.GetCurrentFunction().GetAffordances(),
-		"AddExpression")[0].ApplyAffordance()
-	
-	
-	expr, err := cxt.GetCurrentFunction().SelectExpression(100)
-	if err == nil {
-		affs = expr.GetAffordances()
-		FilterAffordances(affs, "AddArgument")[0].ApplyAffordance()
-		affs = expr.GetAffordances()
-		FilterAffordances(affs, "AddArgument")[0].ApplyAffordance()
-		affs = expr.GetAffordances()
-		FilterAffordances(affs, "AddArgument")[0].ApplyAffordance()
-		affs = expr.GetAffordances()
-		FilterAffordances(affs, "AddArgument")[0].ApplyAffordance()
+	if mod, err := cxt.GetCurrentModule(); err == nil {
+		// native functions only need a name to reference them
+		
+		mod.AddFunction(addI32)
+		mod.AddFunction(double)
+		mod.AddFunction(quad)
+		mod.AddFunction(sumQuads)
+		mod.AddFunction(main)
 	} else {
 		fmt.Println(err)
 	}
-
-	FilterAffordances(cxt.SelectStruct("List").GetAffordances(),
-		"AddField")[0].ApplyAffordance()
-	FilterAffordances(cxt.GetCurrentStruct().GetAffordances(),
-		"AddField")[1].ApplyAffordance()
-
-	fmt.Println("\n...\n")
-	//cxt.PrintProgram(true)
-
-	fmt.Println("\nNew Program\n")
-
+	
 	// Generating random program
-	cxt = RandomProgram(200)
-	cxt.PrintProgram(false)
+	//cxt := RandomProgram(200)
+	//cxt.PrintProgram(false)
+
+	// Call stack testing
+	cxt.Run(false, 2000)
+	fmt.Println(len(cxt.Steps))
+	fmt.Println("...")
+	//PrintCallStack(cxt.Steps[len(cxt.Steps) - 1])
+	PrintCallStack(cxt.CallStack)
+	//cxt.Run(false, 200)
+	fmt.Println(len(cxt.Steps))
+
+	// for _, step := range cxt.Steps {
+	// 	//fmt.Println(step)
+	// 	//PrintCallStack(step)
+	// 	fmt.Printf("%p\n", step[len(step) - 1].Context)
+	// }
+	//PrintCallStack(cxt.CallStack)	
+
+
+	fmt.Println("...")
+
+	
+	// copy of program at about the middle of its execution
+	cxtCopy := MakeContextCopy(cxt, 1000)
+	// if defs, err := cxtCopy.GetCurrentDefinitions(); err == nil {
+	// 	defs["num1"].Value = &num2
+	// }
+	//cxt.Run(false, 200)
+	// fmt.Println("...")
+
+	//PrintCallStack(cxtCopy.Steps[len(cxtCopy.Steps) - 1])
+	PrintCallStack(cxtCopy.CallStack)
+	//fmt.Println(len(cxtCopy.Steps))
+	//fmt.Println(len(cxt.Steps))
+	cxtCopy.Run(false, 2000)
+	//fmt.Println(len(cxtCopy.Steps))
+	// fmt.Println("...")
+	fmt.Println(len(cxt.Steps))
+	fmt.Println(len(cxtCopy.Steps))
+	// PrintCallStack(cxtCopy.Steps[len(cxtCopy.Steps) - 1])
+	fmt.Println("checking calls contexts")
+	// for _, step := range cxtCopy.Steps {
+	// 	fmt.Printf("%p\n", step[len(step) - 1].Context)
+	// }
+
+	for i := 0; i < len(cxtCopy.Steps); i++ {
+		fmt.Printf("...%d\n", i)
+		//PrintCallStack(cxt.Steps[i])
+		PrintCallStack(cxtCopy.Steps[i])
+	}
 }

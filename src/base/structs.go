@@ -11,12 +11,44 @@ type cxField struct {
 	Typ *cxType
 }
 
+
+// Are all these structures going to be c structs?
+
+// Affordances would need to be applied before compilation (or maybe not? we could make structMeta grow automatically)
+/// If it grows automatically, we just need to make a new array + the size of the affordance (this will allocate a contiguous block of memory)
+
+// We need a byte array to store the fields (the values)
+// If we want to access field "x", how do we know
+
+// We need a structMeta[] which would be an array (or slice?)
+// We could have an array, because this is going to be performed at compile time
+
+// type cxStructC struct {
+// 	fields []*cxField
+// 	offset int
+// }
+
+// Do we need a structMeta for each of our structs?
+// We'll use word-length offsets (for example, 4 bytes) for fields of primitive types
+// What about fields of complex types?
+/// For example, in an expression we have (+ Point1.x Point2.y)
+
+
+// Compilation (substition, when):
+
+// Benchmark (way to test it):
+
+// Every relevant structure just needs to save an offset
+type structMeta struct {
+	//Offsets []
+}
+
 type cxStruct struct {
 	Name string
 	Fields []*cxField
 
-	Context *cxContext
 	Module *cxModule
+	Context *cxContext
 }
 
 /*
@@ -24,9 +56,37 @@ type cxStruct struct {
 */
 
 type cxContext struct {
-	Modules []*cxModule
+	Modules map[string]*cxModule
 	CurrentModule *cxModule
-	//Scopes [][]*cxDefinition
+	CallStack []*cxCall
+	Steps [][]*cxCall
+
+
+	
+
+	// We can only go back in time in the stack at the moment
+	// This works if we consider a fixed program structure:
+	/// constant modules, functions, structures, definitions
+	// If we want to mix affordances and stepping, we also need to save program structure
+
+
+	// For this, we would need to make refcopies (like the process in saveStep) of:
+	///
+
+
+	
+	// Ok, now we got a deep copied context
+	// To save structure, how can we do it
+	// The first option would be to just
+	
+	// We can do something similar to saveStep (saveStruct)
+	// Everytime we call an adder, if a flag is true, we call saveStruct (let's think for another name)
+	// The biggest problem is that this isn't a linear structure, like a stack. the program is a tree
+
+	// The other option is to just save a copy of the whole context each N adders,
+	// but I like the versatility of the previous option
+	// I'll keep thinknig about that one
+	
 }
 
 /*
@@ -43,11 +103,23 @@ type cxArgument struct {
 	Value *[]byte
 }
 
+type cxCall struct {
+	Operator *cxFunction // constant
+	
+	Line int // non constant
+	State map[string]*cxDefinition // non constant
+	
+	ReturnAddress *cxCall // constant
+	Context *cxContext // constant
+	Module *cxModule // constant
+}
+
 type cxExpression struct {
 	Operator *cxFunction
 	Arguments []*cxArgument
-
+	OutputName string
 	Line int
+	
 	Function *cxFunction
 	Module *cxModule
 	Context *cxContext
@@ -94,11 +166,7 @@ type cxModule struct {
 */
 
 type cxAffordance struct {
-	//Typ *cxType // determines how to cast action // might not be needed actually, let's see
 	Description string
-	Action func() // func()*cxContext, func()*cxModule, etc
-	//Object interface{} // to what object are we going to apply the action
-	// might not be needed either, as this is a closure having everything needed
-	// e.g. *cxModule{}, *cxFunction{}, etc.
+	Action func()
 }
 
