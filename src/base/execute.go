@@ -85,7 +85,6 @@ func PrintCallStack (callStack []*cxCall) {
 }
 
 func saveStep (call *cxCall) {
-	fmt.Printf("%p\n", call.Context)
 	lenCallStack := len(call.Context.CallStack)
 	newStep := make([]*cxCall, lenCallStack)
 
@@ -129,6 +128,12 @@ func saveStep (call *cxCall) {
 	
 	call.Context.Steps = append(call.Context.Steps, newStep)
 	return
+}
+
+// It "un-runs" a program
+func (cxt *cxContext) Reset() {
+	cxt.CallStack = nil
+	cxt.Steps = nil
 }
 
 func (cxt *cxContext) Run (withDebug bool, nCalls int) {
@@ -187,7 +192,7 @@ func callsEqual (call1, call2 *cxCall) bool {
 
 func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 	//  add a counter here to pause
-	if callCounter >= nCalls {
+	if nCalls > 0 && callCounter >= nCalls {
 		return
 	}
 	callCounter++
@@ -206,6 +211,10 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			// this one is for returning result
 			returnName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputName
 			output := call.State[outName]
+			if output == nil {
+				outName := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputName
+				output = call.State[outName]
+			}
 
 			if output != nil {
 				call.ReturnAddress.State[returnName] = MakeDefinition(returnName, output.Value, output.Typ)
@@ -234,16 +243,22 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			for i, inp := range expr.Operator.Inputs {
 				argNames[i] = inp.Name
 			}
-
 			
 			// we are modifying by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
 				if argsRefs[i].Typ.Name == "ident" {
 					lookingFor := string(*argsRefs[i].Value)
+
+					//fmt.Println(fn.Name)
+					//fmt.Println(state)
+					//fmt.Println(expr.Line)
+
 					local := state[lookingFor]
 					global := globals[lookingFor]
 
 					if (local == nil && global == nil) {
+						//call.Context.PrintProgram(false)
+						//fmt.Printf("%s:%d\n", fn.Name, expr.Line)
 						panic(fmt.Sprintf("'%s' is undefined", lookingFor))
 					}
 
@@ -264,10 +279,18 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 				value := addI32(argsCopy[0], argsCopy[1])
 				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
 				call.Line++
-				// saveStep(call)
-				// if withDebug {
-				// 	PrintCallStack(call.Context.CallStack)
-				// }
+				call.call(withDebug, nCalls, callCounter)
+				return
+			case "mulI32":
+				value := mulI32(argsCopy[0], argsCopy[1])
+				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
+				call.Line++
+				call.call(withDebug, nCalls, callCounter)
+				return
+			case "subI32":
+				value := subI32(argsCopy[0], argsCopy[1])
+				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
+				call.Line++
 				call.call(withDebug, nCalls, callCounter)
 				return
 			default: // not native function

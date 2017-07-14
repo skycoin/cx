@@ -86,6 +86,19 @@ func (mod *cxModule) GetDefinitions () (map[string]*cxDefinition, error) {
 	}
 }
 
+func (cxt *cxContext) GetDefinition (name string) (*cxDefinition, error) {
+	if mod, err := cxt.GetCurrentModule(); err == nil {
+		found := mod.Definitions[name]
+		if found == nil {
+			return nil, errors.New("Definition not found")
+		} else {
+			return found, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
 func (strct *cxStruct) GetFields() ([]*cxField, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
@@ -106,6 +119,14 @@ func (mod *cxModule) GetFunctions() ([]*cxFunction, error) {
 		return funcs, nil
 	} else {
 		return nil, errors.New("Module has no functions")
+	}
+}
+
+func (cxt *cxContext) GetModule(modName string) (*cxModule, error) {
+	if cxt.Modules != nil {
+		return cxt.Modules[modName], nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("Module '%s'", modName))
 	}
 }
 

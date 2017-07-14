@@ -13,10 +13,11 @@ func MakeGenSym (name string) string {
 }
 
 func MakeContext () *cxContext {
-	return &cxContext{
+	newContext := &cxContext{
 		Modules: make(map[string]*cxModule, 0),
 		CallStack: make([]*cxCall, 0),
 		Steps: make([][]*cxCall, 0)}
+	return newContext
 }
 
 // after implementing structure stepping, we need to change this
@@ -42,8 +43,6 @@ func MakeArgumentCopy (arg *cxArgument) *cxArgument {
 	}
 }
 
-// should the operator be the same as the copied expression?
-
 // complete
 func MakeExpressionCopy (expr *cxExpression, fn *cxFunction, mod *cxModule, cxt *cxContext) *cxExpression {
 	argsCopy := make([]*cxArgument, len(expr.Arguments))
@@ -68,17 +67,18 @@ func MakeFunctionCopy (fn *cxFunction, mod *cxModule, cxt *cxContext) *cxFunctio
 	for i, inp := range fn.Inputs {
 		inputsCopy[i] = MakeParameterCopy(inp)
 	}
+	
 	for i, expr := range fn.Expressions {
 		exprsCopy[i] = MakeExpressionCopy(expr, newFn, mod, cxt)
 	}
-
+	
 	newFn.Name = fn.Name
 	newFn.Inputs = inputsCopy
 	if fn.Output != nil {
 		newFn.Output = MakeParameterCopy(fn.Output)
 	}
 	newFn.Expressions = exprsCopy
-	if fn.Expressions != nil {
+	if len(exprsCopy) > 0 {
 		newFn.CurrentExpression = exprsCopy[len(exprsCopy) - 1]
 	}
 	newFn.Module = mod
@@ -134,6 +134,13 @@ func MakeModuleCopy (mod *cxModule, cxt *cxContext) *cxModule {
 		defsCopy[k] = MakeDefinitionCopy(def, newMod, cxt)
 	}
 
+	// Setting current function in copy
+	for _, fn := range fnsCopy {
+		if fn.Name == mod.CurrentFunction.Name {
+			newMod.CurrentFunction = fn
+		}
+	}
+
 	newMod.Name = mod.Name
 	newMod.Imports = mod.Imports
 	newMod.Functions = fnsCopy
@@ -163,6 +170,7 @@ func MakeCallCopy (call *cxCall, mod *cxModule, cxt *cxContext) *cxCall {
 
 func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	newContext := &cxContext{}
+
 	modsCopy := make(map[string]*cxModule, len(cxt.Modules))
 	if stepNumber > len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
@@ -172,6 +180,26 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 		modsCopy[k] = MakeModuleCopy(mod, newContext)
 	}
 
+	// Setting current module in copy
+	for _, mod := range modsCopy {
+		if mod.Name == cxt.CurrentModule.Name {
+			newContext.CurrentModule = mod
+		}
+	}
+
+	newContext.Modules = modsCopy
+
+	// if len(cxt.Steps) < 1 {
+	// 	if mod, err := newContext.GetModule("main"); err == nil {
+	// 		if fn, err := newContext.GetFunction("main", "main"); err == nil {
+	// 			state := make(map[string]*cxDefinition)
+	// 			mainCall := MakeCall(fn, state, nil, mod, newContext)
+	// 			cxt.CallStack = append(cxt.CallStack, mainCall)
+				
+	// 		}
+	// 	}
+	// }
+
 	// Making imports copies
 	for _, mod := range modsCopy {
 		for impKey, _ := range mod.Imports {
@@ -179,7 +207,7 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 		}
 	}
 
-	newContext.Modules = modsCopy
+	
 	
 	// Making expressions/operators
 	for _, mod := range modsCopy {
@@ -192,34 +220,34 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 		}
 	}
 
+	if len(cxt.Steps) > 0 {
+		reqStep := cxt.Steps[stepNumber]
 
-	reqStep := cxt.Steps[stepNumber]
-
-	newStep := make([]*cxCall, len(reqStep))
-	var lastCall *cxCall
-	for j, call := range reqStep {
-		var callModule *cxModule
-		for _, mod := range modsCopy {
-			if call.Module.Name == mod.Name {
-				callModule = mod
+		newStep := make([]*cxCall, len(reqStep))
+		var lastCall *cxCall
+		for j, call := range reqStep {
+			var callModule *cxModule
+			for _, mod := range modsCopy {
+				if call.Module.Name == mod.Name {
+					callModule = mod
+				}
 			}
+			
+			newCall := MakeCallCopy(call, callModule, newContext)
+			if callOp, err := newContext.GetFunction(call.Operator.Name, call.Operator.Module.Name); err == nil {
+				newCall.Operator = callOp
+			}
+			newCall.ReturnAddress = lastCall
+			//fmt.Printf("**%p\n", newCall.Context)
+			lastCall = newCall
+			newStep[j] = newCall
 		}
 		
-		newCall := MakeCallCopy(call, callModule, newContext)
-		if callOp, err := newContext.GetFunction(call.Operator.Name, call.Operator.Module.Name); err == nil {
-			newCall.Operator = callOp
-		}
-		newCall.ReturnAddress = lastCall
-		fmt.Printf("**%p\n", newCall.Context)
-		lastCall = newCall
-		newStep[j] = newCall
+		newContext.CallStack = newStep
+		//newContext.CallStack = reqStep
+		//newContext.Steps = append(newContext.Steps, newStep)
+		newContext.Steps = nil
 	}
-
-	
-	newContext.CallStack = newStep
-	//newContext.CallStack = reqStep
-	//newContext.Steps = append(newContext.Steps, newStep)
-	newContext.Steps = nil
 	
 	return newContext
 }
@@ -389,4 +417,11 @@ func MakeCall (op *cxFunction, state map[string]*cxDefinition, ret *cxCall, mod 
 		ReturnAddress: ret,
 		Module: mod,
 		Context: cxt,}
+}
+
+func MakeAffordance (desc string, action func()) *cxAffordance {
+	return &cxAffordance{
+		Description: desc,
+		Action: action,
+	}
 }

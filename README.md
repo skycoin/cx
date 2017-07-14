@@ -391,3 +391,244 @@ we get an output similar to this:
 
 which sadly didn't add any expression to any function it created (so
 it wouldn't do anything if executed).
+
+## Evolutionary Algorithm
+
+For this small evolutionary algorithm, affordances are used to add
+expressions to a function which represents a solution to a curve
+fitting problem. Mutation is defined by randomly removing one expression from
+a program, and then applying an affordance to replace the removed
+expression. At the moment, all the necessary code to perform the
+evolutionary process is located in the *base/evolution.go* file.
+
+For this walkthrough, the observed points are obtained by evaluating
+`f(x) = x\*x\*x - (3\*x)` with the integer set `{-10, -9, 8, ..., 8, 9,
+10}`. In *main.go*, these points are obtained by the following code:
+
+```
+dataIn := []int32{-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+	dataOut := make([]int32, len(dataIn))
+	for i, in := range dataIn {
+		dataOut[i] = in * in * in - (3 * in)
+	}
+```
+
+The context (or program) must have at least a module named `main`, a
+function named `main`, a solution function named `solution`, and the
+`main` function must call solution with the input data as
+arguments. Also, one can add the desired functions to be used as
+operators for the expressions in the solution function (it can be
+noted that more functions means a larger search space for the
+evolutionary algorithm). For this walkthrough, the initial program is
+defined by the following code:
+
+```
+num1 := encoder.SerializeAtomic(int32(0))
+
+	cxt := MakeContext().AddModule(MakeModule("main"))
+	if mod, err := cxt.GetCurrentModule(); err == nil {
+		mod.AddDefinition(MakeDefinition("num1", &num1, i32))
+
+		mod.AddFunction(MakeFunction("addI32"))
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddInput(MakeParameter("n1", i32))
+			fn.AddInput(MakeParameter("n2", i32))
+			fn.AddOutput(MakeParameter("out", i32))
+		}
+		
+		mod.AddFunction(MakeFunction("subI32"))
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddInput(MakeParameter("n1", i32))
+			fn.AddInput(MakeParameter("n2", i32))
+			fn.AddOutput(MakeParameter("out", i32))
+		}
+
+		mod.AddFunction(MakeFunction("mulI32"))
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddInput(MakeParameter("n1", i32))
+			fn.AddInput(MakeParameter("n2", i32))
+			fn.AddOutput(MakeParameter("out", i32))
+		}
+		
+		mod.AddFunction(MakeFunction("main"))
+		mod.AddFunction(MakeFunction("double"))
+
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddInput(MakeParameter("n", i32))
+			fn.AddOutput(MakeParameter("out", i32))
+			if addI32, err := cxt.GetFunction("mulI32", mod.Name); err == nil {
+				fn.AddExpression(MakeExpression("out", addI32))
+
+				if expr, err := cxt.GetCurrentExpression(); err == nil {
+					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
+					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
+				}
+			}
+		}
+
+		mod.AddFunction(MakeFunction("solution"))
+
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddInput(MakeParameter("x", i32))
+			fn.AddOutput(MakeParameter("f(x)", i32))
+		}
+		
+		mod.SelectFunction("main")
+
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			fn.AddOutput(MakeParameter("outMain", i32))
+			if solution, err := cxt.GetFunction("solution", mod.Name); err == nil {
+				fn.AddExpression(MakeExpression("outMain", solution))
+				
+				if expr, err := cxt.GetCurrentExpression(); err == nil {
+					expr.AddArgument(MakeArgument(MakeValue("num2"), ident))
+				}
+			}
+		}
+	}
+```
+
+Each of the inputs is going to be assigned to the global definition
+`num1` (the reason for this is the mere convenience of reusing the
+code for previous testings). As can be seen in the code, the operators
+which can be used for the expressions are `addI32`, `subI32`,
+`mulI32`, and `double`.
+
+The `solution` function receives a single parameter `x`, and has the
+named output `f(x)`.
+
+The evolutionary process can be started by calling the method
+`EvolveSolution` on the previously defined context:
+
+```
+    evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 10000)
+```
+
+`EvolveSolution` takes four parameters: the data inputs, the data
+outputs, the number of expressions which the solution should have, and
+the number of maximum iterations the algorithm can perform, in that
+order. In this case, the solution should have exactly five expressions
+and the maximum number of iterations is 10,000. This exercise was ran
+several times, and the optimal solution was always found in less than
+1,000 iterations, so a stop condition was added to the algorithm,
+which prevents any more evaluations to occur if the error is equal
+to 0.
+
+While the algorithm is running, one can see the lowest achieved error
+at each iteration printed to console. Once the evolutiona process has
+finished, the evolved program can be printed by running:
+
+```
+    evolvedProgram.PrintProgram(false)
+```
+
+which should print something like this:
+
+```
+Context
+0.- Module: main
+	Definitions
+		0.- Definition: num1 i32
+		1.- Definition: num2 i32
+	Functions
+		0.- Function: solution (x i32) f(x) i32
+			0.- Expression: x = mulI32(num1 i32, num1 i32)
+			1.- Expression: var7388 = mulI32(x i32, num1 i32)
+			2.- Expression: x = subI32(var7388 ident, num1 i32)
+			3.- Expression: var38465 = addI32(num1 i32, num1 i32)
+			4.- Expression: f(x) = subI32(x i32, var38465 ident)
+		1.- Function: addI32 (n1 i32, n2 i32) out i32
+		2.- Function: subI32 (n1 i32, n2 i32) out i32
+		3.- Function: mulI32 (n1 i32, n2 i32) out i32
+		4.- Function: main () outMain i32
+			0.- Expression: outMain = solution(num2 i32)
+		5.- Function: double (n i32) out i32
+			0.- Expression: out = mulI32(n i32, n i32)
+```
+
+The simulated vs observed points can be printed by running the
+following code:
+
+```
+var error int32 = 0
+	for i, inp := range dataIn {
+		num1 := encoder.SerializeAtomic(inp)
+		if def, err := evolvedProgram.GetDefinition("num1"); err == nil {
+			def.Value = &num1
+		} else {
+			fmt.Println(err)
+		}
+
+		evolvedProgram.Reset()
+		evolvedProgram.Run(false, -1)
+
+		// getting the simulated output
+		var result int32
+		output := evolvedProgram.CallStack[0].State["outMain"].Value
+		encoder.DeserializeAtomic(*output, &result)
+
+		diff := result - dataOut[i]
+		fmt.Printf("Simulated #%d: %d\n", i, result)
+		fmt.Printf("Observed #%d: %d\n", i, dataOut[i])
+		if diff >= 0 {
+			error += diff
+		} else {
+			error += diff * -1
+		}
+	}
+```
+
+Which will print something similar to this:
+
+```
+Simulated #0: -970
+Observed #0: -970
+Simulated #1: -702
+Observed #1: -702
+Simulated #2: -488
+Observed #2: -488
+Simulated #3: -322
+Observed #3: -322
+Simulated #4: -198
+Observed #4: -198
+Simulated #5: -110
+Observed #5: -110
+Simulated #6: -52
+Observed #6: -52
+Simulated #7: -18
+Observed #7: -18
+Simulated #8: -2
+Observed #8: -2
+Simulated #9: 2
+Observed #9: 2
+Simulated #10: 0
+Observed #10: 0
+Simulated #11: -2
+Observed #11: -2
+Simulated #12: 2
+Observed #12: 2
+Simulated #13: 18
+Observed #13: 18
+Simulated #14: 52
+Observed #14: 52
+Simulated #15: 110
+Observed #15: 110
+Simulated #16: 198
+Observed #16: 198
+Simulated #17: 322
+Observed #17: 322
+Simulated #18: 488
+Observed #18: 488
+Simulated #19: 702
+Observed #19: 702
+Simulated #20: 970
+Observed #20: 970
+```
+
+And finally, the obtained error can be calculated by dividing the
+accumulated absolute errors by the number of data points:
+
+```
+fmt.Println(error / int32(len(dataIn)))
+```

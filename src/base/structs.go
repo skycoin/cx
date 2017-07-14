@@ -5,6 +5,7 @@ type cxType struct {
 }
 // used for affordances (and maybe other stuff)
 var basicTypes = []string{"i32"}
+var basicFunctions = []string{"addI32", "mulI32", "subI32", "divI32"}
 
 type cxField struct {
 	Name string
@@ -60,8 +61,7 @@ type cxContext struct {
 	CurrentModule *cxModule
 	CallStack []*cxCall
 	Steps [][]*cxCall
-
-
+	ProgramSteps []*cxProgramStep
 	
 
 	// We can only go back in time in the stack at the moment
@@ -113,6 +113,12 @@ type cxCall struct {
 	Context *cxContext // constant
 	Module *cxModule // constant
 }
+
+// We could somehow use the same cxCall process
+// Operator could be
+
+// The affordances option:
+// The affordance could receive a context
 
 type cxExpression struct {
 	Operator *cxFunction
@@ -170,3 +176,7 @@ type cxAffordance struct {
 	Action func()
 }
 
+
+type cxProgramStep struct {
+	Action func(*cxContext)
+}
