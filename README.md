@@ -402,7 +402,7 @@ expression. At the moment, all the necessary code to perform the
 evolutionary process is located in the *base/evolution.go* file.
 
 For this walkthrough, the observed points are obtained by evaluating
-`f(x) = x\*x\*x - (3\*x)` with the integer set `{-10, -9, 8, ..., 8, 9,
+`f(x) = x*x*x - (3*x)` with the integer set `{-10, -9, 8, ..., 8, 9,
 10}`. In *main.go*, these points are obtained by the following code:
 
 ```
