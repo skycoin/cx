@@ -778,7 +778,7 @@ Context
 ```
 
 With call stack stepping, program structure stepping, and evolutionary
-algorithms we could create a program which could stop itself at
+algorithms we could create a program which stops itself at a
 certain step, measure the execution time of one of its functions,
 mutate them and if it creates something better, automatically
 modify itself, and then resume its execution. The same could be done
