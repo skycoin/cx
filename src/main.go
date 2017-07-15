@@ -117,62 +117,70 @@ func main() {
 		dataOut[i] = in * in * in - (3 * in)
 	}
 
-	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 10000)
+	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 5)
 	evolvedProgram.PrintProgram(false)
 
 	// getting the simulated outputs
-	var error int32 = 0
-	for i, inp := range dataIn {
-		num1 := encoder.SerializeAtomic(inp)
-		if def, err := evolvedProgram.GetDefinition("num1"); err == nil {
-			def.Value = &num1
-		} else {
-			fmt.Println(err)
-		}
+	// var error int32 = 0
+	// for i, inp := range dataIn {
+	// 	num1 := encoder.SerializeAtomic(inp)
+	// 	if def, err := evolvedProgram.GetDefinition("num1"); err == nil {
+	// 		def.Value = &num1
+	// 	} else {
+	// 		fmt.Println(err)
+	// 	}
 
-		evolvedProgram.Reset()
-		evolvedProgram.Run(false, -1)
+	// 	evolvedProgram.Reset()
+	// 	evolvedProgram.Run(false, -1)
 
-		// getting the simulated output
-		var result int32
-		output := evolvedProgram.CallStack[0].State["outMain"].Value
-		encoder.DeserializeAtomic(*output, &result)
+	// 	// getting the simulated output
+	// 	var result int32
+	// 	output := evolvedProgram.CallStack[0].State["outMain"].Value
+	// 	encoder.DeserializeAtomic(*output, &result)
 
-		diff := result - dataOut[i]
-		fmt.Printf("Simulated #%d: %d\n", i, result)
-		fmt.Printf("Observed #%d: %d\n", i, dataOut[i])
-		if diff >= 0 {
-			error += diff
-		} else {
-			error += diff * -1
-		}
-	}
-	fmt.Println(error / int32(len(dataIn)))
+	// 	diff := result - dataOut[i]
+	// 	fmt.Printf("Simulated #%d: %d\n", i, result)
+	// 	fmt.Printf("Observed #%d: %d\n", i, dataOut[i])
+	// 	if diff >= 0 {
+	// 		error += diff
+	// 	} else {
+	// 		error += diff * -1
+	// 	}
+	// }
+	// fmt.Println(error / int32(len(dataIn)))
 	
-	
+	fmt.Println(len(evolvedProgram.ProgramSteps))
+	fmt.Println(len(evolvedProgram.Steps))
+	fmt.Println(len(evolvedProgram.CallStack))
 
+	//copy := MakeContextCopy(evolvedProgram, 8)
+	//copy.Run(true, -1)
+	
+	evolvedProgram.ResetTo(0)
+	evolvedProgram.Run(true, -1)
+	
 	//fmt.Println(len(cxt.ProgramSteps))
 
-	// cxtCopy := MakeContext()
-	// cxtCopy2 := MakeContext()
-	// cxtCopy3 := MakeContext()
+	// copy1 := MakeContext()
+	// copy2 := MakeContext()
+	// copy3 := MakeContext()
 	
 	// fmt.Println("Before copying")
 	//cxt.PrintProgram(false)
 	// cxtCopy.PrintProgram(false)
 
-	//fmt.Println(len(cxt.ProgramSteps))
+	//fmt.Println(len(evolvedProgram.ProgramSteps))
 	
 	// for i := 0; i < 15; i++ {
-	// 	cxt.ProgramSteps[i].Action(cxtCopy)
+	// 	cxt.ProgramSteps[i].Action(copy1)
 	// }
 
 	// for i := 0; i < 5; i++ {
-	// 	cxt.ProgramSteps[i].Action(cxtCopy2)
+	// 	cxt.ProgramSteps[i].Action(copy2)
 	// }
 	
 	// for i := 0; i < 10; i++ {
-	// 	cxt.ProgramSteps[i].Action(cxtCopy3)
+	// 	cxt.ProgramSteps[i].Action(copy3)
 	// }
 	
 	// for _, step := range cxt.ProgramSteps {
@@ -181,9 +189,9 @@ func main() {
 
 	// fmt.Println("After copying")
 	// //cxt.PrintProgram(false)
-	// cxtCopy.PrintProgram(false)
-	// cxtCopy2.PrintProgram(false)
-	// cxtCopy3.PrintProgram(false)
+	// copy1.PrintProgram(false)
+	// copy2.PrintProgram(false)
+	// copy3.PrintProgram(false)
 
 	// fmt.Println("...")
 	
@@ -205,115 +213,5 @@ func main() {
 	// }
 	
 
-	// addI32 := MakeFunction("addI32")
-	// double := MakeFunction("double").
-	// 	AddInput(MakeParameter("n", i32)).
-	// 	AddOutput(MakeParameter("out", i32)).
-	// 	AddExpression(
-	// 	MakeExpression("notOut", addI32).
-	// 		AddArgument(MakeArgument(MakeValue("n"), ident)).
-	// 		AddArgument(MakeArgument(MakeValue("n"), ident))).
-	// 	AddExpression(
-	// 	MakeExpression("out", addI32).
-	// 		AddArgument(MakeArgument(MakeValue("notOut"), ident)).
-	// 		AddArgument(MakeArgument(MakeValue("num1"), ident)))
 
-	// quad := MakeFunction("quad").
-	// 	AddInput(MakeParameter("n", i32)).
-	// 	AddOutput(MakeParameter("out", i32)).
-	// 	AddExpression(MakeExpression("n", double).
-	// 	  AddArgument(MakeArgument(MakeValue("n"), ident))).
-	// 	AddExpression(MakeExpression("out", double).
-	// 	AddArgument(MakeArgument(MakeValue("n"), ident)))
-
-	// sumQuads := MakeFunction("sumQuads").
-	// 	AddInput(MakeParameter("n1", i32)).
-	// 	AddInput(MakeParameter("n2", i32)).
-	// 	AddOutput(MakeParameter("result", i32)).
-	// 	AddExpression(MakeExpression("quad1", quad).
-	// 	AddArgument(MakeArgument(MakeValue("n1"), ident))).
-	// 	AddExpression(MakeExpression("quad2", quad).
-	// 	AddArgument(MakeArgument(MakeValue("n2"), ident))).
-	// 	AddExpression(MakeExpression("result", addI32).
-	// 	AddArgument(MakeArgument(MakeValue("quad1"), ident)).
-	// 	AddArgument(MakeArgument(MakeValue("quad2"), ident)))
-
-	// main := MakeFunction("main").
-	// 	AddExpression(MakeExpression("outputMain", sumQuads).
-	// 	AddArgument(MakeArgument(MakeValue("num1"), ident)).
-	// 	//AddArgument(MakeArgument(&num2, i32)).
-	// 	AddArgument(MakeArgument(&num2, i32)))
-
-
-
-
-	
-	
-
-
-
-	// if mod, err := cxt.GetCurrentModule(); err == nil {
-	// 	// native functions only need a name to reference them
-		
-	// 	mod.AddFunction(addI32)
-	// 	mod.AddFunction(double)
-	// 	mod.AddFunction(quad)
-	// 	mod.AddFunction(sumQuads)
-	// 	mod.AddFunction(main)
-	// } else {
-	// 	fmt.Println(err)
-	// }
-	
-	// // Generating random program
-	// //cxt := RandomProgram(200)
-	// //cxt.PrintProgram(false)
-
-	// // Call stack testing
-	// cxt.Run(false, 2000)
-	// fmt.Println(len(cxt.Steps))
-	// fmt.Println("...")
-	// //PrintCallStack(cxt.Steps[len(cxt.Steps) - 1])
-	// PrintCallStack(cxt.CallStack)
-	// //cxt.Run(false, 200)
-	// fmt.Println(len(cxt.Steps))
-
-	// // for _, step := range cxt.Steps {
-	// // 	//fmt.Println(step)
-	// // 	//PrintCallStack(step)
-	// // 	fmt.Printf("%p\n", step[len(step) - 1].Context)
-	// // }
-	// //PrintCallStack(cxt.CallStack)	
-
-
-	// fmt.Println("...")
-
-	
-	// // copy of program at about the middle of its execution
-	// cxtCopy := MakeContextCopy(cxt, 1000)
-	// // if defs, err := cxtCopy.GetCurrentDefinitions(); err == nil {
-	// // 	defs["num1"].Value = &num2
-	// // }
-	// //cxt.Run(false, 200)
-	// // fmt.Println("...")
-
-	// //PrintCallStack(cxtCopy.Steps[len(cxtCopy.Steps) - 1])
-	// PrintCallStack(cxtCopy.CallStack)
-	// //fmt.Println(len(cxtCopy.Steps))
-	// //fmt.Println(len(cxt.Steps))
-	// cxtCopy.Run(false, 2000)
-	// //fmt.Println(len(cxtCopy.Steps))
-	// // fmt.Println("...")
-	// fmt.Println(len(cxt.Steps))
-	// fmt.Println(len(cxtCopy.Steps))
-	// // PrintCallStack(cxtCopy.Steps[len(cxtCopy.Steps) - 1])
-	// fmt.Println("checking calls contexts")
-	// // for _, step := range cxtCopy.Steps {
-	// // 	fmt.Printf("%p\n", step[len(step) - 1].Context)
-	// // }
-
-	// for i := 0; i < len(cxtCopy.Steps); i++ {
-	// 	fmt.Printf("...%d\n", i)
-	// 	//PrintCallStack(cxt.Steps[i])
-	// 	PrintCallStack(cxtCopy.Steps[i])
-	// }
 }

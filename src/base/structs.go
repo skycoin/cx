@@ -62,31 +62,6 @@ type cxContext struct {
 	CallStack []*cxCall
 	Steps [][]*cxCall
 	ProgramSteps []*cxProgramStep
-	
-
-	// We can only go back in time in the stack at the moment
-	// This works if we consider a fixed program structure:
-	/// constant modules, functions, structures, definitions
-	// If we want to mix affordances and stepping, we also need to save program structure
-
-
-	// For this, we would need to make refcopies (like the process in saveStep) of:
-	///
-
-
-	
-	// Ok, now we got a deep copied context
-	// To save structure, how can we do it
-	// The first option would be to just
-	
-	// We can do something similar to saveStep (saveStruct)
-	// Everytime we call an adder, if a flag is true, we call saveStruct (let's think for another name)
-	// The biggest problem is that this isn't a linear structure, like a stack. the program is a tree
-
-	// The other option is to just save a copy of the whole context each N adders,
-	// but I like the versatility of the previous option
-	// I'll keep thinknig about that one
-	
 }
 
 /*
@@ -104,14 +79,12 @@ type cxArgument struct {
 }
 
 type cxCall struct {
-	Operator *cxFunction // constant
-	
-	Line int // non constant
-	State map[string]*cxDefinition // non constant
-	
-	ReturnAddress *cxCall // constant
-	Context *cxContext // constant
-	Module *cxModule // constant
+	Operator *cxFunction
+	Line int
+	State map[string]*cxDefinition
+	ReturnAddress *cxCall
+	Context *cxContext
+	Module *cxModule
 }
 
 // We could somehow use the same cxCall process

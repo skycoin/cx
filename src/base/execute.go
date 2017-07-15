@@ -84,6 +84,24 @@ func PrintCallStack (callStack []*cxCall) {
 	fmt.Println()
 }
 
+func callsEqual (call1, call2 *cxCall) bool {
+	if call1.Line != call2.Line ||
+		len(call1.State) != len(call2.State) ||
+		call1.Operator != call2.Operator ||
+		call1.ReturnAddress != call2.ReturnAddress ||
+		call1.Module != call2.Module {
+		return false
+	}
+
+	for k, v := range call1.State {
+		if call2.State[k] != v {
+			return false
+		}
+	}
+
+	return true
+}
+
 func saveStep (call *cxCall) {
 	lenCallStack := len(call.Context.CallStack)
 	newStep := make([]*cxCall, lenCallStack)
@@ -134,6 +152,29 @@ func saveStep (call *cxCall) {
 func (cxt *cxContext) Reset() {
 	cxt.CallStack = nil
 	cxt.Steps = nil
+	//cxt.ProgramSteps = nil
+}
+
+func (cxt *cxContext) ResetTo(stepNumber int) {
+	// if no steps, we do nothing. the program will run from step 0
+	if len(cxt.Steps) > 0 {
+		if stepNumber > len(cxt.Steps) {
+			stepNumber = len(cxt.Steps) - 1
+		}
+		reqStep := cxt.Steps[stepNumber]
+
+		newStep := make([]*cxCall, len(reqStep))
+		var lastCall *cxCall
+		for j, call := range reqStep {
+			newCall := MakeCallCopy(call, call.Module, call.Context)
+			newCall.ReturnAddress = lastCall
+			lastCall = newCall
+			newStep[j] = newCall
+		}
+
+		cxt.CallStack = newStep
+		cxt.Steps = cxt.Steps[:stepNumber]
+	}
 }
 
 func (cxt *cxContext) Run (withDebug bool, nCalls int) {
@@ -171,23 +212,6 @@ func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 			fmt.Println(err)
 		}
 	}
-}
-
-func callsEqual (call1, call2 *cxCall) bool {
-	if call1.Line != call2.Line ||
-		len(call1.State) != len(call2.State) ||
-		call1.Operator != call2.Operator ||
-		call1.ReturnAddress != call2.ReturnAddress ||
-		call1.Module != call2.Module {
-		return false
-	}
-	for k, v := range call1.State {
-		if call2.State[k] != v {
-			return false
-		}
-	}
-
-	return true
 }
 
 func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {

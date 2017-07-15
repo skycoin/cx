@@ -513,7 +513,8 @@ and the maximum number of iterations is 10,000. This exercise was ran
 several times, and the optimal solution was always found in less than
 1,000 iterations, so a stop condition was added to the algorithm,
 which prevents any more evaluations to occur if the error is equal
-to 0.
+to 0. An additional parameter (usually called epsilon) can be added to indicate the
+algorithm to stop if the error is lower than this threshold.
 
 While the algorithm is running, one can see the lowest achieved error
 at each iteration printed to console. Once the evolutiona process has
@@ -632,3 +633,156 @@ accumulated absolute errors by the number of data points:
 ```
 fmt.Println(error / int32(len(dataIn)))
 ```
+
+## Call Stack Stepping
+
+A call to an expression is represented by a struct. This struct
+stores a reference to the expression's operator which is being called,
+the line number currently being executed in the expression's operator,
+a state (a set of definitions), and a return address (to what call do we
+need to return once the current call finishes its execution). A
+context or a program stores an array of calls, which is defined as a
+*call stack*.
+
+Implementing the execution of a program (by a series of calls,
+represented by structs) in this way allows a program to store the
+call stacks a program is creating during its execution. The storing of
+a call stack is defined as a *step*, and the process of storing call
+stacks is defined as *stepping* (these names are subject to change and
+I will use them for convenience for now).
+
+Stepping in the current implementation happens everytime a new call is
+performed. This means that a program has access to every past point of
+execution. This behaviour can easily be changed to saving the program
+steps every *N* calls, in order to save system resources.
+
+`MakeContextCopy(cxt *cxContext, stepNumber int)` can be used to
+create a copy of a program. The second parameter, *stepNumber*, is
+used to indicate at which point of execution one wants to create the
+copy. For example, if a program was executing a loop, we can create a
+copy of this program and "rollback" the steps to the point where the
+program hasn't entered the loop yet. The following code makes a copy
+of the evolved program from the last section, rollbacks to step 3, and
+then executes again:
+
+```
+    copy := MakeContextCopy(evolvedProgram, 8)
+	copy.Run(true, -1)
+```
+
+The `Run` method above receives two parameters: `withDebug bool`,
+which prints the call stack at each step of the program execution; and
+`nCalls int`, which tells the program how many calls it must run
+before pausing its execution. The program doesn't raises an error if
+it finishes its execution before the *nCalls* threshold is reached. If
+we don't want a program to run for a certain number of calls, we can
+simply give it a negative number of calls.
+
+The method `ResetTo(stepNumber int)` can be called on a program to
+rollback to the given step number, without making any copies of the
+program. The code below rollsback a program to step 3, and then runs
+the same program only for 8 more steps. This process is looped 5 times.
+
+```
+    for i := 0; i < 5; i++ {
+      evolvedProgram.ResetTo(3)
+      evolvedProgram.Run(true, 8)
+    }
+```
+
+It is important to note that each execution in the loop above is
+independent from the others, state-wise, i. e., they won't share
+the values of their variables among them.
+
+Call stack stepping can be used later on for debugging a program while
+it's being executed. For example, if we have an evolutionary that has
+been running for the last 5 days and it encounters an error, we can
+inspect the state in each of the calls in the current stack, encounter
+the problem, rollback *N* steps, make the necessary changes to the
+program structure, and then resume the execution.
+
+Another use for call stack stepping is for benchmarking code blocks of a
+running program. We can create two copies of a program, each using a
+particular solution to a problem (for example, one that uses a
+solution based on looping, and the other uses recursion). We set each
+of these copies to the start of the desired step, and run each program
+until it finishes the code block being benchmarked. The code block
+with the better performance can then be inserted to the original
+program.
+
+## Program Structure Stepping
+
+A program is also aware of its own structure and the ordered steps
+that have to be executed to reach its current structure. This means
+that a program has the capability of rolling back to a certain step in
+its structure, and we can create copies of a program at different
+points of its structure stepping.
+
+With the current implementation of CX, we must create a new program
+and use the program steps of another to duplicate its structure to the
+new program. For example, if we have a program stored in the variable
+`cxt`, we can create three partial copies of it in the following way:
+
+```
+    copy1 := MakeContext()
+	copy2 := MakeContext()
+	copy3 := MakeContext()
+
+    for i := 0; i < 15; i++ {
+		cxt.ProgramSteps[i].Action(copy1)
+	}
+
+	for i := 0; i < 5; i++ {
+		cxt.ProgramSteps[i].Action(copy2)
+	}
+	
+	for i := 0; i < 10; i++ {
+		cxt.ProgramSteps[i].Action(copy3)
+	}
+
+    copy1.PrintProgram(false)
+	copy2.PrintProgram(false)
+	copy3.PrintProgram(false)
+```
+
+The first loop will create a copy of the program until step 15, the
+second loop a copy until step 5, and the final loop a copy until step 10.
+
+The code above will print something similar to this:
+
+```
+Context
+0.- Module: main
+	Definitions
+		0.- Definition: num1 i32
+		1.- Definition: num2 i32
+	Functions
+		0.- Function: addI32 (n1 i32, n2 i32) out i32
+		1.- Function: subI32 (n1 i32, n2 i32) out i32
+		2.- Function: mulI32 (n1 i32, n2 i32) out i32
+Context
+0.- Module: main
+	Definitions
+		0.- Definition: num2 i32
+		1.- Definition: num1 i32
+	Functions
+		0.- Function: addI32 (n1 i32) 
+Context
+0.- Module: main
+	Definitions
+		0.- Definition: num1 i32
+		1.- Definition: num2 i32
+	Functions
+		0.- Function: addI32 (n1 i32, n2 i32) out i32
+		1.- Function: subI32 (n1 i32, n2 i32) 
+```
+
+With call stack stepping, program structure stepping, and evolutionary
+algorithms we could create a program which could stop itself at
+certain step, measure the execution time of one of its functions,
+mutate them and if it creates something better, automatically
+modify itself, and then resume its execution. The same could be done
+to replace buggy parts of a program: if a function raises an exception with a
+certain combination of arguments, we can mutate the function until it
+gives us the same outputs as the previous version of the function, but
+also doesn't raise the exception.

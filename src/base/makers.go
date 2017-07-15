@@ -172,7 +172,7 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	newContext := &cxContext{}
 
 	modsCopy := make(map[string]*cxModule, len(cxt.Modules))
-	if stepNumber > len(cxt.Steps) || stepNumber < 0 {
+	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
 	}
 	
@@ -189,17 +189,6 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 
 	newContext.Modules = modsCopy
 
-	// if len(cxt.Steps) < 1 {
-	// 	if mod, err := newContext.GetModule("main"); err == nil {
-	// 		if fn, err := newContext.GetFunction("main", "main"); err == nil {
-	// 			state := make(map[string]*cxDefinition)
-	// 			mainCall := MakeCall(fn, state, nil, mod, newContext)
-	// 			cxt.CallStack = append(cxt.CallStack, mainCall)
-				
-	// 		}
-	// 	}
-	// }
-
 	// Making imports copies
 	for _, mod := range modsCopy {
 		for impKey, _ := range mod.Imports {
@@ -207,8 +196,6 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 		}
 	}
 
-	
-	
 	// Making expressions/operators
 	for _, mod := range modsCopy {
 		for _, fn := range mod.Functions {
@@ -238,7 +225,6 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 				newCall.Operator = callOp
 			}
 			newCall.ReturnAddress = lastCall
-			//fmt.Printf("**%p\n", newCall.Context)
 			lastCall = newCall
 			newStep[j] = newCall
 		}
@@ -251,115 +237,6 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	
 	return newContext
 }
-
-func MakeContextCopy2 (cxt *cxContext, numberSteps int) *cxContext {
-	if numberSteps > len(cxt.Steps) || numberSteps < 0 {
-		numberSteps = len(cxt.Steps)
-	}
-	
-	newContext := &cxContext{
-		Modules: cxt.Modules,
-		CurrentModule: cxt.CurrentModule,
-	}
-
-	for _, mod := range newContext.Modules {
-		newMod := MakeModule(mod.Name)
-		newMod.Context = newContext
-		for _, fn := range mod.Functions {
-			fn.Context = newContext
-		}
-		for _, strct := range mod.Structs {
-			strct.Context = newContext
-		}
-		for _, def := range mod.Definitions {
-			def.Context = newContext
-		}
-	}
-
-	reqStep := cxt.Steps[numberSteps - 1]
-
-	newStep := make([]*cxCall, len(reqStep))
-	var lastCall *cxCall
-	for j, call := range reqStep {
-		newCall := MakeCallCopy(call, call.Module, newContext)
-		//newCall.Context = newContext
-		newCall.ReturnAddress = lastCall
-		lastCall = newCall
-		//saveStep(newCall)
-		newStep[j] = newCall
-	}
-
-	newContext.Steps = nil
-	newContext.CallStack = newStep
-	
-	//newSteps[i] = newStep
-
-	//newSteps := make([][]*cxCall, numberSteps)
-	// for i, step := range cxt.Steps {
-	// 	if i >= numberSteps {
-	// 		break
-	// 	}
-	// 	//newStep := make([]*cxCall, len(step))
-
-	// 	// only the last step matters for now
-		
-
-	// 	var lastCall *cxCall
-	// 	for _, call := range step {
-	// 		newCall := MakeCallCopy(call)
-	// 		newCall.Context = newContext
-	// 		newCall.ReturnAddress = lastCall
-	// 		lastCall = newCall
-	// 		saveStep(newCall)
-	// 		//newStep[j] = newCall
-	// 	}
-	// 	//newSteps[i] = newStep
-	// }
-
-	//fmt.Println(newSteps)
-	
-	//newContext.CallStack = newSteps[len(newSteps) - 1]
-	//newContext.CallStack = newContext.Steps[len(newContext.Steps) - 1]
-	//newContext.Steps = newSteps
-
-	// for _, step := range newSteps {
-	// 	fmt.Printf("%p\n", step[len(step) - 1].Context)
-	// }
-	
-	return newContext
-}
-
-// func MakeModuleCopy (mod *cxModule) *cxModule {
-// 	newMod := MakeModule(mod.Name)
-// 	defCopies := make([]*cxDefinition, len(mod.Definitions))
-
-// 	i := 0
-// 	for _, def := range mod.Definitions {
-// 		newDef := MakeDefinition(def.Name, def.Value, def.Typ)
-// 		defCopies[i] = newDef
-// 		i++
-// 	}
-
-// 	i = 0
-// 	for _, fn := range mod.Functions {
-// 		newFn := MakeFunction(fn.Name)
-// 		newFn.Inputs = fn.Inputs
-// 		newFn.Output = fn.Output
-// 		newFn.Expressions = fn.Expressions
-// 		newFn.CurrentExpression = fn.CurrentExpression
-// 		//newFn.Context = 
-		
-// 	}
-
-// 	// Import copies must be made in makecontextcopy I think
-// 	// At the moment we can leave the references to the original imports
-// 	newMod.Imports = mod.Imports
-// 	// for _, imp := range mod.Imports {
-// 	// 	MakeModule(def.Name, def.Value, def.Typ)
-// 	// }
-
-	
-// }
 
 func MakeModule (name string) *cxModule {
 	return &cxModule{
