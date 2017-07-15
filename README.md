@@ -779,8 +779,8 @@ Context
 
 With call stack stepping, program structure stepping, and evolutionary
 algorithms we could create a program which stops itself at a
-certain step, measure the execution time of one of its functions,
-mutate them and if it creates something better, automatically
+certain step, measures the execution time of one of its functions,
+mutates them and if it creates something better, automatically
 modify itself, and then resume its execution. The same could be done
 to replace buggy parts of a program: if a function raises an exception with a
 certain combination of arguments, we can mutate the function until it
