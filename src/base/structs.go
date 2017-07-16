@@ -194,21 +194,21 @@ var basicFunctions = []string{"addI32", "mulI32", "subI32", "divI32"}
   Context
 */
 
-type cxContext struct {
-	Modules map[string]*cxModule
-	CurrentModule *cxModule
-	CallStack []*cxCall
-	Steps [][]*cxCall
-	ProgramSteps []*cxProgramStep
-}
-
 // type cxContext struct {
 // 	Modules map[string]*cxModule
 // 	CurrentModule *cxModule
-// 	CallStack *cxCallStack
-// 	Steps []*cxCallStack
+// 	CallStack []*cxCall
+// 	Steps [][]*cxCall
 // 	ProgramSteps []*cxProgramStep
 // }
+
+type cxContext struct {
+	Modules map[string]*cxModule
+	CurrentModule *cxModule
+	CallStack *cxCallStack
+	Steps []*cxCallStack
+	ProgramSteps []*cxProgramStep
+}
 
 type cxCallStack struct {
 	Calls []*cxCall

@@ -154,7 +154,7 @@ func (cxt *cxContext) EvolveSolution (inputs, outputs []int32, numberExprs, iter
 
 						// getting the simulated output
 						var result int32
-						output := program.CallStack[0].State["outMain"].Value
+						output := program.CallStack.Calls[0].State["outMain"].Value
 						encoder.DeserializeAtomic(*output, &result)
 
 						// I don't want to import Math, so I will hardcode abs

@@ -117,41 +117,38 @@ func main() {
 		dataOut[i] = in * in * in - (3 * in)
 	}
 
-	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 5)
+	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 1000)
 	evolvedProgram.PrintProgram(false)
 
-	// getting the simulated outputs
-	// var error int32 = 0
-	// for i, inp := range dataIn {
-	// 	num1 := encoder.SerializeAtomic(inp)
-	// 	if def, err := evolvedProgram.GetDefinition("num1"); err == nil {
-	// 		def.Value = &num1
-	// 	} else {
-	// 		fmt.Println(err)
-	// 	}
+	//getting the simulated outputs
+	var error int32 = 0
+	for i, inp := range dataIn {
+		num1 := encoder.SerializeAtomic(inp)
+		if def, err := evolvedProgram.GetDefinition("num1"); err == nil {
+			def.Value = &num1
+		} else {
+			fmt.Println(err)
+		}
 
-	// 	evolvedProgram.Reset()
-	// 	evolvedProgram.Run(false, -1)
+		evolvedProgram.Reset()
+		evolvedProgram.Run(false, -1)
 
-	// 	// getting the simulated output
-	// 	var result int32
-	// 	output := evolvedProgram.CallStack[0].State["outMain"].Value
-	// 	encoder.DeserializeAtomic(*output, &result)
+		// getting the simulated output
+		var result int32
+		output := evolvedProgram.CallStack.Calls[0].State["outMain"].Value
+		encoder.DeserializeAtomic(*output, &result)
 
-	// 	diff := result - dataOut[i]
-	// 	fmt.Printf("Simulated #%d: %d\n", i, result)
-	// 	fmt.Printf("Observed #%d: %d\n", i, dataOut[i])
-	// 	if diff >= 0 {
-	// 		error += diff
-	// 	} else {
-	// 		error += diff * -1
-	// 	}
-	// }
-	// fmt.Println(error / int32(len(dataIn)))
+		diff := result - dataOut[i]
+		fmt.Printf("Simulated #%d: %d\n", i, result)
+		fmt.Printf("Observed #%d: %d\n", i, dataOut[i])
+		if diff >= 0 {
+			error += diff
+		} else {
+			error += diff * -1
+		}
+	}
+	fmt.Println(error / int32(len(dataIn)))
 	
-	fmt.Println(len(evolvedProgram.ProgramSteps))
-	fmt.Println(len(evolvedProgram.Steps))
-	fmt.Println(len(evolvedProgram.CallStack))
 
 	//copy := MakeContextCopy(evolvedProgram, 8)
 	//copy.Run(true, -1)

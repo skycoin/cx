@@ -103,13 +103,13 @@ func callsEqual (call1, call2 *cxCall) bool {
 }
 
 func saveStep (call *cxCall) {
-	lenCallStack := len(call.Context.CallStack)
-	newStep := make([]*cxCall, lenCallStack)
+	lenCallStack := len(call.Context.CallStack.Calls)
+	newStep := MakeCallStack(lenCallStack)
 
 	if len(call.Context.Steps) < 1 {
 		// First call, copy everything
-		for i, call := range call.Context.CallStack {
-			newStep[i] = MakeCallCopy(call, call.Module, call.Context)
+		for i, call := range call.Context.CallStack.Calls {
+			newStep.Calls[i] = MakeCallCopy(call, call.Module, call.Context)
 		}
 
 		call.Context.Steps = append(call.Context.Steps, newStep)
@@ -117,7 +117,7 @@ func saveStep (call *cxCall) {
 	}
 	
 	lastStep := call.Context.Steps[len(call.Context.Steps) - 1]
-	lenLastStep := len(lastStep)
+	lenLastStep := len(lastStep.Calls)
 	
 	smallerLen := 0
 	if lenLastStep < lenCallStack {
@@ -129,19 +129,19 @@ func saveStep (call *cxCall) {
 	// Everytime a call changes, we need to make a hard copy of it
 	// If the call doesn't change, we keep saving a pointer to it
 
-	for i, call := range call.Context.CallStack[:smallerLen] {
-		if callsEqual(call, lastStep[i]) {
+	for i, call := range call.Context.CallStack.Calls[:smallerLen] {
+		if callsEqual(call, lastStep.Calls[i]) {
 			// if they are equal
 			// append reference
-			newStep[i] = lastStep[i]
+			newStep.Calls[i] = lastStep.Calls[i]
 		} else {
-			newStep[i] = MakeCallCopy(call, call.Module, call.Context)
+			newStep.Calls[i] = MakeCallCopy(call, call.Module, call.Context)
 		}
 	}
 
 	// sizes can be different. if this is the case, we hard copy the rest
-	for i, call := range call.Context.CallStack[smallerLen:] {
-		newStep[i + smallerLen] = MakeCallCopy(call, call.Module, call.Context)
+	for i, call := range call.Context.CallStack.Calls[smallerLen:] {
+		newStep.Calls[i + smallerLen] = MakeCallCopy(call, call.Module, call.Context)
 	}
 	
 	call.Context.Steps = append(call.Context.Steps, newStep)
@@ -150,8 +150,8 @@ func saveStep (call *cxCall) {
 
 // It "un-runs" a program
 func (cxt *cxContext) Reset() {
-	cxt.CallStack = nil
-	cxt.Steps = nil
+	cxt.CallStack = MakeCallStack(0)
+	cxt.Steps = make([]*cxCallStack, 0)
 	//cxt.ProgramSteps = nil
 }
 
@@ -163,13 +163,14 @@ func (cxt *cxContext) ResetTo(stepNumber int) {
 		}
 		reqStep := cxt.Steps[stepNumber]
 
-		newStep := make([]*cxCall, len(reqStep))
+		newStep := MakeCallStack(len(reqStep.Calls))
+		
 		var lastCall *cxCall
-		for j, call := range reqStep {
+		for j, call := range reqStep.Calls {
 			newCall := MakeCallCopy(call, call.Module, call.Context)
 			newCall.ReturnAddress = lastCall
 			lastCall = newCall
-			newStep[j] = newCall
+			newStep.Calls[j] = newCall
 		}
 
 		cxt.CallStack = newStep
@@ -180,14 +181,9 @@ func (cxt *cxContext) ResetTo(stepNumber int) {
 func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
-	if len(cxt.CallStack) > 0 {
+	if cxt.CallStack != nil && len(cxt.CallStack.Calls) > 0 {
 		// we resume the program
-		lastCall := cxt.CallStack[len(cxt.CallStack) - 1]
-
-		// saveStep(lastCall)
-		// if withDebug {
-		// 	PrintCallStack(cxt.CallStack)
-		// }
+		lastCall := cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
 		
 		lastCall.call(withDebug, nCalls, callCounter)
 	} else {
@@ -198,7 +194,7 @@ func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 				state := make(map[string]*cxDefinition)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
-				cxt.CallStack = append(cxt.CallStack, mainCall)
+				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
 				// saveStep(mainCall)
 				// if withDebug {
 				// 	PrintCallStack(cxt.CallStack)
@@ -223,13 +219,13 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 
 	saveStep(call)
 	if withDebug {
-		PrintCallStack(call.Context.CallStack)
+		PrintCallStack(call.Context.CallStack.Calls)
 	}
 	
 	if call.Line >= len(call.Operator.Expressions) {
 		if call.ReturnAddress != nil {
 			// popping the stack
-			call.Context.CallStack = call.Context.CallStack[:len(call.Context.CallStack) - 1]
+			call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
 			outName := call.Operator.Output.Name
 
 			// this one is for returning result
@@ -243,10 +239,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			if output != nil {
 				call.ReturnAddress.State[returnName] = MakeDefinition(returnName, output.Value, output.Typ)
 			}
-			// saveStep(call)
-			// if withDebug {
-			// 	PrintCallStack(call.Context.CallStack)
-			// }
+			
 			call.ReturnAddress.call(withDebug, nCalls, callCounter)
 			return
 		}
@@ -255,7 +248,6 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 		
 		globals := call.Module.Definitions
 		state := call.State
-		//outName := call.Operator.Expressions[call.Line].OutputName
 
 		if expr, err := fn.GetExpression(call.Line); err == nil {
 			// getting arguments
@@ -273,16 +265,10 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 				if argsRefs[i].Typ.Name == "ident" {
 					lookingFor := string(*argsRefs[i].Value)
 
-					//fmt.Println(fn.Name)
-					//fmt.Println(state)
-					//fmt.Println(expr.Line)
-
 					local := state[lookingFor]
 					global := globals[lookingFor]
 
 					if (local == nil && global == nil) {
-						//call.Context.PrintProgram(false)
-						//fmt.Printf("%s:%d\n", fn.Name, expr.Line)
 						panic(fmt.Sprintf("'%s' is undefined", lookingFor))
 					}
 
@@ -321,7 +307,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 				call.Line++ // once the subcall finishes, call next line of the
 				if argDefs, err := argsToDefs(argsCopy, argNames); err == nil {
 					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Context)
-					call.Context.CallStack = append(call.Context.CallStack, subcall)
+					call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
 					// debugging
 					// saveStep(call)
 					// if withDebug {
@@ -338,62 +324,3 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 		}
 	}
 }
-
-// Keeping it to test if CX still runs with other changes
-// func (expr *cxExpression) Execute(state map[string]*cxDefinition) *cxArgument {
-// 	fn := expr.Operator
-// 	args := expr.Arguments
-// 	fnName := fn.Name
-
-// 	// checking if arguments are identifiers to extract and replace them
-// 	for i := 0; i < len(args); i++ {
-// 		if args[i].Typ.Name == "ident" {
-// 			tmpDef := state[string(*args[i].Value)]
-// 			args[i] = &cxArgument{Value: tmpDef.Value, Typ: tmpDef.Typ}
-// 		}
-// 	}
-
-// 	// checking for native functions
-// 	switch fnName {
-// 	case "addI32":
-// 		return addI32(args[0], args[1])
-// 	default: // not native function
-		
-// 		// making a copy of the current state
-// 		// to add/replace definitions for the new scope
-// 		scope := make(map[string]*cxDefinition)
-
-// 		for k, v := range state {
-// 			scope[k] = v
-// 		}
-
-// 		for i, input := range fn.Inputs {
-// 			def := &cxDefinition{
-// 				Name: input.Name,
-// 				Typ: input.Typ,
-// 				Value: args[i].Value,
-// 			}
-// 			scope[input.Name] = def
-// 		}
-
-// 		stop := 0
-// 		if fn.Output.Name != "" {
-// 			stop = len(fn.Expressions)
-// 		} else {
-// 			stop = len(fn.Expressions) - 1
-// 		}
-		
-// 		for i := 0; i < stop; i++ {
-// 			fn.Expressions[i].Execute(scope)
-// 		}
-
-// 		if fn.Output.Name != "" {
-// 			// if end-user didn't assign a value to that named output, we should raise an error
-// 			return &cxArgument{
-// 				Value: scope[fn.Output.Name].Value,
-// 				Typ: scope[fn.Output.Name].Typ}
-// 		} else {
-// 			return fn.Expressions[len(fn.Expressions) - 1].Execute(scope)
-// 		}
-// 	}
-// }

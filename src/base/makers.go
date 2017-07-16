@@ -15,8 +15,8 @@ func MakeGenSym (name string) string {
 func MakeContext () *cxContext {
 	newContext := &cxContext{
 		Modules: make(map[string]*cxModule, 0),
-		CallStack: make([]*cxCall, 0),
-		Steps: make([][]*cxCall, 0)}
+		CallStack: MakeCallStack(0),
+		Steps: make([]*cxCallStack, 0)}
 	return newContext
 }
 
@@ -168,6 +168,12 @@ func MakeCallCopy (call *cxCall, mod *cxModule, cxt *cxContext) *cxCall {
 	}
 }
 
+func MakeCallStack (size int) *cxCallStack {
+	return &cxCallStack{
+		Calls: make([]*cxCall, size),
+	}
+}
+
 func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	newContext := &cxContext{}
 
@@ -209,10 +215,10 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 
 	if len(cxt.Steps) > 0 {
 		reqStep := cxt.Steps[stepNumber]
-
-		newStep := make([]*cxCall, len(reqStep))
+		newStep := MakeCallStack(len(reqStep.Calls))
+		
 		var lastCall *cxCall
-		for j, call := range reqStep {
+		for j, call := range reqStep.Calls {
 			var callModule *cxModule
 			for _, mod := range modsCopy {
 				if call.Module.Name == mod.Name {
@@ -226,7 +232,7 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 			}
 			newCall.ReturnAddress = lastCall
 			lastCall = newCall
-			newStep[j] = newCall
+			newStep.Calls[j] = newCall
 		}
 		
 		newContext.CallStack = newStep
