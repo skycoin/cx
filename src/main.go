@@ -158,6 +158,12 @@ func main() {
 	
 	evolvedProgram.ResetTo(0)
 	evolvedProgram.Run(true, -1)
+
+
+	
+
+
+
 	
 	//fmt.Println(len(cxt.ProgramSteps))
 
