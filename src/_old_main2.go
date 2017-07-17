@@ -81,18 +81,6 @@ func (vt *vtable) Delegate() (*vtable) {
 	return &child
 }
 
-
-// NOPE, we're using the Datum struct for a generalized representation
-// Datum is the CX struct Brandon mentioned
-// type Int32 struct {
-// 	// These types are going to be stored in a State structure
-// 	// They are going to store values that represent this type
-// 	// Each statement knows how to handle the data contained in these types
-// 	val int32
-// 	// For basic types it might not make much sense
-// }
-
-// We would create several vtables to encapsulate types of objects with the same offset (fixed structs)
 var Object_vt *vtable = &vtable{space: make([]byte, 0)}
 var Symbol_vt *vtable = &vtable{space: make([]byte, 0)}
 

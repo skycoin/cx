@@ -7,6 +7,7 @@ import (
 
 	"math/rand"
 	"time"
+	"unsafe"
 	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/src/base"
@@ -117,7 +118,7 @@ func main() {
 		dataOut[i] = in * in * in - (3 * in)
 	}
 
-	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 1000)
+	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 5)
 	evolvedProgram.PrintProgram(false)
 
 	//getting the simulated outputs
@@ -156,65 +157,13 @@ func main() {
 	evolvedProgram.ResetTo(0)
 	evolvedProgram.Run(true, -1)
 
+	//foo := encoder.SerializeAtomic(int32(0))
+	foo := encoder.Serialize("hello world, I'm happy to be here")
+	bar := []byte("hello")
+	fmt.Println(encoder.Size(foo))
+	fmt.Println(unsafe.Sizeof(foo))
+	fmt.Println(encoder.Size(bar))
+	fmt.Println(unsafe.Sizeof(bar))
 
-	
-
-
-
-	
-	//fmt.Println(len(cxt.ProgramSteps))
-
-	// copy1 := MakeContext()
-	// copy2 := MakeContext()
-	// copy3 := MakeContext()
-	
-	// fmt.Println("Before copying")
-	//cxt.PrintProgram(false)
-	// cxtCopy.PrintProgram(false)
-
-	//fmt.Println(len(evolvedProgram.ProgramSteps))
-	
-	// for i := 0; i < 15; i++ {
-	// 	cxt.ProgramSteps[i].Action(copy1)
-	// }
-
-	// for i := 0; i < 5; i++ {
-	// 	cxt.ProgramSteps[i].Action(copy2)
-	// }
-	
-	// for i := 0; i < 10; i++ {
-	// 	cxt.ProgramSteps[i].Action(copy3)
-	// }
-	
-	// for _, step := range cxt.ProgramSteps {
-	// 	step.Action(cxtCopy)
-	// }
-
-	// fmt.Println("After copying")
-	// //cxt.PrintProgram(false)
-	// copy1.PrintProgram(false)
-	// copy2.PrintProgram(false)
-	// copy3.PrintProgram(false)
-
-	// fmt.Println("...")
-	
-	// if mainFn, err := cxt.SelectFunction("main"); err == nil {
-	// 	fmt.Println(len(mainFn.Expressions))
-	// }
-
-	// if mainFn, err := cxtCopy.SelectFunction("main"); err == nil {
-	// 	fmt.Println(len(mainFn.Expressions))
-	// }
-
-	// fmt.Println("...")
-	// for _, fn := range cxt.CurrentModule.Functions {
-	// 	fmt.Printf("%s %d\n", fn.Name, len(fn.Expressions))
-	// }
-	// fmt.Println("...")
-	// for _, fn := range cxtCopy.CurrentModule.Functions {
-	// 	fmt.Printf("%s %d\n", fn.Name, len(fn.Expressions))
-	// }
-	
-
-
+	Testing()
 }

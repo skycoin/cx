@@ -137,19 +137,6 @@ type metaArgument struct {
 //
 
 
-
-
-
-// okay, we know that everything concerned to serializing the program is easy (let's assume)
-// now, for compiling, let's see what is going to be the problem
-// brandon said before that the biggest concern is to acces a structure's field
-// let's get back to just serializing a program...
-
-
-
-
-
-
 // okay, looking at metaArgument, it only gives us an offset
 
 
@@ -193,14 +180,6 @@ var basicFunctions = []string{"addI32", "mulI32", "subI32", "divI32"}
 /*
   Context
 */
-
-// type cxContext struct {
-// 	Modules map[string]*cxModule
-// 	CurrentModule *cxModule
-// 	CallStack []*cxCall
-// 	Steps [][]*cxCall
-// 	ProgramSteps []*cxProgramStep
-// }
 
 type cxContext struct {
 	Modules map[string]*cxModule
