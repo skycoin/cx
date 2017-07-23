@@ -204,13 +204,13 @@ func main() {
 		dataOut[i] = in * in * in - (3 * in)
 	}
 
-	cxt.Run(true, 1)
+	cxt.Run(true, -1)
 	sCxt := Serialize(cxt)
 	//cxt.PrintProgram(false)
 	dsCxt := Deserialize(sCxt)
 	//Deserialize(sCxt)
 	fmt.Println("===================================")
-	dsCxt.Run(true, 1)
+	dsCxt.Run(true, -1)
 	//dsCxt.PrintProgram(false)
 
 

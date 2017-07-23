@@ -786,3 +786,142 @@ to replace buggy parts of a program: if a function raises an exception with a
 certain combination of arguments, we can mutate the function until it
 gives us the same outputs as the previous version of the function, but
 also doesn't raise the exception.
+
+## Byte arrays
+
+The `byte` type has been added, as well as the `[]byte` type, which
+defines a byte array. Two native functions to manipulate byte
+arrays were added (found at *base/functions.go*): `readAByte` and
+`writeAByte`.
+
+`readAByte` takes two parameters: a byte array and an index. The index
+(int32) is used to retrieve the byte at that position in the byte
+array. The function returns a `byte`.
+
+`writeAByte` takes three parameters: a byte array, an index and a byte
+value. The byte at the indicated index in the byte array is replaced
+by the provided byte value. The function returns the modified byte array.
+
+## Serialization
+
+A program can be serialized using the function `Serialize`. The result
+of applying this method is a byte array which can be deserialized
+using the function `Deserialize`.
+
+Basically, the serialization process involves using a set of structs
+defined in *base/serialize.go* which store offsets and sizes. An
+*offset* field tells us at what index in the byte array we can find
+the starting byte of another structure, and a *size* field tells us how
+many bytes have to be sequentially read from the byte array to
+retrieve a subset of bytes that represent another structure.
+
+For example, the struct
+
+```
+type sModule struct {
+	NameOffset int32
+	NameSize int32
+	ImportsOffset int32
+	ImportsSize int32
+	FunctionsOffset int32
+	FunctionsSize int32
+	StructsOffset int32
+	StructsSize int32
+	DefinitionsOffset int32
+	DefinitionsSize int32
+	CurrentFunctionOffset int32
+	CurrentStructOffset int32
+}
+```
+
+provides offsets and sizes of a module to find its module's name,
+imported modules, functions, structs, and definitions. By using
+`FunctionsOffset` and `FunctionsSize`, we can extract a subset of
+bytes representing all the functions of that module. As every of these
+"serialization structs" are fixed sized (they only contain int32
+fields), we can use `encoder.Size()` to determine its serialized size,
+and use it to loop over the serialized functions in the byte array. A
+deserialized function looks like this:
+
+```
+type sFunction struct {
+	NameOffset int32
+	NameSize int32
+	InputsOffset int32
+	InputsSize int32
+	OutputOffset int32
+	ExpressionsOffset int32
+	ExpressionsSize int32
+	CurrentExpressionOffset int32
+	ModuleOffset int32
+}
+```
+
+Again, the offsets and sizes would be used to retrieve the elements
+required to get back the desired function.
+
+A program can be executed for *N* steps:
+
+```
+    cxt.Run(false, 2)
+```
+
+Then it can be serialized:
+
+```
+    sCxt := Serialize(cxt)
+```
+
+`sCxt` is holding the byte array. To deserialize it:
+
+```
+    dsCxt := Deserialize(sCxt)
+```
+
+And now `dsCxt` can continue the execution from step 2:
+
+```
+    dsCxt.Run(true, -1)
+```
+
+The printed call stacks of both runs are shown below:
+
+
+```
+main 0, 
+
+main 1, 
+	double 0, n: 66
+
+===================================
+
+main 1, 
+	double 1, n: 66, out: 132
+
+main 1, outMain: 132
+
+main 2, outMain: 132, foo: [5 70 100]
+
+main 3, outMain: 5, foo: [5 70 100]
+```
+
+The calls above the double line are from the first run, and the calls
+below the double line are from the second run. This call stack
+is exactly the same for the unserialized program, if executed until
+the end:
+
+```
+main 0, 
+
+main 1, 
+	double 0, n: 66
+
+main 1, 
+	double 1, n: 66, out: 132
+
+main 1, outMain: 132
+
+main 2, outMain: 132, foo: [5 70 100]
+
+main 3, outMain: 5, foo: [5 70 100]
+```
