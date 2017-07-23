@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 	"bytes"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func random(min, max int) int {
@@ -75,11 +76,21 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 			}
 		}
 
+		if len(mod.Imports) > 0 {
+			fmt.Println("\tImports")
+		}
+
+		j := 0
+		for _, imp := range mod.Imports {
+			fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
+			j++
+		}
+
 		if len(mod.Definitions) > 0 {
 			fmt.Println("\tDefinitions")
 		}
-		
-		j := 0
+
+		j = 0
 		for _, v := range mod.Definitions {
 			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ.Name)
 			j++
@@ -170,15 +181,26 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 						}
 					}
 
+					if arg.Offset > -1 {
+						offset := arg.Offset
+						size := arg.Size
+						var val []byte
+						encoder.DeserializeRaw((*cxt.Heap)[offset:offset+size], &val)
+						arg.Value = &val
+					}
+
 					if i == len(expr.Arguments) - 1 {
 						args.WriteString(concat(string(*arg.Value), " ", typ))
 					} else {
 						args.WriteString(concat(string(*arg.Value), " ", typ, ", "))
 					}
 				}
-				
+
 				fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)\n",
-					k, expr.OutputName, expr.Operator.Name, args.String())
+					k,
+					expr.OutputName,
+					expr.Operator.Name,
+					args.String())
 
 				if withAffs {
 					for i, aff := range expr.GetAffordances() {

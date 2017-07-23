@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"regexp"
+	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func PrintAffordances (affs []*cxAffordance) {
@@ -19,7 +20,8 @@ func (aff *cxAffordance) ApplyAffordance () {
 func FilterAffordances(affs []*cxAffordance, filters ...string) []*cxAffordance {
 	filteredAffs := make([]*cxAffordance, 0)
 	for _, filter := range filters {
-		re := regexp.MustCompile(regexp.QuoteMeta(filter))
+		//re := regexp.MustCompile(regexp.QuoteMeta(filter))
+		re := regexp.MustCompile(filter)
 		for _, aff := range affs {
 			if re.FindString(aff.Description) != "" {
 				filteredAffs = append(filteredAffs, aff)
@@ -206,9 +208,11 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	// Getting input defs
 	// We might need to create an empty definition?
 	onlyLocals := make([]string, 0)
+	onlyLocalsTypes := make([]string, 0)
 	for _, inp := range fn.Inputs {
 		defs = append(defs, inp.Name)
 		onlyLocals = append(onlyLocals, inp.Name)
+		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
 		defsTypes = append(defsTypes, inp.Typ)
 	}
 
@@ -218,6 +222,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	if fn.Output != nil {
 		//defs = append(defs, fn.Output.Name)
 		onlyLocals = append(onlyLocals, fn.Output.Name)
+		onlyLocalsTypes = append(onlyLocalsTypes, fn.Output.Typ.Name)
 		//defsTypes = append(defsTypes, fn.Output.Typ)
 	}
 
@@ -233,7 +238,9 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 		if cont && expr.OutputName != fn.Output.Name {
 			defs = append(defs, expr.OutputName)
 			onlyLocals = append(onlyLocals, expr.OutputName)
-			defsTypes = append(defsTypes, fn.Output.Typ)
+			onlyLocalsTypes = append(onlyLocalsTypes, expr.Operator.Output.Typ.Name)
+			//defsTypes = append(defsTypes, fn.Output.Typ)
+			defsTypes = append(defsTypes, expr.Operator.Output.Typ)
 		}
 	}
 
@@ -262,16 +269,21 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 		theOp := op // or will keep reference to last op
 
 		inputArgs := make([][]*cxArgument, 0)
-		for i, inp := range theOp.Inputs {
+		inputArgsTypes := make([][]string, 0)
+		for _, inp := range theOp.Inputs {
 			args := make([]*cxArgument, 0)
-			for _, def := range defs {
-				if defsTypes[i].Name == inp.Typ.Name {
+			argsTypes := make([]string, 0)
+			for j, def := range defs {
+				if defsTypes[j].Name == inp.Typ.Name {
 					arg := MakeArgument(MakeValue(def), ident)
+					//arg := MakeArgument(MakeValue(def), inp.Typ)
 					args = append(args, arg)
+					argsTypes = append(argsTypes, inp.Typ.Name)
 				}
 			}
 			if len(args) > 0 {
 				inputArgs = append(inputArgs, args)
+				inputArgsTypes = append(inputArgsTypes, argsTypes)
 			}
 		}
 
@@ -281,47 +293,60 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 		}
 
 		finalArguments := make([][]*cxArgument, numberCombinations)
+		finalArgumentsTypes := make([][]string, numberCombinations)
 		for i, args := range inputArgs {
 			for j := 0; j < numberCombinations; j++ {
 				x := 1
 				for _, a := range inputArgs[i+1:] {
 					x = x * len(a)
 				}
-				//fmt.Printf("j: %d, x: %d, len: %d\n", j, x, len(args))
-				//fmt.Println(j / x % len(args))
-				//fmt.Printf("x: %d, lenInp: %d\n", x, len(inputArgs))
 				finalArguments[j] = append(finalArguments[j], args[(j / x) % len(args)])
+				finalArgumentsTypes[j] = append(finalArgumentsTypes[j], inputArgsTypes[i][(j / x) % len(inputArgsTypes[i])])
 			}
 		}
 
-		// for _, arg := range finalArguments {
-		// 	for _, a := range arg {
-		// 		fmt.Printf("%s, ", string(*a.Value))
-		// 	}
-		// 	fmt.Println()
-		// }
-
-		// for _, inp := range theOp.Inputs {
-			
-		// }
-
-		// for _, args := range inputArgs {
-		// 	for _, arg := range args {
-				
-		// 	}
-		// }
-		//argsCombination := make([]*cxArgument, len(theOp.Inputs))
-
-		//fmt.Println(len(finalArguments))
-
-		//fmt.Println()
-
 		onlyLocals = append(onlyLocals, MakeGenSym("var"))
-		onlyLocals = removeDuplicates(onlyLocals)
+		onlyLocalsTypes = append(onlyLocalsTypes, "ident")
+		//onlyLocals = removeDuplicates(onlyLocals)
 
-		//for _, args := range argCombinations {
 		for _, args := range finalArguments {
-			for _, local := range onlyLocals {
+			// isArrayFn := false
+			// for _, arrFnName := range arrayFunctions {
+			// 	if op.Name == arrFnName {
+			// 		isArrayFn = true
+			// 	}
+			// }
+			// if isArrayFn {
+			// 	// for any array manipulation function:
+			// 	// first argument will always be the array
+			// 	// second argument will always be the index
+			// 	var index int32
+			// 	var arrByte []byte
+			// 	fmt.Println(finalArgumentsTypes[i])
+			// 	fmt.Println(string(*args[1].Value))
+			// 	encoder.DeserializeAtomic(*args[1].Value, &index)
+			// 	encoder.DeserializeRaw(*args[0].Value, &arrByte)
+			// 	fmt.Printf("Trouble index %d\n", index)
+			// 	if index >= int32(len(*args[0].Value)) {
+			// 		continue
+			// 	}
+			// }
+			
+			
+			for i, local := range onlyLocals {
+				// if a var was initialized of one type, we can't assign another type to this var later on
+				if (onlyLocalsTypes[i] != theOp.Output.Typ.Name &&
+					onlyLocalsTypes[i] != "ident") &&
+					local != fn.Output.Name {
+					continue
+				}
+
+				// skip affordances where the operator's output type doesn't match function's output type
+				// and we're assigning this to the function's output var
+				if local == fn.Output.Name && theOp.Output.Typ.Name != fn.Output.Typ.Name {
+					continue
+				}
+				
 				varExpr := local
 
 				identNames := ""
@@ -338,6 +363,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 				argsCopy := make([]*cxArgument, len(args))
 				for i, arg := range args {
 					argsCopy[i] = MakeArgumentCopy(arg)
+					//fmt.Println(string(*argsCopy[i].Value))
 				}
 
 				affs = append(affs, &cxAffordance{

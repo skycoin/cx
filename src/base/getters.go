@@ -24,6 +24,15 @@ func (cxt *cxContext) GetCurrentStruct () (*cxStruct, error) {
 	
 }
 
+func (mod *cxModule) GetCurrentStruct () (*cxStruct, error) {
+	if mod.CurrentStruct != nil {
+		return mod.CurrentStruct, nil
+	} else {
+		return nil, errors.New("Current struct is nil")
+	}
+	
+}
+
 func (cxt *cxContext) GetCurrentFunction () (*cxFunction, error) {
 	if cxt.CurrentModule != nil &&
 		cxt.CurrentModule.CurrentFunction != nil {
@@ -90,7 +99,7 @@ func (cxt *cxContext) GetDefinition (name string) (*cxDefinition, error) {
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		found := mod.Definitions[name]
 		if found == nil {
-			return nil, errors.New("Definition not found")
+			return nil, errors.New(fmt.Sprintf("GetDefinition: definition '%s' not found", name))
 		} else {
 			return found, nil
 		}

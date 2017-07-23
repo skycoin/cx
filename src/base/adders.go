@@ -26,6 +26,12 @@ func (cxt *cxContext) AddModule (mod *cxModule) *cxContext {
 }
 
 func (mod *cxModule) AddDefinition (def *cxDefinition) *cxModule {
+	// identParts := getIdentParts(def.Name)
+	// // we're ignoring nested structs for now
+	// if len(identParts) == 2 {
+		
+	// }
+	
 	stepDef := MakeDefinitionCopy(def, mod, mod.Context)
 	prgrmStep := &cxProgramStep{
 		Action: func(cxt *cxContext) {

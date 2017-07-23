@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"regexp"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -73,7 +74,6 @@ func (cxt *cxContext) MutateSolution (numberExprs int) {
 		}
 
 		for i := 0; len(fn.Expressions) < numberExprs; i++ {
-			//affs := FilterAffordances(fn.GetAffordances(), "Expression")
 			affs := make([]*cxAffordance, 0)
 			
 			if !hasOutput && i == numberExprs - 1 {
@@ -82,6 +82,16 @@ func (cxt *cxContext) MutateSolution (numberExprs int) {
 			} else {
 				affs = FilterAffordances(fn.GetAffordances(), "Expression")
 			}
+
+			// excluding array operations
+			re := regexp.MustCompile("readAByte|writeAByte")
+			filteredAffs := make([]*cxAffordance, 0)
+			for _, aff := range affs {
+				if re.FindString(aff.Description) == "" {
+					filteredAffs = append(filteredAffs, aff)
+				}
+			}
+			affs = filteredAffs
 			
 			affs[random(0, len(affs))].ApplyAffordance()
 		}
@@ -104,6 +114,17 @@ func (cxt *cxContext) EvolveSolution (inputs, outputs []int32, numberExprs, iter
 				// 	fmt.Println(aff.Description)
 				// }
 			}
+
+			// excluding array operations
+			re := regexp.MustCompile("readAByte|writeAByte")
+			filteredAffs := make([]*cxAffordance, 0)
+			for _, aff := range affs {
+				if re.FindString(aff.Description) == "" {
+					filteredAffs = append(filteredAffs, aff)
+				}
+			}
+			affs = filteredAffs
+			
 			r := random(0, len(affs))
 			//fmt.Println(r)
 			affs[r].ApplyAffordance()
@@ -138,7 +159,8 @@ func (cxt *cxContext) EvolveSolution (inputs, outputs []int32, numberExprs, iter
 
 				// we need to evaluate all of them with each of the inputs and get the error
 				for i, program := range programs {
-					//fmt.Printf("Program:%d\n", i)					
+					//fmt.Printf("Program:%d\n", i)
+					//program.PrintProgram(false)
 					var error float64 = 0
 					for i, inp := range inputs {
 						// the input is always going to be num1 for now
@@ -154,7 +176,12 @@ func (cxt *cxContext) EvolveSolution (inputs, outputs []int32, numberExprs, iter
 
 						// getting the simulated output
 						var result int32
-						output := program.CallStack.Calls[0].State["outMain"].Value
+						// output := program.
+						// 	CallStack.
+						// 	Calls[0].
+						// 	State["outMain"].
+						// 	Value
+						output := program.Output.Value
 						encoder.DeserializeAtomic(*output, &result)
 
 						// I don't want to import Math, so I will hardcode abs
@@ -183,6 +210,8 @@ func (cxt *cxContext) EvolveSolution (inputs, outputs []int32, numberExprs, iter
 				}
 				//fmt.Println(errors)
 				//fmt.Println(bestIndex)
+
+				// print error each iteration
 				fmt.Println(errors[bestIndex])
 				
 				//best.PrintProgram(false)

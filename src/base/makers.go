@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var counter int = 0
@@ -13,9 +14,11 @@ func MakeGenSym (name string) string {
 }
 
 func MakeContext () *cxContext {
+	heap := make([]byte, 0)
 	newContext := &cxContext{
 		Modules: make(map[string]*cxModule, 0),
 		CallStack: MakeCallStack(0),
+		Heap: &heap,
 		Steps: make([]*cxCallStack, 0)}
 	return newContext
 }
@@ -40,6 +43,8 @@ func MakeArgumentCopy (arg *cxArgument) *cxArgument {
 	return &cxArgument{
 		Typ: MakeType(arg.Typ.Name),
 		Value: &value,
+		Offset: arg.Offset,
+		Size: arg.Size,
 	}
 }
 
@@ -177,6 +182,8 @@ func MakeCallStack (size int) *cxCallStack {
 func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	newContext := &cxContext{}
 
+	newContext.Heap = cxt.Heap
+
 	modsCopy := make(map[string]*cxModule, len(cxt.Modules))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
@@ -251,8 +258,28 @@ func MakeModule (name string) *cxModule {
 		Imports: make(map[string]*cxModule, 0),
 		Functions: make(map[string]*cxFunction, 0),
 		Structs: make(map[string]*cxStruct, 0),
+		//Instances: make(map[string]*cxInstance, 0),
 	}
 }
+
+// func MakeInstance (name string, typ *cxStruct) *cxInstance {
+// 	// the instance definitions need to be initialized
+// 	defs := make([]*cxDefinition, 0)
+// 	for _, fld := range typ.Fields {
+// 		byteArray := make([]byte, 0)
+// 		defs = append(defs, &cxDefinition{
+// 			Name: fld.Name,
+// 			Typ: fld.Typ,
+// 			Value: &byteArray,
+// 		})
+// 	}
+	
+// 	return &cxInstance{
+// 		Name: name,
+// 		Typ: MakeType(typ.Name),
+// 		Definitions: defs,
+// 	}
+// }
 
 func MakeDefinition (name string, value *[]byte, typ *cxType) *cxDefinition {
 	return &cxDefinition{Name: name, Typ: typ, Value: value}
@@ -276,11 +303,18 @@ func MakeExpression (outputName string, fn *cxFunction) *cxExpression {
 }
 
 func MakeArgument (value *[]byte, typ *cxType) *cxArgument {
-	return &cxArgument{Typ: typ, Value: value}
+	return &cxArgument{
+		Typ: typ,
+		Value: value,
+		Offset: -1,
+		Size: -1,
+	}
 }
 
 func MakeType (name string) *cxType {
-	return &cxType{Name: name}
+	return &cxType{
+		Name: name,
+	}
 }
 
 func MakeFunction (name string) *cxFunction {

@@ -7,8 +7,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-// might not be needed, check to delete
-func argsToDefs (args []*cxArgument, names []string) (map[string]*cxDefinition, error) {
+func argsToDefs (args []*cxArgument, names []string, mod *cxModule, cxt *cxContext) (map[string]*cxDefinition, error) {
 	if len(names) == len(args) {
 		defs := make(map[string]*cxDefinition, 0)
 		for i, arg := range args {
@@ -16,49 +15,13 @@ func argsToDefs (args []*cxArgument, names []string) (map[string]*cxDefinition, 
 				Name: names[i],
 				Typ: arg.Typ,
 				Value: arg.Value,
+				Module: mod,
+				Context: cxt,
 			}
 		}
 		return defs, nil
 	} else {
 		return nil, errors.New("Not enough definition names provided")
-	}
-}
-
-
-
-
-
-// 1. Check if main module and function exists
-// 2. Make root call, with null returnaddress
-// 3. Just call() this root call
-//
-// 4. The call() method should get the first expression
-
-
-func PrintCallStackOld (callStack []*cxCall) {
-	lastCall := callStack[len(callStack) - 1]
-	pluses := strings.Repeat("   ", len(callStack) - 1)
-	minuses := strings.Repeat("---", len(callStack) - 1)
-
-	if lastCall.Line < len(lastCall.Operator.Expressions) {
-		fmt.Printf("%sEntering function: '%s', Line#: %d \n",
-			pluses,
-			lastCall.Operator.Name,
-			lastCall.Line)
-	} else {
-		fmt.Printf("%sNow exiting '%s'\n",
-			minuses,
-			lastCall.Operator.Name)
-	}
-
-	fmt.Printf("%sState:\n", pluses)
-	for _, v := range lastCall.State {
-		var val int32
-		encoder.DeserializeAtomic(*v.Value, &val)
-		fmt.Printf("%s\t'%s': %d\n",
-			pluses,
-			v.Name,
-			val)
 	}
 }
 
@@ -70,13 +33,37 @@ func PrintCallStack (callStack []*cxCall) {
 		lenState := len(call.State)
 		idx := 0
 		for _, def := range call.State {
-			var val int32
-			encoder.DeserializeAtomic(*def.Value, &val)
-			if idx == lenState - 1 {
-				fmt.Printf("%s: %d", def.Name, val)
-			} else {
-				fmt.Printf("%s: %d, ", def.Name, val)
+			var valI32 int32
+			var valI64 int64
+			switch def.Typ.Name {
+			case "i32":
+				encoder.DeserializeAtomic(*def.Value, &valI32)
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %d", def.Name, valI32)
+				} else {
+					fmt.Printf("%s: %d, ", def.Name, valI32)
+				}
+			case "i64":
+				encoder.DeserializeAtomic(*def.Value, &valI64)
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %d", def.Name, valI64)
+				} else {
+					fmt.Printf("%s: %d, ", def.Name, valI64)
+				}
+			case "byte":
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %d", def.Name, (*def.Value)[0])
+				} else {
+					fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
+				}
+			case "[]byte":
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %v", def.Name, (*def.Value))
+				} else {
+					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+				}
 			}
+			
 			idx++
 		}
 		fmt.Println()
@@ -178,6 +165,121 @@ func (cxt *cxContext) ResetTo(stepNumber int) {
 	}
 }
 
+func beforeDot (str string ) (beforeDot string, afterDot string) {
+	beforeDot = ""
+	afterDot = ""
+	beforeDotCounter := 0
+	foundDot := false
+	for _, letter := range str {
+		if letter != '.' {
+			beforeDot = concat(beforeDot, string(letter))
+		} else {
+			foundDot = true
+			break
+		}
+		beforeDotCounter++
+	}
+	if foundDot {
+		afterDot = str[beforeDotCounter + 1:] // ignore the dot
+	}
+	
+	return beforeDot, afterDot
+}
+
+func getIdentParts (str string) []string {
+	var identParts []string
+	before, after := beforeDot(str) // => "Math", "myPoint.x"
+	identParts = append(identParts, before)
+	for after != "" {
+		before, after = beforeDot(after)
+		identParts = append(identParts, before)
+	}
+	return identParts
+}
+
+func (cxt *cxContext) Compile () *cxContext {
+	heap := *cxt.Heap
+	heapCounter := 0
+
+	for _, mod := range cxt.Modules {
+		for _, fn := range mod.Functions {
+
+			// using struct fields
+			for _, expr := range fn.Expressions {
+				for argIdx, arg := range expr.Arguments {
+					if arg.Typ.Name == "ident" {
+						identParts := getIdentParts(string(*arg.Value))
+
+						var def *cxDefinition
+						
+						if len(identParts) == 1 {
+							// it's a current module's definition
+							// TODO: compile later
+						} else {
+							if identMod, ok := cxt.Modules[identParts[0]]; ok {
+								// identParts[1] will always be a definition if before is a module
+								if len(identParts) == 2 {
+									// then we are referring to the struct itself or a normal ident
+									// TODO: compile later
+								} else {
+									// we're referring to a struct field then
+									if len(identParts) > 3 {
+										// nested structs
+										// TODO: compile later
+									} else {
+										def = identMod.Definitions[concat(identParts[1], ".", identParts[2])]
+										
+										defSize := len(*def.Value)
+										heapArg := &cxArgument{
+											Typ: def.Typ,
+											//Value: arg.Value, //irrelevant now
+											Offset: heapCounter,
+											Size: defSize,
+										}
+										// replacing argument
+										arg = heapArg
+
+										heap = append(heap, *def.Value...)
+										heapCounter = heapCounter + defSize
+									}
+								}
+							} else {
+								if len(identParts) > 2 {
+									fmt.Println("identParts > 2")
+									// nested structs
+									// TODO: compile later
+								} else {
+									def = mod.Definitions[concat(identParts[0], ".", identParts[1])]
+
+									//defSize := encoder.Size(*def.Value)
+									defSize := len(*def.Value)
+									heapArg := &cxArgument{
+										Typ: def.Typ,
+										//Value: arg.Value, //irrelevant now
+										Offset: heapCounter,
+										Size: defSize,
+									}
+									// replacing argument
+									expr.Arguments[argIdx] = heapArg
+
+									//heap = append(heap, encoder.Serialize(*def.Value)...)
+									heap = append(heap, *def.Value...)
+									heapCounter = heapCounter + defSize
+								}
+							}
+						}
+
+						// checking if first part is a module
+						
+					}
+				}
+			}
+		}
+	}
+	cxt.Heap = &heap
+	return cxt
+}
+
 func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
@@ -223,25 +325,43 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 	}
 	
 	if call.Line >= len(call.Operator.Expressions) {
+		if len(call.Operator.Expressions) < 1 {
+			panic(fmt.Sprintf("Calling function without expressions '%s'", call.Operator.Name))
+		}
+		// popping the stack
+		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
+		outName := call.Operator.Output.Name
+
+		// this one is for returning result
+		output := call.State[outName]
+		if output == nil {
+			outName := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputName
+			output = call.State[outName]
+		}
+
+		// checking if output var has the same type as the required output
+		if output.Typ.Name != call.Operator.Output.Typ.Name {
+			panic(fmt.Sprintf("output var '%s' is of type '%s'; function '%s' requires output of type '%s'",
+				output.Name, output.Typ.Name, call.Operator.Name, call.Operator.Output.Typ.Name))
+		}
+
 		if call.ReturnAddress != nil {
-			// popping the stack
-			call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
-			outName := call.Operator.Output.Name
-
-			// this one is for returning result
 			returnName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputName
-			output := call.State[outName]
-			if output == nil {
-				outName := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputName
-				output = call.State[outName]
+			
+			if output != nil {
+				def := MakeDefinition(returnName, output.Value, output.Typ)
+				def.Module = call.Module
+				def.Context = call.Context
+				call.ReturnAddress.State[returnName] = def
+			} else {
+				panic(fmt.Sprintf("Function '%s' couldn't return anything", call.Operator.Name))
 			}
 
-			if output != nil {
-				call.ReturnAddress.State[returnName] = MakeDefinition(returnName, output.Value, output.Typ)
-			}
-			
 			call.ReturnAddress.call(withDebug, nCalls, callCounter)
-			return
+		} else {
+			// no return address. should only be for main
+			call.Context.Output = output
+			//fmt.Printf("\nProgram's output:\n%v\n", output.Value)
 		}
 	} else {
 		fn := call.Operator
@@ -262,6 +382,15 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			
 			// we are modifying by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
+				if argsRefs[i].Offset > -1 {
+					offset := argsRefs[i].Offset
+					size := argsRefs[i].Size
+					//var val []byte
+					//encoder.DeserializeRaw((*call.Context.Heap)[offset:offset+size], &val)
+					//argsRefs[i].Value = &val
+					val := (*call.Context.Heap)[offset:offset+size]
+					argsRefs[i].Value = &val
+				}
 				if argsRefs[i].Typ.Name == "ident" {
 					lookingFor := string(*argsRefs[i].Value)
 
@@ -281,38 +410,56 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 				} else {
 					argsCopy[i] = argsRefs[i]
 				}
+
+				// checking if arguments types match with expressions required types
+				if expr.Operator.Inputs[i].Typ.Name != argsCopy[i].Typ.Name {
+					//panic(fmt.Sprintf("%s, line #%d: wrong argument type", expr.Operator.Name, call.Line))
+					panic(fmt.Sprintf("%s, line #%d: %s argument #%d is type '%s'; expected type '%s'",
+						fn.Name, call.Line, expr.Operator.Name, i, argsCopy[i].Typ.Name, expr.Operator.Inputs[i].Typ.Name))
+				}
 			}
 
 			// checking if native or not
+			var value *cxArgument
+			
 			switch expr.Operator.Name {
 			case "addI32":
-				value := addI32(argsCopy[0], argsCopy[1])
-				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
-				call.Line++
-				call.call(withDebug, nCalls, callCounter)
-				return
+				value = addI32(argsCopy[0], argsCopy[1])
 			case "mulI32":
-				value := mulI32(argsCopy[0], argsCopy[1])
-				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
-				call.Line++
-				call.call(withDebug, nCalls, callCounter)
-				return
+				value = mulI32(argsCopy[0], argsCopy[1])
 			case "subI32":
-				value := subI32(argsCopy[0], argsCopy[1])
-				call.State[outName] = MakeDefinition(outName, value.Value, value.Typ)
+				value = subI32(argsCopy[0], argsCopy[1])
+			case "divI32":
+				value = divI32(argsCopy[0], argsCopy[1])
+			case "addI64":
+				value = addI64(argsCopy[0], argsCopy[1])
+			case "mulI64":
+				value = mulI64(argsCopy[0], argsCopy[1])
+			case "subI64":
+				value = subI64(argsCopy[0], argsCopy[1])
+			case "divI64":
+				value = divI64(argsCopy[0], argsCopy[1])
+			case "readAByte":
+				value = readAByte(argsCopy[0], argsCopy[1])
+			case "writeAByte":
+				value = writeAByte(argsCopy[0], argsCopy[1], argsCopy[2])
+			case "":
+			}
+			if value != nil {
+				// operator was a native function
+				def := MakeDefinition(outName, value.Value, value.Typ)
+				def.Module = call.Module
+				def.Context = call.Context
+				
+				call.State[outName] = def
 				call.Line++
 				call.call(withDebug, nCalls, callCounter)
-				return
-			default: // not native function
+			} else {
+				// operator was not a native function
 				call.Line++ // once the subcall finishes, call next line of the
-				if argDefs, err := argsToDefs(argsCopy, argNames); err == nil {
+				if argDefs, err := argsToDefs(argsCopy, argNames, call.Module, call.Context); err == nil {
 					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Context)
 					call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
-					// debugging
-					// saveStep(call)
-					// if withDebug {
-					// 	PrintCallStack(call.Context.CallStack)
-					// }
 					subcall.call(withDebug, nCalls, callCounter)
 					return
 				} else {
