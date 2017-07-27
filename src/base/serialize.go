@@ -26,6 +26,7 @@ type sProgram struct {
 	ExpressionsOffset int32
 	ArgumentsOffset int32
 	CallsOffset int32
+	OutputNamesOffset int32
 }
 
 type sContext struct {
@@ -117,7 +118,8 @@ type sFunction struct {
 	NameSize int32
 	InputsOffset int32
 	InputsSize int32
-	OutputOffset int32
+	OutputsOffset int32
+	OutputsSize int32
 	ExpressionsOffset int32
 	ExpressionsSize int32
 	CurrentExpressionOffset int32
@@ -134,11 +136,17 @@ type sExpression struct {
 	OperatorOffset int32
 	ArgumentsOffset int32
 	ArgumentsSize int32
-	OutputNameOffset int32 // these are also going to the names byte array
-	OutputNameSize int32
+	OutputNamesOffset int32
+	OutputNamesSize int32
 	Line int32
 	FunctionOffset int32
 	ModuleOffset int32
+}
+
+// used by sExpression's OutputNamesOffset and OutputNamesSize
+type sOutputName struct {
+	NameOffset int32
+	NameSize int32
 }
 
 type sArgument struct {
@@ -204,6 +212,9 @@ func Serialize (cxt *cxContext) *[]byte {
 
 	sCalls := make([]byte, 0)
 	sCallsCounter := 0
+
+	sOutNames := make([]byte, 0)
+	sOutNamesCounter := 0
 	
 	// context
 	sCxt := &sContext{}
@@ -333,50 +344,101 @@ func Serialize (cxt *cxContext) *[]byte {
 					sFn.InputsSize = -1
 				}
 
-				// output
-				if fn.Output != nil {
-					sFn.OutputOffset = int32(sParamsCounter)
-					sParam := sParameter{}
-
-					// name
-					if offset, ok := sNamesMap[fn.Output.Name]; ok {
-						sParam.NameOffset = int32(offset)
-						sParam.NameSize = int32(encoder.Size(fn.Output.Name))
-					} else {
-						sNames = append(sNames, encoder.Serialize(fn.Output.Name)...)
-						sNamesMap[fn.Output.Name] = sNamesCounter
-						sParam.NameOffset = int32(sNamesCounter)
-						sParam.NameSize = int32(encoder.Size(fn.Output.Name))
-						sNamesCounter = sNamesCounter + int(sParam.NameSize)
-					}
-
-					// output type
-					typ := fn.Output.Typ
-					sTyp := sType{}
+				// outputs
+				if fn.Outputs != nil && len(fn.Outputs) > 0 {
+					sFn.OutputsOffset = int32(sParamsCounter)
+					sFn.OutputsSize = int32(len(fn.Outputs))
 					
-					// output type name
-					if offset, ok := sNamesMap[typ.Name]; ok {
-						sTyp.NameOffset = int32(offset)
-						sTyp.NameSize = int32(encoder.Size(typ.Name))
-					} else {
-						sNames = append(sNames, encoder.Serialize(typ.Name)...)
-						sNamesMap[typ.Name] = sNamesCounter
-						sTyp.NameOffset = int32(sNamesCounter)
-						sTyp.NameSize = int32(encoder.Size(typ.Name))
-						sNamesCounter = sNamesCounter + int(sTyp.NameSize)
+					for _, out := range fn.Outputs {
+						sParam := sParameter{}
+
+						// output name
+						if offset, ok := sNamesMap[out.Name]; ok {
+							sParam.NameOffset = int32(offset)
+							sParam.NameSize = int32(encoder.Size(out.Name))
+						} else {
+							sNames = append(sNames, encoder.Serialize(out.Name)...)
+							sNamesMap[out.Name] = sNamesCounter
+							sParam.NameOffset = int32(sNamesCounter)
+							sParam.NameSize = int32(encoder.Size(out.Name))
+							sNamesCounter = sNamesCounter + int(sParam.NameSize)
+							
+						}
+
+						// output type
+						typ := out.Typ
+						sTyp := sType{}
+						
+						// output type name
+						if offset, ok := sNamesMap[typ.Name]; ok {
+							sTyp.NameOffset = int32(offset)
+							sTyp.NameSize = int32(encoder.Size(typ.Name))
+						} else {
+							sNames = append(sNames, encoder.Serialize(typ.Name)...)
+							sNamesMap[typ.Name] = sNamesCounter
+							sTyp.NameOffset = int32(sNamesCounter)
+							sTyp.NameSize = int32(encoder.Size(typ.Name))
+							sNamesCounter = sNamesCounter + int(sTyp.NameSize)
+						}
+
+						// save the sTyp
+						sTyps = append(sTyps, encoder.Serialize(sTyp)...)
+						sParam.TypOffset = int32(sTypsCounter)
+						sTypsCounter++
+
+						// save the sParam
+						sParams = append(sParams, encoder.Serialize(sParam)...)
+						sParamsCounter++
 					}
-
-					// save the sTyp
-					sTyps = append(sTyps, encoder.Serialize(sTyp)...)
-					sParam.TypOffset = int32(sTypsCounter)
-					sTypsCounter++
-
-					// save the sParam
-					sParams = append(sParams, encoder.Serialize(sParam)...)
-					sParamsCounter++
 				} else {
-					sFn.OutputOffset = -1 // nil; fn does not have an output
+					sFn.OutputsOffset = -1 // nil; fn does not have outputs
+					sFn.OutputsSize = -1
 				}
+
+				// // output
+				// if fn.Output != nil {
+				// 	sFn.OutputOffset = int32(sParamsCounter)
+				// 	sParam := sParameter{}
+
+				// 	// name
+				// 	if offset, ok := sNamesMap[fn.Output.Name]; ok {
+				// 		sParam.NameOffset = int32(offset)
+				// 		sParam.NameSize = int32(encoder.Size(fn.Output.Name))
+				// 	} else {
+				// 		sNames = append(sNames, encoder.Serialize(fn.Output.Name)...)
+				// 		sNamesMap[fn.Output.Name] = sNamesCounter
+				// 		sParam.NameOffset = int32(sNamesCounter)
+				// 		sParam.NameSize = int32(encoder.Size(fn.Output.Name))
+				// 		sNamesCounter = sNamesCounter + int(sParam.NameSize)
+				// 	}
+
+				// 	// output type
+				// 	typ := fn.Output.Typ
+				// 	sTyp := sType{}
+					
+				// 	// output type name
+				// 	if offset, ok := sNamesMap[typ.Name]; ok {
+				// 		sTyp.NameOffset = int32(offset)
+				// 		sTyp.NameSize = int32(encoder.Size(typ.Name))
+				// 	} else {
+				// 		sNames = append(sNames, encoder.Serialize(typ.Name)...)
+				// 		sNamesMap[typ.Name] = sNamesCounter
+				// 		sTyp.NameOffset = int32(sNamesCounter)
+				// 		sTyp.NameSize = int32(encoder.Size(typ.Name))
+				// 		sNamesCounter = sNamesCounter + int(sTyp.NameSize)
+				// 	}
+
+				// 	// save the sTyp
+				// 	sTyps = append(sTyps, encoder.Serialize(sTyp)...)
+				// 	sParam.TypOffset = int32(sTypsCounter)
+				// 	sTypsCounter++
+
+				// 	// save the sParam
+				// 	sParams = append(sParams, encoder.Serialize(sParam)...)
+				// 	sParamsCounter++
+				// } else {
+				// 	sFn.OutputOffset = -1 // nil; fn does not have an output
+				// }
 
 				// expressions
 				if fn.Expressions != nil && len(fn.Expressions) > 0 {
@@ -406,6 +468,32 @@ func Serialize (cxt *cxContext) *[]byte {
 							panic(fmt.Sprintf("Expression's operator (%s) not found in sFnsMap", opName))
 						}
 
+						// output names
+						if expr.OutputNames != nil && len(expr.OutputNames) > 0 {
+							sExpr.OutputNamesOffset = int32(sOutNamesCounter)
+							sExpr.OutputNamesSize = int32(len(expr.OutputNames))
+
+							for _, outName := range expr.OutputNames {
+								sOutName := sOutputName{}
+
+								// name
+								if offset, ok := sNamesMap[outName]; ok {
+									sOutName.NameOffset = int32(offset)
+									sOutName.NameSize = int32(encoder.Size(outName))
+								} else {
+									sNames = append(sNames, encoder.Serialize(outName)...)
+									sNamesMap[outName] = sNamesCounter
+									sOutName.NameOffset = int32(sNamesCounter)
+									sOutName.NameSize = int32(encoder.Size(outName))
+									sNamesCounter = sNamesCounter + int(sOutName.NameSize)
+								}
+								
+								// saving the output name
+								sOutNames = append(sOutNames, encoder.Serialize(sOutName)...)
+								sOutNamesCounter++
+							}
+						}
+						
 						// arguments
 						if expr.Arguments != nil && len(expr.Arguments) > 0 {
 							sExpr.ArgumentsOffset = int32(sArgsCounter)
@@ -448,16 +536,16 @@ func Serialize (cxt *cxContext) *[]byte {
 						}
 
 						// output name
-						if offset, ok := sNamesMap[expr.OutputName]; ok {
-							sExpr.OutputNameOffset = int32(offset)
-							sExpr.OutputNameSize = int32(encoder.Size(expr.OutputName))
-						} else {
-							sNames = append(sNames, encoder.Serialize(expr.OutputName)...)
-							sNamesMap[expr.OutputName] = sNamesCounter
-							sExpr.OutputNameOffset = int32(sNamesCounter)
-							sExpr.OutputNameSize = int32(encoder.Size(expr.OutputName))
-							sNamesCounter = sNamesCounter + int(sExpr.OutputNameSize)
-						}
+						// if offset, ok := sNamesMap[expr.OutputName]; ok {
+						// 	sExpr.OutputNameOffset = int32(offset)
+						// 	sExpr.OutputNameSize = int32(encoder.Size(expr.OutputName))
+						// } else {
+						// 	sNames = append(sNames, encoder.Serialize(expr.OutputName)...)
+						// 	sNamesMap[expr.OutputName] = sNamesCounter
+						// 	sExpr.OutputNameOffset = int32(sNamesCounter)
+						// 	sExpr.OutputNameSize = int32(encoder.Size(expr.OutputName))
+						// 	sNamesCounter = sNamesCounter + int(sExpr.OutputNameSize)
+						// }
 
 						// line
 						sExpr.Line = int32(expr.Line)
@@ -767,6 +855,7 @@ func Serialize (cxt *cxContext) *[]byte {
 	sPrgrm.ExpressionsOffset = sPrgrm.ParametersOffset + int32(encoder.Size(sParams))
 	sPrgrm.ArgumentsOffset = sPrgrm.ExpressionsOffset + int32(encoder.Size(sExprs))
 	sPrgrm.CallsOffset = sPrgrm.ArgumentsOffset + int32(encoder.Size(sArgs))
+	sPrgrm.OutputNamesOffset = sPrgrm.CallsOffset + int32(encoder.Size(sCalls))
 
 	serialized = append(serialized, encoder.Serialize(sPrgrm)...)
 	serialized = append(serialized, encoder.Serialize(sCxt)...)
@@ -783,6 +872,7 @@ func Serialize (cxt *cxContext) *[]byte {
 	serialized = append(serialized, encoder.Serialize(sExprs)...)
 	serialized = append(serialized, encoder.Serialize(sArgs)...)
 	serialized = append(serialized, encoder.Serialize(sCalls)...)
+	serialized = append(serialized, encoder.Serialize(sOutNames)...)
 	
 	return &serialized
 }
@@ -865,6 +955,11 @@ func Deserialize (prgrm *[]byte) *cxContext {
 	var dsCalls []byte
 	sCalls := (*prgrm)[dsPrgrm.CallsOffset:]
 	encoder.DeserializeRaw(sCalls, &dsCalls)
+
+	// Output names
+	var dsOutNames []byte
+	sOutNames := (*prgrm)[dsPrgrm.OutputNamesOffset:]
+	encoder.DeserializeRaw(sOutNames, &dsOutNames)
 
 
 	/*
@@ -1021,34 +1116,69 @@ func Deserialize (prgrm *[]byte) *cxContext {
 				inps = append(inps, &inp)
 			}
 
-			// Output
-			out := &cxParameter{}
-			outOffset := int(dsFn.OutputOffset) * paramSize
+			// Outputs
+			var outs []*cxParameter
+			outsOffset := int(dsFn.OutputsOffset) * paramSize
+			for i := 0; i < int(dsFn.OutputsSize); i++ {
+				out := cxParameter{}
 
-			var dsOut sParameter
-			sOut := dsParams[outOffset : outOffset + paramSize]
-			encoder.DeserializeRaw(sOut, &dsOut)
+				var dsParam sParameter
+				sParam := dsParams[outsOffset + i*paramSize : outsOffset + (i+1)*paramSize]
+				encoder.DeserializeRaw(sParam, &dsParam)
 
-			// Output name
-			var dsOutName []byte
-			sOutName := dsNames[dsOut.NameOffset : dsOut.NameOffset + dsOut.NameSize]
-			encoder.DeserializeRaw(sOutName, &dsOutName)
+				// Name
+				var dsName []byte
+				sName := dsNames[dsParam.NameOffset : dsParam.NameOffset + dsParam.NameSize]
+				encoder.DeserializeRaw(sName, &dsName)
 
-			// Output Type
-			typ := cxType{}
+				// Type
+				typ := cxType{}
+				
+				var dsTyp sType
+				sTyp := dsTyps[dsParam.TypOffset*int32(typSize) : dsParam.TypOffset*int32(typSize) + int32(typSize)]
+				encoder.DeserializeRaw(sTyp, &dsTyp)
+
+				// Type name
+				var dsTypName []byte
+				sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+				encoder.DeserializeRaw(sTypName, &dsTypName)
+				typ.Name = string(dsTypName)
+				
+				out.Name = string(dsName)
+				out.Typ = &typ
+
+				// Appending final output
+				outs = append(outs, &out)
+			}
+
+			// // Output
+			// out := &cxParameter{}
+			// outOffset := int(dsFn.OutputOffset) * paramSize
+
+			// var dsOut sParameter
+			// sOut := dsParams[outOffset : outOffset + paramSize]
+			// encoder.DeserializeRaw(sOut, &dsOut)
+
+			// // Output name
+			// var dsOutName []byte
+			// sOutName := dsNames[dsOut.NameOffset : dsOut.NameOffset + dsOut.NameSize]
+			// encoder.DeserializeRaw(sOutName, &dsOutName)
+
+			// // Output Type
+			// typ := cxType{}
 			
-			var dsTyp sType
-			sTyp := dsTyps[dsOut.TypOffset*int32(typSize) : dsOut.TypOffset*int32(typSize) + int32(typSize)]
-			encoder.DeserializeRaw(sTyp, &dsTyp)
+			// var dsTyp sType
+			// sTyp := dsTyps[dsOut.TypOffset*int32(typSize) : dsOut.TypOffset*int32(typSize) + int32(typSize)]
+			// encoder.DeserializeRaw(sTyp, &dsTyp)
 
-			// Type name
-			var dsTypName []byte
-			sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
-			encoder.DeserializeRaw(sTypName, &dsTypName)
-			typ.Name = string(dsTypName)
+			// // Type name
+			// var dsTypName []byte
+			// sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+			// encoder.DeserializeRaw(sTypName, &dsTypName)
+			// typ.Name = string(dsTypName)
 
-			out.Name = string(dsOutName)
-			out.Typ = &typ
+			// out.Name = string(dsOutName)
+			// out.Typ = &typ
 
 			// Expressions
 			var exprs []*cxExpression
@@ -1122,14 +1252,36 @@ func Deserialize (prgrm *[]byte) *cxContext {
 					args = append(args, &arg)
 				}
 
-				// Expression output name
-				var dsOutName []byte
-				sOutName := dsNames[dsExpr.OutputNameOffset : dsExpr.OutputNameOffset + dsExpr.OutputNameSize]
-				encoder.DeserializeRaw(sOutName, &dsOutName)
+
+				// Expression output names
+				var outNames []string
+				outNameSize := encoder.Size(sOutputName{})
+				outNamesOffset := int(dsExpr.OutputNamesOffset) * outNameSize
+				for i := 0; i < int(dsExpr.OutputNamesSize); i++ {
+					var outName string
+
+					var dsOutName sOutputName
+					sOutName := dsOutNames[outNamesOffset + i*outNameSize : outNamesOffset + (i+1)*outNameSize]
+					encoder.DeserializeRaw(sOutName, &dsOutName)
+
+					var dsName []byte
+					sName := dsNames[dsOutName.NameOffset : dsOutName.NameOffset + dsOutName.NameSize]
+					encoder.DeserializeRaw(sName, &dsName)
+					outName = string(dsName)
+
+					// Appending final output name
+					outNames = append(outNames, outName)
+				}
+
+				// // Expression output name
+				// var dsOutName []byte
+				// sOutName := dsNames[dsExpr.OutputNameOffset : dsExpr.OutputNameOffset + dsExpr.OutputNameSize]
+				// encoder.DeserializeRaw(sOutName, &dsOutName)
 
 				expr.Operator = fns[fmt.Sprintf("%s.%s", dsModName, dsOpName)]
 				expr.Arguments = args
-				expr.OutputName = string(dsOutName)
+				//expr.OutputName = string(dsOutName)
+				expr.OutputNames = outNames
 				expr.Line = int(dsExpr.Line)
 				expr.Function = fn
 				expr.Context = &cxt
@@ -1144,7 +1296,7 @@ func Deserialize (prgrm *[]byte) *cxContext {
 			// Constructing final function
 			fn.Name = string(dsName)
 			fn.Inputs = inps
-			fn.Output = out
+			fn.Outputs = outs
 			fn.Expressions = exprs
 			// Current expression was added in the expression's loop
 			fn.Module = mod

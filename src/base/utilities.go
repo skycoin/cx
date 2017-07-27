@@ -132,28 +132,35 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 			
 			
 			var inps bytes.Buffer
-			//inps.WriteString(" ")
 			for i, inp := range fn.Inputs {
 				if i == len(fn.Inputs) - 1 {
 					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name))
 				} else {
 					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name, ", "))
 				}
-				
 			}
 
-			out := ""
-			if fn.Output != nil {
-				if (fn.Output.Name != "") {
-					out = concat(fn.Output.Name, " ", fn.Output.Typ.Name)
-					inOuts[fn.Output.Name] = fn.Output.Typ.Name
+			var outs bytes.Buffer
+			for i, out := range fn.Outputs {
+				if i == len(fn.Outputs) - 1 {
+					outs.WriteString(concat(out.Name, " ", out.Typ.Name))
 				} else {
-					out = fn.Output.Typ.Name
+					outs.WriteString(concat(out.Name, " ", out.Typ.Name, ", "))
 				}
 			}
+
+			// out := ""
+			// if fn.Output != nil {
+			// 	if (fn.Output.Name != "") {
+			// 		out = concat(fn.Output.Name, " ", fn.Output.Typ.Name)
+			// 		inOuts[fn.Output.Name] = fn.Output.Typ.Name
+			// 	} else {
+			// 		out = fn.Output.Typ.Name
+			// 	}
+			// }
 			
-			fmt.Printf("\t\t%d.- Function: %s (%s) %s\n",
-				j, fn.Name, inps.String(), out)
+			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
+				j, fn.Name, inps.String(), outs.String())
 
 			if withAffs {
 				for i, aff := range fn.GetAffordances() {
@@ -196,9 +203,18 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 					}
 				}
 
+				var outNames bytes.Buffer
+				for i, outName := range expr.OutputNames {
+					if i == len(expr.OutputNames) - 1 {
+						outNames.WriteString(outName)
+					} else {
+						outNames.WriteString(concat(outName, ", "))
+					}
+				}
+
 				fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)\n",
 					k,
-					expr.OutputName,
+					outNames.String(),
 					expr.Operator.Name,
 					args.String())
 

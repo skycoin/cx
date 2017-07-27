@@ -297,12 +297,7 @@ func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
 				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
-				// saveStep(mainCall)
-				// if withDebug {
-				// 	PrintCallStack(cxt.CallStack)
-				// }
 
-				//cal := MakeCall(fn, state, mainCall)
 				mainCall.call(withDebug, nCalls, callCounter)
 			}
 			
@@ -330,37 +325,85 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 		}
 		// popping the stack
 		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
-		outName := call.Operator.Output.Name
+		//outName := call.Operator.Output.Name
+
+
+		outNames := make([]string, len(call.Operator.Outputs))
+		for i, out := range call.Operator.Outputs {
+			outNames[i] = out.Name
+		}
 
 		// this one is for returning result
-		output := call.State[outName]
-		if output == nil {
-			outName := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputName
-			output = call.State[outName]
+		//output := call.State[outName]
+
+		outputs := make([]*cxDefinition, len(call.Operator.Outputs))
+
+		for i, outName := range outNames {
+			//fmt.Printf("%s : %v\n", outName, call.State[outName])
+			//fmt.Println(call.State[outName])
+			outputs[i] = call.State[outName]
+
+			// if call.State[outName] == nil {
+			// 	call.Context.PrintProgram(false)
+			// }
 		}
 
-		// checking if output var has the same type as the required output
-		if output.Typ.Name != call.Operator.Output.Typ.Name {
-			panic(fmt.Sprintf("output var '%s' is of type '%s'; function '%s' requires output of type '%s'",
-				output.Name, output.Typ.Name, call.Operator.Name, call.Operator.Output.Typ.Name))
+		//call.Context.PrintProgram(false)
+
+		// last expression will give us the outputs
+		if len(outputs) == 0 {
+			outNames := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputNames
+			for _, outName := range outNames {
+				outputs = append(outputs, call.State[outName])
+			}
 		}
+
+		for i, out := range outputs {
+			if out.Typ.Name != call.Operator.Outputs[i].Typ.Name {
+				panic(fmt.Sprintf("output var '%s' is of type '%s'; function '%s' requires output of type '%s'",
+					out.Name, out.Typ.Name, call.Operator.Name, call.Operator.Outputs[i].Typ.Name))
+			}
+		}
+		
+		// checking if output var has the same type as the required output
+		// if output.Typ.Name != call.Operator.Output.Typ.Name {
+		// 	panic(fmt.Sprintf("output var '%s' is of type '%s'; function '%s' requires output of type '%s'",
+		// 		output.Name, output.Typ.Name, call.Operator.Name, call.Operator.Output.Typ.Name))
+		// }
 
 		if call.ReturnAddress != nil {
-			returnName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputName
-			
-			if output != nil {
-				def := MakeDefinition(returnName, output.Value, output.Typ)
-				def.Module = call.Module
-				def.Context = call.Context
-				call.ReturnAddress.State[returnName] = def
-			} else {
-				panic(fmt.Sprintf("Function '%s' couldn't return anything", call.Operator.Name))
+			//returnName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputName
+
+			returnNames := make([]string, len(call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames))
+			for i, out := range call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames {
+				returnNames[i] = out
 			}
+
+			if len(outputs) > 0 {
+				//defs := make([]*cxDefinition, len(returnNames))
+				for i, returnName := range returnNames {
+					def := MakeDefinition(returnName, outputs[i].Value, outputs[i].Typ)
+					def.Module = call.Module
+					def.Context = call.Context
+					call.ReturnAddress.State[returnName] = def
+				}
+			} else {
+				panic(fmt.Sprintf("Function '%s' didn't return anything", call.Operator.Name))
+			}
+
+			// if output != nil {
+			// 	def := MakeDefinition(returnName, output.Value, output.Typ)
+			// 	def.Module = call.Module
+			// 	def.Context = call.Context
+			// 	call.ReturnAddress.State[returnName] = def
+			// } else {
+			// 	panic(fmt.Sprintf("Function '%s' couldn't return anything", call.Operator.Name))
+			// }
 
 			call.ReturnAddress.call(withDebug, nCalls, callCounter)
 		} else {
 			// no return address. should only be for main
-			call.Context.Output = output
+			call.Context.Outputs = outputs
 			//fmt.Printf("\nProgram's output:\n%v\n", output.Value)
 		}
 	} else {
@@ -369,12 +412,17 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 		globals := call.Module.Definitions
 		state := call.State
 
+		//fmt.Println(len(state))
+
 		if expr, err := fn.GetExpression(call.Line); err == nil {
 			// getting arguments
-			outName := expr.OutputName
+			//outName := expr.OutputName
 			argsRefs, _ := expr.GetArguments()
+
 			argsCopy := make([]*cxArgument, len(argsRefs))
 			argNames := make([]string, len(argsRefs))
+
+			//call.Context.PrintProgram(false)
 
 			for i, inp := range expr.Operator.Inputs {
 				argNames[i] = inp.Name
@@ -390,6 +438,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 					//argsRefs[i].Value = &val
 					val := (*call.Context.Heap)[offset:offset+size]
 					argsRefs[i].Value = &val
+					continue
 				}
 				if argsRefs[i].Typ.Name == "ident" {
 					lookingFor := string(*argsRefs[i].Value)
@@ -397,6 +446,11 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 					local := state[lookingFor]
 					global := globals[lookingFor]
 
+					//fmt.Println(state)
+
+					// fmt.Printf("Here: %s\n", lookingFor)
+					// fmt.Printf("Here2: %s\n", string(*argsRefs[i].Value))
+					
 					if (local == nil && global == nil) {
 						panic(fmt.Sprintf("'%s' is undefined", lookingFor))
 					}
@@ -420,38 +474,41 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			}
 
 			// checking if native or not
-			var value *cxArgument
+			var values []*cxArgument
 			
 			switch expr.Operator.Name {
 			case "addI32":
-				value = addI32(argsCopy[0], argsCopy[1])
+				//value = addI32(argsCopy[0], argsCopy[1])
+				values = append(values, addI32(argsCopy[0], argsCopy[1]))
 			case "mulI32":
-				value = mulI32(argsCopy[0], argsCopy[1])
+				values = append(values, mulI32(argsCopy[0], argsCopy[1]))
 			case "subI32":
-				value = subI32(argsCopy[0], argsCopy[1])
+				values = append(values, subI32(argsCopy[0], argsCopy[1]))
 			case "divI32":
-				value = divI32(argsCopy[0], argsCopy[1])
+				values = append(values, divI32(argsCopy[0], argsCopy[1]))
 			case "addI64":
-				value = addI64(argsCopy[0], argsCopy[1])
+				values = append(values, addI64(argsCopy[0], argsCopy[1]))
 			case "mulI64":
-				value = mulI64(argsCopy[0], argsCopy[1])
+				values = append(values, mulI64(argsCopy[0], argsCopy[1]))
 			case "subI64":
-				value = subI64(argsCopy[0], argsCopy[1])
+				values = append(values, subI64(argsCopy[0], argsCopy[1]))
 			case "divI64":
-				value = divI64(argsCopy[0], argsCopy[1])
+				values = append(values, divI64(argsCopy[0], argsCopy[1]))
 			case "readAByte":
-				value = readAByte(argsCopy[0], argsCopy[1])
+				values = append(values, readAByte(argsCopy[0], argsCopy[1]))
 			case "writeAByte":
-				value = writeAByte(argsCopy[0], argsCopy[1], argsCopy[2])
+				values = append(values, writeAByte(argsCopy[0], argsCopy[1], argsCopy[2]))
 			case "":
 			}
-			if value != nil {
+			if len(values) > 0 {
 				// operator was a native function
-				def := MakeDefinition(outName, value.Value, value.Typ)
-				def.Module = call.Module
-				def.Context = call.Context
-				
-				call.State[outName] = def
+				for i, outName := range expr.OutputNames {
+					def := MakeDefinition(outName, values[i].Value, values[i].Typ)
+					def.Module = call.Module
+					def.Context = call.Context
+
+					call.State[outName] = def
+				}
 				call.Line++
 				call.call(withDebug, nCalls, callCounter)
 			} else {

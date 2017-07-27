@@ -179,13 +179,13 @@ func (fn *cxFunction) AddOutput (param *cxParameter) *cxFunction {
 	prgrmStep := &cxProgramStep{
 		Action: func(cxt *cxContext) {
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				fn.Output = MakeParameterCopy(stepParam)
+				fn.Outputs = append(fn.Outputs, MakeParameterCopy(stepParam))
 			}
 		},
 	}
 	saveProgramStep(prgrmStep, fn.Context)
-	
-	fn.Output = param
+
+	fn.Outputs = append(fn.Outputs, param)
 	return fn
 }
 
@@ -202,5 +202,10 @@ func (expr *cxExpression) AddArgument (arg *cxArgument) *cxExpression {
 		expr.Context)
 
 	expr.Arguments = append(expr.Arguments, arg)
+	return expr
+}
+
+func (expr *cxExpression) AddOutputName (outName string) *cxExpression {
+	expr.OutputNames = append(expr.OutputNames, outName)
 	return expr
 }

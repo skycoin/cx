@@ -57,7 +57,7 @@ func MakeExpressionCopy (expr *cxExpression, fn *cxFunction, mod *cxModule, cxt 
 	return &cxExpression{
 		Operator: expr.Operator,
 		Arguments: argsCopy,
-		OutputName: expr.OutputName,
+		OutputNames: expr.OutputNames,
 		Line: expr.Line,
 		Function: fn,
 		Module: mod,
@@ -68,9 +68,13 @@ func MakeExpressionCopy (expr *cxExpression, fn *cxFunction, mod *cxModule, cxt 
 func MakeFunctionCopy (fn *cxFunction, mod *cxModule, cxt *cxContext) *cxFunction {
 	newFn := &cxFunction{}
 	inputsCopy := make([]*cxParameter, len(fn.Inputs))
+	outputsCopy := make([]*cxParameter, len(fn.Outputs))
 	exprsCopy := make([]*cxExpression, len(fn.Expressions))
 	for i, inp := range fn.Inputs {
 		inputsCopy[i] = MakeParameterCopy(inp)
+	}
+	for i, out := range fn.Outputs {
+		outputsCopy[i] = MakeParameterCopy(out)
 	}
 	
 	for i, expr := range fn.Expressions {
@@ -79,9 +83,11 @@ func MakeFunctionCopy (fn *cxFunction, mod *cxModule, cxt *cxContext) *cxFunctio
 	
 	newFn.Name = fn.Name
 	newFn.Inputs = inputsCopy
-	if fn.Output != nil {
-		newFn.Output = MakeParameterCopy(fn.Output)
-	}
+	newFn.Outputs = outputsCopy
+	
+	// if fn.Output != nil {
+	// 	newFn.Output = MakeParameterCopy(fn.Output)
+	// }
 	newFn.Expressions = exprsCopy
 	if len(exprsCopy) > 0 {
 		newFn.CurrentExpression = exprsCopy[len(exprsCopy) - 1]
@@ -298,8 +304,8 @@ func MakeParameter (name string, typ *cxType) *cxParameter {
 		Typ: typ}
 }
 
-func MakeExpression (outputName string, fn *cxFunction) *cxExpression {
-	return &cxExpression{Operator: fn, OutputName: outputName}
+func MakeExpression (fn *cxFunction) *cxExpression {
+	return &cxExpression{Operator: fn}
 }
 
 func MakeArgument (value *[]byte, typ *cxType) *cxArgument {

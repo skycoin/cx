@@ -71,74 +71,112 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 	affs := make([]*cxAffordance, 0)
 
 	// The operator for this function doesn't require arguments
-	if len(op.Inputs) < 1 {
-		return affs
-	}
-	if len(expr.Arguments) >= len(op.Inputs) {
-		return affs
-	}
-	
-	fn := expr.Function
-	mod := expr.Module
-	reqType := op.Inputs[len(expr.Arguments)].Typ.Name // Required type for the current op's input
-	defsTypes := make([]string, 0)
-	args := make([]*cxArgument, 0)
-	identType := MakeType("ident")
+	if len(op.Inputs) > 0 && len(expr.Arguments) < len(op.Inputs) {
+		fn := expr.Function
+		mod := expr.Module
+		reqType := op.Inputs[len(expr.Arguments)].Typ.Name // Required type for the current op's input
+		defsTypes := make([]string, 0)
+		args := make([]*cxArgument, 0)
+		identType := MakeType("ident")
 
-	inOutNames := make([]string, len(fn.Inputs) + 1)
-	
-	// Adding inputs and outputs as definitions
-	for i, param := range fn.Inputs {
-		if reqType == param.Typ.Name {
-			inOutNames[i] = param.Name
-			defsTypes = append(defsTypes, param.Typ.Name)
-			identName := []byte(param.Name)
-			args = append(args, &cxArgument{
-				Typ: identType,
-				Value: &identName})
-		}
-	}
-
-	if fn.Output != nil &&
-		fn.Output.Name != "" &&
-		fn.Output.Typ.Name == reqType {
-
-		inOutNames[len(inOutNames)] = fn.Output.Name
-		defsTypes = append(defsTypes, fn.Output.Typ.Name)
-		identName := []byte(fn.Output.Name)
-		args = append(args, &cxArgument{
-			Typ: identType,
-			Value: &identName})
-	}
-
-	// Adding definitions (global vars)
-	for _, def := range mod.Definitions {
-		if reqType == def.Typ.Name {
-			// we could have a var with the same name and type in global and local
-			// contexts. We only want to show 1 affordance for this name
-			notDuplicated := true
-			for _, name := range inOutNames {
-				if name == def.Name {
-					notDuplicated = false
-					break
-				}
-			}
-			
-			if notDuplicated {
-				defsTypes = append(defsTypes, def.Typ.Name)
-				identName := []byte(def.Name)
+		inOutNames := make([]string, len(fn.Inputs) + 1)
+		
+		// Adding inputs and outputs as definitions
+		// inputs
+		for i, param := range fn.Inputs {
+			if reqType == param.Typ.Name {
+				inOutNames[i] = param.Name
+				defsTypes = append(defsTypes, param.Typ.Name)
+				identName := []byte(param.Name)
 				args = append(args, &cxArgument{
 					Typ: identType,
-					Value: &identName})
+					Value: &identName,
+					Offset: -1,
+					Size: -1,})
 			}
+		}
+		
+		// // outputs
+		// for i, param := range fn.Outputs {
+		// 	if reqType == param.Typ.Name {
+		// 		inOutNames[i] = param.Name
+		// 		defsTypes = append(defsTypes, param.Typ.Name)
+		// 		identName := []byte(param.Name)
+		// 		args = append(args, &cxArgument{
+		// 			Typ: identType,
+		// 			Value: &identName,
+		// 			Offset: -1,
+		// 			Size: -1,})
+		// 	}
+		// }
+
+		// Adding definitions (global vars)
+		for _, def := range mod.Definitions {
+			if reqType == def.Typ.Name {
+				// we could have a var with the same name and type in global and local
+				// contexts. We only want to show 1 affordance for this name
+				notDuplicated := true
+				for _, name := range inOutNames {
+					if name == def.Name {
+						notDuplicated = false
+						break
+					}
+				}
+				
+				if notDuplicated {
+					defsTypes = append(defsTypes, def.Typ.Name)
+					identName := []byte(def.Name)
+					args = append(args, &cxArgument{
+						Typ: identType,
+						Value: &identName,
+						Offset: -1,
+						Size: -1,})
+				}
+			}
+		}
+
+		// Adding local definitions
+		for _, ex := range expr.Function.Expressions {
+			
+			if ex == expr {
+				continue
+			}
+
+			if len(ex.Operator.Outputs) != len(ex.OutputNames) ||
+				len(ex.Operator.Inputs) != len(ex.Arguments) {
+				// Then it's not a completed expression
+				continue
+			}
+
+			for i, out := range ex.Operator.Outputs {
+				defsTypes = append(defsTypes, out.Typ.Name)
+				identName := []byte(ex.OutputNames[i])
+				args = append(args, &cxArgument{
+					Typ: identType,
+					Value: &identName,
+					Offset: -1,
+					Size: -1,
+				})
+			}
+		}
+
+		for i, arg := range args {
+			theArg := arg
+			affs = append(affs, &cxAffordance{
+				Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
+				Action: func() {
+					expr.AddArgument(theArg)
+				}})
 		}
 	}
 
-	for i, arg := range args {
+	// Output names affordances
+	if len(expr.OutputNames) < len(expr.Operator.Outputs) {
+		outName := MakeGenSym("var")
 		affs = append(affs, &cxAffordance{
-			Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
+			Description: concat("AddOutputName ", outName),
 			Action: func() {
-				expr.AddArgument(arg)
+				expr.AddOutputName(outName)
 			}})
 	}
 
@@ -157,10 +195,6 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	mod := fn.Module
 	opsNames := make([]string, 0)
 	ops := make([]*cxFunction, 0)
-	//defs := make([]*cxDefinition, 0)
-	// we only need the names and all of them will be of type ident
-	defs := make([]string, 0)
-	defsTypes := make([]*cxType, 0)
 
 	types := make([]string, len(basicTypes))
 	copy(types, basicTypes)
@@ -191,196 +225,262 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 		}
 	}
 
-	//Getting global definitions from current module
-	for defName, def := range mod.Definitions {
-		defs = append(defs, defName)
-		defsTypes = append(defsTypes, def.Typ)
-	}
-
-	//Getting global definitions from imported modules
-	for _, imp := range mod.Imports {
-		for defName, def := range imp.Definitions {
-			defs = append(defs, defName)
-			defsTypes = append(defsTypes, def.Typ)
-		}
-	}
-
-	// Getting input defs
-	// We might need to create an empty definition?
-	onlyLocals := make([]string, 0)
-	onlyLocalsTypes := make([]string, 0)
-	for _, inp := range fn.Inputs {
-		defs = append(defs, inp.Name)
-		onlyLocals = append(onlyLocals, inp.Name)
-		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
-		defsTypes = append(defsTypes, inp.Typ)
-	}
-
-	// Getting output def
-	// *why commenting it* The output definition CAN be an argument to another expr
-	// But it should not be used as an argument
-	if fn.Output != nil {
-		//defs = append(defs, fn.Output.Name)
-		onlyLocals = append(onlyLocals, fn.Output.Name)
-		onlyLocalsTypes = append(onlyLocalsTypes, fn.Output.Typ.Name)
-		//defsTypes = append(defsTypes, fn.Output.Typ)
-	}
-
-	// Getting local definitions
-	for _, expr := range fn.Expressions {
-		cont := true
-		for _, def := range defs {
-			if expr.OutputName == def {
-				cont = false
-			}
-		}
-
-		if cont && expr.OutputName != fn.Output.Name {
-			defs = append(defs, expr.OutputName)
-			onlyLocals = append(onlyLocals, expr.OutputName)
-			onlyLocalsTypes = append(onlyLocalsTypes, expr.Operator.Output.Typ.Name)
-			//defsTypes = append(defsTypes, fn.Output.Typ)
-			defsTypes = append(defsTypes, expr.Operator.Output.Typ)
-		}
-	}
-
-	// Input affs
+	// Inputs
 	for _, typ := range types {
 		affs = append(affs, &cxAffordance{
 			Description: concat("AddInput ", typ),
 			Action: func() {
 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+		}})
+	}
+
+	// Outputs
+	for _, typ := range types {
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddOutput ", typ),
+			Action: func() {
+				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
 			}})
 	}
 
-	// Output. We can only add one output
-	if fn.Output == nil {
-		for _, typ := range types {
-			affs = append(affs, &cxAffordance{
-				Description: concat("AddOutput ", typ),
-				Action: func() {
-					fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
-				}})
-		}
-	}
-
-	ident := MakeType("ident")
-	for opIndex, op := range ops {
+	// Expressions
+	for i, op := range ops {
 		theOp := op // or will keep reference to last op
-
-		inputArgs := make([][]*cxArgument, 0)
-		inputArgsTypes := make([][]string, 0)
-		for _, inp := range theOp.Inputs {
-			args := make([]*cxArgument, 0)
-			argsTypes := make([]string, 0)
-			for j, def := range defs {
-				if defsTypes[j].Name == inp.Typ.Name {
-					arg := MakeArgument(MakeValue(def), ident)
-					//arg := MakeArgument(MakeValue(def), inp.Typ)
-					args = append(args, arg)
-					argsTypes = append(argsTypes, inp.Typ.Name)
-				}
-			}
-			if len(args) > 0 {
-				inputArgs = append(inputArgs, args)
-				inputArgsTypes = append(inputArgsTypes, argsTypes)
-			}
-		}
-
-		numberCombinations := 1
-		for _, args := range inputArgs {
-			numberCombinations = numberCombinations * len(args)
-		}
-
-		finalArguments := make([][]*cxArgument, numberCombinations)
-		finalArgumentsTypes := make([][]string, numberCombinations)
-		for i, args := range inputArgs {
-			for j := 0; j < numberCombinations; j++ {
-				x := 1
-				for _, a := range inputArgs[i+1:] {
-					x = x * len(a)
-				}
-				finalArguments[j] = append(finalArguments[j], args[(j / x) % len(args)])
-				finalArgumentsTypes[j] = append(finalArgumentsTypes[j], inputArgsTypes[i][(j / x) % len(inputArgsTypes[i])])
-			}
-		}
-
-		onlyLocals = append(onlyLocals, MakeGenSym("var"))
-		onlyLocalsTypes = append(onlyLocalsTypes, "ident")
-		//onlyLocals = removeDuplicates(onlyLocals)
-
-		for _, args := range finalArguments {
-			// isArrayFn := false
-			// for _, arrFnName := range arrayFunctions {
-			// 	if op.Name == arrFnName {
-			// 		isArrayFn = true
-			// 	}
-			// }
-			// if isArrayFn {
-			// 	// for any array manipulation function:
-			// 	// first argument will always be the array
-			// 	// second argument will always be the index
-			// 	var index int32
-			// 	var arrByte []byte
-			// 	fmt.Println(finalArgumentsTypes[i])
-			// 	fmt.Println(string(*args[1].Value))
-			// 	encoder.DeserializeAtomic(*args[1].Value, &index)
-			// 	encoder.DeserializeRaw(*args[0].Value, &arrByte)
-			// 	fmt.Printf("Trouble index %d\n", index)
-			// 	if index >= int32(len(*args[0].Value)) {
-			// 		continue
-			// 	}
-			// }
-			
-			
-			for i, local := range onlyLocals {
-				// if a var was initialized of one type, we can't assign another type to this var later on
-				if (onlyLocalsTypes[i] != theOp.Output.Typ.Name &&
-					onlyLocalsTypes[i] != "ident") &&
-					local != fn.Output.Name {
-					continue
-				}
-
-				// skip affordances where the operator's output type doesn't match function's output type
-				// and we're assigning this to the function's output var
-				if local == fn.Output.Name && theOp.Output.Typ.Name != fn.Output.Typ.Name {
-					continue
-				}
-				
-				varExpr := local
-
-				identNames := ""
-				//fmt.Println(args)
-				for i, arg := range args {
-					if i == len(args) - 1 {
-						identNames = concat(identNames, string(*arg.Value))
-					} else {
-						identNames = concat(identNames, string(*arg.Value), ", ")
-					}
-					
-				}
-
-				argsCopy := make([]*cxArgument, len(args))
-				for i, arg := range args {
-					argsCopy[i] = MakeArgumentCopy(arg)
-					//fmt.Println(string(*argsCopy[i].Value))
-				}
-
-				affs = append(affs, &cxAffordance{
-					Description: fmt.Sprintf("AddExpression %s = %s(%s)", varExpr, opsNames[opIndex], identNames),
-					Action: func() {
-						expr := MakeExpression(varExpr, theOp)
-						fn.AddExpression(expr)
-						for _, arg := range argsCopy {
-							expr.AddArgument(arg)
-						}
-					}})
-			}
-		}
+		affs = append(affs, &cxAffordance{
+			Description: concat("AddExpression ", opsNames[i]),
+			Action: func() {
+				fn.AddExpression(MakeExpression(theOp))
+		}})
 	}
-	
+
 	return affs
 }
+
+// func (fn *cxFunction) GetAffordances() []*cxAffordance {
+// 	affs := make([]*cxAffordance, 0)
+
+// 	for _, fnName := range basicFunctions {
+// 		if fnName == fn.Name {
+// 			return affs
+// 		}
+// 	}
+	
+// 	mod := fn.Module
+// 	opsNames := make([]string, 0)
+// 	ops := make([]*cxFunction, 0)
+// 	//defs := make([]*cxDefinition, 0)
+// 	// we only need the names and all of them will be of type ident
+// 	defs := make([]string, 0)
+// 	defsTypes := make([]*cxType, 0)
+
+// 	types := make([]string, len(basicTypes))
+// 	copy(types, basicTypes)
+// 	for name, _ := range mod.Structs {
+// 		types = append(types, name)
+// 	}
+
+// 	// Getting types from imported modules
+// 	for impName, imp := range mod.Imports {
+// 		for _, strct := range imp.Structs {
+// 			types = append(types, concat(impName, ".", strct.Name))
+// 		}
+// 	}
+
+// 	// Getting operators from current module
+// 	for opName, op := range mod.Functions {
+// 		if fn.Name != opName && opName != "main" {
+// 			ops = append(ops, op)
+// 			opsNames = append(opsNames, opName)
+// 		}
+// 	}
+
+// 	// Getting operators from imported modules
+// 	for impName, imp := range mod.Imports {
+// 		for opName, op := range imp.Functions {
+// 			ops = append(ops, op)
+// 			opsNames = append(opsNames, concat(impName, ".", opName))
+// 		}
+// 	}
+
+// 	//Getting global definitions from current module
+// 	for defName, def := range mod.Definitions {
+// 		defs = append(defs, defName)
+// 		defsTypes = append(defsTypes, def.Typ)
+// 	}
+
+// 	//Getting global definitions from imported modules
+// 	for _, imp := range mod.Imports {
+// 		for defName, def := range imp.Definitions {
+// 			defs = append(defs, defName)
+// 			defsTypes = append(defsTypes, def.Typ)
+// 		}
+// 	}
+
+// 	// Getting input defs
+// 	// We might need to create an empty definition?
+// 	onlyLocals := make([]string, 0)
+// 	onlyLocalsTypes := make([]string, 0)
+// 	for _, inp := range fn.Inputs {
+// 		defs = append(defs, inp.Name)
+// 		onlyLocals = append(onlyLocals, inp.Name)
+// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
+// 		defsTypes = append(defsTypes, inp.Typ)
+// 	}
+
+// 	// Getting output def
+// 	// *why commenting it* The output definition CAN be an argument to another expr
+// 	// But it SHOULD NOT be used as an argument
+// 	for _, inp := range fn.Outputs {
+// 		//defs = append(defs, inp.Name)
+// 		onlyLocals = append(onlyLocals, inp.Name)
+// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
+// 		//defsTypes = append(defsTypes, inp.Typ)
+// 	}
+
+// 	// Getting local definitions
+// 	for _, expr := range fn.Expressions {
+		
+
+
+// 		for i, outName := range expr.OutputNames {
+// 			cont := true
+// 			for _, def := range defs {
+// 				if outName == def {
+// 					cont = false
+// 				}
+// 			}
+// 			for _, out := range fn.Outputs {
+// 				if outName == out.Name {
+// 					cont = false
+// 				}
+// 			}
+
+// 			if cont {
+// 				defs = append(defs, outName)
+// 				defsTypes = append(defsTypes, expr.Operator.Outputs[i].Typ)
+// 				onlyLocals = append(onlyLocals, outName)
+// 				onlyLocalsTypes = append(onlyLocalsTypes, expr.Operator.Outputs[i].Typ.Name)
+// 			}
+// 		}
+// 	}
+
+// 	// Input affs
+// 	for _, typ := range types {
+// 		affs = append(affs, &cxAffordance{
+// 			Description: concat("AddInput ", typ),
+// 			Action: func() {
+// 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+// 			}})
+// 	}
+
+// 	// Output affs
+// 	for _, typ := range types {
+// 		affs = append(affs, &cxAffordance{
+// 			Description: concat("AddOutput ", typ),
+// 			Action: func() {
+// 				fn.AddInput(MakeParameter(MakeGenSym("out"), MakeType(typ)))
+// 			}})
+// 	}
+
+// 	ident := MakeType("ident")
+// 	for opIndex, op := range ops {
+// 		theOp := op // or will keep reference to last op
+
+// 		inputArgs := make([][]*cxArgument, 0)
+// 		inputArgsTypes := make([][]string, 0)
+// 		for _, inp := range theOp.Inputs {
+// 			args := make([]*cxArgument, 0)
+// 			argsTypes := make([]string, 0)
+// 			for j, def := range defs {
+// 				if defsTypes[j].Name == inp.Typ.Name {
+// 					arg := MakeArgument(MakeValue(def), ident)
+// 					//arg := MakeArgument(MakeValue(def), inp.Typ)
+// 					args = append(args, arg)
+// 					argsTypes = append(argsTypes, inp.Typ.Name)
+// 				}
+// 			}
+// 			if len(args) > 0 {
+// 				inputArgs = append(inputArgs, args)
+// 				inputArgsTypes = append(inputArgsTypes, argsTypes)
+// 			}
+// 		}
+
+// 		numberCombinations := 1
+// 		for _, args := range inputArgs {
+// 			numberCombinations = numberCombinations * len(args)
+// 		}
+
+// 		finalArguments := make([][]*cxArgument, numberCombinations)
+// 		finalArgumentsTypes := make([][]string, numberCombinations)
+// 		for i, args := range inputArgs {
+// 			for j := 0; j < numberCombinations; j++ {
+// 				x := 1
+// 				for _, a := range inputArgs[i+1:] {
+// 					x = x * len(a)
+// 				}
+// 				finalArguments[j] = append(finalArguments[j], args[(j / x) % len(args)])
+// 				finalArgumentsTypes[j] = append(finalArgumentsTypes[j], inputArgsTypes[i][(j / x) % len(inputArgsTypes[i])])
+// 			}
+// 		}
+
+// 		onlyLocals = append(onlyLocals, MakeGenSym("var"))
+// 		onlyLocalsTypes = append(onlyLocalsTypes, "ident")
+// 		//onlyLocals = removeDuplicates(onlyLocals)
+
+// 		for _, args := range finalArguments {
+// 			for i, local := range onlyLocals {
+// 				// if a var was initialized of one type, we can't assign another type to this var later on
+// 				if (onlyLocalsTypes[i] != theOp.Output.Typ.Name &&
+// 					onlyLocalsTypes[i] != "ident") &&
+// 					local != fn.Output.Name {
+// 					continue
+// 				}
+				
+// 				for _, out := range theOp.Outputs {
+// 					if onlyLocalsTypes
+// 				}
+
+
+// 				// skip affordances where the operator's output type doesn't match function's output type
+// 				// and we're assigning this to the function's output var
+// 				if local == fn.Output.Name && theOp.Output.Typ.Name != fn.Output.Typ.Name {
+// 					continue
+// 				}
+				
+// 				varExpr := local
+
+// 				identNames := ""
+// 				//fmt.Println(args)
+// 				for i, arg := range args {
+// 					if i == len(args) - 1 {
+// 						identNames = concat(identNames, string(*arg.Value))
+// 					} else {
+// 						identNames = concat(identNames, string(*arg.Value), ", ")
+// 					}
+					
+// 				}
+
+// 				argsCopy := make([]*cxArgument, len(args))
+// 				for i, arg := range args {
+// 					argsCopy[i] = MakeArgumentCopy(arg)
+// 					//fmt.Println(string(*argsCopy[i].Value))
+// 				}
+
+// 				affs = append(affs, &cxAffordance{
+// 					Description: fmt.Sprintf("AddExpression %s = %s(%s)", varExpr, opsNames[opIndex], identNames),
+// 					Action: func() {
+// 						expr := MakeExpression(varExpr, theOp)
+// 						fn.AddExpression(expr)
+// 						for _, arg := range argsCopy {
+// 							expr.AddArgument(arg)
+// 						}
+// 					}})
+// 			}
+// 		}
+// 	}
+	
+// 	return affs
+// }
 
 func (mod *cxModule) GetAffordances() []*cxAffordance {
 	affs := make([]*cxAffordance, 0)

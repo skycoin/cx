@@ -1,0 +1,65 @@
+state 0 //
+
+    0 $accept: . input
+    1 input: .  [$end, '\n', KEYWORD]
+
+    $end     reduce using rule 1 (input)
+    '\n'     reduce using rule 1 (input)
+    KEYWORD  reduce using rule 1 (input)
+
+    input  goto state 1
+
+state 1 // [$end]
+
+    0 $accept: input .  [$end]
+    2 input: input . line
+
+    $end     accept
+    '\n'     shift, and goto state 3
+    KEYWORD  shift, and goto state 5
+
+    cxtExpr  goto state 4
+    line     goto state 2
+
+state 2 // '\n' [$end]
+
+    2 input: input line .  [$end, '\n', KEYWORD]
+
+    $end     reduce using rule 2 (input)
+    '\n'     reduce using rule 2 (input)
+    KEYWORD  reduce using rule 2 (input)
+
+state 3 // '\n'
+
+    3 line: '\n' .  [$end, '\n', KEYWORD]
+
+    $end     reduce using rule 3 (line)
+    '\n'     reduce using rule 3 (line)
+    KEYWORD  reduce using rule 3 (line)
+
+state 4 // KEYWORD WORD ['\n']
+
+    4 line: cxtExpr . '\n'
+
+    '\n'  shift, and goto state 7
+
+state 5 // KEYWORD
+
+    5 cxtExpr: KEYWORD . WORD
+
+    WORD  shift, and goto state 6
+
+state 6 // KEYWORD WORD
+
+    5 cxtExpr: KEYWORD WORD .  ['\n']
+
+    '\n'  reduce using rule 5 (cxtExpr)
+
+state 7 // KEYWORD WORD '\n'
+
+    4 line: cxtExpr '\n' .  [$end, '\n', KEYWORD]
+
+    $end     reduce using rule 4 (line)
+    '\n'     reduce using rule 4 (line)
+    KEYWORD  reduce using rule 4 (line)
+

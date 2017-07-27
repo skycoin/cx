@@ -15,7 +15,7 @@ type cxContext struct {
 	Modules map[string]*cxModule
 	CurrentModule *cxModule
 	CallStack *cxCallStack
-	Output *cxDefinition
+	Outputs []*cxDefinition
 	Steps []*cxCallStack
 	ProgramSteps []*cxProgramStep
 	Heap *[]byte
@@ -88,11 +88,10 @@ type cxType struct {
   Functions
 */
 
-
 type cxFunction struct {
 	Name string
 	Inputs []*cxParameter
-	Output *cxParameter
+	Outputs []*cxParameter
 	Expressions []*cxExpression
 
 	CurrentExpression *cxExpression
@@ -108,7 +107,7 @@ type cxParameter struct {
 type cxExpression struct {
 	Operator *cxFunction
 	Arguments []*cxArgument
-	OutputName string
+	OutputNames []string
 	Line int
 	
 	Function *cxFunction

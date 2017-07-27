@@ -137,10 +137,22 @@ func main() {
 		if fn, err := cxt.GetCurrentFunction(); err == nil {
 			fn.AddInput(MakeParameter("n", i32))
 			fn.AddOutput(MakeParameter("out", i32))
+			fn.AddOutput(MakeParameter("error", i32))
 			if addI32, err := cxt.GetFunction("addI32", mod.Name); err == nil {
-				fn.AddExpression(MakeExpression("out", addI32))
+				fn.AddExpression(MakeExpression(addI32))
 
 				if expr, err := cxt.GetCurrentExpression(); err == nil {
+					expr.AddOutputName("out")
+					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
+					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
+				}
+			}
+
+			if mulI32, err := cxt.GetFunction("mulI32", mod.Name); err == nil {
+				fn.AddExpression(MakeExpression(mulI32))
+
+				if expr, err := cxt.GetCurrentExpression(); err == nil {
+					expr.AddOutputName("error")
 					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
 					expr.AddArgument(MakeArgument(MakeValue("n"), ident))
 				}
@@ -152,51 +164,69 @@ func main() {
 		if fn, err := cxt.GetCurrentFunction(); err == nil {
 			fn.AddInput(MakeParameter("x", i32))
 			fn.AddOutput(MakeParameter("fx", i32))
+
+			// if double, err := cxt.GetFunction("double", mod.Name); err == nil {
+			// 	fn.AddExpression(MakeExpression(double))
+
+			// 	if expr, err := cxt.GetCurrentExpression(); err == nil {
+			// 		expr.AddOutputName("fx")
+			// 		expr.AddOutputName("outMain")
+					
+			// 		expr.AddArgument(MakeArgument(MakeValue("myPoint.22y"), ident))
+			// 	}
+			// }
+			
 		}
 		
 		mod.SelectFunction("main")
 
 		if fn, err := cxt.GetCurrentFunction(); err == nil {
-			fn.AddOutput(MakeParameter("outMain", byt))
+			fn.AddOutput(MakeParameter("outMain", i32))
 			
-			if double, err := cxt.GetFunction("double", mod.Name); err == nil {
-				fn.AddExpression(MakeExpression("outMain", double))
-				
-				if expr, err := cxt.GetCurrentExpression(); err == nil {
-					expr.AddArgument(MakeArgument(MakeValue("myPoint.y"), ident))
-				}
-			}
-
-			if writeAByte, err := cxt.GetFunction("writeAByte", mod.Name); err == nil {
-				fn.AddExpression(MakeExpression("foo", writeAByte))
-				
-				if expr, err := cxt.GetCurrentExpression(); err == nil {
-					expr.AddArgument(MakeArgument(MakeValue("bytes"), ident))
-					//expr.AddArgument(MakeArgument(MakeValue("index2"), ident))
-					expr.AddArgument(MakeArgument(&num2, i32))
-					expr.AddArgument(MakeArgument(MakeValue("byte"), ident))
-				}
-			}
-
-			if readAByte, err := cxt.GetFunction("readAByte", mod.Name); err == nil {
-				fn.AddExpression(MakeExpression("outMain", readAByte))
-				
-				if expr, err := cxt.GetCurrentExpression(); err == nil {
-					expr.AddArgument(MakeArgument(MakeValue("bytes"), ident))
-					expr.AddArgument(MakeArgument(MakeValue("index"), ident))
-				}
-			}
-
-			// if solution, err := cxt.GetFunction("solution", mod.Name); err == nil {
-			// 	fn.AddExpression(MakeExpression("outMain", solution))
+			// if double, err := cxt.GetFunction("double", mod.Name); err == nil {
+			// 	fn.AddExpression(MakeExpression(double))
 				
 			// 	if expr, err := cxt.GetCurrentExpression(); err == nil {
-			// 		expr.AddArgument(MakeArgument(MakeValue("num1"), ident))
+			// 		expr.AddOutputName("err")
+			// 		expr.AddOutputName("outMain")
+					
+			// 		expr.AddArgument(MakeArgument(MakeValue("myPoint.y"), ident))
 			// 	}
 			// }
+
+			// if writeAByte, err := cxt.GetFunction("writeAByte", mod.Name); err == nil {
+			// 	fn.AddExpression(MakeExpression(writeAByte))
+				
+			// 	if expr, err := cxt.GetCurrentExpression(); err == nil {
+			// 		expr.AddOutputName("foo")
+			// 		expr.AddArgument(MakeArgument(MakeValue("bytes"), ident))
+			// 		//expr.AddArgument(MakeArgument(MakeValue("index2"), ident))
+			// 		expr.AddArgument(MakeArgument(&num2, i32))
+			// 		expr.AddArgument(MakeArgument(MakeValue("byte"), ident))
+			// 	}
+			// }
+
+			// if readAByte, err := cxt.GetFunction("readAByte", mod.Name); err == nil {
+			// 	fn.AddExpression(MakeExpression(readAByte))
+				
+			// 	if expr, err := cxt.GetCurrentExpression(); err == nil {
+			// 		expr.AddOutputName("outMain")
+			// 		expr.AddArgument(MakeArgument(MakeValue("bytes"), ident))
+			// 		expr.AddArgument(MakeArgument(MakeValue("index"), ident))
+			// 	}
+			// }
+
+			if solution, err := cxt.GetFunction("solution", mod.Name); err == nil {
+				fn.AddExpression(MakeExpression(solution))
+				
+				if expr, err := cxt.GetCurrentExpression(); err == nil {
+					expr.AddOutputName("outMain")
+					expr.AddArgument(MakeArgument(MakeValue("num1"), ident))
+				}
+			}
 		}
 	}
-
+	
 	dataIn := []int32{-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
 	dataOut := make([]int32, len(dataIn))
@@ -204,25 +234,26 @@ func main() {
 		dataOut[i] = in * in * in - (3 * in)
 	}
 
-	cxt.Run(true, -1)
-	sCxt := Serialize(cxt)
+	//cxt.Run(true, -1)
+	//sCxt := Serialize(cxt)
 	//cxt.PrintProgram(false)
-	dsCxt := Deserialize(sCxt)
-	//Deserialize(sCxt)
-	fmt.Println("===================================")
-	dsCxt.Run(true, -1)
-	//dsCxt.PrintProgram(false)
+
+	// dsCxt := Deserialize(sCxt)
+	// //Deserialize(sCxt)
+	// fmt.Println("===================================")
+	// dsCxt.Run(true, -1)
+	// //dsCxt.PrintProgram(false)
 
 
-	cxt.Run(false, -1)
-	fmt.Println(cxt.Output.Value)
-	dsCxt.Run(false, -1)
-	fmt.Println(dsCxt.Output.Value)
+	// cxt.Run(false, -1)
+	// fmt.Println(cxt.Outputs[0].Value)
+	// dsCxt.Run(false, -1)
+	// fmt.Println(dsCxt.Outputs[0].Value)
 
 	
 
-	// evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 5, 2000)
-	// evolvedProgram.PrintProgram(false)
+	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 10, 2000)
+	evolvedProgram.PrintProgram(false)
 
 	
 	// //getting the simulated outputs
