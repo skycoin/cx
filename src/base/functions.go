@@ -5,7 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func addI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func addI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
 		if arg1.Typ.Name != "i32" {
 			panic(fmt.Sprintf("addI32: first argument is type '%s'; expected type 'i32'", arg1.Typ.Name))
@@ -20,10 +20,10 @@ func addI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 + num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i32")}
+	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func subI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func subI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
 		panic("subI32: wrong argument type")
 	}
@@ -35,10 +35,10 @@ func subI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 - num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i32")}
+	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func mulI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func mulI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
 		panic("mulI32: wrong argument type")
 	}
@@ -50,10 +50,10 @@ func mulI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 * num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i32")}
+	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func divI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func divI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
 		panic("divI32: wrong argument type")
 	}
@@ -69,10 +69,10 @@ func divI32 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 / num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i32")}
+	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func addI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func addI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
 		panic("addI64: wrong argument type")
 	}
@@ -84,10 +84,10 @@ func addI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 + num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i64")}
+	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func subI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func subI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
 		panic("subI64: wrong argument type")
 	}
@@ -99,10 +99,10 @@ func subI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 - num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i64")}
+	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func mulI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func mulI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
 		panic("mulI64: wrong argument type")
 	}
@@ -114,10 +114,10 @@ func mulI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 
 	output := encoder.SerializeAtomic(num1 * num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i64")}
+	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func divI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
+func divI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
 		panic("divI64: wrong argument type")
 	}
@@ -133,10 +133,10 @@ func divI64 (arg1 *cxArgument, arg2 *cxArgument) *cxArgument {
 	
 	output := encoder.SerializeAtomic(num1 / num2)
 
-	return &cxArgument{Value: &output, Typ: MakeType("i64")}
+	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func readAByte (arr *cxArgument, idx *cxArgument) *cxArgument {
+func readAByte (arr *CXArgument, idx *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" {
 		panic("readAByte: wrong argument type")
 	}
@@ -151,10 +151,10 @@ func readAByte (arr *cxArgument, idx *cxArgument) *cxArgument {
 	output := make([]byte, 1)
 	output[0] = (*arr.Value)[index]
 
-	return &cxArgument{Value: &output, Typ: MakeType("byte")}
+	return &CXArgument{Value: &output, Typ: MakeType("byte")}
 }
 
-func writeAByte (arr *cxArgument, idx *cxArgument, val *cxArgument) *cxArgument {
+func writeAByte (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" || val.Typ.Name != "byte" {
 		panic("readAByte: wrong argument type")
 	}

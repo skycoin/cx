@@ -1,86 +1,95 @@
 package base
 
 // used for affordances (and maybe other stuff)
-var basicTypes = []string{"byte", "i32", "i64", "[]byte", "[]i32", "[]i64"}
-var basicFunctions = []string{"addI32", "mulI32", "subI32", "divI32",
+var basicTypes = []string{
+	"str", "byte", "i32", "i64", "f32", "f64",
+	"[]byte", "[]i32", "[]i64", "[]f64", "[]f32",
+}
+var basicFunctions = []string{
+	"evolve",
+	"addI32", "mulI32", "subI32", "divI32",
 	"addI64", "mulI64", "subI64", "divI64",
-	"readAByte", "writeAByte"}
-var arrayFunctions = []string{"readAByte", "writeAByte"}
+	"idAI32", "idI32",
+	"readAByte", "writeAByte",
+}
+var arrayFunctions = []string{
+	"readAByte", "writeAByte",
+}
 
 /*
   Context
 */
 
-type cxContext struct {
-	Modules map[string]*cxModule
-	CurrentModule *cxModule
-	CallStack *cxCallStack
-	Outputs []*cxDefinition
-	Steps []*cxCallStack
-	ProgramSteps []*cxProgramStep
+type CXContext struct {
+	Modules map[string]*CXModule
+	CurrentModule *CXModule
+	CallStack *CXCallStack
+	Outputs []*CXDefinition
+	Steps []*CXCallStack
+	ProgramSteps []*CXProgramStep
 	Heap *[]byte
 }
 
-type cxCallStack struct {
-	Calls []*cxCall
+type CXCallStack struct {
+	Calls []*CXCall
 }
 
-type cxCall struct {
-	Operator *cxFunction
+type CXCall struct {
+	Operator *CXFunction
 	Line int
-	State map[string]*cxDefinition
-	ReturnAddress *cxCall
-	Context *cxContext
-	Module *cxModule
+	State map[string]*CXDefinition
+	ReturnAddress *CXCall
+	Context *CXContext
+	Module *CXModule
 }
 
-type cxProgramStep struct {
-	Action func(*cxContext)
+type CXProgramStep struct {
+	Action func(*CXContext)
 }
 
 /*
   Modules
 */
 
-type cxModule struct {
+type CXModule struct {
 	Name string
-	Imports map[string]*cxModule
-	Functions map[string]*cxFunction
-	Structs map[string]*cxStruct
-	Definitions map[string]*cxDefinition
+	Imports map[string]*CXModule
+	Functions map[string]*CXFunction
+	Structs map[string]*CXStruct
+	Definitions map[string]*CXDefinition
 
-	CurrentFunction *cxFunction
-	CurrentStruct *cxStruct
-	Context *cxContext
+	CurrentFunction *CXFunction
+	CurrentStruct *CXStruct
+	Context *CXContext
 }
 
-type cxDefinition struct {
+type CXDefinition struct {
 	Name string
-	Typ *cxType
+	Typ *CXType
 	Value *[]byte
 
-	Module *cxModule
-	Context *cxContext
+	Module *CXModule
+	Context *CXContext
 }
 
 /*
   Structs
 */
 
-type cxStruct struct {
+type CXStruct struct {
 	Name string
-	Fields []*cxField
+	Fields []*CXField
 
-	Module *cxModule
-	Context *cxContext
+	Module *CXModule
+	Context *CXContext
 }
 
-type cxField struct {
+type CXField struct {
 	Name string
-	Typ *cxType
+	Typ *CXType
 }
 
-type cxType struct {
+type CXType struct {
 	Name string
 }
 
@@ -88,41 +97,41 @@ type cxType struct {
   Functions
 */
 
-type cxFunction struct {
+type CXFunction struct {
 	Name string
-	Inputs []*cxParameter
-	Outputs []*cxParameter
-	Expressions []*cxExpression
+	Inputs []*CXParameter
+	Outputs []*CXParameter
+	Expressions []*CXExpression
 
-	CurrentExpression *cxExpression
-	Module *cxModule
-	Context *cxContext
+	CurrentExpression *CXExpression
+	Module *CXModule
+	Context *CXContext
 }
 
-type cxParameter struct {
+type CXParameter struct {
 	Name string
-	Typ *cxType
+	Typ *CXType
 }
 
-type cxExpression struct {
-	Operator *cxFunction
-	Arguments []*cxArgument
+type CXExpression struct {
+	Operator *CXFunction
+	Arguments []*CXArgument
 	OutputNames []string
 	Line int
 	
-	Function *cxFunction
-	Module *cxModule
-	Context *cxContext
+	Function *CXFunction
+	Module *CXModule
+	Context *CXContext
 }
 
-// type cxPointer struct {
-// 	//Typ *cxType // do we need to know the type?
+// type CXPointer struct {
+// 	//Typ *CXType // do we need to know the type?
 // 	Offset int
 // 	Size int
 // }
 
-type cxArgument struct {
-	Typ *cxType
+type CXArgument struct {
+	Typ *CXType
 	Value *[]byte
 	Offset int
 	Size int
@@ -132,7 +141,7 @@ type cxArgument struct {
   Affordances
 */
 
-type cxAffordance struct {
+type CXAffordance struct {
 	Description string
 	Action func()
 }

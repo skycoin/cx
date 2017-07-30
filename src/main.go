@@ -252,8 +252,10 @@ func main() {
 
 	
 
-	evolvedProgram := cxt.EvolveSolution(dataIn, dataOut, 10, 2000)
-	evolvedProgram.PrintProgram(false)
+	//evolvedProgram := cxt.Evolve("solution", dataIn, dataOut, 10, 2, 0.001)
+	//evolvedProgram.PrintProgram(false)
+
+	fmt.Println(dataOut)
 
 	
 	// //getting the simulated outputs
@@ -293,35 +295,33 @@ func main() {
 
 	
 
-	// fmt.Println("Interpreted")
-	// for i := 0; i < 30; i++ {
-	// 	start := time.Now()
+	fmt.Println("Interpreted")
+	for i := 0; i < 30; i++ {
+		start := time.Now()
 
-	// 	for j := 0; j < 10000; j++ {
-	// 		evolvedProgram.ResetTo(0)
-	// 		evolvedProgram.Run(false, -1)
-	// 	}
+		for j := 0; j < 10000; j++ {
+			cxt.ResetTo(0)
+			cxt.Run(false, -1)
+		}
 		
-	// 	elapsed := time.Since(start)
-	// 	//log.Printf("Interpreted took %s", elapsed)
-	// 	fmt.Println(elapsed)
-	// }
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
+	}
 
-	// evolvedProgram.Compile()
+	evolvedProgram.Compile()
 
-	// fmt.Println("Compiled")
-	// for i := 0; i < 30; i++ {
-	// 	start := time.Now()
+	fmt.Println("Compiled")
+	for i := 0; i < 30; i++ {
+		start := time.Now()
 
-	// 	for j := 0; j < 10000; j++ {
-	// 		evolvedProgram.ResetTo(0)
-	// 		evolvedProgram.Run(false, -1)
-	// 	}
+		for j := 0; j < 10000; j++ {
+			cxt.ResetTo(0)
+			cxt.Run(false, -1)
+		}
 		
-	// 	elapsed := time.Since(start)
-	// 	//log.Printf("Compiled took %s", elapsed)
-	// 	fmt.Println(elapsed)
-	// }
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
+	}
 
 	
 

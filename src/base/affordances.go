@@ -4,21 +4,22 @@ import (
 	"fmt"
 	"strconv"
 	"regexp"
+	"bytes"
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func PrintAffordances (affs []*cxAffordance) {
+func PrintAffordances (affs []*CXAffordance) {
 	for _, aff := range affs {
 		fmt.Println(aff.Description)
 	}
 }
 
-func (aff *cxAffordance) ApplyAffordance () {
+func (aff *CXAffordance) ApplyAffordance () {
 	aff.Action()
 }
 
-func FilterAffordances(affs []*cxAffordance, filters ...string) []*cxAffordance {
-	filteredAffs := make([]*cxAffordance, 0)
+func FilterAffordances(affs []*CXAffordance, filters ...string) []*CXAffordance {
+	filteredAffs := make([]*CXAffordance, 0)
 	for _, filter := range filters {
 		//re := regexp.MustCompile(regexp.QuoteMeta(filter))
 		re := regexp.MustCompile(filter)
@@ -28,13 +29,13 @@ func FilterAffordances(affs []*cxAffordance, filters ...string) []*cxAffordance 
 			}
 		}
 		affs = filteredAffs
-		filteredAffs = make([]*cxAffordance, 0)
+		filteredAffs = make([]*CXAffordance, 0)
 	}
 	return affs
 }
 
-func (strct *cxStruct) GetAffordances() []*cxAffordance {
-	affs := make([]*cxAffordance, 0)
+func (strct *CXStruct) GetAffordances() []*CXAffordance {
+	affs := make([]*CXAffordance, 0)
 	mod := strct.Module
 
 	types := make([]string, len(basicTypes))
@@ -56,7 +57,7 @@ func (strct *cxStruct) GetAffordances() []*cxAffordance {
 		fldGensym := MakeGenSym("fld")
 		fldType := MakeType(typ)
 		
-		affs = append(affs, &cxAffordance{
+		affs = append(affs, &CXAffordance{
 			Description: concat("AddField ", fldGensym, " ", typ),
 			Action: func() {
 				strct.AddField(MakeField(fldGensym, fldType))
@@ -66,9 +67,9 @@ func (strct *cxStruct) GetAffordances() []*cxAffordance {
 	return affs
 }
 
-func (expr *cxExpression) GetAffordances() []*cxAffordance {
+func (expr *CXExpression) GetAffordances() []*CXAffordance {
 	op := expr.Operator
-	affs := make([]*cxAffordance, 0)
+	affs := make([]*CXAffordance, 0)
 
 	// The operator for this function doesn't require arguments
 	if len(op.Inputs) > 0 && len(expr.Arguments) < len(op.Inputs) {
@@ -76,7 +77,7 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 		mod := expr.Module
 		reqType := op.Inputs[len(expr.Arguments)].Typ.Name // Required type for the current op's input
 		defsTypes := make([]string, 0)
-		args := make([]*cxArgument, 0)
+		args := make([]*CXArgument, 0)
 		identType := MakeType("ident")
 
 		inOutNames := make([]string, len(fn.Inputs) + 1)
@@ -88,7 +89,7 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 				inOutNames[i] = param.Name
 				defsTypes = append(defsTypes, param.Typ.Name)
 				identName := []byte(param.Name)
-				args = append(args, &cxArgument{
+				args = append(args, &CXArgument{
 					Typ: identType,
 					Value: &identName,
 					Offset: -1,
@@ -102,7 +103,7 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 		// 		inOutNames[i] = param.Name
 		// 		defsTypes = append(defsTypes, param.Typ.Name)
 		// 		identName := []byte(param.Name)
-		// 		args = append(args, &cxArgument{
+		// 		args = append(args, &CXArgument{
 		// 			Typ: identType,
 		// 			Value: &identName,
 		// 			Offset: -1,
@@ -126,7 +127,7 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 				if notDuplicated {
 					defsTypes = append(defsTypes, def.Typ.Name)
 					identName := []byte(def.Name)
-					args = append(args, &cxArgument{
+					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
 						Offset: -1,
@@ -149,20 +150,22 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 			}
 
 			for i, out := range ex.Operator.Outputs {
-				defsTypes = append(defsTypes, out.Typ.Name)
-				identName := []byte(ex.OutputNames[i])
-				args = append(args, &cxArgument{
-					Typ: identType,
-					Value: &identName,
-					Offset: -1,
-					Size: -1,
-				})
+				if reqType == out.Typ.Name {
+					defsTypes = append(defsTypes, out.Typ.Name)
+					identName := []byte(ex.OutputNames[i])
+					args = append(args, &CXArgument{
+						Typ: identType,
+						Value: &identName,
+						Offset: -1,
+						Size: -1,
+					})
+				}
 			}
 		}
 
 		for i, arg := range args {
 			theArg := arg
-			affs = append(affs, &cxAffordance{
+			affs = append(affs, &CXAffordance{
 				Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
 				Action: func() {
 					expr.AddArgument(theArg)
@@ -173,7 +176,7 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 	// Output names affordances
 	if len(expr.OutputNames) < len(expr.Operator.Outputs) {
 		outName := MakeGenSym("var")
-		affs = append(affs, &cxAffordance{
+		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutputName ", outName),
 			Action: func() {
 				expr.AddOutputName(outName)
@@ -183,8 +186,8 @@ func (expr *cxExpression) GetAffordances() []*cxAffordance {
 	return affs
 }
 
-func (fn *cxFunction) GetAffordances() []*cxAffordance {
-	affs := make([]*cxAffordance, 0)
+func (fn *CXFunction) GetAffordances() []*CXAffordance {
+	affs := make([]*CXAffordance, 0)
 
 	for _, fnName := range basicFunctions {
 		if fnName == fn.Name {
@@ -194,7 +197,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	
 	mod := fn.Module
 	opsNames := make([]string, 0)
-	ops := make([]*cxFunction, 0)
+	ops := make([]*CXFunction, 0)
 
 	types := make([]string, len(basicTypes))
 	copy(types, basicTypes)
@@ -227,7 +230,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 
 	// Inputs
 	for _, typ := range types {
-		affs = append(affs, &cxAffordance{
+		affs = append(affs, &CXAffordance{
 			Description: concat("AddInput ", typ),
 			Action: func() {
 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
@@ -236,7 +239,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 
 	// Outputs
 	for _, typ := range types {
-		affs = append(affs, &cxAffordance{
+		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutput ", typ),
 			Action: func() {
 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
@@ -245,9 +248,30 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 
 	// Expressions
 	for i, op := range ops {
+
+		var inps bytes.Buffer
+		for j, inp := range ops[i].Inputs {
+			if j == len(ops[i].Inputs) - 1 {
+				inps.WriteString(concat(inp.Typ.Name))
+			} else {
+				inps.WriteString(concat(inp.Typ.Name, ", "))
+			}
+		}
+
+		var outs bytes.Buffer
+		for j, out := range ops[i].Outputs {
+			if j == len(ops[i].Outputs) - 1 {
+				outs.WriteString(concat(out.Typ.Name))
+			} else {
+				outs.WriteString(concat(out.Typ.Name, ", "))
+			}
+		}
+
+		
 		theOp := op // or will keep reference to last op
-		affs = append(affs, &cxAffordance{
-			Description: concat("AddExpression ", opsNames[i]),
+		affs = append(affs, &CXAffordance{
+			
+			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
 			Action: func() {
 				fn.AddExpression(MakeExpression(theOp))
 		}})
@@ -256,8 +280,8 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	return affs
 }
 
-// func (fn *cxFunction) GetAffordances() []*cxAffordance {
-// 	affs := make([]*cxAffordance, 0)
+// func (fn *CXFunction) GetAffordances() []*CXAffordance {
+// 	affs := make([]*CXAffordance, 0)
 
 // 	for _, fnName := range basicFunctions {
 // 		if fnName == fn.Name {
@@ -267,11 +291,11 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 	
 // 	mod := fn.Module
 // 	opsNames := make([]string, 0)
-// 	ops := make([]*cxFunction, 0)
-// 	//defs := make([]*cxDefinition, 0)
+// 	ops := make([]*CXFunction, 0)
+// 	//defs := make([]*CXDefinition, 0)
 // 	// we only need the names and all of them will be of type ident
 // 	defs := make([]string, 0)
-// 	defsTypes := make([]*cxType, 0)
+// 	defsTypes := make([]*CXType, 0)
 
 // 	types := make([]string, len(basicTypes))
 // 	copy(types, basicTypes)
@@ -366,7 +390,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 
 // 	// Input affs
 // 	for _, typ := range types {
-// 		affs = append(affs, &cxAffordance{
+// 		affs = append(affs, &CXAffordance{
 // 			Description: concat("AddInput ", typ),
 // 			Action: func() {
 // 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
@@ -375,7 +399,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 
 // 	// Output affs
 // 	for _, typ := range types {
-// 		affs = append(affs, &cxAffordance{
+// 		affs = append(affs, &CXAffordance{
 // 			Description: concat("AddOutput ", typ),
 // 			Action: func() {
 // 				fn.AddInput(MakeParameter(MakeGenSym("out"), MakeType(typ)))
@@ -386,10 +410,10 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 // 	for opIndex, op := range ops {
 // 		theOp := op // or will keep reference to last op
 
-// 		inputArgs := make([][]*cxArgument, 0)
+// 		inputArgs := make([][]*CXArgument, 0)
 // 		inputArgsTypes := make([][]string, 0)
 // 		for _, inp := range theOp.Inputs {
-// 			args := make([]*cxArgument, 0)
+// 			args := make([]*CXArgument, 0)
 // 			argsTypes := make([]string, 0)
 // 			for j, def := range defs {
 // 				if defsTypes[j].Name == inp.Typ.Name {
@@ -410,7 +434,7 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 // 			numberCombinations = numberCombinations * len(args)
 // 		}
 
-// 		finalArguments := make([][]*cxArgument, numberCombinations)
+// 		finalArguments := make([][]*CXArgument, numberCombinations)
 // 		finalArgumentsTypes := make([][]string, numberCombinations)
 // 		for i, args := range inputArgs {
 // 			for j := 0; j < numberCombinations; j++ {
@@ -460,13 +484,13 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 					
 // 				}
 
-// 				argsCopy := make([]*cxArgument, len(args))
+// 				argsCopy := make([]*CXArgument, len(args))
 // 				for i, arg := range args {
 // 					argsCopy[i] = MakeArgumentCopy(arg)
 // 					//fmt.Println(string(*argsCopy[i].Value))
 // 				}
 
-// 				affs = append(affs, &cxAffordance{
+// 				affs = append(affs, &CXAffordance{
 // 					Description: fmt.Sprintf("AddExpression %s = %s(%s)", varExpr, opsNames[opIndex], identNames),
 // 					Action: func() {
 // 						expr := MakeExpression(varExpr, theOp)
@@ -482,8 +506,8 @@ func (fn *cxFunction) GetAffordances() []*cxAffordance {
 // 	return affs
 // }
 
-func (mod *cxModule) GetAffordances() []*cxAffordance {
-	affs := make([]*cxAffordance, 0)
+func (mod *CXModule) GetAffordances() []*CXAffordance {
+	affs := make([]*CXAffordance, 0)
 	types := make([]string, len(basicTypes))
 	copy(types, basicTypes)
 
@@ -506,7 +530,7 @@ func (mod *cxModule) GetAffordances() []*cxAffordance {
 		defType := MakeType(typ)
 		value := []byte{}
 		
-		affs = append(affs, &cxAffordance{
+		affs = append(affs, &CXAffordance{
 			Description: concat("AddDefinition ", defGensym, " ", typ),
 			Action: func() {
 				mod.AddDefinition(MakeDefinition(defGensym, &value, defType))
@@ -516,7 +540,7 @@ func (mod *cxModule) GetAffordances() []*cxAffordance {
 	// add imports
 	for _, imp := range mod.Context.Modules {
 		if imp.Name != mod.Name {
-			affs = append(affs, &cxAffordance{
+			affs = append(affs, &CXAffordance{
 				Description: concat("AddImport ", imp.Name),
 				Action: func() {
 					mod.AddImport(imp)
@@ -526,7 +550,7 @@ func (mod *cxModule) GetAffordances() []*cxAffordance {
 	
 	// add function
 	fnGensym := MakeGenSym("fn")
-	affs = append(affs, &cxAffordance{
+	affs = append(affs, &CXAffordance{
 		Description: concat("AddFunction ", fnGensym),
 		Action: func() {
 			mod.AddFunction(MakeFunction(fnGensym))
@@ -534,7 +558,7 @@ func (mod *cxModule) GetAffordances() []*cxAffordance {
 
 	// add structure
 	strctGensym := MakeGenSym("strct")
-	affs = append(affs, &cxAffordance{
+	affs = append(affs, &CXAffordance{
 		Description: concat("AddStruct ", strctGensym),
 		Action: func() {
 			mod.AddStruct(MakeStruct(strctGensym))
@@ -543,11 +567,11 @@ func (mod *cxModule) GetAffordances() []*cxAffordance {
 	return affs
 }
 
-func (cxt *cxContext) GetAffordances() []*cxAffordance {
-	affs := make([]*cxAffordance, 0)
+func (cxt *CXContext) GetAffordances() []*CXAffordance {
+	affs := make([]*CXAffordance, 0)
 	modGensym := MakeGenSym("mod")
 	
-	affs = append(affs, &cxAffordance {
+	affs = append(affs, &CXAffordance {
 		Description: concat("AddModule ", modGensym),
 		Action: func() {
 			cxt.AddModule(MakeModule(modGensym))
@@ -556,7 +580,7 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 	// Select module
 	for _, mod := range cxt.Modules {
 		modName := mod.Name
-		affs = append(affs, &cxAffordance {
+		affs = append(affs, &CXAffordance {
 			Description: concat("SelectModule ", modName),
 			Action: func() {
 				cxt.SelectModule(modName)
@@ -567,7 +591,7 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 	if cxt.CurrentModule != nil {
 		for _, fn := range cxt.CurrentModule.Functions {
 			fnName := fn.Name
-			affs = append(affs, &cxAffordance {
+			affs = append(affs, &CXAffordance {
 				Description: concat("SelectFunction ", fnName),
 				Action: func() {
 					cxt.SelectFunction(fnName)
@@ -579,7 +603,7 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 	if cxt.CurrentModule != nil {
 		for _, strct := range cxt.CurrentModule.Structs {
 			strctName := strct.Name
-			affs = append(affs, &cxAffordance {
+			affs = append(affs, &CXAffordance {
 				Description: concat("SelectStruct ", strctName),
 				Action: func() {
 					cxt.SelectStruct(strctName)
@@ -593,7 +617,7 @@ func (cxt *cxContext) GetAffordances() []*cxAffordance {
 			lineNumber := expr.Line
 			line := strconv.Itoa(lineNumber)
 			
-			affs = append(affs, &cxAffordance {
+			affs = append(affs, &CXAffordance {
 				Description: fmt.Sprintf("SelectExpression (%s.%s) Line # %s", expr.Module.Name, expr.Function.Name, line),
 				Action: func() {
 					cxt.SelectExpression(lineNumber)

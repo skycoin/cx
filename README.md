@@ -787,7 +787,7 @@ certain combination of arguments, we can mutate the function until it
 gives us the same outputs as the previous version of the function, but
 also doesn't raise the exception.
 
-## Byte arrays
+## Byte Arrays
 
 The `byte` type has been added, as well as the `[]byte` type, which
 defines a byte array. Two native functions to manipulate byte
@@ -925,3 +925,261 @@ main 2, outMain: 132, foo: [5 70 100]
 
 main 3, outMain: 5, foo: [5 70 100]
 ```
+
+## Multiple Return Values
+
+The base language can now handle multiple return values for
+functions.
+
+```
+if fn, err := cxt.GetCurrentFunction(); err == nil {
+    fn.AddOutput(MakeParameter("output1", i32))
+    fn.AddOutput(MakeParameter("output2", i32))
+}
+```
+
+The code above adds two int32 output parameters to the function
+currently being modified.
+
+Expressions had to be modified to handle multiple returns. a
+CXExpression struct now holds an array of output names, which are used
+to create the definitions in the stack at runtime. The number of
+output names must be equal to the number of outputs of its operator.
+
+## More Array Types
+
+Arrays of the following types can now be created: byte ([]byte), int32
+([]i32), int64 ([]i64), float32 ([]f32) and float64
+([]f64). Arguments and definitions store the arrays in byte arrays
+internally, and CX uses the type to decode the value when needed.
+
+The evolutionary algorithm was modified to skip array operations while
+mutating a solution, as these frequently resulted in out of bounds
+errors.
+
+## Compilation
+
+Some basic optimizations can be performed on a program by using the
+`Compile` method, e.g.:
+
+```
+cxt.Compile()
+```
+
+The CXContext struct now holds a field representing a heap (a byte
+array) which stores definitions of CX structs' fields. The `Compile`
+method looks for every use of a struct field in the program, and
+stores them in the heap. The found arguments are changed for offsets
+and sizes which can be used to extract the values from the heap. The
+process of accessing a struct's field has a complexity of O(NlogN) if
+being interpreted. After calling `Compile`, the process has a
+complexity of O(1).
+
+A comparison between an interpreted and a compiled program was
+performed by using the following code:
+
+```
+    fmt.Println("Interpreted")
+	for i := 0; i < 30; i++ {
+		start := time.Now()
+
+		for j := 0; j < 10000; j++ {
+			cxt.ResetTo(0)
+			cxt.Run(false, -1)
+		}
+		
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
+	}
+
+	cxt.Compile()
+
+    fmt.Println("Compiled")
+	for i := 0; i < 30; i++ {
+		start := time.Now()
+
+		for j := 0; j < 10000; j++ {
+			cxt.ResetTo(0)
+			cxt.Run(false, -1)
+		}
+		
+		elapsed := time.Since(start)
+		fmt.Println(elapsed)
+	}
+```
+
+The same program was ran 30 times to approximate a normal distribution
+for the measured times, and a hypothesis test was performed.
+
+The average execution time for the interpreted program
+was 4.833766611, with a standard deviation of 0.020860135. The average
+execution time for the compiled program was 4.817615965, with a
+standard deviation of 0.02491697.
+
+A T Student test (I used StatDisk, and it doesn't have Z-test AFAIK,
+but the T test works) reveals that, with a confidence interval of 99%
+(`tc = 2.66`), the interpretated program is statistically slower than
+the compiled program with `t = 2.72`.
+
+## Go-like Language
+
+Nex (a Lex-like lexical analyzer) and Go's Yacc were used to create a
+parser for a go-like language which compiles to CX base. The syntax is
+almost identical to Go's.
+
+### Packages
+
+Packages can be defined by using the keyword `package` followed by an
+identifier. Every CX program needs a main module, so let's define one:
+
+```
+package main
+```
+
+### Global Variables
+
+Global variables can be created by using the `var` keyword. The type
+must always be provided (there's no type inference yet), and they must
+always be initialized for now.
+
+Let's test the evolutionary algorithm to demonstate the current
+capabilities of the go-like programming language. We already have the
+*main* package defined, now we need some global variables defining the
+inputs and the outputs for the supervised training of the solution
+model:
+
+```
+var inps []i32 = []i32{
+	-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+    
+var outs []i32 = []i32{
+	-970, -702, -488, -322, -198, -110, -52, -18, -2,
+	2, 0, -2, 2, 18, 52, 110, 198, 322, 488, 702, 970}
+```
+
+For illustrative purposes, let's also define a some more variables:
+
+```
+var greeting str = "hello"
+var foo i32 = 10
+var bar i32 = 20
+var epsilon f64 = 1.531
+```
+
+### Functions
+
+For debugging and testing reasons, for now we are required to write
+prototypes of the native functions we want to use in a package:
+
+```
+/* Identity functions
+func idAI32 (x []i32) (x []i32) {}
+func idI32 (x i32) (x i32) {}
+*/
+func addI32 (n1 i32, n2 i32) (out i32) {}
+func subI32 (n1 i32, n2 i32) (out i32) {}
+func mulI32 (n1 i32, n2 i32) (out i32) {}
+// func readAByte (arr []byte, idx i32) (byt byte) {}
+func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
+```
+
+The first two functions are identity functions (`f(x) = x`) for the
+i32 and []i32 types. As they would be useless in the evolutionary
+algorithm, let's comment them using a multiple-line comment (/*
+... */). The readAByte function doesn't play well with the
+evolutionary algorithm, so it's commented using a single line comment
+(//).
+
+The remaining native functions are *addI32*, which adds two i32
+arguments, *subI32* which substracts two i32 arguments,
+*mulI32* which multiplies two i32 arguments, and *evolve*
+which takes the name of a function defined in the current package and
+evolves it to fit an array of outputs. It currently outputs an i32
+argument which tells us if the evolution was successful or not. This
+should be changed later for a more successful output (maybe the error
+of the best solution).
+
+### Expressions
+
+The functions above are expressionless functions. Let's now create a
+function with an expression:
+
+```
+func double (num i32) (out i32) {
+	out = addI32(num, num)
+}
+```
+
+This function simply takes a number and doubles it using the *addI32*
+native function. Notice how we had to use the `out` varible to assign
+the result of the addition. As this is the same variable name as the
+output parameter's name, the argument returned by this expression will
+be the output of the `double` function. The assignment operator, for
+now, can either be written as  `=` or `:=`.
+
+### The Solution Function
+
+Before defining the `main` function, we need to define a function to
+be evolved by the evolutionary algorithm (although we could evolve any
+function we wanted):
+
+```
+func solution (n i32) (out i32) {}
+```
+
+This function will take as input each of the integers in the `inps`
+array, and must return the corresponding output integer from the
+`outs` array.
+
+Something interesting to note is that this function could have some
+expressions in it. If we have an idea of an approximate solution to
+the problem we want the evolutionary algorithm to solve, we can
+transform the training stage to a semi supervised learning process
+this way.
+
+The solution we want to arrive to is:
+
+```
+func solution (n i32) (out i32) {
+	double = addI32(n, n)
+	triple = addI32(double, n)
+	square = mulI32(n, n)
+	cubic = mulI32(square, n)
+	out = subI32(cubic, triple)
+}
+```
+
+If we the function above, the evolutionary algorithm should stop at
+iteration 0. If we comment out some of the expressions, but not all,
+the algorithm should converge faster to the correct solution (at least
+most of the time; it could also kill our expressions in the first
+iterations via mutation).
+
+
+### The Main Function
+
+Just like the `main` module, every CX program needs a `main` function,
+which acts as the entry point for the program. For now, any input
+parameters we add to the main function will be ignored. In the case of
+the output parameters, the first one will be used as the program's
+final output.
+
+```
+func main () (outMain i32) {
+	_ := evolve("solution", inps, outs, 20, 10000, epsilon)
+	outMain := solution(30)
+}
+```
+
+In the `main` function above, the first expression calls the `evolve`
+function. We are telling `evolve` to perform the evolutionary process
+on the `solution` function, using the `inps` and `outs` arrays for
+training. We want the solution function to have exactly 20
+expressions, the evolutionary algorithm will run for 10,000 iterations
+and should stop if *epsilon* is reached (if the error is less than
+*epsilon*).
+
+Finally, we test the evolved solution by calling `solution(30)` and
+output this to the program's output variable `outMain` (which is
+`main`'s output paramater).

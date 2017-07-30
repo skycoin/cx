@@ -1,0 +1,48 @@
+package main
+
+var greeting str = "hello"
+var foo i32 = 10
+var bar i32 = 20
+var epsilon f64 = 1.531
+var inps []i32 = []i32{
+	-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+var outs []i32 = []i32{
+	-970, -702, -488, -322, -198, -110, -52, -18, -2,
+	2, 0, -2, 2, 18, 52, 110, 198, 322, 488, 702, 970}
+
+/*
+  Native functions
+*/
+
+/* Identity functions
+func idAI32 (x []i32) (x []i32) {}
+func idI32 (x i32) (x i32) {}
+*/
+func addI32 (n1 i32, n2 i32) (out i32) {}
+func subI32 (n1 i32, n2 i32) (out i32) {}
+func mulI32 (n1 i32, n2 i32) (out i32) {}
+// func readAByte (arr []byte, idx i32) (byt byte) {}
+func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
+
+/*
+  Actual program
+*/
+
+func double (num i32) (out i32) {
+	out = addI32(num, num)
+}
+
+func solution (n i32) (out i32) {
+	double = addI32(n, n)
+	triple = addI32(double, n)
+	square = mulI32(n, n)
+	cubic = mulI32(square, n)
+	//out = subI32(cubic, triple)
+}
+
+func main () (outMain i32) {
+	_ := evolve("solution", inps, outs, 8, 1000, epsilon)
+	//foo2 := addI32(bar, bar)
+	outMain := solution(30)
+}

@@ -7,11 +7,11 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func argsToDefs (args []*cxArgument, names []string, mod *cxModule, cxt *cxContext) (map[string]*cxDefinition, error) {
+func argsToDefs (args []*CXArgument, names []string, mod *CXModule, cxt *CXContext) (map[string]*CXDefinition, error) {
 	if len(names) == len(args) {
-		defs := make(map[string]*cxDefinition, 0)
+		defs := make(map[string]*CXDefinition, 0)
 		for i, arg := range args {
-			defs[names[i]] = &cxDefinition{
+			defs[names[i]] = &CXDefinition{
 				Name: names[i],
 				Typ: arg.Typ,
 				Value: arg.Value,
@@ -25,7 +25,7 @@ func argsToDefs (args []*cxArgument, names []string, mod *cxModule, cxt *cxConte
 	}
 }
 
-func PrintCallStack (callStack []*cxCall) {
+func PrintCallStack (callStack []*CXCall) {
 	for i, call := range callStack {
 		tabs := strings.Repeat("\t", i)
 		fmt.Printf("%s%s %d, ", tabs, call.Operator.Name, call.Line)
@@ -62,6 +62,18 @@ func PrintCallStack (callStack []*cxCall) {
 				} else {
 					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
 				}
+			case "[]i32":
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %v", def.Name, (*def.Value))
+				} else {
+					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+				}
+			case "[]i64":
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %v", def.Name, (*def.Value))
+				} else {
+					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+				}
 			}
 			
 			idx++
@@ -71,7 +83,7 @@ func PrintCallStack (callStack []*cxCall) {
 	fmt.Println()
 }
 
-func callsEqual (call1, call2 *cxCall) bool {
+func callsEqual (call1, call2 *CXCall) bool {
 	if call1.Line != call2.Line ||
 		len(call1.State) != len(call2.State) ||
 		call1.Operator != call2.Operator ||
@@ -89,7 +101,7 @@ func callsEqual (call1, call2 *cxCall) bool {
 	return true
 }
 
-func saveStep (call *cxCall) {
+func saveStep (call *CXCall) {
 	lenCallStack := len(call.Context.CallStack.Calls)
 	newStep := MakeCallStack(lenCallStack)
 
@@ -136,13 +148,13 @@ func saveStep (call *cxCall) {
 }
 
 // It "un-runs" a program
-func (cxt *cxContext) Reset() {
+func (cxt *CXContext) Reset() {
 	cxt.CallStack = MakeCallStack(0)
-	cxt.Steps = make([]*cxCallStack, 0)
+	cxt.Steps = make([]*CXCallStack, 0)
 	//cxt.ProgramSteps = nil
 }
 
-func (cxt *cxContext) ResetTo(stepNumber int) {
+func (cxt *CXContext) ResetTo(stepNumber int) {
 	// if no steps, we do nothing. the program will run from step 0
 	if len(cxt.Steps) > 0 {
 		if stepNumber > len(cxt.Steps) {
@@ -152,7 +164,7 @@ func (cxt *cxContext) ResetTo(stepNumber int) {
 
 		newStep := MakeCallStack(len(reqStep.Calls))
 		
-		var lastCall *cxCall
+		var lastCall *CXCall
 		for j, call := range reqStep.Calls {
 			newCall := MakeCallCopy(call, call.Module, call.Context)
 			newCall.ReturnAddress = lastCall
@@ -197,7 +209,7 @@ func getIdentParts (str string) []string {
 	return identParts
 }
 
-func (cxt *cxContext) Compile () *cxContext {
+func (cxt *CXContext) Compile () *CXContext {
 	heap := *cxt.Heap
 	heapCounter := 0
 
@@ -210,7 +222,7 @@ func (cxt *cxContext) Compile () *cxContext {
 					if arg.Typ.Name == "ident" {
 						identParts := getIdentParts(string(*arg.Value))
 
-						var def *cxDefinition
+						var def *CXDefinition
 						
 						if len(identParts) == 1 {
 							// it's a current module's definition
@@ -230,7 +242,7 @@ func (cxt *cxContext) Compile () *cxContext {
 										def = identMod.Definitions[concat(identParts[1], ".", identParts[2])]
 										
 										defSize := len(*def.Value)
-										heapArg := &cxArgument{
+										heapArg := &CXArgument{
 											Typ: def.Typ,
 											//Value: arg.Value, //irrelevant now
 											Offset: heapCounter,
@@ -253,7 +265,7 @@ func (cxt *cxContext) Compile () *cxContext {
 
 									//defSize := encoder.Size(*def.Value)
 									defSize := len(*def.Value)
-									heapArg := &cxArgument{
+									heapArg := &CXArgument{
 										Typ: def.Typ,
 										//Value: arg.Value, //irrelevant now
 										Offset: heapCounter,
@@ -280,7 +292,7 @@ func (cxt *cxContext) Compile () *cxContext {
 	return cxt
 }
 
-func (cxt *cxContext) Run (withDebug bool, nCalls int) {
+func (cxt *CXContext) Run (withDebug bool, nCalls int) {
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
 	if cxt.CallStack != nil && len(cxt.CallStack.Calls) > 0 {
@@ -293,7 +305,7 @@ func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 		if mod, err := cxt.SelectModule("main"); err == nil {
 			if fn, err := mod.SelectFunction("main"); err == nil {
 				// main function
-				state := make(map[string]*cxDefinition)
+				state := make(map[string]*CXDefinition)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
 				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
@@ -307,7 +319,7 @@ func (cxt *cxContext) Run (withDebug bool, nCalls int) {
 	}
 }
 
-func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
+func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
 		return
@@ -336,7 +348,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 		// this one is for returning result
 		//output := call.State[outName]
 
-		outputs := make([]*cxDefinition, len(call.Operator.Outputs))
+		outputs := make([]*CXDefinition, len(call.Operator.Outputs))
 
 		for i, outName := range outNames {
 			//fmt.Printf("%s : %v\n", outName, call.State[outName])
@@ -380,7 +392,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			}
 
 			if len(outputs) > 0 {
-				//defs := make([]*cxDefinition, len(returnNames))
+				//defs := make([]*CXDefinition, len(returnNames))
 				for i, returnName := range returnNames {
 					def := MakeDefinition(returnName, outputs[i].Value, outputs[i].Typ)
 					def.Module = call.Module
@@ -419,7 +431,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			//outName := expr.OutputName
 			argsRefs, _ := expr.GetArguments()
 
-			argsCopy := make([]*cxArgument, len(argsRefs))
+			argsCopy := make([]*CXArgument, len(argsRefs))
 			argNames := make([]string, len(argsRefs))
 
 			//call.Context.PrintProgram(false)
@@ -474,11 +486,52 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 			}
 
 			// checking if native or not
-			var values []*cxArgument
+			var values []*CXArgument
+			opName := expr.Operator.Name
 			
-			switch expr.Operator.Name {
+			switch opName {
+			case "evolve":
+				fnName := string(*argsCopy[0].Value)
+				
+				var inps []int32
+				int32Size := encoder.Size(int32(0))
+				for i := 0; i < len(*argsCopy[1].Value) / int32Size; i++ {
+					var inp int32
+					from := i * int32Size
+					to := (i + 1) * int32Size
+					encoder.DeserializeRaw((*argsCopy[1].Value)[from:to], &inp)
+					inps = append(inps, inp)
+				}
+				
+				var outs []int32
+				for i := 0; i < len(*argsCopy[2].Value) / int32Size; i++ {
+					var out int32
+					from := i * int32Size
+					to := (i + 1) * int32Size
+					encoder.DeserializeRaw((*argsCopy[2].Value)[from:to], &out)
+					outs = append(outs, out)
+				}
+
+				var numberExprs int32
+				encoder.DeserializeRaw(*argsCopy[3].Value, &numberExprs)
+				var iterations int32
+				encoder.DeserializeRaw(*argsCopy[4].Value, &iterations)
+				var epsilon float64
+				encoder.DeserializeRaw(*argsCopy[5].Value, &epsilon)
+				
+				call.Context.Evolve(fnName, inps, outs, int(numberExprs), int(iterations), epsilon)
+
+				// return 1 for true or something like that
+				val := encoder.Serialize(int32(1))
+				values = append(values, MakeArgument(&val, MakeType("i32")))
+				
+				// identity functions
+			case "idAI32":
+				values = append(values, argsCopy[0])
+			case "idI32":
+				values = append(values, argsCopy[0])
+				// arithmetic functions
 			case "addI32":
-				//value = addI32(argsCopy[0], argsCopy[1])
 				values = append(values, addI32(argsCopy[0], argsCopy[1]))
 			case "mulI32":
 				values = append(values, mulI32(argsCopy[0], argsCopy[1]))
@@ -494,6 +547,7 @@ func (call *cxCall) call(withDebug bool, nCalls, callCounter int) {
 				values = append(values, subI64(argsCopy[0], argsCopy[1]))
 			case "divI64":
 				values = append(values, divI64(argsCopy[0], argsCopy[1]))
+				// array functions
 			case "readAByte":
 				values = append(values, readAByte(argsCopy[0], argsCopy[1]))
 			case "writeAByte":

@@ -1,11 +1,14 @@
 state 0 //
 
     0 $accept: . input
-    1 input: .  [$end, '\n', KEYWORD]
+    1 input: .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
 
     $end     reduce using rule 1 (input)
+    ';'      reduce using rule 1 (input)
     '\n'     reduce using rule 1 (input)
+    FUNC     reduce using rule 1 (input)
     KEYWORD  reduce using rule 1 (input)
+    VAR      reduce using rule 1 (input)
 
     input  goto state 1
 
@@ -15,51 +18,549 @@ state 1 // [$end]
     2 input: input . line
 
     $end     accept
-    '\n'     shift, and goto state 3
-    KEYWORD  shift, and goto state 5
+    ';'      shift, and goto state 11
+    '\n'     shift, and goto state 12
+    FUNC     shift, and goto state 7
+    KEYWORD  shift, and goto state 10
+    VAR      shift, and goto state 6
 
-    cxtExpr  goto state 4
-    line     goto state 2
+    cxtAdder  goto state 5
+    def       goto state 8
+    fun       goto state 9
+    line      goto state 2
+    modAdder  goto state 4
+    term      goto state 3
 
-state 2 // '\n' [$end]
+state 2 // ';' [$end]
 
-    2 input: input line .  [$end, '\n', KEYWORD]
+    2 input: input line .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
 
     $end     reduce using rule 2 (input)
+    ';'      reduce using rule 2 (input)
     '\n'     reduce using rule 2 (input)
+    FUNC     reduce using rule 2 (input)
     KEYWORD  reduce using rule 2 (input)
+    VAR      reduce using rule 2 (input)
 
-state 3 // '\n'
+state 3 // ';' [$end]
 
-    3 line: '\n' .  [$end, '\n', KEYWORD]
+    3 line: term .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
 
     $end     reduce using rule 3 (line)
+    ';'      reduce using rule 3 (line)
     '\n'     reduce using rule 3 (line)
+    FUNC     reduce using rule 3 (line)
     KEYWORD  reduce using rule 3 (line)
+    VAR      reduce using rule 3 (line)
 
-state 4 // KEYWORD WORD ['\n']
+state 4 // VAR IDENT TYP OP FLOAT [$end]
 
-    4 line: cxtExpr . '\n'
-
-    '\n'  shift, and goto state 7
-
-state 5 // KEYWORD
-
-    5 cxtExpr: KEYWORD . WORD
-
-    WORD  shift, and goto state 6
-
-state 6 // KEYWORD WORD
-
-    5 cxtExpr: KEYWORD WORD .  ['\n']
-
-    '\n'  reduce using rule 5 (cxtExpr)
-
-state 7 // KEYWORD WORD '\n'
-
-    4 line: cxtExpr '\n' .  [$end, '\n', KEYWORD]
+    4 line: modAdder .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+   29 modAdder: modAdder . fun
+   30 modAdder: modAdder . def
 
     $end     reduce using rule 4 (line)
+    ';'      reduce using rule 4 (line)
     '\n'     reduce using rule 4 (line)
+    FUNC     shift, and goto state 7
     KEYWORD  reduce using rule 4 (line)
+    VAR      shift, and goto state 6
+
+    def  goto state 57
+    fun  goto state 56
+
+    conflict on FUNC, shift, and goto state 7, reduce using rule 4
+    conflict on VAR, shift, and goto state 6, reduce using rule 4
+
+state 5 // KEYWORD IDENT [$end]
+
+    5 line: cxtAdder .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 5 (line)
+    ';'      reduce using rule 5 (line)
+    '\n'     reduce using rule 5 (line)
+    FUNC     reduce using rule 5 (line)
+    KEYWORD  reduce using rule 5 (line)
+    VAR      reduce using rule 5 (line)
+
+state 6 // VAR
+
+   24 def: VAR . IDENT TYP OP arg
+
+    IDENT  shift, and goto state 52
+
+state 7 // FUNC
+
+   26 fun: FUNC . IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+
+    IDENT  shift, and goto state 14
+
+state 8 // VAR IDENT TYP OP FLOAT [$end]
+
+   27 modAdder: def .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 27 (modAdder)
+    ';'      reduce using rule 27 (modAdder)
+    '\n'     reduce using rule 27 (modAdder)
+    FUNC     reduce using rule 27 (modAdder)
+    KEYWORD  reduce using rule 27 (modAdder)
+    VAR      reduce using rule 27 (modAdder)
+
+state 9 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE [$end]
+
+   28 modAdder: fun .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 28 (modAdder)
+    ';'      reduce using rule 28 (modAdder)
+    '\n'     reduce using rule 28 (modAdder)
+    FUNC     reduce using rule 28 (modAdder)
+    KEYWORD  reduce using rule 28 (modAdder)
+    VAR      reduce using rule 28 (modAdder)
+
+state 10 // KEYWORD
+
+   31 cxtAdder: KEYWORD . IDENT
+
+    IDENT  shift, and goto state 13
+
+state 11 // ';'
+
+   32 term: ';' .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 32 (term)
+    ';'      reduce using rule 32 (term)
+    '\n'     reduce using rule 32 (term)
+    FUNC     reduce using rule 32 (term)
+    KEYWORD  reduce using rule 32 (term)
+    VAR      reduce using rule 32 (term)
+
+state 12 // '\n'
+
+   33 term: '\n' .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 33 (term)
+    ';'      reduce using rule 33 (term)
+    '\n'     reduce using rule 33 (term)
+    FUNC     reduce using rule 33 (term)
+    KEYWORD  reduce using rule 33 (term)
+    VAR      reduce using rule 33 (term)
+
+state 13 // KEYWORD IDENT
+
+   31 cxtAdder: KEYWORD IDENT .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 31 (cxtAdder)
+    ';'      reduce using rule 31 (cxtAdder)
+    '\n'     reduce using rule 31 (cxtAdder)
+    FUNC     reduce using rule 31 (cxtAdder)
+    KEYWORD  reduce using rule 31 (cxtAdder)
+    VAR      reduce using rule 31 (cxtAdder)
+
+state 14 // FUNC IDENT
+
+   26 fun: FUNC IDENT . LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+
+    LPAREN  shift, and goto state 15
+
+state 15 // FUNC IDENT LPAREN
+
+   26 fun: FUNC IDENT LPAREN . params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+    9 params: .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 9 (params)
+    IDENT   shift, and goto state 16
+    RPAREN  reduce using rule 9 (params)
+
+    param   goto state 17
+    params  goto state 18
+
+state 16 // FUNC IDENT LPAREN IDENT
+
+    6 param: IDENT . TYP
+
+    TYP  shift, and goto state 51
+
+state 17 // FUNC IDENT LPAREN IDENT TYP [COMMA]
+
+    7 params: param .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 7 (params)
+    RPAREN  reduce using rule 7 (params)
+
+state 18 // FUNC IDENT LPAREN [COMMA]
+
+    8 params: params . COMMA param
+   26 fun: FUNC IDENT LPAREN params . RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+
+    COMMA   shift, and goto state 19
+    RPAREN  shift, and goto state 20
+
+state 19 // FUNC IDENT LPAREN COMMA
+
+    8 params: params COMMA . param
+
+    IDENT  shift, and goto state 16
+
+    param  goto state 50
+
+state 20 // FUNC IDENT LPAREN RPAREN
+
+   26 fun: FUNC IDENT LPAREN params RPAREN . LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+
+    LPAREN  shift, and goto state 21
+
+state 21 // FUNC IDENT LPAREN RPAREN LPAREN
+
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN . params RPAREN $@1 LBRACE fnAdder RBRACE
+    9 params: .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 9 (params)
+    IDENT   shift, and goto state 16
+    RPAREN  reduce using rule 9 (params)
+
+    param   goto state 17
+    params  goto state 22
+
+state 22 // FUNC IDENT LPAREN RPAREN LPAREN [COMMA]
+
+    8 params: params . COMMA param
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params . RPAREN $@1 LBRACE fnAdder RBRACE
+
+    COMMA   shift, and goto state 19
+    RPAREN  shift, and goto state 23
+
+state 23 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN
+
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN . $@1 LBRACE fnAdder RBRACE
+   25 $@1: .  [LBRACE]
+
+    LBRACE  reduce using rule 25 ($@1)
+
+    $@1  goto state 24
+
+state 24 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN [LBRACE]
+
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 . LBRACE fnAdder RBRACE
+
+    LBRACE  shift, and goto state 25
+
+state 25 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE
+
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE . fnAdder RBRACE
+   21 fnAdder: .  [IDENT, RBRACE]
+
+    IDENT   shift, and goto state 26
+    RBRACE  reduce using rule 21 (fnAdder)
+
+    expr      goto state 28
+    fnAdder   goto state 29
+    outNames  goto state 27
+
+    conflict on IDENT, shift, and goto state 26, reduce using rule 21
+
+state 26 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT
+
+   18 outNames: IDENT .  [COMMA, OP]
+
+    COMMA  reduce using rule 18 (outNames)
+    OP     reduce using rule 18 (outNames)
+
+state 27 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT [COMMA]
+
+   19 outNames: outNames . COMMA IDENT
+   20 expr: outNames . OP IDENT LPAREN args RPAREN
+
+    COMMA  shift, and goto state 32
+    OP     shift, and goto state 33
+
+state 28 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN [IDENT]
+
+   22 fnAdder: expr .  [IDENT, RBRACE]
+
+    IDENT   reduce using rule 22 (fnAdder)
+    RBRACE  reduce using rule 22 (fnAdder)
+
+state 29 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE [RBRACE]
+
+   23 fnAdder: fnAdder . expr
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder . RBRACE
+
+    IDENT   shift, and goto state 26
+    RBRACE  shift, and goto state 31
+
+    expr      goto state 30
+    outNames  goto state 27
+
+state 30 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN
+
+   23 fnAdder: fnAdder expr .  [IDENT, RBRACE]
+
+    IDENT   reduce using rule 23 (fnAdder)
+    RBRACE  reduce using rule 23 (fnAdder)
+
+state 31 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE
+
+   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 26 (fun)
+    ';'      reduce using rule 26 (fun)
+    '\n'     reduce using rule 26 (fun)
+    FUNC     reduce using rule 26 (fun)
+    KEYWORD  reduce using rule 26 (fun)
+    VAR      reduce using rule 26 (fun)
+
+state 32 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA
+
+   19 outNames: outNames COMMA . IDENT
+
+    IDENT  shift, and goto state 49
+
+state 33 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP
+
+   20 expr: outNames OP . IDENT LPAREN args RPAREN
+
+    IDENT  shift, and goto state 34
+
+state 34 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT
+
+   20 expr: outNames OP IDENT . LPAREN args RPAREN
+
+    LPAREN  shift, and goto state 35
+
+state 35 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN
+
+   20 expr: outNames OP IDENT LPAREN . args RPAREN
+   15 args: .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 15 (args)
+    FLOAT   shift, and goto state 37
+    IDENT   shift, and goto state 39
+    INT     shift, and goto state 36
+    RPAREN  reduce using rule 15 (args)
+    STRING  shift, and goto state 38
+    TYP     shift, and goto state 40
+
+    arg   goto state 41
+    args  goto state 42
+
+state 36 // VAR IDENT TYP OP INT
+
+   10 arg: INT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
+
+    $end     reduce using rule 10 (arg)
+    ';'      reduce using rule 10 (arg)
+    '\n'     reduce using rule 10 (arg)
+    COMMA    reduce using rule 10 (arg)
+    FUNC     reduce using rule 10 (arg)
+    KEYWORD  reduce using rule 10 (arg)
+    RBRACE   reduce using rule 10 (arg)
+    RPAREN   reduce using rule 10 (arg)
+    VAR      reduce using rule 10 (arg)
+
+state 37 // VAR IDENT TYP OP FLOAT
+
+   11 arg: FLOAT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
+
+    $end     reduce using rule 11 (arg)
+    ';'      reduce using rule 11 (arg)
+    '\n'     reduce using rule 11 (arg)
+    COMMA    reduce using rule 11 (arg)
+    FUNC     reduce using rule 11 (arg)
+    KEYWORD  reduce using rule 11 (arg)
+    RBRACE   reduce using rule 11 (arg)
+    RPAREN   reduce using rule 11 (arg)
+    VAR      reduce using rule 11 (arg)
+
+state 38 // VAR IDENT TYP OP STRING
+
+   12 arg: STRING .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
+
+    $end     reduce using rule 12 (arg)
+    ';'      reduce using rule 12 (arg)
+    '\n'     reduce using rule 12 (arg)
+    COMMA    reduce using rule 12 (arg)
+    FUNC     reduce using rule 12 (arg)
+    KEYWORD  reduce using rule 12 (arg)
+    RBRACE   reduce using rule 12 (arg)
+    RPAREN   reduce using rule 12 (arg)
+    VAR      reduce using rule 12 (arg)
+
+state 39 // VAR IDENT TYP OP IDENT
+
+   13 arg: IDENT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
+
+    $end     reduce using rule 13 (arg)
+    ';'      reduce using rule 13 (arg)
+    '\n'     reduce using rule 13 (arg)
+    COMMA    reduce using rule 13 (arg)
+    FUNC     reduce using rule 13 (arg)
+    KEYWORD  reduce using rule 13 (arg)
+    RBRACE   reduce using rule 13 (arg)
+    RPAREN   reduce using rule 13 (arg)
+    VAR      reduce using rule 13 (arg)
+
+state 40 // VAR IDENT TYP OP TYP
+
+   14 arg: TYP . LBRACE args RBRACE
+
+    LBRACE  shift, and goto state 46
+
+state 41 // VAR IDENT TYP OP TYP LBRACE FLOAT [COMMA]
+
+   16 args: arg .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 16 (args)
+    RBRACE  reduce using rule 16 (args)
+    RPAREN  reduce using rule 16 (args)
+
+state 42 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN [COMMA]
+
+   17 args: args . COMMA arg
+   20 expr: outNames OP IDENT LPAREN args . RPAREN
+
+    COMMA   shift, and goto state 43
+    RPAREN  shift, and goto state 44
+
+state 43 // VAR IDENT TYP OP TYP LBRACE COMMA
+
+   17 args: args COMMA . arg
+
+    FLOAT   shift, and goto state 37
+    IDENT   shift, and goto state 39
+    INT     shift, and goto state 36
+    STRING  shift, and goto state 38
+    TYP     shift, and goto state 40
+
+    arg  goto state 45
+
+state 44 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN
+
+   20 expr: outNames OP IDENT LPAREN args RPAREN .  [IDENT, RBRACE]
+
+    IDENT   reduce using rule 20 (expr)
+    RBRACE  reduce using rule 20 (expr)
+
+state 45 // VAR IDENT TYP OP TYP LBRACE COMMA FLOAT [COMMA]
+
+   17 args: args COMMA arg .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 17 (args)
+    RBRACE  reduce using rule 17 (args)
+    RPAREN  reduce using rule 17 (args)
+
+state 46 // VAR IDENT TYP OP TYP LBRACE
+
+   14 arg: TYP LBRACE . args RBRACE
+   15 args: .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 15 (args)
+    FLOAT   shift, and goto state 37
+    IDENT   shift, and goto state 39
+    INT     shift, and goto state 36
+    RBRACE  reduce using rule 15 (args)
+    STRING  shift, and goto state 38
+    TYP     shift, and goto state 40
+
+    arg   goto state 41
+    args  goto state 47
+
+state 47 // VAR IDENT TYP OP TYP LBRACE [COMMA]
+
+   14 arg: TYP LBRACE args . RBRACE
+   17 args: args . COMMA arg
+
+    COMMA   shift, and goto state 43
+    RBRACE  shift, and goto state 48
+
+state 48 // VAR IDENT TYP OP TYP LBRACE RBRACE
+
+   14 arg: TYP LBRACE args RBRACE .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
+
+    $end     reduce using rule 14 (arg)
+    ';'      reduce using rule 14 (arg)
+    '\n'     reduce using rule 14 (arg)
+    COMMA    reduce using rule 14 (arg)
+    FUNC     reduce using rule 14 (arg)
+    KEYWORD  reduce using rule 14 (arg)
+    RBRACE   reduce using rule 14 (arg)
+    RPAREN   reduce using rule 14 (arg)
+    VAR      reduce using rule 14 (arg)
+
+state 49 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA IDENT
+
+   19 outNames: outNames COMMA IDENT .  [COMMA, OP]
+
+    COMMA  reduce using rule 19 (outNames)
+    OP     reduce using rule 19 (outNames)
+
+state 50 // FUNC IDENT LPAREN COMMA IDENT TYP [COMMA]
+
+    8 params: params COMMA param .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 8 (params)
+    RPAREN  reduce using rule 8 (params)
+
+state 51 // FUNC IDENT LPAREN IDENT TYP
+
+    6 param: IDENT TYP .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 6 (param)
+    RPAREN  reduce using rule 6 (param)
+
+state 52 // VAR IDENT
+
+   24 def: VAR IDENT . TYP OP arg
+
+    TYP  shift, and goto state 53
+
+state 53 // VAR IDENT TYP
+
+   24 def: VAR IDENT TYP . OP arg
+
+    OP  shift, and goto state 54
+
+state 54 // VAR IDENT TYP OP
+
+   24 def: VAR IDENT TYP OP . arg
+
+    FLOAT   shift, and goto state 37
+    IDENT   shift, and goto state 39
+    INT     shift, and goto state 36
+    STRING  shift, and goto state 38
+    TYP     shift, and goto state 40
+
+    arg  goto state 55
+
+state 55 // VAR IDENT TYP OP FLOAT [$end]
+
+   24 def: VAR IDENT TYP OP arg .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 24 (def)
+    ';'      reduce using rule 24 (def)
+    '\n'     reduce using rule 24 (def)
+    FUNC     reduce using rule 24 (def)
+    KEYWORD  reduce using rule 24 (def)
+    VAR      reduce using rule 24 (def)
+
+state 56 // VAR IDENT TYP OP FLOAT FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE [$end]
+
+   29 modAdder: modAdder fun .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 29 (modAdder)
+    ';'      reduce using rule 29 (modAdder)
+    '\n'     reduce using rule 29 (modAdder)
+    FUNC     reduce using rule 29 (modAdder)
+    KEYWORD  reduce using rule 29 (modAdder)
+    VAR      reduce using rule 29 (modAdder)
+
+state 57 // VAR IDENT TYP OP FLOAT VAR IDENT TYP OP FLOAT [$end]
+
+   30 modAdder: modAdder def .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+
+    $end     reduce using rule 30 (modAdder)
+    ';'      reduce using rule 30 (modAdder)
+    '\n'     reduce using rule 30 (modAdder)
+    FUNC     reduce using rule 30 (modAdder)
+    KEYWORD  reduce using rule 30 (modAdder)
+    VAR      reduce using rule 30 (modAdder)
 

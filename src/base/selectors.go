@@ -4,15 +4,15 @@ import (
 	"errors"
 )
 
-func (cxt *cxContext) SelectModule (name string) (*cxModule, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (cxt *CXContext) SelectModule (name string) (*CXModule, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			cxt.SelectModule(name)
 		},
 	}
 	saveProgramStep(prgrmStep, cxt)
 	
-	var found *cxModule
+	var found *CXModule
 	for _, mod := range cxt.Modules {
 		if mod.Name == name {
 			cxt.CurrentModule = mod
@@ -27,9 +27,9 @@ func (cxt *cxContext) SelectModule (name string) (*cxModule, error) {
 	return found, nil
 }
 
-func (cxt *cxContext) SelectFunction (name string) (*cxFunction, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (cxt *CXContext) SelectFunction (name string) (*CXFunction, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			cxt.SelectFunction(name)
 		},
 	}
@@ -43,9 +43,9 @@ func (cxt *cxContext) SelectFunction (name string) (*cxFunction, error) {
 	}
 }
 
-func (mod *cxModule) SelectFunction (name string) (*cxFunction, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (mod *CXModule) SelectFunction (name string) (*CXFunction, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.SelectFunction(name)
 			}
@@ -53,7 +53,7 @@ func (mod *cxModule) SelectFunction (name string) (*cxFunction, error) {
 	}
 	saveProgramStep(prgrmStep, mod.Context)
 	
-	var found *cxFunction
+	var found *CXFunction
 	for _, fn := range mod.Functions {
 		if fn.Name == name {
 			mod.CurrentFunction = fn
@@ -68,9 +68,9 @@ func (mod *cxModule) SelectFunction (name string) (*cxFunction, error) {
 	return found, nil
 }
 
-func (cxt *cxContext) SelectStruct (name string) (*cxStruct, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (cxt *CXContext) SelectStruct (name string) (*CXStruct, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			cxt.SelectStruct(name)
 		},
 	}
@@ -84,9 +84,9 @@ func (cxt *cxContext) SelectStruct (name string) (*cxStruct, error) {
 	}
 }
 
-func (mod *cxModule) SelectStruct (name string) (*cxStruct, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (mod *CXModule) SelectStruct (name string) (*CXStruct, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.SelectStruct(name)
 			}
@@ -94,7 +94,7 @@ func (mod *cxModule) SelectStruct (name string) (*cxStruct, error) {
 	}
 	saveProgramStep(prgrmStep, mod.Context)
 
-	var found *cxStruct
+	var found *CXStruct
 	for _, strct := range mod.Structs {
 		if strct.Name == name {
 			mod.CurrentStruct = strct
@@ -109,9 +109,9 @@ func (mod *cxModule) SelectStruct (name string) (*cxStruct, error) {
 	return found, nil
 }
 
-func (cxt *cxContext) SelectExpression (line int) (*cxExpression, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (cxt *CXContext) SelectExpression (line int) (*CXExpression, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			cxt.SelectExpression(line)
 		},
 	}
@@ -125,9 +125,9 @@ func (cxt *cxContext) SelectExpression (line int) (*cxExpression, error) {
 	}
 }
 
-func (mod *cxModule) SelectExpression (line int) (*cxExpression, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (mod *CXModule) SelectExpression (line int) (*CXExpression, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.SelectExpression(line)
 			}
@@ -142,9 +142,9 @@ func (mod *cxModule) SelectExpression (line int) (*cxExpression, error) {
 	}
 }
 
-func (fn *cxFunction) SelectExpression (line int) (*cxExpression, error) {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (fn *CXFunction) SelectExpression (line int) (*CXExpression, error) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					fn.SelectExpression(line)

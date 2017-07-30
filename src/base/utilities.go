@@ -57,7 +57,7 @@ func concat (strs ...string) string {
 }
 
 // Just a function to debug for myself. Not meant to be used in production nor meant to be efficient/maintanable
-func (cxt *cxContext) PrintProgram(withAffs bool) {
+func (cxt *CXContext) PrintProgram(withAffs bool) {
 
 	fmt.Println("Context")
 	if withAffs {
@@ -174,6 +174,7 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 				var args bytes.Buffer
 
 				for i, arg := range expr.Arguments {
+					//fmt.Println(string(*arg.Value))
 					typ := ""
 					if arg.Typ.Name == "ident" {
 						if arg.Typ != nil &&
@@ -186,6 +187,25 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 						} else {
 							typ = arg.Typ.Name
 						}
+					} else {
+						typ = arg.Typ.Name
+					}
+
+					argName := string(*arg.Value)
+
+					if arg.Typ.Name != "ident" {
+						switch typ {
+						case "i32":
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%d", val)
+						case "f64":
+							var val float64
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%f", val)
+						default:
+							argName = string(*arg.Value)
+						}
 					}
 
 					if arg.Offset > -1 {
@@ -197,9 +217,9 @@ func (cxt *cxContext) PrintProgram(withAffs bool) {
 					}
 
 					if i == len(expr.Arguments) - 1 {
-						args.WriteString(concat(string(*arg.Value), " ", typ))
+						args.WriteString(concat(argName, " ", typ))
 					} else {
-						args.WriteString(concat(string(*arg.Value), " ", typ, ", "))
+						args.WriteString(concat(argName, " ", typ, ", "))
 					}
 				}
 

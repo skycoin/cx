@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var counter int = 0
@@ -13,13 +12,13 @@ func MakeGenSym (name string) string {
 	return gensym
 }
 
-func MakeContext () *cxContext {
+func MakeContext () *CXContext {
 	heap := make([]byte, 0)
-	newContext := &cxContext{
-		Modules: make(map[string]*cxModule, 0),
+	newContext := &CXContext{
+		Modules: make(map[string]*CXModule, 0),
 		CallStack: MakeCallStack(0),
 		Heap: &heap,
-		Steps: make([]*cxCallStack, 0)}
+		Steps: make([]*CXCallStack, 0)}
 	return newContext
 }
 
@@ -30,17 +29,17 @@ func MakeContext () *cxContext {
 // we'll need it later too, so let's do it
 
 // complete
-func MakeParameterCopy (param *cxParameter) *cxParameter {
-	return &cxParameter{
+func MakeParameterCopy (param *CXParameter) *CXParameter {
+	return &CXParameter{
 		Name: param.Name,
 		Typ: MakeType(param.Typ.Name),
 	}
 }
 
 // complete
-func MakeArgumentCopy (arg *cxArgument) *cxArgument {
+func MakeArgumentCopy (arg *CXArgument) *CXArgument {
 	value := *arg.Value
-	return &cxArgument{
+	return &CXArgument{
 		Typ: MakeType(arg.Typ.Name),
 		Value: &value,
 		Offset: arg.Offset,
@@ -49,12 +48,12 @@ func MakeArgumentCopy (arg *cxArgument) *cxArgument {
 }
 
 // complete
-func MakeExpressionCopy (expr *cxExpression, fn *cxFunction, mod *cxModule, cxt *cxContext) *cxExpression {
-	argsCopy := make([]*cxArgument, len(expr.Arguments))
+func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt *CXContext) *CXExpression {
+	argsCopy := make([]*CXArgument, len(expr.Arguments))
 	for i, arg := range expr.Arguments {
 		argsCopy[i] = MakeArgumentCopy(arg)
 	}
-	return &cxExpression{
+	return &CXExpression{
 		Operator: expr.Operator,
 		Arguments: argsCopy,
 		OutputNames: expr.OutputNames,
@@ -65,11 +64,11 @@ func MakeExpressionCopy (expr *cxExpression, fn *cxFunction, mod *cxModule, cxt 
 	}
 }
 
-func MakeFunctionCopy (fn *cxFunction, mod *cxModule, cxt *cxContext) *cxFunction {
-	newFn := &cxFunction{}
-	inputsCopy := make([]*cxParameter, len(fn.Inputs))
-	outputsCopy := make([]*cxParameter, len(fn.Outputs))
-	exprsCopy := make([]*cxExpression, len(fn.Expressions))
+func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXContext) *CXFunction {
+	newFn := &CXFunction{}
+	inputsCopy := make([]*CXParameter, len(fn.Inputs))
+	outputsCopy := make([]*CXParameter, len(fn.Outputs))
+	exprsCopy := make([]*CXExpression, len(fn.Expressions))
 	for i, inp := range fn.Inputs {
 		inputsCopy[i] = MakeParameterCopy(inp)
 	}
@@ -98,19 +97,19 @@ func MakeFunctionCopy (fn *cxFunction, mod *cxModule, cxt *cxContext) *cxFunctio
 	return newFn
 }
 
-func MakeFieldCopy (fld *cxField) *cxField {
-	return &cxField{
+func MakeFieldCopy (fld *CXField) *CXField {
+	return &CXField{
 		Name: fld.Name,
 		Typ: MakeType(fld.Typ.Name),
 	}
 }
 
-func MakeStructCopy (strct *cxStruct, mod *cxModule, cxt *cxContext) *cxStruct {
-	fldsCopy := make([]*cxField, len(strct.Fields))
+func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXContext) *CXStruct {
+	fldsCopy := make([]*CXField, len(strct.Fields))
 	for i, fld := range strct.Fields {
 		fldsCopy[i] = MakeFieldCopy(fld)
 	}
-	return &cxStruct{
+	return &CXStruct{
 		Name: strct.Name,
 		Fields: fldsCopy,
 		Module: mod,
@@ -118,9 +117,9 @@ func MakeStructCopy (strct *cxStruct, mod *cxModule, cxt *cxContext) *cxStruct {
 	}
 }
 
-func MakeDefinitionCopy (def *cxDefinition, mod *cxModule, cxt *cxContext) *cxDefinition {
+func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXContext) *CXDefinition {
 	valCopy := *def.Value
-	return &cxDefinition{
+	return &CXDefinition{
 		Name: def.Name,
 		Typ: MakeType(def.Typ.Name),
 		Value: &valCopy,
@@ -129,11 +128,11 @@ func MakeDefinitionCopy (def *cxDefinition, mod *cxModule, cxt *cxContext) *cxDe
 	}
 }
 
-func MakeModuleCopy (mod *cxModule, cxt *cxContext) *cxModule {
-	newMod := &cxModule{Context: cxt}
-	fnsCopy := make(map[string]*cxFunction, len(mod.Functions))
-	strctsCopy := make(map[string]*cxStruct, len(mod.Structs))
-	defsCopy := make(map[string]*cxDefinition, len(mod.Definitions))
+func MakeModuleCopy (mod *CXModule, cxt *CXContext) *CXModule {
+	newMod := &CXModule{Context: cxt}
+	fnsCopy := make(map[string]*CXFunction, len(mod.Functions))
+	strctsCopy := make(map[string]*CXStruct, len(mod.Structs))
+	defsCopy := make(map[string]*CXDefinition, len(mod.Definitions))
 	
 	for k, fn := range mod.Functions {
 		fnsCopy[k] = MakeFunctionCopy(fn, newMod, cxt)
@@ -162,14 +161,14 @@ func MakeModuleCopy (mod *cxModule, cxt *cxContext) *cxModule {
 	return newMod
 }
 
-func MakeCallCopy (call *cxCall, mod *cxModule, cxt *cxContext) *cxCall {
-	stateCopy := make(map[string]*cxDefinition)
+func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXContext) *CXCall {
+	stateCopy := make(map[string]*CXDefinition)
 	for k, v := range call.State {
 		//var valueCopy []byte = *v.Value
 		//stateCopy[k] = MakeDefinition(v.Name, &valueCopy, MakeType(v.Typ.Name))
 		stateCopy[k] = MakeDefinitionCopy(v, mod, cxt)
 	}
-	return &cxCall{
+	return &CXCall{
 		Operator: call.Operator,
 		Line: call.Line,
 		State: stateCopy,
@@ -179,18 +178,18 @@ func MakeCallCopy (call *cxCall, mod *cxModule, cxt *cxContext) *cxCall {
 	}
 }
 
-func MakeCallStack (size int) *cxCallStack {
-	return &cxCallStack{
-		Calls: make([]*cxCall, size),
+func MakeCallStack (size int) *CXCallStack {
+	return &CXCallStack{
+		Calls: make([]*CXCall, size),
 	}
 }
 
-func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
-	newContext := &cxContext{}
+func MakeContextCopy (cxt *CXContext, stepNumber int) *CXContext {
+	newContext := &CXContext{}
 
 	newContext.Heap = cxt.Heap
 
-	modsCopy := make(map[string]*cxModule, len(cxt.Modules))
+	modsCopy := make(map[string]*CXModule, len(cxt.Modules))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
 	}
@@ -230,9 +229,9 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 		reqStep := cxt.Steps[stepNumber]
 		newStep := MakeCallStack(len(reqStep.Calls))
 		
-		var lastCall *cxCall
+		var lastCall *CXCall
 		for j, call := range reqStep.Calls {
-			var callModule *cxModule
+			var callModule *CXModule
 			for _, mod := range modsCopy {
 				if call.Module.Name == mod.Name {
 					callModule = mod
@@ -257,59 +256,59 @@ func MakeContextCopy (cxt *cxContext, stepNumber int) *cxContext {
 	return newContext
 }
 
-func MakeModule (name string) *cxModule {
-	return &cxModule{
+func MakeModule (name string) *CXModule {
+	return &CXModule{
 		Name: name,
-		Definitions: make(map[string]*cxDefinition, 0),
-		Imports: make(map[string]*cxModule, 0),
-		Functions: make(map[string]*cxFunction, 0),
-		Structs: make(map[string]*cxStruct, 0),
-		//Instances: make(map[string]*cxInstance, 0),
+		Definitions: make(map[string]*CXDefinition, 0),
+		Imports: make(map[string]*CXModule, 0),
+		Functions: make(map[string]*CXFunction, 0),
+		Structs: make(map[string]*CXStruct, 0),
+		//Instances: make(map[string]*CXInstance, 0),
 	}
 }
 
-// func MakeInstance (name string, typ *cxStruct) *cxInstance {
+// func MakeInstance (name string, typ *CXStruct) *CXInstance {
 // 	// the instance definitions need to be initialized
-// 	defs := make([]*cxDefinition, 0)
+// 	defs := make([]*CXDefinition, 0)
 // 	for _, fld := range typ.Fields {
 // 		byteArray := make([]byte, 0)
-// 		defs = append(defs, &cxDefinition{
+// 		defs = append(defs, &CXDefinition{
 // 			Name: fld.Name,
 // 			Typ: fld.Typ,
 // 			Value: &byteArray,
 // 		})
 // 	}
 	
-// 	return &cxInstance{
+// 	return &CXInstance{
 // 		Name: name,
 // 		Typ: MakeType(typ.Name),
 // 		Definitions: defs,
 // 	}
 // }
 
-func MakeDefinition (name string, value *[]byte, typ *cxType) *cxDefinition {
-	return &cxDefinition{Name: name, Typ: typ, Value: value}
+func MakeDefinition (name string, value *[]byte, typ *CXType) *CXDefinition {
+	return &CXDefinition{Name: name, Typ: typ, Value: value}
 }
 
-func MakeField (name string, typ *cxType) *cxField {
-	return &cxField{Name: name, Typ: typ}
+func MakeField (name string, typ *CXType) *CXField {
+	return &CXField{Name: name, Typ: typ}
 }
 
-func MakeStruct (name string) *cxStruct {
-	return &cxStruct{Name: name}
+func MakeStruct (name string) *CXStruct {
+	return &CXStruct{Name: name}
 }
 
-func MakeParameter (name string, typ *cxType) *cxParameter {
-	return &cxParameter{Name: name,
+func MakeParameter (name string, typ *CXType) *CXParameter {
+	return &CXParameter{Name: name,
 		Typ: typ}
 }
 
-func MakeExpression (fn *cxFunction) *cxExpression {
-	return &cxExpression{Operator: fn}
+func MakeExpression (fn *CXFunction) *CXExpression {
+	return &CXExpression{Operator: fn}
 }
 
-func MakeArgument (value *[]byte, typ *cxType) *cxArgument {
-	return &cxArgument{
+func MakeArgument (value *[]byte, typ *CXType) *CXArgument {
+	return &CXArgument{
 		Typ: typ,
 		Value: value,
 		Offset: -1,
@@ -317,14 +316,14 @@ func MakeArgument (value *[]byte, typ *cxType) *cxArgument {
 	}
 }
 
-func MakeType (name string) *cxType {
-	return &cxType{
+func MakeType (name string) *CXType {
+	return &CXType{
 		Name: name,
 	}
 }
 
-func MakeFunction (name string) *cxFunction {
-	return &cxFunction{Name: name}
+func MakeFunction (name string) *CXFunction {
+	return &CXFunction{Name: name}
 }
 
 func MakeValue (value string) *[]byte {
@@ -332,8 +331,8 @@ func MakeValue (value string) *[]byte {
 	return &byts
 }
 
-func MakeCall (op *cxFunction, state map[string]*cxDefinition, ret *cxCall, mod *cxModule, cxt *cxContext) *cxCall {
-	return &cxCall{
+func MakeCall (op *CXFunction, state map[string]*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXContext) *CXCall {
+	return &CXCall{
 		Operator: op,
 		Line: 0,
 		State: state,
@@ -342,8 +341,8 @@ func MakeCall (op *cxFunction, state map[string]*cxDefinition, ret *cxCall, mod 
 		Context: cxt,}
 }
 
-func MakeAffordance (desc string, action func()) *cxAffordance {
-	return &cxAffordance{
+func MakeAffordance (desc string, action func()) *CXAffordance {
+	return &CXAffordance{
 		Description: desc,
 		Action: action,
 	}

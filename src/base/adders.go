@@ -4,14 +4,14 @@ import (
 
 )
 
-func saveProgramStep (prgrmStep *cxProgramStep, cxt *cxContext) {
+func saveProgramStep (prgrmStep *CXProgramStep, cxt *CXContext) {
 	cxt.ProgramSteps = append(cxt.ProgramSteps, prgrmStep)
 }
 
-func (cxt *cxContext) AddModule (mod *cxModule) *cxContext {
+func (cxt *CXContext) AddModule (mod *CXModule) *CXContext {
 	stepMod := MakeModuleCopy(mod, cxt)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			newStep := MakeModuleCopy(stepMod, cxt)
 			cxt.CurrentModule = newStep
 			cxt.Modules[newStep.Name] = newStep
@@ -25,7 +25,7 @@ func (cxt *cxContext) AddModule (mod *cxModule) *cxContext {
 	return cxt
 }
 
-func (mod *cxModule) AddDefinition (def *cxDefinition) *cxModule {
+func (mod *CXModule) AddDefinition (def *CXDefinition) *CXModule {
 	// identParts := getIdentParts(def.Name)
 	// // we're ignoring nested structs for now
 	// if len(identParts) == 2 {
@@ -33,8 +33,8 @@ func (mod *cxModule) AddDefinition (def *cxDefinition) *cxModule {
 	// }
 	
 	stepDef := MakeDefinitionCopy(def, mod, mod.Context)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				newDef := MakeDefinitionCopy(stepDef, mod, cxt)
 				mod.Definitions[newDef.Name] = newDef
@@ -49,10 +49,10 @@ func (mod *cxModule) AddDefinition (def *cxDefinition) *cxModule {
 	return mod
 }
 
-func (mod *cxModule) AddFunction (fn *cxFunction) *cxModule {
+func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	stepFn := MakeFunctionCopy(fn, mod, mod.Context)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				newFn := MakeFunctionCopy(stepFn, mod, cxt)
 				mod.CurrentFunction = newFn
@@ -69,10 +69,10 @@ func (mod *cxModule) AddFunction (fn *cxFunction) *cxModule {
 	return mod
 }
 
-func (mod *cxModule) AddStruct (strct *cxStruct) *cxModule {
+func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
 	stepStrct := MakeStructCopy(strct, mod, mod.Context)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				newStrct := MakeStructCopy(stepStrct, mod, cxt)
 				mod.CurrentStruct = newStrct
@@ -90,9 +90,9 @@ func (mod *cxModule) AddStruct (strct *cxStruct) *cxModule {
 	return mod
 }
 
-func (mod *cxModule) AddImport (imp *cxModule) *cxModule {
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.Imports[imp.Name] = cxt.Modules[imp.Name]
 			}
@@ -104,10 +104,10 @@ func (mod *cxModule) AddImport (imp *cxModule) *cxModule {
 	return mod
 }
 
-func (strct *cxStruct) AddField (fld *cxField) *cxStruct {
+func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
 	stepFld := MakeFieldCopy(fld)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			newFld := MakeFieldCopy(stepFld)
 			if strct, err := cxt.GetCurrentStruct(); err == nil {
 				strct.Fields = append(strct.Fields, newFld)
@@ -120,14 +120,14 @@ func (strct *cxStruct) AddField (fld *cxField) *cxStruct {
 	return strct
 }
 
-func (fn *cxFunction) AddExpression (expr *cxExpression) *cxFunction {
+func (fn *CXFunction) AddExpression (expr *CXExpression) *CXFunction {
 	stepExpr := MakeExpressionCopy(expr, fn, fn.Module, fn.Context)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					newExpr := MakeExpressionCopy(stepExpr, fn, mod, cxt)
-					var exprOperator *cxFunction
+					var exprOperator *CXFunction
 					for _, mod := range cxt.Modules {
 						for _, fn := range mod.Functions {
 							if fn.Name == expr.Operator.Name &&
@@ -159,10 +159,10 @@ func (fn *cxFunction) AddExpression (expr *cxExpression) *cxFunction {
 	return fn
 }
 
-func (fn *cxFunction) AddInput (param *cxParameter) *cxFunction {
+func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
 	stepParam := MakeParameterCopy(param)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				fn.Inputs = append(fn.Inputs, MakeParameterCopy(stepParam))
 			}
@@ -174,10 +174,10 @@ func (fn *cxFunction) AddInput (param *cxParameter) *cxFunction {
 	return fn
 }
 
-func (fn *cxFunction) AddOutput (param *cxParameter) *cxFunction {
+func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
 	stepParam := MakeParameterCopy(param)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				fn.Outputs = append(fn.Outputs, MakeParameterCopy(stepParam))
 			}
@@ -189,10 +189,10 @@ func (fn *cxFunction) AddOutput (param *cxParameter) *cxFunction {
 	return fn
 }
 
-func (expr *cxExpression) AddArgument (arg *cxArgument) *cxExpression {
+func (expr *CXExpression) AddArgument (arg *CXArgument) *CXExpression {
 	stepArg := MakeArgumentCopy(arg)
-	prgrmStep := &cxProgramStep{
-		Action: func(cxt *cxContext) {
+	prgrmStep := &CXProgramStep{
+		Action: func(cxt *CXContext) {
 			if expr, err := cxt.GetCurrentExpression(); err == nil {
 				expr.Arguments = append(expr.Arguments, MakeArgumentCopy(stepArg))
 			}
@@ -205,7 +205,7 @@ func (expr *cxExpression) AddArgument (arg *cxArgument) *cxExpression {
 	return expr
 }
 
-func (expr *cxExpression) AddOutputName (outName string) *cxExpression {
+func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	expr.OutputNames = append(expr.OutputNames, outName)
 	return expr
 }

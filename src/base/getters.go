@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-func (cxt *cxContext) GetCurrentModule () (*cxModule, error) {
+func (cxt *CXContext) GetCurrentModule () (*CXModule, error) {
 	if cxt.CurrentModule != nil {
 		return cxt.CurrentModule, nil
 	} else {
@@ -14,7 +14,7 @@ func (cxt *cxContext) GetCurrentModule () (*cxModule, error) {
 	
 }
 
-func (cxt *cxContext) GetCurrentStruct () (*cxStruct, error) {
+func (cxt *CXContext) GetCurrentStruct () (*CXStruct, error) {
 	if cxt.CurrentModule != nil &&
 		cxt.CurrentModule.CurrentStruct != nil {
 		return cxt.CurrentModule.CurrentStruct, nil
@@ -24,7 +24,7 @@ func (cxt *cxContext) GetCurrentStruct () (*cxStruct, error) {
 	
 }
 
-func (mod *cxModule) GetCurrentStruct () (*cxStruct, error) {
+func (mod *CXModule) GetCurrentStruct () (*CXStruct, error) {
 	if mod.CurrentStruct != nil {
 		return mod.CurrentStruct, nil
 	} else {
@@ -33,7 +33,7 @@ func (mod *cxModule) GetCurrentStruct () (*cxStruct, error) {
 	
 }
 
-func (cxt *cxContext) GetCurrentFunction () (*cxFunction, error) {
+func (cxt *CXContext) GetCurrentFunction () (*CXFunction, error) {
 	if cxt.CurrentModule != nil &&
 		cxt.CurrentModule.CurrentFunction != nil {
 		return cxt.CurrentModule.CurrentFunction, nil
@@ -43,7 +43,7 @@ func (cxt *cxContext) GetCurrentFunction () (*cxFunction, error) {
 	
 }
 
-func (mod *cxModule) GetCurrentFunction () (*cxFunction, error) {
+func (mod *CXModule) GetCurrentFunction () (*CXFunction, error) {
 	if mod.CurrentFunction != nil {
 		return mod.CurrentFunction, nil
 	} else {
@@ -51,7 +51,7 @@ func (mod *cxModule) GetCurrentFunction () (*cxFunction, error) {
 	}
 }
 
-func (cxt *cxContext) GetCurrentExpression () (*cxExpression, error) {
+func (cxt *CXContext) GetCurrentExpression () (*CXExpression, error) {
 	if cxt.CurrentModule != nil &&
 		cxt.CurrentModule.CurrentFunction != nil &&
 		cxt.CurrentModule.CurrentFunction.CurrentExpression != nil {
@@ -63,7 +63,7 @@ func (cxt *cxContext) GetCurrentExpression () (*cxExpression, error) {
 
 // no, we're always going to return something
 // if nil, we return the first expression, unless it's empty
-func (fn *cxFunction) GetCurrentExpression () (*cxExpression, error) {
+func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	if fn.CurrentExpression != nil {
 		return fn.CurrentExpression, nil
 	} else if fn.Expressions != nil {
@@ -73,7 +73,7 @@ func (fn *cxFunction) GetCurrentExpression () (*cxExpression, error) {
 	}
 }
 
-func (cxt *cxContext) GetCurrentDefinitions () (map[string]*cxDefinition, error) {
+func (cxt *CXContext) GetCurrentDefinitions () (map[string]*CXDefinition, error) {
 	mod, err := cxt.GetCurrentModule()
 
 	if err == nil {
@@ -83,11 +83,11 @@ func (cxt *cxContext) GetCurrentDefinitions () (map[string]*cxDefinition, error)
 	}
 }
 
-func (mod *cxModule) GetCurrentDefinitions () (map[string]*cxDefinition, error) {
+func (mod *CXModule) GetCurrentDefinitions () (map[string]*CXDefinition, error) {
 	return mod.GetDefinitions()
 }
 
-func (mod *cxModule) GetDefinitions () (map[string]*cxDefinition, error) {
+func (mod *CXModule) GetDefinitions () (map[string]*CXDefinition, error) {
 	if mod.Definitions != nil {
 		return mod.Definitions, nil
 	} else {
@@ -95,7 +95,7 @@ func (mod *cxModule) GetDefinitions () (map[string]*cxDefinition, error) {
 	}
 }
 
-func (cxt *cxContext) GetDefinition (name string) (*cxDefinition, error) {
+func (cxt *CXContext) GetDefinition (name string) (*CXDefinition, error) {
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		found := mod.Definitions[name]
 		if found == nil {
@@ -108,7 +108,7 @@ func (cxt *cxContext) GetDefinition (name string) (*cxDefinition, error) {
 	}
 }
 
-func (strct *cxStruct) GetFields() ([]*cxField, error) {
+func (strct *CXStruct) GetFields() ([]*CXField, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
@@ -116,10 +116,10 @@ func (strct *cxStruct) GetFields() ([]*cxField, error) {
 	}
 }
 
-func (mod *cxModule) GetFunctions() ([]*cxFunction, error) {
+func (mod *CXModule) GetFunctions() ([]*CXFunction, error) {
 	// going from map to slice
 	if mod.Functions != nil {
-		funcs := make([]*cxFunction, len(mod.Functions))
+		funcs := make([]*CXFunction, len(mod.Functions))
 		i := 0
 		for _, v := range mod.Functions {
 			funcs[i] = v
@@ -131,7 +131,7 @@ func (mod *cxModule) GetFunctions() ([]*cxFunction, error) {
 	}
 }
 
-func (cxt *cxContext) GetModule(modName string) (*cxModule, error) {
+func (cxt *CXContext) GetModule(modName string) (*CXModule, error) {
 	if cxt.Modules != nil {
 		return cxt.Modules[modName], nil
 	} else {
@@ -139,15 +139,15 @@ func (cxt *cxContext) GetModule(modName string) (*cxModule, error) {
 	}
 }
 
-func (cxt *cxContext) GetFunction(fnName string, modName string) (*cxFunction, error) {
-	if cxt.Modules != nil && cxt.Modules[modName].Functions != nil {
+func (cxt *CXContext) GetFunction(fnName string, modName string) (*CXFunction, error) {
+	if cxt.Modules != nil && cxt.Modules[modName].Functions != nil && cxt.Modules[modName].Functions[fnName] != nil {
 		return cxt.Modules[modName].Functions[fnName], nil
 	} else {
 		return nil, errors.New(fmt.Sprintf("Function '%s' not found in module '%s'", fnName, modName))
 	}
 }
 
-func (fn *cxFunction) GetExpressions() ([]*cxExpression, error) {
+func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
 	} else {
@@ -155,7 +155,7 @@ func (fn *cxFunction) GetExpressions() ([]*cxExpression, error) {
 	}
 }
 
-func (fn *cxFunction) GetExpression(line int) (*cxExpression, error) {
+func (fn *CXFunction) GetExpression(line int) (*CXExpression, error) {
 	if fn.Expressions != nil {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
@@ -168,7 +168,7 @@ func (fn *cxFunction) GetExpression(line int) (*cxExpression, error) {
 	}
 }
 
-func (expr *cxExpression) GetArguments() ([]*cxArgument, error) {
+func (expr *CXExpression) GetArguments() ([]*CXArgument, error) {
 	if expr.Arguments != nil {
 		return expr.Arguments, nil
 	} else {
