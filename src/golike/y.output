@@ -1,566 +1,1463 @@
 state 0 //
 
-    0 $accept: . input
-    1 input: .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+    0 $accept: . lines
+    1 lines: .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-    $end     reduce using rule 1 (input)
-    ';'      reduce using rule 1 (input)
-    '\n'     reduce using rule 1 (input)
-    FUNC     reduce using rule 1 (input)
-    KEYWORD  reduce using rule 1 (input)
-    VAR      reduce using rule 1 (input)
+    $end        reduce using rule 1 (lines)
+    FUNC        reduce using rule 1 (lines)
+    PACKAGE     reduce using rule 1 (lines)
+    TYPSTRUCT   reduce using rule 1 (lines)
+    UNEXPECTED  reduce using rule 1 (lines)
+    VAR         reduce using rule 1 (lines)
 
-    input  goto state 1
+    lines  goto state 1
 
 state 1 // [$end]
 
-    0 $accept: input .  [$end]
-    2 input: input . line
+    0 $accept: lines .  [$end]
+    2 lines: lines . line
 
-    $end     accept
-    ';'      shift, and goto state 11
-    '\n'     shift, and goto state 12
-    FUNC     shift, and goto state 7
-    KEYWORD  shift, and goto state 10
-    VAR      shift, and goto state 6
+    $end        accept
+    FUNC        shift, and goto state 11
+    PACKAGE     shift, and goto state 8
+    TYPSTRUCT   shift, and goto state 10
+    UNEXPECTED  shift, and goto state 7
+    VAR         shift, and goto state 9
 
-    cxtAdder  goto state 5
-    def       goto state 8
-    fun       goto state 9
-    line      goto state 2
-    modAdder  goto state 4
-    term      goto state 3
+    defDecl      goto state 3
+    funcDecl     goto state 6
+    line         goto state 2
+    packageDecl  goto state 5
+    structDecl   goto state 4
 
-state 2 // ';' [$end]
+state 2 // UNEXPECTED [$end]
 
-    2 input: input line .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+    2 lines: lines line .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-    $end     reduce using rule 2 (input)
-    ';'      reduce using rule 2 (input)
-    '\n'     reduce using rule 2 (input)
-    FUNC     reduce using rule 2 (input)
-    KEYWORD  reduce using rule 2 (input)
-    VAR      reduce using rule 2 (input)
+    $end        reduce using rule 2 (lines)
+    FUNC        reduce using rule 2 (lines)
+    PACKAGE     reduce using rule 2 (lines)
+    TYPSTRUCT   reduce using rule 2 (lines)
+    UNEXPECTED  reduce using rule 2 (lines)
+    VAR         reduce using rule 2 (lines)
 
-state 3 // ';' [$end]
+state 3 // VAR IDENT BYTE [$end]
 
-    3 line: term .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+    3 line: defDecl .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-    $end     reduce using rule 3 (line)
-    ';'      reduce using rule 3 (line)
-    '\n'     reduce using rule 3 (line)
-    FUNC     reduce using rule 3 (line)
-    KEYWORD  reduce using rule 3 (line)
-    VAR      reduce using rule 3 (line)
+    $end        reduce using rule 3 (line)
+    FUNC        reduce using rule 3 (line)
+    PACKAGE     reduce using rule 3 (line)
+    TYPSTRUCT   reduce using rule 3 (line)
+    UNEXPECTED  reduce using rule 3 (line)
+    VAR         reduce using rule 3 (line)
 
-state 4 // VAR IDENT TYP OP FLOAT [$end]
+state 4 // TYPSTRUCT IDENT STRUCT LBRACE RBRACE [$end]
 
-    4 line: modAdder .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-   29 modAdder: modAdder . fun
-   30 modAdder: modAdder . def
+    4 line: structDecl .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-    $end     reduce using rule 4 (line)
-    ';'      reduce using rule 4 (line)
-    '\n'     reduce using rule 4 (line)
-    FUNC     shift, and goto state 7
-    KEYWORD  reduce using rule 4 (line)
-    VAR      shift, and goto state 6
+    $end        reduce using rule 4 (line)
+    FUNC        reduce using rule 4 (line)
+    PACKAGE     reduce using rule 4 (line)
+    TYPSTRUCT   reduce using rule 4 (line)
+    UNEXPECTED  reduce using rule 4 (line)
+    VAR         reduce using rule 4 (line)
 
-    def  goto state 57
-    fun  goto state 56
+state 5 // PACKAGE IDENT [$end]
 
-    conflict on FUNC, shift, and goto state 7, reduce using rule 4
-    conflict on VAR, shift, and goto state 6, reduce using rule 4
+    5 line: packageDecl .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-state 5 // KEYWORD IDENT [$end]
+    $end        reduce using rule 5 (line)
+    FUNC        reduce using rule 5 (line)
+    PACKAGE     reduce using rule 5 (line)
+    TYPSTRUCT   reduce using rule 5 (line)
+    UNEXPECTED  reduce using rule 5 (line)
+    VAR         reduce using rule 5 (line)
 
-    5 line: cxtAdder .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+state 6 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE [$end]
 
-    $end     reduce using rule 5 (line)
-    ';'      reduce using rule 5 (line)
-    '\n'     reduce using rule 5 (line)
-    FUNC     reduce using rule 5 (line)
-    KEYWORD  reduce using rule 5 (line)
-    VAR      reduce using rule 5 (line)
+    6 line: funcDecl .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-state 6 // VAR
+    $end        reduce using rule 6 (line)
+    FUNC        reduce using rule 6 (line)
+    PACKAGE     reduce using rule 6 (line)
+    TYPSTRUCT   reduce using rule 6 (line)
+    UNEXPECTED  reduce using rule 6 (line)
+    VAR         reduce using rule 6 (line)
 
-   24 def: VAR . IDENT TYP OP arg
+state 7 // UNEXPECTED
 
-    IDENT  shift, and goto state 52
+    7 line: UNEXPECTED .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
 
-state 7 // FUNC
+    $end        reduce using rule 7 (line)
+    FUNC        reduce using rule 7 (line)
+    PACKAGE     reduce using rule 7 (line)
+    TYPSTRUCT   reduce using rule 7 (line)
+    UNEXPECTED  reduce using rule 7 (line)
+    VAR         reduce using rule 7 (line)
 
-   26 fun: FUNC . IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
+state 8 // PACKAGE
 
-    IDENT  shift, and goto state 14
+   22 packageDecl: PACKAGE . IDENT
 
-state 8 // VAR IDENT TYP OP FLOAT [$end]
+    IDENT  shift, and goto state 106
 
-   27 modAdder: def .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+state 9 // VAR
 
-    $end     reduce using rule 27 (modAdder)
-    ';'      reduce using rule 27 (modAdder)
-    '\n'     reduce using rule 27 (modAdder)
-    FUNC     reduce using rule 27 (modAdder)
-    KEYWORD  reduce using rule 27 (modAdder)
-    VAR      reduce using rule 27 (modAdder)
+   25 defDecl: VAR . IDENT typeSpec defAssign
 
-state 9 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE [$end]
+    IDENT  shift, and goto state 103
 
-   28 modAdder: fun .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+state 10 // TYPSTRUCT
 
-    $end     reduce using rule 28 (modAdder)
-    ';'      reduce using rule 28 (modAdder)
-    '\n'     reduce using rule 28 (modAdder)
-    FUNC     reduce using rule 28 (modAdder)
-    KEYWORD  reduce using rule 28 (modAdder)
-    VAR      reduce using rule 28 (modAdder)
+   27 structDecl: TYPSTRUCT . IDENT $@1 STRUCT LBRACE params RBRACE
 
-state 10 // KEYWORD
+    IDENT  shift, and goto state 97
 
-   31 cxtAdder: KEYWORD . IDENT
+state 11 // FUNC
 
-    IDENT  shift, and goto state 13
+   29 funcDecl: FUNC . IDENT LPAREN params RPAREN LPAREN params RPAREN $@2 LBRACE exprs RBRACE
 
-state 11 // ';'
+    IDENT  shift, and goto state 12
 
-   32 term: ';' .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+state 12 // FUNC IDENT
 
-    $end     reduce using rule 32 (term)
-    ';'      reduce using rule 32 (term)
-    '\n'     reduce using rule 32 (term)
-    FUNC     reduce using rule 32 (term)
-    KEYWORD  reduce using rule 32 (term)
-    VAR      reduce using rule 32 (term)
+   29 funcDecl: FUNC IDENT . LPAREN params RPAREN LPAREN params RPAREN $@2 LBRACE exprs RBRACE
 
-state 12 // '\n'
+    LPAREN  shift, and goto state 13
 
-   33 term: '\n' .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
+state 13 // FUNC IDENT LPAREN
+
+   29 funcDecl: FUNC IDENT LPAREN . params RPAREN LPAREN params RPAREN $@2 LBRACE exprs RBRACE
+   31 params: .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 31 (params)
+    IDENT   shift, and goto state 15
+    RPAREN  reduce using rule 31 (params)
+
+    param   goto state 16
+    params  goto state 14
 
-    $end     reduce using rule 33 (term)
-    ';'      reduce using rule 33 (term)
-    '\n'     reduce using rule 33 (term)
-    FUNC     reduce using rule 33 (term)
-    KEYWORD  reduce using rule 33 (term)
-    VAR      reduce using rule 33 (term)
-
-state 13 // KEYWORD IDENT
-
-   31 cxtAdder: KEYWORD IDENT .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-
-    $end     reduce using rule 31 (cxtAdder)
-    ';'      reduce using rule 31 (cxtAdder)
-    '\n'     reduce using rule 31 (cxtAdder)
-    FUNC     reduce using rule 31 (cxtAdder)
-    KEYWORD  reduce using rule 31 (cxtAdder)
-    VAR      reduce using rule 31 (cxtAdder)
-
-state 14 // FUNC IDENT
-
-   26 fun: FUNC IDENT . LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
-
-    LPAREN  shift, and goto state 15
-
-state 15 // FUNC IDENT LPAREN
-
-   26 fun: FUNC IDENT LPAREN . params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
-    9 params: .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 9 (params)
-    IDENT   shift, and goto state 16
-    RPAREN  reduce using rule 9 (params)
-
-    param   goto state 17
-    params  goto state 18
-
-state 16 // FUNC IDENT LPAREN IDENT
-
-    6 param: IDENT . TYP
-
-    TYP  shift, and goto state 51
-
-state 17 // FUNC IDENT LPAREN IDENT TYP [COMMA]
-
-    7 params: param .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 7 (params)
-    RPAREN  reduce using rule 7 (params)
-
-state 18 // FUNC IDENT LPAREN [COMMA]
-
-    8 params: params . COMMA param
-   26 fun: FUNC IDENT LPAREN params . RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
-
-    COMMA   shift, and goto state 19
-    RPAREN  shift, and goto state 20
-
-state 19 // FUNC IDENT LPAREN COMMA
-
-    8 params: params COMMA . param
-
-    IDENT  shift, and goto state 16
-
-    param  goto state 50
-
-state 20 // FUNC IDENT LPAREN RPAREN
-
-   26 fun: FUNC IDENT LPAREN params RPAREN . LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE
-
-    LPAREN  shift, and goto state 21
-
-state 21 // FUNC IDENT LPAREN RPAREN LPAREN
-
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN . params RPAREN $@1 LBRACE fnAdder RBRACE
-    9 params: .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 9 (params)
-    IDENT   shift, and goto state 16
-    RPAREN  reduce using rule 9 (params)
-
-    param   goto state 17
-    params  goto state 22
-
-state 22 // FUNC IDENT LPAREN RPAREN LPAREN [COMMA]
-
-    8 params: params . COMMA param
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params . RPAREN $@1 LBRACE fnAdder RBRACE
-
-    COMMA   shift, and goto state 19
-    RPAREN  shift, and goto state 23
-
-state 23 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN
-
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN . $@1 LBRACE fnAdder RBRACE
-   25 $@1: .  [LBRACE]
-
-    LBRACE  reduce using rule 25 ($@1)
-
-    $@1  goto state 24
-
-state 24 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN [LBRACE]
-
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 . LBRACE fnAdder RBRACE
-
-    LBRACE  shift, and goto state 25
-
-state 25 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE
-
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE . fnAdder RBRACE
-   21 fnAdder: .  [IDENT, RBRACE]
-
-    IDENT   shift, and goto state 26
-    RBRACE  reduce using rule 21 (fnAdder)
-
-    expr      goto state 28
-    fnAdder   goto state 29
-    outNames  goto state 27
-
-    conflict on IDENT, shift, and goto state 26, reduce using rule 21
-
-state 26 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT
-
-   18 outNames: IDENT .  [COMMA, OP]
-
-    COMMA  reduce using rule 18 (outNames)
-    OP     reduce using rule 18 (outNames)
-
-state 27 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT [COMMA]
-
-   19 outNames: outNames . COMMA IDENT
-   20 expr: outNames . OP IDENT LPAREN args RPAREN
-
-    COMMA  shift, and goto state 32
-    OP     shift, and goto state 33
-
-state 28 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN [IDENT]
-
-   22 fnAdder: expr .  [IDENT, RBRACE]
-
-    IDENT   reduce using rule 22 (fnAdder)
-    RBRACE  reduce using rule 22 (fnAdder)
-
-state 29 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE [RBRACE]
-
-   23 fnAdder: fnAdder . expr
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder . RBRACE
-
-    IDENT   shift, and goto state 26
-    RBRACE  shift, and goto state 31
-
-    expr      goto state 30
-    outNames  goto state 27
-
-state 30 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN
-
-   23 fnAdder: fnAdder expr .  [IDENT, RBRACE]
-
-    IDENT   reduce using rule 23 (fnAdder)
-    RBRACE  reduce using rule 23 (fnAdder)
-
-state 31 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE
-
-   26 fun: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@1 LBRACE fnAdder RBRACE .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-
-    $end     reduce using rule 26 (fun)
-    ';'      reduce using rule 26 (fun)
-    '\n'     reduce using rule 26 (fun)
-    FUNC     reduce using rule 26 (fun)
-    KEYWORD  reduce using rule 26 (fun)
-    VAR      reduce using rule 26 (fun)
-
-state 32 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA
-
-   19 outNames: outNames COMMA . IDENT
-
-    IDENT  shift, and goto state 49
-
-state 33 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP
-
-   20 expr: outNames OP . IDENT LPAREN args RPAREN
-
-    IDENT  shift, and goto state 34
-
-state 34 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT
-
-   20 expr: outNames OP IDENT . LPAREN args RPAREN
-
-    LPAREN  shift, and goto state 35
-
-state 35 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN
-
-   20 expr: outNames OP IDENT LPAREN . args RPAREN
-   15 args: .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 15 (args)
-    FLOAT   shift, and goto state 37
-    IDENT   shift, and goto state 39
-    INT     shift, and goto state 36
-    RPAREN  reduce using rule 15 (args)
-    STRING  shift, and goto state 38
-    TYP     shift, and goto state 40
-
-    arg   goto state 41
-    args  goto state 42
-
-state 36 // VAR IDENT TYP OP INT
-
-   10 arg: INT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
-
-    $end     reduce using rule 10 (arg)
-    ';'      reduce using rule 10 (arg)
-    '\n'     reduce using rule 10 (arg)
-    COMMA    reduce using rule 10 (arg)
-    FUNC     reduce using rule 10 (arg)
-    KEYWORD  reduce using rule 10 (arg)
-    RBRACE   reduce using rule 10 (arg)
-    RPAREN   reduce using rule 10 (arg)
-    VAR      reduce using rule 10 (arg)
-
-state 37 // VAR IDENT TYP OP FLOAT
-
-   11 arg: FLOAT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
-
-    $end     reduce using rule 11 (arg)
-    ';'      reduce using rule 11 (arg)
-    '\n'     reduce using rule 11 (arg)
-    COMMA    reduce using rule 11 (arg)
-    FUNC     reduce using rule 11 (arg)
-    KEYWORD  reduce using rule 11 (arg)
-    RBRACE   reduce using rule 11 (arg)
-    RPAREN   reduce using rule 11 (arg)
-    VAR      reduce using rule 11 (arg)
-
-state 38 // VAR IDENT TYP OP STRING
-
-   12 arg: STRING .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
-
-    $end     reduce using rule 12 (arg)
-    ';'      reduce using rule 12 (arg)
-    '\n'     reduce using rule 12 (arg)
-    COMMA    reduce using rule 12 (arg)
-    FUNC     reduce using rule 12 (arg)
-    KEYWORD  reduce using rule 12 (arg)
-    RBRACE   reduce using rule 12 (arg)
-    RPAREN   reduce using rule 12 (arg)
-    VAR      reduce using rule 12 (arg)
-
-state 39 // VAR IDENT TYP OP IDENT
-
-   13 arg: IDENT .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
-
-    $end     reduce using rule 13 (arg)
-    ';'      reduce using rule 13 (arg)
-    '\n'     reduce using rule 13 (arg)
-    COMMA    reduce using rule 13 (arg)
-    FUNC     reduce using rule 13 (arg)
-    KEYWORD  reduce using rule 13 (arg)
-    RBRACE   reduce using rule 13 (arg)
-    RPAREN   reduce using rule 13 (arg)
-    VAR      reduce using rule 13 (arg)
-
-state 40 // VAR IDENT TYP OP TYP
-
-   14 arg: TYP . LBRACE args RBRACE
-
-    LBRACE  shift, and goto state 46
-
-state 41 // VAR IDENT TYP OP TYP LBRACE FLOAT [COMMA]
-
-   16 args: arg .  [COMMA, RBRACE, RPAREN]
-
-    COMMA   reduce using rule 16 (args)
-    RBRACE  reduce using rule 16 (args)
-    RPAREN  reduce using rule 16 (args)
-
-state 42 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN [COMMA]
-
-   17 args: args . COMMA arg
-   20 expr: outNames OP IDENT LPAREN args . RPAREN
-
-    COMMA   shift, and goto state 43
-    RPAREN  shift, and goto state 44
-
-state 43 // VAR IDENT TYP OP TYP LBRACE COMMA
-
-   17 args: args COMMA . arg
-
-    FLOAT   shift, and goto state 37
-    IDENT   shift, and goto state 39
-    INT     shift, and goto state 36
-    STRING  shift, and goto state 38
-    TYP     shift, and goto state 40
-
-    arg  goto state 45
-
-state 44 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT OP IDENT LPAREN RPAREN
-
-   20 expr: outNames OP IDENT LPAREN args RPAREN .  [IDENT, RBRACE]
-
-    IDENT   reduce using rule 20 (expr)
-    RBRACE  reduce using rule 20 (expr)
-
-state 45 // VAR IDENT TYP OP TYP LBRACE COMMA FLOAT [COMMA]
-
-   17 args: args COMMA arg .  [COMMA, RBRACE, RPAREN]
-
-    COMMA   reduce using rule 17 (args)
-    RBRACE  reduce using rule 17 (args)
-    RPAREN  reduce using rule 17 (args)
-
-state 46 // VAR IDENT TYP OP TYP LBRACE
-
-   14 arg: TYP LBRACE . args RBRACE
-   15 args: .  [COMMA, RBRACE]
-
-    COMMA   reduce using rule 15 (args)
-    FLOAT   shift, and goto state 37
-    IDENT   shift, and goto state 39
-    INT     shift, and goto state 36
-    RBRACE  reduce using rule 15 (args)
-    STRING  shift, and goto state 38
-    TYP     shift, and goto state 40
-
-    arg   goto state 41
-    args  goto state 47
-
-state 47 // VAR IDENT TYP OP TYP LBRACE [COMMA]
-
-   14 arg: TYP LBRACE args . RBRACE
-   17 args: args . COMMA arg
-
-    COMMA   shift, and goto state 43
-    RBRACE  shift, and goto state 48
-
-state 48 // VAR IDENT TYP OP TYP LBRACE RBRACE
-
-   14 arg: TYP LBRACE args RBRACE .  [$end, ';', '\n', COMMA, FUNC, KEYWORD, RBRACE, RPAREN, VAR]
-
-    $end     reduce using rule 14 (arg)
-    ';'      reduce using rule 14 (arg)
-    '\n'     reduce using rule 14 (arg)
-    COMMA    reduce using rule 14 (arg)
-    FUNC     reduce using rule 14 (arg)
-    KEYWORD  reduce using rule 14 (arg)
-    RBRACE   reduce using rule 14 (arg)
-    RPAREN   reduce using rule 14 (arg)
-    VAR      reduce using rule 14 (arg)
-
-state 49 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA IDENT
-
-   19 outNames: outNames COMMA IDENT .  [COMMA, OP]
-
-    COMMA  reduce using rule 19 (outNames)
-    OP     reduce using rule 19 (outNames)
-
-state 50 // FUNC IDENT LPAREN COMMA IDENT TYP [COMMA]
-
-    8 params: params COMMA param .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 8 (params)
-    RPAREN  reduce using rule 8 (params)
-
-state 51 // FUNC IDENT LPAREN IDENT TYP
-
-    6 param: IDENT TYP .  [COMMA, RPAREN]
-
-    COMMA   reduce using rule 6 (param)
-    RPAREN  reduce using rule 6 (param)
-
-state 52 // VAR IDENT
-
-   24 def: VAR IDENT . TYP OP arg
-
-    TYP  shift, and goto state 53
-
-state 53 // VAR IDENT TYP
-
-   24 def: VAR IDENT TYP . OP arg
-
-    OP  shift, and goto state 54
-
-state 54 // VAR IDENT TYP OP
-
-   24 def: VAR IDENT TYP OP . arg
-
-    FLOAT   shift, and goto state 37
-    IDENT   shift, and goto state 39
-    INT     shift, and goto state 36
-    STRING  shift, and goto state 38
-    TYP     shift, and goto state 40
-
-    arg  goto state 55
-
-state 55 // VAR IDENT TYP OP FLOAT [$end]
-
-   24 def: VAR IDENT TYP OP arg .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-
-    $end     reduce using rule 24 (def)
-    ';'      reduce using rule 24 (def)
-    '\n'     reduce using rule 24 (def)
-    FUNC     reduce using rule 24 (def)
-    KEYWORD  reduce using rule 24 (def)
-    VAR      reduce using rule 24 (def)
-
-state 56 // VAR IDENT TYP OP FLOAT FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE [$end]
-
-   29 modAdder: modAdder fun .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-
-    $end     reduce using rule 29 (modAdder)
-    ';'      reduce using rule 29 (modAdder)
-    '\n'     reduce using rule 29 (modAdder)
-    FUNC     reduce using rule 29 (modAdder)
-    KEYWORD  reduce using rule 29 (modAdder)
-    VAR      reduce using rule 29 (modAdder)
-
-state 57 // VAR IDENT TYP OP FLOAT VAR IDENT TYP OP FLOAT [$end]
-
-   30 modAdder: modAdder def .  [$end, ';', '\n', FUNC, KEYWORD, VAR]
-
-    $end     reduce using rule 30 (modAdder)
-    ';'      reduce using rule 30 (modAdder)
-    '\n'     reduce using rule 30 (modAdder)
-    FUNC     reduce using rule 30 (modAdder)
-    KEYWORD  reduce using rule 30 (modAdder)
-    VAR      reduce using rule 30 (modAdder)
+state 14 // FUNC IDENT LPAREN [COMMA]
+
+   29 funcDecl: FUNC IDENT LPAREN params . RPAREN LPAREN params RPAREN $@2 LBRACE exprs RBRACE
+   33 params: params . COMMA param
+
+    COMMA   shift, and goto state 32
+    RPAREN  shift, and goto state 31
+
+state 15 // FUNC IDENT LPAREN IDENT
+
+   30 param: IDENT . typeSpec
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    STR     shift, and goto state 27
+    STRUCT  shift, and goto state 28
+
+    typeSpec  goto state 29
+
+state 16 // FUNC IDENT LPAREN IDENT BYTE [COMMA]
+
+   32 params: param .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 32 (params)
+    RBRACE  reduce using rule 32 (params)
+    RPAREN  reduce using rule 32 (params)
+
+state 17 // VAR IDENT I32
+
+   10 typeSpec: I32 .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 10 (typeSpec)
+    ASSIGN      reduce using rule 10 (typeSpec)
+    CASSIGN     reduce using rule 10 (typeSpec)
+    COMMA       reduce using rule 10 (typeSpec)
+    FUNC        reduce using rule 10 (typeSpec)
+    IDENT       reduce using rule 10 (typeSpec)
+    IF          reduce using rule 10 (typeSpec)
+    LBRACE      reduce using rule 10 (typeSpec)
+    PACKAGE     reduce using rule 10 (typeSpec)
+    RBRACE      reduce using rule 10 (typeSpec)
+    RPAREN      reduce using rule 10 (typeSpec)
+    TYPSTRUCT   reduce using rule 10 (typeSpec)
+    UNEXPECTED  reduce using rule 10 (typeSpec)
+    VAR         reduce using rule 10 (typeSpec)
+    WHILE       reduce using rule 10 (typeSpec)
+
+state 18 // VAR IDENT I64
+
+   11 typeSpec: I64 .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 11 (typeSpec)
+    ASSIGN      reduce using rule 11 (typeSpec)
+    CASSIGN     reduce using rule 11 (typeSpec)
+    COMMA       reduce using rule 11 (typeSpec)
+    FUNC        reduce using rule 11 (typeSpec)
+    IDENT       reduce using rule 11 (typeSpec)
+    IF          reduce using rule 11 (typeSpec)
+    LBRACE      reduce using rule 11 (typeSpec)
+    PACKAGE     reduce using rule 11 (typeSpec)
+    RBRACE      reduce using rule 11 (typeSpec)
+    RPAREN      reduce using rule 11 (typeSpec)
+    TYPSTRUCT   reduce using rule 11 (typeSpec)
+    UNEXPECTED  reduce using rule 11 (typeSpec)
+    VAR         reduce using rule 11 (typeSpec)
+    WHILE       reduce using rule 11 (typeSpec)
+
+state 19 // VAR IDENT F32
+
+   12 typeSpec: F32 .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 12 (typeSpec)
+    ASSIGN      reduce using rule 12 (typeSpec)
+    CASSIGN     reduce using rule 12 (typeSpec)
+    COMMA       reduce using rule 12 (typeSpec)
+    FUNC        reduce using rule 12 (typeSpec)
+    IDENT       reduce using rule 12 (typeSpec)
+    IF          reduce using rule 12 (typeSpec)
+    LBRACE      reduce using rule 12 (typeSpec)
+    PACKAGE     reduce using rule 12 (typeSpec)
+    RBRACE      reduce using rule 12 (typeSpec)
+    RPAREN      reduce using rule 12 (typeSpec)
+    TYPSTRUCT   reduce using rule 12 (typeSpec)
+    UNEXPECTED  reduce using rule 12 (typeSpec)
+    VAR         reduce using rule 12 (typeSpec)
+    WHILE       reduce using rule 12 (typeSpec)
+
+state 20 // VAR IDENT F64
+
+   13 typeSpec: F64 .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 13 (typeSpec)
+    ASSIGN      reduce using rule 13 (typeSpec)
+    CASSIGN     reduce using rule 13 (typeSpec)
+    COMMA       reduce using rule 13 (typeSpec)
+    FUNC        reduce using rule 13 (typeSpec)
+    IDENT       reduce using rule 13 (typeSpec)
+    IF          reduce using rule 13 (typeSpec)
+    LBRACE      reduce using rule 13 (typeSpec)
+    PACKAGE     reduce using rule 13 (typeSpec)
+    RBRACE      reduce using rule 13 (typeSpec)
+    RPAREN      reduce using rule 13 (typeSpec)
+    TYPSTRUCT   reduce using rule 13 (typeSpec)
+    UNEXPECTED  reduce using rule 13 (typeSpec)
+    VAR         reduce using rule 13 (typeSpec)
+    WHILE       reduce using rule 13 (typeSpec)
+
+state 21 // VAR IDENT BYTE
+
+   14 typeSpec: BYTE .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 14 (typeSpec)
+    ASSIGN      reduce using rule 14 (typeSpec)
+    CASSIGN     reduce using rule 14 (typeSpec)
+    COMMA       reduce using rule 14 (typeSpec)
+    FUNC        reduce using rule 14 (typeSpec)
+    IDENT       reduce using rule 14 (typeSpec)
+    IF          reduce using rule 14 (typeSpec)
+    LBRACE      reduce using rule 14 (typeSpec)
+    PACKAGE     reduce using rule 14 (typeSpec)
+    RBRACE      reduce using rule 14 (typeSpec)
+    RPAREN      reduce using rule 14 (typeSpec)
+    TYPSTRUCT   reduce using rule 14 (typeSpec)
+    UNEXPECTED  reduce using rule 14 (typeSpec)
+    VAR         reduce using rule 14 (typeSpec)
+    WHILE       reduce using rule 14 (typeSpec)
+
+state 22 // VAR IDENT BYTEA
+
+   15 typeSpec: BYTEA .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 15 (typeSpec)
+    ASSIGN      reduce using rule 15 (typeSpec)
+    CASSIGN     reduce using rule 15 (typeSpec)
+    COMMA       reduce using rule 15 (typeSpec)
+    FUNC        reduce using rule 15 (typeSpec)
+    IDENT       reduce using rule 15 (typeSpec)
+    IF          reduce using rule 15 (typeSpec)
+    LBRACE      reduce using rule 15 (typeSpec)
+    PACKAGE     reduce using rule 15 (typeSpec)
+    RBRACE      reduce using rule 15 (typeSpec)
+    RPAREN      reduce using rule 15 (typeSpec)
+    TYPSTRUCT   reduce using rule 15 (typeSpec)
+    UNEXPECTED  reduce using rule 15 (typeSpec)
+    VAR         reduce using rule 15 (typeSpec)
+    WHILE       reduce using rule 15 (typeSpec)
+
+state 23 // VAR IDENT I32A
+
+   16 typeSpec: I32A .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 16 (typeSpec)
+    ASSIGN      reduce using rule 16 (typeSpec)
+    CASSIGN     reduce using rule 16 (typeSpec)
+    COMMA       reduce using rule 16 (typeSpec)
+    FUNC        reduce using rule 16 (typeSpec)
+    IDENT       reduce using rule 16 (typeSpec)
+    IF          reduce using rule 16 (typeSpec)
+    LBRACE      reduce using rule 16 (typeSpec)
+    PACKAGE     reduce using rule 16 (typeSpec)
+    RBRACE      reduce using rule 16 (typeSpec)
+    RPAREN      reduce using rule 16 (typeSpec)
+    TYPSTRUCT   reduce using rule 16 (typeSpec)
+    UNEXPECTED  reduce using rule 16 (typeSpec)
+    VAR         reduce using rule 16 (typeSpec)
+    WHILE       reduce using rule 16 (typeSpec)
+
+state 24 // VAR IDENT I64A
+
+   17 typeSpec: I64A .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 17 (typeSpec)
+    ASSIGN      reduce using rule 17 (typeSpec)
+    CASSIGN     reduce using rule 17 (typeSpec)
+    COMMA       reduce using rule 17 (typeSpec)
+    FUNC        reduce using rule 17 (typeSpec)
+    IDENT       reduce using rule 17 (typeSpec)
+    IF          reduce using rule 17 (typeSpec)
+    LBRACE      reduce using rule 17 (typeSpec)
+    PACKAGE     reduce using rule 17 (typeSpec)
+    RBRACE      reduce using rule 17 (typeSpec)
+    RPAREN      reduce using rule 17 (typeSpec)
+    TYPSTRUCT   reduce using rule 17 (typeSpec)
+    UNEXPECTED  reduce using rule 17 (typeSpec)
+    VAR         reduce using rule 17 (typeSpec)
+    WHILE       reduce using rule 17 (typeSpec)
+
+state 25 // VAR IDENT F32A
+
+   18 typeSpec: F32A .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 18 (typeSpec)
+    ASSIGN      reduce using rule 18 (typeSpec)
+    CASSIGN     reduce using rule 18 (typeSpec)
+    COMMA       reduce using rule 18 (typeSpec)
+    FUNC        reduce using rule 18 (typeSpec)
+    IDENT       reduce using rule 18 (typeSpec)
+    IF          reduce using rule 18 (typeSpec)
+    LBRACE      reduce using rule 18 (typeSpec)
+    PACKAGE     reduce using rule 18 (typeSpec)
+    RBRACE      reduce using rule 18 (typeSpec)
+    RPAREN      reduce using rule 18 (typeSpec)
+    TYPSTRUCT   reduce using rule 18 (typeSpec)
+    UNEXPECTED  reduce using rule 18 (typeSpec)
+    VAR         reduce using rule 18 (typeSpec)
+    WHILE       reduce using rule 18 (typeSpec)
+
+state 26 // VAR IDENT F64A
+
+   19 typeSpec: F64A .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 19 (typeSpec)
+    ASSIGN      reduce using rule 19 (typeSpec)
+    CASSIGN     reduce using rule 19 (typeSpec)
+    COMMA       reduce using rule 19 (typeSpec)
+    FUNC        reduce using rule 19 (typeSpec)
+    IDENT       reduce using rule 19 (typeSpec)
+    IF          reduce using rule 19 (typeSpec)
+    LBRACE      reduce using rule 19 (typeSpec)
+    PACKAGE     reduce using rule 19 (typeSpec)
+    RBRACE      reduce using rule 19 (typeSpec)
+    RPAREN      reduce using rule 19 (typeSpec)
+    TYPSTRUCT   reduce using rule 19 (typeSpec)
+    UNEXPECTED  reduce using rule 19 (typeSpec)
+    VAR         reduce using rule 19 (typeSpec)
+    WHILE       reduce using rule 19 (typeSpec)
+
+state 27 // VAR IDENT STR
+
+   20 typeSpec: STR .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 20 (typeSpec)
+    ASSIGN      reduce using rule 20 (typeSpec)
+    CASSIGN     reduce using rule 20 (typeSpec)
+    COMMA       reduce using rule 20 (typeSpec)
+    FUNC        reduce using rule 20 (typeSpec)
+    IDENT       reduce using rule 20 (typeSpec)
+    IF          reduce using rule 20 (typeSpec)
+    LBRACE      reduce using rule 20 (typeSpec)
+    PACKAGE     reduce using rule 20 (typeSpec)
+    RBRACE      reduce using rule 20 (typeSpec)
+    RPAREN      reduce using rule 20 (typeSpec)
+    TYPSTRUCT   reduce using rule 20 (typeSpec)
+    UNEXPECTED  reduce using rule 20 (typeSpec)
+    VAR         reduce using rule 20 (typeSpec)
+    WHILE       reduce using rule 20 (typeSpec)
+
+state 28 // VAR IDENT STRUCT
+
+   21 typeSpec: STRUCT . IDENT
+
+    IDENT  shift, and goto state 30
+
+state 29 // FUNC IDENT LPAREN IDENT BYTE [COMMA]
+
+   30 param: IDENT typeSpec .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 30 (param)
+    RBRACE  reduce using rule 30 (param)
+    RPAREN  reduce using rule 30 (param)
+
+state 30 // VAR IDENT STRUCT IDENT
+
+   21 typeSpec: STRUCT IDENT .  [$end, ASSIGN, CASSIGN, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 21 (typeSpec)
+    ASSIGN      reduce using rule 21 (typeSpec)
+    CASSIGN     reduce using rule 21 (typeSpec)
+    COMMA       reduce using rule 21 (typeSpec)
+    FUNC        reduce using rule 21 (typeSpec)
+    IDENT       reduce using rule 21 (typeSpec)
+    IF          reduce using rule 21 (typeSpec)
+    LBRACE      reduce using rule 21 (typeSpec)
+    PACKAGE     reduce using rule 21 (typeSpec)
+    RBRACE      reduce using rule 21 (typeSpec)
+    RPAREN      reduce using rule 21 (typeSpec)
+    TYPSTRUCT   reduce using rule 21 (typeSpec)
+    UNEXPECTED  reduce using rule 21 (typeSpec)
+    VAR         reduce using rule 21 (typeSpec)
+    WHILE       reduce using rule 21 (typeSpec)
+
+state 31 // FUNC IDENT LPAREN RPAREN
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN . LPAREN params RPAREN $@2 LBRACE exprs RBRACE
+
+    LPAREN  shift, and goto state 34
+
+state 32 // FUNC IDENT LPAREN COMMA
+
+   33 params: params COMMA . param
+
+    IDENT  shift, and goto state 15
+
+    param  goto state 33
+
+state 33 // FUNC IDENT LPAREN COMMA IDENT BYTE [COMMA]
+
+   33 params: params COMMA param .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 33 (params)
+    RBRACE  reduce using rule 33 (params)
+    RPAREN  reduce using rule 33 (params)
+
+state 34 // FUNC IDENT LPAREN RPAREN LPAREN
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN . params RPAREN $@2 LBRACE exprs RBRACE
+   31 params: .  [COMMA, RPAREN]
+
+    COMMA   reduce using rule 31 (params)
+    IDENT   shift, and goto state 15
+    RPAREN  reduce using rule 31 (params)
+
+    param   goto state 16
+    params  goto state 35
+
+state 35 // FUNC IDENT LPAREN RPAREN LPAREN [COMMA]
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params . RPAREN $@2 LBRACE exprs RBRACE
+   33 params: params . COMMA param
+
+    COMMA   shift, and goto state 32
+    RPAREN  shift, and goto state 36
+
+state 36 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN . $@2 LBRACE exprs RBRACE
+   28 $@2: .  [LBRACE]
+
+    LBRACE  reduce using rule 28 ($@2)
+
+    $@2  goto state 37
+
+state 37 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN [LBRACE]
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@2 . LBRACE exprs RBRACE
+
+    LBRACE  shift, and goto state 38
+
+state 38 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@2 LBRACE . exprs RBRACE
+   49 exprs: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  reduce using rule 49 (exprs)
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 50
+    exprs        goto state 39
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+    conflict on IDENT, shift, and goto state 41, reduce using rule 49
+    conflict on IF, shift, and goto state 44, reduce using rule 49
+    conflict on VAR, shift, and goto state 42, reduce using rule 49
+    conflict on WHILE, shift, and goto state 43, reduce using rule 49
+
+state 39 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE [RBRACE]
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@2 LBRACE exprs . RBRACE
+   51 exprs: exprs . expr
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  shift, and goto state 96
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 67
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+state 40 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT [ASSIGN]
+
+   34 argsExpr: outNames . assignOp IDENT LPAREN args RPAREN
+   61 outNames: outNames . COMMA IDENT
+
+    ASSIGN   shift, and goto state 81
+    CASSIGN  shift, and goto state 82
+    COMMA    shift, and goto state 90
+
+    assignOp  goto state 89
+
+state 41 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT
+
+   35 arglessExpr: IDENT . LPAREN args RPAREN
+   60 outNames: IDENT .  [ASSIGN, CASSIGN, COMMA]
+
+    ASSIGN   reduce using rule 60 (outNames)
+    CASSIGN  reduce using rule 60 (outNames)
+    COMMA    reduce using rule 60 (outNames)
+    LPAREN   shift, and goto state 86
+
+state 42 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE VAR
+
+   36 arglessExpr: VAR . IDENT typeSpec defAssign
+
+    IDENT  shift, and goto state 79
+
+state 43 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE
+
+   38 whileExpr: WHILE . $@3 arg LBRACE exprs RBRACE
+   37 $@3: .  [BYTE, BYTEA, F32, F32A, F64, F64A, FLOAT, I32, I32A, I64, I64A, IDENT, INT, STR, STRING, STRUCT]
+
+    BYTE    reduce using rule 37 ($@3)
+    BYTEA   reduce using rule 37 ($@3)
+    F32     reduce using rule 37 ($@3)
+    F32A    reduce using rule 37 ($@3)
+    F64     reduce using rule 37 ($@3)
+    F64A    reduce using rule 37 ($@3)
+    FLOAT   reduce using rule 37 ($@3)
+    I32     reduce using rule 37 ($@3)
+    I32A    reduce using rule 37 ($@3)
+    I64     reduce using rule 37 ($@3)
+    I64A    reduce using rule 37 ($@3)
+    IDENT   reduce using rule 37 ($@3)
+    INT     reduce using rule 37 ($@3)
+    STR     reduce using rule 37 ($@3)
+    STRING  reduce using rule 37 ($@3)
+    STRUCT  reduce using rule 37 ($@3)
+
+    $@3  goto state 74
+
+state 44 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF
+
+   40 ifExpr: IF . $@4 arg LBRACE exprs RBRACE elseExpr
+   39 $@4: .  [BYTE, BYTEA, F32, F32A, F64, F64A, FLOAT, I32, I32A, I64, I64A, IDENT, INT, STR, STRING, STRUCT]
+
+    BYTE    reduce using rule 39 ($@4)
+    BYTEA   reduce using rule 39 ($@4)
+    F32     reduce using rule 39 ($@4)
+    F32A    reduce using rule 39 ($@4)
+    F64     reduce using rule 39 ($@4)
+    F64A    reduce using rule 39 ($@4)
+    FLOAT   reduce using rule 39 ($@4)
+    I32     reduce using rule 39 ($@4)
+    I32A    reduce using rule 39 ($@4)
+    I64     reduce using rule 39 ($@4)
+    I64A    reduce using rule 39 ($@4)
+    IDENT   reduce using rule 39 ($@4)
+    INT     reduce using rule 39 ($@4)
+    STR     reduce using rule 39 ($@4)
+    STRING  reduce using rule 39 ($@4)
+    STRUCT  reduce using rule 39 ($@4)
+
+    $@4  goto state 51
+
+state 45 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN RPAREN [IDENT]
+
+   44 opExpr: arglessExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 44 (opExpr)
+    IF      reduce using rule 44 (opExpr)
+    RBRACE  reduce using rule 44 (opExpr)
+    VAR     reduce using rule 44 (opExpr)
+    WHILE   reduce using rule 44 (opExpr)
+
+state 46 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN IDENT LPAREN RPAREN [IDENT]
+
+   45 opExpr: argsExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 45 (opExpr)
+    IF      reduce using rule 45 (opExpr)
+    RBRACE  reduce using rule 45 (opExpr)
+    VAR     reduce using rule 45 (opExpr)
+    WHILE   reduce using rule 45 (opExpr)
+
+state 47 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE [IDENT]
+
+   46 expr: ifExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 46 (expr)
+    IF      reduce using rule 46 (expr)
+    RBRACE  reduce using rule 46 (expr)
+    VAR     reduce using rule 46 (expr)
+    WHILE   reduce using rule 46 (expr)
+
+state 48 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE FLOAT LBRACE RBRACE [IDENT]
+
+   47 expr: whileExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 47 (expr)
+    IF      reduce using rule 47 (expr)
+    RBRACE  reduce using rule 47 (expr)
+    VAR     reduce using rule 47 (expr)
+    WHILE   reduce using rule 47 (expr)
+
+state 49 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN RPAREN [IDENT]
+
+   48 expr: opExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 48 (expr)
+    IF      reduce using rule 48 (expr)
+    RBRACE  reduce using rule 48 (expr)
+    VAR     reduce using rule 48 (expr)
+    WHILE   reduce using rule 48 (expr)
+
+state 50 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN RPAREN [IDENT]
+
+   50 exprs: expr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 50 (exprs)
+    IF      reduce using rule 50 (exprs)
+    RBRACE  reduce using rule 50 (exprs)
+    VAR     reduce using rule 50 (exprs)
+    WHILE   reduce using rule 50 (exprs)
+
+state 51 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF [BYTE]
+
+   40 ifExpr: IF $@4 . arg LBRACE exprs RBRACE elseExpr
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 52
+    typeSpec  goto state 57
+
+state 52 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT [LBRACE]
+
+   40 ifExpr: IF $@4 arg . LBRACE exprs RBRACE elseExpr
+
+    LBRACE  shift, and goto state 64
+
+state 53 // VAR IDENT BYTE ASSIGN INT
+
+   52 arg: INT .  [$end, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 52 (arg)
+    COMMA       reduce using rule 52 (arg)
+    FUNC        reduce using rule 52 (arg)
+    IDENT       reduce using rule 52 (arg)
+    IF          reduce using rule 52 (arg)
+    LBRACE      reduce using rule 52 (arg)
+    PACKAGE     reduce using rule 52 (arg)
+    RBRACE      reduce using rule 52 (arg)
+    RPAREN      reduce using rule 52 (arg)
+    TYPSTRUCT   reduce using rule 52 (arg)
+    UNEXPECTED  reduce using rule 52 (arg)
+    VAR         reduce using rule 52 (arg)
+    WHILE       reduce using rule 52 (arg)
+
+state 54 // VAR IDENT BYTE ASSIGN FLOAT
+
+   53 arg: FLOAT .  [$end, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 53 (arg)
+    COMMA       reduce using rule 53 (arg)
+    FUNC        reduce using rule 53 (arg)
+    IDENT       reduce using rule 53 (arg)
+    IF          reduce using rule 53 (arg)
+    LBRACE      reduce using rule 53 (arg)
+    PACKAGE     reduce using rule 53 (arg)
+    RBRACE      reduce using rule 53 (arg)
+    RPAREN      reduce using rule 53 (arg)
+    TYPSTRUCT   reduce using rule 53 (arg)
+    UNEXPECTED  reduce using rule 53 (arg)
+    VAR         reduce using rule 53 (arg)
+    WHILE       reduce using rule 53 (arg)
+
+state 55 // VAR IDENT BYTE ASSIGN STRING
+
+   54 arg: STRING .  [$end, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 54 (arg)
+    COMMA       reduce using rule 54 (arg)
+    FUNC        reduce using rule 54 (arg)
+    IDENT       reduce using rule 54 (arg)
+    IF          reduce using rule 54 (arg)
+    LBRACE      reduce using rule 54 (arg)
+    PACKAGE     reduce using rule 54 (arg)
+    RBRACE      reduce using rule 54 (arg)
+    RPAREN      reduce using rule 54 (arg)
+    TYPSTRUCT   reduce using rule 54 (arg)
+    UNEXPECTED  reduce using rule 54 (arg)
+    VAR         reduce using rule 54 (arg)
+    WHILE       reduce using rule 54 (arg)
+
+state 56 // VAR IDENT BYTE ASSIGN IDENT
+
+   55 arg: IDENT .  [$end, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 55 (arg)
+    COMMA       reduce using rule 55 (arg)
+    FUNC        reduce using rule 55 (arg)
+    IDENT       reduce using rule 55 (arg)
+    IF          reduce using rule 55 (arg)
+    LBRACE      reduce using rule 55 (arg)
+    PACKAGE     reduce using rule 55 (arg)
+    RBRACE      reduce using rule 55 (arg)
+    RPAREN      reduce using rule 55 (arg)
+    TYPSTRUCT   reduce using rule 55 (arg)
+    UNEXPECTED  reduce using rule 55 (arg)
+    VAR         reduce using rule 55 (arg)
+    WHILE       reduce using rule 55 (arg)
+
+state 57 // VAR IDENT BYTE ASSIGN BYTE [LBRACE]
+
+   56 arg: typeSpec . LBRACE args RBRACE
+
+    LBRACE  shift, and goto state 58
+
+state 58 // VAR IDENT BYTE ASSIGN BYTE LBRACE
+
+   56 arg: typeSpec LBRACE . args RBRACE
+   57 args: .  [COMMA, RBRACE]
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    COMMA   reduce using rule 57 (args)
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    RBRACE  reduce using rule 57 (args)
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 60
+    args      goto state 59
+    typeSpec  goto state 57
+
+state 59 // VAR IDENT BYTE ASSIGN BYTE LBRACE [COMMA]
+
+   56 arg: typeSpec LBRACE args . RBRACE
+   59 args: args . COMMA arg
+
+    COMMA   shift, and goto state 62
+    RBRACE  shift, and goto state 61
+
+state 60 // VAR IDENT BYTE ASSIGN BYTE LBRACE FLOAT [COMMA]
+
+   58 args: arg .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 58 (args)
+    RBRACE  reduce using rule 58 (args)
+    RPAREN  reduce using rule 58 (args)
+
+state 61 // VAR IDENT BYTE ASSIGN BYTE LBRACE RBRACE
+
+   56 arg: typeSpec LBRACE args RBRACE .  [$end, COMMA, FUNC, IDENT, IF, LBRACE, PACKAGE, RBRACE, RPAREN, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 56 (arg)
+    COMMA       reduce using rule 56 (arg)
+    FUNC        reduce using rule 56 (arg)
+    IDENT       reduce using rule 56 (arg)
+    IF          reduce using rule 56 (arg)
+    LBRACE      reduce using rule 56 (arg)
+    PACKAGE     reduce using rule 56 (arg)
+    RBRACE      reduce using rule 56 (arg)
+    RPAREN      reduce using rule 56 (arg)
+    TYPSTRUCT   reduce using rule 56 (arg)
+    UNEXPECTED  reduce using rule 56 (arg)
+    VAR         reduce using rule 56 (arg)
+    WHILE       reduce using rule 56 (arg)
+
+state 62 // VAR IDENT BYTE ASSIGN BYTE LBRACE COMMA
+
+   59 args: args COMMA . arg
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 63
+    typeSpec  goto state 57
+
+state 63 // VAR IDENT BYTE ASSIGN BYTE LBRACE COMMA FLOAT [COMMA]
+
+   59 args: args COMMA arg .  [COMMA, RBRACE, RPAREN]
+
+    COMMA   reduce using rule 59 (args)
+    RBRACE  reduce using rule 59 (args)
+    RPAREN  reduce using rule 59 (args)
+
+state 64 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE
+
+   40 ifExpr: IF $@4 arg LBRACE . exprs RBRACE elseExpr
+   49 exprs: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  reduce using rule 49 (exprs)
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 50
+    exprs        goto state 65
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+    conflict on IDENT, shift, and goto state 41, reduce using rule 49
+    conflict on IF, shift, and goto state 44, reduce using rule 49
+    conflict on VAR, shift, and goto state 42, reduce using rule 49
+    conflict on WHILE, shift, and goto state 43, reduce using rule 49
+
+state 65 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE [RBRACE]
+
+   40 ifExpr: IF $@4 arg LBRACE exprs . RBRACE elseExpr
+   51 exprs: exprs . expr
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  shift, and goto state 66
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 67
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+state 66 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE
+
+   40 ifExpr: IF $@4 arg LBRACE exprs RBRACE . elseExpr
+   41 elseExpr: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    ELSE    shift, and goto state 69
+    IDENT   reduce using rule 41 (elseExpr)
+    IF      reduce using rule 41 (elseExpr)
+    RBRACE  reduce using rule 41 (elseExpr)
+    VAR     reduce using rule 41 (elseExpr)
+    WHILE   reduce using rule 41 (elseExpr)
+
+    elseExpr  goto state 68
+
+state 67 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN RPAREN
+
+   51 exprs: exprs expr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 51 (exprs)
+    IF      reduce using rule 51 (exprs)
+    RBRACE  reduce using rule 51 (exprs)
+    VAR     reduce using rule 51 (exprs)
+    WHILE   reduce using rule 51 (exprs)
+
+state 68 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE [IDENT]
+
+   40 ifExpr: IF $@4 arg LBRACE exprs RBRACE elseExpr .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 40 (ifExpr)
+    IF      reduce using rule 40 (ifExpr)
+    RBRACE  reduce using rule 40 (ifExpr)
+    VAR     reduce using rule 40 (ifExpr)
+    WHILE   reduce using rule 40 (ifExpr)
+
+state 69 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE ELSE
+
+   43 elseExpr: ELSE . $@5 LBRACE exprs RBRACE
+   42 $@5: .  [LBRACE]
+
+    LBRACE  reduce using rule 42 ($@5)
+
+    $@5  goto state 70
+
+state 70 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE ELSE [LBRACE]
+
+   43 elseExpr: ELSE $@5 . LBRACE exprs RBRACE
+
+    LBRACE  shift, and goto state 71
+
+state 71 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE ELSE LBRACE
+
+   43 elseExpr: ELSE $@5 LBRACE . exprs RBRACE
+   49 exprs: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  reduce using rule 49 (exprs)
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 50
+    exprs        goto state 72
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+    conflict on IDENT, shift, and goto state 41, reduce using rule 49
+    conflict on IF, shift, and goto state 44, reduce using rule 49
+    conflict on VAR, shift, and goto state 42, reduce using rule 49
+    conflict on WHILE, shift, and goto state 43, reduce using rule 49
+
+state 72 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE ELSE LBRACE [RBRACE]
+
+   43 elseExpr: ELSE $@5 LBRACE exprs . RBRACE
+   51 exprs: exprs . expr
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  shift, and goto state 73
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 67
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+state 73 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IF FLOAT LBRACE RBRACE ELSE LBRACE RBRACE
+
+   43 elseExpr: ELSE $@5 LBRACE exprs RBRACE .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 43 (elseExpr)
+    IF      reduce using rule 43 (elseExpr)
+    RBRACE  reduce using rule 43 (elseExpr)
+    VAR     reduce using rule 43 (elseExpr)
+    WHILE   reduce using rule 43 (elseExpr)
+
+state 74 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE [BYTE]
+
+   38 whileExpr: WHILE $@3 . arg LBRACE exprs RBRACE
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 75
+    typeSpec  goto state 57
+
+state 75 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE FLOAT [LBRACE]
+
+   38 whileExpr: WHILE $@3 arg . LBRACE exprs RBRACE
+
+    LBRACE  shift, and goto state 76
+
+state 76 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE FLOAT LBRACE
+
+   38 whileExpr: WHILE $@3 arg LBRACE . exprs RBRACE
+   49 exprs: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  reduce using rule 49 (exprs)
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 50
+    exprs        goto state 77
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+    conflict on IDENT, shift, and goto state 41, reduce using rule 49
+    conflict on IF, shift, and goto state 44, reduce using rule 49
+    conflict on VAR, shift, and goto state 42, reduce using rule 49
+    conflict on WHILE, shift, and goto state 43, reduce using rule 49
+
+state 77 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE FLOAT LBRACE [RBRACE]
+
+   38 whileExpr: WHILE $@3 arg LBRACE exprs . RBRACE
+   51 exprs: exprs . expr
+
+    IDENT   shift, and goto state 41
+    IF      shift, and goto state 44
+    RBRACE  shift, and goto state 78
+    VAR     shift, and goto state 42
+    WHILE   shift, and goto state 43
+
+    arglessExpr  goto state 45
+    argsExpr     goto state 46
+    expr         goto state 67
+    ifExpr       goto state 47
+    opExpr       goto state 49
+    outNames     goto state 40
+    whileExpr    goto state 48
+
+state 78 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE WHILE FLOAT LBRACE RBRACE
+
+   38 whileExpr: WHILE $@3 arg LBRACE exprs RBRACE .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 38 (whileExpr)
+    IF      reduce using rule 38 (whileExpr)
+    RBRACE  reduce using rule 38 (whileExpr)
+    VAR     reduce using rule 38 (whileExpr)
+    WHILE   reduce using rule 38 (whileExpr)
+
+state 79 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE VAR IDENT
+
+   36 arglessExpr: VAR IDENT . typeSpec defAssign
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    STR     shift, and goto state 27
+    STRUCT  shift, and goto state 28
+
+    typeSpec  goto state 80
+
+state 80 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE VAR IDENT BYTE [ASSIGN]
+
+   36 arglessExpr: VAR IDENT typeSpec . defAssign
+   23 defAssign: .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    ASSIGN   shift, and goto state 81
+    CASSIGN  shift, and goto state 82
+    IDENT    reduce using rule 23 (defAssign)
+    IF       reduce using rule 23 (defAssign)
+    RBRACE   reduce using rule 23 (defAssign)
+    VAR      reduce using rule 23 (defAssign)
+    WHILE    reduce using rule 23 (defAssign)
+
+    assignOp   goto state 83
+    defAssign  goto state 84
+
+state 81 // VAR IDENT BYTE ASSIGN
+
+    8 assignOp: ASSIGN .  [BYTE, BYTEA, F32, F32A, F64, F64A, FLOAT, I32, I32A, I64, I64A, IDENT, INT, STR, STRING, STRUCT]
+
+    BYTE    reduce using rule 8 (assignOp)
+    BYTEA   reduce using rule 8 (assignOp)
+    F32     reduce using rule 8 (assignOp)
+    F32A    reduce using rule 8 (assignOp)
+    F64     reduce using rule 8 (assignOp)
+    F64A    reduce using rule 8 (assignOp)
+    FLOAT   reduce using rule 8 (assignOp)
+    I32     reduce using rule 8 (assignOp)
+    I32A    reduce using rule 8 (assignOp)
+    I64     reduce using rule 8 (assignOp)
+    I64A    reduce using rule 8 (assignOp)
+    IDENT   reduce using rule 8 (assignOp)
+    INT     reduce using rule 8 (assignOp)
+    STR     reduce using rule 8 (assignOp)
+    STRING  reduce using rule 8 (assignOp)
+    STRUCT  reduce using rule 8 (assignOp)
+
+state 82 // VAR IDENT BYTE CASSIGN
+
+    9 assignOp: CASSIGN .  [BYTE, BYTEA, F32, F32A, F64, F64A, FLOAT, I32, I32A, I64, I64A, IDENT, INT, STR, STRING, STRUCT]
+
+    BYTE    reduce using rule 9 (assignOp)
+    BYTEA   reduce using rule 9 (assignOp)
+    F32     reduce using rule 9 (assignOp)
+    F32A    reduce using rule 9 (assignOp)
+    F64     reduce using rule 9 (assignOp)
+    F64A    reduce using rule 9 (assignOp)
+    FLOAT   reduce using rule 9 (assignOp)
+    I32     reduce using rule 9 (assignOp)
+    I32A    reduce using rule 9 (assignOp)
+    I64     reduce using rule 9 (assignOp)
+    I64A    reduce using rule 9 (assignOp)
+    IDENT   reduce using rule 9 (assignOp)
+    INT     reduce using rule 9 (assignOp)
+    STR     reduce using rule 9 (assignOp)
+    STRING  reduce using rule 9 (assignOp)
+    STRUCT  reduce using rule 9 (assignOp)
+
+state 83 // VAR IDENT BYTE ASSIGN [BYTE]
+
+   24 defAssign: assignOp . arg
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 85
+    typeSpec  goto state 57
+
+state 84 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE VAR IDENT BYTE [IDENT]
+
+   36 arglessExpr: VAR IDENT typeSpec defAssign .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 36 (arglessExpr)
+    IF      reduce using rule 36 (arglessExpr)
+    RBRACE  reduce using rule 36 (arglessExpr)
+    VAR     reduce using rule 36 (arglessExpr)
+    WHILE   reduce using rule 36 (arglessExpr)
+
+state 85 // VAR IDENT BYTE ASSIGN FLOAT [$end]
+
+   24 defAssign: assignOp arg .  [$end, FUNC, IDENT, IF, PACKAGE, RBRACE, TYPSTRUCT, UNEXPECTED, VAR, WHILE]
+
+    $end        reduce using rule 24 (defAssign)
+    FUNC        reduce using rule 24 (defAssign)
+    IDENT       reduce using rule 24 (defAssign)
+    IF          reduce using rule 24 (defAssign)
+    PACKAGE     reduce using rule 24 (defAssign)
+    RBRACE      reduce using rule 24 (defAssign)
+    TYPSTRUCT   reduce using rule 24 (defAssign)
+    UNEXPECTED  reduce using rule 24 (defAssign)
+    VAR         reduce using rule 24 (defAssign)
+    WHILE       reduce using rule 24 (defAssign)
+
+state 86 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN
+
+   35 arglessExpr: IDENT LPAREN . args RPAREN
+   57 args: .  [COMMA, RPAREN]
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    COMMA   reduce using rule 57 (args)
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    RPAREN  reduce using rule 57 (args)
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 60
+    args      goto state 87
+    typeSpec  goto state 57
+
+state 87 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN [COMMA]
+
+   35 arglessExpr: IDENT LPAREN args . RPAREN
+   59 args: args . COMMA arg
+
+    COMMA   shift, and goto state 62
+    RPAREN  shift, and goto state 88
+
+state 88 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT LPAREN RPAREN
+
+   35 arglessExpr: IDENT LPAREN args RPAREN .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 35 (arglessExpr)
+    IF      reduce using rule 35 (arglessExpr)
+    RBRACE  reduce using rule 35 (arglessExpr)
+    VAR     reduce using rule 35 (arglessExpr)
+    WHILE   reduce using rule 35 (arglessExpr)
+
+state 89 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN [IDENT]
+
+   34 argsExpr: outNames assignOp . IDENT LPAREN args RPAREN
+
+    IDENT  shift, and goto state 92
+
+state 90 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA
+
+   61 outNames: outNames COMMA . IDENT
+
+    IDENT  shift, and goto state 91
+
+state 91 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT COMMA IDENT
+
+   61 outNames: outNames COMMA IDENT .  [ASSIGN, CASSIGN, COMMA]
+
+    ASSIGN   reduce using rule 61 (outNames)
+    CASSIGN  reduce using rule 61 (outNames)
+    COMMA    reduce using rule 61 (outNames)
+
+state 92 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN IDENT
+
+   34 argsExpr: outNames assignOp IDENT . LPAREN args RPAREN
+
+    LPAREN  shift, and goto state 93
+
+state 93 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN IDENT LPAREN
+
+   34 argsExpr: outNames assignOp IDENT LPAREN . args RPAREN
+   57 args: .  [COMMA, RPAREN]
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    COMMA   reduce using rule 57 (args)
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    FLOAT   shift, and goto state 54
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    IDENT   shift, and goto state 56
+    INT     shift, and goto state 53
+    RPAREN  reduce using rule 57 (args)
+    STR     shift, and goto state 27
+    STRING  shift, and goto state 55
+    STRUCT  shift, and goto state 28
+
+    arg       goto state 60
+    args      goto state 94
+    typeSpec  goto state 57
+
+state 94 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN IDENT LPAREN [COMMA]
+
+   34 argsExpr: outNames assignOp IDENT LPAREN args . RPAREN
+   59 args: args . COMMA arg
+
+    COMMA   shift, and goto state 62
+    RPAREN  shift, and goto state 95
+
+state 95 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE IDENT ASSIGN IDENT LPAREN RPAREN
+
+   34 argsExpr: outNames assignOp IDENT LPAREN args RPAREN .  [IDENT, IF, RBRACE, VAR, WHILE]
+
+    IDENT   reduce using rule 34 (argsExpr)
+    IF      reduce using rule 34 (argsExpr)
+    RBRACE  reduce using rule 34 (argsExpr)
+    VAR     reduce using rule 34 (argsExpr)
+    WHILE   reduce using rule 34 (argsExpr)
+
+state 96 // FUNC IDENT LPAREN RPAREN LPAREN RPAREN LBRACE RBRACE
+
+   29 funcDecl: FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN $@2 LBRACE exprs RBRACE .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
+
+    $end        reduce using rule 29 (funcDecl)
+    FUNC        reduce using rule 29 (funcDecl)
+    PACKAGE     reduce using rule 29 (funcDecl)
+    TYPSTRUCT   reduce using rule 29 (funcDecl)
+    UNEXPECTED  reduce using rule 29 (funcDecl)
+    VAR         reduce using rule 29 (funcDecl)
+
+state 97 // TYPSTRUCT IDENT
+
+   27 structDecl: TYPSTRUCT IDENT . $@1 STRUCT LBRACE params RBRACE
+   26 $@1: .  [STRUCT]
+
+    STRUCT  reduce using rule 26 ($@1)
+
+    $@1  goto state 98
+
+state 98 // TYPSTRUCT IDENT [STRUCT]
+
+   27 structDecl: TYPSTRUCT IDENT $@1 . STRUCT LBRACE params RBRACE
+
+    STRUCT  shift, and goto state 99
+
+state 99 // TYPSTRUCT IDENT STRUCT
+
+   27 structDecl: TYPSTRUCT IDENT $@1 STRUCT . LBRACE params RBRACE
+
+    LBRACE  shift, and goto state 100
+
+state 100 // TYPSTRUCT IDENT STRUCT LBRACE
+
+   27 structDecl: TYPSTRUCT IDENT $@1 STRUCT LBRACE . params RBRACE
+   31 params: .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 31 (params)
+    IDENT   shift, and goto state 15
+    RBRACE  reduce using rule 31 (params)
+
+    param   goto state 16
+    params  goto state 101
+
+state 101 // TYPSTRUCT IDENT STRUCT LBRACE [COMMA]
+
+   27 structDecl: TYPSTRUCT IDENT $@1 STRUCT LBRACE params . RBRACE
+   33 params: params . COMMA param
+
+    COMMA   shift, and goto state 32
+    RBRACE  shift, and goto state 102
+
+state 102 // TYPSTRUCT IDENT STRUCT LBRACE RBRACE
+
+   27 structDecl: TYPSTRUCT IDENT $@1 STRUCT LBRACE params RBRACE .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
+
+    $end        reduce using rule 27 (structDecl)
+    FUNC        reduce using rule 27 (structDecl)
+    PACKAGE     reduce using rule 27 (structDecl)
+    TYPSTRUCT   reduce using rule 27 (structDecl)
+    UNEXPECTED  reduce using rule 27 (structDecl)
+    VAR         reduce using rule 27 (structDecl)
+
+state 103 // VAR IDENT
+
+   25 defDecl: VAR IDENT . typeSpec defAssign
+
+    BYTE    shift, and goto state 21
+    BYTEA   shift, and goto state 22
+    F32     shift, and goto state 19
+    F32A    shift, and goto state 25
+    F64     shift, and goto state 20
+    F64A    shift, and goto state 26
+    I32     shift, and goto state 17
+    I32A    shift, and goto state 23
+    I64     shift, and goto state 18
+    I64A    shift, and goto state 24
+    STR     shift, and goto state 27
+    STRUCT  shift, and goto state 28
+
+    typeSpec  goto state 104
+
+state 104 // VAR IDENT BYTE [$end]
+
+   25 defDecl: VAR IDENT typeSpec . defAssign
+   23 defAssign: .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
+
+    $end        reduce using rule 23 (defAssign)
+    ASSIGN      shift, and goto state 81
+    CASSIGN     shift, and goto state 82
+    FUNC        reduce using rule 23 (defAssign)
+    PACKAGE     reduce using rule 23 (defAssign)
+    TYPSTRUCT   reduce using rule 23 (defAssign)
+    UNEXPECTED  reduce using rule 23 (defAssign)
+    VAR         reduce using rule 23 (defAssign)
+
+    assignOp   goto state 83
+    defAssign  goto state 105
+
+state 105 // VAR IDENT BYTE [$end]
+
+   25 defDecl: VAR IDENT typeSpec defAssign .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
+
+    $end        reduce using rule 25 (defDecl)
+    FUNC        reduce using rule 25 (defDecl)
+    PACKAGE     reduce using rule 25 (defDecl)
+    TYPSTRUCT   reduce using rule 25 (defDecl)
+    UNEXPECTED  reduce using rule 25 (defDecl)
+    VAR         reduce using rule 25 (defDecl)
+
+state 106 // PACKAGE IDENT
+
+   22 packageDecl: PACKAGE IDENT .  [$end, FUNC, PACKAGE, TYPSTRUCT, UNEXPECTED, VAR]
+
+    $end        reduce using rule 22 (packageDecl)
+    FUNC        reduce using rule 22 (packageDecl)
+    PACKAGE     reduce using rule 22 (packageDecl)
+    TYPSTRUCT   reduce using rule 22 (packageDecl)
+    UNEXPECTED  reduce using rule 22 (packageDecl)
+    VAR         reduce using rule 22 (packageDecl)
 

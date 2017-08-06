@@ -1021,6 +1021,46 @@ but the T test works) reveals that, with a confidence interval of 99%
 (`tc = 2.66`), the interpretated program is statistically slower than
 the compiled program with `t = 2.72`.
 
+## Go-to Native Function
+
+The flow control statements in CX are not performed by Go's native
+statements.  A go-to native function had to be implemented to
+enable flow control statements like if, if/else and while loops.
+
+Basically, goTo increments or decrements the `Line` number of an
+expression in a `CXCall` structure. The `goTo` function receives three
+arguments: a predicate, an increment or decrement of lines in case the
+predicate evaluates to true, and an increment or decrement of lines in
+case the predicate evaluates to false.
+
+Considering the following CX function:
+
+```
+func basicIf (num i32) (num i32) {
+  pred := gtI32(num, 0)
+  goTo(pred, 3, 4)
+  printStr("Greater than 0")
+  printStr("Less than 0")
+}
+```
+
+if we call `basicIf(-1)`, the program should print "Less than 0",
+ignoring the `printStr("Greater than 0")` expression. As we can see in
+the goTo expression, if predicate is true, the program will jump
+to line #3, and if the predicate is false, the program will
+jump to line #4.
+
+If we call `basicIf(3)`, the program will print "Greater than 0" and
+"Less than 0". The reason behind this is that the program is jumping
+to line #3, but we're not telling it to ignore line #4, i.e., the
+program will continue a normal flow.
+
+If we wanted to implement a more correct if/else structure, we'd need
+to add another goTo expression after the `printStr("Greater than 0")`
+expression, telling the program to jump to line #5 (which doesn't
+exist, but CX interprets any line number greater than the number of
+expressions in a function as the end of the function's execution).
+
 ## Go-like Language
 
 Nex (a Lex-like lexical analyzer) and Go's Yacc were used to create a
@@ -1183,3 +1223,67 @@ and should stop if *epsilon* is reached (if the error is less than
 Finally, we test the evolved solution by calling `solution(30)` and
 output this to the program's output variable `outMain` (which is
 `main`'s output paramater).
+
+## CX 'If/else' Flow Control Structure
+
+Let's suppose we want to decide between two different operations to be
+assigned to variable `result`. In CX, we can create an if/else
+structure in the following way:
+
+```
+    pred := gtI64(5, 10)
+	if pred {
+		result := addI64(7, 10)
+		//print(25)
+	} else {
+		result := addI64(20, 3)
+	}
+```
+
+Notice that we can't place the predicate inside the if/else
+structure. This is a problem with the current implementation of the
+parser.
+
+Internally, the if/else structure above will be transformed to the
+following series of expressions:
+
+```
+    1.- Expression: pred = gtI64(5 i64, 10 i64)
+	2.- Expression: goTo(pred ident, 1 i32, 3 i32)
+	3.- Expression: result = addI64(7 i64, 10 i64)
+    4.- Expression: goTo([1] byte, 2 i32, 0 i32)
+    5.- Expression: result = addI64(20 i64, 3 i64)
+```
+
+## CX 'while' Flow Control Structure
+
+At the moment, CX only has implemented the while loop. An example of a
+while loop which prints the numbers from 0 to 10,000 is:
+
+```
+    var i i64 = 0
+	pred := ltI64(i, 10000)
+	while pred {
+		//printI64(i)
+		i := addI64(i, 1)
+		pred := ltI64(i, 10000)
+	}
+```
+
+Internally, the code above will be transformed to the following series
+of expressions:
+
+```
+    10.- Expression: i = idI64(0 i64)
+    11.- Expression: pred = ltI64(i ident, 10000 i64)
+    12.- Expression: goTo(pred ident, 1 i32, 5 i32)
+    13.- Expression: printI64(i ident)
+    14.- Expression: i = addI64(i ident, 1 i64)
+    15.- Expression: pred = ltI64(i ident, 10000 i64)
+    16.- Expression: goTo(pred ident, -3 i32, 1 i32)
+    ```
+
+We can notice how the final `goTo` receives a negative argument as its
+second parameter. This makes the program go back 3 lines in order to
+make another iteration. As soon as the predicate is false, the program
+will advance 1 line (goTo's third parameter), as in normal execution.

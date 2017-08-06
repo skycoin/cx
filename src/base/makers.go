@@ -2,12 +2,19 @@ package base
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 )
 
-var counter int = 0
+//var counter int = 0
 func MakeGenSym (name string) string {
-	gensym := fmt.Sprintf("%s%d", name, counter)
-	counter++
+	u1 := uuid.NewV4()
+	for i := 0; i < len(u1); i++ {
+		if u1[i] == '-' {
+			u1[i] = '_'
+		}
+	}
+	gensym := fmt.Sprintf("%s_%s", name, u1)
+	//counter++
 	
 	return gensym
 }
@@ -123,6 +130,8 @@ func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXContext) *CXDe
 		Name: def.Name,
 		Typ: MakeType(def.Typ.Name),
 		Value: &valCopy,
+		Offset: def.Offset,
+		Size: def.Size,
 		Module: mod,
 		Context: cxt,
 	}
@@ -287,7 +296,12 @@ func MakeModule (name string) *CXModule {
 // }
 
 func MakeDefinition (name string, value *[]byte, typ *CXType) *CXDefinition {
-	return &CXDefinition{Name: name, Typ: typ, Value: value}
+	return &CXDefinition{
+		Name: name,
+		Typ: typ,
+		Value: value,
+		Offset: -1,
+		Size: -1,}
 }
 
 func MakeField (name string, typ *CXType) *CXField {

@@ -53,6 +53,30 @@ func mulI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
+func initDef (arg1 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "str" {
+		panic("initDef: wrong argument type")
+	}
+
+	typName := string(*arg1.Value)
+
+	var zeroVal []byte
+	switch  typName {
+	case "byte": zeroVal = []byte{byte(0)}
+	case "i32": zeroVal = encoder.Serialize(int32(0))
+	case "i64": zeroVal = encoder.Serialize(int64(0))
+	case "f32": zeroVal = encoder.Serialize(float32(0))
+	case "f64": zeroVal = encoder.Serialize(float64(0))
+	case "[]byte": zeroVal = []byte{byte(0)}
+	case "[]i32": zeroVal = encoder.Serialize([]int32{0})
+	case "[]i64": zeroVal = encoder.Serialize([]int64{0})
+	case "[]f32": zeroVal = encoder.Serialize([]float32{0})
+	case "[]f64": zeroVal = encoder.Serialize([]float64{0})
+	}
+
+	return MakeArgument(&zeroVal, MakeType(typName))
+}
+
 func divI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
 		panic("divI32: wrong argument type")
@@ -63,7 +87,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg1.Value, &num1)
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 
-	if num2 == 0 {
+	if num2 == int32(0) {
 		panic("divI32: Division by 0")
 	}
 
@@ -127,13 +151,141 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg1.Value, &num1)
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 
-	if num2 == 0 {
+	if num2 == int64(0) {
 		panic("divI64: Division by 0")
 	}
 	
 	output := encoder.SerializeAtomic(num1 / num2)
 
 	return &CXArgument{Value: &output, Typ: MakeType("i64")}
+}
+
+func addF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
+		panic("addF32: wrong argument type")
+	}
+	
+	var num1 float32
+	var num2 float32
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 + num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f32")}
+}
+
+func subF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
+		panic("subF32: wrong argument type")
+	}
+	
+	var num1 float32
+	var num2 float32
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 - num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f32")}
+}
+
+func mulF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
+		panic("mulF32: wrong argument type")
+	}
+	
+	var num1 float32
+	var num2 float32
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 * num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f32")}
+}
+
+func divF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
+		panic("mulF32: wrong argument type")
+	}
+	
+	var num1 float32
+	var num2 float32
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	if num2 == float32(0.0) {
+		panic("divI32: Division by 0")
+	}
+
+	output := encoder.Serialize(num1 / num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f32")}
+}
+
+func addF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
+		panic("addF64: wrong argument type")
+	}
+	
+	var num1 float64
+	var num2 float64
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 + num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f64")}
+}
+
+func subF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
+		panic("subF64: wrong argument type")
+	}
+	
+	var num1 float64
+	var num2 float64
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 - num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f64")}
+}
+
+func mulF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
+		panic("mulF64: wrong argument type")
+	}
+	
+	var num1 float64
+	var num2 float64
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	output := encoder.Serialize(num1 * num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f64")}
+}
+
+func divF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
+		panic("mulF64: wrong argument type")
+	}
+	
+	var num1 float64
+	var num2 float64
+	encoder.DeserializeRaw(*arg1.Value, &num1)
+	encoder.DeserializeRaw(*arg2.Value, &num2)
+
+	if num2 == float64(0.0) {
+		panic("divF64: Division by 0")
+	}
+
+	output := encoder.Serialize(num1 / num2)
+
+	return &CXArgument{Value: &output, Typ: MakeType("f64")}
 }
 
 func readAByte (arr *CXArgument, idx *CXArgument) *CXArgument {
@@ -170,3 +322,214 @@ func writeAByte (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument 
 
 	return arr
 }
+
+/*
+  Relational Operators
+*/
+
+func ltI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
+		panic("ltI32: wrong argument type")
+	}
+
+	var num1 int32
+	var num2 int32
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 < num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+func gtI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
+		panic("gtI32: wrong argument type")
+	}
+
+	var num1 int32
+	var num2 int32
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 > num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+func eqI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
+		panic("eqI32: wrong argument type")
+	}
+
+	var num1 int32
+	var num2 int32
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 == num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+func ltI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
+		panic("ltI64: wrong argument type")
+	}
+
+	var num1 int64
+	var num2 int64
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 < num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+func gtI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
+		panic("gtI64: wrong argument type")
+	}
+
+	var num1 int64
+	var num2 int64
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 > num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+func eqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
+	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
+		panic("eqI64: wrong argument type")
+	}
+
+	var num1 int64
+	var num2 int64
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	
+	if num1 == num2 {
+		val := []byte{1}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	} else {
+		val := []byte{0}
+		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+	}
+}
+
+/*
+  Cast functions
+*/
+
+func castStr (arg *CXArgument) *CXArgument {
+	strTyp := MakeType("str")
+	switch arg.Typ.Name {
+	case "[]byte":
+		newArg := MakeArgument(arg.Value, strTyp)
+		return newArg
+	default:
+		panic(fmt.Sprintf("Type '%s' can't be casted to type 'str'", arg.Typ.Name))
+	}
+}
+
+func byteAtoStr (arg *CXArgument) *CXArgument {
+	if arg.Typ.Name != "[]byte" {
+		panic("byteAtoStr: wrong argument type")
+	}
+	
+	strTyp := MakeType("str")
+	newArg := MakeArgument(arg.Value, strTyp)
+		return newArg
+}
+
+func castI64 (arg *CXArgument) *CXArgument {
+	i64Typ := MakeType("i64")
+	switch arg.Typ.Name {
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(int64(val))
+		newArg := MakeArgument(&newVal, i64Typ)
+		return newArg
+	case "i64":
+		return arg
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Println(val)
+		newVal := encoder.Serialize(int64(val))
+		newArg := MakeArgument(&newVal, i64Typ)
+		return newArg
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(int64(val))
+		newArg := MakeArgument(&newVal, i64Typ)
+		return newArg
+	default:
+		panic(fmt.Sprintf("Type '%s' can't be casted to type 'i64'", arg.Typ.Name))
+	}
+}
+
+// goTo increments/decrements the call.Line to the desired expression line.
+// Used for if/else and loop statements.
+func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) *CXArgument {
+	if predicate.Typ.Name != "byte" || thenLine.Typ.Name != "i32" || elseLine.Typ.Name != "i32" {
+		panic("goTo: wrong argument type")
+	}
+	isFalse := true
+
+	for _, byt := range *predicate.Value {
+		if byt != 0 {
+			isFalse = false
+			break
+		}
+	}
+
+	var thenLineNo int32
+	var elseLineNo int32
+
+	encoder.DeserializeRaw(*thenLine.Value, &thenLineNo)
+	encoder.DeserializeRaw(*elseLine.Value, &elseLineNo)
+
+	if isFalse {
+		//call.Line = int(elseLineNo) - 1
+		call.Line = call.Line + int(elseLineNo) - 1
+	} else {
+		//call.Line = int(thenLineNo) - 1
+		call.Line = call.Line + int(thenLineNo) - 1
+	}
+	
+	if isFalse {
+		val := []byte{0}
+		return MakeArgument(&val, MakeType("byte"))
+	} else {
+		val := []byte{1}
+		return MakeArgument(&val, MakeType("byte"))
+	}
+}
+

@@ -2,18 +2,19 @@
 package main
 import (
   "strings"
+  "fmt"
   "github.com/skycoin/skycoin/src/cipher/encoder"
   . "github.com/skycoin/cx/src/base"
 )
 
 var cxt = MakeContext()
+var lineNo int = 1
 
 %}
 
 %union {
     i32 int32
     f64 float64
-    //    str string
     tok string
     fun *CXFunction
     params []*CXParameter
@@ -21,7 +22,9 @@ var cxt = MakeContext()
     args []*CXArgument
     arg *CXArgument
     outNames []string
-    
+    fnAdder []*CXExpression
+    expr *CXExpression
+
     cxt *CXContext
     mod *CXModule
 }
@@ -29,10 +32,12 @@ var cxt = MakeContext()
 %token  <i32>           INT
 %token  <f64>           FLOAT
 
-%token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT KEYWORD TYP VAR COMMA COMMENT STRING
+%token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT TYP VAR COMMA COMMENT STRING PACKAGE IF ELSE
 
 %type   <cxt>           cxtAdder
 %type   <mod>           modAdder
+%type   <fnAdder>       fnAdder
+%type   <expr>          expr ifStat
 %type   <param>         param
 %type   <params>        params
 %type   <arg>           arg
@@ -46,13 +51,21 @@ var cxt = MakeContext()
 
 %%
 
-input:
+input:          
         |       input line
 ;
 
 line:           term
-        |       modAdder
         |       cxtAdder
+        |       modAdder
+                ;
+
+cxtAdder:           PACKAGE IDENT
+                {
+                    fmt.Printf("")
+                    cxt.AddModule(MakeModule($2))
+                        $$ = cxt
+                        }
                 ;
 
 param:          IDENT TYP
@@ -142,7 +155,32 @@ outNames:       IDENT
                 }
         ;
 
-expr:           outNames OP IDENT LPAREN args RPAREN
+expr:           IDENT LPAREN args RPAREN
+                {
+                    if mod, err := cxt.GetCurrentModule(); err == nil {
+                        if fn, err := cxt.GetCurrentFunction(); err == nil {
+                            if op, err := cxt.GetFunction($1, mod.Name); err == nil {
+                            expr := MakeExpression(op)
+
+                            fn.AddExpression(expr)
+
+                            if expr, err := fn.GetCurrentExpression(); err == nil {
+                                    for _, arg := range $3 {
+                                            expr.AddArgument(arg)
+                                        }
+                                    $$ = expr
+                                }
+                
+                            } else {
+                                panic(err)
+                            }
+                        }
+                
+                    } else {
+                        panic(err)
+                            }
+                }
+        |       outNames OP IDENT LPAREN args RPAREN
                 {
                     if mod, err := cxt.GetCurrentModule(); err == nil {
                         if fn, err := cxt.GetCurrentFunction(); err == nil {
@@ -159,6 +197,7 @@ expr:           outNames OP IDENT LPAREN args RPAREN
                                 for _, arg := range $5 {
                                         expr.AddArgument(arg)
                                     }
+                                $$ = expr
                             }
                 
                             } else {
@@ -172,9 +211,56 @@ expr:           outNames OP IDENT LPAREN args RPAREN
                 }
         ;
 
-fnAdder:
+fnAdder:        
+                {
+                exprs := make([]*CXExpression, 0)
+                        $$ = exprs
+                }
+        |
+                ifStat
+                {
+                
+                }
         |       expr
+                {
+                    exprs := make([]*CXExpression, 1)
+                        exprs[0] = $1
+                        $$ = exprs
+                        
+                }
         |       fnAdder expr
+                {
+                    $1 = append($1, $2)
+                        $$ = $1
+                }
+        ;
+
+elseStat:       ELSE LBRACE fnAdder RBRACE
+                {
+                fmt.Println("else")
+                fmt.Println($3)
+
+                /* if mod, err := cxt.GetCurrentModule(); err == nil { */
+                /*     if fn, err := mod.GetCurrentFunction(); err == nil { */
+                /* fn.AddExpression() */
+                /* } */
+                /* } */
+                
+                }
+                ;
+/*
+  The goTo is now ready, now we need to build the expressions
+*/
+ifStat:         IF arg LBRACE fnAdder RBRACE
+                {
+                fmt.Println("if/then")
+                fmt.Println($4)
+                }
+        |       IF arg LBRACE fnAdder RBRACE elseStat
+                {
+                fmt.Println("if/then with else")
+                fmt.Println($4)
+                }
         ;
 
 def:           VAR IDENT TYP OP
@@ -183,7 +269,7 @@ def:           VAR IDENT TYP OP
                     if mod, err := cxt.GetCurrentModule(); err == nil {
                     mod.AddDefinition(MakeDefinition($2, $5.Value, MakeType($3)))
                     }
-                } 
+                }
         ;
 
 fun:            FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN
@@ -203,23 +289,26 @@ fun:            FUNC IDENT LPAREN params RPAREN LPAREN params RPAREN
                 LBRACE fnAdder RBRACE
         ;
 
-modAdder:       def {
+modAdder:       def
+                {
                     
                 }
-        |       fun {
+        |       fun
+                {
                     
                 }
-        |       modAdder fun {}
-        |       modAdder def {}
+        |       modAdder fun
+                {
+                
+                }
+        |       modAdder def
+                {
+                
+                }
                 
         ;
 
-cxtAdder:           KEYWORD IDENT
-                {
-                    cxt.AddModule(MakeModule($2))
-                        $$ = cxt
-                        }
-                ;
+// cxtAdder should be in line
 
 term : ';'
 	{
@@ -227,4 +316,6 @@ term : ';'
 	| '\n'
 	{
 	}
-	;%%
+	;
+
+%%

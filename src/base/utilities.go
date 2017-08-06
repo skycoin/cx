@@ -195,8 +195,14 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 
 					if arg.Typ.Name != "ident" {
 						switch typ {
+						case "byte":
+							argName = fmt.Sprintf("%v", *arg.Value)
 						case "i32":
 							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%d", val)
+						case "i64":
+							var val int64
 							encoder.DeserializeRaw(*arg.Value, &val)
 							argName = fmt.Sprintf("%d", val)
 						case "f64":
@@ -223,20 +229,29 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 					}
 				}
 
-				var outNames bytes.Buffer
-				for i, outName := range expr.OutputNames {
-					if i == len(expr.OutputNames) - 1 {
-						outNames.WriteString(outName)
-					} else {
-						outNames.WriteString(concat(outName, ", "))
+				if len(expr.OutputNames) > 0 {
+					var outNames bytes.Buffer
+					for i, outName := range expr.OutputNames {
+						if i == len(expr.OutputNames) - 1 {
+							outNames.WriteString(outName)
+						} else {
+							outNames.WriteString(concat(outName, ", "))
+						}
 					}
+					
+					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)\n",
+						k,
+						outNames.String(),
+						expr.Operator.Name,
+						args.String())
+				} else {
+					fmt.Printf("\t\t\t%d.- Expression: %s(%s)\n",
+						k,
+						expr.Operator.Name,
+						args.String())
 				}
 
-				fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)\n",
-					k,
-					outNames.String(),
-					expr.Operator.Name,
-					args.String())
+				
 
 				if withAffs {
 					for i, aff := range expr.GetAffordances() {

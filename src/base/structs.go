@@ -9,7 +9,10 @@ var basicFunctions = []string{
 	"evolve",
 	"addI32", "mulI32", "subI32", "divI32",
 	"addI64", "mulI64", "subI64", "divI64",
+	"addF32", "mulF32", "subF32", "divF32",
+	"addF64", "mulF64", "subF64", "divF64",
 	"idAI32", "idI32",
+	"print",
 	"readAByte", "writeAByte",
 }
 var arrayFunctions = []string{
@@ -67,6 +70,8 @@ type CXDefinition struct {
 	Name string
 	Typ *CXType
 	Value *[]byte
+	Offset int
+	Size int
 
 	Module *CXModule
 	Context *CXContext
@@ -123,12 +128,6 @@ type CXExpression struct {
 	Module *CXModule
 	Context *CXContext
 }
-
-// type CXPointer struct {
-// 	//Typ *CXType // do we need to know the type?
-// 	Offset int
-// 	Size int
-// }
 
 type CXArgument struct {
 	Typ *CXType

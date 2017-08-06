@@ -1,48 +1,98 @@
 package main
 
 var greeting str = "hello"
+var true byte = 1
+var false byte = 0
 var foo i32 = 10
 var bar i32 = 20
+var par i32 = 30
+var boo i32 = 40
 var epsilon f64 = 1.531
-var inps []i32 = []i32{
-	-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-var outs []i32 = []i32{
-	-970, -702, -488, -322, -198, -110, -52, -18, -2,
-	2, 0, -2, 2, 18, 52, 110, 198, 322, 488, 702, 970}
+var inps []f64 = []f64{
+	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
+	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
+var outs []f64 = []f64{
+	-970.0, -702.0, -488.0, -322.0, -198.0, -110.0, -52.0, -18.0, -2.0,
+	2.0, 0.0, -2.0, 2.0, 18.0, 52.0, 110.0, 198.0, 322.0, 488.0, 702.0, 970.0}
 
 /*
   Native functions
 */
 
-/* Identity functions
 func idAI32 (x []i32) (x []i32) {}
 func idI32 (x i32) (x i32) {}
-*/
+
 func addI32 (n1 i32, n2 i32) (out i32) {}
 func subI32 (n1 i32, n2 i32) (out i32) {}
 func mulI32 (n1 i32, n2 i32) (out i32) {}
-// func readAByte (arr []byte, idx i32) (byt byte) {}
-func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
+func divI32 (n1 f64, n2 f64) (out f64) {}
+
+func addF64 (n1 f64, n2 f64) (out f64) {}
+func subF64 (n1 f64, n2 f64) (out f64) {}
+func mulF64 (n1 f64, n2 f64) (out f64) {}
+func divF64 (n1 f64, n2 f64) (out f64) {}
+
+func ltI32 (n1 i32, n2 i32) (out byte) {}
+func gtI32 (n1 i32, n2 i32) (out byte) {}
+func eqI32 (n1 i32, n2 i32) (out byte) {}
+
+func goTo (predicate byte, thenLine i32, elseLine i32) (out byte) {}
+
+func print (n i32) (out i32) {}
+
+func readAByte (arr []byte, idx i32) (byt byte) {}
+func writeAByte (arr []byte, idx i32, val byte) (byt byte) {}
+
+func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 
 /*
   Actual program
 */
 
-func double (num i32) (out i32) {
-	out = addI32(num, num)
+func double (num f64) (out f64) {
+	out = addF64(num, num)
 }
 
-func solution (n i32) (out i32) {
-	double = addI32(n, n)
-	triple = addI32(double, n)
-	square = mulI32(n, n)
-	cubic = mulI32(square, n)
-	//out = subI32(cubic, triple)
+func voidFn () () {
+	print(bar)
 }
 
-func main () (outMain i32) {
-	_ := evolve("solution", inps, outs, 8, 1000, epsilon)
-	//foo2 := addI32(bar, bar)
-	outMain := solution(30)
+func solution (n f64) (out f64) {
+	double = addF64(n, n)
+	triple = addF64(double, n)
+	square = mulF64(n, n)
+	// cubic = mulF64(square, n)
+	// out = subF64(cubic, triple)
+}
+
+func main () (outMain f64) {
+	//chuck := addI32(5, 10)
+	//_ := evolve("solution", "addF64|subF64", inps, outs, 5, 10, epsilon)
+	//outMain := divF64(3.0, 7.0)
+	//outMain := solution(10.0)
+	//norris := addI32(5, 15)
+	//print(foo)
+	//voidFn()
+
+	//outMain := addF64(3.14, 3.14);
+
+
+	// trying loops
+	// one := addI32(1, 0)
+	// i := addI32(0, 0)
+	// i := addI32(i, one)
+	// print(i)
+	// stop := gtI32(i, 9)
+	// goTo(stop, 6, 2)
+
+	//pred := gtI32(bar, foo)
+	
+	if pred {
+		outMain := addF64(3.0, 7.0)
+		outMain := addF64(3.0, 7.0)
+		outMain := addF64(3.0, 7.0)
+	}
+
+	outMain := divF64(3.0, 7.0)
+
 }

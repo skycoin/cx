@@ -255,7 +255,11 @@ func main() {
 	//evolvedProgram := cxt.Evolve("solution", dataIn, dataOut, 10, 2, 0.001)
 	//evolvedProgram.PrintProgram(false)
 
-	fmt.Println(dataOut)
+	encoded := encoder.Serialize(float64(1234))
+	fmt.Println(encoded)
+	var decoded float64
+	encoder.DeserializeRaw(encoded, &decoded)
+	fmt.Println(decoded)
 
 	
 	// //getting the simulated outputs
@@ -295,33 +299,33 @@ func main() {
 
 	
 
-	fmt.Println("Interpreted")
-	for i := 0; i < 30; i++ {
-		start := time.Now()
+	// fmt.Println("Interpreted")
+	// for i := 0; i < 30; i++ {
+	// 	start := time.Now()
 
-		for j := 0; j < 10000; j++ {
-			cxt.ResetTo(0)
-			cxt.Run(false, -1)
-		}
+	// 	for j := 0; j < 10000; j++ {
+	// 		cxt.ResetTo(0)
+	// 		cxt.Run(false, -1)
+	// 	}
 		
-		elapsed := time.Since(start)
-		fmt.Println(elapsed)
-	}
+	// 	elapsed := time.Since(start)
+	// 	fmt.Println(elapsed)
+	// }
 
-	evolvedProgram.Compile()
+	// cxt.Compile()
 
-	fmt.Println("Compiled")
-	for i := 0; i < 30; i++ {
-		start := time.Now()
+	// fmt.Println("Compiled")
+	// for i := 0; i < 30; i++ {
+	// 	start := time.Now()
 
-		for j := 0; j < 10000; j++ {
-			cxt.ResetTo(0)
-			cxt.Run(false, -1)
-		}
+	// 	for j := 0; j < 10000; j++ {
+	// 		cxt.ResetTo(0)
+	// 		cxt.Run(false, -1)
+	// 	}
 		
-		elapsed := time.Since(start)
-		fmt.Println(elapsed)
-	}
+	// 	elapsed := time.Since(start)
+	// 	fmt.Println(elapsed)
+	// }
 
 	
 

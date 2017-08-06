@@ -13,3 +13,4 @@ gisp.go
 *.nex
 *.nn.go
 nexyacc
+ansi-c-yacc-grammar.y

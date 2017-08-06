@@ -139,8 +139,16 @@ func (cxt *CXContext) GetModule(modName string) (*CXModule, error) {
 	}
 }
 
+func (cxt *CXContext) GetStruct(strctName string, modName string) (*CXStruct, error) {
+	if cxt.Modules != nil && cxt.Modules[modName] != nil && cxt.Modules[modName].Structs != nil && cxt.Modules[modName].Structs[strctName] != nil {
+		return cxt.Modules[modName].Structs[strctName], nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("Strct '%s' not found in module '%s'", strctName, modName))
+	}
+}
+
 func (cxt *CXContext) GetFunction(fnName string, modName string) (*CXFunction, error) {
-	if cxt.Modules != nil && cxt.Modules[modName].Functions != nil && cxt.Modules[modName].Functions[fnName] != nil {
+	if cxt.Modules != nil && cxt.Modules[modName] != nil && cxt.Modules[modName].Functions != nil && cxt.Modules[modName].Functions[fnName] != nil {
 		return cxt.Modules[modName].Functions[fnName], nil
 	} else {
 		return nil, errors.New(fmt.Sprintf("Function '%s' not found in module '%s'", fnName, modName))
