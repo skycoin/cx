@@ -1281,7 +1281,7 @@ of expressions:
     14.- Expression: i = addI64(i ident, 1 i64)
     15.- Expression: pred = ltI64(i ident, 10000 i64)
     16.- Expression: goTo(pred ident, -3 i32, 1 i32)
-    ```
+```
 
 We can notice how the final `goTo` receives a negative argument as its
 second parameter. This makes the program go back 3 lines in order to
