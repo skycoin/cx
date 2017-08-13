@@ -5,12 +5,13 @@ import (
 	"strconv"
 	"regexp"
 	"bytes"
+	"sort"
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func PrintAffordances (affs []*CXAffordance) {
-	for _, aff := range affs {
-		fmt.Println(aff.Description)
+	for i, aff := range affs {
+		fmt.Printf("%d.-%s", i, aff.Description)
 	}
 }
 
@@ -22,7 +23,7 @@ func FilterAffordances(affs []*CXAffordance, filters ...string) []*CXAffordance 
 	filteredAffs := make([]*CXAffordance, 0)
 	for _, filter := range filters {
 		//re := regexp.MustCompile(regexp.QuoteMeta(filter))
-		re := regexp.MustCompile(filter)
+		re := regexp.MustCompile("(?i)" + filter)
 		for _, aff := range affs {
 			if re.FindString(aff.Description) != "" {
 				filteredAffs = append(filteredAffs, aff)
@@ -38,8 +39,8 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 	mod := strct.Module
 
-	types := make([]string, len(basicTypes))
-	copy(types, basicTypes)
+	types := make([]string, len(BASIC_TYPES))
+	copy(types, BASIC_TYPES)
 	
 	for name, _ := range mod.Structs {
 		types = append(types, name)
@@ -189,7 +190,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 
-	for _, fnName := range basicFunctions {
+	for _, fnName := range NATIVE_FUNCTIONS {
 		if fnName == fn.Name {
 			return affs
 		}
@@ -199,8 +200,8 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	opsNames := make([]string, 0)
 	ops := make([]*CXFunction, 0)
 
-	types := make([]string, len(basicTypes))
-	copy(types, basicTypes)
+	types := make([]string, len(BASIC_TYPES))
+	copy(types, BASIC_TYPES)
 	for name, _ := range mod.Structs {
 		types = append(types, name)
 	}
@@ -220,6 +221,15 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		}
 	}
 
+	// Getting operators from core module
+	if core, err := fn.Context.GetModule(CORE_MODULE); err == nil {
+		for opName, op := range core.Functions {
+			ops = append(ops, op)
+			opsNames = append(opsNames, concat(core.Name, ".", opName))
+		}
+	}
+	
+
 	// Getting operators from imported modules
 	for impName, imp := range mod.Imports {
 		for opName, op := range imp.Functions {
@@ -228,27 +238,35 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		}
 	}
 
+	sort.Strings(types)
+
 	// Inputs
 	for _, typ := range types {
+		theTyp := typ
 		affs = append(affs, &CXAffordance{
-			Description: concat("AddInput ", typ),
+			Description: concat("AddInput ", theTyp),
 			Action: func() {
-				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(theTyp)))
 		}})
 	}
-
+	
 	// Outputs
 	for _, typ := range types {
+		theTyp := typ
 		affs = append(affs, &CXAffordance{
-			Description: concat("AddOutput ", typ),
+			Description: concat("AddOutput ", theTyp),
 			Action: func() {
-				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+				fn.AddOutput(MakeParameter(MakeGenSym("in"), MakeType(theTyp)))
 			}})
 	}
 
+	sort.Strings(opsNames)
+	sort.Sort(byFnName(ops))
+
 	// Expressions
 	for i, op := range ops {
-
+		theOp := op
+		
 		var inps bytes.Buffer
 		for j, inp := range ops[i].Inputs {
 			if j == len(ops[i].Inputs) - 1 {
@@ -267,8 +285,6 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			}
 		}
 
-		
-		theOp := op // or will keep reference to last op
 		affs = append(affs, &CXAffordance{
 			
 			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
@@ -283,7 +299,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	affs := make([]*CXAffordance, 0)
 
-// 	for _, fnName := range basicFunctions {
+// 	for _, fnName := range NATIVE_FUNCTIONS {
 // 		if fnName == fn.Name {
 // 			return affs
 // 		}
@@ -297,8 +313,8 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	defs := make([]string, 0)
 // 	defsTypes := make([]*CXType, 0)
 
-// 	types := make([]string, len(basicTypes))
-// 	copy(types, basicTypes)
+// 	types := make([]string, len(BASIC_TYPES))
+// 	copy(types, BASIC_TYPES)
 // 	for name, _ := range mod.Structs {
 // 		types = append(types, name)
 // 	}
@@ -508,8 +524,8 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 func (mod *CXModule) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
-	types := make([]string, len(basicTypes))
-	copy(types, basicTypes)
+	types := make([]string, len(BASIC_TYPES))
+	copy(types, BASIC_TYPES)
 
 	if len(mod.Structs) > 0 {
 		for name, _ := range mod.Structs {

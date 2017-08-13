@@ -1,21 +1,36 @@
 package base
 
-// used for affordances (and maybe other stuff)
-var basicTypes = []string{
-	"str", "byte", "i32", "i64", "f32", "f64",
-	"[]byte", "[]i32", "[]i64", "[]f64", "[]f32",
+const NON_ASSIGN_PREFIX = "nonAssign"
+const CORE_MODULE = "core"
+var BASIC_TYPES []string = []string{
+	"bool", "str", "byte", "i32", "i64", "f32", "f64",
+	"[]bool", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
 }
-var basicFunctions = []string{
-	"evolve",
+var NATIVE_FUNCTIONS = []string{
 	"addI32", "mulI32", "subI32", "divI32",
 	"addI64", "mulI64", "subI64", "divI64",
 	"addF32", "mulF32", "subF32", "divF32",
 	"addF64", "mulF64", "subF64", "divF64",
-	"idAI32", "idI32",
-	"print",
+	
+	"printStr", "printByte", "printI32", "printI64",
+	"printF32", "printF64", "printByteA", "printI32A",
+	"printI64A", "printF32A", "printF64A",
+	
+	"idStr", "idByte", "idI32", "idI64", "idF32", "idF64",
+	"idByteA", "idI32A", "idI64A", "idF32A", "idF64A",
+	
 	"readAByte", "writeAByte",
+	
+	"byteAtoStr", "i32toI64", "f32toI64", "f64toI64",
+	
+	"ltI32", "gtI32", "eqI32",
+	"ltI64", "gtI64", "eqI64",
+
+	"initDef",
+	"evolve",
+	"goTo",
 }
-var arrayFunctions = []string{
+var ARRAY_FUNCTIONS = []string{
 	"readAByte", "writeAByte",
 }
 

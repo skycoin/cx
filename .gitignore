@@ -13,4 +13,9 @@ gisp.go
 *.nex
 *.nn.go
 nexyacc
+old/
 ansi-c-yacc-grammar.y
+cx.nn.go
+cx
+cx.go
+y.output

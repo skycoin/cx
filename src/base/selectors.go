@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	"errors"
 )
 
@@ -21,7 +22,7 @@ func (cxt *CXContext) SelectModule (name string) (*CXModule, error) {
 	}
 
 	if found == nil {
-		return nil, errors.New("Desired module does not exist")
+		return nil, errors.New(fmt.Sprintf("Module '%s' does not exist", name))
 	}
 
 	return found, nil

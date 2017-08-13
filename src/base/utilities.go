@@ -68,6 +68,9 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 
 	i := 0
 	for _, mod := range cxt.Modules {
+		if mod.Name == CORE_MODULE {
+			continue
+		}
 		fmt.Printf("%d.- Module: %s\n", i, mod.Name)
 
 		if withAffs {
@@ -149,18 +152,11 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 				}
 			}
 
-			// out := ""
-			// if fn.Output != nil {
-			// 	if (fn.Output.Name != "") {
-			// 		out = concat(fn.Output.Name, " ", fn.Output.Typ.Name)
-			// 		inOuts[fn.Output.Name] = fn.Output.Typ.Name
-			// 	} else {
-			// 		out = fn.Output.Typ.Name
-			// 	}
-			// }
-			
+			// delete me
+			//if fn.Name == "main" {
 			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
 				j, fn.Name, inps.String(), outs.String())
+			//}
 
 			if withAffs {
 				for i, aff := range fn.GetAffordances() {
@@ -195,20 +191,54 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 
 					if arg.Typ.Name != "ident" {
 						switch typ {
+						case "str":
+							fmt.Printf("%#v\n", string(*arg.Value))
+						case "bool":
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							if val == 0 {
+								argName = "false"
+							} else {
+								argName = "true"
+							}
 						case "byte":
-							argName = fmt.Sprintf("%v", *arg.Value)
+							argName = fmt.Sprintf("%#v", *arg.Value)
 						case "i32":
 							var val int32
 							encoder.DeserializeRaw(*arg.Value, &val)
-							argName = fmt.Sprintf("%d", val)
+							argName = fmt.Sprintf("%#v", val)
 						case "i64":
 							var val int64
 							encoder.DeserializeRaw(*arg.Value, &val)
-							argName = fmt.Sprintf("%d", val)
+							argName = fmt.Sprintf("%#v", val)
+						case "f32":
+							var val float32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
 						case "f64":
 							var val float64
 							encoder.DeserializeRaw(*arg.Value, &val)
-							argName = fmt.Sprintf("%f", val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]byte":
+							var val []byte
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]i32":
+							var val []int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]i64":
+							var val []int64
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]f32":
+							var val []float32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]f64":
+							var val []float64
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
 						default:
 							argName = string(*arg.Value)
 						}
@@ -232,6 +262,10 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 				if len(expr.OutputNames) > 0 {
 					var outNames bytes.Buffer
 					for i, outName := range expr.OutputNames {
+						// making outName shorter
+						// if len(outName) > 15 {
+						// 	outName = outName[:15]
+						// }
 						if i == len(expr.OutputNames) - 1 {
 							outNames.WriteString(outName)
 						} else {

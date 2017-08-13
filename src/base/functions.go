@@ -338,11 +338,11 @@ func ltI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 < num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -357,11 +357,11 @@ func gtI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 > num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -376,11 +376,11 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 == num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -395,11 +395,11 @@ func ltI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 < num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -414,11 +414,11 @@ func gtI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 > num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -433,11 +433,11 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	
 	if num1 == num2 {
-		val := []byte{1}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(1))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	} else {
-		val := []byte{0}
-		return &CXArgument{Value: &val, Typ: MakeType("byte")}
+		val := encoder.Serialize(int32(0))
+		return &CXArgument{Value: &val, Typ: MakeType("bool")}
 	}
 }
 
@@ -498,16 +498,18 @@ func castI64 (arg *CXArgument) *CXArgument {
 // goTo increments/decrements the call.Line to the desired expression line.
 // Used for if/else and loop statements.
 func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) *CXArgument {
-	if predicate.Typ.Name != "byte" || thenLine.Typ.Name != "i32" || elseLine.Typ.Name != "i32" {
+	if predicate.Typ.Name != "bool" || thenLine.Typ.Name != "i32" || elseLine.Typ.Name != "i32" {
 		panic("goTo: wrong argument type")
 	}
-	isFalse := true
+	var isFalse bool
 
-	for _, byt := range *predicate.Value {
-		if byt != 0 {
-			isFalse = false
-			break
-		}
+	var pred int32
+	encoder.DeserializeRaw(*predicate.Value, &pred)
+
+	if pred == 0 {
+		isFalse = true
+	} else {
+		isFalse = false
 	}
 
 	var thenLineNo int32
@@ -525,11 +527,11 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
 	}
 	
 	if isFalse {
-		val := []byte{0}
-		return MakeArgument(&val, MakeType("byte"))
+		val := encoder.Serialize(int32(0))
+		return MakeArgument(&val, MakeType("bool"))
 	} else {
-		val := []byte{1}
-		return MakeArgument(&val, MakeType("byte"))
+		val := encoder.Serialize(int32(1))
+		return MakeArgument(&val, MakeType("bool"))
 	}
 }
 

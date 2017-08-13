@@ -27,13 +27,18 @@ func argsToDefs (args []*CXArgument, names []string, mod *CXModule, cxt *CXConte
 
 func PrintCallStack (callStack []*CXCall) {
 	for i, call := range callStack {
-		tabs := strings.Repeat("\t", i)
-		fmt.Printf("%s%s %d, ", tabs, call.Operator.Name, call.Line)
+		tabs := strings.Repeat("___", i)
+		if tabs == "" {
+			fmt.Printf("%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+		} else {
+			fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+		}
+		
 
 		lenState := len(call.State)
 		idx := 0
 		for _, def := range call.State {
-			if def.Name == "_" {
+			if def.Name == "_" || (len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX) {
 				continue
 			}
 			var valI32 int32
@@ -99,7 +104,6 @@ func PrintCallStack (callStack []*CXCall) {
 		}
 		fmt.Println()
 	}
-	fmt.Println()
 }
 
 func callsEqual (call1, call2 *CXCall) bool {
@@ -193,6 +197,85 @@ func (cxt *CXContext) ResetTo(stepNumber int) {
 
 		cxt.CallStack = newStep
 		cxt.Steps = cxt.Steps[:stepNumber]
+	}
+}
+
+func (cxt *CXContext) UnRun (nCalls int) {
+	if len(cxt.Steps) > 0 && nCalls > 0 {
+		if nCalls > len(cxt.Steps) {
+			nCalls = len(cxt.Steps) - 1
+		}
+
+		reqStep := cxt.Steps[len(cxt.Steps) - nCalls]
+
+		newStep := MakeCallStack(len(reqStep.Calls))
+		
+		var lastCall *CXCall
+		for j, call := range reqStep.Calls {
+			newCall := MakeCallCopy(call, call.Module, call.Context)
+			newCall.ReturnAddress = lastCall
+			lastCall = newCall
+			newStep.Calls[j] = newCall
+		}
+
+		cxt.CallStack = newStep
+		cxt.Steps = cxt.Steps[:len(cxt.Steps) - nCalls]
+	}
+}
+
+func replPrintEvaluation (arg *CXArgument) {
+	fmt.Printf(">> ")
+	switch arg.Typ.Name {
+	case "str":
+		fmt.Printf("%#v\n", string(*arg.Value))
+	case "bool":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		if val == 0 {
+			fmt.Printf("false\n")
+		} else {
+			fmt.Printf("true\n")
+		}
+	case "byte":
+		fmt.Printf("%#v\n", *arg.Value)
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "[]byte":
+		var val []byte
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "[]i32":
+		var val []int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "[]i64":
+		var val []int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "[]f32":
+		var val []float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	case "[]f64":
+		var val []float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
+	default:
+		fmt.Printf("")
 	}
 }
 
@@ -396,13 +479,18 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			// }
 		}
 
-		//call.Context.PrintProgram(false)
+		allOutsNil := true
+		for _, out := range outputs {
+			if out != nil {
+				allOutsNil = false
+				break
+			}
+		}
 
-		// last expression will give us the outputs
-		if len(outputs) == 0 {
+		if allOutsNil {
 			outNames := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputNames
-			for _, outName := range outNames {
-				outputs = append(outputs, call.State[outName])
+			for i, outName := range outNames {
+				outputs[i] = call.State[outName]
 			}
 		}
 
@@ -413,7 +501,7 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			}
 		}
 		
-		// checking if output var has the same type as the required output
+		//checking if output var has the same type as the required output
 		// if output.Typ.Name != call.Operator.Output.Typ.Name {
 		// 	panic(fmt.Sprintf("output var '%s' is of type '%s'; function '%s' requires output of type '%s'",
 		// 		output.Name, output.Typ.Name, call.Operator.Name, call.Operator.Output.Typ.Name))
@@ -622,6 +710,7 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 				fmt.Println(val)
 				values = append(values, argsCopy[0])
 				// identity functions
+			case "idStr": values = append(values, argsCopy[0])
 			case "idByte": values = append(values, argsCopy[0])
 			case "idI32": values = append(values, argsCopy[0])
 			case "idI64": values = append(values, argsCopy[0])
@@ -655,6 +744,14 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 				values = append(values, eqI32(argsCopy[0], argsCopy[1]))
 			case "ltI64":
 				values = append(values, ltI64(argsCopy[0], argsCopy[1]))
+
+				// 1. Keep trying to solve compile
+				// 2. Bootstrap native functions
+				// 3. Maybe make everything be in a byte array
+				// 4. Make CXGO call affordances
+				// 5. Nested expressions
+				// 6. Create a REPL
+				
 			case "gtI64":
 				values = append(values, gtI64(argsCopy[0], argsCopy[1]))
 			case "eqI64":
@@ -705,6 +802,9 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			if len(values) > 0 {
 				// operator was a native function
 				for i, outName := range expr.OutputNames {
+					if withDebug {
+						replPrintEvaluation(values[i])
+					}
 					def := MakeDefinition(outName, values[i].Value, values[i].Typ)
 					def.Module = call.Module
 					def.Context = call.Context

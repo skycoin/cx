@@ -2,22 +2,30 @@ package base
 
 import (
 	"fmt"
-	"github.com/satori/go.uuid"
+	//"github.com/satori/go.uuid"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-//var counter int = 0
+var genSymCounter int = 0
 func MakeGenSym (name string) string {
-	u1 := uuid.NewV4()
-	for i := 0; i < len(u1); i++ {
-		if u1[i] == '-' {
-			u1[i] = '_'
-		}
-	}
-	gensym := fmt.Sprintf("%s_%s", name, u1)
-	//counter++
+	gensym := fmt.Sprintf("%s_%d", name, genSymCounter)
+	genSymCounter++
 	
 	return gensym
 }
+
+// func MakeGenSym (name string) string {
+// 	u1 := uuid.NewV4()
+// 	for i := 0; i < len(u1); i++ {
+// 		if u1[i] == '-' {
+// 			u1[i] = '_'
+// 		}
+// 	}
+// 	gensym := fmt.Sprintf("%s_%s", name, u1)
+// 	//counter++
+	
+// 	return gensym
+// }
 
 func MakeContext () *CXContext {
 	heap := make([]byte, 0)
@@ -308,6 +316,30 @@ func MakeField (name string, typ *CXType) *CXField {
 	return &CXField{Name: name, Typ: typ}
 }
 
+func MakeFieldFromParameter (param *CXParameter) *CXField {
+	return &CXField{Name: param.Name, Typ: param.Typ}
+}
+
+// Used only for native types
+func MakeDefaultValue (typName string) *[]byte {
+	var zeroVal []byte
+	switch typName {
+	case "byte": zeroVal = []byte{byte(0)}
+	case "i32": zeroVal = encoder.Serialize(int32(0))
+	case "i64": zeroVal = encoder.Serialize(int64(0))
+	case "f32": zeroVal = encoder.Serialize(float32(0))
+	case "f64": zeroVal = encoder.Serialize(float64(0))
+	case "[]byte": zeroVal = []byte{byte(0)}
+	case "[]i32": zeroVal = encoder.Serialize([]int32{0})
+	case "[]i64": zeroVal = encoder.Serialize([]int64{0})
+	case "[]f32": zeroVal = encoder.Serialize([]float32{0})
+	case "[]f64": zeroVal = encoder.Serialize([]float64{0})
+	}
+	return &zeroVal
+}
+
+//func MakeSerializedValue ()
+
 func MakeStruct (name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
@@ -359,5 +391,32 @@ func MakeAffordance (desc string, action func()) *CXAffordance {
 	return &CXAffordance{
 		Description: desc,
 		Action: action,
+	}
+}
+
+func MakeIdentityOpName (typeName string) string {
+	switch typeName {
+	case "byte":
+		return "idByte"
+	case "i32":
+		return "idI32"
+	case "i64":
+		return "idI64"
+	case "f32":
+		return "idF32"
+	case "f64":
+		return "idF64"
+	case "[]byte":
+		return "idByteA"
+	case "[]i32":
+		return "idI32A"
+	case "[]i64":
+		return "idI64A"
+	case "[]f32":
+		return "idF32A"
+	case "[]f64":
+		return "idF64A"
+	default:
+		return ""
 	}
 }

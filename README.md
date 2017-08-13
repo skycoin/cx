@@ -1,8 +1,519 @@
 # CX Programming Language
 
 This is a prototype version of the CX Programming Language. At the
-moment, in order to create a program, the programmer needs to use the base
-language directly.
+moment, a programmer can either use the base language directly
+(although this is no longer encouraged) or can use a programming
+language with a syntax similar to Go.
+
+This README file described how to create a CX program using the base
+language (by using Golang's functions and structs). These sections
+will now appear at the end of this file (after the "Old README" title).
+
+## Building the CX Compiler
+
+### Quick Instructions
+
+Go to `src/golike` in a terminal, and run:
+
+```
+$ chmod +x cx.sh
+$ ./cx.sh
+```
+
+After the compilation, one should see printed the following message:
+
+```
+CX REPL
+More information about CX is available at https://github.com/skycoin/cx
+
+*
+```
+
+To test the environment, write `:dProgram true;` to enable program
+structure debugging.
+
+After running the `cx.sh` script, one can now use the generated `cx` compiler
+to run the REPL or compile source code files (just make sure to make it
+executable by running `chmod +x cx`).
+
+## CX REPL
+
+CX now has a REPL where a programmer can interactively build and
+evaluate a CX program. By following the instructions in the *Quick
+Instructions* section, you should now have be in the CX REPL.
+
+An important note is that a semicolon (;) is necessary at the end of
+the input to indicate the REPL that you want to evaluate the code.
+
+### Metaprogramming Commands
+
+CX has a set of metaprogramming commands, which give the programmer
+ more control over the building process of a program.
+
+#### Debugging
+
+CX has two metaprogramming commands for debugging: `:dProgram` and
+`:dStack`. The former prints the program abstract syntax tree (AST)
+whenever a new element is added (e.g., a new module, a new function, a
+new expression), and the latter prints the callstack everytime a
+forward step is performed (see the subsection *Stepping*).
+
+To activate program structure debugging, write in the REPL:
+
+```
+:dProgram true;
+```
+
+To deactivate it, write:
+
+```
+:dProgram false;
+```
+
+`:dStack` helps the programmer know what are the inputs and outputs of
+the functions being called during a program's execution, as well as
+what expression is currently being evaluated. To activate it, write:
+
+```
+:dStack true;
+```
+
+And to deactivate it, write:
+
+```
+:dStack false;
+```
+
+#### Call Stack Stepping
+
+The `:step` metaprogramming command receives an integer which
+represents how many steps in the CX call stack should be run (or
+"unrun"). `:step 10` would run the current program for 10 steps, while
+`:step -5` would go back in time 5 steps.
+
+For example, we could emulate a loop which repeats 3 times a block of code
+with 5 expressions 3 times, by running:
+
+```
+:step 5 :step -5 :step 5 :step -5 :step 5 :step -5;
+```
+
+This is not an actualy loop, as it would not be updating the program's
+state at each iteration. For example, if we have this expression `i =
+addI32(i, 1)` and we run `:step 1 :step -1 :step 1 :step -1`, the
+value of i stays the same at this point.
+
+#### Selectors
+
+A problem that many REPLs have is that they don't provide any feature
+to modify an already defined element in a program (you usually need to
+redefine the whole elemnt). In CX, you can *select* an element, like a
+function, and continue appending expressions to it without having to
+redefine the whole function.
+
+For example, after running `./cx.sh` or `./cx`, we can start adding
+expressions to the already defined and empty `main` function by
+running:
+
+```
+:func main;
+```
+
+This command will print `:func main {...` indicating us that we are
+now under the scope of the `main` function. Any expression that we
+introduce now will be appended to `main`. To exit from this scope, we
+can just press `Ctrl + D`.
+
+If we only want to append a few expressions and then immediately
+return to the previous scope, we can run:
+
+```
+:func main {addI32(3, 10) /* ... more expressions ... */};
+```
+
+All the available selectors are:
+
+* `:package IDENT;`, `:package IDENT {LINES};` to switch to another
+package or append lines to another package
+* `:func IDENT`, `:func IDENT {EXPRESSIONS}}` to switch to another
+function or append expressions and statements to another function
+* `:struct IDENT`, `:struct IDENT {FIELDS}` to switch to another
+struct or append fields to another struct
+
+Soon, the CX REPL should also have *structure stepping*, which will
+allow us to remove the previous N elements in a CX program. Structure
+stepping, combined with selectors will allow a more powerful REPL.
+
+#### Affordances
+
+At the moment, the CX REPL only provides access to function
+affordances. The `:aff` metaprogramming command has three different
+behaviours: 1) it can print the available affordances for a desired
+function; 2) it can filter the affordances using a regular expression
+; and 3) it can apply an affordance.
+
+To list all the available affordances, you can run `:aff func IDENT;`,
+for example:
+
+```
+:aff func main;
+```
+
+This will print a list of the affordances to the terminal. The list
+looks something like this:
+
+```
+...
+(27)	AddOutput i32
+(28)	AddOutput i64
+(29)	AddOutput str
+(30)	AddExpression core.addF32 (f32, f32) (f32)
+(31)	AddExpression core.addF64 (f64, f64) (f64)
+(32)	AddExpression core.addI32 (i32, i32) (i32)
+...
+```
+
+We can then apply, for example, affordance #28 by running `:aff func
+main {28};`.
+
+If we want to only list the affordances related to adding input
+parameters to a function, we can run `:aff func main {"input"}`. Then
+we can select one of the available affordances with `:aff func main
+{"input" 3}`.
+
+#### Loading a file to the REPL
+
+We can load an existing source file by passing the `--load` flag to
+the REPL. The *golike/* directory contains a *test.cx* file that can
+be loaded:
+
+```
+# this (re)compiles everything and then loads the file to the REPL
+./cx.sh --load test.cx
+```
+
+or
+
+```
+# this uses the generated CX executable to load the file to the REPL
+./cx --load test.cx
+```
+
+To test if the file was loaded, we can print the program's AST by
+running `:dProgram true;`. If we input `:step 2;` to the REPL, we
+should see:
+
+```
+fn:main ln:0, 	locals: 
+10
+>> 10
+fn:main ln:1, 	locals: 
+20
+>> 20
+```
+
+The first two expressions in the *test.cx* file contain two calls to
+`printI32`. The REPL is printing 10 and 20, and at the same time it's
+telling us that they are returning these values. This means that the
+following expression is valid:
+
+```
+addI32(printI32(10), printI32(20))
+```
+
+and it will first print 10, then 20, and finally 30.
+
+### Interpreting a Source File
+
+We can avoid entering the REPL by just passing a source file to the CX
+interpreter as the first argument in the terminal:
+
+```
+./cx test.cx
+```
+
+This should only print:
+
+```
+10
+20
+12
+```
+
+## Go-to Native Function
+
+The flow control statements in CX are not performed by Go's native
+statements.  A go-to native function had to be implemented to
+enable flow control statements like if, if/else and while loops.
+
+Basically, goTo increments or decrements the `Line` number of an
+expression in a `CXCall` structure. The `goTo` function receives three
+arguments: a predicate, an increment or decrement of lines in case the
+predicate evaluates to true, and an increment or decrement of lines in
+case the predicate evaluates to false.
+
+Considering the following CX function:
+
+```
+func basicIf (num i32) (num i32) {
+  pred := gtI32(num, 0)
+  goTo(pred, 3, 4)
+  printStr("Greater than 0")
+  printStr("Less than 0")
+}
+```
+
+if we call `basicIf(-1)`, the program should print "Less than 0",
+ignoring the `printStr("Greater than 0")` expression. As we can see in
+the goTo expression, if predicate is true, the program will jump
+to line #3, and if the predicate is false, the program will
+jump to line #4.
+
+If we call `basicIf(3)`, the program will print "Greater than 0" and
+"Less than 0". The reason behind this is that the program is jumping
+to line #3, but we're not telling it to ignore line #4, i.e., the
+program will continue a normal flow.
+
+If we wanted to implement a more correct if/else structure, we'd need
+to add another goTo expression after the `printStr("Greater than 0")`
+expression, telling the program to jump to line #5 (which doesn't
+exist, but CX interprets any line number greater than the number of
+expressions in a function as the end of the function's execution).
+
+## Go-like Language
+
+Nex (a Lex-like lexical analyzer) and Go's Yacc were used to create a
+parser for a go-like language which compiles to CX base. The syntax is
+almost identical to Go's.
+
+### Packages
+
+Packages can be defined by using the keyword `package` followed by an
+identifier. Every CX program needs a main module, so let's define one:
+
+```
+package main
+```
+
+### Global Variables
+
+Global variables can be created by using the `var` keyword. The type
+must always be provided (there's no type inference yet), and they must
+always be initialized for now.
+
+Let's test the evolutionary algorithm to demonstate the current
+capabilities of the go-like programming language. We already have the
+*main* package defined, now we need some global variables defining the
+inputs and the outputs for the supervised training of the solution
+model:
+
+```
+var inps []i32 = []i32{
+	-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+    
+var outs []i32 = []i32{
+	-970, -702, -488, -322, -198, -110, -52, -18, -2,
+	2, 0, -2, 2, 18, 52, 110, 198, 322, 488, 702, 970}
+```
+
+For illustrative purposes, let's also define a some more variables:
+
+```
+var greeting str = "hello"
+var foo i32 = 10
+var bar i32 = 20
+var epsilon f64 = 1.531
+```
+
+### Functions
+
+For debugging and testing reasons, for now we are required to write
+prototypes of the native functions we want to use in a package:
+
+```
+/* Identity functions
+func idAI32 (x []i32) (x []i32) {}
+func idI32 (x i32) (x i32) {}
+*/
+func addI32 (n1 i32, n2 i32) (out i32) {}
+func subI32 (n1 i32, n2 i32) (out i32) {}
+func mulI32 (n1 i32, n2 i32) (out i32) {}
+// func readAByte (arr []byte, idx i32) (byt byte) {}
+func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
+```
+
+The first two functions are identity functions (`f(x) = x`) for the
+i32 and []i32 types. As they would be useless in the evolutionary
+algorithm, let's comment them using a multiple-line comment (/*
+... */). The readAByte function doesn't play well with the
+evolutionary algorithm, so it's commented using a single line comment
+(//).
+
+The remaining native functions are *addI32*, which adds two i32
+arguments, *subI32* which substracts two i32 arguments,
+*mulI32* which multiplies two i32 arguments, and *evolve*
+which takes the name of a function defined in the current package and
+evolves it to fit an array of outputs. It currently outputs an i32
+argument which tells us if the evolution was successful or not. This
+should be changed later for a more successful output (maybe the error
+of the best solution).
+
+### Expressions
+
+The functions above are expressionless functions. Let's now create a
+function with an expression:
+
+```
+func double (num i32) (out i32) {
+	out = addI32(num, num)
+}
+```
+
+This function simply takes a number and doubles it using the *addI32*
+native function. Notice how we had to use the `out` varible to assign
+the result of the addition. As this is the same variable name as the
+output parameter's name, the argument returned by this expression will
+be the output of the `double` function. The assignment operator, for
+now, can either be written as  `=` or `:=`.
+
+### The Solution Function
+
+Before defining the `main` function, we need to define a function to
+be evolved by the evolutionary algorithm (although we could evolve any
+function we wanted):
+
+```
+func solution (n i32) (out i32) {}
+```
+
+This function will take as input each of the integers in the `inps`
+array, and must return the corresponding output integer from the
+`outs` array.
+
+Something interesting to note is that this function could have some
+expressions in it. If we have an idea of an approximate solution to
+the problem we want the evolutionary algorithm to solve, we can
+transform the training stage to a semi supervised learning process
+this way.
+
+The solution we want to arrive to is:
+
+```
+func solution (n i32) (out i32) {
+	double = addI32(n, n)
+	triple = addI32(double, n)
+	square = mulI32(n, n)
+	cubic = mulI32(square, n)
+	out = subI32(cubic, triple)
+}
+```
+
+If we the function above, the evolutionary algorithm should stop at
+iteration 0. If we comment out some of the expressions, but not all,
+the algorithm should converge faster to the correct solution (at least
+most of the time; it could also kill our expressions in the first
+iterations via mutation).
+
+
+### The Main Function
+
+Just like the `main` module, every CX program needs a `main` function,
+which acts as the entry point for the program. For now, any input
+parameters we add to the main function will be ignored. In the case of
+the output parameters, the first one will be used as the program's
+final output.
+
+```
+func main () (outMain i32) {
+	_ := evolve("solution", inps, outs, 20, 10000, epsilon)
+	outMain := solution(30)
+}
+```
+
+In the `main` function above, the first expression calls the `evolve`
+function. We are telling `evolve` to perform the evolutionary process
+on the `solution` function, using the `inps` and `outs` arrays for
+training. We want the solution function to have exactly 20
+expressions, the evolutionary algorithm will run for 10,000 iterations
+and should stop if *epsilon* is reached (if the error is less than
+*epsilon*).
+
+Finally, we test the evolved solution by calling `solution(30)` and
+output this to the program's output variable `outMain` (which is
+`main`'s output paramater).
+
+## CX 'If/else' Flow Control Structure
+
+Let's suppose we want to decide between two different operations to be
+assigned to variable `result`. In CX, we can create an if/else
+structure in the following way:
+
+```
+    pred := gtI64(5, 10)
+	if pred {
+		result := addI64(7, 10)
+		//print(25)
+	} else {
+		result := addI64(20, 3)
+	}
+```
+
+Notice that we can't place the predicate inside the if/else
+structure. This is a problem with the current implementation of the
+parser.
+
+Internally, the if/else structure above will be transformed to the
+following series of expressions:
+
+```
+    1.- Expression: pred = gtI64(5 i64, 10 i64)
+	2.- Expression: goTo(pred ident, 1 i32, 3 i32)
+	3.- Expression: result = addI64(7 i64, 10 i64)
+    4.- Expression: goTo([1] byte, 2 i32, 0 i32)
+    5.- Expression: result = addI64(20 i64, 3 i64)
+```
+
+## CX 'while' Flow Control Structure
+
+At the moment, CX only has implemented the while loop. An example of a
+while loop which prints the numbers from 0 to 10,000 is:
+
+```
+    var i i64 = 0
+	pred := ltI64(i, 10000)
+	while pred {
+		//printI64(i)
+		i := addI64(i, 1)
+		pred := ltI64(i, 10000)
+	}
+```
+
+Internally, the code above will be transformed to the following series
+of expressions:
+
+```
+    10.- Expression: i = idI64(0 i64)
+    11.- Expression: pred = ltI64(i ident, 10000 i64)
+    12.- Expression: goTo(pred ident, 1 i32, 5 i32)
+    13.- Expression: printI64(i ident)
+    14.- Expression: i = addI64(i ident, 1 i64)
+    15.- Expression: pred = ltI64(i ident, 10000 i64)
+    16.- Expression: goTo(pred ident, -3 i32, 1 i32)
+```
+
+We can notice how the final `goTo` receives a negative argument as its
+second parameter. This makes the program go back 3 lines in order to
+make another iteration. As soon as the predicate is false, the program
+will advance 1 line (goTo's third parameter), as in normal execution.
+
+
+
+
+
+
+
+# Old README
 
 ## Basic Usage
 
@@ -1021,269 +1532,3 @@ but the T test works) reveals that, with a confidence interval of 99%
 (`tc = 2.66`), the interpretated program is statistically slower than
 the compiled program with `t = 2.72`.
 
-## Go-to Native Function
-
-The flow control statements in CX are not performed by Go's native
-statements.  A go-to native function had to be implemented to
-enable flow control statements like if, if/else and while loops.
-
-Basically, goTo increments or decrements the `Line` number of an
-expression in a `CXCall` structure. The `goTo` function receives three
-arguments: a predicate, an increment or decrement of lines in case the
-predicate evaluates to true, and an increment or decrement of lines in
-case the predicate evaluates to false.
-
-Considering the following CX function:
-
-```
-func basicIf (num i32) (num i32) {
-  pred := gtI32(num, 0)
-  goTo(pred, 3, 4)
-  printStr("Greater than 0")
-  printStr("Less than 0")
-}
-```
-
-if we call `basicIf(-1)`, the program should print "Less than 0",
-ignoring the `printStr("Greater than 0")` expression. As we can see in
-the goTo expression, if predicate is true, the program will jump
-to line #3, and if the predicate is false, the program will
-jump to line #4.
-
-If we call `basicIf(3)`, the program will print "Greater than 0" and
-"Less than 0". The reason behind this is that the program is jumping
-to line #3, but we're not telling it to ignore line #4, i.e., the
-program will continue a normal flow.
-
-If we wanted to implement a more correct if/else structure, we'd need
-to add another goTo expression after the `printStr("Greater than 0")`
-expression, telling the program to jump to line #5 (which doesn't
-exist, but CX interprets any line number greater than the number of
-expressions in a function as the end of the function's execution).
-
-## Go-like Language
-
-Nex (a Lex-like lexical analyzer) and Go's Yacc were used to create a
-parser for a go-like language which compiles to CX base. The syntax is
-almost identical to Go's.
-
-### Packages
-
-Packages can be defined by using the keyword `package` followed by an
-identifier. Every CX program needs a main module, so let's define one:
-
-```
-package main
-```
-
-### Global Variables
-
-Global variables can be created by using the `var` keyword. The type
-must always be provided (there's no type inference yet), and they must
-always be initialized for now.
-
-Let's test the evolutionary algorithm to demonstate the current
-capabilities of the go-like programming language. We already have the
-*main* package defined, now we need some global variables defining the
-inputs and the outputs for the supervised training of the solution
-model:
-
-```
-var inps []i32 = []i32{
-	-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-    
-var outs []i32 = []i32{
-	-970, -702, -488, -322, -198, -110, -52, -18, -2,
-	2, 0, -2, 2, 18, 52, 110, 198, 322, 488, 702, 970}
-```
-
-For illustrative purposes, let's also define a some more variables:
-
-```
-var greeting str = "hello"
-var foo i32 = 10
-var bar i32 = 20
-var epsilon f64 = 1.531
-```
-
-### Functions
-
-For debugging and testing reasons, for now we are required to write
-prototypes of the native functions we want to use in a package:
-
-```
-/* Identity functions
-func idAI32 (x []i32) (x []i32) {}
-func idI32 (x i32) (x i32) {}
-*/
-func addI32 (n1 i32, n2 i32) (out i32) {}
-func subI32 (n1 i32, n2 i32) (out i32) {}
-func mulI32 (n1 i32, n2 i32) (out i32) {}
-// func readAByte (arr []byte, idx i32) (byt byte) {}
-func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
-```
-
-The first two functions are identity functions (`f(x) = x`) for the
-i32 and []i32 types. As they would be useless in the evolutionary
-algorithm, let's comment them using a multiple-line comment (/*
-... */). The readAByte function doesn't play well with the
-evolutionary algorithm, so it's commented using a single line comment
-(//).
-
-The remaining native functions are *addI32*, which adds two i32
-arguments, *subI32* which substracts two i32 arguments,
-*mulI32* which multiplies two i32 arguments, and *evolve*
-which takes the name of a function defined in the current package and
-evolves it to fit an array of outputs. It currently outputs an i32
-argument which tells us if the evolution was successful or not. This
-should be changed later for a more successful output (maybe the error
-of the best solution).
-
-### Expressions
-
-The functions above are expressionless functions. Let's now create a
-function with an expression:
-
-```
-func double (num i32) (out i32) {
-	out = addI32(num, num)
-}
-```
-
-This function simply takes a number and doubles it using the *addI32*
-native function. Notice how we had to use the `out` varible to assign
-the result of the addition. As this is the same variable name as the
-output parameter's name, the argument returned by this expression will
-be the output of the `double` function. The assignment operator, for
-now, can either be written as  `=` or `:=`.
-
-### The Solution Function
-
-Before defining the `main` function, we need to define a function to
-be evolved by the evolutionary algorithm (although we could evolve any
-function we wanted):
-
-```
-func solution (n i32) (out i32) {}
-```
-
-This function will take as input each of the integers in the `inps`
-array, and must return the corresponding output integer from the
-`outs` array.
-
-Something interesting to note is that this function could have some
-expressions in it. If we have an idea of an approximate solution to
-the problem we want the evolutionary algorithm to solve, we can
-transform the training stage to a semi supervised learning process
-this way.
-
-The solution we want to arrive to is:
-
-```
-func solution (n i32) (out i32) {
-	double = addI32(n, n)
-	triple = addI32(double, n)
-	square = mulI32(n, n)
-	cubic = mulI32(square, n)
-	out = subI32(cubic, triple)
-}
-```
-
-If we the function above, the evolutionary algorithm should stop at
-iteration 0. If we comment out some of the expressions, but not all,
-the algorithm should converge faster to the correct solution (at least
-most of the time; it could also kill our expressions in the first
-iterations via mutation).
-
-
-### The Main Function
-
-Just like the `main` module, every CX program needs a `main` function,
-which acts as the entry point for the program. For now, any input
-parameters we add to the main function will be ignored. In the case of
-the output parameters, the first one will be used as the program's
-final output.
-
-```
-func main () (outMain i32) {
-	_ := evolve("solution", inps, outs, 20, 10000, epsilon)
-	outMain := solution(30)
-}
-```
-
-In the `main` function above, the first expression calls the `evolve`
-function. We are telling `evolve` to perform the evolutionary process
-on the `solution` function, using the `inps` and `outs` arrays for
-training. We want the solution function to have exactly 20
-expressions, the evolutionary algorithm will run for 10,000 iterations
-and should stop if *epsilon* is reached (if the error is less than
-*epsilon*).
-
-Finally, we test the evolved solution by calling `solution(30)` and
-output this to the program's output variable `outMain` (which is
-`main`'s output paramater).
-
-## CX 'If/else' Flow Control Structure
-
-Let's suppose we want to decide between two different operations to be
-assigned to variable `result`. In CX, we can create an if/else
-structure in the following way:
-
-```
-    pred := gtI64(5, 10)
-	if pred {
-		result := addI64(7, 10)
-		//print(25)
-	} else {
-		result := addI64(20, 3)
-	}
-```
-
-Notice that we can't place the predicate inside the if/else
-structure. This is a problem with the current implementation of the
-parser.
-
-Internally, the if/else structure above will be transformed to the
-following series of expressions:
-
-```
-    1.- Expression: pred = gtI64(5 i64, 10 i64)
-	2.- Expression: goTo(pred ident, 1 i32, 3 i32)
-	3.- Expression: result = addI64(7 i64, 10 i64)
-    4.- Expression: goTo([1] byte, 2 i32, 0 i32)
-    5.- Expression: result = addI64(20 i64, 3 i64)
-```
-
-## CX 'while' Flow Control Structure
-
-At the moment, CX only has implemented the while loop. An example of a
-while loop which prints the numbers from 0 to 10,000 is:
-
-```
-    var i i64 = 0
-	pred := ltI64(i, 10000)
-	while pred {
-		//printI64(i)
-		i := addI64(i, 1)
-		pred := ltI64(i, 10000)
-	}
-```
-
-Internally, the code above will be transformed to the following series
-of expressions:
-
-```
-    10.- Expression: i = idI64(0 i64)
-    11.- Expression: pred = ltI64(i ident, 10000 i64)
-    12.- Expression: goTo(pred ident, 1 i32, 5 i32)
-    13.- Expression: printI64(i ident)
-    14.- Expression: i = addI64(i ident, 1 i64)
-    15.- Expression: pred = ltI64(i ident, 10000 i64)
-    16.- Expression: goTo(pred ident, -3 i32, 1 i32)
-```
-
-We can notice how the final `goTo` receives a negative argument as its
-second parameter. This makes the program go back 3 lines in order to
-make another iteration. As soon as the predicate is false, the program
-will advance 1 line (goTo's third parameter), as in normal execution.

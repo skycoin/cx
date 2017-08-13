@@ -148,6 +148,11 @@ func (cxt *CXContext) GetStruct(strctName string, modName string) (*CXStruct, er
 }
 
 func (cxt *CXContext) GetFunction(fnName string, modName string) (*CXFunction, error) {
+	for _, nativeFn := range NATIVE_FUNCTIONS {
+		if fnName == nativeFn {
+			modName = CORE_MODULE
+		}
+	}
 	if cxt.Modules != nil && cxt.Modules[modName] != nil && cxt.Modules[modName].Functions != nil && cxt.Modules[modName].Functions[fnName] != nil {
 		return cxt.Modules[modName].Functions[fnName], nil
 	} else {
@@ -183,3 +188,4 @@ func (expr *CXExpression) GetArguments() ([]*CXArgument, error) {
 		return nil, errors.New("Expression has no arguments")
 	}
 }
+

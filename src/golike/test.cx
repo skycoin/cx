@@ -1,10 +1,10 @@
 package main
 
 var greeting str = "hello"
-var true byte = 1
-var false byte = 0
+var ten i32 = 10
+var five i32 = 5
 var foo i32 = 10
-var bar i32 = 20
+var bar f64 = 4.17
 var par i32 = 30
 var boo i32 = 40
 var epsilon f64 = 1.531
@@ -15,84 +15,110 @@ var outs []f64 = []f64{
 	-970.0, -702.0, -488.0, -322.0, -198.0, -110.0, -52.0, -18.0, -2.0,
 	2.0, 0.0, -2.0, 2.0, 18.0, 52.0, 110.0, 198.0, 322.0, 488.0, 702.0, 970.0}
 
-/*
-  Native functions
-*/
+type Shape struct {
+	perimeter f32
+	area f32
+}
 
-func idAI32 (x []i32) (x []i32) {}
-func idI32 (x i32) (x i32) {}
+type Point struct {
+	name str
+	x i32
+	y i32
+}
 
-func addI32 (n1 i32, n2 i32) (out i32) {}
-func subI32 (n1 i32, n2 i32) (out i32) {}
-func mulI32 (n1 i32, n2 i32) (out i32) {}
-func divI32 (n1 f64, n2 f64) (out f64) {}
+var myPoint Point
+var myInt i32
 
-func addF64 (n1 f64, n2 f64) (out f64) {}
-func subF64 (n1 f64, n2 f64) (out f64) {}
-func mulF64 (n1 f64, n2 f64) (out f64) {}
-func divF64 (n1 f64, n2 f64) (out f64) {}
+func double (num f32) (out f32) {
+	out := addF32(num, num)
+}
 
-func ltI32 (n1 i32, n2 i32) (out byte) {}
-func gtI32 (n1 i32, n2 i32) (out byte) {}
-func eqI32 (n1 i32, n2 i32) (out byte) {}
-
-func goTo (predicate byte, thenLine i32, elseLine i32) (out byte) {}
-
-func print (n i32) (out i32) {}
-
-func readAByte (arr []byte, idx i32) (byt byte) {}
-func writeAByte (arr []byte, idx i32, val byte) (byt byte) {}
-
-func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
-
-/*
-  Actual program
-*/
-
-func double (num f64) (out f64) {
-	out = addF64(num, num)
+func quad (num f32) (out f32) {
+	out := double(num)
 }
 
 func voidFn () () {
-	print(bar)
 }
 
 func solution (n f64) (out f64) {
 	double = addF64(n, n)
 	triple = addF64(double, n)
 	square = mulF64(n, n)
-	// cubic = mulF64(square, n)
-	// out = subF64(cubic, triple)
+	cubic = mulF64(square, n)
+	out = subF64(cubic, triple)
 }
 
-func main () (outMain f64) {
-	//chuck := addI32(5, 10)
-	//_ := evolve("solution", "addF64|subF64", inps, outs, 5, 10, epsilon)
-	//outMain := divF64(3.0, 7.0)
-	//outMain := solution(10.0)
-	//norris := addI32(5, 15)
-	//print(foo)
-	//voidFn()
+//:func voidFn
 
-	//outMain := addF64(3.14, 3.14);
+func main () (outMain f32) {
+	printI32(10)
+	printI32(20)
+	num := addI32(3, 3)
+	outMain := quad(4.0)
+	// outMain := divF32(3.0, 7.0)
 
-
-	// trying loops
-	// one := addI32(1, 0)
-	// i := addI32(0, 0)
-	// i := addI32(i, one)
-	// print(i)
-	// stop := gtI32(i, 9)
-	// goTo(stop, 6, 2)
-
-	//pred := gtI32(bar, foo)
+	// num := addI32(3, 3)
 	
-	if pred {
-		outMain := addF64(3.0, 7.0)
-		outMain := addF64(3.0, 7.0)
-		outMain := addF64(3.0, 7.0)
+	// pred := gtI32(5, 10)
+	if gtI32(5, 10) {
+		printByte(ltI32(5, 10))
+		printByte(ltI32(5, 10))
+		//num := addI32(3, 3)
+		//printI32(num)
+		//printByte(ltI32(15, 10))
+		//result := addI32(7, 10)
+		//result := addI32(7, 10)
+	} else {
+		//printByte(ltI32(15, 10))
+		//printByte(ltI32(5, 10))
+		num := addI32(6, 6)
+		printI32(num)
+		// printByte(ltI32(15, 10))
+		//result := addI32(20, 3)
+		//result := addI32(7, 10)
+		//result := addI32(7, 10)
 	}
 
-	outMain := divF64(3.0, 7.0)
+	// var i i32 = 0
+	// //pred := ltI32(i, 10000)
+	// while ltI32(i, 100) {
+	// //while pred {
+	// 	//printI32(i)
+	// 	//printByte(ltI32(i, 10))
+	// 	i := addI32(i, 1)
+	// 	//pred := ltI32(i, 10000)
+	// }
 
+	
+	
+	// printI32(10101)
+	// var anotherPoint Point
+	
+	// //var done i32 = 10101
+
+	// // var myPoint Point
+	
+	// // var i i32 = 0
+	// // pred := ltI32(i, 10000)
+	// // while pred {
+	// // 	printI32(i)
+	// // 	i := addI32(i, 1)
+	// // 	pred := ltI32(i, 10000)
+	// // }
+
+	// // printI32(myPoint.x)
+
+	// // var bar f32 = 4.17
+	// // // casting
+	// // foo1 := f32toI32(bar)
+	// // foo2 := addI32(foo1, foo1)
+	// // printI32(foo1)
+	// // printF32A(inps)
+
+	// // printStr("hello")
+
+	// // printStr()
+
+	// // //addI32(addI32(5, 4), addI32(3, 7))
+	// // addI32(addI32(addI32(i, 20), i), addI32(3, i))
 }
