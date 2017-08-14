@@ -98,20 +98,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			}
 		}
 		
-		// // outputs
-		// for i, param := range fn.Outputs {
-		// 	if reqType == param.Typ.Name {
-		// 		inOutNames[i] = param.Name
-		// 		defsTypes = append(defsTypes, param.Typ.Name)
-		// 		identName := []byte(param.Name)
-		// 		args = append(args, &CXArgument{
-		// 			Typ: identType,
-		// 			Value: &identName,
-		// 			Offset: -1,
-		// 			Size: -1,})
-		// 	}
-		// }
-
 		// Adding definitions (global vars)
 		for _, def := range mod.Definitions {
 			if reqType == def.Typ.Name {
@@ -141,6 +127,18 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		for _, ex := range expr.Function.Expressions {
 			
 			if ex == expr {
+				continue
+			}
+
+			// checking if it's a nonAssign local
+			isNonAssign := false
+			for _, outName := range ex.OutputNames {
+				if len(outName) > len(NON_ASSIGN_PREFIX) && outName[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX {
+					isNonAssign = true
+					break
+				}
+			}
+			if isNonAssign {
 				continue
 			}
 

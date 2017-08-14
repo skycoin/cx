@@ -104,30 +104,8 @@ selectorLines:
                 }
         ;
 
-/* affordanceSelector: */
-/*                 /\* empty *\/ */
-/*                 { */
-/* 			$<i32>$ = 0 */
-/*                 } */
-/*         |       LBRACE INT RBRACE */
-/*                 { */
-/* 			$<i32>$ = 0 */
-/*                 } */
-/*         |       LBRACE STR INT RBRACE */
-/*                 { */
-/* 			$<i32>$ = 0 */
-/*                 } */
-/*                         |       LPAREN STR COMMA INT RPAREN */
-/*                 { */
-/* 			$<i32>$ = 0 */
-/*                 } */
-/*         ; */
-
-// :aff func main
-// :aff func main {10}
-// :aff func main {"Filter" 10}
-
 affordance:
+                /* Function Affordances */
                 AFF FUNC IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -174,22 +152,149 @@ affordance:
 				}
 			}
                 }
-        // |       AFF FUNC IDENT INT
-        //         {
-                
-        //         }
-        // |       AFF FUNC STR
-        //         {
-                
-        //         }
-        // |       AFF FUNC STR INT
-        //         {
-                
-        //         }
-                
-        // |       AFF PACKAGE
-        // |       AFF STRUCT
-        // |       AFF EXPR
+                /* Module Affordances */
+        |       AFF PACKAGE IDENT
+                {
+			if mod, err := cxt.GetModule($3); err == nil {
+				affs := mod.GetAffordances()
+				for i, aff := range affs {
+					fmt.Printf("(%d)\t%s\n", i, aff.Description)
+				}
+			}
+                }
+        |       AFF PACKAGE IDENT LBRACE INT RBRACE
+                {
+			if mod, err := cxt.GetModule($3); err == nil {
+				affs := mod.GetAffordances()
+				affs[$5].ApplyAffordance()
+			}
+                }
+        |       AFF PACKAGE IDENT LBRACE STRING RBRACE
+                {
+			if mod, err := cxt.GetModule($3); err == nil {
+				affs := mod.GetAffordances()
+				filter := strings.TrimPrefix($5, "\"")
+				filter = strings.TrimSuffix(filter, "\"")
+				affs = FilterAffordances(affs, filter)
+				for i, aff := range affs {
+					fmt.Printf("(%d)\t%s\n", i, aff.Description)
+				}
+			}
+                }
+        |       AFF PACKAGE IDENT LBRACE STRING INT RBRACE
+                {
+			if mod, err := cxt.GetModule($3); err == nil {
+				affs := mod.GetAffordances()
+				filter := strings.TrimPrefix($5, "\"")
+				filter = strings.TrimSuffix(filter, "\"")
+				affs = FilterAffordances(affs, filter)
+				affs[$6].ApplyAffordance()
+			}
+                }
+                /* Struct Affordances */
+        |       AFF STRUCT IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+					affs := strct.GetAffordances()
+					for i, aff := range affs {
+						fmt.Printf("(%d)\t%s\n", i, aff.Description)
+					}
+				}
+			}
+			
+                }
+        |       AFF STRUCT IDENT LBRACE INT RBRACE
+                {
+
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+					affs := strct.GetAffordances()
+					affs[$5].ApplyAffordance()
+				}
+			}
+                }
+        |       AFF STRUCT IDENT LBRACE STRING RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+					affs := strct.GetAffordances()
+					filter := strings.TrimPrefix($5, "\"")
+					filter = strings.TrimSuffix(filter, "\"")
+					affs = FilterAffordances(affs, filter)
+					for i, aff := range affs {
+						fmt.Printf("(%d)\t%s\n", i, aff.Description)
+					}
+				}
+			}
+                }
+        |       AFF STRUCT IDENT LBRACE STRING INT RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+					affs := strct.GetAffordances()
+					filter := strings.TrimPrefix($5, "\"")
+					filter = strings.TrimSuffix(filter, "\"")
+					affs = FilterAffordances(affs, filter)
+					affs[$6].ApplyAffordance()
+				}
+			}
+                }
+                /* Struct Affordances */
+        |       AFF EXPR
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if expr, err := fn.GetCurrentExpression(); err == nil {
+						affs := expr.GetAffordances()
+						for i, aff := range affs {
+							fmt.Printf("(%d)\t%s\n", i, aff.Description)
+						}
+					}
+				}
+			}
+                }
+        |       AFF EXPR LBRACE INT RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if expr, err := fn.GetCurrentExpression(); err == nil {
+						affs := expr.GetAffordances()
+						affs[$4].ApplyAffordance()
+					}
+				}
+			}
+                }
+        |       AFF EXPR LBRACE STRING RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if expr, err := fn.GetCurrentExpression(); err == nil {
+						affs := expr.GetAffordances()
+						filter := strings.TrimPrefix($5, "\"")
+						filter = strings.TrimSuffix(filter, "\"")
+						affs = FilterAffordances(affs, filter)
+						for i, aff := range affs {
+							fmt.Printf("(%d)\t%s\n", i, aff.Description)
+						}
+					}
+				}
+			}
+                }
+        |       AFF EXPR LBRACE STRING INT RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if expr, err := fn.GetCurrentExpression(); err == nil {
+						affs := expr.GetAffordances()
+						filter := strings.TrimPrefix($4, "\"")
+						filter = strings.TrimSuffix(filter, "\"")
+						affs = FilterAffordances(affs, filter)
+						affs[$5].ApplyAffordance()
+					}
+				}
+			}
+                }
         ;
 
 stepping:       STEP INT

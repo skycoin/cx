@@ -61,8 +61,6 @@ func (cxt *CXContext) GetCurrentExpression () (*CXExpression, error) {
 	}
 }
 
-// no, we're always going to return something
-// if nil, we return the first expression, unless it's empty
 func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	if fn.CurrentExpression != nil {
 		return fn.CurrentExpression, nil
