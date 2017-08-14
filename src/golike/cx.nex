@@ -1,0 +1,261 @@
+/(\r\n|\r|\n|;)/ {
+	lineNo++
+}
+/(\t| )/ {
+	/* skip blanks and tabs */
+}
+/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
+	/* skip comments */
+	lineNo = lineNo + countNewLines([]byte(yylex.Text()))
+}
+/:dStack/  { return DSTACK   }
+/:dProgram/{ return DPROGRAM }
+/:package/ { return SPACKAGE }
+/:struct/  { return SSTRUCT  }
+/:func/    { return SFUNC    }
+/:step/    { return STEP     }
+/:pstep/   { return PSTEP    }
+/:aff/     { return AFF      }
+/package/  { return PACKAGE  }
+/type/     { return TYPSTRUCT}
+/struct/   { return STRUCT   }
+/if/       { return IF       }
+/else/     { return ELSE     }
+/while/    { return WHILE    }
+/,/        { return COMMA    }
+/func/     { return FUNC     }
+/expr/     { return EXPR     }
+/var/      { return VAR      }
+/\(/       { return LPAREN   }
+/\)/       { return RPAREN   }
+/\{/       { return LBRACE   }
+/\}/       { return RBRACE   }
+/=/        { return ASSIGN   }
+/:=/       { return CASSIGN  }
+/>/        { return GTHAN    }
+/</        { return LTHAN    }
+/<=/       { return LTEQ     }
+/>=/       { return GTEQ     }
+/bool/     { lval.tok = yylex.Text(); return BOOL     }
+/str/      { lval.tok = yylex.Text(); return STR      }
+/i32/      { lval.tok = yylex.Text(); return I32      }
+/i64/      { lval.tok = yylex.Text(); return I64      }
+/f32/      { lval.tok = yylex.Text(); return F32      }
+/f64/      { lval.tok = yylex.Text(); return F64      }
+/byte/     { lval.tok = yylex.Text(); return BYTE     }
+/\[\]bool/ { lval.tok = yylex.Text(); return BOOLA    }
+/\[\]byte/ { lval.tok = yylex.Text(); return BYTEA    }
+/\[\]i32/  { lval.tok = yylex.Text(); return I32A     }
+/\[\]i64/  { lval.tok = yylex.Text(); return I64A     }
+/\[\]f32/  { lval.tok = yylex.Text(); return F32A     }
+/\[\]f64/  { lval.tok = yylex.Text(); return F64A     }
+/"([^"]*)"/ { /* " */
+	lval.tok = yylex.Text()
+	return STRING
+}
+/true/ {
+	lval.i32 = int32(1)
+	return BOOLEAN
+}
+/false/ {
+	lval.i32 = int32(0)
+	return BOOLEAN
+}
+/-?[0-9]+/ {
+	result ,_ := strconv.Atoi(yylex.Text())
+	lval.i32 = int32(result)
+	return INT
+}
+/-?[0-9]+\.[0-9]*/ {
+	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
+	lval.f32 = float32(result)
+	return FLOAT
+}
+/[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
+	//fmt.Println(yylex.Text())
+	lval.tok = yylex.Text()
+	return IDENT
+}
+/\\Z/ {
+	// do nothing
+}
+//
+package main
+import (
+	"os"
+	"fmt"
+	"bytes"
+	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	"strconv"
+)
+
+func countNewLines (s []byte) int {
+	count := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\n' {
+			count++
+		}
+	}
+	return count
+}
+
+// func readEOT (fi *bufio.Reader) (string, bool) {
+// 	s, err := fi.ReadString('')
+// }
+
+func readline (fi *bufio.Reader) (string, bool) {
+	s, err := fi.ReadString(';')
+	if err != nil {
+		return "", false
+	}
+	return s, true
+}
+
+func main() {
+	/*
+           Initializing native functions
+        */
+
+	coreModule := `
+package core
+func idByte (x byte) (x byte) {}
+func idI32 (x i32) (x i32) {}
+func idI64 (x i64) (x i64) {}
+func idF32 (x f32) (x f32) {}
+func idF64 (x f64) (x f64) {}
+func idByteA (x []byte) (x []byte) {}
+func idI32A (x []i32) (x []i32) {}
+func idI64A (x []i64) (x []i64) {}
+func idF32A (x []f32) (x []f32) {}
+func idF64A (x []f64) (x []f64) {}
+
+func addI32 (n1 i32, n2 i32) (out i32) {}
+func subI32 (n1 i32, n2 i32) (out i32) {}
+func mulI32 (n1 i32, n2 i32) (out i32) {}
+func divI32 (n1 i32, n2 i32) (out i32) {}
+
+func addI64 (n1 i64, n2 i64) (out i64) {}
+func subI64 (n1 i64, n2 i64) (out i64) {}
+func mulI64 (n1 i64, n2 i64) (out i64) {}
+func divI64 (n1 i64, n2 i64) (out i64) {}
+
+func addF32 (n1 f32, n2 f32) (out f32) {}
+func subF32 (n1 f32, n2 f32) (out f32) {}
+func mulF32 (n1 f32, n2 f32) (out f32) {}
+func divF32 (n1 f32, n2 f32) (out f32) {}
+
+func addF64 (n1 f64, n2 f64) (out f64) {}
+func subF64 (n1 f64, n2 f64) (out f64) {}
+func mulF64 (n1 f64, n2 f64) (out f64) {}
+func divF64 (n1 f64, n2 f64) (out f64) {}
+
+func ltI32 (n1 i32, n2 i32) (out bool) {}
+func gtI32 (n1 i32, n2 i32) (out bool) {}
+func eqI32 (n1 i32, n2 i32) (out bool) {}
+
+func ltI64 (n1 i64, n2 i64) (out bool) {}
+func gtI64 (n1 i64, n2 i64) (out bool) {}
+func eqI64 (n1 i64, n2 i64) (out bool) {}
+
+func byteAtoStr (in []byte) (out str) {}
+func i32toI64 (in i32) (out i64) {}
+func f32toI64 (in f32) (out i64) {}
+func f64toI64 (in f64) (out i64) {}
+
+func goTo (predicate bool, thenLine i32, elseLine i32) (out bool) {}
+
+func printStr (s str) (s str) {}
+func printByte (n byte) (out byte) {}
+func printI32 (n i32) (out i32) {}
+func printI64 (n i64) (out i64) {}
+func printF32 (n f64) (out f32) {}
+func printF64 (n f64) (out f64) {}
+func printByteA (n []byte) (out []byte) {}
+func printI32A (n []i32) (out []i32) {}
+func printI64A (n []i64) (out []i64) {}
+func printF32A (n []f64) (out []f32) {}
+func printF64A (n []f64) (out []f64) {}
+
+func readAByte (arr []byte, idx i32) (byt byte) {}
+func writeAByte (arr []byte, idx i32, val byte) (byt byte) {}
+
+func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
+
+func initDef (typ str) (typ str) {}
+
+package main
+
+func main () (out i32) {}
+`
+
+	// adding core module and native functions to it
+	b := bytes.NewBufferString(coreModule)
+	yyParse(NewLexer(b))
+	
+	args := os.Args[1:]
+	if len(args) == 1 {
+		// only a file is being sent as argument
+		if file, err := os.Open(args[0]); err == nil {
+			yyParse(NewLexer(file))
+
+			//cxt.Compile()
+			cxt.Run(false, -1)
+			//cxt.PrintProgram(false)
+
+			// var out float32
+			// outVal := *cxt.Outputs[0].Value
+			// encoder.DeserializeRaw(outVal, &out)
+			// fmt.Println(out)
+		} else {
+			panic(fmt.Sprintf("Couldn't read file '%s'", args[0]))
+		}
+	} else {
+
+		fmt.Println()
+		fmt.Println("CX REPL")
+		fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
+		replMode = true
+
+		for i, flag := range args {
+			switch flag {
+			case "--load":
+				if file, err := os.Open(args[i+1]); err == nil {
+					yyParse(NewLexer(file))
+				}
+			}
+		}
+		
+		fi := bufio.NewReader(os.NewFile(0, "stdin"))
+
+		for {
+			var inp string
+			var ok bool
+
+			fmt.Println(replTargetFn)
+		
+			if replTargetFn != "" {
+				fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
+				fmt.Printf("\t* ")
+			} else {
+				fmt.Printf("* ")
+			}
+			if inp, ok = readline(fi); ok {
+				if replTargetFn != "" {
+					inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
+				}
+				b := bytes.NewBufferString(inp)
+				yyParse(NewLexer(b))
+			} else {
+				if replTargetFn != "" {
+					replTargetFn = ""
+				} else {
+					fmt.Printf("\nBye!\n")
+					break
+				}
+				
+			}
+		}
+		
+		//yyParse(NewLexer(os.Stdin))
+	}
+}
