@@ -7,17 +7,24 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func argsToDefs (args []*CXArgument, names []string, mod *CXModule, cxt *CXContext) (map[string]*CXDefinition, error) {
+func argsToDefs (args []*CXArgument, names []string, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
 	if len(names) == len(args) {
-		defs := make(map[string]*CXDefinition, 0)
+		defs := make([]*CXDefinition, 0)
 		for i, arg := range args {
-			defs[names[i]] = &CXDefinition{
+			defs = append(defs, &CXDefinition{
 				Name: names[i],
 				Typ: arg.Typ,
 				Value: arg.Value,
 				Module: mod,
 				Context: cxt,
-			}
+			})
+			// defs[names[i]] = &CXDefinition{
+			// 	Name: names[i],
+			// 	Typ: arg.Typ,
+			// 	Value: arg.Value,
+			// 	Module: mod,
+			// 	Context: cxt,
+			// }
 		}
 		return defs, nil
 	} else {
@@ -81,22 +88,44 @@ func PrintCallStack (callStack []*CXCall) {
 					fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
 				}
 			case "[]byte":
+				var val []byte
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, (*def.Value))
+					fmt.Printf("%s: %v", def.Name, val)
 				} else {
-					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+					fmt.Printf("%s: %v, ", def.Name, val)
 				}
 			case "[]i32":
+				var val []int32
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, (*def.Value))
+					fmt.Printf("%s: %v", def.Name, val)
 				} else {
-					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+					fmt.Printf("%s: %v, ", def.Name, val)
 				}
 			case "[]i64":
+				var val []int64
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, (*def.Value))
+					fmt.Printf("%s: %v", def.Name, val)
 				} else {
-					fmt.Printf("%s: %v, ", def.Name, (*def.Value))
+					fmt.Printf("%s: %v, ", def.Name, val)
+				}
+			case "[]f32":
+				var val []float32
+				encoder.DeserializeRaw(*def.Value, &val)
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %v", def.Name, val)
+				} else {
+					fmt.Printf("%s: %v, ", def.Name, val)
+				}
+			case "[]f64":
+				var val []float64
+				encoder.DeserializeRaw(*def.Value, &val)
+				if idx == lenState - 1 {
+					fmt.Printf("%s: %v", def.Name, val)
+				} else {
+					fmt.Printf("%s: %v, ", def.Name, val)
 				}
 			}
 			
@@ -171,13 +200,13 @@ func saveStep (call *CXCall) {
 }
 
 // It "un-runs" a program
-func (cxt *CXContext) Reset() {
+func (cxt *CXProgram) Reset() {
 	cxt.CallStack = MakeCallStack(0)
 	cxt.Steps = make([]*CXCallStack, 0)
 	//cxt.ProgramSteps = nil
 }
 
-func (cxt *CXContext) ResetTo(stepNumber int) {
+func (cxt *CXProgram) ResetTo(stepNumber int) {
 	// if no steps, we do nothing. the program will run from step 0
 	if len(cxt.Steps) > 0 {
 		if stepNumber > len(cxt.Steps) {
@@ -200,7 +229,7 @@ func (cxt *CXContext) ResetTo(stepNumber int) {
 	}
 }
 
-func (cxt *CXContext) UnRun (nCalls int) {
+func (cxt *CXProgram) UnRun (nCalls int) {
 	if len(cxt.Steps) > 0 && nCalls > 0 {
 		if nCalls > len(cxt.Steps) {
 			nCalls = len(cxt.Steps) - 1
@@ -311,8 +340,26 @@ func getIdentParts (str string) []string {
 	return identParts
 }
 
-func (cxt *CXContext) Compile () *CXContext {
-	allocs := make(map[string]*CXArgument)
+func getAllocSize (typ string) int {
+	// I need to do arrays too
+	switch typ {
+	case "byte":
+		return 1
+	case "i32":
+		return 4
+	case "i64":
+		return 8
+	case "f32":
+		return 4
+	case "f64":
+		return 8
+	default:
+		return -1
+	}
+}
+
+func (cxt *CXProgram) Compile () *CXProgram {
+	allocs := make(map[string]*CXArgument, 0)
 	heap := *cxt.Heap
 	heapCounter := 0
 
@@ -321,6 +368,15 @@ func (cxt *CXContext) Compile () *CXContext {
 
 			// using struct fields
 			for _, expr := range fn.Expressions {
+
+
+				for i, outName := range expr.OutputNames {
+					allocSize := getAllocSize(expr.Operator.Outputs[i].Typ.Name)
+					outName.Offset = heapCounter
+					heapCounter = heapCounter + allocSize
+				}
+				
+				
 				for argIdx, arg := range expr.Arguments {
 					if arg.Typ.Name == "ident" {
 						identParts := getIdentParts(string(*arg.Value))
@@ -331,7 +387,7 @@ func (cxt *CXContext) Compile () *CXContext {
 							// TODO: compile later
 						} else {
 							// is the first part of the identifier a module, if yes:
-							if identMod, ok := cxt.Modules[identParts[0]]; ok {
+							if identMod, err := cxt.GetModule(identParts[0]); err == nil {
 								// identParts[1] will always be a definition if before is a module
 								if len(identParts) == 2 {
 									// then we are referring to the struct itself or a normal ident
@@ -342,7 +398,7 @@ func (cxt *CXContext) Compile () *CXContext {
 										// nested structs
 										// TODO: compile later
 									} else {
-										if def, ok := identMod.Definitions[concat(identParts[1], ".", identParts[2])]; ok {
+										if def, err := identMod.GetDefinition(concat(identParts[1], ".", identParts[2])); err == nil {
 											var heapArg *CXArgument
 											defSize := len(*def.Value)
 											if found, ok := allocs[concat(identParts[0], ".", identParts[1], ".", identParts[2])]; ok {
@@ -374,7 +430,7 @@ func (cxt *CXContext) Compile () *CXContext {
 									// nested structs
 									// TODO: compile later
 								} else {
-									if def, ok := mod.Definitions[concat(identParts[0], ".", identParts[1])]; ok {
+									if def, err := mod.GetDefinition(concat(identParts[0], ".", identParts[1])); err == nil {
 										//def = mod.Definitions[concat(identParts[0], ".", identParts[1])]
 										var heapArg *CXArgument
 										defSize := len(*def.Value)
@@ -411,7 +467,7 @@ func (cxt *CXContext) Compile () *CXContext {
 	return cxt
 }
 
-func (cxt *CXContext) Run (withDebug bool, nCalls int) {
+func (cxt *CXProgram) Run (withDebug bool, nCalls int) {
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
 	if cxt.CallStack != nil && len(cxt.CallStack.Calls) > 0 {
@@ -424,7 +480,7 @@ func (cxt *CXContext) Run (withDebug bool, nCalls int) {
 		if mod, err := cxt.SelectModule("main"); err == nil {
 			if fn, err := mod.SelectFunction("main"); err == nil {
 				// main function
-				state := make(map[string]*CXDefinition)
+				state := make([]*CXDefinition, 0)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
 				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
@@ -451,9 +507,11 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 	}
 	
 	if call.Line >= len(call.Operator.Expressions) {
-		if len(call.Operator.Expressions) < 1 {
-			panic(fmt.Sprintf("Calling function without expressions '%s'", call.Operator.Name))
-		}
+		
+		// if len(call.Operator.Expressions) < 1 {
+		// 	panic(fmt.Sprintf("Calling function without expressions '%s'", call.Operator.Name))
+		// }
+		
 		// popping the stack
 		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
 		//outName := call.Operator.Output.Name
@@ -472,7 +530,13 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 		for i, outName := range outNames {
 			//fmt.Printf("%s : %v\n", outName, call.State[outName])
 			//fmt.Println(call.State[outName])
-			outputs[i] = call.State[outName]
+
+			//outputs[i] = call.State[outName]
+			for _, stateDef := range call.State {
+				if stateDef.Name == outName {
+					outputs[i] = stateDef
+				}
+			}
 
 			// if call.State[outName] == nil {
 			// 	call.Context.PrintProgram(false)
@@ -487,10 +551,14 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			}
 		}
 
-		if allOutsNil {
+		if allOutsNil && len(outputs) > 0 {
 			outNames := call.Operator.Expressions[len(call.Operator.Expressions) - 1].OutputNames
 			for i, outName := range outNames {
-				outputs[i] = call.State[outName]
+				for _, stateDef := range call.State {
+					if stateDef.Name == outName.Name {
+						outputs[i] = stateDef
+					}
+				}
 			}
 		}
 
@@ -512,7 +580,7 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 
 			returnNames := make([]string, len(call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames))
 			for i, out := range call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames {
-				returnNames[i] = out
+				returnNames[i] = out.Name
 			}
 
 			if len(outputs) > 0 {
@@ -521,7 +589,22 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 					def := MakeDefinition(returnName, outputs[i].Value, outputs[i].Typ)
 					def.Module = call.Module
 					def.Context = call.Context
-					call.ReturnAddress.State[returnName] = def
+
+					
+					//call.ReturnAddress.State[returnName] = def
+
+					idx := -1
+					for i, stateDef := range call.ReturnAddress.State {
+						if stateDef.Name == returnName {
+							idx = i
+							break
+						}
+					}
+					if idx < 0 {
+						call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+					} else {
+						call.ReturnAddress.State[idx] = def
+					}
 				}
 			}//  else {
 			// 	panic(fmt.Sprintf("Function '%s' didn't return anything", call.Operator.Name))
@@ -547,8 +630,6 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 		
 		globals := call.Module.Definitions
 		state := call.State
-
-		//fmt.Println(len(state))
 
 		if expr, err := fn.GetExpression(call.Line); err == nil {
 			// getting arguments
@@ -580,9 +661,26 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 					lookingFor := string(*argsRefs[i].Value)
 
 					// in here we could create an entry in the state map
+
+					found := false
+					var local *CXDefinition
+					var global *CXDefinition
+					for _, stateDef := range state {
+						if stateDef.Name == lookingFor {
+							found = true
+							local = stateDef
+						}
+					}
+					if !found {
+						for _, globalDef := range globals {
+							if globalDef.Name == lookingFor {
+								global = globalDef
+							}
+						}
+					}
 					
-					local := state[lookingFor]
-					global := globals[lookingFor]
+					//local := state[lookingFor]
+					//global := globals[lookingFor]
 
 
 					// fmt.Printf("Here: %s\n", lookingFor)
@@ -616,6 +714,8 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			opName := expr.Operator.Name
 			
 			switch opName {
+			case "eval":
+				//
 			case "evolve":
 				fnName := string(*argsCopy[0].Value)
 				fnBag := string(*argsCopy[1].Value)
@@ -655,11 +755,16 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 				// flow control
 			case "goTo":
 				values = append(values, goTo(call, argsCopy[0], argsCopy[1], argsCopy[2]))
-			// case "if":
-				// 	values = append(values, cxif)
-				// we'll use go-tos
-				
 				// I/O functions
+			case "printBool":
+				var val int32
+				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
+				if val == 0 {
+					fmt.Println("false")
+				} else {
+					fmt.Println("true")
+				}
+				values = append(values, argsCopy[0])
 			case "printStr":
 				fmt.Println(string(*argsCopy[0].Value))
 				values = append(values, argsCopy[0])
@@ -672,7 +777,7 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printI64":
-				var val int32
+				var val int64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
 				fmt.Println(val)
 				values = append(values, argsCopy[0])
@@ -722,14 +827,23 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			case "idF32A": values = append(values, argsCopy[0])
 			case "idF64A": values = append(values, argsCopy[0])
 				// cast functions
-			case "byteAtoStr": values = append(values, castStr(argsCopy[0]))
-			// case "byte": values = append(values, castByte(argsCopy[0]))
-			// case "i32": values = append(values, castI32(argsCopy[0]))
-			case "i32toI64": values = append(values, castI64(argsCopy[0]))
-			case "f32toI64": values = append(values, castI64(argsCopy[0]))
-			case "f64toI64": values = append(values, castI64(argsCopy[0]))
-			// case "f32": values = append(values, castF32(argsCopy[0]))
-			// case "f64": values = append(values, castF64(argsCopy[0]))
+			case "byteAToStr": values = append(values, castToStr(argsCopy[0]))
+				// case "byte": values = append(values, castByte(argsCopy[0]))
+				// case "i32": values = append(values, castI32(argsCopy[0]))
+			case "i64ToI32": values = append(values, castToI32(argsCopy[0]))
+			case "f32ToI32": values = append(values, castToI32(argsCopy[0]))
+			case "f64ToI32": values = append(values, castToI32(argsCopy[0]))
+			case "i32ToI64": values = append(values, castToI64(argsCopy[0]))
+			case "f32ToI64": values = append(values, castToI64(argsCopy[0]))
+			case "f64ToI64": values = append(values, castToI64(argsCopy[0]))
+			case "i32ToF32": values = append(values, castToF32(argsCopy[0]))
+			case "i64ToF32": values = append(values, castToF32(argsCopy[0]))
+			case "f64ToF32": values = append(values, castToF32(argsCopy[0]))
+			case "i32ToF64": values = append(values, castToF64(argsCopy[0]))
+			case "i64ToF64": values = append(values, castToF64(argsCopy[0]))
+			case "f32ToF64": values = append(values, castToF64(argsCopy[0]))
+			// case "f32": values = append(values, castToF32(argsCopy[0]))
+			// case "f64": values = append(values, castToF64(argsCopy[0]))
 			// case "[]byte": values = append(values, castByteA(argsCopy[0]))
 			// case "[]i32": values = append(values, castI32A(argsCopy[0]))
 			// case "[]i64": values = append(values, castI64A(argsCopy[0]))
@@ -793,10 +907,29 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 			case "divF64":
 				values = append(values, divF64(argsCopy[0], argsCopy[1]))
 				// array functions
-			case "readAByte":
-				values = append(values, readAByte(argsCopy[0], argsCopy[1]))
-			case "writeAByte":
-				values = append(values, writeAByte(argsCopy[0], argsCopy[1], argsCopy[2]))
+			case "readByteA":
+				values = append(values, readByteA(argsCopy[0], argsCopy[1]))
+			case "writeByteA":
+				values = append(values, writeByteA(argsCopy[0], argsCopy[1], argsCopy[2]))
+			case "readI32A":
+				values = append(values, readI32A(argsCopy[0], argsCopy[1]))
+			case "writeI32A":
+				values = append(values, writeI32A(argsCopy[0], argsCopy[1], argsCopy[2]))
+			case "readI64A":
+				values = append(values, readI64A(argsCopy[0], argsCopy[1]))
+			case "writeI64A":
+				values = append(values, writeI64A(argsCopy[0], argsCopy[1], argsCopy[2]))
+			case "readF32A":
+				values = append(values, readF32A(argsCopy[0], argsCopy[1]))
+			case "writeF32A":
+				values = append(values, writeF32A(argsCopy[0], argsCopy[1], argsCopy[2]))
+			case "readF64A":
+				values = append(values, readF64A(argsCopy[0], argsCopy[1]))
+			case "writeF64A":
+				values = append(values, writeF64A(argsCopy[0], argsCopy[1], argsCopy[2]))
+				/* Time functions */
+			case "sleep":
+				values = append(values, sleep(argsCopy[0]))
 			case "":
 			}
 			if len(values) > 0 {
@@ -805,11 +938,27 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) {
 					if withDebug {
 						replPrintEvaluation(values[i])
 					}
-					def := MakeDefinition(outName, values[i].Value, values[i].Typ)
+					def := MakeDefinition(outName.Name, values[i].Value, values[i].Typ)
 					def.Module = call.Module
 					def.Context = call.Context
 
-					call.State[outName] = def
+					// if outName.Offset > -1 {
+					// 	call.State[outName.Offset] = def
+					// } else {
+						
+					// }
+					
+					found := false
+					for i, stateDef := range call.State {
+						if stateDef.Name == outName.Name {
+							found = true
+							call.State[i] = def
+						}
+					}
+					if !found {
+						call.State = append(call.State, def)
+					}
+					
 
 
 					// if values[i].Offset > -1 {

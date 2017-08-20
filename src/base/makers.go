@@ -27,10 +27,10 @@ func MakeGenSym (name string) string {
 // 	return gensym
 // }
 
-func MakeContext () *CXContext {
+func MakeContext () *CXProgram {
 	heap := make([]byte, 0)
-	newContext := &CXContext{
-		Modules: make(map[string]*CXModule, 0),
+	newContext := &CXProgram{
+		Modules: make([]*CXModule, 0),
 		CallStack: MakeCallStack(0),
 		Heap: &heap,
 		Steps: make([]*CXCallStack, 0)}
@@ -63,7 +63,7 @@ func MakeArgumentCopy (arg *CXArgument) *CXArgument {
 }
 
 // complete
-func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt *CXContext) *CXExpression {
+func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXExpression {
 	argsCopy := make([]*CXArgument, len(expr.Arguments))
 	for i, arg := range expr.Arguments {
 		argsCopy[i] = MakeArgumentCopy(arg)
@@ -79,7 +79,7 @@ func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt 
 	}
 }
 
-func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXContext) *CXFunction {
+func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunction {
 	newFn := &CXFunction{}
 	inputsCopy := make([]*CXParameter, len(fn.Inputs))
 	outputsCopy := make([]*CXParameter, len(fn.Outputs))
@@ -119,7 +119,7 @@ func MakeFieldCopy (fld *CXField) *CXField {
 	}
 }
 
-func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXContext) *CXStruct {
+func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXProgram) *CXStruct {
 	fldsCopy := make([]*CXField, len(strct.Fields))
 	for i, fld := range strct.Fields {
 		fldsCopy[i] = MakeFieldCopy(fld)
@@ -132,7 +132,7 @@ func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXContext) *CXStruct {
 	}
 }
 
-func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXContext) *CXDefinition {
+func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXProgram) *CXDefinition {
 	valCopy := *def.Value
 	return &CXDefinition{
 		Name: def.Name,
@@ -145,11 +145,11 @@ func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXContext) *CXDe
 	}
 }
 
-func MakeModuleCopy (mod *CXModule, cxt *CXContext) *CXModule {
+func MakeModuleCopy (mod *CXModule, cxt *CXProgram) *CXModule {
 	newMod := &CXModule{Context: cxt}
-	fnsCopy := make(map[string]*CXFunction, len(mod.Functions))
-	strctsCopy := make(map[string]*CXStruct, len(mod.Structs))
-	defsCopy := make(map[string]*CXDefinition, len(mod.Definitions))
+	fnsCopy := make([]*CXFunction, len(mod.Functions))
+	strctsCopy := make([]*CXStruct, len(mod.Structs))
+	defsCopy := make([]*CXDefinition, len(mod.Definitions))
 	
 	for k, fn := range mod.Functions {
 		fnsCopy[k] = MakeFunctionCopy(fn, newMod, cxt)
@@ -178,8 +178,8 @@ func MakeModuleCopy (mod *CXModule, cxt *CXContext) *CXModule {
 	return newMod
 }
 
-func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXContext) *CXCall {
-	stateCopy := make(map[string]*CXDefinition)
+func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
+	stateCopy := make([]*CXDefinition, len(call.State))
 	for k, v := range call.State {
 		//var valueCopy []byte = *v.Value
 		//stateCopy[k] = MakeDefinition(v.Name, &valueCopy, MakeType(v.Typ.Name))
@@ -201,12 +201,12 @@ func MakeCallStack (size int) *CXCallStack {
 	}
 }
 
-func MakeContextCopy (cxt *CXContext, stepNumber int) *CXContext {
-	newContext := &CXContext{}
+func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
+	newContext := &CXProgram{}
 
 	newContext.Heap = cxt.Heap
 
-	modsCopy := make(map[string]*CXModule, len(cxt.Modules))
+	modsCopy := make([]*CXModule, len(cxt.Modules))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
 	}
@@ -276,32 +276,13 @@ func MakeContextCopy (cxt *CXContext, stepNumber int) *CXContext {
 func MakeModule (name string) *CXModule {
 	return &CXModule{
 		Name: name,
-		Definitions: make(map[string]*CXDefinition, 0),
-		Imports: make(map[string]*CXModule, 0),
-		Functions: make(map[string]*CXFunction, 0),
-		Structs: make(map[string]*CXStruct, 0),
-		//Instances: make(map[string]*CXInstance, 0),
+		Definitions: make([]*CXDefinition, 0),
+		Imports: make([]*CXModule, 0),
+		Functions: make([]*CXFunction, 0),
+		Structs: make([]*CXStruct, 0),
+		//Instances: make([]*CXInstance, 0),
 	}
 }
-
-// func MakeInstance (name string, typ *CXStruct) *CXInstance {
-// 	// the instance definitions need to be initialized
-// 	defs := make([]*CXDefinition, 0)
-// 	for _, fld := range typ.Fields {
-// 		byteArray := make([]byte, 0)
-// 		defs = append(defs, &CXDefinition{
-// 			Name: fld.Name,
-// 			Typ: fld.Typ,
-// 			Value: &byteArray,
-// 		})
-// 	}
-	
-// 	return &CXInstance{
-// 		Name: name,
-// 		Typ: MakeType(typ.Name),
-// 		Definitions: defs,
-// 	}
-// }
 
 func MakeDefinition (name string, value *[]byte, typ *CXType) *CXDefinition {
 	return &CXDefinition{
@@ -349,8 +330,8 @@ func MakeParameter (name string, typ *CXType) *CXParameter {
 		Typ: typ}
 }
 
-func MakeExpression (fn *CXFunction) *CXExpression {
-	return &CXExpression{Operator: fn}
+func MakeExpression (op *CXFunction) *CXExpression {
+	return &CXExpression{Operator: op}
 }
 
 func MakeArgument (value *[]byte, typ *CXType) *CXArgument {
@@ -377,7 +358,7 @@ func MakeValue (value string) *[]byte {
 	return &byts
 }
 
-func MakeCall (op *CXFunction, state map[string]*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXContext) *CXCall {
+func MakeCall (op *CXFunction, state []*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
 	return &CXCall{
 		Operator: op,
 		Line: 0,
@@ -420,3 +401,23 @@ func MakeIdentityOpName (typeName string) string {
 		return ""
 	}
 }
+
+func MakeProgramStep (action func()) *CXProgramStep {
+	return &CXProgramStep{Action: action}
+}
+
+// Use MakeArgument
+// func MakeObject () {
+	
+// }
+
+// op: Expression's operator
+// arg: Operator's candidate argument
+// obj: A name which will determine if an argument is allowed or not
+// func MakeClause (op *CXFunction, arg *CXArgument, obj *CXArgument) *CXClause {
+// 	return &CXClause{
+// 		Operator: op,
+// 		Argument: arg,
+// 		Object: obj,
+// 	}
+// }

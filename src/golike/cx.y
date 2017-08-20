@@ -2,18 +2,31 @@
 	package main
 	import (
 		"strings"
+		"bytes"
 		"fmt"
+		"os"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
+
+
+		"github.com/mndrix/golog"
+		"github.com/mndrix/golog/read"
+		"github.com/mndrix/golog/term"
 	)
 
 	var cxt = MakeContext()
+	var m = golog.NewInteractiveMachine()
+	
 	var lineNo int = 0
 	var replMode bool = false
 	var replTargetFn = ""
 	var dStack bool = true
 	var dProgram bool = false
 
+	func warnf(format string, args ...interface{}) {
+		fmt.Fprintf(os.Stderr, format, args...)
+		os.Stderr.Sync()
+	}
 %}
 
 %union {
@@ -46,17 +59,21 @@
 %token  <f32>           FLOAT
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE WHILE TYPSTRUCT STRUCT
-                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ EXPR
+                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
+                        /* Removers */
+                        REM GLOBAL EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP
                         /* Debugging */
-                        DSTACK DPROGRAM
+                        DSTACK DPROGRAM DQUERY
                         /* Affordances */
                         AFF
+                        /* Prolog */
+                        CCLAUSES QUERY COBJECT COBJECTS
 
 %type   <tok>           typeSpecifier
                         
@@ -86,11 +103,109 @@ line:
                 definitionDeclaration
         |       structDeclaration
         |       packageDeclaration
+        |       importDeclaration
         |       functionDeclaration
         |       selector
         |       stepping
         |       debugging
         |       affordance
+        |       removers
+                // prolog
+        |       prolog
+        ;
+
+// :clause OPERATOR ARGUMENT
+// :clause IDENT IDENT IDENT
+// :clause ROBOT TURNLEFT
+
+prolog:
+                COBJECTS
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				for i, object := range mod.Objects {
+					fmt.Printf("%d.- %s\n", i, object)
+				}
+			}
+                }
+        |       CCLAUSES STRING
+                {
+			clauses := strings.TrimPrefix($2, "\"")
+			clauses = strings.TrimSuffix(clauses, "\"")
+
+			b := bytes.NewBufferString(clauses)
+			m = m.Consult(b)
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.Clauses = clauses
+			}
+                }
+        |       COBJECT IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.AddObject($2);
+			}
+                }
+        |       QUERY STRING
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				query := strings.TrimPrefix($2, "\"")
+				query = strings.TrimSuffix(query, "\"")
+				mod.Query = query
+			}
+                }
+        |       DQUERY STRING
+                {
+			query := strings.TrimPrefix($2, "\"")
+			query = strings.TrimSuffix(query, "\"")
+
+			goal, err := read.Term(query)
+			if err == nil {
+				variables := term.Variables(goal)
+				answers := m.ProveAll(goal)
+
+				yesNoAnswer := false
+				if len(answers) == 0 {
+					fmt.Println("no.")
+					yesNoAnswer = true
+				} else if variables.Size() == 0 {
+					fmt.Println("yes.")
+					yesNoAnswer = true
+				}
+
+				if !yesNoAnswer {
+					for i, answer := range answers {
+						lines := make([]string, 0)
+						variables.ForEach(func(name string, variable interface{}) {
+							v := variable.(*term.Variable)
+							val := answer.Resolve_(v)
+							line := fmt.Sprintf("%s = %s", name, val)
+							lines = append(lines, line)
+						})
+
+						warnf("%s", strings.Join(lines, "\n"))
+						if i == len(answers)-1 {
+							fmt.Printf("\t.\n\n")
+						} else {
+							warnf("\t;\n")
+						}
+					}
+				}
+			} else {
+				fmt.Println("Problem parsing the query.")
+			}
+                }
+        ;
+
+importDeclaration:
+                IMPORT STRING
+                {
+			impName := strings.TrimPrefix($2, "\"")
+			impName = strings.TrimSuffix(impName, "\"")
+			if imp, err := cxt.GetModule(impName); err == nil {
+				if mod, err := cxt.GetCurrentModule(); err == nil {
+					mod.AddImport(imp)
+				}
+			}
+                }
         ;
 
 selectorLines:
@@ -332,6 +447,98 @@ debugging:      DSTACK BOOLEAN
 				dProgram = false
 			}
                 }
+        ;
+
+removers:       REM FUNC IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveFunction($3)
+			}
+                }
+        |       REM PACKAGE IDENT
+                {
+			cxt.RemoveModule($3)
+                }
+        |       REM GLOBAL IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveDefinition($3)
+			}
+                }
+        |       REM STRUCT IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveStruct($3)
+			}
+                }
+        |       REM IMPORT STRING
+                {
+			impName := strings.TrimPrefix($3, "\"")
+			impName = strings.TrimSuffix(impName, "\"")
+			
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveImport(impName)
+			}
+                }
+        |       REM EXPR INT FUNC IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+					fn.RemoveExpression(int($3))
+				}
+			}
+                }
+        |       REM FIELD IDENT STRUCT IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if strct, err := cxt.GetStruct($5, mod.Name); err == nil {
+					strct.RemoveField($3)
+				}
+				
+			}
+                }
+        |       REM INPUT IDENT FUNC IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+					fn.RemoveInput($3)
+				}
+			}
+                }
+        |       REM OUTPUT IDENT FUNC IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+					fn.RemoveOutput($3)
+				}
+			}
+                }
+        |       REM CLAUSES
+                {
+			m = golog.NewInteractiveMachine()
+                }
+        |       REM OBJECT IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveObject($3)
+			}
+                }
+        |       REM OBJECTS
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				mod.RemoveObjects()
+			}
+                }
+                // no, too complex. just wipe entire expression
+        // |       REM ARG INT EXPR INT FUNC IDENT
+        //         {
+	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 			if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+	// 				fn.RemoveExpression(int($3))
+	// 			}
+	// 		}
+        //         }
+        //        |REM OUTNAME
         ;
 
 selectorExpressionsAndStatements:
@@ -642,6 +849,8 @@ expressionsAndStatements:
         |       stepping
         |       debugging
         |       affordance
+        |       removers
+        |       prolog
         |       expressionsAndStatements nonAssignExpression
         |       expressionsAndStatements assignExpression
         |       expressionsAndStatements statement
@@ -649,6 +858,8 @@ expressionsAndStatements:
         |       expressionsAndStatements stepping
         |       expressionsAndStatements debugging
         |       expressionsAndStatements affordance
+        |       expressionsAndStatements removers
+        |       expressionsAndStatements prolog
         ;
 
 
@@ -1116,15 +1327,14 @@ elseStatement:
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-
 					goToExpr := fn.Expressions[$<i>4 - 1]
 					
 					elseLines := encoder.Serialize(int32(0))
 					thenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>4 + 1))
 
-					predVal := []byte{1}
+					alwaysTrue := encoder.Serialize(int32(1))
 
-					goToExpr.AddArgument(MakeArgument(&predVal, MakeType("byte")))
+					goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 
@@ -1177,7 +1387,7 @@ argument:
 					vals[i] = byte(val)
 				}
 				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, MakeType("[]i32"))
+				$$ = MakeArgument(&sVal, MakeType("[]byte"))
 			case "[]i32":
                                 vals := make([]int32, len($3))
 				for i, arg := range $3 {

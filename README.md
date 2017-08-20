@@ -13,14 +13,24 @@ will now appear at the end of this file (after the "Old README" title).
 
 ### Quick Instructions
 
-Go to `src/golike` in a terminal, and run:
+Run
 
 ```
 $ chmod +x cx.sh
 $ ./cx.sh
 ```
 
-After the compilation, one should see printed the following message:
+in a terminal. This script should install the necessary dependencies
+and compile the CX compiler/interpreter.
+
+To start a CX REPL, run
+
+```
+$ chmod +x cx
+$ ./cx
+```
+
+If successful, one should see printed the following message:
 
 ```
 CX REPL
@@ -339,14 +349,14 @@ func idI32 (x i32) (x i32) {}
 func addI32 (n1 i32, n2 i32) (out i32) {}
 func subI32 (n1 i32, n2 i32) (out i32) {}
 func mulI32 (n1 i32, n2 i32) (out i32) {}
-// func readAByte (arr []byte, idx i32) (byt byte) {}
+// func readByteA (arr []byte, idx i32) (byt byte) {}
 func evolve (fnName str, inps []i32, outs []i32, numberExprs i32, iterations i32, epsilon f64) (success i32) {}
 ```
 
 The first two functions are identity functions (`f(x) = x`) for the
 i32 and []i32 types. As they would be useless in the evolutionary
 algorithm, let's comment them using a multiple-line comment (/*
-... */). The readAByte function doesn't play well with the
+... */). The readByteA function doesn't play well with the
 evolutionary algorithm, so it's commented using a single line comment
 (//).
 
@@ -1302,14 +1312,14 @@ also doesn't raise the exception.
 
 The `byte` type has been added, as well as the `[]byte` type, which
 defines a byte array. Two native functions to manipulate byte
-arrays were added (found at *base/functions.go*): `readAByte` and
-`writeAByte`.
+arrays were added (found at *base/functions.go*): `readByteA` and
+`writeByteA`.
 
-`readAByte` takes two parameters: a byte array and an index. The index
+`readByteA` takes two parameters: a byte array and an index. The index
 (int32) is used to retrieve the byte at that position in the byte
 array. The function returns a `byte`.
 
-`writeAByte` takes three parameters: a byte array, an index and a byte
+`writeByteA` takes three parameters: a byte array, an index and a byte
 value. The byte at the indicated index in the byte array is replaced
 by the provided byte value. The function returns the modified byte array.
 
@@ -1477,7 +1487,7 @@ Some basic optimizations can be performed on a program by using the
 cxt.Compile()
 ```
 
-The CXContext struct now holds a field representing a heap (a byte
+The CXProgram struct now holds a field representing a heap (a byte
 array) which stores definitions of CX structs' fields. The `Compile`
 method looks for every use of a struct field in the program, and
 stores them in the heap. The found arguments are changed for offsets

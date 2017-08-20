@@ -10,7 +10,7 @@ import (
 // This method removes 1 or more expressions
 // Then adds the equivalent of removed expressions
 
-func (expr *CXExpression) BuildExpression (outNames []string) *CXExpression {
+func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpression {
 	numInps := len(expr.Operator.Inputs)
 	numOuts := len(expr.Operator.Outputs)
 
@@ -55,7 +55,7 @@ func (expr *CXExpression) BuildExpression (outNames []string) *CXExpression {
 	return expr
 }
 
-func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberExprs int) {
+func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberExprs int) {
 	cxt.SelectFunction(solutionName)
 	if fn, err := cxt.GetCurrentFunction(); err == nil {
 		// removing (we also need to remove those expressions which contain the output var of this expr)
@@ -81,7 +81,7 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 
 				argIdentRemoved := false
 				for _, removedVar := range removedVars {
-					if i > removeIndex && string(*arg.Value) == removedVar {
+					if i > removeIndex && string(*arg.Value) == removedVar.Name {
 						indexesToRemove = append([]int{i}, indexesToRemove...)
 						argIdentRemoved = true
 					}
@@ -99,7 +99,7 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 					for _, j := range indexesToRemove {
 						argIsOutput := false
 						for _, outName := range fn.Expressions[j].OutputNames {
-							if string(*arg.Value) == outName {
+							if string(*arg.Value) == outName.Name {
 								indexesToRemove = append([]int{i}, indexesToRemove...)
 								broke = true
 								argIsOutput = true
@@ -148,7 +148,7 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 			sameOutputs := true
 			
 			for i, out := range fnOutputs {
-				if out.Name != exprOutNames[i] {
+				if out.Name != exprOutNames[i].Name {
 					sameOutputs = false
 				}
 			}
@@ -180,7 +180,7 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 			
 
 			// excluding array operations
-			re := regexp.MustCompile("readAByte|writeAByte|evolve")
+			re := regexp.MustCompile("readByteA|writeByteA|evolve")
 			filteredAffs := make([]*CXAffordance, 0)
 			for _, aff := range affs {
 				if re.FindString(aff.Description) == "" {
@@ -194,9 +194,13 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 
 			if expr, err := fn.GetCurrentExpression(); err == nil {
 				if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
-					outNames := make([]string, len(fn.Outputs))
+					outNames := make([]*CXDefinition, len(fn.Outputs))
 					for i, out := range fn.Outputs {
-						outNames[i] = out.Name
+						outDef := MakeDefinition(
+							out.Name,
+							MakeDefaultValue(out.Typ.Name),
+							out.Typ)
+						outNames[i] = outDef
 					}
 					expr.BuildExpression(outNames)
 				} else {
@@ -207,10 +211,18 @@ func (cxt *CXContext) MutateSolution (solutionName string, fnBag string, numberE
 	}
 }
 
-func (cxt *CXContext) adaptPreEvolution (solutionName string) {
+func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 	if mod, err := cxt.GetModule("main"); err == nil {
 		if _, err := cxt.GetFunction("main", "main"); err == nil {
-			delete(mod.Functions, "main")
+			//delete(mod.Functions, "main")
+			idx := -1
+			for i, fn := range mod.Functions {
+				if fn.Name == "main" {
+					idx = i
+					break
+				}
+			}
+			mod.Functions = append(mod.Functions[:idx], mod.Functions[idx+1:]...)
 		} else {
 			panic(err)
 		}
@@ -236,7 +248,7 @@ func (cxt *CXContext) adaptPreEvolution (solutionName string) {
 	}
 }
 
-func (cxt *CXContext) adaptInput (testValue float64) {
+func (cxt *CXProgram) adaptInput (testValue float64) {
 	if fn, err := cxt.GetFunction("main", "main"); err == nil {
 		//val := encoder.SerializeAtomic(testValue)
 		val := encoder.Serialize(testValue)
@@ -248,18 +260,26 @@ func (cxt *CXContext) adaptInput (testValue float64) {
 	}
 }
 
-func (fromCxt *CXContext) transferSolution (solutionName string, toCxt *CXContext) {
+func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgram) {
 	if fromMod, err := fromCxt.GetCurrentModule(); err == nil {
 		if fromFn, err := fromCxt.GetFunction(solutionName, fromMod.Name); err == nil {
 			if toMod, err := toCxt.GetCurrentModule(); err == nil {
-				delete(toMod.Functions, solutionName)
+				//delete(toMod.Functions, solutionName)
+				idx := -1
+				for i, fn := range toMod.Functions {
+					if fn.Name == solutionName {
+						idx = i
+						break
+					}
+				}
+				toMod.Functions = append(toMod.Functions[:idx], toMod.Functions[idx+1:]...)
 				toMod.AddFunction(MakeFunctionCopy(fromFn, toMod, toCxt))
 			}
 		}
 	}
 }
 
-func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) float64 {
+func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) float64 {
 	cxt.SelectFunction(solutionName)
 
 	//cxt.PrintProgram(false)
@@ -273,7 +293,7 @@ func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs
 				affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
 				
 				// excluding array operations
-				re := regexp.MustCompile("readAByte|writeAByte|evolve")
+				re := regexp.MustCompile("readByteA|writeByteA|evolve")
 				filteredAffs := make([]*CXAffordance, 0)
 				for _, aff := range affs {
 					if re.FindString(aff.Description) == "" {
@@ -316,7 +336,7 @@ func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs
 				affs := FilterAffordances(fn.GetAffordances(), "Expression", possibleOps, fnBag)
 
 				// excluding array operations
-				re := regexp.MustCompile("readAByte|writeAByte|evolve")
+				re := regexp.MustCompile("readByteA|writeByteA|evolve")
 				filteredAffs := make([]*CXAffordance, 0)
 				for _, aff := range affs {
 					if re.FindString(aff.Description) == "" {
@@ -329,9 +349,13 @@ func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs
 				affs[r].ApplyAffordance()
 				
 				// making sure last expression assigns to output
-				outNames := make([]string, len(fn.Outputs))
+				outNames := make([]*CXDefinition, len(fn.Outputs))
 				for i, out := range fn.Outputs {
-					outNames[i] = out.Name
+					outDef := MakeDefinition(
+						out.Name,
+						MakeDefaultValue(out.Typ.Name),
+						out.Typ)
+					outNames[i] = outDef
 				}
 
 				if expr, err := fn.GetCurrentExpression(); err == nil {
@@ -360,7 +384,7 @@ func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs
 					//fmt.Printf("Iteration:%d\n", i)
 					// getting 4 copies of the parent (the best solution)
 					// let's create an array holding these programs
-					programs := make([]*CXContext, 5) // it's always 5, because of the 1+4 strategy
+					programs := make([]*CXProgram, 5) // it's always 5, because of the 1+4 strategy
 					errors := make([]float64, 5)
 					programs[0] = best // the best solution will always be at index 0
 
@@ -438,7 +462,7 @@ func (cxt *CXContext) Evolve (solutionName string, fnBag string, inputs, outputs
 	return finalError
 }
 
-func RandomProgram (numberAffordances int) *CXContext {
+func RandomProgram (numberAffordances int) *CXProgram {
 	cxt := MakeContext()
 	for i := 0; i < numberAffordances; i++ {
 		randomCase := random(0, 100)

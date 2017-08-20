@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -288,16 +289,16 @@ func divF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
 	return &CXArgument{Value: &output, Typ: MakeType("f64")}
 }
 
-func readAByte (arr *CXArgument, idx *CXArgument) *CXArgument {
+func readByteA (arr *CXArgument, idx *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" {
-		panic("readAByte: wrong argument type")
+		panic("readByteA: wrong argument type")
 	}
 
 	var index int32
 	encoder.DeserializeAtomic(*idx.Value, &index)
 
 	if index >= int32(len(*arr.Value)) {
-		panic(fmt.Sprintf("readAByte: Index %d exceeds array of length %d", index, len(*arr.Value)))
+		panic(fmt.Sprintf("readByteA: Index %d exceeds array of length %d", index, len(*arr.Value)))
 	}
 
 	output := make([]byte, 1)
@@ -306,19 +307,199 @@ func readAByte (arr *CXArgument, idx *CXArgument) *CXArgument {
 	return &CXArgument{Value: &output, Typ: MakeType("byte")}
 }
 
-func writeAByte (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
+func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" || val.Typ.Name != "byte" {
-		panic("readAByte: wrong argument type")
+		panic("readByteA: wrong argument type")
 	}
 
 	var index int32
 	encoder.DeserializeAtomic(*idx.Value, &index)
 	
 	if index >= int32(len(*arr.Value)) {
-		panic(fmt.Sprintf("writeAByte: Index %d exceeds array of length %d", index, len(*arr.Value)))
+		panic(fmt.Sprintf("writeByteA: Index %d exceeds array of length %d", index, len(*arr.Value)))
 	}
 
 	(*arr.Value)[index] = (*val.Value)[0]
+
+	return arr
+}
+
+func readI32A (arr *CXArgument, idx *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]i32" || idx.Typ.Name != "i32" {
+		panic("readI32A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var array []int32
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("readI32A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	output := encoder.Serialize(array[index])
+
+	return &CXArgument{Value: &output, Typ: MakeType("i32")}
+}
+
+func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]i32" || idx.Typ.Name != "i32" || val.Typ.Name != "i32" {
+		panic("readI32A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var value int32
+	encoder.DeserializeAtomic(*val.Value, &value)
+
+	var array []int32
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("writeI32A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	array[index] = value
+	output := encoder.Serialize(array)
+	arr.Value = &output
+
+	return arr
+}
+
+func readI64A (arr *CXArgument, idx *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]i64" || idx.Typ.Name != "i32" {
+		panic("readI64A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var array []int64
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("readI64A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	output := encoder.Serialize(array[index])
+
+	return &CXArgument{Value: &output, Typ: MakeType("i64")}
+}
+
+func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]i64" || idx.Typ.Name != "i32" || val.Typ.Name != "i64" {
+		panic("readI64A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var value int64
+	encoder.DeserializeAtomic(*val.Value, &value)
+
+	var array []int64
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("writeI64A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	array[index] = value
+	output := encoder.Serialize(array)
+	arr.Value = &output
+
+	return arr
+}
+
+func readF32A (arr *CXArgument, idx *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]f32" || idx.Typ.Name != "i32" {
+		panic("readF32A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var array []float32
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("readF32A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	output := encoder.Serialize(array[index])
+
+	return &CXArgument{Value: &output, Typ: MakeType("f32")}
+}
+
+func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]f32" || idx.Typ.Name != "i32" || val.Typ.Name != "f32" {
+		panic("readF32A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var value float32
+	encoder.DeserializeAtomic(*val.Value, &value)
+
+	var array []float32
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("writeF32A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	array[index] = value
+	output := encoder.Serialize(array)
+	arr.Value = &output
+
+	return arr
+}
+
+func readF64A (arr *CXArgument, idx *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]f64" || idx.Typ.Name != "i32" {
+		panic("readF64A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var array []float64
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("readF64A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	output := encoder.Serialize(array[index])
+
+	return &CXArgument{Value: &output, Typ: MakeType("f64")}
+}
+
+func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
+	if arr.Typ.Name != "[]f64" || idx.Typ.Name != "i32" || val.Typ.Name != "f64" {
+		panic("readF64A: wrong argument type")
+	}
+
+	var index int32
+	encoder.DeserializeAtomic(*idx.Value, &index)
+
+	var value float64
+	encoder.DeserializeAtomic(*val.Value, &value)
+
+	var array []float64
+	encoder.DeserializeRaw(*arr.Value, &array)
+	
+	if index >= int32(len(array)) {
+		panic(fmt.Sprintf("writeF64A: Index %d exceeds array of length %d", index, len(array)))
+	}
+
+	array[index] = value
+	output := encoder.Serialize(array)
+	arr.Value = &output
 
 	return arr
 }
@@ -445,7 +626,7 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
   Cast functions
 */
 
-func castStr (arg *CXArgument) *CXArgument {
+func castToStr (arg *CXArgument) *CXArgument {
 	strTyp := MakeType("str")
 	switch arg.Typ.Name {
 	case "[]byte":
@@ -466,7 +647,35 @@ func byteAtoStr (arg *CXArgument) *CXArgument {
 		return newArg
 }
 
-func castI64 (arg *CXArgument) *CXArgument {
+func castToI32 (arg *CXArgument) *CXArgument {
+	i32Typ := MakeType("i32")
+	switch arg.Typ.Name {
+	case "i32":
+		return arg
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(int32(val))
+		newArg := MakeArgument(&newVal, i32Typ)
+		return newArg
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(int32(val))
+		newArg := MakeArgument(&newVal, i32Typ)
+		return newArg
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(int32(val))
+		newArg := MakeArgument(&newVal, i32Typ)
+		return newArg
+	default:
+		panic(fmt.Sprintf("Type '%s' can't be casted to type 'i32'", arg.Typ.Name))
+	}
+}
+
+func castToI64 (arg *CXArgument) *CXArgument {
 	i64Typ := MakeType("i64")
 	switch arg.Typ.Name {
 	case "i32":
@@ -480,7 +689,6 @@ func castI64 (arg *CXArgument) *CXArgument {
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
-		fmt.Println(val)
 		newVal := encoder.Serialize(int64(val))
 		newArg := MakeArgument(&newVal, i64Typ)
 		return newArg
@@ -492,6 +700,62 @@ func castI64 (arg *CXArgument) *CXArgument {
 		return newArg
 	default:
 		panic(fmt.Sprintf("Type '%s' can't be casted to type 'i64'", arg.Typ.Name))
+	}
+}
+
+func castToF32 (arg *CXArgument) *CXArgument {
+	f32Typ := MakeType("f32")
+	switch arg.Typ.Name {
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float32(val))
+		newArg := MakeArgument(&newVal, f32Typ)
+		return newArg
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float32(val))
+		newArg := MakeArgument(&newVal, f32Typ)
+		return newArg
+	case "f32":
+		return arg
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float32(val))
+		newArg := MakeArgument(&newVal, f32Typ)
+		return newArg
+	default:
+		panic(fmt.Sprintf("Type '%s' can't be casted to type 'f32'", arg.Typ.Name))
+	}
+}
+
+func castToF64 (arg *CXArgument) *CXArgument {
+	f64Typ := MakeType("f64")
+	switch arg.Typ.Name {
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float64(val))
+		newArg := MakeArgument(&newVal, f64Typ)
+		return newArg
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float64(val))
+		newArg := MakeArgument(&newVal, f64Typ)
+		return newArg
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := encoder.Serialize(float64(val))
+		newArg := MakeArgument(&newVal, f64Typ)
+		return newArg
+	case "f64":
+		return arg
+	default:
+		panic(fmt.Sprintf("Type '%s' can't be casted to type 'f64'", arg.Typ.Name))
 	}
 }
 
@@ -535,3 +799,27 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
 	}
 }
 
+func sleep (ms *CXArgument) *CXArgument {
+	if ms.Typ.Name != "i32" {
+		panic("sleep: wrong argument type")
+	}
+	
+	var duration int32
+	encoder.DeserializeRaw(*ms.Value, &duration)
+
+	time.Sleep(time.Duration(duration) * time.Millisecond)
+
+	return ms
+}
+
+/*
+  MetaProgramming Natives
+*/
+
+// For now, let's just add these
+// Prolog
+// :clauses
+// :objects
+// :object
+// :query
+// :rem

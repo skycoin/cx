@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 	"bytes"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -56,10 +57,186 @@ func concat (strs ...string) string {
 	return buffer.String()
 }
 
-// Just a function to debug for myself. Not meant to be used in production nor meant to be efficient/maintanable
-func (cxt *CXContext) PrintProgram(withAffs bool) {
 
-	fmt.Println("Context")
+
+// (modules (main (definitions (str ))
+//                (functions (= double (addF64 ((f64 n) (f64 n))))
+//                           (= triple (subF64 ((f64 n) (f64 n))))))
+// 	 (math (definitions)))
+
+// (modules (module main
+//                  (definitions
+//                      (definition greeting str "hello")
+//                      (definition ten i32 10)
+//                    (definition ten i32 10)
+//                      )))
+
+
+func printValue (value *[]byte, typName string) string {
+	var argName string
+	switch typName {
+	case "str":
+		argName = fmt.Sprintf("\"%s\"", string(*value))
+	case "bool":
+		var val int32
+		encoder.DeserializeRaw(*value, &val)
+		if val == 0 {
+			argName = "false"
+		} else {
+			fmt.Printf("true")
+			argName = "true"
+		}
+	case "byte":
+		argName = fmt.Sprintf("%#v", value)
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "[]byte":
+		var val []byte
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "[]i32":
+		var val []int32
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "[]i64":
+		var val []int64
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "[]f32":
+		var val []float32
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	case "[]f64":
+		var val []float64
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
+	default:
+		argName = string(*value)
+	}
+
+	return argName
+}
+
+func rep (str string, n int) string {
+	return strings.Repeat(str, n)
+}
+
+// func (cxt *CXProgram) PrintProgram (isCompressed bool) {
+// 	tab := "\t"
+// 	nl := "\n"
+// 	if isCompressed {
+// 		tab = ""
+// 		nl = ""
+// 	}
+	
+// 	fmt.Println()
+// 	fmt.Printf("(Modules %s", nl)
+// 	for _, mod := range cxt.Modules {
+// 		if mod.Name == CORE_MODULE {
+// 			continue
+// 		}
+// 		fmt.Printf("%s(Module %s %s", rep(tab, 1), mod.Name, nl)
+
+// 		fmt.Printf("%s(Imports %s", rep(tab, 2), nl)
+// 		fmt.Printf("%s)%s", rep(tab, 2), nl) // imports
+		
+// 		fmt.Printf("%s(Definitions %s", rep(tab, 2), nl)
+
+// 		for _, def := range mod.Definitions {
+// 			fmt.Printf("%s(Definition %s %s %s)%s",
+// 				rep(tab, 3),
+// 				def.Name,
+// 				def.Typ.Name,
+// 				printValue(def.Value, def.Typ.Name),
+// 				nl)
+// 		}
+		
+// 		fmt.Printf("%s)%s", rep(tab, 2), nl) // definitions
+
+// 		fmt.Printf("%s(Structs %s", rep(tab, 2), nl)
+
+// 		for _, strct := range mod.Structs {
+// 			fmt.Printf("%s(Struct %s", rep(tab, 3), nl)
+
+// 			for _, fld := range strct.Fields {
+// 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Typ.Name, nl)
+// 			}
+			
+// 			fmt.Printf("%s)%s", rep(tab, 3), nl) // structs
+// 		}
+		
+// 		fmt.Printf("%s)%s", rep(tab, 2), nl) // structs
+
+// 		fmt.Printf("%s(Functions %s", rep(tab, 2), nl)
+
+// 		for _, fn := range mod.Functions {
+// 			fmt.Printf("%s(Function %s%s", rep(tab, 3), fn.Name, nl)
+
+// 			fmt.Printf("%s(Inputs %s", rep(tab, 4), nl)
+// 			for _, inp := range fn.Inputs {
+// 				fmt.Printf("%s(Input %s %s)%s", rep(tab, 5), inp.Name, inp.Typ.Name, nl)
+// 			}
+// 			fmt.Printf("%s)%s", rep(tab, 4), nl) // inputs
+
+// 			fmt.Printf("%s(Outputs %s", rep(tab, 4), nl)
+// 			for _, out := range fn.Outputs {
+// 				fmt.Printf("%s(Output %s %s)%s", rep(tab, 5), out.Name, out.Typ.Name, nl)
+// 			}
+// 			fmt.Printf("%s)%s", rep(tab, 4), nl) // outputs
+
+// 			fmt.Printf("%s(Expressions %s", rep(tab, 4), nl)
+// 			for _, expr := range fn.Expressions {
+// 				_ = expr
+// 				fmt.Printf("%s(Expression %s", rep(tab, 5), nl)
+
+// 				fmt.Printf("%s(Operator %s)%s", rep(tab, 6), expr.Operator.Name, nl)
+				
+// 				fmt.Printf("%s(OutputNames %s", rep(tab, 6), nl)
+// 				for _, outName := range expr.OutputNames {
+// 					fmt.Printf("%s(OutputName %s)%s", rep(tab, 7), outName.Name, nl)
+// 				}
+// 				fmt.Printf("%s)%s", rep(tab, 6), nl)
+				
+// 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
+// 				for _, arg := range expr.Arguments {
+// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), printValue(arg.Value, arg.Typ.Name), arg.Typ.Name, nl)
+// 				}
+// 				fmt.Printf("%s)%s", rep(tab, 6), nl)
+				
+// 				fmt.Printf("%s)%s", rep(tab, 5), nl)
+// 			}
+// 			fmt.Printf("%s)%s", rep(tab, 4), nl) // expressions
+			
+// 			fmt.Printf("%s)%s", rep(tab, 3), nl) // function
+// 		}
+		
+// 		fmt.Printf("%s)%s", rep(tab, 2), nl) // functions
+		
+// 		fmt.Printf("%s)%s", rep(tab, 1), nl) // modules
+// 	}
+// 	fmt.Printf(")")
+// 	fmt.Println()
+// }
+
+
+
+func (cxt *CXProgram) PrintProgram(withAffs bool) {
+
+	fmt.Println("Program")
 	if withAffs {
 		for i, aff := range cxt.GetAffordances() {
 			fmt.Printf(" * %d.- %s\n", i, aff.Description)
@@ -176,10 +353,23 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 						if arg.Typ != nil &&
 							inOuts[string(*arg.Value)] != "" {
 							typ = inOuts[string(*arg.Value)]
-						} else if arg.Value != nil &&
-							mod.Definitions[string(*arg.Value)] != nil &&
-							mod.Definitions[string(*arg.Value)].Typ.Name != "" {
-							typ = mod.Definitions[string(*arg.Value)].Typ.Name
+						} else if arg.Value != nil { //&&
+							// mod.Definitions[string(*arg.Value)] != nil &&
+							// mod.Definitions[string(*arg.Value)].Typ.Name != ""
+							//{
+
+							//found := false
+							var found *CXDefinition
+							for _, def := range mod.Definitions {
+								if def.Name == string(*arg.Value) {
+									found = def
+									break
+								}
+							}
+							if found != nil && found.Typ.Name != "" {
+								typ = found.Typ.Name
+							}
+							//typ = mod.Definitions[string(*arg.Value)].Typ.Name
 						} else {
 							typ = arg.Typ.Name
 						}
@@ -192,7 +382,7 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 					if arg.Typ.Name != "ident" {
 						switch typ {
 						case "str":
-							fmt.Printf("%#v\n", string(*arg.Value))
+							argName = fmt.Sprintf("%#v", string(*arg.Value))
 						case "bool":
 							var val int32
 							encoder.DeserializeRaw(*arg.Value, &val)
@@ -267,9 +457,9 @@ func (cxt *CXContext) PrintProgram(withAffs bool) {
 						// 	outName = outName[:15]
 						// }
 						if i == len(expr.OutputNames) - 1 {
-							outNames.WriteString(outName)
+							outNames.WriteString(outName.Name)
 						} else {
-							outNames.WriteString(concat(outName, ", "))
+							outNames.WriteString(concat(outName.Name, ", "))
 						}
 					}
 					

@@ -14,32 +14,36 @@ var NATIVE_FUNCTIONS = []string{
 	
 	"printStr", "printByte", "printI32", "printI64",
 	"printF32", "printF64", "printByteA", "printI32A",
-	"printI64A", "printF32A", "printF64A",
+	"printI64A", "printF32A", "printF64A", "printBool",
 	
 	"idStr", "idByte", "idI32", "idI64", "idF32", "idF64",
 	"idByteA", "idI32A", "idI64A", "idF32A", "idF64A",
 	
-	"readAByte", "writeAByte",
+	"readByteA", "writeByteA", "readI32A", "writeI32A",
+	"readF32A", "writeF32A", "readF64A", "writeF64A",
 	
-	"byteAtoStr", "i32toI64", "f32toI64", "f64toI64",
+	"byteAToStr",
+	"i64ToI32", "f32ToI32", "f64ToI32",
+	"i32ToI64", "f32ToI64", "f64ToI64",
+	"i32ToF32", "i64ToF32", "f64ToF32",
+	"i32ToF64", "i64ToF64", "f32ToF64",
 	
 	"ltI32", "gtI32", "eqI32",
 	"ltI64", "gtI64", "eqI64",
 
+	"sleep",
+
 	"initDef",
 	"evolve",
 	"goTo",
-}
-var ARRAY_FUNCTIONS = []string{
-	"readAByte", "writeAByte",
 }
 
 /*
   Context
 */
 
-type CXContext struct {
-	Modules map[string]*CXModule
+type CXProgram struct {
+	Modules []*CXModule
 	CurrentModule *CXModule
 	CallStack *CXCallStack
 	Outputs []*CXDefinition
@@ -55,14 +59,15 @@ type CXCallStack struct {
 type CXCall struct {
 	Operator *CXFunction
 	Line int
-	State map[string]*CXDefinition
+	State []*CXDefinition
 	ReturnAddress *CXCall
-	Context *CXContext
+	Context *CXProgram
 	Module *CXModule
 }
 
 type CXProgramStep struct {
-	Action func(*CXContext)
+	//Action func(*CXProgram)
+	Action func()
 }
 
 /*
@@ -71,14 +76,31 @@ type CXProgramStep struct {
 
 type CXModule struct {
 	Name string
-	Imports map[string]*CXModule
-	Functions map[string]*CXFunction
-	Structs map[string]*CXStruct
-	Definitions map[string]*CXDefinition
+	Imports []*CXModule
+	Functions []*CXFunction
+	Structs []*CXStruct
+	Definitions []*CXDefinition
+
+	// Affordance inference
+	//Clauses []*CXClause
+	Clauses string
+	Objects []string
+	Query string
+	//Objects []*CXArgument // Idents
 
 	CurrentFunction *CXFunction
 	CurrentStruct *CXStruct
-	Context *CXContext
+	Context *CXProgram
+}
+
+type CXClause struct {
+	//Type *CXType
+	Operator *CXFunction
+	Argument *CXArgument
+	Object *CXArgument
+
+	Module *CXModule
+	Context *CXProgram
 }
 
 type CXDefinition struct {
@@ -89,7 +111,7 @@ type CXDefinition struct {
 	Size int
 
 	Module *CXModule
-	Context *CXContext
+	Context *CXProgram
 }
 
 /*
@@ -101,7 +123,7 @@ type CXStruct struct {
 	Fields []*CXField
 
 	Module *CXModule
-	Context *CXContext
+	Context *CXProgram
 }
 
 type CXField struct {
@@ -125,7 +147,7 @@ type CXFunction struct {
 
 	CurrentExpression *CXExpression
 	Module *CXModule
-	Context *CXContext
+	Context *CXProgram
 }
 
 type CXParameter struct {
@@ -136,12 +158,12 @@ type CXParameter struct {
 type CXExpression struct {
 	Operator *CXFunction
 	Arguments []*CXArgument
-	OutputNames []string
+	OutputNames []*CXDefinition
 	Line int
 	
 	Function *CXFunction
 	Module *CXModule
-	Context *CXContext
+	Context *CXProgram
 }
 
 type CXArgument struct {

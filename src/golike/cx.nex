@@ -8,11 +8,17 @@
 	/* skip comments */
 	lineNo = lineNo + countNewLines([]byte(yylex.Text()))
 }
+/:clauses/ { return CCLAUSES }
+/:objects/ { return COBJECTS }
+/:object/  { return COBJECT  }
+/:query/   { return QUERY    }
+/:dQuery/  { return DQUERY   }
 /:dStack/  { return DSTACK   }
 /:dProgram/{ return DPROGRAM }
 /:package/ { return SPACKAGE }
 /:struct/  { return SSTRUCT  }
 /:func/    { return SFUNC    }
+/:rem/     { return REM      }
 /:step/    { return STEP     }
 /:pstep/   { return PSTEP    }
 /:aff/     { return AFF      }
@@ -24,7 +30,15 @@
 /while/    { return WHILE    }
 /,/        { return COMMA    }
 /func/     { return FUNC     }
+/clauses/  { return CLAUSES  }
+/objects/  { return OBJECTS  }
+/object/   { return OBJECT   }
 /expr/     { return EXPR     }
+/global/   { return GLOBAL   }
+/field/    { return FIELD    }
+/input/    { return INPUT    }
+/output/   { return OUTPUT   }
+/import/   { return IMPORT   }
 /var/      { return VAR      }
 /\(/       { return LPAREN   }
 /\)/       { return RPAREN   }
@@ -71,7 +85,7 @@
 	lval.f32 = float32(result)
 	return FLOAT
 }
-/[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
+/[_a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
 	//fmt.Println(yylex.Text())
 	lval.tok = yylex.Text()
 	return IDENT
@@ -157,27 +171,47 @@ func ltI64 (n1 i64, n2 i64) (out bool) {}
 func gtI64 (n1 i64, n2 i64) (out bool) {}
 func eqI64 (n1 i64, n2 i64) (out bool) {}
 
-func byteAtoStr (in []byte) (out str) {}
-func i32toI64 (in i32) (out i64) {}
-func f32toI64 (in f32) (out i64) {}
-func f64toI64 (in f64) (out i64) {}
+func byteAToStr (in []byte) (out str) {}
+func i64ToI32 (in i64) (out i32) {}
+func f32ToI32 (in f32) (out i32) {}
+func f64ToI32 (in f64) (out i32) {}
+func i32ToI64 (in i32) (out i64) {}
+func f32ToI64 (in f32) (out i64) {}
+func f64ToI64 (in f64) (out i64) {}
+func i32ToF32 (in i32) (out f32) {}
+func i64ToF32 (in i64) (out f32) {}
+func f64ToF32 (in f64) (out f32) {}
+func i32ToF64 (in i32) (out f64) {}
+func i64ToF64 (in i64) (out f64) {}
+func f32ToF64 (in f32) (out f64) {}
 
 func goTo (predicate bool, thenLine i32, elseLine i32) (out bool) {}
 
+func printBool (p bool) (p bool) {}
 func printStr (s str) (s str) {}
 func printByte (n byte) (out byte) {}
 func printI32 (n i32) (out i32) {}
 func printI64 (n i64) (out i64) {}
-func printF32 (n f64) (out f32) {}
+func printF32 (n f32) (out f32) {}
 func printF64 (n f64) (out f64) {}
 func printByteA (n []byte) (out []byte) {}
 func printI32A (n []i32) (out []i32) {}
 func printI64A (n []i64) (out []i64) {}
-func printF32A (n []f64) (out []f32) {}
+func printF32A (n []f32) (out []f32) {}
 func printF64A (n []f64) (out []f64) {}
 
-func readAByte (arr []byte, idx i32) (byt byte) {}
-func writeAByte (arr []byte, idx i32, val byte) (byt byte) {}
+func readByteA (arr []byte, idx i32) (lit byte) {}
+func writeByteA (arr []byte, idx i32, val byte) (arr []byte) {}
+func readI32A (arr []i32, idx i32) (lit i32) {}
+func writeI32A (arr []i32, idx i32, val i32) (arr []i32) {}
+func readI64A (arr []i64, idx i32) (lit i64) {}
+func writeI64A (arr []i64, idx i32, val i64) (arr []i64) {}
+func readF32A (arr []f32, idx i32) (lit f32) {}
+func writeF32A (arr []f32, idx i32, val f32) (arr []f32) {}
+func readF64A (arr []f64, idx i32) (lit f64) {}
+func writeF64A (arr []f64, idx i32, val f64) (arr []f64) {}
+
+func sleep (ms i32) (ms i32) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 
@@ -198,7 +232,7 @@ func main () (out i32) {}
 		if file, err := os.Open(args[0]); err == nil {
 			yyParse(NewLexer(file))
 
-			//cxt.Compile()
+			cxt.Compile()
 			cxt.Run(false, -1)
 			//cxt.PrintProgram(false)
 
@@ -210,8 +244,6 @@ func main () (out i32) {}
 			panic(fmt.Sprintf("Couldn't read file '%s'", args[0]))
 		}
 	} else {
-
-		fmt.Println()
 		fmt.Println("CX REPL")
 		fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
 		replMode = true
@@ -224,7 +256,7 @@ func main () (out i32) {}
 				}
 			}
 		}
-		
+
 		fi := bufio.NewReader(os.NewFile(0, "stdin"))
 
 		for {

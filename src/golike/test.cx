@@ -1,13 +1,17 @@
+package Math
+var ten i32 = 10
+var five i32 = 5
+var foo i32 = 10
 package main
 
 var greeting str = "hello"
 var ten i32 = 10
 var five i32 = 5
-var foo i32 = 10
-var bar f64 = 4.17
-var par i32 = 30
-var boo i32 = 40
-var epsilon f64 = 1.531
+// var foo i32 = 10
+// var bar f64 = 4.17
+// var par i32 = 30
+// var boo i32 = 40
+// var epsilon f64 = 1.531
 var inps []f64 = []f64{
 	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
 	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
@@ -48,41 +52,205 @@ func solution (n f64) (out f64) {
 	out = subF64(cubic, triple)
 }
 
+var turnRight str = "turning right."
+var turnLeft str = "turning left."
+var advance str = "advancing."
+
 //:func voidFn
 
+var bytes []byte = []byte{11, 22, 33}
+
+
+/*
+  Function for robot simulator
+*/
+func setObject(i i32) () {
+	if eqI32(i, 0) {
+		:object leftWall
+	}
+	if eqI32(i, 1) {
+		:object rightWall
+	}
+	if eqI32(i, 2) {
+		:object frontWall
+	}
+	if eqI32(i, 3) {
+		:object leftWormhole
+	}
+	if eqI32(i, 4) {
+		:object rightWormhole
+	}
+	if eqI32(i, 5) {
+		:object frontWormhole
+	}
+}
+
+func robotAct (action str) (action str) {
+	printStr(action)
+}
+
+func robot () () {
+	// :func robot {
+	// 	:rem expr 0 func robot;
+	// 	robotAct()
+	// 	:aff expr {"turnRight|turnLeft|advance" 0}
+	// }
+}
+
+// robot()
+// :object leftWall;
+// :object rightWall;
+// :aff expr {"turnRight|turnLeft|advance" 0};
+// :rem objects;
+// robot()
+// :object frontWall;
+// :aff expr {"turnRight|turnLeft|advance" 0};
+// :rem objects;
+// robot()
+// :object rightWall;
+// :object frontWall;
+// :aff expr {"turnRight|turnLeft|advance" 0};
+
+
+
+
 func main () (outMain f32) {
-	printI32(10)
-	printI32(20)
-	num := addI32(3, 3)
-	outMain := quad(4.0)
+	var outMain f32 = 3.14
+
+	:clauses "
+	  aff(robot, turnRight, X, R) :- X = rightWall, R = false.
+	  aff(robot, turnLeft, X, R) :- X = leftWall, R = false.
+	  aff(robot, advance, X, R) :- X = frontWall, R = false.
+
+	  aff(robot, turnRight, X, R) :- X = rightWormhole, R = true.
+	  aff(robot, turnLeft, X, R) :- X = leftWormhole, R = true.
+	  aff(robot, advance, X, R) :- X = frontWormhole, R = true.
+	  ";
+
+	:query "aff(%s, %s, %s, R).";
+	
+	// :func main {r = robot()};
+	// :object frontWormhole;
+	// :object frontWall;
+	// :object rightWall;
+	// :aff expr;
+
+	// ok, we can define the obstacles like this
+	// but how are we going to make the robot move:
+	// remove all expressions from robot()
+	// then simply add
+	// no, robot is going to print an action it could do
+	
+	// we must work around sending allowed arguments
+	// the problem is that, once we've set the argument, how do we remove it
+	// we got removers, but the while goto gets in the way
+
+	
+	var lefts []i32 = []i32{0, 1, 2, 3, 4}
+	// var rights
+	// var fronts
+
+	// var i i32 = 0
+	// while ltI32(i, 10) {
+	// 	i = addI32(i, 1)
+	// 	//sleep(1000)
+	// 	//printStr("hello")
+	// 	//:rem expr 1000 func robot
+	// 	printF64(readF64A(inps, i))
+	// 	robot()
+	// 	:aff expr;
+	// }
+
+	:dStack false;
+	:rem objects;
+	:object rightWall;
+	:object leftWall;
+	robot()
+
+	// robot()
+	// :object leftWall;
+	// :object rightWall;
+	// :aff expr {"turnRight|turnLeft|advance" 0};
+	// :rem objects;
+	// robot()
+	// :object frontWall;
+	// :aff expr {"turnRight|turnLeft|advance" 0};
+	// :rem objects;
+	// robot()
+	// :object rightWall;
+	// :object frontWall;
+	// :aff expr {"turnRight|turnLeft|advance" 0};
+
+	// now, can we wrap these in a function?
+
+	
+
+	// printStr("Test")
+	// printStr("==start== Testing Cast Functions")
+	// var _i32 i32 = 1
+	// var _i64 i64 = 2
+	// var _f32 f32 = 3.22
+	// var _f64 f64 = 4.67
+	
+	// printStr("To I32")
+	// printI32(i64ToI32(_i64))
+	// printI32(f32ToI32(_f32))
+	// printI32(f64ToI32(_f64))
+	// printStr("To I64")
+	// printI64(i32ToI64(_i32))
+	// printI64(f32ToI64(_f32))
+	// printI64(f64ToI64(_f64))
+	// printStr("To F32")
+	// printF32(i32ToF32(_i32))
+	// printF32(i64ToF32(_i64))
+	// printF32(f64ToF32(_f64))
+	// printStr("To F64")
+	// printF64(i32ToF64(_i32))
+	// printF64(i64ToF64(_i64))
+	// printF64(f32ToF64(_f32))
+
+	// printStr("==end== Testing Cast Functions")
+
+	//:func solution
+	//printI32(10)
+	//:func main
+	//printI32(20)
+	//num := addI32(3, 3)
+	//outMain := quad(4.0)
 	// outMain := divF32(3.0, 7.0)
 
 	// num := addI32(3, 3)
 	
 	// pred := gtI32(5, 10)
-	if gtI32(5, 10) {
-		printByte(ltI32(5, 10))
-		printByte(ltI32(5, 10))
-		//num := addI32(3, 3)
-		//printI32(num)
-		//printByte(ltI32(15, 10))
-		//result := addI32(7, 10)
-		//result := addI32(7, 10)
-	} else {
-		//printByte(ltI32(15, 10))
-		//printByte(ltI32(5, 10))
-		num := addI32(6, 6)
-		printI32(num)
-		// printByte(ltI32(15, 10))
-		//result := addI32(20, 3)
-		//result := addI32(7, 10)
-		//result := addI32(7, 10)
-	}
+	// if gtI32(10, 5) {
+	// 	printBool(ltI32(5, 10))
+	// 	printBool(ltI32(5, 10))
+	// 	//num := addI32(3, 3)
+	// 	//printI32(num)
+	// 	//printByte(ltI32(15, 10))
+	// 	//result := addI32(7, 10)
+	// 	//result := addI32(7, 10)
+	// } else {
+	// 	//printByte(ltI32(15, 10))
+	// 	//printByte(ltI32(5, 10))
+	// 	num := addI32(6, 18)
+	// 	printI32(num)
+	// 	// printByte(ltI32(15, 10))
+	// 	//result := addI32(20, 3)
+	// 	//result := addI32(7, 10)
+	// 	//result := addI32(7, 10)
+	// }
 
 	// var i i32 = 0
+
+	// writeF64A(inps, 0, f32ToF64(50.0))
+	
+	// rI32 := readF64A(inps, 0)
+	// printF64(rI32)
+	
 	// //pred := ltI32(i, 10000)
 	// while ltI32(i, 100) {
-	// //while pred {
+	// 	//while pred {
 	// 	//printI32(i)
 	// 	//printByte(ltI32(i, 10))
 	// 	i := addI32(i, 1)
@@ -122,3 +290,24 @@ func main () (outMain f32) {
 	// // //addI32(addI32(5, 4), addI32(3, 7))
 	// // addI32(addI32(addI32(i, 20), i), addI32(3, i))
 }
+
+//:dProgram true;
+
+
+// :clauses "
+//   aff(robot, turnRight, X, R) :- X = rightWall, R = false.
+//   aff(robot, turnLeft, X, R) :- X = leftWall, R = false.
+//   aff(robot, advance, X, R) :- X = frontWall, R = false.
+
+//   aff(robot, turnRight, X, R) :- X = rightWormhole, R = true.
+//   aff(robot, turnLeft, X, R) :- X = leftWormhole, R = true.
+//   aff(robot, advance, X, R) :- X = frontWormhole, R = true.
+//   ";
+
+// :query "aff(%s, %s, %s, R).";
+
+// :func main {r = robot()};
+// :object frontWormhole;
+// :object frontWall;
+// :object rightWall;
+// :aff expr;

@@ -6,7 +6,10 @@ import (
 	"regexp"
 	"bytes"
 	"sort"
-	//"github.com/skycoin/skycoin/src/cipher/encoder"
+	
+	"github.com/mndrix/golog"
+	"github.com/mndrix/golog/read"
+	"github.com/mndrix/golog/term"
 )
 
 func PrintAffordances (affs []*CXAffordance) {
@@ -42,15 +45,15 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 	types := make([]string, len(BASIC_TYPES))
 	copy(types, BASIC_TYPES)
 	
-	for name, _ := range mod.Structs {
-		types = append(types, name)
+	for _, s := range mod.Structs {
+		types = append(types, s.Name)
 	}
 
 	// Getting types from imported modules
-	for impName, imp := range mod.Imports {
+	for _, imp := range mod.Imports {
 		for _, strct := range imp.Structs {
-			types = append(types, concat(impName, ".", strct.Name))
-		}
+			types = append(types, concat(imp.Name, ".", strct.Name))
+	       	}
 	}
 
 	// definitions for each available type
@@ -133,7 +136,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			// checking if it's a nonAssign local
 			isNonAssign := false
 			for _, outName := range ex.OutputNames {
-				if len(outName) > len(NON_ASSIGN_PREFIX) && outName[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX {
+				if len(outName.Name) > len(NON_ASSIGN_PREFIX) && outName.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX {
 					isNonAssign = true
 					break
 				}
@@ -151,7 +154,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			for i, out := range ex.Operator.Outputs {
 				if reqType == out.Typ.Name {
 					defsTypes = append(defsTypes, out.Typ.Name)
-					identName := []byte(ex.OutputNames[i])
+					identName := []byte(ex.OutputNames[i].Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
@@ -162,8 +165,69 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			}
 		}
 
+		// Consulting clauses
+		m := golog.NewInteractiveMachine()
+		if len(expr.Module.Objects) > 0 && len(expr.Module.Clauses) > 0 {
+			b := bytes.NewBufferString(expr.Module.Clauses)
+			m = m.Consult(b)
+		}
+
+		//:query "aff(robot, advance, rightWall, R).
+
+		re := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]*$")
+
 		for i, arg := range args {
 			theArg := arg
+			argName := string(*arg.Value)
+			isSkip := false
+
+			if len(expr.Module.Objects) > 0 && len(expr.Module.Clauses) > 0 && expr.Module.Query != "" && re.FindString(argName) != "" {
+				for _, obj := range expr.Module.Objects {
+					query := fmt.Sprintf(expr.Module.Query,
+						op.Name,
+						argName,
+						obj)
+
+					if goal, err := read.Term(query); err == nil {
+						variables := term.Variables(goal)
+						answers := m.ProveAll(goal)
+
+						pass := false
+						if len(answers) == 0 || variables.Size() == 0 {
+							pass = true
+						}
+
+						if !pass {
+							for _, answer := range answers {
+								//fmt.Println("hello")
+								//lines := make([]string, 0)
+								variables.ForEach(func(name string, variable interface{}) {
+									v := variable.(*term.Variable)
+									val := answer.Resolve_(v)
+									if val.String() == "false" {
+										isSkip = true
+									}
+									if val.String() == "true" {
+										isSkip = false
+									}
+									
+									
+									//line := fmt.Sprintf("%s = %s", name, val)
+									//lines = append(lines, line)
+								})
+								//fmt.Println(strings.Join(lines, "\n"))
+							}
+						}
+					} else {
+						fmt.Println(err)
+					}
+				}
+			}
+
+			if isSkip {
+				continue
+			}
+			
 			affs = append(affs, &CXAffordance{
 				Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
 				Action: func() {
@@ -200,39 +264,39 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 	types := make([]string, len(BASIC_TYPES))
 	copy(types, BASIC_TYPES)
-	for name, _ := range mod.Structs {
-		types = append(types, name)
+	for _, s := range mod.Structs {
+		types = append(types, s.Name)
 	}
 
 	// Getting types from imported modules
-	for impName, imp := range mod.Imports {
+	for _, imp := range mod.Imports {
 		for _, strct := range imp.Structs {
-			types = append(types, concat(impName, ".", strct.Name))
+			types = append(types, concat(imp.Name, ".", strct.Name))
 		}
 	}
 
 	// Getting operators from current module
-	for opName, op := range mod.Functions {
-		if fn.Name != opName && opName != "main" {
+	for _, op := range mod.Functions {
+		if fn.Name != op.Name && op.Name != "main" {
 			ops = append(ops, op)
-			opsNames = append(opsNames, opName)
+			opsNames = append(opsNames, op.Name)
 		}
 	}
 
 	// Getting operators from core module
 	if core, err := fn.Context.GetModule(CORE_MODULE); err == nil {
-		for opName, op := range core.Functions {
+		for _, op := range core.Functions {
 			ops = append(ops, op)
-			opsNames = append(opsNames, concat(core.Name, ".", opName))
+			opsNames = append(opsNames, concat(core.Name, ".", op.Name))
 		}
 	}
 	
 
 	// Getting operators from imported modules
-	for impName, imp := range mod.Imports {
-		for opName, op := range imp.Functions {
+	for _, imp := range mod.Imports {
+		for _, op := range imp.Functions {
 			ops = append(ops, op)
-			opsNames = append(opsNames, concat(impName, ".", opName))
+			opsNames = append(opsNames, concat(imp.Name, ".", op.Name))
 		}
 	}
 
@@ -526,15 +590,15 @@ func (mod *CXModule) GetAffordances() []*CXAffordance {
 	copy(types, BASIC_TYPES)
 
 	if len(mod.Structs) > 0 {
-		for name, _ := range mod.Structs {
-			types = append(types, name)
+		for _, s := range mod.Structs {
+			types = append(types, s.Name)
 		}
 	}
 
 	// Getting types from imported modules
-	for impName, imp := range mod.Imports {
+	for _, imp := range mod.Imports {
 		for _, strct := range imp.Structs {
-			types = append(types, concat(impName, ".", strct.Name))
+			types = append(types, concat(imp.Name, ".", strct.Name))
 		}
 	}
 
@@ -581,7 +645,7 @@ func (mod *CXModule) GetAffordances() []*CXAffordance {
 	return affs
 }
 
-func (cxt *CXContext) GetAffordances() []*CXAffordance {
+func (cxt *CXProgram) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 	modGensym := MakeGenSym("mod")
 	
