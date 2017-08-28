@@ -72,7 +72,7 @@ func concat (strs ...string) string {
 //                      )))
 
 
-func printValue (value *[]byte, typName string) string {
+func PrintValue (value *[]byte, typName string) string {
 	var argName string
 	switch typName {
 	case "str":
@@ -161,7 +161,7 @@ func rep (str string, n int) string {
 // 				rep(tab, 3),
 // 				def.Name,
 // 				def.Typ.Name,
-// 				printValue(def.Value, def.Typ.Name),
+// 				PrintValue(def.Value, def.Typ.Name),
 // 				nl)
 // 		}
 		
@@ -213,7 +213,7 @@ func rep (str string, n int) string {
 				
 // 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
 // 				for _, arg := range expr.Arguments {
-// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), printValue(arg.Value, arg.Typ.Name), arg.Typ.Name, nl)
+// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ.Name), arg.Typ.Name, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
 				
@@ -407,6 +407,10 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							argName = fmt.Sprintf("%#v", val)
 						case "f64":
 							var val float64
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]bool":
+							var val []bool
 							encoder.DeserializeRaw(*arg.Value, &val)
 							argName = fmt.Sprintf("%#v", val)
 						case "[]byte":

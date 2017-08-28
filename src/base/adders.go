@@ -264,12 +264,6 @@ func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
 	return mod
 }
 
-// func (mod *CXModule) AddObject (obj *CXArgument) *CXModule {
-// 	mod.Objects = append(mod.Objects, obj)
-
-// 	return mod
-// }
-
 func (mod *CXModule) AddObject (obj string) *CXModule {
 	mod.Objects = append(mod.Objects, obj)
 
@@ -286,6 +280,11 @@ func (mod *CXModule) AddObject (obj string) *CXModule {
 
 func (mod *CXModule) AddClauses (clauses string) *CXModule {
 	mod.Clauses = clauses
+	return mod
+}
+
+func (mod *CXModule) AddQuery (query string) *CXModule {
+	mod.Query = query
 	return mod
 }
 
@@ -308,7 +307,16 @@ func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
 	// }
 	// saveProgramStep(prgrmStep, strct.Context)
 
-	strct.Fields = append(strct.Fields, fld)
+	found := false
+	for _, fl := range strct.Fields {
+		if fl.Name == fld.Name {
+			found = true
+			break
+		}
+	}
+	if !found {
+		strct.Fields = append(strct.Fields, fld)
+	}
 	return strct
 }
 
@@ -376,7 +384,17 @@ func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
 	// }
 	// saveProgramStep(prgrmStep, fn.Context)
 
-	fn.Inputs = append(fn.Inputs, param)
+	found := false
+	for _, inp := range fn.Inputs {
+		if inp.Name == param.Name {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fn.Inputs = append(fn.Inputs, param)
+	}
+	
 	return fn
 }
 
@@ -398,7 +416,17 @@ func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
 	// }
 	// saveProgramStep(prgrmStep, fn.Context)
 
-	fn.Outputs = append(fn.Outputs, param)
+	found := false
+	for _, out := range fn.Outputs {
+		if out.Name == param.Name {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fn.Outputs = append(fn.Outputs, param)
+	}
+
 	return fn
 }
 
@@ -458,3 +486,4 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	
 	return expr
 }
+

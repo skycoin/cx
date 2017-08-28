@@ -1,0 +1,15 @@
+package main
+
+var greeting str = "hello"
+var ten i32 = 10
+var five i32 = 5
+
+func main () (outMain f32) {
+	var outMain f32 = 3.14
+	var outMain f32 = 3.18
+
+	foo := divI32(0, 0)
+	
+	//printI32(divI32(3, divI32(addI32(0, 0), 3)))
+	
+}

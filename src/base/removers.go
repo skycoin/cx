@@ -74,27 +74,9 @@ func (mod *CXModule) RemoveImport (impName string) {
 	}
 }
 
-func (mod *CXModule) RemoveClause (clsName string) {
-	mod.Clauses = mod.Clauses[:len(mod.Clauses) - 1]
-}
-
 func (mod *CXModule) RemoveClauses () {
 	mod.Clauses = ""
 }
-
-// func (mod *CXModule) RemoveObject (objName string) {
-// 	lenObjs := len(mod.Objects)
-// 	for i, obj := range mod.Objects {
-// 		if string(*obj.Value) == objName {
-// 			if i == lenObjs - 1 {
-// 				mod.Objects = mod.Objects[:len(mod.Objects) - 1]
-// 			} else {
-// 				mod.Objects = append(mod.Objects[:i], mod.Objects[i+1:]...)
-// 			}
-// 			break
-// 		}
-// 	}
-// }
 
 func (mod *CXModule) RemoveObject (objName string) {
 	lenObjs := len(mod.Objects)
@@ -105,13 +87,18 @@ func (mod *CXModule) RemoveObject (objName string) {
 			} else {
 				mod.Objects = append(mod.Objects[:i], mod.Objects[i+1:]...)
 			}
-			break
+			// break
+			// we want to remove all the instances of that object
 		}
 	}
 }
 
 func (mod *CXModule) RemoveObjects () {
 	mod.Objects = nil
+}
+
+func (mod *CXModule) RemoveQuery () {
+	mod.Query = ""
 }
 
 func (strct *CXStruct) RemoveField (fldName string) {

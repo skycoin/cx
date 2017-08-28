@@ -1,6 +1,15 @@
 \documentclass[twoside,twocolumn]{algol60}
 
 \usepackage{amsmath}
+\usepackage{courier}
+\usepackage{listings}
+\lstset{
+  numbers=left,
+  firstnumber=1,
+  numberfirstline=true,
+  basicstyle=\ttfamily
+}
+\usepackage{hyperref}
 
 \pagestyle{headings}
 \showboxdepth=0
@@ -20,7 +29,7 @@
                          % excluding running head and foot).
 
 \textwidth 523pt         % Width of text line.
-\columnsep 15pt          % Space between columns 
+\columnsep 25pt          % Space between columns 
 \columnseprule 0pt       % Width of rule between columns.
 
 \parskip 5pt plus 2pt minus 2pt % Extra vertical space between paragraphs.
@@ -42,22 +51,31 @@
 \parindent 0pt %!! 15pt                    % Width of paragraph indentation.
 
 \input{first}   \par
-\input{intro}   \par
+\input{introduction}   \par
 \vskip 2ex
 \clearchapterstar{Description of the language} %\unskip\vskip -2ex
-\input{struct}  \par
-\input{lex}	\par
-\input{basic}	\par
-\input{expr}	\par  \vfill\eject
-\input{prog}	\par
-\input{procs}	\par  \vfill\eject
-\input{syn}	\par
-\input{sem}	\par
-\input{derive}	\par  \vfill\eject
+\input{overview}  \par
+\input{adders}	\par
+\input{affordances}	\par
+\input{execution}	\par  \vfill\eject
+\input{native-functions}	\par
+\input{getters}	\par  \vfill\eject
+\input{makers}	\par
+\input{removers}	\par
+\input{selectors}	\par  \vfill\eject
+\input{serialization}	\par
+\input{structs}	\par
+\input{meta-programming}	\par
+\clearchapterstar{An Implementation of the language}
+\input{implementation-introduction}	\par
+\input{lexical-analyzer}	\par
+\input{syntactic-analyzer}	\par
+\input{code-generator}	\par
+
 \appendix
 \input{stdmod}	\par \vfill\eject
-\input{features} \par \vfill\eject
-\input{notes}	\par
+\input{evolutionary-algorithm} \par \vfill\eject
+\input{robot-control}	\par
 \input{repository} \par \vfill\eject
 \input{example}	\par  %\vfill\eject
 \renewcommand{\bibname}{References}

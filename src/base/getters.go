@@ -95,8 +95,6 @@ func (mod *CXModule) GetDefinitions () ([]*CXDefinition, error) {
 
 func (cxt *CXProgram) GetDefinition (name string) (*CXDefinition, error) {
 	if mod, err := cxt.GetCurrentModule(); err == nil {
-		//found := mod.Definitions[name]
-
 		var found *CXDefinition
 		for _, def := range mod.Definitions {
 			if def.Name == name {

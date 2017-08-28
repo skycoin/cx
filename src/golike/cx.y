@@ -5,6 +5,7 @@
 		"bytes"
 		"fmt"
 		"os"
+		"time"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
 
@@ -27,6 +28,7 @@
 		fmt.Fprintf(os.Stderr, format, args...)
 		os.Stderr.Sync()
 	}
+	
 %}
 
 %union {
@@ -38,6 +40,8 @@
 	tok string
 	bool bool
 	string string
+
+	line int
 
 	parameter *CXParameter
 	parameters []*CXParameter
@@ -67,9 +71,9 @@
                         /* Removers */
                         REM GLOBAL EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
                         /* Stepping */
-                        STEP PSTEP
+                        STEP PSTEP TSTEP
                         /* Debugging */
-                        DSTACK DPROGRAM DQUERY
+                        DSTACK DPROGRAM DQUERY DSTATE
                         /* Affordances */
                         AFF
                         /* Prolog */
@@ -93,6 +97,7 @@ lines:
                 /* empty */
         |       lines line
                 {
+			//fmt.Println(yyS[yypt-0].line)
 			if replMode && dProgram {
 				cxt.PrintProgram(false)
 			}
@@ -135,7 +140,7 @@ prolog:
 			b := bytes.NewBufferString(clauses)
 			m = m.Consult(b)
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.Clauses = clauses
+				mod.AddClauses(clauses)
 			}
                 }
         |       COBJECT IDENT
@@ -149,7 +154,7 @@ prolog:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				query := strings.TrimPrefix($2, "\"")
 				query = strings.TrimSuffix(query, "\"")
-				mod.Query = query
+				mod.AddQuery(query)
 			}
                 }
         |       DQUERY STRING
@@ -412,16 +417,51 @@ affordance:
                 }
         ;
 
-stepping:       STEP INT
+stepping:       TSTEP INT INT
                 {
 			if $2 == 0 {
-				// we do nothing
+				// Maybe nothing for now
+			} else {
+				if $2 < 0 {
+					nCalls := $2 * -1
+					for i := int32(0); i < nCalls; i++ {
+						time.Sleep(time.Duration(int32($3)) * time.Millisecond)
+						cxt.UnRun(1)
+					}
+				} else {
+
+					for i := int32(0); i < $2; i++ {
+						time.Sleep(time.Duration(int32($3)) * time.Millisecond)
+						err := cxt.Run(dStack, 1)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+				}
+			}
+                }
+        |       STEP INT
+                {
+			if $2 == 0 {
+				// we run until halt or end of program;
+				if err := cxt.Run(dStack, -1); err != nil {
+					fmt.Println(err)
+				}
 			} else {
 				if $2 < 0 {
 					nCalls := $2 * -1
 					cxt.UnRun(int(nCalls))
 				} else {
-					cxt.Run(dStack, int($2))
+					//fmt.Println(cxt.Run(dStack, int($2)))
+
+					err := cxt.Run(dStack, int($2))
+					if err != nil {
+						fmt.Println(err)
+					}
+					
+					// if err := cxt.Run(dStack, int($2)); err != nil {
+					// 	fmt.Println(err)
+					// }
 				}
 			}
                 }
@@ -431,7 +471,15 @@ stepping:       STEP INT
         //         }
         ;
 
-debugging:      DSTACK BOOLEAN
+debugging:      DSTATE
+                {
+			if len(cxt.CallStack.Calls) > 0 {
+				for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
+					fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Value, def.Typ.Name))
+				}
+			}
+                }
+        |       DSTACK BOOLEAN
                 {
 			if $2 > 0 {
 				dStack = true
@@ -529,7 +577,7 @@ removers:       REM FUNC IDENT
 				mod.RemoveObjects()
 			}
                 }
-                // no, too complex. just wipe entire expression
+                // no, too complex. just wipe out entire expression
         // |       REM ARG INT EXPR INT FUNC IDENT
         //         {
 	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -871,6 +919,9 @@ assignExpression:
 					if $4 == nil {
 						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
 							expr := MakeExpression(op)
+							if !replMode {
+								expr.FileLine = yyS[yypt-0].line + 1
+							}
 							fn.AddExpression(expr)
 							expr.AddOutputName($2)
 							typ := []byte($3)
@@ -880,6 +931,9 @@ assignExpression:
 							if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 								for _, fld := range strct.Fields {
 									expr := MakeExpression(op)
+									if !replMode {
+										expr.FileLine = yyS[yypt-0].line + 1
+									}
 									fn.AddExpression(expr)
 									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									typ := []byte(fld.Typ.Name)
@@ -890,6 +944,21 @@ assignExpression:
 						}
 					} else {
 						switch $3 {
+						case "bool":
+							var ds int32
+							encoder.DeserializeRaw(*$4.Value, &ds)
+							new := encoder.SerializeAtomic(ds)
+							val := MakeArgument(&new, MakeType("bool"))
+							
+							if op, err := cxt.GetFunction("idBool", mod.Name); err == nil {
+								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
+								fn.AddExpression(expr)
+								expr.AddOutputName($2)
+								expr.AddArgument(val)
+							}
 						case "byte":
 							var ds int32
 							encoder.DeserializeRaw(*$4.Value, &ds)
@@ -898,6 +967,9 @@ assignExpression:
 							
 							if op, err := cxt.GetFunction("idByte", mod.Name); err == nil {
 								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
 								fn.AddExpression(expr)
 								expr.AddOutputName($2)
 								expr.AddArgument(val)
@@ -910,6 +982,9 @@ assignExpression:
 
 							if op, err := cxt.GetFunction("idI64", mod.Name); err == nil {
 								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
 								fn.AddExpression(expr)
 								expr.AddOutputName($2)
 								expr.AddArgument(val)
@@ -922,6 +997,9 @@ assignExpression:
 
 							if op, err := cxt.GetFunction("idF64", mod.Name); err == nil {
 								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
 								fn.AddExpression(expr)
 								expr.AddOutputName($2)
 								expr.AddArgument(val)
@@ -932,6 +1010,7 @@ assignExpression:
 							switch $3 {
 							case "i32": getFn = "idI32"
 							case "f32": getFn = "idF32"
+							case "[]bool": getFn = "idBoolA"
 							case "[]byte": getFn = "idByteA"
 							case "[]i32": getFn = "idI32A"
 							case "[]i64": getFn = "idI64A"
@@ -941,6 +1020,9 @@ assignExpression:
 
 							if op, err := cxt.GetFunction(getFn, mod.Name); err == nil {
 								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
 								fn.AddExpression(expr)
 								expr.AddOutputName($2)
 								expr.AddArgument(val)
@@ -957,6 +1039,9 @@ assignExpression:
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if op, err := cxt.GetFunction($3, mod.Name); err == nil {
 						expr := MakeExpression(op)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 
 						for _, outNameInArg := range $1 {
 							expr.AddOutputName(string(*outNameInArg.Value))
@@ -990,6 +1075,9 @@ nonAssignExpression:
 					if op, err := cxt.GetFunction($1, mod.Name); err == nil {
 						syntOutName := MakeGenSym("nonAssign")
 						expr := MakeExpression(op)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 						for _, arg := range $2 {
 							expr.AddArgument(arg)
@@ -1011,6 +1099,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1051,6 +1142,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1090,6 +1184,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1129,6 +1226,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1156,6 +1256,9 @@ statement:
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
+						if !replMode {
+							goToExpr.FileLine = lineNo
+						}
 						fn.AddExpression(goToExpr)
 
 						elseLines := encoder.Serialize(int32(0))
@@ -1177,6 +1280,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1205,6 +1311,9 @@ statement:
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
+						if !replMode {
+							goToExpr.FileLine = lineNo
+						}
 						fn.AddExpression(goToExpr)
 
 						elseLines := encoder.Serialize(int32(0))
@@ -1226,6 +1335,9 @@ statement:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 						fn.AddExpression(expr)
 					}
 				}
@@ -1259,6 +1371,9 @@ statement:
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
+						if !replMode {
+							goToExpr.FileLine = lineNo
+						}
 						fn.AddExpression(goToExpr)
 
 						elseLines := encoder.Serialize(int32(0))
@@ -1286,6 +1401,9 @@ statement:
 							if fn, err := cxt.GetCurrentFunction(); err == nil {
 								if op, err := cxt.GetFunction(MakeIdentityOpName(fld.Typ.Name), mod.Name); err == nil {
 									expr := MakeExpression(op)
+									if !replMode {
+										expr.FileLine = yyS[yypt-0].line + 1
+									}
 									fn.AddExpression(expr)
 									
 									expr.AddArgument(MakeArgument(zeroVal, fld.Typ))
@@ -1311,7 +1429,10 @@ elseStatement:
                     if mod, err := cxt.GetCurrentModule(); err == nil {
                         if fn, err := mod.GetCurrentFunction(); err == nil {
                             if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
-                            expr := MakeExpression(goToFn)
+				    expr := MakeExpression(goToFn)
+				    if !replMode {
+					    expr.FileLine = yyS[yypt-0].line + 1
+				    }
                             fn.AddExpression(expr)
                             }
                         }
@@ -1363,6 +1484,11 @@ argument:
 			val := encoder.Serialize($1)
 			$$ = MakeArgument(&val, MakeType("f32"))
                 }
+        |       BOOLEAN
+                {
+			val := encoder.Serialize($1)
+			$$ = MakeArgument(&val, MakeType("bool"))
+                }
         |       STRING
                 {
 			str := strings.TrimPrefix($1, "\"")
@@ -1379,6 +1505,15 @@ argument:
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
 			switch $1 {
+			case "[]bool":
+                                vals := make([]int32, len($3))
+				for i, arg := range $3 {
+					var val int32
+					encoder.DeserializeRaw(*arg.Value, &val)
+					vals[i] = val
+				}
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, MakeType("[]bool"))
 			case "[]byte":
                                 vals := make([]byte, len($3))
 				for i, arg := range $3 {
@@ -1386,8 +1521,8 @@ argument:
 					encoder.DeserializeRaw(*arg.Value, &val)
 					vals[i] = byte(val)
 				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, MakeType("[]byte"))
+				//sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&vals, MakeType("[]byte"))
 			case "[]i32":
                                 vals := make([]int32, len($3))
 				for i, arg := range $3 {

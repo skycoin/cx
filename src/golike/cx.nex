@@ -1,18 +1,19 @@
-/(\r\n|\r|\n|;)/ {
-	lineNo++
+/(\r\n|\r|\n)/ {
+	lval.line++
 }
 /(\t| )/ {
 	/* skip blanks and tabs */
 }
 /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
 	/* skip comments */
-	lineNo = lineNo + countNewLines([]byte(yylex.Text()))
+	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
 /:clauses/ { return CCLAUSES }
 /:objects/ { return COBJECTS }
 /:object/  { return COBJECT  }
 /:query/   { return QUERY    }
 /:dQuery/  { return DQUERY   }
+/:dState/  { return DSTATE   }
 /:dStack/  { return DSTACK   }
 /:dProgram/{ return DPROGRAM }
 /:package/ { return SPACKAGE }
@@ -20,7 +21,8 @@
 /:func/    { return SFUNC    }
 /:rem/     { return REM      }
 /:step/    { return STEP     }
-/:pstep/   { return PSTEP    }
+/:tStep/   { return TSTEP     }
+/:pStep/   { return PSTEP    }
 /:aff/     { return AFF      }
 /package/  { return PACKAGE  }
 /type/     { return TYPSTRUCT}
@@ -65,6 +67,7 @@
 /\[\]f64/  { lval.tok = yylex.Text(); return F64A     }
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
+	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return STRING
 }
 /true/ {
@@ -125,18 +128,67 @@ func readline (fi *bufio.Reader) (string, bool) {
 	return s, true
 }
 
+func repl (args []string) {
+	fmt.Println("CX REPL")
+	fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
+
+	for i, flag := range args {
+		switch flag {
+		case "--load":
+			if file, err := os.Open(args[i+1]); err == nil {
+				yyParse(NewLexer(file))
+			}
+		}
+	}
+
+	fi := bufio.NewReader(os.NewFile(0, "stdin"))
+
+	replMode = true
+	
+	for {
+		var inp string
+		var ok bool
+
+		fmt.Println(replTargetFn)
+		
+		if replTargetFn != "" {
+			fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
+			fmt.Printf("\t* ")
+		} else {
+			fmt.Printf("* ")
+		}
+		if inp, ok = readline(fi); ok {
+			if replTargetFn != "" {
+				inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
+			}
+			b := bytes.NewBufferString(inp)
+			yyParse(NewLexer(b))
+		} else {
+			if replTargetFn != "" {
+				replTargetFn = ""
+			} else {
+				fmt.Printf("\nBye!\n")
+				break
+			}
+			
+		}
+	}
+}
+
 func main() {
 	/*
            Initializing native functions
         */
-
+	
 	coreModule := `
 package core
+func idBool (x bool) (x bool) {}
 func idByte (x byte) (x byte) {}
 func idI32 (x i32) (x i32) {}
 func idI64 (x i64) (x i64) {}
 func idF32 (x f32) (x f32) {}
 func idF64 (x f64) (x f64) {}
+func idBoolA (x []bool) (x []bool) {}
 func idByteA (x []byte) (x []byte) {}
 func idI32A (x []i32) (x []i32) {}
 func idI64A (x []i64) (x []i64) {}
@@ -163,13 +215,48 @@ func subF64 (n1 f64, n2 f64) (out f64) {}
 func mulF64 (n1 f64, n2 f64) (out f64) {}
 func divF64 (n1 f64, n2 f64) (out f64) {}
 
+func modI32 (n1 i32, n2 i32) (rem i32) {}
+func modI64 (n1 i64, n2 i64) (rem i64) {}
+
+func andI32 (n1 i32, n2 i32) (out i32) {}
+func orI32 (n1 i32, n2 i32) (out i32) {}
+func xorI32 (n1 i32, n2 i32) (out i32) {}
+func andNotI32 (n1 i32, n2 i32) (out i32) {}
+
+func andI64 (n1 i64, n2 i64) (out i64) {}
+func orI64 (n1 i64, n2 i64) (out i64) {}
+func xorI64 (n1 i64, n2 i64) (out i64) {}
+func andNotI64 (n1 i64, n2 i64) (out i64) {}
+
+func and (c1 bool, c2 bool) (out bool) {}
+func or (c1 bool, c2 bool) (out bool) {}
+func not (c1 bool) (out bool) {}
+
 func ltI32 (n1 i32, n2 i32) (out bool) {}
 func gtI32 (n1 i32, n2 i32) (out bool) {}
 func eqI32 (n1 i32, n2 i32) (out bool) {}
+func lteqI32 (n1 i32, n2 i32) (out bool) {}
+func gteqI32 (n1 i32, n2 i32) (out bool) {}
 
 func ltI64 (n1 i64, n2 i64) (out bool) {}
 func gtI64 (n1 i64, n2 i64) (out bool) {}
 func eqI64 (n1 i64, n2 i64) (out bool) {}
+func lteqI64 (n1 i64, n2 i64) (out bool) {}
+func gteqI64 (n1 i64, n2 i64) (out bool) {}
+
+func ltF32 (n1 f32, n2 f32) (out bool) {}
+func gtF32 (n1 f32, n2 f32) (out bool) {}
+func eqF32 (n1 f32, n2 f32) (out bool) {}
+func lteqF32 (n1 f32, n2 f32) (out bool) {}
+func gteqF32 (n1 f32, n2 f32) (out bool) {}
+
+func ltF64 (n1 f64, n2 f64) (out bool) {}
+func gtF64 (n1 f64, n2 f64) (out bool) {}
+func eqF64 (n1 f64, n2 f64) (out bool) {}
+func lteqF64 (n1 f64, n2 f64) (out bool) {}
+func gteqF64 (n1 f64, n2 f64) (out bool) {}
+
+func eqStr (str1 str, str2 str) (out bool) {}
 
 func byteAToStr (in []byte) (out str) {}
 func i64ToI32 (in i64) (out i32) {}
@@ -184,6 +271,18 @@ func f64ToF32 (in f64) (out f32) {}
 func i32ToF64 (in i32) (out f64) {}
 func i64ToF64 (in i64) (out f64) {}
 func f32ToF64 (in f32) (out f64) {}
+func i64AToI32A (in []i64) (out []i32) {}
+func f32AToI32A (in []f32) (out []i32) {}
+func f64AToI32A (in []f64) (out []i32) {}
+func i32AToI64A (in []i32) (out []i64) {}
+func f32AToI64A (in []f32) (out []i64) {}
+func f64AToI64A (in []f64) (out []i64) {}
+func i32AToF32A (in []i32) (out []f32) {}
+func i64AToF32A (in []i64) (out []f32) {}
+func f64AToF32A (in []f64) (out []f32) {}
+func i32AToF64A (in []i32) (out []f64) {}
+func i64AToF64A (in []i64) (out []f64) {}
+func f32AToF64A (in []f32) (out []f64) {}
 
 func goTo (predicate bool, thenLine i32, elseLine i32) (out bool) {}
 
@@ -194,12 +293,15 @@ func printI32 (n i32) (out i32) {}
 func printI64 (n i64) (out i64) {}
 func printF32 (n f32) (out f32) {}
 func printF64 (n f64) (out f64) {}
+func printBoolA (n []bool) (out []bool) {}
 func printByteA (n []byte) (out []byte) {}
 func printI32A (n []i32) (out []i32) {}
 func printI64A (n []i64) (out []i64) {}
 func printF32A (n []f32) (out []f32) {}
 func printF64A (n []f64) (out []f64) {}
 
+func readBoolA (arr []bool, idx i32) (lit bool) {}
+func writeBoolA (arr []bool, idx i32, val bool) (arr []bool) {}
 func readByteA (arr []byte, idx i32) (lit byte) {}
 func writeByteA (arr []byte, idx i32, val byte) (arr []byte) {}
 func readI32A (arr []i32, idx i32) (lit i32) {}
@@ -211,11 +313,32 @@ func writeF32A (arr []f32, idx i32, val f32) (arr []f32) {}
 func readF64A (arr []f64, idx i32) (lit f64) {}
 func writeF64A (arr []f64, idx i32, val f64) (arr []f64) {}
 
+func lenBoolA (arr []bool) (len i32) {}
+func lenByteA (arr []byte) (len i32) {}
+func lenI32A (arr []i32) (len i32) {}
+func lenI64A (arr []i64) (len i32) {}
+func lenF32A (arr []f32) (len i32) {}
+func lenF64A (arr []f64) (len i32) {}
+
 func sleep (ms i32) (ms i32) {}
+
+func randI32 (min i32, max i32) (r i32) {}
+
+func setClauses (clss str) (clss str) {}
+func setQuery (qry str) (qry str) {}
+func addObject (obj str) (obj str) {}
+func remObject (obj str) (obj str) {}
+func remObjects () (out bool) {}
+func remExpr (fnName str, num i32) (err bool) {}
+func remArg (fnName str) (err bool) {}
+func addExpr (fnName str) (err bool) {}
+func exprAff (filter str) (err bool) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 
 func initDef (typ str) (typ str) {}
+
+func halt (msg str) (out bool) {}
 
 package main
 
@@ -225,6 +348,7 @@ func main () (out i32) {}
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
+	lineNo = 0
 	
 	args := os.Args[1:]
 	if len(args) == 1 {
@@ -233,7 +357,10 @@ func main () (out i32) {}
 			yyParse(NewLexer(file))
 
 			cxt.Compile()
-			cxt.Run(false, -1)
+			if err := cxt.Run(false, -1); err != nil {
+				fmt.Println(err)
+				repl(nil)
+			}
 			//cxt.PrintProgram(false)
 
 			// var out float32
@@ -244,49 +371,7 @@ func main () (out i32) {}
 			panic(fmt.Sprintf("Couldn't read file '%s'", args[0]))
 		}
 	} else {
-		fmt.Println("CX REPL")
-		fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
-		replMode = true
-
-		for i, flag := range args {
-			switch flag {
-			case "--load":
-				if file, err := os.Open(args[i+1]); err == nil {
-					yyParse(NewLexer(file))
-				}
-			}
-		}
-
-		fi := bufio.NewReader(os.NewFile(0, "stdin"))
-
-		for {
-			var inp string
-			var ok bool
-
-			fmt.Println(replTargetFn)
-		
-			if replTargetFn != "" {
-				fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
-				fmt.Printf("\t* ")
-			} else {
-				fmt.Printf("* ")
-			}
-			if inp, ok = readline(fi); ok {
-				if replTargetFn != "" {
-					inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
-				}
-				b := bytes.NewBufferString(inp)
-				yyParse(NewLexer(b))
-			} else {
-				if replTargetFn != "" {
-					replTargetFn = ""
-				} else {
-					fmt.Printf("\nBye!\n")
-					break
-				}
-				
-			}
-		}
+		repl(args)
 		
 		//yyParse(NewLexer(os.Stdin))
 	}

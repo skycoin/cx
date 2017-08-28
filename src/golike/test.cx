@@ -12,10 +12,11 @@ var five i32 = 5
 // var par i32 = 30
 // var boo i32 = 40
 // var epsilon f64 = 1.531
-var inps []f64 = []f64{
-	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
+var boolArr []bool = []bool{true, true, true, false, false}
+var inps []f32 = []f32{
+	-10.5, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
 	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
-var outs []f64 = []f64{
+var outs []f32 = []f32{
 	-970.0, -702.0, -488.0, -322.0, -198.0, -110.0, -52.0, -18.0, -2.0,
 	2.0, 0.0, -2.0, 2.0, 18.0, 52.0, 110.0, 198.0, 322.0, 488.0, 702.0, 970.0}
 
@@ -52,49 +53,45 @@ func solution (n f64) (out f64) {
 	out = subF64(cubic, triple)
 }
 
-var turnRight str = "turning right."
-var turnLeft str = "turning left."
-var advance str = "advancing."
+var goNorth str = "going north."
+var goSouth str = "going south."
+var goWest str = "going west."
+var goEast str = "going east."
 
 //:func voidFn
 
 var bytes []byte = []byte{11, 22, 33}
 
-
 /*
   Function for robot simulator
 */
-func setObject(i i32) () {
-	if eqI32(i, 0) {
-		:object leftWall
-	}
-	if eqI32(i, 1) {
-		:object rightWall
-	}
-	if eqI32(i, 2) {
-		:object frontWall
-	}
-	if eqI32(i, 3) {
-		:object leftWormhole
-	}
-	if eqI32(i, 4) {
-		:object rightWormhole
-	}
-	if eqI32(i, 5) {
-		:object frontWormhole
-	}
-}
 
-func robotAct (action str) (action str) {
+func robotAct (row i32, col i32, action str) (row i32, col i32) {
 	printStr(action)
+	if eqStr(action, "going north.") {
+		row = addI32(row, -1)
+		//col = col
+	}
+	if eqStr(action, "going south.") {
+		row = addI32(row, 1)
+		//col = col
+	}
+	if eqStr(action, "going east.") {
+		//row = row
+		col = addI32(col, 1)
+	}
+	if eqStr(action, "going west.") {
+		//row = row
+		col = addI32(col, -1)
+	}
 }
 
-func robot () () {
-	// :func robot {
-	// 	:rem expr 0 func robot;
-	// 	robotAct()
-	// 	:aff expr {"turnRight|turnLeft|advance" 0}
-	// }
+func robot (row i32, col i32) (row i32, col i32) {
+	//remExpr("robot", 10)
+	//addExpr("robotAct")
+	remArg("robot")
+	exprAff("goNorth|goSouth|goWest|goEast")
+	row, col = robotAct(row, col, "") // affordances will add the action
 }
 
 // robot()
@@ -112,202 +109,422 @@ func robot () () {
 // :aff expr {"turnRight|turnLeft|advance" 0};
 
 
+func changeValue (num i32) (num i32) {
+	num = addI32(num, 10)
+}
 
+func map2Dto1D (r i32, c i32, w i32) (i i32) {
+	i = addI32(mulI32(w, r), c)
+}
+
+func map1Dto2D (i i32, w i32) (r i32, c i32) {
+	r = divI32(i, W)
+	c = modI32(i, W)
+}
+
+func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) () {
+	remObjects()
+	if readBoolA(wallMap, map2Dto1D(addI32(row, -1), col, width)) {
+		addObject("northWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(addI32(row, 1), col, width)) {
+		addObject("southWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(row, addI32(col, 1), width)) {
+		addObject("eastWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(row, addI32(col, -1), width)) {
+		addObject("westWall")
+	}
+
+	if readBoolA(wormholeMap, map2Dto1D(addI32(row, -1), col, width)) {
+		addObject("northWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(addI32(row, 1), col, width)) {
+		addObject("southWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, 1), width)) {
+		addObject("eastWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, -1), width)) {
+		addObject("westWormhole")
+	}
+}
 
 func main () (outMain f32) {
 	var outMain f32 = 3.14
+	//var outMain f32 = addF32(3.14, 4.14)
+	//barbar := 50
 
-	:clauses "
-	  aff(robot, turnRight, X, R) :- X = rightWall, R = false.
-	  aff(robot, turnLeft, X, R) :- X = leftWall, R = false.
-	  aff(robot, advance, X, R) :- X = frontWall, R = false.
-
-	  aff(robot, turnRight, X, R) :- X = rightWormhole, R = true.
-	  aff(robot, turnLeft, X, R) :- X = leftWormhole, R = true.
-	  aff(robot, advance, X, R) :- X = frontWormhole, R = true.
-	  ";
-
-	:query "aff(%s, %s, %s, R).";
+	// // testing logical operators
+	// printBool(and(true, true))
+	// printBool(and(true, false))
 	
-	// :func main {r = robot()};
-	// :object frontWormhole;
-	// :object frontWall;
-	// :object rightWall;
-	// :aff expr;
+	// printBool(or(false, true))
+	// printBool(or(false, false))
 
-	// ok, we can define the obstacles like this
-	// but how are we going to make the robot move:
-	// remove all expressions from robot()
-	// then simply add
-	// no, robot is going to print an action it could do
+	// printBool(not(false))
+	// printBool(not(true))
+
+	printI32(addI32(3, 5))
 	
-	// we must work around sending allowed arguments
-	// the problem is that, once we've set the argument, how do we remove it
-	// we got removers, but the while goto gets in the way
-
-	
-	var lefts []i32 = []i32{0, 1, 2, 3, 4}
-	// var rights
-	// var fronts
-
-	// var i i32 = 0
-	// while ltI32(i, 10) {
-	// 	i = addI32(i, 1)
-	// 	//sleep(1000)
-	// 	//printStr("hello")
-	// 	//:rem expr 1000 func robot
-	// 	printF64(readF64A(inps, i))
-	// 	robot()
-	// 	:aff expr;
-	// }
-
 	:dStack false;
-	:rem objects;
-	:object rightWall;
-	:object leftWall;
-	robot()
+	var c i32 = 0
+	while ltI32(c, 10) {
+		//printI32(c)
+		c = addI32(c, 1)
+	}
 
-	// robot()
-	// :object leftWall;
-	// :object rightWall;
-	// :aff expr {"turnRight|turnLeft|advance" 0};
-	// :rem objects;
-	// robot()
-	// :object frontWall;
-	// :aff expr {"turnRight|turnLeft|advance" 0};
-	// :rem objects;
-	// robot()
-	// :object rightWall;
-	// :object frontWall;
-	// :aff expr {"turnRight|turnLeft|advance" 0};
 
-	// now, can we wrap these in a function?
+
+
+
 
 	
-
-	// printStr("Test")
-	// printStr("==start== Testing Cast Functions")
-	// var _i32 i32 = 1
-	// var _i64 i64 = 2
-	// var _f32 f32 = 3.22
-	// var _f64 f64 = 4.67
+	// //printI32(andNotI32(5, 3))
+	// printByteA([]byte{0, 100, 200, 300, 400})
 	
-	// printStr("To I32")
-	// printI32(i64ToI32(_i64))
-	// printI32(f32ToI32(_f32))
-	// printI32(f64ToI32(_f64))
-	// printStr("To I64")
-	// printI64(i32ToI64(_i32))
-	// printI64(f32ToI64(_f32))
-	// printI64(f64ToI64(_f64))
-	// printStr("To F32")
-	// printF32(i32ToF32(_i32))
-	// printF32(i64ToF32(_i64))
-	// printF32(f64ToF32(_f64))
-	// printStr("To F64")
-	// printF64(i32ToF64(_i32))
-	// printF64(i64ToF64(_i64))
-	// printF64(f32ToF64(_f32))
+	// printF32A(inps)
+	// printF32A(writeF32A(inps, 0, -3.5))
+	// printF32A(inps)
 
-	// printStr("==end== Testing Cast Functions")
-
-	//:func solution
-	//printI32(10)
-	//:func main
-	//printI32(20)
-	//num := addI32(3, 3)
-	//outMain := quad(4.0)
-	// outMain := divF32(3.0, 7.0)
-
-	// num := addI32(3, 3)
+	// printI64A(f32AToI64A(inps))
 	
-	// pred := gtI32(5, 10)
-	// if gtI32(10, 5) {
-	// 	printBool(ltI32(5, 10))
-	// 	printBool(ltI32(5, 10))
-	// 	//num := addI32(3, 3)
-	// 	//printI32(num)
-	// 	//printByte(ltI32(15, 10))
-	// 	//result := addI32(7, 10)
-	// 	//result := addI32(7, 10)
-	// } else {
-	// 	//printByte(ltI32(15, 10))
-	// 	//printByte(ltI32(5, 10))
-	// 	num := addI32(6, 18)
-	// 	printI32(num)
-	// 	// printByte(ltI32(15, 10))
-	// 	//result := addI32(20, 3)
-	// 	//result := addI32(7, 10)
-	// 	//result := addI32(7, 10)
+	// printStr("hello")
+	// printStr("bye")
+
+	// //printI32(divI32(3, 0))
+	// //printI64(divI64(i32ToI64(3), i32ToI64(0)))
+
+	// // check about the line numbers
+	// // I think the parser can now give a proper line number
+	
+	// printI32(modI32(11, 7))
+	// printI64(modI64(i32ToI64(11), i32ToI64(7)))
+	
+	// var bar []bool = []bool{true, true, true, true, true}
+	// var bar2 []i32 = []i32{100, 200, 300}
+
+	// //printBool(readBoolA(bar, 3))
+	// printBoolA(bar)
+	// //printBoolA(writeBoolA(bar, 3, false))
+	// //writeBoolA(bar, 2, false)
+	
+	// bar := writeBoolA(bar, 2, false)
+	// printBoolA(bar)
+	// //printBoolA(bar)
+	// //printBool(readBoolA(writeBoolA(bar, 3, true), 3))
+	// printStr("Testing lengths")
+	// printI32(lenBoolA(bar))
+	// printI32(lenI32A(bar2))
+	
+
+	// var foo i32 = 5
+	// changeValue(foo)
+	// printI32(foo)
+	// printI32(changeValue(foo))
+	
+	// :dStack false;
+	// setClauses("
+        //   aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
+	//   aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
+	//   aff(robotAct, goWest, X, R) :- X = westWall, R = false.
+	//   aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
+
+	//   aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
+	//   aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
+	//   aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
+	//   aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
+        // ")
+
+	// //aff(robotAct, goEast, X, R) :- X = mod(X, 4), R = false.
+	// //aff(robotAct, goWest, X, R) :- X = mod(X, 4) + 1, R = false.
+	// // we need to send objects, not numbers
+	
+	// // we also need an OR in the rules for mod(X, N)
+	// // considering the indexes are 0-based
+	
+
+	// setQuery("aff(%s, %s, %s, R).")
+	// //addObject("northWall")
+	// //:object rightWall;
+	// //:object leftWall;
+	// //addObject("rightWall")
+
+
+	// // printStr("=== Start Randoms ===")
+	// // printI32(randI32(0, 10))
+	// // printI32(randI32(0, 10))
+	// // printI32(randI32(0, 10))
+	// // printI32(randI32(0, 10))
+	// // printI32(randI32(0, 10))
+	// // printStr("=== End Randoms ===")
+	
+	// printStr("=== Start Testing robot ===")
+	// var wallMap []bool = []bool{
+	// 	true, true,  true,  true,  true,
+	// 	true, false, true, false, true,
+	// 	true, false, true, false, true,
+	// 	true, false, false, false, true,
+	// 	true, true,  true,  true,  true}
+
+	// var wormholeMap []bool = []bool{
+	// 	false, false, false, false, false,
+	// 	false, false, false, false, false,
+	// 	false, false, false, false, false,
+	// 	false, false, false, false, false,
+	// 	false, false, false, false, false}
+
+	
+	// // i = width * row + col
+	// // row = i / W
+	// // col = i % W
+		
+	// // initial coords
+	// var width i32 = 5
+	// var row i32 = 1
+	// var col i32 = 1
+
+	// var counter i32
+	// while ltI32(counter, 6) {
+	// 	wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
+	// 	wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
+	// 	robotObjects(row, col, width, wallMap, wormholeMap)
+	// 	row, col := robot(row, col)
+	// 	counter = addI32(counter, 1)
+	// 	halt("Pausing program.")
 	// }
-
-	// var i i32 = 0
-
-	// writeF64A(inps, 0, f32ToF64(50.0))
 	
-	// rI32 := readF64A(inps, 0)
-	// printF64(rI32)
 	
-	// //pred := ltI32(i, 10000)
-	// while ltI32(i, 100) {
-	// 	//while pred {
-	// 	//printI32(i)
-	// 	//printByte(ltI32(i, 10))
-	// 	i := addI32(i, 1)
-	// 	//pred := ltI32(i, 10000)
-	// }
+	
+	
+
+
 
 	
 	
-	// printI32(10101)
-	// var anotherPoint Point
 	
-	// //var done i32 = 10101
+	
+	
+	// // for example, in position 6:
+	// // north is N-4
+	// // south is N+4
+	// // west is N-1
+	// // east is N+1
 
-	// // var myPoint Point
+	// // testing for east
+	// // position 1
+	// //  0 % 4 = 0 XXXX
+	// // position 2
+	// // 1 % 4 = 1
+	// // position 3
+	// // 2 % 4 = 2
+	// // position 4
+	// // 3 % 4 = 3
+	// // position
+
+
+
 	
+	// // how do we manage end of map? (edges)
+	// // I think we can use mod
+	// // for example, position 2
+	// // the biggest problem is this
+	// // 6 % 4 = 2
+	// //
+	// // position 4:
+	// // east is 5
+	// // 5 % 4 = 1
+	// // ====
+	// // position 2:
+	// // east is 3
+	// // 3 % 4 = 3
+	// // position 1:
+	// // east is 2
+	// // 2 % 4 = 2
+	// // position 3:
+	// // east is 4
+	// // 4 % 4 = 0
+	// // position 1:
+	// // west is 0
+	// // 0 % 4 = 0
+
+	// // then the rule is that it can be done if R % row|column is R or 0
+	// // oh crap, can we create a prolog rule for this??
+
+
+	// // prolog rule about arithmetic
+
+	// // var rowNumber i32 = 4
+	// // var colNumber i32 = 4
+	
+	// // var lefts []bool = []bool{true, }
+	// // var rights []bool = []bool{true, }
+	// // var fronts []bool = []bool{false, }
+
+	// //addObject("northWall")
+	// //addObject("southWall")
+	// printStr("=== End Testing robot ===")
+
+	
+
+
+
+
+
+
+
+
+
+	
+	// // :func main {r = robot()};
+	// // :object frontWormhole;
+	// // :object frontWall;
+	// // :object rightWall;
+	// // :aff expr;
+
+	
+	// // var lefts []i32 = []i32{0, 1, 2, 3, 4}
+	// // var rights
+	// // var fronts
+
 	// // var i i32 = 0
-	// // pred := ltI32(i, 10000)
-	// // while pred {
-	// // 	printI32(i)
-	// // 	i := addI32(i, 1)
-	// // 	pred := ltI32(i, 10000)
+	// // while ltI32(i, 10) {
+	// // 	i = addI32(i, 1)
+	// // 	//sleep(1000)
+	// // 	//printStr("hello")
+	// // 	//:rem expr 1000 func robot
+	// // 	printF64(readF64A(inps, i))
+	// // 	robot()
+	// // 	:aff expr;
 	// // }
 
-	// // printI32(myPoint.x)
+	// // :dStack false;
+	// // :rem objects;
+	// // :object rightWall;
+	// // :object leftWall;
+	// // robot()
 
-	// // var bar f32 = 4.17
-	// // // casting
-	// // foo1 := f32toI32(bar)
-	// // foo2 := addI32(foo1, foo1)
-	// // printI32(foo1)
-	// // printF32A(inps)
+	// // robot()
+	// // :object leftWall;
+	// // :object rightWall;
+	// // :aff expr {"turnRight|turnLeft|advance" 0};
+	// // :rem objects;
+	// // robot()
+	// // :object frontWall;
+	// // :aff expr {"turnRight|turnLeft|advance" 0};
+	// // :rem objects;
+	// // robot()
+	// // :object rightWall;
+	// // :object frontWall;
+	// // :aff expr {"turnRight|turnLeft|advance" 0};
 
-	// // printStr("hello")
+	// // now, can we wrap these in a function?
 
-	// // printStr()
+	
 
-	// // //addI32(addI32(5, 4), addI32(3, 7))
-	// // addI32(addI32(addI32(i, 20), i), addI32(3, i))
+	// // printStr("Test")
+	// // printStr("==start== Testing Cast Functions")
+	// // var _i32 i32 = 1
+	// // var _i64 i64 = 2
+	// // var _f32 f32 = 3.22
+	// // var _f64 f64 = 4.67
+	
+	// // printStr("To I32")
+	// // printI32(i64ToI32(_i64))
+	// // printI32(f32ToI32(_f32))
+	// // printI32(f64ToI32(_f64))
+	// // printStr("To I64")
+	// // printI64(i32ToI64(_i32))
+	// // printI64(f32ToI64(_f32))
+	// // printI64(f64ToI64(_f64))
+	// // printStr("To F32")
+	// // printF32(i32ToF32(_i32))
+	// // printF32(i64ToF32(_i64))
+	// // printF32(f64ToF32(_f64))
+	// // printStr("To F64")
+	// // printF64(i32ToF64(_i32))
+	// // printF64(i64ToF64(_i64))
+	// // printF64(f32ToF64(_f32))
+
+	// // printStr("==end== Testing Cast Functions")
+
+	// //:func solution
+	// //printI32(10)
+	// //:func main
+	// //printI32(20)
+	// //num := addI32(3, 3)
+	// //outMain := quad(4.0)
+	// // outMain := divF32(3.0, 7.0)
+
+	// // num := addI32(3, 3)
+	
+	// // pred := gtI32(5, 10)
+	// // if gtI32(10, 5) {
+	// // 	printBool(ltI32(5, 10))
+	// // 	printBool(ltI32(5, 10))
+	// // 	//num := addI32(3, 3)
+	// // 	//printI32(num)
+	// // 	//printByte(ltI32(15, 10))
+	// // 	//result := addI32(7, 10)
+	// // 	//result := addI32(7, 10)
+	// // } else {
+	// // 	//printByte(ltI32(15, 10))
+	// // 	//printByte(ltI32(5, 10))
+	// // 	num := addI32(6, 18)
+	// // 	printI32(num)
+	// // 	// printByte(ltI32(15, 10))
+	// // 	//result := addI32(20, 3)
+	// // 	//result := addI32(7, 10)
+	// // 	//result := addI32(7, 10)
+	// // }
+
+	// // var i i32 = 0
+
+	// // writeF64A(inps, 0, f32ToF64(50.0))
+	
+	// // rI32 := readF64A(inps, 0)
+	// // printF64(rI32)
+	
+	// // //pred := ltI32(i, 10000)
+	// // while ltI32(i, 100) {
+	// // 	//while pred {
+	// // 	//printI32(i)
+	// // 	//printByte(ltI32(i, 10))
+	// // 	i := addI32(i, 1)
+	// // 	//pred := ltI32(i, 10000)
+	// // }
+
+	
+	
+	// // printI32(10101)
+	// // var anotherPoint Point
+	
+	// // //var done i32 = 10101
+
+	// // // var myPoint Point
+	
+	// // // var i i32 = 0
+	// // // pred := ltI32(i, 10000)
+	// // // while pred {
+	// // // 	printI32(i)
+	// // // 	i := addI32(i, 1)
+	// // // 	pred := ltI32(i, 10000)
+	// // // }
+
+	// // // printI32(myPoint.x)
+
+	// // // var bar f32 = 4.17
+	// // // // casting
+	// // // foo1 := f32toI32(bar)
+	// // // foo2 := addI32(foo1, foo1)
+	// // // printI32(foo1)
+	// // // printF32A(inps)
+
+	// // // printStr("hello")
+
+	// // // printStr()
+
+	// // // //addI32(addI32(5, 4), addI32(3, 7))
+	// // // addI32(addI32(addI32(i, 20), i), addI32(3, i))
 }
-
-//:dProgram true;
-
-
-// :clauses "
-//   aff(robot, turnRight, X, R) :- X = rightWall, R = false.
-//   aff(robot, turnLeft, X, R) :- X = leftWall, R = false.
-//   aff(robot, advance, X, R) :- X = frontWall, R = false.
-
-//   aff(robot, turnRight, X, R) :- X = rightWormhole, R = true.
-//   aff(robot, turnLeft, X, R) :- X = leftWormhole, R = true.
-//   aff(robot, advance, X, R) :- X = frontWormhole, R = true.
-//   ";
-
-// :query "aff(%s, %s, %s, R).";
-
-// :func main {r = robot()};
-// :object frontWormhole;
-// :object frontWall;
-// :object rightWall;
-// :aff expr;
