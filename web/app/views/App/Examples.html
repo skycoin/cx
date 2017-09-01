@@ -1,0 +1,710 @@
+{{set . "title" "Documentation"}}
+{{template "header.html" .}}
+
+<div class ="container">
+  <div class="page-header" id="banner">
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6">
+        <h1>CX Examples</h1>
+        <p class="lead">Contents</p>
+
+        <ul>
+          <li><a href="#hello-world">Hello world</a></li>
+          <li><a href="#comments">Comments</a></li>
+          <li><a href="#definitions">Definitions</a></li>
+          <li><a href="#functions">Functions</a></li>
+          <li><a href="#structs">Structs</a></li>
+          <li><a href="#arrays">Arrays</a></li>
+          <li><a href="#expressions">Expressions</a></li>
+          <li><a href="#go-to">Go-to</a></li>
+          <li><a href="#if-and-if-else">If and if/else</a></li>
+          <li><a href="#looping">Looping</a></li>
+          <li><a href="#factorial">Factorial</a></li>
+          <li><a href="#thue-morse-sequence">Thue-Morse sequence</a></li>
+          <li><a href="#prime-or-not">Prime or not</a></li>
+          <li><a href="#meta-programming-commands">Meta-programming commands</a></li>
+          <li><a href="#debugging">Debugging</a></li>
+          <li><a href="#stepping">Stepping</a></li>
+          <li><a href="#affordances">Affordances</a></li>
+          <li><a href="#standard-library">Serialization</a></li>
+          <li><a href="#standard-library">Standard library</a></li>
+          <li><a href="#robot-simulator">Robot simulator</a></li>
+        </ul>
+        
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Hello world start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="hello-world">Hello world</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func main () (out i32) {
+     printStr("Hello World!")
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Hello world end -->
+
+
+
+  <!-- Comments start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="comments">Comments</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func main () (out i32) {
+	// This won't be evaluated
+	//out := divI32(5, 0) // This won't either
+
+	out := divI32(10, 5) // The program will return 2
+
+	/*
+        Comment block
+	out := subF32(3.33, 1.11)
+	out := subF32(3.33, 1.11)
+	out := subF32(3.33, 1.11)
+	out := subF32(3.33, 1.11)
+        */
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Comments end -->
+
+
+
+
+  <!-- Definitions start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="definitions">Definitions</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+var global1 i32 = 5
+var global2 f32 = 3.14159
+
+func printGlobals () () {
+	printI32(global1)
+	printF32(global2)
+}
+
+func main () (out i32) {
+	printGlobals()
+	printF32(global2)
+	printI32(global1)
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Definitions end -->
+
+
+
+
+
+  <!-- Functions start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="functions">Functions</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+var PI f32 = 3.14159
+
+func circleArea (radius f32) (area f32) {
+	mulF32(mulF32(radius, radius), PI)
+}
+
+func circlePerimeter (radius f32) (perimeter f32) {
+	perimeter := mulF32(mulF32(2, radius), PI)
+}
+
+func main () (area f32) {
+	area := circleArea(2)
+	printF32(circlePerimeter(5))
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Functions end -->
+
+
+  <!-- Structs start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="structs">Structs</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+type Point struct {
+	name str
+	x i32
+	y i32
+}
+
+var globalPoint Point
+
+func main () (out i32) {
+	var uPoint Point
+	printStr(uPoint.name)
+	printI32(uPoint.x)
+	printI32(uPoint.y)
+	
+	var myPoint Point
+	myPoint.x = addI32(5, 10)
+	myPoint.y = addI32(myPoint.x, 20)
+	
+	out = addI32(myPoint.x, myPoint.y)
+}
+            </code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Structs end -->
+
+
+  <!-- Arrays start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="arrays">Arrays</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func main () (out str) {
+	var ids []i32 = []i32{433, 561, 652, 984}
+	var ages []i32 = []i32{23, 21, 26, 31}
+	var grades []f32 = []f32{8.8, 9.4, 9.3, 8.3}
+
+	printStr("Student's ID:")
+	printI32(readI32A(ids, 1))
+	printStr("Student's age:")
+	printI32(readI32A(ages, 1))
+	printStr("Student's age:")
+	printF32(readF32A(grades, 1))
+	printStr("done.")
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Arrays end -->
+
+
+
+
+
+  <!-- Expressions start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="expressions">Expressions</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func sayHi () () {
+	printStr("Hi")
+}
+
+func sayMyName (name str) () {
+	printStr(name)
+}
+
+func returnName () (name str) {
+	name := idStr("Bart")
+}
+
+func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
+	add := addI32(num1, num2)
+	sub := subI32(num1, num2)
+	mul := mulI32(num1, num2)
+	div := divI32(num1, num2)
+}
+
+func main () (out i32) {
+	sayHi()
+	sayMyName("Homer")
+	printStr(returnName())
+	a, s, out, d := multiReturn(20, 20)
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Expressions end -->
+
+  
+
+  <!-- Go-to start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="go-to">Go-to</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func basicIf (num i32) (num i32) {
+	pred := gtI32(num, 0)
+	goTo(pred, 1, 3)
+	printStr("Greater than 0")
+	goTo(true, 10, 0)
+	printStr("Less than 0")
+}
+
+func main () (out i32) {
+	basicIf(5)
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Go-to end -->
+
+
+
+
+
+  <!-- If-and-if-else start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="if-and-if-else">If and if/else</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func main () (out i32) {
+     	if false {
+		error := divI32(50, 0)
+		printStr("This will never be printed")
+	}
+
+	if true {
+		printStr("This will always print")
+	}
+
+	if gtI32(5, 3) {
+		printStr("5 is greater than 3")
+	}
+
+	if eqStr("password123", "password123") {
+		printStr("Access granted")
+	} else {
+		printStr("Access denied")
+	}
+
+	if lteqI32(50, 5) {
+		out = idI32(100)
+	} else {
+		out = idI32(200)
+	}
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- If-and-if-else end -->
+
+
+
+  <!-- Looping start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="looping">Looping</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func main () (out i32) {
+	var out i32 = 0
+	while ltI32(out, 10) {
+		printI32(out)
+		out = addI32(out, 1)
+	}
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Looping end -->
+  
+
+  <!-- Factorial start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="factorial">Factorial</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+func factorial (num i32) (fact i32) {
+	if eqI32(num, 1) {
+		fact := idI32(1)
+	} else {
+		fact := mulI32(num, factorial(subI32(num, 1)))
+	}
+}
+
+func main () (out i32) {
+	factorial(6)
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Factorial end -->
+
+
+
+
+
+
+  <!-- Robot simulator start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="robot-simulator">Robot simulator</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+var goNorth str = "going north."
+var goSouth str = "going south."
+var goWest str = "going west."
+var goEast str = "going east."
+
+func robotAct (row i32, col i32, action str) (row i32, col i32) {
+	printStr(action)
+	if eqStr(action, "going north.") {
+		row = addI32(row, -1)
+	}
+	if eqStr(action, "going south.") {
+		row = addI32(row, 1)
+	}
+	if eqStr(action, "going east.") {
+		col = addI32(col, 1)
+	}
+	if eqStr(action, "going west.") {
+		col = addI32(col, -1)
+	}
+}
+
+func robot (row i32, col i32) (row i32, col i32) {
+	remArg("robot")
+	exprAff("goNorth|goSouth|goWest|goEast")
+	row, col = robotAct(row, col, "")
+}
+
+func map2Dto1D (r i32, c i32, w i32) (i i32) {
+	i = addI32(mulI32(w, r), c)
+}
+
+func map1Dto2D (i i32, w i32) (r i32, c i32) {
+	r = divI32(i, W)
+	c = modI32(i, W)
+}
+
+func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) () {
+	remObjects()
+	if readBoolA(wallMap, map2Dto1D(addI32(row, -1), col, width)) {
+		addObject("northWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(addI32(row, 1), col, width)) {
+		addObject("southWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(row, addI32(col, 1), width)) {
+		addObject("eastWall")
+	}
+	if readBoolA(wallMap, map2Dto1D(row, addI32(col, -1), width)) {
+		addObject("westWall")
+	}
+
+	if readBoolA(wormholeMap, map2Dto1D(addI32(row, -1), col, width)) {
+		addObject("northWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(addI32(row, 1), col, width)) {
+		addObject("southWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, 1), width)) {
+		addObject("eastWormhole")
+	}
+	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, -1), width)) {
+		addObject("westWormhole")
+	}
+}
+
+func main () (out str) {
+
+	setClauses("
+          aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
+	  aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
+	  aff(robotAct, goWest, X, R) :- X = westWall, R = false.
+	  aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
+
+	  aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
+	  aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
+	  aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
+	  aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
+        ")
+
+	setQuery("aff(%s, %s, %s, R).")
+
+	var wallMap []bool = []bool{
+		true, true,  true,  true,  true,
+		true, false, true, false, true,
+		true, false, true, false, true,
+		true, false, false, false, true,
+		true, true,  true,  true,  true}
+
+	var wormholeMap []bool = []bool{
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false}
+
+	var width i32 = 5
+	var row i32 = 1
+	var col i32 = 1
+
+	var counter i32
+	while ltI32(counter, 6) {
+		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
+		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
+		robotObjects(row, col, width, wallMap, wormholeMap)
+		row, col := robot(row, col)
+		counter = addI32(counter, 1)
+	}
+	
+	printStr("done.")
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Robot simulator end -->
+  
+</div>
+
+  {{template "footer.html" .}}

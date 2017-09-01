@@ -97,13 +97,16 @@
 	// do nothing
 }
 //
-package main
+package cxgo
 import (
 	"os"
 	"fmt"
 	"bytes"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	"regexp"
+	"io/ioutil"
 	"strconv"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func countNewLines (s []byte) int {
@@ -170,18 +173,13 @@ func repl (args []string) {
 				fmt.Printf("\nBye!\n")
 				break
 			}
-			
 		}
 	}
 }
 
-func main() {
-	/*
-           Initializing native functions
-        */
-	
-	coreModule := `
+var coreModule string = `
 package core
+func idStr (x str) (x str) {}
 func idBool (x bool) (x bool) {}
 func idByte (x byte) (x byte) {}
 func idI32 (x i32) (x i32) {}
@@ -259,32 +257,40 @@ func gteqF64 (n1 f64, n2 f64) (out bool) {}
 func eqStr (str1 str, str2 str) (out bool) {}
 
 func byteAToStr (in []byte) (out str) {}
+
 func i64ToI32 (in i64) (out i32) {}
 func f32ToI32 (in f32) (out i32) {}
 func f64ToI32 (in f64) (out i32) {}
+
 func i32ToI64 (in i32) (out i64) {}
 func f32ToI64 (in f32) (out i64) {}
 func f64ToI64 (in f64) (out i64) {}
+
 func i32ToF32 (in i32) (out f32) {}
 func i64ToF32 (in i64) (out f32) {}
 func f64ToF32 (in f64) (out f32) {}
+
 func i32ToF64 (in i32) (out f64) {}
 func i64ToF64 (in i64) (out f64) {}
 func f32ToF64 (in f32) (out f64) {}
+
 func i64AToI32A (in []i64) (out []i32) {}
 func f32AToI32A (in []f32) (out []i32) {}
 func f64AToI32A (in []f64) (out []i32) {}
+
 func i32AToI64A (in []i32) (out []i64) {}
 func f32AToI64A (in []f32) (out []i64) {}
 func f64AToI64A (in []f64) (out []i64) {}
+
 func i32AToF32A (in []i32) (out []f32) {}
 func i64AToF32A (in []i64) (out []f32) {}
 func f64AToF32A (in []f64) (out []f32) {}
+
 func i32AToF64A (in []i32) (out []f64) {}
 func i64AToF64A (in []i64) (out []f64) {}
 func f32AToF64A (in []f32) (out []f64) {}
 
-func goTo (predicate bool, thenLine i32, elseLine i32) (out bool) {}
+func goTo (predicate bool, thenLines i32, elseLines i32) (out bool) {}
 
 func printBool (p bool) (p bool) {}
 func printStr (s str) (s str) {}
@@ -329,6 +335,7 @@ func setQuery (qry str) (qry str) {}
 func addObject (obj str) (obj str) {}
 func remObject (obj str) (obj str) {}
 func remObjects () (out bool) {}
+
 func remExpr (fnName str, num i32) (err bool) {}
 func remArg (fnName str) (err bool) {}
 func addExpr (fnName str) (err bool) {}
@@ -340,10 +347,111 @@ func initDef (typ str) (typ str) {}
 
 func halt (msg str) (out bool) {}
 
-package main
-
-func main () (out i32) {}
+//package main
+//func main () (out i32) {}
 `
+
+func Eval (code string) string {
+	/*
+           Initializing native functions
+        */
+
+	lineNo = 0
+	
+	b := bytes.NewBufferString(coreModule)
+	yyParse(NewLexer(b))
+	
+	b = bytes.NewBufferString(code)
+	yyParse(NewLexer(b))
+
+	// storing strings sent to standard output
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	if err := cxt.Run(false, -1); err != nil {
+		fmt.Println(err)
+		repl(nil)
+	}
+
+	outVal := *cxt.Outputs[0].Value
+	
+	switch cxt.Outputs[0].Typ.Name {
+	case "bool":
+		var out bool
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "str":
+		fmt.Println(string(outVal))
+	case "byte":
+		fmt.Println(outVal)
+	case "i32":
+		var out int32
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "i64":
+		var out int64
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "f32":
+		var out float32
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "f64":
+		var out float64
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]bool":
+		var out []bool
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]byte":
+		var out []byte
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]i32":
+		var out []int32
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]i64":
+		var out []int64
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]f32":
+		var out []float32
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	case "[]f64":
+		var out []float64
+		encoder.DeserializeRaw(outVal, &out)
+		fmt.Println(out)
+	default:
+		
+	}
+
+	outC := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+	
+	w.Close()
+	os.Stdout = old // restoring the real stdout
+	//out := <-outC
+	out := <-outC
+	re := regexp.MustCompile("\n")
+	result := string(re.ReplaceAll([]byte(out), []byte("<br />")))
+	
+	return result
+}
+
+func main () {
+	/*
+           Initializing native functions
+        */
+
+	program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;func main () {`)
 
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
@@ -356,7 +464,7 @@ func main () (out i32) {}
 		if file, err := os.Open(args[0]); err == nil {
 			yyParse(NewLexer(file))
 
-			cxt.Compile()
+			//cxt.Compile()
 			if err := cxt.Run(false, -1); err != nil {
 				fmt.Println(err)
 				repl(nil)
@@ -375,4 +483,7 @@ func main () (out i32) {}
 		
 		//yyParse(NewLexer(os.Stdin))
 	}
+
+	program.WriteString(`cxt.Run(false, -1);}`)
+	ioutil.WriteFile("out.cx.go", []byte(program.String()), 0644)
 }

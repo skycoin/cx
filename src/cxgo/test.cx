@@ -3,6 +3,7 @@ var ten i32 = 10
 var five i32 = 5
 var foo i32 = 10
 package main
+import "Math"
 
 var greeting str = "hello"
 var ten i32 = 10
@@ -87,11 +88,9 @@ func robotAct (row i32, col i32, action str) (row i32, col i32) {
 }
 
 func robot (row i32, col i32) (row i32, col i32) {
-	//remExpr("robot", 10)
-	//addExpr("robotAct")
 	remArg("robot")
 	exprAff("goNorth|goSouth|goWest|goEast")
-	row, col = robotAct(row, col, "") // affordances will add the action
+	row, col = robotAct(row, col, "")
 }
 
 // robot()
@@ -152,46 +151,40 @@ func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bo
 }
 
 func main () (outMain f32) {
+	printStr("Hello world!")
+	foo = addI32(5, 30)
+	foo = addI32(5, 30)
+	foo = addI32(5, 30)
 	var outMain f32 = 3.14
-	//var outMain f32 = addF32(3.14, 4.14)
-	//barbar := 50
 
-	// // testing logical operators
-	// printBool(and(true, true))
-	// printBool(and(true, false))
+	var outMain f32 = addF32(3.14, 4.14)
+	barbar := 50
+
+	// testing logical operators
+	printBool(and(true, true))
+	printBool(and(true, false))
 	
-	// printBool(or(false, true))
-	// printBool(or(false, false))
+	printBool(or(false, true))
+	printBool(or(false, false))
 
-	// printBool(not(false))
-	// printBool(not(true))
+	printBool(not(false))
+	printBool(not(true))
 
 	printI32(addI32(3, 5))
 	
-	:dStack false;
-	var c i32 = 0
-	while ltI32(c, 10) {
-		//printI32(c)
-		c = addI32(c, 1)
-	}
-
-
-
-
-
-
+	//:dStack false;
 	
-	// //printI32(andNotI32(5, 3))
-	// printByteA([]byte{0, 100, 200, 300, 400})
+	//printI32(andNotI32(5, 3))
+	printByteA([]byte{0, 100, 200, 300, 400})
 	
-	// printF32A(inps)
-	// printF32A(writeF32A(inps, 0, -3.5))
-	// printF32A(inps)
+	printF32A(inps)
+	printF32A(writeF32A(inps, 0, -3.5))
+	printF32A(inps)
 
-	// printI64A(f32AToI64A(inps))
+	printI64A(f32AToI64A(inps))
 	
-	// printStr("hello")
-	// printStr("bye")
+	printStr("hello")
+	printStr("bye")
 
 	// //printI32(divI32(3, 0))
 	// //printI64(divI64(i32ToI64(3), i32ToI64(0)))
@@ -199,8 +192,8 @@ func main () (outMain f32) {
 	// // check about the line numbers
 	// // I think the parser can now give a proper line number
 	
-	// printI32(modI32(11, 7))
-	// printI64(modI64(i32ToI64(11), i32ToI64(7)))
+	printI32(modI32(11, 7))
+	printI64(modI64(i32ToI64(11), i32ToI64(7)))
 	
 	// var bar []bool = []bool{true, true, true, true, true}
 	// var bar2 []i32 = []i32{100, 200, 300}
@@ -224,147 +217,74 @@ func main () (outMain f32) {
 	// printI32(foo)
 	// printI32(changeValue(foo))
 	
-	// :dStack false;
-	// setClauses("
-        //   aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
-	//   aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
-	//   aff(robotAct, goWest, X, R) :- X = westWall, R = false.
-	//   aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
+	:dStack false;
+	setClauses("
+          aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
+	  aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
+	  aff(robotAct, goWest, X, R) :- X = westWall, R = false.
+	  aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
 
-	//   aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
-	//   aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
-	//   aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
-	//   aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
-        // ")
+	  aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
+	  aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
+	  aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
+	  aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
+        ")
 
-	// //aff(robotAct, goEast, X, R) :- X = mod(X, 4), R = false.
-	// //aff(robotAct, goWest, X, R) :- X = mod(X, 4) + 1, R = false.
-	// // we need to send objects, not numbers
+	//aff(robotAct, goEast, X, R) :- X = mod(X, 4), R = false.
+	//aff(robotAct, goWest, X, R) :- X = mod(X, 4) + 1, R = false.
+	// we need to send objects, not numbers
 	
-	// // we also need an OR in the rules for mod(X, N)
-	// // considering the indexes are 0-based
+	// we also need an OR in the rules for mod(X, N)
+	// considering the indexes are 0-based
 	
 
-	// setQuery("aff(%s, %s, %s, R).")
-	// //addObject("northWall")
-	// //:object rightWall;
-	// //:object leftWall;
-	// //addObject("rightWall")
+	setQuery("aff(%s, %s, %s, R).")
+	//addObject("northWall")
+	//:object rightWall;
+	//:object leftWall;
+	//addObject("rightWall")
 
 
-	// // printStr("=== Start Randoms ===")
-	// // printI32(randI32(0, 10))
-	// // printI32(randI32(0, 10))
-	// // printI32(randI32(0, 10))
-	// // printI32(randI32(0, 10))
-	// // printI32(randI32(0, 10))
-	// // printStr("=== End Randoms ===")
+	// printStr("=== Start Randoms ===")
+	// printI32(randI32(0, 10))
+	// printI32(randI32(0, 10))
+	// printI32(randI32(0, 10))
+	// printI32(randI32(0, 10))
+	// printI32(randI32(0, 10))
+	// printStr("=== End Randoms ===")
 	
-	// printStr("=== Start Testing robot ===")
-	// var wallMap []bool = []bool{
-	// 	true, true,  true,  true,  true,
-	// 	true, false, true, false, true,
-	// 	true, false, true, false, true,
-	// 	true, false, false, false, true,
-	// 	true, true,  true,  true,  true}
+	printStr("=== Start Testing robot ===")
+	var wallMap []bool = []bool{
+		true, true,  true,  true,  true,
+		true, false, true, false, true,
+		true, false, true, false, true,
+		true, false, false, false, true,
+		true, true,  true,  true,  true}
 
-	// var wormholeMap []bool = []bool{
-	// 	false, false, false, false, false,
-	// 	false, false, false, false, false,
-	// 	false, false, false, false, false,
-	// 	false, false, false, false, false,
-	// 	false, false, false, false, false}
+	var wormholeMap []bool = []bool{
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false,
+		false, false, false, false, false}
 
 	
-	// // i = width * row + col
-	// // row = i / W
-	// // col = i % W
-		
 	// // initial coords
-	// var width i32 = 5
-	// var row i32 = 1
-	// var col i32 = 1
+	var width i32 = 5
+	var row i32 = 1
+	var col i32 = 1
 
-	// var counter i32
-	// while ltI32(counter, 6) {
-	// 	wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
-	// 	wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
-	// 	robotObjects(row, col, width, wallMap, wormholeMap)
-	// 	row, col := robot(row, col)
-	// 	counter = addI32(counter, 1)
-	// 	halt("Pausing program.")
-	// }
-	
-	
-	
-	
+	var counter i32
+	while ltI32(counter, 6) {
+		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
+		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
+		robotObjects(row, col, width, wallMap, wormholeMap)
+		row, col := robot(row, col)
+		counter = addI32(counter, 1)
+		halt("Pausing program.")
+	}
 
-
-
-	
-	
-	
-	
-	
-	// // for example, in position 6:
-	// // north is N-4
-	// // south is N+4
-	// // west is N-1
-	// // east is N+1
-
-	// // testing for east
-	// // position 1
-	// //  0 % 4 = 0 XXXX
-	// // position 2
-	// // 1 % 4 = 1
-	// // position 3
-	// // 2 % 4 = 2
-	// // position 4
-	// // 3 % 4 = 3
-	// // position
-
-
-
-	
-	// // how do we manage end of map? (edges)
-	// // I think we can use mod
-	// // for example, position 2
-	// // the biggest problem is this
-	// // 6 % 4 = 2
-	// //
-	// // position 4:
-	// // east is 5
-	// // 5 % 4 = 1
-	// // ====
-	// // position 2:
-	// // east is 3
-	// // 3 % 4 = 3
-	// // position 1:
-	// // east is 2
-	// // 2 % 4 = 2
-	// // position 3:
-	// // east is 4
-	// // 4 % 4 = 0
-	// // position 1:
-	// // west is 0
-	// // 0 % 4 = 0
-
-	// // then the rule is that it can be done if R % row|column is R or 0
-	// // oh crap, can we create a prolog rule for this??
-
-
-	// // prolog rule about arithmetic
-
-	// // var rowNumber i32 = 4
-	// // var colNumber i32 = 4
-	
-	// // var lefts []bool = []bool{true, }
-	// // var rights []bool = []bool{true, }
-	// // var fronts []bool = []bool{false, }
-
-	// //addObject("northWall")
-	// //addObject("southWall")
-	// printStr("=== End Testing robot ===")
+	printStr("=== End Testing robot ===")
 
 	
 
@@ -373,57 +293,6 @@ func main () (outMain f32) {
 
 
 
-
-
-
-	
-	// // :func main {r = robot()};
-	// // :object frontWormhole;
-	// // :object frontWall;
-	// // :object rightWall;
-	// // :aff expr;
-
-	
-	// // var lefts []i32 = []i32{0, 1, 2, 3, 4}
-	// // var rights
-	// // var fronts
-
-	// // var i i32 = 0
-	// // while ltI32(i, 10) {
-	// // 	i = addI32(i, 1)
-	// // 	//sleep(1000)
-	// // 	//printStr("hello")
-	// // 	//:rem expr 1000 func robot
-	// // 	printF64(readF64A(inps, i))
-	// // 	robot()
-	// // 	:aff expr;
-	// // }
-
-	// // :dStack false;
-	// // :rem objects;
-	// // :object rightWall;
-	// // :object leftWall;
-	// // robot()
-
-	// // robot()
-	// // :object leftWall;
-	// // :object rightWall;
-	// // :aff expr {"turnRight|turnLeft|advance" 0};
-	// // :rem objects;
-	// // robot()
-	// // :object frontWall;
-	// // :aff expr {"turnRight|turnLeft|advance" 0};
-	// // :rem objects;
-	// // robot()
-	// // :object rightWall;
-	// // :object frontWall;
-	// // :aff expr {"turnRight|turnLeft|advance" 0};
-
-	// // now, can we wrap these in a function?
-
-	
-
-	// // printStr("Test")
 	// // printStr("==start== Testing Cast Functions")
 	// // var _i32 i32 = 1
 	// // var _i64 i64 = 2

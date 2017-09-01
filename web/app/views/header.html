@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>{{.title}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/public/css/bootstrap-3.3.7.min.css">
+    <link rel="shortcut icon" type="image/png" href="/public/img/favicon.png">
+    
+    <link rel="stylesheet" href="/public/css/highlightjs-default-style.css">
+    
+    <script src="/public/js/highlight.pack.js"></script>
+    <script src="/public/js/highlightjs-line-numbers.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>hljs.initLineNumbersOnLoad();</script>
+    
+    <script src="/public/js/jquery-2.2.4.min.js"></script>
+    <script src="/public/js/bootstrap-3.3.6.min.js"></script>
+    <link rel="stylesheet" href="/public/css/main.css">
+    {{range .moreStyles}}
+    <link rel="stylesheet" type="text/css" href="/public/{{.}}">
+    {{end}}
+    {{range .moreScripts}}
+    <script src="/public/{{.}}" type="text/javascript" charset="utf-8"></script>
+    {{end}}
+  </head>
+  <body>
+
+    <div class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="../" class="navbar-brand">CX Programming Language </a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes">About <span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="themes">
+                <li><a href="#">About CX</a></li>
+                <li class="divider"></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="https://www.skycoin.net/">Skycoin</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download">CX <span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="download">
+                <li><a href="/App/Index">CX Playground</a></li>
+                <li class="divider"></li>
+                <li><a href="/App/Tutorial">Tutorial and Documentation</a></li>
+                <li><a href="/App/Examples">Examples</a></li>
+                <li><a href="/public/pdf/cx.pdf">Specification</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#">Blog</a>
+            </li>
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" target="_blank">CX Playground</a></li>
+            <li><a href="https://github.com/skycoin/cx" target="_blank">Github Repository</a></li>
+          </ul>
+
+        </div>
+      </div>
+    </div>

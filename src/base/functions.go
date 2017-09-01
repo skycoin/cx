@@ -319,7 +319,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 */
 
 func andI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("modI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("andI32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -333,109 +333,109 @@ func andI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 	}
 }
 
-func orI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("orI32: wrong argument type")
+func orI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("orI32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int32(num1 | num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int32(num1 | num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func xorI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("xorI32: wrong argument type")
+func xorI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("xorI32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int32(num1 ^ num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int32(num1 ^ num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func andNotI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("andNotI32: wrong argument type")
+func andNotI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("andNotI32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int32(num1 &^ num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int32(num1 &^ num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func andI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("andI64: wrong argument type")
+func andI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("andI64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 & num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i64")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int64(num1 & num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func orI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("orI64: wrong argument type")
+func orI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("orI64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 | num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i64")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int64(num1 | num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func xorI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("xorI64: wrong argument type")
+func xorI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("xorI64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 ^ num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i64")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int64(num1 ^ num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func andNotI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("andNotI64: wrong argument type")
+func andNotI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("andNotI64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 &^ num2))
+
+		return &CXArgument{Value: &output, Typ: MakeType("i64")}, nil
+	} else {
+		return nil, err
 	}
-	
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-
-	output := encoder.Serialize(int64(num1 &^ num2))
-
-	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
 /*
@@ -564,7 +564,7 @@ func readI32A (arr *CXArgument, idx *CXArgument) *CXArgument {
 
 func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]i32" || idx.Typ.Name != "i32" || val.Typ.Name != "i32" {
-		panic("readI32A: wrong argument type")
+		panic("writeI32A: wrong argument type")
 	}
 
 	var index int32

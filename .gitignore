@@ -22,3 +22,8 @@ test.pl
 main
 y.output
 mersenne-twister.go
+test.go
+test
+out.*
+*.o
+cx.pdf

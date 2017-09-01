@@ -20,9 +20,9 @@ var NATIVE_FUNCTIONS = []string{
 	"printI64A", "printF32A", "printF64A", "printBool",
 	"printBoolA",
 	
-	"idStr", "idByte", "idI32", "idI64", "idF32", "idF64",
-	"idByteA", "idI32A", "idI64A", "idF32A", "idF64A", "idBool",
-	"idBoolA",
+	"idStr", "idBool", "idByte", "idI32", "idI64", "idF32", "idF64",
+	"idBoolA", "idByteA", "idI32A", "idI64A", "idF32A", "idF64A",
+	
 
 	"readBoolA", "writeBoolA",
 	"readByteA", "writeByteA", "readI32A", "writeI32A",
@@ -46,18 +46,17 @@ var NATIVE_FUNCTIONS = []string{
 	"ltI64", "gtI64", "eqI64", "lteqI64", "gteqI64",
 	"ltF32", "gtF32", "eqF32", "lteqF32", "gteqF32",
 	"ltF64", "gtF64", "eqF64", "lteqF64", "gteqF64",
-
 	"eqStr",
 
-	"sleep",
+	"sleep", "halt",
+
+	"randI32",
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
 	"remExpr", "remArg", "addExpr", "exprAff",
-
-	"randI32", "halt",
-	"initDef",
-	"evolve",
+	"evolve", "initDef",
+	
 	"goTo",
 }
 

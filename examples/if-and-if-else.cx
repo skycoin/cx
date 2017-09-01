@@ -1,0 +1,28 @@
+package main
+
+func main () (out i32) {
+     	if false {
+		error := divI32(50, 0)
+		printStr("This will never be printed")
+	}
+
+	if true {
+		printStr("This will always print")
+	}
+
+	if gtI32(5, 3) {
+		printStr("5 is greater than 3")
+	}
+
+	if eqStr("password123", "password123") {
+		printStr("Access granted")
+	} else {
+		printStr("Access denied")
+	}
+
+	if lteqI32(50, 5) {
+		out = idI32(100)
+	} else {
+		out = idI32(200)
+	}
+}

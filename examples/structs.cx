@@ -1,0 +1,22 @@
+package main
+
+type Point struct {
+	name str
+	x i32
+	y i32
+}
+
+var globalPoint Point
+
+func main () (out i32) {
+	var uPoint Point
+	printStr(uPoint.name)
+	printI32(uPoint.x)
+	printI32(uPoint.y)
+	
+	var myPoint Point
+	myPoint.x = addI32(5, 10)
+	myPoint.y = addI32(myPoint.x, 20)
+	
+	out = addI32(myPoint.x, myPoint.y)
+}

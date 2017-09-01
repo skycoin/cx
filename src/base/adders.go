@@ -49,18 +49,18 @@ func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
 	// }
 	
 	mod.Context = cxt
-	cxt.CurrentModule = mod
 	//cxt.Modules[mod.Name] = mod
 	found := false
-	for i, md := range cxt.Modules {
+	for _, md := range cxt.Modules {
 		if md.Name == mod.Name {
-			cxt.Modules[i] = mod
+			cxt.CurrentModule = md
 			found = true
 			break
 		}
 	}
 	if !found {
 		cxt.Modules = append(cxt.Modules, mod)
+		cxt.CurrentModule = mod
 	}
 	return cxt
 }
@@ -167,7 +167,6 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	return mod
 }
 
-// here
 func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
 	// stepStrct := MakeStructCopy(strct, mod, mod.Context)
 	// prgrmStep := &CXProgramStep{

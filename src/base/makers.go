@@ -305,6 +305,7 @@ func MakeFieldFromParameter (param *CXParameter) *CXField {
 func MakeDefaultValue (typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
+	case "str": zeroVal = []byte{byte(0)}
 	case "bool": zeroVal = encoder.Serialize(int32(0))
 	case "byte": zeroVal = []byte{byte(0)}
 	case "i32": zeroVal = encoder.Serialize(int32(0))
@@ -378,6 +379,10 @@ func MakeAffordance (desc string, action func()) *CXAffordance {
 
 func MakeIdentityOpName (typeName string) string {
 	switch typeName {
+	case "str":
+		return "idStr"
+	case "bool":
+		return "idBool"
 	case "byte":
 		return "idByte"
 	case "i32":
@@ -388,6 +393,8 @@ func MakeIdentityOpName (typeName string) string {
 		return "idF32"
 	case "f64":
 		return "idF64"
+	case "[]bool":
+		return "idBoolA"
 	case "[]byte":
 		return "idByteA"
 	case "[]i32":

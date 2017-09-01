@@ -1,0 +1,865 @@
+{{set . "title" "Documentation"}}
+{{template "header.html" .}}
+
+<div class ="container">
+  <div class="page-header" id="banner">
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6">
+        <h1>CX Tutorial</h1>
+        <p class="lead">Contents</p>
+
+        <ul>
+          <li><a href="#introduction">Introduction</a></li>
+          <ul>
+            <li><a href="#a-compiled-and-interpreted-language">A compiled and interpreted language</a></li>
+            <li><a href="#interactive-development">Interactive development</a></li>
+            <li><a href="#meta-programming-commands">Meta-programming commands</a></li>
+            <li><a href="#cxs-type-system">CX's type system</a></li>
+            <li><a href="#cx-playground">CX Playground</a></li>
+            <li><a href="#examples">Examples</a></li>
+          </ul>
+          <li><a href="#program-architecture">Program architecture</a></li>
+          <ul>
+            <li><a href="#comments">Comments</a></li>
+            <li><a href="#packages">Packages</a></li>
+            <li><a href="#global-definitions">Global definitions</a></li>
+            <li><a href="#functions">Functions</a></li>
+          </ul>
+          <li><a href="#control-structures">Control structures</a></li>
+          <ul>
+            <li><a href="#if-and-if-else">If and if/else</a></li>
+            <li><a href="#while">While</a></li>
+            <li><a href="#go-to">Go-to</a></li>
+          </ul>
+          <li><a href="#functions">Functions</a></li>
+          <ul>
+            <li><a href="#multiple-return-values">Multiple return values</a></li>
+            <li><a href="#named-result-parameters">Named result parameters</a></li>
+          </ul>
+          <li><a href="#data">Data</a></li>
+          <ul>
+            <li><a href="#definitions">Definitions</a></li>
+            <li><a href="#structs">Structs</a></li>
+            <li><a href="#arrays">Arrays</a></li>
+          </ul>
+          <li><a href="#initialization">Initialization</a></li>
+          <ul>
+            <li><a href="#variables">Variables</a></li>
+          </ul>
+          <li><a href="#debugging">Debugging</a></li>
+          <li><a href="#stepping">Stepping</a></li>
+          <ul>
+            <li><a href="#program-halting">Program halting</a></li>
+          </ul>
+          <li><a href="#affordances">Affordances</a></li>
+          <li><a href="#standard-library">Serialization</a></li>
+          <li><a href="#standard-library">Standard library</a></li>
+          <ul>
+            <li><a href="#arithmetic-functions">Arithmetic functions</a></li>
+            <li><a href="#flow-control-functions">Flow-control functions</a></li>
+            <li><a href="#printing-functions">Printing functions</a></li>
+            <li><a href="#identity-functions">Identity functions</a></li>
+            <li><a href="#array-functions">Array functions</a></li>
+            <li><a href="#casting-functions">Casting functions</a></li>
+            <li><a href="#system-functions">System functions</a></li>
+            <li><a href="#affordance-inference-functions">Affordance inference functions</a></li>
+            <li><a href="#meta-programming-functions">Meta-programming functions</a></li>
+            <li><a href="#random-numbers-functions">Random numbers functions</a></li>
+            <li><a href="#logical-operators">Logical operators</a></li>
+            <li><a href="#relational-operators">Relational operators</a></li>
+            <li><a href="#bitwise-operators">Bitwise operators</a></li>
+          </ul>
+        </ul>
+        
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Introduction start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="introduction">Introduction</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p>The <a href="/App/Specification">CX specification</a> describes a set of data structures that define the different elements that a CX program can have, along with a set of functions/methods that manipulate these elements in order to execute a program. But these elements are part of a lower level of abstraction called CX Base. In principle, any language that follows the ideas behind CX Base can be considered a CX dialect.</p>
+
+        <p>This tutorial is based on an implementation of CX based on the lexicon, syntax and semantics of <a href="https://golang.org/">Golang</a>. The repository of the whole CX project can be found <a href="https://github.com/skycoin/cx">here</a>. The implementation described in this document can be found under the <i>src/cxgo/</i> directory.</p>
+
+        <h2 id="a-compiled-and-interpreted-language">A compiled and interpreted language</h2>
+        <p>CX is designed to be both a compiled and an interpreted language. You can use the interpreted mode to interactively build and test a program, and when performance is an issue, the source code can be compiled. All of the features that can be used in the interpreted mode are accessible to its compiled counterpart, but it must be noted that CX is still a work in progress and this could change in the future.</p>
+        
+        <h2 id="interactive-development">Interactive development</h2>
+        <p>REPL. Add functions, expressions, other elements.</p>
+        
+        <h2 id="meta-programming-commands">Meta-programming commands</h2>
+        <p>Meta-programming commands. Selectors. Affordances. Stepping.</p>
+        
+        <h2 id="cxs-type-system">CX's type system</h2>
+
+        <p>
+          CX supports 13 primitive types:
+        </p>
+        
+        <ul>
+          <li>str</li>
+          <li>bool</li>
+          <li>byte</li>
+          <li>i32</li>
+          <li>i64</li>
+          <li>f32</li>
+          <li>f64</li>
+          <li>[]bool</li>
+          <li>[]byte</li>
+          <li>[]i32</li>
+          <li>[]i64</li>
+          <li>[]f32</li>
+          <li>[]f64</li>
+        </ul>
+        
+        <p>
+          In CX there is no type inference or implicit type casting. If a function requires a 32 bit integer, you can't send a 64 integer, or any of the two types of floats. For this reason, the <a href="#standard-library">standard library</a> provides native functions that consider each of the primitive types when applicable. For example, there are four versions of the addition function: addI32, addI64, addF32, and addF64.
+        </p>
+
+        <p>
+          If, for example, you have an <i>i32</i> variable and you want to send it as an argument to a function which only accepts <i>f64</i>, you can use one of the casting functions to explicitly cast the variable to <i>f64</i>. To see the list of available casting functions, have a look at CX's <a href="#standard-library">standard library</a> located at the bottom of this document. This is an example of type casting:
+        </p>
+
+        <pre><code class="go">addF64(i32ToF64(3), f32ToF64(5.4))</code></pre>
+
+        <p>
+          Character strings in CX need to be enclosed in double quotes, and, unlike other languages such as JavaScript or Go, you can't use single quotes, backquotes or any other enclosing characters. Internally, strings are stored as byte arrays, and one can cast a string to a byte array, and viceversa:
+        </p>
+
+        <pre><code class="go">byteToStr([]byte{0, 1, 2})
+strToByte("hello")</code></pre>
+        
+        <p>
+          Booleans also have a special representation internally: they are actually 32 bit integers, limited to 1 (true) and 0 (false). Nevertheless, booleans can't be casted to numeric types. In CX, booleans are represented by the words <i>true</i> and <i>false</i>.
+        </p>
+
+        <p>
+          The programmer can create custom types by using CX structs, which are similar to structs in other programming languages. Structs in CX follow the syntax used in Go. Here is an example of a struct declaration:
+        </p>
+
+        <pre><code class="go">type Point struct {
+	name str
+	x i32
+	y i32
+}</code></pre>
+        
+        <h2 id="cx-playground">CX playground</h2>
+        
+        <p>If you want to try CX programs, you can start doing it right away without downloading the actual interpreter/compiler. In the <a href="/">home page</a> you can find a tool similar to <a href="https://play.golang.org/">Go Playground</a>, where you can write and evaluate any CX program you want.</p>
+          
+        <h2 id="examples">Examples</h2>
+        
+        <p>The full list of examples can be accessed by clicking <a href="/App/Examples">here</a>, but one example is shown below, so you don't have to leave the webpage.</p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Introduction end -->
+
+
+
+
+  <!-- Program architecture start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="program-architecture">Program architecture</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <h2 id="comments">Comments</h2>
+        <p></p>
+        <h2 id="packages">Packages</h2>
+        <p>Mention imports.</p>
+        <h2 id="global-definitions">Global definitions</h2>
+        <p></p>
+        <h2 id="functions">Functions</h2>
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Program architecture end -->
+  
+  
+
+  
+
+
+  <!-- Control structures start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="control-structures">Control structures</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <h2 id="if-and-if-else">If and if/else</h2>
+        <p></p>
+        <h2 id="while">While</h2>
+        <p></p>
+        <h2 id="go-to">Go-to</h2>
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Control structures end -->
+  
+
+
+  <!-- Initialization start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="initialization">Initialization</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <h2 id="variables">Variables</h2>
+        <p>Assignment syntax (=, :=)</p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Initialization end -->
+
+
+
+  <!-- Debugging start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="debugging">Debugging</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p>If a program has an error, the program enters REPL mode.</p>
+        
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Debugging end -->
+  
+
+
+
+
+
+
+
+
+
+  <!-- Standard library start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="standard-library">Standard library</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p>Mention the core package.</p>
+
+        <h2 id="arithmetic-functions">Arithmetic functions</h2>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;addI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;addI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;addF32 (<i>number f32, number f32</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;addF64 (<i>number f64, number f64</i>) (<i>number f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;subI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;subI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;subF32 (<i>number f32, number f32</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;subF64 (<i>number f64, number f64</i>) (<i>number f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;mulI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;mulI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;mulF32 (<i>number f32, number f32</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;mulF64 (<i>number f64, number f64</i>) (<i>number f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+        
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;divI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;divI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;divF32 (<i>number f32, number f32</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;divF64 (<i>number f64, number f64</i>) (<i>number f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;modI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;modI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="flow-control-functions">Flow-control functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;goTo (<i>predicate bool, thenLines i32, elseLines i32</i>) (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="printing-functions">Printing functions</h2>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;printStr (<i>object str</i>) (<i>object str</i>)</h4>
+            <h4>&#8594;printBool (<i>object bool</i>) (<i>object bool</i>)</h4>
+            <h4>&#8594;printByte (<i>object byte</i>) (<i>object byte</i>)</h4>
+            <h4>&#8594;printI32 (<i>object i32</i>) (<i>object i32</i>)</h4>
+            <h4>&#8594;printI64 (<i>object i64</i>) (<i>object i64</i>)</h4>
+            <h4>&#8594;printF32 (<i>object f32</i>) (<i>object f32</i>)</h4>
+            <h4>&#8594;printF64 (<i>object f64</i>) (<i>object f64</i>)</h4>
+            <h4>&#8594;printBoolA (<i>object []bool</i>) (<i>object []bool</i>)</h4>
+            <h4>&#8594;printByteA (<i>object []byte</i>) (<i>object []byte</i>)</h4>
+            <h4>&#8594;printI32A (<i>object []i32</i>) (<i>object []i32</i>)</h4>
+            <h4>&#8594;printI64A (<i>object []i64</i>) (<i>object []i64</i>)</h4>
+            <h4>&#8594;printF32A (<i>object []f32</i>) (<i>object []f32</i>)</h4>
+            <h4>&#8594;printF64A (<i>object []f64</i>) (<i>object []f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="identity-functions">Identity functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;idStr (<i>object str</i>) (<i>object str</i>)</h4>
+            <h4>&#8594;idBool (<i>object bool</i>) (<i>object bool</i>)</h4>
+            <h4>&#8594;idByte (<i>object byte</i>) (<i>object byte</i>)</h4>
+            <h4>&#8594;idI32 (<i>object i32</i>) (<i>object i32</i>)</h4>
+            <h4>&#8594;idI64 (<i>object i64</i>) (<i>object i64</i>)</h4>
+            <h4>&#8594;idF32 (<i>object f32</i>) (<i>object f32</i>)</h4>
+            <h4>&#8594;idF64 (<i>object f64</i>) (<i>object f64</i>)</h4>
+            <h4>&#8594;idBoolA (<i>object []bool</i>) (<i>object []bool</i>)</h4>
+            <h4>&#8594;idByteA (<i>object []byte</i>) (<i>object []byte</i>)</h4>
+            <h4>&#8594;idI32A (<i>object []i32</i>) (<i>object []i32</i>)</h4>
+            <h4>&#8594;idI64A (<i>object []i64</i>) (<i>object []i64</i>)</h4>
+            <h4>&#8594;idF32A (<i>object []f32</i>) (<i>object []f32</i>)</h4>
+            <h4>&#8594;idF64A (<i>object []f64</i>) (<i>object []f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="array-functions">Array functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;readBoolA (<i>array []bool, index i32</i>) (<i>element bool</i>)</h4>
+            <h4>&#8594;readByteA (<i>array []byte, index i32</i>) (<i>element byte</i>)</h4>
+            <h4>&#8594;readI32A (<i>array []i32, index i32</i>) (<i>element i32</i>)</h4>
+            <h4>&#8594;readI64A (<i>array []i64, index i32</i>) (<i>element i64</i>)</h4>
+            <h4>&#8594;readF32A (<i>array []f32, index i32</i>) (<i>element f32</i>)</h4>
+            <h4>&#8594;readF64A (<i>array []f64, index i32</i>) (<i>element f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;writeBoolA (<i>array []bool, index i32, element bool</i>) (<i>array []bool</i>)</h4>
+            <h4>&#8594;writeByteA (<i>array []byte, index i32, element byte</i>) (<i>array []byte</i>)</h4>
+            <h4>&#8594;writeI32A (<i>array []i32, index i32, element i32</i>) (<i>array []i32</i>)</h4>
+            <h4>&#8594;writeI64A (<i>array []i64, index i32, element i64</i>) (<i>array []i64</i>)</h4>
+            <h4>&#8594;writeF32A (<i>array []f32, index i32, element f32</i>) (<i>array []f32</i>)</h4>
+            <h4>&#8594;writeF64A (<i>array []f64, index i32, element f64</i>) (<i>array []f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;lenBoolA (<i>array []bool</i>) (<i>length i32</i>)</h4>
+            <h4>&#8594;lenByteA (<i>array []byte</i>) (<i>length i32</i>)</h4>
+            <h4>&#8594;lenI32A (<i>array []i32</i>) (<i>length i32</i>)</h4>
+            <h4>&#8594;lenI64A (<i>array []i64</i>) (<i>length i32</i>)</h4>
+            <h4>&#8594;lenF32A (<i>array []f32</i>) (<i>length i32</i>)</h4>
+            <h4>&#8594;lenF64A (<i>array []f64</i>) (<i>length i32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="casting-functions">Casting functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;byteAToStr (<i>array []byte</i>) (<i>string str</i>)</h4>
+            <h4>&#8594;strToByteA (<i>string str</i>) (<i>array []byte</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i64ToI32 (<i>number i64</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;f32ToI32 (<i>number f32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;f64ToI32 (<i>number f64</i>) (<i>number i32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32ToI64 (<i>number i32</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;f32ToI64 (<i>number f32</i>) (<i>number i64</i>)</h4>
+            <h4>&#8594;f64ToI64 (<i>number f64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32ToF32 (<i>number i32</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;i64ToF32 (<i>number i64</i>) (<i>number f32</i>)</h4>
+            <h4>&#8594;f64ToF32 (<i>number f64</i>) (<i>number f32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32ToF64 (<i>number i32</i>) (<i>number f64</i>)</h4>
+            <h4>&#8594;i64ToF64 (<i>number i64</i>) (<i>number f64</i>)</h4>
+            <h4>&#8594;f32ToF64 (<i>number f32</i>) (<i>number f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+
+
+
+
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i64AToI32A (<i>array []i64</i>) (<i>array []i32</i>)</h4>
+            <h4>&#8594;f32AToI32A (<i>array []f32</i>) (<i>array []i32</i>)</h4>
+            <h4>&#8594;f64AToI32A (<i>array []f64</i>) (<i>array []i32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32AToI64A (<i>array []i32</i>) (<i>array []i64</i>)</h4>
+            <h4>&#8594;f32AToI64A (<i>array []f32</i>) (<i>array []i64</i>)</h4>
+            <h4>&#8594;f64AToI64A (<i>array []f64</i>) (<i>array []i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32AToF32A (<i>array []i32</i>) (<i>array f32</i>)</h4>
+            <h4>&#8594;i64AToF32A (<i>array []i64</i>) (<i>array f32</i>)</h4>
+            <h4>&#8594;f64AToF32A (<i>array []f64</i>) (<i>array f32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;i32AToF64A (<i>array []i32</i>) (<i>array []f64</i>)</h4>
+            <h4>&#8594;i64AToF64A (<i>array []i64</i>) (<i>array []f64</i>)</h4>
+            <h4>&#8594;f32AToF64A (<i>array []f32</i>) (<i>array []f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="system-functions">System functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;sleep (<i>milliseconds i32</i>) (<i>milliseconds i32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;halt (<i>message str</i>) (<i>message str</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="affordance-inference-functions">Affordance inference functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;setClauses (<i>clauses str</i>) (<i>clauses str</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;setQuery (<i>query str</i>) (<i>query str</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;addObject (<i>object str</i>) (<i>object str</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;remObject (<i>object str</i>) (<i>object str</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;remObjects () (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="meta-programming-functions">Random numbers functions</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;randI32 (<i>min i32, max i32</i>) (<i>number i32</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;randI64 (<i>min i64, max i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+
+        <h2 id="meta-programming-functions">Meta-programming functions</h2>
+        <p>Selectors. Stepping. Debugging (dStack, dProgram, dState). Affordances. Removers. Prolog.</p>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;remExpr (<i>fnName str, num i32</i>) (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;remArg (<i>fnName str</i>) (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;addExpr (<i>fnName str</i>) (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;exprAff (<i>filter str</i>) (<i>error bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;evolve (<i>fnName str, fnBag str, inputs []f64, outputs []f64, numberExprs i32, iterations i32, epsilon f64</i>) (<i>error f64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <!-- <h2 id="meta-programming-functions">Meta-programming commands</h2>
+             <p>Selectors. Stepping. Debugging (dStack, dProgram, dState). Affordances. Removers. Prolog.</p> -->
+        
+
+        <h2 id="logical-operators">Logical operators</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;and (<i>premise bool, premise bool</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;or (<i>premise bool, premise bool</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;not (<i>premise bool</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="relational-operators">Relational operators</h2>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;ltStr (<i>string str, string str</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;ltByte (<i>number byte, number byte</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;ltI32 (<i>number i32, number i32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;ltI64 (<i>number i64, number i64</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;ltF32 (<i>number f32, number f32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;ltF64 (<i>number f64, number f64</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;gtStr (<i>string str, string str</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gtByte (<i>number byte, number byte</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gtI32 (<i>number i32, number i32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gtI64 (<i>number i64, number i64</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gtF32 (<i>number f32, number f32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gtF64 (<i>number f64, number f64</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;eqStr (<i>string str, string str</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;eqByte (<i>number byte, number byte</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;eqI32 (<i>number i32, number i32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;eqI64 (<i>number i64, number i64</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;eqF32 (<i>number f32, number f32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;eqF64 (<i>number f64, number f64</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;lteqStr (<i>string str, string str</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;lteqByte (<i>number byte, number byte</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;lteqI32 (<i>number i32, number i32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;lteqI64 (<i>number i64, number i64</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;lteqF32 (<i>number f32, number f32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;lteqF64 (<i>number f64, number f64</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;gteqStr (<i>string str, string str</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gteqByte (<i>number byte, number byte</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gteqI32 (<i>number i32, number i32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gteqI64 (<i>number i64, number i64</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gteqF32 (<i>number f32, number f32</i>) (<i>conclusion bool</i>)</h4>
+            <h4>&#8594;gteqF64 (<i>number f64, number f64</i>) (<i>conclusion bool</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <h2 id="bitwise-operators">Bitwise operators</h2>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;andI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;andI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;orI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;orI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;xorI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;xorI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>&#8594;andNotI32 (<i>number i32, number i32</i>) (<i>number i32</i>)</h4>
+            <h4>&#8594;andNotI64 (<i>number i64, number i64</i>) (<i>number i64</i>)</h4>
+          </div>
+          <div class="panel-body">
+            <p>Lorem ipsum dolor sit amet</p>
+          </div>
+        </div>
+        
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Standard library end -->
+  
+</div>
+
+  {{template "footer.html" .}}

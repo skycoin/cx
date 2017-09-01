@@ -1,0 +1,9 @@
+package main
+
+func main () (out i32) {
+	var out i32 = 0
+	while ltI32(out, 10) {
+		printI32(out)
+		out = addI32(out, 1)
+	}
+}

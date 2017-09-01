@@ -1,0 +1,287 @@
+{{set . "title" "CX Programming Language"}}
+{{template "header.html" .}}
+
+<div class ="container">
+  <div class="page-header" id="banner">
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6">
+        <h1>CX</h1>
+        <p class="lead">A strongly typed programming language</p>
+
+        <div class="row">
+          <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="list-group table-of-contents">
+              <a class="list-group-item" href="#compiled-and-interpreted">Compiled and interpreted</a>
+              <a class="list-group-item" href="#strict-typing-system">Strict typing system</a>
+              <a class="list-group-item" href="#affordances">Affordances</a>
+              <a class="list-group-item" href="#serialization">Serialization</a>
+              <a class="list-group-item" href="#stepping">Stepping</a>
+              <a class="list-group-item" href="#interactive-evaluation">Interactive evaluation</a>
+              <a class="list-group-item" href="#interactive-debugging">Interactive debugging</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-6 col-md-6 col-sm-6">
+        <h1>CX Playground</h1>
+        <p class="lead">Try CX online</p>
+        <form action="/App/Index" method="post">
+          <label for="example-select">Load example: </label>
+          <select id="example-select" class="form-control" name="example-select" id="example-select">
+            <option value="hello-world">Hello world</option>
+            <option value="looping">Looping</option>
+            <option value="factorial">Factorial</option>
+            <option value="more">More examples!</option>
+          </select>
+          <br />
+          <textarea id="code-editor" class="form-control" name="code" rows="6">{{if .code}}{{raw .code}}{{else}}
+package main
+
+func main () (out str) {
+	printStr("Hello World!")
+}{{end}}</textarea>
+          <br />
+          <button type="submit" class="btn btn-primary">Run</button>
+          <button id="clear-button" class="btn btn-warning">Clear</button>
+          <br />
+          <br />
+          {{if .evalResult}}
+          <div class="alert alert-success">{{raw .evalResult}}</div>
+          {{end}}
+        </form>
+      </div>
+
+      
+      
+    </div>    
+  </div>
+
+  <!-- Compiled and interpreted start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="compiled-and-interpreted">Compiled and interpreted</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p>CX is both a compiled and interpreted language. The two models are combined to provide a great developing experience to you.</p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Compiled and interpreted end -->
+
+
+
+
+  <!-- Strict typing system start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="strict-typing-system">Strict typing system</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Strict typing system end -->
+
+
+
+
+  <!-- Affordances start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="affordances">Affordances</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Affordances end -->
+
+
+  <!-- Serialization start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="serialization">Serialization</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Serialization end -->
+
+
+
+
+
+  <!-- Stepping start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="stepping">Stepping</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Stepping end -->
+
+
+
+
+
+  <!-- Interactive evaluation start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="interactive-evaluation">Interactive evaluation</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Interactive evaluation end -->
+
+
+
+
+
+
+  <!-- Interactive debugging start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="interactive-debugging">Interactive debugging</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+        <p></p>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Interactive debugging end -->
+  
+</div>
+
+<script>
+ $("#example-select").change(function () {
+   if ($("#example-select").val() == "hello-world") {
+     $("#code-editor").val("package main\n\
+\n\
+func main () (out str) {\n\
+	printStr(\"Hello World!\")\n\
+}")
+   }
+
+   if ($("#example-select").val() == "looping") {
+     $("#code-editor").val("package main\n\
+\n\
+func main () (out i32) {\n\
+	var out i32 = 0\n\
+	while ltI32(out, 10) {\n\
+		printI32(out)\n\
+		out = addI32(out, 1)\n\
+	}\n\
+}")
+   }
+
+   if ($("#example-select").val() == "factorial") {
+     $("#code-editor").val("package main\n\
+\n\
+func factorial (num i32) (fact i32) {\n\
+	if eqI32(num, 1) {\n\
+		fact := idI32(1)\n\
+	} else {\n\
+		fact := mulI32(num, factorial(subI32(num, 1)))\n\
+	}\n\
+}\n\
+\n\
+func main () (out i32) {\n\
+	factorial(6)\n\
+}")
+   }
+
+   if ($("#example-select").val() == "more") {
+     window.location.replace("/App/Examples")
+   }
+     
+ });
+ 
+ $("#clear-button").click(function (event) {
+   event.preventDefault();
+   $("#code-editor").val("")
+ });
+ 
+</script>
+
+{{template "footer.html" .}}

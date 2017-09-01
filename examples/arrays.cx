@@ -1,0 +1,16 @@
+package main
+
+func main () (out str) {
+	var ids []i32 = []i32{433, 561, 652, 984}
+	var ages []i32 = []i32{23, 21, 26, 31}
+	var grades []f32 = []f32{8.8, 9.4, 9.3, 8.3}
+
+	// printStr("Student's ID:")
+	// printI32(readI32A(ids, 1))
+	// printI32(readI32A(ids, 1))
+	// printStr("Student's age:")
+	// printI32(readI32A(ages, 1))
+	// printStr("Student's age:")
+	// printF32(readF32A(grades, 1))
+	printStr("done.")
+}

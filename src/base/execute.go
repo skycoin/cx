@@ -40,7 +40,6 @@ func PrintCallStack (callStack []*CXCall) {
 		} else {
 			fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
 		}
-		
 
 		lenState := len(call.State)
 		idx := 0
@@ -493,8 +492,7 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 	return nil
 }
 
-func (call *CXCall) call(withDebug bool, nCalls, callCounter int) error {
-	fmt.Println(len(call.Context.CallStack.Calls))
+func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
 		return nil
@@ -1059,19 +1057,61 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) error {
 					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
 				}
 			case "orI32":
-				values = append(values, orI32(argsCopy[0], argsCopy[1]))
+				if val, err := orI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "xorI32":
-				values = append(values, xorI32(argsCopy[0], argsCopy[1]))
+				if val, err := xorI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "andNotI32":
-				values = append(values, andNotI32(argsCopy[0], argsCopy[1]))
+				if val, err := andNotI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "andI64":
-				values = append(values, andI64(argsCopy[0], argsCopy[1]))
+				if val, err := andI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 			case "orI64":
-				values = append(values, orI64(argsCopy[0], argsCopy[1]))
+				if val, err := orI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 			case "xorI64":
-				values = append(values, xorI64(argsCopy[0], argsCopy[1]))
+				if val, err := xorI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 			case "andNotI64":
-				values = append(values, andNotI64(argsCopy[0], argsCopy[1]))
+				if val, err := andNotI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 				// array functions
 			case "readBoolA":
 				values = append(values, readBoolA(argsCopy[0], argsCopy[1]))
@@ -1136,20 +1176,15 @@ func (call *CXCall) call(withDebug bool, nCalls, callCounter int) error {
 				values = append(values, exprAff(argsCopy[0], call.Operator))
 				// debugging functions
 			case "halt":
-				callCounter = 2
-				nCalls = 1
-				//callCounter = 0
 				fmt.Println(string(*argsCopy[0].Value))
+				exc = true
+				excError = errors.New(fmt.Sprintf("%d: Call to halt", expr.FileLine))
 				values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 			case "":
 			}
 			if len(values) > 0 {
 
 				if exc {
-					//callCounter = 2
-					//nCalls = 1
-					//fmt.Printf("Line: %d, %s\n", call.Line, excError)
-					//call.Context.UnRun(1)
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {

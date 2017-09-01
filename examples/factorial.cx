@@ -1,0 +1,13 @@
+package main
+
+func factorial (num i32) (fact i32) {
+	if eqI32(num, 1) {
+		fact := idI32(1)
+	} else {
+		fact := mulI32(num, factorial(subI32(num, 1)))
+	}
+}
+
+func main () (out i32) {
+	factorial(6)
+}
