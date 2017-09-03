@@ -6,8 +6,6 @@ type Point struct {
 	y i32
 }
 
-var globalPoint Point
-
 func main () (out i32) {
 	var uPoint Point
 	printStr(uPoint.name)

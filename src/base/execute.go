@@ -504,12 +504,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 		PrintCallStack(call.Context.CallStack.Calls)
 	}
 	
-	if call.Line >= len(call.Operator.Expressions) {
-		
-		// if len(call.Operator.Expressions) < 1 {
-		// 	panic(fmt.Sprintf("Calling function without expressions '%s'", call.Operator.Name))
-		// }
-		
+	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
 		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
 		//outName := call.Operator.Output.Name
@@ -721,23 +716,10 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				fnBag := string(*argsCopy[1].Value)
 				
 				var inps []float64
-				float64Size := encoder.Size(float64(0))
-				for i := 0; i < len(*argsCopy[2].Value) / float64Size; i++ {
-					var inp float64
-					from := i * float64Size
-					to := (i + 1) * float64Size
-					encoder.DeserializeRaw((*argsCopy[2].Value)[from:to], &inp)
-					inps = append(inps, inp)
-				}
+				encoder.DeserializeRaw(*argsCopy[2].Value, &inps)
 				
 				var outs []float64
-				for i := 0; i < len(*argsCopy[3].Value) / float64Size; i++ {
-					var out float64
-					from := i * float64Size
-					to := (i + 1) * float64Size
-					encoder.DeserializeRaw((*argsCopy[3].Value)[from:to], &out)
-					outs = append(outs, out)
-				}
+				encoder.DeserializeRaw(*argsCopy[3].Value, &outs)
 
 				var numberExprs int32
 				encoder.DeserializeRaw(*argsCopy[4].Value, &numberExprs)
@@ -748,7 +730,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				
 				evolutionErr := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon)
 
-				// return 1 for true or something like that
 				val := encoder.Serialize(evolutionErr)
 				values = append(values, MakeArgument(&val, MakeType("f64")))
 
@@ -1148,7 +1129,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			case "lenF32A":
 				values = append(values, lenF32A(argsCopy[0]))
 			case "lenF64A":
-				values = append(values, lenF32A(argsCopy[0]))
+				values = append(values, lenF64A(argsCopy[0]))
 				// time functions
 			case "sleep":
 				values = append(values, sleep(argsCopy[0]))

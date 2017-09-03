@@ -1,0 +1,43 @@
+/*
+        This isn't meant to be run as a CX program.
+*/
+
+* :dStack false;
+* :dProgram true;
+
+Program
+0.- Module: main
+	Definitions
+		0.- Definition: inps []f64
+		1.- Definition: outs []f64
+	Functions
+		0.- Function: solution (n f64) (out f64)
+			0.- Expression: square = mulF64(n f64, n f64)
+			1.- Expression: var_8 = addF64(n f64, square )
+			2.- Expression: var_300 = addF64(square , square )
+			3.- Expression: var_303 = mulF64(square , var_8 )
+			4.- Expression: out = addF64(n f64, square )
+		1.- Function: main () (out f64)
+			0.- Expression: nonAssign_0 = f32ToF64(0.1 f32)
+			1.- Expression: nonAssign_1 = evolve("solution" str, "addF64|mulF64|subF64" str, inps []f64, outs []f64, 5 i32, 300 i32, nonAssign_0 )
+			2.- Expression: nonAssign_2 = printStr("Extrapolating solution" str)
+			3.- Expression: nonAssign_3 = f32ToF64(30 f32)
+			4.- Expression: nonAssign_4 = solution(nonAssign_3 )
+			5.- Expression: nonAssign_5 = printF64(nonAssign_4 )
+
+* :step 100;
+Evolving function 'solution'
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+0
+Finished evolving function 'solution'
+Extrapolating solution
+930

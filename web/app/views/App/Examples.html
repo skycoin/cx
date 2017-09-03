@@ -19,15 +19,10 @@
           <li><a href="#go-to">Go-to</a></li>
           <li><a href="#if-and-if-else">If and if/else</a></li>
           <li><a href="#looping">Looping</a></li>
-          <li><a href="#factorial">Factorial</a></li>
-          <li><a href="#thue-morse-sequence">Thue-Morse sequence</a></li>
-          <li><a href="#prime-or-not">Prime or not</a></li>
+          <li><a href="#evolving-a-function">Evolving a function</a></li>
           <li><a href="#meta-programming-commands">Meta-programming commands</a></li>
-          <li><a href="#debugging">Debugging</a></li>
-          <li><a href="#stepping">Stepping</a></li>
-          <li><a href="#affordances">Affordances</a></li>
-          <li><a href="#standard-library">Serialization</a></li>
-          <li><a href="#standard-library">Standard library</a></li>
+          <li><a href="#meta-programming-functions">Meta-programming functions</a></li>
+          <li><a href="#factorial">Factorial</a></li>
           <li><a href="#robot-simulator">Robot simulator</a></li>
         </ul>
         
@@ -54,12 +49,13 @@
           <div class="panel-heading">
             <pre><code class="go">package main
 
-func main () (out i32) {
+func main () (out str) {
      printStr("Hello World!")
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>A classic. <i>printStr</i> is part of the core module or package, and it is automatically added to any CX program, so we don't need to explicitly include it.</p>
+            <p>Something interesting in this example (as can be noted in the <a href="/App/Index">CX Playground</a>) is that this program will print "Hello World!" two times. What's actually happening is that CX is printing to the standard output the string, and then the program is exiting, returning a string.</p>
           </div>
         </div>
 
@@ -106,7 +102,7 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>Comments in CX follow the same syntax as in many other popular languages, like C and Go. Use // to comment out one line, and /* ... */ to comment out multiple lines in a source file.</p>
           </div>
         </div>
 
@@ -153,7 +149,8 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>A definition is just a global variable. This means that any function in the current module or in those modules that have imported the current module can access the definition's value.</p>
+            <p>In this example, we can see that both <i>printGlobals</i> and <i>main</i> are accessing the definitions <i>global1</i> and <i>global2</i>.</p>
           </div>
         </div>
 
@@ -202,7 +199,7 @@ func main () (area f32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>The example defines two functions: one for calculating a circle's area, and another for calculating a circle's perimeter. A feature in CX is that the output of a function can be explicitly defined, as in the case of <i>circlePerimeter</i>. If the output is not explicit, CX will take the last expression as the output of the function.</p>
           </div>
         </div>
 
@@ -238,8 +235,6 @@ type Point struct {
 	y i32
 }
 
-var globalPoint Point
-
 func main () (out i32) {
 	var uPoint Point
 	printStr(uPoint.name)
@@ -255,7 +250,9 @@ func main () (out i32) {
             </code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>User-defined types can be created by the use of structs. In this example, a type called "Point" is created. We want a point to be defined by a name, and its x and y coordinates on a plane.</p>
+            <p>The <i>main</i> function defines two variables of type Point, one at <b>line 12</b>, and another at <b>line 17</b>. <b>Lines 11, 12, and 13</b> try to print the values of an uninitialized instance of Point, but this won't crash the program, as CX initializes the fields to their corresponding zero value. For example, a <i>str</i> will be initialized to an empty string, a <i>bool</i> will be initialized to false, and an <i>i32</i> to a 32 bit integer 0.</p>
+            <p>At <b>line 15</b> another instance of Point is created, and their x and y fields are initialized at <b>lines 16 and 16</b>. Finally, at <b>line 19</b>, we perform the addition of both fields and its sum serves as the output of the program.</p>
           </div>
         </div>
 
@@ -300,7 +297,7 @@ func main () (out str) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>Three arrays are created to simulate the data of four students. They hold the ids, ages and grades. At <b>lines 9, 11, and 13</b> array reader functions are used to access the values at index 1 for each of the arrays.</p>
           </div>
         </div>
 
@@ -310,8 +307,6 @@ func main () (out str) {
     
   </div>
   <!-- Arrays end -->
-
-
 
 
 
@@ -360,7 +355,9 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>Four functions and a main function are defined in this example. <i>sayHi</i> demonstrates the definition of an input-less and output-less function. <i>sayMyName</i> receives one parameter as input, but does not return anything. <i>returnName</i> receives no parameters as input, but returns one output.</p>
+            
+            <p><i>multiReturn</i> is a bit more interesting than the other functions, as it receives two input parameters, and returns four output parameters. This function takes two 32 bit integers and returns their addition, subtraction, multiplication and division. The main function calls each of these functions, and assigns its output with the third output parameter from <i>multiReturn</i>.</p>
           </div>
         </div>
 
@@ -370,7 +367,6 @@ func main () (out i32) {
     
   </div>
   <!-- Expressions end -->
-
   
 
   <!-- Go-to start -->
@@ -404,7 +400,9 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p><i>goTo</i> <b>should not</b> be used, as it can create programs that are very hard to debug. CX uses the go-to operator to create other flow-control structures, such as <i>if</i> and <i>while</i>.</p>
+            <p>Nevertheless, if you really require a go-to in your program, you can use it. The example above shows how an if-else can be constructed using two go-to expressions. <i>goTo</i> takes three arguments as its parameters: a predicate, a number of lines the program should advance if the predicate evaluates to true, and a number of lines the program should advance if the predicate evaluates to false.</p>
+            <p>As in the case of the second <i>goTo</i> in the example, if you give it a number of lines which exceeds the number of expressions in the function, this will only cause the function to return. Negative numbers can also be provided, and they will cause the program to re-evaluate the N expressions above.</p>
           </div>
         </div>
 
@@ -414,9 +412,6 @@ func main () (out i32) {
     
   </div>
   <!-- Go-to end -->
-
-
-
 
 
   <!-- If-and-if-else start -->
@@ -465,7 +460,8 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>If and if/else statements in CX work as in any other programming language. If the condition evaluates to true, the first block of expressions will be executed; if the condition evaluates to false, the second block of expressions will be executed.</p>
+            <p>Like in Go, the condition doesn't need to be enclosed in parenthesis.</p>
           </div>
         </div>
 
@@ -505,7 +501,7 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>You can use <i>while</i> to create a loop. As in other programming languages that implement a while statement, a condition is provided which will instruct the computer to evaluate a block of expressions while the condition evaluates to true. In the case of the example above, the while loop will print the numbers from 0 to 10.</p>
           </div>
         </div>
 
@@ -515,8 +511,180 @@ func main () (out i32) {
     
   </div>
   <!-- Looping end -->
+
+
+
+  <!-- Evolving a function start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="evolving-a-function">Evolving a function</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+var inps []f64 = []f64{
+	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
+	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
+
+var outs []f64 = []f64{
+	90.0, 72.0, 56.0, 42.0, 30.0, 20.0, 12.0, 6.0, 2.0, 0.0, 0.0,
+	2.0, 6.0, 12.0, 20.0, 30.0, 42.0, 56.0, 72.0, 90.0, 110.0}
+
+func solution (n f64) (out f64) {
+	square = mulF64(n, n)
+}
+
+func main () (out f64) {
+	:dStack false;
+	:dProgram true;
+	evolve("solution", "addF64|mulF64|subF64", inps, outs, 5, 300, f32ToF64(0.1))
+
+	printStr("Extrapolating solution")
+	printF64(solution(f32ToF64(30.0)))
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p><i>evolve</i> is perhaps the most complicated native function in CX, not only because it is the native function that receives the greater number of parameters, but because of its purpose.</p>
+            <p><i>evolve</i> follows the principles of evolutionary computation. In particular, <i>evolve</i> performs a technique called genetic programming. Genetic programming tries to find a combination of operators and arguments that will solve a problem. For example, you could instruct evolve to find a combination of operators that, when sent 10, returns 20. This might sound trivial, but genetic programming and other evolutionary algorithms can solve very complicated problems.</p>
+            <p>In this example, we have a number of inputs defined at <b>line 3</b>, and we want to find a function which maps them to the outputs defined at <b>line 7</b>. The function <i>solution</i> could be totally empty, but we can help <i>evolve</i> a little bit. We know that a close solution to the problem is to multiply n by n, so we add that expression.</p>
+            <p>The call to <i>evolve</i> at <b>line 18</b> takes "solution" as its first argument. This instructs the evolutionary algorithm to evolve the <i>solution</i> function. Next, we provide the function with a set of functions to choose from when the algorithm starts creating different combinations. This argument is actually a regular expression, so we could send it "." to match any function in the current program. However, in genetic programming it's always useful to limit the algorithm to a small set of operators. If we have a very large set of operators, the algorithm could take too long to find a solution.</p>
+            <p>The next two parameters are the set of inputs and outputs we want to create a function for. Then, the next parameter defines the number of expressions we want the target solution function to be limited to. In traditional genetic programming a limit doesn't exist, and the resulting programs are usually very large. CX's <i>evolve</i> follows a strategy used in cartesian genetic programming (CGP). In CGP, a limit of statements or expressions is given, and this eliminates bloat in the solutions.</p>
+            <p>The last two parameters are know as the stop criteria. Evolutionary algorithms are heuristics, which means that they won't necessarily deliver the optimal solution to a problem. By using the stop criteria, we can tell <i>evolve</i> to give us the best solution it could find after N iterations, or if the error obtained is less than certain threshold.</p>
+            <p>If you run the example above, you should get a list of errors printed on the screen. These errors will decrease as the evolution algorithm progresses. When either the error threshold or the number of iterations is reached, the evolutionary algorithm will stop and the program will print what the evolved solution function evaluates to when sent an argument of 30.</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Evolving a function end -->
+
   
 
+  <!-- Meta-programming commands start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="meta-programming-commands">Meta-programming commands</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">* :dStack false;
+* :dProgram true;
+
+Program
+0.- Module: main
+	Definitions
+		0.- Definition: inps []f64
+		1.- Definition: outs []f64
+	Functions
+		0.- Function: solution (n f64) (out f64)
+			0.- Expression: square = mulF64(n f64, n f64)
+			1.- Expression: var_8 = addF64(n f64, square )
+			2.- Expression: var_300 = addF64(square , square )
+			3.- Expression: var_303 = mulF64(square , var_8 )
+			4.- Expression: out = addF64(n f64, square )
+		1.- Function: main () (out f64)
+			0.- Expression: nonAssign_0 = f32ToF64(0.1 f32)
+			1.- Expression: nonAssign_2 = printStr("Extrapolating solution" str)
+			2.- Expression: nonAssign_3 = f32ToF64(30 f32)
+			3.- Expression: nonAssign_4 = solution(nonAssign_3 )
+			4.- Expression: nonAssign_5 = printF64(nonAssign_4 )
+
+* :step 100;
+Evolving function 'solution'
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+5.238095238095238
+0
+Finished evolving function 'solution'
+Extrapolating solution
+930</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>This example is not meant to be run as a program. It's actually a simulation of a REPL session. The reason behind this is that meta-programming commands (unlike meta-programming functions) are most useful when used in an interactive environment.</p>
+            <p>In this example, three meta-programming commands are used: dStack, dProgram, and step. The program that was loaded into the REPL is the example from <a href="evolving-a-function">evolving a function</a>. <i>:dStack</i> is used for telling the REPL that it should start/stop printing the call stack each time the program advances. :dProgram is like :dStack, but it tells the REPL to print the program's abstract syntax tree. The "d" at the start of these commands stands for "debug", and this tells us that both of these commands are used for debugging purposes only.</p>
+            <p>:step takes an integer as its argument, and tells CX to run forwards or backwards the number of steps indicated by this integer. It is worth noting that giving :step a negative number is not the same as, for example, using <i>goTo</i> to get back to a previous expression in a function. :step will "forget" anything that happened in the last N steps, if N is negative. If N is positive, it's the equivalent of a normal execution of a CX program.</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Meta-programming commands end -->
+
+  <!-- Meta-programming functions start -->
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 id="meta-programming-functions">Meta-programming functions</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <!-- Content starts -->
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <pre><code class="go">package main
+
+var greeting str = "Meta hello."
+var farewell str = "Meta good-bye."
+
+func main () () {
+	remExpr("main", 1)
+	divI32(3, 0)
+	addExpr("printStr")
+	exprAff(".")
+}</code></pre>
+          </div>
+          <div class="panel-body">
+            <p>In this example we can see one of the special features of CX: meta-programming functions. Unlike meta-programming commands, which unleash their true potential only in the REPL, meta-programming functions can be used in CX expressions and modify a program's structure in runtime.</p>
+            <p>We can see that at <b>line 8</b>, a division by 0 is defined, but the program won't crash because we are removing this expression by calling <i>remExpr("main", 1)</i> at <b>line 7</b>, i.e., we are telling CX to remove expression 1 (the second one, as expressions are zero-indexed) from the "main" function.</p>
+            <p>At <b>line 9</b>, we instruct CX to add an <i>printStr</i> expression. This call to <i>addExpr</i> would normally crash the program, as it's adding an argument-less call to the function. However, we then ask CX to add whatever it wants as an argument to the expression we just added, at <b>line 10</b>. The "." (a regular expression) we are sending to <i>exprAff</i> is telling CX to apply any affordance it wants.</p>
+            <p>As a more elaborated example of affordances and meta-programming functions, check the <a href="robot-simulator">robot simulator</a>.</p>
+          </div>
+        </div>
+
+        <!-- Content ends -->
+      </div>
+    </div>
+    
+  </div>
+  <!-- Meta-programming functions end -->
+  
   <!-- Factorial start -->
   <div class="bs-docs-section">
     <div class="row">
@@ -548,7 +716,7 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>The <i>factorial</i> function defined above shows how one can use recursion in CX. If we give the compiler/interpreter the :dStack meta-programming command, we'd see how CX calls <i>factorial</i> several times, and how each of these calls are waiting for the next to return.</p>
           </div>
         </div>
 
@@ -694,7 +862,7 @@ func main () (out str) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>This example tries to illustrate most of the concepts shown in the previous examples.</p>
           </div>
         </div>
 
@@ -707,4 +875,4 @@ func main () (out str) {
   
 </div>
 
-  {{template "footer.html" .}}
+{{template "footer.html" .}}

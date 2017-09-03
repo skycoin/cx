@@ -16,7 +16,7 @@
               <a class="list-group-item" href="#affordances">Affordances</a>
               <a class="list-group-item" href="#serialization">Serialization</a>
               <a class="list-group-item" href="#stepping">Stepping</a>
-              <a class="list-group-item" href="#interactive-evaluation">Interactive evaluation</a>
+              <a class="list-group-item" href="#integrated-evolution-of-functions">Integrated evolution of functions</a>
               <a class="list-group-item" href="#interactive-debugging">Interactive debugging</a>
             </div>
           </div>
@@ -32,6 +32,7 @@
             <option value="hello-world">Hello world</option>
             <option value="looping">Looping</option>
             <option value="factorial">Factorial</option>
+            <option value="evolving-a-function">Evolving a function</option>
             <option value="more">More examples!</option>
           </select>
           <br />
@@ -268,6 +269,32 @@ func factorial (num i32) (fact i32) {\n\
 \n\
 func main () (out i32) {\n\
 	factorial(6)\n\
+}")
+   }
+
+
+   if ($("#example-select").val() == "evolving-a-function") {
+     $("#code-editor").val("package main\n\
+\n\
+var inps []f64 = []f64{\n\
+	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,\n\
+	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}\n\
+\n\
+var outs []f64 = []f64{\n\
+	90.0, 72.0, 56.0, 42.0, 30.0, 20.0, 12.0, 6.0, 2.0, 0.0, 0.0,\n\
+	2.0, 6.0, 12.0, 20.0, 30.0, 42.0, 56.0, 72.0, 90.0, 110.0}\n\
+\n\
+func solution (n f64) (out f64) {\n\
+	square = mulF64(n, n)\n\
+}\n\
+\n\
+func main () (out f64) {\n\
+	:dStack false;\n\
+	:dProgram true;\n\
+	evolve(\"solution\", \"addF64|mulF64|subF64\", inps, outs, 5, 300, f32ToF64(0.1))\n\
+\n\
+	printStr(\"Extrapolating solution\")\n\
+	printF64(solution(f32ToF64(30.0)))\n\
 }")
    }
 

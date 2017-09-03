@@ -1,0 +1,22 @@
+package main
+
+var inps []f64 = []f64{
+	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
+	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
+
+var outs []f64 = []f64{
+	90.0, 72.0, 56.0, 42.0, 30.0, 20.0, 12.0, 6.0, 2.0, 0.0, 0.0,
+	2.0, 6.0, 12.0, 20.0, 30.0, 42.0, 56.0, 72.0, 90.0, 110.0}
+
+func solution (n f64) (out f64) {
+	square = mulF64(n, n)
+}
+
+func main () (out f64) {
+	:dStack false;
+	:dProgram true;
+	evolve("solution", "addF64|mulF64|subF64", inps, outs, 5, 300, f32ToF64(0.1))
+
+	printStr("Extrapolating solution")
+	printF64(solution(f32ToF64(30.0)))
+}

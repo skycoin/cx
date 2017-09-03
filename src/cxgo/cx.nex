@@ -21,12 +21,13 @@
 /:func/    { return SFUNC    }
 /:rem/     { return REM      }
 /:step/    { return STEP     }
-/:tStep/   { return TSTEP     }
+/:tStep/   { return TSTEP    }
 /:pStep/   { return PSTEP    }
 /:aff/     { return AFF      }
 /package/  { return PACKAGE  }
 /type/     { return TYPSTRUCT}
 /struct/   { return STRUCT   }
+/return/   { return RETURN   }
 /if/       { return IF       }
 /else/     { return ELSE     }
 /while/    { return WHILE    }

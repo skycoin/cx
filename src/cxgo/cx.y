@@ -112,7 +112,7 @@
 %token  <f32>           FLOAT
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE WHILE TYPSTRUCT STRUCT
-                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT
+                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A
                         /* Selectors */
@@ -956,6 +956,7 @@ functionStatements:
                 /* } */
         ;
 
+
 expressionsAndStatements:
                 nonAssignExpression
         |       assignExpression
@@ -1186,8 +1187,30 @@ nonAssignExpression:
                 }
         ;
 
-statement:
-                IF nonAssignExpression
+statement:      RETURN
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
+						fn.AddExpression(expr)
+						assembleExpression("goTo", yyS[yypt-0].line + 1)
+						val := MakeDefaultValue("bool")
+						expr.AddArgument(MakeArgument(val, MakeType("bool")))
+						assembleArgument(*val, "bool")
+						lines := encoder.SerializeAtomic(int32(-len(fn.Expressions)))
+						expr.AddArgument(MakeArgument(&lines, MakeType("i32")))
+						assembleArgument(lines, "i32")
+						expr.AddArgument(MakeArgument(&lines, MakeType("i32")))
+						assembleArgument(lines, "i32")
+					}
+				}
+			}
+                }
+        |       IF nonAssignExpression
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {

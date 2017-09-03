@@ -723,7 +723,7 @@ func readF64A (arr *CXArgument, idx *CXArgument) *CXArgument {
 
 func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
 	if arr.Typ.Name != "[]f64" || idx.Typ.Name != "i32" || val.Typ.Name != "f64" {
-		panic("readF64A: wrong argument type")
+		panic("writeF64A: wrong argument type")
 	}
 
 	var index int32
