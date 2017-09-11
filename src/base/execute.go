@@ -328,7 +328,7 @@ func beforeDot (str string ) (beforeDot string, afterDot string) {
 	return beforeDot, afterDot
 }
 
-func getIdentParts (str string) []string {
+func GetIdentParts (str string) []string {
 	var identParts []string
 	before, after := beforeDot(str) // => "Math", "myPoint.x"
 	identParts = append(identParts, before)
@@ -378,7 +378,7 @@ func (cxt *CXProgram) Compile () *CXProgram {
 				
 				for argIdx, arg := range expr.Arguments {
 					if arg.Typ.Name == "ident" {
-						identParts := getIdentParts(string(*arg.Value))
+						identParts := GetIdentParts(string(*arg.Value))
 
 						//var def *CXDefinition
 						if len(identParts) == 1 {
@@ -467,12 +467,34 @@ func (cxt *CXProgram) Compile () *CXProgram {
 }
 
 func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
+	if cxt.Terminated {
+		// user wants to re-run the program
+		cxt.Terminated = false
+	}
+	
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
 	if cxt.CallStack != nil && len(cxt.CallStack.Calls) > 0 {
 		// we resume the program
-		lastCall := cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
-		return lastCall.call(withDebug, nCalls, callCounter)
+		var lastCall *CXCall
+		var err error
+
+		var untilEnd = false
+		if nCalls < 1 {
+			nCalls = 1 // so the for loop executes
+			untilEnd = true
+		}
+
+		for !cxt.Terminated && nCalls > 0 {
+			lastCall = cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
+			err = lastCall.call(withDebug, 1, callCounter)
+			if err != nil {
+				return err
+			}
+			if !untilEnd {
+				nCalls = nCalls - 1
+			}
+		}
 	} else {
 		// initialization and checking
 		if mod, err := cxt.SelectModule("main"); err == nil {
@@ -482,9 +504,30 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
 				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
-				return mainCall.call(withDebug, nCalls, callCounter)
+
+				//return mainCall.call(withDebug, nCalls, callCounter)
+
+				var lastCall *CXCall
+				var err error
+
+				var untilEnd = false
+				if nCalls < 1 {
+					nCalls = 1 // so the for loop executes
+					untilEnd = true
+				}
+				
+				for !cxt.Terminated && nCalls > 0 {
+					lastCall = cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
+					err = lastCall.call(withDebug, 1, callCounter)
+					if err != nil {
+						return err
+					}
+					if !untilEnd {
+						nCalls = nCalls - 1
+					}
+				}
+				return err
 			}
-			
 		} else {
 			return err
 		}
@@ -577,14 +620,10 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			}
 
 			if len(outputs) > 0 {
-				//defs := make([]*CXDefinition, len(returnNames))
 				for i, returnName := range returnNames {
 					def := MakeDefinition(returnName, outputs[i].Value, outputs[i].Typ)
 					def.Module = call.Module
 					def.Context = call.Context
-
-					
-					//call.ReturnAddress.State[returnName] = def
 
 					idx := -1
 					for i, stateDef := range call.ReturnAddress.State {
@@ -599,30 +638,16 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						call.ReturnAddress.State[idx] = def
 					}
 				}
-			}//  else {
-			// 	panic(fmt.Sprintf("Function '%s' didn't return anything", call.Operator.Name))
-			// }
-
-			// if output != nil {
-			// 	def := MakeDefinition(returnName, output.Value, output.Typ)
-			// 	def.Module = call.Module
-			// 	def.Context = call.Context
-			// 	call.ReturnAddress.State[returnName] = def
-			// } else {
-			// 	panic(fmt.Sprintf("Function '%s' couldn't return anything", call.Operator.Name))
-			// }
+			}
 
 			return call.ReturnAddress.call(withDebug, nCalls, callCounter)
 		} else {
 			// no return address. should only be for main
+			call.Context.Terminated = true
 			call.Context.Outputs = outputs
-			//fmt.Printf("\nProgram's output:\n%v\n", output.Value)
 		}
 	} else {
 		fn := call.Operator
-
-		globals := call.Module.Definitions
-		state := call.State
 
 		if expr, err := fn.GetExpression(call.Line); err == nil {
 			// getting arguments
@@ -653,59 +678,69 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				if argsRefs[i].Typ.Name == "ident" {
 					lookingFor := string(*argsRefs[i].Value)
 
-					// in here we could create an entry in the state map
+					var resolvedIdent *CXDefinition
 
-					found := false
-					var local *CXDefinition
-					var global *CXDefinition
-					for _, stateDef := range state {
-						if stateDef.Name == lookingFor {
-							found = true
-							local = stateDef
+					identParts := GetIdentParts(lookingFor)
+
+					if len(identParts) > 1 {
+						if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+							// then it's an external definition or struct
+							if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
+								resolvedIdent = def
+							} else {
+								
+							}
+						} else {
+							// then it's a global struct
+							mod := call.Operator.Module
+							if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
+								resolvedIdent = def
+							}
 						}
-					}
-					if !found {
-						for _, globalDef := range globals {
-							if globalDef.Name == lookingFor {
-								global = globalDef
+					} else {
+						// then it's a local or global definition
+						local := false
+						for _, stateDef := range call.State {
+							if stateDef.Name == lookingFor {
+								local = true
+								resolvedIdent = stateDef
+							}
+						}
+
+						if !local {
+							mod := call.Operator.Module
+							if def, err := mod.GetDefinition(lookingFor); err == nil {
+								resolvedIdent = def
 							}
 						}
 					}
 					
-					//local := state[lookingFor]
-					//global := globals[lookingFor]
-
-
-					// fmt.Printf("Here: %s\n", lookingFor)
-					// fmt.Printf("Here2: %s\n", string(*argsRefs[i].Value))
-					
-					if (local == nil && global == nil) {
+					//if (local == nil && global == nil) {
+					if resolvedIdent == nil {
 						panic(fmt.Sprintf("'%s' is undefined", lookingFor))
 					}
-
-					// giving priority to local var
-					if local != nil {
-						argsCopy[i] = MakeArgument(local.Value, local.Typ)
-						//argsCopy[i] = MakeArgumentCopy(local)
-					} else {
-						argsCopy[i] = MakeArgument(global.Value, global.Typ)
-						//argsCopy[i] = MakeArgumentCopy(global)
-					}
+					argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
 				} else {
 					argsCopy[i] = argsRefs[i]
 				}
 
 				// checking if arguments types match with expressions required types
 				if len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[i].Typ.Name != argsCopy[i].Typ.Name {
-					panic(fmt.Sprintf("%s, line #%d: %s argument #%d is type '%s'; expected type '%s'",
-						fn.Name, call.Line, expr.Operator.Name, i, argsCopy[i].Typ.Name, expr.Operator.Inputs[i].Typ.Name))
+					// panic(fmt.Sprintf("%s, line #%d: %s argument #%d is type '%s'; expected type '%s'",
+					fmt.Printf("%d: %s: argument %d is type '%s'; expected type '%s'\n",
+						expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ.Name, expr.Operator.Inputs[i].Typ.Name)
 				}
 			}
 
 			// checking if native or not
 			var values []*CXArgument
-			opName := expr.Operator.Name
-
+			var opName string
+			if expr.Operator != nil {
+				opName = expr.Operator.Name
+			} else {
+				opName = "id" // return the same
+			}
+			
 			// exceptions
 			var exc bool
 			var excError error
@@ -727,162 +762,467 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				encoder.DeserializeRaw(*argsCopy[5].Value, &iterations)
 				var epsilon float64
 				encoder.DeserializeRaw(*argsCopy[6].Value, &epsilon)
-				
-				evolutionErr := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon)
 
-				val := encoder.Serialize(evolutionErr)
-				values = append(values, MakeArgument(&val, MakeType("f64")))
-
+				if evolutionErr, err := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon); err == nil {
+					val := encoder.Serialize(evolutionErr)
+					values = append(values, MakeArgument(&val, MakeType("f64")))
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("f64"), MakeType("f64")))
+				}
 				// flow control
 			case "goTo":
-				values = append(values, goTo(call, argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := goTo(call, argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 				// I/O functions
 			case "printBool":
 				var val int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
 				if val == 0 {
-					fmt.Println("false")
+					fmt.Print("false")
 				} else {
-					fmt.Println("true")
+					fmt.Print("true")
 				}
 				values = append(values, argsCopy[0])
 			case "printStr":
-				fmt.Println(string(*argsCopy[0].Value))
+				fmt.Print(string(*argsCopy[0].Value))
 				values = append(values, argsCopy[0])
 			case "printByte":
-				fmt.Println((*argsCopy[0].Value)[0])
+				fmt.Print((*argsCopy[0].Value)[0])
 				values = append(values, argsCopy[0])
 			case "printI32":
 				var val int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printI64":
 				var val int64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printF32":
 				var val float32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printF64":
 				var val float64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printBoolA":
 				var val []int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Printf("[")
+				fmt.Print("[")
 				for i, v := range val {
 					if v == 0 {
-						fmt.Printf("false")
+						fmt.Print("false")
 					} else {
-						fmt.Printf("true")
+						fmt.Print("true")
 					}
 					if i != len(val) -1 {
-						fmt.Printf(" ")
+						fmt.Print(" ")
 					}
 				}
-				fmt.Printf("]")
-				fmt.Println()
+				fmt.Print("]")
 				values = append(values, argsCopy[0])
 			case "printByteA":
-				fmt.Println(*argsCopy[0].Value)
+				fmt.Print(*argsCopy[0].Value)
 				values = append(values, argsCopy[0])
 			case "printI32A":
 				var val []int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printI64A":
 				var val []int64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printF32A":
 				var val []float32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 			case "printF64A":
 				var val []float64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Println(val)
+				fmt.Print(val)
 				values = append(values, argsCopy[0])
 				// identity functions
-			case "idStr": values = append(values, argsCopy[0])
-			case "idBool": values = append(values, argsCopy[0])
-			case "idByte": values = append(values, argsCopy[0])
-			case "idI32": values = append(values, argsCopy[0])
-			case "idI64": values = append(values, argsCopy[0])
-			case "idF32": values = append(values, argsCopy[0])
-			case "idF64": values = append(values, argsCopy[0])
-			case "idBoolA": values = append(values, argsCopy[0])
-			case "idByteA": values = append(values, argsCopy[0])
-			case "idI32A": values = append(values, argsCopy[0])
-			case "idI64A": values = append(values, argsCopy[0])
-			case "idF32A": values = append(values, argsCopy[0])
-			case "idF64A": values = append(values, argsCopy[0])
+				case "idStr", "idBool", "idByte", "idI32", "idI64", "idF32", "idF64",
+				"idBoolA", "idByteA", "idI32A", "idI64A", "idF32A", "idF64A":
+				values = append(values, argsCopy[0])
 				// cast functions
-			case "byteAToStr": values = append(values, castToStr(argsCopy[0]))
-			case "i64ToI32": values = append(values, castToI32(argsCopy[0]))
-			case "f32ToI32": values = append(values, castToI32(argsCopy[0]))
-			case "f64ToI32": values = append(values, castToI32(argsCopy[0]))
-			case "i32ToI64": values = append(values, castToI64(argsCopy[0]))
-			case "f32ToI64": values = append(values, castToI64(argsCopy[0]))
-			case "f64ToI64": values = append(values, castToI64(argsCopy[0]))
-			case "i32ToF32": values = append(values, castToF32(argsCopy[0]))
-			case "i64ToF32": values = append(values, castToF32(argsCopy[0]))
-			case "f64ToF32": values = append(values, castToF32(argsCopy[0]))
-			case "i32ToF64": values = append(values, castToF64(argsCopy[0]))
-			case "i64ToF64": values = append(values, castToF64(argsCopy[0]))
-			case "f32ToF64": values = append(values, castToF64(argsCopy[0]))
-			case "i64AToI32A": values = append(values, castToI32A(argsCopy[0]))
-			case "f32AToI32A": values = append(values, castToI32A(argsCopy[0]))
-			case "f64AToI32A": values = append(values, castToI32A(argsCopy[0]))
-			case "i32AToI64A": values = append(values, castToI64A(argsCopy[0]))
-			case "f32AToI64A": values = append(values, castToI64A(argsCopy[0]))
-			case "f64AToI64A": values = append(values, castToI64A(argsCopy[0]))
-			case "i32AToF32A": values = append(values, castToF32A(argsCopy[0]))
-			case "i64AToF32A": values = append(values, castToF32A(argsCopy[0]))
-			case "f64AToF32A": values = append(values, castToF32A(argsCopy[0]))
-			case "i32AToF64A": values = append(values, castToF64A(argsCopy[0]))
-			case "i64AToF64A": values = append(values, castToF64A(argsCopy[0]))
-			case "f32AToF64A": values = append(values, castToF64A(argsCopy[0]))
+			case "byteAToStr":
+				if val, err := castToStr(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("str"), MakeType("str")))
+				}
+			case "strToByteA":
+				if val, err := castToByteA(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]byte"), MakeType("[]byte")))
+				}
+			case "i32ToByte", "i64ToByte", "f32ToByte", "f64ToByte":
+				if val, err := castToByte(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("byte"), MakeType("byte")))
+				}
+			case "byteToI32", "i64ToI32", "f32ToI32", "f64ToI32":
+				if val, err := castToI32(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
+			case "byteToI64", "i32ToI64", "f32ToI64", "f64ToI64":
+				if val, err := castToI64(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
+			case "byteToF32", "i32ToF32", "i64ToF32", "f64ToF32":
+				if val, err := castToF32(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("f32"), MakeType("f32")))
+				}
+			case "byteToF64", "i32ToF64", "i64ToF64", "f32ToF64":
+				if val, err := castToF64(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("f64"), MakeType("f64")))
+				}
+			case "i32AToByteA", "i64AToByteA", "f32AToByteA", "f64AToByteA":
+				if val, err := castToByteA(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]byte"), MakeType("[]byte")))
+				}
+			case "byteAToI32A", "i64AToI32A", "f32AToI32A", "f64AToI32A":
+				if val, err := castToI32A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i32"), MakeType("[]i32")))
+				}
+			case "byteAToI64A", "i32AToI64A", "f32AToI64A", "f64AToI64A":
+				if val, err := castToI64A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i64"), MakeType("[]i64")))
+				}
+			case "byteAToF32A", "i32AToF32A", "i64AToF32A", "f64AToF32A":
+				if val, err := castToF32A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f32"), MakeType("[]f32")))
+				}
+			case "byteAToF64A", "i32AToF64A", "i64AToF64A", "f32AToF64A":
+				if val, err := castToF64A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f64"), MakeType("[]f64")))
+				}
 				// logical operators
-			case "and": values = append(values, and(argsCopy[0], argsCopy[1]))
-			case "or": values = append(values, or(argsCopy[0], argsCopy[1]))
-			case "not": values = append(values, not(argsCopy[0]))
+			case "and":
+				if val, err := and(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "or":
+				if val, err := or(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "not":
+				if val, err := not(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 				// relational operators
-			case "ltI32": values = append(values, ltI32(argsCopy[0], argsCopy[1]))
-			case "gtI32": values = append(values, gtI32(argsCopy[0], argsCopy[1]))
-			case "eqI32": values = append(values, eqI32(argsCopy[0], argsCopy[1]))
-			case "lteqI32": values = append(values, lteqI32(argsCopy[0], argsCopy[1]))
-			case "gteqI32": values = append(values, gteqI32(argsCopy[0], argsCopy[1]))
-				
-			case "ltI64": values = append(values, ltI64(argsCopy[0], argsCopy[1]))
-			case "gtI64": values = append(values, gtI64(argsCopy[0], argsCopy[1]))
-			case "eqI64": values = append(values, eqI64(argsCopy[0], argsCopy[1]))
-			case "lteqI64": values = append(values, lteqI64(argsCopy[0], argsCopy[1]))
-			case "gteqI64": values = append(values, gteqI64(argsCopy[0], argsCopy[1]))
-
-			case "ltF32": values = append(values, ltF32(argsCopy[0], argsCopy[1]))
-			case "gtF32": values = append(values, gtF32(argsCopy[0], argsCopy[1]))
-			case "eqF32": values = append(values, eqF32(argsCopy[0], argsCopy[1]))
-			case "lteqF32": values = append(values, lteqF32(argsCopy[0], argsCopy[1]))
-			case "gteqF32": values = append(values, lteqF32(argsCopy[0], argsCopy[1]))
-
-			case "ltF64": values = append(values, ltF64(argsCopy[0], argsCopy[1]))
-			case "gtF64": values = append(values, gtF64(argsCopy[0], argsCopy[1]))
-			case "eqF64": values = append(values, eqF64(argsCopy[0], argsCopy[1]))
-			case "lteqF64": values = append(values, lteqF64(argsCopy[0], argsCopy[1]))
-			case "gteqF64": values = append(values, lteqF64(argsCopy[0], argsCopy[1]))
-			case "eqStr": values = append(values, eqStr(argsCopy[0], argsCopy[1]))
+			case "ltI32":
+				if val, err := ltI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gtI32":
+				if val, err := gtI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqI32":
+				if val, err := eqI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqI32":
+				if val, err := lteqI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqI32":
+				if val, err := gteqI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "ltI64":
+				if val, err := ltI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gtI64":
+				if val, err := gtI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqI64":
+				if val, err := eqI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqI64":
+				if val, err := lteqI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqI64":
+				if val, err := gteqI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "ltF32":
+				if val, err := ltF32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gtF32":
+				if val, err := gtF32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqF32":
+				if val, err := eqF32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqF32":
+				if val, err := lteqF32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqF32":
+				if val, err := gteqF32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "ltF64":
+				if val, err := ltF64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gtF64":
+				if val, err := gtF64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqF64":
+				if val, err := eqF64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqF64":
+				if val, err := lteqF64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqF64":
+				if val, err := gteqF64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "ltStr":
+				if val, err := ltStr(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqStr":
+				if val, err := eqStr(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqStr":
+				if val, err := lteqStr(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqStr":
+				if val, err := gteqStr(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "ltByte":
+				if val, err := ltByte(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gtByte":
+				if val, err := gtByte(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "eqByte":
+				if val, err := eqByte(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "lteqByte":
+				if val, err := lteqByte(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "gteqByte":
+				if val, err := gteqByte(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 				// struct operations
-			case "initDef": values = append(values, initDef(argsCopy[0]))
+			case "initDef":
+				if val, err := initDef(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 				// arithmetic functions
 			case "addI32":
 				if val, err := addI32(argsCopy[0], argsCopy[1]); err == nil {
@@ -1093,68 +1433,299 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
 				}
+				// make functions
+			case "makeBoolA":
+				if val, err := makeArray("[]bool", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]bool"), MakeType("[]bool")))
+				}
+			case "makeByteA":
+				if val, err := makeArray("[]byte", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]byte"), MakeType("[]byte")))
+				}
+			case "makeI32A":
+				if val, err := makeArray("[]i32", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i32"), MakeType("[]i32")))
+				}
+			case "makeI64A":
+				if val, err := makeArray("[]i64", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i64"), MakeType("[]i64")))
+				}
+			case "makeF32A":
+				if val, err := makeArray("[]f32", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f32"), MakeType("[]f32")))
+				}
+			case "makeF64A":
+				if val, err := makeArray("[]f64", argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f64"), MakeType("[]f64")))
+				}
 				// array functions
 			case "readBoolA":
-				values = append(values, readBoolA(argsCopy[0], argsCopy[1]))
+				if val, err := readBoolA(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 			case "writeBoolA":
-				values = append(values, writeBoolA(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeBoolA(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]bool"), MakeType("[]bool")))
+				}
 			case "readByteA":
-				values = append(values, readByteA(argsCopy[0], argsCopy[1]))
+				if val, err := readByteA(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("byte"), MakeType("byte")))
+				}
 			case "writeByteA":
-				values = append(values, writeByteA(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeByteA(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]byte"), MakeType("[]byte")))
+				}
 			case "readI32A":
-				values = append(values, readI32A(argsCopy[0], argsCopy[1]))
+				if val, err := readI32A(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "writeI32A":
-				values = append(values, writeI32A(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeI32A(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i32"), MakeType("[]i32")))
+				}
 			case "readI64A":
-				values = append(values, readI64A(argsCopy[0], argsCopy[1]))
+				if val, err := readI64A(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 			case "writeI64A":
-				values = append(values, writeI64A(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeI64A(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]i64"), MakeType("[]i64")))
+				}
 			case "readF32A":
-				values = append(values, readF32A(argsCopy[0], argsCopy[1]))
+				if val, err := readF32A(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("f32"), MakeType("f32")))
+				}
 			case "writeF32A":
-				values = append(values, writeF32A(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeF32A(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f32"), MakeType("[]f32")))
+				}
 			case "readF64A":
-				values = append(values, readF64A(argsCopy[0], argsCopy[1]))
+				if val, err := readF64A(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("f64"), MakeType("f64")))
+				}
 			case "writeF64A":
-				values = append(values, writeF64A(argsCopy[0], argsCopy[1], argsCopy[2]))
+				if val, err := writeF64A(argsCopy[0], argsCopy[1], argsCopy[2]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("[]f64"), MakeType("[]f64")))
+				}
 			case "lenBoolA":
-				values = append(values, lenBoolA(argsCopy[0]))
+				if val, err := lenBoolA(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "lenByteA":
-				values = append(values, lenByteA(argsCopy[0]))
+				if val, err := lenByteA(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "lenI32A":
-				values = append(values, lenI32A(argsCopy[0]))
+				if val, err := lenI32A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "lenI64A":
-				values = append(values, lenI64A(argsCopy[0]))
+				if val, err := lenI64A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "lenF32A":
-				values = append(values, lenF32A(argsCopy[0]))
+				if val, err := lenF32A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 			case "lenF64A":
-				values = append(values, lenF64A(argsCopy[0]))
+				if val, err := lenF64A(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 				// time functions
 			case "sleep":
-				values = append(values, sleep(argsCopy[0]))
+				if val, err := sleep(argsCopy[0]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
 				// utilitiy functions
 			case "randI32":
-				values = append(values, randI32(argsCopy[0], argsCopy[1]))
+				if val, err := randI32(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i32"), MakeType("i32")))
+				}
+			case "randI64":
+				if val, err := randI64(argsCopy[0], argsCopy[1]); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("i64"), MakeType("i64")))
+				}
 				// meta functions
 			case "setClauses":
-				values = append(values, setClauses(argsCopy[0], call.Operator.Module))
+				if val, err := setClauses(argsCopy[0], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("str"), MakeType("str")))
+				}
 			case "addObject":
-				values = append(values, addObject(argsCopy[0], call.Operator.Module))
+				if val, err := addObject(argsCopy[0], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("str"), MakeType("str")))
+				}
 			case "setQuery":
-				values = append(values, setQuery(argsCopy[0], call.Operator.Module))
+				if val, err := setQuery(argsCopy[0], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("str"), MakeType("str")))
+				}
 			case "remObject":
-				values = append(values, remObject(argsCopy[0], call.Operator.Module))
+				if val, err := remObject(argsCopy[0], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("str"), MakeType("str")))
+				}
 			case "remObjects":
-				values = append(values, remObjects(call.Operator.Module))
+				if val, err := remObjects(call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 			case "remExpr":
-				values = append(values, remExpr(argsCopy[0], argsCopy[1], call.Operator.Module))
+				if val, err := remExpr(argsCopy[0], argsCopy[1], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 			case "remArg":
-				values = append(values, remArg(argsCopy[0], call.Operator.Module))
+				if val, err := remArg(argsCopy[0], call.Operator.Module); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 			case "addExpr":
-				values = append(values, addExpr(argsCopy[0], call.Operator))
+				if val, err := addExpr(argsCopy[0], call.Operator); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 			case "exprAff":
-				values = append(values, exprAff(argsCopy[0], call.Operator))
+				if val, err := exprAff(argsCopy[0], call.Operator); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
 				// debugging functions
 			case "halt":
 				fmt.Println(string(*argsCopy[0].Value))
@@ -1232,7 +1803,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				return call.call(withDebug, nCalls, callCounter)
 			} else {
 				// operator was not a native function
-				call.Line++ // once the subcall finishes, call next line of the
+				call.Line++ // once the subcall finishes, call next line
 				if argDefs, err := argsToDefs(argsCopy, argNames, call.Module, call.Context); err == nil {
 					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Context)
 					call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)

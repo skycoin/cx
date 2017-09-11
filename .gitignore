@@ -26,4 +26,6 @@ test.go
 test
 out.*
 *.o
+o
+o.go
 cx.pdf

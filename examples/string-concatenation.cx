@@ -1,0 +1,26 @@
+package main
+
+func concatStr (s1 str, s2 str) (s str) {
+	bytes1 := strToByteA(s1)
+	bytes2 := strToByteA(s2)
+
+	lenBytes1 := lenByteA(bytes1)
+	lenBytes2 := lenByteA(bytes2)
+
+	totalLength := addI32(lenBytes1, lenBytes2)
+	concat := makeByteA(totalLength)
+
+	for c := 0; ltI32(c, lenByteA(bytes1)); c = addI32(c, 1) {
+		writeByteA(concat, c, readByteA(bytes1, c))
+	}
+
+	for c := 0; ltI32(c, lenByteA(bytes2)); c = addI32(c, 1) {
+		writeByteA(concat, addI32(c, lenBytes1), readByteA(bytes2, c))
+	}
+	
+	s := byteAToStr(concat)
+}
+
+func main () () {
+	printStr(concatStr(concatStr("Hello ", "World!"), " I'm happy."))
+}

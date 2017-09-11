@@ -22,7 +22,7 @@ func robotAct (row i32, col i32, action str) (row i32, col i32) {
 }
 
 func robot (row i32, col i32) (row i32, col i32) {
-	remArg("robot")
+	//remArg("robot")
 	exprAff("goNorth|goSouth|goWest|goEast")
 	row, col = robotAct(row, col, "")
 }
@@ -95,17 +95,12 @@ func main () (out str) {
 		false, false, false, false, false,
 		false, false, false, false, false}
 
-	out := printStr("testing.")
-	printStr("hello")
-	return
-	printStr("do you reach me?")
-	
 	var width i32 = 5
 	var row i32 = 1
 	var col i32 = 1
 
 	var counter i32
-	while ltI32(counter, 6) {
+	for ltI32(counter, 6) {
 		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
 		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
 		robotObjects(row, col, width, wallMap, wormholeMap)

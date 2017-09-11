@@ -8,18 +8,37 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func checkTwoTypes (fnName string, typ string, arg1 *CXArgument, arg2 *CXArgument) error {
-	if arg1.Typ.Name != typ || arg2.Typ.Name != typ {
-		if arg1.Typ.Name != typ {
-			return errors.New(fmt.Sprintf("%s: first argument is type '%s'; expected type '%s'", fnName, arg1.Typ.Name, typ))
+func checkType (fnName string, typ string, arg *CXArgument) error {
+	if arg.Typ.Name != typ {
+		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ.Name, typ))
+	}
+	return nil
+}
+
+func checkTwoTypes (fnName string, typ1 string, typ2 string, arg1 *CXArgument, arg2 *CXArgument) error {
+	if arg1.Typ.Name != typ1 || arg2.Typ.Name != typ2 {
+		if arg1.Typ.Name != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ.Name, typ1))
 		}
-		return errors.New(fmt.Sprintf("%s: second argument is type '%s'; expected type '%s'", fnName, arg1.Typ.Name, typ))
+		return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ.Name, typ2))
+	}
+	return nil
+}
+
+func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1 *CXArgument, arg2 *CXArgument, arg3 *CXArgument) error {
+	if arg1.Typ.Name != typ1 || arg2.Typ.Name != typ2 || arg3.Typ.Name != typ3 {
+		if arg1.Typ.Name != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ.Name, typ1))
+		} else if arg2.Typ.Name != typ2 {
+			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ.Name, typ2))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ.Name, typ3))
 	}
 	return nil
 }
 
 func addI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("addI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("addI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -34,7 +53,7 @@ func addI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func subI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("subI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("subI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -49,7 +68,7 @@ func subI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func mulI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("mulI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("mulI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -64,7 +83,7 @@ func mulI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func divI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("divI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("divI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -83,7 +102,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func addI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("addI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("addI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -98,7 +117,7 @@ func addI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func subI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("subI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("subI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -113,7 +132,7 @@ func subI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func mulI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("mulI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("mulI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -128,7 +147,7 @@ func mulI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func divI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("divI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("divI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -147,7 +166,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func addF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("addF32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("addF32", "f32", "f32", arg1, arg2); err == nil {
 		
 	} else {
 		return nil, err
@@ -164,7 +183,7 @@ func addF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func subF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("subF32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("subF32", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 	var num2 float32
 	encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -179,7 +198,7 @@ func subF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func mulF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("mulF32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("mulF32", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -194,14 +213,14 @@ func mulF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func divF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("divF32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("divF32", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == float32(0.0) {
-			panic("divF32: Division by 0")
+			return nil, errors.New("divF32: Division by 0")
 		}
 
 		output := encoder.Serialize(float32(num1 / num2))
@@ -213,7 +232,7 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func addF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("addF64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("addF64", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -228,7 +247,7 @@ func addF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func subF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("subF64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("subF64", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -243,7 +262,7 @@ func subF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func mulF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("mulF64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("mulF64", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -258,14 +277,14 @@ func mulF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func divF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("divF64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("divF64", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == float64(0.0) {
-			panic("divF64: Division by 0")
+			return nil, errors.New("divF64: Division by 0")
 		}
 
 		output := encoder.Serialize(float64(num1 / num2))
@@ -277,14 +296,14 @@ func divF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func modI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("modI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("modI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int32(0) {
-			panic("modI32: Division by 0")
+			return nil, errors.New("modI32: Division by 0")
 		}
 
 		output := encoder.Serialize(int32(num1 % num2))
@@ -296,14 +315,14 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func modI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("modI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("modI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int64(0) {
-			panic("modI64: Division by 0")
+			return nil, errors.New("modI64: Division by 0")
 		}
 
 		output := encoder.Serialize(int64(num1 % num2))
@@ -319,7 +338,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 */
 
 func andI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("andI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("andI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -334,7 +353,7 @@ func andI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func orI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("orI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("orI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -349,7 +368,7 @@ func orI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func xorI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("xorI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("xorI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -364,7 +383,7 @@ func xorI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func andNotI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("andNotI32", "i32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("andNotI32", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -379,7 +398,7 @@ func andNotI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func andI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("andI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("andI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -394,7 +413,7 @@ func andI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func orI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("orI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("orI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -409,7 +428,7 @@ func orI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func xorI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("xorI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("xorI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -424,7 +443,7 @@ func xorI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 }
 
 func andNotI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
-	if err := checkTwoTypes("andNotI64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("andNotI64", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -442,440 +461,440 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
   Array functions
 */
 
-func readBoolA (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]bool" || idx.Typ.Name != "i32" {
-		panic("readBoolA: wrong argument type")
+func readBoolA (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readBoolA", "[]bool", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readBoolA: negative index %d", index))
+		}
+		
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("readBoolA: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		output := encoder.Serialize(array[index])
+
+		return &CXArgument{Value: &output, Typ: MakeType("bool")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readBoolA: Negative index %d", index))
-	}
-	
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("readBoolA: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	output := encoder.Serialize(array[index])
-
-	return &CXArgument{Value: &output, Typ: MakeType("bool")}
 }
 
-func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]bool" || idx.Typ.Name != "i32" || val.Typ.Name != "bool" {
-		panic("readBoolA: wrong argument type")
+func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeBoolA", "[]bool", "i32", "bool", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var value int32
+		encoder.DeserializeRaw(*val.Value, &value)
+		
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeBoolA: negative index %d", index))
+		}
+		
+		if index >= int32(len(*arr.Value)) {
+			return nil, errors.New(fmt.Sprintf("writeBoolA: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		array[index] = value
+		output := encoder.Serialize(array)
+		arr.Value = &output
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var value int32
-	encoder.DeserializeRaw(*val.Value, &value)
-	
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeBoolA: Negative index %d", index))
-	}
-	
-	if index >= int32(len(*arr.Value)) {
-		panic(fmt.Sprintf("writeBoolA: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	array[index] = value
-	output := encoder.Serialize(array)
-	arr.Value = &output
-
-	return arr
 }
 
-func readByteA (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" {
-		panic("readByteA: wrong argument type")
+func readByteA (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readByteA", "[]byte", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readByteA: negative index %d", index))
+		}
+		
+		if index >= int32(len(*arr.Value)) {
+			return nil, errors.New(fmt.Sprintf("readByteA: index %d exceeds array of length %d", index, len(*arr.Value)))
+		}
+
+		output := make([]byte, 1)
+		output[0] = (*arr.Value)[index]
+
+		return &CXArgument{Value: &output, Typ: MakeType("byte")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readByteA: Negative index %d", index))
-	}
-	
-	if index >= int32(len(*arr.Value)) {
-		panic(fmt.Sprintf("readByteA: Index %d exceeds array of length %d", index, len(*arr.Value)))
-	}
-
-	output := make([]byte, 1)
-	output[0] = (*arr.Value)[index]
-
-	return &CXArgument{Value: &output, Typ: MakeType("byte")}
 }
 
-func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]byte" || idx.Typ.Name != "i32" || val.Typ.Name != "byte" {
-		panic("readByteA: wrong argument type")
+func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeByteA", "[]byte", "i32", "byte", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeByteA: negative index %d", index))
+		}
+		
+		if index >= int32(len(*arr.Value)) {
+			return nil, errors.New(fmt.Sprintf("writeByteA: index %d exceeds array of length %d", index, len(*arr.Value)))
+		}
+
+		(*arr.Value)[index] = (*val.Value)[0]
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeByteA: Negative index %d", index))
-	}
-	
-	if index >= int32(len(*arr.Value)) {
-		panic(fmt.Sprintf("writeByteA: Index %d exceeds array of length %d", index, len(*arr.Value)))
-	}
-
-	(*arr.Value)[index] = (*val.Value)[0]
-
-	return arr
 }
 
-func readI32A (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i32" || idx.Typ.Name != "i32" {
-		panic("readI32A: wrong argument type")
+func readI32A (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readI32A", "[]i32", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readI32A: negative index %d", index))
+		}
+		
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("readI32A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		output := encoder.Serialize(array[index])
+
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readI32A: Negative index %d", index))
-	}
-	
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("readI32A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	output := encoder.Serialize(array[index])
-
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i32" || idx.Typ.Name != "i32" || val.Typ.Name != "i32" {
-		panic("writeI32A: wrong argument type")
+func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeI32A", "[]i32", "i32", "i32", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var value int32
+		encoder.DeserializeRaw(*val.Value, &value)
+
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeI32A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("writeI32A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		array[index] = value
+		output := encoder.Serialize(array)
+		arr.Value = &output
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var value int32
-	encoder.DeserializeRaw(*val.Value, &value)
-
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeI32A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("writeI32A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	array[index] = value
-	output := encoder.Serialize(array)
-	arr.Value = &output
-
-	return arr
 }
 
-func readI64A (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i64" || idx.Typ.Name != "i32" {
-		panic("readI64A: wrong argument type")
+func readI64A (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readI64A", "[]i64", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var array []int64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readI64A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("readI64A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		output := encoder.Serialize(array[index])
+
+		return &CXArgument{Value: &output, Typ: MakeType("i64")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var array []int64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readI64A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("readI64A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	output := encoder.Serialize(array[index])
-
-	return &CXArgument{Value: &output, Typ: MakeType("i64")}
 }
 
-func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i64" || idx.Typ.Name != "i32" || val.Typ.Name != "i64" {
-		panic("readI64A: wrong argument type")
+func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeI64A", "[]i64", "i32", "i64", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var value int64
+		encoder.DeserializeRaw(*val.Value, &value)
+
+		var array []int64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeI64A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("writeI64A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		array[index] = value
+		output := encoder.Serialize(array)
+		arr.Value = &output
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var value int64
-	encoder.DeserializeRaw(*val.Value, &value)
-
-	var array []int64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeI64A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("writeI64A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	array[index] = value
-	output := encoder.Serialize(array)
-	arr.Value = &output
-
-	return arr
 }
 
-func readF32A (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f32" || idx.Typ.Name != "i32" {
-		panic("readF32A: wrong argument type")
+func readF32A (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readF32A", "[]f32", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var array []float32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readF32A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("readF32A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		output := encoder.Serialize(array[index])
+
+		return &CXArgument{Value: &output, Typ: MakeType("f32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var array []float32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readF32A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("readF32A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	output := encoder.Serialize(array[index])
-
-	return &CXArgument{Value: &output, Typ: MakeType("f32")}
 }
 
-func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f32" || idx.Typ.Name != "i32" || val.Typ.Name != "f32" {
-		panic("writeF32A: wrong argument type")
+func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeF32A", "[]f32", "i32", "f32", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var value float32
+		encoder.DeserializeRaw(*val.Value, &value)
+
+		var array []float32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeF32A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("writeF32A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		array[index] = value
+		output := encoder.Serialize(array)
+		arr.Value = &output
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var value float32
-	encoder.DeserializeRaw(*val.Value, &value)
-
-	var array []float32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeF32A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("writeF32A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	array[index] = value
-	output := encoder.Serialize(array)
-	arr.Value = &output
-
-	return arr
 }
 
-func readF64A (arr *CXArgument, idx *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f64" || idx.Typ.Name != "i32" {
-		panic("readF64A: wrong argument type")
+func readF64A (arr *CXArgument, idx *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("readF64A", "[]f64", "i32", arr, idx); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var array []float64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("readF64A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("readF64A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		output := encoder.Serialize(array[index])
+
+		return &CXArgument{Value: &output, Typ: MakeType("f64")}, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var array []float64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("readF64A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("readF64A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	output := encoder.Serialize(array[index])
-
-	return &CXArgument{Value: &output, Typ: MakeType("f64")}
 }
 
-func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f64" || idx.Typ.Name != "i32" || val.Typ.Name != "f64" {
-		panic("writeF64A: wrong argument type")
+func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("writeF64A", "[]f64", "i32", "f64", arr, idx, val); err == nil {
+		var index int32
+		encoder.DeserializeRaw(*idx.Value, &index)
+
+		var value float64
+		encoder.DeserializeRaw(*val.Value, &value)
+
+		var array []float64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		if index < 0 {
+			return nil, errors.New(fmt.Sprintf("writeF64A: negative index %d", index))
+		}
+
+		if index >= int32(len(array)) {
+			return nil, errors.New(fmt.Sprintf("writeF64A: index %d exceeds array of length %d", index, len(array)))
+		}
+
+		array[index] = value
+		output := encoder.Serialize(array)
+		arr.Value = &output
+
+		return arr, nil
+	} else {
+		return nil, err
 	}
-
-	var index int32
-	encoder.DeserializeRaw(*idx.Value, &index)
-
-	var value float64
-	encoder.DeserializeRaw(*val.Value, &value)
-
-	var array []float64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	if index < 0 {
-		panic(fmt.Sprintf("writeF64A: Negative index %d", index))
-	}
-
-	if index >= int32(len(array)) {
-		panic(fmt.Sprintf("writeF64A: Index %d exceeds array of length %d", index, len(array)))
-	}
-
-	array[index] = value
-	output := encoder.Serialize(array)
-	arr.Value = &output
-
-	return arr
 }
 
-func lenBoolA (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]bool" {
-		panic("lenBoolA: wrong argument type")
+func lenBoolA (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenBoolA", "[]bool", arr); err == nil {
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		output := encoder.SerializeAtomic(int32(len(array)))
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	output := encoder.SerializeAtomic(int32(len(array)))
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func lenByteA (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]byte" {
-		panic("lenByteA: wrong argument type")
+func lenByteA (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenByteA", "[]byte", arr); err == nil {
+		output := encoder.SerializeAtomic(int32(len(*arr.Value)))
+		
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	output := encoder.SerializeAtomic(int32(len(*arr.Value)))
-	
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func lenI32A (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i32" {
-		panic("lenI32A: wrong argument type")
+func lenI32A (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenI32A", "[]i32", arr); err == nil {
+		var array []int32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		output := encoder.SerializeAtomic(int32(len(array)))
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var array []int32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	output := encoder.SerializeAtomic(int32(len(array)))
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func lenI64A (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]i64" {
-		panic("lenI64A: wrong argument type")
+func lenI64A (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenI64A", "[]i64", arr); err == nil {
+		var array []int64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		output := encoder.SerializeAtomic(int32(len(array)))
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var array []int64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	output := encoder.SerializeAtomic(int32(len(array)))
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func lenF32A (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f32" {
-		panic("lenF32A: wrong argument type")
+func lenF32A (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenF32A", "[]f32", arr); err == nil {
+		var array []float32
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		output := encoder.SerializeAtomic(int32(len(array)))
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var array []float32
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	output := encoder.SerializeAtomic(int32(len(array)))
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
-func lenF64A (arr *CXArgument) *CXArgument {
-	if arr.Typ.Name != "[]f64" {
-		panic("lenF64A: wrong argument type")
+func lenF64A (arr *CXArgument) (*CXArgument, error) {
+	if err := checkType("lenF64A", "[]f64", arr); err == nil {
+		var array []float64
+		encoder.DeserializeRaw(*arr.Value, &array)
+
+		output := encoder.SerializeAtomic(int32(len(array)))
+		return &CXArgument{Value: &output, Typ: MakeType("i32")}, nil
+	} else {
+		return nil, err
 	}
-
-	var array []float64
-	encoder.DeserializeRaw(*arr.Value, &array)
-
-	output := encoder.SerializeAtomic(int32(len(array)))
-	return &CXArgument{Value: &output, Typ: MakeType("i32")}
 }
 
 /*
   Logical Operators
 */
 
-func and (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "bool" || arg2.Typ.Name != "bool" {
-		panic("and: wrong argument type")
-	}
+func and (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("and", "bool", "bool", arg1, arg2); err == nil {
+		var c1 int32
+		var c2 int32
+		encoder.DeserializeRaw(*arg1.Value, &c1)
+		encoder.DeserializeRaw(*arg2.Value, &c2)
 
-	var c1 int32
-	var c2 int32
-	encoder.DeserializeRaw(*arg1.Value, &c1)
-	encoder.DeserializeRaw(*arg2.Value, &c2)
-
-	if c1 == 1 && c2 == 1 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		if c1 == 1 && c2 == 1 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func or (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "bool" || arg2.Typ.Name != "bool" {
-		panic("or: wrong argument type")
-	}
+func or (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("or", "bool", "bool", arg1, arg2); err == nil {
+		var c1 int32
+		var c2 int32
+		encoder.DeserializeRaw(*arg1.Value, &c1)
+		encoder.DeserializeRaw(*arg2.Value, &c2)
 
-	var c1 int32
-	var c2 int32
-	encoder.DeserializeRaw(*arg1.Value, &c1)
-	encoder.DeserializeRaw(*arg2.Value, &c2)
-
-	if c1 == 1 || c2 == 1 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		if c1 == 1 || c2 == 1 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func not (arg1 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "bool" {
-		panic("not: wrong argument type")
-	}
+func not (arg1 *CXArgument) (*CXArgument, error) {
+	if err := checkType("not", "bool", arg1); err == nil {
+		var c1 int32
+		encoder.DeserializeRaw(*arg1.Value, &c1)
 
-	var c1 int32
-	encoder.DeserializeRaw(*arg1.Value, &c1)
-
-	if c1 == 0 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		if c1 == 0 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
@@ -883,575 +902,791 @@ func not (arg1 *CXArgument) *CXArgument {
   Relational Operators
 */
 
-func ltI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("ltI32: wrong argument type")
-	}
-
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 < num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func ltI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltI32", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 < num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gtI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("gtI32: wrong argument type")
-	}
-
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 > num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gtI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtI32", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 > num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func eqI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("eqI32: wrong argument type")
-	}
-
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 == num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func eqI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqI32", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 == num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func lteqI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("lteqI32: wrong argument type")
-	}
-
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 <= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func lteqI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqI32", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 <= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gteqI32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i32" || arg2.Typ.Name != "i32" {
-		panic("lteqI32: wrong argument type")
-	}
-
-	var num1 int32
-	var num2 int32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 >= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gteqI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqI32", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 >= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func ltI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("ltI64: wrong argument type")
-	}
-
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 < num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func ltI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltI64", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 < num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gtI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("gtI64: wrong argument type")
-	}
-
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 > num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gtI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtI64", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 > num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func eqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("eqI64: wrong argument type")
-	}
-
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 == num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func eqI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqI64", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 == num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func lteqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("lteqI64: wrong argument type")
-	}
-
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 <= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func lteqI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqI64", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 <= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gteqI64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "i64" || arg2.Typ.Name != "i64" {
-		panic("gteqI64: wrong argument type")
-	}
-
-	var num1 int64
-	var num2 int64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 >= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gteqI64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqI64", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 >= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func ltF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
-		panic("ltF32: wrong argument type")
-	}
-
-	var num1 float32
-	var num2 float32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 < num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func ltF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltF32", "f32", "f32", arg1, arg2); err == nil {
+		var num1 float32
+		var num2 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 < num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gtF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
-		panic("gtF32: wrong argument type")
-	}
-
-	var num1 float32
-	var num2 float32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 > num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gtF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtF32", "f32", "f32", arg1, arg2); err == nil {
+		var num1 float32
+		var num2 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 > num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func eqF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
-		panic("eqF32: wrong argument type")
-	}
-
-	var num1 float32
-	var num2 float32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 == num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func eqF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqF32", "f32", "f32", arg1, arg2); err == nil {
+		var num1 float32
+		var num2 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 == num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func lteqF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
-		panic("lteqF32: wrong argument type")
-	}
-
-	var num1 float32
-	var num2 float32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 <= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func lteqF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqF32", "f32", "f32", arg1, arg2); err == nil {
+		var num1 float32
+		var num2 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 <= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
 	}
 }
 
-func gteqF32 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f32" || arg2.Typ.Name != "f32" {
-		panic("gteqF32: wrong argument type")
-	}
-
-	var num1 float32
-	var num2 float32
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 >= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+func gteqF32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqF32", "f32", "f32", arg1, arg2); err == nil {
+		var num1 float32
+		var num2 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 >= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
+		return nil, err
+	}
+}
+
+func ltF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltF64", "f64", "f64", arg1, arg2); err == nil {
+		var num1 float64
+		var num2 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 < num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gtF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtF64", "f64", "f64", arg1, arg2); err == nil {
+		var num1 float64
+		var num2 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 > num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func eqF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqF64", "f64", "f64", arg1, arg2); err == nil {
+		var num1 float64
+		var num2 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 == num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func lteqF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqF64", "f64", "f64", arg1, arg2); err == nil {
+		var num1 float64
+		var num2 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 <= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gteqF64 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqF64", "f64", "f64", arg1, arg2); err == nil {
+		var num1 float64
+		var num2 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+		
+		if num1 >= num2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func ltStr (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltStr", "str", "str", arg1, arg2); err == nil {
+		str1 := string(*arg1.Value)
+		str2 := string(*arg2.Value)
+		
+		if str1 < str2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gtStr (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtStr", "str", "str", arg1, arg2); err == nil {
+		str1 := string(*arg1.Value)
+		str2 := string(*arg2.Value)
+		
+		if str1 > str2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func eqStr (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqStr", "str", "str", arg1, arg2); err == nil {
+		str1 := string(*arg1.Value)
+		str2 := string(*arg2.Value)
+		
+		if str1 == str2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func lteqStr (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqStr", "str", "str", arg1, arg2); err == nil {
+		str1 := string(*arg1.Value)
+		str2 := string(*arg2.Value)
+		
+		if str1 <= str2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gteqStr (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqStr", "str", "str", arg1, arg2); err == nil {
+		str1 := string(*arg1.Value)
+		str2 := string(*arg2.Value)
+		
+		if str1 >= str2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func ltByte (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("ltByte", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+		
+		if byte1 < byte2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gtByte (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gtByte", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+		
+		if byte1 > byte2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func eqByte (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("eqByte", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+		
+		if byte1 == byte2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func lteqByte (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("lteqByte", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+		
+		if byte1 <= byte2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func gteqByte (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("gteqByte", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+		
+		if byte1 >= byte2 {
+			val := encoder.Serialize(int32(1))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
+		}
+	} else {
+		return nil, err
 	}
 }
 
 
-
-
-
-
-
-
-
-
-
-
-func ltF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
-		panic("ltF64: wrong argument type")
-	}
-
-	var num1 float64
-	var num2 float64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 < num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
-
-func gtF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
-		panic("gtF64: wrong argument type")
-	}
-
-	var num1 float64
-	var num2 float64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 > num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
-
-func eqF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
-		panic("eqF64: wrong argument type")
-	}
-
-	var num1 float64
-	var num2 float64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 == num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
-
-func lteqF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
-		panic("lteqF64: wrong argument type")
-	}
-
-	var num1 float64
-	var num2 float64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 <= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
-
-func gteqF64 (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "f64" || arg2.Typ.Name != "f64" {
-		panic("gteqF64: wrong argument type")
-	}
-
-	var num1 float64
-	var num2 float64
-	encoder.DeserializeRaw(*arg1.Value, &num1)
-	encoder.DeserializeRaw(*arg2.Value, &num2)
-	
-	if num1 >= num2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
-
-func eqStr (arg1 *CXArgument, arg2 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "str" || arg2.Typ.Name != "str" {
-		panic("eqStr: wrong argument type")
-	}
-
-	str1 := string(*arg1.Value)
-	str2 := string(*arg2.Value)
-	
-	if str1 == str2 {
-		val := encoder.Serialize(int32(1))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	} else {
-		val := encoder.Serialize(int32(0))
-		return &CXArgument{Value: &val, Typ: MakeType("bool")}
-	}
-}
 
 /*
   Cast functions
 */
 
-func castToStr (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]byte" {
-		panic("castToStr: wrong argument type")
-	}
+func castToStr (arg *CXArgument) (*CXArgument, error) {
 	strTyp := MakeType("str")
 	switch arg.Typ.Name {
 	case "[]byte":
 		newArg := MakeArgument(arg.Value, strTyp)
-		return newArg
+		return newArg, nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type 'str'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToStr: type '%s' can't be casted to type 'str'", arg.Typ.Name))
 	}
 }
 
-func byteAtoStr (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]byte" {
-		panic("byteAtoStr: wrong argument type")
+func castToByteA (arg *CXArgument) (*CXArgument, error) {
+	byteATyp := MakeType("[]byte")
+	switch arg.Typ.Name {
+	case "str":
+		return MakeArgument(arg.Value, byteATyp), nil
+	case "[]byte":
+		return arg, nil
+	case "[]i32":
+		var val []int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+
+		output := make([]byte, len(val))
+		for i, n := range val {
+			output[i] = byte(n)
+		}
+		
+		newVal := output
+		return MakeArgument(&newVal, byteATyp), nil
+	case "[]i64":
+		var val []int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+
+		output := make([]byte, len(val))
+		for i, n := range val {
+			output[i] = byte(n)
+		}
+		
+		newVal := output
+		return MakeArgument(&newVal, byteATyp), nil
+	case "[]f32":
+		var val []float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+
+		output := make([]byte, len(val))
+		for i, n := range val {
+			output[i] = byte(n)
+		}
+		
+		newVal := output
+		return MakeArgument(&newVal, byteATyp), nil
+	case "[]f64":
+		var val []float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+
+		output := make([]byte, len(val))
+		for i, n := range val {
+			output[i] = byte(n)
+		}
+		
+		newVal := output
+		return MakeArgument(&newVal, byteATyp), nil
+	default:
+		return nil, errors.New(fmt.Sprintf("castToByteA: type '%s' can't be casted to type '[]byte'", arg.Typ.Name))
 	}
-	
-	strTyp := MakeType("str")
-	newArg := MakeArgument(arg.Value, strTyp)
-		return newArg
 }
 
-func castToI32 (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "i32" && arg.Typ.Name != "i64" && arg.Typ.Name != "f32" && arg.Typ.Name != "f64" {
-		panic("castToI32: wrong argument type")
+func castToByte (arg *CXArgument) (*CXArgument, error) {
+	byteTyp := MakeType("byte")
+	switch arg.Typ.Name {
+	case "byte":
+		return arg, nil
+	case "i32":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := []byte{byte(val)}
+		return MakeArgument(&newVal, byteTyp), nil
+	case "i64":
+		var val int64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := []byte{byte(val)}
+		return MakeArgument(&newVal, byteTyp), nil
+	case "f32":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := []byte{byte(val)}
+		return MakeArgument(&newVal, byteTyp), nil
+	case "f64":
+		var val float64
+		encoder.DeserializeRaw(*arg.Value, &val)
+		newVal := []byte{byte(val)}
+		return MakeArgument(&newVal, byteTyp), nil
+	default:
+		return nil, errors.New(fmt.Sprintf("castToByte: type '%s' can't be casted to type 'byte'", arg.Typ.Name))
 	}
+}
+
+func castToI32 (arg *CXArgument) (*CXArgument, error) {
 	i32Typ := MakeType("i32")
 	switch arg.Typ.Name {
+	case "byte":
+		val := (*arg.Value)[0]
+		newVal := encoder.Serialize(int32(val))
+		return MakeArgument(&newVal, i32Typ), nil
 	case "i32":
-		return arg
+		return arg, nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
-		newArg := MakeArgument(&newVal, i32Typ)
-		return newArg
+		return MakeArgument(&newVal, i32Typ), nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
-		newArg := MakeArgument(&newVal, i32Typ)
-		return newArg
+		return MakeArgument(&newVal, i32Typ), nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
-		newArg := MakeArgument(&newVal, i32Typ)
-		return newArg
+		return MakeArgument(&newVal, i32Typ), nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type 'i32'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToI32: type '%s' can't be casted to type 'i32'", arg.Typ.Name))
 	}
 }
 
-func castToI64 (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "i32" && arg.Typ.Name != "i64" && arg.Typ.Name != "f32" && arg.Typ.Name != "f64" {
-		panic("castToI64: wrong argument type")
-	}
+func castToI64 (arg *CXArgument) (*CXArgument, error) {
 	i64Typ := MakeType("i64")
 	switch arg.Typ.Name {
+	case "byte":
+		val := (*arg.Value)[0]
+		newVal := encoder.Serialize(int64(val))
+		return MakeArgument(&newVal, i64Typ), nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
-		newArg := MakeArgument(&newVal, i64Typ)
-		return newArg
+		return MakeArgument(&newVal, i64Typ), nil
 	case "i64":
-		return arg
+		return arg, nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
-		newArg := MakeArgument(&newVal, i64Typ)
-		return newArg
+		return MakeArgument(&newVal, i64Typ), nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
-		newArg := MakeArgument(&newVal, i64Typ)
-		return newArg
+		return MakeArgument(&newVal, i64Typ), nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type 'i64'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToI64: type '%s' can't be casted to type 'i64'", arg.Typ.Name))
 	}
 }
 
-func castToF32 (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "i32" && arg.Typ.Name != "i64" && arg.Typ.Name != "f32" && arg.Typ.Name != "f64" {
-		panic("castToF32: wrong argument type")
-	}
+func castToF32 (arg *CXArgument) (*CXArgument, error) {
 	f32Typ := MakeType("f32")
 	switch arg.Typ.Name {
+	case "byte":
+		val := (*arg.Value)[0]
+		newVal := encoder.Serialize(float32(val))
+		return MakeArgument(&newVal, f32Typ), nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
-		newArg := MakeArgument(&newVal, f32Typ)
-		return newArg
+		return MakeArgument(&newVal, f32Typ), nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
-		newArg := MakeArgument(&newVal, f32Typ)
-		return newArg
+		return MakeArgument(&newVal, f32Typ), nil
 	case "f32":
-		return arg
+		return arg, nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
-		newArg := MakeArgument(&newVal, f32Typ)
-		return newArg
+		return MakeArgument(&newVal, f32Typ), nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type 'f32'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToF32: type '%s' can't be casted to type 'f32'", arg.Typ.Name))
 	}
 }
 
-func castToF64 (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "i32" && arg.Typ.Name != "i64" && arg.Typ.Name != "f32" && arg.Typ.Name != "f64" {
-		panic("castToF64: wrong argument type")
-	}
-	
+func castToF64 (arg *CXArgument) (*CXArgument, error) {
 	f64Typ := MakeType("f64")
 	switch arg.Typ.Name {
+	case "byte":
+		val := (*arg.Value)[0]
+		newVal := encoder.Serialize(float64(val))
+		return MakeArgument(&newVal, f64Typ), nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
-		newArg := MakeArgument(&newVal, f64Typ)
-		return newArg
+		return MakeArgument(&newVal, f64Typ), nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
-		newArg := MakeArgument(&newVal, f64Typ)
-		return newArg
+		return MakeArgument(&newVal, f64Typ), nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
-		newArg := MakeArgument(&newVal, f64Typ)
-		return newArg
+		return MakeArgument(&newVal, f64Typ), nil
 	case "f64":
-		return arg
+		return arg, nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type 'f64'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToF64: type '%s' can't be casted to type 'f64'", arg.Typ.Name))
 	}
 }
 
-func castToI32A (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]i32" && arg.Typ.Name != "[]i64" && arg.Typ.Name != "[]f32" && arg.Typ.Name != "[]f64" {
-		panic("castToI32A: wrong argument type")
-	}
+func castToI32A (arg *CXArgument) (*CXArgument, error) {
 	i32ATyp := MakeType("[]i32")
 	switch arg.Typ.Name {
+	case "[]byte":
+		val := *arg.Value
+
+		output := make([]int32, len(val))
+		for i, n := range val {
+			output[i] = int32(n)
+		}
+		
+		newVal := encoder.Serialize(output)
+		newArg := MakeArgument(&newVal, i32ATyp)
+		return newArg, nil
 	case "[]i32":
-		return arg
+		return arg, nil
 	case "[]i64":
 		var val []int64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1463,7 +1698,7 @@ func castToI32A (arg *CXArgument) *CXArgument {
 		
 		newVal := encoder.Serialize(output)
 		newArg := MakeArgument(&newVal, i32ATyp)
-		return newArg
+		return newArg, nil
 	case "[]f32":
 		var val []float32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1475,7 +1710,7 @@ func castToI32A (arg *CXArgument) *CXArgument {
 		
 		newVal := encoder.Serialize(output)
 		newArg := MakeArgument(&newVal, i32ATyp)
-		return newArg
+		return newArg, nil
 	case "[]f64":
 		var val []float64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1487,18 +1722,25 @@ func castToI32A (arg *CXArgument) *CXArgument {
 		
 		newVal := encoder.Serialize(output)
 		newArg := MakeArgument(&newVal, i32ATyp)
-		return newArg
+		return newArg, nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type '[]i32'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToI32A: type '%s' can't be casted to type '[]i32'", arg.Typ.Name))
 	}
 }
 
-func castToI64A (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]i32" && arg.Typ.Name != "[]i64" && arg.Typ.Name != "[]f32" && arg.Typ.Name != "[]f64" {
-		panic("castToI64A: wrong argument type")
-	}
+func castToI64A (arg *CXArgument) (*CXArgument, error) {
 	i64ATyp := MakeType("[]i64")
 	switch arg.Typ.Name {
+	case "[]byte":
+		val := *arg.Value
+
+		output := make([]int64, len(val))
+		for i, n := range val {
+			output[i] = int64(n)
+		}
+		
+		newVal := encoder.Serialize(output)
+		return MakeArgument(&newVal, i64ATyp), nil
 	case "[]i32":
 		var val []int32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1509,10 +1751,9 @@ func castToI64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, i64ATyp)
-		return newArg
+		return MakeArgument(&newVal, i64ATyp), nil
 	case "[]i64":
-		return arg
+		return arg, nil
 	case "[]f32":
 		var val []float32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1523,8 +1764,7 @@ func castToI64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, i64ATyp)
-		return newArg
+		return MakeArgument(&newVal, i64ATyp), nil
 	case "[]f64":
 		var val []float64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1535,19 +1775,25 @@ func castToI64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, i64ATyp)
-		return newArg
+		return MakeArgument(&newVal, i64ATyp), nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type '[]i64'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToI64A: type '%s' can't be casted to type '[]i64'", arg.Typ.Name))
 	}
 }
 
-func castToF32A (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]i32" && arg.Typ.Name != "[]i64" && arg.Typ.Name != "[]f32" && arg.Typ.Name != "[]f64" {
-		panic("castToF32A: wrong argument type")
-	}
+func castToF32A (arg *CXArgument) (*CXArgument, error) {
 	f32ATyp := MakeType("[]f32")
 	switch arg.Typ.Name {
+	case "[]byte":
+		val := *arg.Value
+
+		output := make([]float32, len(val))
+		for i, n := range val {
+			output[i] = float32(n)
+		}
+		
+		newVal := encoder.Serialize(output)
+		return MakeArgument(&newVal, f32ATyp), nil
 	case "[]i32":
 		var val []int32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1558,8 +1804,7 @@ func castToF32A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f32ATyp)
-		return newArg
+		return MakeArgument(&newVal, f32ATyp), nil
 	case "[]i64":
 		var val []int64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1570,10 +1815,9 @@ func castToF32A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f32ATyp)
-		return newArg
+		return MakeArgument(&newVal, f32ATyp), nil
 	case "[]f32":
-		return arg
+		return arg, nil
 	case "[]f64":
 		var val []float64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1584,19 +1828,25 @@ func castToF32A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f32ATyp)
-		return newArg
+		return MakeArgument(&newVal, f32ATyp), nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type '[]f32'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToF32A: type '%s' can't be casted to type '[]f32'", arg.Typ.Name))
 	}
 }
 
-func castToF64A (arg *CXArgument) *CXArgument {
-	if arg.Typ.Name != "[]i32" && arg.Typ.Name != "[]i64" && arg.Typ.Name != "[]f32" && arg.Typ.Name != "[]f64" {
-		panic("castToF64A: wrong argument type")
-	}
+func castToF64A (arg *CXArgument) (*CXArgument, error) {
 	f64ATyp := MakeType("[]f64")
 	switch arg.Typ.Name {
+	case "[]byte":
+		val := *arg.Value
+
+		output := make([]float64, len(val))
+		for i, n := range val {
+			output[i] = float64(n)
+		}
+		
+		newVal := encoder.Serialize(output)
+		return MakeArgument(&newVal, f64ATyp), nil
 	case "[]i32":
 		var val []int32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1607,8 +1857,7 @@ func castToF64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f64ATyp)
-		return newArg
+		return MakeArgument(&newVal, f64ATyp), nil
 	case "[]i64":
 		var val []int64
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1619,8 +1868,7 @@ func castToF64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f64ATyp)
-		return newArg
+		return MakeArgument(&newVal, f64ATyp), nil
 	case "[]f32":
 		var val []float32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -1631,52 +1879,50 @@ func castToF64A (arg *CXArgument) *CXArgument {
 		}
 		
 		newVal := encoder.Serialize(output)
-		newArg := MakeArgument(&newVal, f64ATyp)
-		return newArg
+		return MakeArgument(&newVal, f64ATyp), nil
 	case "[]f64":
-		return arg
+		return arg, nil
 	default:
-		panic(fmt.Sprintf("Type '%s' can't be casted to type '[]f64'", arg.Typ.Name))
+		return nil, errors.New(fmt.Sprintf("castToF64A: type '%s' can't be casted to type '[]f64'", arg.Typ.Name))
 	}
 }
 
 // goTo increments/decrements the call.Line to the desired expression line.
 // Used for if/else and loop statements.
-func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) *CXArgument {
-	if predicate.Typ.Name != "bool" || thenLine.Typ.Name != "i32" || elseLine.Typ.Name != "i32" {
-		panic("goTo: wrong argument type")
-	}
-	var isFalse bool
+func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) (*CXArgument, error) {
+	if err := checkThreeTypes("goTo", "bool", "i32", "i32", predicate, thenLine, elseLine); err == nil {
+		var isFalse bool
 
-	var pred int32
-	encoder.DeserializeRaw(*predicate.Value, &pred)
+		var pred int32
+		encoder.DeserializeRaw(*predicate.Value, &pred)
 
-	if pred == 0 {
-		isFalse = true
+		if pred == 0 {
+			isFalse = true
+		} else {
+			isFalse = false
+		}
+
+		var thenLineNo int32
+		var elseLineNo int32
+
+		encoder.DeserializeRaw(*thenLine.Value, &thenLineNo)
+		encoder.DeserializeRaw(*elseLine.Value, &elseLineNo)
+
+		if isFalse {
+			call.Line = call.Line + int(elseLineNo) - 1
+		} else {
+			call.Line = call.Line + int(thenLineNo) - 1
+		}
+		
+		if isFalse {
+			val := encoder.Serialize(int32(0))
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			val := encoder.Serialize(int32(1))
+			return MakeArgument(&val, MakeType("bool")), nil
+		}
 	} else {
-		isFalse = false
-	}
-
-	var thenLineNo int32
-	var elseLineNo int32
-
-	encoder.DeserializeRaw(*thenLine.Value, &thenLineNo)
-	encoder.DeserializeRaw(*elseLine.Value, &elseLineNo)
-
-	if isFalse {
-		//call.Line = int(elseLineNo) - 1
-		call.Line = call.Line + int(elseLineNo) - 1
-	} else {
-		//call.Line = int(thenLineNo) - 1
-		call.Line = call.Line + int(thenLineNo) - 1
-	}
-	
-	if isFalse {
-		val := encoder.Serialize(int32(0))
-		return MakeArgument(&val, MakeType("bool"))
-	} else {
-		val := encoder.Serialize(int32(1))
-		return MakeArgument(&val, MakeType("bool"))
+		return nil, err
 	}
 }
 
@@ -1684,17 +1930,17 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
   Time functions
 */
 
-func sleep (ms *CXArgument) *CXArgument {
-	if ms.Typ.Name != "i32" {
-		panic("sleep: wrong argument type")
+func sleep (ms *CXArgument) (*CXArgument, error) {
+	if err := checkType("sleep", "i32", ms); err == nil {
+		var duration int32
+		encoder.DeserializeRaw(*ms.Value, &duration)
+
+		time.Sleep(time.Duration(duration) * time.Millisecond)
+
+		return ms, nil
+	} else {
+		return nil, err
 	}
-	
-	var duration int32
-	encoder.DeserializeRaw(*ms.Value, &duration)
-
-	time.Sleep(time.Duration(duration) * time.Millisecond)
-
-	return ms
 }
 
 
@@ -1702,191 +1948,246 @@ func sleep (ms *CXArgument) *CXArgument {
   Prolog functions
 */
 
-func setClauses (clss *CXArgument, mod *CXModule) *CXArgument {
-	if clss.Typ.Name != "str" {
-		panic("setClauses: wrong argument type")
+func setClauses (clss *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkType("setClauses", "str", clss); err == nil {
+		clauses := string(*clss.Value)
+		mod.AddClauses(clauses)
+
+		return clss, nil
+	} else {
+		return nil, err
 	}
-
-	clauses := string(*clss.Value)
-	mod.AddClauses(clauses)
-
-	return clss
 }
 
-func addObject (obj *CXArgument, mod *CXModule) *CXArgument {
-	if obj.Typ.Name != "str" {
-		panic("addObject: wrong argument type")
-	}
-	
-	object := string(*obj.Value)
-	mod.AddObject(object)
+func addObject (obj *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkType("addObject", "str", obj); err == nil {
+		object := string(*obj.Value)
+		mod.AddObject(object)
 
-	return obj
+		return obj, nil
+	} else {
+		return nil, err
+	}
 }
 
-func setQuery (qry *CXArgument, mod *CXModule) *CXArgument {
-	if qry.Typ.Name != "str" {
-		panic("setQuery: wrong argument type")
-	}
-	
-	query := string(*qry.Value)
-	mod.AddQuery(query)
+func setQuery (qry *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkType("setQuery", "str", qry); err == nil {
+		query := string(*qry.Value)
+		mod.AddQuery(query)
 
-	return qry
+		return qry, nil
+	} else {
+		return nil, err
+	}
 }
 
-func remObject (obj *CXArgument, mod *CXModule) *CXArgument {
-	if obj.Typ.Name != "str" {
-		panic("remObject: wrong argument type")
-	}
-	
-	object := string(*obj.Value)
-	mod.RemoveObject(object)
+func remObject (obj *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkType("remObject", "str", obj); err == nil {
+		object := string(*obj.Value)
+		mod.RemoveObject(object)
 
-	return obj
+		return obj, nil
+	} else {
+		return nil, err
+	}
 }
 
-func remObjects (mod *CXModule) *CXArgument {
+func remObjects (mod *CXModule) (*CXArgument, error) {
 	mod.RemoveObjects()
 
 	success := encoder.Serialize(int32(1))
-	return MakeArgument(&success, MakeType("bool"))
+	return MakeArgument(&success, MakeType("bool")), nil
 }
 
-func remExpr (fnName *CXArgument, ln *CXArgument, mod *CXModule) *CXArgument {
-	if fnName.Typ.Name != "str" {
-		panic("remExpr: wrong argument type")
-	}
-
-	var line int32
-	encoder.DeserializeRaw(*ln.Value, &line)
-	
-	name := string(*fnName.Value)
-	if fn, err := mod.Context.GetFunction(name, mod.Name); err == nil {
-		fn.RemoveExpression(int(line))
-		val := encoder.Serialize(int32(1))
-		return MakeArgument(&val, MakeType("bool"))
-	} else {
-		val := encoder.Serialize(int32(0))
-		return MakeArgument(&val, MakeType("bool"))
-	}
-}
-
-func remArg (fnName *CXArgument, mod *CXModule) *CXArgument {
-	if fnName.Typ.Name != "str" {
-		panic("remArg: wrong argument type")
-	}
-	
-	name := string(*fnName.Value)
-	if fn, err := mod.Context.GetFunction(name, mod.Name); err == nil {
-		if expr, err := fn.GetCurrentExpression(); err == nil {
-			expr.RemoveArgument()
+func remExpr (fnName *CXArgument, ln *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkTwoTypes("remExpr", "str", "i32", fnName, ln); err == nil {
+		var line int32
+		encoder.DeserializeRaw(*ln.Value, &line)
+		
+		name := string(*fnName.Value)
+		if fn, err := mod.Context.GetFunction(name, mod.Name); err == nil {
+			fn.RemoveExpression(int(line))
+			val := encoder.Serialize(int32(1))
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return MakeArgument(&val, MakeType("bool")), nil
 		}
-		
-		val := encoder.Serialize(int32(1))
-		return MakeArgument(&val, MakeType("bool"))
 	} else {
-		val := encoder.Serialize(int32(0))
-		return MakeArgument(&val, MakeType("bool"))
+		return nil, err
 	}
 }
 
-func addExpr (fnName *CXArgument, caller *CXFunction) *CXArgument {
-	if fnName.Typ.Name != "str" {
-		panic("addExpr: wrong argument type")
-	}
-
-	mod := caller.Module
-	
-	opName := string(*fnName.Value)
-	if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
-		expr := MakeExpression(fn)
-		caller.AddExpression(expr)
-		
-		val := encoder.Serialize(int32(1))
-		return MakeArgument(&val, MakeType("bool"))
+func remArg (fnName *CXArgument, mod *CXModule) (*CXArgument, error) {
+	if err := checkType("remArg", "str", fnName); err == nil {
+		name := string(*fnName.Value)
+		if fn, err := mod.Context.GetFunction(name, mod.Name); err == nil {
+			if expr, err := fn.GetCurrentExpression(); err == nil {
+				expr.RemoveArgument()
+			}
+			
+			val := encoder.Serialize(int32(1))
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return MakeArgument(&val, MakeType("bool")), nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return MakeArgument(&val, MakeType("bool"))
+		return nil, err
 	}
 }
 
-func exprAff (fltr *CXArgument, op *CXFunction) *CXArgument {
-	filter := string(*fltr.Value)
-	
-	if expr, err := op.GetExpression(len(op.Expressions)-1); err == nil {
-		affs := FilterAffordances(expr.GetAffordances(), filter)
-		affs[0].ApplyAffordance()
-
+func addExpr (fnName *CXArgument, caller *CXFunction) (*CXArgument, error) {
+	if err := checkType("addExpr", "str", fnName); err == nil {
+		mod := caller.Module
 		
-		
-		val := encoder.Serialize(int32(1))
-		return MakeArgument(&val, MakeType("bool"))
+		opName := string(*fnName.Value)
+		if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
+			expr := MakeExpression(fn)
+			caller.AddExpression(expr)
+			
+			val := encoder.Serialize(int32(1))
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return MakeArgument(&val, MakeType("bool")), nil
+		}
 	} else {
-		val := encoder.Serialize(int32(0))
-		return MakeArgument(&val, MakeType("bool"))
+		return nil, err
 	}
 }
 
-func initDef (arg1 *CXArgument) *CXArgument {
-	if arg1.Typ.Name != "str" {
-		panic("initDef: wrong argument type")
+func exprAff (fltr *CXArgument, op *CXFunction) (*CXArgument, error) {
+	if err := checkType("exprAff", "str", fltr); err == nil {
+		filter := string(*fltr.Value)
+		
+		if expr, err := op.GetExpression(len(op.Expressions)-1); err == nil {
+			fmt.Println(filter)
+			fmt.Println(expr.Operator.Name)
+			for _, aff := range expr.GetAffordances() {
+				fmt.Println(aff.Description)
+			}
+			
+			affs := FilterAffordances(expr.GetAffordances(), filter)
+			affs[0].ApplyAffordance()
+
+			
+			
+			val := encoder.Serialize(int32(1))
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			val := encoder.Serialize(int32(0))
+			return MakeArgument(&val, MakeType("bool")), nil
+		}
+	} else {
+		return nil, err
 	}
-
-	typName := string(*arg1.Value)
-
-	var zeroVal []byte
-	switch  typName {
-	case "bool": zeroVal = encoder.Serialize(int32(0))
-	case "byte": zeroVal = []byte{byte(0)}
-	case "i32": zeroVal = encoder.Serialize(int32(0))
-	case "i64": zeroVal = encoder.Serialize(int64(0))
-	case "f32": zeroVal = encoder.Serialize(float32(0))
-	case "f64": zeroVal = encoder.Serialize(float64(0))
-	case "[]bool": zeroVal = encoder.Serialize([]int32{0})
-	case "[]byte": zeroVal = []byte{byte(0)}
-	case "[]i32": zeroVal = encoder.Serialize([]int32{0})
-	case "[]i64": zeroVal = encoder.Serialize([]int64{0})
-	case "[]f32": zeroVal = encoder.Serialize([]float32{0})
-	case "[]f64": zeroVal = encoder.Serialize([]float64{0})
-	}
-
-	return MakeArgument(&zeroVal, MakeType(typName))
 }
 
-// func randSeed (seed *CXArgument) *CXArgument {
-// 	if seed.Typ.Name != "i64" {
-// 		panic("randSeed: wrong argument type")
-// 	}
+func initDef (arg1 *CXArgument) (*CXArgument, error) {
+	if err := checkType("initDef", "str", arg1); err == nil {
+		typName := string(*arg1.Value)
 
-	
-// }
+		var zeroVal []byte
+		switch  typName {
+		case "bool": zeroVal = encoder.Serialize(int32(0))
+		case "byte": zeroVal = []byte{byte(0)}
+		case "i32": zeroVal = encoder.Serialize(int32(0))
+		case "i64": zeroVal = encoder.Serialize(int64(0))
+		case "f32": zeroVal = encoder.Serialize(float32(0))
+		case "f64": zeroVal = encoder.Serialize(float64(0))
+		case "[]bool": zeroVal = encoder.Serialize([]int32{0})
+		case "[]byte": zeroVal = []byte{byte(0)}
+		case "[]i32": zeroVal = encoder.Serialize([]int32{0})
+		case "[]i64": zeroVal = encoder.Serialize([]int64{0})
+		case "[]f32": zeroVal = encoder.Serialize([]float32{0})
+		case "[]f64": zeroVal = encoder.Serialize([]float64{0})
+		}
 
-func randI32 (min *CXArgument, max *CXArgument) *CXArgument {
-	if min.Typ.Name != "i32" || max.Typ.Name != "i32" {
-		panic("randI32: wrong argument type")
+		return MakeArgument(&zeroVal, MakeType(typName)), nil
+	} else {
+		return nil, err
 	}
-
-	//const n int = 312
-	//const m int = 156
-
-
-
-
-
-	
-	var minimum int32
-	encoder.DeserializeRaw(*min.Value, &minimum)
-
-	var maximum int32
-	encoder.DeserializeRaw(*max.Value, &maximum)
-
-	if minimum > maximum {
-		panic(fmt.Sprintf("random: min must be less than max (%d !< %d)", minimum, maximum))
-	}
-
-	rand.Seed(time.Now().UTC().UnixNano())
-	output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
-	return MakeArgument(&output, MakeType("i32"))
 }
 
+func randI32 (min *CXArgument, max *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("randI32", "i32", "i32", min, max); err == nil {
+		var minimum int32
+		encoder.DeserializeRaw(*min.Value, &minimum)
+
+		var maximum int32
+		encoder.DeserializeRaw(*max.Value, &maximum)
+
+		if minimum > maximum {
+			return nil, errors.New(fmt.Sprintf("randI32: min must be less than max (%d !< %d)", minimum, maximum))
+		}
+
+		rand.Seed(time.Now().UTC().UnixNano())
+		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
+		return MakeArgument(&output, MakeType("i32")), nil
+	} else {
+		return nil, err
+	}
+}
+
+func randI64 (min *CXArgument, max *CXArgument) (*CXArgument, error) {
+	if err := checkTwoTypes("randI64", "i64", "i64", min, max); err == nil {
+		var minimum int64
+		encoder.DeserializeRaw(*min.Value, &minimum)
+
+		var maximum int64
+		encoder.DeserializeRaw(*max.Value, &maximum)
+
+		if minimum > maximum {
+			return nil, errors.New(fmt.Sprintf("randI64: min must be less than max (%d !< %d)", minimum, maximum))
+		}
+
+		rand.Seed(time.Now().UTC().UnixNano())
+		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
+		return MakeArgument(&output, MakeType("i64")), nil
+	} else {
+		return nil, err
+	}
+}
+
+/*
+  Make Array
+*/
+
+func makeArray (typ string, size *CXArgument) (*CXArgument, error) {
+	if err := checkType("makeArray", "i32", size); err == nil {
+		var len int32
+		encoder.DeserializeRaw(*size.Value, &len)
+
+		switch typ {
+		case "[]bool":
+			arr := make([]bool, len)
+			val := encoder.Serialize(arr)
+			return MakeArgument(&val, MakeType(typ)), nil
+		case "[]byte":
+			arr := make([]byte, len)
+			return MakeArgument(&arr, MakeType(typ)), nil
+		case "[]i32":
+			arr := make([]int32, len)
+			val := encoder.Serialize(arr)
+			return MakeArgument(&val, MakeType(typ)), nil
+		case "[]i64":
+			arr := make([]int64, len)
+			val := encoder.Serialize(arr)
+			return MakeArgument(&val, MakeType(typ)), nil
+		case "[]f32":
+			arr := make([]float32, len)
+			val := encoder.Serialize(arr)
+			return MakeArgument(&val, MakeType(typ)), nil
+		case "[]f64":
+			arr := make([]float64, len)
+			val := encoder.Serialize(arr)
+			return MakeArgument(&val, MakeType(typ)), nil
+		case "default":
+			return nil, errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ.Name))
+		}
+		return nil, nil
+	} else {
+		return nil, err
+	}
+}

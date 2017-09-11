@@ -30,7 +30,7 @@
 /return/   { return RETURN   }
 /if/       { return IF       }
 /else/     { return ELSE     }
-/while/    { return WHILE    }
+/for/      { return FOR      }
 /,/        { return COMMA    }
 /func/     { return FUNC     }
 /clauses/  { return CLAUSES  }
@@ -94,20 +94,21 @@
 	lval.tok = yylex.Text()
 	return IDENT
 }
-/\\Z/ {
-	// do nothing
-}
+/./ { return int(yylex.Text()[0]) }
 //
 package cxgo
 import (
 	"os"
+	"os/exec"
 	"fmt"
 	"bytes"
+	"time"
 	"regexp"
 	"io/ioutil"
 	"strconv"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	. "github.com/skycoin/cx/src/base"
 )
 
 func countNewLines (s []byte) int {
@@ -132,23 +133,21 @@ func readline (fi *bufio.Reader) (string, bool) {
 	return s, true
 }
 
-func repl (args []string) {
+func repl () {
 	fmt.Println("CX REPL")
 	fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
 
-	for i, flag := range args {
-		switch flag {
-		case "--load":
-			if file, err := os.Open(args[i+1]); err == nil {
-				yyParse(NewLexer(file))
-			}
-		}
-	}
+	// for i, flag := range args {
+	// 	switch flag {
+	// 	case "--load":
+	// 		if file, err := os.Open(args[i+1]); err == nil {
+	// 			yyParse(NewLexer(file))
+	// 		}
+	// 	}
+	// }
 
 	fi := bufio.NewReader(os.NewFile(0, "stdin"))
 
-	replMode = true
-	
 	for {
 		var inp string
 		var ok bool
@@ -255,38 +254,67 @@ func eqF64 (n1 f64, n2 f64) (out bool) {}
 func lteqF64 (n1 f64, n2 f64) (out bool) {}
 func gteqF64 (n1 f64, n2 f64) (out bool) {}
 
-func eqStr (str1 str, str2 str) (out bool) {}
+func ltStr (n1 str, n2 str) (out bool) {}
+func gtStr (n1 str, n2 str) (out bool) {}
+func eqStr (n1 str, n2 str) (out bool) {}
+func lteqStr (n1 str, n2 str) (out bool) {}
+func gteqStr (n1 str, n2 str) (out bool) {}
+
+func ltByte (n1 byte, n2 byte) (out bool) {}
+func gtByte (n1 byte, n2 byte) (out bool) {}
+func eqByte (n1 byte, n2 byte) (out bool) {}
+func lteqByte (n1 byte, n2 byte) (out bool) {}
+func gteqByte (n1 byte, n2 byte) (out bool) {}
 
 func byteAToStr (in []byte) (out str) {}
+func strToByteA (in str) (out []byte) {}
 
+func i32ToByte (in i32) (out byte) {}
+func i64ToByte (in i64) (out byte) {}
+func f32ToByte (in f32) (out byte) {}
+func f64ToByte (in f64) (out byte) {}
+
+func byteToI32 (in byte) (out i32) {}
 func i64ToI32 (in i64) (out i32) {}
 func f32ToI32 (in f32) (out i32) {}
 func f64ToI32 (in f64) (out i32) {}
 
+func byteToI64 (in byte) (out i64) {}
 func i32ToI64 (in i32) (out i64) {}
 func f32ToI64 (in f32) (out i64) {}
 func f64ToI64 (in f64) (out i64) {}
 
+func byteToF32 (in byte) (out f32) {}
 func i32ToF32 (in i32) (out f32) {}
 func i64ToF32 (in i64) (out f32) {}
 func f64ToF32 (in f64) (out f32) {}
 
+func byteToF64 (in byte) (out f64) {}
 func i32ToF64 (in i32) (out f64) {}
 func i64ToF64 (in i64) (out f64) {}
 func f32ToF64 (in f32) (out f64) {}
 
+func i32AToByteA (in []i32) (out []byte) {}
+func i64AToByteA (in []i64) (out []byte) {}
+func f32AToByteA (in []f32) (out []byte) {}
+func f64AToByteA (in []f64) (out []byte) {}
+
+func byteAToI32A (in []byte) (out []i32) {}
 func i64AToI32A (in []i64) (out []i32) {}
 func f32AToI32A (in []f32) (out []i32) {}
 func f64AToI32A (in []f64) (out []i32) {}
 
+func byteAToI64A (in []byte) (out []i64) {}
 func i32AToI64A (in []i32) (out []i64) {}
 func f32AToI64A (in []f32) (out []i64) {}
 func f64AToI64A (in []f64) (out []i64) {}
 
+func byteAToF32A (in []byte) (out []f32) {}
 func i32AToF32A (in []i32) (out []f32) {}
 func i64AToF32A (in []i64) (out []f32) {}
 func f64AToF32A (in []f64) (out []f32) {}
 
+func byteAToF64A (in []byte) (out []f64) {}
 func i32AToF64A (in []i32) (out []f64) {}
 func i64AToF64A (in []i64) (out []f64) {}
 func f32AToF64A (in []f32) (out []f64) {}
@@ -306,6 +334,13 @@ func printI32A (n []i32) (out []i32) {}
 func printI64A (n []i64) (out []i64) {}
 func printF32A (n []f32) (out []f32) {}
 func printF64A (n []f64) (out []f64) {}
+
+func makeBoolA (size i32) (arr []bool) {}
+func makeByteA (size i32) (arr []byte) {}
+func makeI32A (size i32) (arr []i32) {}
+func makeI64A (size i32) (arr []i64) {}
+func makeF32A (size i32) (arr []f32) {}
+func makeF64A (size i32) (arr []f64) {}
 
 func readBoolA (arr []bool, idx i32) (lit bool) {}
 func writeBoolA (arr []bool, idx i32, val bool) (arr []bool) {}
@@ -330,6 +365,7 @@ func lenF64A (arr []f64) (len i32) {}
 func sleep (ms i32) (ms i32) {}
 
 func randI32 (min i32, max i32) (r i32) {}
+func randI64 (min i64, max i64) (r i64) {}
 
 func setClauses (clss str) (clss str) {}
 func setQuery (qry str) (qry str) {}
@@ -347,12 +383,9 @@ func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, ite
 func initDef (typ str) (typ str) {}
 
 func halt (msg str) (out bool) {}
-
-//package main
-//func main () (out i32) {}
 `
 
-func Eval (code string) string {
+func unsafeEval (code string) string {
 	/*
            Initializing native functions
         */
@@ -371,64 +404,69 @@ func Eval (code string) string {
 	os.Stdout = w
 
 	if err := cxt.Run(false, -1); err != nil {
-		fmt.Println(err)
-		repl(nil)
+		//fmt.Println(err)
+		cxt = MakeContext()
+		return fmt.Sprintf("%s", err)
+		//repl(nil)
 	}
 
-	outVal := *cxt.Outputs[0].Value
+	if len(cxt.Outputs) > 0 {
+		outVal := *cxt.Outputs[0].Value
 	
-	switch cxt.Outputs[0].Typ.Name {
-	case "bool":
-		var out bool
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "str":
-		fmt.Println(string(outVal))
-	case "byte":
-		fmt.Println(outVal)
-	case "i32":
-		var out int32
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "i64":
-		var out int64
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "f32":
-		var out float32
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "f64":
-		var out float64
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]bool":
-		var out []bool
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]byte":
-		var out []byte
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]i32":
-		var out []int32
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]i64":
-		var out []int64
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]f32":
-		var out []float32
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	case "[]f64":
-		var out []float64
-		encoder.DeserializeRaw(outVal, &out)
-		fmt.Println(out)
-	default:
-		
+		switch cxt.Outputs[0].Typ.Name {
+		case "bool":
+			var out bool
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "str":
+			fmt.Println(string(outVal))
+		case "byte":
+			fmt.Println(outVal)
+		case "i32":
+			var out int32
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "i64":
+			var out int64
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "f32":
+			var out float32
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "f64":
+			var out float64
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]bool":
+			var out []bool
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]byte":
+			var out []byte
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]i32":
+			var out []int32
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]i64":
+			var out []int64
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]f32":
+			var out []float32
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		case "[]f64":
+			var out []float64
+			encoder.DeserializeRaw(outVal, &out)
+			fmt.Println(out)
+		default:
+			
+		}
 	}
+	
 
 	outC := make(chan string)
 	go func() {
@@ -443,48 +481,151 @@ func Eval (code string) string {
 	out := <-outC
 	re := regexp.MustCompile("\n")
 	result := string(re.ReplaceAll([]byte(out), []byte("<br />")))
-	
+
+	cxt = MakeContext()
 	return result
 }
 
-func main () {
-	/*
-           Initializing native functions
-        */
+func Eval (code string) string {
 
-	program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;func main () {`)
+	ch := make(chan string, 1)
+	//defer close(ch)
+
+	var result string
+	
+	go func() {
+		result = unsafeEval(code)
+		ch <- result
+	}()
+
+	timer := time.NewTimer(2 * time.Second)
+	defer timer.Stop()
+
+	select {
+	case <-ch:
+		return result
+	case <-timer.C:
+		cxt = MakeContext()
+		return "Timed out."
+	}
+
+}
+
+func parseFile (fileName string) {
+	sourceCode, err := os.Open(fileName)
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't read file."))
+	}
+	yyParse(NewLexer(sourceCode))
+}
+
+func help () {
+	fmt.Printf(`Usage: cx [options] [source-files]
+
+Options:
+-b, --base                       Generate a "out.cx.go" file with the transcompiled CX Base source code.
+-c, --compile                    Generate a "out" executable file of the program.
+-co, --compile-output FILENAME   Specifies the filename for the generated executable.
+-h, --help                       Prints this message.
+-r, --repl                       Loads source files into memory and starts a read-eval-print loop.
+
+Notes:
+Options --compile and --repl are mutually exclusive.
+`)
+}
+
+func main () {
+	args := os.Args[1:]
+	var sourceCode []*os.File
+
+	if len(args) == 0 {
+		replMode = true
+	}
+
+	flagMode := false
+	var compileOutput string = "o"
+	for i, arg := range args {		
+		if arg == "--repl" || arg == "-r" {
+			replMode = true
+			flagMode = true
+			continue
+		}
+		if arg == "--base" || arg == "-b" {
+			baseOutput = true
+			flagMode = true
+			continue
+		}
+		if arg == "--compile" || arg == "-c" {
+			compileMode = true
+			baseOutput = true
+			flagMode = true
+			continue
+		}
+		if arg == "--compile-output" || arg == "-co" {
+			compileOutput = args[i+1]
+			continue
+		}
+		if arg == "--help" || arg == "-h" {
+			helpMode = true
+			flagMode = true
+			continue
+		}
+		if !flagMode {
+			file, err := os.Open(arg)
+			if err != nil {
+				panic(fmt.Sprintf("Couldn't read file."))
+			}
+			sourceCode = append(sourceCode, file)	
+		}
+	}
+
+	if helpMode {
+		help()
+		return
+	}
+
+	if compileMode && replMode {
+		fmt.Println("Error: Options --compile and --repl are mutually exclusive.")
+		return
+	}
+
+	if baseOutput {
+		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;func main () {`)
+	}
 
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
-	lineNo = 0
-	
-	args := os.Args[1:]
-	if len(args) == 1 {
-		// only a file is being sent as argument
-		if file, err := os.Open(args[0]); err == nil {
-			yyParse(NewLexer(file))
 
-			//cxt.Compile()
-			if err := cxt.Run(false, -1); err != nil {
-				fmt.Println(err)
-				repl(nil)
-			}
-			//cxt.PrintProgram(false)
-
-			// var out float32
-			// outVal := *cxt.Outputs[0].Value
-			// encoder.DeserializeRaw(outVal, &out)
-			// fmt.Println(out)
-		} else {
-			panic(fmt.Sprintf("Couldn't read file '%s'", args[0]))
-		}
-	} else {
-		repl(args)
-		
-		//yyParse(NewLexer(os.Stdin))
+	// parsing all source code files
+	for _, source := range sourceCode {
+		yyParse(NewLexer(source))
 	}
+	
+	// if sourceCode != nil {
+	// 	yyParse(NewLexer(sourceCode))
+	// }
+	
+	lineNo = 0
 
-	program.WriteString(`cxt.Run(false, -1);}`)
-	ioutil.WriteFile("out.cx.go", []byte(program.String()), 0644)
+	if replMode {
+		repl()
+	} else if !compileMode {
+		if err := cxt.Run(false, -1); err != nil {
+			fmt.Println(err)
+			repl()
+		}
+	}
+	
+	if baseOutput {
+		program.WriteString(`cxt.Run(false, -1);}`)
+		ioutil.WriteFile(fmt.Sprintf("%s.go", compileOutput), []byte(program.String()), 0644)
+	}
+	if compileMode {
+		baseFilename := fmt.Sprintf("%s.go", compileOutput)
+		build := exec.Command("go", "build", baseFilename)
+		build.Run()
+		removeBase := exec.Command("rm", baseFilename)
+		removeBase.Run()
+	}
 }

@@ -313,6 +313,7 @@ func MakeDefaultValue (typName string) *[]byte {
 	case "f32": zeroVal = encoder.Serialize(float32(0))
 	case "f64": zeroVal = encoder.Serialize(float64(0))
 	case "[]byte": zeroVal = []byte{byte(0)}
+	case "[]bool": zeroVal = []byte{byte(0)}
 	case "[]i32": zeroVal = encoder.Serialize([]int32{0})
 	case "[]i64": zeroVal = encoder.Serialize([]int64{0})
 	case "[]f32": zeroVal = encoder.Serialize([]float32{0})

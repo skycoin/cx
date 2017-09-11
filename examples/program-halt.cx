@@ -1,0 +1,6 @@
+package main
+
+func main () (out i32) {
+	printI32(divI32(5, 3))
+	printI32(divI32(5, 0))
+}

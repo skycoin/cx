@@ -280,7 +280,7 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 	}
 }
 
-func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) float64 {
+func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) (float64, error) {
 	cxt.SelectFunction(solutionName)
 
 	//cxt.PrintProgram(false)
@@ -479,7 +479,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	}
 
 	best.transferSolution(solutionName, cxt)
-	return finalError
+	return finalError, nil
 }
 
 func RandomProgram (numberAffordances int) *CXProgram {

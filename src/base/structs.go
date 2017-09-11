@@ -22,7 +22,9 @@ var NATIVE_FUNCTIONS = []string{
 	
 	"idStr", "idBool", "idByte", "idI32", "idI64", "idF32", "idF64",
 	"idBoolA", "idByteA", "idI32A", "idI64A", "idF32A", "idF64A",
-	
+
+	"makeBoolA", "makeByteA", "makeI32A",
+	"makeI64A", "makeF32A", "makeF64A",
 
 	"readBoolA", "writeBoolA",
 	"readByteA", "writeByteA", "readI32A", "writeI32A",
@@ -30,11 +32,19 @@ var NATIVE_FUNCTIONS = []string{
 	"lenBoolA", "lenByteA", "lenI32A", "lenI64A",
 	"lenF32A", "lenF64A",
 	
-	"byteAToStr",
+	"byteAToStr", "strToByteA",
+	
+	"byteToI32", "byteToI64", "byteToF32", "byteToF64",
+	"byteAToI32A", "byteAToI64A", "byteAToF32A", "byteAToF64A",
+
+	"i32ToByte", "i64ToByte", "f32ToByte", "f64ToByte",
+	"i32AToByteA", "i64AToByteA", "f32AToByteA", "f64AToByteA",
+	
 	"i64ToI32", "f32ToI32", "f64ToI32",
 	"i32ToI64", "f32ToI64", "f64ToI64",
 	"i32ToF32", "i64ToF32", "f64ToF32",
 	"i32ToF64", "i64ToF64", "f32ToF64",
+	
 	"i64AToI32A", "f32AToI32A", "f64AToI32A",
 	"i32AToI64A", "f32AToI64A", "f64AToI64A",
 	"i32AToF32A", "i64AToF32A", "f64AToF32A",
@@ -46,11 +56,12 @@ var NATIVE_FUNCTIONS = []string{
 	"ltI64", "gtI64", "eqI64", "lteqI64", "gteqI64",
 	"ltF32", "gtF32", "eqF32", "lteqF32", "gteqF32",
 	"ltF64", "gtF64", "eqF64", "lteqF64", "gteqF64",
-	"eqStr",
+	"ltStr", "gtStr", "eqStr", "lteqStr", "gteqStr",
+	"ltByte", "gtByte", "eqByte", "lteqByte", "gteqByte",
 
 	"sleep", "halt",
 
-	"randI32",
+	"randI32", "randI64",
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
@@ -68,6 +79,7 @@ type CXProgram struct {
 	Modules []*CXModule
 	CurrentModule *CXModule
 	CallStack *CXCallStack
+	Terminated bool
 	// Inputs []*CXDefinition
 	Outputs []*CXDefinition
 	Steps []*CXCallStack

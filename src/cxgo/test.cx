@@ -1,7 +1,38 @@
 package Math
-var ten i32 = 10
-var five i32 = 5
-var foo i32 = 10
+
+var PI f32 = 3.14159
+
+func Square (num f32) (out f32) {
+	mulF32(num, num)
+}
+
+package Stat
+
+func Mean (vals []f32) (mean f32) {
+	if eqI32(lenF32A(vals), 0) {
+		printStr("error?")
+		halt("Stat.Mean: division by 0")
+	}
+	var sum f32 = 0.0
+	var counter i32 = 0
+	for ltI32(counter, lenF32A(vals)) {
+		sum = addF32(sum, readF32A(vals, counter))
+		counter = addI32(counter, 1)
+	}
+	mean = divF32(sum, i32ToF32(lenF32A(vals)))
+}
+
+func Variance (vals []f32) (variance f32) {
+	mean := Mean(vals)
+	var sum f32 = 0.0
+	var counter i32 = 0
+	for ltI32(counter, lenF32A(vals)) {
+		sum = Math.Square(subF32(readF32A(vals, counter), mean))
+		counter = addI32(counter, 1)
+	}
+	variance = divF32(sum, i32ToF32(lenF32A(vals)))
+}
+
 package main
 import "Math"
 
@@ -93,21 +124,6 @@ func robot (row i32, col i32) (row i32, col i32) {
 	row, col = robotAct(row, col, "")
 }
 
-// robot()
-// :object leftWall;
-// :object rightWall;
-// :aff expr {"turnRight|turnLeft|advance" 0};
-// :rem objects;
-// robot()
-// :object frontWall;
-// :aff expr {"turnRight|turnLeft|advance" 0};
-// :rem objects;
-// robot()
-// :object rightWall;
-// :object frontWall;
-// :aff expr {"turnRight|turnLeft|advance" 0};
-
-
 func changeValue (num i32) (num i32) {
 	num = addI32(num, 10)
 }
@@ -150,250 +166,41 @@ func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bo
 	}
 }
 
+var foo []f32 = []f32{3.3, 5.3}
+var bar []byte = []byte{0, 1000, 2}
+
 func main () (outMain f32) {
-	printStr("Hello world!")
-	foo = addI32(5, 30)
-	foo = addI32(5, 30)
-	foo = addI32(5, 30)
-	var outMain f32 = 3.14
-
-	var outMain f32 = addF32(3.14, 4.14)
-	barbar := 50
-
-	// testing logical operators
-	printBool(and(true, true))
-	printBool(and(true, false))
-	
-	printBool(or(false, true))
-	printBool(or(false, false))
-
-	printBool(not(false))
-	printBool(not(true))
-
-	printI32(addI32(3, 5))
-	
-	//:dStack false;
-	
-	//printI32(andNotI32(5, 3))
-	printByteA([]byte{0, 100, 200, 300, 400})
-	
-	printF32A(inps)
-	printF32A(writeF32A(inps, 0, -3.5))
-	printF32A(inps)
-
-	printI64A(f32AToI64A(inps))
-	
-	printStr("hello")
-	printStr("bye")
-
-	// //printI32(divI32(3, 0))
-	// //printI64(divI64(i32ToI64(3), i32ToI64(0)))
-
-	// // check about the line numbers
-	// // I think the parser can now give a proper line number
-	
-	printI32(modI32(11, 7))
-	printI64(modI64(i32ToI64(11), i32ToI64(7)))
-	
-	// var bar []bool = []bool{true, true, true, true, true}
-	// var bar2 []i32 = []i32{100, 200, 300}
-
-	// //printBool(readBoolA(bar, 3))
-	// printBoolA(bar)
-	// //printBoolA(writeBoolA(bar, 3, false))
-	// //writeBoolA(bar, 2, false)
-	
-	// bar := writeBoolA(bar, 2, false)
-	// printBoolA(bar)
-	// //printBoolA(bar)
-	// //printBool(readBoolA(writeBoolA(bar, 3, true), 3))
-	// printStr("Testing lengths")
-	// printI32(lenBoolA(bar))
-	// printI32(lenI32A(bar2))
-	
-
-	// var foo i32 = 5
-	// changeValue(foo)
-	// printI32(foo)
-	// printI32(changeValue(foo))
-	
 	:dStack false;
-	setClauses("
-          aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
-	  aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
-	  aff(robotAct, goWest, X, R) :- X = westWall, R = false.
-	  aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
-
-	  aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
-	  aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
-	  aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
-	  aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
-        ")
-
-	//aff(robotAct, goEast, X, R) :- X = mod(X, 4), R = false.
-	//aff(robotAct, goWest, X, R) :- X = mod(X, 4) + 1, R = false.
-	// we need to send objects, not numbers
+	var outMain f32 = 3.14
+	//printF32(Math.PI)
+	//printF32(Math.square(7.5))
+	printStr(greeting)
+	printF32(Stat.Mean(foo))
+	printF32(Stat.Variance(foo))
 	
-	// we also need an OR in the rules for mod(X, N)
-	// considering the indexes are 0-based
-	
-
-	setQuery("aff(%s, %s, %s, R).")
-	//addObject("northWall")
-	//:object rightWall;
-	//:object leftWall;
-	//addObject("rightWall")
-
-
-	// printStr("=== Start Randoms ===")
-	// printI32(randI32(0, 10))
-	// printI32(randI32(0, 10))
-	// printI32(randI32(0, 10))
-	// printI32(randI32(0, 10))
-	// printI32(randI32(0, 10))
-	// printStr("=== End Randoms ===")
-	
-	printStr("=== Start Testing robot ===")
-	var wallMap []bool = []bool{
-		true, true,  true,  true,  true,
-		true, false, true, false, true,
-		true, false, true, false, true,
-		true, false, false, false, true,
-		true, true,  true,  true,  true}
-
-	var wormholeMap []bool = []bool{
-		false, false, false, false, false,
-		false, false, false, false, false,
-		false, false, false, false, false,
-		false, false, false, false, false,
-		false, false, false, false, false}
+	printByteA(bar)
 
 	
-	// // initial coords
-	var width i32 = 5
-	var row i32 = 1
-	var col i32 = 1
+	printI32A(byteAToI32A([]byte{1, 2, 3, 4}))
 
-	var counter i32
-	while ltI32(counter, 6) {
-		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
-		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
-		robotObjects(row, col, width, wallMap, wormholeMap)
-		row, col := robot(row, col)
-		counter = addI32(counter, 1)
-		halt("Pausing program.")
-	}
-
-	printStr("=== End Testing robot ===")
-
+	printStr(byteAToStr([]byte{65, 66, 67}))
+	printByteA(strToByteA("ABC"))
 	
-
-
-
-
-
-
-	// // printStr("==start== Testing Cast Functions")
-	// // var _i32 i32 = 1
-	// // var _i64 i64 = 2
-	// // var _f32 f32 = 3.22
-	// // var _f64 f64 = 4.67
+	printByte(i32ToByte(50))
+	printByte(i64ToByte(i32ToI64(50)))
+	printByte(f32ToByte(50.5))
+	printByte(f64ToByte(f32ToF64(50.5)))
 	
-	// // printStr("To I32")
-	// // printI32(i64ToI32(_i64))
-	// // printI32(f32ToI32(_f32))
-	// // printI32(f64ToI32(_f64))
-	// // printStr("To I64")
-	// // printI64(i32ToI64(_i32))
-	// // printI64(f32ToI64(_f32))
-	// // printI64(f64ToI64(_f64))
-	// // printStr("To F32")
-	// // printF32(i32ToF32(_i32))
-	// // printF32(i64ToF32(_i64))
-	// // printF32(f64ToF32(_f64))
-	// // printStr("To F64")
-	// // printF64(i32ToF64(_i32))
-	// // printF64(i64ToF64(_i64))
-	// // printF64(f32ToF64(_f32))
+	printByteA(i32AToByteA([]i32{50, 60, 70, 80}))
+	printByteA(i64AToByteA([]i64{55, 65, 75, 85}))
+	printByteA(f32AToByteA([]f32{50.5, 60.5, 70.5, 80.5}))
+	printByteA(f64AToByteA([]f64{55.5, 65.5, 75.5, 85.5}))
 
-	// // printStr("==end== Testing Cast Functions")
-
-	// //:func solution
-	// //printI32(10)
-	// //:func main
-	// //printI32(20)
-	// //num := addI32(3, 3)
-	// //outMain := quad(4.0)
-	// // outMain := divF32(3.0, 7.0)
-
-	// // num := addI32(3, 3)
-	
-	// // pred := gtI32(5, 10)
-	// // if gtI32(10, 5) {
-	// // 	printBool(ltI32(5, 10))
-	// // 	printBool(ltI32(5, 10))
-	// // 	//num := addI32(3, 3)
-	// // 	//printI32(num)
-	// // 	//printByte(ltI32(15, 10))
-	// // 	//result := addI32(7, 10)
-	// // 	//result := addI32(7, 10)
-	// // } else {
-	// // 	//printByte(ltI32(15, 10))
-	// // 	//printByte(ltI32(5, 10))
-	// // 	num := addI32(6, 18)
-	// // 	printI32(num)
-	// // 	// printByte(ltI32(15, 10))
-	// // 	//result := addI32(20, 3)
-	// // 	//result := addI32(7, 10)
-	// // 	//result := addI32(7, 10)
-	// // }
-
-	// // var i i32 = 0
-
-	// // writeF64A(inps, 0, f32ToF64(50.0))
-	
-	// // rI32 := readF64A(inps, 0)
-	// // printF64(rI32)
-	
-	// // //pred := ltI32(i, 10000)
-	// // while ltI32(i, 100) {
-	// // 	//while pred {
-	// // 	//printI32(i)
-	// // 	//printByte(ltI32(i, 10))
-	// // 	i := addI32(i, 1)
-	// // 	//pred := ltI32(i, 10000)
-	// // }
-
-	
-	
-	// // printI32(10101)
-	// // var anotherPoint Point
-	
-	// // //var done i32 = 10101
-
-	// // // var myPoint Point
-	
-	// // // var i i32 = 0
-	// // // pred := ltI32(i, 10000)
-	// // // while pred {
-	// // // 	printI32(i)
-	// // // 	i := addI32(i, 1)
-	// // // 	pred := ltI32(i, 10000)
-	// // // }
-
-	// // // printI32(myPoint.x)
-
-	// // // var bar f32 = 4.17
-	// // // // casting
-	// // // foo1 := f32toI32(bar)
-	// // // foo2 := addI32(foo1, foo1)
-	// // // printI32(foo1)
-	// // // printF32A(inps)
-
-	// // // printStr("hello")
-
-	// // // printStr()
-
-	// // // //addI32(addI32(5, 4), addI32(3, 7))
-	// // // addI32(addI32(addI32(i, 20), i), addI32(3, i))
+	// var counter i32 = 0
+	// for ltI32(counter, 1) {
+	// 	//printI32(counter)
+	// 	counter = addI32(counter, 1)
+	// }
 }
+
+//./cx.sh && ./cx --load src/cxgo/test.cx 
