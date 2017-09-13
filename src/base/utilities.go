@@ -466,12 +466,18 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							outNames.WriteString(concat(outName.Name, ", "))
 						}
 					}
-					
-					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)\n",
+
+					var exprTag string
+					if expr.Tag != "" {
+						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					}
+
+					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
 						k,
 						outNames.String(),
 						expr.Operator.Name,
-						args.String())
+						args.String(),
+						exprTag)
 				} else {
 					fmt.Printf("\t\t\t%d.- Expression: %s(%s)\n",
 						k,

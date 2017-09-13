@@ -100,7 +100,7 @@ func (s byParamName) Less(i, j int) bool {
 
 func PrintAffordances (affs []*CXAffordance) {
 	for i, aff := range affs {
-		fmt.Printf("%d.-%s", i, aff.Description)
+		fmt.Printf("%d.-%s\n", i, aff.Description)
 	}
 }
 
@@ -216,7 +216,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		for _, ex := range expr.Function.Expressions {
 			
 			if ex == expr {
-				continue
+				break
 			}
 
 			// checking if it's a nonAssign local

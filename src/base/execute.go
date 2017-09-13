@@ -657,20 +657,24 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			argsCopy := make([]*CXArgument, len(argsRefs))
 			argNames := make([]string, len(argsRefs))
 
-			//call.Context.PrintProgram(false)
+			// exceptions
+			var exc bool
+			var excError error
 
+			if len(argNames) != len(expr.Operator.Inputs) {
+				return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
+					expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argNames)))
+			}
+			
 			for i, inp := range expr.Operator.Inputs {
 				argNames[i] = inp.Name
 			}
 			
-			// we are modifying by reference, we need to make copies
+			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
 				if argsRefs[i].Offset > -1 {
 					offset := argsRefs[i].Offset
 					size := argsRefs[i].Size
-					//var val []byte
-					//encoder.DeserializeRaw((*call.Context.Heap)[offset:offset+size], &val)
-					//argsRefs[i].Value = &val
 					val := (*call.Context.Heap)[offset:offset+size]
 					argsRefs[i].Value = &val
 					continue
@@ -740,10 +744,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			} else {
 				opName = "id" // return the same
 			}
-			
-			// exceptions
-			var exc bool
-			var excError error
 
 			switch opName {
 			case "evolve":
@@ -785,36 +785,36 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				var val int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
 				if val == 0 {
-					fmt.Print("false")
+					fmt.Println("false")
 				} else {
-					fmt.Print("true")
+					fmt.Println("true")
 				}
 				values = append(values, argsCopy[0])
 			case "printStr":
-				fmt.Print(string(*argsCopy[0].Value))
+				fmt.Println(string(*argsCopy[0].Value))
 				values = append(values, argsCopy[0])
 			case "printByte":
-				fmt.Print((*argsCopy[0].Value)[0])
+				fmt.Println((*argsCopy[0].Value)[0])
 				values = append(values, argsCopy[0])
 			case "printI32":
 				var val int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printI64":
 				var val int64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printF32":
 				var val float32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printF64":
 				var val float64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printBoolA":
 				var val []int32
@@ -831,29 +831,30 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					}
 				}
 				fmt.Print("]")
+				fmt.Println()
 				values = append(values, argsCopy[0])
 			case "printByteA":
-				fmt.Print(*argsCopy[0].Value)
+				fmt.Println(*argsCopy[0].Value)
 				values = append(values, argsCopy[0])
 			case "printI32A":
 				var val []int32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printI64A":
 				var val []int64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printF32A":
 				var val []float32
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 			case "printF64A":
 				var val []float64
 				encoder.DeserializeRaw(*argsCopy[0].Value, &val)
-				fmt.Print(val)
+				fmt.Println(val)
 				values = append(values, argsCopy[0])
 				// identity functions
 				case "idStr", "idBool", "idByte", "idI32", "idI64", "idF32", "idF64",
@@ -1695,7 +1696,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 				}
 			case "remExpr":
-				if val, err := remExpr(argsCopy[0], argsCopy[1], call.Operator.Module); err == nil {
+				if val, err := remExpr(argsCopy[0], call.Operator); err == nil {
 					values = append(values, val)
 				} else {
 					exc = true
@@ -1703,7 +1704,15 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 				}
 			case "remArg":
-				if val, err := remArg(argsCopy[0], call.Operator.Module); err == nil {
+				if val, err := remArg(argsCopy[0], call.Operator); err == nil {
+					values = append(values, val)
+				} else {
+					exc = true
+					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+				}
+			case "addArg":
+				if val, err := addArg(argsCopy[0], argsCopy[1], call.Operator); err == nil {
 					values = append(values, val)
 				} else {
 					exc = true
@@ -1718,8 +1727,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 				}
-			case "exprAff":
-				if val, err := exprAff(argsCopy[0], call.Operator); err == nil {
+			case "affExpr":
+				if val, err := affExpr(argsCopy[0], argsCopy[1], argsCopy[2], call.Operator); err == nil {
 					values = append(values, val)
 				} else {
 					exc = true
@@ -1730,7 +1739,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			case "halt":
 				fmt.Println(string(*argsCopy[0].Value))
 				exc = true
-				excError = errors.New(fmt.Sprintf("%d: Call to halt", expr.FileLine))
+				excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
 				values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 			case "":
 			}
@@ -1763,7 +1772,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					// if outName.Offset > -1 {
 					// 	call.State[outName.Offset] = def
 					// } else {
-						
+					
 					// }
 					
 					found := false
@@ -1776,28 +1785,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					if !found {
 						call.State = append(call.State, def)
 					}
-					
-
-
-					// if values[i].Offset > -1 {
-					// 	for values[i].Value
-						
-					// 	(*call.Context.Heap)[values[i].Offset:values[i].Offset + values[i].Size]
-					// }
-
-
-
-					// if argsRefs[i].Offset > -1 {
-					// 	offset := argsRefs[i].Offset
-					// 	size := argsRefs[i].Size
-					// 	//var val []byte
-					// 	//encoder.DeserializeRaw((*call.Context.Heap)[offset:offset+size], &val)
-					// 	//argsRefs[i].Value = &val
-					// 	val := (*call.Context.Heap)[offset:offset+size]
-					// 	argsRefs[i].Value = &val
-					// 	continue
-					// }
-					
 				}
 				call.Line++
 				return call.call(withDebug, nCalls, callCounter)

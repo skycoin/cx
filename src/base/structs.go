@@ -65,7 +65,9 @@ var NATIVE_FUNCTIONS = []string{
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
-	"remExpr", "remArg", "addExpr", "exprAff",
+
+	"addArg",
+	"remExpr", "remArg", "addExpr", "affExpr",
 	"evolve", "initDef",
 	
 	"goTo",
@@ -101,7 +103,6 @@ type CXCall struct {
 }
 
 type CXProgramStep struct {
-	//Action func(*CXProgram)
 	Action func()
 }
 
@@ -110,6 +111,7 @@ type CXProgramStep struct {
 */
 
 type CXModule struct {
+	Tag string
 	Name string
 	Imports []*CXModule
 	Functions []*CXFunction
@@ -128,16 +130,6 @@ type CXModule struct {
 	Context *CXProgram
 }
 
-// type CXClause struct {
-// 	//Type *CXType
-// 	Operator *CXFunction
-// 	Argument *CXArgument
-// 	Object *CXArgument
-
-// 	Module *CXModule
-// 	Context *CXProgram
-// }
-
 type CXDefinition struct {
 	Name string
 	Typ *CXType
@@ -154,6 +146,7 @@ type CXDefinition struct {
 */
 
 type CXStruct struct {
+	Tag string
 	Name string
 	Fields []*CXField
 
@@ -175,6 +168,7 @@ type CXType struct {
 */
 
 type CXFunction struct {
+	Tag string
 	Name string
 	Inputs []*CXParameter
 	Outputs []*CXParameter
@@ -191,6 +185,7 @@ type CXParameter struct {
 }
 
 type CXExpression struct {
+	Tag string
 	Operator *CXFunction
 	Arguments []*CXArgument
 	OutputNames []*CXDefinition

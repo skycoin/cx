@@ -6,9 +6,6 @@
 		"fmt"
 		"os"
 		"time"
-
-		//"bufio"
-		//"io/ioutil"
 		
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
@@ -32,6 +29,7 @@
 	var replTargetFn string = ""
 	var dStack bool = false
 	var dProgram bool = false
+	var tag string = ""
 
 	func warnf(format string, args ...interface{}) {
 		fmt.Fprintf(os.Stderr, format, args...)
@@ -40,7 +38,7 @@
 
 	func assembleModule (modName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);`, modName))
+			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);mod.Tag = tag;tag = "";`, modName))
 		}
 	}
 
@@ -52,7 +50,7 @@
 
 	func assembleStruct (strctName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);`, strctName))
+			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);strct.Tag = tag;tag = "";`, strctName))
 		}
 	}
 	
@@ -64,7 +62,7 @@
 
 	func assembleFunction (fnName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);`, fnName))
+			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);fn.Tag = tag;tag = "";`, fnName))
 		}
 	}
 
@@ -98,9 +96,19 @@
 		}
 	}
 	
-	func assembleExpression (fnName string, modName string, fileLine int) {
+	func assembleExpression (fnName string, modName string, fileLine int, needsTag bool) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);`, fnName, modName, fileLine))
+			var tagStr string
+			if needsTag {
+				tagStr = `expr.Tag = tag;tag = "";`
+			}
+			program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s`, fnName, modName, fileLine, tagStr))
+		}
+	}
+
+	func assembleTag (tagName string) {
+		if baseOutput {
+			program.WriteString(fmt.Sprintf(`tag = "%s"`, tagName))
 		}
 	}
 %}
@@ -149,7 +157,7 @@
                         /* Debugging */
                         DSTACK DPROGRAM DQUERY DSTATE
                         /* Affordances */
-                        AFF
+                        AFF TAG
                         /* Prolog */
                         CCLAUSES QUERY COBJECT COBJECTS
 
@@ -176,6 +184,10 @@ lines:
 				cxt.PrintProgram(false)
 			}
                 }
+        |       lines ';'
+                {
+                    
+                }
         ;
 
 line:
@@ -189,9 +201,7 @@ line:
         |       debugging
         |       affordance
         |       removers
-                // prolog
         |       prolog
-        |       ';'
         ;
 
 prolog:
@@ -300,8 +310,13 @@ selectorLines:
         ;
 
 affordance:
+                TAG IDENT
+                {
+			tag = $2
+			assembleTag($2)
+                }     
                 /* Function Affordances */
-                AFF FUNC IDENT
+        |       AFF FUNC IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetFunction($3, mod.Name); err == nil {
@@ -792,7 +807,10 @@ typeSpecifier:
 packageDeclaration:
                 PACKAGE IDENT
                 {
-			cxt.AddModule(MakeModule($2))
+			mod := MakeModule($2)
+			cxt.AddModule(mod)
+			mod.AddTag(tag)
+			tag = ""
 			assembleModule($2)
                 }
                 ;
@@ -894,6 +912,8 @@ structDeclaration:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
+				strct.AddTag(tag)
+				tag = ""
 				assembleStruct($2)
 			}
                 }
@@ -924,7 +944,10 @@ functionDeclaration:
                 FUNC IDENT functionParameters functionParameters
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.AddFunction(MakeFunction($2))
+				fn := MakeFunction($2)
+				mod.AddFunction(fn)
+				fn.AddTag(tag)
+				tag = ""
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, inp := range $3 {
 						fn.AddInput(inp)
@@ -1014,7 +1037,7 @@ assignExpression:
 							}
 
 							fn.AddExpression(expr)
-							assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1)
+							assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false)
 							expr.AddOutputName($2)
 							assembleOutputName($2)
 							
@@ -1030,7 +1053,7 @@ assignExpression:
 										expr.FileLine = yyS[yypt-0].line + 1
 									}
 									fn.AddExpression(expr)
-									assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1)
+									assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false)
 									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									assembleOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									typ := []byte(fld.Typ.Name)
@@ -1054,7 +1077,7 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idBool", CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression("idBool", CORE_MODULE, yyS[yypt-0].line + 1, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
@@ -1072,7 +1095,7 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idByte", CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression("idByte", CORE_MODULE, yyS[yypt-0].line + 1, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
@@ -1090,7 +1113,7 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idI64", CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression("idI64", CORE_MODULE, yyS[yypt-0].line + 1, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
@@ -1108,7 +1131,7 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idF64", CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression("idF64", CORE_MODULE, yyS[yypt-0].line + 1, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
@@ -1134,7 +1157,7 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression(getFn, CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression(getFn, CORE_MODULE, yyS[yypt-0].line + 1, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
@@ -1147,7 +1170,6 @@ assignExpression:
                 }
         |       argumentsList assignOperator argumentsList
                 {
-
 			argsL := $1
 			argsR := $3
 			
@@ -1182,7 +1204,9 @@ assignExpression:
 						}
 
 						fn.AddExpression(expr)
-						assembleExpression(idFn, CORE_MODULE, yyS[yypt-0].line + 1)
+						expr.AddTag(tag)
+						tag = ""
+						assembleExpression(idFn, CORE_MODULE, yyS[yypt-0].line + 1, true)
 
 						expr.AddOutputName(string(*argL.Value))
 						
@@ -1217,42 +1241,7 @@ assignExpression:
 					}
 				}
 			}
-
-			// if fn, err := cxt.GetCurrentFunction(); err == nil {
-			// 	if op, err := cxt.GetFunction(fnName, modName); err == nil {
-			// 		expr := MakeExpression(op)
-			// 		if !replMode {
-			// 			expr.FileLine = yyS[yypt-0].line + 1
-			// 		}
-
-			// 		fn.AddExpression(expr)
-			// 		assembleExpression(fnName, modName, yyS[yypt-0].line + 1)
-
-			// 		for _, outNameInArg := range $1 {
-			// 			expr.AddOutputName(string(*outNameInArg.Value))
-			// 			assembleOutputName(string(*outNameInArg.Value))
-			// 		}
-
-			// 		if expr, err := fn.GetCurrentExpression(); err == nil {
-			// 			for _, arg := range $4 {
-			// 				expr.AddArgument(arg)
-			// 				assembleArgument(*arg.Value, arg.Typ.Name)
-			// 			}
-			// 			$$ = expr
-			// 		}
-			// 	} else {
-			// 		panic(err)
-			// 	}
-			// }
-
-
-			
                 }
-// here
-        /* |       IDENT assignOperator argumentsList */
-        /*         { */
-
-        /*         } */
         ;
 
 nonAssignExpression:
@@ -1281,7 +1270,9 @@ nonAssignExpression:
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression(fnName, modName, yyS[yypt-0].line + 1)
+						expr.AddTag(tag)
+						tag = ""
+						assembleExpression(fnName, modName, yyS[yypt-0].line + 1, true)
 						for _, arg := range $2 {
 
 							typeParts := GetIdentParts(arg.Typ.Name)
@@ -1324,7 +1315,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 						val := MakeDefaultValue("bool")
 						expr.AddArgument(MakeArgument(val, MakeType("bool")))
 						assembleArgument(*val, "bool")
@@ -1347,7 +1338,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1395,7 +1386,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1441,7 +1432,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1486,7 +1477,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1521,7 +1512,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5 - 1))
@@ -1549,7 +1540,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1584,7 +1575,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1612,7 +1603,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 					}
 				}
 			}
@@ -1652,7 +1643,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1684,7 +1675,7 @@ statement:      RETURN
 								expr.FileLine = yyS[yypt-0].line + 1
 							}
 							fn.AddExpression(expr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 						}
 					}
 				}
@@ -1708,7 +1699,7 @@ statement:      RETURN
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+								assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 							}
 						}
 					}
@@ -1753,7 +1744,7 @@ statement:      RETURN
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1793,7 +1784,7 @@ statement:      RETURN
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
 							
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1834,7 +1825,7 @@ statement:      RETURN
 										expr.FileLine = yyS[yypt-0].line + 1
 									}
 									fn.AddExpression(expr)
-									assembleExpression(MakeIdentityOpName(fld.Typ.Name), CORE_MODULE, yyS[yypt-0].line + 1)
+									assembleExpression(MakeIdentityOpName(fld.Typ.Name), CORE_MODULE, yyS[yypt-0].line + 1, false)
 									
 									expr.AddArgument(MakeArgument(zeroVal, fld.Typ))
 									assembleArgument(*zeroVal, fld.Typ.Name)
@@ -1877,7 +1868,7 @@ elseStatement:
 					    expr.FileLine = yyS[yypt-0].line + 1
 				    }
 				    fn.AddExpression(expr)
-				    assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1)
+				    assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
                             }
                         }
                     }
@@ -2030,23 +2021,7 @@ argumentsList:
                 }
         |       nonAssignExpression
                 {
-			//var args []*CXArgument
-
-			// args := make([]*CXArgument, len($1))
 			args := $1
-			
-			//identName := []byte($1)
-			//arg := MakeArgument(&identName, MakeType("ident"))
-
-
-			//args := make([]*CXArgument, len($3))
-			// for i, identName := range $1 {
-			// 	theName := []byte(identName)
-			// 	args[i] = MakeArgument(&theName, MakeType("ident"))
-			// }
-
-			
-			//args = append(args, arg)
 			$$ = args
                 }
         |       argumentsList COMMA argument
@@ -2056,16 +2031,8 @@ argumentsList:
                 }
         |       argumentsList COMMA nonAssignExpression
                 {
-			//identName := []byte($3)
-
-			//args := make([]*CXArgument, len($3))
 			args := $3
-			// for i, identName := range $3 {
-			// 	theName := []byte(identName)
-			// 	args[i] = MakeArgument(&theName, MakeType("ident"))
-			// }
-			
-			//arg := MakeArgument(&identName, MakeType("ident"))
+
 			$1 = append($1, args...)
 			$$ = $1
                 }

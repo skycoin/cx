@@ -23,6 +23,7 @@
 /:step/    { return STEP     }
 /:tStep/   { return TSTEP    }
 /:pStep/   { return PSTEP    }
+/:tag/     { return TAG      }
 /:aff/     { return AFF      }
 /package/  { return PACKAGE  }
 /type/     { return TYPSTRUCT}
@@ -107,6 +108,8 @@ import (
 	"io/ioutil"
 	"strconv"
 
+	"runtime"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/src/base"
 )
@@ -120,10 +123,6 @@ func countNewLines (s []byte) int {
 	}
 	return count
 }
-
-// func readEOT (fi *bufio.Reader) (string, bool) {
-// 	s, err := fi.ReadString('')
-// }
 
 func readline (fi *bufio.Reader) (string, bool) {
 	s, err := fi.ReadString(';')
@@ -373,10 +372,11 @@ func addObject (obj str) (obj str) {}
 func remObject (obj str) (obj str) {}
 func remObjects () (out bool) {}
 
-func remExpr (fnName str, num i32) (err bool) {}
-func remArg (fnName str) (err bool) {}
+func remExpr (tag str) (err bool) {}
+func remArg (tag str) (err bool) {}
+func addArg (tag str, ident str) (err bool) {}
 func addExpr (fnName str) (err bool) {}
-func exprAff (filter str) (err bool) {}
+func affExpr (tag str, filter str, index i32) (err bool) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 
@@ -385,10 +385,16 @@ func initDef (typ str) (typ str) {}
 func halt (msg str) (out bool) {}
 `
 
-func unsafeEval (code string) string {
+func unsafeEval (code string) (result string) {
 	/*
            Initializing native functions
         */
+
+	defer func() {
+		if r := recover(); r != nil {
+			result = fmt.Sprintf("Syntax error: %v", r)
+		}
+	}()
 
 	lineNo = 0
 	
@@ -480,14 +486,14 @@ func unsafeEval (code string) string {
 	//out := <-outC
 	out := <-outC
 	re := regexp.MustCompile("\n")
-	result := string(re.ReplaceAll([]byte(out), []byte("<br />")))
+	result = string(re.ReplaceAll([]byte(out), []byte("<br />")))
 
 	cxt = MakeContext()
 	return result
 }
 
 func Eval (code string) string {
-
+	runtime.GOMAXPROCS(2)
 	ch := make(chan string, 1)
 	//defer close(ch)
 
@@ -535,6 +541,8 @@ Options --compile and --repl are mutually exclusive.
 }
 
 func main () {
+	runtime.GOMAXPROCS(2)
+	
 	args := os.Args[1:]
 	var sourceCode []*os.File
 
@@ -590,7 +598,7 @@ func main () {
 	}
 
 	if baseOutput {
-		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;func main () {`)
+		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {`)
 	}
 
 	// adding core module and native functions to it

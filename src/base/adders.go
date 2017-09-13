@@ -8,14 +8,6 @@ func saveProgramStep (prgrmStep *CXProgramStep, cxt *CXProgram) {
 	cxt.ProgramSteps = append(cxt.ProgramSteps, prgrmStep)
 }
 
-// right now
-// the pstepping involves saving each of the steps
-// if we want to recreate a program, we'd need to construct another context and execute each of the steps
-
-// now with removers
-// we'd be storing a dual operation for each adder
-// if we add a module, we want to store a remover that, well, removes that module
-
 func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
 	//stepMod := MakeModuleCopy(mod, cxt)
 	// prgrmStep := &CXProgramStep{
@@ -269,14 +261,6 @@ func (mod *CXModule) AddObject (obj string) *CXModule {
 	return mod
 }
 
-// func (mod *CXModule) AddClauses (clause *CXClause) *CXModule {
-// 	mod.Clauses = append(mod.Clauses, clause)
-// 	clause.Module = mod
-// 	clause.Context = mod.Context
-
-// 	return mod
-// }
-
 func (mod *CXModule) AddClauses (clauses string) *CXModule {
 	mod.Clauses = clauses
 	return mod
@@ -486,3 +470,22 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	return expr
 }
 
+func (expr *CXExpression) AddTag (tag string) *CXExpression {
+	expr.Tag = tag
+	return expr
+}
+
+func (mod *CXModule) AddTag (tag string) *CXModule {
+	mod.Tag = tag
+	return mod
+}
+
+func (strct *CXStruct) AddTag (tag string) *CXStruct {
+	strct.Tag = tag
+	return strct
+}
+
+func (fn *CXFunction) AddTag (tag string) *CXFunction {
+	fn.Tag = tag
+	return fn
+}

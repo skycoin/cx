@@ -400,7 +400,7 @@ func main () (out i32) {
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p><i>goTo</i> <b>should not</b> be used, as it can create programs that are very hard to debug. CX uses the go-to operator to create other flow-control structures, such as <i>if</i> and <i>while</i>.</p>
+            <p><i>goTo</i> <b>should not</b> be used, as it can create programs that are very hard to debug. CX uses the go-to operator to create other flow-control structures, such as <i>if</i> and <i>for</i>.</p>
             <p>Nevertheless, if you really require a go-to in your program, you can use it. The example above shows how an if-else can be constructed using two go-to expressions. <i>goTo</i> takes three arguments as its parameters: a predicate, a number of lines the program should advance if the predicate evaluates to true, and a number of lines the program should advance if the predicate evaluates to false.</p>
             <p>As in the case of the second <i>goTo</i> in the example, if you give it a number of lines which exceeds the number of expressions in the function, this will only cause the function to return. Negative numbers can also be provided, and they will cause the program to re-evaluate the N expressions above.</p>
           </div>
@@ -494,14 +494,14 @@ func main () (out i32) {
 
 func main () (out i32) {
 	var out i32 = 0
-	while ltI32(out, 10) {
+	for ltI32(out, 10) {
 		printI32(out)
 		out = addI32(out, 1)
 	}
 }</code></pre>
           </div>
           <div class="panel-body">
-            <p>You can use <i>while</i> to create a loop. As in other programming languages that implement a while statement, a condition is provided which will instruct the computer to evaluate a block of expressions while the condition evaluates to true. In the case of the example above, the while loop will print the numbers from 0 to 10.</p>
+            <p>You can use <i>for</i> to create a loop. As in other programming languages that implement a for statement, a condition is provided which will instruct the computer to evaluate a block of expressions while the condition evaluates to true. In the case of the example above, the for loop will print the numbers from 0 to 10.</p>
           </div>
         </div>
 
@@ -850,7 +850,7 @@ func main () (out str) {
 	var col i32 = 1
 
 	var counter i32
-	while ltI32(counter, 6) {
+	for ltI32(counter, 6) {
 		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
 		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
 		robotObjects(row, col, width, wallMap, wormholeMap)
