@@ -3,7 +3,8 @@
 This is a prototype version of the CX Programming Language. At the
 moment, a programmer can either use the base language directly
 (although this is no longer encouraged) or can use a programming
-language with a syntax similar to Go.
+language with a syntax similar to Go. The reader can find a more
+updated source of information at the [CX website](http://cx.skycoin.net/).
 
 This README file described how to create a CX program using the base
 language (by using Golang's functions and structs). These sections

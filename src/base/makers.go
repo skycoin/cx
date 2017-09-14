@@ -305,7 +305,7 @@ func MakeFieldFromParameter (param *CXParameter) *CXField {
 func MakeDefaultValue (typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
-	case "str": zeroVal = []byte{byte(0)}
+	case "str": zeroVal = nil
 	case "bool": zeroVal = encoder.Serialize(int32(0))
 	case "byte": zeroVal = []byte{byte(0)}
 	case "i32": zeroVal = encoder.Serialize(int32(0))
@@ -411,22 +411,6 @@ func MakeIdentityOpName (typeName string) string {
 	}
 }
 
-func MakeProgramStep (action func()) *CXProgramStep {
-	return &CXProgramStep{Action: action}
-}
-
-// Use MakeArgument
-// func MakeObject () {
-	
-// }
-
-// op: Expression's operator
-// arg: Operator's candidate argument
-// obj: A name which will determine if an argument is allowed or not
-// func MakeClause (op *CXFunction, arg *CXArgument, obj *CXArgument) *CXClause {
-// 	return &CXClause{
-// 		Operator: op,
-// 		Argument: arg,
-// 		Object: obj,
-// 	}
+// func MakeProgramStep (action func()) *CXProgramStep {
+// 	return &CXProgramStep{Action: action}
 // }

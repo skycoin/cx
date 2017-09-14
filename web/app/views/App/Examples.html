@@ -664,10 +664,11 @@ var greeting str = "Meta hello."
 var farewell str = "Meta good-bye."
 
 func main () () {
-	remExpr("main", 1)
+	remExpr("toBeRemoved")
+	:tag toBeRemoved;
 	divI32(3, 0)
-	addExpr("printStr")
-	exprAff(".")
+	addExpr("newPrint", "printStr")
+	affExpr("newPrint", ".", 0)
 }</code></pre>
           </div>
           <div class="panel-body">
@@ -772,8 +773,9 @@ func robotAct (row i32, col i32, action str) (row i32, col i32) {
 }
 
 func robot (row i32, col i32) (row i32, col i32) {
-	remArg("robot")
-	exprAff("goNorth|goSouth|goWest|goEast")
+	remArg("robotAct")
+	affExpr("robotAct", "goNorth|goSouth|goWest|goEast", 0)
+	:tag robotAct;
 	row, col = robotAct(row, col, "")
 }
 
@@ -859,7 +861,8 @@ func main () (out str) {
 	}
 	
 	printStr("done.")
-}</code></pre>
+}
+</code></pre>
           </div>
           <div class="panel-body">
             <p>This example tries to illustrate most of the concepts shown in the previous examples.</p>

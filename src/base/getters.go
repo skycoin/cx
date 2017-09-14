@@ -145,9 +145,14 @@ func (cxt *CXProgram) GetModule (modName string) (*CXModule, error) {
 				break
 			}
 		}
-		return found, nil
+		if found != nil {
+			return found, nil
+		} else {
+			return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
+		}
+		
 	} else {
-		return nil, errors.New(fmt.Sprintf("Module '%s'", modName))
+		return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
 	}
 }
 

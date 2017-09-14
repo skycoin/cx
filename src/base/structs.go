@@ -59,18 +59,16 @@ var NATIVE_FUNCTIONS = []string{
 	"ltStr", "gtStr", "eqStr", "lteqStr", "gteqStr",
 	"ltByte", "gtByte", "eqByte", "lteqByte", "gteqByte",
 
-	"sleep", "halt",
+	"sleep", "halt", "goTo",
 
 	"randI32", "randI64",
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
 
-	"addArg",
 	"remExpr", "remArg", "addExpr", "affExpr",
-	"evolve", "initDef",
 	
-	"goTo",
+	"evolve", "initDef",
 }
 
 /*
@@ -85,7 +83,6 @@ type CXProgram struct {
 	// Inputs []*CXDefinition
 	Outputs []*CXDefinition
 	Steps []*CXCallStack
-	ProgramSteps []*CXProgramStep
 	Heap *[]byte
 }
 
@@ -102,16 +99,11 @@ type CXCall struct {
 	Module *CXModule
 }
 
-type CXProgramStep struct {
-	Action func()
-}
-
 /*
   Modules
 */
 
 type CXModule struct {
-	Tag string
 	Name string
 	Imports []*CXModule
 	Functions []*CXFunction
@@ -119,11 +111,9 @@ type CXModule struct {
 	Definitions []*CXDefinition
 
 	// Affordance inference
-	//Clauses []*CXClause
 	Clauses string
 	Objects []string
 	Query string
-	//Objects []*CXArgument // Idents
 
 	CurrentFunction *CXFunction
 	CurrentStruct *CXStruct
@@ -146,7 +136,6 @@ type CXDefinition struct {
 */
 
 type CXStruct struct {
-	Tag string
 	Name string
 	Fields []*CXField
 
@@ -168,7 +157,6 @@ type CXType struct {
 */
 
 type CXFunction struct {
-	Tag string
 	Name string
 	Inputs []*CXParameter
 	Outputs []*CXParameter
@@ -185,12 +173,12 @@ type CXParameter struct {
 }
 
 type CXExpression struct {
-	Tag string
 	Operator *CXFunction
 	Arguments []*CXArgument
 	OutputNames []*CXDefinition
 	Line int
 	FileLine int
+	Tag string
 	
 	Function *CXFunction
 	Module *CXModule

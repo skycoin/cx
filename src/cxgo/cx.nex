@@ -8,65 +8,65 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/:clauses/ { return CCLAUSES }
-/:objects/ { return COBJECTS }
-/:object/  { return COBJECT  }
-/:query/   { return QUERY    }
-/:dQuery/  { return DQUERY   }
-/:dState/  { return DSTATE   }
-/:dStack/  { return DSTACK   }
-/:dProgram/{ return DPROGRAM }
-/:package/ { return SPACKAGE }
-/:struct/  { return SSTRUCT  }
-/:func/    { return SFUNC    }
-/:rem/     { return REM      }
-/:step/    { return STEP     }
-/:tStep/   { return TSTEP    }
-/:pStep/   { return PSTEP    }
-/:tag/     { return TAG      }
-/:aff/     { return AFF      }
-/package/  { return PACKAGE  }
-/type/     { return TYPSTRUCT}
-/struct/   { return STRUCT   }
-/return/   { return RETURN   }
-/if/       { return IF       }
-/else/     { return ELSE     }
-/for/      { return FOR      }
-/,/        { return COMMA    }
-/func/     { return FUNC     }
-/clauses/  { return CLAUSES  }
-/objects/  { return OBJECTS  }
-/object/   { return OBJECT   }
-/expr/     { return EXPR     }
-/global/   { return GLOBAL   }
-/field/    { return FIELD    }
-/input/    { return INPUT    }
-/output/   { return OUTPUT   }
-/import/   { return IMPORT   }
-/var/      { return VAR      }
-/\(/       { return LPAREN   }
-/\)/       { return RPAREN   }
-/\{/       { return LBRACE   }
-/\}/       { return RBRACE   }
-/=/        { return ASSIGN   }
-/:=/       { return CASSIGN  }
-/>/        { return GTHAN    }
-/</        { return LTHAN    }
-/<=/       { return LTEQ     }
-/>=/       { return GTEQ     }
-/bool/     { lval.tok = yylex.Text(); return BOOL     }
-/str/      { lval.tok = yylex.Text(); return STR      }
-/i32/      { lval.tok = yylex.Text(); return I32      }
-/i64/      { lval.tok = yylex.Text(); return I64      }
-/f32/      { lval.tok = yylex.Text(); return F32      }
-/f64/      { lval.tok = yylex.Text(); return F64      }
-/byte/     { lval.tok = yylex.Text(); return BYTE     }
-/\[\]bool/ { lval.tok = yylex.Text(); return BOOLA    }
-/\[\]byte/ { lval.tok = yylex.Text(); return BYTEA    }
-/\[\]i32/  { lval.tok = yylex.Text(); return I32A     }
-/\[\]i64/  { lval.tok = yylex.Text(); return I64A     }
-/\[\]f32/  { lval.tok = yylex.Text(); return F32A     }
-/\[\]f64/  { lval.tok = yylex.Text(); return F64A     }
+/:clauses/   { return CCLAUSES   }
+/:objects/   { return COBJECTS   }
+/:object/    { return COBJECT    }
+/:query/     { return QUERY      }
+/:dQuery/    { return DQUERY     }
+/:dState/    { return DSTATE     }
+/:dStack/    { return DSTACK     }
+/:dProgram/  { return DPROGRAM   }
+/:package/   { return SPACKAGE   }
+/:struct/    { return SSTRUCT    }
+/:func/      { return SFUNC      }
+/:rem/       { return REM        }
+/:step/      { return STEP       }
+/:tStep/     { return TSTEP      }
+/:pStep/     { return PSTEP      }
+/:tag/       { return TAG        }
+/:aff/       { return AFF        }
+/package/    { return PACKAGE    }
+/type/       { return TYPSTRUCT  }
+/struct/     { return STRUCT     }
+/return/     { return RETURN     }
+/if/         { return IF         }
+/else/       { return ELSE       }
+/for/        { return FOR        }
+/,/          { return COMMA      }
+/func/       { return FUNC       }
+/clauses/    { return CLAUSES    }
+/objects/    { return OBJECTS    }
+/object/     { return OBJECT     }
+/expr/       { return EXPR       }
+/def/        { return DEF        }
+/field/      { return FIELD      }
+/input/      { return INPUT      }
+/output/     { return OUTPUT     }
+/import/     { return IMPORT     }
+/var/        { return VAR        }
+/\(/         { return LPAREN     }
+/\)/         { return RPAREN     }
+/\{/         { return LBRACE     }
+/\}/         { return RBRACE     }
+/=/          { return ASSIGN     }
+/:=/         { return CASSIGN    }
+/>/          { return GTHAN      }
+/</          { return LTHAN      }
+/<=/         { return LTEQ       }
+/>=/         { return GTEQ       }
+/bool/       { lval.tok = yylex.Text(); return BOOL     }
+/str/        { lval.tok = yylex.Text(); return STR      }
+/i32/        { lval.tok = yylex.Text(); return I32      }
+/i64/        { lval.tok = yylex.Text(); return I64      }
+/f32/        { lval.tok = yylex.Text(); return F32      }
+/f64/        { lval.tok = yylex.Text(); return F64      }
+/byte/       { lval.tok = yylex.Text(); return BYTE     }
+/\[\]bool/   { lval.tok = yylex.Text(); return BOOLA    }
+/\[\]byte/   { lval.tok = yylex.Text(); return BYTEA    }
+/\[\]i32/    { lval.tok = yylex.Text(); return I32A     }
+/\[\]i64/    { lval.tok = yylex.Text(); return I64A     }
+/\[\]f32/    { lval.tok = yylex.Text(); return F32A     }
+/\[\]f64/    { lval.tok = yylex.Text(); return F64A     }
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
@@ -91,11 +91,10 @@
 	return FLOAT
 }
 /[_a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
-	//fmt.Println(yylex.Text())
 	lval.tok = yylex.Text()
 	return IDENT
 }
-/./ { return int(yylex.Text()[0]) }
+/;/ { return int(yylex.Text()[0]) }
 //
 package cxgo
 import (
@@ -134,16 +133,9 @@ func readline (fi *bufio.Reader) (string, bool) {
 
 func repl () {
 	fmt.Println("CX REPL")
-	fmt.Println("More information about CX is available at https://github.com/skycoin/cx")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/")
 
-	// for i, flag := range args {
-	// 	switch flag {
-	// 	case "--load":
-	// 		if file, err := os.Open(args[i+1]); err == nil {
-	// 			yyParse(NewLexer(file))
-	// 		}
-	// 	}
-	// }
+	inREPL = true
 
 	fi := bufio.NewReader(os.NewFile(0, "stdin"))
 
@@ -151,27 +143,54 @@ func repl () {
 		var inp string
 		var ok bool
 
-		fmt.Println(replTargetFn)
-		
-		if replTargetFn != "" {
+		fmt.Println()
+
+		if replTargetMod != "" {
+			fmt.Println(fmt.Sprintf(":package %s {...", replTargetMod))
+			fmt.Printf("\t* ")
+		} else if replTargetFn != "" {
 			fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
+			fmt.Printf("\t* ")
+		} else if replTargetStrct != "" {
+			fmt.Println(fmt.Sprintf(":struct %s {...", replTargetStrct))
 			fmt.Printf("\t* ")
 		} else {
 			fmt.Printf("* ")
 		}
+		
 		if inp, ok = readline(fi); ok {
 			if replTargetFn != "" {
 				inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
+			}
+			if replTargetMod != "" {
+				inp = fmt.Sprintf(":package %s {%s}", replTargetMod, inp)
+			}
+			if replTargetStrct != "" {
+				inp = fmt.Sprintf(":struct %s {%s}", replTargetStrct, inp)
 			}
 			b := bytes.NewBufferString(inp)
 			yyParse(NewLexer(b))
 		} else {
 			if replTargetFn != "" {
 				replTargetFn = ""
-			} else {
-				fmt.Printf("\nBye!\n")
-				break
+				fmt.Println()
+				continue
 			}
+
+			if replTargetStrct != "" {
+				replTargetStrct = ""
+				fmt.Println()
+				continue
+			}
+
+			if replTargetMod != "" {
+				replTargetMod = ""
+				fmt.Println()
+				continue
+			}
+
+			fmt.Printf("\nBye!\n")
+			break
 		}
 	}
 }
@@ -374,8 +393,8 @@ func remObjects () (out bool) {}
 
 func remExpr (tag str) (err bool) {}
 func remArg (tag str) (err bool) {}
-func addArg (tag str, ident str) (err bool) {}
-func addExpr (fnName str) (err bool) {}
+//func addArg (tag str, ident str) (err bool) {}
+func addExpr (tag str, fnName str) (err bool) {}
 func affExpr (tag str, filter str, index i32) (err bool) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
@@ -386,28 +405,28 @@ func halt (msg str) (out bool) {}
 `
 
 func unsafeEval (code string) (result string) {
-	/*
-           Initializing native functions
-        */
-
+	var lexer *Lexer
 	defer func() {
 		if r := recover(); r != nil {
-			result = fmt.Sprintf("Syntax error: %v", r)
+			result = fmt.Sprintf("%v", r)
+			lexer.Stop()
 		}
 	}()
-
-	lineNo = 0
 	
-	b := bytes.NewBufferString(coreModule)
-	yyParse(NewLexer(b))
-	
-	b = bytes.NewBufferString(code)
-	yyParse(NewLexer(b))
-
 	// storing strings sent to standard output
 	old := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
+	
+	lineNo = 0
+	
+	b := bytes.NewBufferString(coreModule)
+	lexer = NewLexer(b)
+	yyParse(lexer)
+	
+	b = bytes.NewBufferString(code)
+	lexer = NewLexer(b)
+	yyParse(lexer)
 
 	if err := cxt.Run(false, -1); err != nil {
 		//fmt.Println(err)
@@ -495,7 +514,6 @@ func unsafeEval (code string) (result string) {
 func Eval (code string) string {
 	runtime.GOMAXPROCS(2)
 	ch := make(chan string, 1)
-	//defer close(ch)
 
 	var result string
 	
@@ -504,7 +522,7 @@ func Eval (code string) string {
 		ch <- result
 	}()
 
-	timer := time.NewTimer(2 * time.Second)
+	timer := time.NewTimer(20 * time.Second)
 	defer timer.Stop()
 
 	select {
@@ -514,7 +532,6 @@ func Eval (code string) string {
 		cxt = MakeContext()
 		return "Timed out."
 	}
-
 }
 
 func parseFile (fileName string) {
@@ -540,9 +557,19 @@ Options --compile and --repl are mutually exclusive.
 `)
 }
 
+func (yylex Lexer) Error (e string) {
+	if inREPL {
+		fmt.Printf("syntax error: %s\n", e)
+	} else {
+		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
+	}
+	
+	yylex.Stop()
+}
+
 func main () {
 	runtime.GOMAXPROCS(2)
-	
+
 	args := os.Args[1:]
 	var sourceCode []*os.File
 
@@ -552,7 +579,7 @@ func main () {
 
 	flagMode := false
 	var compileOutput string = "o"
-	for i, arg := range args {		
+	for i, arg := range args {
 		if arg == "--repl" || arg == "-r" {
 			replMode = true
 			flagMode = true

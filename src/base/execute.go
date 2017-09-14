@@ -685,20 +685,25 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					var resolvedIdent *CXDefinition
 
 					identParts := GetIdentParts(lookingFor)
-
 					if len(identParts) > 1 {
 						if mod, err := call.Context.GetModule(identParts[0]); err == nil {
 							// then it's an external definition or struct
 							if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
 								resolvedIdent = def
-							} else {
-								
 							}
 						} else {
 							// then it's a global struct
 							mod := call.Operator.Module
 							if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
 								resolvedIdent = def
+							} else {
+								// then it's a local struct
+								for _, stateDef := range call.State {
+									if stateDef.Name == lookingFor {
+										resolvedIdent = stateDef
+										break
+									}
+								}
 							}
 						}
 					} else {
@@ -1711,16 +1716,16 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 				}
-			case "addArg":
-				if val, err := addArg(argsCopy[0], argsCopy[1], call.Operator); err == nil {
-					values = append(values, val)
-				} else {
-					exc = true
-					excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-					values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
-				}
+			// case "addArg":
+			// 	if val, err := addArg(argsCopy[0], argsCopy[1], call.Operator); err == nil {
+			// 		values = append(values, val)
+			// 	} else {
+			// 		exc = true
+			// 		excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+			// 		values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
+			// 	}
 			case "addExpr":
-				if val, err := addExpr(argsCopy[0], call.Operator); err == nil {
+				if val, err := addExpr(argsCopy[0], argsCopy[1], call.Operator, expr.Line); err == nil {
 					values = append(values, val)
 				} else {
 					exc = true

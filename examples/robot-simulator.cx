@@ -22,8 +22,9 @@ func robotAct (row i32, col i32, action str) (row i32, col i32) {
 }
 
 func robot (row i32, col i32) (row i32, col i32) {
-	//remArg("robot")
-	exprAff("goNorth|goSouth|goWest|goEast")
+	remArg("robotAct")
+	affExpr("robotAct", "goNorth|goSouth|goWest|goEast", 0)
+	:tag robotAct;
 	row, col = robotAct(row, col, "")
 }
 

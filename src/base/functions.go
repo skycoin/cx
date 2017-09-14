@@ -2003,21 +2003,6 @@ func remObjects (mod *CXModule) (*CXArgument, error) {
   Meta-programming functions
 */
 
-func remExpr (tag *CXArgument, caller *CXFunction) (*CXArgument, error) {
-	if err := checkType("remExpr", "str", tag); err == nil {
-		for i, expr := range caller.Expressions {
-			if expr.Tag == string(*tag.Value) {
-				caller.RemoveExpression(i)
-				val := encoder.Serialize(int32(0))
-				return MakeArgument(&val, MakeType("bool")), nil
-			}
-		}
-	} else {
-		return nil, err
-	}
-	return nil, errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", string(*tag.Value)))
-}
-
 func remArg (tag *CXArgument, caller *CXFunction) (*CXArgument, error) {
 	if err := checkType("remArg", "str", tag); err == nil {
 		for _, expr := range caller.Expressions {
@@ -2033,48 +2018,38 @@ func remArg (tag *CXArgument, caller *CXFunction) (*CXArgument, error) {
 	return nil, errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", string(*tag.Value)))
 }
 
-func addArg (tag *CXArgument, ident *CXArgument, caller *CXFunction) (*CXArgument, error) {
-	if err := checkTwoTypes("addArg", "str", "str", tag, ident); err == nil {
-		for _, expr := range caller.Expressions {
-			if expr.Tag == string(*tag.Value) {
-				expr.AddArgument(MakeArgument(ident.Value, MakeType("ident")))
-				val := encoder.Serialize(int32(0))
-				return MakeArgument(&val, MakeType("bool")), nil
-			}
-		}
-	} else {
-		return nil, err
-	}
-	return nil, errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", string(*tag.Value)))
-}
-
-// func remArgCopy (fnName *CXArgument, mod *CXModule) (*CXArgument, error) {
-// 	if err := checkType("remArg", "str", fnName); err == nil {
-// 		name := string(*fnName.Value)
-// 		if fn, err := mod.Context.GetFunction(name, mod.Name); err == nil {
-// 			if expr, err := fn.GetCurrentExpression(); err == nil {
-// 				expr.RemoveArgument()
+// func addArg (tag *CXArgument, ident *CXArgument, caller *CXFunction) (*CXArgument, error) {
+// 	if err := checkTwoTypes("addArg", "str", "str", tag, ident); err == nil {
+// 		for _, expr := range caller.Expressions {
+// 			if expr.Tag == string(*tag.Value) {
+// 				expr.AddArgument(MakeArgument(ident.Value, MakeType("ident")))
+// 				val := encoder.Serialize(int32(0))
+// 				return MakeArgument(&val, MakeType("bool")), nil
 // 			}
-			
-// 			val := encoder.Serialize(int32(0))
-// 			return MakeArgument(&val, MakeType("bool")), nil
-// 		} else {
-// 			val := encoder.Serialize(int32(1))
-// 			return MakeArgument(&val, MakeType("bool")), nil
 // 		}
 // 	} else {
 // 		return nil, err
 // 	}
+// 	return nil, errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", string(*tag.Value)))
 // }
 
-func addExpr (fnName *CXArgument, caller *CXFunction) (*CXArgument, error) {
+func addExpr (tag *CXArgument, fnName *CXArgument, caller *CXFunction, line int) (*CXArgument, error) {
 	if err := checkType("addExpr", "str", fnName); err == nil {
 		mod := caller.Module
 		
 		opName := string(*fnName.Value)
 		if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
 			expr := MakeExpression(fn)
+			expr.AddTag(string(*tag.Value))
+			
 			caller.AddExpression(expr)
+
+			//caller.Expressions = append(caller.Expressions[:line], expr, caller.Expressions[line:(len(caller.Expressions)-2)]...)
+
+			// re-indexing expression line numbers
+			// for i, expr := range caller.Expressions {
+			// 	expr.Line = i
+			// }
 			
 			val := encoder.Serialize(int32(0))
 			return MakeArgument(&val, MakeType("bool")), nil
@@ -2085,6 +2060,21 @@ func addExpr (fnName *CXArgument, caller *CXFunction) (*CXArgument, error) {
 	} else {
 		return nil, err
 	}
+}
+
+func remExpr (tag *CXArgument, caller *CXFunction) (*CXArgument, error) {
+	if err := checkType("remExpr", "str", tag); err == nil {
+		for i, expr := range caller.Expressions {
+			if expr.Tag == string(*tag.Value) {
+				caller.RemoveExpression(i)
+				val := encoder.Serialize(int32(0))
+				return MakeArgument(&val, MakeType("bool")), nil
+			}
+		}
+	} else {
+		return nil, err
+	}
+	return nil, errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", string(*tag.Value)))
 }
 
 func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFunction) (*CXArgument, error) {

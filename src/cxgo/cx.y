@@ -27,8 +27,11 @@
 	var helpMode bool = false
 	var compileMode bool = false
 	var replTargetFn string = ""
+	var replTargetStrct string = ""
+	var replTargetMod string = ""
 	var dStack bool = false
-	var dProgram bool = false
+	var inREPL bool = false
+	//var dProgram bool = false
 	var tag string = ""
 
 	func warnf(format string, args ...interface{}) {
@@ -38,7 +41,7 @@
 
 	func assembleModule (modName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);mod.Tag = tag;tag = "";`, modName))
+			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);`, modName))
 		}
 	}
 
@@ -50,7 +53,7 @@
 
 	func assembleStruct (strctName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);strct.Tag = tag;tag = "";`, strctName))
+			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);`, strctName))
 		}
 	}
 	
@@ -62,7 +65,7 @@
 
 	func assembleFunction (fnName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);fn.Tag = tag;tag = "";`, fnName))
+			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);`, fnName))
 		}
 	}
 
@@ -151,7 +154,7 @@
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
-                        REM GLOBAL EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
+                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */
@@ -179,10 +182,9 @@ lines:
                 /* empty */
         |       lines line
                 {
-			//fmt.Println(yyS[yypt-0].line)
-			if replMode && dProgram {
-				cxt.PrintProgram(false)
-			}
+			// if replMode && dProgram {
+			// 	cxt.PrintProgram(false)
+			// }
                 }
         |       lines ';'
                 {
@@ -200,7 +202,7 @@ line:
         |       stepping
         |       debugging
         |       affordance
-        |       removers
+        |       remover
         |       prolog
         ;
 
@@ -295,17 +297,6 @@ importDeclaration:
 					assembleImport(impName)
 				}
 			}
-                }
-        ;
-
-selectorLines:
-                /* empty */
-                {
-			$$ = false
-                }
-        |       LBRACE lines RBRACE
-                {
-			$$ = true
                 }
         ;
 
@@ -451,56 +442,68 @@ affordance:
 			}
                 }
                 /* Struct Affordances */
-        |       AFF EXPR
+        |       AFF EXPR IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if expr, err := fn.GetCurrentExpression(); err == nil {
-						affs := expr.GetAffordances()
-						for i, aff := range affs {
-							fmt.Printf("(%d)\t%s\n", i, aff.Description)
+					for _, expr := range fn.Expressions {
+						if expr.Tag == $3 {
+							PrintAffordances(expr.GetAffordances())
+							break
+						}
+					}
+					// if expr, err := fn.GetCurrentExpression(); err == nil {
+					// 	affs := expr.GetAffordances()
+					// 	for i, aff := range affs {
+					// 		fmt.Printf("(%d)\t%s\n", i, aff.Description)
+					// 	}
+					// }
+				}
+			}
+                }
+        |       AFF EXPR IDENT LBRACE INT RBRACE
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					for _, expr := range fn.Expressions {
+						if expr.Tag == $3 {
+							affs := expr.GetAffordances()
+							affs[$5].ApplyAffordance()
+							break
 						}
 					}
 				}
 			}
                 }
-        |       AFF EXPR LBRACE INT RBRACE
+        |       AFF EXPR IDENT LBRACE STRING RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if expr, err := fn.GetCurrentExpression(); err == nil {
-						affs := expr.GetAffordances()
-						affs[$4].ApplyAffordance()
-					}
-				}
-			}
-                }
-        |       AFF EXPR LBRACE STRING RBRACE
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if expr, err := fn.GetCurrentExpression(); err == nil {
-						affs := expr.GetAffordances()
-						filter := strings.TrimPrefix($5, "\"")
-						filter = strings.TrimSuffix(filter, "\"")
-						affs = FilterAffordances(affs, filter)
-						for i, aff := range affs {
-							fmt.Printf("(%d)\t%s\n", i, aff.Description)
+					for _, expr := range fn.Expressions {
+						if expr.Tag == $3 {
+							affs := expr.GetAffordances()
+							filter := strings.TrimPrefix($5, "\"")
+							filter = strings.TrimSuffix(filter, "\"")
+							PrintAffordances(FilterAffordances(affs, filter))
+							break
 						}
 					}
 				}
 			}
                 }
-        |       AFF EXPR LBRACE STRING INT RBRACE
+        |       AFF EXPR IDENT LBRACE STRING INT RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if expr, err := fn.GetCurrentExpression(); err == nil {
-						affs := expr.GetAffordances()
-						filter := strings.TrimPrefix($4, "\"")
-						filter = strings.TrimSuffix(filter, "\"")
-						affs = FilterAffordances(affs, filter)
-						affs[$5].ApplyAffordance()
+					for _, expr := range fn.Expressions {
+						if expr.Tag == $3 {
+							affs := expr.GetAffordances()
+							filter := strings.TrimPrefix($5, "\"")
+							filter = strings.TrimSuffix(filter, "\"")
+							affs = FilterAffordances(affs, filter)
+							affs[$6].ApplyAffordance()
+							break
+						}
 					}
 				}
 			}
@@ -577,17 +580,18 @@ debugging:      DSTATE
 				dStack = false
 			}
                 }
-        |       DPROGRAM BOOLEAN
+        |       DPROGRAM
                 {
-			if $2 > 0 {
-				dProgram = true
-                        } else {
-				dProgram = false
-			}
+			cxt.PrintProgram(false)
+			// if $2 > 0 {
+			// 	dProgram = true
+                        // } else {
+			// 	dProgram = false
+			// }
                 }
         ;
 
-removers:       REM FUNC IDENT
+remover:        REM FUNC IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.RemoveFunction($3)
@@ -597,7 +601,7 @@ removers:       REM FUNC IDENT
                 {
 			cxt.RemoveModule($3)
                 }
-        |       REM GLOBAL IDENT
+        |       REM DEF IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				mod.RemoveDefinition($3)
@@ -618,11 +622,15 @@ removers:       REM FUNC IDENT
 				mod.RemoveImport(impName)
 			}
                 }
-        |       REM EXPR INT FUNC IDENT
+        |       REM EXPR IDENT FUNC IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
-					fn.RemoveExpression(int($3))
+					for i, expr := range fn.Expressions {
+						if expr.Tag == $3 {
+							fn.RemoveExpression(i)
+						}
+					}
 				}
 			}
                 }
@@ -676,7 +684,18 @@ removers:       REM FUNC IDENT
 	// 			}
 	// 		}
         //         }
-        //        |REM OUTNAME
+        // |       REM OUTNAME
+        ;
+
+selectorLines:
+                /* empty */
+                {
+			$$ = false
+                }
+        |       LBRACE lines RBRACE
+                {
+			$$ = true
+                }
         ;
 
 selectorExpressionsAndStatements:
@@ -714,7 +733,7 @@ selector:       SPACKAGE IDENT
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				previousModule = mod
 			} else {
-				panic("A current module does not exist")
+				fmt.Println("A current module does not exist")
 			}
 			if _, err := cxt.SelectModule($2); err == nil {
 				//fmt.Println(fmt.Sprintf("== Changed to package '%s' ==", mod.Name))
@@ -722,6 +741,10 @@ selector:       SPACKAGE IDENT
 				fmt.Println(err)
 			}
 
+			replTargetMod = $2
+			replTargetStrct = ""
+			replTargetFn = ""
+			
 			$<string>$ = previousModule.Name
                 }
                 selectorLines
@@ -738,7 +761,7 @@ selector:       SPACKAGE IDENT
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				previousFunction = fn
 			} else {
-				panic("A current function does not exist")
+				fmt.Println("A current function does not exist")
 			}
 			if _, err := cxt.SelectFunction($2); err == nil {
 				//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
@@ -746,7 +769,10 @@ selector:       SPACKAGE IDENT
 				fmt.Println(err)
 			}
 
+			replTargetMod = ""
+			replTargetStrct = ""
 			replTargetFn = $2
+			
 			$<string>$ = previousFunction.Name
                 }
                 selectorExpressionsAndStatements
@@ -763,7 +789,7 @@ selector:       SPACKAGE IDENT
 			if fn, err := cxt.GetCurrentStruct(); err == nil {
 				previousStruct = fn
 			} else {
-				panic("A current struct does not exist")
+				fmt.Println("A current struct does not exist")
 			}
 			if _, err := cxt.SelectStruct($2); err == nil {
 				//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", fn.Name))
@@ -771,6 +797,10 @@ selector:       SPACKAGE IDENT
 				fmt.Println(err)
 			}
 
+			replTargetStrct = $2
+			replTargetMod = ""
+			replTargetFn = ""
+			
 			$<string>$ = previousStruct.Name
                 }
                 selectorFields
@@ -809,8 +839,6 @@ packageDeclaration:
                 {
 			mod := MakeModule($2)
 			cxt.AddModule(mod)
-			mod.AddTag(tag)
-			tag = ""
 			assembleModule($2)
                 }
                 ;
@@ -866,7 +894,6 @@ definitionDeclaration:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 					if flds, err := strct.GetFields(); err == nil {
-						//_ = flds
 						for _, fld := range flds {
 							zeroVal := MakeDefaultValue(fld.Typ.Name)
 							defName := fmt.Sprintf("%s.%s", $2, fld.Name)
@@ -875,7 +902,7 @@ definitionDeclaration:
 						}
 					}
 				} else {
-					panic(fmt.Sprintf("Type '%s' not defined", $3))
+					fmt.Println("Type '%s' not defined", $3)
 				}
 			}
                 }
@@ -888,9 +915,27 @@ fields:
                         flds = append(flds, MakeFieldFromParameter($1))
 			$$ = flds
                 }
+        |       ';'
+                {
+			var flds []*CXField
+			$$ = flds
+                }
+        |       debugging
+                {
+			var flds []*CXField
+			$$ = flds
+                }
         |       fields parameter
                 {
 			$1 = append($1, MakeFieldFromParameter($2))
+			$$ = $1
+                }
+        |       fields ';'
+                {
+			$$ = $1
+                }
+        |       fields debugging
+                {
 			$$ = $1
                 }
                 ;
@@ -912,8 +957,6 @@ structDeclaration:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
-				strct.AddTag(tag)
-				tag = ""
 				assembleStruct($2)
 			}
                 }
@@ -946,8 +989,6 @@ functionDeclaration:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
-				fn.AddTag(tag)
-				tag = ""
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, inp := range $3 {
 						fn.AddInput(inp)
@@ -1001,7 +1042,6 @@ functionStatements:
                 /* } */
         ;
 
-
 expressionsAndStatements:
                 nonAssignExpression
         |       assignExpression
@@ -1010,7 +1050,7 @@ expressionsAndStatements:
         |       stepping
         |       debugging
         |       affordance
-        |       removers
+        |       remover
         |       prolog
         |       expressionsAndStatements nonAssignExpression
         |       expressionsAndStatements assignExpression
@@ -1019,7 +1059,7 @@ expressionsAndStatements:
         |       expressionsAndStatements stepping
         |       expressionsAndStatements debugging
         |       expressionsAndStatements affordance
-        |       expressionsAndStatements removers
+        |       expressionsAndStatements remover
         |       expressionsAndStatements prolog
         ;
 
@@ -1298,7 +1338,7 @@ nonAssignExpression:
 						
 						$$ = args
 					} else {
-						panic(fmt.Sprintf("Function '%s' not defined", $1))
+						fmt.Println("Function '%s' not defined", $1)
 					}
 				}
 			}
@@ -1799,14 +1839,6 @@ statement:      RETURN
 							assembleArgument(elseLines, "i32")
 						}
 					}
-					
-					// first goTo:
-					// then: either 1 or size(increment)
-					// else: either size(block) or size(block) + size(increment)
-
-					// second goTo (increment):
-					// alwaysTrue
-					// then: -size(increment)
 				}
 			}
                 }

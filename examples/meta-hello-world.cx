@@ -1,0 +1,12 @@
+package main
+
+var greeting str = "Meta hello."
+var farewell str = "Meta good-bye."
+
+func main () () {
+	remExpr("toBeRemoved")
+	:tag toBeRemoved;
+	divI32(3, 0)
+	addExpr("newPrint", "printStr")
+	affExpr("newPrint", ".", 0)
+}
