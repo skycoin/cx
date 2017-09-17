@@ -361,6 +361,12 @@ func MakeValue (value string) *[]byte {
 	return &byts
 }
 
+func MakeObject (name string) *CXObject {
+	return &CXObject{
+		Name: name,
+	}
+}
+
 func MakeCall (op *CXFunction, state []*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
 	return &CXCall{
 		Operator: op,
@@ -411,6 +417,4 @@ func MakeIdentityOpName (typeName string) string {
 	}
 }
 
-// func MakeProgramStep (action func()) *CXProgramStep {
-// 	return &CXProgramStep{Action: action}
-// }
+

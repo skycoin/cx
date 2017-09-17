@@ -15,6 +15,6 @@ func main () (out i32) {
 	var myPoint Point
 	myPoint.x = addI32(5, 10)
 	myPoint.y = addI32(myPoint.x, 20)
-	
+
 	out = addI32(myPoint.x, myPoint.y)
 }

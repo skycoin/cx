@@ -1961,8 +1961,7 @@ func setClauses (clss *CXArgument, mod *CXModule) (*CXArgument, error) {
 
 func addObject (obj *CXArgument, mod *CXModule) (*CXArgument, error) {
 	if err := checkType("addObject", "str", obj); err == nil {
-		object := string(*obj.Value)
-		mod.AddObject(object)
+		mod.AddObject(MakeObject(string(*obj.Value)))
 
 		return obj, nil
 	} else {

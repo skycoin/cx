@@ -67,8 +67,10 @@ var NATIVE_FUNCTIONS = []string{
 	"remObject", "remObjects",
 
 	"remExpr", "remArg", "addExpr", "affExpr",
-	
-	"evolve", "initDef",
+
+	"serialize", "deserialize", "evolve",
+
+	"initDef",
 }
 
 /*
@@ -112,12 +114,16 @@ type CXModule struct {
 
 	// Affordance inference
 	Clauses string
-	Objects []string
+	Objects []*CXObject
 	Query string
 
 	CurrentFunction *CXFunction
 	CurrentStruct *CXStruct
 	Context *CXProgram
+}
+
+type CXObject struct {
+	Name string
 }
 
 type CXDefinition struct {

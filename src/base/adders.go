@@ -90,7 +90,7 @@ func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddObject (obj string) *CXModule {
+func (mod *CXModule) AddObject (obj *CXObject) *CXModule {
 	mod.Objects = append(mod.Objects, obj)
 
 	return mod
@@ -172,6 +172,10 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 			outName,
 			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ.Name),
 			expr.Operator.Outputs[nextOutIdx].Typ)
+		
+		outDef.Module = expr.Module
+		outDef.Context = expr.Context
+		
 		expr.OutputNames = append(expr.OutputNames, outDef)
 	}
 	

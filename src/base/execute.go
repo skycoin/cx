@@ -648,8 +648,9 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 		}
 	} else {
 		fn := call.Operator
-
+		
 		if expr, err := fn.GetExpression(call.Line); err == nil {
+			
 			// getting arguments
 			//outName := expr.OutputName
 			argsRefs, _ := expr.GetArguments()
@@ -660,8 +661,9 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			// exceptions
 			var exc bool
 			var excError error
-
+			
 			if len(argNames) != len(expr.Operator.Inputs) {
+				//fmt.Println("delete-me")
 				return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
 					expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argNames)))
 			}
@@ -751,6 +753,13 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			}
 
 			switch opName {
+			case "serialize":
+				sProgram := Serialize(call.Context)
+				values = append(values, MakeArgument(sProgram, MakeType("[]byte")))
+			case "deserialize":
+				// it only prints the deserialized program for now
+				Deserialize(argsCopy[0].Value).PrintProgram(false)
+				values = append(values, MakeArgument(MakeDefaultValue("bool"), MakeType("bool")))
 			case "evolve":
 				fnName := string(*argsCopy[0].Value)
 				fnBag := string(*argsCopy[1].Value)

@@ -329,11 +329,8 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 				}
 			}
 
-			// delete me
-			//if fn.Name == "main" {
 			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
 				j, fn.Name, inps.String(), outs.String())
-			//}
 
 			if withAffs {
 				for i, aff := range fn.GetAffordances() {

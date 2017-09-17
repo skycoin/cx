@@ -272,7 +272,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 					query := fmt.Sprintf(expr.Module.Query,
 						op.Name,
 						argName,
-						obj)
+						obj.Name)
 
 					if goal, err := read.Term(query); err == nil {
 						variables := term.Variables(goal)

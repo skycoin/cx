@@ -81,7 +81,7 @@ func (mod *CXModule) RemoveClauses () {
 func (mod *CXModule) RemoveObject (objName string) {
 	lenObjs := len(mod.Objects)
 	for i, obj := range mod.Objects {
-		if obj == objName {
+		if obj.Name == objName {
 			if i == lenObjs - 1 {
 				mod.Objects = mod.Objects[:len(mod.Objects) - 1]
 			} else {

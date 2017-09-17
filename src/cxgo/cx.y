@@ -1,5 +1,5 @@
 %{
-	package cxgo
+	package main
 	import (
 		"strings"
 		"bytes"
@@ -211,7 +211,7 @@ prolog:
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				for i, object := range mod.Objects {
-					fmt.Printf("%d.- %s\n", i, object)
+					fmt.Printf("%d.- %s\n", i, object.Name)
 				}
 			}
                 }
@@ -230,7 +230,7 @@ prolog:
         |       COBJECT IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.AddObject($2);
+				mod.AddObject(MakeObject($2));
 				//assembleObject($2)
 			}
                 }
