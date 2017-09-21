@@ -1,0 +1,129 @@
+package main
+
+func walk (flag bool) () {
+	if flag {
+		if gtI32(randI32(0, 10), 5) {
+			printStr("The traveler keeps following the lane, making sure to ignore any pain.")
+		} else {
+			printStr("North, east, west, south. Any direction is good, as long as no monster can be found.")
+		}
+	}
+}
+
+func noise (flag bool) () {
+	if flag {
+		if gtI32(randI32(0, 10), 5) {
+			printStr("A cracking noise is heard, but no monster is there.")
+		} else {
+			addObject("monster")
+			printStr("Howling and growling, the monster is coming.")
+		}
+	}
+}
+
+func consider (flag bool) () {
+	if flag {
+		if gtI32(randI32(0, 10), 5) {
+			remObject("monster")
+			printStr("The traveler runs away, and cowardice lets him live for another day.")
+		} else {
+			addObject("fight")
+			printStr("Bravery comes into sight, in the hope of living for another night.")
+		}
+	}
+}
+
+func chance (flag bool) () {
+	if and(flag, gtI32(randI32(0, 10), 5)) {
+		if gtI32(randI32(0, 10), 5) {
+			remObject("fight")
+			remObject("monster")
+			printStr("The monster stares, almost as in compassion, and leaves despite the traveler's past actions.")
+		} else {
+			remObject("fight")
+			printStr("The monster starts a deep glare, waiting for the traveler to accept the dare.")
+		}
+	}
+}
+
+func fightResult (flag bool) () {
+	if flag {
+		if gtI32(randI32(0, 10), 5) {
+			addObject("died")
+			printStr("But failure describes this fend and, suddenly, this adventure comes to an end.")
+		} else {
+			remObject("monster")
+			remObject("fight")
+			printStr("Naive, and even dumb, but the traveler's act leaves the monster numb.")
+		}
+	}
+}
+
+func theEnd (flag bool) () {
+	if flag {
+		printStr("")
+		halt("You died.")
+	}
+}
+
+func act () () {
+	yes := true
+	no := false
+	
+	remArg("walk")
+	affExpr("walk", "yes|no", 0)
+	:tag walk;
+	walk(false)
+
+	remArg("noise")
+	affExpr("noise", "yes|no", 0)
+	:tag noise;
+	noise(false)
+
+	remArg("consider")
+	affExpr("consider", "yes|no", 0)
+	:tag consider;
+	consider(false)
+
+	remArg("chance")
+	affExpr("chance", "yes|no", 0)
+	:tag chance;
+	chance(false)
+
+	remArg("fightResult")
+	affExpr("fightResult", "yes|no", 0)
+	:tag fightResult;
+	fightResult(false)
+
+	remArg("theEnd")
+	affExpr("theEnd", "yes|no", 0)
+	:tag theEnd;
+	theEnd(false)
+}
+
+func main () () {
+	setClauses("
+          aff(walk, yes, X, R) :- X = monster, R = false.
+          aff(noise, yes, X, R) :- X = monster, R = false.
+
+          aff(consider, yes, X, R) :-  R = false.
+          aff(chance, yes, X, R) :-  R = false.
+          aff(fightResult, yes, X, R) :-  R = false.
+          aff(theEnd, yes, X, R) :-  R = false.
+
+          aff(consider, yes, X, R) :- X = monster, R = true.
+          aff(chance, yes, X, R) :- X = fight, R = true.
+          aff(fightResult, yes, X, R) :- X = fight, R = true.
+          aff(theEnd, yes, X, R) :- X = died, R = true.
+        ")
+	
+	setQuery("aff(%s, %s, %s, R).")
+
+	addObject("start")
+	for c := 0; ltI32(c, 5); c = addI32(c, 1) {
+		act()
+	}
+
+	printStr("")
+	printStr("You survived.")
+}

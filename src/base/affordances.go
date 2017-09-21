@@ -258,8 +258,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			m = m.Consult(b)
 		}
 
-		//:query "aff(robot, advance, rightWall, R).
-
 		re := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]*$")
 
 		for i, arg := range args {
@@ -277,7 +275,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 					if goal, err := read.Term(query); err == nil {
 						variables := term.Variables(goal)
 						answers := m.ProveAll(goal)
-
+						
 						pass := false
 						if len(answers) == 0 || variables.Size() == 0 {
 							pass = true
@@ -289,6 +287,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 								variables.ForEach(func(name string, variable interface{}) {
 									v := variable.(*term.Variable)
 									val := answer.Resolve_(v)
+									//fmt.Printf("\nhere: %s\n", val.String())
 									if val.String() == "false" {
 										isSkip = true
 									}
@@ -296,9 +295,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 										isSkip = false
 									}
 									
-									
-									//line := fmt.Sprintf("%s = %s", name, val)
-									//lines = append(lines, line)
 								})
 								//fmt.Println(strings.Join(lines, "\n"))
 							}

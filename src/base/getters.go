@@ -216,7 +216,7 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			break
 		}
 	}
-
+	
 	var foundFn *CXFunction
 	for _, fn := range foundMod.Functions {
 		if fn.Name == fnName {
@@ -224,6 +224,8 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			break
 		}
 	}
+
+	
 
 	if foundMod != nil && foundFn != nil {
 		return foundFn, nil

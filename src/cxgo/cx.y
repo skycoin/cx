@@ -902,7 +902,7 @@ definitionDeclaration:
 						}
 					}
 				} else {
-					fmt.Println("Type '%s' not defined", $3)
+					fmt.Printf("Type '%s' not defined\n", $3)
 				}
 			}
                 }
@@ -1249,35 +1249,10 @@ assignExpression:
 						assembleExpression(idFn, CORE_MODULE, yyS[yypt-0].line + 1, true)
 
 						expr.AddOutputName(string(*argL.Value))
-						
-						// for _, outNameInArg := range $1 {
-						// 	expr.AddOutputName(string(*outNameInArg.Value))
-						// 	assembleOutputName(string(*outNameInArg.Value))
-						// }
-
-						//var arg *CXArgument
-						
-						// switch typ {
-						// case "ident":
-						// 	arg = MakeArgument(string(*argR.Value), MakeType(typ))
-						// case "bool":
-						// 	var val bool
-						// 	encoder.DeserializeRaw(*argR.Value, &val)
-						// 	MakeType(typ)
-						// }
 
 						arg := MakeArgument(argsR[i].Value, MakeType(typ))
-						//expr.AddArgument(argsR[i])
 						expr.AddArgument(arg)
 						assembleArgument(*arg.Value, typ)
-						
-						// if expr, err := fn.GetCurrentExpression(); err == nil {
-						// 	for _, arg := range $4 {
-						// 		expr.AddArgument(arg)
-						// 		assembleArgument(*arg.Value, arg.Typ.Name)
-						// 	}
-						// 	$$ = expr
-						// }
 					}
 				}
 			}
@@ -1338,7 +1313,7 @@ nonAssignExpression:
 						
 						$$ = args
 					} else {
-						fmt.Println("Function '%s' not defined", $1)
+						fmt.Printf("Function '%s' not defined\n", $1)
 					}
 				}
 			}

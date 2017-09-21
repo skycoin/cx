@@ -393,9 +393,8 @@ func remObjects () (out bool) {}
 
 func remExpr (tag str) (err bool) {}
 func remArg (tag str) (err bool) {}
-//func addArg (tag str, ident str) (err bool) {}
 func addExpr (tag str, fnName str) (err bool) {}
-func affExpr (tag str, filter str, index i32) (err bool) {}
+func affExpr (tag str, filter str, index i32) (numAffs i32) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 func serialize () (sPrgrm []byte) {}

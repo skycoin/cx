@@ -2076,17 +2076,28 @@ func remExpr (tag *CXArgument, caller *CXFunction) (*CXArgument, error) {
 	return nil, errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", string(*tag.Value)))
 }
 
+//func affFn (filter *CXArgument, )
+
 func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFunction) (*CXArgument, error) {
 	if err := checkThreeTypes("affExpr", "str", "str", "i32", tag, filter, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		if index < 0 {
+		if index == -1 {
 			for _, expr := range caller.Expressions {
 				if expr.Tag == string(*tag.Value) {
-					PrintAffordances(FilterAffordances(expr.GetAffordances(), string(*filter.Value)))
-					val := encoder.Serialize(int32(0))
-					return MakeArgument(&val, MakeType("bool")), nil
+					affs := FilterAffordances(expr.GetAffordances(), string(*filter.Value))
+					PrintAffordances(affs)
+					val := encoder.Serialize(int32(len(affs)))
+					return MakeArgument(&val, MakeType("i32")), nil
+				}
+			}
+		} else if index < -1 {
+			for _, expr := range caller.Expressions {
+				if expr.Tag == string(*tag.Value) {
+					affs := FilterAffordances(expr.GetAffordances(), string(*filter.Value))
+					val := encoder.Serialize(int32(len(affs)))
+					return MakeArgument(&val, MakeType("i32")), nil
 				}
 			}
 		} else {
@@ -2094,8 +2105,8 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 				if expr.Tag == string(*tag.Value) {
 					affs := FilterAffordances(expr.GetAffordances(), string(*filter.Value))
 					affs[index].ApplyAffordance()
-					val := encoder.Serialize(int32(0))
-					return MakeArgument(&val, MakeType("bool")), nil
+					val := encoder.Serialize(int32(len(affs)))
+					return MakeArgument(&val, MakeType("i32")), nil
 				}
 			}
 		}
