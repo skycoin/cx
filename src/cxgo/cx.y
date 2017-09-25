@@ -22,6 +22,7 @@
 	var m = golog.NewInteractiveMachine()
 	
 	var lineNo int = 0
+	var webMode bool = false
 	var baseOutput bool = false
 	var replMode bool = false
 	var helpMode bool = false
@@ -33,6 +34,7 @@
 	var inREPL bool = false
 	//var dProgram bool = false
 	var tag string = ""
+	var asmNL = "\n"
 
 	func warnf(format string, args ...interface{}) {
 		fmt.Fprintf(os.Stderr, format, args...)
@@ -41,77 +43,89 @@
 
 	func assembleModule (modName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);`, modName))
+			program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);%s`, modName, asmNL))
 		}
 	}
 
 	func assembleImport (impName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`imp, _ = cxt.GetModule("%s");mod.AddImport(imp);`, impName))
+			program.WriteString(fmt.Sprintf(`imp, _ = cxt.GetModule("%s");mod.AddImport(imp);%s`, impName, asmNL))
 		}
 	}
 
 	func assembleStruct (strctName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);`, strctName))
+			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);%s`, strctName, asmNL))
 		}
 	}
 	
 	func assembleField (fldName, fldTypName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`strct.AddField(MakeField("%s", MakeType("%s")));`, fldName, fldTypName))
+			program.WriteString(fmt.Sprintf(`strct.AddField(MakeField("%s", MakeType("%s")));%s`, fldName, fldTypName, asmNL))
 		}
 	}
 
 	func assembleFunction (fnName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);`, fnName))
+			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);%s`, fnName, asmNL))
 		}
 	}
 
 	func assembleOutputName (outName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");`, outName))
+			program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");%s`, outName, asmNL))
 		}
 	}
 
-	func assembleArgument (val []byte, typName string) {
+	func assembleArgument (val []byte, typName string, isGoTo bool) {
+		var exprName string
+		if isGoTo {
+			exprName = "goToExpr"
+		} else {
+			exprName = "expr"
+		}
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, MakeType("%s")));`, val, typName))
+			program.WriteString(fmt.Sprintf(`%s.AddArgument(MakeArgument(&%#v, MakeType("%s")));%s`, exprName, val, typName, asmNL))
 		}
 	}
 
 	func assembleInput (inpName, inpTypeName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`fn.AddInput(MakeParameter("%s", MakeType("%s")));`, inpName, inpTypeName))
+			program.WriteString(fmt.Sprintf(`fn.AddInput(MakeParameter("%s", MakeType("%s")));%s`, inpName, inpTypeName, asmNL))
 		}
 	}
 	
 	func assembleOutput (outName, outTypeName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", MakeType("%s")));`, outName, outTypeName))
+			program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", MakeType("%s")));%s`, outName, outTypeName, asmNL))
 		}
 	}
 	
 	func assembleDefinition (defName string, value []byte, typName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, MakeType("%s")));`, defName, value, typName))
+			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, MakeType("%s")));%s`, defName, value, typName, asmNL))
 		}
 	}
 	
-	func assembleExpression (fnName string, modName string, fileLine int, needsTag bool) {
+	func assembleExpression (fnName string, modName string, fileLine int, needsTag, isGoTo bool) {
 		if baseOutput {
 			var tagStr string
-			if needsTag {
-				tagStr = `expr.Tag = tag;tag = "";`
+			var exprName string
+			if isGoTo {
+				exprName = "goToExpr"
+			} else {
+				exprName = "expr"
 			}
-			program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s`, fnName, modName, fileLine, tagStr))
+			if needsTag {
+				tagStr = fmt.Sprintf(`%s.Tag = tag;tag = "";`, exprName)
+			}
+			program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");%s = MakeExpression(op);%s.FileLine = %d;fn.AddExpression(%s);%s%s`, fnName, modName, exprName, exprName, fileLine, exprName, tagStr, asmNL))
 		}
 	}
 
 	func assembleTag (tagName string) {
 		if baseOutput {
-			program.WriteString(fmt.Sprintf(`tag = "%s"`, tagName))
+			program.WriteString(fmt.Sprintf(`tag = "%s%s"`, tagName, asmNL))
 		}
 	}
 %}
@@ -1077,14 +1091,14 @@ assignExpression:
 							}
 
 							fn.AddExpression(expr)
-							assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false)
+							assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 							expr.AddOutputName($2)
 							assembleOutputName($2)
 							
 							typ := []byte($3)
 							arg := MakeArgument(&typ, MakeType("str"))
 							expr.AddArgument(arg)
-							assembleArgument(typ, "str")
+							assembleArgument(typ, "str", false)
 
 							if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 								for _, fld := range strct.Fields {
@@ -1093,13 +1107,13 @@ assignExpression:
 										expr.FileLine = yyS[yypt-0].line + 1
 									}
 									fn.AddExpression(expr)
-									assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false)
+									assembleExpression("initDef", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									assembleOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									typ := []byte(fld.Typ.Name)
 									arg := MakeArgument(&typ, MakeType("str"))
 									expr.AddArgument(arg)
-									assembleArgument(typ, "str")
+									assembleArgument(typ, "str", false)
 								}
 							}
 						}
@@ -1117,11 +1131,11 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idBool", CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression("idBool", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
-								assembleArgument(*val.Value, "bool")
+								assembleArgument(*val.Value, "bool", false)
 							}
 						case "byte":
 							var ds int32
@@ -1135,11 +1149,11 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idByte", CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression("idByte", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
-								assembleArgument(*val.Value, "byte")
+								assembleArgument(*val.Value, "byte", false)
 							}
 						case "i64":
 							var ds int32
@@ -1153,11 +1167,11 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idI64", CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression("idI64", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
-								assembleArgument(*val.Value, "i64")
+								assembleArgument(*val.Value, "i64", false)
 							}
 						case "f64":
 							var ds float32
@@ -1171,11 +1185,11 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("idF64", CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression("idF64", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
-								assembleArgument(*val.Value, "f64")
+								assembleArgument(*val.Value, "f64", false)
 							}
 						default:
 							val := $4
@@ -1197,11 +1211,11 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression(getFn, CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression(getFn, CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 								expr.AddOutputName($2)
 								assembleOutputName($2)
 								expr.AddArgument(val)
-								assembleArgument(*val.Value, $3)
+								assembleArgument(*val.Value, $3, false)
 							}
 						}
 					}
@@ -1246,13 +1260,13 @@ assignExpression:
 						fn.AddExpression(expr)
 						expr.AddTag(tag)
 						tag = ""
-						assembleExpression(idFn, CORE_MODULE, yyS[yypt-0].line + 1, true)
+						assembleExpression(idFn, CORE_MODULE, yyS[yypt-0].line + 1, true, false)
 
 						expr.AddOutputName(string(*argL.Value))
 
 						arg := MakeArgument(argsR[i].Value, MakeType(typ))
 						expr.AddArgument(arg)
-						assembleArgument(*arg.Value, typ)
+						assembleArgument(*arg.Value, typ, false)
 					}
 				}
 			}
@@ -1278,8 +1292,6 @@ nonAssignExpression:
 			if err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if op, err := cxt.GetFunction(fnName, modName); err == nil {
-						//syntOutName := MakeGenSym("nonAssign")
-						
 						expr := MakeExpression(op)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
@@ -1287,14 +1299,14 @@ nonAssignExpression:
 						fn.AddExpression(expr)
 						expr.AddTag(tag)
 						tag = ""
-						assembleExpression(fnName, modName, yyS[yypt-0].line + 1, true)
+						assembleExpression(fnName, modName, yyS[yypt-0].line + 1, true, false)
 						for _, arg := range $2 {
 
 							typeParts := GetIdentParts(arg.Typ.Name)
 
 							arg.Typ.Name = typeParts[0]
 							expr.AddArgument(arg)
-							assembleArgument(*arg.Value, arg.Typ.Name)
+							assembleArgument(*arg.Value, arg.Typ.Name, false)
 						}
 
 						lenOut := len(op.Outputs)
@@ -1330,15 +1342,15 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 						val := MakeDefaultValue("bool")
 						expr.AddArgument(MakeArgument(val, MakeType("bool")))
-						assembleArgument(*val, "bool")
+						assembleArgument(*val, "bool", true)
 						lines := encoder.SerializeAtomic(int32(-len(fn.Expressions)))
 						expr.AddArgument(MakeArgument(&lines, MakeType("i32")))
-						assembleArgument(lines, "i32")
+						assembleArgument(lines, "i32", true)
 						expr.AddArgument(MakeArgument(&lines, MakeType("i32")))
-						assembleArgument(lines, "i32")
+						assembleArgument(lines, "i32", true)
 					}
 				}
 			}
@@ -1353,7 +1365,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1383,11 +1395,11 @@ statement:      RETURN
 					predVal := $2[0].Value
 
 					goToExpr.AddArgument(MakeArgument(predVal, MakeType("ident")))
-					assembleArgument(*predVal, "ident")
+					assembleArgument(*predVal, "ident", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 				}
 			}
                 }
@@ -1401,7 +1413,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1429,11 +1441,11 @@ statement:      RETURN
 					predVal := []byte($2)
 
 					goToExpr.AddArgument(MakeArgument(&predVal, MakeType("ident")))
-					assembleArgument(predVal, "ident")
+					assembleArgument(predVal, "ident", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 				}
 			}
                 }
@@ -1447,7 +1459,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1474,11 +1486,11 @@ statement:      RETURN
 					predVal := encoder.Serialize($2)
 					
 					goToExpr.AddArgument(MakeArgument(&predVal, MakeType("bool")))
-					assembleArgument(predVal, "bool")
+					assembleArgument(predVal, "bool", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 				}
 			}
                 }
@@ -1492,7 +1504,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1515,11 +1527,11 @@ statement:      RETURN
 					predVal := $2[0].Value
 					
 					goToExpr.AddArgument(MakeArgument(predVal, MakeType("ident")))
-					assembleArgument(*predVal, "ident")
+					assembleArgument(*predVal, "ident", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
@@ -1527,7 +1539,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5 - 1))
@@ -1535,11 +1547,11 @@ statement:      RETURN
 						alwaysTrue := encoder.Serialize(int32(1))
 
 						goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-						assembleArgument(alwaysTrue, "bool")
+						assembleArgument(alwaysTrue, "bool", true)
 						goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-						assembleArgument(thenLines, "i32")
+						assembleArgument(thenLines, "i32", true)
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-						assembleArgument(elseLines, "i32")
+						assembleArgument(elseLines, "i32", true)
 					}
 					
 				}
@@ -1555,7 +1567,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1578,11 +1590,11 @@ statement:      RETURN
 					predVal := []byte($2)
 					
 					goToExpr.AddArgument(MakeArgument(&predVal, MakeType("ident")))
-					assembleArgument(predVal, "ident")
+					assembleArgument(predVal, "ident", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
@@ -1590,7 +1602,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1598,11 +1610,11 @@ statement:      RETURN
 						alwaysTrue := encoder.Serialize(int32(1))
 
 						goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-						assembleArgument(alwaysTrue, "bool")
+						assembleArgument(alwaysTrue, "bool", true)
 						goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-						assembleArgument(thenLines, "i32")
+						assembleArgument(thenLines, "i32", true)
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-						assembleArgument(elseLines, "i32")
+						assembleArgument(elseLines, "i32", true)
 					}
 					
 				}
@@ -1618,7 +1630,7 @@ statement:      RETURN
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1646,11 +1658,11 @@ statement:      RETURN
 					}
 
 					goToExpr.AddArgument(MakeArgument(&predVal, MakeType("bool")))
-					assembleArgument(elseLines, "bool")
+					assembleArgument(elseLines, "bool", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 					
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
@@ -1658,7 +1670,7 @@ statement:      RETURN
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1666,11 +1678,11 @@ statement:      RETURN
 						alwaysTrue := encoder.Serialize(int32(1))
 
 						goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-						assembleArgument(alwaysTrue, "bool")
+						assembleArgument(alwaysTrue, "bool", true)
 						goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-						assembleArgument(thenLines, "i32")
+						assembleArgument(thenLines, "i32", true)
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-						assembleArgument(elseLines, "i32")
+						assembleArgument(elseLines, "i32", true)
 					}
 					
 				}
@@ -1690,7 +1702,7 @@ statement:      RETURN
 								expr.FileLine = yyS[yypt-0].line + 1
 							}
 							fn.AddExpression(expr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 						}
 					}
 				}
@@ -1714,7 +1726,7 @@ statement:      RETURN
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+								assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 							}
 						}
 					}
@@ -1725,9 +1737,9 @@ statement:      RETURN
 					predVal := $4[0].Value
 					
 					goToExpr.AddArgument(MakeArgument(predVal, MakeType("ident")))
-					assembleArgument(*predVal, "ident")
+					assembleArgument(*predVal, "ident", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					// goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 					// assembleArgument(elseLines, "i32")
 				}
@@ -1747,11 +1759,11 @@ statement:      RETURN
 						elseLines := encoder.Serialize(int32(0))
 
 						goToExpr.AddArgument(MakeArgument(predVal, MakeType("bool")))
-						assembleArgument(*predVal, "bool")
+						assembleArgument(*predVal, "bool", true)
 						goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-						assembleArgument(thenLines, "i32")
+						assembleArgument(thenLines, "i32", true)
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-						assembleArgument(elseLines, "i32")
+						assembleArgument(elseLines, "i32", true)
 
 						if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
@@ -1759,7 +1771,7 @@ statement:      RETURN
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1767,18 +1779,18 @@ statement:      RETURN
 							elseLines := encoder.Serialize(int32(0))
 
 							goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-							assembleArgument(alwaysTrue, "bool")
+							assembleArgument(alwaysTrue, "bool", true)
 							goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-							assembleArgument(thenLines, "i32")
+							assembleArgument(thenLines, "i32", true)
 							goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-							assembleArgument(elseLines, "i32")
+							assembleArgument(elseLines, "i32", true)
 
 							condGoToExpr := fn.Expressions[$<i>5 - 1]
 
 							condThenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 1))
 							
 							condGoToExpr.AddArgument(MakeArgument(&condThenLines, MakeType("i32")))
-							assembleArgument(condThenLines, "i32")
+							assembleArgument(condThenLines, "i32", true)
 						}
 					} else {
 						predVal := $4[0].Value
@@ -1787,11 +1799,11 @@ statement:      RETURN
 						elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 2))
 						
 						goToExpr.AddArgument(MakeArgument(predVal, MakeType("ident")))
-						assembleArgument(*predVal, "ident")
+						assembleArgument(*predVal, "ident", true)
 						goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-						assembleArgument(thenLines, "i32")
+						assembleArgument(thenLines, "i32", true)
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-						assembleArgument(elseLines, "i32")
+						assembleArgument(elseLines, "i32", true)
 
 						if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
@@ -1799,7 +1811,7 @@ statement:      RETURN
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 							
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1807,11 +1819,11 @@ statement:      RETURN
 							elseLines := encoder.Serialize(int32(0))
 
 							goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-							assembleArgument(alwaysTrue, "bool")
+							assembleArgument(alwaysTrue, "bool", true)
 							goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-							assembleArgument(thenLines, "i32")
+							assembleArgument(thenLines, "i32", true)
 							goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-							assembleArgument(elseLines, "i32")
+							assembleArgument(elseLines, "i32", true)
 						}
 					}
 				}
@@ -1832,10 +1844,10 @@ statement:      RETURN
 										expr.FileLine = yyS[yypt-0].line + 1
 									}
 									fn.AddExpression(expr)
-									assembleExpression(MakeIdentityOpName(fld.Typ.Name), CORE_MODULE, yyS[yypt-0].line + 1, false)
+									assembleExpression(MakeIdentityOpName(fld.Typ.Name), CORE_MODULE, yyS[yypt-0].line + 1, false, false)
 									
 									expr.AddArgument(MakeArgument(zeroVal, fld.Typ))
-									assembleArgument(*zeroVal, fld.Typ.Name)
+									assembleArgument(*zeroVal, fld.Typ.Name, false)
 									expr.AddOutputName(localName)
 									assembleOutputName(localName)
 								}
@@ -1875,7 +1887,7 @@ elseStatement:
 					    expr.FileLine = yyS[yypt-0].line + 1
 				    }
 				    fn.AddExpression(expr)
-				    assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false)
+				    assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
                             }
                         }
                     }
@@ -1898,11 +1910,11 @@ elseStatement:
 					alwaysTrue := encoder.Serialize(int32(1))
 
 					goToExpr.AddArgument(MakeArgument(&alwaysTrue, MakeType("bool")))
-					assembleArgument(alwaysTrue, "bool")
+					assembleArgument(alwaysTrue, "bool", true)
 					goToExpr.AddArgument(MakeArgument(&thenLines, MakeType("i32")))
-					assembleArgument(thenLines, "i32")
+					assembleArgument(thenLines, "i32", true)
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
-					assembleArgument(elseLines, "i32")
+					assembleArgument(elseLines, "i32", true)
 
 					$<i>$ = len(fn.Expressions) - $<i>4
 				}

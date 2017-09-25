@@ -207,6 +207,11 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			modName = CORE_MODULE
 			break
 		}
+		if fmt.Sprintf("%s.%s", modName, fnName, ) == nativeFn {
+			fnName = fmt.Sprintf("%s.%s", modName, fnName, )
+			modName = CORE_MODULE
+			break
+		}
 	}
 	
 	var foundMod *CXModule

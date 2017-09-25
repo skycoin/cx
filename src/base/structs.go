@@ -7,61 +7,60 @@ var BASIC_TYPES []string = []string{
 	"[]bool", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
 }
 var NATIVE_FUNCTIONS = []string{
-	"addI32", "mulI32", "subI32", "divI32",
-	"addI64", "mulI64", "subI64", "divI64",
-	"addF32", "mulF32", "subF32", "divF32",
-	"addF64", "mulF64", "subF64", "divF64",
-	"modI32", "modI64",
-	"andI32", "orI32", "xorI32", "andNotI32",
-	"andI64", "orI64", "xorI64", "andNotI64",
-	
-	"printStr", "printByte", "printI32", "printI64",
-	"printF32", "printF64", "printByteA", "printI32A",
-	"printI64A", "printF32A", "printF64A", "printBool",
-	"printBoolA",
-	
-	"idStr", "idBool", "idByte", "idI32", "idI64", "idF32", "idF64",
-	"idBoolA", "idByteA", "idI32A", "idI64A", "idF32A", "idF64A",
+	"i32.add", "i32.mul", "i32.sub", "i32.div",
+	"i64.add", "i64.mul", "i64.sub", "i64.div",
+	"f32.add", "f32.mul", "f32.sub", "f32.div",
+	"f64.add", "f64.mul", "f64.sub", "f64.div",
+	"i32.mod", "i64.mod",
+	"i32.and", "i32.or", "i32.xor", "i32.andNot",
+	"i64.and", "i64.or", "i64.xor", "i64.andNot",
 
-	"makeBoolA", "makeByteA", "makeI32A",
-	"makeI64A", "makeF32A", "makeF64A",
+	"str.print", "byte.print", "i32.print", "i64.print",
+	"f32.print", "f64.print", "[]byte.print", "[]i32.print",
+	"[]i64.print", "[]f32.print", "[]f64.print", "bool.print",
+	"[]bool.print",
 
-	"readBoolA", "writeBoolA",
-	"readByteA", "writeByteA", "readI32A", "writeI32A",
-	"readF32A", "writeF32A", "readF64A", "writeF64A",
-	"lenBoolA", "lenByteA", "lenI32A", "lenI64A",
-	"lenF32A", "lenF64A",
-	
-	"byteAToStr", "strToByteA",
-	
-	"byteToI32", "byteToI64", "byteToF32", "byteToF64",
-	"byteAToI32A", "byteAToI64A", "byteAToF32A", "byteAToF64A",
+	"str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id",
+	"[]bool.id", "[]byte.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id",
 
-	"i32ToByte", "i64ToByte", "f32ToByte", "f64ToByte",
-	"i32AToByteA", "i64AToByteA", "f32AToByteA", "f64AToByteA",
+	"[]bool.make", "[]byte.make", "[]i32.make",
+	"[]i64.make", "[]f32.make", "[]f64.make",
+
+	"[]bool.read", "[]bool.write",
+	"[]byte.read", "[]byte.write", "[]i32.read", "[]i32.write",
+	"[]f32.read", "[]f32.write", "[]f64.read", "[]f64.write",
+	"[]bool.len", "[]byte.len", "[]i32.len", "[]i64.len",
+	"[]f32.len", "[]f64.len",
+
+	"[]byte.str", "str.[]byte",
 	
-	"i64ToI32", "f32ToI32", "f64ToI32",
-	"i32ToI64", "f32ToI64", "f64ToI64",
-	"i32ToF32", "i64ToF32", "f64ToF32",
-	"i32ToF64", "i64ToF64", "f32ToF64",
+	"byte.i32", "byte.i64", "byte.f32", "byte.f64",
+	"[]byte.[]i32", "[]byte.[]i64", "[]byte.[]f32", "[]byte.[]f64",
+
+	"i32.byte", "i64.byte", "f32.byte", "f64.byte",
+	"[]i32.[]byte", "[]i64.[]byte", "[]f32.[]byte", "[]f64.[]byte",
+
+	"i64.i32", "f32.i32", "f64.i32",
+	"i32.i64", "f32.i64", "f64.i64",
+	"i32.f32", "i64.f32", "f64.f32",
+	"i32.f64", "i64.f64", "f32.f64",
+
+	"[]i64.[]i32", "[]f32.[]i32", "[]f64.[]i32",
+	"[]i32.[]i64", "[]f32.[]i64", "[]f64.[]i64",
+	"[]i32.[]f32", "[]i64.[]f32", "[]f64.[]f32",
+	"[]i32.[]f64", "[]i64.[]f64", "[]f32.[]f64",
 	
-	"i64AToI32A", "f32AToI32A", "f64AToI32A",
-	"i32AToI64A", "f32AToI64A", "f64AToI64A",
-	"i32AToF32A", "i64AToF32A", "f64AToF32A",
-	"i32AToF64A", "i64AToF64A", "f32AToF64A",
+	"i32.lt", "i32.gt", "i32.eq", "i32.lteq", "i32.gteq",
+	"i64.lt", "i64.gt", "i64.eq", "i64.lteq", "i64.gteq",
+	"f32.lt", "f32.gt", "f32.eq", "f32.lteq", "f32.gteq",
+	"f64.lt", "f64.gt", "f64.eq", "f64.lteq", "f64.gteq",
+	"str.lt", "str.gt", "str.eq", "str.lteq", "str.gteq",
+	"byte.lt", "byte.gt", "byte.eq", "byte.lteq", "byte.gteq",
+
+	"i32.rand", "i64.rand",
 
 	"and", "or", "not",
-	
-	"ltI32", "gtI32", "eqI32", "lteqI32", "gteqI32",
-	"ltI64", "gtI64", "eqI64", "lteqI64", "gteqI64",
-	"ltF32", "gtF32", "eqF32", "lteqF32", "gteqF32",
-	"ltF64", "gtF64", "eqF64", "lteqF64", "gteqF64",
-	"ltStr", "gtStr", "eqStr", "lteqStr", "gteqStr",
-	"ltByte", "gtByte", "eqByte", "lteqByte", "gteqByte",
-
 	"sleep", "halt", "goTo",
-
-	"randI32", "randI64",
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
@@ -185,6 +184,7 @@ type CXExpression struct {
 	Line int
 	FileLine int
 	Tag string
+	Label string
 	
 	Function *CXFunction
 	Module *CXModule

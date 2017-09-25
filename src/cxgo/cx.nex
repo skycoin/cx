@@ -54,6 +54,10 @@
 /</          { return LTHAN      }
 /<=/         { return LTEQ       }
 />=/         { return GTEQ       }
+/(str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
+	lval.tok = yylex.Text()
+	return IDENT
+}
 /bool/       { lval.tok = yylex.Text(); return BOOL     }
 /str/        { lval.tok = yylex.Text(); return STR      }
 /i32/        { lval.tok = yylex.Text(); return I32      }
@@ -106,9 +110,17 @@ import (
 	"regexp"
 	"io/ioutil"
 	"strconv"
+	"encoding/json"
 
+//	"flag"
+
+	"net"
+	"net/http"
+	
 	"runtime"
 
+	"github.com/skycoin/viscript/signal"
+	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/src/base"
 )
@@ -197,193 +209,193 @@ func repl () {
 
 var coreModule string = `
 package core
-func idStr (x str) (x str) {}
-func idBool (x bool) (x bool) {}
-func idByte (x byte) (x byte) {}
-func idI32 (x i32) (x i32) {}
-func idI64 (x i64) (x i64) {}
-func idF32 (x f32) (x f32) {}
-func idF64 (x f64) (x f64) {}
-func idBoolA (x []bool) (x []bool) {}
-func idByteA (x []byte) (x []byte) {}
-func idI32A (x []i32) (x []i32) {}
-func idI64A (x []i64) (x []i64) {}
-func idF32A (x []f32) (x []f32) {}
-func idF64A (x []f64) (x []f64) {}
+func str.id (x str) (x str) {}
+func bool.id (x bool) (x bool) {}
+func byte.id (x byte) (x byte) {}
+func i32.id (x i32) (x i32) {}
+func i64.id (x i64) (x i64) {}
+func f32.id (x f32) (x f32) {}
+func f64.id (x f64) (x f64) {}
+func []bool.id (x []bool) (x []bool) {}
+func []byte.id (x []byte) (x []byte) {}
+func []i32.id (x []i32) (x []i32) {}
+func []i64.id (x []i64) (x []i64) {}
+func []f32.id (x []f32) (x []f32) {}
+func []f64.id (x []f64) (x []f64) {}
 
-func addI32 (n1 i32, n2 i32) (out i32) {}
-func subI32 (n1 i32, n2 i32) (out i32) {}
-func mulI32 (n1 i32, n2 i32) (out i32) {}
-func divI32 (n1 i32, n2 i32) (out i32) {}
+func i32.add (n1 i32, n2 i32) (out i32) {}
+func i32.sub (n1 i32, n2 i32) (out i32) {}
+func i32.mul (n1 i32, n2 i32) (out i32) {}
+func i32.div (n1 i32, n2 i32) (out i32) {}
 
-func addI64 (n1 i64, n2 i64) (out i64) {}
-func subI64 (n1 i64, n2 i64) (out i64) {}
-func mulI64 (n1 i64, n2 i64) (out i64) {}
-func divI64 (n1 i64, n2 i64) (out i64) {}
+func i64.add (n1 i64, n2 i64) (out i64) {}
+func i64.sub (n1 i64, n2 i64) (out i64) {}
+func i64.mul (n1 i64, n2 i64) (out i64) {}
+func i64.div (n1 i64, n2 i64) (out i64) {}
 
-func addF32 (n1 f32, n2 f32) (out f32) {}
-func subF32 (n1 f32, n2 f32) (out f32) {}
-func mulF32 (n1 f32, n2 f32) (out f32) {}
-func divF32 (n1 f32, n2 f32) (out f32) {}
+func f32.add (n1 f32, n2 f32) (out f32) {}
+func f32.sub (n1 f32, n2 f32) (out f32) {}
+func f32.mul (n1 f32, n2 f32) (out f32) {}
+func f32.div (n1 f32, n2 f32) (out f32) {}
 
-func addF64 (n1 f64, n2 f64) (out f64) {}
-func subF64 (n1 f64, n2 f64) (out f64) {}
-func mulF64 (n1 f64, n2 f64) (out f64) {}
-func divF64 (n1 f64, n2 f64) (out f64) {}
+func f64.add (n1 f64, n2 f64) (out f64) {}
+func f64.sub (n1 f64, n2 f64) (out f64) {}
+func f64.mul (n1 f64, n2 f64) (out f64) {}
+func f64.div (n1 f64, n2 f64) (out f64) {}
 
-func modI32 (n1 i32, n2 i32) (rem i32) {}
-func modI64 (n1 i64, n2 i64) (rem i64) {}
+func i32.mod (n1 i32, n2 i32) (rem i32) {}
+func i64.mod (n1 i64, n2 i64) (rem i64) {}
 
-func andI32 (n1 i32, n2 i32) (out i32) {}
-func orI32 (n1 i32, n2 i32) (out i32) {}
-func xorI32 (n1 i32, n2 i32) (out i32) {}
-func andNotI32 (n1 i32, n2 i32) (out i32) {}
+func i32.and (n1 i32, n2 i32) (out i32) {}
+func i32.or (n1 i32, n2 i32) (out i32) {}
+func i32.xor (n1 i32, n2 i32) (out i32) {}
+func i32.andNot (n1 i32, n2 i32) (out i32) {}
 
-func andI64 (n1 i64, n2 i64) (out i64) {}
-func orI64 (n1 i64, n2 i64) (out i64) {}
-func xorI64 (n1 i64, n2 i64) (out i64) {}
-func andNotI64 (n1 i64, n2 i64) (out i64) {}
+func i64.and (n1 i64, n2 i64) (out i64) {}
+func i64.or (n1 i64, n2 i64) (out i64) {}
+func i64.xor (n1 i64, n2 i64) (out i64) {}
+func i64.andNot (n1 i64, n2 i64) (out i64) {}
 
 func and (c1 bool, c2 bool) (out bool) {}
 func or (c1 bool, c2 bool) (out bool) {}
 func not (c1 bool) (out bool) {}
 
-func ltI32 (n1 i32, n2 i32) (out bool) {}
-func gtI32 (n1 i32, n2 i32) (out bool) {}
-func eqI32 (n1 i32, n2 i32) (out bool) {}
-func lteqI32 (n1 i32, n2 i32) (out bool) {}
-func gteqI32 (n1 i32, n2 i32) (out bool) {}
+func i32.lt (n1 i32, n2 i32) (out bool) {}
+func i32.gt (n1 i32, n2 i32) (out bool) {}
+func i32.eq (n1 i32, n2 i32) (out bool) {}
+func i32.lteq (n1 i32, n2 i32) (out bool) {}
+func i32.gteq (n1 i32, n2 i32) (out bool) {}
 
-func ltI64 (n1 i64, n2 i64) (out bool) {}
-func gtI64 (n1 i64, n2 i64) (out bool) {}
-func eqI64 (n1 i64, n2 i64) (out bool) {}
-func lteqI64 (n1 i64, n2 i64) (out bool) {}
-func gteqI64 (n1 i64, n2 i64) (out bool) {}
+func i64.lt (n1 i64, n2 i64) (out bool) {}
+func i64.gt (n1 i64, n2 i64) (out bool) {}
+func i64.eq (n1 i64, n2 i64) (out bool) {}
+func i64.lteq (n1 i64, n2 i64) (out bool) {}
+func i64.gteq (n1 i64, n2 i64) (out bool) {}
 
-func ltF32 (n1 f32, n2 f32) (out bool) {}
-func gtF32 (n1 f32, n2 f32) (out bool) {}
-func eqF32 (n1 f32, n2 f32) (out bool) {}
-func lteqF32 (n1 f32, n2 f32) (out bool) {}
-func gteqF32 (n1 f32, n2 f32) (out bool) {}
+func f32.lt (n1 f32, n2 f32) (out bool) {}
+func f32.gt (n1 f32, n2 f32) (out bool) {}
+func f32.eq (n1 f32, n2 f32) (out bool) {}
+func f32.lteq (n1 f32, n2 f32) (out bool) {}
+func f32.gteq (n1 f32, n2 f32) (out bool) {}
 
-func ltF64 (n1 f64, n2 f64) (out bool) {}
-func gtF64 (n1 f64, n2 f64) (out bool) {}
-func eqF64 (n1 f64, n2 f64) (out bool) {}
-func lteqF64 (n1 f64, n2 f64) (out bool) {}
-func gteqF64 (n1 f64, n2 f64) (out bool) {}
+func f64.lt (n1 f64, n2 f64) (out bool) {}
+func f64.gt (n1 f64, n2 f64) (out bool) {}
+func f64.eq (n1 f64, n2 f64) (out bool) {}
+func f64.lteq (n1 f64, n2 f64) (out bool) {}
+func f64.gteq (n1 f64, n2 f64) (out bool) {}
 
-func ltStr (n1 str, n2 str) (out bool) {}
-func gtStr (n1 str, n2 str) (out bool) {}
-func eqStr (n1 str, n2 str) (out bool) {}
-func lteqStr (n1 str, n2 str) (out bool) {}
-func gteqStr (n1 str, n2 str) (out bool) {}
+func str.lt (n1 str, n2 str) (out bool) {}
+func str.gt (n1 str, n2 str) (out bool) {}
+func str.eq (n1 str, n2 str) (out bool) {}
+func str.lteq (n1 str, n2 str) (out bool) {}
+func str.gteq (n1 str, n2 str) (out bool) {}
 
-func ltByte (n1 byte, n2 byte) (out bool) {}
-func gtByte (n1 byte, n2 byte) (out bool) {}
-func eqByte (n1 byte, n2 byte) (out bool) {}
-func lteqByte (n1 byte, n2 byte) (out bool) {}
-func gteqByte (n1 byte, n2 byte) (out bool) {}
+func byte.lt (n1 byte, n2 byte) (out bool) {}
+func byte.gt (n1 byte, n2 byte) (out bool) {}
+func byte.eq (n1 byte, n2 byte) (out bool) {}
+func byte.lteq (n1 byte, n2 byte) (out bool) {}
+func byte.gteq (n1 byte, n2 byte) (out bool) {}
 
-func byteAToStr (in []byte) (out str) {}
-func strToByteA (in str) (out []byte) {}
+func []byte.str (in []byte) (out str) {}
+func str.[]byte (in str) (out []byte) {}
 
-func i32ToByte (in i32) (out byte) {}
-func i64ToByte (in i64) (out byte) {}
-func f32ToByte (in f32) (out byte) {}
-func f64ToByte (in f64) (out byte) {}
+func i32.byte (in i32) (out byte) {}
+func i64.byte (in i64) (out byte) {}
+func f32.byte (in f32) (out byte) {}
+func f64.byte (in f64) (out byte) {}
 
-func byteToI32 (in byte) (out i32) {}
-func i64ToI32 (in i64) (out i32) {}
-func f32ToI32 (in f32) (out i32) {}
-func f64ToI32 (in f64) (out i32) {}
+func byte.i32 (in byte) (out i32) {}
+func i64.i32 (in i64) (out i32) {}
+func f32.i32 (in f32) (out i32) {}
+func f64.i32 (in f64) (out i32) {}
 
-func byteToI64 (in byte) (out i64) {}
-func i32ToI64 (in i32) (out i64) {}
-func f32ToI64 (in f32) (out i64) {}
-func f64ToI64 (in f64) (out i64) {}
+func byte.i64 (in byte) (out i64) {}
+func i32.i64 (in i32) (out i64) {}
+func f32.i64 (in f32) (out i64) {}
+func f64.i64 (in f64) (out i64) {}
 
-func byteToF32 (in byte) (out f32) {}
-func i32ToF32 (in i32) (out f32) {}
-func i64ToF32 (in i64) (out f32) {}
-func f64ToF32 (in f64) (out f32) {}
+func byte.f32 (in byte) (out f32) {}
+func i32.f32 (in i32) (out f32) {}
+func i64.f32 (in i64) (out f32) {}
+func f64.f32 (in f64) (out f32) {}
 
-func byteToF64 (in byte) (out f64) {}
-func i32ToF64 (in i32) (out f64) {}
-func i64ToF64 (in i64) (out f64) {}
-func f32ToF64 (in f32) (out f64) {}
+func byte.f64 (in byte) (out f64) {}
+func i32.f64 (in i32) (out f64) {}
+func i64.f64 (in i64) (out f64) {}
+func f32.f64 (in f32) (out f64) {}
 
-func i32AToByteA (in []i32) (out []byte) {}
-func i64AToByteA (in []i64) (out []byte) {}
-func f32AToByteA (in []f32) (out []byte) {}
-func f64AToByteA (in []f64) (out []byte) {}
+func []i32.[]byte (in []i32) (out []byte) {}
+func []i64.[]byte (in []i64) (out []byte) {}
+func []f32.[]byte (in []f32) (out []byte) {}
+func []f64.[]byte (in []f64) (out []byte) {}
 
-func byteAToI32A (in []byte) (out []i32) {}
-func i64AToI32A (in []i64) (out []i32) {}
-func f32AToI32A (in []f32) (out []i32) {}
-func f64AToI32A (in []f64) (out []i32) {}
+func []byte.[]i32 (in []byte) (out []i32) {}
+func []i64.[]i32 (in []i64) (out []i32) {}
+func []f32.[]i32 (in []f32) (out []i32) {}
+func []f64.[]i32 (in []f64) (out []i32) {}
 
-func byteAToI64A (in []byte) (out []i64) {}
-func i32AToI64A (in []i32) (out []i64) {}
-func f32AToI64A (in []f32) (out []i64) {}
-func f64AToI64A (in []f64) (out []i64) {}
+func []byte.[]i64 (in []byte) (out []i64) {}
+func []i32.[]i64 (in []i32) (out []i64) {}
+func []f32.[]i64 (in []f32) (out []i64) {}
+func []f64.[]i64 (in []f64) (out []i64) {}
 
-func byteAToF32A (in []byte) (out []f32) {}
-func i32AToF32A (in []i32) (out []f32) {}
-func i64AToF32A (in []i64) (out []f32) {}
-func f64AToF32A (in []f64) (out []f32) {}
+func []byte.[]f32 (in []byte) (out []f32) {}
+func []i32.[]f32 (in []i32) (out []f32) {}
+func []i64.[]f32 (in []i64) (out []f32) {}
+func []f64.[]f32 (in []f64) (out []f32) {}
 
-func byteAToF64A (in []byte) (out []f64) {}
-func i32AToF64A (in []i32) (out []f64) {}
-func i64AToF64A (in []i64) (out []f64) {}
-func f32AToF64A (in []f32) (out []f64) {}
+func []byte.[]f64 (in []byte) (out []f64) {}
+func []i32.[]f64 (in []i32) (out []f64) {}
+func []i64.[]f64 (in []i64) (out []f64) {}
+func []f32.[]f64 (in []f32) (out []f64) {}
 
 func goTo (predicate bool, thenLines i32, elseLines i32) (out bool) {}
 
-func printBool (p bool) (p bool) {}
-func printStr (s str) (s str) {}
-func printByte (n byte) (out byte) {}
-func printI32 (n i32) (out i32) {}
-func printI64 (n i64) (out i64) {}
-func printF32 (n f32) (out f32) {}
-func printF64 (n f64) (out f64) {}
-func printBoolA (n []bool) (out []bool) {}
-func printByteA (n []byte) (out []byte) {}
-func printI32A (n []i32) (out []i32) {}
-func printI64A (n []i64) (out []i64) {}
-func printF32A (n []f32) (out []f32) {}
-func printF64A (n []f64) (out []f64) {}
+func bool.print (p bool) (p bool) {}
+func str.print (s str) (s str) {}
+func byte.print (n byte) (out byte) {}
+func i32.print (n i32) (out i32) {}
+func i64.print (n i64) (out i64) {}
+func f32.print (n f32) (out f32) {}
+func f64.print (n f64) (out f64) {}
+func []bool.print (n []bool) (out []bool) {}
+func []byte.print (n []byte) (out []byte) {}
+func []i32.print (n []i32) (out []i32) {}
+func []i64.print (n []i64) (out []i64) {}
+func []f32.print (n []f32) (out []f32) {}
+func []f64.print (n []f64) (out []f64) {}
 
-func makeBoolA (size i32) (arr []bool) {}
-func makeByteA (size i32) (arr []byte) {}
-func makeI32A (size i32) (arr []i32) {}
-func makeI64A (size i32) (arr []i64) {}
-func makeF32A (size i32) (arr []f32) {}
-func makeF64A (size i32) (arr []f64) {}
+func []bool.make (size i32) (arr []bool) {}
+func []byte.make (size i32) (arr []byte) {}
+func []i32.make (size i32) (arr []i32) {}
+func []i64.make (size i32) (arr []i64) {}
+func []f32.make (size i32) (arr []f32) {}
+func []f64.make (size i32) (arr []f64) {}
 
-func readBoolA (arr []bool, idx i32) (lit bool) {}
-func writeBoolA (arr []bool, idx i32, val bool) (arr []bool) {}
-func readByteA (arr []byte, idx i32) (lit byte) {}
-func writeByteA (arr []byte, idx i32, val byte) (arr []byte) {}
-func readI32A (arr []i32, idx i32) (lit i32) {}
-func writeI32A (arr []i32, idx i32, val i32) (arr []i32) {}
-func readI64A (arr []i64, idx i32) (lit i64) {}
-func writeI64A (arr []i64, idx i32, val i64) (arr []i64) {}
-func readF32A (arr []f32, idx i32) (lit f32) {}
-func writeF32A (arr []f32, idx i32, val f32) (arr []f32) {}
-func readF64A (arr []f64, idx i32) (lit f64) {}
-func writeF64A (arr []f64, idx i32, val f64) (arr []f64) {}
+func []bool.read (arr []bool, idx i32) (lit bool) {}
+func []bool.write (arr []bool, idx i32, val bool) (arr []bool) {}
+func []byte.read (arr []byte, idx i32) (lit byte) {}
+func []byte.write (arr []byte, idx i32, val byte) (arr []byte) {}
+func []i32.read (arr []i32, idx i32) (lit i32) {}
+func []i32.write (arr []i32, idx i32, val i32) (arr []i32) {}
+func []i64.read (arr []i64, idx i32) (lit i64) {}
+func []i64.write (arr []i64, idx i32, val i64) (arr []i64) {}
+func []f32.read (arr []f32, idx i32) (lit f32) {}
+func []f32.write (arr []f32, idx i32, val f32) (arr []f32) {}
+func []f64.read (arr []f64, idx i32) (lit f64) {}
+func []f64.write (arr []f64, idx i32, val f64) (arr []f64) {}
 
-func lenBoolA (arr []bool) (len i32) {}
-func lenByteA (arr []byte) (len i32) {}
-func lenI32A (arr []i32) (len i32) {}
-func lenI64A (arr []i64) (len i32) {}
-func lenF32A (arr []f32) (len i32) {}
-func lenF64A (arr []f64) (len i32) {}
+func []bool.len (arr []bool) (len i32) {}
+func []byte.len (arr []byte) (len i32) {}
+func []i32.len (arr []i32) (len i32) {}
+func []i64.len (arr []i64) (len i32) {}
+func []f32.len (arr []f32) (len i32) {}
+func []f64.len (arr []f64) (len i32) {}
 
 func sleep (ms i32) (ms i32) {}
 
-func randI32 (min i32, max i32) (r i32) {}
-func randI64 (min i64, max i64) (r i64) {}
+func i32.rand (min i32, max i32) (r i32) {}
+func i64.rand (min i64, max i64) (r i64) {}
 
 func setClauses (clss str) (clss str) {}
 func setQuery (qry str) (qry str) {}
@@ -533,6 +545,29 @@ func Eval (code string) string {
 	}
 }
 
+type SourceCode struct {
+	Code string
+}
+
+func WebMode () {
+	host := ":5336"
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
+		var source SourceCode
+		json.NewDecoder(r.Body).Decode(&source)
+		
+		if err := r.ParseForm(); err == nil {
+			fmt.Fprintf(w, "%s", Eval(source.Code))
+		}
+	})
+
+	if listener, err := net.Listen("tcp", host); err == nil {
+		fmt.Println("Starting CX web service on http://127.0.0.1:5336/")
+		http.Serve(listener, mux)
+	}
+}
+
 func parseFile (fileName string) {
 	sourceCode, err := os.Open(fileName)
 	if err != nil {
@@ -544,15 +579,22 @@ func parseFile (fileName string) {
 func help () {
 	fmt.Printf(`Usage: cx [options] [source-files]
 
-Options:
--b, --base                       Generate a "out.cx.go" file with the transcompiled CX Base source code.
--c, --compile                    Generate a "out" executable file of the program.
--co, --compile-output FILENAME   Specifies the filename for the generated executable.
--h, --help                       Prints this message.
--r, --repl                       Loads source files into memory and starts a read-eval-print loop.
+CX options:
+%b, %base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
+%c, %compile                     Generate a "out" executable file of the program.
+%co, %compile-output FILENAME    Specifies the filename for the generated executable.
+%h, %help                        Prints this message.
+%r, %repl                        Loads source files into memory and starts a read-eval-print loop.
+%w, %web                         Start CX as a web service.
+
+Signal options:
+-signal-client                   Run signal client
+-signal-client-id UINT           Id of signal client (default 1)
+-signal-server-address STRING    Address of signal server (default "localhost:7999")
 
 Notes:
-Options --compile and --repl are mutually exclusive.
+* Options %compile and %repl are mutually exclusive.
+* Option %web makes every other flag to be ignored.
 `)
 }
 
@@ -566,8 +608,12 @@ func (yylex Lexer) Error (e string) {
 	yylex.Stop()
 }
 
+// var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
+
 func main () {
 	runtime.GOMAXPROCS(2)
+
+	signal.Listen("0.0.0.0:7999")
 
 	args := os.Args[1:]
 	var sourceCode []*os.File
@@ -579,29 +625,41 @@ func main () {
 	flagMode := false
 	var compileOutput string = "o"
 	for i, arg := range args {
-		if arg == "--repl" || arg == "-r" {
+		if arg == "%web" || arg == "%w" {
+			webMode = true
+			flagMode = true
+			continue
+		}
+		if arg == "%repl" || arg == "%r" {
 			replMode = true
 			flagMode = true
 			continue
 		}
-		if arg == "--base" || arg == "-b" {
+		if arg == "%base" || arg == "%b" {
 			baseOutput = true
 			flagMode = true
 			continue
 		}
-		if arg == "--compile" || arg == "-c" {
+		if arg == "%compile" || arg == "%c" {
 			compileMode = true
 			baseOutput = true
 			flagMode = true
 			continue
 		}
-		if arg == "--compile-output" || arg == "-co" {
+		if arg == "%compile-output" || arg == "%co" {
 			compileOutput = args[i+1]
 			continue
 		}
-		if arg == "--help" || arg == "-h" {
+		if arg == "%help" || arg == "%h" {
 			helpMode = true
 			flagMode = true
+			continue
+		}
+		// viscript options
+		if arg[:1] == "-" {
+			continue
+		}
+		if i > 0 && (args[i-1] == "-signal-client-id" || args[i-1] == "-signal-server-address") {
 			continue
 		}
 		if !flagMode {
@@ -609,12 +667,17 @@ func main () {
 			if err != nil {
 				panic(fmt.Sprintf("Couldn't read file."))
 			}
-			sourceCode = append(sourceCode, file)	
+			sourceCode = append(sourceCode, file)
 		}
 	}
 
 	if helpMode {
 		help()
+		return
+	}
+
+	if webMode {
+		WebMode()
 		return
 	}
 
@@ -624,7 +687,7 @@ func main () {
 	}
 
 	if baseOutput {
-		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {`)
+		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var goToExpr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {`)
 	}
 
 	// adding core module and native functions to it
@@ -642,9 +705,9 @@ func main () {
 	
 	lineNo = 0
 
-	if replMode {
+	if replMode || len(sourceCode) == 0 {
 		repl()
-	} else if !compileMode {
+	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
 		if err := cxt.Run(false, -1); err != nil {
 			fmt.Println(err)
 			repl()
@@ -654,6 +717,7 @@ func main () {
 	if baseOutput {
 		program.WriteString(`cxt.Run(false, -1);}`)
 		ioutil.WriteFile(fmt.Sprintf("%s.go", compileOutput), []byte(program.String()), 0644)
+		cxt.Compile(false)
 	}
 	if compileMode {
 		baseFilename := fmt.Sprintf("%s.go", compileOutput)
@@ -662,4 +726,31 @@ func main () {
 		removeBase := exec.Command("rm", baseFilename)
 		removeBase.Run()
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// if *memprofile != "" {
+	// 	f, err := os.Create(*memprofile)
+	// 	if err != nil {
+	// 		log.Fatal("could not create memory profile: ", err)
+// 	}
+	// 	runtime.GC() // get up-to-date statistics
+	// 	if err := pprof.WriteHeapProfile(f); err != nil {
+// 		log.Fatal("could not write memory profile: ", err)
+	// 	}
+	// 	f.Close()
+// }
 }

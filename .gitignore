@@ -28,3 +28,6 @@ out.*
 *.o
 o
 o.go
+cpu.prof
+fibonacci.cx
+fib.py

@@ -1926,6 +1926,46 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
 	}
 }
 
+// func goTo (call *CXCall, predicate *CXArgument, label *CXArgument) (*CXArgument, error) {
+// 	if err := checkTwoTypes("goTo", "bool", "str", predicate, label); err == nil {
+// 		var isFalse bool
+
+// 		var pred int32
+// 		encoder.DeserializeRaw(*predicate.Value, &pred)
+
+// 		if pred == 0 {
+// 			isFalse = true
+// 			//return
+// 		} else {
+// 			isFalse = false
+// 		}
+
+// 		lbl := string(*label.Value)
+
+// 		for _, expr := range call.Operator.Expressions {
+// 			if expr.Label == lbl {
+// 				call.Line = expr.Line
+// 			}
+// 		}
+
+// 		// if isFalse {
+// 		// 	call.Line = call.Line + int(elseLineNo) - 1
+// 		// } else {
+// 		// 	call.Line = call.Line + int(thenLineNo) - 1
+// 		// }
+		
+// 		if isFalse {
+// 			val := encoder.Serialize(int32(0))
+// 			return MakeArgument(&val, MakeType("bool")), nil
+// 		} else {
+// 			val := encoder.Serialize(int32(1))
+// 			return MakeArgument(&val, MakeType("bool")), nil
+// 		}
+// 	} else {
+// 		return nil, err
+// 	}
+// }
+
 /*
   Time functions
 */
