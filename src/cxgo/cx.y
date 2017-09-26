@@ -162,7 +162,7 @@
 %token  <f32>           FLOAT
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN
+                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN GOTO
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A
                         /* Selectors */
@@ -315,10 +315,10 @@ importDeclaration:
         ;
 
 affordance:
-                TAG IDENT
+                TAG
                 {
-			tag = $2
-			assembleTag($2)
+			tag = strings.TrimSuffix($1, ":")
+			assembleTag(tag)
                 }     
                 /* Function Affordances */
         |       AFF FUNC IDENT
@@ -1125,7 +1125,7 @@ assignExpression:
 							new := encoder.SerializeAtomic(ds)
 							val := MakeArgument(&new, MakeType("bool"))
 							
-							if op, err := cxt.GetFunction("idBool", mod.Name); err == nil {
+							if op, err := cxt.GetFunction("bool.id", mod.Name); err == nil {
 								expr := MakeExpression(op)
 								if !replMode {
 									expr.FileLine = yyS[yypt-0].line + 1
@@ -1143,7 +1143,7 @@ assignExpression:
 							new := []byte{byte(ds)}
 							val := MakeArgument(&new, MakeType("byte"))
 							
-							if op, err := cxt.GetFunction("idByte", mod.Name); err == nil {
+							if op, err := cxt.GetFunction("byte.id", mod.Name); err == nil {
 								expr := MakeExpression(op)
 								if !replMode {
 									expr.FileLine = yyS[yypt-0].line + 1
@@ -1161,7 +1161,7 @@ assignExpression:
 							new := encoder.Serialize(int64(ds))
 							val := MakeArgument(&new, MakeType("i64"))
 
-							if op, err := cxt.GetFunction("idI64", mod.Name); err == nil {
+							if op, err := cxt.GetFunction("i64.id", mod.Name); err == nil {
 								expr := MakeExpression(op)
 								if !replMode {
 									expr.FileLine = yyS[yypt-0].line + 1
@@ -1179,7 +1179,7 @@ assignExpression:
 							new := encoder.Serialize(float64(ds))
 							val := MakeArgument(&new, MakeType("f64"))
 
-							if op, err := cxt.GetFunction("idF64", mod.Name); err == nil {
+							if op, err := cxt.GetFunction("f64.id", mod.Name); err == nil {
 								expr := MakeExpression(op)
 								if !replMode {
 									expr.FileLine = yyS[yypt-0].line + 1
@@ -1195,14 +1195,14 @@ assignExpression:
 							val := $4
 							var getFn string
 							switch $3 {
-							case "i32": getFn = "idI32"
-							case "f32": getFn = "idF32"
-							case "[]bool": getFn = "idBoolA"
-							case "[]byte": getFn = "idByteA"
-							case "[]i32": getFn = "idI32A"
-							case "[]i64": getFn = "idI64A"
-							case "[]f32": getFn = "idF32A"
-							case "[]f64": getFn = "idF64A"
+							case "i32": getFn = "i32.id"
+							case "f32": getFn = "f32.id"
+							case "[]bool": getFn = "[]bool.id"
+							case "[]byte": getFn = "[]byte.id"
+							case "[]i32": getFn = "[]i32.id"
+							case "[]i64": getFn = "[]i64.id"
+							case "[]f32": getFn = "[]f32.id"
+							case "[]f64": getFn = "[]f64.id"
 							}
 
 							if op, err := cxt.GetFunction(getFn, mod.Name); err == nil {
@@ -1336,13 +1336,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 						val := MakeDefaultValue("bool")
 						expr.AddArgument(MakeArgument(val, MakeType("bool")))
 						assembleArgument(*val, "bool", true)
@@ -1355,17 +1355,37 @@ statement:      RETURN
 				}
 			}
                 }
-        |       IF nonAssignExpression
+        |       GOTO IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
+					// this one is goTo, not baseGoTo
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, false)
+
+						label := []byte($2)
+						expr.AddArgument(MakeArgument(&label, MakeType("str")))
+						assembleArgument(label, "str", false)
+					}
+				}
+			}
+                }
+        |       IF nonAssignExpression
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
+						expr := MakeExpression(goToFn)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
+						fn.AddExpression(expr)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1407,13 +1427,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1453,13 +1473,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1498,13 +1518,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1533,13 +1553,13 @@ statement:      RETURN
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 					assembleArgument(elseLines, "i32", true)
 					
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
 						if !replMode {
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5 - 1))
@@ -1561,13 +1581,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1596,13 +1616,13 @@ statement:      RETURN
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 					assembleArgument(elseLines, "i32", true)
 					
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
 						if !replMode {
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1624,13 +1644,13 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 					}
 				}
 			}
@@ -1664,13 +1684,13 @@ statement:      RETURN
 					goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 					assembleArgument(elseLines, "i32", true)
 					
-					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
 						if !replMode {
 							goToExpr.FileLine = lineNo
 						}
 						fn.AddExpression(goToExpr)
-						assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+						assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 						elseLines := encoder.Serialize(int32(0))
 						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
@@ -1696,13 +1716,13 @@ statement:      RETURN
 				
 				if mod, err := cxt.GetCurrentModule(); err == nil {
 					if fn, err := mod.GetCurrentFunction(); err == nil {
-						if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							expr := MakeExpression(goToFn)
 							if !replMode {
 								expr.FileLine = yyS[yypt-0].line + 1
 							}
 							fn.AddExpression(expr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+							assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 						}
 					}
 				}
@@ -1720,13 +1740,13 @@ statement:      RETURN
 				if $<bool>7 {
 					if mod, err := cxt.GetCurrentModule(); err == nil {
 						if fn, err := mod.GetCurrentFunction(); err == nil {
-							if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+							if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 								expr := MakeExpression(goToFn)
 								if !replMode {
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+								assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 							}
 						}
 					}
@@ -1765,13 +1785,13 @@ statement:      RETURN
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 						assembleArgument(elseLines, "i32", true)
 
-						if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
 							if !replMode {
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+							assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1805,13 +1825,13 @@ statement:      RETURN
 						goToExpr.AddArgument(MakeArgument(&elseLines, MakeType("i32")))
 						assembleArgument(elseLines, "i32", true)
 
-						if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
 							if !replMode {
 								goToExpr.FileLine = lineNo
 							}
 							fn.AddExpression(goToExpr)
-							assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+							assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
 							
 							alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1881,13 +1901,13 @@ elseStatement:
                 {
                     if mod, err := cxt.GetCurrentModule(); err == nil {
                         if fn, err := mod.GetCurrentFunction(); err == nil {
-                            if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
+                            if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 				    expr := MakeExpression(goToFn)
 				    if !replMode {
 					    expr.FileLine = yyS[yypt-0].line + 1
 				    }
 				    fn.AddExpression(expr)
-				    assembleExpression("goTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
+				    assembleExpression("baseGoTo", CORE_MODULE, yyS[yypt-0].line + 1, false, true)
                             }
                         }
                     }

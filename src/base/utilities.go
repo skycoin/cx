@@ -131,6 +131,10 @@ func PrintValue (value *[]byte, typName string) string {
 	return argName
 }
 
+// func PrintValue (value *[]byte, typName string) string {
+// 	return ""
+// }
+
 func rep (str string, n int) string {
 	return strings.Repeat(str, n)
 }
@@ -497,3 +501,5 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 		i++
 	}
 }
+
+// func (cxt *CXProgram) PrintProgram(withAffs bool) {}

@@ -151,8 +151,6 @@ type sExpression struct {
 	FileLine int32
 	TagOffset int32
 	TagSize int32
-	LabelOffset int32
-	LabelSize int32
 	FunctionOffset int32
 	ModuleOffset int32
 }
@@ -452,9 +450,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 
 						// tag
 						sExpr.TagOffset, sExpr.TagSize = serializeName(expr.Tag, &sNamesMap, &sNames, &sNamesCounter)
-
-						// label
-						sExpr.LabelOffset, sExpr.LabelSize = serializeName(expr.Label, &sNamesMap, &sNames, &sNamesCounter)
 
 
 						// function
@@ -1155,11 +1150,6 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				sTag := dsNames[dsExpr.TagOffset : dsExpr.TagOffset + dsExpr.TagSize]
 				encoder.DeserializeRaw(sTag, &dsTag)
 
-				// expression label
-				var dsLabel []byte
-				sLabel := dsNames[dsExpr.LabelOffset : dsExpr.LabelOffset + dsExpr.LabelSize]
-				encoder.DeserializeRaw(sLabel, &dsLabel)
-
 				for _, fn := range fns {
 					if fn.Name == string(dsOpName) {
 						expr.Operator = fn
@@ -1172,7 +1162,6 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				expr.OutputNames = outNames
 				expr.Line = int(dsExpr.Line)
 				expr.Tag = string(dsTag)
-				expr.Label = string(dsLabel)
 				expr.FileLine = int(dsExpr.FileLine)
 				expr.Function = fn
 				expr.Context = &cxt

@@ -948,10 +948,12 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument) (*CXArgument, error) {
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 		
 		if num1 == num2 {
-			val := encoder.Serialize(int32(1))
+			//val := encoder.Serialize(int32(1))
+			val := []byte{1, 0, 0, 0}
 			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
 		} else {
-			val := encoder.Serialize(int32(0))
+			//val := encoder.Serialize(int32(0))
+			val := []byte{0, 0, 0, 0}
 			return &CXArgument{Value: &val, Typ: MakeType("bool")}, nil
 		}
 	} else {
@@ -1889,14 +1891,15 @@ func castToF64A (arg *CXArgument) (*CXArgument, error) {
 
 // goTo increments/decrements the call.Line to the desired expression line.
 // Used for if/else and loop statements.
-func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) (*CXArgument, error) {
+func baseGoTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *CXArgument) (*CXArgument, error) {
 	if err := checkThreeTypes("goTo", "bool", "i32", "i32", predicate, thenLine, elseLine); err == nil {
 		var isFalse bool
 
-		var pred int32
-		encoder.DeserializeRaw(*predicate.Value, &pred)
+		// var pred int32
+		// encoder.DeserializeRaw(*predicate.Value, &pred)
 
-		if pred == 0 {
+		//if pred == 0 {}
+		if (*predicate.Value)[0] == 0 {
 			isFalse = true
 		} else {
 			isFalse = false
@@ -1915,6 +1918,33 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
 		}
 		
 		if isFalse {
+			//val := encoder.Serialize(int32(0))
+			val := []byte{0, 0, 0, 0}
+			return MakeArgument(&val, MakeType("bool")), nil
+		} else {
+			//val := encoder.Serialize(int32(1))
+			val := []byte{1, 0, 0, 0}
+			return MakeArgument(&val, MakeType("bool")), nil
+		}
+	} else {
+		return nil, err
+	}
+}
+
+func goTo (call *CXCall, tag *CXArgument) (*CXArgument, error) {
+	if err := checkType("goTo", "str", tag); err == nil {
+		tg := string(*tag.Value)
+		success := false
+
+		for _, expr := range call.Operator.Expressions {
+			if expr.Tag == tg {
+				call.Line = expr.Line - 1
+				success = true
+				break
+			}
+		}
+
+		if success {
 			val := encoder.Serialize(int32(0))
 			return MakeArgument(&val, MakeType("bool")), nil
 		} else {
@@ -1925,46 +1955,6 @@ func goTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLine *
 		return nil, err
 	}
 }
-
-// func goTo (call *CXCall, predicate *CXArgument, label *CXArgument) (*CXArgument, error) {
-// 	if err := checkTwoTypes("goTo", "bool", "str", predicate, label); err == nil {
-// 		var isFalse bool
-
-// 		var pred int32
-// 		encoder.DeserializeRaw(*predicate.Value, &pred)
-
-// 		if pred == 0 {
-// 			isFalse = true
-// 			//return
-// 		} else {
-// 			isFalse = false
-// 		}
-
-// 		lbl := string(*label.Value)
-
-// 		for _, expr := range call.Operator.Expressions {
-// 			if expr.Label == lbl {
-// 				call.Line = expr.Line
-// 			}
-// 		}
-
-// 		// if isFalse {
-// 		// 	call.Line = call.Line + int(elseLineNo) - 1
-// 		// } else {
-// 		// 	call.Line = call.Line + int(thenLineNo) - 1
-// 		// }
-		
-// 		if isFalse {
-// 			val := encoder.Serialize(int32(0))
-// 			return MakeArgument(&val, MakeType("bool")), nil
-// 		} else {
-// 			val := encoder.Serialize(int32(1))
-// 			return MakeArgument(&val, MakeType("bool")), nil
-// 		}
-// 	} else {
-// 		return nil, err
-// 	}
-// }
 
 /*
   Time functions

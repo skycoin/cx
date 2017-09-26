@@ -60,7 +60,7 @@ var NATIVE_FUNCTIONS = []string{
 	"i32.rand", "i64.rand",
 
 	"and", "or", "not",
-	"sleep", "halt", "goTo",
+	"sleep", "halt", "goTo", "baseGoTo",
 
 	"setClauses", "addObject", "setQuery",
 	"remObject", "remObjects",
@@ -184,7 +184,6 @@ type CXExpression struct {
 	Line int
 	FileLine int
 	Tag string
-	Label string
 	
 	Function *CXFunction
 	Module *CXModule

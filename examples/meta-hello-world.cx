@@ -5,8 +5,8 @@ var farewell str = "Meta good-bye."
 
 func main () () {
 	remExpr("toBeRemoved")
-	:tag toBeRemoved;
-	divI32(3, 0)
-	addExpr("newPrint", "printStr")
+	toBeRemoved:
+	i32.div(3, 0)
+	addExpr("newPrint", "str.print")
 	affExpr("newPrint", ".", 0)
 }

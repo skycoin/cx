@@ -23,12 +23,12 @@
 /:step/      { return STEP       }
 /:tStep/     { return TSTEP      }
 /:pStep/     { return PSTEP      }
-/:tag/       { return TAG        }
 /:aff/       { return AFF        }
 /package/    { return PACKAGE    }
 /type/       { return TYPSTRUCT  }
 /struct/     { return STRUCT     }
 /return/     { return RETURN     }
+/goto/       { return GOTO       }
 /if/         { return IF         }
 /else/       { return ELSE       }
 /for/        { return FOR        }
@@ -93,6 +93,10 @@
 	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
 	lval.f32 = float32(result)
 	return FLOAT
+}
+/[_a-zA-Z][a-zA-Z0-9_]*:/ {
+	lval.tok = yylex.Text()
+	return TAG
 }
 /[_a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
 	lval.tok = yylex.Text()
@@ -349,7 +353,8 @@ func []i32.[]f64 (in []i32) (out []f64) {}
 func []i64.[]f64 (in []i64) (out []f64) {}
 func []f32.[]f64 (in []f32) (out []f64) {}
 
-func goTo (predicate bool, thenLines i32, elseLines i32) (out bool) {}
+func baseGoTo (predicate bool, thenLines i32, elseLines i32) (out bool) {}
+func goTo (label str) (out bool) {}
 
 func bool.print (p bool) (p bool) {}
 func str.print (s str) (s str) {}
@@ -580,12 +585,12 @@ func help () {
 	fmt.Printf(`Usage: cx [options] [source-files]
 
 CX options:
-%b, %base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
-%c, %compile                     Generate a "out" executable file of the program.
-%co, %compile-output FILENAME    Specifies the filename for the generated executable.
-%h, %help                        Prints this message.
-%r, %repl                        Loads source files into memory and starts a read-eval-print loop.
-%w, %web                         Start CX as a web service.
+-b, --base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
+-c, --compile                     Generate a "out" executable file of the program.
+-co, --compile-output FILENAME    Specifies the filename for the generated executable.
+-h, --help                        Prints this message.
+-r, --repl                        Loads source files into memory and starts a read-eval-print loop.
+-w, --web                         Start CX as a web service.
 
 Signal options:
 -signal-client                   Run signal client
@@ -593,8 +598,8 @@ Signal options:
 -signal-server-address STRING    Address of signal server (default "localhost:7999")
 
 Notes:
-* Options %compile and %repl are mutually exclusive.
-* Option %web makes every other flag to be ignored.
+* Options --compile and --repl are mutually exclusive.
+* Option --web makes every other flag to be ignored.
 `)
 }
 
@@ -625,38 +630,38 @@ func main () {
 	flagMode := false
 	var compileOutput string = "o"
 	for i, arg := range args {
-		if arg == "%web" || arg == "%w" {
+		if arg == "--web" || arg == "-w" {
 			webMode = true
 			flagMode = true
 			continue
 		}
-		if arg == "%repl" || arg == "%r" {
+		if arg == "--repl" || arg == "-r" {
 			replMode = true
 			flagMode = true
 			continue
 		}
-		if arg == "%base" || arg == "%b" {
+		if arg == "--base" || arg == "-b" {
 			baseOutput = true
 			flagMode = true
 			continue
 		}
-		if arg == "%compile" || arg == "%c" {
+		if arg == "--compile" || arg == "-c" {
 			compileMode = true
 			baseOutput = true
 			flagMode = true
 			continue
 		}
-		if arg == "%compile-output" || arg == "%co" {
+		if arg == "--compile-output" || arg == "-co" {
 			compileOutput = args[i+1]
 			continue
 		}
-		if arg == "%help" || arg == "%h" {
+		if arg == "--help" || arg == "-h" {
 			helpMode = true
 			flagMode = true
 			continue
 		}
 		// viscript options
-		if arg[:1] == "-" {
+		if arg == "-signal-client" || arg == "-signal-client-id" || arg == "-signal-server-address" {
 			continue
 		}
 		if i > 0 && (args[i-1] == "-signal-client-id" || args[i-1] == "-signal-server-address") {
@@ -717,7 +722,7 @@ func main () {
 	if baseOutput {
 		program.WriteString(`cxt.Run(false, -1);}`)
 		ioutil.WriteFile(fmt.Sprintf("%s.go", compileOutput), []byte(program.String()), 0644)
-		cxt.Compile(false)
+		cxt.Compile(true)
 	}
 	if compileMode {
 		baseFilename := fmt.Sprintf("%s.go", compileOutput)

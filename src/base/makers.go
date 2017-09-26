@@ -387,31 +387,31 @@ func MakeAffordance (desc string, action func()) *CXAffordance {
 func MakeIdentityOpName (typeName string) string {
 	switch typeName {
 	case "str":
-		return "idStr"
+		return "str.id"
 	case "bool":
-		return "idBool"
+		return "bool.id"
 	case "byte":
-		return "idByte"
+		return "byte.id"
 	case "i32":
-		return "idI32"
+		return "i32.id"
 	case "i64":
-		return "idI64"
+		return "i64.id"
 	case "f32":
-		return "idF32"
+		return "f32.id"
 	case "f64":
-		return "idF64"
+		return "f64.id"
 	case "[]bool":
-		return "idBoolA"
+		return "[]bool.id"
 	case "[]byte":
-		return "idByteA"
+		return "[]byte.id"
 	case "[]i32":
-		return "idI32A"
+		return "[]i32.id"
 	case "[]i64":
-		return "idI64A"
+		return "[]i64.id"
 	case "[]f32":
-		return "idF32A"
+		return "[]f32.id"
 	case "[]f64":
-		return "idF64A"
+		return "[]f64.id"
 	default:
 		return ""
 	}
