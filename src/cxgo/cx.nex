@@ -123,7 +123,7 @@ import (
 	
 	"runtime"
 
-	"github.com/skycoin/viscript/signal"
+	//"github.com/skycoin/viscript/signal"
 	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/src/base"
@@ -353,22 +353,22 @@ func []i32.[]f64 (in []i32) (out []f64) {}
 func []i64.[]f64 (in []i64) (out []f64) {}
 func []f32.[]f64 (in []f32) (out []f64) {}
 
-func baseGoTo (predicate bool, thenLines i32, elseLines i32) (out bool) {}
-func goTo (label str) (out bool) {}
+func baseGoTo (predicate bool, thenLines i32, elseLines i32) () {}
+func goTo (label str) () {}
 
-func bool.print (p bool) (p bool) {}
-func str.print (s str) (s str) {}
-func byte.print (n byte) (out byte) {}
-func i32.print (n i32) (out i32) {}
-func i64.print (n i64) (out i64) {}
-func f32.print (n f32) (out f32) {}
-func f64.print (n f64) (out f64) {}
-func []bool.print (n []bool) (out []bool) {}
-func []byte.print (n []byte) (out []byte) {}
-func []i32.print (n []i32) (out []i32) {}
-func []i64.print (n []i64) (out []i64) {}
-func []f32.print (n []f32) (out []f32) {}
-func []f64.print (n []f64) (out []f64) {}
+func bool.print (p bool) () {}
+func str.print (s str) () {}
+func byte.print (n byte) () {}
+func i32.print (n i32) () {}
+func i64.print (n i64) () {}
+func f32.print (n f32) () {}
+func f64.print (n f64) () {}
+func []bool.print (n []bool) () {}
+func []byte.print (n []byte) () {}
+func []i32.print (n []i32) () {}
+func []i64.print (n []i64) () {}
+func []f32.print (n []f32) () {}
+func []f64.print (n []f64) () {}
 
 func []bool.make (size i32) (arr []bool) {}
 func []byte.make (size i32) (arr []byte) {}
@@ -397,20 +397,20 @@ func []i64.len (arr []i64) (len i32) {}
 func []f32.len (arr []f32) (len i32) {}
 func []f64.len (arr []f64) (len i32) {}
 
-func sleep (ms i32) (ms i32) {}
+func sleep (ms i32) () {}
 
 func i32.rand (min i32, max i32) (r i32) {}
 func i64.rand (min i64, max i64) (r i64) {}
 
-func setClauses (clss str) (clss str) {}
-func setQuery (qry str) (qry str) {}
-func addObject (obj str) (obj str) {}
-func remObject (obj str) (obj str) {}
-func remObjects () (out bool) {}
+func setClauses (clss str) () {}
+func setQuery (qry str) () {}
+func addObject (obj str) () {}
+func remObject (obj str) () {}
+func remObjects () () {}
 
-func remExpr (tag str) (err bool) {}
-func remArg (tag str) (err bool) {}
-func addExpr (tag str, fnName str) (err bool) {}
+func remExpr (tag str) () {}
+func remArg (tag str) () {}
+func addExpr (tag str, fnName str) () {}
 func affExpr (tag str, filter str, index i32) (numAffs i32) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
@@ -454,7 +454,7 @@ func unsafeEval (code string) (result string) {
 	if len(cxt.Outputs) > 0 {
 		outVal := *cxt.Outputs[0].Value
 	
-		switch cxt.Outputs[0].Typ.Name {
+		switch cxt.Outputs[0].Typ {
 		case "bool":
 			var out bool
 			encoder.DeserializeRaw(outVal, &out)
@@ -559,9 +559,20 @@ func WebMode () {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
-		var source SourceCode
-		json.NewDecoder(r.Body).Decode(&source)
+		defer r.Body.Close()
+		var b []byte
+		var err error
+		if b, err = ioutil.ReadAll(r.Body); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 		
+		var source SourceCode
+		if err := json.Unmarshal(b, &source); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
 		if err := r.ParseForm(); err == nil {
 			fmt.Fprintf(w, "%s", Eval(source.Code))
 		}
@@ -618,7 +629,7 @@ func (yylex Lexer) Error (e string) {
 func main () {
 	runtime.GOMAXPROCS(2)
 
-	signal.Listen("0.0.0.0:7999")
+	//signal.Listen("0.0.0.0:7999")
 
 	args := os.Args[1:]
 	var sourceCode []*os.File
@@ -731,31 +742,4 @@ func main () {
 		removeBase := exec.Command("rm", baseFilename)
 		removeBase.Run()
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// if *memprofile != "" {
-	// 	f, err := os.Create(*memprofile)
-	// 	if err != nil {
-	// 		log.Fatal("could not create memory profile: ", err)
-// 	}
-	// 	runtime.GC() // get up-to-date statistics
-	// 	if err := pprof.WriteHeapProfile(f); err != nil {
-// 		log.Fatal("could not write memory profile: ", err)
-	// 	}
-	// 	f.Close()
-// }
 }

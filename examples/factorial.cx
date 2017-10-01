@@ -1,13 +1,13 @@
 package main
 
 func factorial (num i32) (fact i32) {
-	if eqI32(num, 1) {
-		fact := idI32(1)
+	if i32.eq(num, 1) {
+		fact = 1
 	} else {
-		fact := mulI32(num, factorial(subI32(num, 1)))
+		fact = i32.mul(num, factorial(i32.sub(num, 1)))
 	}
 }
 
-func main () (out i32) {
-	factorial(6)
+func main () () {
+	i32.print(factorial(10))
 }

@@ -8,13 +8,13 @@ type Point struct {
 
 func main () (out i32) {
 	var uPoint Point;
-	printStr(uPoint.name)
-	printI32(uPoint.x)
-	printI32(uPoint.y)
+	str.print(uPoint.name)
+	i32.print(uPoint.x)
+	i32.print(uPoint.y)
 
 	var myPoint Point
-	myPoint.x = addI32(5, 10)
-	myPoint.y = addI32(myPoint.x, 20)
+	myPoint.x = i32.add(5, 10)
+	myPoint.y = i32.add(myPoint.x, 20)
 
-	out = addI32(myPoint.x, myPoint.y)
+	i32.print(i32.add(myPoint.x, myPoint.y))
 }

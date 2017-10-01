@@ -4,8 +4,10 @@ var greeting str = "Meta hello."
 var farewell str = "Meta good-bye."
 
 func main () () {
-	remExpr("main", 1)
-	divI32(3, 0)
-	addExpr("printStr")
-	exprAff(".")
+	remExpr("toBeRemoved")
+	toBeRemoved:
+	i32.div(3, 0)
+	addExpr("newPrint", "str.print")
+	affExpr("newPrint", ".", 0)
 }
+

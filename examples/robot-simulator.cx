@@ -6,62 +6,62 @@ var goWest str = "going west."
 var goEast str = "going east."
 
 func robotAct (row i32, col i32, action str) (row i32, col i32) {
-	printStr(action)
-	if eqStr(action, "going north.") {
-		row = addI32(row, -1)
+	str.print(action)
+	if str.eq(action, "going north.") {
+		row = i32.add(row, -1)
 	}
-	if eqStr(action, "going south.") {
-		row = addI32(row, 1)
+	if str.eq(action, "going south.") {
+		row = i32.add(row, 1)
 	}
-	if eqStr(action, "going east.") {
-		col = addI32(col, 1)
+	if str.eq(action, "going east.") {
+		col = i32.add(col, 1)
 	}
-	if eqStr(action, "going west.") {
-		col = addI32(col, -1)
+	if str.eq(action, "going west.") {
+		col = i32.add(col, -1)
 	}
 }
 
 func robot (row i32, col i32) (row i32, col i32) {
 	remArg("robotAct")
 	affExpr("robotAct", "goNorth|goSouth|goWest|goEast", 0)
-	:tag robotAct;
+	robotAct:
 	row, col = robotAct(row, col, "")
 }
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
-	i = addI32(mulI32(w, r), c)
+	i = i32.add(i32.mul(w, r), c)
 }
 
 func map1Dto2D (i i32, w i32) (r i32, c i32) {
-	r = divI32(i, W)
-	c = modI32(i, W)
+	r = i32.div(i, W)
+	c = i32.mod(i, W)
 }
 
 func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) () {
 	remObjects()
-	if readBoolA(wallMap, map2Dto1D(addI32(row, -1), col, width)) {
+	if []bool.read(wallMap, map2Dto1D(i32.add(row, -1), col, width)) {
 		addObject("northWall")
 	}
-	if readBoolA(wallMap, map2Dto1D(addI32(row, 1), col, width)) {
+	if []bool.read(wallMap, map2Dto1D(i32.add(row, 1), col, width)) {
 		addObject("southWall")
 	}
-	if readBoolA(wallMap, map2Dto1D(row, addI32(col, 1), width)) {
+	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, 1), width)) {
 		addObject("eastWall")
 	}
-	if readBoolA(wallMap, map2Dto1D(row, addI32(col, -1), width)) {
+	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, -1), width)) {
 		addObject("westWall")
 	}
 
-	if readBoolA(wormholeMap, map2Dto1D(addI32(row, -1), col, width)) {
+	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, -1), col, width)) {
 		addObject("northWormhole")
 	}
-	if readBoolA(wormholeMap, map2Dto1D(addI32(row, 1), col, width)) {
+	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, 1), col, width)) {
 		addObject("southWormhole")
 	}
-	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, 1), width)) {
+	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, 1), width)) {
 		addObject("eastWormhole")
 	}
-	if readBoolA(wormholeMap, map2Dto1D(row, addI32(col, -1), width)) {
+	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, -1), width)) {
 		addObject("westWormhole")
 	}
 }
@@ -101,13 +101,13 @@ func main () (out str) {
 	var col i32 = 1
 
 	var counter i32
-	for ltI32(counter, 6) {
-		wallMap = writeBoolA(wallMap, map2Dto1D(row, col, width), true)
-		wormholeMap = writeBoolA(wormholeMap, map2Dto1D(row, col, width), false)
+	for i32.lt(counter, 6) {
+		wallMap = []bool.write(wallMap, map2Dto1D(row, col, width), true)
+		wormholeMap = []bool.write(wormholeMap, map2Dto1D(row, col, width), false)
 		robotObjects(row, col, width, wallMap, wormholeMap)
 		row, col := robot(row, col)
-		counter = addI32(counter, 1)
+		counter = i32.add(counter, 1)
 	}
 	
-	printStr("done.")
+	str.print("done.")
 }

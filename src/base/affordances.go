@@ -13,7 +13,7 @@ import (
 )
 
 type byFnName []*CXFunction
-type byTypName []*CXType
+type byTypName []string
 type byModName []*CXModule
 type byDefName []*CXDefinition
 type byStrctName []*CXStruct
@@ -80,7 +80,7 @@ func (s byFnName) Less(i, j int) bool {
     return concat(s[i].Module.Name, ".", s[i].Name) < concat(s[j].Module.Name, ".", s[j].Name)
 }
 func (s byTypName) Less(i, j int) bool {
-    return s[i].Name < s[j].Name
+    return s[i] < s[j]
 }
 func (s byModName) Less(i, j int) bool {
     return s[i].Name < s[j].Name
@@ -145,7 +145,7 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 	// definitions for each available type
 	for _, typ := range types {
 		fldGensym := MakeGenSym("fld")
-		fldType := MakeType(typ)
+		fldType := typ
 		
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddField ", fldGensym, " ", typ),
@@ -165,31 +165,32 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 	if len(op.Inputs) > 0 && len(expr.Arguments) < len(op.Inputs) {
 		fn := expr.Function
 		mod := expr.Module
-		reqType := op.Inputs[len(expr.Arguments)].Typ.Name // Required type for the current op's input
+		reqType := op.Inputs[len(expr.Arguments)].Typ // Required type for the current op's input
 		defsTypes := make([]string, 0)
 		args := make([]*CXArgument, 0)
-		identType := MakeType("ident")
+		identType := "ident"
 
 		inOutNames := make([]string, len(fn.Inputs) + 1)
 		
 		// Adding inputs and outputs as definitions
 		// inputs
 		for i, param := range fn.Inputs {
-			if reqType == param.Typ.Name {
+			if reqType == param.Typ {
 				inOutNames[i] = param.Name
-				defsTypes = append(defsTypes, param.Typ.Name)
+				defsTypes = append(defsTypes, param.Typ)
 				identName := []byte(param.Name)
 				args = append(args, &CXArgument{
 					Typ: identType,
 					Value: &identName,
-					Offset: -1,
-					Size: -1,})
+					// Offset: -1,
+					// Size: -1,
+				})
 			}
 		}
 		
 		// Adding definitions (global vars)
 		for _, def := range mod.Definitions {
-			if reqType == def.Typ.Name {
+			if reqType == def.Typ {
 				// we could have a var with the same name and type in global and local
 				// contexts. We only want to show 1 affordance for this name
 				notDuplicated := true
@@ -201,13 +202,14 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				}
 				
 				if notDuplicated {
-					defsTypes = append(defsTypes, def.Typ.Name)
+					defsTypes = append(defsTypes, def.Typ)
 					identName := []byte(def.Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
-						Offset: -1,
-						Size: -1,})
+						// Offset: -1,
+						// Size: -1,
+					})
 				}
 			}
 		}
@@ -238,14 +240,14 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			}
 
 			for i, out := range ex.Operator.Outputs {
-				if reqType == out.Typ.Name {
-					defsTypes = append(defsTypes, out.Typ.Name)
+				if reqType == out.Typ {
+					defsTypes = append(defsTypes, out.Typ)
 					identName := []byte(ex.OutputNames[i].Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
-						Offset: -1,
-						Size: -1,
+						// Offset: -1,
+						// Size: -1,
 					})
 				}
 			}
@@ -333,10 +335,14 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 
-	for _, fnName := range NATIVE_FUNCTIONS {
-		if fnName == fn.Name {
-			return affs
-		}
+	// for _, fnName := range NATIVE_FUNCTIONS {
+	// 	if fnName == fn.Name {
+	// 		return affs
+	// 	}
+	// }
+
+	if _, ok := NATIVE_FUNCTIONS[fn.Name]; ok {
+		return affs
 	}
 	
 	mod := fn.Module
@@ -389,7 +395,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddInput ", theTyp),
 			Action: func() {
-				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(theTyp)))
+				fn.AddInput(MakeParameter(MakeGenSym("in"), theTyp))
 		}})
 	}
 	
@@ -399,7 +405,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutput ", theTyp),
 			Action: func() {
-				fn.AddOutput(MakeParameter(MakeGenSym("in"), MakeType(theTyp)))
+				fn.AddOutput(MakeParameter(MakeGenSym("in"), theTyp))
 			}})
 	}
 
@@ -413,18 +419,18 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		var inps bytes.Buffer
 		for j, inp := range ops[i].Inputs {
 			if j == len(ops[i].Inputs) - 1 {
-				inps.WriteString(concat(inp.Typ.Name))
+				inps.WriteString(concat(inp.Typ))
 			} else {
-				inps.WriteString(concat(inp.Typ.Name, ", "))
+				inps.WriteString(concat(inp.Typ, ", "))
 			}
 		}
 
 		var outs bytes.Buffer
 		for j, out := range ops[i].Outputs {
 			if j == len(ops[i].Outputs) - 1 {
-				outs.WriteString(concat(out.Typ.Name))
+				outs.WriteString(concat(out.Typ))
 			} else {
-				outs.WriteString(concat(out.Typ.Name, ", "))
+				outs.WriteString(concat(out.Typ, ", "))
 			}
 		}
 
@@ -442,10 +448,8 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	affs := make([]*CXAffordance, 0)
 
-// 	for _, fnName := range NATIVE_FUNCTIONS {
-// 		if fnName == fn.Name {
-// 			return affs
-// 		}
+// if _, ok := NATIVE_FUNCTIONS[fn.Name]; ok {
+// 		return affs
 // 	}
 	
 // 	mod := fn.Module
@@ -506,7 +510,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	for _, inp := range fn.Inputs {
 // 		defs = append(defs, inp.Name)
 // 		onlyLocals = append(onlyLocals, inp.Name)
-// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
+// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ)
 // 		defsTypes = append(defsTypes, inp.Typ)
 // 	}
 
@@ -516,7 +520,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	for _, inp := range fn.Outputs {
 // 		//defs = append(defs, inp.Name)
 // 		onlyLocals = append(onlyLocals, inp.Name)
-// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ.Name)
+// 		onlyLocalsTypes = append(onlyLocalsTypes, inp.Typ)
 // 		//defsTypes = append(defsTypes, inp.Typ)
 // 	}
 
@@ -542,7 +546,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 				defs = append(defs, outName)
 // 				defsTypes = append(defsTypes, expr.Operator.Outputs[i].Typ)
 // 				onlyLocals = append(onlyLocals, outName)
-// 				onlyLocalsTypes = append(onlyLocalsTypes, expr.Operator.Outputs[i].Typ.Name)
+// 				onlyLocalsTypes = append(onlyLocalsTypes, expr.Operator.Outputs[i].Typ)
 // 			}
 // 		}
 // 	}
@@ -552,7 +556,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 		affs = append(affs, &CXAffordance{
 // 			Description: concat("AddInput ", typ),
 // 			Action: func() {
-// 				fn.AddInput(MakeParameter(MakeGenSym("in"), MakeType(typ)))
+// 				fn.AddInput(MakeParameter(MakeGenSym("in"), typ))
 // 			}})
 // 	}
 
@@ -561,11 +565,11 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 		affs = append(affs, &CXAffordance{
 // 			Description: concat("AddOutput ", typ),
 // 			Action: func() {
-// 				fn.AddInput(MakeParameter(MakeGenSym("out"), MakeType(typ)))
+// 				fn.AddInput(MakeParameter(MakeGenSym("out"), typ))
 // 			}})
 // 	}
 
-// 	ident := MakeType("ident")
+// 	ident := "ident"
 // 	for opIndex, op := range ops {
 // 		theOp := op // or will keep reference to last op
 
@@ -575,11 +579,11 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 			args := make([]*CXArgument, 0)
 // 			argsTypes := make([]string, 0)
 // 			for j, def := range defs {
-// 				if defsTypes[j].Name == inp.Typ.Name {
+// 				if defsTypes[j].Name == inp.Typ {
 // 					arg := MakeArgument(MakeValue(def), ident)
 // 					//arg := MakeArgument(MakeValue(def), inp.Typ)
 // 					args = append(args, arg)
-// 					argsTypes = append(argsTypes, inp.Typ.Name)
+// 					argsTypes = append(argsTypes, inp.Typ)
 // 				}
 // 			}
 // 			if len(args) > 0 {
@@ -613,7 +617,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 		for _, args := range finalArguments {
 // 			for i, local := range onlyLocals {
 // 				// if a var was initialized of one type, we can't assign another type to this var later on
-// 				if (onlyLocalsTypes[i] != theOp.Output.Typ.Name &&
+// 				if (onlyLocalsTypes[i] != theOp.Output.Typ &&
 // 					onlyLocalsTypes[i] != "ident") &&
 // 					local != fn.Output.Name {
 // 					continue
@@ -626,7 +630,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 // 				// skip affordances where the operator's output type doesn't match function's output type
 // 				// and we're assigning this to the function's output var
-// 				if local == fn.Output.Name && theOp.Output.Typ.Name != fn.Output.Typ.Name {
+// 				if local == fn.Output.Name && theOp.Output.Typ != fn.Output.Typ {
 // 					continue
 // 				}
 				
@@ -686,7 +690,7 @@ func (mod *CXModule) GetAffordances() []*CXAffordance {
 	// definitions for each available type
 	for _, typ := range types {
 		defGensym := MakeGenSym("def")
-		defType := MakeType(typ)
+		defType := typ
 		value := []byte{}
 		
 		affs = append(affs, &CXAffordance{

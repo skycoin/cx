@@ -41,6 +41,7 @@ func (mod *CXModule) AddDefinition (def *CXDefinition) *CXModule {
 func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	fn.Context = mod.Context
 	fn.Module = mod
+	fn.NumberOutputs = len(fn.Outputs)
 	mod.CurrentFunction = fn
 	found := false
 	for i, f := range mod.Functions {
@@ -170,7 +171,7 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 		nextOutIdx := len(expr.OutputNames)
 		outDef := MakeDefinition(
 			outName,
-			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ.Name),
+			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ),
 			expr.Operator.Outputs[nextOutIdx].Typ)
 		
 		outDef.Module = expr.Module

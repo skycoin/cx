@@ -2,15 +2,15 @@ package main
 
 func main () (out i32) {
 	// This won't be evaluated
-	//out := divI32(5, 0) // This won't either
+	//out := i32.div(5, 0) // This won't either
 
-	out := divI32(10, 5) // The program will return 2
+	out := i32.div(10, 5) // The program will return 2
 
 	/*
         Comment block
-	out := subF32(3.33, 1.11)
-	out := subF32(3.33, 1.11)
-	out := subF32(3.33, 1.11)
-	out := subF32(3.33, 1.11)
+	out := f32.sub(3.33, 1.11)
+	out := f32.sub(3.33, 1.11)
+	out := f32.sub(3.33, 1.11)
+	out := f32.sub(3.33, 1.11)
         */
 }

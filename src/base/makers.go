@@ -28,11 +28,11 @@ func MakeGenSym (name string) string {
 // }
 
 func MakeContext () *CXProgram {
-	heap := make([]byte, 0)
+	//heap := make([]byte, 0)
 	newContext := &CXProgram{
 		Modules: make([]*CXModule, 0),
 		CallStack: MakeCallStack(0),
-		Heap: &heap,
+		//Heap: &heap,
 		Steps: make([]*CXCallStack, 0)}
 	return newContext
 }
@@ -47,7 +47,7 @@ func MakeContext () *CXProgram {
 func MakeParameterCopy (param *CXParameter) *CXParameter {
 	return &CXParameter{
 		Name: param.Name,
-		Typ: MakeType(param.Typ.Name),
+		Typ: param.Typ,
 	}
 }
 
@@ -55,10 +55,10 @@ func MakeParameterCopy (param *CXParameter) *CXParameter {
 func MakeArgumentCopy (arg *CXArgument) *CXArgument {
 	value := *arg.Value
 	return &CXArgument{
-		Typ: MakeType(arg.Typ.Name),
+		Typ: arg.Typ,
 		Value: &value,
-		Offset: arg.Offset,
-		Size: arg.Size,
+		// Offset: arg.Offset,
+		// Size: arg.Size,
 	}
 }
 
@@ -115,7 +115,7 @@ func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunctio
 func MakeFieldCopy (fld *CXField) *CXField {
 	return &CXField{
 		Name: fld.Name,
-		Typ: MakeType(fld.Typ.Name),
+		Typ: fld.Typ,
 	}
 }
 
@@ -136,10 +136,10 @@ func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXProgram) *CXDe
 	valCopy := *def.Value
 	return &CXDefinition{
 		Name: def.Name,
-		Typ: MakeType(def.Typ.Name),
+		Typ: def.Typ,
 		Value: &valCopy,
-		Offset: def.Offset,
-		Size: def.Size,
+		// Offset: def.Offset,
+		// Size: def.Size,
 		Module: mod,
 		Context: cxt,
 	}
@@ -182,7 +182,7 @@ func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
 	stateCopy := make([]*CXDefinition, len(call.State))
 	for k, v := range call.State {
 		//var valueCopy []byte = *v.Value
-		//stateCopy[k] = MakeDefinition(v.Name, &valueCopy, MakeType(v.Typ.Name))
+		//stateCopy[k] = MakeDefinition(v.Name, &valueCopy, v.Typ)
 		stateCopy[k] = MakeDefinitionCopy(v, mod, cxt)
 	}
 	return &CXCall{
@@ -204,7 +204,7 @@ func MakeCallStack (size int) *CXCallStack {
 func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	newContext := &CXProgram{}
 
-	newContext.Heap = cxt.Heap
+	//newContext.Heap = cxt.Heap
 
 	modsCopy := make([]*CXModule, len(cxt.Modules))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
@@ -276,24 +276,25 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 func MakeModule (name string) *CXModule {
 	return &CXModule{
 		Name: name,
-		Definitions: make([]*CXDefinition, 0),
+		Definitions: make([]*CXDefinition, 0, 10),
 		Imports: make([]*CXModule, 0),
-		Functions: make([]*CXFunction, 0),
+		Functions: make([]*CXFunction, 0, 10),
 		Structs: make([]*CXStruct, 0),
 		//Instances: make([]*CXInstance, 0),
 	}
 }
 
-func MakeDefinition (name string, value *[]byte, typ *CXType) *CXDefinition {
+func MakeDefinition (name string, value *[]byte, typ string) *CXDefinition {
 	return &CXDefinition{
 		Name: name,
 		Typ: typ,
 		Value: value,
-		Offset: -1,
-		Size: -1,}
+		// Offset: -1,
+		// Size: -1,
+	}
 }
 
-func MakeField (name string, typ *CXType) *CXField {
+func MakeField (name string, typ string) *CXField {
 	return &CXField{Name: name, Typ: typ}
 }
 
@@ -328,7 +329,7 @@ func MakeStruct (name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
 
-func MakeParameter (name string, typ *CXType) *CXParameter {
+func MakeParameter (name string, typ string) *CXParameter {
 	return &CXParameter{Name: name,
 		Typ: typ}
 }
@@ -337,20 +338,18 @@ func MakeExpression (op *CXFunction) *CXExpression {
 	return &CXExpression{Operator: op}
 }
 
-func MakeArgument (value *[]byte, typ *CXType) *CXArgument {
+func MakeArgument (value *[]byte, typ string) *CXArgument {
 	return &CXArgument{
 		Typ: typ,
 		Value: value,
-		Offset: -1,
-		Size: -1,
+		// Offset: -1,
+		// Size: -1,
 	}
 }
 
-func MakeType (name string) *CXType {
-	return &CXType{
-		Name: name,
-	}
-}
+// func MakeType (name string string {
+// 	return name
+// }
 
 func MakeFunction (name string) *CXFunction {
 	return &CXFunction{Name: name}

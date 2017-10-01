@@ -4,12 +4,12 @@ var global1 i32 = 5
 var global2 f32 = 3.14159
 
 func printGlobals () () {
-	printI32(global1)
-	printF32(global2)
+	i32.print(global1)
+	f32.print(global2)
 }
 
 func main () (out i32) {
 	printGlobals()
-	printF32(global2)
-	printI32(global1)
+	f32.print(global2)
+	i32.print(global1)
 }

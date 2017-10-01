@@ -167,9 +167,9 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 				var outs bytes.Buffer
 				for j, out := range fn.Outputs {
 					if j == len(fn.Outputs) - 1 {
-						outs.WriteString(concat(out.Typ.Name))
+						outs.WriteString(concat(out.Typ))
 					} else {
-						outs.WriteString(concat(out.Typ.Name, ", "))
+						outs.WriteString(concat(out.Typ, ", "))
 					}
 				}
 
@@ -198,7 +198,7 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 					for i, out := range fn.Outputs {
 						outDef := MakeDefinition(
 							out.Name,
-							MakeDefaultValue(out.Typ.Name),
+							MakeDefaultValue(out.Typ),
 							out.Typ)
 						outNames[i] = outDef
 					}
@@ -231,7 +231,7 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 			if mod, err := cxt.GetModule("main"); err == nil {
 				mod.AddFunction(MakeFunction("main"))
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
-					fn.AddOutput(MakeParameter("out", MakeType("f64")))
+					fn.AddOutput(MakeParameter("out", "f64"))
 					if sol, err := cxt.GetFunction(solutionName, solMod.Name); err == nil {
 						fn.AddExpression(MakeExpression(sol))
 						
@@ -239,7 +239,7 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 							expr.AddOutputName("out")
 							//tmpVal := encoder.SerializeAtomic(float64(0))
 							tmpVal := encoder.Serialize(float64(0))
-							expr.AddArgument(MakeArgument(&tmpVal, MakeType("f64")))
+							expr.AddArgument(MakeArgument(&tmpVal, "f64"))
 						}
 					}
 				}
@@ -252,9 +252,9 @@ func (cxt *CXProgram) adaptInput (testValue float64) {
 	if fn, err := cxt.GetFunction("main", "main"); err == nil {
 		//val := encoder.SerializeAtomic(testValue)
 		val := encoder.Serialize(testValue)
-		arg := MakeArgument(&val, MakeType("f64"))
-		arg.Offset = -1
-		arg.Size = -1
+		arg := MakeArgument(&val, "f64")
+		// arg.Offset = -1
+		// arg.Size = -1
 
 		fn.Expressions[0].Arguments[0] = arg
 	}
@@ -280,7 +280,7 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 	}
 }
 
-func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) (float64, error) {
+func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) error {
 	cxt.SelectFunction(solutionName)
 
 	//cxt.PrintProgram(false)
@@ -313,7 +313,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				
 				fnOutTypNames := make([]string, 0)
 				for _, out := range fn.Outputs {
-					fnOutTypNames = append(fnOutTypNames, out.Typ.Name)
+					fnOutTypNames = append(fnOutTypNames, out.Typ)
 				}
 
 				//possibleOps := make([]byte, 0)
@@ -322,7 +322,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				for _, op := range coreModule.Functions {
 					possibleOp := true
 					for i, out := range op.Outputs {
-						if len(op.Outputs) != len(fnOutTypNames) || out.Typ.Name != fnOutTypNames[i] {
+						if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
 							possibleOp = false
 							break
 						}
@@ -335,7 +335,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				for _, op := range fn.Module.Functions {
 					possibleOp := true
 					for i, out := range op.Outputs {
-						if len(op.Outputs) != len(fnOutTypNames) || out.Typ.Name != fnOutTypNames[i] {
+						if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
 							possibleOp = false
 							break
 						}
@@ -368,7 +368,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				for i, out := range fn.Outputs {
 					outDef := MakeDefinition(
 						out.Name,
-						MakeDefaultValue(out.Typ.Name),
+						MakeDefaultValue(out.Typ),
 						out.Typ)
 					outNames[i] = outDef
 				}
@@ -389,7 +389,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	// printing initial solution
 	//best.PrintProgram(false)
 
-	var finalError float64
+	//var finalError float64
 	
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		if fn, err := cxt.GetFunction(solutionName, mod.Name); err == nil {
@@ -467,7 +467,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 					//best.PrintProgram(false)
 					best = programs[bestIndex]
 					//best.PrintProgram(false)
-					finalError = errors[bestIndex]
+					//finalError = errors[bestIndex]
 
 					if errors[bestIndex] < epsilon {
 						break
@@ -479,7 +479,8 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	}
 
 	best.transferSolution(solutionName, cxt)
-	return finalError, nil
+	//return finalError, nil
+	return nil
 }
 
 func RandomProgram (numberAffordances int) *CXProgram {

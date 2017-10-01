@@ -7,6 +7,7 @@ func main () () {
 	remExpr("toBeRemoved")
 	toBeRemoved:
 	i32.div(3, 0)
+	//i32.rand(3, 0)
 	addExpr("newPrint", "str.print")
 	affExpr("newPrint", ".", 0)
 }

@@ -86,7 +86,8 @@ type sObject struct {
 type sDefinition struct {
 	NameOffset int32
 	NameSize int32
-	TypOffset int32
+	TypeOffset int32
+	TypeSize int32
 	ValueOffset int32
 	ValueSize int32
 
@@ -110,13 +111,14 @@ type sStruct struct {
 type sField struct {
 	NameOffset int32
 	NameSize int32
-	TypOffset int32
+	TypeOffset int32
+	TypeSize int32
 }
 
-type sType struct {
-	NameOffset int32
-	NameSize int32
-}
+// type sType struct {
+// 	NameOffset int32
+// 	NameSize int32
+// }
 
 /*
   Functions
@@ -138,7 +140,8 @@ type sFunction struct {
 type sParameter struct {
 	NameOffset int32
 	NameSize int32
-	TypOffset int32
+	TypeOffset int32
+	TypeSize int32
 }
 
 type sExpression struct {
@@ -156,7 +159,8 @@ type sExpression struct {
 }
 
 type sArgument struct {
-	TypOffset int32
+	TypeOffset int32
+	TypeSize int32
 	ValueOffset int32
 	ValueSize int32
 }
@@ -179,18 +183,6 @@ func serializeName (name string, sNamesMap *map[string]int, sNames *[]byte, sNam
 		*sNamesCounter = *sNamesCounter + int(size)
 	}
 	return offset, size
-}
-
-func serializeType (typ *CXType, sTyps *[]byte, sTypsCounter *int, sNamesMap *map[string]int, sNames *[]byte, sNamesCounter *int) (typOffset int32) {
-	sTyp := sType{}
-
-	sTyp.NameOffset, sTyp.NameSize = serializeName(typ.Name, sNamesMap, sNames, sNamesCounter)
-
-	*sTyps = append(*sTyps, encoder.Serialize(sTyp)...)
-	typOffset = int32(*sTypsCounter)
-	*sTypsCounter++
-
-	return typOffset
 }
 
 func serializeValue (value, sValues *[]byte, sValuesCounter *int) (offset, size int32) {
@@ -254,9 +246,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 
 	sFlds := make([]byte, 0)
 	sFldsCounter := 0
-
-	sTyps := make([]byte, 0)
-	sTypsCounter := 0
 
 	sParams := make([]byte, 0)
 	sParamsCounter := 0
@@ -335,7 +324,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 						sParam.NameOffset, sParam.NameSize = serializeName(inp.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 						// input type
-						sParam.TypOffset = serializeType(inp.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+						sParam.TypeOffset, sParam.TypeSize = serializeName(inp.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 						// save the sParam
 						sParams = append(sParams, encoder.Serialize(sParam)...)
@@ -358,7 +347,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 						sParam.NameOffset, sParam.NameSize = serializeName(out.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 						// output type
-						sParam.TypOffset = serializeType(out.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+						sParam.TypeOffset, sParam.TypeSize = serializeName(out.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 						// save the sParam
 						sParams = append(sParams, encoder.Serialize(sParam)...)
@@ -408,7 +397,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 								// outputName name
 								sOutName.NameOffset, sOutName.NameSize = serializeName(outName.Name, &sNamesMap, &sNames, &sNamesCounter)
 								// outputName type
-								sOutName.TypOffset = serializeType(outName.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+								sOutName.TypeOffset, sOutName.TypeSize = serializeName(outName.Typ, &sNamesMap, &sNames, &sNamesCounter)
 								// outputName value
 								sOutName.ValueOffset, sOutName.ValueSize = serializeValue(outName.Value, &sValues, &sValuesCounter)
 
@@ -430,8 +419,9 @@ func Serialize (cxt *CXProgram) *[]byte {
 
 							for _, arg := range expr.Arguments {
 								sArg := sArgument{}
-								
-								sArg.TypOffset = serializeType(arg.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+
+								// argument type
+								sArg.TypeOffset, sArg.TypeSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 								// argument value
 								sArg.ValueOffset, sArg.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
@@ -516,7 +506,8 @@ func Serialize (cxt *CXProgram) *[]byte {
 						// field name
 						sFld.NameOffset, sFld.NameSize = serializeName(fld.Name, &sNamesMap, &sNames, &sNamesCounter)
 
-						sFld.TypOffset = serializeType(fld.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+						// field type
+						sFld.TypeOffset, sFld.TypeSize = serializeName(fld.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 						// save the field
 						sFlds = append(sFlds, encoder.Serialize(sFld)...)
@@ -550,7 +541,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				sDef.NameOffset, sDef.NameSize = serializeName(def.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 				// definition type
-				sDef.TypOffset = serializeType(def.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+				sDef.TypeOffset, sDef.TypeSize = serializeName(def.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 				// definition value
 				sDef.ValueOffset, sDef.ValueSize = serializeValue(def.Value, &sValues, &sValuesCounter)
@@ -644,7 +635,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				sDef.NameOffset, sDef.NameSize = serializeName(def.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 				// state definition type
-				sDef.TypOffset = serializeType(def.Typ, &sTyps, &sTypsCounter, &sNamesMap, &sNames, &sNamesCounter)
+				sDef.TypeOffset, sDef.TypeSize = serializeName(def.Typ, &sNamesMap, &sNames, &sNamesCounter)
 
 				// state definition value
 				sDef.ValueOffset, sDef.ValueSize = serializeValue(def.Value, &sValues, &sValuesCounter)
@@ -684,8 +675,10 @@ func Serialize (cxt *CXProgram) *[]byte {
 	sIdx.FunctionsOffset = sIdx.ImportsOffset + int32(encoder.Size(sImps))
 	sIdx.StructsOffset = sIdx.FunctionsOffset + int32(encoder.Size(sFns))
 	sIdx.FieldsOffset = sIdx.StructsOffset + int32(encoder.Size(sStrcts))
-	sIdx.TypesOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
-	sIdx.ParametersOffset = sIdx.TypesOffset + int32(encoder.Size(sTyps))
+	//sIdx.TypesOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
+	
+	sIdx.ParametersOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
+	
 	sIdx.ExpressionsOffset = sIdx.ParametersOffset + int32(encoder.Size(sParams))
 	sIdx.ArgumentsOffset = sIdx.ExpressionsOffset + int32(encoder.Size(sExprs))
 	sIdx.CallsOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
@@ -702,7 +695,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 	serialized = append(serialized, encoder.Serialize(sFns)...)
 	serialized = append(serialized, encoder.Serialize(sStrcts)...)
 	serialized = append(serialized, encoder.Serialize(sFlds)...)
-	serialized = append(serialized, encoder.Serialize(sTyps)...)
+	//serialized = append(serialized, encoder.Serialize(sTyps)...)
 	serialized = append(serialized, encoder.Serialize(sParams)...)
 	serialized = append(serialized, encoder.Serialize(sExprs)...)
 	serialized = append(serialized, encoder.Serialize(sArgs)...)
@@ -763,13 +756,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 	// Fields
 	var dsFlds []byte
-	sFlds := (*prgrm)[dsIdx.FieldsOffset:dsIdx.TypesOffset]
+	sFlds := (*prgrm)[dsIdx.FieldsOffset:dsIdx.ParametersOffset]
 	encoder.DeserializeRaw(sFlds, &dsFlds)
-
-	// Types
-	var dsTyps []byte
-	sTyps := (*prgrm)[dsIdx.TypesOffset:dsIdx.ParametersOffset]
-	encoder.DeserializeRaw(sTyps, &dsTyps)
 
 	// Parameters (Inputs & Outputs)
 	var dsParams []byte
@@ -950,7 +938,6 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			// Inputs
 			var inps []*CXParameter
 			paramSize := encoder.Size(sParameter{})
-			typSize := encoder.Size(sType{})
 			inpsOffset := int(dsFn.InputsOffset) * paramSize
 			for i := 0; i < int(dsFn.InputsSize); i++ {
 				inp := CXParameter{}
@@ -965,20 +952,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				encoder.DeserializeRaw(sName, &dsName)
 
 				// Type
-				typ := CXType{}
-				
-				var dsTyp sType
-				sTyp := dsTyps[dsParam.TypOffset*int32(typSize) : dsParam.TypOffset*int32(typSize) + int32(typSize)]
-				encoder.DeserializeRaw(sTyp, &dsTyp)
-
-				// Type name
 				var dsTypName []byte
-				sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+				sTypName := dsNames[dsParam.TypeOffset : dsParam.TypeOffset + dsParam.TypeSize]
 				encoder.DeserializeRaw(sTypName, &dsTypName)
-				typ.Name = string(dsTypName)
 				
 				inp.Name = string(dsName)
-				inp.Typ = &typ
+				inp.Typ = string(dsTypName)
 
 				// Appending final input
 				inps = append(inps, &inp)
@@ -999,21 +978,14 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				sName := dsNames[dsParam.NameOffset : dsParam.NameOffset + dsParam.NameSize]
 				encoder.DeserializeRaw(sName, &dsName)
 
-				// Type
-				typ := CXType{}
-				
-				var dsTyp sType
-				sTyp := dsTyps[dsParam.TypOffset*int32(typSize) : dsParam.TypOffset*int32(typSize) + int32(typSize)]
-				encoder.DeserializeRaw(sTyp, &dsTyp)
 
-				// Type name
+				// Type
 				var dsTypName []byte
-				sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+				sTypName := dsNames[dsParam.TypeOffset : dsParam.TypeOffset + dsParam.TypeSize]
 				encoder.DeserializeRaw(sTypName, &dsTypName)
-				typ.Name = string(dsTypName)
 				
 				out.Name = string(dsName)
-				out.Typ = &typ
+				out.Typ = string(dsTypName)
 
 				// Appending final output
 				outs = append(outs, &out)
@@ -1064,28 +1036,21 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 					sArg := dsArgs[argsOffset + i*argSize : argsOffset + (i+1)*argSize]
 					encoder.DeserializeRaw(sArg, &dsArg)
 
+
 					// Argument type
-					typ := CXType{}
-
-					var dsTyp sType
-					sTyp := dsTyps[dsArg.TypOffset*int32(typSize) : dsArg.TypOffset*int32(typSize) + int32(typSize)]
-					encoder.DeserializeRaw(sTyp, &dsTyp)
-
-					// Type name
 					var dsTypName []byte
-					sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+					sTypName := dsNames[dsArg.TypeOffset : dsArg.TypeOffset + dsArg.TypeSize]
 					encoder.DeserializeRaw(sTypName, &dsTypName)
-					typ.Name = string(dsTypName)
-
+					
 					// Argument value
 					var dsValue []byte
 					sVal := dsValues[dsArg.ValueOffset : dsArg.ValueOffset + dsArg.ValueSize]
 					encoder.DeserializeRaw(sVal, &dsValue)
 
-					arg.Typ = &typ
+					arg.Typ = string(dsTypName)
 					arg.Value = &dsValue
-					arg.Offset = -1
-					arg.Size = -1
+					// arg.Offset = -1
+					// arg.Size = -1
 
 					// Appending final argument
 					args = append(args, &arg)
@@ -1112,21 +1077,10 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 					sName := dsNames[dsOutName.NameOffset : dsOutName.NameOffset + dsOutName.NameSize]
 					encoder.DeserializeRaw(sName, &dsName)
 
-
-
-					// outName type
-					typ := CXType{}
-
-					var dsTyp sType
-					typSize := encoder.Size(sType{})
-					sTyp := dsTyps[dsOutName.TypOffset*int32(typSize) : dsOutName.TypOffset*int32(typSize) + int32(typSize)]
-					encoder.DeserializeRaw(sTyp, &dsTyp)
-					
 					// outName type
 					var dsTypName []byte
-					sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+					sTypName := dsNames[dsOutName.TypeOffset : dsOutName.TypeOffset + dsOutName.TypeSize]
 					encoder.DeserializeRaw(sTypName, &dsTypName)
-					typ.Name = string(dsTypName)
 
 					// outName value
 					var dsValue []byte
@@ -1134,12 +1088,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 					encoder.DeserializeRaw(sVal, &dsValue)
 
 					outName.Name = string(dsName)
-					outName.Typ = &typ
+					outName.Typ = string(dsTypName)
 					outName.Value = &dsValue
 					outName.Module = mod
 					outName.Context = &cxt
-					outName.Offset = -1
-					outName.Size = -1
+					// outName.Offset = -1
+					// outName.Size = -1
 					
 					// Appending final outName
 					outNames = append(outNames, &outName)
@@ -1229,21 +1183,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				encoder.DeserializeRaw(sName, &dsName)
 
 				// Field type
-				typ := CXType{}
-
-				var dsTyp sType
-				typSize := encoder.Size(sType{})
-				sTyp := dsTyps[dsFld.TypOffset*int32(typSize) : dsFld.TypOffset*int32(typSize) + int32(typSize)]
-				encoder.DeserializeRaw(sTyp, &dsTyp)
-
-				// Type name
 				var dsTypName []byte
-				sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+				sTypName := dsNames[dsFld.TypeOffset : dsFld.TypeOffset + dsFld.TypeSize]
 				encoder.DeserializeRaw(sTypName, &dsTypName)
-				typ.Name = string(dsTypName)
-				
+
 				fld.Name = string(dsName)
-				fld.Typ = &typ
+				fld.Typ = string(dsTypName)
 
 				// Appending final field
 				flds = append(flds, &fld)
@@ -1278,18 +1223,9 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sName, &dsName)
 
 			// Definition type
-			typ := CXType{}
-
-			var dsTyp sType
-			typSize := encoder.Size(sType{})
-			sTyp := dsTyps[dsDef.TypOffset*int32(typSize) : dsDef.TypOffset*int32(typSize) + int32(typSize)]
-			encoder.DeserializeRaw(sTyp, &dsTyp)
-
-			// Type name
 			var dsTypName []byte
-			sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+			sTypName := dsNames[dsDef.TypeOffset : dsDef.TypeOffset + dsDef.TypeSize]
 			encoder.DeserializeRaw(sTypName, &dsTypName)
-			typ.Name = string(dsTypName)
 
 			// Definition value
 			var dsValue []byte
@@ -1297,12 +1233,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sVal, &dsValue)
 
 			def.Name = string(dsName)
-			def.Typ = &typ
+			def.Typ = string(dsTypName)
 			def.Value = &dsValue
 			def.Module = mod
 			def.Context = &cxt
-			def.Offset = -1
-			def.Size = -1
+			// def.Offset = -1
+			// def.Size = -1
 
 			// Appending final definition
 			//defs[string(dsName)] = &def
@@ -1433,18 +1369,9 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sName, &dsName)
 
 			// Definition type
-			typ := CXType{}
-
-			var dsTyp sType
-			typSize := encoder.Size(sType{})
-			sTyp := dsTyps[dsDef.TypOffset*int32(typSize) : dsDef.TypOffset*int32(typSize) + int32(typSize)]
-			encoder.DeserializeRaw(sTyp, &dsTyp)
-
-			// Type name
 			var dsTypName []byte
-			sTypName := dsNames[dsTyp.NameOffset : dsTyp.NameOffset + dsTyp.NameSize]
+			sTypName := dsNames[dsDef.TypeOffset : dsDef.TypeOffset + dsDef.TypeSize]
 			encoder.DeserializeRaw(sTypName, &dsTypName)
-			typ.Name = string(dsTypName)
 
 			// Definition value
 			var dsValue []byte
@@ -1452,7 +1379,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sVal, &dsValue)
 
 			def.Name = string(dsName)
-			def.Typ = &typ
+			def.Typ = string(dsTypName)
 			def.Value = &dsValue
 			def.Module = mod
 			def.Context = &cxt

@@ -164,8 +164,8 @@ func rep (str string, n int) string {
 // 			fmt.Printf("%s(Definition %s %s %s)%s",
 // 				rep(tab, 3),
 // 				def.Name,
-// 				def.Typ.Name,
-// 				PrintValue(def.Value, def.Typ.Name),
+// 				def.Typ,
+// 				PrintValue(def.Value, def.Typ),
 // 				nl)
 // 		}
 		
@@ -177,7 +177,7 @@ func rep (str string, n int) string {
 // 			fmt.Printf("%s(Struct %s", rep(tab, 3), nl)
 
 // 			for _, fld := range strct.Fields {
-// 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Typ.Name, nl)
+// 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Typ, nl)
 // 			}
 			
 // 			fmt.Printf("%s)%s", rep(tab, 3), nl) // structs
@@ -192,13 +192,13 @@ func rep (str string, n int) string {
 
 // 			fmt.Printf("%s(Inputs %s", rep(tab, 4), nl)
 // 			for _, inp := range fn.Inputs {
-// 				fmt.Printf("%s(Input %s %s)%s", rep(tab, 5), inp.Name, inp.Typ.Name, nl)
+// 				fmt.Printf("%s(Input %s %s)%s", rep(tab, 5), inp.Name, inp.Typ, nl)
 // 			}
 // 			fmt.Printf("%s)%s", rep(tab, 4), nl) // inputs
 
 // 			fmt.Printf("%s(Outputs %s", rep(tab, 4), nl)
 // 			for _, out := range fn.Outputs {
-// 				fmt.Printf("%s(Output %s %s)%s", rep(tab, 5), out.Name, out.Typ.Name, nl)
+// 				fmt.Printf("%s(Output %s %s)%s", rep(tab, 5), out.Name, out.Typ, nl)
 // 			}
 // 			fmt.Printf("%s)%s", rep(tab, 4), nl) // outputs
 
@@ -217,7 +217,7 @@ func rep (str string, n int) string {
 				
 // 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
 // 				for _, arg := range expr.Arguments {
-// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ.Name), arg.Typ.Name, nl)
+// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ), arg.Typ, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
 				
@@ -235,8 +235,6 @@ func rep (str string, n int) string {
 // 	fmt.Printf(")")
 // 	fmt.Println()
 // }
-
-
 
 func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
@@ -276,7 +274,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 		j = 0
 		for _, v := range mod.Definitions {
-			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ.Name)
+			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ)
 			j++
 		}
 
@@ -296,7 +294,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 			for k, fld := range strct.Fields {
 				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
-					k, fld.Name, fld.Typ.Name)
+					k, fld.Name, fld.Typ)
 			}
 			
 			j++
@@ -311,25 +309,25 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 			inOuts := make(map[string]string)
 			for _, in := range fn.Inputs {
-				inOuts[in.Name] = in.Typ.Name
+				inOuts[in.Name] = in.Typ
 			}
 			
 			
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
 				if i == len(fn.Inputs) - 1 {
-					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name))
+					inps.WriteString(concat(inp.Name, " ", inp.Typ))
 				} else {
-					inps.WriteString(concat(inp.Name, " ", inp.Typ.Name, ", "))
+					inps.WriteString(concat(inp.Name, " ", inp.Typ, ", "))
 				}
 			}
 
 			var outs bytes.Buffer
 			for i, out := range fn.Outputs {
 				if i == len(fn.Outputs) - 1 {
-					outs.WriteString(concat(out.Name, " ", out.Typ.Name))
+					outs.WriteString(concat(out.Name, " ", out.Typ))
 				} else {
-					outs.WriteString(concat(out.Name, " ", out.Typ.Name, ", "))
+					outs.WriteString(concat(out.Name, " ", out.Typ, ", "))
 				}
 			}
 
@@ -350,13 +348,13 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 				for i, arg := range expr.Arguments {
 					//fmt.Println(string(*arg.Value))
 					typ := ""
-					if arg.Typ.Name == "ident" {
-						if arg.Typ != nil &&
+					if arg.Typ == "ident" {
+						if arg.Typ != "" &&
 							inOuts[string(*arg.Value)] != "" {
 							typ = inOuts[string(*arg.Value)]
 						} else if arg.Value != nil { //&&
 							// mod.Definitions[string(*arg.Value)] != nil &&
-							// mod.Definitions[string(*arg.Value)].Typ.Name != ""
+							// mod.Definitions[string(*arg.Value)].Typ != ""
 							//{
 
 							//found := false
@@ -367,20 +365,20 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 									break
 								}
 							}
-							if found != nil && found.Typ.Name != "" {
-								typ = found.Typ.Name
+							if found != nil && found.Typ != "" {
+								typ = found.Typ
 							}
-							//typ = mod.Definitions[string(*arg.Value)].Typ.Name
+							//typ = mod.Definitions[string(*arg.Value)].Typ
 						} else {
-							typ = arg.Typ.Name
+							typ = arg.Typ
 						}
 					} else {
-						typ = arg.Typ.Name
+						typ = arg.Typ
 					}
 
 					argName := string(*arg.Value)
 
-					if arg.Typ.Name != "ident" {
+					if arg.Typ != "ident" {
 						switch typ {
 						case "str":
 							argName = fmt.Sprintf("%#v", string(*arg.Value))
@@ -439,13 +437,13 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 						}
 					}
 
-					if arg.Offset > -1 {
-						offset := arg.Offset
-						size := arg.Size
-						var val []byte
-						encoder.DeserializeRaw((*cxt.Heap)[offset:offset+size], &val)
-						arg.Value = &val
-					}
+					// if arg.Offset > -1 {
+					// 	offset := arg.Offset
+					// 	size := arg.Size
+					// 	var val []byte
+					// 	encoder.DeserializeRaw((*cxt.Heap)[offset:offset+size], &val)
+					// 	arg.Value = &val
+					// }
 
 					if i == len(expr.Arguments) - 1 {
 						args.WriteString(concat(argName, " ", typ))
