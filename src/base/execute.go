@@ -330,12 +330,6 @@ func beforeDot (str string ) (beforeDot string, afterDot string) {
 	return beforeDot, afterDot
 }
 
-// func GetIdentParts (str string) []string {
-// 	return strings.Split(str, ".")
-// }
-
-//var biggestOutputNumber int = 0
-
 // Compiling from CXGO to CX Base
 func (cxt *CXProgram) Compile (withProfiling bool) {
 	var asmNL string = "\n"

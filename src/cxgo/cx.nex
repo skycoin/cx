@@ -111,7 +111,6 @@ import (
 	"fmt"
 	"bytes"
 	"time"
-	"regexp"
 	"io/ioutil"
 	"strconv"
 	"encoding/json"
@@ -422,11 +421,11 @@ func initDef (typ str) (typ str) {}
 func halt (msg str) (out bool) {}
 `
 
-func unsafeEval (code string) (result string) {
+func unsafeEval (code string) (out string) {
 	var lexer *Lexer
 	defer func() {
 		if r := recover(); r != nil {
-			result = fmt.Sprintf("%v", r)
+			out = fmt.Sprintf("%v", r)
 			lexer.Stop()
 		}
 	}()
@@ -518,13 +517,10 @@ func unsafeEval (code string) (result string) {
 	
 	w.Close()
 	os.Stdout = old // restoring the real stdout
-	//out := <-outC
-	out := <-outC
-	re := regexp.MustCompile("\n")
-	result = string(re.ReplaceAll([]byte(out), []byte("<br />")))
+	out = <-outC
 
 	cxt = MakeContext()
-	return result
+	return out
 }
 
 func Eval (code string) string {
@@ -558,6 +554,9 @@ func WebMode () {
 	host := ":5336"
 
 	mux := http.NewServeMux()
+	
+	mux.Handle("/", http.FileServer(http.Dir("./dist")))
+	
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
@@ -627,6 +626,8 @@ func (yylex Lexer) Error (e string) {
 // var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 func main () {
+
+	//TestGl()
 	runtime.GOMAXPROCS(2)
 
 	//signal.Listen("0.0.0.0:7999")
