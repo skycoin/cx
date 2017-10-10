@@ -9,5 +9,5 @@ func factorial (num i32) (fact i32) {
 }
 
 func main () () {
-	i32.print(factorial(10))
+	i32.print(factorial(6))
 }

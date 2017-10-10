@@ -40,16 +40,7 @@ func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpressi
 			affs[r].ApplyAffordance()
 		}
 	} else {
-		//fmt.Println(outNames)
 		expr.OutputNames = outNames
-		// for _, outName := range outNames {
-		// 	fmt.Println("THIS")
-		// 	fmt.Println(FilterAffordances(expr.GetAffordances(), "OutputName")[0].Description)
-			
-		// 	affs := FilterAffordances(expr.GetAffordances(), "OutputName", outName)
-		// 	r := random(0, len(affs))
-		// 	affs[r].ApplyAffordance()
-		// }
 	}
 	
 	return expr
@@ -280,7 +271,7 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 	}
 }
 
-func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64) error {
+func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
 	cxt.SelectFunction(solutionName)
 
 	//cxt.PrintProgram(false)
@@ -292,16 +283,6 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 
 			if i != numberExprs - preExistingExpressions - 1 {
 				affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
-				
-				// excluding array operations
-				// re := regexp.MustCompile("readByteA|writeByteA|evolve")
-				// filteredAffs := make([]*CXAffordance, 0)
-				// for _, aff := range affs {
-				// 	if re.FindString(aff.Description) == "" {
-				// 		filteredAffs = append(filteredAffs, aff)
-				// 	}
-				// }
-				// affs = filteredAffs
 				
 				r := random(0, len(affs))
 				affs[r].ApplyAffordance()
@@ -316,7 +297,6 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 					fnOutTypNames = append(fnOutTypNames, out.Typ)
 				}
 
-				//possibleOps := make([]byte, 0)
 				var possibleOps string
 				coreModule, _ := cxt.GetModule("core")
 				for _, op := range coreModule.Functions {
@@ -350,16 +330,6 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 
 				affs := FilterAffordances(fn.GetAffordances(), "Expression", possibleOps, fnBag)
 
-				// // excluding array operations
-				// re := regexp.MustCompile("readByteA|writeByteA|evolve")
-				// filteredAffs := make([]*CXAffordance, 0)
-				// for _, aff := range affs {
-				// 	if re.FindString(aff.Description) == "" {
-				// 		filteredAffs = append(filteredAffs, aff)
-				// 	}
-				// }
-				// affs = filteredAffs
-
 				r := random(0, len(affs))
 				affs[r].ApplyAffordance()
 				
@@ -389,14 +359,14 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	// printing initial solution
 	//best.PrintProgram(false)
 
-	//var finalError float64
+	var finalError float64
 	
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		if fn, err := cxt.GetFunction(solutionName, mod.Name); err == nil {
 			if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
 				fmt.Printf("Evolving function '%s'\n", solutionName)
 				for i := 0; i < iterations; i++ {
-					//fmt.Printf("Iteration:%d\n", i)
+					// fmt.Printf("Iteration:%d\n", i)
 					// getting 4 copies of the parent (the best solution)
 					// let's create an array holding these programs
 					programs := make([]*CXProgram, 5) // it's always 5, because of the 1+4 strategy
@@ -416,10 +386,11 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 						var error float64 = 0
 						for i, inp := range inputs {
 							program.adaptInput(inp)
+							//fmt.Println(program.Modules[0].Functions[0].Expressions[0].Arguments[0].Value)
 
 							//program.PrintProgram(false)
 							//fmt.Println(inp)
-							
+
 							program.Reset()
 							program.Run(false, -1)
 
@@ -428,24 +399,30 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 							// We'll always take the first value
 							// The algorithm shouldn't work with multiple value returns yet
 
-							output := program.Outputs[0].Value
-							encoder.DeserializeRaw(*output, &result)
+							output := *program.Outputs[0].Value
+							encoder.DeserializeRaw(output, &result)
 
 							//fmt.Println(program.Outputs[0].Value)
 
 							// I don't want to import Math, so I will hardcode abs
 							diff := float64(result - outputs[i])
-							//fmt.Println(diff)
+
+							// fmt.Println(result)
+							//fmt.Println(program.Outputs[0].Value)
+							// fmt.Println(outputs[i])
+							// fmt.Println()
+							
 							if diff >= 0 {
 								error += diff
 							} else {
-								error += diff * float64(-1)
+								error += (diff * float64(-1))
 							}
 							//fmt.Println(error)
 
 						}
 						
 						//fmt.Println(len(program.CallStack[len(program.CallStack) - 1].State))
+						//fmt.Println(error / float64(len(inputs)))
 						errors[i] = error / float64(len(inputs))
 					}
 
@@ -463,11 +440,12 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 
 					// print error each iteration
 					fmt.Println(errors[bestIndex])
+					//fmt.Println(errors)
 					
 					//best.PrintProgram(false)
 					best = programs[bestIndex]
 					//best.PrintProgram(false)
-					//finalError = errors[bestIndex]
+					finalError = errors[bestIndex]
 
 					if errors[bestIndex] < epsilon {
 						break
@@ -479,7 +457,17 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	}
 
 	best.transferSolution(solutionName, cxt)
-	//return finalError, nil
+
+	sFinalError := encoder.Serialize(finalError)
+	
+	for _, def := range call.State {
+		if def.Name == expr.OutputNames[0].Name {
+			def.Value = &sFinalError
+			return nil
+		}
+	}
+	
+	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sFinalError, "f64"))
 	return nil
 }
 

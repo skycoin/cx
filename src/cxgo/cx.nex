@@ -114,7 +114,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"encoding/json"
-
+	
 //	"flag"
 
 	"net"
@@ -249,15 +249,15 @@ func f64.div (n1 f64, n2 f64) (out f64) {}
 func i32.mod (n1 i32, n2 i32) (rem i32) {}
 func i64.mod (n1 i64, n2 i64) (rem i64) {}
 
-func i32.and (n1 i32, n2 i32) (out i32) {}
-func i32.or (n1 i32, n2 i32) (out i32) {}
-func i32.xor (n1 i32, n2 i32) (out i32) {}
-func i32.andNot (n1 i32, n2 i32) (out i32) {}
+func i32.bitand (n1 i32, n2 i32) (out i32) {}
+func i32.bitor (n1 i32, n2 i32) (out i32) {}
+func i32.bitxor (n1 i32, n2 i32) (out i32) {}
+func i32.bitclear (n1 i32, n2 i32) (out i32) {}
 
-func i64.and (n1 i64, n2 i64) (out i64) {}
-func i64.or (n1 i64, n2 i64) (out i64) {}
-func i64.xor (n1 i64, n2 i64) (out i64) {}
-func i64.andNot (n1 i64, n2 i64) (out i64) {}
+func i64.bitand (n1 i64, n2 i64) (out i64) {}
+func i64.bitor (n1 i64, n2 i64) (out i64) {}
+func i64.bitxor (n1 i64, n2 i64) (out i64) {}
+func i64.bitclear (n1 i64, n2 i64) (out i64) {}
 
 func and (c1 bool, c2 bool) (out bool) {}
 func or (c1 bool, c2 bool) (out bool) {}
@@ -377,17 +377,17 @@ func []f32.make (size i32) (arr []f32) {}
 func []f64.make (size i32) (arr []f64) {}
 
 func []bool.read (arr []bool, idx i32) (lit bool) {}
-func []bool.write (arr []bool, idx i32, val bool) (arr []bool) {}
+func []bool.write (arr []bool, idx i32, val bool) () {}
 func []byte.read (arr []byte, idx i32) (lit byte) {}
-func []byte.write (arr []byte, idx i32, val byte) (arr []byte) {}
+func []byte.write (arr []byte, idx i32, val byte) () {}
 func []i32.read (arr []i32, idx i32) (lit i32) {}
-func []i32.write (arr []i32, idx i32, val i32) (arr []i32) {}
+func []i32.write (arr []i32, idx i32, val i32) () {}
 func []i64.read (arr []i64, idx i32) (lit i64) {}
-func []i64.write (arr []i64, idx i32, val i64) (arr []i64) {}
+func []i64.write (arr []i64, idx i32, val i64) () {}
 func []f32.read (arr []f32, idx i32) (lit f32) {}
-func []f32.write (arr []f32, idx i32, val f32) (arr []f32) {}
+func []f32.write (arr []f32, idx i32, val f32) () {}
 func []f64.read (arr []f64, idx i32) (lit f64) {}
-func []f64.write (arr []f64, idx i32, val f64) (arr []f64) {}
+func []f64.write (arr []f64, idx i32, val f64) () {}
 
 func []bool.len (arr []bool) (len i32) {}
 func []byte.len (arr []byte) (len i32) {}
@@ -395,6 +395,28 @@ func []i32.len (arr []i32) (len i32) {}
 func []i64.len (arr []i64) (len i32) {}
 func []f32.len (arr []f32) (len i32) {}
 func []f64.len (arr []f64) (len i32) {}
+
+func str.concat (arr1 str, arr2 str) (conc str) {}
+func []byte.concat (arr1 []byte, arr2 []byte) (conc []byte) {}
+func []bool.concat (arr1 []bool, arr2 []bool) (conc []bool) {}
+func []i32.concat (arr1 []i32, arr2 []i32) (conc []i32) {}
+func []i64.concat (arr1 []i64, arr2 []i64) (conc []i64) {}
+func []f32.concat (arr1 []f32, arr2 []f32) (conc []f32) {}
+func []f64.concat (arr1 []f64, arr2 []f64) (conc []f64) {}
+
+func []byte.append (arr1 []byte, lit byte) (conc []byte) {}
+func []bool.append (arr1 []bool, lit bool) (conc []bool) {}
+func []i32.append (arr1 []i32, lit i32) (conc []i32) {}
+func []i64.append (arr1 []i64, lit i64) (conc []i64) {}
+func []f32.append (arr1 []f32, lit f32) (conc []f32) {}
+func []f64.append (arr1 []f64, lit f64) (conc []f64) {}
+
+func []byte.copy (arr1 []byte, arr2 []byte) () {}
+func []bool.copy (arr1 []bool, arr2 []bool) () {}
+func []i32.copy (arr1 []i32, arr2 []i32) () {}
+func []i64.copy (arr1 []i64, arr2 []i64) () {}
+func []f32.copy (arr1 []f32, arr2 []f32) () {}
+func []f64.copy (arr1 []f64, arr2 []f64) () {}
 
 func sleep (ms i32) () {}
 
@@ -419,6 +441,76 @@ func deserialize (sPrgrm []byte) (err bool) {}
 func initDef (typ str) (typ str) {}
 
 func halt (msg str) (out bool) {}
+
+/*
+  Runtime
+*/
+
+func runtime.LockOSThread () () {}
+
+/*
+  OpenGL
+*/
+
+func gl.Init () (error str) {}
+func gl.CreateProgram () (progId i32) {}
+func gl.LinkProgram (progId i32) () {}
+func gl.Clear (mask i32) () {}
+func gl.UseProgram (progId i32) () {}
+
+func gl.BindBuffer (target i32, buffer i32) () {}
+func gl.BindVertexArray (target i32) () {}
+func gl.EnableVertexAttribArray (index i32) () {}
+func gl.VertexAttribPointer (index i32, size i32, xtype i32, normalized bool, stride i32) () {}
+func gl.DrawArrays (mode i32, first i32, count i32) () {}
+func gl.GenBuffers (n i32, buffers i32) () {}
+func gl.BufferData (target i32, size i32, data []f32, usage i32) () {}
+func gl.GenVertexArrays (n i32, arrays i32) () {}
+func gl.CreateShader (xtype i32) (shader i32) {}
+
+func gl.Strs (source str, freeFn str) () {}
+func gl.Free (freeFn str) () {}
+func gl.ShaderSource (shader i32, count i32, xstring str) () {}
+func gl.CompileShader (shader i32) () {}
+func gl.GetShaderiv (shader i32, pname i32, params i32) () {}
+func gl.AttachShader (program i32, shader i32) () {}
+
+/*
+  GLFW
+*/
+
+func glfw.Init () () {}
+func glfw.WindowHint (target i32, hint i32) () {}
+func glfw.CreateWindow (window str, width i32, height i32, title str) () {}
+func glfw.MakeContextCurrent (window str) () {}
+func glfw.ShouldClose (window str) (flag bool) {}
+func glfw.PollEvents () () {}
+func glfw.SwapBuffers (window str) () {}
+
+package glfw
+
+var False i32 = 0
+var True i32 = 1
+var Resizable i32 = 131075
+var ContextVersionMajor i32 = 139266
+var ContextVersionMinor i32 = 139267
+var OpenGLProfile i32 = 139272
+var OpenGLCoreProfile i32 = 204801
+var OpenGLForwardCompatible i32 = 139270
+
+package gl
+
+var FALSE i32 = 0
+var TRUE i32 = 1
+var COLOR_BUFFER_BIT i32 = 16384
+var DEPTH_BUFFER_BIT i32 = 256
+var STATIC_DRAW i32 = 35044
+var ARRAY_BUFFER i32 = 34962
+var FLOAT i32 = 5126
+var TRIANGLES i32 = 4
+var VERTEX_SHADER i32 = 35633
+var FRAGMENT_SHADER i32 = 35632
+
 `
 
 func unsafeEval (code string) (out string) {
@@ -623,12 +715,15 @@ func (yylex Lexer) Error (e string) {
 	yylex.Stop()
 }
 
-// var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
-
 func main () {
+	runtime.LockOSThread()
+	//runtime.GOMAXPROCS(2)
 
-	//TestGl()
-	runtime.GOMAXPROCS(2)
+
+	//fmt.Println(encoder.Serialize([]float32{1.1, 2.2, 3.3, 4.4}))
+	//fmt.Println(encoder.Serialize([]float32{1.1, 1.1, 3.3, 4.4, 5.5}))
+
+	
 
 	//signal.Listen("0.0.0.0:7999")
 

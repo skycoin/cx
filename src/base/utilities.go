@@ -6,8 +6,68 @@ import (
 	"time"
 	"bytes"
 	"strings"
+	"errors"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
+
+func checkType (fnName string, typ string, arg *CXArgument) error {
+	if arg.Typ != typ {
+		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ, typ))
+	}
+	return nil
+}
+
+func checkTwoTypes (fnName string, typ1 string, typ2 string, arg1 *CXArgument, arg2 *CXArgument) error {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 {
+		if arg1.Typ != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+	}
+	return nil
+}
+
+func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1 *CXArgument, arg2 *CXArgument, arg3 *CXArgument) error {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 {
+		if arg1.Typ != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+		} else if arg2.Typ != typ2 {
+			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+	}
+	return nil
+}
+
+func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, arg4 *CXArgument) error {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
+		if arg1.Typ != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+		} else if arg2.Typ != typ2 {
+			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+		} else if arg3.Typ != typ3 {
+			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
+	}
+	return nil
+}
+
+func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, arg3, arg4, arg5 *CXArgument) error {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
+		if arg1.Typ != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+		} else if arg2.Typ != typ2 {
+			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+		} else if arg3.Typ != typ3 {
+			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+		} else if arg4.Typ != typ4 {
+			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Typ, typ5))
+	}
+	return nil
+}
 
 func random(min, max int) int {
 	rand.Seed(time.Now().UTC().UnixNano())

@@ -12,8 +12,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"f32.add":true, "f32.mul":true, "f32.sub":true, "f32.div":true,
 	"f64.add":true, "f64.mul":true, "f64.sub":true, "f64.div":true,
 	"i32.mod":true, "i64.mod":true,
-	"i32.and":true, "i32.or":true, "i32.xor":true, "i32.andNot":true,
-	"i64.and":true, "i64.or":true, "i64.xor":true, "i64.andNot":true,
+	"i32.bitand":true, "i32.bitor":true, "i32.bitxor":true, "i32.bitclear":true,
+	"i64.bitand":true, "i64.bitor":true, "i64.bitxor":true, "i64.bitclear":true,
 
 	"str.print":true, "byte.print":true, "i32.print":true, "i64.print":true,
 	"f32.print":true, "f64.print":true, "[]byte.print":true, "[]i32.print":true,
@@ -31,6 +31,15 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"[]f32.read":true, "[]f32.write":true, "[]f64.read":true, "[]f64.write":true,
 	"[]bool.len":true, "[]byte.len":true, "[]i32.len":true, "[]i64.len":true,
 	"[]f32.len":true, "[]f64.len":true,
+
+	"str.concat":true, "[]byte.concat":true, "[]bool.concat":true,
+	"[]i32.concat":true, "[]i64.concat":true, "[]f32.concat":true, "[]f64.concat":true,
+
+	"[]byte.append":true, "[]bool.append":true,
+	"[]i32.append":true, "[]i64.append":true, "[]f32.append":true, "[]f64.append":true,
+	
+	"[]byte.copy":true, "[]bool.copy":true,
+	"[]i32.copy":true, "[]i64.copy":true, "[]f32.copy":true, "[]f64.copy":true,
 
 	"[]byte.str":true, "str.[]byte":true,
 	
@@ -70,6 +79,33 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"serialize":true, "deserialize":true, "evolve":true,
 
 	"initDef":true,
+
+	/*
+          Runtime
+        */
+
+	"runtime.LockOSThread":true,
+	
+	/*
+          OpenGL
+        */
+	"gl.Init":true, "gl.CreateProgram":true, "gl.LinkProgram":true,
+	"gl.Clear":true, "gl.UseProgram":true,
+	
+	"gl.BindBuffer":true, "gl.BindVertexArray":true, "gl.EnableVertexAttribArray":true,
+	"gl.VertexAttribPointer":true, "gl.DrawArrays":true, "gl.GenBuffers":true,
+	"gl.BufferData":true, "gl.GenVertexArrays":true, "gl.CreateShader":true,
+	
+	"gl.Strs":true, "gl.Free":true, "gl.ShaderSource":true,
+	"gl.CompileShader":true, "gl.GetShaderiv":true, "gl.AttachShader":true,
+	
+	/*
+          GLFW
+        */
+
+	"glfw.Init":true, "glfw.WindowHint":true, "glfw.CreateWindow":true,
+	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true,
+	"glfw.PollEvents":true, "glfw.SwapBuffers":true,
 }
 // var NATIVE_FUNCTIONS = []string{
 // 	"i32.add", "i32.mul", "i32.sub", "i32.div",
@@ -143,6 +179,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 type CXProgram struct {
 	Modules []*CXModule
+	ArgumentPointers []*CXArgument
 	CurrentModule *CXModule
 	CallStack *CXCallStack
 	Terminated bool

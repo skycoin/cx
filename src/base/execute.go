@@ -3,7 +3,8 @@ package base
 import (
 	"bytes"
 	"io/ioutil"
-	
+	"runtime"
+
 	"fmt"
 	"errors"
 	"strings"
@@ -198,6 +199,7 @@ func saveStep (call *CXCall) {
 func (cxt *CXProgram) Reset() {
 	cxt.CallStack = MakeCallStack(0)
 	cxt.Steps = make([]*CXCallStack, 0)
+	cxt.Outputs = make([]*CXDefinition, 0)
 	//cxt.ProgramSteps = nil
 }
 
@@ -343,14 +345,17 @@ import (
 "os"
 	"log"
 	"flag"
+        "runtime"
 	"runtime/pprof"
 );
 
 var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile 'file'")
+var memprofile = flag.String("memprofile", "", "write memory profile to 'file'")
 
 func main () {
+	runtime.LockOSThread()
 
 	flag.Parse()
 	if *cpuprofile != "" {
@@ -363,7 +368,7 @@ func main () {
 	}
 `)
 	} else {
-		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {`)
+		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
 	}
 	
 	
@@ -411,6 +416,20 @@ func main () {
 			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, *def.Value, def.Typ, asmNL))
 		}
 	}
+
+	program.WriteString(`
+if *memprofile != "" {
+        f, err := os.Create(*memprofile)
+        if err != nil {
+            log.Fatal("could not create memory profile: ", err)
+        }
+        runtime.GC() // get up-to-date statistics
+        if err := pprof.WriteHeapProfile(f); err != nil {
+            log.Fatal("could not write memory profile: ", err)
+        }
+        f.Close()
+    }
+`)
 
 	program.WriteString(`cxt.Run(false, -1);}`)
 	ioutil.WriteFile(fmt.Sprintf("o.go"), []byte(program.String()), 0644)
@@ -489,7 +508,8 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*CXArgument, exc *bool, excError *error) {
 	switch opName {
 	case "serialize":
-		Serialize(call.Context)
+		//Serialize(call.Context, expr, call)
+		serialize_program(expr, call)
 	case "deserialize":
 		// it only prints the deserialized program for now
 		Deserialize((*argsCopy)[0].Value).PrintProgram(false)
@@ -510,8 +530,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		var epsilon float64
 		encoder.DeserializeRaw(*(*argsCopy)[6].Value, &epsilon)
 
-		if err := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon); err == nil {
-			//val := encoder.Serialize(evolutionErr)
+		if err := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
@@ -990,49 +1009,49 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
 		// bitwise operators
-	case "i32.and":
+	case "i32.bitand":
 		if err := andI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i32.or":
+	case "i32.bitor":
 		if err := orI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i32.xor":
+	case "i32.bitxor":
 		if err := xorI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i32.andNot":
+	case "i32.bitclear":
 		if err := andNotI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i64.and":
+	case "i64.bitand":
 		if err := andI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i64.or":
+	case "i64.bitor":
 		if err := orI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i64.xor":
+	case "i64.bitxor":
 		if err := xorI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
-	case "i64.andNot":
+	case "i64.bitclear":
 		if err := andNotI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
 		} else {
 			*exc = true
@@ -1184,6 +1203,122 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 		}
+		// concatenation functions
+	case "str.concat":
+		if err := concatStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]byte.append":
+		if err := appendByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]bool.append":
+		if err := appendBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i32.append":
+		if err := appendI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i64.append":
+		if err := appendI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f32.append":
+		if err := appendF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f64.append":
+		if err := appendF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]byte.concat":
+		if err := concatByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]bool.concat":
+		if err := concatBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i32.concat":
+		if err := concatI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i64.concat":
+		if err := concatI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f32.concat":
+		if err := concatF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f64.concat":
+		if err := concatF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+		// copy functions
+	case "[]byte.copy":
+		if err := copyByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]bool.copy":
+		if err := copyBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i32.copy":
+		if err := copyI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]i64.copy":
+		if err := copyI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f32.copy":
+		if err := copyF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "[]f64.copy":
+		if err := copyF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
 		// time functions
 	case "sleep":
 		if err := sleep((*argsCopy)[0]); err == nil {
@@ -1270,6 +1405,178 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println(string(*(*argsCopy)[0].Value))
 		*exc = true
 		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
+		// Runtime
+	case "runtime.LockOSThread":
+		runtime.LockOSThread()
+		// if err := runtime_LockOSThread(expr, call); err == nil {
+		// } else {
+		// 	*exc = true
+		// 	*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		// }
+		// OpenGL
+	case "gl.Init":
+		if err := gl_Init(expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.CreateProgram":
+		if err := gl_CreateProgram(expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.LinkProgram":
+		if err := gl_LinkProgram((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.Clear":
+		if err := gl_Clear((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.UseProgram":
+		if err := gl_UseProgram((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.BindBuffer":
+		if err := gl_BindBuffer((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.BindVertexArray":
+		if err := gl_BindVertexArray((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.EnableVertexAttribArray":
+		if err := gl_EnableVertexAttribArray((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.VertexAttribPointer":
+		if err := gl_VertexAttribPointer((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.DrawArrays":
+		if err := gl_DrawArrays((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.GenBuffers":
+		if err := gl_GenBuffers((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.BufferData":
+		if err := gl_BufferData((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.GenVertexArrays":
+		if err := gl_GenVertexArrays((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.CreateShader":
+		if err := gl_CreateShader((*argsCopy)[0], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.Strs":
+		if err := gl_Strs((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.Free":
+		if err := gl_Free((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.ShaderSource":
+		if err := gl_ShaderSource((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.CompileShader":
+		if err := gl_CompileShader((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.GetShaderiv":
+		if err := gl_GetShaderiv((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.AttachShader":
+		if err := gl_AttachShader((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+		// GLFW
+	case "glfw.Init":
+		if err := glfw_Init(); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.WindowHint":
+		if err := glfw_WindowHint((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.CreateWindow":
+		if err := glfw_CreateWindow((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.MakeContextCurrent":
+		if err := glfw_MakeContextCurrent((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.ShouldClose":
+		if err := glfw_ShouldClose((*argsCopy)[0], expr, call); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.PollEvents":
+		if err := glfw_PollEvents(); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "glfw.SwapBuffers":
+		if err := glfw_SwapBuffers((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
 	case "":
 	}
 }
@@ -1312,7 +1619,12 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						}
 
 						found = true
-						break
+						// break
+						return call.ReturnAddress.call(withDebug, nCalls, callCounter)
+					} else {
+						// no return address. should only be for main
+						call.Context.Terminated = true
+						call.Context.Outputs = append(call.Context.Outputs, def)
 					}
 				}
 			}
@@ -1325,7 +1637,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 		if call.ReturnAddress != nil {
 			return call.ReturnAddress.call(withDebug, nCalls, callCounter)
-		}  else {
+		} else {
 			// no return address. should only be for main
 			call.Context.Terminated = true
 			//call.Context.Outputs = append(call.Context.Outputs, def)
@@ -1358,12 +1670,25 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					var resolvedIdent *CXDefinition
 
 					identParts := strings.Split(lookingFor, ".")
+
 					if len(identParts) > 1 {
 						if mod, err := call.Context.GetModule(identParts[0]); err == nil {
 							// then it's an external definition or struct
-							if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
-								resolvedIdent = def
+							isImported := false
+							for _, imp := range call.Operator.Module.Imports {
+								if imp.Name == identParts[0] {
+									isImported = true
+									break
+								}
 							}
+							if isImported {
+								if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
+									resolvedIdent = def
+								}
+							} else {
+								return errors.New(fmt.Sprintf("Module '%s' not imported", mod.Name))
+							}
+							
 						} else {
 							// then it's a global struct
 							mod := call.Operator.Module
@@ -1399,7 +1724,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					}
 
 					if resolvedIdent == nil {
-						panic(fmt.Sprintf("'%s' is undefined", lookingFor))
+						return errors.New(fmt.Sprintf("%d: '%s' is undefined", expr.FileLine, lookingFor))
 					}
 					argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
 				} else {

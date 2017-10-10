@@ -1,10 +1,7 @@
 package main
 
-func main () (out i32) {
-	var out i32
-
-	for i32.lt(out, 10) {
-		i32.print(out)
-		out = i32.add(out, 1)
+func main () () {
+	for c := 0; i32.lt(c, 20); c = i32.add(c, 1) {
+		i32.print(c)
 	}
 }

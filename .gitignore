@@ -29,5 +29,8 @@ out.*
 o
 o.go
 cpu.prof
+mem.prof
 fibonacci.cx
 fib.py
+pointers.cx
+

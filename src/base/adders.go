@@ -166,6 +166,12 @@ func (expr *CXExpression) AddArgument (arg *CXArgument) *CXExpression {
 	return expr
 }
 
+// func (expr *CXExpression) AddArgumentPointer (arg *CXArgument) *CXExpression {
+// 	expr.Arguments = append(expr.Arguments, arg)
+// 	expr.Context
+// 	return expr
+// }
+
 func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	if len(expr.Operator.Outputs) > 0 {
 		nextOutIdx := len(expr.OutputNames)

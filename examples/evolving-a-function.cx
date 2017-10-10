@@ -8,13 +8,11 @@ var outs []f64 = []f64{
 	90.0, 72.0, 56.0, 42.0, 30.0, 20.0, 12.0, 6.0, 2.0, 0.0, 0.0,
 	2.0, 6.0, 12.0, 20.0, 30.0, 42.0, 56.0, 72.0, 90.0, 110.0}
 
-func solution (n f64) (out f64) {
-	square = f64.mul(n, n)
-}
+func solution (n f64) (out f64) {}
 
 func main () (out f64) {
-	evolve("solution", "addF64|mulF64|subF64", inps, outs, 5, 300, f32.f64(0.1))
+	evolve("solution", "f64.add|f64.mul|f64.sub", inps, outs, 2, 100, f32.f64(0.1))
 
-	str.print("Extrapolating solution")
+	str.print("Extrapolating evolved solution")
 	f64.print(solution(f32.f64(30.0)))
 }

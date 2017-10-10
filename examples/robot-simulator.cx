@@ -102,8 +102,8 @@ func main () (out str) {
 
 	var counter i32
 	for i32.lt(counter, 6) {
-		wallMap = []bool.write(wallMap, map2Dto1D(row, col, width), true)
-		wormholeMap = []bool.write(wormholeMap, map2Dto1D(row, col, width), false)
+		[]bool.write(wallMap, map2Dto1D(row, col, width), true)
+		[]bool.write(wormholeMap, map2Dto1D(row, col, width), false)
 		robotObjects(row, col, width, wallMap, wormholeMap)
 		row, col := robot(row, col)
 		counter = i32.add(counter, 1)

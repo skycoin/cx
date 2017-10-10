@@ -2,4 +2,6 @@ package main
 
 func main () () {
 	str.print("Hello World!")
+	a, b, c := i32.add(10, 10), i32.add(30, 10), 15
+	i32.print(b)
 }
