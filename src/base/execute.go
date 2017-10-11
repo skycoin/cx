@@ -1408,14 +1408,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// Runtime
 	case "runtime.LockOSThread":
 		runtime.LockOSThread()
-		// if err := runtime_LockOSThread(expr, call); err == nil {
-		// } else {
-		// 	*exc = true
-		// 	*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		// }
 		// OpenGL
 	case "gl.Init":
-		if err := gl_Init(expr, call); err == nil {
+		if err := gl_Init(); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
@@ -1530,6 +1525,48 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		}
 	case "gl.AttachShader":
 		if err := gl_AttachShader((*argsCopy)[0], (*argsCopy)[1]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.LoadIdentity":
+		if err := gl_LoadIdentity(); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.MatrixMode":
+		if err := gl_MatrixMode((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.EnableClientState":
+		if err := gl_EnableClientState((*argsCopy)[0]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.PushMatrix":
+		if err := gl_PushMatrix(); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.PopMatrix":
+		if err := gl_PopMatrix(); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.Rotatef":
+		if err := gl_Rotatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
+		} else {
+			*exc = true
+			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		}
+	case "gl.Translatef":
+		if err := gl_Translatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
 		} else {
 			*exc = true
 			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))

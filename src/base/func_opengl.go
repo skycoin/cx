@@ -13,7 +13,8 @@ import (
 var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
-func gl_Init (expr *CXExpression, call *CXCall) error {
+func gl_Init () error {
+	
 	if err := gl.Init(); err == nil {
 		return nil
 	} else {
@@ -143,6 +144,34 @@ func gl_VertexAttribPointer (index, size, xtype, normalized, stride *CXArgument)
 		return err
 	}
 }
+
+// func gl_VertexPointer (index, size, xtype, normalized, stride *CXArgument) error {
+// 	if err := checkFiveTypes("gl.VertexAttribPointer", "i32", "i32", "i32", "bool", "i32", index, size, xtype, normalized, stride); err == nil {
+// 		var idx int32
+// 		var siz int32
+// 		var xtyp int32
+// 		var norm int32 //and later to bool
+// 		var strid int32
+
+// 		encoder.DeserializeAtomic(*index.Value, &idx)
+// 		encoder.DeserializeAtomic(*size.Value, &siz)
+// 		encoder.DeserializeAtomic(*xtype.Value, &xtyp)
+// 		encoder.DeserializeAtomic(*xtype.Value, &xtyp)
+// 		encoder.DeserializeAtomic(*stride.Value, &strid)
+
+// 		var normal bool
+// 		if norm == 1 {
+// 			normal = true
+// 		} else {
+// 			normal = false
+// 		}
+
+// 		gl.VertexAttribPointer(uint32(idx), int32(siz), uint32(xtyp), normal, int32(strid), nil) // fix nil
+// 		return nil
+// 	} else {
+// 		return err
+// 	}
+// }
 
 func gl_DrawArrays (mode, first, count *CXArgument) error {
 	if err := checkThreeTypes("gl.DrawArrays", "i32", "i32", "i32", mode, first, count); err == nil {
@@ -354,4 +383,102 @@ func gl_AttachShader (program, shader *CXArgument) error {
 	} else {
 		return err
 	}
+}
+
+func gl_LoadIdentity () error {
+	gl.LoadIdentity()
+	return nil
+}
+
+func gl_PushMatrix () error {
+	gl.PushMatrix()
+	return nil
+}
+
+func gl_PopMatrix () error {
+	gl.PopMatrix()
+	return nil
+}
+
+func gl_Rotatef (angle, x, y, z *CXArgument) error {
+	if err := checkFourTypes("gl.Rotatef", "f32", "f32", "f32", "f32", angle, x, y, z); err == nil {
+		var dsA float32
+		var dsX float32
+		var dsY float32
+		var dsZ float32
+
+		//gl.MatrixMode(gl.MODELVIEW)
+		//gl.Rotatef(45.0, 0.0, 1.0, 0.0)
+
+		encoder.DeserializeRaw(*angle.Value, &dsA)
+		encoder.DeserializeRaw(*x.Value, &dsX)
+		encoder.DeserializeRaw(*y.Value, &dsY)
+		encoder.DeserializeRaw(*z.Value, &dsZ)
+
+		gl.Rotatef(dsA, dsX, dsY, dsZ)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Translatef (x, y, z *CXArgument) error {
+	if err := checkThreeTypes("gl.Translatef", "f32", "f32", "f32", x, y, z); err == nil {
+		var dsX float32
+		var dsY float32
+		var dsZ float32
+
+		encoder.DeserializeRaw(*x.Value, &dsX)
+		encoder.DeserializeRaw(*y.Value, &dsY)
+		encoder.DeserializeRaw(*z.Value, &dsZ)
+
+		gl.Translatef(dsX, dsY, dsZ)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_MatrixMode (mode *CXArgument) error {
+	if err := checkType("gl.MatrixMode", "i32", mode); err == nil {
+		var mod int32
+
+		encoder.DeserializeAtomic(*mode.Value, &mod)
+
+		gl.MatrixMode(uint32(mod))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_EnableClientState (array *CXArgument) error {
+	if err := checkType("gl.EnableClientState", "i32", array); err == nil {
+		var arr int32
+
+		encoder.DeserializeAtomic(*array.Value, &arr)
+
+		gl.EnableClientState(uint32(arr))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func Foo () {
+	fmt.Println(gl.STREAM_DRAW)
+	fmt.Println(gl.STREAM_READ)
+	fmt.Println(gl.STREAM_COPY)
+
+	fmt.Println()
+	
+	fmt.Println(gl.STATIC_DRAW)
+	fmt.Println(gl.STATIC_READ)
+	fmt.Println(gl.STATIC_COPY)
+
+	fmt.Println()
+	
+	fmt.Println(gl.DYNAMIC_DRAW)
+	fmt.Println(gl.DYNAMIC_READ)
+	fmt.Println(gl.DYNAMIC_COPY)
 }

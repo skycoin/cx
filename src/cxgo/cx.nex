@@ -475,6 +475,14 @@ func gl.CompileShader (shader i32) () {}
 func gl.GetShaderiv (shader i32, pname i32, params i32) () {}
 func gl.AttachShader (program i32, shader i32) () {}
 
+func gl.MatrixMode (mode i32) () {}
+func gl.LoadIdentity () () {}
+func gl.Rotatef (angle f32, x f32, y f32, z f32) () {}
+func gl.Translatef (x f32, y f32, z f32) () {}
+func gl.PushMatrix () () {}
+func gl.PopMatrix () () {}
+func gl.EnableClientState (array i32) () {}
+
 /*
   GLFW
 */
@@ -504,12 +512,31 @@ var FALSE i32 = 0
 var TRUE i32 = 1
 var COLOR_BUFFER_BIT i32 = 16384
 var DEPTH_BUFFER_BIT i32 = 256
-var STATIC_DRAW i32 = 35044
 var ARRAY_BUFFER i32 = 34962
 var FLOAT i32 = 5126
 var TRIANGLES i32 = 4
 var VERTEX_SHADER i32 = 35633
 var FRAGMENT_SHADER i32 = 35632
+var MODELVIEW i32 = 5888
+
+var PROJECTION i32 = 5889
+var TEXTURE i32 = 5890
+var COLOR i32 = 6144
+
+var MODELVIEW_MATRIX i32 = 2982
+var VERTEX_ARRAY i32 = 32884
+
+var STREAM_DRAW i32 = 35040
+var STREAM_READ i32 = 35041
+var STREAM_COPY i32 = 35042
+
+var STATIC_DRAW i32 = 35044
+var STATIC_READ i32 = 35045
+var STATIC_COPY i32 = 35046
+
+var DYNAMIC_DRAW i32 = 35048
+var DYNAMIC_READ i32 = 35049
+var DYNAMIC_COPY i32 = 35050
 
 `
 
@@ -715,15 +742,54 @@ func (yylex Lexer) Error (e string) {
 	yylex.Stop()
 }
 
+type Point struct {
+	x int32
+	y int32
+}
+
+type Rectangle struct {
+	height int32
+	width int32
+}
+
+type Board struct {
+	points []Point
+	info int32
+	rects []Rectangle
+}
+
 func main () {
-	runtime.LockOSThread()
-	//runtime.GOMAXPROCS(2)
+	// //foo := Point{x: 10, y: 20}
+	// points := []Point{Point{x: 10, y: 20}, Point{x: 30, y: 40}}
+	// foo := Board{points: points, rects: []Rectangle{Rectangle{height: 111, width: 222}}}
+	// encoded := encoder.Serialize(foo)
+	// fmt.Println(encoded)
+
+	// var des Board
+	// encoder.DeserializeRaw(encoded, &des)
+	// //fmt.Println(encoder.Serialize(foo))
+	// fmt.Println(des)
+
+	// var myPoint Point
+	// sMyPoint := encoder.Serialize(myPoint)
+
+	// fmt.Println("myPoint")
+	// fmt.Println(sMyPoint)
+	
+	// var dsMyPoint Point
+	// encoder.DeserializeRaw(sMyPoint, &dsMyPoint)
+	// fmt.Println(dsMyPoint.x)
 
 
-	//fmt.Println(encoder.Serialize([]float32{1.1, 2.2, 3.3, 4.4}))
-	//fmt.Println(encoder.Serialize([]float32{1.1, 1.1, 3.3, 4.4, 5.5}))
+	// str := "helló"
+	// sStr := encoder.Serialize(str)
+	// fmt.Println(sStr)
 
 	
+	
+	//Foo()
+	runtime.LockOSThread()
+	//runtime.GOMAXPROCS(2)
 
 	//signal.Listen("0.0.0.0:7999")
 

@@ -116,16 +116,9 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 		
-		// var array []float32
-		// encoder.DeserializeRaw(*arr.Value, &array)
-
 		if index < 0 {
 			return errors.New(fmt.Sprintf("readF32A: negative index %d", index))
 		}
-
-		// if index >= int32(len(array)) {
-		// 	return errors.New(fmt.Sprintf("readF32A: index %d exceeds array of length %d", index, len(array)))
-		// }
 
 		if index >= size {
 			return errors.New(fmt.Sprintf("readF32A: index %d exceeds array of length %d", index, size))
@@ -135,17 +128,13 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
 		sValue := encoder.Serialize(value)
 
-		//output := encoder.Serialize(array[index])
-
 		for _, def := range call.State {
 			if def.Name == expr.OutputNames[0].Name {
-				//def.Value = &output
 				def.Value = &sValue
 				return nil
 			}
 		}
 		
-		//call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f32"))
 		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "f32"))
 
 		return nil
@@ -159,24 +148,22 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		var value float32
-		encoder.DeserializeRaw(*val.Value, &value)
-
-		var array []float32
-		encoder.DeserializeRaw(*arr.Value, &array)
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
 			return errors.New(fmt.Sprintf("writeF32A: negative index %d", index))
 		}
 
-		if index >= int32(len(array)) {
-			return errors.New(fmt.Sprintf("writeF32A: index %d exceeds array of length %d", index, len(array)))
+		if index >= size {
+			return errors.New(fmt.Sprintf("writeF32A: index %d exceeds array of length %d", index, size))
 		}
 
-		array[index] = value
-		output := encoder.Serialize(array)
-
-		*arr.Value = output
+		i := (int(index)+1)*4
+		for c := 0; c < 4; c++ {
+			(*arr.Value)[i + c] = (*val.Value)[c]
+		}
+		
 		return nil
 	} else {
 		return err

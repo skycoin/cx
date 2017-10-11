@@ -11,12 +11,14 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
+		size := len(*arr.Value)
+
 		if index < 0 {
 			return errors.New(fmt.Sprintf("readByteA: negative index %d", index))
 		}
 		
-		if index >= int32(len(*arr.Value)) {
-			return errors.New(fmt.Sprintf("readByteA: index %d exceeds array of length %d", index, len(*arr.Value)))
+		if index >= int32(size) {
+			return errors.New(fmt.Sprintf("readByteA: index %d exceeds array of length %d", index, size))
 		}
 
 		output := make([]byte, 1)
@@ -45,9 +47,11 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		if index < 0 {
 			return errors.New(fmt.Sprintf("writeByteA: negative index %d", index))
 		}
-		
-		if index >= int32(len(*arr.Value)) {
-			return errors.New(fmt.Sprintf("writeByteA: index %d exceeds array of length %d", index, len(*arr.Value)))
+
+		size := int32(len(*arr.Value))
+
+		if index >= size {
+			return errors.New(fmt.Sprintf("writeByteA: index %d exceeds array of length %d", index, size))
 		}
 
 		(*arr.Value)[index] = (*val.Value)[0]

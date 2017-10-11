@@ -266,27 +266,29 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		var array []int64
-		encoder.DeserializeRaw(*arr.Value, &array)
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
 			return errors.New(fmt.Sprintf("readI64A: negative index %d", index))
 		}
 
-		if index >= int32(len(array)) {
-			return errors.New(fmt.Sprintf("readI64A: index %d exceeds array of length %d", index, len(array)))
+		if index >= size {
+			return errors.New(fmt.Sprintf("readI64A: index %d exceeds array of length %d", index, size))
 		}
 
-		output := encoder.Serialize(array[index])
+		var value int64
+		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
+		sValue := encoder.Serialize(value)
 
 		for _, def := range call.State {
 			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
+				def.Value = &sValue
 				return nil
 			}
 		}
 		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
+		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "i64"))
 
 		return nil
 	} else {
@@ -299,24 +301,22 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		var value int64
-		encoder.DeserializeRaw(*val.Value, &value)
-
-		var array []int64
-		encoder.DeserializeRaw(*arr.Value, &array)
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
 			return errors.New(fmt.Sprintf("writeI64A: negative index %d", index))
 		}
 
-		if index >= int32(len(array)) {
-			return errors.New(fmt.Sprintf("writeI64A: index %d exceeds array of length %d", index, len(array)))
+		if index >= size {
+			return errors.New(fmt.Sprintf("writeI64A: index %d exceeds array of length %d", index, size))
 		}
 
-		array[index] = value
-		output := encoder.Serialize(array)
-
-		*arr.Value = output
+		i := (int(index)+1)*4
+		for c := 0; c < 4; c++ {
+			(*arr.Value)[i + c] = (*val.Value)[c]
+		}
+		
 		return nil
 	} else {
 		return err

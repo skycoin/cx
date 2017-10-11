@@ -98,6 +98,10 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	
 	"gl.Strs":true, "gl.Free":true, "gl.ShaderSource":true,
 	"gl.CompileShader":true, "gl.GetShaderiv":true, "gl.AttachShader":true,
+
+	"gl.MatrixMode":true,
+	"gl.Rotatef":true, "gl.Translatef":true, "gl.LoadIdentity":true,
+	"gl.PushMatrix":true, "gl.PopMatrix":true, "gl.EnableClientState":true,
 	
 	/*
           GLFW
