@@ -7,7 +7,7 @@ import (
 )
 
 func addF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("addF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.add", "f32", "f32", arg1, arg2); err == nil {
 		
 	} else {
 		return err
@@ -20,20 +20,12 @@ func addF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 	output := encoder.Serialize(float32(num1 + num2))
 
-	for _, def := range call.State {
-		if def.Name == expr.OutputNames[0].Name {
-			def.Value = &output
-			return nil
-		}
-	}
-	
-	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f32"))
-
+	assignOutput(&output, "f32", expr, call)
 	return nil
 }
 
 func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("subF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.sub", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -41,15 +33,7 @@ func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 - num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f32"))
-
+		assignOutput(&output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -57,7 +41,7 @@ func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("mulF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.mul", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -65,15 +49,7 @@ func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 * num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f32"))
-
+		assignOutput(&output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -81,7 +57,7 @@ func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("divF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.div", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -93,15 +69,7 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 / num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f32"))
-
+		assignOutput(&output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -109,7 +77,7 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("readF32A", "[]f32", "i32", arr, idx); err == nil {
+	if err := checkTwoTypes("[]f32.read", "[]f32", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -126,17 +94,9 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 
 		var value float32
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
-		sValue := encoder.Serialize(value)
+		output := encoder.Serialize(value)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sValue
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "f32"))
-
+		assignOutput(&output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -144,7 +104,7 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkThreeTypes("writeF32A", "[]f32", "i32", "f32", arr, idx, val); err == nil {
+	if err := checkThreeTypes("[]f32.write", "[]f32", "i32", "f32", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -171,20 +131,13 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 }
 
 func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkType("lenF32A", "[]f32", arr); err == nil {
+	if err := checkType("[]f32.len", "[]f32", arr); err == nil {
 		var array []float32
 		encoder.DeserializeRaw(*arr.Value, &array)
 
 		output := encoder.SerializeAtomic(int32(len(array)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -192,7 +145,7 @@ func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("ltF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.lt", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -206,13 +159,7 @@ func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -220,7 +167,7 @@ func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gtF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.gt", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -234,13 +181,7 @@ func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -248,7 +189,7 @@ func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("eqF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.eq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -262,13 +203,7 @@ func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -276,7 +211,7 @@ func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("lteqF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.lteq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -290,13 +225,7 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -304,7 +233,7 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 }
 
 func gteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gteqF32", "f32", "f32", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f32.gteq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -318,13 +247,7 @@ func gteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -341,13 +264,7 @@ func concatF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]f32"))
+		assignOutput(&sOutput, "[]f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -364,13 +281,7 @@ func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]f32"))
+		assignOutput(&sOutput, "[]f32", expr, call)
 		return nil
 	} else {
 		return err

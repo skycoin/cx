@@ -175,14 +175,8 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	if foundMod != nil && foundStrct != nil {
 		return foundStrct, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Strct '%s' not found in module '%s'", strctName, modName))
+		return nil, errors.New(fmt.Sprintf("Struct '%s' not found in module '%s'", strctName, modName))
 	}
-	
-	// if cxt.Modules != nil && cxt.Modules[modName] != nil && cxt.Modules[modName].Structs != nil && cxt.Modules[modName].Structs[strctName] != nil {
-	// 	return cxt.Modules[modName].Structs[strctName], nil
-	// } else {
-	// 	return nil, errors.New(fmt.Sprintf("Strct '%s' not found in module '%s'", strctName, modName))
-	// }
 }
 
 func (mod *CXModule) GetDefinition (defName string) (*CXDefinition, error) {

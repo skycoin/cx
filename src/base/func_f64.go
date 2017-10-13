@@ -7,7 +7,7 @@ import (
 )
 
 func addF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("addF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.add", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -15,15 +15,7 @@ func addF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float64(num1 + num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f64"))
-
+		assignOutput(&output, "f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -31,7 +23,7 @@ func addF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func subF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("subF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.sub", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -39,15 +31,7 @@ func subF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float64(num1 - num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f64"))
-
+		assignOutput(&output, "f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -55,7 +39,7 @@ func subF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func mulF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("mulF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.mul", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -63,15 +47,7 @@ func mulF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float64(num1 * num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f64"))
-
+		assignOutput(&output, "f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -79,7 +55,7 @@ func mulF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func divF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("divF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.div", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -91,15 +67,7 @@ func divF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float64(num1 / num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "f64"))
-
+		assignOutput(&output, "f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -107,7 +75,7 @@ func divF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("readF64A", "[]f64", "i32", arr, idx); err == nil {
+	if err := checkTwoTypes("[]f64.read", "[]f64", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -124,17 +92,9 @@ func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 
 		var value float64
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
-		sValue := encoder.Serialize(value)
+		output := encoder.Serialize(value)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sValue
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "f64"))
-
+		assignOutput(&output, "f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -142,7 +102,7 @@ func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkThreeTypes("writeF64A", "[]f64", "i32", "f64", arr, idx, val); err == nil {
+	if err := checkThreeTypes("[]f64.write", "[]f64", "i32", "f64", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -169,7 +129,7 @@ func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 }
 
 func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkType("lenF64A", "[]f64", arr); err == nil {
+	if err := checkType("[]f64.len", "[]f64", arr); err == nil {
 		var array []float64
 		encoder.DeserializeRaw(*arr.Value, &array)
 
@@ -182,7 +142,7 @@ func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 			}
 		}
 		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -190,7 +150,7 @@ func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func ltF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("ltF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.lt", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -204,13 +164,7 @@ func ltF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -218,7 +172,7 @@ func ltF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gtF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.gt", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -232,13 +186,7 @@ func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -246,7 +194,7 @@ func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func eqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("eqF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.eq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -260,13 +208,7 @@ func eqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -274,7 +216,7 @@ func eqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func lteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("lteqF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.lteq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -288,13 +230,7 @@ func lteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -302,7 +238,7 @@ func lteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 }
 
 func gteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gteqF64", "f64", "f64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("f64.gteq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -316,13 +252,7 @@ func gteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -339,13 +269,7 @@ func concatF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]f64"))
+		assignOutput(&sOutput, "[]f64", expr, call)
 		return nil
 	} else {
 		return err
@@ -362,13 +286,7 @@ func appendF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]f64"))
+		assignOutput(&sOutput, "[]f64", expr, call)
 		return nil
 	} else {
 		return err

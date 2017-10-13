@@ -614,17 +614,18 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println(val)
 		// identity functions
 	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id":
-		found := false
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = (*argsCopy)[0].Value
-				found = true
-				break
-			}
-		}
-		if !found {
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, (*argsCopy)[0].Value, (*argsCopy)[0].Typ))
-		}
+		assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+		// found := false
+		// for _, def := range call.State {
+		// 	if def.Name == expr.OutputNames[0].Name {
+		// 		def.Value = (*argsCopy)[0].Value
+		// 		found = true
+		// 		break
+		// 	}
+		// }
+		// if !found {
+		// 	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, (*argsCopy)[0].Value, (*argsCopy)[0].Typ))
+		// }
 		// cast functions
 	case "[]byte.str":
 		if err := castToStr((*argsCopy)[0], expr, call); err == nil {
@@ -1618,6 +1619,59 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	}
 }
 
+
+func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string) {
+	var offset int32 = 0
+
+	for _, f := range strct.Fields {
+		if f.Name == fld {
+			var size int32
+			switch f.Typ {
+			case "byte":
+				size = 1
+			case "bool", "i32", "f32":
+				size = 4
+			case "i64", "f64":
+				size = 8
+			case "str", "[]byte", "[]bool", "[]i32", "[]i64", "[]f32", "[]f64":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+			}
+
+			// subSlice := make([]*byte, size)
+			// for c := int32(0); c < size; c++ {
+			// 	subSlice[c] = &(*val)[offset + c]
+			// }
+
+			// var subSlice *[]byte
+			//subSlice := make([]byte, size, size)
+
+			//&subSlice = (*val)[offset]
+			
+			// subSlice := (*val)[offset:offset+size]
+			// return subSlice, f.Typ
+
+			return (*val)[offset:offset+size], f.Typ
+		}
+
+		switch f.Typ {
+		case "byte":
+			offset += 1
+		case "bool", "i32", "f32":
+			offset += 4
+		case "i64", "f64":
+			offset += 8
+		case "str", "[]byte", "[]bool", "[]i32", "[]i64", "[]f32", "[]f64":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+			offset += arrOffset
+		}
+	}
+	
+	return nil, ""
+}
+
 func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
@@ -1705,6 +1759,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					lookingFor := string(*argsRefs[i].Value)
 
 					var resolvedIdent *CXDefinition
+					isStructFld := false
 
 					identParts := strings.Split(lookingFor, ".")
 
@@ -1725,7 +1780,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 							} else {
 								return errors.New(fmt.Sprintf("Module '%s' not imported", mod.Name))
 							}
-							
 						} else {
 							// then it's a global struct
 							mod := call.Operator.Module
@@ -1733,12 +1787,34 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 								resolvedIdent = def
 							} else {
 								// then it's a local struct
+
+								isStructFld = true
 								for _, stateDef := range call.State {
-									if stateDef.Name == lookingFor {
-										resolvedIdent = stateDef
+									if stateDef.Name == identParts[0] {
+										// // Let's look in the byte array for the value
+										if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
+											byts, typ := resolveStructField(identParts[1], stateDef.Value, strct)
+											argsCopy[i] = MakeArgument(&byts, typ)
+											
+										} else {
+											return err
+										}
+										
+										// byts := []byte
+										// //argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+										// argsCopy[i] = MakeArgument(, )
+										
+										// resolvedIdent = stateDef
 										break
 									}
 								}
+								
+								// for _, stateDef := range call.State {
+								// 	if stateDef.Name == lookingFor {
+								// 		resolvedIdent = stateDef
+								// 		break
+								// 	}
+								// }
 							}
 						}
 					} else {
@@ -1760,10 +1836,13 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						}
 					}
 
-					if resolvedIdent == nil {
+					if resolvedIdent == nil && !isStructFld {
 						return errors.New(fmt.Sprintf("%d: '%s' is undefined", expr.FileLine, lookingFor))
 					}
-					argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+					if !isStructFld {
+						// if it was a struct field, we already created the argument above for efficiency reasons
+						argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+					}
 				} else {
 					argsCopy[i] = argsRefs[i]
 				}

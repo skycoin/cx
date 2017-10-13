@@ -24,15 +24,7 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		output := make([]byte, 1)
 		output[0] = (*arr.Value)[index]
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "byte"))
-
+		assignOutput(&output, "byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -66,15 +58,7 @@ func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenByteA", "[]byte", arr); err == nil {
 		output := encoder.SerializeAtomic(int32(len(*arr.Value)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
-		
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -94,13 +78,7 @@ func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -120,13 +98,7 @@ func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -146,13 +118,7 @@ func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -172,13 +138,7 @@ func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -198,13 +158,7 @@ func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -215,13 +169,7 @@ func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	if err := checkTwoTypes("[]byte.concat", "[]byte", "[]byte", arg1, arg2); err == nil {
 		output := append(*arg1.Value, *arg2.Value...)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "[]byte"))
+		assignOutput(&output, "[]byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -232,13 +180,7 @@ func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	if err := checkTwoTypes("[]byte.append", "[]byte", "byte", arg1, arg2); err == nil {
 		output := append(*arg1.Value, *arg2.Value...)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "[]byte"))
+		assignOutput(&output, "[]byte", expr, call)
 		return nil
 	} else {
 		return err

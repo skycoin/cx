@@ -1,14 +1,12 @@
 package main
 
 type Point struct {
-	name str
 	x i32
 	y i32
 }
 
 func main () (out i32) {
-	var uPoint Point;
-	str.print(uPoint.name)
+	var uPoint Point
 	i32.print(uPoint.x)
 	i32.print(uPoint.y)
 

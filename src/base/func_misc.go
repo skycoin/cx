@@ -26,14 +26,7 @@ func and (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) 
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -55,14 +48,7 @@ func or (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) e
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -82,14 +68,7 @@ func not (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -261,20 +240,8 @@ func addExpr (tag *CXArgument, fnName *CXArgument, caller *CXFunction, line int)
 			expr.AddTag(string(*tag.Value))
 			
 			caller.AddExpression(expr)
-
-			//caller.Expressions = append(caller.Expressions[:line], expr, caller.Expressions[line:(len(caller.Expressions)-2)]...)
-
-			// re-indexing expression line numbers
-			// for i, expr := range caller.Expressions {
-			// 	expr.Line = i
-			// }
-			
-			//val := encoder.Serialize(int32(0))
-			//return MakeArgument(&val, "bool"), nil
 			return nil
 		} else {
-			//val := encoder.Serialize(int32(1))
-			//return MakeArgument(&val, "bool"), nil
 			return nil
 		}
 	} else {
@@ -287,8 +254,6 @@ func remExpr (tag *CXArgument, caller *CXFunction) error {
 		for i, expr := range caller.Expressions {
 			if expr.Tag == string(*tag.Value) {
 				caller.RemoveExpression(i)
-				//val := encoder.Serialize(int32(0))
-				//return MakeArgument(&val, "bool"), nil
 				return nil
 			}
 		}
@@ -297,8 +262,6 @@ func remExpr (tag *CXArgument, caller *CXFunction) error {
 	}
 	return errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", string(*tag.Value)))
 }
-
-//func affFn (filter *CXArgument, )
 
 func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFunction, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("affExpr", "str", "str", "i32", tag, filter, idx); err == nil {
@@ -312,14 +275,7 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 					PrintAffordances(affs)
 					val := encoder.Serialize(int32(len(affs)))
 
-					for _, def := range call.State {
-						if def.Name == expr.OutputNames[0].Name {
-							def.Value = &val
-							return nil
-						}
-					}
-
-					call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "i32"))
+					assignOutput(&val, "i32", expr, call)
 					return nil
 				}
 			}
@@ -329,14 +285,7 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 					affs := FilterAffordances(ex.GetAffordances(), string(*filter.Value))
 					val := encoder.Serialize(int32(len(affs)))
 
-					for _, def := range call.State {
-						if def.Name == expr.OutputNames[0].Name {
-							def.Value = &val
-							return nil
-						}
-					}
-					
-					call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "i32"))
+					assignOutput(&val, "i32", expr, call)
 					return nil
 				}
 			}
@@ -347,15 +296,8 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 					affs[index].ApplyAffordance()
 					val := encoder.Serialize(int32(len(affs)))
 
-					for _, def := range call.State {
-						if def.Name == expr.OutputNames[0].Name {
-							def.Value = &val
-							return nil
-						}
-					}
-
 					if len(expr.OutputNames) > 0 {
-						call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "i32"))
+						assignOutput(&val, "i32", expr, call)
 					}
 					return nil
 				}
@@ -367,34 +309,81 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 	return errors.New(fmt.Sprintf("affExpr: no expression with tag '%s' was found", string(*tag.Value)))
 }
 
+func resolveStruct (typ string, expr *CXExpression, call *CXCall) ([]byte, error) {
+	var bs []byte
+
+	found := false
+	if mod, err := call.Context.GetCurrentModule(); err == nil {
+		var foundStrct *CXStruct
+		for _, strct := range mod.Structs {
+			if strct.Name == typ {
+				found = true
+				foundStrct = strct
+				break
+			}
+		}
+		if !found {
+			for _, imp := range mod.Imports {
+				for _, strct := range imp.Structs {
+					if strct.Name == typ {
+						found = true
+						foundStrct = strct
+						break
+					}
+				}
+			}
+		}
+
+		if !found {
+			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
+		}
+		
+		for _, fld := range foundStrct.Fields {
+			isBasic := false
+			for _, basic := range BASIC_TYPES {
+				if fld.Typ == basic {
+					isBasic = true
+					bs = append(bs, *MakeDefaultValue(basic)...)
+					break
+				}
+			}
+
+			if !isBasic {
+				if byts, err := resolveStruct(fld.Typ, expr, call); err == nil {
+					bs = append(bs, byts...)
+				} else {
+					return nil, err
+				}
+			}
+		}
+	}
+	return bs, nil
+}
+
 func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("initDef", "str", arg1); err == nil {
 		typName := string(*arg1.Value)
 
-		var zeroVal []byte
-		switch  typName {
-		case "bool": zeroVal = encoder.Serialize(int32(0))
-		case "byte": zeroVal = []byte{byte(0)}
-		case "i32": zeroVal = encoder.Serialize(int32(0))
-		case "i64": zeroVal = encoder.Serialize(int64(0))
-		case "f32": zeroVal = encoder.Serialize(float32(0))
-		case "f64": zeroVal = encoder.Serialize(float64(0))
-		case "[]bool": zeroVal = encoder.Serialize([]int32{0})
-		case "[]byte": zeroVal = []byte{byte(0)}
-		case "[]i32": zeroVal = encoder.Serialize([]int32{0})
-		case "[]i64": zeroVal = encoder.Serialize([]int64{0})
-		case "[]f32": zeroVal = encoder.Serialize([]float32{0})
-		case "[]f64": zeroVal = encoder.Serialize([]float64{0})
-		}
-
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &zeroVal
-				return nil
+		isBasic := false
+		for _, basic := range BASIC_TYPES {
+			if basic == typName {
+				isBasic = true
+				break
 			}
 		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &zeroVal, typName))
+
+		var zeroVal []byte
+		if isBasic {
+			zeroVal = *MakeDefaultValue(typName)
+		} else {
+			if byts, err := resolveStruct(typName, expr, call); err == nil {
+				zeroVal = byts
+			} else {
+				return err
+			}
+		}
+
+		assignOutput(&zeroVal, typName, expr, call)
 		return nil
 	} else {
 		return err
@@ -415,78 +404,36 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 			arr := make([]bool, len)
 			val := encoder.Serialize(arr)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &val
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, typ))
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]byte":
 			arr := make([]byte, len)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &arr
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &arr, typ))
+			assignOutput(&arr, typ, expr, call)
 			return nil
 		case "[]i32":
 			arr := make([]int32, len)
 			val := encoder.Serialize(arr)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &val
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, typ))
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]i64":
 			arr := make([]int64, len)
 			val := encoder.Serialize(arr)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &val
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, typ))
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]f32":
 			arr := make([]float32, len)
 			val := encoder.Serialize(arr)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &val
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, typ))
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]f64":
 			arr := make([]float64, len)
 			val := encoder.Serialize(arr)
 
-			for _, def := range call.State {
-				if def.Name == expr.OutputNames[0].Name {
-					def.Value = &val
-					return nil
-				}
-			}
-			
-			call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, typ))
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "default":
 			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ))
@@ -499,14 +446,7 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 
 func serialize_program (expr *CXExpression, call *CXCall) error {
 	val := Serialize(call.Context)
-	
-	for _, def := range call.State {
-		if def.Name == expr.OutputNames[0].Name {
-			def.Value = val
-			return nil
-		}
-	}
-	
-	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, val, "[]byte"))
+
+	assignOutput(val, "[]byte", expr, call)
 	return nil
 }

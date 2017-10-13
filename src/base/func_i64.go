@@ -9,7 +9,7 @@ import (
 )
 
 func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("addI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.add", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -17,15 +17,7 @@ func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 + num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -33,7 +25,7 @@ func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("subI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.sub", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -41,15 +33,7 @@ func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 - num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -57,7 +41,7 @@ func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("mulI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64mul", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -65,15 +49,7 @@ func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 * num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -81,7 +57,7 @@ func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("divI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.div", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -93,15 +69,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		
 		output := encoder.SerializeAtomic(int64(num1 / num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -109,7 +77,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("modI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.mod", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -121,15 +89,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 % num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -137,7 +97,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("andI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.and", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -145,15 +105,7 @@ func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 & num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -161,7 +113,7 @@ func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("orI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.or", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -169,15 +121,7 @@ func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 
 		output := encoder.Serialize(int64(num1 | num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -185,7 +129,7 @@ func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("xorI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.xor", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -193,15 +137,7 @@ func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 ^ num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -209,7 +145,7 @@ func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("andNotI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.bitclear", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -217,15 +153,7 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 
 		output := encoder.Serialize(int64(num1 &^ num2))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -233,7 +161,7 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 }
 
 func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("randI64", "i64", "i64", min, max); err == nil {
+	if err := checkTwoTypes("i64.rand", "i64", "i64", min, max); err == nil {
 		var minimum int64
 		encoder.DeserializeRaw(*min.Value, &minimum)
 
@@ -247,14 +175,7 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		rand.Seed(time.Now().UTC().UnixNano())
 		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i64"))
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -262,7 +183,7 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("readI64A", "[]i64", "i32", arr, idx); err == nil {
+	if err := checkTwoTypes("[]i64.read", "[]i64", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -279,17 +200,9 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 
 		var value int64
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
-		sValue := encoder.Serialize(value)
+		output := encoder.Serialize(value)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sValue
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "i64"))
-
+		assignOutput(&output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -297,7 +210,7 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkThreeTypes("writeI64A", "[]i64", "i32", "i64", arr, idx, val); err == nil {
+	if err := checkThreeTypes("[]i64.write", "[]i64", "i32", "i64", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -324,20 +237,13 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 }
 
 func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkType("lenI64A", "[]i64", arr); err == nil {
+	if err := checkType("[]i64.len", "[]i64", arr); err == nil {
 		var array []int64
 		encoder.DeserializeRaw(*arr.Value, &array)
 
 		output := encoder.SerializeAtomic(int32(len(array)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -345,7 +251,7 @@ func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("ltI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.lt", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -359,13 +265,7 @@ func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -373,7 +273,7 @@ func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gtI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.gt", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -387,13 +287,7 @@ func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -401,7 +295,7 @@ func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("eqI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.eq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -415,13 +309,7 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -429,7 +317,7 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 }
 
 func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("lteqI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.lteq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -443,13 +331,7 @@ func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -457,7 +339,7 @@ func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 }
 
 func gteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gteqI64", "i64", "i64", arg1, arg2); err == nil {
+	if err := checkTwoTypes("i64.gteq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -471,13 +353,7 @@ func gteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &val
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &val, "bool"))
+		assignOutput(&val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -494,13 +370,7 @@ func concatI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]i64"))
+		assignOutput(&sOutput, "[]i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -517,13 +387,7 @@ func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]i64"))
+		assignOutput(&sOutput, "[]i64", expr, call)
 		return nil
 	} else {
 		return err

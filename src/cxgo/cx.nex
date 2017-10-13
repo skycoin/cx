@@ -759,6 +759,26 @@ type Board struct {
 }
 
 func main () {
+	// foo := make([]byte, 10, 10)
+
+	// for c := 0; c < 10; c++ {
+	// 	foo[c] = byte(c)
+	// }
+	
+	// bar := foo[:]
+
+	// for c := 0; c < 10; c++ {
+	// 	fmt.Println(&foo[c])
+	// }
+	
+	// fmt.Println()
+
+	// for c := 0; c < 10; c++ {
+	// 	fmt.Println(&bar[c])
+	// }
+	
+
+	
 	// //foo := Point{x: 10, y: 20}
 	// points := []Point{Point{x: 10, y: 20}, Point{x: 30, y: 40}}
 	// foo := Board{points: points, rects: []Rectangle{Rectangle{height: 111, width: 222}}}

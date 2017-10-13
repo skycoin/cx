@@ -24,17 +24,9 @@ func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 
 		var value int32
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
-		sValue := encoder.Serialize(value)
+		output := encoder.Serialize(value)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sValue
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sValue, "bool"))
-
+		assignOutput(&output, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -75,14 +67,7 @@ func lenBoolA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.SerializeAtomic(int32(len(array)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -99,13 +84,7 @@ func concatBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]bool"))
+		assignOutput(&sOutput, "[]bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -122,13 +101,7 @@ func appendBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sOutput
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "[]bool"))
+		assignOutput(&sOutput, "[]bool", expr, call)
 		return nil
 	} else {
 		return err

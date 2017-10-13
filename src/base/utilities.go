@@ -10,6 +10,40 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall) {
+	outName := expr.OutputNames[0].Name
+	for _, char := range outName {
+		if char == '.' {
+			identParts := strings.Split(outName, ".")
+
+			for _, def := range call.State {
+				if def.Name == identParts[0] {
+					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+						byts, _ := resolveStructField(identParts[1], def.Value, strct)
+
+						for c := 0; c < len(byts); c++ {
+							byts[c] = (*output)[c]
+						}
+					} else {
+						panic(err)
+					}
+					return
+				}
+			}
+			break
+		}
+	}
+	
+	for _, def := range call.State {
+		if def.Name == outName {
+			def.Value = output
+			return
+		}
+	}
+	call.State = append(call.State, MakeDefinition(outName, output, typ))
+	return
+}
+
 func checkType (fnName string, typ string, arg *CXArgument) error {
 	if arg.Typ != typ {
 		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ, typ))

@@ -9,14 +9,7 @@ import (
 func castToStr (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	switch arg.Typ {
 	case "[]byte":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, "str"))
+		assignOutput(arg.Value, "str", expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToStr: type '%s' can't be casted to type 'str'", arg.Typ))
@@ -27,24 +20,10 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	byteATyp := "[]byte"
 	switch arg.Typ {
 	case "str":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, byteATyp))
+		assignOutput(arg.Value, byteATyp, expr, call)
 		return nil
 	case "[]byte":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, byteATyp))
+		assignOutput(arg.Value, byteATyp, expr, call)
 		return nil
 	case "[]i32":
 		var val []int32
@@ -55,14 +34,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			output[i] = byte(n)
 		}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, byteATyp))
+		assignOutput(&output, byteATyp, expr, call)
 		return nil
 	case "[]i64":
 		var val []int64
@@ -72,15 +44,8 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		for i, n := range val {
 			output[i] = byte(n)
 		}
-		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, byteATyp))
+
+		assignOutput(&output, byteATyp, expr, call)
 		return nil
 	case "[]f32":
 		var val []float32
@@ -91,14 +56,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			output[i] = byte(n)
 		}
 		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, byteATyp))
+		assignOutput(&output, byteATyp, expr, call)
 		return nil
 	case "[]f64":
 		var val []float64
@@ -109,14 +67,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			output[i] = byte(n)
 		}
 		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, byteATyp))
+		assignOutput(&output, byteATyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToByteA: type '%s' can't be casted to type '[]byte'", arg.Typ))
@@ -127,70 +78,35 @@ func castToByte (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	byteTyp := "byte"
 	switch arg.Typ {
 	case "byte":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, byteTyp))
+		assignOutput(arg.Value, byteTyp, expr, call)
 		return nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := []byte{byte(val)}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, byteTyp))
+		assignOutput(&newVal, byteTyp, expr, call)
 		return nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := []byte{byte(val)}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, byteTyp))
+		assignOutput(&newVal, byteTyp, expr, call)
 		return nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := []byte{byte(val)}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, byteTyp))
+		assignOutput(&newVal, byteTyp, expr, call)
 		return nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := []byte{byte(val)}
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, byteTyp))
+		assignOutput(&newVal, byteTyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToByte: type '%s' can't be casted to type 'byte'", arg.Typ))
@@ -204,66 +120,31 @@ func castToI32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		val := (*arg.Value)[0]
 		newVal := encoder.Serialize(int32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32Typ))
+		assignOutput(&newVal, i32Typ, expr, call)
 		return nil
 	case "i32":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, i32Typ))
+		assignOutput(arg.Value, i32Typ, expr, call)
 		return nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32Typ))
+		assignOutput(&newVal, i32Typ, expr, call)
 		return nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32Typ))
+		assignOutput(&newVal, i32Typ, expr, call)
 		return nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32Typ))
+		assignOutput(&newVal, i32Typ, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToI32: type '%s' can't be casted to type 'i32'", arg.Typ))
@@ -277,66 +158,31 @@ func castToI64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		val := (*arg.Value)[0]
 		newVal := encoder.Serialize(int64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64Typ))
+		assignOutput(&newVal, i64Typ, expr, call)
 		return nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64Typ))
+		assignOutput(&newVal, i64Typ, expr, call)
 		return nil
 	case "i64":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, i64Typ))
+		assignOutput(arg.Value, i64Typ, expr, call)
 		return nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64Typ))
+		assignOutput(&newVal, i64Typ, expr, call)
 		return nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(int64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64Typ))
+		assignOutput(&newVal, i64Typ, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToI64: type '%s' can't be casted to type 'i64'", arg.Typ))
@@ -350,66 +196,31 @@ func castToF32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		val := (*arg.Value)[0]
 		newVal := encoder.Serialize(float32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32Typ))
+		assignOutput(&newVal, f32Typ, expr, call)
 		return nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32Typ))
+		assignOutput(&newVal, f32Typ, expr, call)
 		return nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32Typ))
+		assignOutput(&newVal, f32Typ, expr, call)
 		return nil
 	case "f32":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, f32Typ))
+		assignOutput(arg.Value, f32Typ, expr, call)
 		return nil
 	case "f64":
 		var val float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float32(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32Typ))
+		assignOutput(&newVal, f32Typ, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToF32: type '%s' can't be casted to type 'f32'", arg.Typ))
@@ -423,66 +234,31 @@ func castToF64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		val := (*arg.Value)[0]
 		newVal := encoder.Serialize(float64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64Typ))
+		assignOutput(&newVal, f64Typ, expr, call)
 		return nil
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64Typ))
+		assignOutput(&newVal, f64Typ, expr, call)
 		return nil
 	case "i64":
 		var val int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64Typ))
+		assignOutput(&newVal, f64Typ, expr, call)
 		return nil
 	case "f32":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		newVal := encoder.Serialize(float64(val))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64Typ))
+		assignOutput(&newVal, f64Typ, expr, call)
 		return nil
 	case "f64":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, f64Typ))
+		assignOutput(arg.Value, f64Typ, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToF64: type '%s' can't be casted to type 'f64'", arg.Typ))
@@ -500,25 +276,11 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			output[i] = int32(n)
 		}
 		newVal := encoder.Serialize(output)
-		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32ATyp))
+
+		assignOutput(&newVal, i32ATyp, expr, call)
 		return nil
 	case "[]i32":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, i32ATyp))
+		assignOutput(arg.Value, i32ATyp, expr, call)
 		return nil
 	case "[]i64":
 		var val []int64
@@ -530,14 +292,7 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}		
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32ATyp))
+		assignOutput(&newVal, i32ATyp, expr, call)
 		return nil
 	case "[]f32":
 		var val []float32
@@ -549,14 +304,7 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32ATyp))
+		assignOutput(&newVal, i32ATyp, expr, call)
 		return nil
 	case "[]f64":
 		var val []float64
@@ -568,14 +316,7 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i32ATyp))
+		assignOutput(&newVal, i32ATyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToI32A: type '%s' can't be casted to type '[]i32'", arg.Typ))
@@ -594,14 +335,7 @@ func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64ATyp))
+		assignOutput(&newVal, i64ATyp, expr, call)
 		return nil
 	case "[]i32":
 		var val []int32
@@ -613,24 +347,10 @@ func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64ATyp))
+		assignOutput(&newVal, i64ATyp, expr, call)
 		return nil
 	case "[]i64":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, i64ATyp))
+		assignOutput(arg.Value, i64ATyp, expr, call)
 		return nil
 	case "[]f32":
 		var val []float32
@@ -642,14 +362,7 @@ func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64ATyp))
+		assignOutput(&newVal, i64ATyp, expr, call)
 		return nil
 	case "[]f64":
 		var val []float64
@@ -661,14 +374,7 @@ func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, i64ATyp))
+		assignOutput(&newVal, i64ATyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToI64A: type '%s' can't be casted to type '[]i64'", arg.Typ))
@@ -687,14 +393,7 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32ATyp))
+		assignOutput(&newVal, f32ATyp, expr, call)
 		return nil
 	case "[]i32":
 		var val []int32
@@ -706,14 +405,7 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32ATyp))
+		assignOutput(&newVal, f32ATyp, expr, call)
 		return nil
 	case "[]i64":
 		var val []int64
@@ -725,24 +417,10 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32ATyp))
+		assignOutput(&newVal, f32ATyp, expr, call)
 		return nil
 	case "[]f32":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, f32ATyp))
+		assignOutput(arg.Value, f32ATyp, expr, call)
 		return nil
 	case "[]f64":
 		var val []float64
@@ -755,14 +433,7 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f32ATyp))
+		assignOutput(&newVal, f32ATyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToF32A: type '%s' can't be casted to type '[]f32'", arg.Typ))
@@ -781,14 +452,7 @@ func castToF64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64ATyp))
+		assignOutput(&newVal, f64ATyp, expr, call)
 		return nil
 	case "[]i32":
 		var val []int32
@@ -800,14 +464,7 @@ func castToF64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64ATyp))
+		assignOutput(&newVal, f64ATyp, expr, call)
 		return nil
 	case "[]i64":
 		var val []int64
@@ -819,14 +476,7 @@ func castToF64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64ATyp))
+		assignOutput(&newVal, f64ATyp, expr, call)
 		return nil
 	case "[]f32":
 		var val []float32
@@ -838,24 +488,10 @@ func castToF64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		newVal := encoder.Serialize(output)
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &newVal
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &newVal, f64ATyp))
+		assignOutput(&newVal, f64ATyp, expr, call)
 		return nil
 	case "[]f64":
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = arg.Value
-				return nil
-			}
-		}
-		
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, arg.Value, f64ATyp))
+		assignOutput(arg.Value, f64ATyp, expr, call)
 		return nil
 	default:
 		return errors.New(fmt.Sprintf("castToF64A: type '%s' can't be casted to type '[]f64'", arg.Typ))

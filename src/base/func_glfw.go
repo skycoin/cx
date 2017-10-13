@@ -73,14 +73,7 @@ func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) err
 			output = encoder.Serialize(int32(0))
 		}
 		
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "bool"))
-		
+		assignOutput(&output, "bool", expr, call)
 		return nil
 	} else {
 		return err

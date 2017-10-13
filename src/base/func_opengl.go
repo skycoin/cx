@@ -26,13 +26,7 @@ func gl_CreateProgram (expr *CXExpression, call *CXCall) error {
 	prog := gl.CreateProgram()
 	output := encoder.Serialize(int32(prog))
 
-	for _, def := range call.State {
-		if def.Name == expr.OutputNames[0].Name {
-			def.Value = &output
-			return nil
-		}
-	}
-	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &output, "i32"))
+	assignOutput(&output, "i32", expr, call)
 	return nil
 }
 
@@ -145,34 +139,6 @@ func gl_VertexAttribPointer (index, size, xtype, normalized, stride *CXArgument)
 	}
 }
 
-// func gl_VertexPointer (index, size, xtype, normalized, stride *CXArgument) error {
-// 	if err := checkFiveTypes("gl.VertexAttribPointer", "i32", "i32", "i32", "bool", "i32", index, size, xtype, normalized, stride); err == nil {
-// 		var idx int32
-// 		var siz int32
-// 		var xtyp int32
-// 		var norm int32 //and later to bool
-// 		var strid int32
-
-// 		encoder.DeserializeAtomic(*index.Value, &idx)
-// 		encoder.DeserializeAtomic(*size.Value, &siz)
-// 		encoder.DeserializeAtomic(*xtype.Value, &xtyp)
-// 		encoder.DeserializeAtomic(*xtype.Value, &xtyp)
-// 		encoder.DeserializeAtomic(*stride.Value, &strid)
-
-// 		var normal bool
-// 		if norm == 1 {
-// 			normal = true
-// 		} else {
-// 			normal = false
-// 		}
-
-// 		gl.VertexAttribPointer(uint32(idx), int32(siz), uint32(xtyp), normal, int32(strid), nil) // fix nil
-// 		return nil
-// 	} else {
-// 		return err
-// 	}
-// }
-
 func gl_DrawArrays (mode, first, count *CXArgument) error {
 	if err := checkThreeTypes("gl.DrawArrays", "i32", "i32", "i32", mode, first, count); err == nil {
 		var mod int32
@@ -190,6 +156,7 @@ func gl_DrawArrays (mode, first, count *CXArgument) error {
 	}
 }
 
+// uses pointers. change after implementing cx pointers
 func gl_GenBuffers (n, buffers *CXArgument) error {
 	if err := checkTwoTypes("gl.GenBuffers", "i32", "i32", n, buffers); err == nil {
 		var _n int32
@@ -203,8 +170,6 @@ func gl_GenBuffers (n, buffers *CXArgument) error {
 		gl.GenBuffers(_n, &tmp)
 
 		*buffers.Value = encoder.Serialize(tmp)
-		//*buffers.Value = encoder.Serialize(tmp)
-		
 		return nil
 	} else {
 		return err
@@ -230,6 +195,7 @@ func gl_BufferData (target, size, data, usage *CXArgument) error {
 	}
 }
 
+// uses pointers. change after implementing cx pointers
 func gl_GenVertexArrays (n, arrays *CXArgument) error {
 	if err := checkTwoTypes("gl.GenVertexArrays", "i32", "i32", n, arrays); err == nil {
 		var _n int32
@@ -247,7 +213,6 @@ func gl_GenVertexArrays (n, arrays *CXArgument) error {
 		}
 
 		*arrays.Value = encoder.Serialize(tmp)
-		
 		return nil
 	} else {
 		return err
@@ -263,13 +228,7 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 		shader := gl.CreateShader(uint32(xtyp))
 		sShader := encoder.Serialize(int32(shader))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &sShader
-				return nil
-			}
-		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sShader, "i32"))
+		assignOutput(&sShader, "i32", expr, call)
 
 		return nil
 	} else {
@@ -351,6 +310,7 @@ func gl_CompileShader (shader *CXArgument) error {
 	}
 }
 
+// uses pointers. change after implementing cx pointers
 func gl_GetShaderiv (shader, pname, params *CXArgument) error {
 	if err := checkThreeTypes("gl.GetShaderiv", "i32", "i32", "i32", shader, pname, params); err == nil {
 		var shad int32
@@ -406,9 +366,6 @@ func gl_Rotatef (angle, x, y, z *CXArgument) error {
 		var dsX float32
 		var dsY float32
 		var dsZ float32
-
-		//gl.MatrixMode(gl.MODELVIEW)
-		//gl.Rotatef(45.0, 0.0, 1.0, 0.0)
 
 		encoder.DeserializeRaw(*angle.Value, &dsA)
 		encoder.DeserializeRaw(*x.Value, &dsX)
@@ -466,19 +423,5 @@ func gl_EnableClientState (array *CXArgument) error {
 }
 
 func Foo () {
-	fmt.Println(gl.STREAM_DRAW)
-	fmt.Println(gl.STREAM_READ)
-	fmt.Println(gl.STREAM_COPY)
 
-	fmt.Println()
-	
-	fmt.Println(gl.STATIC_DRAW)
-	fmt.Println(gl.STATIC_READ)
-	fmt.Println(gl.STATIC_COPY)
-
-	fmt.Println()
-	
-	fmt.Println(gl.DYNAMIC_DRAW)
-	fmt.Println(gl.DYNAMIC_READ)
-	fmt.Println(gl.DYNAMIC_COPY)
 }
