@@ -1,0 +1,444 @@
+package main
+
+import "gl"
+import "glfw"
+
+type Sprite struct {
+	x1 f32
+	x2 f32
+	y1 f32
+	y2 f32
+	isObstacle bool
+	textureSheet i32
+}
+
+var background []i32 = []i32{
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
+}
+
+var foreground []i32 = []i32{
+	10, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  7,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	12, 1,  1,  1,  1,  7,  0, 30,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  3,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  9,  1,  1,  1,  4,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  9,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8
+}
+
+var vertexShaderSource str = "
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex * 200;
+          }
+"
+
+var fragmentShaderSource str = "
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+"
+
+var width i32 = 600
+var height i32 = 600
+
+var rows i32 = 20
+var columns i32 = 20
+
+var size i32 = 14
+
+var tex_characters i32
+var tex_city i32
+var tex_dungeon i32
+var tex_indoor i32
+var tex_pack i32
+
+var w_characters i32 = 918
+var h_characters i32 = 203
+var w_city i32 = 628
+var h_city i32 = 475
+var w_dungeon i32 = 492
+var h_dungeon i32 = 305
+var w_indoor i32 = 457
+var h_indoor i32 = 305
+var w_pack i32 = 968
+var h_pack i32 = 526
+
+var sp_empty Sprite
+
+var sp_floor_brick_xx Sprite
+var sp_blue_carpet Sprite
+var sp_knight1 Sprite
+
+var sp_brown_wall_tb Sprite
+var sp_brown_wall_lr Sprite
+
+var sp_brown_wall_ts Sprite
+var sp_brown_wall_rs Sprite
+var sp_brown_wall_bs Sprite
+var sp_brown_wall_ls Sprite
+
+var sp_brown_wall_tr Sprite
+var sp_brown_wall_br Sprite
+var sp_brown_wall_bl Sprite
+var sp_brown_wall_tl Sprite
+
+var sp_brown_wall_to Sprite
+var sp_brown_wall_ro Sprite
+var sp_brown_wall_bo Sprite
+var sp_brown_wall_lo Sprite
+
+var sp_brown_wall_xx Sprite
+
+
+
+var sp_rock1 Sprite
+var sp_rock2 Sprite
+var sp_rock3 Sprite
+
+func compileShader(source str, shaderType i32) (shader i32) {
+	shader := gl.CreateShader(shaderType)
+
+	gl.Strs(source, "csources")
+	gl.ShaderSource(shader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(shader)
+}
+
+func addNull (source str) (source str) {
+	bSource := str.[]byte(source)
+	bSource := []byte.append(bSource, i32.byte(0))
+	source = []byte.str(bSource)
+}
+
+func initOpenGL () (program i32) {
+	gl.Init()
+
+	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+
+	program := gl.CreateProgram()
+	
+	gl.AttachShader(program, vertexShader)
+	gl.AttachShader(program, fragmentShader)
+	gl.LinkProgram(program)
+}
+
+func initGlfw (window str) () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	// glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	//glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+
+	glfw.CreateWindow("window", width, height, "Testing")
+	glfw.MakeContextCurrent("window")
+}
+
+func scale (x i32, max i32) (out f32) {
+	out = f32.div(i32.f32(x), i32.f32(max))
+}
+
+func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
+	gl.MatrixMode(gl.MODELVIEW)
+
+	gl.LoadIdentity()
+	
+	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
+	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
+	gl.Translatef(f32.add(i32.f32(x), 0.0), f32.add(i32.f32(y), 0.0), f32.mul(i32.f32(size), -1.0))
+
+	// gl.Enable(gl.BLEND)
+	// gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	// gl.DepthMask(true)
+
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
+	gl.Color4f(1.0, 1.0, 1.0, 1.0)
+
+	gl.Begin(gl.QUADS)
+
+	gl.Normal3f(0.0, 0.0, 0.0)
+	gl.TexCoord2f(sprite.x1, sprite.y2)
+	gl.Vertex3f(-0.5, -0.5, 0.0)
+	gl.TexCoord2f(sprite.x1, sprite.y1)
+	gl.Vertex3f(-0.5, 0.5, 0.0)
+	gl.TexCoord2f(sprite.x2, sprite.y1)
+	gl.Vertex3f(0.5, 0.5, 0.0)
+	gl.TexCoord2f(sprite.x2, sprite.y2)
+	gl.Vertex3f(0.5, -0.5, 0.0)
+
+	gl.End()
+}
+
+func drawTile (x i32, y i32, sprite Sprite) () {
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
+
+	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
+	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
+
+	gl.Translatef(i32.f32(x), i32.f32(y), f32.mul(i32.f32(size), -1.0))
+
+	gl.BindTexture(gl.TEXTURE_2D, sprite.textureSheet)
+	
+	gl.Color4f(1.0, 1.0, 1.0, 1.0)
+
+	gl.Begin(gl.QUADS)
+
+	gl.Normal3f(0.0, 0.0, 0.0)
+        
+	gl.TexCoord2f(sprite.x1, sprite.y2)
+	gl.Vertex3f(-1.0, -1.0, 0.0)
+	gl.TexCoord2f(sprite.x2, sprite.y2)
+	gl.Vertex3f(1.0, -1.0, 0.0)
+	gl.TexCoord2f(sprite.x2, sprite.y1)
+	gl.Vertex3f(1.0, 1.0, 0.0)
+	gl.TexCoord2f(sprite.x1, sprite.y1)
+	gl.Vertex3f(-1.0, 1.0, 0.0)
+
+	gl.End()
+}
+
+func setSprite (s Sprite, isObstacle bool, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) () {
+	s.isObstacle = isObstacle
+	s.x1 = scale(i32.add(x1, 1), W)
+	s.x2 = scale(i32.sub(x2, 1), W)
+	s.y1 = scale(i32.add(y1, 1), H)
+	s.y2 = scale(i32.sub(y2, 1), H)
+	s.textureSheet = textureSheet
+}
+
+func setupScene () () {
+	gl.Disable(gl.DITHER)
+	gl.Disable(gl.POINT_SMOOTH)
+	gl.Disable(gl.LINE_SMOOTH)
+	gl.Disable(gl.POLYGON_SMOOTH)
+	gl.Hint(gl.POINT_SMOOTH, gl.DONT_CARE)
+	gl.Hint(gl.LINE_SMOOTH, gl.DONT_CARE)
+	gl.Hint(gl.POLYGON_SMOOTH_HINT, gl.DONT_CARE)
+	gl.Disable(gl.MULTISAMPLE_ARB)
+	
+	gl.TexEnvi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+	gl.Disable(gl.DEPTH_TEST)
+
+	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+	gl.ClearDepth(f32.f64(1.0))
+	gl.DepthFunc(gl.LEQUAL)
+	
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.DepthMask(true)
+
+	gl.MatrixMode(gl.PROJECTION)
+	gl.LoadIdentity()
+	
+	gl.Frustum(
+		f32.f64(-1.0), f32.f64(1.0), f32.f64(-1.0),
+		f32.f64(1.0), f32.f64(1.0), i32.f64(i32.add(size, 2)))
+
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
+
+        tex_characters = gl.NewTexture("textures/roguelike_characters.png")
+	tex_city = gl.NewTexture("textures/roguelike_city.png")
+	tex_dungeon = gl.NewTexture("textures/roguelike_dungeon.png")
+	tex_indoor = gl.NewTexture("textures/roguelike_indoor.png")
+	tex_pack = gl.NewTexture("textures/roguelike_pack.png")
+
+	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
+	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
+	setSprite(sp_knight1, true, 0, 16, 187, 203, w_characters, h_characters, tex_characters)
+
+	setSprite(sp_brown_wall_tb, true, 238, 254, 204, 220, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_tl, true, 272, 288, 204, 220, w_pack, h_pack, tex_pack)
+
+	setSprite(sp_brown_wall_ts, true, 221, 237, 221, 237, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_rs, true, 255, 271, 204, 220, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_bs, true, 221, 237, 238, 254, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_ls, true, 221, 237, 204, 220, w_pack, h_pack, tex_pack)
+	
+	setSprite(sp_brown_wall_tr, true, 289, 305, 204, 220, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_br, true, 289, 305, 221, 237, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_bl, true, 272, 288, 221, 237, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_lr, true, 255, 271, 221, 237, w_pack, h_pack, tex_pack)
+	
+	setSprite(sp_brown_wall_to, true, 323, 339, 204, 220, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_ro, true, 306, 322, 204, 220, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_bo, true, 323, 339, 221, 237, w_pack, h_pack, tex_pack)
+	setSprite(sp_brown_wall_lo, true, 306, 322, 221, 237, w_pack, h_pack, tex_pack)
+	
+	setSprite(sp_brown_wall_xx, true, 238, 254, 221, 237, w_pack, h_pack, tex_pack)
+
+	setSprite(sp_rock1, true, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
+	setSprite(sp_empty, false, 918, 934, 306, 322, w_pack, h_pack, tex_pack)
+	//setSprite(sp_rock2, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
+}
+
+func map2Dto1D (c i32, r i32, w i32) (i i32) {
+	r = i32.sub(i32.sub(w, 1), r)
+	i = i32.add(i32.mul(w, r), c)
+}
+
+func map1Dto2D (i i32, w i32) (c i32, r i32) {
+	r = i32.sub(i32.sub(w, 1), i32.div(i, w))
+	c = i32.mod(i, w)
+}
+
+func getSprite (index i32) (sprite Sprite) {
+	var s Sprite
+	if i32.eq(index, 0) { s = sp_empty }
+	if i32.eq(index, 1) { s = sp_brown_wall_tb }
+	if i32.eq(index, 2) { s = sp_brown_wall_lr }
+	if i32.eq(index, 3) { s = sp_brown_wall_ts }
+	if i32.eq(index, 4) { s = sp_brown_wall_rs }
+	if i32.eq(index, 5) { s = sp_brown_wall_bs }
+	if i32.eq(index, 6) { s = sp_brown_wall_ls }
+	if i32.eq(index, 7) { s = sp_brown_wall_tr }
+	if i32.eq(index, 8) { s = sp_brown_wall_br }
+	if i32.eq(index, 9) { s = sp_brown_wall_bl }
+	if i32.eq(index, 10) { s = sp_brown_wall_tl }
+	if i32.eq(index, 11) { s = sp_brown_wall_to }
+	if i32.eq(index, 12) { s = sp_brown_wall_ro }
+	if i32.eq(index, 13) { s = sp_brown_wall_bo }
+	if i32.eq(index, 14) { s = sp_brown_wall_lo }
+	if i32.eq(index, 15) { s = sp_brown_wall_xx }
+
+	if i32.eq(index, 20) { s = sp_floor_brick_xx }
+	if i32.eq(index, 30) { s = sp_rock1 }
+	if i32.eq(index, 40) { s = sp_blue_carpet }
+	
+	sprite = s
+}
+
+func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
+	if and(i32.eq(key, 265), i32.eq(action, 1)) {
+		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
+		idx := []i32.read(foreground, i)
+		obj := getSprite(idx)
+		if obj.isObstacle {
+			return
+		}
+		
+		if i32.gteq(p1y, i32.sub(size, 1)) {
+			p1y = i32.sub(size, 1)
+			return
+		} else {
+			p1y = i32.add(p1y, 1)
+			return
+		}
+	}
+	if and(i32.eq(key, 264), i32.eq(action, 1)) {
+		i := map2Dto1D(p1x, i32.add(p1y, -1), size)
+		idx := []i32.read(foreground, i)
+		obj := getSprite(idx)
+		if obj.isObstacle {
+			return
+		}
+		
+		if i32.lteq(p1y, 0) {
+			p1y = 0
+			return
+		} else {
+			p1y = i32.add(p1y, -1)
+			return
+		}
+		
+	}
+	if and(i32.eq(key, 263), i32.eq(action, 1)) {
+		i := map2Dto1D(i32.add(p1x, -1), p1y, size)
+		idx := []i32.read(foreground, i)
+		obj := getSprite(idx)
+		if obj.isObstacle {
+			return
+		}
+		
+		if i32.lteq(p1x, 0) {
+			p1x = 0
+			return
+		} else {
+			p1x = i32.add(p1x, -1)
+			return
+		}
+	}
+	if and(i32.eq(key, 262), i32.eq(action, 1)) {
+		i := map2Dto1D(i32.add(p1x, 1), p1y, size)
+		idx := []i32.read(foreground, i)
+		obj := getSprite(idx)
+		if obj.isObstacle {
+			return
+		}
+		
+		if i32.gteq(p1x, i32.sub(size, 1)) {
+			p1x = i32.sub(size, 1)
+			return
+		} else {
+			p1x = i32.add(p1x, 1)
+			return
+		}
+	}
+	// str.print(window)
+	// i32.print(key)
+	// i32.print(scancode)
+	// i32.print(action)
+	// i32.print(mods)
+	// str.print("")
+}
+
+var p1x i32 = 1
+var p1y i32 = 1
+
+func main () () {
+	initGlfw("window")
+	program := initOpenGL()
+
+	glfw.SetKeyCallback("window", "charActions")
+
+	stop := not(glfw.ShouldClose("window"))
+
+	lSize := i32.mul(size, size)
+
+	setupScene()
+
+	for stop {
+		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+
+		for c := 0; i32.lt(c, lSize); c = i32.add(c, 1) {
+			x, y := map1Dto2D(c, size)
+			idxB := []i32.read(background, c)
+			idxF := []i32.read(foreground, c)
+			drawTile(x, y, getSprite(idxB))
+			drawTile(x, y, getSprite(idxF))
+		}
+
+		//drawTile(3, 0, tex_pack, sp_brown_wall_lr)
+		drawChar(p1x, p1y, tex_characters, sp_knight1)
+
+		glfw.SwapBuffers("window")
+		glfw.PollEvents()
+		
+		stop = not(glfw.ShouldClose("window"))
+	}
+}

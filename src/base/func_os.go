@@ -39,4 +39,16 @@ func os_Open(fileName *CXArgument) error {
 	}
 }
 
-func os_Close (fileName *CXArgument) {}
+func os_Close (fileName *CXArgument) error {
+	if err := checkType("os.Open", "str", fileName); err == nil {
+		name := string(*fileName.Value)
+		if file, ok := openFiles[name]; ok {
+			if err := file.Close(); err != nil {
+				return err
+			}
+		}
+		return nil
+	} else {
+		return err
+	}
+}

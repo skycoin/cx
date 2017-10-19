@@ -91,7 +91,8 @@ func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		}
 
 		var value float64
-		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
+		//encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
+		encoder.DeserializeRaw((*arr.Value)[((index)*8)+4:((index+1)*8)+4], &value)
 		output := encoder.Serialize(value)
 
 		assignOutput(&output, "f64", expr, call)

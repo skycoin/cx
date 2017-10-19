@@ -72,7 +72,7 @@
 
 %token  <i32>           INT BOOLEAN
 %token  <f32>           FLOAT
-%token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE IDENT
+%token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN GOTO
                         /* Types */
@@ -810,17 +810,20 @@ definitionDeclaration:
                 {
 			// we have to initialize all the fields
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-					if flds, err := strct.GetFields(); err == nil {
-						for _, fld := range flds {
-							zeroVal := MakeDefaultValue(fld.Typ)
-							defName := fmt.Sprintf("%s.%s", $2, fld.Name)
-							mod.AddDefinition(MakeDefinition(defName, zeroVal, fld.Typ))
-						}
-					}
-				} else {
-					fmt.Printf("Type '%s' not defined\n", $3)
+				if zeroVal, err := ResolveStruct($3, cxt); err == nil {
+					mod.AddDefinition(MakeDefinition($2, &zeroVal, $3))
 				}
+				// if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+				// 	if flds, err := strct.GetFields(); err == nil {
+				// 		for _, fld := range flds {
+				// 			zeroVal := MakeDefaultValue(fld.Typ)
+				// 			defName := fmt.Sprintf("%s.%s", $2, fld.Name)
+				// 			mod.AddDefinition(MakeDefinition(defName, zeroVal, fld.Typ))
+				// 		}
+				// 	}
+				// } else {
+				// 	fmt.Printf("Type '%s' not defined\n", $3)
+				// }
 			}
                 }
         ;
@@ -919,6 +922,10 @@ functionDeclaration:
 
 parameter:
                 IDENT typeSpecifier
+                {
+			$$ = MakeParameter($1, $2)
+                }
+        |       IDENT IDENT
                 {
 			$$ = MakeParameter($1, $2)
                 }
@@ -1103,26 +1110,40 @@ assignExpression:
 
 				for i, argL := range argsL {
 					// argL is going to be the output name
-
-					//typeParts := GetIdentParts(argsR[i].Typ)
 					typeParts := strings.Split(argsR[i].Typ, ".")
 
 					var typ string
 					var secondTyp string
 					var idFn string
-					
+
 					if len(typeParts) > 1 {
-						typ = typeParts[0]
-						secondTyp = typeParts[1]
+						//typ = typeParts[0] // ident
+						typ = "str"
+						secondTyp = typeParts[1] // i32, f32, etc
+					} else if typeParts[0] == "ident" {
+						typ = "str"
+						secondTyp = "ident"
 					} else {
-						typ = typeParts[0]
+						typ = typeParts[0] // i32, f32, etc
 					}
 
 					if secondTyp == "" {
 						idFn = MakeIdentityOpName(typ)
 					} else {
-						idFn = MakeIdentityOpName(secondTyp)
+						//idFn = MakeIdentityOpName(secondTyp)
+						idFn = "identity"
 					}
+
+					// if argsR[i].Typ == "ident" {
+					// 	idFn = "identity"
+					// 	typ = "str"
+					// } else {
+					// 	idFn = MakeIdentityOpName(argsR[i].Typ)
+					// 	fmt.Println(argsR[i].Typ)
+					// 	typ = argsR[i].Typ
+					// }
+
+					//idFn = MakeIdentityOpName(typ)
 
 					if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
 						expr := MakeExpression(op)
@@ -1189,6 +1210,7 @@ nonAssignExpression:
 							outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
 							byteName := []byte(outNames[i])
 							args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
+							//args[i] = MakeArgument(&byteName, "ident")
 							expr.AddOutputName(outNames[i])
 						}
 						
@@ -1658,15 +1680,9 @@ statement:      RETURN
                 }
         |       VAR IDENT IDENT
                 {
-
-
-
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
-
-
-
 						expr := MakeExpression(op)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
@@ -1678,80 +1694,9 @@ statement:      RETURN
 						typ := []byte($3)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
-
-						// if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-						// 	for _, fld := range strct.Fields {
-						// 		expr := MakeExpression(op)
-						// 		if !replMode {
-						// 			expr.FileLine = yyS[yypt-0].line + 1
-						// 		}
-						// 		fn.AddExpression(expr)
-						// 		expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
-						// 		typ := []byte(fld.Typ)
-						// 		arg := MakeArgument(&typ, "str")
-						// 		expr.AddArgument(arg)
-						// 	}
-						// }
 					}
 				}
 			}
-
-			
-			// here
-			//bs := resolveStruct($3)
-
-			// if mod, err := cxt.GetCurrentModule(); err == nil {
-			// 	if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-			// 		// if flds, err := strct.GetFields(); err == nil {
-			// 		// 	for _, fld := range flds {
-			// 		// 		isBasic := false
-			// 		// 		for _, basic := range BASIC_TYPES {
-			// 		// 			if fld.Typ == basic {
-			// 		// 				isBasic = true
-			// 		// 				break
-			// 		// 			}
-			// 		// 		}
-			// 		// 		var zeroVal []byte
-			// 		// 		if isBasic {
-			// 		// 			zeroVal = MakeDefaultValue(fld.Typ)
-			// 		// 		} else {
-			// 		// 			zeroVal = resolveStruct(fld.Typ)
-			// 		// 		}
-
-			// 		// 		fmt.Println(zeroVal)
-			// 		// 	}
-			// 		// }
-
-			// 		fmt.Println(resolveStruct(str))
-			// 	} else {
-			// 		panic(fmt.Sprintf("Type '%s' not defined", $3))
-			// 	}
-			// }
-
-			// if mod, err := cxt.GetCurrentModule(); err == nil {
-			// 	if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-			// 		if flds, err := strct.GetFields(); err == nil {
-			// 			for _, fld := range flds {
-			// 				zeroVal := MakeDefaultValue(fld.Typ)
-			// 				localName := fmt.Sprintf("%s.%s", $2, fld.Name)
-			// 				if fn, err := cxt.GetCurrentFunction(); err == nil {
-			// 					if op, err := cxt.GetFunction(MakeIdentityOpName(fld.Typ), mod.Name); err == nil {
-			// 						expr := MakeExpression(op)
-			// 						if !replMode {
-			// 							expr.FileLine = yyS[yypt-0].line + 1
-			// 						}
-			// 						fn.AddExpression(expr)
-									
-			// 						expr.AddArgument(MakeArgument(zeroVal, fld.Typ))
-			// 						expr.AddOutputName(localName)
-			// 					}
-			// 				}
-			// 			}
-			// 		}
-			// 	} else {
-			// 		panic(fmt.Sprintf("Type '%s' not defined", $3))
-			// 	}
-			// }
                 }
         |       ';'
         ;
@@ -1849,6 +1794,11 @@ argument:
 			val := []byte($1)
                         $$ = MakeArgument(&val, "ident")
                 }
+        |       IDENT LBRACK INT RBRACK
+                {
+			val := []byte(fmt.Sprintf("%s[%d", $1, $3))
+			$$ = MakeArgument(&val, "ident")
+                }
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
 			switch $1 {
@@ -1868,14 +1818,26 @@ argument:
 					encoder.DeserializeRaw(*arg.Value, &val)
 					vals[i] = byte(val)
 				}
-				//sVal := encoder.Serialize(vals)
 				$$ = MakeArgument(&vals, "[]byte")
 			case "[]i32":
-                                vals := make([]int32, len($3))
+				vals := make([]int32, len($3))
 				for i, arg := range $3 {
-					var val int32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = val
+					if arg.Typ == "ident" {
+						// if fn, err := cxt.GetCurrentFunction(); err == nil {
+						// 	if op, err := cxt.GetFunction("[]i32.write", CORE_MODULE); err == nil {
+						// 		expr := MakeExpression(op)
+						// 		fn.AddExpression(expr)
+						// 		expr.AddArgument()
+						// 	}
+							
+						// } else {
+						// 	fmt.Println(err)
+						// }
+					} else {
+						var val int32
+						encoder.DeserializeRaw(*arg.Value, &val)
+						vals[i] = val
+					}
 				}
 				sVal := encoder.Serialize(vals)
 				$$ = MakeArgument(&sVal, "[]i32")

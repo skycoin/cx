@@ -6,6 +6,7 @@ import (
 	"time"
 	"bytes"
 	"strings"
+	"strconv"
 	"errors"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -32,6 +33,26 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 			}
 			break
 		}
+		if char == '[' {
+			identParts := strings.Split(outName, "[")
+
+			for _, def := range call.State {
+				if def.Name == identParts[0] {
+					idx, _ := strconv.ParseInt(identParts[1], 10, 64)
+					for c := 0; c < len(*output); c++ {
+						if typ == "i64" || typ == "f64" {
+							(*def.Value)[(int(idx)*8) + 4 + c] = (*output)[c]
+						} else if typ == "byte" {
+							(*def.Value)[int(idx) + c] = (*output)[c]
+						} else {
+							(*def.Value)[(int(idx)*4) + 4 + c] = (*output)[c]
+						}
+					}
+					return
+				}
+			}
+			break
+		}
 	}
 	
 	for _, def := range call.State {
@@ -40,6 +61,11 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 			return
 		}
 	}
+
+	if def, err := expr.Module.GetDefinition(outName); err == nil {
+		def.Value = output
+	}
+
 	call.State = append(call.State, MakeDefinition(outName, output, typ))
 	return
 }
@@ -88,7 +114,7 @@ func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, ar
 }
 
 func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, arg3, arg4, arg5 *CXArgument) error {
-	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
 		} else if arg2.Typ != typ2 {
@@ -99,6 +125,24 @@ func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, ar
 			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
 		}
 		return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Typ, typ5))
+	}
+	return nil
+}
+
+func checkSixTypes (fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg2, arg3, arg4, arg5, arg6 *CXArgument) error {
+	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 || arg6.Typ != typ6 {
+		if arg1.Typ != typ1 {
+			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+		} else if arg2.Typ != typ2 {
+			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+		} else if arg3.Typ != typ3 {
+			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+		} else if arg4.Typ != typ4 {
+			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
+		} else if arg5.Typ != typ5 {
+			return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Typ, typ5))
+		}
+		return errors.New(fmt.Sprintf("%s: argument 6 is type '%s'; expected type '%s'", fnName, arg6.Typ, typ6))
 	}
 	return nil
 }

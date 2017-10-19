@@ -6,6 +6,10 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"runtime"
 	"strings"
+	"os"
+	"image"
+	"image/draw"
+	_ "image/png"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -14,7 +18,6 @@ var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
 func gl_Init () error {
-	
 	if err := gl.Init(); err == nil {
 		return nil
 	} else {
@@ -422,6 +425,363 @@ func gl_EnableClientState (array *CXArgument) error {
 	}
 }
 
-func Foo () {
+func gl_BindTexture (target, texture *CXArgument) error {
+	if err := checkTwoTypes("gl.BindTexture", "i32", "i32", target, texture); err == nil {
+		var tgt int32
+		var tex int32
 
+		encoder.DeserializeAtomic(*target.Value, &tgt)
+		encoder.DeserializeAtomic(*texture.Value, &tex)
+
+		gl.BindTexture(uint32(tgt), uint32(tex))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Color4f (red, green, blue, alpha *CXArgument) error {
+	if err := checkFourTypes("gl.Color4f", "f32", "f32", "f32", "f32", red, green, blue, alpha); err == nil {
+		var r float32
+		var g float32
+		var b float32
+		var a float32
+
+		encoder.DeserializeRaw(*red.Value, &r)
+		encoder.DeserializeRaw(*green.Value, &g)
+		encoder.DeserializeRaw(*blue.Value, &b)
+		encoder.DeserializeRaw(*alpha.Value, &a)
+
+		gl.Color4f(r, g, b, a)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Begin (mode *CXArgument) error {
+	if err := checkType("gl.Begin", "i32", mode); err == nil {
+		var mod int32
+
+		encoder.DeserializeAtomic(*mode.Value, &mod)
+
+		gl.Begin(uint32(mod))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_End () error {
+	gl.End()
+	return nil
+}
+
+func gl_Normal3f (nx, ny, nz *CXArgument) error {
+	if err := checkThreeTypes("gl.Normal3f", "f32", "f32", "f32", nx, ny, nz); err == nil {
+		var x float32
+		var y float32
+		var z float32
+
+		encoder.DeserializeRaw(*nx.Value, &x)
+		encoder.DeserializeRaw(*ny.Value, &y)
+		encoder.DeserializeRaw(*nz.Value, &z)
+
+		gl.Normal3f(x, y, z)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_TexCoord2f (s, t *CXArgument) error {
+	if err := checkTwoTypes("gl.TexCoord2f", "f32", "f32", s, t); err == nil {
+		var _s float32
+		var _t float32
+
+		encoder.DeserializeRaw(*s.Value, &_s)
+		encoder.DeserializeRaw(*t.Value, &_t)
+
+		gl.TexCoord2f(_s, _t)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Vertex3f (nx, ny, nz *CXArgument) error {
+	if err := checkThreeTypes("gl.Vertex3f", "f32", "f32", "f32", nx, ny, nz); err == nil {
+		var x float32
+		var y float32
+		var z float32
+
+		encoder.DeserializeRaw(*nx.Value, &x)
+		encoder.DeserializeRaw(*ny.Value, &y)
+		encoder.DeserializeRaw(*nz.Value, &z)
+
+		gl.Vertex3f(x, y, z)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Enable (cap *CXArgument) error {
+	if err := checkType("gl.Enable", "i32", cap); err == nil {
+		var c int32
+
+		encoder.DeserializeAtomic(*cap.Value, &c)
+
+		gl.Enable(uint32(c))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Disable (cap *CXArgument) error {
+	if err := checkType("gl.Disable", "i32", cap); err == nil {
+		var c int32
+
+		encoder.DeserializeAtomic(*cap.Value, &c)
+
+		gl.Disable(uint32(c))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_ClearColor (red, green, blue, alpha *CXArgument) error {
+	if err := checkFourTypes("gl.Color4f", "f32", "f32", "f32", "f32", red, green, blue, alpha); err == nil {
+		var r float32
+		var g float32
+		var b float32
+		var a float32
+
+		encoder.DeserializeRaw(*red.Value, &r)
+		encoder.DeserializeRaw(*green.Value, &g)
+		encoder.DeserializeRaw(*blue.Value, &b)
+		encoder.DeserializeRaw(*alpha.Value, &a)
+
+		gl.ClearColor(r, g, b, a)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_ClearDepth (depth *CXArgument) error {
+	if err := checkType("gl.ClearDepth", "f64", depth); err == nil {
+		var d float64
+
+		encoder.DeserializeRaw(*depth.Value, &d)
+
+		gl.ClearDepth(d)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_DepthFunc (xfunc *CXArgument) error {
+	if err := checkType("gl.DepthFunc", "i32", xfunc); err == nil {
+		var xfn int32
+
+		encoder.DeserializeRaw(*xfunc.Value, &xfn)
+
+		gl.DepthFunc(uint32(xfn))
+		return nil
+	} else {
+		return err
+	}
+}
+
+// uses pointers. change after implementing cx pointers
+func gl_Lightfv (light, pname, params *CXArgument) error {
+	if err := checkThreeTypes("gl.Lightfv", "i32", "i32", "f32", light, pname, params); err == nil {
+		var ligh int32
+		var pnam int32
+		var param float32
+
+		encoder.DeserializeAtomic(*light.Value, &ligh)
+		encoder.DeserializeAtomic(*pname.Value, &pnam)
+		encoder.DeserializeRaw(*params.Value, &param)
+
+		gl.Lightfv(uint32(ligh), uint32(pnam), &param)
+
+		*params.Value = encoder.Serialize(param)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Frustum (left, right, bottom, top, zNear, zFar *CXArgument) error {
+	if err := checkSixTypes("gl.Frustum", "f64", "f64", "f64", "f64", "f64", "f64", left, right, bottom, top, zNear, zFar); err == nil {
+		var l float64
+		var r float64
+		var b float64
+		var t float64
+		var zN float64
+		var zF float64
+
+		encoder.DeserializeRaw(*left.Value, &l)
+		encoder.DeserializeRaw(*right.Value, &r)
+		encoder.DeserializeRaw(*bottom.Value, &b)
+		encoder.DeserializeRaw(*top.Value, &t)
+		encoder.DeserializeRaw(*zNear.Value, &zN)
+		encoder.DeserializeRaw(*zFar.Value, &zF)
+
+		gl.Frustum(l, r, b, t, zN, zF)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func newTexture(file string) uint32 {
+	imgFile, err := os.Open(file)
+	if err != nil {
+		panic(fmt.Sprintf("texture %q not found on disk: %v\n", file, err))
+	}
+
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		panic(err)
+	}
+	rgba := image.NewRGBA(img.Bounds())
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		panic("unsupported stride")
+	}
+	
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+
+	var texture uint32
+	gl.Enable(gl.TEXTURE_2D)
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	//gl.TexEnvi(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+
+	return texture
+}
+
+func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("gl.NewTexture", "str", file); err == nil {
+		name := string(*file.Value)
+
+		texture := newTexture(name)
+		output := encoder.Serialize(int32(texture))
+		
+		assignOutput(&output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_DepthMask (flag *CXArgument) error {
+	if err := checkType("gl.DepthMask", "bool", flag); err == nil {
+		var f bool = false
+		if (*flag.Value)[0] == 1 {
+			f = true
+		}
+
+		gl.DepthMask(f)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_TexEnvi (target, pname, param *CXArgument) error {
+	if err := checkThreeTypes("gl.TexEnvi", "i32", "i32", "i32", target, pname, param); err == nil {
+		var _target int32
+		var _pname int32
+		var _param int32
+
+		encoder.DeserializeAtomic(*target.Value, &_target)
+		encoder.DeserializeAtomic(*pname.Value, &_pname)
+		encoder.DeserializeAtomic(*param.Value, &_param)
+
+		gl.TexEnvi(uint32(_target), uint32(_pname), _param)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_BlendFunc (sfactor, dfactor *CXArgument) error {
+	if err := checkTwoTypes("gl.BlendFunc", "i32", "i32", sfactor, dfactor); err == nil {
+		var _sfactor int32
+		var _dfactor int32
+
+		encoder.DeserializeAtomic(*sfactor.Value, &_sfactor)
+		encoder.DeserializeAtomic(*dfactor.Value, &_dfactor)
+
+		gl.BlendFunc(uint32(_sfactor), uint32(_dfactor))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Hint (target, mode *CXArgument) error {
+	if err := checkTwoTypes("gl.Hint", "i32", "i32", target, mode); err == nil {
+		var _target int32
+		var _mode int32
+
+		encoder.DeserializeAtomic(*target.Value, &_target)
+		encoder.DeserializeAtomic(*mode.Value, &_mode)
+
+		gl.Hint(uint32(_target), uint32(_mode))
+		return nil
+	} else {
+		return err
+	}
+}
+
+//gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+func Foo () {
+	fmt.Println("gl.DITHER", gl.DITHER)
+	fmt.Println("gl.POINT_SMOOTH", gl.POINT_SMOOTH)
+	fmt.Println("gl.LINE_SMOOTH", gl.LINE_SMOOTH)
+	fmt.Println("gl.POLYGON_SMOOTH", gl.POLYGON_SMOOTH)
+	fmt.Println("gl.POINT_SMOOTH", gl.POINT_SMOOTH)
+	fmt.Println("gl.DONT_CARE", gl.DONT_CARE)
+	fmt.Println("gl.POLYGON_SMOOTH_HINT", gl.POLYGON_SMOOTH_HINT)
+	fmt.Println("gl.MULTISAMPLE_ARB", gl.MULTISAMPLE_ARB)
+	
+	// fmt.Println("gl.SRC_ALPHA", gl.SRC_ALPHA)
+	// fmt.Println("gl.ONE_MINUS_SRC_ALPHA", gl.ONE_MINUS_SRC_ALPHA)
+	
+	// fmt.Println("gl.TEXTURE_ENV", gl.TEXTURE_ENV)
+	// fmt.Println("gl.TEXTURE_ENV_MODE", gl.TEXTURE_ENV_MODE)
+	// fmt.Println("gl.MODULATE", gl.MODULATE)
+	// fmt.Println("gl.DECAL", gl.DECAL)
+	// fmt.Println("gl.BLEND", gl.BLEND)
+	// fmt.Println("gl.REPLACE", gl.REPLACE)
+	
+	// fmt.Println("gl.BLEND", gl.BLEND)
+	// fmt.Println("gl.DEPTH_TEST", gl.DEPTH_TEST)
+	// fmt.Println("gl.LIGHTING", gl.LIGHTING)
+	// fmt.Println("gl.LEQUAL", gl.LEQUAL)
+	// fmt.Println("gl.LIGHT0", gl.LIGHT0)
+	// fmt.Println("gl.AMBIENT", gl.AMBIENT)
+	// fmt.Println("gl.DIFFUSE", gl.DIFFUSE)
+	// fmt.Println("gl.POSITION", gl.POSITION)
 }

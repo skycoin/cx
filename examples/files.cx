@@ -1,0 +1,6 @@
+package main
+
+func main () () {
+	// Creating file
+	os.Create("testing.huehue")
+}

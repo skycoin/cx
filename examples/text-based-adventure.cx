@@ -72,32 +72,32 @@ func act () () {
 	
 	remArg("walk")
 	affExpr("walk", "yes|no", 0)
-	walk:
+walk:
 	walk(false)
 
 	remArg("noise")
 	affExpr("noise", "yes|no", 0)
-	noise:
+noise:
 	noise(false)
 
 	remArg("consider")
 	affExpr("consider", "yes|no", 0)
-	consider:
+consider:
 	consider(false)
 
 	remArg("chance")
 	affExpr("chance", "yes|no", 0)
-	chance:
+chance:
 	chance(false)
 
 	remArg("fightResult")
 	affExpr("fightResult", "yes|no", 0)
-	fightResult:
+fightResult:
 	fightResult(false)
 
 	remArg("theEnd")
 	affExpr("theEnd", "yes|no", 0)
-	theEnd:
+theEnd:
 	theEnd(false)
 }
 

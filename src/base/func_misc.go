@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	"errors"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -309,11 +310,11 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 	return errors.New(fmt.Sprintf("affExpr: no expression with tag '%s' was found", string(*tag.Value)))
 }
 
-func resolveStruct (typ string, expr *CXExpression, call *CXCall) ([]byte, error) {
+func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	var bs []byte
 
 	found := false
-	if mod, err := call.Context.GetCurrentModule(); err == nil {
+	if mod, err := cxt.GetCurrentModule(); err == nil {
 		var foundStrct *CXStruct
 		for _, strct := range mod.Structs {
 			if strct.Name == typ {
@@ -349,7 +350,7 @@ func resolveStruct (typ string, expr *CXExpression, call *CXCall) ([]byte, error
 			}
 
 			if !isBasic {
-				if byts, err := resolveStruct(fld.Typ, expr, call); err == nil {
+				if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
 					bs = append(bs, byts...)
 				} else {
 					return nil, err
@@ -358,6 +359,36 @@ func resolveStruct (typ string, expr *CXExpression, call *CXCall) ([]byte, error
 		}
 	}
 	return bs, nil
+}
+
+func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+	found := false
+	name := string(*arg.Value)
+	for _, def := range call.State {
+		if def.Name == name {
+			found = true
+			assignOutput(def.Value, def.Typ, expr, call)
+			return nil
+		}
+	}
+	if !found {
+		// then it can be a global
+		identParts := strings.Split(name, ".")
+		if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
+			
+			if len(identParts) > 1 {
+				if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+					byts, typ := resolveStructField(identParts[1], def.Value, strct)
+					
+					assignOutput(&byts, typ, expr, call)
+					return nil
+				}
+			} else {
+				assignOutput(def.Value, def.Typ, expr, call)
+			}
+		}
+	}
+	return errors.New(fmt.Sprintf("identity: identifier '%s' not found", string(*arg.Value)))
 }
 
 func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
@@ -376,7 +407,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		if isBasic {
 			zeroVal = *MakeDefaultValue(typName)
 		} else {
-			if byts, err := resolveStruct(typName, expr, call); err == nil {
+			if byts, err := ResolveStruct(typName, call.Context); err == nil {
 				zeroVal = byts
 			} else {
 				return err

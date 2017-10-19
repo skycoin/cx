@@ -195,23 +195,26 @@ func (mod *CXModule) GetDefinition (defName string) (*CXDefinition, error) {
 	}
 }
 
-func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, error) {
-	// for _, nativeFn := range NATIVE_FUNCTIONS {
-	// 	if fnName == nativeFn {
-	// 		modName = CORE_MODULE
-	// 		break
-	// 	}
-	// 	if fmt.Sprintf("%s.%s", modName, fnName, ) == nativeFn {
-	// 		fnName = fmt.Sprintf("%s.%s", modName, fnName, )
-	// 		modName = CORE_MODULE
-	// 		break
-	// 	}
-	// }
+// func (mod *CXModule) GetFunction (fnName string) (*CXFunction, error) {
+// 	var err error
+// 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
+// 		//modName = CORE_MODULE
+// 		if mod, err = mod.Context.GetModule(CORE_MODULE); err != nil {
+// 			return nil, err
+// 		}
+// 	} else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
+// 		fnName = fmt.Sprintf("%s.%s", modName, fnName)
+// 		if mod, err = mod.Context.GetModule(CORE_MODULE); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// }
 
+func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, error) {
 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
 		modName = CORE_MODULE
 	} else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
-		fnName = fmt.Sprintf("%s.%s", modName, fnName, )
+		fnName = fmt.Sprintf("%s.%s", modName, fnName)
 		modName = CORE_MODULE
 	}
 	
@@ -222,15 +225,18 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			break
 		}
 	}
-	
-	var foundFn *CXFunction
-	for _, fn := range foundMod.Functions {
-		if fn.Name == fnName {
-			foundFn = fn
-			break
-		}
-	}
 
+	var foundFn *CXFunction
+	if foundMod != nil {
+		for _, fn := range foundMod.Functions {
+			if fn.Name == fnName {
+				foundFn = fn
+				break
+			}
+		}
+	} else {
+		return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
+	}
 	
 
 	if foundMod != nil && foundFn != nil {

@@ -48,6 +48,8 @@
 /\)/         { return RPAREN     }
 /\{/         { return LBRACE     }
 /\}/         { return RBRACE     }
+/\[/         { return LBRACK     }
+/\]/         { return RBRACK     }
 /=/          { return ASSIGN     }
 /:=/         { return CASSIGN    }
 />/          { return GTHAN      }
@@ -225,6 +227,7 @@ func []i32.id (x []i32) (x []i32) {}
 func []i64.id (x []i64) (x []i64) {}
 func []f32.id (x []f32) (x []f32) {}
 func []f64.id (x []f64) (x []f64) {}
+func identity (ident str) (ident str) {}
 
 func i32.add (n1 i32, n2 i32) (out i32) {}
 func i32.sub (n1 i32, n2 i32) (out i32) {}
@@ -298,6 +301,8 @@ func byte.gt (n1 byte, n2 byte) (out bool) {}
 func byte.eq (n1 byte, n2 byte) (out bool) {}
 func byte.lteq (n1 byte, n2 byte) (out bool) {}
 func byte.gteq (n1 byte, n2 byte) (out bool) {}
+
+func str.read () (line str) {}
 
 func []byte.str (in []byte) (out str) {}
 func str.[]byte (in str) (out []byte) {}
@@ -483,6 +488,28 @@ func gl.PushMatrix () () {}
 func gl.PopMatrix () () {}
 func gl.EnableClientState (array i32) () {}
 
+func gl.BindTexture (target i32, texture i32) () {}
+func gl.Color4f (red f32, green f32, blue f32, alpha f32) () {}
+func gl.Begin (mode i32) () {}
+func gl.End () () {}
+func gl.Normal3f (nx f32, ny f32, nz f32) () {}
+func gl.TexCoord2f (s f32, t f32) () {}
+func gl.Vertex3f (nx f32, ny f32, nz f32) () {}
+
+func gl.Enable (cap i32) () {}
+func gl.Disable (cap i32) () {}
+func gl.ClearColor (red f32, green f32, blue f32, alpha f32) () {}
+func gl.ClearDepth (depth f64) () {}
+func gl.DepthFunc (xfunc i32) () {}
+func gl.Lightfv (light i32, pname i32, params f32) () {}
+func gl.Frustum (left f64, right f64, bottom f64, top f64, zNear f64, zFar f64) () {}
+
+func gl.NewTexture (file str) (texture i32) {}
+func gl.DepthMask (flag bool) () {}
+func gl.TexEnvi (target i32, pname i32, param i32) () {}
+func gl.BlendFunc (sfactor i32, dfactor i32) () {}
+func gl.Hint (target i32, mode i32) () {}
+
 /*
   GLFW
 */
@@ -494,6 +521,22 @@ func glfw.MakeContextCurrent (window str) () {}
 func glfw.ShouldClose (window str) (flag bool) {}
 func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
+
+func glfw.SetKeyCallback (window str, fnName str) () {}
+
+/*
+  Operating System
+*/
+
+func os.Create (fileName str) () {}
+func os.Open (fileName str) () {}
+func os.Close (fileName str) () {}
+
+/*
+  Image
+*/
+
+
 
 package glfw
 
@@ -510,6 +553,7 @@ package gl
 
 var FALSE i32 = 0
 var TRUE i32 = 1
+var QUADS i32 = 7
 var COLOR_BUFFER_BIT i32 = 16384
 var DEPTH_BUFFER_BIT i32 = 256
 var ARRAY_BUFFER i32 = 34962
@@ -518,6 +562,8 @@ var TRIANGLES i32 = 4
 var VERTEX_SHADER i32 = 35633
 var FRAGMENT_SHADER i32 = 35632
 var MODELVIEW i32 = 5888
+
+var TEXTURE_2D i32 = 3553
 
 var PROJECTION i32 = 5889
 var TEXTURE i32 = 5890
@@ -537,6 +583,33 @@ var STATIC_COPY i32 = 35046
 var DYNAMIC_DRAW i32 = 35048
 var DYNAMIC_READ i32 = 35049
 var DYNAMIC_COPY i32 = 35050
+
+var BLEND i32 = 3042
+var DEPTH_TEST i32 = 2929
+var LIGHTING i32 = 2896
+var LEQUAL i32 = 515
+var LIGHT0 i32 = 16384
+var AMBIENT i32 = 4608
+var DIFFUSE i32 = 4609
+var POSITION i32 = 4611
+
+var TEXTURE_ENV i32 = 8960
+var TEXTURE_ENV_MODE i32 = 8704
+var MODULATE i32 = 8448
+var DECAL i32 = 8449
+var BLEND i32 = 3042
+var REPLACE i32 = 7681
+
+var SRC_ALPHA i32 = 770
+var ONE_MINUS_SRC_ALPHA i32 = 771
+
+var DITHER i32 = 3024
+var POINT_SMOOTH i32 = 2832
+var LINE_SMOOTH i32 = 2848
+var POLYGON_SMOOTH i32 = 2881
+var DONT_CARE i32 = 4352
+var POLYGON_SMOOTH_HINT i32 = 3155
+var MULTISAMPLE_ARB i32 = 32925
 
 `
 
@@ -742,23 +815,8 @@ func (yylex Lexer) Error (e string) {
 	yylex.Stop()
 }
 
-type Point struct {
-	x int32
-	y int32
-}
-
-type Rectangle struct {
-	height int32
-	width int32
-}
-
-type Board struct {
-	points []Point
-	info int32
-	rects []Rectangle
-}
-
 func main () {
+	// Foo()
 	// foo := make([]byte, 10, 10)
 
 	// for c := 0; c < 10; c++ {

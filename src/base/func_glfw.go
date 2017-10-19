@@ -95,3 +95,41 @@ func glfw_SwapBuffers (window *CXArgument) error {
 		return err
 	}
 }
+
+
+
+func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+	wName := string(*window.Value)
+	name := string(*fnName.Value)
+	
+	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+
+			var winName []byte
+			for key, win := range windows {
+				if w == win {
+					winName = []byte(key)
+					break
+				}
+			}
+
+			sKey := encoder.Serialize(int32(key))
+			sScancode := encoder.Serialize(int32(scancode))
+			sAction := encoder.Serialize(int32(action))
+			sModifierKey := encoder.Serialize(int32(mods))
+
+			state := make([]*CXDefinition, len(fn.Inputs))
+			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
+			state[1] = MakeDefinition(fn.Inputs[1].Name, &sKey,fn.Inputs[1].Typ)
+			state[2] = MakeDefinition(fn.Inputs[2].Name, &sScancode,fn.Inputs[2].Typ)
+			state[3] = MakeDefinition(fn.Inputs[3].Name, &sAction,fn.Inputs[3].Typ)
+			state[4] = MakeDefinition(fn.Inputs[4].Name, &sModifierKey,fn.Inputs[4].Typ)
+			
+			subcall := MakeCall(fn, state, call, call.Module, call.Context)
+			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+		}
+	}
+
+	windows[wName].SetKeyCallback(callback)
+	return nil
+}

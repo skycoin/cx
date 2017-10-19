@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"runtime"
 
+	"strconv"
 	"fmt"
 	"errors"
 	"strings"
@@ -305,33 +306,6 @@ func replPrintEvaluation (arg *CXArgument) {
 	}
 }
 
-func beforeDot (str string ) (beforeDot string, afterDot string) {
-	beforeDot = ""
-	afterDot = ""
-	beforeDotCounter := 0
-	foundDot := false
-
-
-	for i, letter := range str {
-		if letter == '.' {
-			foundDot = true
-			beforeDot = str[:i]
-			beforeDotCounter = i
-			break
-		}
-	}
-
-	if !foundDot {
-		beforeDot = str
-	}
-	
-	if foundDot {
-		afterDot = str[beforeDotCounter + 1:] // ignore the dot
-	}
-
-	return beforeDot, afterDot
-}
-
 // Compiling from CXGO to CX Base
 func (cxt *CXProgram) Compile (withProfiling bool) {
 	var asmNL string = "\n"
@@ -506,10 +480,9 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 }
 
 func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*CXArgument, exc *bool, excError *error) {
+	var err error
 	switch opName {
-	case "serialize":
-		//Serialize(call.Context, expr, call)
-		serialize_program(expr, call)
+	case "serialize": serialize_program(expr, call)
 	case "deserialize":
 		// it only prints the deserialized program for now
 		Deserialize((*argsCopy)[0].Value).PrintProgram(false)
@@ -530,25 +503,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		var epsilon float64
 		encoder.DeserializeRaw(*(*argsCopy)[6].Value, &epsilon)
 
-		if err := call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+		err = call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call)
 		// flow control
-	case "baseGoTo":
-		if err := baseGoTo(call, (*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
-
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "goTo":
-		if err := goTo(call, (*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "baseGoTo": err = baseGoTo(call, (*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "goTo": err = goTo(call, (*argsCopy)[0])
 		// I/O functions
 	case "bool.print":
 		var val int32
@@ -558,10 +516,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		} else {
 			fmt.Println("true")
 		}
-	case "str.print":
-		fmt.Println(string(*(*argsCopy)[0].Value))
-	case "byte.print":
-		fmt.Println((*(*argsCopy)[0].Value)[0])
+	case "str.print": fmt.Println(string(*(*argsCopy)[0].Value))
+	case "byte.print": fmt.Println((*(*argsCopy)[0].Value)[0])
 	case "i32.print":
 		var val int32
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
@@ -594,8 +550,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		}
 		fmt.Print("]")
 		fmt.Println()
-	case "[]byte.print":
-		fmt.Println(*(*argsCopy)[0].Value)
+	case "[]byte.print": fmt.Println(*(*argsCopy)[0].Value)
 	case "[]i32.print":
 		var val []int32
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
@@ -613,1009 +568,225 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 		// identity functions
-	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id":
-		assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
-		// found := false
-		// for _, def := range call.State {
-		// 	if def.Name == expr.OutputNames[0].Name {
-		// 		def.Value = (*argsCopy)[0].Value
-		// 		found = true
-		// 		break
-		// 	}
-		// }
-		// if !found {
-		// 	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, (*argsCopy)[0].Value, (*argsCopy)[0].Typ))
-		// }
+	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+	case "identity": identity((*argsCopy)[0], expr, call)
 		// cast functions
-	case "[]byte.str":
-		if err := castToStr((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "str.[]byte":
-		if err := castToByteA((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.byte", "i64.byte", "f32.byte", "f64.byte":
-		if err := castToByte((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.i32", "i64.i32", "f32.i32", "f64.i32":
-		if err := castToI32((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.i64", "i32.i64", "f32.i64", "f64.i64":
-		if err := castToI64((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.f32", "i32.f32", "i64.f32", "f64.f32":
-		if err := castToF32((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.f64", "i32.f64", "i64.f64", "f32.f64":
-		if err := castToF64((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.[]byte", "[]i64.[]byte", "[]f32.[]byte", "[]f64.[]byte":
-		if err := castToByteA((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.[]i32", "[]i64.[]i32", "[]f32.[]i32", "[]f64.[]i32":
-		if err := castToI32A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.[]i64", "[]i32.[]i64", "[]f32.[]i64", "[]f64.[]i64":
-		if err := castToI64A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.[]f32", "[]i32.[]f32", "[]i64.[]f32", "[]f64.[]f32":
-		if err := castToF32A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.[]f64", "[]i32.[]f64", "[]i64.[]f64", "[]f32.[]f64":
-		if err := castToF64A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "[]byte.str": err = castToStr((*argsCopy)[0], expr, call)
+	case "str.[]byte": err = castToByteA((*argsCopy)[0], expr, call)
+	case "i32.byte", "i64.byte", "f32.byte", "f64.byte": err = castToByte((*argsCopy)[0], expr, call)
+	case "byte.i32", "i64.i32", "f32.i32", "f64.i32": err = castToI32((*argsCopy)[0], expr, call)
+	case "byte.i64", "i32.i64", "f32.i64", "f64.i64": err = castToI64((*argsCopy)[0], expr, call)
+	case "byte.f32", "i32.f32", "i64.f32", "f64.f32": err = castToF32((*argsCopy)[0], expr, call)
+	case "byte.f64", "i32.f64", "i64.f64", "f32.f64": err = castToF64((*argsCopy)[0], expr, call)
+	case "[]i32.[]byte", "[]i64.[]byte", "[]f32.[]byte", "[]f64.[]byte": err = castToByteA((*argsCopy)[0], expr, call)
+	case "[]byte.[]i32", "[]i64.[]i32", "[]f32.[]i32", "[]f64.[]i32": err = castToI32A((*argsCopy)[0], expr, call)
+	case "[]byte.[]i64", "[]i32.[]i64", "[]f32.[]i64", "[]f64.[]i64": err = castToI64A((*argsCopy)[0], expr, call)
+	case "[]byte.[]f32", "[]i32.[]f32", "[]i64.[]f32", "[]f64.[]f32": err = castToF32A((*argsCopy)[0], expr, call)
+	case "[]byte.[]f64", "[]i32.[]f64", "[]i64.[]f64", "[]f32.[]f64": err = castToF64A((*argsCopy)[0], expr, call)
 		// logical operators
-	case "and":
-		if err := and((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "or":
-		if err := or((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "not":
-		if err := not((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "and": err = and((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "or": err = or((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "not": err = not((*argsCopy)[0], expr, call)
 		// relational operators
-	case "i32.lt":
-		if err := ltI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.gt":
-		if err := gtI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.eq":
-		if err := eqI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.lteq":
-		if err := lteqI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.gteq":
-		if err := gteqI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.lt":
-		if err := ltI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.gt":
-		if err := gtI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.eq":
-		if err := eqI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.lteq":
-		if err := lteqI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.gteq":
-		if err := gteqI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.lt":
-		if err := ltF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.gt":
-		if err := gtF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.eq":
-		if err := eqF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.lteq":
-		if err := lteqF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.gteq":
-		if err := gteqF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.lt":
-		if err := ltF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.gt":
-		if err := gtF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.eq":
-		if err := eqF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.lteq":
-		if err := lteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.gteq":
-		if err := gteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "str.lt":
-		if err := ltStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "str.eq":
-		if err := eqStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "str.lteq":
-		if err := lteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "str.gteq":
-		if err := gteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.lt":
-		if err := ltByte((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.gt":
-		if err := gtByte((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.eq":
-		if err := eqByte((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.lteq":
-		if err := lteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "byte.gteq":
-		if err := gteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "i32.lt": err = ltI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.gt": err = gtI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.eq": err = eqI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.lteq": err = lteqI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.gteq": err = gteqI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.lt": err = ltI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.gt": err = gtI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.eq": err = eqI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.lteq": err = lteqI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.gteq": err = gteqI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.lt": err = ltF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.gt": err = gtF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.eq": err = eqF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.lteq": err = lteqF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.gteq": err = gteqF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.lt": err = ltF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.gt": err = gtF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.eq": err = eqF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.lteq": err = lteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.gteq": err = gteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "str.lt": err = ltStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "str.eq": err = eqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "str.lteq": err = lteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "str.gteq": err = gteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "byte.lt": err = ltByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "byte.gt": err = gtByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "byte.eq": err = eqByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "byte.lteq": err = lteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "byte.gteq": err = gteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
+		// io functions
+		case "str.read": err = readStr(expr, call)
 		// struct operations
-	case "initDef":
-		if err := initDef((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "initDef": err = initDef((*argsCopy)[0], expr, call)
 		// arithmetic functions
-	case "i32.add":
-		if err := addI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.mul":
-		if err := mulI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.sub":
-		if err := subI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.div":
-		if err := divI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.add":
-		if err := addI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.mul":
-		if err := mulI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.sub":
-		if err := subI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.div":
-		if err := divI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.add":
-		if err := addF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.mul":
-		if err := mulF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.sub":
-		if err := subF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f32.div":
-		if err := divF32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.add":
-		if err := addF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.mul":
-		if err := mulF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.sub":
-		if err := subF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "f64.div":
-		if err := divF64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.mod":
-		if err := modI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.mod":
-		if err := modI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "i32.add": err = addI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.mul": err = mulI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.sub": err = subI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.div": err = divI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.add": err = addI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.mul": err = mulI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.sub": err = subI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.div": err = divI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.add": err = addF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.mul": err = mulF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.sub": err = subF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.div": err = divF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.add": err = addF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.mul": err = mulF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.sub": err = subF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.div": err = divF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.mod": err = modI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.mod": err = modI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// bitwise operators
-	case "i32.bitand":
-		if err := andI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.bitor":
-		if err := orI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.bitxor":
-		if err := xorI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i32.bitclear":
-		if err := andNotI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.bitand":
-		if err := andI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.bitor":
-		if err := orI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.bitxor":
-		if err := xorI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.bitclear":
-		if err := andNotI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "i32.bitand": err = andI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.bitor": err = orI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.bitxor": err = xorI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.bitclear": err = andNotI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitand": err = andI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitor": err = orI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitxor": err = xorI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitclear": err = andNotI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// make functions
-	case "[]bool.make":
-		if err := makeArray("[]bool", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.make":
-		if err := makeArray("[]byte", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.make":
-		if err := makeArray("[]i32", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.make":
-		if err := makeArray("[]i64", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.make":
-		if err := makeArray("[]f32", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.make":
-		if err := makeArray("[]f64", (*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "[]bool.make": err = makeArray("[]bool", (*argsCopy)[0], expr, call)
+	case "[]byte.make": err = makeArray("[]byte", (*argsCopy)[0], expr, call)
+	case "[]i32.make": err = makeArray("[]i32", (*argsCopy)[0], expr, call)
+	case "[]i64.make": err = makeArray("[]i64", (*argsCopy)[0], expr, call)
+	case "[]f32.make": err = makeArray("[]f32", (*argsCopy)[0], expr, call)
+	case "[]f64.make": err = makeArray("[]f64", (*argsCopy)[0], expr, call)
 		// array functions
-	case "[]bool.read":
-		if err := readBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]bool.write":
-		if err := writeBoolA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.read":
-		if err := readByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.write":
-		if err := writeByteA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.read":
-		if err := readI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.write":
-		if err := writeI32A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.read":
-		if err := readI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.write":
-		if err := writeI64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.read":
-		if err := readF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.write":
-		if err := writeF32A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.read":
-		if err := readF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.write":
-		if err := writeF64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]bool.len":
-		if err := lenBoolA((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.len":
-		if err := lenByteA((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.len":
-		if err := lenI32A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.len":
-		if err := lenI64A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.len":
-		if err := lenF32A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.len":
-		if err := lenF64A((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "[]bool.read": err = readBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]bool.write": err = writeBoolA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]byte.read": err = readByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]byte.write": err = writeByteA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]i32.read": err = readI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i32.write": err = writeI32A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]i64.read": err = readI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i64.write": err = writeI64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]f32.read": err = readF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f32.write": err = writeF32A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]f64.read": err = readF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f64.write": err = writeF64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]bool.len": err = lenBoolA((*argsCopy)[0], expr, call)
+	case "[]byte.len": err = lenByteA((*argsCopy)[0], expr, call)
+	case "[]i32.len": err = lenI32A((*argsCopy)[0], expr, call)
+	case "[]i64.len": err = lenI64A((*argsCopy)[0], expr, call)
+	case "[]f32.len": err = lenF32A((*argsCopy)[0], expr, call)
+	case "[]f64.len": err = lenF64A((*argsCopy)[0], expr, call)
 		// concatenation functions
-	case "str.concat":
-		if err := concatStr((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.append":
-		if err := appendByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]bool.append":
-		if err := appendBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.append":
-		if err := appendI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.append":
-		if err := appendI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.append":
-		if err := appendF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.append":
-		if err := appendF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]byte.concat":
-		if err := concatByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]bool.concat":
-		if err := concatBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.concat":
-		if err := concatI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.concat":
-		if err := concatI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.concat":
-		if err := concatF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.concat":
-		if err := concatF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "str.concat": err = concatStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]byte.append": err = appendByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]bool.append": err = appendBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i32.append": err = appendI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i64.append": err = appendI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f32.append": err = appendF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f64.append": err = appendF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]byte.concat": err = concatByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]bool.concat": err = concatBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i32.concat": err = concatI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i64.concat": err = concatI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f32.concat": err = concatF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f64.concat": err = concatF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// copy functions
-	case "[]byte.copy":
-		if err := copyByteA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]bool.copy":
-		if err := copyBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i32.copy":
-		if err := copyI32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]i64.copy":
-		if err := copyI64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f32.copy":
-		if err := copyF32A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "[]f64.copy":
-		if err := copyF64A((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "[]byte.copy": err = copyByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]bool.copy": err = copyBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i32.copy": err = copyI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]i64.copy": err = copyI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f32.copy": err = copyF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]f64.copy": err = copyF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// time functions
-	case "sleep":
-		if err := sleep((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "sleep": err = sleep((*argsCopy)[0])
 		// utilitiy functions
-	case "i32.rand":
-		if err := randI32((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "i64.rand":
-		if err := randI64((*argsCopy)[0], (*argsCopy)[1], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "i32.rand": err = randI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.rand": err = randI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// meta functions
-	case "setClauses":
-		if err := setClauses((*argsCopy)[0], call.Operator.Module); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "addObject":
-		if err := addObject((*argsCopy)[0], call.Operator.Module); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "setQuery":
-		if err := setQuery((*argsCopy)[0], call.Operator.Module); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "remObject":
-		if err := remObject((*argsCopy)[0], call.Operator.Module); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "remObjects":
-		if err := remObjects(call.Operator.Module); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "remExpr":
-		if err := remExpr((*argsCopy)[0], call.Operator); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "remArg":
-		if err := remArg((*argsCopy)[0], call.Operator); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-		// case "addArg":
-		// 	if err := addArg((*argsCopy)[0], (*argsCopy)[1], expr, call, call.Operator); err == nil {
-		// 	} else {
-		// 		*exc = true
-		// 		*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		// 	}
-	case "addExpr":
-		if err := addExpr((*argsCopy)[0], (*argsCopy)[1], call.Operator, expr.Line); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "affExpr":
-		if err := affExpr((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], call.Operator, expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "setClauses": err = setClauses((*argsCopy)[0], call.Operator.Module)
+	case "addObject": err = addObject((*argsCopy)[0], call.Operator.Module)
+	case "setQuery": err = setQuery((*argsCopy)[0], call.Operator.Module)
+	case "remObject": err = remObject((*argsCopy)[0], call.Operator.Module)
+	case "remObjects": err = remObjects(call.Operator.Module)
+	case "remExpr": err = remExpr((*argsCopy)[0], call.Operator)
+	case "remArg": err = remArg((*argsCopy)[0], call.Operator)
+	case "addExpr": err = addExpr((*argsCopy)[0], (*argsCopy)[1], call.Operator, expr.Line)
+	case "affExpr": err = affExpr((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], call.Operator, expr, call)
 		// debugging functions
 	case "halt":
 		fmt.Println(string(*(*argsCopy)[0].Value))
 		*exc = true
 		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
 		// Runtime
-	case "runtime.LockOSThread":
-		runtime.LockOSThread()
+	case "runtime.LockOSThread": runtime.LockOSThread()
 		// OpenGL
-	case "gl.Init":
-		if err := gl_Init(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.CreateProgram":
-		if err := gl_CreateProgram(expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.LinkProgram":
-		if err := gl_LinkProgram((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.Clear":
-		if err := gl_Clear((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.UseProgram":
-		if err := gl_UseProgram((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.BindBuffer":
-		if err := gl_BindBuffer((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.BindVertexArray":
-		if err := gl_BindVertexArray((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.EnableVertexAttribArray":
-		if err := gl_EnableVertexAttribArray((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.VertexAttribPointer":
-		if err := gl_VertexAttribPointer((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.DrawArrays":
-		if err := gl_DrawArrays((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.GenBuffers":
-		if err := gl_GenBuffers((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.BufferData":
-		if err := gl_BufferData((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.GenVertexArrays":
-		if err := gl_GenVertexArrays((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.CreateShader":
-		if err := gl_CreateShader((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.Strs":
-		if err := gl_Strs((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.Free":
-		if err := gl_Free((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.ShaderSource":
-		if err := gl_ShaderSource((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.CompileShader":
-		if err := gl_CompileShader((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.GetShaderiv":
-		if err := gl_GetShaderiv((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.AttachShader":
-		if err := gl_AttachShader((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.LoadIdentity":
-		if err := gl_LoadIdentity(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.MatrixMode":
-		if err := gl_MatrixMode((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.EnableClientState":
-		if err := gl_EnableClientState((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.PushMatrix":
-		if err := gl_PushMatrix(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.PopMatrix":
-		if err := gl_PopMatrix(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.Rotatef":
-		if err := gl_Rotatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "gl.Translatef":
-		if err := gl_Translatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "gl.Init": err = gl_Init()
+	case "gl.CreateProgram": err = gl_CreateProgram(expr, call)
+	case "gl.LinkProgram": err = gl_LinkProgram((*argsCopy)[0])
+	case "gl.Clear": err = gl_Clear((*argsCopy)[0])
+	case "gl.UseProgram": err = gl_UseProgram((*argsCopy)[0])
+	case "gl.BindBuffer": err = gl_BindBuffer((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.BindVertexArray": err = gl_BindVertexArray((*argsCopy)[0])
+	case "gl.EnableVertexAttribArray": err = gl_EnableVertexAttribArray((*argsCopy)[0])
+	case "gl.VertexAttribPointer": err = gl_VertexAttribPointer((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4])
+	case "gl.DrawArrays": err = gl_DrawArrays((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.GenBuffers": err = gl_GenBuffers((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.BufferData": err = gl_BufferData((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
+	case "gl.GenVertexArrays": err = gl_GenVertexArrays((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.CreateShader": err = gl_CreateShader((*argsCopy)[0], expr, call)
+	case "gl.Strs": err = gl_Strs((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Free": err = gl_Free((*argsCopy)[0])
+	case "gl.ShaderSource": err = gl_ShaderSource((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.CompileShader": err = gl_CompileShader((*argsCopy)[0])
+	case "gl.GetShaderiv": err = gl_GetShaderiv((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.AttachShader": err = gl_AttachShader((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.LoadIdentity": err = gl_LoadIdentity()
+	case "gl.MatrixMode": err = gl_MatrixMode((*argsCopy)[0])
+	case "gl.EnableClientState": err = gl_EnableClientState((*argsCopy)[0])
+	case "gl.PushMatrix": err = gl_PushMatrix()
+	case "gl.PopMatrix": err = gl_PopMatrix()
+	case "gl.Rotatef": err = gl_Rotatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
+	case "gl.Translatef": err = gl_Translatef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.NewTexture": err = gl_NewTexture((*argsCopy)[0], expr, call)
+
+	case "gl.BindTexture": err = gl_BindTexture((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Color4f": err = gl_Color4f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
+	case "gl.Begin": err = gl_Begin((*argsCopy)[0])
+	case "gl.End": err = gl_End()
+	case "gl.Normal3f": err = gl_Normal3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.TexCoord2f": err = gl_TexCoord2f((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Vertex3f": err = gl_Vertex3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.Hint": err = gl_Hint((*argsCopy)[0], (*argsCopy)[1])
+
+	case "gl.Enable": err = gl_Enable((*argsCopy)[0])
+	case "gl.Disable": err = gl_Enable((*argsCopy)[0])
+	case "gl.ClearColor": err = gl_ClearColor((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
+	case "gl.ClearDepth": err = gl_ClearDepth((*argsCopy)[0])
+	case "gl.DepthFunc": err = gl_DepthFunc((*argsCopy)[0])
+	case "gl.DepthMask": err = gl_DepthMask((*argsCopy)[0])
+	case "gl.BlendFunc": err = gl_BlendFunc((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Lightfv": err = gl_Lightfv((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.TexEnvi": err = gl_TexEnvi((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.Frustum": err = gl_Frustum((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4], (*argsCopy)[5])
 		// GLFW
-	case "glfw.Init":
-		if err := glfw_Init(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.WindowHint":
-		if err := glfw_WindowHint((*argsCopy)[0], (*argsCopy)[1]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.CreateWindow":
-		if err := glfw_CreateWindow((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.MakeContextCurrent":
-		if err := glfw_MakeContextCurrent((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.ShouldClose":
-		if err := glfw_ShouldClose((*argsCopy)[0], expr, call); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.PollEvents":
-		if err := glfw_PollEvents(); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
-	case "glfw.SwapBuffers":
-		if err := glfw_SwapBuffers((*argsCopy)[0]); err == nil {
-		} else {
-			*exc = true
-			*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
-		}
+	case "glfw.Init": err = glfw_Init()
+	case "glfw.WindowHint": err = glfw_WindowHint((*argsCopy)[0], (*argsCopy)[1])
+	case "glfw.CreateWindow": err = glfw_CreateWindow((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
+	case "glfw.MakeContextCurrent": err = glfw_MakeContextCurrent((*argsCopy)[0])
+	case "glfw.ShouldClose": err = glfw_ShouldClose((*argsCopy)[0], expr, call)
+	case "glfw.PollEvents": err = glfw_PollEvents()
+	case "glfw.SwapBuffers": err = glfw_SwapBuffers((*argsCopy)[0])
+	case "glfw.SetKeyCallback": err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
+		// Operating System
+	case "os.Create": err = os_Create((*argsCopy)[0])
+	case "os.Open": err = os_Open((*argsCopy)[0])
+	case "os.Close": err = os_Close((*argsCopy)[0])
 	case "":
+	}
+
+	// there was an error and we'll report line number and err msg
+	if err != nil {
+		*exc = true
+		*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 	}
 }
 
@@ -1638,20 +809,6 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
 			}
-
-			// subSlice := make([]*byte, size)
-			// for c := int32(0); c < size; c++ {
-			// 	subSlice[c] = &(*val)[offset + c]
-			// }
-
-			// var subSlice *[]byte
-			//subSlice := make([]byte, size, size)
-
-			//&subSlice = (*val)[offset]
-			
-			// subSlice := (*val)[offset:offset+size]
-			// return subSlice, f.Typ
-
 			return (*val)[offset:offset+size], f.Typ
 		}
 
@@ -1672,6 +829,27 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 	return nil, ""
 }
 
+func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
+	//val := def.Value
+
+	switch typ {
+	case "[]byte":
+		return []byte{(*val)[index]}, "byte"
+	case "[]bool":
+		return (*val)[(index+1)*4:(index+2)*4], "bool"
+	case "[]i32":
+		return (*val)[(index+1)*4:(index+2)*4], "i32"
+	case "[]i64":
+		return (*val)[((index)*8)+4:((index+1)*8)+4], "i64"
+	case "[]f32":
+		return (*val)[(index+1)*4:(index+2)*4], "f32"
+	case "[]f64":
+		return (*val)[((index)*8)+4:((index+1)*8)+4], "f64"
+	}
+	
+	return nil, ""
+}
+
 func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
@@ -1687,8 +865,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
 		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
-
-		// we're looking for the output name in the state, and then we look in return's state for that
+		numOutputs := len(call.Operator.Outputs)
 		for i, out := range call.Operator.Outputs {
 			found := true
 			for _, def := range call.State {
@@ -1699,6 +876,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						found := false
 						for _, retDef := range call.ReturnAddress.State {
 							if retDef.Name == retName {
+								
 								retDef.Value = def.Value
 								found = true
 								break
@@ -1711,7 +889,9 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 						found = true
 						// break
-						return call.ReturnAddress.call(withDebug, nCalls, callCounter)
+						if i == numOutputs {
+							return call.ReturnAddress.call(withDebug, nCalls, callCounter)
+						}
 					} else {
 						// no return address. should only be for main
 						call.Context.Terminated = true
@@ -1749,8 +929,14 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			var excError error
 			
 			if len(argsRefs) != len(expr.Operator.Inputs) {
-				return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
-					expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+				if len(argsRefs) == 1 {
+					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d was provided",
+						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+				} else {
+					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
+						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+				}
+				
 			}
 			
 			// we don't want to modify by reference, we need to make copies
@@ -1760,6 +946,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 					var resolvedIdent *CXDefinition
 					isStructFld := false
+					isArray := false
 
 					identParts := strings.Split(lookingFor, ".")
 
@@ -1787,7 +974,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 								resolvedIdent = def
 							} else {
 								// then it's a local struct
-
 								isStructFld = true
 								for _, stateDef := range call.State {
 									if stateDef.Name == identParts[0] {
@@ -1799,32 +985,33 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 										} else {
 											return err
 										}
-										
-										// byts := []byte
-										// //argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
-										// argsCopy[i] = MakeArgument(, )
-										
-										// resolvedIdent = stateDef
 										break
 									}
 								}
-								
-								// for _, stateDef := range call.State {
-								// 	if stateDef.Name == lookingFor {
-								// 		resolvedIdent = stateDef
-								// 		break
-								// 	}
-								// }
 							}
 						}
 					} else {
 						// then it's a local or global definition
 						local := false
+						arrayParts := strings.Split(lookingFor, "[")
+						if len(arrayParts) > 1 {
+							lookingFor = arrayParts[0]
+						}
 						for _, stateDef := range call.State {
-							if stateDef.Name == lookingFor {
+							if stateDef.Name == arrayParts[0] {
 								local = true
 								resolvedIdent = stateDef
 								break
+							}
+						}
+
+						if len(arrayParts) > 1 && local {
+							if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
+								isArray = true
+								byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
+								argsCopy[i] = MakeArgument(&byts, typ)
+							} else {
+								return err
 							}
 						}
 
@@ -1836,11 +1023,12 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						}
 					}
 
-					if resolvedIdent == nil && !isStructFld {
+					if resolvedIdent == nil && !isStructFld && !isArray {
 						return errors.New(fmt.Sprintf("%d: '%s' is undefined", expr.FileLine, lookingFor))
 					}
-					if !isStructFld {
+					if !isStructFld && !isArray {
 						// if it was a struct field, we already created the argument above for efficiency reasons
+						// the same goes to arrays in the form ident[index]
 						argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
 					}
 				} else {
@@ -1848,9 +1036,9 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				}
 
 				// checking if arguments types match with expressions required types
-				if len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[i].Typ != argsCopy[i].Typ {
-					fmt.Println()
-					// panic(fmt.Sprintf("%s, line #%d: %s argument #%d is type '%s'; expected type '%s'",
+				if len(expr.Operator.Inputs) > 0 &&
+					expr.Operator.Inputs[i].Typ !=
+					argsCopy[i].Typ {
 					return errors.New(fmt.Sprintf("%d: %s: argument %d is type '%s'; expected type '%s'\n",
 						expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}

@@ -22,6 +22,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 	"str.id":true, "bool.id":true, "byte.id":true, "i32.id":true, "i64.id":true, "f32.id":true, "f64.id":true,
 	"[]bool.id":true, "[]byte.id":true, "[]i32.id":true, "[]i64.id":true, "[]f32.id":true, "[]f64.id":true,
+	"identity":true,
 
 	"[]bool.make":true, "[]byte.make":true, "[]i32.make":true,
 	"[]i64.make":true, "[]f32.make":true, "[]f64.make":true,
@@ -66,6 +67,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"str.lt":true, "str.gt":true, "str.eq":true, "str.lteq":true, "str.gteq":true,
 	"byte.lt":true, "byte.gt":true, "byte.eq":true, "byte.lteq":true, "byte.gteq":true,
 
+	"str.read":true,
+
 	"i32.rand":true, "i64.rand":true,
 
 	"and":true, "or":true, "not":true,
@@ -102,6 +105,17 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.MatrixMode":true,
 	"gl.Rotatef":true, "gl.Translatef":true, "gl.LoadIdentity":true,
 	"gl.PushMatrix":true, "gl.PopMatrix":true, "gl.EnableClientState":true,
+
+	"gl.BindTexture":true, "gl.Color4f":true, "gl.Begin":true,
+	"gl.End":true, "gl.Normal3f":true, "gl.TexCoord2f":true,
+	"gl.Vertex3f":true,
+
+	"gl.Enable":true, "gl.ClearColor":true, "gl.ClearDepth":true,
+	"gl.DepthFunc":true, "gl.Lightfv":true, "gl.Frustum":true,
+	"gl.Disable":true, "gl.Hint":true,
+
+	"gl.NewTexture":true, "gl.DepthMask":true, "gl.TexEnvi":true,
+	"gl.BlendFunc":true,
 	
 	/*
           GLFW
@@ -110,7 +124,17 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"glfw.Init":true, "glfw.WindowHint":true, "glfw.CreateWindow":true,
 	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true,
 	"glfw.PollEvents":true, "glfw.SwapBuffers":true,
+
+	"glfw.SetKeyCallback":true,
+
+	/*
+          Operating System
+        */
+
+	"os.Create":true, "os.Open":true, "os.Close":true,
 }
+
+
 // var NATIVE_FUNCTIONS = []string{
 // 	"i32.add", "i32.mul", "i32.sub", "i32.div",
 // 	"i64.add", "i64.mul", "i64.sub", "i64.div",
