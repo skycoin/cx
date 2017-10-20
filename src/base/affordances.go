@@ -285,11 +285,9 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 
 						if !pass {
 							for _, answer := range answers {
-								//lines := make([]string, 0)
 								variables.ForEach(func(name string, variable interface{}) {
 									v := variable.(*term.Variable)
 									val := answer.Resolve_(v)
-									//fmt.Printf("\nhere: %s\n", val.String())
 									if val.String() == "false" {
 										isSkip = true
 									}
@@ -298,7 +296,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 									}
 									
 								})
-								//fmt.Println(strings.Join(lines, "\n"))
 							}
 						}
 					} else {
@@ -334,12 +331,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 
 func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
-
-	// for _, fnName := range NATIVE_FUNCTIONS {
-	// 	if fnName == fn.Name {
-	// 		return affs
-	// 	}
-	// }
 
 	if _, ok := NATIVE_FUNCTIONS[fn.Name]; ok {
 		return affs

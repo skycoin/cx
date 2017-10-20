@@ -76,7 +76,7 @@
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN GOTO
                         /* Types */
-                        BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A
+                        BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */

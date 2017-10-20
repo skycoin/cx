@@ -207,7 +207,6 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 type CXProgram struct {
 	Modules []*CXModule
-	ArgumentPointers []*CXArgument
 	CurrentModule *CXModule
 	CallStack *CXCallStack
 	Terminated bool
@@ -244,6 +243,7 @@ type CXModule struct {
 	// Affordance inference
 	Clauses string
 	Objects []*CXObject
+	//Metas []*CXObject
 	Query string
 
 	CurrentFunction *CXFunction
@@ -282,10 +282,6 @@ type CXField struct {
 	Name string
 	Typ string
 }
-
-// type CXType struct {
-// 	Name string
-// }
 
 /*
   Functions

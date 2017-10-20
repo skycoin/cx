@@ -13,35 +13,35 @@ type Sprite struct {
 }
 
 var background []i32 = []i32{
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-	20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 }
 
 var foreground []i32 = []i32{
 	10, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  7,
 	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	12, 1,  1,  1,  1,  7,  0, 30,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  41,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  27, 20, 21, 0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  26, 28, 22, 0,  2,
+	12, 1,  1,  1,  1,  7,  0, 40,  0,  25, 24, 23, 0,  2,
 	2,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
 	2,  0,  3,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
 	2,  0,  2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  2,  0,  0,  9,  1,  1,  1,  4,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  9,  1,  1,  1,  1,  1,  4,  0,  2,
 	2,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  9,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  9,  7,  0,  0,  0,  0,  0,  42,  0,  0,  0,  2,
 	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
 	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8
 }
@@ -112,6 +112,20 @@ var sp_brown_wall_lo Sprite
 var sp_brown_wall_xx Sprite
 
 
+// water
+var sp_water_t Sprite
+var sp_water_tr Sprite
+var sp_water_r Sprite
+var sp_water_br Sprite
+var sp_water_b Sprite
+var sp_water_bl Sprite
+var sp_water_l Sprite
+var sp_water_tl Sprite
+var sp_water_xx Sprite
+
+// grass
+var sp_grass_1 Sprite
+var sp_grass_2 Sprite
 
 var sp_rock1 Sprite
 var sp_rock2 Sprite
@@ -224,10 +238,16 @@ func drawTile (x i32, y i32, sprite Sprite) () {
 
 func setSprite (s Sprite, isObstacle bool, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) () {
 	s.isObstacle = isObstacle
-	s.x1 = scale(i32.add(x1, 1), W)
-	s.x2 = scale(i32.sub(x2, 1), W)
-	s.y1 = scale(i32.add(y1, 1), H)
-	s.y2 = scale(i32.sub(y2, 1), H)
+	// s.x1 = scale(i32.add(x1, 1), W)
+	// s.x2 = scale(i32.sub(x2, 1), W)
+	// s.y1 = scale(i32.add(y1, 1), H)
+	// s.y2 = scale(i32.sub(y2, 1), H)
+
+	s.x1 = scale(x1, W)
+	s.x2 = scale(x2, W)
+	s.y1 = scale(y1, H)
+	s.y2 = scale(y2, H)
+	
 	s.textureSheet = textureSheet
 }
 
@@ -257,7 +277,7 @@ func setupScene () () {
 	
 	gl.Frustum(
 		f32.f64(-1.0), f32.f64(1.0), f32.f64(-1.0),
-		f32.f64(1.0), f32.f64(1.0), i32.f64(i32.add(size, 2)))
+		f32.f64(1.0), f32.f64(1.0), i32.f64(i32.add(size, 1)))
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
@@ -272,27 +292,40 @@ func setupScene () () {
 	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
 	setSprite(sp_knight1, true, 0, 16, 187, 203, w_characters, h_characters, tex_characters)
 
+	// brown wall
 	setSprite(sp_brown_wall_tb, true, 238, 254, 204, 220, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_tl, true, 272, 288, 204, 220, w_pack, h_pack, tex_pack)
-
 	setSprite(sp_brown_wall_ts, true, 221, 237, 221, 237, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_rs, true, 255, 271, 204, 220, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_bs, true, 221, 237, 238, 254, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_ls, true, 221, 237, 204, 220, w_pack, h_pack, tex_pack)
-	
 	setSprite(sp_brown_wall_tr, true, 289, 305, 204, 220, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_br, true, 289, 305, 221, 237, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_bl, true, 272, 288, 221, 237, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_lr, true, 255, 271, 221, 237, w_pack, h_pack, tex_pack)
-	
 	setSprite(sp_brown_wall_to, true, 323, 339, 204, 220, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_ro, true, 306, 322, 204, 220, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_bo, true, 323, 339, 221, 237, w_pack, h_pack, tex_pack)
 	setSprite(sp_brown_wall_lo, true, 306, 322, 221, 237, w_pack, h_pack, tex_pack)
-	
 	setSprite(sp_brown_wall_xx, true, 238, 254, 221, 237, w_pack, h_pack, tex_pack)
 
+	// water
+	setSprite(sp_water_t, true, 51, 67, 0, 16, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_tr, true, 68, 84, 0, 16, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_r, true, 68, 84, 17, 33, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_br, true, 68, 84, 34, 50, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_b, true, 51, 67, 34, 50, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_bl, true, 34, 50, 34, 50, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_l, true, 34, 50, 17, 33, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_tl, true, 34, 50, 0, 16, w_pack, h_pack, tex_pack)
+	setSprite(sp_water_xx, true, 51, 67, 17, 33, w_pack, h_pack, tex_pack)
+	//grass
+	setSprite(sp_grass_1, false, 85, 101, 0, 16, w_pack, h_pack, tex_pack)
+	setSprite(sp_grass_2, false, 85, 101, 17, 33, w_pack, h_pack, tex_pack)
+
 	setSprite(sp_rock1, true, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
+	setSprite(sp_rock2, true, 936, 951, 326, 342, w_pack, h_pack, tex_pack)
+	setSprite(sp_rock3, true, 952, 968, 325, 341, w_pack, h_pack, tex_pack)
 	setSprite(sp_empty, false, 918, 934, 306, 322, w_pack, h_pack, tex_pack)
 	//setSprite(sp_rock2, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
 }
@@ -309,6 +342,7 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 
 func getSprite (index i32) (sprite Sprite) {
 	var s Sprite
+	// brown wall
 	if i32.eq(index, 0) { s = sp_empty }
 	if i32.eq(index, 1) { s = sp_brown_wall_tb }
 	if i32.eq(index, 2) { s = sp_brown_wall_lr }
@@ -325,15 +359,41 @@ func getSprite (index i32) (sprite Sprite) {
 	if i32.eq(index, 13) { s = sp_brown_wall_bo }
 	if i32.eq(index, 14) { s = sp_brown_wall_lo }
 	if i32.eq(index, 15) { s = sp_brown_wall_xx }
+	// water
+	if i32.eq(index, 20) { s = sp_water_t }
+	if i32.eq(index, 21) { s = sp_water_tr }
+	if i32.eq(index, 22) { s = sp_water_r }
+	if i32.eq(index, 23) { s = sp_water_br }
+	if i32.eq(index, 24) { s = sp_water_b }
+	if i32.eq(index, 25) { s = sp_water_bl }
+	if i32.eq(index, 26) { s = sp_water_l }
+	if i32.eq(index, 27) { s = sp_water_tl }
+	if i32.eq(index, 28) { s = sp_water_xx }
+	// grass
+	if i32.eq(index, 30) { s = sp_grass_1 }
+	if i32.eq(index, 31) { s = sp_grass_2 }
+	//rocks
+	if i32.eq(index, 40) { s = sp_rock1 }
+	if i32.eq(index, 41) { s = sp_rock2 }
+	if i32.eq(index, 42) { s = sp_rock3 }
 
-	if i32.eq(index, 20) { s = sp_floor_brick_xx }
-	if i32.eq(index, 30) { s = sp_rock1 }
-	if i32.eq(index, 40) { s = sp_blue_carpet }
+	if i32.eq(index, 50) { s = sp_floor_brick_xx }
+	
+	if i32.eq(index, 60) { s = sp_blue_carpet }
 	
 	sprite = s
 }
 
 func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
+	// 
+	// 	filter1 := 0
+	// 	filter2 := 0
+	// 	remArg("label")
+	// 	affExpr("label", "filter1|filter2", 0)
+	// label:
+	// 	fun()
+	////////////
+
 	if and(i32.eq(key, 265), i32.eq(action, 1)) {
 		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
 		idx := []i32.read(foreground, i)

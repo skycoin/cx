@@ -67,6 +67,7 @@
 /f32/        { lval.tok = yylex.Text(); return F32      }
 /f64/        { lval.tok = yylex.Text(); return F64      }
 /byte/       { lval.tok = yylex.Text(); return BYTE     }
+/\[\]str/    { lval.tok = yylex.Text(); return STRA     }
 /\[\]bool/   { lval.tok = yylex.Text(); return BOOLA    }
 /\[\]byte/   { lval.tok = yylex.Text(); return BYTEA    }
 /\[\]i32/    { lval.tok = yylex.Text(); return I32A     }
