@@ -313,12 +313,13 @@ func MakeDefaultValue (typName string) *[]byte {
 	case "i64": zeroVal = encoder.Serialize(int64(0))
 	case "f32": zeroVal = encoder.Serialize(float32(0))
 	case "f64": zeroVal = encoder.Serialize(float64(0))
-	case "[]byte": zeroVal = []byte{byte(0)}
-	case "[]bool": zeroVal = []byte{byte(0)}
-	case "[]i32": zeroVal = encoder.Serialize([]int32{0})
-	case "[]i64": zeroVal = encoder.Serialize([]int64{0})
-	case "[]f32": zeroVal = encoder.Serialize([]float32{0})
-	case "[]f64": zeroVal = encoder.Serialize([]float64{0})
+	case "[]byte": zeroVal = encoder.Serialize([]byte{})
+	case "[]bool": zeroVal = encoder.Serialize([]int32{})
+	case "[]str": zeroVal = encoder.Serialize([]string{})
+	case "[]i32": zeroVal = encoder.Serialize([]int32{})
+	case "[]i64": zeroVal = encoder.Serialize([]int64{})
+	case "[]f32": zeroVal = encoder.Serialize([]float32{})
+	case "[]f64": zeroVal = encoder.Serialize([]float64{})
 	}
 	return &zeroVal
 }
@@ -356,7 +357,7 @@ func MakeFunction (name string) *CXFunction {
 }
 
 func MakeValue (value string) *[]byte {
-	byts := []byte(value)
+	byts := encoder.Serialize(value)
 	return &byts
 }
 
@@ -403,6 +404,8 @@ func MakeIdentityOpName (typeName string) string {
 		return "[]bool.id"
 	case "[]byte":
 		return "[]byte.id"
+	case "[]str":
+		return "[]str.id"
 	case "[]i32":
 		return "[]i32.id"
 	case "[]i64":

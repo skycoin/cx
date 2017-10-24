@@ -746,6 +746,7 @@ typeSpecifier:
         |       BOOL {$$ = $1}
         |       BYTE {$$ = $1}
         |       BOOLA {$$ = $1}
+        |       STRA {$$ = $1}
         |       BYTEA {$$ = $1}
         |       I32A {$$ = $1}
         |       I64A {$$ = $1}
@@ -813,17 +814,6 @@ definitionDeclaration:
 				if zeroVal, err := ResolveStruct($3, cxt); err == nil {
 					mod.AddDefinition(MakeDefinition($2, &zeroVal, $3))
 				}
-				// if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-				// 	if flds, err := strct.GetFields(); err == nil {
-				// 		for _, fld := range flds {
-				// 			zeroVal := MakeDefaultValue(fld.Typ)
-				// 			defName := fmt.Sprintf("%s.%s", $2, fld.Name)
-				// 			mod.AddDefinition(MakeDefinition(defName, zeroVal, fld.Typ))
-				// 		}
-				// 	}
-				// } else {
-				// 	fmt.Printf("Type '%s' not defined\n", $3)
-				// }
 			}
                 }
         ;
@@ -908,6 +898,19 @@ functionDeclaration:
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
+
+					//checking if there are duplicate parameters
+					dups := append($3, $4...)
+					for _, param := range dups {
+						for _, dup := range dups {
+							if param.Name == dup.Name && param != dup {
+								fmt.Println(param.Name)
+								fmt.Println(dup.Name)
+								panic(fmt.Sprintf("%d: duplicate input and/or output parameters in function '%s'", yyS[yypt-0].line+1, $2))
+							}
+						}
+					}
+					
 					for _, inp := range $3 {
 						fn.AddInput(inp)
 					}
@@ -993,7 +996,7 @@ assignExpression:
 							fn.AddExpression(expr)
 							expr.AddOutputName($2)
 							
-							typ := []byte($3)
+							typ := encoder.Serialize($3)
 							arg := MakeArgument(&typ, "str")
 							expr.AddArgument(arg)
 
@@ -1081,6 +1084,7 @@ assignExpression:
 							case "f32": getFn = "f32.id"
 							case "[]bool": getFn = "[]bool.id"
 							case "[]byte": getFn = "[]byte.id"
+							case "[]str": getFn = "[]str.id"
 							case "[]i32": getFn = "[]i32.id"
 							case "[]i64": getFn = "[]i64.id"
 							case "[]f32": getFn = "[]f32.id"
@@ -1105,7 +1109,11 @@ assignExpression:
                 {
 			argsL := $1
 			argsR := $3
-			
+
+			if len(argsL) > len(argsR) {
+				panic("trying to assign values to variables using a function with no output parameters")
+			}
+
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 
 				for i, argL := range argsL {
@@ -1134,17 +1142,6 @@ assignExpression:
 						idFn = "identity"
 					}
 
-					// if argsR[i].Typ == "ident" {
-					// 	idFn = "identity"
-					// 	typ = "str"
-					// } else {
-					// 	idFn = MakeIdentityOpName(argsR[i].Typ)
-					// 	fmt.Println(argsR[i].Typ)
-					// 	typ = argsR[i].Typ
-					// }
-
-					//idFn = MakeIdentityOpName(typ)
-
 					if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
 						expr := MakeExpression(op)
 						if !replMode {
@@ -1155,7 +1152,11 @@ assignExpression:
 						expr.AddTag(tag)
 						tag = ""
 
-						expr.AddOutputName(string(*argL.Value))
+						var outName string
+						encoder.DeserializeRaw(*argL.Value, &outName)
+						
+						//expr.AddOutputName(string(*argL.Value))
+						expr.AddOutputName(outName)
 
 						arg := MakeArgument(argsR[i].Value, typ)
 						expr.AddArgument(arg)
@@ -1208,7 +1209,7 @@ nonAssignExpression:
 						
 						for i, out := range op.Outputs {
 							outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
-							byteName := []byte(outNames[i])
+							byteName := encoder.Serialize(outNames[i])
 							args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
 							//args[i] = MakeArgument(&byteName, "ident")
 							expr.AddOutputName(outNames[i])
@@ -1222,6 +1223,14 @@ nonAssignExpression:
 			}
                 }
         ;
+
+beginFor:       FOR
+                {
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				$<i>$ = len(fn.Expressions)
+			}
+                }
+                ;
 
 statement:      RETURN
                 {
@@ -1254,7 +1263,8 @@ statement:      RETURN
 						}
 						fn.AddExpression(expr)
 
-						label := []byte($2)
+						//label := []byte($2)
+						label := encoder.Serialize($2)
 						expr.AddArgument(MakeArgument(&label, "str"))
 					}
 				}
@@ -1338,7 +1348,7 @@ statement:      RETURN
 					//elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 - 3))
 					thenLines := encoder.Serialize(int32(1))
 
-					predVal := []byte($2)
+					predVal := encoder.Serialize($2)
 
 					goToExpr.AddArgument(MakeArgument(&predVal, "ident"))
 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
@@ -1387,7 +1397,13 @@ statement:      RETURN
 				}
 			}
                 }
-        |       FOR nonAssignExpression
+        |       beginFor
+                nonAssignExpression
+                {
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				$<i>$ = len(fn.Expressions)
+			}
+                }
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -1401,21 +1417,15 @@ statement:      RETURN
 				}
 			}
                 }
-                LBRACE
-                {
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				$<i>$ = len(fn.Expressions)
-			}
-                }
-                expressionsAndStatements RBRACE
+                LBRACE expressionsAndStatements RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>5 - 1]
-					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 2))
+					goToExpr := fn.Expressions[$<i>3]
+					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>3 + 1))
 					thenLines := encoder.Serialize(int32(1))
-					
-					//predVal := []byte($2)
+
+					//if multiple value return, take first one for condition
 					predVal := $2[0].Value
 					
 					goToExpr.AddArgument(MakeArgument(predVal, "ident"))
@@ -1430,7 +1440,7 @@ statement:      RETURN
 						fn.AddExpression(goToExpr)
 
 						elseLines := encoder.Serialize(int32(0))
-						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5 - 1))
+						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>1 + 1))
 
 						alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1442,7 +1452,7 @@ statement:      RETURN
 				}
 			}
                 }
-        |       FOR IDENT
+        |       beginFor IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -1456,22 +1466,16 @@ statement:      RETURN
 				}
 			}
                 }
-                LBRACE
-                {
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				$<i>$ = len(fn.Expressions)
-			}
-                }
-                expressionsAndStatements RBRACE
+                LBRACE expressionsAndStatements RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>5 - 1]
+					goToExpr := fn.Expressions[$<i>1]
 
-					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 2))
+					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>1 + 1))
 					thenLines := encoder.Serialize(int32(1))
 					
-					predVal := []byte($2)
+					predVal := encoder.Serialize($2)
 					
 					goToExpr.AddArgument(MakeArgument(&predVal, "ident"))
 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
@@ -1485,7 +1489,7 @@ statement:      RETURN
 						fn.AddExpression(goToExpr)
 
 						elseLines := encoder.Serialize(int32(0))
-						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
+						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>1 + 1))
 
 						alwaysTrue := encoder.Serialize(int32(1))
 
@@ -1493,11 +1497,10 @@ statement:      RETURN
 						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
 						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
 					}
-					
 				}
 			}
                 }
-        |       FOR BOOLEAN
+        |       beginFor BOOLEAN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -1557,12 +1560,21 @@ statement:      RETURN
 				}
 			}
                 }
-        |       FOR forLoopAssignExpression ';' nonAssignExpression
-                {//$<int>5
+        |       beginFor // $<i>1
+                forLoopAssignExpression // $2
+                {//$<i>3
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
-
-				//beforeGoTo := len(fn.Expressions)
-				
+				$<i>$ = len(fn.Expressions)
+			}
+                }
+                ';' nonAssignExpression
+                {//$<i>6
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				$<i>$ = len(fn.Expressions)
+			}
+                }
+                {//$<i>7
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				if mod, err := cxt.GetCurrentModule(); err == nil {
 					if fn, err := mod.GetCurrentFunction(); err == nil {
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
@@ -1573,19 +1585,19 @@ statement:      RETURN
 							fn.AddExpression(expr)
 						}
 					}
+				} else {
+					fmt.Println(err)
 				}
 
-				//afterGoTo := len(fn.Expressions)
-				//$<i>$ = afterGoTo - beforeGoTo
 				$<i>$ = len(fn.Expressions)
 			}
                 }
-                ';' forLoopAssignExpression
-                {//$<int>8
+                ';' forLoopAssignExpression //$<bool>9
+                {//$<int>10
 			//increment goTo
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				goToExpr := fn.Expressions[$<i>5 - 1]
-				if $<bool>7 {
+				goToExpr := fn.Expressions[$<i>7 - 1]
+				if $<bool>9 {
 					if mod, err := cxt.GetCurrentModule(); err == nil {
 						if fn, err := mod.GetCurrentFunction(); err == nil {
 							if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
@@ -1598,10 +1610,10 @@ statement:      RETURN
 						}
 					}
 
-					thenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 1))
+					thenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>7 + 1))
 					// elseLines := encoder.Serialize(int32(0)) // this is added later in $12
 
-					predVal := $4[0].Value
+					predVal := $5[0].Value
 					
 					goToExpr.AddArgument(MakeArgument(predVal, "ident"))
 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
@@ -1614,12 +1626,12 @@ statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>8 - 1]
+					goToExpr := fn.Expressions[$<i>10 - 1]
 
-					if $<bool>7 {
-						predVal := $4[0].Value
+					if $<bool>9 {
+						predVal := $5[0].Value
 
-						thenLines := encoder.Serialize(int32(-($<i>8 - $<i>5 + 1)))
+						thenLines := encoder.Serialize(int32(-($<i>10 - $<i>3) + 1))
 						elseLines := encoder.Serialize(int32(0))
 
 						goToExpr.AddArgument(MakeArgument(predVal, "bool"))
@@ -1635,24 +1647,24 @@ statement:      RETURN
 
 							alwaysTrue := encoder.Serialize(int32(1))
 
-							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>8 - 2))
+							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>7) + 1)
 							elseLines := encoder.Serialize(int32(0))
 
 							goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
 							goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
 							goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
 
-							condGoToExpr := fn.Expressions[$<i>5 - 1]
+							condGoToExpr := fn.Expressions[$<i>7 - 1]
 
-							condThenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 1))
+							condThenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>7 + 1))
 							
 							condGoToExpr.AddArgument(MakeArgument(&condThenLines, "i32"))
 						}
 					} else {
-						predVal := $4[0].Value
+						predVal := $5[0].Value
 
 						thenLines := encoder.Serialize(int32(1))
-						elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 2))
+						elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>7 + 2))
 						
 						goToExpr.AddArgument(MakeArgument(predVal, "ident"))
 						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
@@ -1667,7 +1679,7 @@ statement:      RETURN
 							
 							alwaysTrue := encoder.Serialize(int32(1))
 
-							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5 - 1))
+							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>3 + 1))
 							elseLines := encoder.Serialize(int32(0))
 
 							goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
@@ -1691,7 +1703,7 @@ statement:      RETURN
 						fn.AddExpression(expr)
 						expr.AddOutputName($2)
 						
-						typ := []byte($3)
+						typ := encoder.Serialize($3)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
 					}
@@ -1785,18 +1797,20 @@ argument:
                 {
 			str := strings.TrimPrefix($1, "\"")
                         str = strings.TrimSuffix(str, "\"")
-                        
-                        val := []byte(str)
+
+			val := encoder.Serialize(str)
+			
                         $$ = MakeArgument(&val, "str")
                 }
         |       IDENT
                 {
-			val := []byte($1)
+			val := encoder.Serialize($1)
+			
                         $$ = MakeArgument(&val, "ident")
                 }
         |       IDENT LBRACK INT RBRACK
                 {
-			val := []byte(fmt.Sprintf("%s[%d", $1, $3))
+			val := encoder.Serialize(fmt.Sprintf("%s[%d", $1, $3))
 			$$ = MakeArgument(&val, "ident")
                 }
         |       typeSpecifier LBRACE argumentsList RBRACE
@@ -1810,6 +1824,7 @@ argument:
 					vals[i] = val
 				}
 				sVal := encoder.Serialize(vals)
+
 				$$ = MakeArgument(&sVal, "[]bool")
 			case "[]byte":
                                 vals := make([]byte, len($3))
@@ -1818,26 +1833,24 @@ argument:
 					encoder.DeserializeRaw(*arg.Value, &val)
 					vals[i] = byte(val)
 				}
-				$$ = MakeArgument(&vals, "[]byte")
+				sVal := encoder.Serialize(vals)
+				//$$ = MakeArgument(&vals, "[]byte")
+				$$ = MakeArgument(&sVal, "[]byte")
+			case "[]str":
+                                vals := make([]string, len($3))
+				for i, arg := range $3 {
+					var val string
+					encoder.DeserializeRaw(*arg.Value, &val)
+					vals[i] = val
+				}
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]str")
 			case "[]i32":
 				vals := make([]int32, len($3))
 				for i, arg := range $3 {
-					if arg.Typ == "ident" {
-						// if fn, err := cxt.GetCurrentFunction(); err == nil {
-						// 	if op, err := cxt.GetFunction("[]i32.write", CORE_MODULE); err == nil {
-						// 		expr := MakeExpression(op)
-						// 		fn.AddExpression(expr)
-						// 		expr.AddArgument()
-						// 	}
-							
-						// } else {
-						// 	fmt.Println(err)
-						// }
-					} else {
-						var val int32
-						encoder.DeserializeRaw(*arg.Value, &val)
-						vals[i] = val
-					}
+					var val int32
+					encoder.DeserializeRaw(*arg.Value, &val)
+					vals[i] = val
 				}
 				sVal := encoder.Serialize(vals)
 				$$ = MakeArgument(&sVal, "[]i32")
@@ -1866,6 +1879,41 @@ argument:
 					encoder.DeserializeRaw(*arg.Value, &val)
 					vals[i] = float64(val)
 				}
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]f64")
+			}
+                }
+                // empty arrays
+        |       typeSpecifier LBRACE RBRACE
+                {
+			switch $1 {
+			case "[]bool":
+                                vals := make([]int32, 0)
+				sVal := encoder.Serialize(vals)
+
+				$$ = MakeArgument(&sVal, "[]bool")
+			case "[]byte":
+                                vals := make([]byte, 0)
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]byte")
+			case "[]str":
+                                vals := make([]string, 0)
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]str")
+			case "[]i32":
+				vals := make([]int32, 0)
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]i32")
+			case "[]i64":
+                                vals := make([]int64, 0)
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]i64")
+			case "[]f32":
+                                vals := make([]float32, 0)
+				sVal := encoder.Serialize(vals)
+				$$ = MakeArgument(&sVal, "[]f32")
+			case "[]f64":
+                                vals := make([]float64, 0)
 				sVal := encoder.Serialize(vals)
 				$$ = MakeArgument(&sVal, "[]f64")
 			}

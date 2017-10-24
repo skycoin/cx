@@ -214,6 +214,21 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			}
 		}
 
+		// Adding possible struct instances
+		var customTypes []string
+		for _, inp := range expr.Operator.Inputs {
+			isCustom := true
+			for _, basic := range BASIC_TYPES {
+				if basic == inp.Typ {
+					isCustom = false
+					break
+				}
+			}
+			if isCustom {
+				customTypes = append(customTypes, inp.Typ)
+			}
+		}
+		
 		// Adding local definitions
 		for _, ex := range expr.Function.Expressions {
 			
@@ -239,15 +254,27 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				continue
 			}
 
+			/// ====
+			// for _, custom := range customTypes {
+
+				
+			// 	args = append(args, &CXArgument{
+			// 		Typ: custom,
+			// 		Value: &identName,
+			// 	})
+			// }
+			/// ====
+
 			for i, out := range ex.Operator.Outputs {
+				//fmt.Println(ex.OutputNames[i].Name)
+				fmt.Println("here", reqType, out.Typ, ex.Operator.Name)
 				if reqType == out.Typ {
+					fmt.Println(reqType)
 					defsTypes = append(defsTypes, out.Typ)
 					identName := []byte(ex.OutputNames[i].Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
-						// Offset: -1,
-						// Size: -1,
 					})
 				}
 			}
@@ -387,7 +414,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			Description: concat("AddInput ", theTyp),
 			Action: func() {
 				fn.AddInput(MakeParameter(MakeGenSym("in"), theTyp))
-		}})
+			}})
 	}
 	
 	// Outputs
@@ -430,7 +457,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
 			Action: func() {
 				fn.AddExpression(MakeExpression(theOp))
-		}})
+			}})
 	}
 
 	return affs

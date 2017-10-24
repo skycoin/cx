@@ -64,7 +64,7 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == float32(0.0) {
-			return errors.New("divF32: Division by 0")
+			return errors.New("f32.div: Division by 0")
 		}
 
 		output := encoder.Serialize(float32(num1 / num2))
@@ -85,11 +85,11 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 		
 		if index < 0 {
-			return errors.New(fmt.Sprintf("readF32A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]f32.read: negative index %d", index))
 		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("readF32A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]f32.read: index %d exceeds array of length %d", index, size))
 		}
 
 		var value float32
@@ -112,11 +112,11 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("writeF32A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]f32.write: negative index %d", index))
 		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("writeF32A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]f32.write: index %d exceeds array of length %d", index, size))
 		}
 
 		i := (int(index)+1)*4

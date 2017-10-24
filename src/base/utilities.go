@@ -13,6 +13,7 @@ import (
 
 func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall) {
 	outName := expr.OutputNames[0].Name
+	expr.OutputNames[0].Typ = typ
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
@@ -20,10 +21,27 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
 					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
-						byts, _ := resolveStructField(identParts[1], def.Value, strct)
+						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
-						for c := 0; c < len(byts); c++ {
-							byts[c] = (*output)[c]
+						if typ == "str" || typ == "[]str" || typ == "[]bool" ||
+							typ == "[]byte" || typ == "[]i32" ||
+							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" {
+
+							firstChunk := make([]byte, offset)
+							secondChunk := make([]byte, len(*def.Value) - int((offset + size)))
+
+							copy(firstChunk, (*def.Value)[:offset])
+							copy(secondChunk, (*def.Value)[offset+size:])
+
+							final := append(firstChunk, *output...)
+							final = append(final, secondChunk...)
+							
+							*def.Value = final
+							return
+						} else {
+							for c := 0; c < len(byts); c++ {
+								byts[c] = (*output)[c]
+							}
 						}
 					} else {
 						panic(err)
@@ -54,7 +72,7 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 			break
 		}
 	}
-	
+
 	for _, def := range call.State {
 		if def.Name == outName {
 			def.Value = output
@@ -64,6 +82,7 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 
 	if def, err := expr.Module.GetDefinition(outName); err == nil {
 		def.Value = output
+		return
 	}
 
 	call.State = append(call.State, MakeDefinition(outName, output, typ))
@@ -385,9 +404,10 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	i := 0
 	for _, mod := range cxt.Modules {
-		if mod.Name == CORE_MODULE {
+		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" {
 			continue
 		}
+
 		fmt.Printf("%d.- Module: %s\n", i, mod.Name)
 
 		if withAffs {
@@ -484,21 +504,17 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 				var args bytes.Buffer
 
 				for i, arg := range expr.Arguments {
-					//fmt.Println(string(*arg.Value))
 					typ := ""
 					if arg.Typ == "ident" {
+						var id string
+						encoder.DeserializeRaw(*arg.Value, &id)
 						if arg.Typ != "" &&
-							inOuts[string(*arg.Value)] != "" {
-							typ = inOuts[string(*arg.Value)]
-						} else if arg.Value != nil { //&&
-							// mod.Definitions[string(*arg.Value)] != nil &&
-							// mod.Definitions[string(*arg.Value)].Typ != ""
-							//{
-
-							//found := false
+							inOuts[id] != "" {
+							typ = inOuts[id]
+						} else if arg.Value != nil {
 							var found *CXDefinition
 							for _, def := range mod.Definitions {
-								if def.Name == string(*arg.Value) {
+								if def.Name == id {
 									found = def
 									break
 								}
@@ -506,7 +522,6 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							if found != nil && found.Typ != "" {
 								typ = found.Typ
 							}
-							//typ = mod.Definitions[string(*arg.Value)].Typ
 						} else {
 							typ = arg.Typ
 						}
@@ -514,12 +529,13 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 						typ = arg.Typ
 					}
 
-					argName := string(*arg.Value)
+					var argName string
+					encoder.DeserializeRaw(*arg.Value, &argName)
 
 					if arg.Typ != "ident" {
 						switch typ {
 						case "str":
-							argName = fmt.Sprintf("%#v", string(*arg.Value))
+							argName = fmt.Sprintf("%#v", argName)
 						case "bool":
 							var val int32
 							encoder.DeserializeRaw(*arg.Value, &val)
@@ -552,6 +568,10 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							argName = fmt.Sprintf("%#v", val)
 						case "[]byte":
 							var val []byte
+							encoder.DeserializeRaw(*arg.Value, &val)
+							argName = fmt.Sprintf("%#v", val)
+						case "[]str":
+							var val []string
 							encoder.DeserializeRaw(*arg.Value, &val)
 							argName = fmt.Sprintf("%#v", val)
 						case "[]i32":

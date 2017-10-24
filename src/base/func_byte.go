@@ -11,18 +11,22 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		size := len(*arr.Value)
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("readByteA: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]byte.read: negative index %d", index))
 		}
 		
-		if index >= int32(size) {
-			return errors.New(fmt.Sprintf("readByteA: index %d exceeds array of length %d", index, size))
+		if index >= size {
+			return errors.New(fmt.Sprintf("[]byte.read: index %d exceeds array of length %d", index, size))
 		}
+		
+		var value byte
+		encoder.DeserializeRaw((*arr.Value)[index+4:(index+1)+4], &value)
 
 		output := make([]byte, 1)
-		output[0] = (*arr.Value)[index]
+		output[0] = value
 
 		assignOutput(&output, "byte", expr, call)
 		return nil
@@ -36,17 +40,18 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
-		if index < 0 {
-			return errors.New(fmt.Sprintf("writeByteA: negative index %d", index))
-		}
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
-		size := int32(len(*arr.Value))
+		if index < 0 {
+			return errors.New(fmt.Sprintf("[]byte.write: negative index %d", index))
+		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("writeByteA: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]byte.write: index %d exceeds array of length %d", index, size))
 		}
-
-		(*arr.Value)[index] = (*val.Value)[0]
+		
+		(*arr.Value)[index + 4] = (*val.Value)[0]
 
 		return nil
 	} else {
@@ -56,7 +61,7 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 
 func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenByteA", "[]byte", arr); err == nil {
-		output := encoder.SerializeAtomic(int32(len(*arr.Value)))
+		output := encoder.SerializeAtomic(int32(len((*arr.Value)[4:])))
 
 		assignOutput(&output, "i32", expr, call)
 		return nil
@@ -167,9 +172,15 @@ func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 
 func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.concat", "[]byte", "[]byte", arg1, arg2); err == nil {
-		output := append(*arg1.Value, *arg2.Value...)
+		var slice1 []byte
+		var slice2 []byte
+		encoder.DeserializeRaw(*arg1.Value, &slice1)
+		encoder.DeserializeRaw(*arg2.Value, &slice2)
 
-		assignOutput(&output, "[]byte", expr, call)
+		output := append(slice1, slice2...)
+		sOutput := encoder.Serialize(output)
+
+		assignOutput(&sOutput, "[]byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -178,9 +189,13 @@ func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 
 func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.append", "[]byte", "byte", arg1, arg2); err == nil {
-		output := append(*arg1.Value, *arg2.Value...)
+		var slice []byte
+		encoder.DeserializeRaw(*arg1.Value, &slice)
 
-		assignOutput(&output, "[]byte", expr, call)
+		output := append(slice, (*arg2.Value)[0])
+		sOutput := encoder.Serialize(output)
+
+		assignOutput(&sOutput, "[]byte", expr, call)
 		return nil
 	} else {
 		return err

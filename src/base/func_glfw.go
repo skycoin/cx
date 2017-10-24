@@ -34,8 +34,10 @@ func glfw_CreateWindow (window, width, height, title *CXArgument) error {
 	if err := checkThreeTypes("glfw.CreateWindow", "i32", "i32", "str", width, height, title); err == nil {
 		var w int32
 		var h int32
-		var t string = string(*title.Value)
-		var winName string = string(*window.Value)
+		var t string
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
+		encoder.DeserializeRaw(*title.Value, &t)
 
 		encoder.DeserializeAtomic(*width.Value, &w)
 		encoder.DeserializeAtomic(*height.Value, &h)
@@ -53,7 +55,8 @@ func glfw_CreateWindow (window, width, height, title *CXArgument) error {
 
 func glfw_MakeContextCurrent (window *CXArgument) error {
 	if err := checkType("glfw.MakeContextCurrent", "str", window); err == nil {
-		var winName string = string(*window.Value)
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
 
 		windows[winName].MakeContextCurrent()
 		return nil
@@ -64,7 +67,8 @@ func glfw_MakeContextCurrent (window *CXArgument) error {
 
 func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("glfw.ShouldClose", "str", window); err == nil {
-		winName := string(*window.Value)
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
 
 		var output []byte
 		if windows[winName].ShouldClose() {
@@ -87,7 +91,8 @@ func glfw_PollEvents () error {
 
 func glfw_SwapBuffers (window *CXArgument) error {
 	if err := checkType("glfw.SwapBuffers", "str", window); err == nil {
-		var winName string = string(*window.Value)
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
 
 		windows[winName].SwapBuffers()
 		return nil
@@ -99,8 +104,10 @@ func glfw_SwapBuffers (window *CXArgument) error {
 
 
 func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
-	wName := string(*window.Value)
-	name := string(*fnName.Value)
+	var wName string
+	var name string
+	encoder.DeserializeRaw(*window.Value, &wName)
+	encoder.DeserializeRaw(*fnName.Value, &name)
 	
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {

@@ -1,0 +1,910 @@
+package main
+
+type testStruct struct {
+	testBool bool
+	testStr str
+	testByte byte
+	testI32 i32
+	testI64 i64
+	testF32 f32
+	testF64 f64
+	testBoolA []bool
+	testByteA []byte
+	testStrA []str
+	testI32A []i32
+	testI64A []i64
+	testF32A []f32
+	testF64A []f64
+}
+
+var testBool bool
+var testStr str
+var testByte byte
+var testI32 i32
+var testI64 i64
+var testF32 f32
+var testF64 f64
+var testBoolA []bool
+var testByteA []byte
+var testStrA []str
+var testI32A []i32
+var testI64A []i64
+var testF32A []f32
+var testF64A []f64
+
+func testFunc () () {}
+
+func returnStruct () () {}
+
+func testModifiedGlobals () () {
+	test.bool(testBool, true, "")
+	test.str(testStr, "hello ≈∫®ƒ¥", "")
+	test.byte(testByte, i32.byte(200), "")
+	test.i32(testI32, 200, "")
+	test.i64(testI64, i32.i64(200), "")
+	test.f32(testF32, 200.5, "")
+	test.f64(testF64, f32.f64(200.5), "")
+	test.[]bool(testBoolA, []bool{true, true, false}, "")
+	test.[]byte(testByteA, []byte{44, 144, 244}, "")
+	test.[]str(testStrA, []str{"str1", "str2", "str3"}, "")
+	test.[]i32(testI32A, []i32{44, 144, 244}, "")
+	test.[]i64(testI64A, []i64{44, 144, 244}, "")
+	test.[]f32(testF32A, []f32{44.5, 144.5, 244.5}, "")
+	test.[]f64(testF64A, []f64{44.5, 144.5, 244.5}, "")
+
+	// changing globals from function to test them back in main()
+	
+	testBool = false
+	testStr = "bye ≈∫® bye"
+	testByte = i32.byte(100)
+	testI32 = 100
+	testI64 = i32.i64(100)
+	testF32 = 100.5
+	testF64 = f32.f64(100.5)
+	testBoolA = []bool{false, false, true}
+	testByteA = []byte{33, 133, 233}
+	testStrA = []str{"str100"}
+	testI32A = []i32{33, 133, 233}
+	testI64A = []i64{33, 144, 244}
+	testF32A = []f32{33.5, 133.5, 233.5}
+	testF64A = []f64{33.5, 133.5, 233.5}
+}
+
+func modifyingStruct (receivedStruct testStruct) () {
+	receivedStruct.testBool = false
+	receivedStruct.testStr = "bye ≈∫® bye"
+	receivedStruct.testByte = i32.byte(100)
+	receivedStruct.testI32 = 100
+	receivedStruct.testI64 = i32.i64(100)
+	receivedStruct.testF32 = 100.5
+	receivedStruct.testF64 = f32.f64(100.5)
+	receivedStruct.testBoolA = []bool{false, false, true}
+	receivedStruct.testByteA = []byte{33, 133, 233}
+	receivedStruct.testStrA = []str{"str100"}
+	receivedStruct.testI32A = []i32{33, 133, 233}
+	receivedStruct.testI64A = []i64{33, 144, 244}
+	receivedStruct.testF32A = []f32{33.5, 133.5, 233.5}
+	receivedStruct.testF64A = []f64{33.5, 133.5, 233.5}
+}
+
+func returningStruct () (retStruct testStruct) {
+	retStruct.testBool = true
+	retStruct.testStr = "≈∫® returning"
+	retStruct.testByte = i32.byte(70)
+	retStruct.testI32 = 70
+	retStruct.testI64 = i32.i64(70)
+	retStruct.testF32 = 70.5
+	retStruct.testF64 = f32.f64(70.5)
+	retStruct.testBoolA = []bool{true, true, false, false, true}
+	retStruct.testByteA = []byte{70, 170, 220}
+	retStruct.testStrA = []str{"str100"}
+	retStruct.testI32A = []i32{70, 170, 270}
+	retStruct.testI64A = []i64{70, 170, 270}
+	retStruct.testF32A = []f32{70.5, 170.5, 270.5}
+	retStruct.testF64A = []f64{70.5, 170.5, 270.5}
+}
+
+func testNoReturn (num1 i32, num2 i32) () {
+	i32.print(i32.add(num1, num2))
+}
+
+func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
+	add := i32.add(num1, num2)
+	sub := i32.sub(num1, num2)
+	mul := i32.mul(num1, num2)
+	div := i32.div(num1, num2)
+}
+
+func main () () {
+	// arithmetic functions
+	
+	test.start()
+	test.i32(i32.add(10, 10), 20, "")
+	test.i32(i32.sub(10, 10), 0, "")
+	test.i32(i32.mul(10, 10), 100, "")
+	test.i32(i32.div(10, 10), 1, "")
+
+	i32.div(10, 0)
+	test.error("i32.div did not raise a division by 0 error")
+
+	i64v := i32.i64(10)
+
+	test.i64(i64.add(i64v, i64v), i32.i64(20), "")
+	test.i64(i64.sub(i64v, i64v), i32.i64(0), "")
+	test.i64(i64.mul(i64v, i64v), i32.i64(100), "")
+	test.i64(i64.div(i64v, i64v), i32.i64(1), "")
+	
+	i64.div(i64v, i32.i64(0))
+	test.error("i64.div did not raise a division by 0 error")
+
+	test.f32(f32.add(10.0, 10.0), 20.0, "")
+	test.f32(f32.sub(10.0, 10.0), 0.0, "")
+	test.f32(f32.mul(10.0, 10.0), 100.0, "")
+	test.f32(f32.div(10.0, 10.0), 1.0, "")
+
+	f64v := i32.f64(10)
+
+	test.f64(f64.add(f64v, f64v), i32.f64(20), "")
+	test.f64(f64.sub(f64v, f64v), i32.f64(0), "")
+	test.f64(f64.mul(f64v, f64v), i32.f64(100), "")
+	test.f64(f64.div(f64v, f64v), i32.f64(1), "")
+
+	test.i32(i32.mod(10, 10), 0, "")
+	test.i64(i64.mod(i64v, i64v), i32.i64(0), "")
+
+	test.i32(i32.bitand(5, 3), 1, "")
+	test.i32(i32.bitor(5, 3), 7, "")
+	test.i32(i32.bitxor(5, 3), 6, "")
+	test.i32(i32.bitclear(5, 3), 4, "")
+
+	test.i64(i64.bitand(i32.i64(5), i32.i64(3)), i32.i64(1), "")
+	test.i64(i64.bitor(i32.i64(5), i32.i64(3)), i32.i64(7), "")
+	test.i64(i64.bitxor(i32.i64(5), i32.i64(3)), i32.i64(6), "")
+	test.i64(i64.bitclear(i32.i64(5), i32.i64(3)), i32.i64(4), "")
+
+	// variable initialization
+	
+	var byteA []byte = []byte{11, 22, 33, 44, 55}
+	var boolA []bool = []bool{true, false, true, false}
+	var strA []str = []str{"str1", "str2", "str3", "str4"}
+	var i32A []i32 = []i32{11, 22, 33, 44, 55}
+	var i64A []i64 = []i64{110, 220, 330, 440, 550}
+	var f32A []f32 = []f32{11.5, 22.5, 33.5, 44.5, 55.5}
+	var f64A []f64 = []f64{11.5, 22.5, 33.5, 44.5, 55.5}
+
+	// print functions
+
+	byte.print(i32.byte(10))
+	bool.print(true)
+	bool.print(false)
+	str.print("printing string message ß¡œ∆≈")
+
+	i32.print(10)
+	i64.print(f32.i64(10.0))
+	f32.print(10.5)
+	f64.print(f32.f64(10.5))
+
+	[]byte.print([]byte{11, 22, 33, 44, 55})
+	[]byte.print(byteA)
+	[]bool.print([]bool{true, false, true, false})
+	[]bool.print(boolA)
+	[]str.print([]str{"str1", "str2", "str3", "str4"})
+	[]str.print(strA)
+	[]i32.print([]i32{11, 22, 33, 44, 55})
+	[]i32.print(i32A)
+	[]i64.print([]i64{110, 220, 330, 440, 550})
+	[]i64.print(i64A)
+	[]f32.print([]f32{11.5, 22.5, 33.5, 44.5, 55.5})
+	[]f32.print(f32A)
+	[]f64.print([]f64{11.5, 22.5, 33.5, 44.5, 55.5})
+	[]f64.print(f64A)
+
+	// specific identity functions
+
+	test.str(str.id("testing string ß¡œ∆≈"), "testing string ß¡œ∆≈", "")
+	test.bool(bool.id(true), true, "")
+	test.bool(bool.id(false), false, "")
+	test.byte(byte.id(i32.byte(0)), i32.byte(0), "")
+	test.i32(i32.id(10), 10, "")
+	test.i64(i64.id(i32.i64(10)), i64v, "")
+	test.f32(f32.id(i32.f32(10)), 10.0, "")
+	test.f64(f64.id(i32.f64(10)), f64v, "")
+
+	test.[]bool([]bool.id(boolA), boolA, "")
+	test.[]byte([]byte.id(byteA), byteA, "")
+	test.[]str([]str.id(strA), strA, "")
+	test.[]i32([]i32.id(i32A), i32A, "")
+	test.[]i64([]i64.id(i64A), i64A, "")
+	test.[]f32([]f32.id(f32A), f32A, "")
+	test.[]f64([]f64.id(f64A), f64A, "")
+
+	// general identity function
+
+	foo1 := 10
+	bar1 := identity("foo1")
+	test.i32(foo1, bar1, "")
+
+	foo2 = []f64{1, 2, 3, 4}
+	bar2 := identity("foo2")
+	test.[]f64(foo2, bar2, "")
+
+	// make array functions
+
+	test.[]bool([]bool.make(0), []bool{}, "")
+	test.[]byte([]byte.make(0), []byte{}, "")
+	test.[]str([]str.make(0), []str{}, "")
+	test.[]i32([]i32.make(0), []i32{}, "")
+	test.[]i64([]i64.make(0), []i64{}, "")
+	test.[]f32([]f32.make(0), []f32{}, "")
+	test.[]f64([]f64.make(0), []f64{}, "")
+
+	test.[]bool([]bool.make(1), []bool{false}, "")
+	test.[]byte([]byte.make(1), []byte{0}, "")
+	test.[]str([]str.make(1), []str{""}, "")
+	test.[]i32([]i32.make(1), []i32{0}, "")
+	test.[]i64([]i64.make(1), []i64{0}, "")
+	test.[]f32([]f32.make(1), []f32{0}, "")
+	test.[]f64([]f64.make(1), []f64{0}, "")
+
+	test.[]bool([]bool.make(2), []bool{false, false}, "")
+	test.[]byte([]byte.make(2), []byte{0, 0}, "")
+	test.[]str([]str.make(2), []str{"", ""}, "")
+	test.[]i32([]i32.make(2), []i32{0, 0}, "")
+	test.[]i64([]i64.make(2), []i64{0, 0}, "")
+	test.[]f32([]f32.make(2), []f32{0, 0}, "")
+	test.[]f64([]f64.make(2), []f64{0, 0}, "")
+
+	// array operations
+
+	test.bool([]bool.read([]bool{true, false}, 1), false, "")
+	test.byte([]byte.read([]byte{0, 1, 234}, 2), i32.byte(234), "")
+	test.str([]str.read([]str{"str1", "str2"}, 1), "str2", "")
+	test.i32([]i32.read([]i32{11, 12, 13}, 1), 12, "")
+	test.i64([]i64.read([]i64{11, 12, 13}, 1), i32.i64(12), "")
+	test.f32([]f32.read([]f32{11.5, 12.5, 13.5}, 1), 12.5, "")
+	test.f64([]f64.read([]f64{11.5, 12.5, 13.5}, 1), f32.f64(12.5), "")
+
+	[]bool.write(boolA, 1, true)
+	[]byte.write(byteA, 1, i32.byte(200))
+	[]str.write(strA, 1, "writing to array")
+	[]i32.write(i32A, 1, 200)
+	[]i64.write(i64A, 1, i32.i64(200))
+	[]f32.write(f32A, 1, 200.5)
+	[]f64.write(f64A, 1, f32.f64(200.5))
+
+	test.bool([]bool.read(boolA, 1), true, "")
+	test.byte([]byte.read(byteA, 1), i32.byte(200), "")
+	test.str([]str.read(strA, 1), "writing to array", "")
+	test.i32([]i32.read(i32A, 1), 200, "")
+	test.i64([]i64.read(i64A, 1), i32.i64(200), "")
+	test.f32([]f32.read(f32A, 1), 200.5, "")
+	test.f64([]f64.read(f64A, 1), f32.f64(200.5), "")
+	
+	[]bool.read([]bool.make(1), 1)
+	test.error("[]bool.read did not raise array out of bounds (overflow)")
+	[]bool.read([]bool.make(1), -1)
+	test.error("[]bool.read did not raise array out of bounds (underflow)")
+
+	[]byte.read([]byte.make(1), 1)
+	test.error("[]byte.read did not raise array out of bounds (overflow)")
+	[]byte.read([]byte.make(1), -1)
+	test.error("[]byte.read did not raise array out of bounds (underflow)")
+
+	[]str.read([]str.make(1), 1)
+	test.error("[]str.read did not raise array out of bounds (overflow)")
+	[]str.read([]str.make(1), -1)
+	test.error("[]str.read did not raise array out of bounds (underflow)")
+
+	[]i32.read([]i32.make(1), 1)
+	test.error("[]i32.read did not raise array out of bounds (overflow)")
+	[]i32.read([]i32.make(1), -1)
+	test.error("[]i32.read did not raise array out of bounds (underflow)")
+
+	[]i64.read([]i64.make(1), 1)
+	test.error("[]i64.read did not raise array out of bounds (overflow)")
+	[]i64.read([]i64.make(1), -1)
+	test.error("[]i64.read did not raise array out of bounds (underflow)")
+
+	[]f32.read([]f32.make(1), 1)
+	test.error("[]f32.read did not raise array out of bounds (overflow)")
+	[]f32.read([]f32.make(1), -1)
+	test.error("[]f32.read did not raise array out of bounds (underflow)")
+
+	[]f64.read([]f64.make(1), 1)
+	test.error("[]f64.read did not raise array out of bounds (overflow)")
+	[]f64.read([]f64.make(1), -1)
+	test.error("[]f64.read did not raise array out of bounds (underflow)")
+
+	test.i32([]bool.len([]bool.make(5)), 5, "")
+	test.i32([]byte.len([]byte.make(5)), 5, "")
+	test.i32([]str.len([]str.make(5)), 5, "")
+	test.i32([]i32.len([]i32.make(5)), 5, "")
+	test.i32([]i64.len([]i64.make(5)), 5, "")
+	test.i32([]f32.len([]f32.make(5)), 5, "")
+	test.i32([]f64.len([]f64.make(5)), 5, "")
+
+	// concatenate functions
+
+	test.str(str.concat("hello", " world"), "hello world", "")
+	test.[]bool([]bool.concat([]bool{true, false}, []bool{true, false}), []bool{true, false, true, false}, "")
+	test.[]byte([]byte.concat([]byte{0, 1, 2}, []byte{3, 4, 5}), []byte{0, 1, 2, 3, 4, 5}, "")
+	test.[]str([]str.concat([]str{"str1", "str2"}, []str{"str3", "str4"}), []str{"str1", "str2", "str3", "str4"}, "")
+	test.[]i32([]i32.concat([]i32{0, 1, 2}, []i32{3, 4, 5}), []i32{0, 1, 2, 3, 4, 5}, "")
+	test.[]i64([]i64.concat([]i64{0, 1, 2}, []i64{3, 4, 5}), []i64{0, 1, 2, 3, 4, 5}, "")
+	test.[]f32([]f32.concat([]f32{0.5, 1.5, 2.5}, []f32{3.5, 4.5, 5.5}), []f32{0.5, 1.5, 2.5, 3.5, 4.5, 5.5}, "")
+	test.[]f64([]f64.concat([]f64{0.5, 1.5, 2.5}, []f64{3.5, 4.5, 5.5}), []f64{0.5, 1.5, 2.5, 3.5, 4.5, 5.5}, "")
+
+	// append functions
+
+	test.[]bool([]bool.append([]bool{true, false, true}, true), []bool{true, false, true, true}, "")
+	test.[]byte([]byte.append([]byte{0, 1, 2}, i32.byte(3)), []byte{0, 1, 2, 3}, "")
+	test.[]str([]str.append([]str{"str1", "str2"}, "str3"), []str{"str1", "str2", "str3"}, "")
+	test.[]i32([]i32.append([]i32{0, 1, 2}, 3), []i32{0, 1, 2, 3}, "")
+	test.[]i64([]i64.append([]i64{0, 1, 2}, i32.i64(3)), []i64{0.5, 1.5, 2.5, 3.5}, "")
+	test.[]f32([]f32.append([]f32{0.5, 1.5, 2.5}, 3.5), []f32{0.5, 1.5, 2.5, 3.5}, "")
+
+	// copy functions
+
+	zeroedByteA := []byte.make(3)
+	zeroedBoolA := []bool.make(3)
+	zeroedStrA := []str.make(3)
+	zeroedI32A := []i32.make(3)
+	zeroedI64A := []i64.make(3)
+	zeroedF32A := []f32.make(3)
+	zeroedF64A := []f64.make(3)
+
+	[]bool.copy(zeroedBoolA, []bool{true, true, false})
+	[]byte.copy(zeroedByteA, []byte{1, 2, 3})
+	[]str.copy(zeroedStrA, []str{"str1", "str2", "str3"})
+	[]i32.copy(zeroedI32A, []i32{1, 2, 3})
+	[]i64.copy(zeroedI64A, []i64{1, 2, 3})
+	[]f32.copy(zeroedF32A, []f32{1.5, 2.5, 3.5})
+	[]f64.copy(zeroedF64A, []f64{1.5, 2.5, 3.5})
+
+	test.[]bool(zeroedBoolA, []bool{true, true, false}, "")
+	test.[]byte(zeroedByteA, []byte{1, 2, 3}, "")
+	test.[]str(zeroedStrA, []str{"str1", "str2", "str3"}, "")
+	test.[]i32(zeroedI32A, []i32{1, 2, 3}, "")
+	test.[]i64(zeroedI64A, []i64{1, 2, 3}, "")
+	test.[]f32(zeroedF32A, []f32{1.5, 2.5, 3.5}, "")
+	test.[]f64(zeroedF64A, []f64{1.5, 2.5, 3.5}, "")
+
+	// cast functions
+	
+	test.str([]byte.str([]byte{104, 101, 108, 108, 111, 32, 226, 137, 136, 226, 136, 171, 194, 174, 198, 146, 194, 165}),
+		"hello ≈∫®ƒ¥",
+		"")
+	test.[]byte(str.[]byte("hello ≈∫®ƒ¥"), []byte{104, 101, 108, 108, 111, 32, 226, 137, 136, 226, 136, 171, 194, 174, 198, 146, 194, 165}, "")
+	
+	test.i32(byte.i32(f32.byte(5.0)), 5, "")
+	test.i64(byte.i64(f32.byte(5.0)), i32.i64(5), "")
+	test.f32(byte.f32(i32.byte(5)), i32.f32(5), "")
+	test.f64(byte.f64(i32.byte(5)), i32.f64(5), "")
+
+	test.[]i32([]byte.[]i32([]byte{0, 1, 3}), []i32{0, 1, 3}, "")
+	test.[]i64([]byte.[]i64([]byte{0, 1, 3}), []i64{0, 1, 3}, "")
+	test.[]f32([]byte.[]f32([]byte{0, 1, 3}), []f32{0.0, 1.0, 3.0}, "")
+	test.[]f64([]byte.[]f64([]byte{0, 1, 3}), []f64{0.0, 1.0, 3.0}, "")
+
+	test.byte(i32.byte(123), f32.byte(123.0), "")
+	test.byte(i64.byte(i32.i64(123)), f32.byte(123.0), "")
+	test.byte(f32.byte(123.0), i32.byte(123), "")
+	test.byte(f64.byte(i32.f64(123)), i32.byte(123), "")
+
+	test.[]byte([]i32.[]byte([]i32{1, 2, 3}), []byte{1, 2, 3}, "")
+	test.[]byte([]i64.[]byte([]i64{1, 2, 3}), []byte{1, 2, 3}, "")
+	test.[]byte([]f32.[]byte([]f32{1.0, 2.0, 3.0}), []byte{1, 2, 3}, "")
+	test.[]byte([]f64.[]byte([]f64{1.0, 2.0, 3.0}), []byte{1, 2, 3}, "")
+
+	test.i32(i64.i32(i32.i64(123)), 123, "")
+	test.i32(f32.i32(123.5), 123, "")
+	test.i32(f64.i32(f32.f64(123.5)), 123, "")
+
+	test.i64(i32.i64(123), f32.i64(123.5), "")
+	test.i64(f32.i64(123.5), byte.i64(i32.byte(123)), "")
+	test.i64(f64.i64(f32.f64(123.5)), i32.i64(123), "")
+
+	test.f32(i32.f32(123), 123.0, "")
+	test.f32(i64.f32(f32.i64(123.5)), 123.0, "")
+	test.f32(f64.f32(i32.f64(123)), 123.0, "")
+
+	test.f64(i32.f64(123), f32.f64(123.0), "")
+	test.f64(i64.f64(f32.i64(123.5)), i32.f64(123), "")
+	test.f64(f32.f64(123.0), i32.f64(123), "")
+
+	test.[]i32([]i64.[]i32([]i64{1, 2, 3}), []i32{1, 2, 3}, "")
+	test.[]i32([]f32.[]i32([]f32{1.5, 2.5, 3.5}), []i32{1, 2, 3}, "")
+	test.[]i32([]f64.[]i32([]f64{1.5, 2.5, 3.5}), []i32{1, 2, 3}, "")
+
+	test.[]i64([]i32.[]i64([]i32{1, 2, 3}), []i64{1, 2, 3}, "")
+	test.[]i64([]f32.[]i64([]f32{1.5, 2.5, 3.5}), []i64{1, 2, 3}, "")
+	test.[]i64([]f64.[]i64([]f64{1.5, 2.5, 3.5}), []i64{1, 2, 3}, "")
+
+	test.[]f32([]i32.[]f32([]i32{1, 2, 3}), []f32{1.0, 2.0, 3.0}, "")
+	test.[]f32([]i64.[]f32([]i64{1, 2, 3}), []f32{1.0, 2.0, 3.0}, "")
+	test.[]f32([]f64.[]f32([]f64{1.5, 2.5, 3.5}), []f32{1.5, 2.5, 3.5}, "")
+
+	// relational operators
+
+	test.bool(i32.lt(3, 5), true, "")
+	test.bool(i32.lt(5, 3), false, "")
+	test.bool(i32.gt(3, 5), false, "")
+	test.bool(i32.gt(5, 3), true, "")
+	test.bool(i32.eq(3, 5), false, "")
+	test.bool(i32.eq(3, 3), true, "")
+	test.bool(i32.lteq(3, 3), true, "")
+	test.bool(i32.lteq(4, 3), false, "")
+	test.bool(i32.gteq(3, 3), true, "")
+	test.bool(i32.gteq(3, 4), false, "")
+
+	test.bool(i64.lt(i32.i64(3), i32.i64(5)), true, "")
+	test.bool(i64.lt(i32.i64(5), i32.i64(3)), false, "")
+	test.bool(i64.gt(i32.i64(3), i32.i64(5)), false, "")
+	test.bool(i64.gt(i32.i64(5), i32.i64(3)), true, "")
+	test.bool(i64.eq(i32.i64(3), i32.i64(5)), false, "")
+	test.bool(i64.eq(i32.i64(3), i32.i64(3)), true, "")
+	test.bool(i64.lteq(i32.i64(3), i32.i64(3)), true, "")
+	test.bool(i64.lteq(i32.i64(4), i32.i64(3)), false, "")
+	test.bool(i64.gteq(i32.i64(3), i32.i64(3)), true, "")
+	test.bool(i64.gteq(i32.i64(3), i32.i64(4)), false, "")
+
+	test.bool(f32.lt(3.5, 5.5), true, "")
+	test.bool(f32.lt(5.5, 3.5), false, "")
+	test.bool(f32.gt(3.5, 5.5), false, "")
+	test.bool(f32.gt(5.5, 3.5), true, "")
+	test.bool(f32.eq(3.5, 5.5), false, "")
+	test.bool(f32.eq(3.5, 3.5), true, "")
+	test.bool(f32.lteq(3.5, 3.5), true, "")
+	test.bool(f32.lteq(4.5, 3.5), false, "")
+	test.bool(f32.gteq(3.5, 3.5), true, "")
+	test.bool(f32.gteq(3.5, 4.5), false, "")
+
+	test.bool(f64.lt(f32.f64(3.5), f32.f64(5.5)), true, "")
+	test.bool(f64.lt(f32.f64(5.5), f32.f64(3.5)), false, "")
+	test.bool(f64.gt(f32.f64(3.5), f32.f64(5.5)), false, "")
+	test.bool(f64.gt(f32.f64(5.5), f32.f64(3.5)), true, "")
+	test.bool(f64.eq(f32.f64(3.5), f32.f64(5.5)), false, "")
+	test.bool(f64.eq(f32.f64(3.5), f32.f64(3.5)), true, "")
+	test.bool(f64.lteq(f32.f64(3.5), f32.f64(3.5)), true, "")
+	test.bool(f64.lteq(f32.f64(4.5), f32.f64(3.5)), false, "")
+	test.bool(f64.gteq(f32.f64(3.5), f32.f64(3.5)), true, "")
+	test.bool(f64.gteq(f32.f64(3.5), f32.f64(4.5)), false, "")
+
+	test.bool(str.lt("aa", "bb"), true, "")
+	test.bool(str.lt("bb", "aa"), false, "")
+	test.bool(str.gt("bb", "aa"), true, "")
+	test.bool(str.gt("aa", "bb"), false, "")
+	test.bool(str.eq("bb", "bb"), true, "")
+	test.bool(str.eq("aa", "bb"), false, "")
+	test.bool(str.lteq("bb", "bb"), true, "")
+	test.bool(str.lteq("bb", "aa"), false, "")
+	test.bool(str.gteq("bb", "bb"), true, "")
+	test.bool(str.gteq("aa", "bb"), false, "")
+
+	test.bool(byte.lt(i32.byte(3), i32.byte(5)), true, "")
+	test.bool(byte.lt(i32.byte(5), i32.byte(3)), false, "")
+	test.bool(byte.gt(i32.byte(3), i32.byte(5)), false, "")
+	test.bool(byte.gt(i32.byte(5), i32.byte(3)), true, "")
+	test.bool(byte.eq(i32.byte(3), i32.byte(5)), false, "")
+	test.bool(byte.eq(i32.byte(3), i32.byte(3)), true, "")
+	test.bool(byte.lteq(i32.byte(3), i32.byte(3)), true, "")
+	test.bool(byte.lteq(i32.byte(4), i32.byte(3)), false, "")
+	test.bool(byte.gteq(i32.byte(3), i32.byte(3)), true, "")
+	test.bool(byte.gteq(i32.byte(3), i32.byte(4)), false, "")
+
+	// random integer functions
+
+	test.i32(i32.rand(0, 1), 0, "")
+	test.i32(i32.rand(10, 11), 10, "")
+
+	test.i64(i64.rand(i32.i64(0), i32.i64(1)), i32.i64(0), "")
+	test.i64(i64.rand(i32.i64(10), i32.i64(11)), i32.i64(10), "")
+
+	// logical operators
+
+	test.bool(and(true, true), true, "")
+	test.bool(and(false, true), false, "")
+	test.bool(and(true, false), false, "")
+	test.bool(and(false, false), false, "")
+
+	test.bool(or(true, true), true, "")
+	test.bool(or(false, true), true, "")
+	test.bool(or(true, false), true, "")
+	test.bool(or(false, false), false, "")
+
+	test.bool(not(true), false, "")
+	test.bool(not(false), true, "")
+
+	// goto
+
+	goTo("label2") // function form
+label1:
+	test.bool(true, false, "this should never be reached")
+label2:
+	test.bool(true, true, "")
+
+	goto label4 // keyword form
+label3:
+	test.bool(true, false, "this should never be reached")
+label4:
+	test.bool(true, true, "")
+
+	// struct testing
+	
+	var myStruct testStruct
+
+	test.bool(myStruct.testBool, false, "")
+	test.str(myStruct.testStr, "", "")
+	test.byte(myStruct.testByte, i32.byte(0), "")
+	test.i32(myStruct.testI32, 0, "")
+	test.i64(myStruct.testI64, i32.i64(0), "")
+	test.f32(myStruct.testF32, i32.f32(0), "")
+	test.f64(myStruct.testF64, i32.f64(0), "")
+	test.[]bool(myStruct.testBoolA, []bool{}, "")
+	test.[]byte(myStruct.testByteA, []byte{}, "")
+	test.[]str(myStruct.testStrA, []str{}, "")
+	test.[]i32(myStruct.testI32A, []i32{}, "")
+	test.[]i64(myStruct.testI64A, []i64{}, "")
+	test.[]f32(myStruct.testF32A, []f32{}, "")
+	test.[]f64(myStruct.testF64A, []f64{}, "")
+	
+	myStruct.testBool = true
+	myStruct.testStr = "hello ≈∫®ƒ¥"
+	myStruct.testByte = i32.byte(123)
+	myStruct.testI32 = 123
+	myStruct.testI64 = i32.i64(123)
+	myStruct.testF32 = i32.f32(123)
+	myStruct.testF64 = i32.f64(123)
+
+	myStruct.testBoolA = []bool{true, false, true}
+	myStruct.testByteA = []byte{1, 2, 3}
+	myStruct.testStrA = []str{"str1", "str2", "str3"}
+	myStruct.testI32A = []i32{1, 2, 3}
+	myStruct.testI64A = []i64{1, 2, 3}
+	myStruct.testF32A = []f32{1.5, 2.5, 3.5}
+	myStruct.testF64A = []f64{1.5, 2.5, 3.5}
+
+	test.bool(myStruct.testBool, true, "")
+	test.str(myStruct.testStr, "hello ≈∫®ƒ¥", "")
+	test.byte(myStruct.testByte, i32.byte(123), "")
+	test.i32(myStruct.testI32, 123, "")
+	test.i64(myStruct.testI64, i32.i64(123), "")
+	test.f32(myStruct.testF32, i32.f32(123), "")
+	test.f64(myStruct.testF64, i32.f64(123), "")
+	
+	test.[]bool(myStruct.testBoolA, []bool{true, false, true}, "")
+	test.[]byte(myStruct.testByteA, []byte{1, 2, 3}, "")
+	test.[]i32(myStruct.testI32A, []i32{1, 2, 3}, "")
+	test.[]i64(myStruct.testI64A, []i64{1, 2, 3}, "")
+	test.[]f32(myStruct.testF32A, []f32{1.5, 2.5, 3.5}, "")
+	test.[]f64(myStruct.testF64A, []f64{1.5, 2.5, 3.5}, "")
+
+	// testing shrinking the struct internal slice with smaller arrays
+
+	myStruct.testBoolA = []bool{true}
+	myStruct.testByteA = []byte{1}
+	myStruct.testStrA = []str{"str1"}
+	myStruct.testI32A = []i32{1}
+	myStruct.testI64A = []i64{1}
+	myStruct.testF32A = []f32{1.5}
+	myStruct.testF64A = []f64{1.5}
+
+	test.[]bool(myStruct.testBoolA, []bool{true}, "")
+	test.[]byte(myStruct.testByteA, []byte{1}, "")
+	test.[]i32(myStruct.testI32A, []i32{1}, "")
+	test.[]i64(myStruct.testI64A, []i64{1}, "")
+	test.[]f32(myStruct.testF32A, []f32{1.5}, "")
+	test.[]f64(myStruct.testF64A, []f64{1.5}, "")
+
+	// testing global variables in current package or module
+
+	test.bool(testBool, false, "")
+	testBool = true
+	test.bool(testBool, true, "")
+
+	test.str(testStr, "", "")
+	testStr = "hello ≈∫®ƒ¥"
+	test.str(testStr, "hello ≈∫®ƒ¥", "")
+
+	test.byte(testByte, i32.byte(0), "")
+	testByte = i32.byte(200)
+	test.byte(testByte, i32.byte(200), "")
+
+	test.i32(testI32, 0, "")
+	testI32 = 200
+	test.i32(testI32, 200, "")
+
+	test.i64(testI64, i32.i64(0), "")
+	testI64 = i32.i64(200)
+	test.i64(testI64, i32.i64(200), "")
+
+	test.f32(testF32, 0.0, "")
+	testF32 = 200.5
+	test.f32(testF32, 200.5, "")
+
+	test.f64(testF64, f32.f64(0.0), "")
+	testF64 = f32.f64(200.5)
+	test.f64(testF64, f32.f64(200.5), "")
+
+	test.[]bool(testBoolA, []bool{}, "")
+	testBoolA = []bool{true, true, false}
+	test.[]bool(testBoolA, []bool{true, true, false}, "")
+
+	test.[]byte(testByteA, []byte{}, "")
+	testByteA = []byte{44, 144, 244}
+	test.[]byte(testByteA, []byte{44, 144, 244}, "")
+
+	test.[]str(testStrA, []str{}, "")
+	testStrA = []str{"str1", "str2", "str3"}
+	test.[]str(testStrA, []str{"str1", "str2", "str3"}, "")
+
+	test.[]i32(testI32A, []i32{}, "")
+	testI32A = []i32{44, 144, 244}
+	test.[]i32(testI32A, []i32{44, 144, 244}, "")
+
+	test.[]i64(testI64A, []i64{}, "")
+	testI64A = []i64{44, 144, 244}
+	test.[]i64(testI64A, []i64{44, 144, 244}, "")
+
+	test.[]f32(testF32A, []f32{}, "")
+	testF32A = []f32{44.5, 144.5, 244.5}
+	test.[]f32(testF32A, []f32{44.5, 144.5, 244.5}, "")
+
+	test.[]f64(testF64A, []f64{}, "")
+	testF64A = []f64{44.5, 144.5, 244.5}
+	test.[]f64(testF64A, []f64{44.5, 144.5, 244.5}, "")
+
+	testModifiedGlobals()
+
+	// testing changed globals from function
+	
+	test.bool(testBool, false, "")
+	test.str(testStr, "bye ≈∫® bye", "")
+	test.byte(testByte, i32.byte(100), "")
+	test.i32(testI32, 100, "")
+	test.i64(testI64, i32.i64(100), "")
+	test.f32(testF32, 100.5, "")
+	test.f64(testF64, f32.f64(100.5), "")
+	test.[]bool(testBoolA, []bool{false, false, true}, "")
+	test.[]byte(testByteA, []byte{33, 133, 233}, "")
+	test.[]str(testStrA, []str{"str100"}, "")
+	test.[]i32(testI32A, []i32{33, 133, 233}, "")
+	test.[]i64(testI64A, []i64{33, 133, 233}, "")
+	test.[]f32(testF32A, []f32{33.5, 133.5, 233.5}, "")
+	test.[]f64(testF64A, []f64{33.5, 133.5, 233.5}, "")
+
+	modifyingStruct(myStruct)
+
+	test.bool(myStruct.testBool, false, "")
+	test.str(myStruct.testStr, "bye ≈∫® bye", "")
+	test.byte(myStruct.testByte, i32.byte(100), "")
+	test.i32(myStruct.testI32, 100, "")
+	test.i64(myStruct.testI64, i32.i64(100), "")
+	test.f32(myStruct.testF32, 100.5, "")
+	test.f64(myStruct.testF64, f32.f64(100.5), "")
+	test.[]bool(myStruct.testBoolA, []bool{false, false, true}, "")
+	test.[]byte(myStruct.testByteA, []byte{33, 133, 233}, "")
+	test.[]str(myStruct.testStrA, []str{"str100"}, "")
+	test.[]i32(myStruct.testI32A, []i32{33, 133, 233}, "")
+	test.[]i64(myStruct.testI64A, []i64{33, 133, 233}, "")
+	test.[]f32(myStruct.testF32A, []f32{33.5, 133.5, 233.5}, "")
+	test.[]f64(myStruct.testF64A, []f64{33.5, 133.5, 233.5}, "")
+
+	returnedStruct := returningStruct()
+
+	test.bool(returnedStruct.testBool, true, "")
+	test.str(returnedStruct.testStr, "≈∫® returning", "")
+	test.byte(returnedStruct.testByte, i32.byte(70), "")
+	test.i32(returnedStruct.testI32, 70, "")
+	test.i64(returnedStruct.testI64, i32.i64(70), "")
+	test.f32(returnedStruct.testF32, 70.5, "")
+	test.f64(returnedStruct.testF64, f32.f64(70.5), "")
+	test.[]bool(returnedStruct.testBoolA, []bool{true, true, false, false, true}, "")
+	test.[]byte(returnedStruct.testByteA, []byte{70, 170, 220}, "")
+	test.[]str(returnedStruct.testStrA, []str{"str100"}, "")
+	test.[]i32(returnedStruct.testI32A, []i32{70, 170, 270}, "")
+	test.[]i64(returnedStruct.testI64A, []i64{70, 170, 270}, "")
+	test.[]f32(returnedStruct.testF32A, []f32{70.5, 170.5, 270.5}, "")
+	test.[]f64(returnedStruct.testF64A, []f64{70.5, 170.5, 270.5}, "")
+
+	// testing if and if/else
+
+	// if without else first
+	var ifVal i32
+	test.i32(ifVal, 0, "")
+	if true {
+		ifVal = 20
+	}
+	test.i32(ifVal, 20, "")
+
+	if false {
+		ifVal = 50
+	}
+	test.i32(ifVal, 20, "")
+
+	fooTrue := true
+	fooFalse := false
+	
+	if fooTrue {
+		ifVal = 33
+	}
+	test.i32(ifVal, 33, "")
+
+	if fooFalse {
+		ifVal = 66
+	}
+	test.i32(ifVal, 33, "")
+	
+	if i32.lt(50, 100) {
+		ifVal = 100
+	}
+	test.i32(ifVal, 100, "")
+
+	if i32.gt(50, 100) {
+		ifVal = 200
+	}
+	test.i32(ifVal, 100, "")
+
+	if i32.gt(i32.add(20, 20), i32.add(10, 10)) {
+		ifVal = 7070
+	}
+	test.i32(ifVal, 7070, "")
+
+	if i32.lt(i32.add(20, 20), i32.add(10, 10)) {
+		ifVal = 2020
+	}
+	test.i32(ifVal, 7070, "")
+
+	// now with else
+	var ifVal i32
+	test.i32(ifVal, 0, "")
+	if true {
+		ifVal = 20
+	} else {
+		ifVal = -31
+	}
+	test.i32(ifVal, 20, "")
+
+	if false {
+		ifVal = 50
+	} else {
+		ifVal = 80
+	}
+	test.i32(ifVal, 80, "")
+
+	if fooTrue {
+		ifVal = 33
+	} else {
+		ifVal = -31
+	}
+	test.i32(ifVal, 33, "")
+
+	if fooFalse {
+		ifVal = 66
+	} else {
+		ifVal = 111
+	}
+	test.i32(ifVal, 111, "")
+	
+	if i32.lt(50, 100) {
+		ifVal = 100
+	} else {
+		ifVal = -31
+	}
+	test.i32(ifVal, 100, "")
+
+	if i32.gt(50, 100) {
+		ifVal = 200
+	} else {
+		ifVal = 777
+	}
+	test.i32(ifVal, 777, "")
+
+	if i32.gt(i32.add(20, 20), i32.add(10, 10)) {
+		ifVal = 7070
+	} else {
+		ifval = 1111
+	}
+	test.i32(ifVal, 7070, "")
+
+	if i32.lt(i32.add(20, 20), i32.add(10, 10)) {
+		ifVal = 7070
+	} else {
+		ifVal = 1212
+	}
+	test.i32(ifVal, 1212, "")
+
+	// nested ifs and if/else
+
+	if true {
+		if i32.gt(i32.add(20, 20), i32.add(10, 10)) {
+			ifVal = 10
+			if i32.lt(i32.add(20, 20), i32.add(10, 10)) {
+				ifVal = 20
+			}
+		}
+	}
+	test.i32(ifVal, 10, "")
+
+	if i32.lt(i32.add(20, 20), i32.add(10, 10)) {
+		ifVal = 8080
+	} else {
+		ifval = 50
+		if i32.lt(i32.add(20, 20), i32.add(10, 10)) {
+			ifVal = 9090
+		} else {
+			if i32.gt(i32.add(20, 20), i32.add(10, 10)) {
+				ifVal = 11
+			} else {
+				ifVal = 22
+			}
+		}
+	}
+	test.i32(ifVal, 11, "")
+
+	// for loop
+
+	var forVal i32
+	
+	for false {
+		forVal = 555
+	}
+	test.i32(forVal, 0, "")
+
+	forTrue := true
+	for forTrue {
+		forVal = 31
+		forTrue = false
+	}
+	test.i32(forVal, 31, "")
+
+	c := 0
+	for i32.lt(i32.add(c, 0), 10) {
+		forVal = c
+		c = i32.add(c, 1)
+	}
+	test.i32(forVal, 9, "")
+
+	for c := 10; i32.lt(i32.add(c, 0), 20); {
+		forVal = c
+		c = i32.add(c, 1)
+	}
+	test.i32(forVal, 19, "")
+
+	for c := 0; i32.lt(i32.add(c, 0), 10); c = i32.add(c, 1) {
+		forVal = c
+	}
+	test.i32(forVal, 9, "")
+
+	// nested if/elses and for loops
+
+	if i32.lt(5, 3) {
+		for true {
+			forVal = 1000
+		}
+		if false {
+			forVal = 3000
+		} else {
+			forVal = 5000
+		}
+	} else {
+		for c := 0; i32.lt(i32.add(c, 0), 10); c = i32.add(c, 2) {
+			if i32.lt(c, 5) {
+				forVal = c
+			} else {
+				forVal = c
+			}
+		}
+	}
+	test.i32(forVal, 8, "")
+
+	testNoReturn(5, 10)
+
+	a, s, m, d := multiReturn(20, 20)
+	test.i32(a, 40, "")
+	test.i32(s, 0, "")
+	test.i32(m, 400, "")
+	test.i32(d, 1, "")
+	
+	test.stop()
+}

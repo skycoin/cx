@@ -2,27 +2,27 @@ package main
 
 func main () (out i32) {
      	if false {
-		error := divI32(50, 0)
-		printStr("This will never be printed")
+		error := i32.div(50, 0)
+		str.print("This will never be printed")
 	}
 
 	if true {
-		printStr("This will always print")
+		str.print("This will always print")
 	}
 
-	if gtI32(5, 3) {
-		printStr("5 is greater than 3")
+	if i32.gt(5, 3) {
+		str.print("5 is greater than 3")
 	}
 
-	if eqStr("password123", "password123") {
-		printStr("Access granted")
+	if str.eq("password123", "password123") {
+		str.print("Access granted")
 	} else {
-		printStr("Access denied")
+		str.print("Access denied")
 	}
 
-	if lteqI32(50, 5) {
-		out = idI32(100)
+	if i32.lteq(50, 5) {
+		out = 100
 	} else {
-		out = idI32(200)
+		out = 200
 	}
 }

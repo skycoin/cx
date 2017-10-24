@@ -12,14 +12,47 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func argsToDefs (args []*CXArgument, inputs []*CXParameter, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
+func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
 	if len(inputs) == len(args) {
-		defs := make([]*CXDefinition, len(args), len(args) + 10)
+
+		// for _, out := range outputs {
+		// 	for _, inp := range inputs {
+		// 		if out.Name == inp.Name {
+		// 			out.Name = ""
+		// 		}
+		// 	}
+		// }
+		
+		defs := make([]*CXDefinition, len(args) + len(outputs), len(args) + len(outputs) + 10)
 		for i, arg := range args {
 			defs[i] = &CXDefinition{
 				Name: inputs[i].Name,
 				Typ: arg.Typ,
 				Value: arg.Value,
+				Module: mod,
+				Context: cxt,
+			}
+		}
+		for i, out := range outputs {
+			var zeroValue []byte
+			isBasic := false
+			for _, basic := range BASIC_TYPES {
+				if basic == out.Typ {
+					zeroValue = *MakeDefaultValue(basic)
+					isBasic = true
+					break
+				}
+			}
+			if !isBasic {
+				var err error
+				if zeroValue, err = ResolveStruct(out.Typ, cxt); err != nil {
+					return nil, err
+				}
+			}
+			defs[i+len(args)] = &CXDefinition{
+				Name: out.Name,
+				Typ: out.Typ,
+				Value: &zeroValue,
 				Module: mod,
 				Context: cxt,
 			}
@@ -254,7 +287,9 @@ func replPrintEvaluation (arg *CXArgument) {
 	fmt.Printf(">> ")
 	switch arg.Typ {
 	case "str":
-		fmt.Printf("%#v\n", string(*arg.Value))
+		var val string
+		encoder.DeserializeRaw(*arg.Value, &val)
+		fmt.Printf("%#v\n", val)
 	case "bool":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
@@ -479,6 +514,9 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 	return nil
 }
 
+var isTesting bool
+var isErrorPresent bool
+
 func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*CXArgument, exc *bool, excError *error) {
 	var err error
 	switch opName {
@@ -487,8 +525,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// it only prints the deserialized program for now
 		Deserialize((*argsCopy)[0].Value).PrintProgram(false)
 	case "evolve":
-		fnName := string(*(*argsCopy)[0].Value)
-		fnBag := string(*(*argsCopy)[1].Value)
+		var fnName string
+		var fnBag string
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &fnName)
+		encoder.DeserializeRaw(*(*argsCopy)[1].Value, &fnBag)
 		
 		var inps []float64
 		encoder.DeserializeRaw(*(*argsCopy)[2].Value, &inps)
@@ -516,8 +556,12 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		} else {
 			fmt.Println("true")
 		}
-	case "str.print": fmt.Println(string(*(*argsCopy)[0].Value))
-	case "byte.print": fmt.Println((*(*argsCopy)[0].Value)[0])
+	case "str.print":
+		var val string
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
+		fmt.Println(val)
+	case "byte.print":
+		fmt.Println((*(*argsCopy)[0].Value)[0])
 	case "i32.print":
 		var val int32
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
@@ -550,7 +594,14 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		}
 		fmt.Print("]")
 		fmt.Println()
-	case "[]byte.print": fmt.Println(*(*argsCopy)[0].Value)
+	case "[]byte.print":
+		var val []byte
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
+		fmt.Println(val)
+	case "[]str.print":
+		var val []string
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
+		fmt.Println(val)
 	case "[]i32.print":
 		var val []int32
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
@@ -568,7 +619,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 		// identity functions
-	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
 	case "identity": identity((*argsCopy)[0], expr, call)
 		// cast functions
 	case "[]byte.str": err = castToStr((*argsCopy)[0], expr, call)
@@ -609,6 +660,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "f64.lteq": err = lteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f64.gteq": err = gteqF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "str.lt": err = ltStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "str.gt": err = gtStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "str.eq": err = eqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "str.lteq": err = lteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "str.gteq": err = gteqStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -652,6 +704,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// make functions
 	case "[]bool.make": err = makeArray("[]bool", (*argsCopy)[0], expr, call)
 	case "[]byte.make": err = makeArray("[]byte", (*argsCopy)[0], expr, call)
+	case "[]str.make": err = makeArray("[]str", (*argsCopy)[0], expr, call)
 	case "[]i32.make": err = makeArray("[]i32", (*argsCopy)[0], expr, call)
 	case "[]i64.make": err = makeArray("[]i64", (*argsCopy)[0], expr, call)
 	case "[]f32.make": err = makeArray("[]f32", (*argsCopy)[0], expr, call)
@@ -661,6 +714,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "[]bool.write": err = writeBoolA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "[]byte.read": err = readByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]byte.write": err = writeByteA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "[]str.read": err = readStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]str.write": err = writeStrA((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "[]i32.read": err = readI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i32.write": err = writeI32A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "[]i64.read": err = readI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -671,6 +726,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "[]f64.write": err = writeF64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "[]bool.len": err = lenBoolA((*argsCopy)[0], expr, call)
 	case "[]byte.len": err = lenByteA((*argsCopy)[0], expr, call)
+	case "[]str.len": err = lenStrA((*argsCopy)[0], expr, call)
 	case "[]i32.len": err = lenI32A((*argsCopy)[0], expr, call)
 	case "[]i64.len": err = lenI64A((*argsCopy)[0], expr, call)
 	case "[]f32.len": err = lenF32A((*argsCopy)[0], expr, call)
@@ -679,12 +735,14 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "str.concat": err = concatStr((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]byte.append": err = appendByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]bool.append": err = appendBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]str.append": err = appendStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i32.append": err = appendI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i64.append": err = appendI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]f32.append": err = appendF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]f64.append": err = appendF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]byte.concat": err = concatByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]bool.concat": err = concatBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]str.concat": err = concatStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i32.concat": err = concatI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i64.concat": err = concatI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]f32.concat": err = concatF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -692,6 +750,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// copy functions
 	case "[]byte.copy": err = copyByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]bool.copy": err = copyBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]str.copy": err = copyStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i32.copy": err = copyI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i64.copy": err = copyI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]f32.copy": err = copyF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -713,9 +772,19 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "affExpr": err = affExpr((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], call.Operator, expr, call)
 		// debugging functions
 	case "halt":
-		fmt.Println(string(*(*argsCopy)[0].Value))
+		var msg string
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &msg)
+		fmt.Println(msg)
 		*exc = true
 		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
+	case "test.start": isTesting = true
+	case "test.stop": isTesting = false
+	case "test.error":
+		//fmt.Println(isErrorPresent)
+		err = test_error((*argsCopy)[0], isErrorPresent, expr)
+		isErrorPresent = false
+		case "test.bool", "test.byte", "test.str", "test.i32", "test.i64", "test.f32", "test.f64", "test.[]bool", "test.[]byte", "test.[]str", "test.[]i32", "test.[]f32", "test.[]f64":
+		err = test_value((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
 		// OpenGL
@@ -791,7 +860,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 }
 
 
-func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string) {
+func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
 	var offset int32 = 0
 
 	for _, f := range strct.Fields {
@@ -804,12 +873,42 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				size = 4
 			case "i64", "f64":
 				size = 8
-			case "str", "[]byte", "[]bool", "[]i32", "[]i64", "[]f32", "[]f64":
+			case "[]str":
+				var noElms int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &noElms)
+
+				noSize := (*val)[offset+4:]
+				
+				var subOffset int32
+				for c := 0; c < int(noElms); c++ {
+					var strSize int32
+					encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
+					//fmt.Println("strSize", strSize)
+					subOffset += strSize + 4
+				}
+				size = subOffset
+
+				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+			case "str", "[]byte":
 				var arrOffset int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
+
+				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+			case "[]bool", "[]i32", "[]f32":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+				
+				return (*val)[offset:offset+(size * 4) + 4], f.Typ, offset, (size * 4) + 4
+			case "[]i64", "[]f64":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+				
+				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
 			}
-			return (*val)[offset:offset+size], f.Typ
+			return (*val)[offset:offset+size], f.Typ, offset, size
 		}
 
 		switch f.Typ {
@@ -819,14 +918,42 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 			offset += 4
 		case "i64", "f64":
 			offset += 8
-		case "str", "[]byte", "[]bool", "[]i32", "[]i64", "[]f32", "[]f64":
+		case "[]str":
+			var noElms int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &noElms)
+
+			noSize := (*val)[offset+4:]
+
+			//fmt.Println("here", noElms)
+
+			var subOffset int32
+			for c := 0; c < int(noElms); c++ {
+				var strSize int32
+				encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
+				//fmt.Println("here", strSize)
+				subOffset += strSize + 4
+			}
+			//fmt.Println("here", subOffset + 4)
+			offset += subOffset + 4
+		case "str", "[]byte":
 			var arrOffset int32
 			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
-			offset += arrOffset
+
+			offset += arrOffset + 4
+		case "[]bool", "[]i32", "[]f32":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+			
+			offset += (arrOffset * 4) + 4
+		case "[]i64", "[]f64":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+
+			offset += (arrOffset * 8) + 4
 		}
 	}
 	
-	return nil, ""
+	return nil, "", 0, 0
 }
 
 func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
@@ -834,7 +961,7 @@ func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
 
 	switch typ {
 	case "[]byte":
-		return []byte{(*val)[index]}, "byte"
+		return (*val)[index+4:(index+1)+4], "byte"
 	case "[]bool":
 		return (*val)[(index+1)*4:(index+2)*4], "bool"
 	case "[]i32":
@@ -861,7 +988,11 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 	if withDebug {
 		PrintCallStack(call.Context.CallStack.Calls)
 	}
-	
+
+	// exceptions
+	var exc bool
+	var excError error
+
 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
 		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
@@ -924,11 +1055,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			argsCopy := make([]*CXArgument, len(argsRefs))
 			//argNames := make([]string, len(argsRefs))
 
-			// exceptions
-			var exc bool
-			var excError error
-			
 			if len(argsRefs) != len(expr.Operator.Inputs) {
+				
 				if len(argsRefs) == 1 {
 					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d was provided",
 						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
@@ -936,13 +1064,18 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
 						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				}
-				
 			}
 			
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
+				// if argsRefs[i].Typ == "str" {
+				// 	fmt.Println(argsRefs[i].Value)
+				// }
+
+				
 				if argsRefs[i].Typ == "ident" {
-					lookingFor := string(*argsRefs[i].Value)
+					var lookingFor string
+					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
 
 					var resolvedIdent *CXDefinition
 					isStructFld := false
@@ -979,11 +1112,11 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 									if stateDef.Name == identParts[0] {
 										// // Let's look in the byte array for the value
 										if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
-											byts, typ := resolveStructField(identParts[1], stateDef.Value, strct)
+											byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
 											argsCopy[i] = MakeArgument(&byts, typ)
 											
 										} else {
-											return err
+											excError = err
 										}
 										break
 									}
@@ -1011,7 +1144,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 								byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
 								argsCopy[i] = MakeArgument(&byts, typ)
 							} else {
-								return err
+								excError = err
 							}
 						}
 
@@ -1026,7 +1159,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					if resolvedIdent == nil && !isStructFld && !isArray {
 						return errors.New(fmt.Sprintf("%d: '%s' is undefined", expr.FileLine, lookingFor))
 					}
-					if !isStructFld && !isArray {
+					if resolvedIdent != nil && !isStructFld && !isArray {
 						// if it was a struct field, we already created the argument above for efficiency reasons
 						// the same goes to arrays in the form ident[index]
 						argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
@@ -1058,8 +1191,11 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 			if isNative {
 				checkNative(opName, expr, call, &argsCopy, &exc, &excError)
-
-				if exc {
+				if exc && isTesting {
+					isErrorPresent = true
+					//fmt.Println(excError)
+				}
+				if exc && !isTesting {
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {
@@ -1078,8 +1214,27 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				return call.call(withDebug, nCalls, callCounter)
 			} else {
 				// operator was not a native function
+				if exc && isTesting {
+					isErrorPresent = true
+					//fmt.Println(excError)
+				}
+				if exc && !isTesting {
+					fmt.Println()
+					fmt.Println("Call's State:")
+					for _, def := range call.State {
+						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Value, def.Typ))
+					}
+					fmt.Println()
+					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
+					for i, arg := range argsCopy {
+						fmt.Printf("%d: %s\n", i, PrintValue(arg.Value, arg.Typ))
+					}
+					fmt.Println()
+					return excError
+				}
+				
 				call.Line++ // once the subcall finishes, call next line
-				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, call.Module, call.Context); err == nil {
+				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Module, call.Context); err == nil {
 					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Context)
 
 					call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)

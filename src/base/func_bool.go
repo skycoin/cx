@@ -15,11 +15,11 @@ func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("readBoolA: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]bool.read: negative index %d", index))
 		}
 		
 		if index >= size {
-			return errors.New(fmt.Sprintf("readBoolA: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]bool.read: index %d exceeds array of length %d", index, size))
 		}
 
 		var value int32
@@ -42,14 +42,14 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("writeBoolA: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]bool.write: negative index %d", index))
 		}
 		
 		if index >= size {
-			return errors.New(fmt.Sprintf("writeBoolA: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]bool.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)+1)*4
+		i := (int(index)+1) * 4
 		for c := 0; c < 4; c++ {
 			(*arr.Value)[i + c] = (*val.Value)[c]
 		}

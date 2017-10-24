@@ -5,6 +5,13 @@ type Point struct {
 	y i32
 }
 
+type Strings struct {
+	lBound i64
+	string str
+	stringA []str
+	rBound i64
+}
+
 func printPoint (p Point) () {
 	str.print("From function")
 	i32.print(p.y)
@@ -17,19 +24,37 @@ func returnStruct () (p Point) {
 }
 
 func main () (out i32) {
-	var uPoint Point
-	i32.print(uPoint.x)
-	i32.print(uPoint.y)
+	// var uPoint Point
+	// i32.print(uPoint.x)
+	// i32.print(uPoint.y)
 
-	var myPoint Point
-	myPoint.x = i32.add(5, 10)
-	myPoint.y = i32.add(myPoint.x, 20)
+	// var myPoint Point
+	// myPoint.x = i32.add(5, 10)
+	// myPoint.y = i32.add(myPoint.x, 20)
 
-	i32.print(i32.add(myPoint.x, myPoint.y))
+	// i32.print(i32.add(myPoint.x, myPoint.y))
 
-	printPoint(myPoint)
+	// printPoint(myPoint)
 
-	ret := returnStruct()
-	i32.print(ret.x)
-	i32.print(ret.y)
+	// ret := returnStruct()
+	// i32.print(ret.x)
+	// i32.print(ret.y)
+
+	var strs Strings
+	i64.print(strs.lBound)
+	str.print(strs.string)
+	[]str.print(strs.stringA)
+	i64.print(strs.rBound)
+
+	str.print("=====")
+	strs.string = "le chat est rouge"
+	//strs.stringA = []str{"str1", "str23", "012345678901"}
+	strs.stringA = []str{"str1", "str2", "0123456789", "31313131313131"}
+	str.print("huouhotu")
+	str.print([]str.read(strs.stringA, 2))
+
+	i64.print(strs.lBound)
+	str.print(strs.string)
+	[]str.print(strs.stringA)
+	i64.print(strs.rBound)
 }

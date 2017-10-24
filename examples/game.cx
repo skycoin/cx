@@ -140,15 +140,17 @@ func compileShader(source str, shaderType i32) (shader i32) {
 	gl.CompileShader(shader)
 }
 
-func addNull (source str) (source str) {
+func addNull (source str) (sourceWithNull str) {
 	bSource := str.[]byte(source)
+
+	//withNull := []byte.append(bSource, i32.byte(0))
 	bSource := []byte.append(bSource, i32.byte(0))
-	source = []byte.str(bSource)
+	sourceWithNull = []byte.str(bSource)
 }
 
 func initOpenGL () (program i32) {
 	gl.Init()
-
+	
 	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
 	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 

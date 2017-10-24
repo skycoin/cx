@@ -56,7 +56,7 @@
 /</          { return LTHAN      }
 /<=/         { return LTEQ       }
 />=/         { return GTEQ       }
-/(str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
+/(test|str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]str|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
 	lval.tok = yylex.Text()
 	return IDENT
 }
@@ -215,20 +215,21 @@ func repl () {
 
 var coreModule string = `
 package core
-func str.id (x str) (x str) {}
-func bool.id (x bool) (x bool) {}
-func byte.id (x byte) (x byte) {}
-func i32.id (x i32) (x i32) {}
-func i64.id (x i64) (x i64) {}
-func f32.id (x f32) (x f32) {}
-func f64.id (x f64) (x f64) {}
-func []bool.id (x []bool) (x []bool) {}
-func []byte.id (x []byte) (x []byte) {}
-func []i32.id (x []i32) (x []i32) {}
-func []i64.id (x []i64) (x []i64) {}
-func []f32.id (x []f32) (x []f32) {}
-func []f64.id (x []f64) (x []f64) {}
-func identity (ident str) (ident str) {}
+func str.id (x str) (_22x str) {}
+func bool.id (x bool) (_x bool) {}
+func byte.id (x byte) (_x byte) {}
+func i32.id (x i32) (_x i32) {}
+func i64.id (x i64) (_x i64) {}
+func f32.id (x f32) (_x f32) {}
+func f64.id (x f64) (_x f64) {}
+func []bool.id (x []bool) (_x []bool) {}
+func []byte.id (x []byte) (_x []byte) {}
+func []str.id (x []str) (_x []str) {}
+func []i32.id (x []i32) (_x []i32) {}
+func []i64.id (x []i64) (_x []i64) {}
+func []f32.id (x []f32) (_x []f32) {}
+func []f64.id (x []f64) (_x []f64) {}
+func identity (ident str) (_ident str) {}
 
 func i32.add (n1 i32, n2 i32) (out i32) {}
 func i32.sub (n1 i32, n2 i32) (out i32) {}
@@ -370,6 +371,7 @@ func f32.print (n f32) () {}
 func f64.print (n f64) () {}
 func []bool.print (n []bool) () {}
 func []byte.print (n []byte) () {}
+func []str.print (n []str) () {}
 func []i32.print (n []i32) () {}
 func []i64.print (n []i64) () {}
 func []f32.print (n []f32) () {}
@@ -377,6 +379,7 @@ func []f64.print (n []f64) () {}
 
 func []bool.make (size i32) (arr []bool) {}
 func []byte.make (size i32) (arr []byte) {}
+func []str.make (size i32) (arr []str) {}
 func []i32.make (size i32) (arr []i32) {}
 func []i64.make (size i32) (arr []i64) {}
 func []f32.make (size i32) (arr []f32) {}
@@ -386,6 +389,8 @@ func []bool.read (arr []bool, idx i32) (lit bool) {}
 func []bool.write (arr []bool, idx i32, val bool) () {}
 func []byte.read (arr []byte, idx i32) (lit byte) {}
 func []byte.write (arr []byte, idx i32, val byte) () {}
+func []str.read (arr []str, idx i32) (lit str) {}
+func []str.write (arr []str, idx i32, val str) () {}
 func []i32.read (arr []i32, idx i32) (lit i32) {}
 func []i32.write (arr []i32, idx i32, val i32) () {}
 func []i64.read (arr []i64, idx i32) (lit i64) {}
@@ -397,6 +402,7 @@ func []f64.write (arr []f64, idx i32, val f64) () {}
 
 func []bool.len (arr []bool) (len i32) {}
 func []byte.len (arr []byte) (len i32) {}
+func []str.len (arr []str) (len i32) {}
 func []i32.len (arr []i32) (len i32) {}
 func []i64.len (arr []i64) (len i32) {}
 func []f32.len (arr []f32) (len i32) {}
@@ -405,6 +411,7 @@ func []f64.len (arr []f64) (len i32) {}
 func str.concat (arr1 str, arr2 str) (conc str) {}
 func []byte.concat (arr1 []byte, arr2 []byte) (conc []byte) {}
 func []bool.concat (arr1 []bool, arr2 []bool) (conc []bool) {}
+func []str.concat (arr1 []str, arr2 []str) (conc []str) {}
 func []i32.concat (arr1 []i32, arr2 []i32) (conc []i32) {}
 func []i64.concat (arr1 []i64, arr2 []i64) (conc []i64) {}
 func []f32.concat (arr1 []f32, arr2 []f32) (conc []f32) {}
@@ -412,6 +419,7 @@ func []f64.concat (arr1 []f64, arr2 []f64) (conc []f64) {}
 
 func []byte.append (arr1 []byte, lit byte) (conc []byte) {}
 func []bool.append (arr1 []bool, lit bool) (conc []bool) {}
+func []str.append (arr1 []str, lit str) (conc []str) {}
 func []i32.append (arr1 []i32, lit i32) (conc []i32) {}
 func []i64.append (arr1 []i64, lit i64) (conc []i64) {}
 func []f32.append (arr1 []f32, lit f32) (conc []f32) {}
@@ -419,6 +427,7 @@ func []f64.append (arr1 []f64, lit f64) (conc []f64) {}
 
 func []byte.copy (arr1 []byte, arr2 []byte) () {}
 func []bool.copy (arr1 []bool, arr2 []bool) () {}
+func []str.copy (arr1 []str, arr2 []str) () {}
 func []i32.copy (arr1 []i32, arr2 []i32) () {}
 func []i64.copy (arr1 []i64, arr2 []i64) () {}
 func []f32.copy (arr1 []f32, arr2 []f32) () {}
@@ -444,9 +453,30 @@ func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, ite
 func serialize () (sPrgrm []byte) {}
 func deserialize (sPrgrm []byte) (err bool) {}
 
-func initDef (typ str) (typ str) {}
+func initDef (typ str) (_typ str) {}
 
 func halt (msg str) (out bool) {}
+
+func test.start () () {}
+func test.stop () () {}
+func test.error (msg str) () {}
+func test.bool (result bool, expected bool, message str) () {}
+func test.str (result str, expected str, message str) () {}
+func test.byte (result byte, expected byte, message str) () {}
+
+func test.i32 (result i32, expected i32, message str) () {}
+func test.i64 (result i64, expected i64, message str) () {}
+func test.f32 (result f32, expected f32, message str) () {}
+func test.f64 (result f64, expected f64, message str) () {}
+
+func test.[]byte (result []byte, expected []byte, message str) () {}
+func test.[]bool (result []bool, expected []bool, message str) () {}
+func test.[]str (result []str, expected []str, message str) () {}
+func test.[]i32 (result []i32, expected []i32, message str) () {}
+func test.[]i64 (result []i64, expected []i64, message str) () {}
+func test.[]f32 (result []f32, expected []f32, message str) () {}
+func test.[]f64 (result []f64, expected []f64, message str) () {}
+
 
 /*
   Runtime
@@ -532,12 +562,6 @@ func glfw.SetKeyCallback (window str, fnName str) () {}
 func os.Create (fileName str) () {}
 func os.Open (fileName str) () {}
 func os.Close (fileName str) () {}
-
-/*
-  Image
-*/
-
-
 
 package glfw
 
@@ -817,55 +841,6 @@ func (yylex Lexer) Error (e string) {
 }
 
 func main () {
-	// Foo()
-	// foo := make([]byte, 10, 10)
-
-	// for c := 0; c < 10; c++ {
-	// 	foo[c] = byte(c)
-	// }
-	
-	// bar := foo[:]
-
-	// for c := 0; c < 10; c++ {
-	// 	fmt.Println(&foo[c])
-	// }
-	
-	// fmt.Println()
-
-	// for c := 0; c < 10; c++ {
-	// 	fmt.Println(&bar[c])
-	// }
-	
-
-	
-	// //foo := Point{x: 10, y: 20}
-	// points := []Point{Point{x: 10, y: 20}, Point{x: 30, y: 40}}
-	// foo := Board{points: points, rects: []Rectangle{Rectangle{height: 111, width: 222}}}
-	// encoded := encoder.Serialize(foo)
-	// fmt.Println(encoded)
-
-	// var des Board
-	// encoder.DeserializeRaw(encoded, &des)
-	// //fmt.Println(encoder.Serialize(foo))
-	// fmt.Println(des)
-
-	// var myPoint Point
-	// sMyPoint := encoder.Serialize(myPoint)
-
-	// fmt.Println("myPoint")
-	// fmt.Println(sMyPoint)
-	
-	// var dsMyPoint Point
-	// encoder.DeserializeRaw(sMyPoint, &dsMyPoint)
-	// fmt.Println(dsMyPoint.x)
-
-
-	// str := "helló"
-	// sStr := encoder.Serialize(str)
-	// fmt.Println(sStr)
-
-	
-	
 	//Foo()
 	runtime.LockOSThread()
 	//runtime.GOMAXPROCS(2)

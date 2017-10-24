@@ -64,7 +64,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int32(0) {
-			return errors.New("divI32: Division by 0")
+			return errors.New("i32.div: Division by 0")
 		}
 
 		output := encoder.SerializeAtomic(int32(num1 / num2))
@@ -84,7 +84,7 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int32(0) {
-			return errors.New("modI32: Division by 0")
+			return errors.New("i32.mod: Division by 0")
 		}
 
 		output := encoder.Serialize(int32(num1 % num2))
@@ -169,7 +169,7 @@ func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		encoder.DeserializeRaw(*max.Value, &maximum)
 
 		if minimum > maximum {
-			return errors.New(fmt.Sprintf("randI32: min must be less than max (%d !< %d)", minimum, maximum))
+			return errors.New(fmt.Sprintf("i32.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
 
 		rand.Seed(time.Now().UTC().UnixNano())
@@ -191,11 +191,11 @@ func readI32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("readI32A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]i32.read: negative index %d", index))
 		}
 		
 		if index >= size {
-			return errors.New(fmt.Sprintf("readI32A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]i32.read: index %d exceeds array of length %d", index, size))
 		}
 
 		var value int32
@@ -218,11 +218,11 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 		
 		if index < 0 {
-			return errors.New(fmt.Sprintf("writeI32A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]i32.write: negative index %d", index))
 		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("writeI32A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]i32.write: index %d exceeds array of length %d", index, size))
 		}
 
 		i := (int(index)+1)*4

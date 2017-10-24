@@ -4,7 +4,7 @@ const NON_ASSIGN_PREFIX = "nonAssign"
 const CORE_MODULE = "core"
 var BASIC_TYPES []string = []string{
 	"bool", "str", "byte", "i32", "i64", "f32", "f64",
-	"[]bool", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
+	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
 }
 var NATIVE_FUNCTIONS = map[string]bool{
 	"i32.add":true, "i32.mul":true, "i32.sub":true, "i32.div":true,
@@ -18,30 +18,33 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"str.print":true, "byte.print":true, "i32.print":true, "i64.print":true,
 	"f32.print":true, "f64.print":true, "[]byte.print":true, "[]i32.print":true,
 	"[]i64.print":true, "[]f32.print":true, "[]f64.print":true, "bool.print":true,
-	"[]bool.print":true,
+	"[]bool.print":true, "[]str.print":true,
 
 	"str.id":true, "bool.id":true, "byte.id":true, "i32.id":true, "i64.id":true, "f32.id":true, "f64.id":true,
-	"[]bool.id":true, "[]byte.id":true, "[]i32.id":true, "[]i64.id":true, "[]f32.id":true, "[]f64.id":true,
+	"[]bool.id":true, "[]byte.id":true, "[]str.id":true, "[]i32.id":true, "[]i64.id":true, "[]f32.id":true, "[]f64.id":true,
 	"identity":true,
 
-	"[]bool.make":true, "[]byte.make":true, "[]i32.make":true,
-	"[]i64.make":true, "[]f32.make":true, "[]f64.make":true,
+	"[]bool.make":true, "[]byte.make":true, "[]str.make":true,
+	"[]i32.make":true, "[]i64.make":true, "[]f32.make":true, "[]f64.make":true,
+	
 
-	"[]bool.read":true, "[]bool.write":true,
-	"[]byte.read":true, "[]byte.write":true, "[]i32.read":true, "[]i32.write":true,
+	"[]bool.read":true, "[]bool.write":true, "[]byte.read":true, "[]byte.write":true,
+	"[]str.read":true, "[]str.write":true, "[]i32.read":true, "[]i32.write":true,
+	"[]i64.read":true, "[]i64.write":true,
 	"[]f32.read":true, "[]f32.write":true, "[]f64.read":true, "[]f64.write":true,
+	
 	"[]bool.len":true, "[]byte.len":true, "[]i32.len":true, "[]i64.len":true,
-	"[]f32.len":true, "[]f64.len":true,
+	"[]f32.len":true, "[]f64.len":true, "[]str.len":true,
 
-	"str.concat":true, "[]byte.concat":true, "[]bool.concat":true,
+	"str.concat":true, "[]byte.concat":true, "[]bool.concat":true, "[]str.concat":true,
 	"[]i32.concat":true, "[]i64.concat":true, "[]f32.concat":true, "[]f64.concat":true,
 
-	"[]byte.append":true, "[]bool.append":true,
+	"[]byte.append":true, "[]bool.append":true, "[]str.append":true,
 	"[]i32.append":true, "[]i64.append":true, "[]f32.append":true, "[]f64.append":true,
 	
-	"[]byte.copy":true, "[]bool.copy":true,
+	"[]byte.copy":true, "[]bool.copy":true, "[]str.copy":true,
 	"[]i32.copy":true, "[]i64.copy":true, "[]f32.copy":true, "[]f64.copy":true,
-
+	
 	"[]byte.str":true, "str.[]byte":true,
 	
 	"byte.i32":true, "byte.i64":true, "byte.f32":true, "byte.f64":true,
@@ -74,6 +77,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"and":true, "or":true, "not":true,
 	"sleep":true, "halt":true, "goTo":true, "baseGoTo":true,
 
+
+	
 	"setClauses":true, "addObject":true, "setQuery":true,
 	"remObject":true, "remObjects":true,
 
@@ -82,6 +87,12 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"serialize":true, "deserialize":true, "evolve":true,
 
 	"initDef":true,
+
+	"test.start":true, "test.stop":true,
+	"test.error":true, "test.bool":true, "test.str":true, "test.byte":true,
+	"test.i32":true, "test.i64":true, "test.f32":true, "test.f64":true,
+	"test.[]bool":true, "test.[]byte":true, "test.[]str":true, "test.[]i32":true,
+	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true, 
 
 	/*
           Runtime

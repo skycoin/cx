@@ -112,7 +112,8 @@ func baseGoTo (call *CXCall, predicate *CXArgument, thenLine *CXArgument, elseLi
 
 func goTo (call *CXCall, tag *CXArgument) error {
 	if err := checkType("goTo", "str", tag); err == nil {
-		tg := string(*tag.Value)
+		var tg string
+		encoder.DeserializeRaw(*tag.Value, &tg)
 
 		for _, expr := range call.Operator.Expressions {
 			if expr.Tag == tg {
@@ -151,7 +152,9 @@ func sleep (ms *CXArgument) error {
 
 func setClauses (clss *CXArgument, mod *CXModule) error {
 	if err := checkType("setClauses", "str", clss); err == nil {
-		clauses := string(*clss.Value)
+		var clauses string
+		encoder.DeserializeRaw(*clss.Value, &clauses)
+		
 		mod.AddClauses(clauses)
 
 		return nil
@@ -162,7 +165,9 @@ func setClauses (clss *CXArgument, mod *CXModule) error {
 
 func addObject (obj *CXArgument, mod *CXModule) error {
 	if err := checkType("addObject", "str", obj); err == nil {
-		mod.AddObject(MakeObject(string(*obj.Value)))
+		var object string
+		encoder.DeserializeRaw(*obj.Value, &object)
+		mod.AddObject(MakeObject(object))
 
 		return nil
 	} else {
@@ -172,7 +177,8 @@ func addObject (obj *CXArgument, mod *CXModule) error {
 
 func setQuery (qry *CXArgument, mod *CXModule) error {
 	if err := checkType("setQuery", "str", qry); err == nil {
-		query := string(*qry.Value)
+		var query string
+		encoder.DeserializeRaw(*qry.Value, &query)
 		mod.AddQuery(query)
 
 		return nil
@@ -183,7 +189,8 @@ func setQuery (qry *CXArgument, mod *CXModule) error {
 
 func remObject (obj *CXArgument, mod *CXModule) error {
 	if err := checkType("remObject", "str", obj); err == nil {
-		object := string(*obj.Value)
+		var object string
+		encoder.DeserializeRaw(*obj.Value, &object)
 		mod.RemoveObject(object)
 
 		return nil
@@ -203,9 +210,11 @@ func remObjects (mod *CXModule) error {
 */
 
 func remArg (tag *CXArgument, caller *CXFunction) error {
+	var tg string
+	encoder.DeserializeRaw(*tag.Value, &tg)
 	if err := checkType("remArg", "str", tag); err == nil {
 		for _, expr := range caller.Expressions {
-			if expr.Tag == string(*tag.Value) {
+			if expr.Tag == tg {
 				expr.RemoveArgument()
 				return nil
 			}
@@ -213,7 +222,7 @@ func remArg (tag *CXArgument, caller *CXFunction) error {
 	} else {
 		return err
 	}
-	return errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", string(*tag.Value)))
+	return errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", tg))
 }
 
 // func addArg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
@@ -234,11 +243,15 @@ func remArg (tag *CXArgument, caller *CXFunction) error {
 func addExpr (tag *CXArgument, fnName *CXArgument, caller *CXFunction, line int) error {
 	if err := checkType("addExpr", "str", fnName); err == nil {
 		mod := caller.Module
+
+		var opName string
+		var tg string
+		encoder.DeserializeRaw(*fnName.Value, &opName)
+		encoder.DeserializeRaw(*tag.Value, &tg)
 		
-		opName := string(*fnName.Value)
 		if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
 			expr := MakeExpression(fn)
-			expr.AddTag(string(*tag.Value))
+			expr.AddTag(tg)
 			
 			caller.AddExpression(expr)
 			return nil
@@ -251,9 +264,11 @@ func addExpr (tag *CXArgument, fnName *CXArgument, caller *CXFunction, line int)
 }
 
 func remExpr (tag *CXArgument, caller *CXFunction) error {
+	var tg string
+	encoder.DeserializeRaw(*tag.Value, &tg)
 	if err := checkType("remExpr", "str", tag); err == nil {
 		for i, expr := range caller.Expressions {
-			if expr.Tag == string(*tag.Value) {
+			if expr.Tag == tg {
 				caller.RemoveExpression(i)
 				return nil
 			}
@@ -261,18 +276,23 @@ func remExpr (tag *CXArgument, caller *CXFunction) error {
 	} else {
 		return err
 	}
-	return errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", string(*tag.Value)))
+	return errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", tg))
 }
 
 func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFunction, expr *CXExpression, call *CXCall) error {
+	var tg string
+	var _filter string
+	encoder.DeserializeRaw(*tag.Value, &tg)
+	encoder.DeserializeRaw(*filter.Value, &_filter)
+	
 	if err := checkThreeTypes("affExpr", "str", "str", "i32", tag, filter, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
 		if index == -1 {
 			for _, ex := range caller.Expressions {
-				if ex.Tag == string(*tag.Value) {
-					affs := FilterAffordances(ex.GetAffordances(), string(*filter.Value))
+				if ex.Tag == tg {
+					affs := FilterAffordances(ex.GetAffordances(), _filter)
 					PrintAffordances(affs)
 					val := encoder.Serialize(int32(len(affs)))
 
@@ -282,8 +302,8 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 			}
 		} else if index < -1 {
 			for _, ex := range caller.Expressions {
-				if ex.Tag == string(*tag.Value) {
-					affs := FilterAffordances(ex.GetAffordances(), string(*filter.Value))
+				if ex.Tag == tg {
+					affs := FilterAffordances(ex.GetAffordances(), _filter)
 					val := encoder.Serialize(int32(len(affs)))
 
 					assignOutput(&val, "i32", expr, call)
@@ -292,8 +312,8 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 			}
 		} else {
 			for _, ex := range caller.Expressions {
-				if ex.Tag == string(*tag.Value) {
-					affs := FilterAffordances(ex.GetAffordances(), string(*filter.Value))
+				if ex.Tag == tg {
+					affs := FilterAffordances(ex.GetAffordances(), _filter)
 					affs[index].ApplyAffordance()
 					val := encoder.Serialize(int32(len(affs)))
 
@@ -307,7 +327,7 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 	} else {
 		return err
 	}
-	return errors.New(fmt.Sprintf("affExpr: no expression with tag '%s' was found", string(*tag.Value)))
+	return errors.New(fmt.Sprintf("affExpr: no expression with tag '%s' was found", tg))
 }
 
 func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
@@ -363,14 +383,25 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 
 func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	found := false
-	name := string(*arg.Value)
+	var name string
+	encoder.DeserializeRaw(*arg.Value, &name)
+	//fmt.Println(name)
+
+	var foundDef *CXDefinition
+	
 	for _, def := range call.State {
 		if def.Name == name {
 			found = true
-			assignOutput(def.Value, def.Typ, expr, call)
-			return nil
+			foundDef = def
+			//return nil // we want to grab the last instance of that variable
 		}
 	}
+
+	if found && foundDef != nil {
+		assignOutput(foundDef.Value, foundDef.Typ, expr, call)
+		return nil
+	}
+	
 	if !found {
 		// then it can be a global
 		identParts := strings.Split(name, ".")
@@ -378,7 +409,7 @@ func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			
 			if len(identParts) > 1 {
 				if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
-					byts, typ := resolveStructField(identParts[1], def.Value, strct)
+					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
 					
 					assignOutput(&byts, typ, expr, call)
 					return nil
@@ -388,12 +419,13 @@ func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 			}
 		}
 	}
-	return errors.New(fmt.Sprintf("identity: identifier '%s' not found", string(*arg.Value)))
+	return errors.New(fmt.Sprintf("identity: identifier '%s' not found", name))
 }
 
 func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("initDef", "str", arg1); err == nil {
-		typName := string(*arg1.Value)
+		var typName string
+		encoder.DeserializeRaw(*arg1.Value, &typName)
 
 		isBasic := false
 		for _, basic := range BASIC_TYPES {
@@ -432,15 +464,22 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 
 		switch typ {
 		case "[]bool":
-			arr := make([]bool, len)
+			arr := make([]int32, len)
 			val := encoder.Serialize(arr)
 
 			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]byte":
 			arr := make([]byte, len)
+			val := encoder.Serialize(arr)
 
-			assignOutput(&arr, typ, expr, call)
+			assignOutput(&val, typ, expr, call)
+			return nil
+		case "[]str":
+			arr := make([]string, len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]i32":
 			arr := make([]int32, len)
@@ -479,5 +518,61 @@ func serialize_program (expr *CXExpression, call *CXCall) error {
 	val := Serialize(call.Context)
 
 	assignOutput(val, "[]byte", expr, call)
+	return nil
+}
+
+// test functions
+
+func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) error {
+	if !isErrorPresent {
+		var _message string
+		encoder.DeserializeRaw(*message.Value, &_message)
+		if _message == "" {
+			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur", expr.FileLine))
+		} else {
+			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur; %s", expr.FileLine, _message))
+		}
+		
+		return nil
+	} else {
+		return nil
+	}
+}
+
+func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
+	if result.Typ != expected.Typ {
+		fmt.Println(fmt.Sprintf("%d: result and expected value are not of the same type", expr.FileLine))
+		return nil
+	}
+	
+	equal := true
+	var _message string
+	encoder.DeserializeRaw(*message.Value, &_message)
+
+	if len(*result.Value) != len(*expected.Value) {
+		equal = false
+	}
+
+	// fmt.Println("")
+	// fmt.Println(*result.Value)
+	// fmt.Println(*expected.Value)
+
+	if equal {
+		for i, byt := range *result.Value {
+			if byt != (*expected.Value)[i] {
+				equal = false
+				break
+			}
+		}
+	}
+
+	if !equal {
+		if _message == "" {
+			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value", expr.FileLine))
+		} else {
+			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s", expr.FileLine, _message))
+		}
+	}
+	
 	return nil
 }

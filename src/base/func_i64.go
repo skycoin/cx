@@ -64,7 +64,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int64(0) {
-			return errors.New("divI64: Division by 0")
+			return errors.New("i64.div: Division by 0")
 		}
 		
 		output := encoder.SerializeAtomic(int64(num1 / num2))
@@ -84,7 +84,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw(*arg2.Value, &num2)
 
 		if num2 == int64(0) {
-			return errors.New("modI64: Division by 0")
+			return errors.New("i64.mod: Division by 0")
 		}
 
 		output := encoder.Serialize(int64(num1 % num2))
@@ -169,11 +169,11 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		encoder.DeserializeRaw(*max.Value, &maximum)
 
 		if minimum > maximum {
-			return errors.New(fmt.Sprintf("randI64: min must be less than max (%d !< %d)", minimum, maximum))
+			return errors.New(fmt.Sprintf("i64.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
 
 		rand.Seed(time.Now().UTC().UnixNano())
-		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
+		output := encoder.Serialize(int64(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
 		assignOutput(&output, "i64", expr, call)
 		return nil
@@ -191,11 +191,11 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("readI64A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]i64.read: negative index %d", index))
 		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("readI64A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]i64.read: index %d exceeds array of length %d", index, size))
 		}
 
 		var value int64
@@ -219,15 +219,15 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
 
 		if index < 0 {
-			return errors.New(fmt.Sprintf("writeI64A: negative index %d", index))
+			return errors.New(fmt.Sprintf("[]i64.write: negative index %d", index))
 		}
 
 		if index >= size {
-			return errors.New(fmt.Sprintf("writeI64A: index %d exceeds array of length %d", index, size))
+			return errors.New(fmt.Sprintf("[]i64.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)+1)*4
-		for c := 0; c < 4; c++ {
+		i := (int(index)*8)+4
+		for c := 0; c < 8; c++ {
 			(*arr.Value)[i + c] = (*val.Value)[c]
 		}
 		
@@ -397,8 +397,8 @@ func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 
 func copyI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.copy", "[]i64", "[]i64", arg1, arg2); err == nil {
-		var slice1 []int32
-		var slice2 []int32
+		var slice1 []int64
+		var slice2 []int64
 		encoder.DeserializeRaw(*arg1.Value, &slice1)
 		encoder.DeserializeRaw(*arg2.Value, &slice2)
 

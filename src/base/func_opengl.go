@@ -241,8 +241,12 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 
 func gl_Strs (source, freeFn *CXArgument) error {
 	if err := checkTwoTypes("gl.Strs", "str", "str", source, freeFn); err == nil {
-		fnName := string(*freeFn.Value)
-		dsSource := string(*source.Value)
+		//fmt.Println(*source.Value)
+		
+		var fnName string
+		var dsSource string
+		encoder.DeserializeRaw(*freeFn.Value, &fnName)
+		encoder.DeserializeRaw(*source.Value, &dsSource)
 		
 		csources, free := gl.Strs(dsSource)
 
@@ -255,9 +259,10 @@ func gl_Strs (source, freeFn *CXArgument) error {
 	}
 }
 
-func gl_Free (fnName *CXArgument) error {
-	if err := checkType("gl.Free", "str", fnName); err == nil {
-		fnName := string(*fnName.Value)
+func gl_Free (sFnName *CXArgument) error {
+	if err := checkType("gl.Free", "str", sFnName); err == nil {
+		var fnName string
+		encoder.DeserializeRaw(*sFnName.Value, &fnName)
 
 		(*freeFns[fnName])()
 		delete(freeFns, fnName)
@@ -277,7 +282,9 @@ func gl_ShaderSource (shader, count, xstring *CXArgument) error {
 		encoder.DeserializeAtomic(*shader.Value, &shad)
 		encoder.DeserializeAtomic(*count.Value, &cnt)
 
-		xstrin := string(*xstring.Value)
+		var xstrin string
+		encoder.DeserializeRaw(*xstring.Value, &xstrin)
+		
 		xstr := cSources[xstrin]
 
 		gl.ShaderSource(uint32(shad), cnt, xstr, nil)
@@ -685,7 +692,8 @@ func newTexture(file string) uint32 {
 
 func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("gl.NewTexture", "str", file); err == nil {
-		name := string(*file.Value)
+		var name string
+		encoder.DeserializeRaw(*file.Value, &name)
 
 		texture := newTexture(name)
 		output := encoder.Serialize(int32(texture))
