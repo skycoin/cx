@@ -131,10 +131,10 @@ func draw (vao i32, len i32) () {
 	gl.DrawArrays(gl.TRIANGLES, 0, i32.div(len, 3))
 }
 
-func addNull (source str) (source str) {
+func addNull (source str) (s str) {
 	bSource := str.[]byte(source)
 	bSource := []byte.append(bSource, i32.byte(0))
-	source = []byte.str(bSource)
+	s = []byte.str(bSource)
 }
 
 func initOpenGL () (program i32) {

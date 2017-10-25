@@ -5,27 +5,31 @@ var goSouth str = "going south."
 var goWest str = "going west."
 var goEast str = "going east."
 
-func robotAct (row i32, col i32, action str) (row i32, col i32) {
+func robotAct (row i32, col i32, action str) (r i32, c i32) {
 	str.print(action)
 	if str.eq(action, "going north.") {
-		row = i32.add(row, -1)
+		r = i32.add(row, -1)
+		c = col
 	}
 	if str.eq(action, "going south.") {
-		row = i32.add(row, 1)
+		r = i32.add(row, 1)
+		c = col
 	}
 	if str.eq(action, "going east.") {
-		col = i32.add(col, 1)
+		c = i32.add(col, 1)
+		r = row
 	}
 	if str.eq(action, "going west.") {
-		col = i32.add(col, -1)
+		c = i32.add(col, -1)
+		r = row
 	}
 }
 
-func robot (row i32, col i32) (row i32, col i32) {
+func robot (row i32, col i32) (r i32, c i32) {
 	remArg("robotAct")
 	affExpr("robotAct", "goNorth|goSouth|goWest|goEast", 0)
 	robotAct:
-	row, col = robotAct(row, col, "")
+	r, c = robotAct(row, col, "")
 }
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
@@ -38,7 +42,10 @@ func map1Dto2D (i i32, w i32) (r i32, c i32) {
 }
 
 func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) () {
+	//str.print("hello")
+	//i32.print(row)
 	remObjects()
+	//i32.print(map2Dto1D(i32.add(row, -1), col, width))
 	if []bool.read(wallMap, map2Dto1D(i32.add(row, -1), col, width)) {
 		addObject("northWall")
 	}

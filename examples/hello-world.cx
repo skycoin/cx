@@ -1,28 +1,5 @@
 package main
 
-type Strings struct {
-	lBound i64
-	string str
-	stringA []str
-	rBound i64
-}
-
-type Arrays struct {
-	int32 []i32
-	int64 []i64
-	float32 []f32
-	float64 []f64
-}
-
 func main () () {
-	var strs Strings
-	strs.string = "hello"
-	strs.stringA = []str{"str1", "str2"}
-
-	i64.print(strs.lBound)
-	str.print(strs.string)
-	[]str.print(strs.stringA)
-	i64.print(strs.rBound)
-	
-	//str.print("Hello World!")
+	str.print("Hello World!")
 }

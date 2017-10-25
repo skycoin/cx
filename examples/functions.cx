@@ -3,14 +3,14 @@ package main
 var PI f32 = 3.14159
 
 func circleArea (radius f32) (area f32) {
-	mulF32(mulF32(radius, radius), PI)
+	f32.mul(f32.mul(radius, radius), PI)
 }
 
 func circlePerimeter (radius f32) (perimeter f32) {
-	perimeter := mulF32(mulF32(2, radius), PI)
+	perimeter := f32.mul(f32.mul(i32.f32(2), radius), PI)
 }
 
 func main () (area f32) {
-	area := circleArea(2)
-	printF32(circlePerimeter(5))
+	area := circleArea(i32.f32(2))
+	f32.print(circlePerimeter(i32.f32(5)))
 }

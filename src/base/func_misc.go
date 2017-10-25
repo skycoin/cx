@@ -311,6 +311,7 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 				}
 			}
 		} else {
+			
 			for _, ex := range caller.Expressions {
 				if ex.Tag == tg {
 					affs := FilterAffordances(ex.GetAffordances(), _filter)
@@ -323,6 +324,7 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 					return nil
 				}
 			}
+			
 		}
 	} else {
 		return err

@@ -10,6 +10,8 @@ import (
 	"github.com/mndrix/golog"
 	"github.com/mndrix/golog/read"
 	"github.com/mndrix/golog/term"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 type byFnName []*CXFunction
@@ -178,7 +180,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			if reqType == param.Typ {
 				inOutNames[i] = param.Name
 				defsTypes = append(defsTypes, param.Typ)
-				identName := []byte(param.Name)
+				identName := encoder.Serialize(param.Name)
 				args = append(args, &CXArgument{
 					Typ: identType,
 					Value: &identName,
@@ -203,7 +205,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				
 				if notDuplicated {
 					defsTypes = append(defsTypes, def.Typ)
-					identName := []byte(def.Name)
+					identName := encoder.Serialize(def.Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
@@ -231,7 +233,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		
 		// Adding local definitions
 		for _, ex := range expr.Function.Expressions {
-			
 			if ex == expr {
 				break
 			}
@@ -245,6 +246,21 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				}
 			}
 			if isNonAssign {
+				continue
+			}
+
+			if ex.Operator.Name == "initDef" {
+				var typ string
+				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
+				val := encoder.Serialize(ex.OutputNames[0].Name)
+				//val := []byte(ex.OutputNames[0].Name)
+
+				defsTypes = append(defsTypes, typ)
+				
+				args = append(args, &CXArgument{
+					Typ: identType,
+					Value: &val,
+				})
 				continue
 			}
 
@@ -266,12 +282,9 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			/// ====
 
 			for i, out := range ex.Operator.Outputs {
-				//fmt.Println(ex.OutputNames[i].Name)
-				fmt.Println("here", reqType, out.Typ, ex.Operator.Name)
 				if reqType == out.Typ {
-					fmt.Println(reqType)
 					defsTypes = append(defsTypes, out.Typ)
-					identName := []byte(ex.OutputNames[i].Name)
+					identName := encoder.Serialize(ex.OutputNames[i].Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
@@ -291,7 +304,8 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 
 		for i, arg := range args {
 			theArg := arg
-			argName := string(*arg.Value)
+			var argName string
+			encoder.DeserializeRaw(*arg.Value, &argName)
 			isSkip := false
 
 			if len(expr.Module.Objects) > 0 && len(expr.Module.Clauses) > 0 && expr.Module.Query != "" && re.FindString(argName) != "" {
@@ -334,9 +348,9 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			if isSkip {
 				continue
 			}
-			
+
 			affs = append(affs, &CXAffordance{
-				Description: concat("AddArgument ", string(*arg.Value), " ", defsTypes[i]),
+				Description: concat("AddArgument ", argName, " ", defsTypes[i]),
 				Action: func() {
 					expr.AddArgument(theArg)
 				}})

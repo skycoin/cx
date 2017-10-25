@@ -229,11 +229,13 @@ func concat (strs ...string) string {
 //                      )))
 
 
-func PrintValue (value *[]byte, typName string) string {
+func PrintValue (identName string, value *[]byte, typName string, cxt *CXProgram) string {
 	var argName string
 	switch typName {
 	case "str":
-		argName = fmt.Sprintf("\"%s\"", string(*value))
+		var val string
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("\"%s\"", val)
 	case "bool":
 		var val int32
 		encoder.DeserializeRaw(*value, &val)
@@ -244,7 +246,9 @@ func PrintValue (value *[]byte, typName string) string {
 			argName = "true"
 		}
 	case "byte":
-		argName = fmt.Sprintf("%#v", value)
+		var val []byte
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
 	case "i32":
 		var val int32
 		encoder.DeserializeRaw(*value, &val)
@@ -265,6 +269,10 @@ func PrintValue (value *[]byte, typName string) string {
 		var val []byte
 		encoder.DeserializeRaw(*value, &val)
 		argName = fmt.Sprintf("%#v", val)
+	case "[]str":
+		var val []string
+		encoder.DeserializeRaw(*value, &val)
+		argName = fmt.Sprintf("%#v", val)
 	case "[]i32":
 		var val []int32
 		encoder.DeserializeRaw(*value, &val)
@@ -282,7 +290,18 @@ func PrintValue (value *[]byte, typName string) string {
 		encoder.DeserializeRaw(*value, &val)
 		argName = fmt.Sprintf("%#v", val)
 	default:
-		argName = string(*value)
+		// struct or custom type
+		if mod, err := cxt.GetCurrentModule(); err == nil {
+			if strct, err := cxt.GetStruct(typName, mod.Name); err == nil {
+				for _, fld := range strct.Fields {
+					val, typ, _, _ := resolveStructField(fld.Name, value, strct)
+					fmt.Printf("\t%s.%s:\t\t%s\n", identName, fld.Name, PrintValue("", &val, typ, cxt))
+				}
+			}
+		}
+
+
+		return ""
 	}
 
 	return argName

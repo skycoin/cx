@@ -489,7 +489,7 @@ debugging:      DSTATE
                 {
 			if len(cxt.CallStack.Calls) > 0 {
 				for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
-					fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Value, def.Typ))
+					fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
 				}
 			}
                 }

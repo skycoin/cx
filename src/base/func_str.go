@@ -328,7 +328,7 @@ func readStr (expr *CXExpression, call *CXCall) error {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	text = strings.Replace(text, "\n", "", -1)
-	output := []byte(text)
+	output := encoder.Serialize(text)
 
 	assignOutput(&output, "str", expr, call)
 	return nil

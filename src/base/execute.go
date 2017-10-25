@@ -775,6 +775,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		var msg string
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &msg)
 		fmt.Println(msg)
+		call.Line++
 		*exc = true
 		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
 	case "test.start": isTesting = true
@@ -1199,12 +1200,26 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {
-						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Value, def.Typ))
+						isBasic := false
+						for _, basic := range BASIC_TYPES {
+							if basic == def.Typ {
+								isBasic = true
+								break
+							}
+						}
+
+						if isBasic {
+							fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
+						} else {
+							fmt.Println(def.Name)
+							PrintValue(def.Name, def.Value, def.Typ, call.Context)
+						}
+						
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue(arg.Value, arg.Typ))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Context))
 					}
 					fmt.Println()
 					return excError
@@ -1222,12 +1237,12 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {
-						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Value, def.Typ))
+						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue(arg.Value, arg.Typ))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Context))
 					}
 					fmt.Println()
 					return excError
