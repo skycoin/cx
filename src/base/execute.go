@@ -670,7 +670,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "byte.lteq": err = lteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "byte.gteq": err = gteqByte((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// io functions
-		case "str.read": err = readStr(expr, call)
+	case "str.read": err = readStr(expr, call)
+	case "i32.read": err = readI32(expr, call)
 		// struct operations
 	case "initDef": err = initDef((*argsCopy)[0], expr, call)
 		// arithmetic functions
@@ -761,6 +762,11 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "i32.rand": err = randI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.rand": err = randI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// meta functions
+		
+	case "aff.query": err = aff_query((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "aff.execute": err = aff_execute((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "aff.print": err = aff_print((*argsCopy)[0], call)
+		
 	case "setClauses": err = setClauses((*argsCopy)[0], call.Operator.Module)
 	case "addObject": err = addObject((*argsCopy)[0], call.Operator.Module)
 	case "setQuery": err = setQuery((*argsCopy)[0], call.Operator.Module)
@@ -863,7 +869,6 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 
 func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
 	var offset int32 = 0
-
 	for _, f := range strct.Fields {
 		if f.Name == fld {
 			var size int32
@@ -884,7 +889,6 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				for c := 0; c < int(noElms); c++ {
 					var strSize int32
 					encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
-					//fmt.Println("strSize", strSize)
 					subOffset += strSize + 4
 				}
 				size = subOffset
@@ -976,6 +980,99 @@ func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
 	}
 	
 	return nil, ""
+}
+
+func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
+	var resolvedIdent *CXDefinition
+	
+	isStructFld := false
+	isArray := false
+
+	identParts := strings.Split(lookingFor, ".")
+
+	if len(identParts) > 1 {
+		if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+			// then it's an external definition or struct
+			isImported := false
+			for _, imp := range call.Operator.Module.Imports {
+				if imp.Name == identParts[0] {
+					isImported = true
+					break
+				}
+			}
+			if isImported {
+				if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
+					resolvedIdent = def
+				}
+			} else {
+				return nil, errors.New(fmt.Sprintf("Module '%s' not imported", mod.Name))
+			}
+		} else {
+			// then it's a global struct
+			mod := call.Operator.Module
+			if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
+				resolvedIdent = def
+			} else {
+				// then it's a local struct
+				isStructFld = true
+				for _, stateDef := range call.State {
+					if stateDef.Name == identParts[0] {
+						// // Let's look in the byte array for the value
+						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
+							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
+							return MakeArgument(&byts, typ), nil
+							
+						} else {
+							return nil, err
+						}
+					}
+				}
+			}
+		}
+	} else {
+		// then it's a local or global definition
+		local := false
+		arrayParts := strings.Split(lookingFor, "[")
+		if len(arrayParts) > 1 {
+			lookingFor = arrayParts[0]
+		}
+		for _, stateDef := range call.State {
+			if stateDef.Name == arrayParts[0] {
+				local = true
+				resolvedIdent = stateDef
+				break
+			}
+		}
+
+		if len(arrayParts) > 1 && local {
+			if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
+				isArray = true
+				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
+				return MakeArgument(&byts, typ), nil
+			} else {
+				//excError = err
+				return nil, err
+			}
+		}
+
+		if !local {
+			mod := call.Operator.Module
+			if def, err := mod.GetDefinition(lookingFor); err == nil {
+				resolvedIdent = def
+			}
+		}
+	}
+
+	if resolvedIdent == nil && !isStructFld && !isArray {
+		return nil, errors.New(fmt.Sprintf("'%s' is undefined", lookingFor))
+	}
+	
+	if resolvedIdent != nil && !isStructFld && !isArray {
+		// if it was a struct field, we already created the argument above for efficiency reasons
+		// the same goes to arrays in the form ident[index]
+		return MakeArgument(resolvedIdent.Value, resolvedIdent.Typ), nil
+	}
+	return nil, errors.New("identifier could not be resolved")
 }
 
 func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
@@ -1077,93 +1174,10 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				if argsRefs[i].Typ == "ident" {
 					var lookingFor string
 					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
-
-					var resolvedIdent *CXDefinition
-					isStructFld := false
-					isArray := false
-
-					identParts := strings.Split(lookingFor, ".")
-
-					if len(identParts) > 1 {
-						if mod, err := call.Context.GetModule(identParts[0]); err == nil {
-							// then it's an external definition or struct
-							isImported := false
-							for _, imp := range call.Operator.Module.Imports {
-								if imp.Name == identParts[0] {
-									isImported = true
-									break
-								}
-							}
-							if isImported {
-								if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
-									resolvedIdent = def
-								}
-							} else {
-								return errors.New(fmt.Sprintf("Module '%s' not imported", mod.Name))
-							}
-						} else {
-							// then it's a global struct
-							mod := call.Operator.Module
-							if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
-								resolvedIdent = def
-							} else {
-								// then it's a local struct
-								isStructFld = true
-								for _, stateDef := range call.State {
-									if stateDef.Name == identParts[0] {
-										// // Let's look in the byte array for the value
-										if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
-											byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
-											argsCopy[i] = MakeArgument(&byts, typ)
-											
-										} else {
-											excError = err
-										}
-										break
-									}
-								}
-							}
-						}
+					if arg, err := resolveIdent(lookingFor, call); err == nil {
+						argsCopy[i] = arg
 					} else {
-						// then it's a local or global definition
-						local := false
-						arrayParts := strings.Split(lookingFor, "[")
-						if len(arrayParts) > 1 {
-							lookingFor = arrayParts[0]
-						}
-						for _, stateDef := range call.State {
-							if stateDef.Name == arrayParts[0] {
-								local = true
-								resolvedIdent = stateDef
-								break
-							}
-						}
-
-						if len(arrayParts) > 1 && local {
-							if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
-								isArray = true
-								byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
-								argsCopy[i] = MakeArgument(&byts, typ)
-							} else {
-								excError = err
-							}
-						}
-
-						if !local {
-							mod := call.Operator.Module
-							if def, err := mod.GetDefinition(lookingFor); err == nil {
-								resolvedIdent = def
-							}
-						}
-					}
-
-					if resolvedIdent == nil && !isStructFld && !isArray {
-						return errors.New(fmt.Sprintf("%d: '%s' is undefined", expr.FileLine, lookingFor))
-					}
-					if resolvedIdent != nil && !isStructFld && !isArray {
-						// if it was a struct field, we already created the argument above for efficiency reasons
-						// the same goes to arrays in the form ident[index]
-						argsCopy[i] = MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
 					}
 				} else {
 					argsCopy[i] = argsRefs[i]

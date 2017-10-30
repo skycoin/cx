@@ -70,7 +70,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"str.lt":true, "str.gt":true, "str.eq":true, "str.lteq":true, "str.gteq":true,
 	"byte.lt":true, "byte.gt":true, "byte.eq":true, "byte.lteq":true, "byte.gteq":true,
 
-	"str.read":true,
+	"str.read":true, "i32.read":true,
 
 	"i32.rand":true, "i64.rand":true,
 
@@ -78,11 +78,13 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"sleep":true, "halt":true, "goTo":true, "baseGoTo":true,
 
 
-	
+
 	"setClauses":true, "addObject":true, "setQuery":true,
 	"remObject":true, "remObjects":true,
 
 	"remExpr":true, "remArg":true, "addExpr":true, "affExpr":true,
+
+	"aff.query":true, "aff.execute":true, "aff.print":true,
 
 	"serialize":true, "deserialize":true, "evolve":true,
 
@@ -254,7 +256,6 @@ type CXModule struct {
 	// Affordance inference
 	Clauses string
 	Objects []*CXObject
-	//Metas []*CXObject
 	Query string
 
 	CurrentFunction *CXFunction
@@ -343,5 +344,10 @@ type CXArgument struct {
 
 type CXAffordance struct {
 	Description string
+	Operator string
+	Name string
+	Typ string
+	//Inputs []string
+	//Outputs []string
 	Action func()
 }

@@ -124,12 +124,6 @@ func (strct *CXStruct) GetFields() ([]*CXField, error) {
 func (mod *CXModule) GetFunctions() ([]*CXFunction, error) {
 	// going from map to slice
 	if mod.Functions != nil {
-		// funcs := make([]*CXFunction, len(mod.Functions))
-		// i := 0
-		// for _, v := range mod.Functions {
-		// 	funcs[i] = v
-		// 	i++
-		// }
 		return mod.Functions, nil
 	} else {
 		return nil, errors.New("Module has no functions")
@@ -194,21 +188,6 @@ func (mod *CXModule) GetDefinition (defName string) (*CXDefinition, error) {
 		return nil, errors.New(fmt.Sprintf("Definition '%s' not found in module '%s'", defName, mod.Name))
 	}
 }
-
-// func (mod *CXModule) GetFunction (fnName string) (*CXFunction, error) {
-// 	var err error
-// 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
-// 		//modName = CORE_MODULE
-// 		if mod, err = mod.Context.GetModule(CORE_MODULE); err != nil {
-// 			return nil, err
-// 		}
-// 	} else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
-// 		fnName = fmt.Sprintf("%s.%s", modName, fnName)
-// 		if mod, err = mod.Context.GetModule(CORE_MODULE); err != nil {
-// 			return nil, err
-// 		}
-// 	}
-// }
 
 func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, error) {
 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
@@ -281,3 +260,9 @@ func (expr *CXExpression) GetArguments () ([]*CXArgument, error) {
 	}
 }
 
+// GetValue
+// we send an ident?
+// func (cxt *CXProgram) GetValue (ident string) ([]*CXArgument, error) {
+// 	// we look for that ident in local > global > external
+// 	// it can be variable or struct
+// }

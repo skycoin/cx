@@ -5,6 +5,10 @@ import (
 	"errors"
 	"time"
 	"math/rand"
+	"os"
+	"strconv"
+	"bufio"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -414,4 +418,18 @@ func copyI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	} else {
 		return err
 	}
+}
+
+func readI32 (expr *CXExpression, call *CXCall) error {
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\n')
+	text = strings.Replace(text, "\n", "", -1)
+	num, err := strconv.ParseInt(text, 10, 32)
+	if err != nil {
+		return err
+	}
+	output := encoder.Serialize(num)
+
+	assignOutput(&output, "str", expr, call)
+	return nil
 }

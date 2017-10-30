@@ -7,9 +7,9 @@ import (
 	"bytes"
 	"sort"
 	
-	"github.com/mndrix/golog"
-	"github.com/mndrix/golog/read"
-	"github.com/mndrix/golog/term"
+	// "github.com/mndrix/golog"
+	// "github.com/mndrix/golog/read"
+	// "github.com/mndrix/golog/term"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -249,11 +249,21 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				continue
 			}
 
+			if len(ex.Operator.Outputs) != len(ex.OutputNames) ||
+				len(ex.Operator.Inputs) != len(ex.Arguments) {
+				// Then it's not a completed expression
+				continue
+			}
+
 			if ex.Operator.Name == "initDef" {
 				var typ string
 				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
+
+				if reqType != typ {
+					continue
+				}
+				
 				val := encoder.Serialize(ex.OutputNames[0].Name)
-				//val := []byte(ex.OutputNames[0].Name)
 
 				defsTypes = append(defsTypes, typ)
 				
@@ -264,27 +274,21 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				continue
 			}
 
-			if len(ex.Operator.Outputs) != len(ex.OutputNames) ||
-				len(ex.Operator.Inputs) != len(ex.Arguments) {
-				// Then it's not a completed expression
-				continue
-			}
-
-			/// ====
-			// for _, custom := range customTypes {
-
-				
-			// 	args = append(args, &CXArgument{
-			// 		Typ: custom,
-			// 		Value: &identName,
-			// 	})
-			// }
-			/// ====
-
-			for i, out := range ex.Operator.Outputs {
-				if reqType == out.Typ {
-					defsTypes = append(defsTypes, out.Typ)
-					identName := encoder.Serialize(ex.OutputNames[i].Name)
+			for _, outName := range ex.OutputNames {
+				typ := outName.Typ
+				if ex.Operator.Name == "identity" {
+					for _, expr := range expr.Function.Expressions {
+						var identName string
+						encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
+						if expr.OutputNames[0].Name == identName {
+							typ = expr.OutputNames[0].Typ
+							break
+						}
+					}
+				}
+				if reqType == typ {
+					defsTypes = append(defsTypes, typ)
+					identName := encoder.Serialize(outName.Name)
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
@@ -293,64 +297,15 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			}
 		}
 
-		// Consulting clauses
-		m := golog.NewInteractiveMachine()
-		if len(expr.Module.Objects) > 0 && len(expr.Module.Clauses) > 0 {
-			b := bytes.NewBufferString(expr.Module.Clauses)
-			m = m.Consult(b)
-		}
-
-		re := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]*$")
-
 		for i, arg := range args {
 			theArg := arg
 			var argName string
 			encoder.DeserializeRaw(*arg.Value, &argName)
-			isSkip := false
-
-			if len(expr.Module.Objects) > 0 && len(expr.Module.Clauses) > 0 && expr.Module.Query != "" && re.FindString(argName) != "" {
-				for _, obj := range expr.Module.Objects {
-					query := fmt.Sprintf(expr.Module.Query,
-						op.Name,
-						argName,
-						obj.Name)
-
-					if goal, err := read.Term(query); err == nil {
-						variables := term.Variables(goal)
-						answers := m.ProveAll(goal)
-						
-						pass := false
-						if len(answers) == 0 || variables.Size() == 0 {
-							pass = true
-						}
-
-						if !pass {
-							for _, answer := range answers {
-								variables.ForEach(func(name string, variable interface{}) {
-									v := variable.(*term.Variable)
-									val := answer.Resolve_(v)
-									if val.String() == "false" {
-										isSkip = true
-									}
-									if val.String() == "true" {
-										isSkip = false
-									}
-									
-								})
-							}
-						}
-					} else {
-						fmt.Println(err)
-					}
-				}
-			}
-
-			if isSkip {
-				continue
-			}
-
 			affs = append(affs, &CXAffordance{
 				Description: concat("AddArgument ", argName, " ", defsTypes[i]),
+				Operator: "AddArgument",
+				Name: argName,
+				Typ: defsTypes[i],
 				Action: func() {
 					expr.AddArgument(theArg)
 				}})
@@ -362,6 +317,16 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		outName := MakeGenSym("var")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutputName ", outName),
+			
+			Operator: "AddOutputName",
+			// AddField, AddArgument, AddOutputName, AddInput, AddOutput, AddExpression, AddDefinition, AddImport, AddFunction, AddStruct, AddModule, SelectModule, SelectFunction, SelectStruct, SelectExpression
+			Name: outName, // water, num, output, nonAssign_3, nonAssign_56
+			//Typ: "", // i32, f32, Sprite, Point, Board, etc
+			//Inputs: []string{}, // []string{"i32", "f32", "Sprite"}
+			//Outputs: []string{}, // []string{"i32", "f32", "Sprite"}
+			
+
+			
 			Action: func() {
 				expr.AddOutputName(outName)
 			}})
@@ -424,20 +389,28 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	// Inputs
 	for _, typ := range types {
 		theTyp := typ
+		theName := MakeGenSym("in")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddInput ", theTyp),
+			Operator: "AddInput",
+			Name: theName,
+			Typ: theTyp,
 			Action: func() {
-				fn.AddInput(MakeParameter(MakeGenSym("in"), theTyp))
+				fn.AddInput(MakeParameter(theName, theTyp))
 			}})
 	}
 	
 	// Outputs
 	for _, typ := range types {
 		theTyp := typ
+		theName := MakeGenSym("out")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutput ", theTyp),
+			Operator: "AddOutput",
+			Name: theName,
+			Typ: theTyp,
 			Action: func() {
-				fn.AddOutput(MakeParameter(MakeGenSym("in"), theTyp))
+				fn.AddOutput(MakeParameter(theName, theTyp))
 			}})
 	}
 
@@ -469,6 +442,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		affs = append(affs, &CXAffordance{
 			
 			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
+			Operator: "AddExpression",
 			Action: func() {
 				fn.AddExpression(MakeExpression(theOp))
 			}})
@@ -723,12 +697,12 @@ func (mod *CXModule) GetAffordances() []*CXAffordance {
 	for _, typ := range types {
 		defGensym := MakeGenSym("def")
 		defType := typ
-		value := []byte{}
+		value := MakeDefaultValue(typ)
 		
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddDefinition ", defGensym, " ", typ),
 			Action: func() {
-				mod.AddDefinition(MakeDefinition(defGensym, &value, defType))
+				mod.AddDefinition(MakeDefinition(defGensym, value, defType))
 			}})
 	}
 

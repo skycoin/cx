@@ -1,0 +1,34 @@
+package main
+
+func main () () {
+	foo1 := 1
+	foo2 := 2
+	foo3 := 3
+	foo4 := 4
+	foo5 := 5
+	foo6 := 6
+	foo7 := 7
+	foo8 := 8
+	
+	target := ->{
+		pkg(main) fn(main) exp(message)
+	}
+	
+	objs := ->{ obj1 $0.5 }
+
+	rules := ->{
+		if obj1 $0.3 {
+			allow(x < foo6)
+		}
+	}
+
+	//[]str.print(rules)
+	
+	affs := aff.query(target, objs, rules)
+	[]str.print(affs)
+	aff.print(affs)
+	aff.execute(target, affs, 1)
+
+message:
+	i32.print(0)
+}

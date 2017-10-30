@@ -10,6 +10,7 @@ type Sprite struct {
 	y2 f32
 	isObstacle bool
 	textureSheet i32
+	name str
 }
 
 var background []i32 = []i32{
@@ -130,6 +131,13 @@ var sp_grass_2 Sprite
 var sp_rock1 Sprite
 var sp_rock2 Sprite
 var sp_rock3 Sprite
+
+// actions
+var sp_act_up Sprite
+var sp_act_down Sprite
+var sp_act_left Sprite
+var sp_act_right Sprite
+var sp_act_water Sprite
 
 func compileShader(source str, shaderType i32) (shader i32) {
 	shader := gl.CreateShader(shaderType)
@@ -289,6 +297,12 @@ func setupScene () () {
 	tex_dungeon = gl.NewTexture("textures/roguelike_dungeon.png")
 	tex_indoor = gl.NewTexture("textures/roguelike_indoor.png")
 	tex_pack = gl.NewTexture("textures/roguelike_pack.png")
+	// action symbols
+	tex_act_up = gl.NewTexture("textures/up.png")
+	tex_act_down = gl.NewTexture("textures/down.png")
+	tex_act_right = gl.NewTexture("textures/right.png")
+	tex_act_left = gl.NewTexture("textures/left.png")
+	tex_act_water = gl.NewTexture("textures/water.png")
 
 	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
 	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
@@ -313,15 +327,19 @@ func setupScene () () {
 
 	// water
 	setSprite(sp_water_t, true, 51, 67, 0, 16, w_pack, h_pack, tex_pack)
+	
 	setSprite(sp_water_tr, true, 68, 84, 0, 16, w_pack, h_pack, tex_pack)
 	setSprite(sp_water_r, true, 68, 84, 17, 33, w_pack, h_pack, tex_pack)
+	
 	setSprite(sp_water_br, true, 68, 84, 34, 50, w_pack, h_pack, tex_pack)
 	setSprite(sp_water_b, true, 51, 67, 34, 50, w_pack, h_pack, tex_pack)
+	
 	setSprite(sp_water_bl, true, 34, 50, 34, 50, w_pack, h_pack, tex_pack)
 	setSprite(sp_water_l, true, 34, 50, 17, 33, w_pack, h_pack, tex_pack)
 	setSprite(sp_water_tl, true, 34, 50, 0, 16, w_pack, h_pack, tex_pack)
+	
 	setSprite(sp_water_xx, true, 51, 67, 17, 33, w_pack, h_pack, tex_pack)
-	//grass
+	// grass
 	setSprite(sp_grass_1, false, 85, 101, 0, 16, w_pack, h_pack, tex_pack)
 	setSprite(sp_grass_2, false, 85, 101, 17, 33, w_pack, h_pack, tex_pack)
 
@@ -330,6 +348,13 @@ func setupScene () () {
 	setSprite(sp_rock3, true, 952, 968, 325, 341, w_pack, h_pack, tex_pack)
 	setSprite(sp_empty, false, 918, 934, 306, 322, w_pack, h_pack, tex_pack)
 	//setSprite(sp_rock2, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
+
+	// actions
+	setSprite(sp_act_up, false, 0, 32, 0, 32, 32, 32, tex_act_up)
+	setSprite(sp_act_down, false, 0, 32, 0, 32, 32, 32, tex_act_down)
+	setSprite(sp_act_left, false, 0, 32, 0, 32, 32, 32, tex_act_left)
+	setSprite(sp_act_right, false, 0, 32, 0, 32, 32, 32, tex_act_right)
+	setSprite(sp_act_water, false, 0, 32, 0, 32, 32, 32, tex_act_water)
 }
 
 func map2Dto1D (c i32, r i32, w i32) (i i32) {
@@ -382,28 +407,109 @@ func getSprite (index i32) (sprite Sprite) {
 	if i32.eq(index, 50) { s = sp_floor_brick_xx }
 	
 	if i32.eq(index, 60) { s = sp_blue_carpet }
+
+	//actions
+	if i32.eq(index, 1000) { s = sp_act_up }
+	if i32.eq(index, 1001) { s = sp_act_down }
+	if i32.eq(index, 1002) { s = sp_act_left }
+	if i32.eq(index, 1003) { s = sp_act_right }
+	if i32.eq(index, 1004) { s = sp_act_water }
 	
 	sprite = s
 }
 
-func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
-	// 
-	// 	filter1 := 0
-	// 	filter2 := 0
-	// 	remArg("label")
-	// 	affExpr("label", "filter1|filter2", 0)
-	// label:
-	// 	fun()
-	////////////
+func _charActions (window str, key i32, scancode i32, action i32, mods i32) () {
+	northI := map2Dto1D(p1x, i32.add(p1y, 1), size)
+	southI := map2Dto1D(p1x, i32.add(p1y, -1), size)
+	westI := map2Dto1D(i32.add(p1x, -1), p1y, size)
+	eastI := map2Dto1D(i32.add(p1x, 1), p1y, size)
+	
+	northIdx := []i32.read(foreground, northI)
+	southIdx := []i32.read(foreground, southI)
+	westIdx := []i32.read(foreground, westI)
+	eastIdx := []i32.read(foreground, eastI)
 
+	northObj := getSprite(northIdx)
+	southObj := getSprite(southIdx)
+	westObj := getSprite(westIdx)
+	eastObj := getSprite(eastIdx)
+
+	// rules := ->{
+	// 	if 
+	// }
+	
 	if and(i32.eq(key, 265), i32.eq(action, 1)) {
 		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
 		idx := []i32.read(foreground, i)
 		obj := getSprite(idx)
+
 		if obj.isObstacle {
 			return
 		}
-		
+
+		if i32.gteq(p1y, i32.sub(size, 1)) {
+			p1y = i32.sub(size, 1)
+			return
+		} else {
+			p1y = i32.add(p1y, 1)
+			return
+		}
+	}
+}
+
+func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
+	northI := map2Dto1D(p1x, i32.add(p1y, 1), size)
+	southI := map2Dto1D(p1x, i32.add(p1y, -1), size)
+	westI := map2Dto1D(i32.add(p1x, -1), p1y, size)
+	eastI := map2Dto1D(i32.add(p1x, 1), p1y, size)
+	
+	northIdx := []i32.read(foreground, northI)
+	southIdx := []i32.read(foreground, southI)
+	westIdx := []i32.read(foreground, westI)
+	eastIdx := []i32.read(foreground, eastI)
+
+	northObj := getSprite(northIdx)
+	southObj := getSprite(southIdx)
+	westObj := getSprite(westIdx)
+	eastObj := getSprite(eastIdx)
+
+	if not(northObj.isObstacle) {
+		drawTile(p1x, i32.add(p1y, 1), getSprite(1000))
+	}
+	if not(southObj.isObstacle) {
+		drawTile(p1x, i32.add(p1y, -1), getSprite(1001))
+	}
+	if not(westObj.isObstacle) {
+		drawTile(i32.add(p1x, -1), p1y, getSprite(1002))
+	}
+	if not(eastObj.isObstacle) {
+		drawTile(i32.add(p1x, 1), p1y, getSprite(1003))
+	}
+
+	str.print(northObj.name)
+	
+	if str.eq(northObj.name, "water") {
+		drawTile(p1x, i32.add(p1y, 1), getSprite(1004))
+	}
+	if str.eq(southObj.name, "water") {
+		drawTile(p1x, i32.add(p1y, -1), getSprite(1004))
+	}
+	if str.eq(westObj.name, "water") {
+		drawTile(i32.add(p1x, -1), p1y, getSprite(1004))
+	}
+	if str.eq(eastObj.name, "water") {
+		drawTile(i32.add(p1x, 1), p1y, getSprite(1004))
+	}
+	
+	if and(i32.eq(key, 265), i32.eq(action, 1)) {
+		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
+		idx := []i32.read(foreground, i)
+		obj := getSprite(idx)
+
+		if obj.isObstacle {
+			return
+		}
+
 		if i32.gteq(p1y, i32.sub(size, 1)) {
 			p1y = i32.sub(size, 1)
 			return
@@ -416,6 +522,7 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		i := map2Dto1D(p1x, i32.add(p1y, -1), size)
 		idx := []i32.read(foreground, i)
 		obj := getSprite(idx)
+		
 		if obj.isObstacle {
 			return
 		}
@@ -427,7 +534,6 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 			p1y = i32.add(p1y, -1)
 			return
 		}
-		
 	}
 	if and(i32.eq(key, 263), i32.eq(action, 1)) {
 		i := map2Dto1D(i32.add(p1x, -1), p1y, size)
@@ -473,6 +579,11 @@ var p1x i32 = 1
 var p1y i32 = 1
 
 func main () () {
+	// for world generation
+	// rules := ->{
+		
+	// }
+
 	initGlfw("window")
 	program := initOpenGL()
 
@@ -484,9 +595,11 @@ func main () () {
 
 	setupScene()
 
+	
+	
 	for stop {
 		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-
+		
 		for c := 0; i32.lt(c, lSize); c = i32.add(c, 1) {
 			x, y := map1Dto2D(c, size)
 			idxB := []i32.read(background, c)
@@ -497,9 +610,14 @@ func main () () {
 
 		//drawTile(3, 0, tex_pack, sp_brown_wall_lr)
 		drawChar(p1x, p1y, tex_characters, sp_knight1)
+		//drawTile(3, 3, getSprite(40))
+		
 
-		glfw.SwapBuffers("window")
 		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+		
+
+		//str.print(str.read())
 		
 		stop = not(glfw.ShouldClose("window"))
 	}

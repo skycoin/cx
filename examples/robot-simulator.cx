@@ -1,35 +1,27 @@
 package main
 
-var goNorth str = "going north."
-var goSouth str = "going south."
-var goWest str = "going west."
-var goEast str = "going east."
+var goNorth i32 = 1
+var goSouth i32 = 2
+var goWest i32 = 3
+var goEast i32 = 4
 
-func robotAct (row i32, col i32, action str) (r i32, c i32) {
-	str.print(action)
-	if str.eq(action, "going north.") {
+func robot (row i32, col i32, action i32) (r i32, c i32) {
+	if i32.eq(action, 1) {
 		r = i32.add(row, -1)
 		c = col
 	}
-	if str.eq(action, "going south.") {
+	if i32.eq(action, 2) {
 		r = i32.add(row, 1)
 		c = col
 	}
-	if str.eq(action, "going east.") {
-		c = i32.add(col, 1)
-		r = row
-	}
-	if str.eq(action, "going west.") {
+	if i32.eq(action, 3) {
 		c = i32.add(col, -1)
 		r = row
 	}
-}
-
-func robot (row i32, col i32) (r i32, c i32) {
-	remArg("robotAct")
-	affExpr("robotAct", "goNorth|goSouth|goWest|goEast", 0)
-	robotAct:
-	r, c = robotAct(row, col, "")
+	if i32.eq(action, 4) {
+		c = i32.add(col, 1)
+		r = row
+	}
 }
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
@@ -41,54 +33,36 @@ func map1Dto2D (i i32, w i32) (r i32, c i32) {
 	c = i32.mod(i, W)
 }
 
-func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) () {
-	//str.print("hello")
-	//i32.print(row)
-	remObjects()
-	//i32.print(map2Dto1D(i32.add(row, -1), col, width))
+func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) (objs []str) {
+	var objs []str
 	if []bool.read(wallMap, map2Dto1D(i32.add(row, -1), col, width)) {
-		addObject("northWall")
+		objs = []str.concat(objs, ->{northWall $1.0})
 	}
 	if []bool.read(wallMap, map2Dto1D(i32.add(row, 1), col, width)) {
-		addObject("southWall")
+		objs = []str.concat(objs, ->{southWall $1.0})
 	}
 	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, 1), width)) {
-		addObject("eastWall")
+		objs = []str.concat(objs, ->{eastWall $1.0})
 	}
 	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, -1), width)) {
-		addObject("westWall")
+		objs = []str.concat(objs, ->{westWall $1.0})
 	}
 
 	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, -1), col, width)) {
-		addObject("northWormhole")
+		objs = []str.concat(objs, ->{northWormhole $1.0})
 	}
 	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, 1), col, width)) {
-		addObject("southWormhole")
+		objs = []str.concat(objs, ->{southWormhole $1.0})
 	}
 	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, 1), width)) {
-		addObject("eastWormhole")
+		objs = []str.concat(objs, ->{eastWormhole $1.0})
 	}
 	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, -1), width)) {
-		addObject("westWormhole")
+		objs = []str.concat(objs, ->{westWormhole $1.0})
 	}
 }
 
 func main () (out str) {
-
-	setClauses("
-          aff(robotAct, goNorth, X, R) :- X = northWall, R = false.
-	  aff(robotAct, goSouth, X, R) :- X = southWall, R = false.
-	  aff(robotAct, goWest, X, R) :- X = westWall, R = false.
-	  aff(robotAct, goEast, X, R) :- X = eastWall, R = false.
-
-	  aff(robotAct, goNorth, X, R) :- X = northWormhole, R = true.
-	  aff(robotAct, goSouth, X, R) :- X = southWormhole, R = true.
-	  aff(robotAct, goWest, X, R) :- X = westWormhole, R = true.
-	  aff(robotAct, goEast, X, R) :- X = eastWormhole, R = true.
-        ")
-
-	setQuery("aff(%s, %s, %s, R).")
-
 	var wallMap []bool = []bool{
 		true, true,  true,  true,  true,
 		true, false, true, false, true,
@@ -107,12 +81,33 @@ func main () (out str) {
 	var row i32 = 1
 	var col i32 = 1
 
+	rules := ->{
+		if true {allow(x == x)}
+		
+		if northWall $1.0 {reject(x == 1)}
+		if southWall $1.0 {reject(x == 2)}
+		if westWall  $1.0 {reject(x == 3)}
+		if eastWall  $1.0 {reject(x == 4)}
+
+		if northWormhole $1.0 {allow(x == 1)}
+		if southWormhole $1.0 {allow(x == 2)}
+		if westWormhole  $1.0 {allow(x == 3)}
+		if eastWormhole  $1.0 {allow(x == 4)}
+	}
+	target := ->{pkg(main) fn(main) exp(robot)}
+
 	var counter i32
 	for i32.lt(counter, 6) {
 		[]bool.write(wallMap, map2Dto1D(row, col, width), true)
 		[]bool.write(wormholeMap, map2Dto1D(row, col, width), false)
-		robotObjects(row, col, width, wallMap, wormholeMap)
-		row, col := robot(row, col)
+		objs := robotObjects(row, col, width, wallMap, wormholeMap)
+
+		remArg("robot")
+		affs := aff.query(target, objs, rules)
+		str.print([]str.read(affs, 3))
+		aff.execute(target, affs, 0)
+	robot:
+		row, col := robot(row, col, 1)
 		counter = i32.add(counter, 1)
 	}
 	

@@ -343,8 +343,6 @@ func MakeArgument (value *[]byte, typ string) *CXArgument {
 	return &CXArgument{
 		Typ: typ,
 		Value: value,
-		// Offset: -1,
-		// Size: -1,
 	}
 }
 

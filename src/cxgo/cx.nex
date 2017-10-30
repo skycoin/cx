@@ -52,11 +52,16 @@
 /\]/         { return RBRACK     }
 /=/          { return ASSIGN     }
 /:=/         { return CASSIGN    }
+/->/         { return INFER      }
 />/          { return GTHAN      }
 /</          { return LTHAN      }
-/<=/         { return LTEQ       }
-/>=/         { return GTEQ       }
-/(test|str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]str|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
+/==/         { return EQUAL      }
+/\$-?[0-9]+\.[0-9]*/ {
+	lval.tok = yylex.Text()[1:]
+	return WEIGHT
+}
+/\$/          { return WASSIGN    }
+/(aff|test|str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]str|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
 	lval.tok = yylex.Text()
 	return IDENT
 }
@@ -305,6 +310,7 @@ func byte.lteq (n1 byte, n2 byte) (out bool) {}
 func byte.gteq (n1 byte, n2 byte) (out bool) {}
 
 func str.read () (line str) {}
+func i32.read () (num i32) {}
 
 func []byte.str (in []byte) (out str) {}
 func str.[]byte (in str) (out []byte) {}
@@ -448,6 +454,10 @@ func remExpr (tag str) () {}
 func remArg (tag str) () {}
 func addExpr (tag str, fnName str) () {}
 func affExpr (tag str, filter str, index i32) (numAffs i32) {}
+
+func aff.query (target []str, objs []str, rules []str) (affs []str) {}
+func aff.execute (target []str, commands []str, index i32) () {}
+func aff.print (commands []str) () {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 func serialize () (sPrgrm []byte) {}

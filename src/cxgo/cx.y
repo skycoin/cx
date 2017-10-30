@@ -51,6 +51,7 @@
 	tok string
 	bool bool
 	string string
+	stringA []string
 
 	line int
 
@@ -74,7 +75,7 @@
 %token  <f32>           FLOAT
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        ASSIGN CASSIGN GTHAN LTHAN LTEQ GTEQ IMPORT RETURN GOTO
+                        ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
                         /* Selectors */
@@ -86,7 +87,7 @@
                         /* Debugging */
                         DSTACK DPROGRAM DQUERY DSTATE
                         /* Affordances */
-                        AFF TAG
+                        AFF TAG INFER WASSIGN WEIGHT
                         /* Prolog */
                         CCLAUSES QUERY COBJECT COBJECTS
 
@@ -101,6 +102,8 @@
 %type   <expressions>   elseStatement
 //%type   <names>         nonAssignExpression
 %type   <bool>          selectorLines selectorExpressionsAndStatements selectorFields
+%type   <stringA>       inferObj inferObjs inferRule inferRules inferClauses inferPred inferCond inferAction inferActions inferActionArg inferTarget inferTargets
+%type   <string>        inferArg inferOp
 
 %%
 
@@ -489,7 +492,7 @@ debugging:      DSTATE
                 {
 			if len(cxt.CallStack.Calls) > 0 {
 				for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
-					fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
+					fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Typ, PrintValue(def.Name, def.Value, def.Typ, cxt))
 				}
 			}
                 }
@@ -1776,6 +1779,198 @@ expressions:
         |       expressions assignExpression
         ;
 
+
+
+
+
+
+
+
+
+
+
+inferPred:      inferObj
+                {
+			$$ = $1
+                }
+        |       inferCond
+                {
+			$$ = $1
+                }
+        |       inferPred COMMA inferObj
+                {
+			$1 = append($1, $3...)
+			$$ = $1
+                }
+        |       inferPred COMMA inferCond
+                {
+			$1 = append($1, $3...)
+			$$ = $1
+                }
+        ;
+
+inferCond:      IDENT LPAREN inferPred RPAREN
+                {
+			$$ = append($3, $1)
+                }
+        |       BOOLEAN
+                {
+			var obj string
+			if $1 == 1 {
+				obj = "true"
+			} else {
+				obj = "false"
+			}
+			$$ = []string{obj, "1.0", "weight"}
+                }
+        ;
+
+inferArg:       IDENT
+                {
+			$$ = fmt.Sprintf("%s", $1)
+                }
+        |       STRING
+                {
+			str := strings.TrimPrefix($1, "\"")
+                        str = strings.TrimSuffix(str, "\"")
+			$$ = str
+                }
+        |       FLOAT
+                {
+			$$ = fmt.Sprintf("%f", $1)
+                }
+        |       INT
+                {
+			$$ = fmt.Sprintf("%d", $1)
+                }
+        ;
+
+inferOp:        EQUAL
+                {
+			$$ = "=="
+                }
+        |       GTHAN
+                {
+			$$ = ">"
+                }
+        |       LTHAN
+                {
+			$$ = "<"
+                }
+                ;
+
+inferActionArg:
+                inferObj
+                {
+			$$ = $1
+                }
+        |       inferArg inferOp inferArg
+                {
+			$$ = []string{$1, $3, $2}
+                }
+        ;
+
+inferAction:
+		IDENT LPAREN inferActionArg RPAREN
+                {
+			$$ = append($3, $1)
+                }
+        ;
+
+inferActions:
+                inferAction
+                {
+			$$ = $1
+                }
+        |       inferActions inferAction
+                {
+			$1 = append($1, $2...)
+			$$ = $1
+                }
+                ;
+
+
+inferRule:      IF inferCond LBRACE inferActions RBRACE
+                {
+			if $4 == nil {
+				$$ = $2
+			} else {
+				block := append($2, "if")
+				block = append(block, $4...)
+				block = append(block, "endif")
+				$$ = block
+			}
+                }
+        |       IF inferObj LBRACE inferActions RBRACE
+                {
+			if $4 == nil {
+				$$ = $2
+			} else {
+				block := append($2, "single")
+				block = append(block, "if")
+				block = append(block, $4...)
+				block = append(block, "endif")
+				$$ = block
+			}
+                }
+        ;
+
+inferRules:     inferRule
+                {
+			$$ = $1
+                }
+        |       inferRules inferRule
+                {
+			$1 = append($1, $2...)
+			$$ = $1
+                }
+        ;
+
+inferObj:       IDENT WEIGHT
+                {
+			$$ = []string{$1, $2, "weight"}
+                }
+;
+
+inferObjs:      inferObj
+                {
+			$$ = $1
+                }
+        |       inferObjs COMMA inferObj
+                {
+			$1 = append($1, $3...)
+			$$ = $1
+                }
+        ;
+
+inferTarget:    IDENT LPAREN IDENT RPAREN
+                {
+			$$ = []string{$3, $1}
+                }
+        ;
+
+inferTargets:   inferTarget
+                {
+			$$ = $1
+                }
+        |       inferTargets inferTarget
+                {
+			$1 = append($2)
+			$$ = $1
+                }
+        ;
+
+inferClauses:   inferObjs
+        |       inferRules
+        |       inferTargets
+        ;
+
+
+
+
+
+
+
 argument:
                 INT
                 {
@@ -1813,6 +2008,12 @@ argument:
 			val := encoder.Serialize(fmt.Sprintf("%s[%d", $1, $3))
 			$$ = MakeArgument(&val, "ident")
                 }
+        |       INFER LBRACE inferClauses RBRACE
+                {
+			val := encoder.Serialize($3)
+			$$ = MakeArgument(&val, "[]str")
+                }
+        ;
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
 			switch $1 {
