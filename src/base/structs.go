@@ -58,6 +58,9 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"i32.f32":true, "i64.f32":true, "f64.f32":true,
 	"i32.f64":true, "i64.f64":true, "f32.f64":true,
 
+	"byte.str":true, "bool.str":true, "i32.str":true,
+	"i64.str":true, "f32.str":true, "f64.str":true,
+
 	"[]i64.[]i32":true, "[]f32.[]i32":true, "[]f64.[]i32":true,
 	"[]i32.[]i64":true, "[]f32.[]i64":true, "[]f64.[]i64":true,
 	"[]i32.[]f32":true, "[]i64.[]f32":true, "[]f64.[]f32":true,
@@ -84,7 +87,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 	"remExpr":true, "remArg":true, "addExpr":true, "affExpr":true,
 
-	"aff.query":true, "aff.execute":true, "aff.print":true,
+	"aff.query":true, "aff.execute":true, "aff.print":true, "aff.concat":true,
+	"aff.len":true,
 
 	"serialize":true, "deserialize":true, "evolve":true,
 
@@ -94,7 +98,9 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"test.error":true, "test.bool":true, "test.str":true, "test.byte":true,
 	"test.i32":true, "test.i64":true, "test.f32":true, "test.f64":true,
 	"test.[]bool":true, "test.[]byte":true, "test.[]str":true, "test.[]i32":true,
-	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true, 
+	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true,
+
+	"cstm.append":true, "cstm.read":true, "cstm.len":true,
 
 	/*
           Runtime
@@ -347,7 +353,6 @@ type CXAffordance struct {
 	Operator string
 	Name string
 	Typ string
-	//Inputs []string
-	//Outputs []string
+	Index string
 	Action func()
 }

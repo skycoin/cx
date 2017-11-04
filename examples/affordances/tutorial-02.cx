@@ -1,0 +1,44 @@
+// Affordances Tutorial 02
+// Basic filtering in custom type arrays
+package main
+
+type Unit struct {
+	x i32
+	y i32
+}
+
+func printPosition (unit Unit) () {
+	i32.print(unit.x)
+	i32.print(unit.y)
+}
+
+func main () () {
+	var units []Unit
+
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		var newUnit Unit
+		newUnit.x = c
+		newUnit.y = i32.add(c, 1)
+		[]Unit.append(units, newUnit)
+	}
+
+	target := ->{
+		pkg(main) fn(main) exp(message)
+	}
+	
+	objs := ->{ obj1 $0.5 }
+
+	rules := ->{
+		if obj1 $0.3 {
+			allow(x.x < 5)
+		}
+	}
+	
+	affs := aff.query(target, objs, rules)
+	aff.print(affs)
+	aff.execute(target, affs, 0)
+
+	var defaultValue Unit
+printPosition:
+	printPosition(defaultValue)
+}

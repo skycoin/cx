@@ -486,8 +486,6 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		drawTile(i32.add(p1x, 1), p1y, getSprite(1003))
 	}
 
-	str.print(northObj.name)
-	
 	if str.eq(northObj.name, "water") {
 		drawTile(p1x, i32.add(p1y, 1), getSprite(1004))
 	}

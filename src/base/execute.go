@@ -622,7 +622,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
 	case "identity": identity((*argsCopy)[0], expr, call)
 		// cast functions
-	case "[]byte.str": err = castToStr((*argsCopy)[0], expr, call)
+	case "[]byte.str", "byte.str", "bool.str", "i32.str", "i64.str", "f32.str", "f64.str": err = castToStr((*argsCopy)[0], expr, call)
 	case "str.[]byte": err = castToByteA((*argsCopy)[0], expr, call)
 	case "i32.byte", "i64.byte", "f32.byte", "f64.byte": err = castToByte((*argsCopy)[0], expr, call)
 	case "byte.i32", "i64.i32", "f32.i32", "f64.i32": err = castToI32((*argsCopy)[0], expr, call)
@@ -743,7 +743,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "[]f64.append": err = appendF64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]byte.concat": err = concatByteA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]bool.concat": err = concatBoolA((*argsCopy)[0], (*argsCopy)[1], expr, call)
-	case "[]str.concat": err = concatStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "[]str.concat", "aff.concat": err = concatStrA((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i32.concat": err = concatI32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]i64.concat": err = concatI64A((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "[]f32.concat": err = concatF32A((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -766,7 +766,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "aff.query": err = aff_query((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "aff.execute": err = aff_execute((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "aff.print": err = aff_print((*argsCopy)[0], call)
-		
+	case "aff.len": err = aff_len((*argsCopy)[0], expr, call)
+
 	case "setClauses": err = setClauses((*argsCopy)[0], call.Operator.Module)
 	case "addObject": err = addObject((*argsCopy)[0], call.Operator.Module)
 	case "setQuery": err = setQuery((*argsCopy)[0], call.Operator.Module)
@@ -792,6 +793,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		isErrorPresent = false
 		case "test.bool", "test.byte", "test.str", "test.i32", "test.i64", "test.f32", "test.f64", "test.[]bool", "test.[]byte", "test.[]str", "test.[]i32", "test.[]f32", "test.[]f64":
 		err = test_value((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr)
+		// custom types functions
+	case "cstm.append": err = cstm_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "cstm.read": err = cstm_read((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "cstm.len": err = cstm_len((*argsCopy)[0], expr, call)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
 		// OpenGL
@@ -865,7 +870,6 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
 	}
 }
-
 
 func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
 	var offset int32 = 0
@@ -1204,11 +1208,13 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				isNative = true
 			}
 
+			// check if struct array function
+			//fmt.Println("here", opName)
+
 			if isNative {
 				checkNative(opName, expr, call, &argsCopy, &exc, &excError)
 				if exc && isTesting {
 					isErrorPresent = true
-					//fmt.Println(excError)
 				}
 				if exc && !isTesting {
 					fmt.Println()

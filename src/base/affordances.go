@@ -259,7 +259,9 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				var typ string
 				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
 
-				if reqType != typ {
+				//fmt.Println(typ)
+
+				if reqType != typ && typ[2:] != reqType {
 					continue
 				}
 				
@@ -277,15 +279,31 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			for _, outName := range ex.OutputNames {
 				typ := outName.Typ
 				if ex.Operator.Name == "identity" {
+					//fmt.Println(typ)
 					for _, expr := range expr.Function.Expressions {
 						var identName string
 						encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
-						if expr.OutputNames[0].Name == identName {
+						if expr.OutputNames != nil && expr.OutputNames[0].Name == identName {
 							typ = expr.OutputNames[0].Typ
 							break
 						}
 					}
 				}
+
+				// Adding arrays of the same type
+				// We'll add each slice when constructing the affordance
+				//fmt.Println(typ)
+				if len(typ) > 2 && reqType == typ[2:] {
+					defsTypes = append(defsTypes, typ)
+					identName := encoder.Serialize(outName.Name)
+					args = append(args, &CXArgument{
+						Typ: identType,
+						Value: &identName,
+					})
+				}
+
+				//fmt.Println(typ)
+				
 				if reqType == typ {
 					defsTypes = append(defsTypes, typ)
 					identName := encoder.Serialize(outName.Name)
@@ -298,9 +316,34 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		}
 
 		for i, arg := range args {
+
 			theArg := arg
 			var argName string
 			encoder.DeserializeRaw(*arg.Value, &argName)
+
+			//fmt.Println("hello", defsTypes[i])
+
+			if len(defsTypes[i]) > 2 && defsTypes[i][:2] == "[]" {
+				//fmt.Println("hello")
+				if arr, err := resolveIdent(argName, expr.Context.CallStack.Calls[len(expr.Context.CallStack.Calls) - 1]); err == nil {
+					var size int32
+					encoder.DeserializeAtomic((*arr.Value)[:4], &size)
+					
+					for c := int32(0); c < size; c++ {
+						affs = append(affs, &CXAffordance{
+							Description: concat("AddArgument ", argName, " ", defsTypes[i]),
+							Operator: "AddArgument",
+							Name: argName,
+							Index: fmt.Sprintf("%d", c),
+							Typ: defsTypes[i],
+							Action: func() {
+								expr.AddArgument(theArg)
+							}})
+					}
+				}
+				continue
+			}
+			
 			affs = append(affs, &CXAffordance{
 				Description: concat("AddArgument ", argName, " ", defsTypes[i]),
 				Operator: "AddArgument",

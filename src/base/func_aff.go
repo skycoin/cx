@@ -20,8 +20,6 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 	if obj1[0] == "x" && obj2[0] == "x" && len(obj1) == 1 && len(obj2) == 1 {
 		bothX = true
 	}
-
-
 	
 	if obj1[0] == "x" {
 		oneIsX = true
@@ -117,18 +115,46 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 		var obj1Typ string
 		var obj2Val []byte
 		var obj2Typ string
-		
+
+		//fmt.Println(aff.Typ)
+
 		if !isBasic {
+			var typ string
+			if aff.Typ[:2] == "[]" {
+				typ = aff.Typ[2:]
+			} else {
+				typ = aff.Typ
+			}
+			//fmt.Println(aff.Typ)
 			if mod, err := call.Context.GetCurrentModule(); err == nil {
-				if strct, err := call.Context.GetStruct(aff.Typ, mod.Name); err == nil {
+				if strct, err := call.Context.GetStruct(typ, mod.Name); err == nil {
 					if arg, err := resolveIdent(aff.Name, call); err == nil {
-						if obj1IsX {
-							obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], arg.Value, strct)
+						if aff.Index != "" {
+							if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
+								if expr, err := call.Context.GetCurrentExpression(); err == nil {
+									if val, err := getStrctFromArray(arg, int32(i), expr, call); err == nil {
+										if obj1IsX {
+											obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], &val, strct)
+										}
+										if obj2IsX {
+											obj2Val, obj2Typ, _, _ = resolveStructField(obj2[1], &val, strct)
+										}
+									}
+								} else {
+									return err
+								}
+							} else {
+								return err
+							}
+							
+						} else {
+							if obj1IsX {
+								obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], arg.Value, strct)
+							}
+							if obj2IsX {
+								obj2Val, obj2Typ, _, _ = resolveStructField(obj2[1], arg.Value, strct)
+							}
 						}
-						if obj2IsX {
-							obj2Val, obj2Typ, _, _ = resolveStructField(obj2[1], arg.Value, strct)
-						}
-						
 					}
 				}
 			}
@@ -278,13 +304,55 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		// parsing _objects
 		for i, obj := range _objects {
 			if obj == "weight" {
+				w := _objects[i - 1]
 				obj1 := _objects[i - 2]
-				obj2 := _objects[i - 1]
-				if f, err := strconv.ParseFloat(obj2, 64); err == nil {
+				obj2 := strings.Split(w, ".")
+				if f, err := strconv.ParseFloat(w, 64); err == nil {
 					pObjs = append(pObjs, obj1)
 					pWeights = append(pWeights, f)
 				} else {
-					return errors.New("aff.query: weight badly formatted in objects list")
+					// then it's an identifier
+					//fmt.Println("here", obj2[0])
+					if arg, err := resolveIdent(obj2[0], call); err == nil {
+						if len(obj2) > 1 {
+							// then it's a struct
+							if mod, err := call.Context.GetCurrentModule(); err == nil {
+								if strct, err := call.Context.GetStruct(arg.Typ, mod.Name); err == nil {
+									id2Val, id2Typ, _, _ := resolveStructField(obj2[1], arg.Value, strct)
+									switch id2Typ {
+									case "i32":
+										var val int32
+										encoder.DeserializeAtomic(id2Val, &val)
+
+										pObjs = append(pObjs, obj1)
+										pWeights = append(pWeights, float64(val))
+									case "f32":
+										var val float32
+										encoder.DeserializeRaw(id2Val, &val)
+
+										pObjs = append(pObjs, obj1)
+										pWeights = append(pWeights, float64(val))
+									}
+								}
+							}
+						} else {
+							switch arg.Typ {
+							case "i32":
+								var val int32
+								encoder.DeserializeAtomic(*arg.Value, &val)
+
+								pObjs = append(pObjs, obj1)
+								pWeights = append(pWeights, float64(val))
+							case "f32":
+								var val float32
+								encoder.DeserializeRaw(*arg.Value, &val)
+
+								pObjs = append(pObjs, obj1)
+								pWeights = append(pWeights, float64(val))
+							}
+						}
+					}
+					//return errors.New("aff.query: weight badly formatted in objects list")
 				}
 			}
 		}
@@ -388,11 +456,11 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					continue
 				}
 				w := stack[len(stack) - 1]
-				obj1 := strings.Split(stack[len(stack) - 2], ".")
+				obj1 := stack[len(stack) - 2]
 				obj2 := strings.Split(w, ".")
 
 				if f, err := strconv.ParseFloat(w, 64); err == nil {
-					objs = append(objs, obj1[0])
+					objs = append(objs, obj1)
 					weights = append(weights, f)
 				} else {
 					// then it's an identifier
@@ -407,7 +475,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 										var val int32
 										encoder.DeserializeAtomic(id2Val, &val)
 
-										objs = append(objs, obj1[0])
+										objs = append(objs, obj1)
 										weights = append(weights, float64(val))
 									}
 								}
@@ -418,7 +486,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 								var val int32
 								encoder.DeserializeAtomic(*arg.Value, &val)
 
-								objs = append(objs, obj1[0])
+								objs = append(objs, obj1)
 								weights = append(weights, float64(val))
 							}
 						}
@@ -676,10 +744,11 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		for _, aff := range filteredAffs {
 			op := aff.Operator
 			name := aff.Name
+			index := aff.Index
 			//typ := aff.Typ
 
 			cmd := []string{
-				"startcmd", op, "op", name, "name", "endcmd",
+				"startcmd", op, "op", name, "name", index, "index", "endcmd",
 			}
 			commands = append(commands, cmd...)
 		}
@@ -704,6 +773,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		
 		var op string
 		var name string
+		var index string
 		var counter int
 
 		isSkip := true
@@ -723,6 +793,10 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 			case "name":
 				if !isSkip {
 					name = _commands[i - 1]
+				}
+			case "index":
+				if !isSkip {
+					index = _commands[i - 1]
 				}
 			default:
 				
@@ -806,9 +880,26 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 				// one CX object can have different types of affordances
 				switch op {
 				case "AddArgument":
-					sName := encoder.Serialize(name)
-					expr.RemoveArgument()
-					expr.AddArgument(MakeArgument(&sName, "ident"))
+					if index != "" {
+						if arr, err := resolveIdent(name, call); err == nil {
+							if i, err := strconv.ParseInt(index, 10, 64); err == nil {
+								if val, err := getStrctFromArray(arr, int32(i), expr, call); err == nil {
+									expr.RemoveArgument()
+									expr.AddArgument(MakeArgument(&val, arr.Typ[2:]))
+								} else {
+									return err
+								}
+							} else {
+								return err
+							}
+						} else {
+							return err
+						}
+					} else {
+						sName := encoder.Serialize(name)
+						expr.RemoveArgument()
+						expr.AddArgument(MakeArgument(&sName, "ident"))
+					}
 				}
 			}
 		default:
@@ -846,12 +937,36 @@ func aff_print (commands *CXArgument, call *CXCall) error {
 				counter++
 			case "name":
 				fmt.Printf("Name: %s\t",  _commands[i - 1])
+			case "index":
+				if _commands[i - 1] != "" {
+					fmt.Printf("Index: %s\t",  _commands[i - 1])
+				}
 			case "endcmd":
 				fmt.Println()
 			default:
 			}
 		}
 		
+		return nil
+	} else {
+		return err
+	}
+}
+
+func aff_len (commands *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("aff.len", "[]str", commands); err == nil {
+		var _commands []string
+		encoder.DeserializeRaw(*commands.Value, &_commands)
+
+		var counter int
+		for _, cmd := range _commands {
+			if cmd == "op" {
+				counter++
+			}
+		}
+		
+		output := encoder.Serialize(int32(counter))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err

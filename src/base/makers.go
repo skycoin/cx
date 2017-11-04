@@ -346,10 +346,6 @@ func MakeArgument (value *[]byte, typ string) *CXArgument {
 	}
 }
 
-// func MakeType (name string string {
-// 	return name
-// }
-
 func MakeFunction (name string) *CXFunction {
 	return &CXFunction{Name: name}
 }

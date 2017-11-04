@@ -7,13 +7,49 @@ import (
 )
 
 func castToStr (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+	strTyp := "str"
 	switch arg.Typ {
 	case "[]byte":
-		assignOutput(arg.Value, "str", expr, call)
-		return nil
+		assignOutput(arg.Value, strTyp, expr, call)
+	case "bool":
+		var val int32
+		encoder.DeserializeAtomic(*arg.Value, &val)
+		var output []byte
+		if val == 1 {
+			output = encoder.Serialize("true")
+		} else {
+			output = encoder.Serialize("false")
+		}
+		assignOutput(&output, strTyp, expr, call)
+	case "byte":
+		var val byte
+		encoder.DeserializeRaw(*arg.Value, &val)
+		output := encoder.Serialize(fmt.Sprintf("%d", val))
+		assignOutput(&output, strTyp, expr, call)
+	case "i32":
+		var val int32
+		encoder.DeserializeAtomic(*arg.Value, &val)
+		output := encoder.Serialize(fmt.Sprintf("%d", val))
+		assignOutput(&output, strTyp, expr, call)
+	case "i64":
+		var val int64
+		encoder.DeserializeAtomic(*arg.Value, &val)
+		output := encoder.Serialize(fmt.Sprintf("%d", val))
+		assignOutput(&output, strTyp, expr, call)
+	case "f32":
+		var val float32
+		encoder.DeserializeAtomic(*arg.Value, &val)
+		output := encoder.Serialize(fmt.Sprintf("%f", val))
+		assignOutput(&output, strTyp, expr, call)
+	case "f64":
+		var val float64
+		encoder.DeserializeAtomic(*arg.Value, &val)
+		output := encoder.Serialize(fmt.Sprintf("%f", val))
+		assignOutput(&output, strTyp, expr, call)
 	default:
 		return errors.New(fmt.Sprintf("castToStr: type '%s' can't be casted to type 'str'", arg.Typ))
 	}
+	return nil
 }
 
 func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {

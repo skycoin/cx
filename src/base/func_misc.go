@@ -336,6 +336,12 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	found := false
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		var foundStrct *CXStruct
+
+		if typ[:2] == "[]" {
+			// empty serialized struct array
+			return []byte{0, 0, 0, 0}, nil
+		}
+		
 		for _, strct := range mod.Structs {
 			if strct.Name == typ {
 				found = true
@@ -354,7 +360,7 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 				}
 			}
 		}
-
+		
 		if !found {
 			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
 		}
@@ -426,6 +432,8 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("initDef", "str", arg1); err == nil {
 		var typName string
 		encoder.DeserializeRaw(*arg1.Value, &typName)
+
+		//fmt.Println(typName)
 
 		isBasic := false
 		for _, basic := range BASIC_TYPES {
@@ -519,6 +527,118 @@ func serialize_program (expr *CXExpression, call *CXCall) error {
 
 	assignOutput(val, "[]byte", expr, call)
 	return nil
+}
+
+// custom type arrays functions
+
+func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error) {
+	var arrSize int32
+	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
+
+	if index < 0 {
+		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index))
+	}
+
+	if index >= arrSize {
+		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize))
+	}
+
+	instances := (*arr.Value)[4:]
+	
+	if strct, err := call.Context.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
+		lastFld := strct.Fields[len(strct.Fields) - 1]
+
+		var lowerBound int32
+		var upperBound int32
+		for c := int32(0); c <= index; c++ {
+			subArray := instances[lowerBound:]
+			_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+
+			lowerBound = upperBound
+			upperBound = upperBound + off + size
+		}
+		
+		output := instances[lowerBound:upperBound]
+		return output, nil
+	} else {
+		return nil, err
+	}
+}
+
+func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("cstm.append", "str", "str", arr, strctInst); err == nil {
+		// we receive the identifiers of both variables
+		var _arr string
+		var _strctInst string
+
+		encoder.DeserializeRaw(*arr.Value, &_arr)
+		encoder.DeserializeRaw(*strctInst.Value, &_strctInst)
+		
+		if rArr, err := resolveIdent(_arr, call); err == nil {
+			if rStrctInst, err := resolveIdent(_strctInst, call); err == nil {
+				// checking that the second argument's type is similar to the first argument's type
+				if rArr.Typ[2:] == rStrctInst.Typ {
+					var arrSize int32
+					encoder.DeserializeRaw((*rArr.Value)[:4], &arrSize)
+
+					output := append(encoder.Serialize(arrSize + 1), (*rArr.Value)[4:]...)
+					*rArr.Value = append(output, *rStrctInst.Value...)
+				}
+			} else {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+	return nil
+}
+
+func cstm_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("cstm.read", "str", "i32", arr, index); err == nil {
+		// we receive the identifiers of both variables
+		var _arr string
+		var _index int32
+
+		encoder.DeserializeRaw(*arr.Value, &_arr)
+		encoder.DeserializeAtomic(*index.Value, &_index)
+
+		if rArr, err := resolveIdent(_arr, call); err == nil {
+			if output, err := getStrctFromArray(rArr, _index, expr, call); err == nil {
+				assignOutput(&output, rArr.Typ[2:], expr, call)
+			} else {
+				return err
+			}
+			
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+	return nil
+}
+
+func cstm_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("cstm.len", "str", arr); err == nil {
+		var _arr string
+		var len int32
+
+		encoder.DeserializeRaw(*arr.Value, &_arr)
+		
+		if rArr, err := resolveIdent(_arr, call); err == nil {
+			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
+			output := encoder.Serialize(len)
+			assignOutput(&output, "i32", expr, call)
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
 }
 
 // test functions

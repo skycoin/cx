@@ -1,0 +1,103 @@
+// Affordances Tutorial 03
+// Usage of weights and adding new objects in rules
+package main
+
+type Unit struct {
+	id i32
+	energy i32
+	//gold i32
+}
+
+//var resources i32
+
+func sendToBattle (unit Unit) () {
+	str.print(str.concat("Sending to battle unit #", i32.str(unit.id)))
+	//str.print(str.concat("Energy: ", i32.str(unit.energy)))
+	unit.energy = i32.sub(unit.energy, i32.rand(0, 3))
+	//resources = i32.add(resources, i32.rand(0, 3))
+}
+
+func sendToRest (unit Unit) () {
+	str.print(str.concat("Sending to rest unit #", i32.str(unit.id)))
+	unit.energy = i32.add(unit.energy, i32.rand(0, 3))
+	//resources = i32.sub(resources, i32.rand(0, 3))
+}
+
+func calculateMorale (availableUnits i32, allUnits []Unit) (morale f32) {
+	morale = f32.sub(1.0, f32.div(i32.f32(availableUnits),
+		i32.f32([]Unit.len(allUnits))))
+}
+
+func main () () {
+	var units []Unit
+	//resources = i32.rand(50, 100)
+
+	for c := 0; i32.lt(c, 5); c = i32.add(c, 1) {
+		var newUnit Unit
+		newUnit.id = c
+		newUnit.energy = i32.rand(1, 10)
+		[]Unit.append(units, newUnit)
+	}
+
+	target := ->{
+		pkg(main) fn(main) exp(action)
+	}
+	
+	objects := ->{ threat $0.2 }
+
+	rules := ->{
+		if lowMorale $0.6 {
+			obj(threat $0.9)
+		}
+		if threat $0.0 {
+			allow(x.energy < 5)
+		}
+		if threat $0.5 {
+			reject(x.energy < 5)
+			allow(x.energy > 5)
+		}
+		if threat $0.8 {
+			reject(x.energy < 7)
+		}
+	}
+
+	
+
+	//affs := aff.query(target, objects, rules)
+	//aff.print(affs)
+	//str.print("")
+	
+	//morale := calculateMorale(aff.len(affs), units)
+	
+	//objects = aff.concat(objects, ->{lowMorale $morale})
+	//affs := aff.query(target, objects, rules)
+	//aff.print(affs)
+	//aff.execute(target, affs, 0)
+
+	//i32.print(aff.len(affs))
+	defaultUnit := []Unit.read(units, 0)
+	for i := 0; i32.lt(i, 3); i = i32.add(i, 1) {
+
+		str.print("")
+		str.print(str.concat("Round #", i32.str(i)))
+		str.print("")
+		
+		affs := aff.query(target, objects, rules)
+		morale := calculateMorale(aff.len(affs), units)
+		objects = aff.concat(objects, ->{lowMorale $morale})
+		affs := aff.query(target, objects, rules)
+		
+		for c := 0; i32.lt(c, aff.len(affs)); c = i32.add(c, 1) {
+			aff.execute(target, affs, c)
+		action:
+			sendToBattle(defaultUnit)
+		}
+
+		str.print("")
+		
+		for c := 0; i32.lt(c, []Unit.len(units)); c = i32.add(c, 1) {
+			sendToRest([]Unit.read(units, c))
+		}
+	}
+	
+}

@@ -87,7 +87,7 @@
                         /* Debugging */
                         DSTACK DPROGRAM DQUERY DSTATE
                         /* Affordances */
-                        AFF TAG INFER WASSIGN WEIGHT
+                        AFF TAG INFER WEIGHT
                         /* Prolog */
                         CCLAUSES QUERY COBJECT COBJECTS
 
@@ -103,7 +103,7 @@
 //%type   <names>         nonAssignExpression
 %type   <bool>          selectorLines selectorExpressionsAndStatements selectorFields
 %type   <stringA>       inferObj inferObjs inferRule inferRules inferClauses inferPred inferCond inferAction inferActions inferActionArg inferTarget inferTargets
-%type   <string>        inferArg inferOp
+%type   <string>        inferArg inferOp inferWeight
 
 %%
 
@@ -761,6 +761,8 @@ typeSpecifier:
 packageDeclaration:
                 PACKAGE IDENT
                 {
+			//fmt.Println($2)
+			//fmt.Println("hello")
 			mod := MakeModule($2)
 			cxt.AddModule(mod)
                 }
@@ -870,6 +872,66 @@ structDeclaration:
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
+
+				// creating manipulation functions for this type a la common lisp
+				// append
+				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2, ))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("strctInst", $2))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.append", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					expr.AddOutputName("_arr")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sStrctInst := encoder.Serialize("strctInst")
+					strctInstArg := MakeArgument(&sStrctInst, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(strctInstArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// read
+				fn = MakeFunction(fmt.Sprintf("[]%s.read", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddOutput(MakeParameter("strctInst", $2))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.read", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					expr.AddOutputName("strctInst")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// len
+				fn = MakeFunction(fmt.Sprintf("[]%s.len", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddOutput(MakeParameter("len", "i32"))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.len", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					expr.AddOutputName("len")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					expr.AddArgument(arrArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				
+				
 			}
                 }
                 STRUCT structFields
@@ -1104,6 +1166,25 @@ assignExpression:
 								expr.AddArgument(val)
 							}
 						}
+					}
+				}
+			}
+                }
+        |       VAR IDENT LBRACK RBRACK IDENT
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := cxt.GetCurrentFunction(); err == nil {
+					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
+						expr := MakeExpression(op)
+
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
+						fn.AddExpression(expr)
+						expr.AddOutputName($2)
+						typ := encoder.Serialize(fmt.Sprintf("[]%s", $5))
+						arg := MakeArgument(&typ, "str")
+						expr.AddArgument(arg)
 					}
 				}
 			}
@@ -1926,9 +2007,23 @@ inferRules:     inferRule
                 }
         ;
 
-inferObj:       IDENT WEIGHT
+inferWeight:    FLOAT
                 {
-			$$ = []string{$1, $2, "weight"}
+			$$ = fmt.Sprintf("%f", $1)
+                }
+        |       INT
+                {
+			$$ = fmt.Sprintf("%d", $1)
+                }
+        |       IDENT
+                {
+			$$ = fmt.Sprintf("%s", $1)
+                }
+        ;
+
+inferObj:       IDENT WEIGHT inferWeight
+                {
+			$$ = []string{$1, $3, "weight"}
                 }
 ;
 
@@ -2013,7 +2108,6 @@ argument:
 			val := encoder.Serialize($3)
 			$$ = MakeArgument(&val, "[]str")
                 }
-        ;
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
 			switch $1 {

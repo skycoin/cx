@@ -1,3 +1,5 @@
+// Affordances Tutorial 01
+// Basic filtering of local variables
 package main
 
 func main () () {
@@ -18,16 +20,13 @@ func main () () {
 
 	rules := ->{
 		if obj1 $0.3 {
-			allow(x < foo6)
+			allow(x > 5)
 		}
 	}
-
-	//[]str.print(rules)
 	
 	affs := aff.query(target, objs, rules)
-	[]str.print(affs)
 	aff.print(affs)
-	aff.execute(target, affs, 1)
+	aff.execute(target, affs, 0)
 
 message:
 	i32.print(0)

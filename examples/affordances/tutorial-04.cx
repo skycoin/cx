@@ -1,0 +1,42 @@
+package main
+
+type Unit struct {
+	id i32
+	energy i32
+}
+
+func printObj (unit Unit) () {
+	i32.print(unit.id)
+}
+
+func main () () {
+	var units []Unit
+
+	for c := 0; i32.lt(c, 5); c = i32.add(c, 1) {
+		var newUnit Unit
+		newUnit.id = c
+		newUnit.energy = c
+		[]Unit.append(units, newUnit)
+	}
+
+	target := ->{
+		pkg(main) fn(main) exp(action)
+	}
+	
+	objects := ->{
+		obj1 $0.2
+	}
+
+	rules := ->{
+		if and(neuron1 $0.2, neuron2 $0.3) {
+			obj(neuron3 $0.5)
+		}
+		if or(neuron3 $0.5, neuron4 $0.7) {
+			obj(neuron5 $0.8)
+		}
+	}
+	
+	defaultUnit := []Unit.read(units, 0)
+action:
+	printUnit(defaultUnit)
+}

@@ -430,6 +430,6 @@ func readI32 (expr *CXExpression, call *CXCall) error {
 	}
 	output := encoder.Serialize(num)
 
-	assignOutput(&output, "str", expr, call)
+	assignOutput(&output, "i32", expr, call)
 	return nil
 }

@@ -35,8 +35,6 @@
 /,/          { return COMMA      }
 /func/       { return FUNC       }
 /clauses/    { return CLAUSES    }
-/objects/    { return OBJECTS    }
-/object/     { return OBJECT     }
 /expr/       { return EXPR       }
 /def/        { return DEF        }
 /field/      { return FIELD      }
@@ -56,15 +54,7 @@
 />/          { return GTHAN      }
 /</          { return LTHAN      }
 /==/         { return EQUAL      }
-/\$-?[0-9]+\.[0-9]*/ {
-	lval.tok = yylex.Text()[1:]
-	return WEIGHT
-}
-/\$/          { return WASSIGN    }
-/(aff|test|str|bool|byte|i32|i64|f32|f64|\[\]bool|\[\]byte|\[\]str|\[\]i32|\[\]i64|\[\]f32|\[\]f64)(\.(\[\])?[a-zA-Z0-9_]+)/ {
-	lval.tok = yylex.Text()
-	return IDENT
-}
+/\$/         { return WEIGHT     }
 /bool/       { lval.tok = yylex.Text(); return BOOL     }
 /str/        { lval.tok = yylex.Text(); return STR      }
 /i32/        { lval.tok = yylex.Text(); return I32      }
@@ -106,7 +96,7 @@
 	lval.tok = yylex.Text()
 	return TAG
 }
-/[_a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)?/ {
+/[.\[\]a-zA-Z0-9_]+/ {
 	lval.tok = yylex.Text()
 	return IDENT
 }
@@ -340,6 +330,13 @@ func i32.f64 (in i32) (out f64) {}
 func i64.f64 (in i64) (out f64) {}
 func f32.f64 (in f32) (out f64) {}
 
+func byte.str (in byte) (out str) {}
+func bool.str (in bool) (out str) {}
+func i32.str (in i32) (out str) {}
+func i64.str (in i64) (out str) {}
+func f32.str (in f32) (out str) {}
+func f64.str (in f64) (out str) {}
+
 func []i32.[]byte (in []i32) (out []byte) {}
 func []i64.[]byte (in []i64) (out []byte) {}
 func []f32.[]byte (in []f32) (out []byte) {}
@@ -458,6 +455,8 @@ func affExpr (tag str, filter str, index i32) (numAffs i32) {}
 func aff.query (target []str, objs []str, rules []str) (affs []str) {}
 func aff.execute (target []str, commands []str, index i32) () {}
 func aff.print (commands []str) () {}
+func aff.concat (arr1 []str, arr2 []str) (conc []str) {}
+func aff.len (commands []str) (len i32) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
 func serialize () (sPrgrm []byte) {}
@@ -487,6 +486,9 @@ func test.[]i64 (result []i64, expected []i64, message str) () {}
 func test.[]f32 (result []f32, expected []f32, message str) () {}
 func test.[]f64 (result []f64, expected []f64, message str) () {}
 
+func cstm.append (arr str, strctInst str) (_arr str) {}
+func cstm.read (arr str, index i32) (strctInst str) {}
+func cstm.len (arr str) (len i32) {}
 
 /*
   Runtime
@@ -850,7 +852,21 @@ func (yylex Lexer) Error (e string) {
 	yylex.Stop()
 }
 
+type Point struct {
+	name string
+	x int32
+	y int32
+}
+
 func main () {
+	// var points []Point
+	// points = append(points, Point{name: "hello world", x: 10})
+	// fmt.Println(encoder.Serialize(points))
+
+	// var point Point
+	// fmt.Println(encoder.Serialize(point))
+	
+	
 	//Foo()
 	runtime.LockOSThread()
 	//runtime.GOMAXPROCS(2)

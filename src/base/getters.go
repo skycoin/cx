@@ -196,6 +196,17 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 		fnName = fmt.Sprintf("%s.%s", modName, fnName)
 		modName = CORE_MODULE
 	}
+
+	// I need to first look for the function in the current module
+	// if we find modName + fnName as it is in the current module, we give that one priority
+	dotFn := fmt.Sprintf("%s.%s", modName, fnName)
+	if mod, err := cxt.GetCurrentModule(); err == nil {
+		for _, fn := range mod.Functions {
+			if fn.Name == dotFn {
+				return fn, nil
+			}
+		}
+	}
 	
 	var foundMod *CXModule
 	for _, mod := range cxt.Modules {
@@ -204,7 +215,7 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			break
 		}
 	}
-
+	
 	var foundFn *CXFunction
 	if foundMod != nil {
 		for _, fn := range foundMod.Functions {

@@ -102,7 +102,6 @@ func main () (out str) {
 		[]bool.write(wormholeMap, map2Dto1D(row, col, width), false)
 		objs := robotObjects(row, col, width, wallMap, wormholeMap)
 
-		remArg("robot")
 		affs := aff.query(target, objs, rules)
 		str.print([]str.read(affs, 3))
 		aff.execute(target, affs, 0)
