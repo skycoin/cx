@@ -132,7 +132,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 						if aff.Index != "" {
 							if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
 								if expr, err := call.Context.GetCurrentExpression(); err == nil {
-									if val, err := getStrctFromArray(arg, int32(i), expr, call); err == nil {
+									if val, err, _, _ := getStrctFromArray(arg, int32(i), expr, call); err == nil {
 										if obj1IsX {
 											obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], &val, strct)
 										}
@@ -883,7 +883,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 					if index != "" {
 						if arr, err := resolveIdent(name, call); err == nil {
 							if i, err := strconv.ParseInt(index, 10, 64); err == nil {
-								if val, err := getStrctFromArray(arr, int32(i), expr, call); err == nil {
+								if val, err, _, _ := getStrctFromArray(arr, int32(i), expr, call); err == nil {
 									expr.RemoveArgument()
 									expr.AddArgument(MakeArgument(&val, arr.Typ[2:]))
 								} else {

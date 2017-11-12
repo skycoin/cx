@@ -1,0 +1,183 @@
+package main
+
+var entityCount i32
+
+// Component masks
+var COMPONENT_NONE i32
+var COMPONENT_DISPLACEMENT i32
+var COMPONENT_VELOCITY i32
+var COMPONENT_APPEARANCE i32
+
+// Compound component masks
+var MOVEMENT_MASK i32
+var RENDER_MASK i32
+
+// Components
+type Displacement struct {
+	x i32
+	y i32
+}
+type Velocity struct {
+	x i32
+	y i32
+}
+type Appearance struct {
+	name str
+}
+
+type World struct {
+	mask []i32
+	displacement []Displacement
+	velocity []Velocity
+	appearance []Appearance
+}
+
+func createEntity (world World) (entity i32) {
+	entityCount := []i32.len(world.mask)
+
+	var entity i32
+	for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+		mask := []i32.read(world.mask, entity)
+		if i32.eq(mask, COMPONENT_NONE) {
+			return
+		}
+	}
+	halt("No more entities left")
+}
+
+func destroyEntity (world World, entity i32) () {
+	[]i32.write(world, entity, COMPONENT_NONE)
+}
+
+// Entities
+
+func createTree (world World, x i32, y i32) (entity i32, newWorld World) {
+	entity := createEntity(world)
+
+	var disp Displacement
+	disp.x = x
+	disp.y = y
+
+	var app Appearance
+	app.name = "Tree"
+
+	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE))
+	world.displacement = []Displacement.write(world.displacement, entity, disp)
+	world.appearance = []Appearance.write(world.appearance, entity, app)
+	
+	newWorld = world
+}
+
+func createBox (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWorld World) {
+	entity := createEntity(world)
+
+	var disp Displacement
+	disp.x = x
+	disp.y = y
+
+	var vel Velocity
+	vel.x = vx
+	vel.y = vy
+
+	var app Appearance
+	app.name = "Box"
+
+	[]i32.write(world.mask, entity, i32.bitor(i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE), COMPONENT_VELOCITY))
+	world.displacement = []Displacement.write(world.displacement, entity, disp)
+	world.velocity = []Velocity.write(world.velocity, entity, vel)
+	world.appearance = []Appearance.write(world.appearance, entity, app)
+
+	newWorld = world
+}
+
+func createGhost (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWorld World) {
+	entity := createEntity(world)
+	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY))
+
+	var disp Displacement
+	displacement.x = x
+	displacement.y = y
+
+	var vel Velocity
+	velocity.x = vx
+	velocity.y = vy
+
+	world.displacement = []Displacement.write(world.displacement, entity, disp)
+	world.velocity = []Velocity.write(world.velocity, entity, vel)
+
+	newWorld = world
+}
+
+// Systems
+
+func movementFunction (world World) (newWorld World) {
+	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+		mask := []i32.read(world.mask, entity)
+		if i32.eq(i32.bitand(mask, MOVEMENT_MASK), MOVEMENT_MASK) {			
+			displacement := []Displacement.read(world.displacement, entity)
+			velocity := []Velocity.read(world.velocity, entity)
+
+			velocity.y = i32.sub(velocity.y, 1)
+
+			displacement.x = i32.add(displacement.x, velocity.x)
+			displacement.y = i32.add(displacement.y, velocity.y)
+
+			world.displacement = []Displacement.write(world.displacement, entity, displacement)
+			world.velocity = []Velocity.write(world.velocity, entity, velocity)
+		}
+	}
+	newWorld = world
+}
+
+func renderFunction (world World) () {
+	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+		mask := []i32.read(world.mask, entity)
+		if i32.eq(i32.bitand(mask, RENDER_MASK), RENDER_MASK) {
+			
+			displacement := []Displacement.read(world.displacement, entity)
+			
+			appearance := []Appearance.read(world.appearance, entity)
+
+			coords := str.concat(str.concat(str.concat(str.concat("(", i32.str(displacement.x)), ", "), i32.str(displacement.y)), ")")
+			
+			str.print(str.concat(str.concat(appearance.name, " is at "), coords))
+			//str.print(str.concat(appearance.name, " is at "))
+		}
+	}
+}
+
+func init () (world World) {
+	entityCount = 10
+
+	// components
+	COMPONENT_NONE := 0
+	COMPONENT_DISPLACEMENT := i32.bitshl(1, 0)
+	COMPONENT_VELOCITY := i32.bitshl(1, 1)
+	COMPONENT_APPEARANCE := i32.bitshl(1, 2)
+
+	// compound masks
+	MOVEMENT_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY)
+	RENDER_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE)
+
+	world.mask = []i32.make(entityCount)
+	world.displacement = []Displacement.make(entityCount)
+	world.velocity = []Velocity.make(entityCount)
+	world.appearance = []Appearance.make(entityCount)
+}
+
+func main () () {
+	world := init()
+
+	// tree, world = createTree(world, 5, 3)
+	// box, world = createBox(world, 10, 10, 0, 0)
+	// ghost, world := createGhost(world, 10, 4, 0, 0)
+
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		_, world = createBox(world, i32.rand(0, 10), i32.rand(0, 10), 0, 0)
+	}
+	
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		world = movementFunction(world)
+		renderFunction(world)
+	}
+}

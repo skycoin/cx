@@ -61,6 +61,9 @@
 	argument *CXArgument
 	arguments []*CXArgument
 
+        definition *CXDefinition
+	definitions []*CXDefinition
+
 	expression *CXExpression
 	expressions []*CXExpression
 
@@ -75,7 +78,7 @@
 %token  <f32>           FLOAT
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL
+                        ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
                         /* Selectors */
@@ -97,6 +100,8 @@
 %type   <parameters>    parameters functionParameters
 %type   <argument>      argument definitionAssignment
 %type   <arguments>     arguments argumentsList nonAssignExpression
+%type   <definition>    structLitDef
+%type   <definitions>   structLitDefs structLiteral
 %type   <fields>        fields structFields
 %type   <expression>    assignExpression
 %type   <expressions>   elseStatement
@@ -229,7 +234,7 @@ affordance:
                 TAG
                 {
 			tag = strings.TrimSuffix($1, ":")
-                }     
+                }
                 /* Function Affordances */
         |       AFF FUNC IDENT
                 {
@@ -678,34 +683,34 @@ selector:       SPACKAGE IDENT
 				}
 			}
                 }
-        |       SFUNC IDENT
-                {
-			var previousFunction *CXFunction
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				previousFunction = fn
-			} else {
-				fmt.Println("A current function does not exist")
-			}
-			if _, err := cxt.SelectFunction($2); err == nil {
-				//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
-			} else {
-				fmt.Println(err)
-			}
+        // |       SFUNC IDENT
+        //         {
+	// 		var previousFunction *CXFunction
+	// 		if fn, err := cxt.GetCurrentFunction(); err == nil {
+	// 			previousFunction = fn
+	// 		} else {
+	// 			fmt.Println("A current function does not exist")
+	// 		}
+	// 		if _, err := cxt.SelectFunction($2); err == nil {
+	// 			//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
+	// 		} else {
+	// 			fmt.Println(err)
+	// 		}
 
-			replTargetMod = ""
-			replTargetStrct = ""
-			replTargetFn = $2
+	// 		replTargetMod = ""
+	// 		replTargetStrct = ""
+	// 		replTargetFn = $2
 			
-			$<string>$ = previousFunction.Name
-                }
-                selectorExpressionsAndStatements
-                {
-			if $<bool>4 {
-				if _, err := cxt.SelectFunction($<string>3); err == nil {
-					//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
-				}
-			}
-                }
+	// 		$<string>$ = previousFunction.Name
+        //         }
+        //         selectorExpressionsAndStatements
+        //         {
+	// 		if $<bool>4 {
+	// 			if _, err := cxt.SelectFunction($<string>3); err == nil {
+	// 				//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
+	// 			}
+	// 		}
+        //         }
         |       SSTRUCT IDENT
                 {
 			var previousStruct *CXStruct
@@ -883,6 +888,9 @@ structDeclaration:
 
 				if op, err := cxt.GetFunction("cstm.append", CORE_MODULE); err == nil {
 					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
 					expr.AddOutputName("_arr")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
@@ -903,6 +911,9 @@ structDeclaration:
 
 				if op, err := cxt.GetFunction("cstm.read", CORE_MODULE); err == nil {
 					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
 					expr.AddOutputName("strctInst")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
@@ -910,6 +921,34 @@ structDeclaration:
 					indexArg := MakeArgument(&sIndex, "ident")
 					expr.AddArgument(arrArg)
 					expr.AddArgument(indexArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// write
+				fn = MakeFunction(fmt.Sprintf("[]%s.write", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddInput(MakeParameter("inst", $2))
+				//fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.write", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					sInst := encoder.Serialize("inst")
+					instArg := MakeArgument(&sInst, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					expr.AddArgument(instArg)
+
+					//expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -922,10 +961,36 @@ structDeclaration:
 
 				if op, err := cxt.GetFunction("cstm.len", CORE_MODULE); err == nil {
 					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
 					expr.AddOutputName("len")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
 					expr.AddArgument(arrArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// make
+				fn = MakeFunction(fmt.Sprintf("[]%s.make", $2))
+				fn.AddInput(MakeParameter("len", "i32"))
+				//fn.AddInput(MakeParameter("typ", "str"))
+				fn.AddOutput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.make", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+					expr.AddOutputName("arr")
+					sLen := encoder.Serialize("len")
+					sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
+					lenArg := MakeArgument(&sLen, "ident")
+					typArg := MakeArgument(&sTyp, "str")
+					expr.AddArgument(lenArg)
+					expr.AddArgument(typArg)
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1034,6 +1099,7 @@ expressionsAndStatements:
         |       affordance
         |       remover
         |       prolog
+//        |       structLitDefs
         |       expressionsAndStatements nonAssignExpression
         |       expressionsAndStatements assignExpression
         |       expressionsAndStatements statement
@@ -1043,6 +1109,7 @@ expressionsAndStatements:
         |       expressionsAndStatements affordance
         |       expressionsAndStatements remover
         |       expressionsAndStatements prolog
+//        |       expressionsAndStatements structLitDefs
         ;
 
 
@@ -1195,12 +1262,15 @@ assignExpression:
 			argsR := $3
 
 			if len(argsL) > len(argsR) {
-				panic("trying to assign values to variables using a function with no output parameters")
+				panic(fmt.Sprintf("%d: trying to assign values to variables using a function with no output parameters", yyS[yypt-0].line + 1))
 			}
 
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 
 				for i, argL := range argsL {
+					if argsR[i] == nil {
+						continue
+					}
 					// argL is going to be the output name
 					typeParts := strings.Split(argsR[i].Typ, ".")
 
@@ -2050,7 +2120,7 @@ inferTargets:   inferTarget
                 }
         |       inferTargets inferTarget
                 {
-			$1 = append($2)
+			$1 = append($1, $2...)
 			$$ = $1
                 }
         ;
@@ -2065,6 +2135,128 @@ inferClauses:   inferObjs
 
 
 
+
+
+structLitDef:
+                TAG argument
+                {
+			name := strings.TrimSuffix($1, ":")
+			$$ = MakeDefinition(name, $2.Value, $2.Typ)
+                }
+                    
+;
+
+structLitDefs:  structLitDef
+                {
+			var defs []*CXDefinition
+			$$ = append(defs, $1)
+                }
+        |       structLitDefs COMMA structLitDef
+                {
+			$1 = append($1, $3)
+			$$ = $1
+                }
+        ;
+
+structLiteral:
+                {
+			$$ = nil
+                }
+        |       
+		LBRACE structLitDefs RBRACE
+                {
+			$$ = $2
+                }
+        ;
+
+// fooIdent:       // IDENT
+//         //         {
+// 	// 		val := encoder.Serialize($1)
+// 	// 		$$ = MakeArgument(&val, "ident")
+//         //         }
+//         // |       
+// 		IDENT structLiteral
+//                 {
+// 			val := encoder.Serialize($1)
+		
+// 			if len($2) < 1 {
+// 				$$ = MakeArgument(&val, "ident")
+// 			} else {
+// 				// then it's a struct literal
+// 				if mod, err := cxt.GetCurrentModule(); err == nil {
+// 					if fn, err := cxt.GetCurrentFunction(); err == nil {
+// 						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
+// 							expr := MakeExpression(op)
+// 							if !replMode {
+// 								expr.FileLine = yyS[yypt-0].line + 1
+// 							}
+// 							fn.AddExpression(expr)
+
+// 							outName := MakeGenSym(NON_ASSIGN_PREFIX)
+// 							sOutName := encoder.Serialize(outName)
+
+// 							expr.AddOutputName(outName)
+// 							typ := encoder.Serialize($1)
+// 							expr.AddArgument(MakeArgument(&typ, "str"))
+
+// 							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $1))
+
+// 							for _, def := range $2 {
+// 								typeParts := strings.Split(def.Typ, ".")
+
+// 								var typ string
+// 								var secondTyp string
+// 								var idFn string
+
+// 								if len(typeParts) > 1 {
+// 									typ = "str"
+// 									secondTyp = typeParts[1] // i32, f32, etc
+// 								} else if typeParts[0] == "ident" {
+// 									typ = "str"
+// 									secondTyp = "ident"
+// 								} else {
+// 									typ = typeParts[0] // i32, f32, etc
+// 								}
+
+// 								if secondTyp == "" {
+// 									idFn = MakeIdentityOpName(typ)
+// 								} else {
+// 									idFn = "identity"
+// 								}
+								
+// 								if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
+// 									expr := MakeExpression(op)
+// 									if !replMode {
+// 										expr.FileLine = yyS[yypt-0].line + 1
+// 									}
+// 									fn.AddExpression(expr)
+// 									expr.AddTag(tag)
+// 									tag = ""
+
+// 									outName := fmt.Sprintf("%s.%s", outName, def.Name)
+// 									expr.AddOutputName(outName)
+// 									arg := MakeArgument(def.Value, typ)
+// 									expr.AddArgument(arg)
+// 								}
+// 							}
+							
+							
+// 							// if strct, err := cxt.GetStruct($1, mod.Name); err == nil {
+							
+// 							// }
+
+							
+// 							// expr.AddOutputName($2)
+							
+// 							// typ := encoder.Serialize($3)
+// 							// arg := MakeArgument(&typ, "str")
+// 							// expr.AddArgument(arg)
+// 						}
+// 					}
+// 				}
+// 			}
+//                 }
+                
 
 argument:
                 INT
@@ -2095,8 +2287,75 @@ argument:
         |       IDENT
                 {
 			val := encoder.Serialize($1)
-			
-                        $$ = MakeArgument(&val, "ident")
+			$$ = MakeArgument(&val, "ident")
+                }
+        |       NEW IDENT LBRACE structLitDefs RBRACE
+                {
+			val := encoder.Serialize($2)
+		
+			if len($4) < 1 {
+				$$ = MakeArgument(&val, "ident")
+			} else {
+				// then it's a struct literal
+				if mod, err := cxt.GetCurrentModule(); err == nil {
+					if fn, err := cxt.GetCurrentFunction(); err == nil {
+						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
+							expr := MakeExpression(op)
+							if !replMode {
+								expr.FileLine = yyS[yypt-0].line + 1
+							}
+							fn.AddExpression(expr)
+
+							outName := MakeGenSym(NON_ASSIGN_PREFIX)
+							sOutName := encoder.Serialize(outName)
+
+							expr.AddOutputName(outName)
+							typ := encoder.Serialize($2)
+							expr.AddArgument(MakeArgument(&typ, "str"))
+
+							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
+							for _, def := range $4 {
+								typeParts := strings.Split(def.Typ, ".")
+
+								var typ string
+								var secondTyp string
+								var idFn string
+
+								if len(typeParts) > 1 {
+									typ = "str"
+									secondTyp = typeParts[1] // i32, f32, etc
+								} else if typeParts[0] == "ident" {
+									typ = "str"
+									secondTyp = "ident"
+								} else {
+									typ = typeParts[0] // i32, f32, etc
+								}
+
+								if secondTyp == "" {
+									idFn = MakeIdentityOpName(typ)
+								} else {
+									idFn = "identity"
+								}
+								
+								if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
+									expr := MakeExpression(op)
+									if !replMode {
+										expr.FileLine = yyS[yypt-0].line + 1
+									}
+									fn.AddExpression(expr)
+									expr.AddTag(tag)
+									tag = ""
+
+									outName := fmt.Sprintf("%s.%s", outName, def.Name)
+									expr.AddOutputName(outName)
+									arg := MakeArgument(def.Value, typ)
+									expr.AddArgument(arg)
+								}
+							}
+						}
+					}
+				}
+			}
                 }
         |       IDENT LBRACK INT RBRACK
                 {
@@ -2141,14 +2400,22 @@ argument:
 				sVal := encoder.Serialize(vals)
 				$$ = MakeArgument(&sVal, "[]str")
 			case "[]i32":
-				vals := make([]int32, len($3))
+				// vals := make([]int32, len($3))
+				// for i, arg := range $3 {
+				// 	var val int32
+				// 	encoder.DeserializeRaw(*arg.Value, &val)
+				// 	vals[i] = val
+				// }
+				// sVal := encoder.Serialize(vals)
+				//$$ = MakeArgument(&sVal, "[]i32")
+
+				
+				
 				for i, arg := range $3 {
-					var val int32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = val
+					
 				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, "[]i32")
+				
+				$$ = nil
 			case "[]i64":
                                 vals := make([]int64, len($3))
 				for i, arg := range $3 {

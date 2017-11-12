@@ -14,15 +14,6 @@ import (
 
 func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
 	if len(inputs) == len(args) {
-
-		// for _, out := range outputs {
-		// 	for _, inp := range inputs {
-		// 		if out.Name == inp.Name {
-		// 			out.Name = ""
-		// 		}
-		// 	}
-		// }
-		
 		defs := make([]*CXDefinition, len(args) + len(outputs), len(args) + len(outputs) + 10)
 		for i, arg := range args {
 			defs[i] = &CXDefinition{
@@ -698,10 +689,14 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "i32.bitor": err = orI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i32.bitxor": err = xorI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i32.bitclear": err = andNotI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.bitshl": err = shiftLeftI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.bitshr": err = shiftRightI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.bitand": err = andI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.bitor": err = orI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.bitxor": err = xorI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.bitclear": err = andNotI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitshl": err = shiftLeftI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.bitshr": err = shiftRightI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// make functions
 	case "[]bool.make": err = makeArray("[]bool", (*argsCopy)[0], expr, call)
 	case "[]byte.make": err = makeArray("[]byte", (*argsCopy)[0], expr, call)
@@ -796,7 +791,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// custom types functions
 	case "cstm.append": err = cstm_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "cstm.read": err = cstm_read((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "cstm.write": err = cstm_write((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "cstm.len": err = cstm_len((*argsCopy)[0], expr, call)
+	case "cstm.make": err = cstm_make((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
 		// OpenGL
@@ -874,9 +871,42 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
 	var offset int32 = 0
 	for _, f := range strct.Fields {
+
+		var fldType string
+		
+		isArray := false
+		isBasic := false
+		if f.Typ[:2] == "[]" {
+			isArray = true
+			for _, basic := range BASIC_TYPES {
+				if basic == f.Typ[2:] {
+					isBasic = true
+					break
+				}
+			}
+		} else {
+			for _, basic := range BASIC_TYPES {
+				if basic == f.Typ {
+					isBasic = true
+					break
+				}
+			}
+		}
+
+		if isBasic {
+			fldType = f.Typ
+		} else {
+			if isArray {
+				fldType = "[]"
+			} else {
+				fldType = "struct"
+			}
+		}
+		
 		if f.Name == fld {
 			var size int32
-			switch f.Typ {
+			
+			switch fldType {
 			case "byte":
 				size = 1
 			case "bool", "i32", "f32":
@@ -903,6 +933,12 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
 
+				//fmt.Println("execute", arrOffset)
+
+				// if len(*val) > 1000 {
+				// 	fmt.Println((*val)[offset-1:offset+4+1])
+				// }
+
 				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
 			case "[]bool", "[]i32", "[]f32":
 				var arrOffset int32
@@ -916,11 +952,42 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				size = arrOffset
 				
 				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
+			case "[]":
+				if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+					lastFld := strct.Fields[len(strct.Fields) - 1]
+					instances := (*val)[offset+4:]
+
+					var upperBound int32
+					var size int32
+					encoder.DeserializeAtomic((*val)[offset:offset + 4], &size)
+					
+					if size == 0 {
+						return (*val)[offset:offset+4], f.Typ, offset, 4
+					}
+
+					for c := int32(0); c < size; c++ {
+						subArray := instances[upperBound:]
+						_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+						
+						upperBound = upperBound + off + size
+					}
+
+					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
+				}
+			case "struct":
+				if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+					lastFld := strct.Fields[len(strct.Fields) - 1]
+
+					instances := (*val)[offset:]
+					_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
+					
+					return (*val)[offset:offset + off + size], f.Typ, offset, off + size
+				}
 			}
 			return (*val)[offset:offset+size], f.Typ, offset, size
 		}
-
-		switch f.Typ {
+		
+		switch fldType {
 		case "byte":
 			offset += 1
 		case "bool", "i32", "f32":
@@ -933,21 +1000,16 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 
 			noSize := (*val)[offset+4:]
 
-			//fmt.Println("here", noElms)
-
 			var subOffset int32
 			for c := 0; c < int(noElms); c++ {
 				var strSize int32
 				encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
-				//fmt.Println("here", strSize)
 				subOffset += strSize + 4
 			}
-			//fmt.Println("here", subOffset + 4)
 			offset += subOffset + 4
 		case "str", "[]byte":
 			var arrOffset int32
 			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
-
 			offset += arrOffset + 4
 		case "[]bool", "[]i32", "[]f32":
 			var arrOffset int32
@@ -959,6 +1021,39 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 
 			offset += (arrOffset * 8) + 4
+		case "[]":
+			if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+				instances := (*val)[offset+4:]
+				lastFld := strct.Fields[len(strct.Fields) - 1]
+				
+				var upperBound int32
+				
+				var size int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &size)
+
+				// we don't need this. if size == 0, the loop won't execute
+				// and we'll return lowerBound(0) + 4 = 4
+				// if size == 0 {
+				// 	offset += 4
+				// }
+				
+				for c := int32(0); c < size; c++ {
+					subArray := instances[upperBound:]
+					_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+
+					upperBound = upperBound + off + size
+				}
+				offset += upperBound + 4
+			}
+		case "struct":
+			if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+				lastFld := strct.Fields[len(strct.Fields) - 1]
+
+				instances := (*val)[offset:]
+				_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
+
+				offset += off + size
+			}
 		}
 	}
 	
@@ -966,8 +1061,6 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 }
 
 func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
-	//val := def.Value
-
 	switch typ {
 	case "[]byte":
 		return (*val)[index+4:(index+1)+4], "byte"
@@ -994,7 +1087,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 
 	identParts := strings.Split(lookingFor, ".")
 
-	if len(identParts) > 1 {
+	if len(identParts) > 1 {		
 		if mod, err := call.Context.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct
 			isImported := false
@@ -1019,8 +1112,10 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 			} else {
 				// then it's a local struct
 				isStructFld = true
+
 				for _, stateDef := range call.State {
 					if stateDef.Name == identParts[0] {
+						//fmt.Println("resolveIdent", identParts[0], identParts[1])
 						// // Let's look in the byte array for the value
 						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
 							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
@@ -1076,7 +1171,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		// the same goes to arrays in the form ident[index]
 		return MakeArgument(resolvedIdent.Value, resolvedIdent.Typ), nil
 	}
-	return nil, errors.New("identifier could not be resolved")
+	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
 }
 
 func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
@@ -1106,10 +1201,12 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				if out.Name == def.Name {
 					if call.ReturnAddress != nil {
 						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames[i].Name
+
+						//fmt.Println("here", retName)
+						
 						found := false
 						for _, retDef := range call.ReturnAddress.State {
 							if retDef.Name == retName {
-								
 								retDef.Value = def.Value
 								found = true
 								break

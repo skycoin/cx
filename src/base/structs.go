@@ -14,6 +14,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"i32.mod":true, "i64.mod":true,
 	"i32.bitand":true, "i32.bitor":true, "i32.bitxor":true, "i32.bitclear":true,
 	"i64.bitand":true, "i64.bitor":true, "i64.bitxor":true, "i64.bitclear":true,
+	"i32.bitshl":true, "i32.bitshr":true, "i64.bitshl":true, "i64.bitshr":true,
 
 	"str.print":true, "byte.print":true, "i32.print":true, "i64.print":true,
 	"f32.print":true, "f64.print":true, "[]byte.print":true, "[]i32.print":true,
@@ -100,7 +101,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"test.[]bool":true, "test.[]byte":true, "test.[]str":true, "test.[]i32":true,
 	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true,
 
-	"cstm.append":true, "cstm.read":true, "cstm.len":true,
+	"cstm.append":true, "cstm.read":true, "cstm.write":true, "cstm.len":true,
+	"cstm.make":true,
 
 	/*
           Runtime

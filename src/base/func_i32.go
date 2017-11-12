@@ -164,6 +164,38 @@ func andNotI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 	}
 }
 
+func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i32.bitshl", "i32", "i32", arg1, arg2); err == nil {
+		var num1 uint32
+		var num2 uint32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int32(num1 << num2))
+
+		assignOutput(&output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func shiftRightI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i32.bitshr", "i32", "i32", arg1, arg2); err == nil {
+		var num1 uint32
+		var num2 uint32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int32(num1 >> num2))
+
+		assignOutput(&output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.rand", "i32", "i32", min, max); err == nil {
 		var minimum int32

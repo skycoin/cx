@@ -48,6 +48,7 @@
 /\}/         { return RBRACE     }
 /\[/         { return LBRACK     }
 /\]/         { return RBRACK     }
+/:/          { return COLON      }
 /=/          { return ASSIGN     }
 /:=/         { return CASSIGN    }
 /->/         { return INFER      }
@@ -55,6 +56,7 @@
 /</          { return LTHAN      }
 /==/         { return EQUAL      }
 /\$/         { return WEIGHT     }
+/new/        { return NEW        }
 /bool/       { lval.tok = yylex.Text(); return BOOL     }
 /str/        { lval.tok = yylex.Text(); return STR      }
 /i32/        { lval.tok = yylex.Text(); return I32      }
@@ -253,11 +255,15 @@ func i32.bitand (n1 i32, n2 i32) (out i32) {}
 func i32.bitor (n1 i32, n2 i32) (out i32) {}
 func i32.bitxor (n1 i32, n2 i32) (out i32) {}
 func i32.bitclear (n1 i32, n2 i32) (out i32) {}
+func i32.bitshl (n1 i32, n2 i32) (out i32) {}
+func i32.bitshr (n1 i32, n2 i32) (out i32) {}
 
 func i64.bitand (n1 i64, n2 i64) (out i64) {}
 func i64.bitor (n1 i64, n2 i64) (out i64) {}
 func i64.bitxor (n1 i64, n2 i64) (out i64) {}
 func i64.bitclear (n1 i64, n2 i64) (out i64) {}
+func i64.bitshl (n1 i64, n2 i64) (out i64) {}
+func i64.bitshr (n1 i64, n2 i64) (out i64) {}
 
 func and (c1 bool, c2 bool) (out bool) {}
 func or (c1 bool, c2 bool) (out bool) {}
@@ -488,7 +494,9 @@ func test.[]f64 (result []f64, expected []f64, message str) () {}
 
 func cstm.append (arr str, strctInst str) (_arr str) {}
 func cstm.read (arr str, index i32) (strctInst str) {}
+func cstm.write (arr str, index i32, inst str) () {}
 func cstm.len (arr str) (len i32) {}
+func cstm.make (len i32, typ str) (arr str) {}
 
 /*
   Runtime

@@ -187,7 +187,6 @@ func scale (x i32, max i32) (out f32) {
 
 func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 	gl.MatrixMode(gl.MODELVIEW)
-
 	gl.LoadIdentity()
 	
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)

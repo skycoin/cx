@@ -160,6 +160,38 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 	}
 }
 
+func shiftLeftI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i64.bitshl", "i64", "i64", arg1, arg2); err == nil {
+		var num1 uint64
+		var num2 uint64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 << num2))
+
+		assignOutput(&output, "i64", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func shiftRightI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i64.bitshr", "i64", "i64", arg1, arg2); err == nil {
+		var num1 uint64
+		var num2 uint64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(num1 >> num2))
+
+		assignOutput(&output, "i64", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.rand", "i64", "i64", min, max); err == nil {
 		var minimum int64

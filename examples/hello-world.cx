@@ -1,5 +1,79 @@
 package main
 
+type Dot struct {
+	a i32
+	b i32
+}
+
+type Point struct {
+	name str
+	dot Dot
+	x i32
+	y i32
+	z i32
+}
+
 func main () () {
+	foo1 := 99
+	
+	foo2 := new Point{
+		dot: new Dot{
+			a: 75,
+			b: 65
+		},
+		x: foo1,
+		y: 30,
+		z: 40
+	}
+
+	i32.print(foo2.x)
+	i32.print(foo2.y)
+	i32.print(foo2.z)
+
+	coco := foo2.dot
+	i32.print(coco.a)
+	i32.print(coco.b)
+
+
+	var points []Point
+	points = []Point.append(points, new Point{x: 3, y: 10})
+	points = []Point.append(points, new Point{z: 30, name: "best point"})
+
+	myPoint := []Point.read(points, 0)
+	i32.print(myPoint.x)
+	i32.print(myPoint.y)
+
+	myPoint2 := []Point.read(points, 1)
+	i32.print(myPoint2.x)
+	i32.print(myPoint2.y)
+	i32.print(myPoint2.z)
+	str.print(myPoint2.name)
+
+	bar1 := 5
+	foobar := []i32{1, 2, bar1}
+	[]i32.print(foobar)
+	// this ^ needs to be expressed as:
+	var foobar []i32
+	foobar := []i32.make(5)
+	[]i32.write(foobar, 0, 1)
+	[]i32.write(foobar, 1, 2)
+	[]i32.write(foobar, 1, bar1)
+
+	// str.print("checking array write")
+	// dots := []Dot.make(10)
+	
+	// aDot := []Dot.read(dots, 0)
+	// i32.print(aDot.a)
+
+	// myDot := new Dot{a: 10, b: 20}
+	// []Dot.write(dots, 0, myDot)
+	// []Dot.write(dots, 1, myDot)
+	// []Dot.write(dots, 2, myDot)
+	// []Dot.write(dots, 3, myDot)
+
+	// aDot := []Dot.read(dots, 3)
+	// i32.print(aDot.b)
+
+	
 	str.print("Hello World!")
 }

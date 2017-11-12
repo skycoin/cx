@@ -17,6 +17,22 @@ type testStruct struct {
 	testF64A []f64
 }
 
+type nestedStruct struct {
+	nested1 testStruct
+	separator1 i32
+	nested2 testStruct
+	separator2 f64
+	nested3 testStruct
+}
+
+type nestedStructArrays struct {
+	nested1 []testStruct
+	separator1 i32
+	nested2 []testStruct
+	separator2 f64
+	nested3 []testStruct
+}
+
 var testBool bool
 var testStr str
 var testByte byte
@@ -156,11 +172,15 @@ func main () () {
 	test.i32(i32.bitor(5, 3), 7, "")
 	test.i32(i32.bitxor(5, 3), 6, "")
 	test.i32(i32.bitclear(5, 3), 4, "")
+	test.i32(i32.bitshl(2, 2), 8, "")
+	test.i32(i32.bitshr(8, 2), 2, "")
 
 	test.i64(i64.bitand(i32.i64(5), i32.i64(3)), i32.i64(1), "")
 	test.i64(i64.bitor(i32.i64(5), i32.i64(3)), i32.i64(7), "")
 	test.i64(i64.bitxor(i32.i64(5), i32.i64(3)), i32.i64(6), "")
 	test.i64(i64.bitclear(i32.i64(5), i32.i64(3)), i32.i64(4), "")
+	test.i64(i64.bitshl(i32.i64(2), i32.i64(2)), i32.i64(8), "")
+	test.i64(i64.bitshr(i32.i64(8), i32.i64(2)), i32.i64(2), "")
 
 	// variable initialization
 	
@@ -707,6 +727,80 @@ label4:
 	test.[]f32(returnedStruct.testF32A, []f32{70.5, 170.5, 270.5}, "")
 	test.[]f64(returnedStruct.testF64A, []f64{70.5, 170.5, 270.5}, "")
 
+	// testing structs with custom type (structs) fields
+	
+	var newTestStruct1 testStruct
+	newTestStruct1.testStr = "¨åæ good morninig ¨åæ"
+	newTestStruct1.testF64 = f32.f64(10.5)
+
+	var newTestStruct2 testStruct
+	newTestStruct2.testStr = "¨åæ good afternoon ¨åæ"
+	newTestStruct2.testF64 = f32.f64(20.5)
+
+	var newTestStruct3 testStruct
+	newTestStruct3.testStr = "¨åæ good evenining ¨åæ"
+	newTestStruct3.testF64 = f32.f64(30.5)
+
+	var newNestedStruct nestedStruct
+	newNestedStruct.nested1 = newTestStruct1
+	newNestedStruct.separator1 = 33
+	newNestedStruct.nested2 = newTestStruct2
+	newNestedStruct.separator2 = f32.f64(3.5)
+	newNestedStruct.nested3 = newTestStruct3
+
+	extractedNested1 = newNestedStruct.nested1
+	extractedNested2 = newNestedStruct.nested2
+	extractedNested3 = newNestedStruct.nested3
+
+	test.i32(newNestedStruct.separator1, 33, "")
+	test.f64(newNestedStruct.separator2, f32.f64(3.5), "")
+	
+	test.str(extractedNested1.testStr, "¨åæ good morninig ¨åæ", "")
+	test.str(extractedNested2.testStr, "¨åæ good afternoon ¨åæ", "")
+	test.str(extractedNested3.testStr, "¨åæ good evenining ¨åæ", "")
+	
+	test.f64(extractedNested1.testF64, f32.f64(10.5), "")
+	test.f64(extractedNested2.testF64, f32.f64(20.5), "")
+	test.f64(extractedNested3.testF64, f32.f64(30.5), "")
+	
+	// testing structs with custom type (structs) array fields
+
+	var testStructs1 []testStruct
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		var newTestStruct testStruct
+		newTestStruct.testI32 = c
+		testStructs1 = []testStruct.append(testStructs1, newTestStruct)
+	}
+
+	var testStructs2 []testStruct
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		var newTestStruct testStruct
+		newTestStruct.testI32 = i32.add(c, 1)
+		testStructs2 = []testStruct.append(testStructs2, newTestStruct)
+	}
+
+	var testStructs3 []testStruct
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		var newTestStruct testStruct
+		newTestStruct.testI32 = i32.add(c, 2)
+		testStructs3 = []testStruct.append(testStructs3, newTestStruct)
+	}
+	
+	var newNestedStructArrays nestedStructArrays
+	newNestedStructArrays.nested1 = testStructs1
+	newNestedStructArrays.separator1 = 33
+	newNestedStructArrays.nested2 = testStructs2
+	newNestedStructArrays.separator2 = f32.f64(3.5)
+	newNestedStructArrays.nested3 = testStructs3
+
+	extractedStructFromArray1 = []testStruct.read(newNestedStructArrays.nested1, 2)
+	extractedStructFromArray2 = []testStruct.read(newNestedStructArrays.nested2, 5)
+	extractedStructFromArray3 = []testStruct.read(newNestedStructArrays.nested3, 8)
+
+	test.i32(extractedStructFromArray1.testI32, 2, "")
+	test.i32(extractedStructFromArray2.testI32, 6, "")
+	test.i32(extractedStructFromArray3.testI32, 10, "")
+	
 	// testing if and if/else
 
 	// if without else first
@@ -905,6 +999,44 @@ label4:
 	test.i32(s, 0, "")
 	test.i32(m, 400, "")
 	test.i32(d, 1, "")
+
+	// affordances syntax
+
+	test.[]str(->{obj1 $0.3}, []str{"obj1", "0.300000", "weight"}, "")
+	test.[]str(->{ pkg(aModule) fn(anFn) exp(anExpr)}, []str{"aModule", "pkg", "anFn", "fn", "anExpr", "exp"}, "")
+	test.[]str(->{
+		if lowMorale $0.6 {
+			obj(threat $0.9)
+		}
+		if threat $0.0 {
+			allow(x.energy < 5)
+		}
+	}, []str{"lowMorale", "0.600000", "weight", "single", "if", "threat", "0.900000", "weight", "obj", "endif", "threat", "0.000000", "weight", "single", "if", "x.energy", "5", "<", "allow", "endif"}, "")
+
+
+	// affordance query and execution
+	affVal := 1500
+	target := ->{pkg(main) fn(main) exp(test)}
+	objs := ->{obj1 $1.0, obj2 $0.5}
+	rules := ->{
+		if and(obj1 $0.9, obj2 $0.4) {
+			obj(obj3 $1.0)
+		}
+		if or(obj4 $0.5, obj3 $1.0) {
+			allow(x > 1000)
+		}
+	}
 	
+	affs := aff.query(target, objs, rules)
+	aff.print(affs)
+	aff.execute(target, affs, 0)
+
+	
+test:
+	affoo := i32.add(1, 2)
+
+	i32.print(affoo)
+	test.i32(affoo, 1501, "")
+
 	test.stop()
 }

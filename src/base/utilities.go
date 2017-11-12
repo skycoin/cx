@@ -14,31 +14,63 @@ import (
 func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall) {
 	outName := expr.OutputNames[0].Name
 	expr.OutputNames[0].Typ = typ
+
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
 
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
+					//fmt.Println("before", def.Name, len(*def.Value), "toAdd", len(*output), "ident", identParts[1])
 					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
-						if typ == "str" || typ == "[]str" || typ == "[]bool" ||
+						isBasic := false
+						for _, basic := range BASIC_TYPES {
+							if basic == typ {
+								isBasic = true
+								break
+							}
+						}
+
+						// if outName == "world.displacement" {
+						// 	fmt.Println(len(*def.Value))
+						// }
+						
+						if true || typ == "str" || typ == "[]str" || typ == "[]bool" ||
 							typ == "[]byte" || typ == "[]i32" ||
-							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" {
+							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" || !isBasic {
 
 							firstChunk := make([]byte, offset)
-							secondChunk := make([]byte, len(*def.Value) - int((offset + size)))
+							secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+
+							//fmt.Println("offset", offset, "size", size)
 
 							copy(firstChunk, (*def.Value)[:offset])
 							copy(secondChunk, (*def.Value)[offset+size:])
 
 							final := append(firstChunk, *output...)
 							final = append(final, secondChunk...)
+
+							//fmt.Println("final", len(final))
+
+							//fmt.Println("hello")
+
+							// final := append((*def.Value)[:offset], *output...)
+							// final = append(final, (*def.Value)[offset+size:]...)
+
+							// if identParts[1] == "appearance" || identParts[1] == "displacement" {
+							// 	fmt.Println()
+							// 	fmt.Println(outName)
+							// 	fmt.Println("def.Value", len(*def.Value))
+							// 	fmt.Println("final", len(final))
+							// }
 							
 							*def.Value = final
+							//fmt.Println("after", def.Name, len(*def.Value))
 							return
 						} else {
+							
 							for c := 0; c < len(byts); c++ {
 								byts[c] = (*output)[c]
 							}

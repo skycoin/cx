@@ -1,0 +1,29 @@
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+type Canvas struct {
+	points []Point
+}
+
+func main () (out i32) {
+	var points []Point
+	for c := 0; i32.lt(c, 10); c = i32.add(c, 1) {
+		var newPoint Point
+		newPoint.x = c
+		newPoint.y = i32.add(c, 1)
+		[]Point.append(points, newPoint)
+	}
+	
+	var canvas Canvas
+	i32.print([]Point.len(canvas.points))
+	canvas.points = points
+	i32.print([]Point.len(canvas.points))
+	myPoint := []Point.read(canvas.points, 9)
+
+	i32.print(myPoint.x)
+	i32.print(myPoint.y)
+}

@@ -324,8 +324,6 @@ func MakeDefaultValue (typName string) *[]byte {
 	return &zeroVal
 }
 
-//func MakeSerializedValue ()
-
 func MakeStruct (name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
