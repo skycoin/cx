@@ -20,10 +20,10 @@ func main () () {
 
 	rules := ->{
 		if obj1 $0.3 {
-			allow(x > 5)
+			allow(x > i32.add(4, 2))
 		}
 	}
-	
+
 	affs := aff.query(target, objs, rules)
 	aff.print(affs)
 	aff.execute(target, affs, 0)

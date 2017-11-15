@@ -312,7 +312,6 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					pWeights = append(pWeights, f)
 				} else {
 					// then it's an identifier
-					//fmt.Println("here", obj2[0])
 					if arg, err := resolveIdent(obj2[0], call); err == nil {
 						if len(obj2) > 1 {
 							// then it's a struct
@@ -633,7 +632,6 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					continue
 				}
 				stack = append(stack, rule)
-			//case ".":
 			case ">":
 				if falseRule {
 					continue

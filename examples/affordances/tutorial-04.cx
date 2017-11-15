@@ -16,7 +16,7 @@ func main () () {
 		var newUnit Unit
 		newUnit.id = c
 		newUnit.energy = c
-		[]Unit.append(units, newUnit)
+		units = []Unit.append(units, newUnit)
 	}
 
 	target := ->{
@@ -38,5 +38,5 @@ func main () () {
 	
 	defaultUnit := []Unit.read(units, 0)
 action:
-	printUnit(defaultUnit)
+	printObj(defaultUnit)
 }

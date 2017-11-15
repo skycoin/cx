@@ -49,11 +49,22 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 			return errors.New(fmt.Sprintf("[]bool.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)+1) * 4
-		for c := 0; c < 4; c++ {
-			(*arr.Value)[i + c] = (*val.Value)[c]
-		}
-		
+		// i := (int(index)+1) * 4
+		// for c := 0; c < 4; c++ {
+		// 	(*arr.Value)[i + c] = (*val.Value)[c]
+		// }
+
+		offset := int(index) * 4 + 4
+		firstChunk := make([]byte, offset)
+		secondChunk := make([]byte, len(*arr.Value) - offset)
+
+		copy(firstChunk, (*arr.Value)[:offset])
+		copy(secondChunk, (*arr.Value)[offset + 4:])
+
+		final := append(firstChunk, *val.Value...)
+		final = append(final, secondChunk...)
+
+		assignOutput(&final, "[]bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -101,6 +112,7 @@ func appendBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
+		//*arg1.Value = sOutput
 		assignOutput(&sOutput, "[]bool", expr, call)
 		return nil
 	} else {

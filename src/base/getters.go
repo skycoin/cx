@@ -9,7 +9,7 @@ func (cxt *CXProgram) GetCurrentModule () (*CXModule, error) {
 	if cxt.CurrentModule != nil {
 		return cxt.CurrentModule, nil
 	} else {
-		return nil, errors.New("Current module is nil")
+		return nil, errors.New("current module is nil")
 	}
 	
 }
@@ -19,7 +19,7 @@ func (cxt *CXProgram) GetCurrentStruct () (*CXStruct, error) {
 		cxt.CurrentModule.CurrentStruct != nil {
 		return cxt.CurrentModule.CurrentStruct, nil
 	} else {
-		return nil, errors.New("Current module or struct is nil")
+		return nil, errors.New("current module or struct is nil")
 	}
 	
 }
@@ -28,7 +28,7 @@ func (mod *CXModule) GetCurrentStruct () (*CXStruct, error) {
 	if mod.CurrentStruct != nil {
 		return mod.CurrentStruct, nil
 	} else {
-		return nil, errors.New("Current struct is nil")
+		return nil, errors.New("current struct is nil")
 	}
 	
 }
@@ -38,7 +38,7 @@ func (cxt *CXProgram) GetCurrentFunction () (*CXFunction, error) {
 		cxt.CurrentModule.CurrentFunction != nil {
 		return cxt.CurrentModule.CurrentFunction, nil
 	} else {
-		return nil, errors.New("Current module or function is nil")
+		return nil, errors.New("current module or function is nil")
 	}
 	
 }
@@ -47,7 +47,7 @@ func (mod *CXModule) GetCurrentFunction () (*CXFunction, error) {
 	if mod.CurrentFunction != nil {
 		return mod.CurrentFunction, nil
 	} else {
-		return nil, errors.New("Current function is nil")
+		return nil, errors.New("current function is nil")
 	}
 }
 
@@ -57,7 +57,7 @@ func (cxt *CXProgram) GetCurrentExpression () (*CXExpression, error) {
 		cxt.CurrentModule.CurrentFunction.CurrentExpression != nil {
 		return cxt.CurrentModule.CurrentFunction.CurrentExpression, nil
 	} else {
-		return nil, errors.New("Current module, function or expression is nil")
+		return nil, errors.New("current module, function or expression is nil")
 	}
 }
 
@@ -67,7 +67,7 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	} else if fn.Expressions != nil {
 		return fn.Expressions[0], nil
 	} else {
-		return nil, errors.New("Current expression is nil")
+		return nil, errors.New("current expression is nil")
 	}
 }
 
@@ -89,7 +89,7 @@ func (mod *CXModule) GetDefinitions () ([]*CXDefinition, error) {
 	if mod.Definitions != nil {
 		return mod.Definitions, nil
 	} else {
-		return nil, errors.New("Definitions array is nil")
+		return nil, errors.New("definitions array is nil")
 	}
 }
 
@@ -117,7 +117,7 @@ func (strct *CXStruct) GetFields() ([]*CXField, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
-		return nil, errors.New("Structure has no fields")
+		return nil, errors.New("structure has no fields")
 	}
 }
 
@@ -126,7 +126,7 @@ func (mod *CXModule) GetFunctions() ([]*CXFunction, error) {
 	if mod.Functions != nil {
 		return mod.Functions, nil
 	} else {
-		return nil, errors.New("Module has no functions")
+		return nil, errors.New("module has no functions")
 	}
 }
 
@@ -142,11 +142,11 @@ func (cxt *CXProgram) GetModule (modName string) (*CXModule, error) {
 		if found != nil {
 			return found, nil
 		} else {
-			return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
+			return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
 		}
 		
 	} else {
-		return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
+		return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
 	}
 }
 
@@ -169,7 +169,7 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	if foundMod != nil && foundStrct != nil {
 		return foundStrct, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Struct '%s' not found in module '%s'", strctName, modName))
+		return nil, errors.New(fmt.Sprintf("struct '%s' not found in module '%s'", strctName, modName))
 	}
 }
 
@@ -185,7 +185,7 @@ func (mod *CXModule) GetDefinition (defName string) (*CXDefinition, error) {
 	if foundDef != nil {
 		return foundDef, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Definition '%s' not found in module '%s'", defName, mod.Name))
+		return nil, errors.New(fmt.Sprintf("definition '%s' not found in module '%s'", defName, mod.Name))
 	}
 }
 
@@ -225,14 +225,14 @@ func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, 
 			}
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("Module '%s' not found", modName))
+		return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
 	}
 	
 
 	if foundMod != nil && foundFn != nil {
 		return foundFn, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("Function '%s' not found in module '%s'", fnName, modName))
+		return nil, errors.New(fmt.Sprintf("function '%s' not found in module '%s'", fnName, modName))
 	}
 	
 	// if cxt.Modules != nil && cxt.Modules[modName] != nil && cxt.Modules[modName].Functions != nil && cxt.Modules[modName].Functions[fnName] != nil {
@@ -246,7 +246,7 @@ func (fn *CXFunction) GetExpressions () ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
 	} else {
-		return nil, errors.New("Function has no expressions")
+		return nil, errors.New("function has no expressions")
 	}
 }
 
@@ -255,11 +255,11 @@ func (fn *CXFunction) GetExpression (line int) (*CXExpression, error) {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
 		} else {
-			return nil, errors.New("Expression line number exceeds number of expressions in function")
+			return nil, errors.New("expression line number exceeds number of expressions in function")
 		}
 		
 	} else {
-		return nil, errors.New("Function has no expressions")
+		return nil, errors.New("function has no expressions")
 	}
 }
 
@@ -267,13 +267,6 @@ func (expr *CXExpression) GetArguments () ([]*CXArgument, error) {
 	if expr.Arguments != nil {
 		return expr.Arguments, nil
 	} else {
-		return nil, errors.New("Expression has no arguments")
+		return nil, errors.New("expression has no arguments")
 	}
 }
-
-// GetValue
-// we send an ident?
-// func (cxt *CXProgram) GetValue (ident string) ([]*CXArgument, error) {
-// 	// we look for that ident in local > global > external
-// 	// it can be variable or struct
-// }

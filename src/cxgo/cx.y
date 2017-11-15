@@ -761,6 +761,7 @@ typeSpecifier:
         |       F32A {$$ = $1}
         |       F64A {$$ = $1}
         |       STR {$$ = $1}
+        |       NEW IDENT {$$ = $2}
         ;
 
 packageDeclaration:
@@ -821,8 +822,11 @@ definitionDeclaration:
                 {
 			// we have to initialize all the fields
 			if mod, err := cxt.GetCurrentModule(); err == nil {
+				
 				if zeroVal, err := ResolveStruct($3, cxt); err == nil {
 					mod.AddDefinition(MakeDefinition($2, &zeroVal, $3))
+				} else {
+					fmt.Println(fmt.Sprintf("%d: definition declaration: %s", yyS[yypt-0].line + 1, err))
 				}
 			}
                 }
@@ -930,7 +934,7 @@ structDeclaration:
 				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
 				fn.AddInput(MakeParameter("index", "i32"))
 				fn.AddInput(MakeParameter("inst", $2))
-				//fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
 				mod.AddFunction(fn)
 
 				if op, err := cxt.GetFunction("cstm.write", CORE_MODULE); err == nil {
@@ -948,7 +952,7 @@ structDeclaration:
 					expr.AddArgument(indexArg)
 					expr.AddArgument(instArg)
 
-					//expr.AddOutputName("_arr")
+					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1994,6 +1998,12 @@ inferArg:       IDENT
                 {
 			$$ = fmt.Sprintf("%d", $1)
                 }
+        |       nonAssignExpression
+                {
+			var ident string
+			encoder.DeserializeRaw(*$1[0].Value, &ident)
+			$$ = ident
+                }
         ;
 
 inferOp:        EQUAL
@@ -2039,7 +2049,6 @@ inferActions:
 			$$ = $1
                 }
                 ;
-
 
 inferRule:      IF inferCond LBRACE inferActions RBRACE
                 {
@@ -2091,9 +2100,19 @@ inferWeight:    FLOAT
                 }
         ;
 
-inferObj:       IDENT WEIGHT inferWeight
+inferObj:
+                {
+			$$ = []string{}
+                }
+        |       IDENT WEIGHT inferWeight
                 {
 			$$ = []string{$1, $3, "weight"}
+                }
+        |       IDENT WEIGHT nonAssignExpression
+                {
+			var ident string
+			encoder.DeserializeRaw(*$3[0].Value, &ident)
+			$$ = []string{$1, ident, "weight"}
                 }
 ;
 
@@ -2133,15 +2152,16 @@ inferClauses:   inferObjs
 
 
 
-
-
-
-
 structLitDef:
                 TAG argument
                 {
 			name := strings.TrimSuffix($1, ":")
 			$$ = MakeDefinition(name, $2.Value, $2.Typ)
+                }
+        |       TAG nonAssignExpression
+                {
+			name := strings.TrimSuffix($1, ":")
+			$$ = MakeDefinition(name, $2[0].Value, $2[0].Typ)
                 }
                     
 ;
@@ -2168,95 +2188,6 @@ structLiteral:
 			$$ = $2
                 }
         ;
-
-// fooIdent:       // IDENT
-//         //         {
-// 	// 		val := encoder.Serialize($1)
-// 	// 		$$ = MakeArgument(&val, "ident")
-//         //         }
-//         // |       
-// 		IDENT structLiteral
-//                 {
-// 			val := encoder.Serialize($1)
-		
-// 			if len($2) < 1 {
-// 				$$ = MakeArgument(&val, "ident")
-// 			} else {
-// 				// then it's a struct literal
-// 				if mod, err := cxt.GetCurrentModule(); err == nil {
-// 					if fn, err := cxt.GetCurrentFunction(); err == nil {
-// 						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
-// 							expr := MakeExpression(op)
-// 							if !replMode {
-// 								expr.FileLine = yyS[yypt-0].line + 1
-// 							}
-// 							fn.AddExpression(expr)
-
-// 							outName := MakeGenSym(NON_ASSIGN_PREFIX)
-// 							sOutName := encoder.Serialize(outName)
-
-// 							expr.AddOutputName(outName)
-// 							typ := encoder.Serialize($1)
-// 							expr.AddArgument(MakeArgument(&typ, "str"))
-
-// 							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $1))
-
-// 							for _, def := range $2 {
-// 								typeParts := strings.Split(def.Typ, ".")
-
-// 								var typ string
-// 								var secondTyp string
-// 								var idFn string
-
-// 								if len(typeParts) > 1 {
-// 									typ = "str"
-// 									secondTyp = typeParts[1] // i32, f32, etc
-// 								} else if typeParts[0] == "ident" {
-// 									typ = "str"
-// 									secondTyp = "ident"
-// 								} else {
-// 									typ = typeParts[0] // i32, f32, etc
-// 								}
-
-// 								if secondTyp == "" {
-// 									idFn = MakeIdentityOpName(typ)
-// 								} else {
-// 									idFn = "identity"
-// 								}
-								
-// 								if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
-// 									expr := MakeExpression(op)
-// 									if !replMode {
-// 										expr.FileLine = yyS[yypt-0].line + 1
-// 									}
-// 									fn.AddExpression(expr)
-// 									expr.AddTag(tag)
-// 									tag = ""
-
-// 									outName := fmt.Sprintf("%s.%s", outName, def.Name)
-// 									expr.AddOutputName(outName)
-// 									arg := MakeArgument(def.Value, typ)
-// 									expr.AddArgument(arg)
-// 								}
-// 							}
-							
-							
-// 							// if strct, err := cxt.GetStruct($1, mod.Name); err == nil {
-							
-// 							// }
-
-							
-// 							// expr.AddOutputName($2)
-							
-// 							// typ := encoder.Serialize($3)
-// 							// arg := MakeArgument(&typ, "str")
-// 							// expr.AddArgument(arg)
-// 						}
-// 					}
-// 				}
-// 			}
-//                 }
-                
 
 argument:
                 INT
@@ -2289,7 +2220,7 @@ argument:
 			val := encoder.Serialize($1)
 			$$ = MakeArgument(&val, "ident")
                 }
-        |       NEW IDENT LBRACE structLitDefs RBRACE
+        |       typeSpecifier LBRACE structLitDefs RBRACE
                 {
 			val := encoder.Serialize($2)
 		
@@ -2310,11 +2241,11 @@ argument:
 							sOutName := encoder.Serialize(outName)
 
 							expr.AddOutputName(outName)
-							typ := encoder.Serialize($2)
+							typ := encoder.Serialize($1)
 							expr.AddArgument(MakeArgument(&typ, "str"))
 
-							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
-							for _, def := range $4 {
+							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $1))
+							for _, def := range $3 {
 								typeParts := strings.Split(def.Typ, ".")
 
 								var typ string
@@ -2369,80 +2300,38 @@ argument:
                 }
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
-			switch $1 {
-			case "[]bool":
-                                vals := make([]int32, len($3))
-				for i, arg := range $3 {
-					var val int32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = val
-				}
-				sVal := encoder.Serialize(vals)
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if fn, err := cxt.GetCurrentFunction(); err == nil {
+					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
+						expr := MakeExpression(op)
+						if !replMode {
+							expr.FileLine = yyS[yypt-0].line + 1
+						}
 
-				$$ = MakeArgument(&sVal, "[]bool")
-			case "[]byte":
-                                vals := make([]byte, len($3))
-				for i, arg := range $3 {
-					var val int32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = byte(val)
-				}
-				sVal := encoder.Serialize(vals)
-				//$$ = MakeArgument(&vals, "[]byte")
-				$$ = MakeArgument(&sVal, "[]byte")
-			case "[]str":
-                                vals := make([]string, len($3))
-				for i, arg := range $3 {
-					var val string
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = val
-				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, "[]str")
-			case "[]i32":
-				// vals := make([]int32, len($3))
-				// for i, arg := range $3 {
-				// 	var val int32
-				// 	encoder.DeserializeRaw(*arg.Value, &val)
-				// 	vals[i] = val
-				// }
-				// sVal := encoder.Serialize(vals)
-				//$$ = MakeArgument(&sVal, "[]i32")
+						outName := MakeGenSym(NON_ASSIGN_PREFIX)
+						sOutName := encoder.Serialize(outName)
 
-				
-				
-				for i, arg := range $3 {
-					
+						fn.AddExpression(expr)
+						expr.AddOutputName(outName)
+
+						typ := encoder.Serialize($1)
+						arg := MakeArgument(&typ, "str")
+						expr.AddArgument(arg)
+						
+						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", $1), mod.Name); err == nil {
+							for _, arg := range $3 {
+								typeParts := strings.Split(arg.Typ, ".")
+								arg.Typ = typeParts[0]
+								expr := MakeExpression(op)
+								fn.AddExpression(expr)
+								expr.AddOutputName(outName)
+								expr.AddArgument(MakeArgument(&sOutName, "ident"))
+								expr.AddArgument(CastArgumentForArray($1, arg))
+							}
+						}
+						$$ = MakeArgument(&sOutName, "ident")
+					}
 				}
-				
-				$$ = nil
-			case "[]i64":
-                                vals := make([]int64, len($3))
-				for i, arg := range $3 {
-					var val int32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = int64(val)
-				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, "[]i64")
-			case "[]f32":
-                                vals := make([]float32, len($3))
-				for i, arg := range $3 {
-					var val float32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = val
-				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, "[]f32")
-			case "[]f64":
-                                vals := make([]float64, len($3))
-				for i, arg := range $3 {
-					var val float32
-					encoder.DeserializeRaw(*arg.Value, &val)
-					vals[i] = float64(val)
-				}
-				sVal := encoder.Serialize(vals)
-				$$ = MakeArgument(&sVal, "[]f64")
 			}
                 }
                 // empty arrays

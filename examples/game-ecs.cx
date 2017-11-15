@@ -3,6 +3,30 @@ package main
 import "gl"
 import "glfw"
 
+// Components
+type Displacement struct {
+	x i32
+	y i32
+}
+type Velocity struct {
+	x i32
+	y i32
+}
+type Appearance struct {
+	x1 f32 
+	x2 f32
+	y1 f32
+	y2 f32
+	textureSheet i32
+}
+
+type World struct {
+	mask []i32
+	displacement []Displacement
+	velocity []Velocity
+	appearance []Appearance
+}
+
 type Sprites struct {
 	Empty Appearance
 	Floors []Appearance
@@ -23,37 +47,13 @@ var COMPONENT_DISPLACEMENT i32
 var COMPONENT_VELOCITY i32
 var COMPONENT_APPEARANCE i32
 var COMPONENT_COLLIDABLE i32
+var COMPONENT_PLAYER i32
 
 // Compound component masks
 var MOVEMENT_MASK i32
 var RENDER_MASK i32
 
-// Components
-type Displacement struct {
-	x i32
-	y i32
-}
-type Velocity struct {
-	x i32
-	y i32
-}
-type Collidable struct {
-	
-}
-type Appearance struct {
-	x1 f32 
-	x2 f32
-	y1 f32
-	y2 f32
-	textureSheet i32
-}
-type World struct {
-	mask []i32
-	displacement []Displacement
-	velocity []Velocity
-	appearance []Appearance
-	collidable []Collidable
-}
+var sprites Sprites
 
 var background []i32 = []i32{
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -114,6 +114,8 @@ var h_indoor i32 = 305
 var w_pack i32 = 968
 var h_pack i32 = 526
 
+var world World
+
 func initOpenGL () (program i32) {
 	gl.Init()
 	program := gl.CreateProgram()
@@ -141,22 +143,23 @@ func draw (disp Displacement, app Appearance) () {
 	y = i32.sub(i32.add(i32.mul(i32.mod(disp.y, size), 2), 1), size)
 
 	gl.Translatef(f32.add(i32.f32(x), 0.0), f32.add(i32.f32(y), 0.0), f32.mul(i32.f32(size), -1.0))
+	//gl.Translatef(i32.f32(x), i32.f32(y), f32.mul(i32.f32(size), -1.0))
 
 	gl.BindTexture(gl.TEXTURE_2D, app.textureSheet)
-	
+
 	gl.Color4f(1.0, 1.0, 1.0, 1.0)
 
 	gl.Begin(gl.QUADS)
 
 	gl.Normal3f(0.0, 0.0, 0.0)
 	gl.TexCoord2f(app.x1, app.y2)
-	gl.Vertex3f(-0.5, -0.5, 0.0)
+	gl.Vertex3f(-1.0, -1.0, 0.0)
 	gl.TexCoord2f(app.x1, app.y1)
-	gl.Vertex3f(-0.5, 0.5, 0.0)
+	gl.Vertex3f(-1.0, 1.0, 0.0)
 	gl.TexCoord2f(app.x2, app.y1)
-	gl.Vertex3f(0.5, 0.5, 0.0)
+	gl.Vertex3f(1.0, 1.0, 0.0)
 	gl.TexCoord2f(app.x2, app.y2)
-	gl.Vertex3f(0.5, -0.5, 0.0)
+	gl.Vertex3f(1.0, -1.0, 0.0)
 
 	gl.End()
 }
@@ -249,7 +252,7 @@ func setupScene () () {
 	water = []Appearance.append(water, setAppearance(34, 50, 17, 33, w_pack, h_pack, tex_pack)) //l
 	water = []Appearance.append(water, setAppearance(34, 50, 0, 16, w_pack, h_pack, tex_pack)) //tl
 	water = []Appearance.append(water, setAppearance(51, 67, 17, 33, w_pack, h_pack, tex_pack)) //xx
-
+	
 	var grass []Appearance
 	grass = []Appearance.append(grass, setAppearance(85, 101, 0, 16, w_pack, h_pack, tex_pack))
 	grass = []Appearance.append(grass, setAppearance(85, 101, 17, 33, w_pack, h_pack, tex_pack))
@@ -258,7 +261,7 @@ func setupScene () () {
 	rocks = []Appearance.append(rocks, setAppearance(918, 934, 322, 338, w_pack, h_pack, tex_pack))
 	rocks = []Appearance.append(rocks, setAppearance(936, 951, 326, 342, w_pack, h_pack, tex_pack))
 	rocks = []Appearance.append(rocks, setAppearance(952, 968, 325, 341, w_pack, h_pack, tex_pack))
-
+	
 	var toolTips []Appearance
 	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_up))
 	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_down))
@@ -266,14 +269,26 @@ func setupScene () () {
 	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_right))
 	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_water))
 
-	Sprites.Empty = setAppearance(918, 934, 306, 322, w_pack, h_pack, tex_pack)
-	Sprites.Floors = floors
-	Sprites.Walls = walls
-	Sprites.Chars = chars
-	Sprites.Water = water
-	Sprites.Grass = grass
-	Sprites.Rocks = rocks
-	Sprites.ToolTips = toolTips
+	var sprites Sprites
+ 	sprites.Empty = setAppearance(918, 934, 306, 322, w_pack, h_pack, tex_pack)
+	sprites.Floors = floors
+	sprites.Walls = walls
+	sprites.Chars = chars
+	sprites.Water = water
+	sprites.Grass = grass
+
+	// str.print("hello")
+	// var coco []Appearance
+	// foo := setAppearance(85, 101, 17, 33, w_pack, h_pack, tex_pack)
+	// coco = []Appearance.append(coco, foo)
+	// i32.print([]Appearance.len(coco))
+	// f32.print(foo.x1)
+	// i32.print([]Appearance.len(sprites.Grass)) // it's throwing 0
+	// i32.print([]Appearance.len(grass))
+
+	
+	sprites.Rocks = rocks
+	sprites.ToolTips = toolTips
 }
 
 func map2Dto1D (c i32, r i32, w i32) (i i32) {
@@ -286,155 +301,46 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 	c = i32.mod(i, w)
 }
 
-
-
-
-func mapGrassField () (world World) {
-	// do I need to get the Sprites like this?
-	grass := []Appearance.read(Sprites.Grass, 0)
-	// let's first create a map full of grass
-	var world World
-	world.mask
-	
-	
-}
-
-func createGrass () () {
-	entity := createEntity(world)
-
-	var disp Displacement
-	disp.x = x
-	disp.y = y
-
-	var app Appearance
-	app.name = "Tree"
-
-	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE))
-	world.displacement = []Displacement.write(world.displacement, entity, disp)
-	world.appearance = []Appearance.write(world.appearance, entity, app)
-	
-	newWorld = world
-}
-
-
-
-
-
-func getSprite (index i32) (sprite Sprite) {
-	var s Sprite
-	// brown wall
-	if i32.eq(index, 0) { s = sp_empty }
-	if i32.eq(index, 1) { s = sp_brown_wall_tb }
-	if i32.eq(index, 2) { s = sp_brown_wall_lr }
-	if i32.eq(index, 3) { s = sp_brown_wall_ts }
-	if i32.eq(index, 4) { s = sp_brown_wall_rs }
-	if i32.eq(index, 5) { s = sp_brown_wall_bs }
-	if i32.eq(index, 6) { s = sp_brown_wall_ls }
-	if i32.eq(index, 7) { s = sp_brown_wall_tr }
-	if i32.eq(index, 8) { s = sp_brown_wall_br }
-	if i32.eq(index, 9) { s = sp_brown_wall_bl }
-	if i32.eq(index, 10) { s = sp_brown_wall_tl }
-	if i32.eq(index, 11) { s = sp_brown_wall_to }
-	if i32.eq(index, 12) { s = sp_brown_wall_ro }
-	if i32.eq(index, 13) { s = sp_brown_wall_bo }
-	if i32.eq(index, 14) { s = sp_brown_wall_lo }
-	if i32.eq(index, 15) { s = sp_brown_wall_xx }
-	// water
-	if i32.eq(index, 20) { s = sp_water_t }
-	if i32.eq(index, 21) { s = sp_water_tr }
-	if i32.eq(index, 22) { s = sp_water_r }
-	if i32.eq(index, 23) { s = sp_water_br }
-	if i32.eq(index, 24) { s = sp_water_b }
-	if i32.eq(index, 25) { s = sp_water_bl }
-	if i32.eq(index, 26) { s = sp_water_l }
-	if i32.eq(index, 27) { s = sp_water_tl }
-	if i32.eq(index, 28) { s = sp_water_xx }
-	// grass
-	if i32.eq(index, 30) { s = sp_grass_1 }
-	if i32.eq(index, 31) { s = sp_grass_2 }
-	//rocks
-	if i32.eq(index, 40) { s = sp_rock1 }
-	if i32.eq(index, 41) { s = sp_rock2 }
-	if i32.eq(index, 42) { s = sp_rock3 }
-
-	if i32.eq(index, 50) { s = sp_floor_brick_xx }
-	
-	if i32.eq(index, 60) { s = sp_blue_carpet }
-
-	//actions
-	if i32.eq(index, 1000) { s = sp_act_up }
-	if i32.eq(index, 1001) { s = sp_act_down }
-	if i32.eq(index, 1002) { s = sp_act_left }
-	if i32.eq(index, 1003) { s = sp_act_right }
-	if i32.eq(index, 1004) { s = sp_act_water }
-	
-	sprite = s
-}
-
 func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
-	if and(i32.eq(key, 265), i32.eq(action, 1)) {
-		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
-
-		if i32.gteq(p1y, i32.sub(size, 1)) {
-			p1y = i32.sub(size, 1)
-			return
-		} else {
-			p1y = i32.add(p1y, 1)
-			return
+	if and(i32.eq(key, 265), i32.or(i32.eq(action, 2), i32.eq(action, 1))) {
+		for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+			mask := []i32.read(world.mask, entity)
+			if i32.eq(COMPONENT_PLAYER, i32.bitand(mask, COMPONENT_PLAYER)) {
+				world.mask = []i32.write(world.mask, entity, i32.bitor(mask, COMPONENT_VELOCITY))
+				world.velocity = []Velocity.write(world.velocity, entity, new Velocity{y: 1})
+			}
 		}
 	}
-	if and(i32.eq(key, 264), i32.eq(action, 1)) {
-		i := map2Dto1D(p1x, i32.add(p1y, -1), size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
-		
-		if i32.lteq(p1y, 0) {
-			p1y = 0
-			return
-		} else {
-			p1y = i32.add(p1y, -1)
-			return
+	if and(i32.eq(key, 264), i32.or(i32.eq(action, 2), i32.eq(action, 1))) {
+		for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+			mask := []i32.read(world.mask, entity)
+			if i32.eq(COMPONENT_PLAYER, i32.bitand(mask, COMPONENT_PLAYER)) {
+				world.mask = []i32.write(world.mask, entity, i32.bitor(mask, COMPONENT_VELOCITY))
+				world.velocity = []Velocity.write(world.velocity, entity, new Velocity{y: -1})
+			}
 		}
 	}
-	if and(i32.eq(key, 263), i32.eq(action, 1)) {
-		i := map2Dto1D(i32.add(p1x, -1), p1y, size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
-		
-		if i32.lteq(p1x, 0) {
-			p1x = 0
-			return
-		} else {
-			p1x = i32.add(p1x, -1)
-			return
+	if and(i32.eq(key, 263), i32.or(i32.eq(action, 2), i32.eq(action, 1))) {
+		for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+			mask := []i32.read(world.mask, entity)
+			if i32.eq(COMPONENT_PLAYER, i32.bitand(mask, COMPONENT_PLAYER)) {
+				world.mask = []i32.write(world.mask, entity, i32.bitor(mask, COMPONENT_VELOCITY))
+				world.velocity = []Velocity.write(world.velocity, entity, new Velocity{x: -1})
+			}
 		}
 	}
-	if and(i32.eq(key, 262), i32.eq(action, 1)) {
-		i := map2Dto1D(i32.add(p1x, 1), p1y, size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
-
-		if i32.gteq(p1x, i32.sub(size, 1)) {
-			p1x = i32.sub(size, 1)
-			return
-		} else {
-			p1x = i32.add(p1x, 1)
-			return
+	if and(i32.eq(key, 262), i32.or(i32.eq(action, 2), i32.eq(action, 1))) {
+		for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
+			mask := []i32.read(world.mask, entity)
+			if i32.eq(COMPONENT_PLAYER, i32.bitand(mask, COMPONENT_PLAYER)) {
+				world.mask = []i32.write(world.mask, entity, i32.bitor(mask, COMPONENT_VELOCITY))
+				world.velocity = []Velocity.write(world.velocity, entity, new Velocity{x: 1})
+			}
 		}
 	}
 }
 
-var p1x i32 = 1
-var p1y i32 = 1
-
-
-
-func createEntity (world World) (entity i32) {
-	entityCount := []i32.len(world.mask)
-
-	var entity i32
+func createEntity () (entity i32) {
 	for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
 		mask := []i32.read(world.mask, entity)
 		if i32.eq(mask, COMPONENT_NONE) {
@@ -444,59 +350,105 @@ func createEntity (world World) (entity i32) {
 	halt("No more entities left")
 }
 
-func destroyEntity (world World, entity i32) () {
-	[]i32.write(world, entity, COMPONENT_NONE)
+func destroyEntity (entity i32) () {
+	world = []i32.write(world.mask, entity, COMPONENT_NONE)
 }
 
 // Entities
 
-func createPlayer (world World, app Appearance, disp Displacement) (entity i32, newWorld World) {
-	entity := createEntity(world)
+func createPlayer (app Appearance, disp Displacement) (entity i32) {
+	entity := createEntity()
 
-	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE))
+	world.mask = []i32.write(world.mask, entity,
+		i32.bitor(i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE),
+			COMPONENT_PLAYER))
+	world.displacement = []Displacement.write(world.displacement, entity, disp)
+	world.velocity = []Velocity.write(world.velocity, entity,
+		new Velocity{
+			x: 1
+		})
+
+	d := []Displacement.read(world.displacement, entity)
+	
+	world.appearance = []Appearance.write(world.appearance, entity, app)
+}
+
+func createGrass (app Appearance, disp Displacement) (entity i32) {
+	entity := createEntity()
+
+	world.mask = []i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE))
 	world.displacement = []Displacement.write(world.displacement, entity, disp)
 	world.appearance = []Appearance.write(world.appearance, entity, app)
-	
-	newWorld = world
+}
+
+func createRock (app Appearance, disp Displacement) (entity i32) {
+	entity := createEntity()
+
+	world.mask = []i32.write(world.mask, entity, i32.bitor(i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE), COMPONENT_COLLIDABLE))
+	world.displacement = []Displacement.write(world.displacement, entity, disp)
+	world.appearance = []Appearance.write(world.appearance, entity, app)
 }
 
 // Systems
 
-func movementFunction (world World) (newWorld World) {
+func movementFunction () () {
 	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
 		mask := []i32.read(world.mask, entity)
-		if i32.eq(i32.bitand(mask, MOVEMENT_MASK), MOVEMENT_MASK) {			
+		if i32.eq(i32.bitand(mask, MOVEMENT_MASK), MOVEMENT_MASK) {
 			displacement := []Displacement.read(world.displacement, entity)
-			// velocity := []Velocity.read(world.velocity, entity)
-
-			// velocity.y = i32.sub(velocity.y, 1)
+			
+			velocity := []Velocity.read(world.velocity, entity)
 
 			displacement.x = i32.add(displacement.x, velocity.x)
 			displacement.y = i32.add(displacement.y, velocity.y)
 
+			// we completely stop the character
+			velocity.x = 0
+			velocity.y = 0
+
+			world.velocity = []Velocity.write(world.velocity, entity, velocity)
 			world.displacement = []Displacement.write(world.displacement, entity, displacement)
-			//world.velocity = []Velocity.write(world.velocity, entity, velocity)
+			world.mask = []i32.write(world.mask, entity, i32.bitclear(mask, COMPONENT_VELOCITY))
 		}
 	}
-	newWorld = world
 }
 
-func renderFunction (world World) () {
+func collisionFunction () () {
+	for obstacle := 0; i32.lt(obstacle, entityCount); obstacle = i32.add(obstacle, 1) {
+		obstacleMask := []i32.read(world.mask, obstacle)
+		if i32.eq(i32.bitand(obstacleMask, COMPONENT_COLLIDABLE), COMPONENT_COLLIDABLE) {
+			for player := 0; i32.lt(player, entityCount); player = i32.add(player, 1) {
+				playerMask := []i32.read(world.mask, player)
+				if i32.eq(i32.bitand(playerMask, COMPONENT_PLAYER), COMPONENT_PLAYER) {
+					playerDisp = []Displacement.read(world.displacement, player)
+					obstacleDisp = []Displacement.read(world.displacement, obstacle)
+					
+					playerVel = []Velocity.read(world.velocity, player)
+
+					xToBe = i32.add(playerDisp.x, playerVel.x)
+					yToBe = i32.add(playerDisp.y, playerVel.y)
+
+					if and(i32.eq(obstacleDisp.x, xToBe), i32.eq(obstacleDisp.y, yToBe)) {
+						world.mask = []i32.write(world.mask, player, i32.bitclear(playerMask, COMPONENT_VELOCITY))
+					}
+				}
+			}
+		}
+	}
+}
+
+func renderFunction () () {
 	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
-		mask := []i32.read(world.mask, entity)
-		
-		if i32.eq(i32.bitand(mask, RENDER_MASK), RENDER_MASK) {
-			disp := []Displacement.read(world.displacement, entity)
-			app := []Appearance.read(world.appearance, entity)
-
-			draw(disp, app)
+		if i32.eq(i32.bitand([]i32.read(world.mask, entity), RENDER_MASK), RENDER_MASK) {
+			draw(
+				[]Displacement.read(world.displacement, entity),
+				[]Appearance.read(world.appearance, entity))
 		}
 	}
-	newWorld = world
 }
 
-func initWorld () (world World) {
-	entityCount = 1000
+func initWorld () () {
+	entityCount = 250
 
 	// components
 	COMPONENT_NONE := 0
@@ -504,24 +456,19 @@ func initWorld () (world World) {
 	COMPONENT_VELOCITY := i32.bitshl(1, 1)
 	COMPONENT_APPEARANCE := i32.bitshl(1, 2)
 	COMPONENT_COLLIDABLE := i32.bitshl(1, 3)
+	COMPONENT_PLAYER := i32.bitshl(1, 4)
 
 	// compound masks
 	MOVEMENT_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY)
 	RENDER_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE)
 
+	//var world World
 	world.mask = []i32.make(entityCount)
 	world.displacement = []Displacement.make(entityCount)
 	world.velocity = []Velocity.make(entityCount)
 	world.appearance = []Appearance.make(entityCount)
 	world.appearance = []Appearance.make(entityCount)
 }
-
-
-
-
-
-
-
 
 func main () () {
 	initGlfw("window")
@@ -533,36 +480,24 @@ func main () () {
 
 	setupScene()
 
-	world := initWorld()
-	//i32.print([]i32.len(world.mask))
+	initWorld()
 
-	var playerApp Appearance
-	playerApp.textureSheet = tex_characters
-	playerApp.x1 = scale(0, w_characters)
-	playerApp.x2 = scale(16, w_characters)
-	playerApp.y1 = scale(187, h_characters)
-	playerApp.y2 = scale(203, h_characters)
+	grass := []Appearance.read(sprites.Grass, 0)
+	for c := 0; i32.lt(c, i32.mul(size, size)); c = i32.add(c, 1) {
+		x, y = map1Dto2D(c, size)
+		createGrass(grass, new Displacement{x: x, y: y})
+	}
 
-	var playerDisp Displacement
-	playerDisp.x = 1
-	playerDisp.y = 1
+	createPlayer([]Appearance.read(sprites.Chars, 0), new Displacement{x: 1, y: 1})
+	createRock([]Appearance.read(sprites.Rocks, 0), new Displacement{x: 3, y: 1})
 	
-	player, world = createPlayer(world, playerApp, playerDisp)
-	//i32.print([]i32.len(world.mask))
-
 	for stop {
 		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 
-		//world = movementFunction(world)
-		renderFunction(world)
-
-		// for c := 0; i32.lt(c, i32.mul(size, size)); c = i32.add(c, 1) {
-		// 	x, y := map1Dto2D(c, size)
-		// 	idxB := []i32.read(background, c)
-		// 	idxF := []i32.read(foreground, c)
-		// 	draw(x, y, getSprite(idxB))
-		// 	draw(x, y, getSprite(idxF))
-		// }
+		collisionFunction()
+		movementFunction()
+		renderFunction()
+		collisionFunction()
 
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")

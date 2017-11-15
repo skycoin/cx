@@ -23,7 +23,7 @@ func main () () {
 	}
 
 	target := ->{
-		pkg(main) fn(main) exp(message)
+		pkg(main) fn(main) exp(printPosition)
 	}
 	
 	objs := ->{ obj1 $0.5 }

@@ -263,16 +263,16 @@ func main () () {
 	test.[]str([]str.make(1), []str{""}, "")
 	test.[]i32([]i32.make(1), []i32{0}, "")
 	test.[]i64([]i64.make(1), []i64{0}, "")
-	test.[]f32([]f32.make(1), []f32{0}, "")
-	test.[]f64([]f64.make(1), []f64{0}, "")
+	test.[]f32([]f32.make(1), []f32{0.0}, "")
+	test.[]f64([]f64.make(1), []f64{0.0}, "")
 
 	test.[]bool([]bool.make(2), []bool{false, false}, "")
 	test.[]byte([]byte.make(2), []byte{0, 0}, "")
 	test.[]str([]str.make(2), []str{"", ""}, "")
 	test.[]i32([]i32.make(2), []i32{0, 0}, "")
 	test.[]i64([]i64.make(2), []i64{0, 0}, "")
-	test.[]f32([]f32.make(2), []f32{0, 0}, "")
-	test.[]f64([]f64.make(2), []f64{0, 0}, "")
+	test.[]f32([]f32.make(2), []f32{0.0, 0.0}, "")
+	test.[]f64([]f64.make(2), []f64{0.0, 0.0}, "")
 
 	// array operations
 
@@ -284,13 +284,14 @@ func main () () {
 	test.f32([]f32.read([]f32{11.5, 12.5, 13.5}, 1), 12.5, "")
 	test.f64([]f64.read([]f64{11.5, 12.5, 13.5}, 1), f32.f64(12.5), "")
 
-	[]bool.write(boolA, 1, true)
-	[]byte.write(byteA, 1, i32.byte(200))
-	[]str.write(strA, 1, "writing to array")
-	[]i32.write(i32A, 1, 200)
-	[]i64.write(i64A, 1, i32.i64(200))
-	[]f32.write(f32A, 1, 200.5)
-	[]f64.write(f64A, 1, f32.f64(200.5))
+	
+	boolA = []bool.write(boolA, 1, true)
+	byteA = []byte.write(byteA, 1, i32.byte(200))
+	strA = []str.write(strA, 1, "writing to array")
+	i32A = []i32.write(i32A, 1, 200)
+	i64A = []i64.write(i64A, 1, i32.i64(200))
+	f32A = []f32.write(f32A, 1, 200.5)
+	f64A = []f64.write(f64A, 1, f32.f64(200.5))
 
 	test.bool([]bool.read(boolA, 1), true, "")
 	test.byte([]byte.read(byteA, 1), i32.byte(200), "")
@@ -356,12 +357,38 @@ func main () () {
 
 	// append functions
 
+	// appBools := []bool{true, false, true}
+	// appBytes := []byte{0, 1, 2}
+	// appStrs := []str{"str1", "str2"}
+	// appI32s := []i32{0, 1, 2}
+	// appI64s := []i64{0, 1, 2}
+	// appF32s := []f32{0.5, 1.5, 2.5}
+	// appF64s := []f64{0.5, 1.5, 2.5}
+
+	// []bool.append(appBools, true)
+	// []byte.append(appBytes, i32.byte(3))
+	// []str.append(appStrs, "str3")
+	// []i32.append(appI32s, 3)
+	// []i64.append(appI64s, i32.i64(3))
+	// []f32.append(appF32s, 3.5)
+	// []f64.append(appF64s, f32.f64(3.5))
+	
+	// test.[]bool(appBools, []bool{true, false, true, true}, "")
+	// test.[]byte(appBytes, []byte{0, 1, 2, 3}, "")
+	// test.[]str(appStrs, []str{"str1", "str2", "str3"}, "")
+	// test.[]i32(appI32s, []i32{0, 1, 2, 3}, "")
+	// test.[]i64(appI64s, []i64{0.5, 1.5, 2.5, 3.5}, "")
+	// test.[]f32(appF32s, []f32{0.5, 1.5, 2.5, 3.5}, "")
+	// test.[]f64(appF64s, []f64{0.5, 1.5, 2.5, 3.5}, "")
+
+	
 	test.[]bool([]bool.append([]bool{true, false, true}, true), []bool{true, false, true, true}, "")
 	test.[]byte([]byte.append([]byte{0, 1, 2}, i32.byte(3)), []byte{0, 1, 2, 3}, "")
 	test.[]str([]str.append([]str{"str1", "str2"}, "str3"), []str{"str1", "str2", "str3"}, "")
 	test.[]i32([]i32.append([]i32{0, 1, 2}, 3), []i32{0, 1, 2, 3}, "")
 	test.[]i64([]i64.append([]i64{0, 1, 2}, i32.i64(3)), []i64{0.5, 1.5, 2.5, 3.5}, "")
 	test.[]f32([]f32.append([]f32{0.5, 1.5, 2.5}, 3.5), []f32{0.5, 1.5, 2.5, 3.5}, "")
+	test.[]f64([]f64.append([]f64{0.5, 1.5, 2.5}, f32.f64(3.5)), []f64{0.5, 1.5, 2.5, 3.5}, "")
 
 	// copy functions
 
@@ -796,7 +823,7 @@ label4:
 	extractedStructFromArray1 = []testStruct.read(newNestedStructArrays.nested1, 2)
 	extractedStructFromArray2 = []testStruct.read(newNestedStructArrays.nested2, 5)
 	extractedStructFromArray3 = []testStruct.read(newNestedStructArrays.nested3, 8)
-
+	
 	test.i32(extractedStructFromArray1.testI32, 2, "")
 	test.i32(extractedStructFromArray2.testI32, 6, "")
 	test.i32(extractedStructFromArray3.testI32, 10, "")

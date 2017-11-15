@@ -1087,7 +1087,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 
 	identParts := strings.Split(lookingFor, ".")
 
-	if len(identParts) > 1 {		
+	if len(identParts) > 1 {
 		if mod, err := call.Context.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct
 			isImported := false
@@ -1107,16 +1107,23 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		} else {
 			// then it's a global struct
 			mod := call.Operator.Module
-			if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
-				resolvedIdent = def
+			//if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
+			if def, err := mod.GetDefinition(identParts[0]); err == nil {
+				isStructFld = true
+				//resolvedIdent = def
+				if strct, err := mod.Context.GetStruct(def.Typ, mod.Name); err == nil {
+					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
+					return MakeArgument(&byts, typ), nil
+					
+				} else {
+					return nil, err
+				}
 			} else {
 				// then it's a local struct
 				isStructFld = true
 
 				for _, stateDef := range call.State {
 					if stateDef.Name == identParts[0] {
-						//fmt.Println("resolveIdent", identParts[0], identParts[1])
-						// // Let's look in the byte array for the value
 						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
 							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
 							return MakeArgument(&byts, typ), nil
@@ -1202,8 +1209,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					if call.ReturnAddress != nil {
 						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames[i].Name
 
-						//fmt.Println("here", retName)
-						
 						found := false
 						for _, retDef := range call.ReturnAddress.State {
 							if retDef.Name == retName {

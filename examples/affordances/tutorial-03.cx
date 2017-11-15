@@ -36,7 +36,7 @@ func main () () {
 		var newUnit Unit
 		newUnit.id = c
 		newUnit.energy = i32.rand(1, 10)
-		[]Unit.append(units, newUnit)
+		units = []Unit.append(units, newUnit)
 	}
 
 	target := ->{
@@ -60,21 +60,7 @@ func main () () {
 			reject(x.energy < 7)
 		}
 	}
-
 	
-
-	//affs := aff.query(target, objects, rules)
-	//aff.print(affs)
-	//str.print("")
-	
-	//morale := calculateMorale(aff.len(affs), units)
-	
-	//objects = aff.concat(objects, ->{lowMorale $morale})
-	//affs := aff.query(target, objects, rules)
-	//aff.print(affs)
-	//aff.execute(target, affs, 0)
-
-	//i32.print(aff.len(affs))
 	defaultUnit := []Unit.read(units, 0)
 	for i := 0; i32.lt(i, 3); i = i32.add(i, 1) {
 

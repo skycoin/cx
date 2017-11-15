@@ -117,10 +117,22 @@ func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 			return errors.New(fmt.Sprintf("[]f64.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)*8)+4
-		for c := 0; c < 8; c++ {
-			(*arr.Value)[i + c] = (*val.Value)[c]
-		}
+		// i := (int(index)*8)+4
+		// for c := 0; c < 8; c++ {
+		// 	(*arr.Value)[i + c] = (*val.Value)[c]
+		// }
+
+		offset := int(index) * 8 + 4
+		firstChunk := make([]byte, offset)
+		secondChunk := make([]byte, len(*arr.Value) - (offset + 8))
+
+		copy(firstChunk, (*arr.Value)[:offset])
+		copy(secondChunk, (*arr.Value)[offset + 8:])
+
+		final := append(firstChunk, *val.Value...)
+		final = append(final, secondChunk...)
+
+		assignOutput(&final, "[]f64", expr, call)
 
 		return nil
 	} else {
@@ -286,6 +298,7 @@ func appendF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
+		//*arg1.Value = sOutput
 		assignOutput(&sOutput, "[]f64", expr, call)
 		return nil
 	} else {

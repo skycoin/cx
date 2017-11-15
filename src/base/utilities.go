@@ -19,9 +19,26 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
 
+			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
+				if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
+
+					firstChunk := make([]byte, offset)
+					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+
+					copy(firstChunk, (*def.Value)[:offset])
+					copy(secondChunk, (*def.Value)[offset+size:])
+
+					final := append(firstChunk, *output...)
+					final = append(final, secondChunk...)
+					
+					*def.Value = final
+					return
+				}
+			}
+
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
-					//fmt.Println("before", def.Name, len(*def.Value), "toAdd", len(*output), "ident", identParts[1])
 					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
@@ -32,10 +49,6 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 								break
 							}
 						}
-
-						// if outName == "world.displacement" {
-						// 	fmt.Println(len(*def.Value))
-						// }
 						
 						if true || typ == "str" || typ == "[]str" || typ == "[]bool" ||
 							typ == "[]byte" || typ == "[]i32" ||
@@ -44,17 +57,12 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 							firstChunk := make([]byte, offset)
 							secondChunk := make([]byte, len(*def.Value) - int(offset + size))
 
-							//fmt.Println("offset", offset, "size", size)
-
 							copy(firstChunk, (*def.Value)[:offset])
 							copy(secondChunk, (*def.Value)[offset+size:])
 
 							final := append(firstChunk, *output...)
 							final = append(final, secondChunk...)
 
-							//fmt.Println("final", len(final))
-
-							//fmt.Println("hello")
 
 							// final := append((*def.Value)[:offset], *output...)
 							// final = append(final, (*def.Value)[offset+size:]...)
@@ -105,16 +113,16 @@ func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall)
 		}
 	}
 
+	if def, err := expr.Module.GetDefinition(outName); err == nil {
+		def.Value = output
+		return
+	}
+
 	for _, def := range call.State {
 		if def.Name == outName {
 			def.Value = output
 			return
 		}
-	}
-
-	if def, err := expr.Module.GetDefinition(outName); err == nil {
-		def.Value = output
-		return
 	}
 
 	call.State = append(call.State, MakeDefinition(outName, output, typ))
@@ -444,6 +452,37 @@ func rep (str string, n int) string {
 // 	fmt.Println()
 // }
 
+func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
+	switch typ {
+	case "[]bool":
+		return MakeArgument(arg.Value, "bool")
+	case "[]byte":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		sVal := encoder.Serialize(byte(val))
+		return MakeArgument(&sVal, "byte")
+	case "[]str":
+		return arg
+	case "[]i32":
+		return arg
+	case "[]i64":
+		var val int32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		sVal := encoder.Serialize(int64(val))
+		return MakeArgument(&sVal, "i64")
+	case "[]f32":
+		return arg
+	case "[]f64":
+		var val float32
+		encoder.DeserializeRaw(*arg.Value, &val)
+		sVal := encoder.Serialize(float64(val))
+		return MakeArgument(&sVal, "f64")
+	default:
+		return arg
+	}
+	//panic(fmt.Sprintf("CastArgumentForArray: unrecognized type %s", typ))
+}
+
 func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	fmt.Println("Program")
@@ -708,5 +747,3 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 		i++
 	}
 }
-
-// func (cxt *CXProgram) PrintProgram(withAffs bool) {}

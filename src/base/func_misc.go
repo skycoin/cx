@@ -376,13 +376,25 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 			}
 
 			if !isBasic {
-				if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
-					bs = append(bs, byts...)
+				var typ string
+				if fld.Typ[:2] == "[]" {
+					typ = fld.Typ[2:]
+				} else {
+					typ = fld.Typ
+				}
+				if _, err := cxt.GetStruct(typ, mod.Name); err == nil {
+					if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
+						bs = append(bs, byts...)
+					} else {
+						return nil, err
+					}
 				} else {
 					return nil, err
 				}
 			}
 		}
+	} else {
+		return nil, err
 	}
 	return bs, nil
 }
@@ -675,8 +687,8 @@ func cstm_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 					// final := append((*rArr.Value)[:offset], *rInst.Value...)
 					// final = append(final, (*rArr.Value)[offset+size:]...)
 
-					*rArr.Value = final
-					//assignOutput(&final, rArr.Typ, expr, call)
+					//*rArr.Value = final
+					assignOutput(&final, rArr.Typ, expr, call)
 				} else {
 					return err
 				}

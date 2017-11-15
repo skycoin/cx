@@ -119,10 +119,22 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 			return errors.New(fmt.Sprintf("[]f32.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)+1)*4
-		for c := 0; c < 4; c++ {
-			(*arr.Value)[i + c] = (*val.Value)[c]
-		}
+		// i := (int(index)+1)*4
+		// for c := 0; c < 4; c++ {
+		// 	(*arr.Value)[i + c] = (*val.Value)[c]
+		// }
+
+		offset := int(index) * 4 + 4
+		firstChunk := make([]byte, offset)
+		secondChunk := make([]byte, len(*arr.Value) - (offset + 4))
+
+		copy(firstChunk, (*arr.Value)[:offset])
+		copy(secondChunk, (*arr.Value)[offset + 4:])
+
+		final := append(firstChunk, *val.Value...)
+		final = append(final, secondChunk...)
+
+		assignOutput(&final, "[]f32", expr, call)
 		
 		return nil
 	} else {
@@ -281,6 +293,7 @@ func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
+		//*arg1.Value = sOutput
 		assignOutput(&sOutput, "[]f32", expr, call)
 		return nil
 	} else {

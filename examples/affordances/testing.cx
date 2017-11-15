@@ -1,0 +1,25 @@
+package main
+
+func main () () {
+	mask0 := 0
+	mask1 := 1
+	mask2 := 2
+	mask3 := 4
+	mask4 := 8
+	mask5 := 16
+
+	target := ->{pkg(main) fn(main) exp(testi32)}
+	objs := ->{obj1 $i32.add(1, 1)}
+	[]str.print(objs)
+	rules := ->{
+		if obj1 $2 {
+			allow(x == i32.add(1, 1))
+		}
+	}
+	
+	affs := aff.query(target, objs, rules)
+	aff.print(affs)
+	
+testi32:
+	i32.print(0)
+}

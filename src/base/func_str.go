@@ -204,9 +204,6 @@ func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 			return errors.New(fmt.Sprintf("[]i32.write: index %d exceeds array of length %d", index, size))
 		}
 
-
-
-
 		var array []string
 		encoder.DeserializeRaw(*arr.Value, &array)
 
@@ -214,7 +211,9 @@ func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		encoder.DeserializeRaw(*val.Value, &value)
 
 		array[index] = value
-		*arr.Value = encoder.Serialize(array)
+		//*arr.Value = encoder.Serialize(array)
+		sOutput := encoder.Serialize(array)
+		assignOutput(&sOutput, "[]str", expr, call)
 
 		
 
@@ -298,6 +297,7 @@ func appendStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice, literal)
 		sOutput := encoder.Serialize(output)
 
+		//*arg1.Value = sOutput
 		assignOutput(&sOutput, "[]str", expr, call)
 		return nil
 	} else {
