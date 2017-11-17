@@ -56,8 +56,8 @@ i32.add(3, 4)       // This will be ignored
 Multi-line comments are created by enclosing the comment in
 slash-asterisk (/*) and
 
-Mult-line comments are started by writing slash-asterisk (/*), and are
-ended by writing asterisk-slash (*/)
+Mult-line comments are started by writing slash-asterisk (/\*), and are
+ended by writing asterisk-slash (\*/)
 
 # Data
 
