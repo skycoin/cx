@@ -1,5 +1,15 @@
 package main
 
+type test struct {
+	nums []i32
+}
+
+var myTest test
+
+func foo () () {
+	myTest.nums = []i32{0, 1, 2, 3}
+}
+
 func main () () {
 	mask0 := 0
 	mask1 := 1
@@ -8,17 +18,26 @@ func main () () {
 	mask4 := 8
 	mask5 := 16
 
+	//masks := []i32{0, 1, 2, 4, 8, 16}
+	strings := []str{"one", "two", "three", "four"}
+
+	strct := new test{nums: []i32{0, 1, 2, 3}}
+
+	foo()
+
 	target := ->{pkg(main) fn(main) exp(testi32)}
 	objs := ->{obj1 $i32.add(1, 1)}
 	[]str.print(objs)
+
 	rules := ->{
 		if obj1 $2 {
-			allow(x == i32.add(1, 1))
+			allow(x == x)
 		}
 	}
 	
 	affs := aff.query(target, objs, rules)
 	aff.print(affs)
+	aff.execute(target, affs, 2)
 	
 testi32:
 	i32.print(0)

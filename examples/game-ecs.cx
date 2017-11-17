@@ -18,6 +18,7 @@ type Appearance struct {
 	y1 f32
 	y2 f32
 	textureSheet i32
+	class str
 }
 
 type World struct {
@@ -164,8 +165,9 @@ func draw (disp Displacement, app Appearance) () {
 	gl.End()
 }
 
-func setAppearance (x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) (app Appearance) {
+func setAppearance (class str, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) (app Appearance) {
 	var app Appearance
+	app.class = class
 	app.x1 = scale(x1, W)
 	app.x2 = scale(x2, W)
 	app.y1 = scale(y1, H)
@@ -219,74 +221,64 @@ func setupScene () () {
 	
 	
 	var floors []Appearance
-	floors = []Appearance.append(floors, setAppearance(187, 203, 136, 152, w_pack, h_pack, tex_pack))
-	floors = []Appearance.append(floors, setAppearance(102, 118, 34, 50, w_pack, h_pack, tex_pack))
+	floors = []Appearance.append(floors, setAppearance("floor", 187, 203, 136, 152, w_pack, h_pack, tex_pack))
+	floors = []Appearance.append(floors, setAppearance("floor", 102, 118, 34, 50, w_pack, h_pack, tex_pack))
 	
 	var chars []Appearance
-	chars = []Appearance.append(chars, setAppearance(0, 16, 187, 203, w_characters, h_characters, tex_characters))
+	chars = []Appearance.append(chars, setAppearance("char", 0, 16, 187, 203, w_characters, h_characters, tex_characters))
 
 	var walls []Appearance
-	walls = []Appearance.append(walls, setAppearance(238, 254, 204, 220, w_pack, h_pack, tex_pack)) //t
-	walls = []Appearance.append(walls, setAppearance(255, 271, 221, 237, w_pack, h_pack, tex_pack)) //s
-	walls = []Appearance.append(walls, setAppearance(221, 237, 221, 237, w_pack, h_pack, tex_pack)) //ts
-	walls = []Appearance.append(walls, setAppearance(255, 271, 204, 220, w_pack, h_pack, tex_pack)) //rs
-	walls = []Appearance.append(walls, setAppearance(221, 237, 238, 254, w_pack, h_pack, tex_pack)) //bs
-	walls = []Appearance.append(walls, setAppearance(221, 237, 204, 220, w_pack, h_pack, tex_pack)) //ls
-	walls = []Appearance.append(walls, setAppearance(289, 305, 204, 220, w_pack, h_pack, tex_pack)) //tr
-	walls = []Appearance.append(walls, setAppearance(289, 305, 221, 237, w_pack, h_pack, tex_pack)) //br
-	walls = []Appearance.append(walls, setAppearance(272, 288, 221, 237, w_pack, h_pack, tex_pack)) //bl
-	walls = []Appearance.append(walls, setAppearance(272, 288, 204, 220, w_pack, h_pack, tex_pack)) //tl
-	walls = []Appearance.append(walls, setAppearance(323, 339, 204, 220, w_pack, h_pack, tex_pack)) //to
-	walls = []Appearance.append(walls, setAppearance(306, 322, 204, 220, w_pack, h_pack, tex_pack)) //ro
-	walls = []Appearance.append(walls, setAppearance(323, 339, 221, 237, w_pack, h_pack, tex_pack)) //bo
-	walls = []Appearance.append(walls, setAppearance(306, 322, 221, 237, w_pack, h_pack, tex_pack)) //lo
-	walls = []Appearance.append(walls, setAppearance(238, 254, 221, 237, w_pack, h_pack, tex_pack)) //xx
+	walls = []Appearance.append(walls, setAppearance("wall_t", 238, 254, 204, 220, w_pack, h_pack, tex_pack)) //t
+	walls = []Appearance.append(walls, setAppearance("wall_s", 255, 271, 221, 237, w_pack, h_pack, tex_pack)) //s
+	walls = []Appearance.append(walls, setAppearance("wall_ts", 221, 237, 221, 237, w_pack, h_pack, tex_pack)) //ts
+	walls = []Appearance.append(walls, setAppearance("wall_rs", 255, 271, 204, 220, w_pack, h_pack, tex_pack)) //rs
+	walls = []Appearance.append(walls, setAppearance("wall_bs", 221, 237, 238, 254, w_pack, h_pack, tex_pack)) //bs
+	walls = []Appearance.append(walls, setAppearance("wall_ls", 221, 237, 204, 220, w_pack, h_pack, tex_pack)) //ls
+	walls = []Appearance.append(walls, setAppearance("wall_tr", 289, 305, 204, 220, w_pack, h_pack, tex_pack)) //tr
+	walls = []Appearance.append(walls, setAppearance("wall_br", 289, 305, 221, 237, w_pack, h_pack, tex_pack)) //br
+	walls = []Appearance.append(walls, setAppearance("wall_bl", 272, 288, 221, 237, w_pack, h_pack, tex_pack)) //bl
+	walls = []Appearance.append(walls, setAppearance("wall_tl", 272, 288, 204, 220, w_pack, h_pack, tex_pack)) //tl
+	walls = []Appearance.append(walls, setAppearance("wall_to", 323, 339, 204, 220, w_pack, h_pack, tex_pack)) //to
+	walls = []Appearance.append(walls, setAppearance("wall_ro", 306, 322, 204, 220, w_pack, h_pack, tex_pack)) //ro
+	walls = []Appearance.append(walls, setAppearance("wall_bo", 323, 339, 221, 237, w_pack, h_pack, tex_pack)) //bo
+	walls = []Appearance.append(walls, setAppearance("wall_lo", 306, 322, 221, 237, w_pack, h_pack, tex_pack)) //lo
+	walls = []Appearance.append(walls, setAppearance("wall_xx", 238, 254, 221, 237, w_pack, h_pack, tex_pack)) //xx
 	
 	var water []Appearance
-	water = []Appearance.append(water, setAppearance(51, 67, 0, 16, w_pack, h_pack, tex_pack)) //t
-	water = []Appearance.append(water, setAppearance(68, 84, 0, 16, w_pack, h_pack, tex_pack)) //tr
-	water = []Appearance.append(water, setAppearance(68, 84, 17, 33, w_pack, h_pack, tex_pack)) //r
-	water = []Appearance.append(water, setAppearance(68, 84, 34, 50, w_pack, h_pack, tex_pack)) //br
-	water = []Appearance.append(water, setAppearance(51, 67, 34, 50, w_pack, h_pack, tex_pack)) //b
-	water = []Appearance.append(water, setAppearance(34, 50, 34, 50, w_pack, h_pack, tex_pack)) //bl
-	water = []Appearance.append(water, setAppearance(34, 50, 17, 33, w_pack, h_pack, tex_pack)) //l
-	water = []Appearance.append(water, setAppearance(34, 50, 0, 16, w_pack, h_pack, tex_pack)) //tl
-	water = []Appearance.append(water, setAppearance(51, 67, 17, 33, w_pack, h_pack, tex_pack)) //xx
+	water = []Appearance.append(water, setAppearance("water_t", 51, 67, 0, 16, w_pack, h_pack, tex_pack)) //t
+	water = []Appearance.append(water, setAppearance("water_tr", 68, 84, 0, 16, w_pack, h_pack, tex_pack)) //tr
+	water = []Appearance.append(water, setAppearance("water_r", 68, 84, 17, 33, w_pack, h_pack, tex_pack)) //r
+	water = []Appearance.append(water, setAppearance("water_br", 68, 84, 34, 50, w_pack, h_pack, tex_pack)) //br
+	water = []Appearance.append(water, setAppearance("water_b", 51, 67, 34, 50, w_pack, h_pack, tex_pack)) //b
+	water = []Appearance.append(water, setAppearance("water_bl", 34, 50, 34, 50, w_pack, h_pack, tex_pack)) //bl
+	water = []Appearance.append(water, setAppearance("water_l", 34, 50, 17, 33, w_pack, h_pack, tex_pack)) //l
+	water = []Appearance.append(water, setAppearance("water_tl", 34, 50, 0, 16, w_pack, h_pack, tex_pack)) //tl
+	water = []Appearance.append(water, setAppearance("water_xx", 51, 67, 17, 33, w_pack, h_pack, tex_pack)) //xx
 	
 	var grass []Appearance
-	grass = []Appearance.append(grass, setAppearance(85, 101, 0, 16, w_pack, h_pack, tex_pack))
-	grass = []Appearance.append(grass, setAppearance(85, 101, 17, 33, w_pack, h_pack, tex_pack))
+	grass = []Appearance.append(grass, setAppearance("grass", 85, 101, 0, 16, w_pack, h_pack, tex_pack))
+	grass = []Appearance.append(grass, setAppearance("grass", 85, 101, 17, 33, w_pack, h_pack, tex_pack))
 
 	var rocks []Appearance
-	rocks = []Appearance.append(rocks, setAppearance(918, 934, 322, 338, w_pack, h_pack, tex_pack))
-	rocks = []Appearance.append(rocks, setAppearance(936, 951, 326, 342, w_pack, h_pack, tex_pack))
-	rocks = []Appearance.append(rocks, setAppearance(952, 968, 325, 341, w_pack, h_pack, tex_pack))
+	rocks = []Appearance.append(rocks, setAppearance("rock", 918, 934, 322, 338, w_pack, h_pack, tex_pack))
+	rocks = []Appearance.append(rocks, setAppearance("rock", 936, 951, 326, 342, w_pack, h_pack, tex_pack))
+	rocks = []Appearance.append(rocks, setAppearance("rock", 952, 968, 325, 341, w_pack, h_pack, tex_pack))
 	
 	var toolTips []Appearance
-	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_up))
-	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_down))
-	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_left))
-	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_right))
-	toolTips = []Appearance.append(toolTips, setAppearance(0, 32, 0, 32, 32, 32, tex_act_water))
+	toolTips = []Appearance.append(toolTips, setAppearance("tt_up_arrow", 0, 32, 0, 32, 32, 32, tex_act_up))
+	toolTips = []Appearance.append(toolTips, setAppearance("tt_down_arrow", 0, 32, 0, 32, 32, 32, tex_act_down))
+	toolTips = []Appearance.append(toolTips, setAppearance("tt_left_arrow", 0, 32, 0, 32, 32, 32, tex_act_left))
+	toolTips = []Appearance.append(toolTips, setAppearance("tt_right_arrow", 0, 32, 0, 32, 32, 32, tex_act_right))
+	toolTips = []Appearance.append(toolTips, setAppearance("tt_water", 0, 32, 0, 32, 32, 32, tex_act_water))
 
 	var sprites Sprites
- 	sprites.Empty = setAppearance(918, 934, 306, 322, w_pack, h_pack, tex_pack)
+ 	sprites.Empty = setAppearance("empty", 918, 934, 306, 322, w_pack, h_pack, tex_pack)
 	sprites.Floors = floors
 	sprites.Walls = walls
 	sprites.Chars = chars
 	sprites.Water = water
 	sprites.Grass = grass
 
-	// str.print("hello")
-	// var coco []Appearance
-	// foo := setAppearance(85, 101, 17, 33, w_pack, h_pack, tex_pack)
-	// coco = []Appearance.append(coco, foo)
-	// i32.print([]Appearance.len(coco))
-	// f32.print(foo.x1)
-	// i32.print([]Appearance.len(sprites.Grass)) // it's throwing 0
-	// i32.print([]Appearance.len(grass))
-
-	
 	sprites.Rocks = rocks
 	sprites.ToolTips = toolTips
 }
@@ -470,6 +462,10 @@ func initWorld () () {
 	world.appearance = []Appearance.make(entityCount)
 }
 
+func apptest (app Appearance) () {
+	
+}
+
 func main () () {
 	initGlfw("window")
 	program := initOpenGL()
@@ -488,20 +484,41 @@ func main () () {
 		createGrass(grass, new Displacement{x: x, y: y})
 	}
 
+
+	target := ->{pkg(main) fn(main) exp(test)}
+	objs := ->{}
+	rules := ->{
+		if true {
+			allow(x == x)
+		}
+	}
+	
+	affs := aff.query(target, objs, rules)
+	aff.print(affs)
+
+
+	default := new Appearance{class: "empty"}
+test:
+	//apptest(new Appearance{class: "empty"})
+	apptest(default)
+
+
+
+
 	createPlayer([]Appearance.read(sprites.Chars, 0), new Displacement{x: 1, y: 1})
 	createRock([]Appearance.read(sprites.Rocks, 0), new Displacement{x: 3, y: 1})
 	
-	for stop {
-		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	// for stop {
+	// 	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 
-		collisionFunction()
-		movementFunction()
-		renderFunction()
-		collisionFunction()
+	// 	collisionFunction()
+	// 	movementFunction()
+	// 	renderFunction()
+	// 	collisionFunction()
 
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
+	// 	glfw.PollEvents()
+	// 	glfw.SwapBuffers("window")
 		
-		stop = not(glfw.ShouldClose("window"))
-	}
+	// 	stop = not(glfw.ShouldClose("window"))
+	// }
 }

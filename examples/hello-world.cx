@@ -1,48 +1,5 @@
 package main
 
-type Dot struct {
-	a i32
-	b i32
-}
-
-type Point struct {
-	name str
-	dots []Dot
-	x i32
-	y i32
-	z i32
-}
-
-var thePoint Point
-
-var entityCount i32
-
-func foo () () {
-	entityCount = 200
-}
-
-
 func main () () {
-	// var point Point
-	// point.dots = []Dot.make(10)
-	// fstPoint := []Dot.read(point.dots, 0)
-	// i32.print(fstPoint.a)
-	// foo(point)
-	// point.dots = []Dot.write(point.dots, 0, new Dot{a: 31})
-	// sndPoint := []Dot.read(point.dots, 0)
-	// i32.print(sndPoint.a)
-
-	// thePoint.dots = []Dot.make(10)
-	// fstPoint := []Dot.read(thePoint.dots, 0)
-	// i32.print(fstPoint.a)
-	// //foo(point)
-	// thePoint.dots = []Dot.write(thePoint.dots, 0, new Dot{a: 31})
-	// sndPoint := []Dot.read(thePoint.dots, 0)
-	// i32.print(sndPoint.a)
-
-	i32.print(entityCount)
-	foo()
-	i32.print(entityCount)
-	
 	str.print("Hello World!")
 }

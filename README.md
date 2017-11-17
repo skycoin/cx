@@ -2,6 +2,452 @@
 
 # CX Programming Language
 
+CX is a general purpose, interpreted and compiled programming
+language, with a very strict type system and a syntax
+similar to Golang's. CX provides a new programming paradigm based on
+the concept of affordances, where the user can ask the programming
+language at runtime what can be done with a CX object (functions,
+expressions, packages, etc.), and interactively or automatically choose
+one of the affordances to be applied.
+
+# Hello World
+
+Do you want to know how CX looks? This is how you print "Hello World!"
+in a terminal:
+
+```
+package main
+
+func main () () {
+	str.print("Hello World!")
+}
+```
+
+Every CX program must have at least a *main* package, and a *main*
+function. As mentioned before, CX has a very stricty type system,
+where functions can only be associated with a single type
+signature (i.e., polymorphism is not allowed in CX). As a consequence,
+if we want to print a string, as in the example above, we have to call
+*str*'s print function, where *str* is a package containing string
+related functions.
+
+# Data
+
+Every programming language is designed to manipulate some kind of data
+using some kind of process. Let's first have a look at the simplest
+kind of data that we can create in CX, and then move on to slightly more
+complex data structures.
+
+## Atomic Data
+### Booleans
+
+Booleans can be either *true* or *false*, and they are mainly used to
+control the flow of a program. As an example, let's print both
+possible values to the terminal:
+
+```
+bool.print(true)
+bool.print(false)
+```
+
+### Integers
+
+CX can work with either 32 or 64 bit integers. The types themselves
+are called *i32* and *i64*  respectively. Any number without decimal
+points are considered to be *i32*, e.g. *5* or *12*.
+
+Unlike i32 numbers, the programmer needs to explicitly tell CX when an
+i64 number is required. For example, to print the *i64* number "15",
+you'd need to write:
+
+```
+i64.print(i32.i64(15))
+```
+
+### Floats
+
+Floating-point numbers come in two sizes, just like integers: 32 and
+64 bits. 32-bit floats are named *f32*s, while 64-bit floats are named
+*f64*s. Similar to *i32*, the programmer does not need any explicit
+casting; CX simply regards any number that has a decimal point as an
+*f32*. In the case of *f64* numbers, the programmer needs to cast an
+*f32* number to *f64* before being passed as an argument to a
+function, for example:
+
+```
+i64.add(i32.i64(30.0), i32.i64(20.0))
+```
+
+### Bytes
+
+Bytes can hold any number from 0 to 255. The programmer can create a
+byte number by casting an *i32* to *byte*:
+
+```
+i32.byte(255)
+```
+
+### Strings
+
+Strings are internally represented as array of bytes. CX's parser
+recognizes any chain of characters enclosed by a pair of double quotes
+(") as a string:
+
+```
+"I'm a string"
+"I'm
+    also a
+            string"
+```
+
+A character string in CX is said to be of type *str*.
+
+## Arrays
+
+Until this point, all data types that we have mentioned have been
+"atomic," which means that they hold only one piece of information
+(except strings, that are actually byte arrays, but they can be seen
+as a single unit of information too).
+
+An array is a collection of atomics, where every element
+contained in an array must be of the same type.
+
+CX arrays behave more like vectors in other programming languages,
+where they can be resized by adding new elements.
+
+A programmer can create arrays of each of the atomic types by writing
+"[]" followed by the desired type and a list of elements that
+initialize the array, enclosed in curly braces. For example:
+
+```
+[]bool{true, false, true}
+[]byte{3, 2}
+[]i32{0, 1, 2}
+[]i64{7, 7, 7}
+[]f32{3.5, 1.2, 8.9}
+[]f64{0.3}
+[]str{"hello", "world"}
+```
+
+As can be noted, numbers in *[]i64* and *[]f64* do not need to be
+cast explicitly. The reason behind this is that they are already being
+explicitly cast: *[]i64* and *[]f64* are telling CX that every element
+is of that type.
+
+There are a number of native functions associated to array types. For
+example, to obtain the number of elements in an *[]i32*, we can use
+*[]i32.len*:
+
+```
+i32.print([]i32.len([]i32{0, 1, 2})
+```
+
+We can read specific elements from arrays by using *[]xxx.read*, write
+new elements to arrays at a particular index by using *[]xxx.write*, concatenate two arrays of
+the same type by using *[]xxx.concat*, append new values to an array
+by using *[]xxx.append*, and we can create copies of arrays by using
+*[]xxx.copy*.
+
+```
+[]i32.read([]i32{10, 20, 30}, 0) // returns 10
+[]f32.write([]f32{3.3, 4.4, 5.5}, 1, 10.10)  // returns []f32{3.3, 10.10, 5.5}
+[]str.concat([]str{"hi"}, []str{"bye"}) // returns []str{"hi", "bye"}
+[]f64.append([]f64{1.1}, i32.i64(2.2)) // returns []f64{1.1, 2.2}
+[]bool.copy(toArray, []bool{true, false})
+```
+
+The set of array *copy* functions are meant to receive a variable
+(first argument) to copy to the array (second argument). These *copy*
+functions won't raise an error if literals are sent as their first
+argument, but it won't be of any use for the programmer, as the new
+copy of the array will be lost. You can create new and empty arrays by
+using the *make* array functions:
+
+```
+empty := []i32.make(3)
+[]i32.copy(empty, []i32{1, 2, 3})
+```
+
+In the example above, *empty* is a variable that holds an empty array
+of length 3. We'll learn more about variables in the next section.
+
+As a final note, CX also provides us with functions to cast arrays of one type to
+another, for example: *[]f32.[]i32*, *[]i64.[]f64*, etc.
+
+## Variables
+
+Passing literal values to functions give us already a lot of power,
+but imagine that we need to pass a 5 string array to three different
+functions. In order to avoid writing the same array three times, we
+can make a variable hold the value for us, and then pass the variable
+to the three different functions:
+
+```
+var names []str = []str{"Edward", "Daniel", "Melissa", "Roger", "Ron"}
+
+[]str.print(names)
+notify(names)
+saveToDatabase(names)
+```
+
+In the example above, the variable *names* is declared and immediately
+initialized with the string array literal, but the variable could have
+been declared and not explicitly initialized. Another option is to use a short form where the
+*var* keyword is skipped:
+
+```
+var notInitilazed i32
+short := 1.1
+```
+
+Internally, variables declared using either the long or the short forms
+are represented the same. The additional syntax is there only to provide
+the programmer a way to inform the reader that that variable is going
+to be used later on.
+
+Just like in Golang, a variable that is being declared and initialized
+without the *var* keyboard must be assigned using a colon and an equal
+symbol (:=).
+
+Finally, as mentioned above, a variable can be declared and not
+*explicitly* initialized. Unlike in languages like C, where a variable
+can end up pointing to garbage in memory, every variable in CX is
+implicitly initialized to its zero value (unless explicitly
+initialized to something else, of course). Numerical variables are
+initialized to 0 or 0.0, booleans are initialized to false, strings
+are initialized to an empty string (""), and arrays are initialized to
+an empty array.
+
+### Local Variables
+
+Variables that are declared inside a function are said to be "local."
+This means that other functions do not have access to this variable:
+
+```
+func outside () () {
+   var greeting str = "hello"
+}
+func main () () {
+  str.print(greeting)
+}
+```
+
+In this example, the *main* function does not have access to the
+*greeting* variable declared in the *outside* function. *greeting* is
+a local variable in *outside* function's scope.
+
+Another thing to have in mind is that local variables are not shared
+in different calls to the same function. For example:
+
+```
+func recur (num i32) () {
+  state := i32.add(num, 1)
+  if i32.eq(state, 3) {
+    return
+  } else {
+    recur(state)
+  }
+}
+
+func main () () {
+   recur(1)
+}
+```
+
+In the example above we can see the example of a recursive function: a
+function that calls itself. The *main* function calls *recur* and
+sends 1 as its argument. *recur* declares a variable called state,
+which is defined as the sum of its only argument and 1. If *state* is
+equal to 3, the function returns, but if it isn't, it calls itself,
+sending its *state* variable as an argument. In this next call to
+recur, what's *state* value going to be? Is it going to be 2, the
+value obtained in the previous call? No, each function call in CX is
+associated with its own "state." The correct answer is 3, which is
+obtained by adding 1 to 2, the argument sent to this new call to *recur*.
+
+### Global Variables
+
+What can we do if we want state to be shared among several function
+calls? We can use global variables. Global variables are declared
+outside of any function declaration, and they must be declared before
+any function that plans to use it. If the programmer wants a function
+to use a global variable that is declared after a function
+declaration, CX should either raise an error or declare a local
+variable with that name, depending on the context in which the
+variable is trying to be used (being sent as an argument to another
+function or assigning a new value to the variable).
+
+```
+var counter i32
+
+func inc () () {
+  counter = i32.add(counter, 1)
+}
+
+func main () () {
+  i32.print(counter)
+  inc()
+  i32.print(counter)
+}
+```
+
+In the example above, *counter* is defined as a global variable, which
+means that any function declared after it, has access to its
+value. The *main* function starts its block of expressions by printing
+*counter*'s value, which is 0. Then a call to *inc* is performed,
+which increases *counter*'s value by 1. *main* then prints again the
+value of counter, which should now be 2.
+
+## Structs
+
+We can create groups of variables by using *struct*s. *struct*s are
+useful for representing more complex data abstractions, where
+different data types and data encapsulations are needed. For example,
+if the programmer needs to represent a *Point*, it can be defined in
+the following way:
+
+```
+type Point struct {
+  x i32
+  y i32
+}
+```
+
+The name of the *struct* needs to be surrounded by the keywords *type*
+and *struct*. The *struct*'s *fields* are enclosed by curly braces,
+and each field is defined by a name or identifier and a type assigned
+to that identifier.
+
+Any basic type can be used as the type of a *struct* *field*:
+
+```
+type Student struct {
+  name str
+  age i32
+  height f32
+  grades []f32
+}
+```
+
+*struct*s can also serve as field types in other *struct*s, but we
+need to remember to declare the *struct*s in the correct order:
+
+```
+type Color struct {
+  r i32
+  g i32
+  b i32
+}
+
+type Point struct {
+  x i32
+  y i32
+}
+
+type Shape struct {
+  color Color
+  vertices []Point
+}
+```
+
+If we had declared *Shape* before *Color* or *Point*, CX would raise
+an error telling us that type "Color" or type "Point" is not defined.
+
+As can be noted, as soon as we declare a new type using a *struct*, we
+automatically have access to another type: arrays of that type of
+*struct*s. CX not only creates this additional type for us, but a set
+of functions to manipulate this new array type. Remember, CX is very
+strict regarding its type system, so if we want to know what's the
+length of an array of *Point*s, we'd need to call *[]Point.len* to
+find out:
+
+```
+var color Color
+color.r = 31
+color.g = 23
+color.b = 131
+
+points := []Point.make(3)
+
+myShape := new Shape{
+  color: color,
+  vertices: points
+}
+
+[]Point.write(myShape.vertices, 0, new Point{x: 1, y: 2})
+[]Point.write(myShape.vertices, 1, new Point{x: 3, y: 5})
+[]Point.write(myShape.vertices, 2, new Point{x: 2, y: 7})
+```
+
+Woa woa! A lot is happening in the example above. Let's analyze this
+step by step. First, we can notice that we can now declare variables
+of custom types (*struct*s): we create a *Color* variable named
+*color*. Similarly to many other programming languages that are
+capable of declaring C structs, we can access the *struct* fields by
+using a dot following the variable name, and we tell CX to assign
+different values to the r, g, b fields of the *Color* type.
+
+Then we can see how we declare and initialize the *points* variable
+by assigning the result of the function call *[]Point.make(3)*. CX
+also created a *make* function to initialize arrays of the *Point*
+type. Each of the *Point*s in this newly created array are initialized
+to its 0 form, i.e., they are *Point* *struct* instances with *x = 0*
+and *y = 0*.
+
+Now, in order to create a *Shape* instance, we use the keyword "new"
+followed by the name of the *struct* we want to create. This is an
+alternative to using the "var name type" form. The advantage to this
+new form (pun intended) is that we can use the created literal as an
+argument to a function call. Anyway, by using the *new Struct* form,
+we can also directly specify what are going to be the values for the
+*struct* instance fields. In this case, the instance's field color is
+set to the color variable defined above, and the vertices field is set
+to the points array, also defined above.
+
+Lastly, we can see how the empty points are re-assigned by using the
+*[]Point.write* function.
+
+# Comments
+
+# Expressions
+# Flow Control
+## If and if/else
+## For Loop
+## Go-to
+
+# Functions
+
+# Packages
+## Importing Packages
+
+# Debugging
+## Halt
+## Stepping
+## Unit Testing
+
+
+# Affordances
+# Serialization
+# Evolutionary Algorithm
+
+
+# OpenGL API
+
+# Examples
+## Fibonacci
+## Factorial
+## String Concatenatio
+## Evolving a Function
+## Serialization
+## Robot Simulator
+## Text-based Adventure Game
+## Graphical Game
+## Entity Component System (ECS) Engine
+## Graphical Game using ECS
+
+
+# CX Programming Language
+
 This is a prototype version of the CX Programming Language. At the
 moment, a programmer can either use the base language directly
 (although this is no longer encouraged) or can use a programming

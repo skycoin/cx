@@ -483,6 +483,15 @@ func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
 	//panic(fmt.Sprintf("CastArgumentForArray: unrecognized type %s", typ))
 }
 
+func isBasicType (typ string) bool {
+	for _, basic := range BASIC_TYPES {
+		if basic == typ {
+			return true
+		}
+	}
+	return false
+}
+
 func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	fmt.Println("Program")

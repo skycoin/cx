@@ -125,7 +125,6 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			} else {
 				typ = aff.Typ
 			}
-			//fmt.Println(aff.Typ)
 			if mod, err := call.Context.GetCurrentModule(); err == nil {
 				if strct, err := call.Context.GetStruct(typ, mod.Name); err == nil {
 					if arg, err := resolveIdent(aff.Name, call); err == nil {
@@ -160,13 +159,36 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			}
 		} else {
 			if arg, err := resolveIdent(aff.Name, call); err == nil {
-				if obj1IsX {
-					obj1Val = *arg.Value
-					obj1Typ = arg.Typ
-				}
-				if obj2IsX {
-					obj2Val = *arg.Value
-					obj2Typ = arg.Typ
+				if aff.Index != "" {
+					if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
+						if obj1IsX {
+							if val, err := getValueFromArray(arg, int32(i)); err == nil {
+								obj1Val = val
+								obj1Typ = arg.Typ[2:]
+							} else {
+								return err
+							}
+						}
+						if obj2IsX {
+							if val, err := getValueFromArray(arg, int32(i)); err == nil {
+								obj2Val = val
+								obj2Typ = arg.Typ[2:]
+							} else {
+								return err
+							}
+						}
+					} else {
+						return err
+					}
+				} else {
+					if obj1IsX {
+						obj1Val = *arg.Value
+						obj1Typ = arg.Typ
+					}
+					if obj2IsX {
+						obj2Val = *arg.Value
+						obj2Typ = arg.Typ
+					}
 				}
 			}
 		}
@@ -881,7 +903,16 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 					if index != "" {
 						if arr, err := resolveIdent(name, call); err == nil {
 							if i, err := strconv.ParseInt(index, 10, 64); err == nil {
-								if val, err, _, _ := getStrctFromArray(arr, int32(i), expr, call); err == nil {
+
+								var val []byte
+								var err error
+								if isBasicType(arr.Typ) {
+									val, err = getValueFromArray(arr, int32(i))
+								} else {
+									val, err, _, _ = getStrctFromArray(arr, int32(i), expr, call)
+								}
+								
+								if err == nil {
 									expr.RemoveArgument()
 									expr.AddArgument(MakeArgument(&val, arr.Typ[2:]))
 								} else {

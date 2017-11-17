@@ -214,19 +214,28 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 					})
 				}
 			}
+
+			if !isBasicType(def.Typ) {
+				if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+					for _, fld := range strct.Fields {
+						if fld.Typ == reqType || fld.Typ[2:] == reqType {
+							defsTypes = append(defsTypes, fld.Typ)
+							identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
+							
+							args = append(args, &CXArgument{
+								Typ: identType,
+								Value: &identName,
+							})
+						}
+					}
+				}
+			}
 		}
 
 		// Adding possible struct instances
 		var customTypes []string
 		for _, inp := range expr.Operator.Inputs {
-			isCustom := true
-			for _, basic := range BASIC_TYPES {
-				if basic == inp.Typ {
-					isCustom = false
-					break
-				}
-			}
-			if isCustom {
+			if !isBasicType(inp.Typ) {
 				customTypes = append(customTypes, inp.Typ)
 			}
 		}
@@ -259,8 +268,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 				var typ string
 				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
 
-				//fmt.Println(typ)
-
 				if reqType != typ && typ[2:] != reqType {
 					continue
 				}
@@ -292,7 +299,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 
 				// Adding arrays of the same type
 				// We'll add each slice when constructing the affordance
-				//fmt.Println(typ)
 				if len(typ) > 2 && reqType == typ[2:] {
 					defsTypes = append(defsTypes, typ)
 					identName := encoder.Serialize(outName.Name)
@@ -302,7 +308,22 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 					})
 				}
 
-				//fmt.Println(typ)
+				if !isBasicType(typ) {
+					if strct, err := expr.Context.GetStruct(typ, expr.Module.Name); err == nil {
+						for _, fld := range strct.Fields {
+							if fld.Typ == reqType || fld.Typ[2:] == reqType {
+								defsTypes = append(defsTypes, fld.Typ)
+								identName := encoder.Serialize(fmt.Sprintf("%s.%s", outName.Name, fld.Name))
+
+								args = append(args, &CXArgument{
+									Typ: identType,
+									Value: &identName,
+								})
+							}
+						}
+					}
+				}
+				
 				
 				if reqType == typ {
 					defsTypes = append(defsTypes, typ)
@@ -321,10 +342,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			var argName string
 			encoder.DeserializeRaw(*arg.Value, &argName)
 
-			//fmt.Println("hello", defsTypes[i])
-
 			if len(defsTypes[i]) > 2 && defsTypes[i][:2] == "[]" {
-				//fmt.Println("hello")
 				if arr, err := resolveIdent(argName, expr.Context.CallStack.Calls[len(expr.Context.CallStack.Calls) - 1]); err == nil {
 					var size int32
 					encoder.DeserializeAtomic((*arr.Value)[:4], &size)

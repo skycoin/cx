@@ -549,6 +549,45 @@ func serialize_program (expr *CXExpression, call *CXCall) error {
 	return nil
 }
 
+func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
+	var arrSize int32
+	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
+
+	if index < 0 {
+		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index))
+	}
+
+	if index >= arrSize {
+		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize))
+	}
+
+	switch arr.Typ {
+	case "[]byte":
+		return (*arr.Value)[index + 4:index + 1 + 4], nil
+	case "[]bool", "[]i32", "[]f32":
+		return (*arr.Value)[index * 4 + 4:(index + 1) * 4 + 4], nil
+	case "[]str":
+		noSize := (*arr.Value)[4:]
+
+		var offset int32
+		for c := 0; c < int(index); c++ {
+			var strSize int32
+			encoder.DeserializeRaw(noSize[offset:offset+4], &strSize)
+			offset += strSize + 4
+		}
+
+		sStrSize := noSize[offset:offset + 4]
+		var strSize int32
+		encoder.DeserializeRaw(sStrSize, &strSize)
+
+		return noSize[offset:offset+strSize+4], nil
+	case "[]i64", "f64":
+		return (*arr.Value)[index * 8 + 4:(index + 1) * 8 + 4], nil
+	}
+	
+	return nil, nil
+}
+
 // custom type arrays functions
 
 func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
