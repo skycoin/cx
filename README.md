@@ -31,6 +31,34 @@ if we want to print a string, as in the example above, we have to call
 *str*'s print function, where *str* is a package containing string
 related functions.
 
+# Comments
+
+Before continuing with more complex subjects,
+
+Some of the code snippets that follow have blocks of text that are
+prefixed by double slashes (//). Double slashes inform the CX parser
+that what
+
+Some of the code snippets that follow have comments in them, i.e.,
+blocks of text that are not actually "run" by the CX compiler or
+interpreter. Just like in C, Golang and many other programming
+languages, single line comments are created by placing double slashes
+(//) before the text being commented. For example:
+
+```
+// Example of summing two 32 bit integers in CX
+
+i32.add(3, 4)       // This will be ignored
+
+// End of the program
+```
+
+Multi-line comments are created by enclosing the comment in
+slash-asterisk (/*) and
+
+Mult-line comments are started by writing slash-asterisk (/*), and are
+ended by writing asterisk-slash (*/)
+
 # Data
 
 Every programming language is designed to manipulate some kind of data
@@ -405,11 +433,23 @@ set to the color variable defined above, and the vertices field is set
 to the points array, also defined above.
 
 Lastly, we can see how the empty points are re-assigned by using the
-*[]Point.write* function.
-
-# Comments
+*[]Point.write* function. *myShape.vertices* is sent to *[]Point.write* as the
+first argument, which means that we want to write a new value of type
+*Point* in the *vertices* array. Each of the three calls writes a new
+*Point* literal to each of the available indexes (0, 1 and 3).
 
 # Expressions
+
+An expression consists of a function to be
+called, a set of arguments that are sent to the function, and a set of
+receiving variables which will hold the outputs of the function being
+called. Everything inside a CX function is an expression or is converted to
+expressions.
+
+```
+foo := i32.mul(3, 5)
+```
+
 # Flow Control
 ## If and if/else
 ## For Loop
