@@ -1,0 +1,40 @@
+package foo
+
+type Point struct {
+	x i32
+	y i32
+}
+
+var num i32 = 10
+
+func bar () () {
+	str.print("From foo package")
+}
+
+
+package bar
+import "foo"
+
+func returnPoint () (aPoint foo.Point) {
+	aPoint = new foo.Point{x: 10, y: 20}
+}
+
+package main
+import "foo"
+import "bar"
+
+func main () () {
+	aPoint := bar.returnPoint()
+	i32.print(aPoint.x)
+	i32.print(aPoint.y)
+
+	var foo1 foo.Point
+	foo1.x = 20
+	foo1.y = 30
+	i32.print(foo1.x)
+	i32.print(foo1.y)
+	
+	i32.print(foo.num)
+	foo.bar()
+	i32.print(foo.num)
+}

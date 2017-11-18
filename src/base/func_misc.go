@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"errors"
-	//"strings"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -331,10 +331,36 @@ func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFu
 }
 
 func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
+	// var impName string
+	
+	// typeParts := strings.Split(typ, ".")
+
+	// if len(typeParts) == 2 {
+	// 	impName = typeParts[0]
+	// 	typ = typeParts[1]
+	// } else {
+	// 	typ = typeParts[0]
+	// }
+
+	
 	var bs []byte
 
 	found := false
 	if mod, err := cxt.GetCurrentModule(); err == nil {
+		// foundImp := false
+		// if impName != "" {
+		// 	for _, imp := range mod.Imports {
+		// 		if impName == imp.Name {
+		// 			foundImp = true
+		// 			break
+		// 		}
+		// 	}
+		// }
+
+		// if impName == "" || (impName != "" && foundImp) {
+			
+		// }
+		
 		var foundStrct *CXStruct
 
 		if typ[:2] == "[]" {
@@ -350,12 +376,17 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 			}
 		}
 		if !found {
-			for _, imp := range mod.Imports {
-				for _, strct := range imp.Structs {
-					if strct.Name == typ {
-						found = true
-						foundStrct = strct
-						break
+			typeParts := strings.Split(typ, ".")
+			if len(typeParts) > 1 {
+				for _, imp := range mod.Imports {
+					if typeParts[0] == imp.Name {
+						for _, strct := range imp.Structs {
+							if strct.Name == typeParts[1] {
+								found = true
+								foundStrct = strct
+								break
+							}
+						}
 					}
 				}
 			}

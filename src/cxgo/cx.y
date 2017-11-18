@@ -822,7 +822,6 @@ definitionDeclaration:
                 {
 			// we have to initialize all the fields
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				
 				if zeroVal, err := ResolveStruct($3, cxt); err == nil {
 					mod.AddDefinition(MakeDefinition($2, &zeroVal, $3))
 				} else {
@@ -1341,44 +1340,60 @@ nonAssignExpression:
 				modName = mod.Name
 				err = e
 			}
-			if err == nil {
-				if fn, err := cxt.GetCurrentFunction(); err == nil {
-					if op, err := cxt.GetFunction(fnName, modName); err == nil {
-						expr := MakeExpression(op)
-						if !replMode {
-							expr.FileLine = yyS[yypt-0].line + 1
-						}
-						fn.AddExpression(expr)
-						expr.AddTag(tag)
-						tag = ""
-						for _, arg := range $2 {
 
-							typeParts := strings.Split(arg.Typ, ".")
-
-							arg.Typ = typeParts[0]
-							expr.AddArgument(arg)
-						}
-
-						lenOut := len(op.Outputs)
-						outNames := make([]string, lenOut)
-						args := make([]*CXArgument, lenOut)
-						// var outNames []string
-						// var args []*CXArgument
-						
-						for i, out := range op.Outputs {
-							outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
-							byteName := encoder.Serialize(outNames[i])
-							args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
-							//args[i] = MakeArgument(&byteName, "ident")
-							expr.AddOutputName(outNames[i])
-						}
-						
-						$$ = args
-					} else {
-						fmt.Printf("Function '%s' not defined\n", $1)
+			found := false
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				for _, imp := range mod.Imports {
+					if modName == imp.Name {
+						found = true
+						break
 					}
 				}
 			}
+			
+			if !found && !IsNative(modName + "." + fnName) {
+				fmt.Printf("%d: module '%s' was not imported or does not exist\n", yyS[yypt-0].line + 1, modName)
+			} else {
+				if err == nil {
+					if fn, err := cxt.GetCurrentFunction(); err == nil {
+						if op, err := cxt.GetFunction(fnName, modName); err == nil {
+							expr := MakeExpression(op)
+							if !replMode {
+								expr.FileLine = yyS[yypt-0].line + 1
+							}
+							fn.AddExpression(expr)
+							expr.AddTag(tag)
+							tag = ""
+							for _, arg := range $2 {
+
+								typeParts := strings.Split(arg.Typ, ".")
+
+								arg.Typ = typeParts[0]
+								expr.AddArgument(arg)
+							}
+
+							lenOut := len(op.Outputs)
+							outNames := make([]string, lenOut)
+							args := make([]*CXArgument, lenOut)
+							// var outNames []string
+							// var args []*CXArgument
+							
+							for i, out := range op.Outputs {
+								outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
+								byteName := encoder.Serialize(outNames[i])
+								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
+								//args[i] = MakeArgument(&byteName, "ident")
+								expr.AddOutputName(outNames[i])
+							}
+							
+							$$ = args
+						} else {
+							fmt.Printf("Function '%s' not defined\n", $1)
+						}
+					}
+				}
+			}
+			
                 }
         ;
 

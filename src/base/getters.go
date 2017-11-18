@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"strings"
 	"errors"
 )
 
@@ -163,6 +164,22 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 		if strct.Name == strctName {
 			foundStrct = strct
 			break
+		}
+	}
+
+	if foundStrct == nil {
+		//looking in imports
+		typParts := strings.Split(strctName, ".")
+		
+		if mod, err := cxt.GetModule(modName); err == nil {
+			for _, imp := range mod.Imports {
+				for _, strct := range imp.Structs {
+					if strct.Name == typParts[1] {
+						foundStrct = strct
+						break
+					}
+				}
+			}
 		}
 	}
 

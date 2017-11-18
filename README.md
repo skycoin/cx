@@ -711,12 +711,84 @@ func main () () {
 
 # Packages
 
-Packages are a useful feature to encapsulate functions, and global
-variables. 
+Packages are a useful feature to encapsulate functions, structs and global
+variables. We have been explicitly working with a single package since the
+beginning of this tutorial: *main*. But we have also used functions in
+other packages like *str*, *i32* and *f32*.
 
-## Importing Packages
+Functions from packages like *str* and *i32* are all implicitly imported, which
+means that you can start using them right away. The reason behind this
+is that these functions are so common that they could be
+considered as part of the language's core library of functions.
+
+Big projects usually need to be divided into several
+packages. Depending on the programming language, these "packages"
+can be called modules, namespaces, vocabularies, etc., but the idea
+is always the same: to encapsulate. Encapsulation is very important,
+because it allows the programmer to create groups of related
+identifiers (variables, types, functions) that won't create conflicts
+with other identifiers named the same, but that have a different
+purpose. For example, in CX we have several versions of *print*, but
+they have somewhat different purposes. Indeed, all of them will print
+stuff in the terminal, but *str.print* will print a string,
+*i32.print* will print a 32 bit integer, and so on. We could even have
+a situation where the functions need to be named the same, and they
+even receive the same type of argument, but do entirely different
+things. For example, *printer.send* and *fax.send* could both receive
+strings, but the former sends the string to a printer and the second
+to a fax (if you don't know what a fax is, you can read about them in
+[here](https://en.wikipedia.org/wiki/Fax)).
+
+## Creating and Importing Packages
+
+"How can I create a package in CX?" you might be wondering by now.
+
+```
+package myPackage
+/*
+  Functions, structs and globals are placed here
+*/
+```
+
+You just need to write the keyword *package* followed by the name you
+want to give to your package. Unlike Golang, you can have multiple
+packages in a single source file and CX won't complain about it
+(although you are encouraged to place different packages in different
+files). Whenever CX reads "package something", every CX statement that
+follows will be attached to the "something" package, and this
+behaviour will continue until "package somethingElse" is
+encountered. Let's create a Math package:
+
+```
+package Math
+
+var PI f32 = 3.14159
+
+func double (num f32) (double f32) {
+    double = f32.mul(num, 2)
+}
+```
+
+This starts looking promising, doesn't it? But how can we start using
+this package in other packages? You have to *import* it.
+
+```
+package main
+import "Math"
+
+func main () () {
+    i32.print(Math.PI)
+    i32.print(Math.double(Math.PI))
+}
+```
+
+If we don't *import Math*, CX will raise an error telling us that the
+module *Math* is not being imported or does not exist.
 
 # Debugging
+
+Whenever
+
 ## Halt
 ## Stepping
 ## Unit Testing

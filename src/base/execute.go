@@ -1102,7 +1102,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 					resolvedIdent = def
 				}
 			} else {
-				return nil, errors.New(fmt.Sprintf("Module '%s' not imported", mod.Name))
+				return nil, errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", mod.Name))
 			}
 		} else {
 			// then it's a global struct

@@ -1,0 +1,8 @@
+package main
+
+func main () () {
+	var foo i32 = 10
+	var bar f32 = 5.5
+	
+	i32.div(1, 0)
+}

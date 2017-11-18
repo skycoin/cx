@@ -492,6 +492,13 @@ func isBasicType (typ string) bool {
 	return false
 }
 
+func IsNative (fnName string) bool {
+	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
+		return true
+	}
+	return false
+}
+
 func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	fmt.Println("Program")
