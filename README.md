@@ -918,8 +918,142 @@ test.str(toWord(4), "error", "0 failed")
 test.stop()
 ```
 
+*test.start* tells CX that unit testing will start, and that
+ errors should only be printed to the user instead of halting the
+ program. *test.str* receives three arguments: the first two can be
+ anything that returns a string, and the third one is an error message
+ that will be displayed to the user in case the test fails. In order
+ for the test to succeed, the evaluations of the two first arguments
+ must be the same.
+
+Now let's imagine that we have a function that needs to return an
+error with a particular set of arguments. How can we test for such a
+case? The solution is to use *test.error*.
+
+```
+i32.div(10, 0)
+test.error("i32.div did not raise a division by 0 error")
+```
+
+Another feature that *test.start* provides is that CX becomes aware of
+the raised errors. In the example above, i32.div(10, 0) *must* raise
+an error (if it doesn't, that's an error). After evaluating the bugged
+expression, we call *test.error*. *test.error* will raise an error if
+an error was not raised by the preceding expression, and the string
+provided as its first argument will be shown to the user.
+
+The *test* package has test functions for each of CX's basic types. If
+you want to see a complete example, you can see CX's unit tests
+[here](https://github.com/skycoin/cx/blob/master/tests/test.cx) (that
+is, you're seeing how we use CX to test that CX is working correctly).
+
 # Affordances
+
+If we create a CX function, what can we do with it? We can call it, we
+can add more expressions to it, we can add more input and output
+parameters, we can remove them, we can change its name, we can remove
+the function entirely... These are called affordances in CX, and they
+help us achieve meta-programming: programs that can get themselves
+modified.
+
+CX applies the affordance paradigm by using its affordance system and
+inference engine. The affordance system can determine everything that
+can be done to an object, and everything that that object can do to
+its surroundings. The inference system filters these affordances
+according to certain criteria.
+
+As this is a complex subject in CX, let's go step by step. First, we
+need to tell CX somehow what element is our target, i.e., what element
+we want to get affordances of. To do this, we need to create a
+*target*:
+
+```
+target := ->{
+  pkg(main) fn(double) exp(multiplication)
+}
+```
+
+Everything contained in *->{...}* is practically a different
+mini-language, but it tries to resemble what we have seen in CX until
+now, as much as possible. *pkg* is used to tell CX what package we
+want to target, *fn* to target a function, and *exp* to target an
+expression. In this case, *main*, *double* and *multiplication* are
+not CX variables; they are simply identifiers for the inference
+engine.
+
+Now, we need to create something similar to a *knowledge base*,
+containing *facts* or *objects*, as are called in CX. Objects simply
+tell CX something that is true or, more correctly, something that
+exists in the current environment.
+
+```
+objects := ->{
+    cloudy $0.7,
+    hot $0.2
+}
+```
+
+As you can see, we keep using the *->{...}* syntax. We are stating
+that the objects *cloudy* and *hot* exist. Notice that objects are
+separated by commas, and that they have numbers next to them, preceded
+by a dollar sign ($). These numbers are called *weights*, and they
+help us assign a grade of truthiness to the object. For instance, we
+are perceiving the weather to be 0.7 cloudy, or *very* cloudy perhaps,
+while we are perceiving it to be only 0.2 hot, or *not so* hot.
+
+Lastly, we need to define a set of *rules* that describe how the
+stated objects are going to filter the affordances determined by the
+affordance system.
+
+```
+if cloudy $0.8 {
+  allow(x.lightSensitive == true)
+  obj(drones $1.0)
+}
+if and(cloudy $0.5, hot $0.1) {
+  allow(x.numberWheels > 2)
+  reject(x.solarPowered == true)
+  obj(rovers $1.0)
+}
+if true {
+  allow(x.class == "bipedal")
+}  
+if or(drones $1.0, rovers $1.0) {
+  reject(x.class == "bipedal")
+}
+```
+
+Let's imagine that we want to program some logic that determines what
+kind of robots can or should be deployed to a particular
+environment. We need to keep in mind that
+at the beginning, the affordance system should have thrown *every*
+robot that exists in the system and that is accessible to the targeted
+CX expression in this case.
+
+The first rule is telling the inference system to allow any robot that
+is light sensitive, and then we dynamically add another object to the
+object set: *drones $1.0* (actually, this is an actual set, as in the
+mathematical sense, i.e., objects can't be repeated). Rules can add
+new objects to affect the execution of the following rules. Adding the
+*drones* object can be interpreted as saying "we can/will deploy
+drones."
+
+The second rule tells the inference system to allow any robot that has
+more than 2 wheels, but to reject any robot that is solar powered
+(because it's too cloudy). The robots meeting these criteria are
+rovers, so we add an object *rovers*.
+
+The third rule is interesting because, regardless of what objects we
+have and regardless of their weights, bipedal robots are going to be
+deployed... *unless* the fourth rule is true. The fourth rule tells
+the inference engine to reject bipedal robots if we are deploying
+either drones or rovers already.
+
+
 # Serialization
+
+
+
 # Evolutionary Algorithm
 
 

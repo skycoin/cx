@@ -1,27 +1,5 @@
 package main
 
-func toWord (num i32) (name str) {
-	if i32.eq(0, num) {
-		name = "zero"
-		return
-	}
-	if i32.eq(1, num) {
-		name = "one"
-		return
-	}
-	if i32.eq(2, num) {
-		name = "two"
-		return
-	}
-	if i32.eq(3, num) {
-		name = "three"
-		return
-	}
-	name = "error"
-	return
-}
-
 func main () () {
-	str.print(toWord(2))
 	str.print("Hello World!")
 }
