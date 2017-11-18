@@ -10,6 +10,38 @@ language at runtime what can be done with a CX object (functions,
 expressions, packages, etc.), and interactively or automatically choose
 one of the affordances to be applied.
 
+# Installation
+
+First, make sure that you have Go installed by running `go
+version`. It should output something similar to
+
+```
+go version go1.8.3 darwin/amd64
+```
+
+Go should also be properly configured (you can read the installation
+instructions by clicking [here](https://golang.org/doc/install).
+
+Download skycoin
+
+```
+go get https://github.com/skycoin/skycoin/...
+```
+
+Clone this repository
+
+# CX Tutorial
+
+In the following sections, the reader can find a short tutorial on how
+to use the main features of the language. It can be used as introductory
+material for people with no experience in programming as some sections
+are explained as if this was the main audience. Nevertheless, the true
+purpose of the tutorial is to demonstrate all the features that the
+language currently supports.
+
+Feel free to [create an issue](https://github.com/skycoin/cx/issues)
+requesting a better explanation of a feature.
+
 # Hello World
 
 Do you want to know how CX looks? This is how you print "Hello World!"
@@ -53,11 +85,14 @@ i32.add(3, 4)       // This will be ignored
 // End of the program
 ```
 
-Multi-line comments are created by enclosing the comment in
-slash-asterisk (/*) and
+Mult-line comments are opened by writing slash-asterisk (/\*), and are
+closed by writing asterisk-slash (\*/).
 
-Mult-line comments are started by writing slash-asterisk (/\*), and are
-ended by writing asterisk-slash (\*/)
+```
+/* This code won't be executed
+str.print("Hello world!")
+*/
+```
 
 # Data
 
@@ -450,9 +485,161 @@ expressions.
 foo := i32.mul(3, 5)
 ```
 
+In the example above, we are telling CX to do 3 times 5 and to store
+the result in *foo*. *i32.mul* is the function to be called, 3 and 5
+are its arguments, and *foo* is the variable that will store the
+output. As in Golang, functions in CX can return more than one value:
+
+```
+seconds, minutes, hours := getTime()
+```
+
+Arguments to function calls can be other expressions:
+
+```
+result := i32.mul(i32.add(5, 2), i32.sub(3, 1))
+```
+
+When stating multiple receiving variables, you can provide different
+expressions to be assigned to each variable, for example:
+
+```
+res1, res2 := i32.add(5, 3), i32.sub(10, 7)
+i32.print(res1)
+i32.print(res2)
+```
+
+After executing the example above, 8 will be printed followed by 3.
+
 # Flow Control
+
+Like in most programming languages (if not all, excluding perhaps some
+[esoteric languages](https://en.wikipedia.org/wiki/Esoteric_programming_language)),
+programs are executed from top to bottom.
+
+We can control CX's normal flow by using *flow control statements*,
+which are discussed below.
+
 ## If and if/else
+
+The first *flow control statement* is *if*, which has the capability
+of ignoring execution of a number of expressions.
+
+```
+if false {
+  str.print("This will never print")
+}
+```
+
+In the example above, we are asking "if x", where x is a predicate
+that is evaluated to determine if it's either true or false. If the
+predicate is true, then the expressions enclosed in curly brackets are
+executed, and are ignored if otherwise. In this case, *x = false*, so
+the expression won't be executed. Predicates can be either booleans,
+or variables or expressions that evaluate to booleans:
+
+
+```
+foo := true
+if foo {
+  str.print("This will print")
+}
+
+if or(true, and(false, false) {
+  str.print("This will also print")
+}
+```
+
+If statements can be nested:
+
+```
+if true {
+  if false {
+    str.print("This won't print")
+  }
+  if true {
+    str.print("This will print")
+  }
+}
+```
+
+As in other programming languages, you can also create an *else*
+clause. This *else* clause will execute if the predicate evaluates to
+false.
+
+```
+if false {
+  str.print("This won't print")
+} else {
+  str.print("But this will!")  
+}
+```
+
+These if/else statements can also be nested:
+
+```
+if false {
+  str.print("This won't print")
+  } else {
+  if true {
+    if false {
+        str.print("This won't print")
+      } else {
+        str.print("This will print")
+      }
+    }
+}
+```
+
 ## For Loop
+
+Many programming languages provide several looping constructs, like
+while, do-while, for-each, for, etc. CX followed the same strategy as
+Golang, and only provides a *for* loop. First, let's have a look at an
+infinite loop:
+
+```
+for true {
+    str.print("This will print forever")
+}
+```
+
+In this form, the *for* loop behaves similarly to an if statement: it
+can receive a single predicate, which can be either a boolean, or a
+variable or expression that evaluates to a boolean. For example:
+
+```
+for or(true, and(false, false) {
+  str.print("This will also print forever")
+}
+```
+
+Using this *for* form, we can create a loop that prints the numbers
+from 0 to 10 like this:
+
+```
+continue := true
+c := 0
+for continue {
+  if i32.gt(c, 10) {
+    continue = false
+  }
+  i32.print(c)
+  c = i32.add(c, 1)
+}
+```
+
+It doesn't look nice, right? To make it look a bit better, we can use
+the second *for* form:
+
+```
+for c := 0; i32.lteq(c, 10); c = i32.add(c, 1) {
+  i32.print(c)
+}
+```
+
+
+
 ## Go-to
 
 # Functions
