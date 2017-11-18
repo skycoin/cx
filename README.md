@@ -638,13 +638,82 @@ for c := 0; i32.lteq(c, 10); c = i32.add(c, 1) {
 }
 ```
 
-
+Much better. This form is the same as the form provided by many other
+programming languages like C. The first part declares and initializes
+a variable that will usually serve as a counter, the second part has a
+predicate, and the last part is usually used as a counter updater. As
+in these other similar programming languages, the first and the third
+parts can actually have any expression you want, but they are usually
+used initialize counters and update counters, respectively.
 
 ## Go-to
 
+The last flow control structure is *go-to*. *go-to*s are used to make
+a CX program jump directly to a labelled expression.
+
+```
+    goto label4
+label3:
+	str.print("This should never be reached")
+label4:
+	str.print("This should be printed")
+```
+
+In the example above, the statement "goto label4" will make CX
+directly jump to the expression labelled as "label4." This flow
+control statement can be combined with other flow control statements
+to create complex programs. The downside with *go-to*s is usually that
+programs become harder to read, but they can become very powerful in the
+correct hands.
+
+As mentioned before, everything in a CX function is actually an
+expression. *go-to* statements are not an expression. Labels are
+actually part of expressions, and the "goto label" statements are
+actually calls to a function called *goTo*.
+
+```
+	goTo("label2") // function 
+label1:
+	str.print("this should never be reached")
+label2:
+	str.print("this should be printed")
+```
+
 # Functions
 
+We have already seen some examples of function calls, and an example
+of a function declaration: the *main* function. We can define other
+custom functions, though.
+
+```
+package main
+
+var PI f32 = 3.14159
+
+func circleArea (radius f32) (area f32) {
+	f32.mul(f32.mul(radius, radius), PI)
+}
+```
+
+In the example above, we are creating a new function that will be
+contained in the *main* package. This function is called *circleArea*,
+and has one input and one output parameter. If we analyze this
+function, we can realize that it calculates the area of a circle,
+given its radius. Once defined, it can be called in other functions
+that are defined below it, such as the *main* function:
+
+```
+func main () () {
+  area := circleArea(i32.f32(2))
+  f32.print(area)
+}
+```
+
 # Packages
+
+Packages are a useful feature to encapsulate functions, and global
+variables. 
+
 ## Importing Packages
 
 # Debugging

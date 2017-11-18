@@ -1,5 +1,15 @@
+package foo
+
+var num i32 = 10
+
+func bar () () {
+	str.print("Hmmm")
+}
+
 package main
 
 func main () () {
-	str.print("Hello World!")
+	foo.bar()
+	i32.print(foo.num)
+	//str.print("Hello World!")
 }

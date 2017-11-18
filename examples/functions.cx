@@ -10,7 +10,7 @@ func circlePerimeter (radius f32) (perimeter f32) {
 	perimeter := f32.mul(f32.mul(i32.f32(2), radius), PI)
 }
 
-func main () (area f32) {
+func main () () {
 	area := circleArea(i32.f32(2))
 	f32.print(circlePerimeter(i32.f32(5)))
 }
