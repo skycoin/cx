@@ -652,7 +652,7 @@ The last flow control structure is *go-to*. *go-to*s are used to make
 a CX program jump directly to a labelled expression.
 
 ```
-    goto label4
+	goto label4
 label3:
 	str.print("This should never be reached")
 label4:
@@ -787,12 +787,136 @@ module *Math* is not being imported or does not exist.
 
 # Debugging
 
-Whenever
+Whenever an error is raised in CX, a read-eval-print loop (REPL) will
+start, where the programmer can try to fix any errors with the
+program. In the REPL, the programmer can modify functions, print the
+call stack, print the program structure, and many other useful
+things.
+
+```
+package main
+
+func main () () {
+	var foo i32 = 10
+	var bar f32 = 5.5
+	
+	i32.div(1, 0)
+}
+```
+
+In this example, we start adding some variables and then we try to
+divide two numbers: 1 by 0. If we run this program, this will be
+printed:
+
+```
+Call's State:
+foo:		10
+bar:		5.5
+
+i32.div() Arguments:
+0: 1
+1: 0
+
+7: i32.div: Division by 0
+CX REPL
+More information about CX is available at http://cx.skycoin.net/
+
+* 
+```
+
+The "Call's State" section tells us what are the values of the
+variables in the current call. In this case, we have two variables:
+foo and bar, with 10 and 5.5 as their values, respectively. Next, CX
+tells us the arguments that were sent to the expression raising the
+error, which are 1 (argument #0) and 0 (argument #1). A description of
+the error is also provided: CX tells us that a "Division by 0" was
+raised, and it was caused by *i32.div* at line #7. Lastly, we can see
+that the CX REPL starts, where the programmer can enter some commands
+to try to fix the error.
 
 ## Halt
-## Stepping
+
+Sometimes we want to *halt* a program's execution: maybe because we
+want to check what's the current call's state, maybe because we want
+to see if the program's flow is reaching somewhere, maybe simply
+because it's fun. Whatever the reason might be, CX provides us with a
+very helpful function, which is curiously named "halt."
+
+```
+for true {
+	str.print("Enter a number greater than 0: ")
+	value := i32.read()
+
+	if i32.gt(value, 0) {
+		str.print("Good, good.")
+	} else {
+		halt("The number was not greater than 0.")
+	}
+}
+```
+
+In this example, CX enters an infinite loop using *for true*. The user
+is asked to enter a number greater than 0, and this value is *read*
+using the *i32.read* function. If this value is greater than 0, the
+program congratulates the user, and if it is not greater than 0, the
+program halts. As you can see, halt receives a string as it's
+argument, which serves as an error message for the user.
+
 ## Unit Testing
 
+It is a good idea to create *test* files, which contain code that
+makes sure that your defined functions are behaving correctly. For
+example, let's assume that we have a function that converts an integer
+from 0 to 3 to it's corresponding "word name" (for example, 3 =>
+"three").
+
+```
+func toWord (num i32) (name str) {
+	if i32.eq(0, num) {
+		name = "zero"
+		return
+	}
+	if i32.eq(1, num) {
+		name = "one"
+		return
+	}
+	if i32.eq(2, num) {
+		name = "two"
+		return
+	}
+	if i32.eq(3, num) {
+		name = "three"
+		return
+	}
+	name = "error"
+	return
+}
+```
+
+We could obviously create some function calls and make sure that the
+results are as expected:
+
+```
+str.print(toWord(0))
+str.print(toWord(1))
+str.print(toWord(2))
+str.print(toWord(3))
+str.print(toWord(4))
+```
+
+This solution can work for some time, but it's going to get too
+complicated when your program reaches dozens of functions. A better
+solution is to use CX's *test* package:
+
+```
+test.start()
+test.str(toWord(0), "zero", "0 failed")
+test.str(toWord(1), "one", "0 failed")
+test.str(toWord(2), "two", "0 failed")
+test.str(toWord(3), "three", "0 failed")
+test.str(toWord(4), "error", "0 failed")
+test.stop()
+```
 
 # Affordances
 # Serialization

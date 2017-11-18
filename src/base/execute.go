@@ -1330,13 +1330,14 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 							}
 						}
 
-						if isBasic {
-							fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
-						} else {
-							fmt.Println(def.Name)
-							PrintValue(def.Name, def.Value, def.Typ, call.Context)
+						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX {
+							if isBasic {
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
+							} else {
+								fmt.Println(def.Name)
+								PrintValue(def.Name, def.Value, def.Typ, call.Context)
+							}
 						}
-						
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)

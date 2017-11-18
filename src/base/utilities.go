@@ -496,6 +496,11 @@ func IsNative (fnName string) bool {
 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
 		return true
 	}
+	//nameParts := 
+	if _, ok := NATIVE_FUNCTIONS[strings.Split(fnName, ".")[1]]; ok {
+		return true
+	}
+	//fmt.Println(fnName)
 	return false
 }
 

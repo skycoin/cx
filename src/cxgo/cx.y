@@ -1342,7 +1342,9 @@ nonAssignExpression:
 			}
 
 			found := false
+			currModName := ""
 			if mod, err := cxt.GetCurrentModule(); err == nil {
+				currModName = mod.Name
 				for _, imp := range mod.Imports {
 					if modName == imp.Name {
 						found = true
@@ -1350,8 +1352,13 @@ nonAssignExpression:
 					}
 				}
 			}
+
+			isModule := false
+			if _, err := cxt.GetModule(modName); err == nil {
+				isModule = true
+			}
 			
-			if !found && !IsNative(modName + "." + fnName) {
+			if !found && !IsNative(modName + "." + fnName) && modName != currModName && isModule {
 				fmt.Printf("%d: module '%s' was not imported or does not exist\n", yyS[yypt-0].line + 1, modName)
 			} else {
 				if err == nil {
@@ -1375,14 +1382,12 @@ nonAssignExpression:
 							lenOut := len(op.Outputs)
 							outNames := make([]string, lenOut)
 							args := make([]*CXArgument, lenOut)
-							// var outNames []string
-							// var args []*CXArgument
 							
 							for i, out := range op.Outputs {
 								outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
 								byteName := encoder.Serialize(outNames[i])
 								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
-								//args[i] = MakeArgument(&byteName, "ident")
+
 								expr.AddOutputName(outNames[i])
 							}
 							
