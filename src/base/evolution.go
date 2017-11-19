@@ -14,25 +14,12 @@ func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpressi
 	numInps := len(expr.Operator.Inputs)
 	numOuts := len(expr.Operator.Outputs)
 
-	// for _, aff := range FilterAffordances(expr.GetAffordances(), "Argument") {
-	// 	fmt.Println(aff.Description)
-	// }
-
 	for i := 0; i < numInps; i++ {
 		affs := FilterAffordances(expr.GetAffordances(), "Argument")
-		//fmt.Printf("Number affs %d\n", len(affs))
 		r := random(0, len(affs))
-		//fmt.Println(affs[r].Description)
 		affs[r].ApplyAffordance()
-		
 	}
-
-	// for _, arg := range expr.Arguments {
-	// 	fmt.Println(string(*arg.Value))
-	// }
 	
-	//fmt.Println()
-
 	if len(outNames) == 0 {
 		for i := 0; i < numOuts; i++ {
 			affs := FilterAffordances(expr.GetAffordances(), "OutputName")
@@ -49,9 +36,7 @@ func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpressi
 func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberExprs int) {
 	cxt.SelectFunction(solutionName)
 	if fn, err := cxt.GetCurrentFunction(); err == nil {
-		// removing (we also need to remove those expressions which contain the output var of this expr)
 		removeIndex := random(0, len(fn.Expressions))
-		//removedVar := fn.Expressions[removeIndex].OutputName
 
 		removedVars := fn.Expressions[removeIndex].OutputNames
 
@@ -64,15 +49,11 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 					break
 				}
 
-				// // testing if always removing the output expression gives better results
-				// if expr.OutputNames[0] == fn.Outputs[0].Name {
-				// 	indexesToRemove = append([]int{i}, indexesToRemove...)
-				// 	break
-				// }
-
 				argIdentRemoved := false
 				for _, removedVar := range removedVars {
-					if i > removeIndex && string(*arg.Value) == removedVar.Name {
+					var identName string
+					encoder.DeserializeRaw(*arg.Value, &identName)
+					if i > removeIndex && identName == removedVar.Name {
 						indexesToRemove = append([]int{i}, indexesToRemove...)
 						argIdentRemoved = true
 					}
@@ -81,16 +62,14 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 					break
 				}
 				
-
-				// if, for example, we removed var25 = add(var1, var2) before
-				// we also need to check for all the subsequent expressions
-				// that could be using var25, and remove them too
 				for _, arg := range fn.Expressions[i].Arguments {
 					broke := false
 					for _, j := range indexesToRemove {
 						argIsOutput := false
 						for _, outName := range fn.Expressions[j].OutputNames {
-							if string(*arg.Value) == outName.Name {
+							var identName string
+							encoder.DeserializeRaw(*arg.Value, &identName)
+							if identName == outName.Name {
 								indexesToRemove = append([]int{i}, indexesToRemove...)
 								broke = true
 								argIsOutput = true
@@ -109,8 +88,6 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 
 		indexesToRemove = removeDuplicatesInt(indexesToRemove)
 
-		//fmt.Println(indexesToRemove)
-
 		for _, i := range indexesToRemove {
 			if i != len(fn.Expressions) {
 				fn.Expressions = append(fn.Expressions[:i], fn.Expressions[i+1:]...)
@@ -124,9 +101,6 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 			expr.Line = i
 		}
 
-		// adding
-		// we need to make sure that at least one expression throws a result to the output var
-		
 		hasOutputs := false
 		fnOutputs := fn.Outputs
 		for _, expr := range fn.Expressions {
@@ -169,17 +143,6 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 				affs = FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
 			}
 			
-
-			// excluding array operations
-			// re := regexp.MustCompile("readByteA|writeByteA|evolve")
-			// filteredAffs := make([]*CXAffordance, 0)
-			// for _, aff := range affs {
-			// 	if re.FindString(aff.Description) == "" {
-			// 		filteredAffs = append(filteredAffs, aff)
-			// 	}
-			// }
-			// affs = filteredAffs
-			
 			r := random(0, len(affs))
 			affs[r].ApplyAffordance()
 
@@ -205,7 +168,6 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 	if mod, err := cxt.GetModule("main"); err == nil {
 		if _, err := cxt.GetFunction("main", "main"); err == nil {
-			//delete(mod.Functions, "main")
 			idx := -1
 			for i, fn := range mod.Functions {
 				if fn.Name == "main" {
@@ -228,7 +190,6 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 						
 						if expr, err := cxt.GetCurrentExpression(); err == nil {
 							expr.AddOutputName("out")
-							//tmpVal := encoder.SerializeAtomic(float64(0))
 							tmpVal := encoder.Serialize(float64(0))
 							expr.AddArgument(MakeArgument(&tmpVal, "f64"))
 						}
@@ -241,12 +202,9 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 
 func (cxt *CXProgram) adaptInput (testValue float64) {
 	if fn, err := cxt.GetFunction("main", "main"); err == nil {
-		//val := encoder.SerializeAtomic(testValue)
 		val := encoder.Serialize(testValue)
 		arg := MakeArgument(&val, "f64")
-		// arg.Offset = -1
-		// arg.Size = -1
-
+		
 		fn.Expressions[0].Arguments[0] = arg
 	}
 }
@@ -255,8 +213,6 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 	if fromMod, err := fromCxt.GetCurrentModule(); err == nil {
 		if fromFn, err := fromCxt.GetFunction(solutionName, fromMod.Name); err == nil {
 			if toMod, err := toCxt.GetCurrentModule(); err == nil {
-				//delete(toMod.Functions, solutionName)
-				//idx := -1
 				for _, fn := range toMod.Functions {
 					if fn.Name == solutionName {
 						//idx = i
@@ -264,8 +220,6 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 						break
 					}
 				}
-				//toMod.Functions = append(toMod.Functions[:idx], toMod.Functions[idx+1:]...)
-				//toMod.AddFunction(MakeFunctionCopy(fromFn, toMod, toCxt))
 			}
 		}
 	}
@@ -273,8 +227,6 @@ func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgra
 
 func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
 	cxt.SelectFunction(solutionName)
-
-	//cxt.PrintProgram(false)
 
 	// Initializing expressions
 	if fn, err := cxt.GetCurrentFunction(); err == nil {
@@ -333,7 +285,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				r := random(0, len(affs))
 				affs[r].ApplyAffordance()
 				
-				// making sure last expression assigns to output
+				//making sure last expression assigns to output
 				outNames := make([]*CXDefinition, len(fn.Outputs))
 				for i, out := range fn.Outputs {
 					outDef := MakeDefinition(
@@ -356,7 +308,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	
 	best := cxtCopy
 	best.adaptPreEvolution(solutionName)
-	// printing initial solution
+
 	//best.PrintProgram(false)
 
 	var finalError float64
@@ -364,11 +316,8 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		if fn, err := cxt.GetFunction(solutionName, mod.Name); err == nil {
 			if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
-				fmt.Printf("Evolving function '%s'\n", solutionName)
+				//fmt.Printf("Evolving function '%s'\n", solutionName)
 				for i := 0; i < iterations; i++ {
-					// fmt.Printf("Iteration:%d\n", i)
-					// getting 4 copies of the parent (the best solution)
-					// let's create an array holding these programs
 					programs := make([]*CXProgram, 5) // it's always 5, because of the 1+4 strategy
 					errors := make([]float64, 5)
 					programs[0] = best // the best solution will always be at index 0
@@ -399,6 +348,9 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 							// We'll always take the first value
 							// The algorithm shouldn't work with multiple value returns yet
 
+							if len(program.Outputs) < 1 {
+								continue
+							}
 							output := *program.Outputs[0].Value
 							encoder.DeserializeRaw(output, &result)
 
@@ -439,7 +391,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 					//fmt.Println(bestIndex)
 
 					// print error each iteration
-					fmt.Println(errors[bestIndex])
+					//fmt.Println(errors[bestIndex])
 					//fmt.Println(errors)
 					
 					//best.PrintProgram(false)
@@ -451,7 +403,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 						break
 					}
 				}
-				fmt.Printf("Finished evolving function '%s'\n", solutionName)
+				//fmt.Printf("Finished evolving function '%s'\n", solutionName)
 			}
 		}
 	}
@@ -471,71 +423,3 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	return nil
 }
 
-func RandomProgram (numberAffordances int) *CXProgram {
-	cxt := MakeContext()
-	for i := 0; i < numberAffordances; i++ {
-		randomCase := random(0, 100)
-		// 0: Affordances on Context // Merge case 0 and 1
-		// 1: Affordances on Module
-		// 2: Affordances on Function
-		// 3: Affordances on Struct
-		// 4: Affordances on Expression
-
-		// let's give different weights to the options
-		
-		switch {
-		case randomCase >= 0 && randomCase < 5:
-			affs := cxt.GetAffordances()
-			if len(affs) > 0 {
-				affs[random(0, len(affs))].ApplyAffordance()
-			}
-		case randomCase >= 5 && randomCase < 15 :
-			mod, err := cxt.GetCurrentModule()
-			if err == nil {
-				affs := make([]*CXAffordance, 0)
-				if mod != nil {
-					affs = mod.GetAffordances()
-				}
-				if len(affs) > 0 {
-					affs[random(0, len(affs))].ApplyAffordance()
-				}
-			}
-		case randomCase >= 15 && randomCase < 30:
-			fn, err := cxt.GetCurrentFunction()
-			if err == nil {
-				affs := make([]*CXAffordance, 0)
-				if fn != nil {
-					affs = fn.GetAffordances()
-				}
-				if len(affs) > 0 {
-					affs[random(0, len(affs))].ApplyAffordance()
-				}
-			}
-		case randomCase >= 50 && randomCase < 60:
-			strct, err := cxt.GetCurrentStruct()
-			if err == nil {
-				affs := make([]*CXAffordance, 0)
-				if strct != nil {
-					affs = strct.GetAffordances()
-				}
-				
-				if len(affs) > 0 {
-					affs[random(0, len(affs))].ApplyAffordance()
-				}
-			}
-		case randomCase >= 60 && randomCase < 100:
-			expr, err := cxt.GetCurrentExpression()
-			if err == nil {
-				affs := make([]*CXAffordance, 0)
-				if expr != nil {
-					affs = expr.GetAffordances()
-				}
-				if len(affs) > 0 {
-					affs[random(0, len(affs))].ApplyAffordance()
-				}
-			}
-		}
-	}
-
-	return cxt
-}

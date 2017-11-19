@@ -767,8 +767,6 @@ typeSpecifier:
 packageDeclaration:
                 PACKAGE IDENT
                 {
-			//fmt.Println($2)
-			//fmt.Println("hello")
 			mod := MakeModule($2)
 			cxt.AddModule(mod)
                 }
@@ -2217,7 +2215,6 @@ argument:
                 }
         |       FLOAT
                 {
-			
 			val := encoder.Serialize($1)
 			$$ = MakeArgument(&val, "f32")
                 }
@@ -2351,7 +2348,73 @@ argument:
 						}
 						$$ = MakeArgument(&sOutName, "ident")
 					}
-				}
+				} else {
+					// then it's for a global definition
+					switch $1 {
+					case "[]str":
+						vals := make([]string, len($3))
+						for i, arg := range $3 {
+							var val string
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = val
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]str")
+                                        case "[]bool":
+						vals := make([]int32, len($3))
+						for i, arg := range $3 {
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = val
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]bool")
+                                        case "[]byte":
+						vals := make([]byte, len($3))
+						for i, arg := range $3 {
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = byte(val)
+						}
+						$$ = MakeArgument(&vals, "[]byte")
+                                        case "[]i32":
+						vals := make([]int32, len($3))
+						for i, arg := range $3 {
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = val
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]i32")
+                                        case "[]i64":
+						vals := make([]int64, len($3))
+						for i, arg := range $3 {
+							var val int32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = int64(val)
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]i64")
+                                        case "[]f32":
+						vals := make([]float32, len($3))
+						for i, arg := range $3 {
+							var val float32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = val
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]f32")
+                                        case "[]f64":
+						vals := make([]float64, len($3))
+						for i, arg := range $3 {
+							var val float32
+							encoder.DeserializeRaw(*arg.Value, &val)
+							vals[i] = float64(val)
+						}
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]f64")
+					}
+                                }
 			}
                 }
                 // empty arrays

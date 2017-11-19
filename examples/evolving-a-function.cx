@@ -1,18 +1,30 @@
 package main
 
-var inps []f64 = []f64{
-	-10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0,
-	0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
+func realFn (n f64) (out f64) {
+	out = f64.add(f64.mul(n, n), n)
+}
 
-var outs []f64 = []f64{
-	90.0, 72.0, 56.0, 42.0, 30.0, 20.0, 12.0, 6.0, 2.0, 0.0, 0.0,
-	2.0, 6.0, 12.0, 20.0, 30.0, 42.0, 56.0, 72.0, 90.0, 110.0}
-
-func solution (n f64) (out f64) {}
+func simFn (n f64) (out f64) {}
 
 func main () (out f64) {
-	evolve("solution", "f64.add|f64.mul|f64.sub", inps, outs, 2, 100, f32.f64(0.1))
+	numPoints := 21
+	inps := []f64.make(numPoints)
+	outs := []f64.make(numPoints)
+	
+	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
+		inps = []f64.write(inps, c, f64.sub(i32.f64(c), i32.f64(10)))
+	}
 
-	str.print("Extrapolating evolved solution")
-	f64.print(solution(f32.f64(30.0)))
+	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
+		outs = []f64.write(outs, c, realFn([]f64.read(inps, c)))
+	}
+	
+	evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1))
+
+	str.print("Testing evolved solution")
+	for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
+		f64.print(simFn([]f64.read(inps, c)))
+	}
+
+	halt()
 }

@@ -147,12 +147,12 @@ func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.SerializeAtomic(int32(len(array)))
 
-		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
-				def.Value = &output
-				return nil
-			}
-		}
+		// for _, def := range call.State {
+		// 	if def.Name == expr.OutputNames[0].Name {
+		// 		def.Value = &output
+		// 		return nil
+		// 	}
+		// }
 		
 		assignOutput(&output, "i32", expr, call)
 		return nil

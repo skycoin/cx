@@ -672,7 +672,7 @@ actually part of expressions, and the "goto label" statements are
 actually calls to a function called *goTo*.
 
 ```
-	goTo("label2") // function 
+	goTo("label2")
 label1:
 	str.print("this should never be reached")
 label2:
@@ -1049,15 +1049,232 @@ deployed... *unless* the fourth rule is true. The fourth rule tells
 the inference engine to reject bipedal robots if we are deploying
 either drones or rovers already.
 
+Now we have all the requirements to create a query: a target, objects
+and rules. But first, we need to assign a label to the expression that
+we want to query.
 
-# Serialization
+```
+multiplication:
+	i32.mul(5, 0)
+```
 
+The expression above is a simple multiplication. Notice how we are
+multiplying 5 by 0. CX's affordance system, when querying expressions,
+is always going find out what arguments we can send as the last output
+that we have given. In this case, we want to replace the 0. To label
+the expression, we use the same kind of labels that we use for *go-to*
+statements.
 
+```
+affs := aff.query(target, objs, rules)
+```
 
-# Evolutionary Algorithm
+The code above will query the affordance system and perform the
+filtering according to the provided objects and rules. Notice that
+*aff.query* returns something and is stored in *affs*. *aff.query*
+returns all the affordances for the queried expression. We can print
+the obtained affordances by using *aff.print*:
 
+```
+aff.print(affs)
+```
 
-# OpenGL API
+And should return something similar to:
+
+```
+(0)	Operator: AddArgument	Name: foo1
+(1)	Operator: AddArgument	Name: foo2
+(2)	Operator: AddArgument	Name: foo3
+(3)	Operator: AddArgument	Name: foo4
+```
+
+The numbers enclosed in parentheses are the affordance indexes, and
+they are used to know what affordance we want to execute or apply in
+particular. For example:
+
+```
+aff.execute(target, affs, 0)
+```
+
+*aff.execute* executes the nth affordance from a list of affordances
+ to a target. In this case, we want to apply the 0th affordance from
+ *affs* to *target* (which is the multiplication
+ expression). Following the robots example, we actually want to send
+ all the robots that meet the criteria defined by the rules. We can
+ loop over all the affordances by using *aff.len*:
+
+```
+for c := 0; i32.lt(c, aff.len(affs)); c = i32.add(c, 1) {
+	aff.execute(target, affs, c)
+deployRobot:
+	deployRobot(new Robot{class: "default"})
+}
+```
+
+You should always send a default value, in case the affordance system
+returns 0 results. Also, CX will complain that *deployRobot* requires
+one argument and won't compile or interpret the program. If you don't
+want a default value, just send a dummy value like 0, an empty
+struct instance, etc., and then have an *if* statement check if the
+resulting affordances array is empty before continuing with *aff.execute*.
+
+# Experimental Features
+
+CX continues growing every day. As a consequence, some features are
+still in its infancy stages. This also means that they are very prone
+to change and be improved in the future. Particularly, in this
+tutorial we'll mention CX's evolutionary algorithm, CX's capability to
+serialize itself, and its OpenGL API.
+
+## Evolutionary Algorithm
+
+After creating the first prototype of CX's affordance system, one of
+the first ideas that came to mind was to use it to create an
+evolutionary algorithm; particularly, a genetic programming (GP)
+algorithm. Programming languages that can manipulate themselves or
+that can programmatically create programs are usual targets to
+experiment with new GP ideas, such as lisps.
+
+In the case of CX, the affordance system is ideal for creating such
+algorithms. CX can start with a null object that represents a CX
+program, and then query that object to know what we can do with it. As
+it is empty, the first and only action would be to add a *main*
+package. The second option only option would be to create a *main*
+function. From this point, the possibilities start to grow
+exponentially: add new definitions, new functions, new input and
+output parameters, add expressions to these functions, etc. Actually,
+one of the first experiments using the affordance system was to create
+a random program.
+
+With some restrictions, it was easy to create a basic GP algorithm for
+CX: we need to target a single function which will act as a solution
+to a problem, this function needs to have only one input and one
+output (although this will probably change later on), we'll be adding
+only a limited number of expressions to the function, the operators
+for these expressions are limited to a certain set and, lastly, the
+arguments to these expressions are limited to local variables only. We
+could provide a deeper explanation on how it is constructed, but
+that's out of the scope of this tutorial, but you can [read the
+source code](https://github.com/skycoin/cx/blob/master/src/base/evolution.go).
+
+Let's suppose that we have an function that we don't know how it
+works, but we know what are its outputs when sent certain inputs (for
+example, a stock market time-series).
+
+```
+[-10 -9 -8 -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10]
+```
+
+We decide to test the function with the input values above, and the
+unknown function responded with the following outputs:
+
+```
+[110 90 72 56 42 30 20 12 6 2 0 0 2 6 12 20 30 42 56 72 90]
+```
+
+How can we know what function responds that way? Well, one option is
+to just think a little but and after some minutes you should find out
+that a possible function is *n\*n+n*, but let's pretend that this is a
+harder problem. How can we find a solution to this problem? One way is
+to use a [curve-fitting](https://en.wikipedia.org/wiki/Curve_fitting)
+algorithm, such as neural networks or, you guessed it, genetic
+programming.
+
+First, let's program the *real function*:
+
+```
+func realFn (n f64) (out f64) {
+	out = f64.add(f64.mul(n, n), n)
+}
+```
+
+And now, let's create the function that *simulates* the real function:
+
+```
+func simFn (n f64) (out f64) {}
+```
+
+Woa! Wait, it's empty! Yeah, we're going to ask CX to fill it for us
+using its evolutionary algorithm. If we had a rough idea of how the
+real function is composed, we could help CX by writing some
+expressions that approximate the solution, like:
+
+```
+func simFn (n f64) (out f64) {
+  someHelp := f64.mul(n, n)
+}
+```
+
+And the evolutionary algorithm could converge to a solution faster (or
+maybe not. Maybe your guess is not as good as you think). But let's
+make CX do all the work and leave *simFn* empty. Now, we only need to
+call *evolve*:
+
+```
+evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1))
+```
+
+*evolve*'s first parameter is used to indicate CX what's the target
+ function to be evolved, which is *simFn* in this case. The second
+ parameter is a string representing a bag of functions to be used to
+ find the solution. If you have no idea of what could be part of the
+ solution, you could just write "." and CX will use every function it
+ knows to create a solution. The third and fourth parameters are the
+ inputs and outputs that represent the real function's behaviour. The
+ sixth parameter represents how many expressions you want the solution
+ to have.
+
+The last two parameters are known as *stop criteria*, which
+ are: for how many iterations do you want CX to run the evolutionary
+ algorithm, and what is a "good enough" error to reach before
+ stopping. But why do we need these parameters? Why not run the
+ evolutionary algorithm until it finds *THE* solution? Well, for this
+ example we have chosen a very easy problem to solve, but most
+ problems in the real world are very hard to solve. *Bio-inspired*
+ search algorithms, such as GP algorithms, are considered as
+ *heuristics*, which is a fancy word to say that they won't
+ necessarily reach the optimal solution. There are indeed algorithms
+ that are guaranteed to find an optimal solution, but these algorithms
+ can take a lot of time to find it (and by a lot of time, we mean
+ weeks or even months, depending on the problem and how rich you are
+ te get a suitable server, of course). Anyway, *stop criteria* are
+ used to tell the evolutionary algorithm when it should stop
+ searching.
+
+Anyway, after either reaching 100 iterations or an error lower or
+equal to 0.1, our evolutionary algorithm will stop, and now we can
+test the solution:
+
+```
+str.print("Testing evolved solution")
+for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
+	f64.print(simFn([]f64.read(inps, c)))
+}
+```
+
+As the problem is very easy to solve, the code above should print the
+same numbers that are present in the outputs array. If you are curious
+on how the evolved function looks like, you can add a call to *halt*
+before the program finishes, and write *:dProgram;* in the *REPL*. You
+should see something like this:
+
+```
+1.- Function: simFn (n f64) (out f64)
+			0.- Expression: var_1037 = f64.mul(n f64, n f64)
+			1.- Expression: var_9874 = f64.sub(var_1037 , var_1037 )
+			2.- Expression: var_9905 = f64.mul(var_9874 , n f64)
+			3.- Expression: var_9936 = f64.add(var_1037 , var_9874 )
+			4.- Expression: out = f64.add(var_9936 , n f64)
+```
+
+That function is an equivalent function to *n\*n+n*. Awesome, right?
+
+## Serialization
+
+CX programs can fully or partially serialize themselves. At the
+moment, CX's serialization feature is in a prototypical 
+
+## OpenGL API
 
 # Examples
 ## Fibonacci
