@@ -1,5 +1,42 @@
 ![cx logo](https://user-images.githubusercontent.com/26845312/32426758-2a4bbb00-c282-11e7-858e-a1eaf3ea92f3.png)
 
+Table of Contents
+=================
+
+   * [CX Programming Language](#cx-programming-language)
+   * [Installation](#installation)
+   * [CX Tutorial](#cx-tutorial)
+   * [Hello World](#hello-world)
+   * [Comments](#comments)
+   * [Data](#data)
+      * [Atomic Data](#atomic-data)
+         * [Booleans](#booleans)
+         * [Integers](#integers)
+         * [Floats](#floats)
+         * [Bytes](#bytes)
+         * [Strings](#strings)
+      * [Arrays](#arrays)
+      * [Variables](#variables)
+         * [Local Variables](#local-variables)
+         * [Global Variables](#global-variables)
+      * [Structs](#structs)
+   * [Expressions](#expressions)
+   * [Flow Control](#flow-control)
+      * [If and if/else](#if-and-ifelse)
+      * [For Loop](#for-loop)
+      * [Go-to](#go-to)
+   * [Functions](#functions)
+   * [Packages](#packages)
+      * [Creating and Importing Packages](#creating-and-importing-packages)
+   * [Debugging](#debugging)
+      * [Halt](#halt)
+      * [Unit Testing](#unit-testing)
+   * [Affordances](#affordances)
+   * [Experimental Features](#experimental-features)
+      * [Evolutionary Algorithm](#evolutionary-algorithm)
+      * [Serialization](#serialization)
+      * [OpenGL 1.2 API](#opengl-12-api)
+
 # CX Programming Language
 
 CX is a general purpose, interpreted and compiled programming
