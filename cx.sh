@@ -88,26 +88,26 @@ if [ ! -d "$GOPATH/src/github.com/skycoin/cx/" ]; then
     fi
 fi
 
-if [ -f "$GOPATH/src/github.com/skycoin/cx/cx" ]
+if [ -f "$GOPATH/bin/cx" ]
 then
     echo "NOTE:\tRe-compiling CX"
 else
     echo "NOTE:\tCompiling CX"
 fi
 
-nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cx.nex
+nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.y >/dev/null 2>&1
+goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y >/dev/null 2>&1
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
 fi
 
-go build $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.nn.go
+go install github.com/skycoin/cx/cx/
 if [ $? -eq 0 ]; then
     echo "OK:\tCX was compiled successfully"
 else
@@ -115,7 +115,5 @@ else
     exit 0
 fi
 
-#nex -e src/cxgo/cx.nex && goyacc -o src/cxgo/cx.go src/cxgo/cx.y && go build src/cxgo/cx.go src/cxgo/cx.nn.go
-
-echo "NOTE:\tWe recommend you to test your CX installation by running './cx tests/test.cx'"
+echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests/test.cx'"
 

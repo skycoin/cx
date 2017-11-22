@@ -49,6 +49,13 @@ one of the affordances to be applied.
 
 # Installation
 
+CX has been successfully installed and tested in recent versions of
+Windows, Linux (Ubuntu) and Mac OS. Nevertheless, if you run into any
+problems, please create an issue and we'll try to solve the problem as
+soon as possible.
+
+## Installing Go
+
 First, make sure that you have Go installed by running `go
 version`. It should output something similar to:
 
@@ -56,18 +63,69 @@ version`. It should output something similar to:
 go version go1.8.3 darwin/amd64
 ```
 
+Some linux distros' package managers install very old versions of
+Go. You can try first with a binary from your favorite package
+manager, but if the installation starts showing errors, try with the
+latest version before creating an issue.
+
 Go should also be properly configured (you can read the installation
-instructions by clicking [here](https://golang.org/doc/install).
+instructions by clicking [here](https://golang.org/doc/install). Particularly:
 
-Download [skycoin](https://github.com/skycoin/skycoin):
+* Make sure that you have added the Go binary to your $PATH
+* Make sure that you have configured your $GOPATH environment variable
+
+## Installing OpenGL and GLFW
+
+Unless you're trying to run CX in a server version distro (no desktop
+environment), you most likely have OpenGL already installed with all
+the required libraries. However, if you get errors, please create an
+issue (although these errors will most likely not be related to CX
+itself).
+
+Download and install [GLFW](http://www.glfw.org/).
+
+## Installing CX - Method 1: The "so easy it might not work" Solution
+
+Run this command in a terminal:
 
 ```
-go get https://github.com/skycoin/skycoin/...
+sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
 ```
 
-Or, as stated in Skycoin's installation instructions, "You can also clone the repo directly with `git clone https://github.com/skycoin/skycoin`, but it must be cloned to this path: `$GOPATH/src/github.com/skycoin/skycoin`."
+If you're skeptical about what this command does, you can check the
+source code in this project. Basically, this script checks if you have
+all the necessary Golang packages and tries to install them for
+you. The script even downloads this repository and installs CX for
+you. This means that you can run `cx` after running the script and see
+the REPL right away (if the script worked). To exit the REPL, you can press `Ctrl-D`.
 
-Clone this repository, and then run `cx.sh` in a terminal.
+You should test your installation by running `cx
+\$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+
+As an alternative, you could clone into this repository and run cx.sh
+in a terminal.
+
+## Installing CX - Method 2: The "not so easy, but still easy" Solution
+
+Run these commands in a terminal:
+
+```
+go get github.com/skycoin/skycoin/...
+go get github.com/go-gl/gl/v2.1/gl
+go get github.com/go-gl/glfw/v3.2/glfw
+go get github.com/blynn/nex
+go get github.com/cznic/goyacc
+go get github.com/skycoin/cx/...
+nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
+goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y >/dev/null 2>&1
+go install github.com/skycoin/cx/cx/
+```
+
+To test if the installation worked, run the `cx` command and you
+should see the REPL start. To exit the REPL, you can press `Ctrl-D`.
+
+You should test your installation by running `cx
+\$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
 
 # CX Tutorial
 
