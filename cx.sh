@@ -101,7 +101,7 @@ if [ ! $? -eq 0 ]; then
     exit 0
 fi
 
-goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.y
+goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.y >/dev/null 2>&1
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
