@@ -279,88 +279,11 @@ func remExpr (tag *CXArgument, caller *CXFunction) error {
 	return errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", tg))
 }
 
-func affExpr (tag *CXArgument, filter *CXArgument, idx *CXArgument, caller *CXFunction, expr *CXExpression, call *CXCall) error {
-	var tg string
-	var _filter string
-	encoder.DeserializeRaw(*tag.Value, &tg)
-	encoder.DeserializeRaw(*filter.Value, &_filter)
-	
-	if err := checkThreeTypes("affExpr", "str", "str", "i32", tag, filter, idx); err == nil {
-		var index int32
-		encoder.DeserializeRaw(*idx.Value, &index)
-
-		if index == -1 {
-			for _, ex := range caller.Expressions {
-				if ex.Tag == tg {
-					affs := FilterAffordances(ex.GetAffordances(), _filter)
-					PrintAffordances(affs)
-					val := encoder.Serialize(int32(len(affs)))
-
-					assignOutput(&val, "i32", expr, call)
-					return nil
-				}
-			}
-		} else if index < -1 {
-			for _, ex := range caller.Expressions {
-				if ex.Tag == tg {
-					affs := FilterAffordances(ex.GetAffordances(), _filter)
-					val := encoder.Serialize(int32(len(affs)))
-
-					assignOutput(&val, "i32", expr, call)
-					return nil
-				}
-			}
-		} else {
-			for _, ex := range caller.Expressions {
-				if ex.Tag == tg {
-					affs := FilterAffordances(ex.GetAffordances(), _filter)
-					affs[index].ApplyAffordance()
-					val := encoder.Serialize(int32(len(affs)))
-
-					if len(expr.OutputNames) > 0 {
-						assignOutput(&val, "i32", expr, call)
-					}
-					return nil
-				}
-			}
-		}
-	} else {
-		return err
-	}
-	return errors.New(fmt.Sprintf("affExpr: no expression with tag '%s' was found", tg))
-}
-
 func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
-	// var impName string
-	
-	// typeParts := strings.Split(typ, ".")
-
-	// if len(typeParts) == 2 {
-	// 	impName = typeParts[0]
-	// 	typ = typeParts[1]
-	// } else {
-	// 	typ = typeParts[0]
-	// }
-
-	
 	var bs []byte
 
 	found := false
 	if mod, err := cxt.GetCurrentModule(); err == nil {
-		// foundImp := false
-		// if impName != "" {
-		// 	for _, imp := range mod.Imports {
-		// 		if impName == imp.Name {
-		// 			foundImp = true
-		// 			break
-		// 		}
-		// 	}
-		// }
-
-		// if impName == "" || (impName != "" && foundImp) {
-			
-		// }
-		
 		var foundStrct *CXStruct
 
 		if typ[:2] == "[]" {
@@ -431,13 +354,8 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 }
 
 func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
-	//found := false
 	var name string
 	encoder.DeserializeRaw(*arg.Value, &name)
-	
-	//var foundDef *CXDefinition
-
-	//fmt.Println(name)
 
 	if arg, err := resolveIdent(name, call); err == nil {
 		assignOutput(arg.Value, arg.Typ, expr, call)
@@ -445,38 +363,6 @@ func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	} else {
 		return err
 	}
-
-	// for _, def := range call.State {
-	// 	if def.Name == name {
-	// 		found = true
-	// 		foundDef = def
-	// 		//return nil // we want to grab the last instance of that variable
-	// 	}
-	// }
-
-	// if found && foundDef != nil {
-	// 	assignOutput(foundDef.Value, foundDef.Typ, expr, call)
-	// 	return nil
-	// }
-	
-	// if !found {
-	// 	// then it can be a global
-	// 	identParts := strings.Split(name, ".")
-	// 	if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
-			
-	// 		if len(identParts) > 1 {
-	// 			if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
-	// 				byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
-					
-	// 				assignOutput(&byts, typ, expr, call)
-	// 				return nil
-	// 			}
-	// 		} else {
-	// 			assignOutput(def.Value, def.Typ, expr, call)
-	// 		}
-	// 	}
-	// }
-	// return errors.New(fmt.Sprintf("identity: identifier '%s' not found", name))
 }
 
 func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
@@ -539,10 +425,8 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 			assignOutput(&val, typ, expr, call)
 			return nil
 		case "[]i32":
-			
 			arr := make([]int32, _len)
 			val := encoder.Serialize(arr)
-			//fmt.Println("hohoho", len(val))
 			
 			assignOutput(&val, typ, expr, call)
 			return nil
@@ -836,7 +720,7 @@ func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) e
 		if _message == "" {
 			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur", expr.FileLine))
 		} else {
-			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur; %s", expr.FileLine, _message))
+			fmt.Println(fmt.Sprintf("%d: %s", expr.FileLine, _message))
 		}
 		
 		return nil
@@ -859,10 +743,6 @@ func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, 
 		equal = false
 	}
 
-	// fmt.Println("")
-	// fmt.Println(*result.Value)
-	// fmt.Println(*expected.Value)
-
 	if equal {
 		for i, byt := range *result.Value {
 			if byt != (*expected.Value)[i] {
@@ -874,9 +754,13 @@ func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, 
 
 	if !equal {
 		if _message == "" {
-			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value", expr.FileLine))
+			//fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value", expr.FileLine))
+			fmt.Printf("%d: result was not equal to the expected value\n", expr.FileLine)
+			return errors.New("")
 		} else {
-			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s", expr.FileLine, _message))
+			//fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s", expr.FileLine, _message))
+			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s\n", expr.FileLine, _message))
+			return errors.New("")
 		}
 	}
 	

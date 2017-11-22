@@ -144,12 +144,8 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]f32.len", "[]f32", arr); err == nil {
-		var array []float32
-		encoder.DeserializeRaw(*arr.Value, &array)
-
-		output := encoder.SerializeAtomic(int32(len(array)))
-
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -303,15 +299,7 @@ func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 
 func copyF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f32.copy", "[]f32", "[]f32", arg1, arg2); err == nil {
-		var slice1 []float32
-		var slice2 []float32
-		encoder.DeserializeRaw(*arg1.Value, &slice1)
-		encoder.DeserializeRaw(*arg2.Value, &slice2)
-
-		copy(slice1, slice2)
-		sOutput := encoder.Serialize(slice1)
-
-		*arg1.Value = sOutput
+		copy(*arg1.Value, *arg2.Value)
 		return nil
 	} else {
 		return err

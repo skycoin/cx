@@ -96,7 +96,7 @@ var height i32 = 600
 var rows i32 = 20
 var columns i32 = 20
 
-var size i32 = 14
+var size i32 = 8
 
 var tex_characters i32
 var tex_city i32
@@ -429,6 +429,30 @@ func collisionFunction () () {
 	}
 }
 
+// func gatheringFunction () () {
+// 	// for minable := 0; i32.lt(minable, entityCount); minable = i32.add(minable, 1) {
+// 	// 	minableMask := []i32.read(world.mask, minable)
+// 	// 	if i32.eq(i32.bitand(minableMask, COMPONENT_COLLIDABLE), COMPONENT_COLLIDABLE) {
+// 	// 		for player := 0; i32.lt(player, entityCount); player = i32.add(player, 1) {
+// 	// 			playerMask := []i32.read(world.mask, player)
+// 	// 			if i32.eq(i32.bitand(playerMask, COMPONENT_PLAYER), COMPONENT_PLAYER) {
+// 	// 				playerDisp = []Displacement.read(world.displacement, player)
+// 	// 				minableDisp = []Displacement.read(world.displacement, minable)
+					
+// 	// 				playerVel = []Velocity.read(world.velocity, player)
+
+// 	// 				xToBe = i32.add(playerDisp.x, playerVel.x)
+// 	// 				yToBe = i32.add(playerDisp.y, playerVel.y)
+
+// 	// 				if and(i32.eq(minableDisp.x, xToBe), i32.eq(minableDisp.y, yToBe)) {
+// 	// 					world.mask = []i32.write(world.mask, player, i32.bitclear(playerMask, COMPONENT_VELOCITY))
+// 	// 				}
+// 	// 			}
+// 	// 		}
+// 	// 	}
+// 	// }
+// }
+
 func renderFunction () () {
 	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
 		if i32.eq(i32.bitand([]i32.read(world.mask, entity), RENDER_MASK), RENDER_MASK) {
@@ -440,7 +464,7 @@ func renderFunction () () {
 }
 
 func initWorld () () {
-	entityCount = 250
+	entityCount = 100
 
 	// components
 	COMPONENT_NONE := 0
@@ -485,22 +509,22 @@ func main () () {
 	}
 
 
-	target := ->{pkg(main) fn(main) exp(test)}
-	objs := ->{}
-	rules := ->{
-		if true {
-			allow(x == x)
-		}
-	}
+	// target := ->{pkg(main) fn(main) exp(test)}
+	// objs := ->{}
+	// rules := ->{
+	// 	if true {
+	// 		allow(x == x)
+	// 	}
+	// }
 	
-	affs := aff.query(target, objs, rules)
-	aff.print(affs)
+	// affs := aff.query(target, objs, rules)
+	//aff.print(affs)
 
 
-	default := new Appearance{class: "empty"}
-test:
-	//apptest(new Appearance{class: "empty"})
-	apptest(default)
+// 	default := new Appearance{class: "empty"}
+// test:
+// 	//apptest(new Appearance{class: "empty"})
+// 	apptest(default)
 
 
 
@@ -508,17 +532,17 @@ test:
 	createPlayer([]Appearance.read(sprites.Chars, 0), new Displacement{x: 1, y: 1})
 	createRock([]Appearance.read(sprites.Rocks, 0), new Displacement{x: 3, y: 1})
 	
-	// for stop {
-	// 	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	for stop {
+		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 
-	// 	collisionFunction()
-	// 	movementFunction()
-	// 	renderFunction()
-	// 	collisionFunction()
+		collisionFunction()
+		movementFunction()
+		renderFunction()
+		collisionFunction()
 
-	// 	glfw.PollEvents()
-	// 	glfw.SwapBuffers("window")
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
 		
-	// 	stop = not(glfw.ShouldClose("window"))
-	// }
+		stop = not(glfw.ShouldClose("window"))
+	}
 }

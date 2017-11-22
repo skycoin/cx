@@ -411,6 +411,7 @@ func []f64.write (arr []f64, idx i32, val f64) (_arr []f64) {}
 
 func []bool.len (arr []bool) (len i32) {}
 func []byte.len (arr []byte) (len i32) {}
+func str.len (string str) (len i32) {}
 func []str.len (arr []str) (len i32) {}
 func []i32.len (arr []i32) (len i32) {}
 func []i64.len (arr []i64) (len i32) {}
@@ -456,11 +457,11 @@ func remObjects () () {}
 func remExpr (tag str) () {}
 func remArg (tag str) () {}
 func addExpr (tag str, fnName str) () {}
-func affExpr (tag str, filter str, index i32) (numAffs i32) {}
 
 func aff.query (target []str, objs []str, rules []str) (affs []str) {}
 func aff.execute (target []str, commands []str, index i32) () {}
 func aff.print (commands []str) () {}
+func aff.index (commands []str, index i32) (_index i32) {}
 func aff.concat (arr1 []str, arr2 []str) (conc []str) {}
 func aff.len (commands []str) (len i32) {}
 
@@ -867,17 +868,8 @@ type Point struct {
 }
 
 func main () {
-	// var points []Point
-	// points = append(points, Point{name: "hello world", x: 10})
-	// fmt.Println(encoder.Serialize(points))
-
-	// var point Point
-	// fmt.Println(encoder.Serialize(point))
-	
-	
-	//Foo()
 	runtime.LockOSThread()
-	//runtime.GOMAXPROCS(2)
+	runtime.GOMAXPROCS(2)
 
 	//signal.Listen("0.0.0.0:7999")
 

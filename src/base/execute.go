@@ -349,7 +349,7 @@ import (
 	"runtime/pprof"
 );
 
-var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";
+var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var fld *CXField;var arg *CXArgument;var tag string = "";
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile 'file'")
 var memprofile = flag.String("memprofile", "", "write memory profile to 'file'")
@@ -370,8 +370,6 @@ func main () {
 	} else {
 		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
 	}
-	
-	
 
 	for _, mod := range cxt.Modules {
 		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);%s`, mod.Name, asmNL))
@@ -393,7 +391,7 @@ func main () {
 			for _, expr := range fn.Expressions {
 				var tagStr string
 				if expr.Tag != "" {
-					tagStr = fmt.Sprintf(`expr.Tag = tag;tag = "";`)
+					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)
 				}
 				program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
 					expr.Operator.Name, expr.Operator.Module.Name, expr.FileLine, tagStr, asmNL))
@@ -410,6 +408,10 @@ func main () {
 
 		for _, strct := range mod.Structs {
 			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);%s`, strct.Name, asmNL))
+			for _, fld := range strct.Fields {
+				// here here
+				program.WriteString(fmt.Sprintf(`fld = MakeField("%s", "%s");strct.AddField(fld);%s`, fld.Name, fld.Typ, asmNL))
+			}
 		}
 
 		for _, def := range mod.Definitions {
@@ -434,7 +436,6 @@ if *memprofile != "" {
 	program.WriteString(`cxt.Run(false, -1);}`)
 	ioutil.WriteFile(fmt.Sprintf("o.go"), []byte(program.String()), 0644)
 }
-
 
 func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 	if cxt.Terminated {
@@ -722,6 +723,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "[]f64.write": err = writeF64A((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "[]bool.len": err = lenBoolA((*argsCopy)[0], expr, call)
 	case "[]byte.len": err = lenByteA((*argsCopy)[0], expr, call)
+	case "str.len": err = lenStr((*argsCopy)[0], expr, call)
 	case "[]str.len": err = lenStrA((*argsCopy)[0], expr, call)
 	case "[]i32.len": err = lenI32A((*argsCopy)[0], expr, call)
 	case "[]i64.len": err = lenI64A((*argsCopy)[0], expr, call)
@@ -760,6 +762,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		
 	case "aff.query": err = aff_query((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "aff.execute": err = aff_execute((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "aff.index": err = aff_index((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "aff.print": err = aff_print((*argsCopy)[0], call)
 	case "aff.len": err = aff_len((*argsCopy)[0], expr, call)
 
@@ -771,7 +774,6 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "remExpr": err = remExpr((*argsCopy)[0], call.Operator)
 	case "remArg": err = remArg((*argsCopy)[0], call.Operator)
 	case "addExpr": err = addExpr((*argsCopy)[0], (*argsCopy)[1], call.Operator, expr.Line)
-	case "affExpr": err = affExpr((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], call.Operator, expr, call)
 		// debugging functions
 	case "halt":
 		var msg string
@@ -932,12 +934,6 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				var arrOffset int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
-
-				//fmt.Println("execute", arrOffset)
-
-				// if len(*val) > 1000 {
-				// 	fmt.Println((*val)[offset-1:offset+4+1])
-				// }
 
 				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
 			case "[]bool", "[]i32", "[]f32":
@@ -1113,7 +1109,8 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 				//resolvedIdent = def
 				if strct, err := mod.Context.GetStruct(def.Typ, mod.Name); err == nil {
 					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
-					return MakeArgument(&byts, typ), nil
+					arg := MakeArgument(&byts, typ)
+					return arg, nil
 					
 				} else {
 					return nil, err
@@ -1126,7 +1123,8 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 					if stateDef.Name == identParts[0] {
 						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
 							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
-							return MakeArgument(&byts, typ), nil
+							arg := MakeArgument(&byts, typ)
+							return arg, nil
 							
 						} else {
 							return nil, err
@@ -1154,7 +1152,8 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 			if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
 				isArray = true
 				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
-				return MakeArgument(&byts, typ), nil
+				arg := MakeArgument(&byts, typ)
+				return arg, nil
 			} else {
 				//excError = err
 				return nil, err
@@ -1176,7 +1175,8 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
-		return MakeArgument(resolvedIdent.Value, resolvedIdent.Typ), nil
+		arg := MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+		return arg, nil
 	}
 	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
 }

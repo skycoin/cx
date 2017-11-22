@@ -283,12 +283,8 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i64.len", "[]i64", arr); err == nil {
-		var array []int64
-		encoder.DeserializeRaw(*arr.Value, &array)
-
-		output := encoder.SerializeAtomic(int32(len(array)))
-
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -442,15 +438,7 @@ func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 
 func copyI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.copy", "[]i64", "[]i64", arg1, arg2); err == nil {
-		var slice1 []int64
-		var slice2 []int64
-		encoder.DeserializeRaw(*arg1.Value, &slice1)
-		encoder.DeserializeRaw(*arg2.Value, &slice2)
-
-		copy(slice1, slice2)
-		sOutput := encoder.Serialize(slice1)
-
-		*arg1.Value = sOutput
+		copy(*arg1.Value, *arg2.Value)
 		return nil
 	} else {
 		return err

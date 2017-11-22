@@ -400,6 +400,8 @@ func main () () {
 	zeroedF32A := []f32.make(3)
 	zeroedF64A := []f64.make(3)
 
+	
+
 	[]bool.copy(zeroedBoolA, []bool{true, true, false})
 	[]byte.copy(zeroedByteA, []byte{1, 2, 3})
 	[]str.copy(zeroedStrA, []str{"str1", "str2", "str3"})
@@ -823,7 +825,7 @@ label4:
 	extractedStructFromArray1 = []testStruct.read(newNestedStructArrays.nested1, 2)
 	extractedStructFromArray2 = []testStruct.read(newNestedStructArrays.nested2, 5)
 	extractedStructFromArray3 = []testStruct.read(newNestedStructArrays.nested3, 8)
-	
+
 	test.i32(extractedStructFromArray1.testI32, 2, "")
 	test.i32(extractedStructFromArray2.testI32, 6, "")
 	test.i32(extractedStructFromArray3.testI32, 10, "")
@@ -1065,5 +1067,7 @@ test:
 	i32.print(affoo)
 	test.i32(affoo, 1501, "")
 
+	test.error("Congratulations, CX passed all the tests!")
+	
 	test.stop()
 }

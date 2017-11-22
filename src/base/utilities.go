@@ -724,10 +724,6 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 				if len(expr.OutputNames) > 0 {
 					var outNames bytes.Buffer
 					for i, outName := range expr.OutputNames {
-						// making outName shorter
-						// if len(outName) > 15 {
-						// 	outName = outName[:15]
-						// }
 						if i == len(expr.OutputNames) - 1 {
 							outNames.WriteString(outName.Name)
 						} else {
@@ -747,16 +743,22 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 						args.String(),
 						exprTag)
 				} else {
-					fmt.Printf("\t\t\t%d.- Expression: %s(%s)\n",
+					var exprTag string
+					if expr.Tag != "" {
+						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					}
+					
+					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
 						k,
 						expr.Operator.Name,
-						args.String())
+						args.String(),
+						exprTag)
 				}
 
 				
 
 				if withAffs {
-					for i, aff := range expr.GetAffordances() {
+					for i, aff := range expr.GetAffordances(nil) {
 						fmt.Printf("\t\t\t * %d.- %s\n", i, aff.Description)
 					}
 				}

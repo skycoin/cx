@@ -11,15 +11,15 @@
 		. "github.com/skycoin/cx/src/base"
 
 
-		"github.com/mndrix/golog"
-		"github.com/mndrix/golog/read"
-		"github.com/mndrix/golog/term"
+		/* "github.com/mndrix/golog" */
+		/* "github.com/mndrix/golog/read" */
+		/* "github.com/mndrix/golog/term" */
 	)
 
 	var program bytes.Buffer
 	
 	var cxt = MakeContext()
-	var m = golog.NewInteractiveMachine()
+	//var m = golog.NewInteractiveMachine()
 	
 	var lineNo int = 0
 	var webMode bool = false
@@ -149,17 +149,17 @@ prolog:
 				}
 			}
                 }
-        |       CCLAUSES STRING
-                {
-			clauses := strings.TrimPrefix($2, "\"")
-			clauses = strings.TrimSuffix(clauses, "\"")
+        // |       CCLAUSES STRING
+        //         {
+	// 		clauses := strings.TrimPrefix($2, "\"")
+	// 		clauses = strings.TrimSuffix(clauses, "\"")
 
-			b := bytes.NewBufferString(clauses)
-			m = m.Consult(b)
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.AddClauses(clauses)
-			}
-                }
+	// 		b := bytes.NewBufferString(clauses)
+	// 		m = m.Consult(b)
+	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 			mod.AddClauses(clauses)
+	// 		}
+        //         }
         |       COBJECT IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -174,47 +174,47 @@ prolog:
 				mod.AddQuery(query)
 			}
                 }
-        |       DQUERY STRING
-                {
-			query := strings.TrimPrefix($2, "\"")
-			query = strings.TrimSuffix(query, "\"")
+        // |       DQUERY STRING
+        //         {
+	// 		query := strings.TrimPrefix($2, "\"")
+	// 		query = strings.TrimSuffix(query, "\"")
 
-			goal, err := read.Term(query)
-			if err == nil {
-				variables := term.Variables(goal)
-				answers := m.ProveAll(goal)
+	// 		goal, err := read.Term(query)
+	// 		if err == nil {
+	// 			variables := term.Variables(goal)
+	// 			answers := m.ProveAll(goal)
 
-				yesNoAnswer := false
-				if len(answers) == 0 {
-					fmt.Println("no.")
-					yesNoAnswer = true
-				} else if variables.Size() == 0 {
-					fmt.Println("yes.")
-					yesNoAnswer = true
-				}
+	// 			yesNoAnswer := false
+	// 			if len(answers) == 0 {
+	// 				fmt.Println("no.")
+	// 				yesNoAnswer = true
+	// 			} else if variables.Size() == 0 {
+	// 				fmt.Println("yes.")
+	// 				yesNoAnswer = true
+	// 			}
 
-				if !yesNoAnswer {
-					for i, answer := range answers {
-						lines := make([]string, 0)
-						variables.ForEach(func(name string, variable interface{}) {
-							v := variable.(*term.Variable)
-							val := answer.Resolve_(v)
-							line := fmt.Sprintf("%s = %s", name, val)
-							lines = append(lines, line)
-						})
+	// 			if !yesNoAnswer {
+	// 				for i, answer := range answers {
+	// 					lines := make([]string, 0)
+	// 					variables.ForEach(func(name string, variable interface{}) {
+	// 						v := variable.(*term.Variable)
+	// 						val := answer.Resolve_(v)
+	// 						line := fmt.Sprintf("%s = %s", name, val)
+	// 						lines = append(lines, line)
+	// 					})
 
-						warnf("%s", strings.Join(lines, "\n"))
-						if i == len(answers)-1 {
-							fmt.Printf("\t.\n\n")
-						} else {
-							warnf("\t;\n")
-						}
-					}
-				}
-			} else {
-				fmt.Println("Problem parsing the query.")
-			}
-                }
+	// 					warnf("%s", strings.Join(lines, "\n"))
+	// 					if i == len(answers)-1 {
+	// 						fmt.Printf("\t.\n\n")
+	// 					} else {
+	// 						warnf("\t;\n")
+	// 					}
+	// 				}
+	// 			}
+	// 		} else {
+	// 			fmt.Println("Problem parsing the query.")
+	// 		}
+        //         }
         ;
 
 importDeclaration:
@@ -377,7 +377,7 @@ affordance:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
-							PrintAffordances(expr.GetAffordances())
+							PrintAffordances(expr.GetAffordances(nil))
 							break
 						}
 					}
@@ -396,7 +396,7 @@ affordance:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
-							affs := expr.GetAffordances()
+							affs := expr.GetAffordances(nil)
 							affs[$5].ApplyAffordance()
 							break
 						}
@@ -410,7 +410,7 @@ affordance:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
-							affs := expr.GetAffordances()
+							affs := expr.GetAffordances(nil)
 							filter := strings.TrimPrefix($5, "\"")
 							filter = strings.TrimSuffix(filter, "\"")
 							PrintAffordances(FilterAffordances(affs, filter))
@@ -426,7 +426,7 @@ affordance:
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
-							affs := expr.GetAffordances()
+							affs := expr.GetAffordances(nil)
 							filter := strings.TrimPrefix($5, "\"")
 							filter = strings.TrimSuffix(filter, "\"")
 							affs = FilterAffordances(affs, filter)
@@ -588,10 +588,10 @@ remover:        REM FUNC IDENT
 				}
 			}
                 }
-        |       REM CLAUSES
-                {
-			m = golog.NewInteractiveMachine()
-                }
+        // |       REM CLAUSES
+        //         {
+	// 		m = golog.NewInteractiveMachine()
+        //         }
         |       REM OBJECT IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -2042,6 +2042,10 @@ inferActionArg:
                 inferObj
                 {
 			$$ = $1
+                }
+        |       IDENT
+                {
+                    $$ = []string{$1}
                 }
         |       inferArg inferOp inferArg
                 {

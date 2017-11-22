@@ -72,9 +72,8 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 
 func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenByteA", "[]byte", arr); err == nil {
-		output := encoder.SerializeAtomic(int32(len((*arr.Value)[4:])))
-
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -216,15 +215,7 @@ func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 
 func copyByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.copy", "[]byte", "[]byte", arg1, arg2); err == nil {
-		// var slice1 []int32
-		// var slice2 []int32
-		// encoder.DeserializeRaw(*arg1.Value, &slice1)
-		// encoder.DeserializeRaw(*arg2.Value, &slice2)
-
 		copy(*arg1.Value, *arg2.Value)
-		//sOutput := encoder.Serialize(slice1)
-
-		//*arg1.Value = sOutput
 		return nil
 	} else {
 		return err

@@ -214,42 +214,16 @@ func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		//*arr.Value = encoder.Serialize(array)
 		sOutput := encoder.Serialize(array)
 		assignOutput(&sOutput, "[]str", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
 
-		
-
-		// noSize := (*arr.Value)[4:]
-
-		// var offset int32
-		// for c := 0; c < int(index); c++ {
-		// 	var strSize int32
-		// 	encoder.DeserializeRaw(noSize[offset:offset+4], &strSize)
-		// 	offset += strSize + 4
-		// }
-
-		// sStrSize := noSize[offset:offset + 4]
-		// var strSize int32
-		// encoder.DeserializeRaw(sStrSize, &strSize)
-
-
-
-		// firstChunk := make([]byte, offset)
-		// secondChunk := make([]byte, len(*arr.Value) - int((offset + strSize)))
-
-
-		// copy(firstChunk, (*arr.Value)[:offset])
-		// copy(secondChunk, (*arr.Value)[offset + strSize:])
-
-		// final := append(firstChunk, *val.Value...)
-		// final = append(final, secondChunk...)
-
-		// fmt.Println(final)
-		
-		// var test []string
-		// encoder.DeserializeRaw(final, &test)
-		// fmt.Println(test)
-
-		// *arr.Value = final
-
+func lenStr (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("str.len", "str", arr); err == nil {
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -258,12 +232,8 @@ func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 func lenStrA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]str.len", "[]str", arr); err == nil {
-		var array []string
-		encoder.DeserializeRaw(*arr.Value, &array)
-
-		output := encoder.SerializeAtomic(int32(len(array)))
-
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err

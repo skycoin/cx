@@ -285,12 +285,8 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 func lenI32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i32.len", "[]i32", arr); err == nil {
-		var array []int32
-		encoder.DeserializeRaw(*arr.Value, &array)
-
-		output := encoder.SerializeAtomic(int32(len(array)))
-
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -449,15 +445,7 @@ func appendI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 
 func copyI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i32.copy", "[]i32", "[]i32", arg1, arg2); err == nil {
-		var slice1 []int32
-		var slice2 []int32
-		encoder.DeserializeRaw(*arg1.Value, &slice1)
-		encoder.DeserializeRaw(*arg2.Value, &slice2)
-
-		copy(slice1, slice2)
-		sOutput := encoder.Serialize(slice1)
-
-		*arg1.Value = sOutput
+		copy(*arg1.Value, *arg2.Value)
 		return nil
 	} else {
 		return err

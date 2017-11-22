@@ -159,7 +159,27 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 	return affs
 }
 
-func (expr *CXExpression) GetAffordances() []*CXAffordance {
+func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
+	var focusAtomics bool
+	var focusArrays bool
+	//var focusStructs bool
+	var focusLocals bool
+	//var focusGlobals bool
+	var focusAll bool
+	//extracting settings
+	if len(settings) > 0 {
+		for _, setting := range settings {
+			if setting == "atomics" {focusAtomics = true}
+			if setting == "arrays" {focusArrays = true}
+			//if setting == "structs" {focusStructs = true}
+			if setting == "locals" {focusLocals = true}
+			//if setting == "globals" {focusGlobals = true}
+		}
+	} else {
+		focusAll = true
+	}
+	
+	
 	op := expr.Operator
 	affs := make([]*CXAffordance, 0)
 
@@ -175,18 +195,22 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 		inOutNames := make([]string, len(fn.Inputs) + 1)
 		
 		// Adding inputs and outputs as definitions
-		// inputs
-		for i, param := range fn.Inputs {
-			if reqType == param.Typ {
-				inOutNames[i] = param.Name
-				defsTypes = append(defsTypes, param.Typ)
-				identName := encoder.Serialize(param.Name)
-				args = append(args, &CXArgument{
-					Typ: identType,
-					Value: &identName,
-					// Offset: -1,
-					// Size: -1,
-				})
+		if focusAll || focusLocals || focusAtomics || focusArrays {
+			for i, param := range fn.Inputs {
+
+				if param.Typ[:2] == "[]" || !focusArrays && !focusLocals {
+					continue
+				}
+				
+				if reqType == param.Typ {
+					inOutNames[i] = param.Name
+					defsTypes = append(defsTypes, param.Typ)
+					identName := encoder.Serialize(param.Name)
+					args = append(args, &CXArgument{
+						Typ: identType,
+						Value: &identName,
+					})
+				}
 			}
 		}
 		
@@ -209,8 +233,6 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 					args = append(args, &CXArgument{
 						Typ: identType,
 						Value: &identName,
-						// Offset: -1,
-						// Size: -1,
 					})
 				}
 			}
@@ -380,14 +402,7 @@ func (expr *CXExpression) GetAffordances() []*CXAffordance {
 			Description: concat("AddOutputName ", outName),
 			
 			Operator: "AddOutputName",
-			// AddField, AddArgument, AddOutputName, AddInput, AddOutput, AddExpression, AddDefinition, AddImport, AddFunction, AddStruct, AddModule, SelectModule, SelectFunction, SelectStruct, SelectExpression
-			Name: outName, // water, num, output, nonAssign_3, nonAssign_56
-			//Typ: "", // i32, f32, Sprite, Point, Board, etc
-			//Inputs: []string{}, // []string{"i32", "f32", "Sprite"}
-			//Outputs: []string{}, // []string{"i32", "f32", "Sprite"}
-			
-
-			
+			Name: outName,
 			Action: func() {
 				expr.AddOutputName(outName)
 			}})

@@ -15,14 +15,14 @@ func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpressi
 	numOuts := len(expr.Operator.Outputs)
 
 	for i := 0; i < numInps; i++ {
-		affs := FilterAffordances(expr.GetAffordances(), "Argument")
+		affs := FilterAffordances(expr.GetAffordances(nil), "Argument")
 		r := random(0, len(affs))
 		affs[r].ApplyAffordance()
 	}
 	
 	if len(outNames) == 0 {
 		for i := 0; i < numOuts; i++ {
-			affs := FilterAffordances(expr.GetAffordances(), "OutputName")
+			affs := FilterAffordances(expr.GetAffordances(nil), "OutputName")
 			r := random(0, len(affs))
 			affs[r].ApplyAffordance()
 		}

@@ -35,7 +35,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"[]f32.read":true, "[]f32.write":true, "[]f64.read":true, "[]f64.write":true,
 	
 	"[]bool.len":true, "[]byte.len":true, "[]i32.len":true, "[]i64.len":true,
-	"[]f32.len":true, "[]f64.len":true, "[]str.len":true,
+	"[]f32.len":true, "[]f64.len":true, "[]str.len":true, "str.len":true,
 
 	"str.concat":true, "[]byte.concat":true, "[]bool.concat":true, "[]str.concat":true,
 	"[]i32.concat":true, "[]i64.concat":true, "[]f32.concat":true, "[]f64.concat":true,
@@ -86,10 +86,10 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"setClauses":true, "addObject":true, "setQuery":true,
 	"remObject":true, "remObjects":true,
 
-	"remExpr":true, "remArg":true, "addExpr":true, "affExpr":true,
+	"remExpr":true, "remArg":true, "addExpr":true,
 
 	"aff.query":true, "aff.execute":true, "aff.print":true, "aff.concat":true,
-	"aff.len":true,
+	"aff.len":true, "aff.index":true,
 
 	"serialize":true, "deserialize":true, "evolve":true,
 
@@ -342,8 +342,6 @@ type CXExpression struct {
 type CXArgument struct {
 	Typ string
 	Value *[]byte
-	// Offset int
-	// Size int
 }
 
 /*

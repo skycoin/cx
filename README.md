@@ -97,7 +97,7 @@ func main () () {
 Every CX program must have at least a *main* package, and a *main*
 function. As mentioned before, CX has a very stricty type system,
 where functions can only be associated with a single type
-signature (i.e., polymorphism is not allowed in CX). As a consequence,
+signature. As a consequence,
 if we want to print a string, as in the example above, we have to call
 *str*'s print function, where *str* is a package containing string
 related functions.

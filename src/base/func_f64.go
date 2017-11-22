@@ -142,19 +142,8 @@ func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]f64.len", "[]f64", arr); err == nil {
-		var array []float64
-		encoder.DeserializeRaw(*arr.Value, &array)
-
-		output := encoder.SerializeAtomic(int32(len(array)))
-
-		// for _, def := range call.State {
-		// 	if def.Name == expr.OutputNames[0].Name {
-		// 		def.Value = &output
-		// 		return nil
-		// 	}
-		// }
-		
-		assignOutput(&output, "i32", expr, call)
+		size := (*arr.Value)[:4]
+		assignOutput(&size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -308,15 +297,7 @@ func appendF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 
 func copyF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f64.copy", "[]f64", "[]f64", arg1, arg2); err == nil {
-		var slice1 []float64
-		var slice2 []float64
-		encoder.DeserializeRaw(*arg1.Value, &slice1)
-		encoder.DeserializeRaw(*arg2.Value, &slice2)
-
-		copy(slice1, slice2)
-		sOutput := encoder.Serialize(slice1)
-
-		*arg1.Value = sOutput
+		copy(*arg1.Value, *arg2.Value)
 		return nil
 	} else {
 		return err

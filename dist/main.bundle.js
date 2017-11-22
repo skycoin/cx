@@ -669,7 +669,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var ApiService = (function () {
     function ApiService(http) {
         this.http = http;
-        this.api = 'http://127.0.0.1:5336/';
+        this.api = '/';
     }
     ApiService.prototype.sendCode = function (code) {
         var url = this.api + 'eval';

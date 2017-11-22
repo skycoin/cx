@@ -94,7 +94,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 	}
 	
 	if !oneIsX {
-		return errors.New("aff.query: malformed then block")
+		return errors.New("aff.query: malformed 'then' block")
 	}
 
 	//resolving the identifier
@@ -437,31 +437,36 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 
 		var affs []*CXAffordance
 		var filteredAffs []*CXAffordance
-		
+		var settings []string
+
+		// getting the settings for the affordance system
+		for i, rule := range _rules {
+			switch rule {
+			case "search":
+				settings = append(settings, _rules[i - 1])
+			}
+		}
+
 		// now getting the affordances
 		switch targetTyp {
 		case "pkg":
 			if mod, err := call.Context.GetCurrentModule(); err == nil {
 				affs = mod.GetAffordances()
-				//PrintAffordances(affs)
 			}
 		case "fn":
 			if fn, err := call.Context.GetCurrentFunction(); err == nil {
 				affs = fn.GetAffordances()
-				//PrintAffordances(affs)
 			}
 		case "strct":
 			if strct, err := call.Context.GetCurrentStruct(); err == nil {
 				affs = strct.GetAffordances()
-				//PrintAffordances(affs)
 			}
 		case "exp":
 			if expr, err := call.Context.GetCurrentExpression(); err == nil {
 				lastArg := expr.Arguments[len(expr.Arguments) - 1]
 				expr.RemoveArgument()
-				affs = expr.GetAffordances()
+				affs = expr.GetAffordances(settings)
 				expr.AddArgument(lastArg)
-				//PrintAffordances(affs)
 			}
 		default:
 			return errors.New("aff.query: no target was specified")
@@ -469,6 +474,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 
 		falseRule := false
 		var exec []bool // result of >, <, ==, etc
+
 
 		for _, rule := range _rules {
 			switch rule {
@@ -714,7 +720,6 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 						}
 					}
 				}
-
 				exec = nil
 			case "if":
 				if falseRule {
@@ -732,10 +737,6 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				stack = nil
 				objs = nil
 			case "endif":
-				// fmt.Println(pObjs)
-				// fmt.Println(pWeights)
-				// fmt.Println()
-				// PrintAffordances(filteredAffs)
 				stack = nil
 				objs = nil
 				falseRule = false
@@ -765,7 +766,6 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 			op := aff.Operator
 			name := aff.Name
 			index := aff.Index
-			//typ := aff.Typ
 
 			cmd := []string{
 				"startcmd", op, "op", name, "name", index, "index", "endcmd",
@@ -946,6 +946,52 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 			call.Context.SelectStruct(prevStrct)
 		}
 
+		return nil
+	} else {
+		return err
+	}
+}
+
+func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("aff.index", "[]str", "i32", commands, index); err == nil {
+		var _commands []string
+		var _index int32
+		
+		encoder.DeserializeRaw(*commands.Value, &_commands)
+		encoder.DeserializeRaw(*index.Value, &_index)
+
+		var index string
+		var counter int
+		var isSkip bool = true
+		
+		for i, cmd := range _commands {
+			switch cmd {
+			case "startcmd":
+				if int(_index) == counter {
+					isSkip = false
+				} else {
+					isSkip = true
+				}
+				counter++
+			case "index":
+				if !isSkip {
+					index = _commands[i - 1]
+				}
+			default:
+				
+			}
+		}
+
+		idx, err := strconv.ParseInt(index, 10, 64)
+
+		if err != nil {
+			output := encoder.Serialize(int32(-1))
+			assignOutput(&output, "i32", expr, call)
+			return nil
+		}
+		
+		output := encoder.Serialize(int32(idx))
+		assignOutput(&output, "i32", expr, call)
 		return nil
 	} else {
 		return err
