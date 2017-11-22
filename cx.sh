@@ -95,19 +95,19 @@ else
     echo "NOTE:\tCompiling CX"
 fi
 
-nex -e $GOPATH/src/github.com/skycoin/cx/src/cxgo/cx.nex
+nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cx.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-goyacc -o $GOPATH/src/github.com/skycoin/cx/src/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/src/cxgo/cx.y
+goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
 fi
 
-go build $GOPATH/src/github.com/skycoin/cx/src/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/src/cxgo/cx.nn.go
+go build $GOPATH/src/github.com/skycoin/cx/cxgo/cx.go $GOPATH/src/github.com/skycoin/cx/cxgo/cx.nn.go
 if [ $? -eq 0 ]; then
     echo "OK:\tCX was compiled successfully"
 else
