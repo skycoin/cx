@@ -100,7 +100,7 @@ you. This means that you can run `cx` after running the script and see
 the REPL right away (if the script worked). To exit the REPL, you can press `Ctrl-D`.
 
 You should test your installation by running `cx
-\$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
 
 As an alternative, you could clone into this repository and run cx.sh
 in a terminal.
@@ -125,7 +125,7 @@ To test if the installation worked, run the `cx` command and you
 should see the REPL start. To exit the REPL, you can press `Ctrl-D`.
 
 You should test your installation by running `cx
-\$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
 
 # CX Tutorial
 
