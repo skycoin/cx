@@ -3,8 +3,18 @@
 Table of Contents
 =================
 
+   * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language)
    * [Installation](#installation)
+      * [Installing Go](#installing-go)
+      * [Installing OpenGL and GLFW Dependencies](#installing-opengl-and-glfw-dependencies)
+      * [Installing CX - Method 1: The "so easy it might not work" Solution](#installing-cx---method-1-the-so-easy-it-might-not-work-solution)
+      * [Installing CX - Method 2: The "not so easy, but still easy" Solution](#installing-cx---method-2-the-not-so-easy-but-still-easy-solution)
+      * [Updating CX](#updating-cx)
+   * [Running CX](#running-cx)
+      * [CX REPL](#cx-repl)
+      * [Running CX Programs](#running-cx-programs)
+      * [Other Options](#other-options)
    * [CX Tutorial](#cx-tutorial)
    * [Hello World](#hello-world)
    * [Comments](#comments)
@@ -50,7 +60,7 @@ one of the affordances to be applied.
 # Installation
 
 CX has been successfully installed and tested in recent versions of
-Windows, Linux (Ubuntu) and Mac OS. Nevertheless, if you run into any
+Linux (Ubuntu) and MacOS X. Nevertheless, if you run into any
 problems, please create an issue and we'll try to solve the problem as
 soon as possible.
 
@@ -71,22 +81,48 @@ latest version before creating an issue.
 Go should also be properly configured (you can read the installation
 instructions by clicking [here](https://golang.org/doc/install). Particularly:
 
-* Make sure that you have added the Go binary to your $PATH
-* Make sure that you have configured your $GOPATH environment variable
+* Make sure that you have added the Go binary to your `$PATH`.
+  * If you installed Go using a package manager, the Go binary is most
+    likely already in your `$PATH` variable.
+  * If you already installed Go, but running "go" in a terminal throws
+    a "command not found" error, this is most likely the problem.
+* Make sure that you have configured your `$GOPATH` environment variable.
+* Make sure that you have added `$GOPATH/bin` to you `$PATH`.
+  * If you have binaries installed in `$GOPATH/bin` but you can't use
+    them by just typing their name wherever you are in the file system
+    in a terminal, then this will solve the problem.
 
-## Installing OpenGL and GLFW
+As an example configuration, considering you're using *bash* in
+*Ubuntu*, you would append to your `~/.bashrc` file this:
 
-Unless you're trying to run CX in a server version distro (no desktop
-environment), you most likely have OpenGL already installed with all
-the required libraries. However, if you get errors, please create an
-issue (although these errors will most likely not be related to CX
-itself).
+```
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin/
+```
 
-Download and install [GLFW](http://www.glfw.org/).
+Don't just copy/paste that; think on what you're doing!
+
+## Installing OpenGL and GLFW Dependencies
+
+\* Based on instructions from [Viscript](https://github.com/skycoin/viscript)'s repository.
+
+CX comes with OpenGL and GLFW APIs. In order to use them, you need to
+install some dependencies. If you're using a Debian based Linux
+distro, such as Ubuntu, you can run these commands:
+
+```
+sudo apt-get install libxi-dev
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install libxrandr-dev
+sudo apt-get install libxcursor-dev
+sudo apt-get install libxinerama-dev
+```
+
+and you should be ready to go.
 
 ## Installing CX - Method 1: The "so easy it might not work" Solution
 
-Run this command in a terminal:
+Make sure that you have `curl` and `git` installed. Run this command in a terminal:
 
 ```
 sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
@@ -126,6 +162,64 @@ should see the REPL start. To exit the REPL, you can press `Ctrl-D`.
 
 You should test your installation by running `cx
 $GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+
+## Updating CX
+
+Go to your CX repository and run a `git pull`. For example:
+
+```
+cd $GOPATH/src/github.com/skycoin/cx/
+git pull
+```
+
+The you should recompile CX:
+
+```
+./cx.sh
+```
+
+# Running CX
+## CX REPL
+
+Once CX has been successfully installed, running `cx` should print
+this in your terminal:
+
+```
+CX REPL
+More information about CX is available at http://cx.skycoin.net/
+
+*
+```
+
+This is the CX REPL ([read-eval-print loop](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)), where you can debug and modify CX programs.
+
+## Running CX Programs
+
+To run a CX program, you have to type, for example, `cx
+the-program.cx`. Let's try to run some examples from the `examples`
+directory in this repository. In a terminal, type this:
+
+```
+cd $GOPATH/src/github.com/skycoin/cx/
+cx examples/hello-world.cx
+```
+
+This should print `Hello World!` in the terminal. Now try running `cx
+examples/game.cx`.
+
+## Other Options
+
+If you write `cx --help` or `cx -h`, you should see a text describing
+CX's usage, options and more.
+
+Some interesting options are:
+
+* `--base` which generates a CX program's assembly code (in Go)
+* `--compile` which generates an executable file
+* `--repl` which loads the program and makes CX run in REPL mode
+(useful for debugging a program)
+* `--web` which starts CX as a RESTful web service (you can send code
+  to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
 
 # CX Tutorial
 
@@ -1352,7 +1446,7 @@ for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
 As the problem is very easy to solve, the code above should print the
 same numbers that are present in the outputs array. If you are curious
 on how the evolved function looks like, you can add a call to *halt*
-before the program finishes, and write *:dProgram;* in the *REPL*. You
+before the program finishes, and type *:dProgram;* in the *REPL*. You
 should see something like this:
 
 ```

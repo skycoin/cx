@@ -1,9 +1,5 @@
 #! /bin/sh
 
-if [ ! -d "$GOPATH/src/github.com/skycoin/" ]; then
-    mkdir -p $GOPATH/src/github.com/skycoin
-fi
-
 if [ ! -d "$GOPATH/src/github.com/skycoin/skycoin/" ]; then
     echo "NOTE:\tRepository github.com/skycoin/skycoin is not present in $GOPATH"
     echo "NOTE:\tDownloading the repository and installing the package via 'go get github.com/skycoin/skycoin/...'"
@@ -13,7 +9,7 @@ if [ ! -d "$GOPATH/src/github.com/skycoin/skycoin/" ]; then
     if [ $? -eq 0 ]; then
         echo "OK:\tPackage github.com/skycoin/skycoin was installed successfully"
     else
-        echo "FAIL:\tCouldn't clone into github.com/skycoin/skycoin"
+        echo "FAIL:\tCouldn't install github.com/skycoin/skycoin"
         exit 0
     fi
 fi

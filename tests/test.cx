@@ -50,6 +50,22 @@ var testF64A []f64
 
 func testFunc () () {}
 
+var globalBool bool = true
+var globalStr str = "´¨å≥π hello ´¨å≥π"
+var globalByte byte = 3
+var globalI32 i32 = 5
+var globalI64 i64 = 20
+var globalF32 f32 = 3.5
+var globalF64 f64 = 6.5
+var globalBoolA []bool = []bool{true, false, true}
+var globalByteA []byte = []byte{5, 10, 15}
+var globalStrA []str = []str{"one", "two", "three"}
+var globalI32A []i32 = []i32{20, 25, 30}
+var globalI64A []i64 = []i64{35, 40, 45}
+var globalF32A []f32 = []f32{5.5, 10.5, 15.5}
+var globalF64A []f64 = []f64{20.5, 25.5, 30.5}
+
+
 func returnStruct () () {}
 
 func testModifiedGlobals () () {
@@ -248,6 +264,22 @@ func main () () {
 	bar2 := identity("foo2")
 	test.[]f64(foo2, bar2, "")
 
+	// global variables (initialized)
+	test.bool(globalBool, true, "")
+	test.str(globalStr, "´¨å≥π hello ´¨å≥π", "")
+	test.byte(globalByte, i32.byte(3), "")
+	test.i32(globalI32, 5, "")
+	test.i64(globalI64, i32.i64(20), "")
+	test.f32(globalF32, 3.5, "")
+	test.f64(globalF64, f32.f64(6.5), "")
+	test.[]bool(globalBoolA, []bool{true, false, true}, "")
+	test.[]byte(globalByteA, []byte{5, 10, 15}, "")
+	test.[]str(globalStrA, []str{"one", "two", "three"}, "")
+	test.[]i32(globalI32A, []i32{20, 25, 30}, "")
+	test.[]i64(globalI64A, []i64{35, 40, 45}, "")
+	test.[]f32(globalF32A, []f32{5.5, 10.5, 15.5}, "")
+	test.[]f64(globalF64A, []f64{20.5, 25.5, 30.5}, "")
+
 	// make array functions
 
 	test.[]bool([]bool.make(0), []bool{}, "")
@@ -355,33 +387,6 @@ func main () () {
 	test.[]f32([]f32.concat([]f32{0.5, 1.5, 2.5}, []f32{3.5, 4.5, 5.5}), []f32{0.5, 1.5, 2.5, 3.5, 4.5, 5.5}, "")
 	test.[]f64([]f64.concat([]f64{0.5, 1.5, 2.5}, []f64{3.5, 4.5, 5.5}), []f64{0.5, 1.5, 2.5, 3.5, 4.5, 5.5}, "")
 
-	// append functions
-
-	// appBools := []bool{true, false, true}
-	// appBytes := []byte{0, 1, 2}
-	// appStrs := []str{"str1", "str2"}
-	// appI32s := []i32{0, 1, 2}
-	// appI64s := []i64{0, 1, 2}
-	// appF32s := []f32{0.5, 1.5, 2.5}
-	// appF64s := []f64{0.5, 1.5, 2.5}
-
-	// []bool.append(appBools, true)
-	// []byte.append(appBytes, i32.byte(3))
-	// []str.append(appStrs, "str3")
-	// []i32.append(appI32s, 3)
-	// []i64.append(appI64s, i32.i64(3))
-	// []f32.append(appF32s, 3.5)
-	// []f64.append(appF64s, f32.f64(3.5))
-	
-	// test.[]bool(appBools, []bool{true, false, true, true}, "")
-	// test.[]byte(appBytes, []byte{0, 1, 2, 3}, "")
-	// test.[]str(appStrs, []str{"str1", "str2", "str3"}, "")
-	// test.[]i32(appI32s, []i32{0, 1, 2, 3}, "")
-	// test.[]i64(appI64s, []i64{0.5, 1.5, 2.5, 3.5}, "")
-	// test.[]f32(appF32s, []f32{0.5, 1.5, 2.5, 3.5}, "")
-	// test.[]f64(appF64s, []f64{0.5, 1.5, 2.5, 3.5}, "")
-
-	
 	test.[]bool([]bool.append([]bool{true, false, true}, true), []bool{true, false, true, true}, "")
 	test.[]byte([]byte.append([]byte{0, 1, 2}, i32.byte(3)), []byte{0, 1, 2, 3}, "")
 	test.[]str([]str.append([]str{"str1", "str2"}, "str3"), []str{"str1", "str2", "str3"}, "")

@@ -9,18 +9,12 @@
 		
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
-
-
-		/* "github.com/mndrix/golog" */
-		/* "github.com/mndrix/golog/read" */
-		/* "github.com/mndrix/golog/term" */
-	)
+                )
 
 	var program bytes.Buffer
 	
 	var cxt = MakeContext()
-	//var m = golog.NewInteractiveMachine()
-	
+
 	var lineNo int = 0
 	var webMode bool = false
 	var baseOutput bool = false
@@ -32,6 +26,7 @@
 	var replTargetMod string = ""
 	var dStack bool = false
 	var inREPL bool = false
+	var inFn bool = false
 	//var dProgram bool = false
 	var tag string = ""
 	var asmNL = "\n"
@@ -881,7 +876,7 @@ structDeclaration:
 
 				// creating manipulation functions for this type a la common lisp
 				// append
-				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2, ))
+				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2))
 				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
 				fn.AddInput(MakeParameter("strctInst", $2))
 				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
@@ -996,8 +991,6 @@ structDeclaration:
 				} else {
 					fmt.Println(err)
 				}
-				
-				
 			}
                 }
                 STRUCT structFields
@@ -1026,6 +1019,7 @@ functionDeclaration:
                 FUNC IDENT functionParameters functionParameters
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
+				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -1081,13 +1075,13 @@ parameters:
 
 functionStatements:
                 LBRACE expressionsAndStatements RBRACE
-                /* { */
-		/* 	$$ = $2 */
-                /* } */
+                {
+			inFn = false
+                }
         |       LBRACE RBRACE
-                /* { */
-		/* 	$$ = nil */
-                /* } */
+                {
+			inFn = false
+                }
         ;
 
 expressionsAndStatements:
@@ -2322,7 +2316,7 @@ argument:
         |       typeSpecifier LBRACE argumentsList RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := cxt.GetCurrentFunction(); err == nil {
+				if fn, err := cxt.GetCurrentFunction(); err == nil && inFn {
 					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
 						expr := MakeExpression(op)
 						if !replMode {
@@ -2380,7 +2374,8 @@ argument:
 							encoder.DeserializeRaw(*arg.Value, &val)
 							vals[i] = byte(val)
 						}
-						$$ = MakeArgument(&vals, "[]byte")
+						sVal := encoder.Serialize(vals)
+						$$ = MakeArgument(&sVal, "[]byte")
                                         case "[]i32":
 						vals := make([]int32, len($3))
 						for i, arg := range $3 {

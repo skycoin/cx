@@ -32,7 +32,7 @@ func main () () {
 	rules := ->{
 		if true {
 			search(arrays)
-			search(globals)
+			search(globals) //
 			search(all) // this would override everything
 		}
 		if obj1 $2 {

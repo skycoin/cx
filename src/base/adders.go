@@ -54,6 +54,7 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	if !found {
 		mod.Functions = append(mod.Functions, fn)
 	}
+
 	return mod
 }
 

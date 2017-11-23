@@ -461,14 +461,7 @@ func setSprite (s Sprite, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32) () {
 	s.x2 = scale(i32.sub(x2, 1), W)
 	s.y1 = scale(i32.add(y1, 1), H)
 	s.y2 = scale(i32.sub(y2, 1), H)
-
-	// s.x1 = scale(x1, W)
-	// s.x2 = scale(x2, W)
-	// s.y1 = scale(y1, H)
-	// s.y2 = scale(y2, H)
 }
-
-//func getSprite ()
 
 func main () () {
 	initGlfw("window")
@@ -478,11 +471,11 @@ func main () () {
 
 	stop := not(glfw.ShouldClose("window"))
 
-	tex_characters := gl.NewTexture("textures/roguelike_characters.png")
-	tex_city := gl.NewTexture("textures/roguelike_city.png")
-	tex_dungeon := gl.NewTexture("textures/roguelike_dungeon.png")
-	tex_indoor := gl.NewTexture("textures/roguelike_indoor.png")
-	tex_pack := gl.NewTexture("textures/roguelike_pack.png")
+	tex_characters := gl.NewTexture("examples/textures/roguelike_characters.png")
+	tex_city := gl.NewTexture("examples/textures/roguelike_city.png")
+	tex_dungeon := gl.NewTexture("examples/textures/roguelike_dungeon.png")
+	tex_indoor := gl.NewTexture("examples/textures/roguelike_indoor.png")
+	tex_pack := gl.NewTexture("examples/textures/roguelike_pack.png")
 	
 	w_characters := 918
 	h_characters := 203
