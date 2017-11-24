@@ -42,6 +42,7 @@ Table of Contents
       * [Halt](#halt)
       * [Unit Testing](#unit-testing)
    * [Affordances](#affordances)
+      * [Limiting the Affordance System's Search Space](#limiting-the-affordance-systems-search-space)
    * [Experimental Features](#experimental-features)
       * [Evolutionary Algorithm](#evolutionary-algorithm)
       * [Serialization](#serialization)
@@ -1308,6 +1309,69 @@ one argument and won't compile or interpret the program. If you don't
 want a default value, just send a dummy value like 0, an empty
 struct instance, etc., and then have an *if* statement check if the
 resulting affordances array is empty before continuing with *aff.execute*.
+
+## Limiting the Affordance System's Search Space
+
+As you may have noticed, the affordance system takes into
+consideration *all* your program as its search space. If you're
+looking for *i32*s and you have some *i32* fields in some global
+struct instances in an imported package, CX will consider it. This
+behaviour might be useful for some type of applications: for example,
+creating an IDE that lists you all the variables that you can send to an
+expression as an argument. However, for many other applications, you
+might want to limit this search space.
+
+Let's imagine that you want to allow all the variables with values that are
+greater than 2, you could write this rule:
+
+```
+rules := ->{
+    if true {
+        allow(x > 2)
+    }
+}
+```
+
+But the inference process is taking too long, even if you only wanted
+to search in a pair of arrays that were sent as arguments to the
+currently called function:
+
+```
+func doSomething (array1 []i32, array2 []i32) () {
+ /* ... */
+}
+```
+How can we limit the search space to *locals* and *arrays*? With the
+`search` function:
+
+```
+rules := ->{
+    if true {
+        search(locals)
+        search(arrays)
+        allow(x > 2)
+    }
+}
+```
+
+You can create combinations for limiting the search space using the
+following keywords: *nonArrays*, *arrays*, *structs*, *locals*,
+*globals*, *allScopes*, and *allTypes*. As you can see, these keywords
+limit the *type* (arrays or non-arrays) and *scope* (locals and
+globals). Additionally, you can tell CX if you want to also search in
+struct instances' fields.
+
+Not limiting the search space is equivalent to the following:
+
+```
+rules := ->{
+    if true {
+        search(structs)
+        search(allScopes)
+        search(allTypes)
+    }
+}
+```
 
 # Experimental Features
 

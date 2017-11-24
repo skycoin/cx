@@ -6,10 +6,6 @@ import (
 	"regexp"
 	"bytes"
 	"sort"
-	
-	// "github.com/mndrix/golog"
-	// "github.com/mndrix/golog/read"
-	// "github.com/mndrix/golog/term"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -160,25 +156,40 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 }
 
 func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
-	var focusAtomics bool
+	// by type
+	var focusNonArrays bool
 	var focusArrays bool
-	//var focusStructs bool
+	var focusStructs bool
+	// by scope
 	var focusLocals bool
-	//var focusGlobals bool
+	var focusGlobals bool
+	
+	var focusAllTypes bool
+	var focusAllScopes bool
 	var focusAll bool
+
 	//extracting settings
 	if len(settings) > 0 {
 		for _, setting := range settings {
-			if setting == "atomics" {focusAtomics = true}
+			if setting == "nonArrays" {focusNonArrays = true}
 			if setting == "arrays" {focusArrays = true}
-			//if setting == "structs" {focusStructs = true}
+			if setting == "structs" {focusStructs = true}
 			if setting == "locals" {focusLocals = true}
-			//if setting == "globals" {focusGlobals = true}
+			if setting == "globals" {focusGlobals = true}
+			if setting == "allScopes" {focusAllScopes = true}
+			if setting == "allTypes" {focusAllTypes = true}
 		}
 	} else {
 		focusAll = true
 	}
-	
+	if (focusNonArrays && focusArrays) ||
+		(!focusNonArrays && !focusArrays) {
+		focusAllTypes = true
+	}
+	if (focusGlobals && focusLocals) ||
+		(!focusGlobals && !focusLocals) {
+		focusAllScopes = true
+	}
 	
 	op := expr.Operator
 	affs := make([]*CXAffordance, 0)
@@ -195,55 +206,45 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		inOutNames := make([]string, len(fn.Inputs) + 1)
 		
 		// Adding inputs and outputs as definitions
-		if focusAll || focusLocals || focusAtomics || focusArrays {
+		if focusAll || focusAllScopes || focusLocals {
 			for i, param := range fn.Inputs {
-
-				if param.Typ[:2] == "[]" || !focusArrays && !focusLocals {
-					continue
-				}
-				
-				if reqType == param.Typ {
-					inOutNames[i] = param.Name
-					defsTypes = append(defsTypes, param.Typ)
-					identName := encoder.Serialize(param.Name)
-					args = append(args, &CXArgument{
-						Typ: identType,
-						Value: &identName,
-					})
+				if reqType == param.Typ || reqType == param.Typ[2:] {
+					if focusAll || focusAllTypes ||
+						(focusArrays && IsArray(param.Typ)) ||
+						(focusNonArrays && !IsArray(param.Typ)) {
+						
+						inOutNames[i] = param.Name
+						defsTypes = append(defsTypes, param.Typ)
+						identName := encoder.Serialize(param.Name)
+						args = append(args, &CXArgument{
+							Typ: identType,
+							Value: &identName,
+						})
+					}
 				}
 			}
 		}
 		
 		// Adding definitions (global vars)
-		for _, def := range mod.Definitions {
-			if reqType == def.Typ {
-				// we could have a var with the same name and type in global and local
-				// contexts. We only want to show 1 affordance for this name
-				notDuplicated := true
-				for _, name := range inOutNames {
-					if name == def.Name {
-						notDuplicated = false
-						break
-					}
-				}
-				
-				if notDuplicated {
-					defsTypes = append(defsTypes, def.Typ)
-					identName := encoder.Serialize(def.Name)
-					args = append(args, &CXArgument{
-						Typ: identType,
-						Value: &identName,
-					})
-				}
-			}
-
-			if !isBasicType(def.Typ) {
-				if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
-					for _, fld := range strct.Fields {
-						if fld.Typ == reqType || fld.Typ[2:] == reqType {
-							defsTypes = append(defsTypes, fld.Typ)
-							identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
-							
+		if focusAll || focusAllScopes || focusGlobals {
+			for _, def := range mod.Definitions {
+				if reqType == def.Typ || reqType == def.Typ[2:] {
+					if focusAll || focusAllTypes ||
+						(focusArrays && IsArray(def.Typ)) ||
+						(focusNonArrays && !IsArray(def.Typ)) {
+						// we could have a var with the same name and type in global and local
+						// contexts. We only want to show 1 affordance for this name
+						notDuplicated := true
+						for _, name := range inOutNames {
+							if name == def.Name {
+								notDuplicated = false
+								break
+							}
+						}
+						
+						if notDuplicated {
+							defsTypes = append(defsTypes, def.Typ)
+							identName := encoder.Serialize(def.Name)
 							args = append(args, &CXArgument{
 								Typ: identType,
 								Value: &identName,
@@ -251,8 +252,45 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 						}
 					}
 				}
+
+				if focusAll || (focusStructs && IsStructInstance(def.Typ, expr.Module)) {
+					if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+						for _, fld := range strct.Fields {
+							if fld.Typ == reqType || fld.Typ[2:] == reqType {
+								if focusAll || focusAllTypes ||
+									(focusArrays && IsArray(fld.Typ)) ||
+									(focusNonArrays && !IsArray(fld.Typ)) {
+									defsTypes = append(defsTypes, fld.Typ)
+									identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
+
+									args = append(args, &CXArgument{
+										Typ: identType,
+										Value: &identName,
+									})
+								}
+							}
+						}
+					}
+				}
+					
+				// if !isBasicType(def.Typ) {
+				// 	if strct, err := expr.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+				// 		for _, fld := range strct.Fields {
+				// 			if fld.Typ == reqType || fld.Typ[2:] == reqType {
+				// 				defsTypes = append(defsTypes, fld.Typ)
+				// 				identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
+								
+				// 				args = append(args, &CXArgument{
+				// 					Typ: identType,
+				// 					Value: &identName,
+				// 				})
+				// 			}
+				// 		}
+				// 	}
+				// }
 			}
 		}
+		
 
 		// Adding possible struct instances
 		var customTypes []string
@@ -305,55 +343,82 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				continue
 			}
 
-			for _, outName := range ex.OutputNames {
-				typ := outName.Typ
-				if ex.Operator.Name == "identity" {
-					//fmt.Println(typ)
-					for _, expr := range expr.Function.Expressions {
-						var identName string
-						encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
-						if expr.OutputNames != nil && expr.OutputNames[0].Name == identName {
-							typ = expr.OutputNames[0].Typ
-							break
-						}
-					}
-				}
-
-				// Adding arrays of the same type
-				// We'll add each slice when constructing the affordance
-				if len(typ) > 2 && reqType == typ[2:] {
-					defsTypes = append(defsTypes, typ)
-					identName := encoder.Serialize(outName.Name)
-					args = append(args, &CXArgument{
-						Typ: identType,
-						Value: &identName,
-					})
-				}
-
-				if !isBasicType(typ) {
-					if strct, err := expr.Context.GetStruct(typ, expr.Module.Name); err == nil {
-						for _, fld := range strct.Fields {
-							if fld.Typ == reqType || fld.Typ[2:] == reqType {
-								defsTypes = append(defsTypes, fld.Typ)
-								identName := encoder.Serialize(fmt.Sprintf("%s.%s", outName.Name, fld.Name))
-
-								args = append(args, &CXArgument{
-									Typ: identType,
-									Value: &identName,
-								})
+			if focusAll || focusAllScopes || focusLocals {
+				for _, outName := range ex.OutputNames {
+					typ := outName.Typ
+					if ex.Operator.Name == "identity" {
+						for _, expr := range expr.Function.Expressions {
+							var identName string
+							encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
+							if expr.OutputNames != nil && expr.OutputNames[0].Name == identName {
+								typ = expr.OutputNames[0].Typ
+								break
 							}
 						}
 					}
-				}
-				
-				
-				if reqType == typ {
-					defsTypes = append(defsTypes, typ)
-					identName := encoder.Serialize(outName.Name)
-					args = append(args, &CXArgument{
-						Typ: identType,
-						Value: &identName,
-					})
+
+					// Adding arrays of the same type
+					// We'll add each slice when constructing the affordance
+					if focusAll || focusAllTypes ||
+						(focusArrays && IsArray(typ)) {
+						if len(typ) > 2 && reqType == typ[2:] {
+							defsTypes = append(defsTypes, typ)
+							identName := encoder.Serialize(outName.Name)
+							args = append(args, &CXArgument{
+								Typ: identType,
+								Value: &identName,
+							})
+						}
+					}
+
+					if focusAll || (focusStructs && IsStructInstance(typ, expr.Module)) {
+						if strct, err := expr.Context.GetStruct(typ, expr.Module.Name); err == nil {
+							for _, fld := range strct.Fields {
+								if fld.Typ == reqType || fld.Typ[2:] == reqType {
+									if focusAll || focusAllTypes ||
+										(focusArrays && IsArray(fld.Typ)) ||
+										(focusNonArrays && !IsArray(fld.Typ)) {
+										defsTypes = append(defsTypes, fld.Typ)
+										identName := encoder.Serialize(fmt.Sprintf("%s.%s", outName.Name, fld.Name))
+
+										args = append(args, &CXArgument{
+											Typ: identType,
+											Value: &identName,
+										})
+									}
+								}
+							}
+						}
+					}
+					
+					// if !isBasicType(typ) {
+					// 	if strct, err := expr.Context.GetStruct(typ, expr.Module.Name); err == nil {
+					// 		for _, fld := range strct.Fields {
+					// 			if fld.Typ == reqType || fld.Typ[2:] == reqType {
+					// 				defsTypes = append(defsTypes, fld.Typ)
+					// 				identName := encoder.Serialize(fmt.Sprintf("%s.%s", outName.Name, fld.Name))
+
+					// 				args = append(args, &CXArgument{
+					// 					Typ: identType,
+					// 					Value: &identName,
+					// 				})
+					// 			}
+					// 		}
+					// 	}
+					// }
+					
+					if reqType == typ {
+						if focusAll || focusAllTypes ||
+							(focusArrays && IsArray(typ)) ||
+							(focusNonArrays && !IsArray(typ)) {
+							defsTypes = append(defsTypes, typ)
+							identName := encoder.Serialize(outName.Name)
+							args = append(args, &CXArgument{
+								Typ: identType,
+								Value: &identName,
+							})
+						}
+					}
 				}
 			}
 		}

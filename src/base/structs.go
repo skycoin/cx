@@ -89,7 +89,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"remExpr":true, "remArg":true, "addExpr":true,
 
 	"aff.query":true, "aff.execute":true, "aff.print":true, "aff.concat":true,
-	"aff.len":true, "aff.index":true,
+	"aff.len":true, "aff.index":true, "aff.name":true,
 
 	"serialize":true, "deserialize":true, "evolve":true,
 

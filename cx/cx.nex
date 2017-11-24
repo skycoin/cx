@@ -462,6 +462,7 @@ func aff.query (target []str, objs []str, rules []str) (affs []str) {}
 func aff.execute (target []str, commands []str, index i32) () {}
 func aff.print (commands []str) () {}
 func aff.index (commands []str, index i32) (_index i32) {}
+func aff.name (commands []str, index i32) (name str) {}
 func aff.concat (arr1 []str, arr2 []str) (conc []str) {}
 func aff.len (commands []str) (len i32) {}
 

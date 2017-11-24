@@ -998,6 +998,44 @@ func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) e
 	}
 }
 
+func aff_name (commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("aff.name", "[]str", "i32", commands, index); err == nil {
+		var _commands []string
+		var _index int32
+		
+		encoder.DeserializeRaw(*commands.Value, &_commands)
+		encoder.DeserializeRaw(*index.Value, &_index)
+
+		var name string
+		var counter int
+		var isSkip bool = true
+		
+		for i, cmd := range _commands {
+			switch cmd {
+			case "startcmd":
+				if int(_index) == counter {
+					isSkip = false
+				} else {
+					isSkip = true
+				}
+				counter++
+			case "name":
+				if !isSkip {
+					name = _commands[i - 1]
+				}
+			default:
+				
+			}
+		}
+
+		output := encoder.Serialize(name)
+		assignOutput(&output, "str", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 // prints affordances in a human readable format
 func aff_print (commands *CXArgument, call *CXCall) error {
 	if err := checkType("aff.print", "[]str", commands); err == nil {

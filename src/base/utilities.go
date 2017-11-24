@@ -496,11 +496,45 @@ func IsNative (fnName string) bool {
 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
 		return true
 	}
-	//nameParts := 
 	if _, ok := NATIVE_FUNCTIONS[strings.Split(fnName, ".")[1]]; ok {
 		return true
 	}
-	//fmt.Println(fnName)
+	return false
+}
+func IsArray (typ string) bool {
+	if len(typ) > 2 && typ[:2] == "[]" {
+		return true
+	}
+	return false
+}
+func IsStructInstance (typ string, mod *CXModule) bool {
+	if _, err := mod.Context.GetStruct(typ, mod.Name); err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+func IsLocal (identName string, call *CXCall) bool {
+	for _, def := range call.State {
+		if def.Name == identName {
+			return true
+		}
+	}
+	return false
+}
+func IsGlobal (identName string, mod *CXModule) bool {
+	for _, def := range mod.Definitions {
+		if def.Name == identName {
+			return true
+		}
+	}
+	for _, imp := range mod.Imports {
+		for _, def := range imp.Definitions {
+			if def.Name == identName {
+				return true
+			}
+		}
+	}
 	return false
 }
 

@@ -1068,9 +1068,167 @@ label4:
 	
 test:
 	affoo := i32.add(1, 2)
-
 	i32.print(affoo)
 	test.i32(affoo, 1501, "")
+
+
+	
+	// limiting search spaces
+	nonArrays := ->{pkg(main) fn(main) exp(nonArrays)}
+	nonArraysRules := ->{
+		if true {
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	arrays := ->{pkg(main) fn(main) exp(arrays)}
+	arraysRules := ->{
+		if true {
+			search(arrays)
+			allow(x == x)
+		}
+	}
+	structNonArrays := ->{pkg(main) fn(main) exp(structNonArrays)}
+	structNonArraysRules := ->{
+		if true {
+			search(structs)
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	structArrays := ->{pkg(main) fn(main) exp(structArrays)}
+	structArraysRules := ->{
+		if true {
+			search(structs)
+			search(arrays)
+			allow(x == x)
+		}
+	}
+	localNonArrays := ->{pkg(main) fn(main) exp(localNonArrays)}
+	localNonArraysRules := ->{
+		if true {
+			search(locals)
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	localArrays := ->{pkg(main) fn(main) exp(localArrays)}
+	localArraysRules := ->{
+		if true {
+			search(locals)
+			search(arrays)
+			allow(x == x)
+		}
+	}
+	localStructNonArrays := ->{pkg(main) fn(main) exp(localStructNonArrays)}
+	localStructNonArraysRules := ->{
+		if true {
+			search(locals)
+			search(structs)
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	localStructArrays := ->{pkg(main) fn(main) exp(localStructArrays)}
+	localStructArraysRules := ->{
+		if true {
+			search(locals)
+			search(structs)
+			search(arrays)
+			allow(x == x)
+		}
+	}
+	globalNonArrays := ->{pkg(main) fn(main) exp(globalNonArrays)}
+	globalNonArraysRules := ->{
+		if true {
+			search(globals)
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	globalArrays := ->{pkg(main) fn(main) exp(globalArrays)}
+	globalArraysRules := ->{
+		if true {
+			search(globals)
+			search(arrays)
+			allow(x == x)
+		}
+	}
+	globalStructNonArrays := ->{pkg(main) fn(main) exp(globalStructNonArrays)}
+	globalStructNonArraysRules := ->{
+		if true {
+			search(globals)
+			search(structs)
+			search(nonArrays)
+			allow(x == x)
+		}
+	}
+	globalStructArrays := ->{pkg(main) fn(main) exp(globalStructArrays)}
+	globalStructArraysRules := ->{
+		if true {
+			search(globals)
+			search(structs)
+			search(arrays)
+			allow(x == x)
+		}
+	}
+
+
+
+
+	
+	objs = ->{}
+
+	nonArraysAffs := aff.query(nonArrays, objs, nonArraysRules)
+	test.str(aff.name(nonArraysAffs, 0), "testI32", "")
+	arraysAffs := aff.query(arrays, objs, arraysRules)
+	test.str(aff.name(arraysAffs, 0), "testI32A", "")
+	structNonArraysAffs := aff.query(structNonArrays, objs, structNonArraysRules)
+	test.str(aff.name(structNonArraysAffs, 0), "testI32", "")
+	structArraysAffs := aff.query(structArrays, objs, structArraysRules)
+	test.str(aff.name(structArraysAffs, 0), "testI32A", "")
+	localNonArraysAffs := aff.query(localNonArrays, objs, localNonArraysRules)
+	test.str(aff.name(localNonArraysAffs, 0), "foo1", "")
+	localArraysAffs := aff.query(localArrays, objs, localArraysRules)
+	test.str(aff.name(localArraysAffs, 0), "i32A", "")
+	localStructNonArraysAffs := aff.query(localStructNonArrays, objs, localStructNonArraysRules)
+	test.str(aff.name(localStructNonArraysAffs, 0), "foo1", "")
+	localStructArraysAffs := aff.query(localStructArrays, objs, localStructArraysRules)
+	test.str(aff.name(localStructArraysAffs, 0), "i32A", "")
+	globalNonArraysAffs := aff.query(globalNonArrays, objs, globalNonArraysRules)
+	test.str(aff.name(globalNonArraysAffs, 0), "testI32", "")
+	globalArraysAffs := aff.query(globalArrays, objs, globalArraysRules)
+	test.str(aff.name(globalArraysAffs, 0), "testI32A", "")
+	globalStructNonArraysAffs := aff.query(globalStructNonArrays, objs, globalStructNonArraysRules)
+	test.str(aff.name(globalStructNonArraysAffs, 0), "testI32", "")
+	globalStructArraysAffs := aff.query(globalStructArrays, objs, globalStructArraysRules)
+	test.str(aff.name(globalStructArraysAffs, 0), "testI32A", "")
+	
+nonArrays:
+	i32.id(0)
+arrays:
+	i32.id(0)
+structNonArrays:
+	i32.id(0)
+structArrays:
+	i32.id(0)
+localNonArrays:
+	i32.id(0)
+localArrays:
+	i32.id(0)
+localStructNonArrays:
+	i32.id(0)
+localStructArrays:
+	i32.id(0)
+globalNonArrays:
+	i32.id(0)
+globalArrays:
+	i32.id(0)
+globalStructNonArrays:
+	i32.id(0)
+globalStructArrays:
+	i32.id(0)
+	
 
 	test.error("Congratulations, CX passed all the tests!")
 	

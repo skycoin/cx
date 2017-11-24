@@ -763,6 +763,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "aff.query": err = aff_query((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "aff.execute": err = aff_execute((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "aff.index": err = aff_index((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "aff.name": err = aff_name((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "aff.print": err = aff_print((*argsCopy)[0], call)
 	case "aff.len": err = aff_len((*argsCopy)[0], expr, call)
 
