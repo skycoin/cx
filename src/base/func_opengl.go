@@ -29,7 +29,7 @@ func gl_CreateProgram (expr *CXExpression, call *CXCall) error {
 	prog := gl.CreateProgram()
 	output := encoder.Serialize(int32(prog))
 
-	assignOutput(&output, "i32", expr, call)
+	assignOutput(0, &output, "i32", expr, call)
 	return nil
 }
 
@@ -231,7 +231,7 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 		shader := gl.CreateShader(uint32(xtyp))
 		sShader := encoder.Serialize(int32(shader))
 
-		assignOutput(&sShader, "i32", expr, call)
+		assignOutput(0, &sShader, "i32", expr, call)
 
 		return nil
 	} else {
@@ -447,6 +447,47 @@ func gl_BindTexture (target, texture *CXArgument) error {
 	}
 }
 
+func gl_Ortho (left, right, bottom, top, zNear, zFar *CXArgument) error {
+	if err := checkSixTypes("gl.Ortho", "f32", "f32", "f32", "f32", "f32", "f32",
+		left, right, bottom, top, zNear, zFar); err == nil {
+			var _left float32
+			var _right float32
+			var _bottom float32
+			var _top float32
+			var _zNear float32
+			var _zFar float32
+
+			encoder.DeserializeRaw(*left.Value, &_left)
+			encoder.DeserializeRaw(*right.Value, &_right)
+			encoder.DeserializeRaw(*bottom.Value, &_bottom)
+			encoder.DeserializeRaw(*top.Value, &_top)
+			encoder.DeserializeRaw(*zNear.Value, &_zNear)
+			encoder.DeserializeRaw(*zFar.Value, &_zFar)
+
+			gl.Ortho(float64(_left), float64(_right), float64(_bottom), float64(_top), float64(_zNear), float64(_zFar))
+			return nil
+		} else {
+			return err
+		}
+}
+
+func gl_Color3f (red, green, blue *CXArgument) error {
+	if err := checkThreeTypes("gl.Color3f", "f32", "f32", "f32", red, green, blue); err == nil {
+		var r float32
+		var g float32
+		var b float32
+
+		encoder.DeserializeRaw(*red.Value, &r)
+		encoder.DeserializeRaw(*green.Value, &g)
+		encoder.DeserializeRaw(*blue.Value, &b)
+
+		gl.Color3f(r, g, b)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func gl_Color4f (red, green, blue, alpha *CXArgument) error {
 	if err := checkFourTypes("gl.Color4f", "f32", "f32", "f32", "f32", red, green, blue, alpha); err == nil {
 		var r float32
@@ -510,6 +551,21 @@ func gl_TexCoord2f (s, t *CXArgument) error {
 		encoder.DeserializeRaw(*t.Value, &_t)
 
 		gl.TexCoord2f(_s, _t)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_Vertex2f (nx, ny *CXArgument) error {
+	if err := checkTwoTypes("gl.Vertex2f", "f32", "f32", nx, ny); err == nil {
+		var x float32
+		var y float32
+
+		encoder.DeserializeRaw(*nx.Value, &x)
+		encoder.DeserializeRaw(*ny.Value, &y)
+
+		gl.Vertex2f(x, y)
 		return nil
 	} else {
 		return err
@@ -698,7 +754,7 @@ func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
 		texture := newTexture(name)
 		output := encoder.Serialize(int32(texture))
 		
-		assignOutput(&output, "i32", expr, call)
+		assignOutput(0, &output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -768,14 +824,7 @@ func gl_Hint (target, mode *CXArgument) error {
 
 //gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 func Foo () {
-	fmt.Println("gl.DITHER", gl.DITHER)
-	fmt.Println("gl.POINT_SMOOTH", gl.POINT_SMOOTH)
-	fmt.Println("gl.LINE_SMOOTH", gl.LINE_SMOOTH)
-	fmt.Println("gl.POLYGON_SMOOTH", gl.POLYGON_SMOOTH)
-	fmt.Println("gl.POINT_SMOOTH", gl.POINT_SMOOTH)
-	fmt.Println("gl.DONT_CARE", gl.DONT_CARE)
-	fmt.Println("gl.POLYGON_SMOOTH_HINT", gl.POLYGON_SMOOTH_HINT)
-	fmt.Println("gl.MULTISAMPLE_ARB", gl.MULTISAMPLE_ARB)
+	fmt.Println("gl.POLYGON", gl.POLYGON)
 	
 	// fmt.Println("gl.SRC_ALPHA", gl.SRC_ALPHA)
 	// fmt.Println("gl.ONE_MINUS_SRC_ALPHA", gl.ONE_MINUS_SRC_ALPHA)

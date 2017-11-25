@@ -77,7 +77,24 @@ func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) err
 			output = encoder.Serialize(int32(0))
 		}
 		
-		assignOutput(&output, "bool", expr, call)
+		assignOutput(0, &output, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func glfw_GetFramebufferSize (window *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("glfw.GetFramebufferSize", "str", window); err == nil {
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
+
+		width, height := windows[winName].GetFramebufferSize()
+		sWidth := encoder.Serialize(int32(width))
+		sHeight := encoder.Serialize(int32(height))
+		
+		assignOutput(0, &sWidth, "i32", expr, call)
+		assignOutput(1, &sHeight, "i32", expr, call)
 		return nil
 	} else {
 		return err

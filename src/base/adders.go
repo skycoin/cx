@@ -92,22 +92,6 @@ func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddObject (obj *CXObject) *CXModule {
-	mod.Objects = append(mod.Objects, obj)
-
-	return mod
-}
-
-func (mod *CXModule) AddClauses (clauses string) *CXModule {
-	mod.Clauses = clauses
-	return mod
-}
-
-func (mod *CXModule) AddQuery (query string) *CXModule {
-	mod.Query = query
-	return mod
-}
-
 func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
 	found := false
 	for _, fl := range strct.Fields {

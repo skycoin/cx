@@ -8,14 +8,9 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/:clauses/   { return CCLAUSES   }
-/:objects/   { return COBJECTS   }
-/:object/    { return COBJECT    }
-/:query/     { return QUERY      }
-/:dQuery/    { return DQUERY     }
 /:dState/    { return DSTATE     }
 /:dStack/    { return DSTACK     }
-/:dProgram/  { return DPROGRAM   }
+/(:dProgram)|(:dp)/  { return DPROGRAM   }
 /:package/   { return SPACKAGE   }
 /:struct/    { return SSTRUCT    }
 /:func/      { return SFUNC      }
@@ -243,10 +238,21 @@ func f32.sub (n1 f32, n2 f32) (out f32) {}
 func f32.mul (n1 f32, n2 f32) (out f32) {}
 func f32.div (n1 f32, n2 f32) (out f32) {}
 
+func f32.cos (n f32) (out f32) {}
+func f32.sin (n f32) (out f32) {}
+
 func f64.add (n1 f64, n2 f64) (out f64) {}
 func f64.sub (n1 f64, n2 f64) (out f64) {}
 func f64.mul (n1 f64, n2 f64) (out f64) {}
 func f64.div (n1 f64, n2 f64) (out f64) {}
+
+func f64.cos (n f64) (out f64) {}
+func f64.sin (n f64) (out f64) {}
+
+func i32.abs (num i32) (abs i32) {}
+func i64.abs (num i64) (abs i64) {}
+func f32.abs (num f32) (abs f32) {}
+func f64.abs (num f64) (abs f64) {}
 
 func i32.mod (n1 i32, n2 i32) (rem i32) {}
 func i64.mod (n1 i64, n2 i64) (rem i64) {}
@@ -448,12 +454,6 @@ func sleep (ms i32) () {}
 func i32.rand (min i32, max i32) (r i32) {}
 func i64.rand (min i64, max i64) (r i64) {}
 
-func setClauses (clss str) () {}
-func setQuery (qry str) () {}
-func addObject (obj str) () {}
-func remObject (obj str) () {}
-func remObjects () () {}
-
 func remExpr (tag str) () {}
 func remArg (tag str) () {}
 func addExpr (tag str, fnName str) () {}
@@ -542,11 +542,13 @@ func gl.PopMatrix () () {}
 func gl.EnableClientState (array i32) () {}
 
 func gl.BindTexture (target i32, texture i32) () {}
+func gl.Color3f (red f32, green f32, blue f32) () {}
 func gl.Color4f (red f32, green f32, blue f32, alpha f32) () {}
 func gl.Begin (mode i32) () {}
 func gl.End () () {}
 func gl.Normal3f (nx f32, ny f32, nz f32) () {}
 func gl.TexCoord2f (s f32, t f32) () {}
+func gl.Vertex2f (nx f32, ny f32) () {}
 func gl.Vertex3f (nx f32, ny f32, nz f32) () {}
 
 func gl.Enable (cap i32) () {}
@@ -563,6 +565,8 @@ func gl.TexEnvi (target i32, pname i32, param i32) () {}
 func gl.BlendFunc (sfactor i32, dfactor i32) () {}
 func gl.Hint (target i32, mode i32) () {}
 
+func gl.Ortho (left f32, right f32, bottom f32, top f32, zNear f32, zFar f32) () {}
+
 /*
   GLFW
 */
@@ -574,7 +578,7 @@ func glfw.MakeContextCurrent (window str) () {}
 func glfw.ShouldClose (window str) (flag bool) {}
 func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
-
+func glfw.GetFramebufferSize (window str) (width i32, height i32) {}
 func glfw.SetKeyCallback (window str, fnName str) () {}
 
 /*
@@ -606,6 +610,7 @@ var DEPTH_BUFFER_BIT i32 = 256
 var ARRAY_BUFFER i32 = 34962
 var FLOAT i32 = 5126
 var TRIANGLES i32 = 4
+var POLYGON i32 = 9
 var VERTEX_SHADER i32 = 35633
 var FRAGMENT_SHADER i32 = 35632
 var MODELVIEW i32 = 5888
@@ -872,6 +877,8 @@ func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
+	//Foo()
+
 	//signal.Listen("0.0.0.0:7999")
 
 	args := os.Args[1:]
@@ -958,13 +965,16 @@ func main () {
 		yyParse(NewLexer(source))
 	}
 	
-	// if sourceCode != nil {
-	// 	yyParse(NewLexer(sourceCode))
-	// }
-	
 	lineNo = 0
 
 	if replMode || len(sourceCode) == 0 {
+		mod := MakeModule("main")
+		cxt.AddModule(mod)
+		fn := MakeFunction("main")
+		mod.AddFunction(fn)
+
+		replTargetFn = "main"
+		
 		repl()
 	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
 		if err := cxt.Run(false, -1); err != nil {

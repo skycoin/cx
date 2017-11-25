@@ -1,10 +1,7 @@
 package base
 
 import (
-	"fmt"
 	"time"
-	"errors"
-	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -27,7 +24,7 @@ func and (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) 
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -49,7 +46,7 @@ func or (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) e
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -69,7 +66,7 @@ func not (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -145,220 +142,12 @@ func sleep (ms *CXArgument) error {
 	}
 }
 
-
-/*
-  Prolog functions
-*/
-
-func setClauses (clss *CXArgument, mod *CXModule) error {
-	if err := checkType("setClauses", "str", clss); err == nil {
-		var clauses string
-		encoder.DeserializeRaw(*clss.Value, &clauses)
-		
-		mod.AddClauses(clauses)
-
-		return nil
-	} else {
-		return err
-	}
-}
-
-func addObject (obj *CXArgument, mod *CXModule) error {
-	if err := checkType("addObject", "str", obj); err == nil {
-		var object string
-		encoder.DeserializeRaw(*obj.Value, &object)
-		mod.AddObject(MakeObject(object))
-
-		return nil
-	} else {
-		return err
-	}
-}
-
-func setQuery (qry *CXArgument, mod *CXModule) error {
-	if err := checkType("setQuery", "str", qry); err == nil {
-		var query string
-		encoder.DeserializeRaw(*qry.Value, &query)
-		mod.AddQuery(query)
-
-		return nil
-	} else {
-		return err
-	}
-}
-
-func remObject (obj *CXArgument, mod *CXModule) error {
-	if err := checkType("remObject", "str", obj); err == nil {
-		var object string
-		encoder.DeserializeRaw(*obj.Value, &object)
-		mod.RemoveObject(object)
-
-		return nil
-	} else {
-		return err
-	}
-}
-
-func remObjects (mod *CXModule) error {
-	mod.RemoveObjects()
-
-	return nil
-}
-
-/*
-  Meta-programming functions
-*/
-
-func remArg (tag *CXArgument, caller *CXFunction) error {
-	var tg string
-	encoder.DeserializeRaw(*tag.Value, &tg)
-	if err := checkType("remArg", "str", tag); err == nil {
-		for _, expr := range caller.Expressions {
-			if expr.Tag == tg {
-				expr.RemoveArgument()
-				return nil
-			}
-		}
-	} else {
-		return err
-	}
-	return errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", tg))
-}
-
-// func addArg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
-// 	if err := checkTwoTypes("addArg", "str", "str", tag, ident); err == nil {
-// 		for _, expr := range caller.Expressions {
-// 			if expr.Tag == string(*tag.Value) {
-// 				expr.AddArgument(MakeArgument(ident.Value, "ident"))
-// 				val := encoder.Serialize(int32(0))
-// 				return MakeArgument(&val, "bool"), nil
-// 			}
-// 		}
-// 	} else {
-// 		return err
-// 	}
-// 	return errors.New(fmt.Sprintf("remArg: no expression with tag '%s' was found", string(*tag.Value)))
-// }
-
-func addExpr (tag *CXArgument, fnName *CXArgument, caller *CXFunction, line int) error {
-	if err := checkType("addExpr", "str", fnName); err == nil {
-		mod := caller.Module
-
-		var opName string
-		var tg string
-		encoder.DeserializeRaw(*fnName.Value, &opName)
-		encoder.DeserializeRaw(*tag.Value, &tg)
-		
-		if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
-			expr := MakeExpression(fn)
-			expr.AddTag(tg)
-			
-			caller.AddExpression(expr)
-			return nil
-		} else {
-			return nil
-		}
-	} else {
-		return err
-	}
-}
-
-func remExpr (tag *CXArgument, caller *CXFunction) error {
-	var tg string
-	encoder.DeserializeRaw(*tag.Value, &tg)
-	if err := checkType("remExpr", "str", tag); err == nil {
-		for i, expr := range caller.Expressions {
-			if expr.Tag == tg {
-				caller.RemoveExpression(i)
-				return nil
-			}
-		}
-	} else {
-		return err
-	}
-	return errors.New(fmt.Sprintf("remExpr: no expression with tag '%s' was found", tg))
-}
-
-func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
-	var bs []byte
-
-	found := false
-	if mod, err := cxt.GetCurrentModule(); err == nil {
-		var foundStrct *CXStruct
-
-		if typ[:2] == "[]" {
-			// empty serialized struct array
-			return []byte{0, 0, 0, 0}, nil
-		}
-		
-		for _, strct := range mod.Structs {
-			if strct.Name == typ {
-				found = true
-				foundStrct = strct
-				break
-			}
-		}
-		if !found {
-			typeParts := strings.Split(typ, ".")
-			if len(typeParts) > 1 {
-				for _, imp := range mod.Imports {
-					if typeParts[0] == imp.Name {
-						for _, strct := range imp.Structs {
-							if strct.Name == typeParts[1] {
-								found = true
-								foundStrct = strct
-								break
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		if !found {
-			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
-		}
-		
-		for _, fld := range foundStrct.Fields {
-			isBasic := false
-			for _, basic := range BASIC_TYPES {
-				if fld.Typ == basic {
-					isBasic = true
-					bs = append(bs, *MakeDefaultValue(basic)...)
-					break
-				}
-			}
-
-			if !isBasic {
-				var typ string
-				if fld.Typ[:2] == "[]" {
-					typ = fld.Typ[2:]
-				} else {
-					typ = fld.Typ
-				}
-				if _, err := cxt.GetStruct(typ, mod.Name); err == nil {
-					if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
-						bs = append(bs, byts...)
-					} else {
-						return nil, err
-					}
-				} else {
-					return nil, err
-				}
-			}
-		}
-	} else {
-		return nil, err
-	}
-	return bs, nil
-}
-
 func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	var name string
 	encoder.DeserializeRaw(*arg.Value, &name)
 
 	if arg, err := resolveIdent(name, call); err == nil {
-		assignOutput(arg.Value, arg.Typ, expr, call)
+		assignOutput(0, arg.Value, arg.Typ, expr, call)
 		return nil
 	} else {
 		return err
@@ -389,68 +178,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 			}
 		}
 
-		assignOutput(&zeroVal, typName, expr, call)
-		return nil
-	} else {
-		return err
-	}
-}
-
-/*
-  Make Array
-*/
-
-func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkType("makeArray", "i32", size); err == nil {
-		var _len int32
-		encoder.DeserializeRaw(*size.Value, &_len)
-
-		switch typ {
-		case "[]bool":
-			arr := make([]int32, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]byte":
-			arr := make([]byte, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]str":
-			arr := make([]string, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]i32":
-			arr := make([]int32, _len)
-			val := encoder.Serialize(arr)
-			
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]i64":
-			arr := make([]int64, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]f32":
-			arr := make([]float32, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "[]f64":
-			arr := make([]float64, _len)
-			val := encoder.Serialize(arr)
-
-			assignOutput(&val, typ, expr, call)
-			return nil
-		case "default":
-			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ))
-		}
+		assignOutput(0, &zeroVal, typName, expr, call)
 		return nil
 	} else {
 		return err
@@ -460,88 +188,11 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 func serialize_program (expr *CXExpression, call *CXCall) error {
 	val := Serialize(call.Context)
 
-	assignOutput(val, "[]byte", expr, call)
+	assignOutput(0, val, "[]byte", expr, call)
 	return nil
 }
 
-func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
-	var arrSize int32
-	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
-
-	if index < 0 {
-		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index))
-	}
-
-	if index >= arrSize {
-		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize))
-	}
-
-	switch arr.Typ {
-	case "[]byte":
-		return (*arr.Value)[index + 4:index + 1 + 4], nil
-	case "[]bool", "[]i32", "[]f32":
-		return (*arr.Value)[index * 4 + 4:(index + 1) * 4 + 4], nil
-	case "[]str":
-		noSize := (*arr.Value)[4:]
-
-		var offset int32
-		for c := 0; c < int(index); c++ {
-			var strSize int32
-			encoder.DeserializeRaw(noSize[offset:offset+4], &strSize)
-			offset += strSize + 4
-		}
-
-		sStrSize := noSize[offset:offset + 4]
-		var strSize int32
-		encoder.DeserializeRaw(sStrSize, &strSize)
-
-		return noSize[offset:offset+strSize+4], nil
-	case "[]i64", "f64":
-		return (*arr.Value)[index * 8 + 4:(index + 1) * 8 + 4], nil
-	}
-	
-	return nil, nil
-}
-
 // custom type arrays functions
-
-func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
-	var arrSize int32
-	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
-
-	if index < 0 {
-		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index)), 0, 0
-	}
-
-	if index >= arrSize {
-		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize)), 0, 0
-	}
-
-	if strct, err := call.Context.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
-		instances := (*arr.Value)[4:]
-		lastFld := strct.Fields[len(strct.Fields) - 1]
-		
-		var lowerBound int32
-		var upperBound int32
-		
-		var size int32
-		encoder.DeserializeAtomic((*arr.Value)[:4], &size)
-
-		// in here we can use <=. we can't do this in resolveStrctField
-		for c := int32(0); c <= index; c++ {
-			subArray := instances[upperBound:]
-			_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
-
-			lowerBound = upperBound
-			upperBound = upperBound + off + size
-		}
-
-		output := instances[lowerBound:upperBound]
-		return output, nil, lowerBound + 4, upperBound - lowerBound
-	} else {
-		return nil, err, 0, 0
-	}
-}
 
 func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("cstm.append", "str", "str", arr, strctInst); err == nil {
@@ -573,7 +224,7 @@ func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) 
 
 					//fmt.Println(final)
 					
-					assignOutput(&final, rArr.Typ, expr, call)
+					assignOutput(0, &final, rArr.Typ, expr, call)
 					//*rArr.Value = final
 					
 					//fmt.Println("arrSize", arrSize, rStrctInst.Typ, len(output))
@@ -602,7 +253,7 @@ func cstm_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 			if instance, err, _, _ := getStrctFromArray(rArr, _index, expr, call); err == nil {
 				output := make([]byte, len(instance))
 				copy(output, instance)
-				assignOutput(&output, rArr.Typ[2:], expr, call)
+				assignOutput(0, &output, rArr.Typ[2:], expr, call)
 			} else {
 				return err
 			}
@@ -642,7 +293,7 @@ func cstm_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 					// final = append(final, (*rArr.Value)[offset+size:]...)
 
 					//*rArr.Value = final
-					assignOutput(&final, rArr.Typ, expr, call)
+					assignOutput(0, &final, rArr.Typ, expr, call)
 				} else {
 					return err
 				}
@@ -668,7 +319,7 @@ func cstm_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 		if rArr, err := resolveIdent(_arr, call); err == nil {
 			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
 			output := encoder.Serialize(len)
-			assignOutput(&output, "i32", expr, call)
+			assignOutput(0, &output, "i32", expr, call)
 			return nil
 		} else {
 			return err
@@ -688,7 +339,7 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 
 		if _len == 0 {
 			output := []byte{0, 0, 0, 0}
-			assignOutput(&output, _typ, expr, call)
+			assignOutput(0, &output, _typ, expr, call)
 			return nil
 		}
 
@@ -704,65 +355,9 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 
 		instances = append(*length.Value, instances...)
 		
-		assignOutput(&instances, _typ, expr, call)
+		assignOutput(0, &instances, _typ, expr, call)
 		return nil
 	} else {
 		return err
 	}
-}
-
-// test functions
-
-func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) error {
-	if !isErrorPresent {
-		var _message string
-		encoder.DeserializeRaw(*message.Value, &_message)
-		if _message == "" {
-			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur", expr.FileLine))
-		} else {
-			fmt.Println(fmt.Sprintf("%d: %s", expr.FileLine, _message))
-		}
-		
-		return nil
-	} else {
-		return nil
-	}
-}
-
-func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
-	if result.Typ != expected.Typ {
-		fmt.Println(fmt.Sprintf("%d: result and expected value are not of the same type", expr.FileLine))
-		return nil
-	}
-	
-	equal := true
-	var _message string
-	encoder.DeserializeRaw(*message.Value, &_message)
-
-	if len(*result.Value) != len(*expected.Value) {
-		equal = false
-	}
-
-	if equal {
-		for i, byt := range *result.Value {
-			if byt != (*expected.Value)[i] {
-				equal = false
-				break
-			}
-		}
-	}
-
-	if !equal {
-		if _message == "" {
-			//fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value", expr.FileLine))
-			fmt.Printf("%d: result was not equal to the expected value\n", expr.FileLine)
-			return errors.New("")
-		} else {
-			//fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s", expr.FileLine, _message))
-			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s\n", expr.FileLine, _message))
-			return errors.New("")
-		}
-	}
-	
-	return nil
 }

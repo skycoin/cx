@@ -61,7 +61,7 @@ var fragmentShaderSource str = "
           }
 "
 
-var width i32 = 600
+var width i32 = 1000
 var height i32 = 600
 
 var rows i32 = 20
@@ -188,6 +188,10 @@ func scale (x i32, max i32) (out f32) {
 func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+
+	bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 	
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
 	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
@@ -219,6 +223,10 @@ func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 func drawTile (x i32, y i32, sprite Sprite) () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+
+	bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
 	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
@@ -291,17 +299,17 @@ func setupScene () () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-        tex_characters = gl.NewTexture("examples/textures/roguelike_characters.png")
-	tex_city = gl.NewTexture("examples/textures/roguelike_city.png")
-	tex_dungeon = gl.NewTexture("examples/textures/roguelike_dungeon.png")
-	tex_indoor = gl.NewTexture("examples/textures/roguelike_indoor.png")
-	tex_pack = gl.NewTexture("examples/textures/roguelike_pack.png")
+        tex_characters = gl.NewTexture("examples/opengl/textures/roguelike_characters.png")
+	tex_city = gl.NewTexture("examples/opengl/textures/roguelike_city.png")
+	tex_dungeon = gl.NewTexture("examples/opengl/textures/roguelike_dungeon.png")
+	tex_indoor = gl.NewTexture("examples/opengl/textures/roguelike_indoor.png")
+	tex_pack = gl.NewTexture("examples/opengl/textures/roguelike_pack.png")
 	// action symbols
-	tex_act_up = gl.NewTexture("examples/textures/up.png")
-	tex_act_down = gl.NewTexture("examples/textures/down.png")
-	tex_act_right = gl.NewTexture("examples/textures/right.png")
-	tex_act_left = gl.NewTexture("examples/textures/left.png")
-	tex_act_water = gl.NewTexture("examples/textures/water.png")
+	tex_act_up = gl.NewTexture("examples/opengl/textures/up.png")
+	tex_act_down = gl.NewTexture("examples/opengl/textures/down.png")
+	tex_act_right = gl.NewTexture("examples/opengl/textures/right.png")
+	tex_act_left = gl.NewTexture("examples/opengl/textures/left.png")
+	tex_act_water = gl.NewTexture("examples/opengl/textures/water.png")
 
 	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
 	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
@@ -415,45 +423,6 @@ func getSprite (index i32) (sprite Sprite) {
 	if i32.eq(index, 1004) { s = sp_act_water }
 	
 	sprite = s
-}
-
-func _charActions (window str, key i32, scancode i32, action i32, mods i32) () {
-	northI := map2Dto1D(p1x, i32.add(p1y, 1), size)
-	southI := map2Dto1D(p1x, i32.add(p1y, -1), size)
-	westI := map2Dto1D(i32.add(p1x, -1), p1y, size)
-	eastI := map2Dto1D(i32.add(p1x, 1), p1y, size)
-	
-	northIdx := []i32.read(foreground, northI)
-	southIdx := []i32.read(foreground, southI)
-	westIdx := []i32.read(foreground, westI)
-	eastIdx := []i32.read(foreground, eastI)
-
-	northObj := getSprite(northIdx)
-	southObj := getSprite(southIdx)
-	westObj := getSprite(westIdx)
-	eastObj := getSprite(eastIdx)
-
-	// rules := ->{
-	// 	if 
-	// }
-	
-	if and(i32.eq(key, 265), i32.eq(action, 1)) {
-		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
-
-		if obj.isObstacle {
-			return
-		}
-
-		if i32.gteq(p1y, i32.sub(size, 1)) {
-			p1y = i32.sub(size, 1)
-			return
-		} else {
-			p1y = i32.add(p1y, 1)
-			return
-		}
-	}
 }
 
 func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
@@ -576,11 +545,6 @@ var p1x i32 = 1
 var p1y i32 = 1
 
 func main () () {
-	// for world generation
-	// rules := ->{
-		
-	// }
-
 	initGlfw("window")
 	program := initOpenGL()
 
@@ -613,8 +577,6 @@ func main () () {
 		glfw.SwapBuffers("window")
 		
 
-		//str.print(str.read())
-		
 		stop = not(glfw.ShouldClose("window"))
 	}
 }

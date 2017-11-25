@@ -26,7 +26,7 @@ func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
 		output := encoder.Serialize(value)
 
-		assignOutput(&output, "bool", expr, call)
+		assignOutput(0, &output, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -64,7 +64,7 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
-		assignOutput(&final, "[]bool", expr, call)
+		assignOutput(0, &final, "[]bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -74,7 +74,7 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 func lenBoolA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenBoolA", "[]bool", arr); err == nil {
 		size := (*arr.Value)[:4]
-		assignOutput(&size, "i32", expr, call)
+		assignOutput(0, &size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -91,7 +91,7 @@ func concatBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		assignOutput(&sOutput, "[]bool", expr, call)
+		assignOutput(0, &sOutput, "[]bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -109,7 +109,7 @@ func appendBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		sOutput := encoder.Serialize(output)
 
 		//*arg1.Value = sOutput
-		assignOutput(&sOutput, "[]bool", expr, call)
+		assignOutput(0, &sOutput, "[]bool", expr, call)
 		return nil
 	} else {
 		return err

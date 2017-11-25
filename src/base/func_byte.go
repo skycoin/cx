@@ -28,7 +28,7 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		output := make([]byte, 1)
 		output[0] = value
 
-		assignOutput(&output, "byte", expr, call)
+		assignOutput(0, &output, "byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -63,7 +63,7 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
-		assignOutput(&final, "[]byte", expr, call)
+		assignOutput(0, &final, "[]byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -73,7 +73,7 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenByteA", "[]byte", arr); err == nil {
 		size := (*arr.Value)[:4]
-		assignOutput(&size, "i32", expr, call)
+		assignOutput(0, &size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -93,7 +93,7 @@ func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -113,7 +113,7 @@ func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -133,7 +133,7 @@ func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -153,7 +153,7 @@ func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -173,7 +173,7 @@ func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -190,7 +190,7 @@ func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		assignOutput(&sOutput, "[]byte", expr, call)
+		assignOutput(0, &sOutput, "[]byte", expr, call)
 		return nil
 	} else {
 		return err
@@ -206,7 +206,7 @@ func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		sOutput := encoder.Serialize(output)
 
 		//*arg1.Value = sOutput
-		assignOutput(&sOutput, "[]byte", expr, call)
+		assignOutput(0, &sOutput, "[]byte", expr, call)
 		return nil
 	} else {
 		return err

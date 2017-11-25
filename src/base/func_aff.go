@@ -774,7 +774,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		}
 
 		output := encoder.Serialize(commands)
-		assignOutput(&output, "[]str", expr, call)
+		assignOutput(0, &output, "[]str", expr, call)
 		return nil
 	} else {
 		return err
@@ -986,12 +986,12 @@ func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) e
 
 		if err != nil {
 			output := encoder.Serialize(int32(-1))
-			assignOutput(&output, "i32", expr, call)
+			assignOutput(0, &output, "i32", expr, call)
 			return nil
 		}
 		
 		output := encoder.Serialize(int32(idx))
-		assignOutput(&output, "i32", expr, call)
+		assignOutput(0, &output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -1029,7 +1029,7 @@ func aff_name (commands, index *CXArgument, expr *CXExpression, call *CXCall) er
 		}
 
 		output := encoder.Serialize(name)
-		assignOutput(&output, "str", expr, call)
+		assignOutput(0, &output, "str", expr, call)
 		return nil
 	} else {
 		return err
@@ -1079,7 +1079,7 @@ func aff_len (commands *CXArgument, expr *CXExpression, call *CXCall) error {
 		}
 		
 		output := encoder.Serialize(int32(counter))
-		assignOutput(&output, "i32", expr, call)
+		assignOutput(0, &output, "i32", expr, call)
 		return nil
 	} else {
 		return err

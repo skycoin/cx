@@ -25,7 +25,6 @@ type sIndex struct {
 	ArgumentsOffset int32
 	CallsOffset int32
 	OutputNamesOffset int32
-	ObjectsOffset int32
 }
 
 type sProgram struct {
@@ -64,23 +63,9 @@ type sModule struct {
 	StructsSize int32
 	DefinitionsOffset int32
 	DefinitionsSize int32
-
-	ClausesOffset int32
-	ClausesSize int32
-
-	ObjectsOffset int32
-	ObjectsSize int32
-
-	QueryOffset int32
-	QuerySize int32
 	
 	CurrentFunctionOffset int32
 	CurrentStructOffset int32
-}
-
-type sObject struct {
-	NameOffset int32
-	NameSize int32
 }
 
 type sDefinition struct {
@@ -91,8 +76,6 @@ type sDefinition struct {
 	ValueOffset int32
 	ValueSize int32
 
-	// offest, size?
-	
 	ModuleOffset int32
 }
 
@@ -223,9 +206,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 	sMods := make([]byte, 0)
 	sModsCounter := 0
 	sModsMap := make(map[string]int, 0)
-
-	sObjs := make([]byte, 0)
-	sObjsCounter := 0
 
 	sDefs := make([]byte, 0)
 	sDefsCounter := 0
@@ -554,30 +534,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 			}
 		}
 
-		// clauses
-		sMod.ClausesOffset, sMod.ClausesSize = serializeName(mod.Clauses, &sNamesMap, &sNames, &sNamesCounter)
-
-		// query
-		sMod.QueryOffset, sMod.QuerySize = serializeName(mod.Query, &sNamesMap, &sNames, &sNamesCounter)
-
-		// objects
-		if mod.Objects != nil && len(mod.Objects) > 0 {
-			sMod.ObjectsOffset = int32(sObjsCounter)
-			sMod.ObjectsSize = int32(len(mod.Objects))
-			
-			for _, obj := range mod.Objects {
-				sObj := sObject{}
-
-				// object name
-				sObj.NameOffset, sObj.NameSize = serializeName(obj.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-				// save the object
-				sObjs = append(sObjs, encoder.Serialize(sObj)...)
-				sMod.ObjectsOffset = int32(sObjsCounter)
-				sObjsCounter++
-			}
-		}
-
 		if cxt.CurrentModule == mod {
 			sPrgrm.CurrentModuleOffset = int32(sModsCounter)
 		}
@@ -675,7 +631,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 	sIdx.FunctionsOffset = sIdx.ImportsOffset + int32(encoder.Size(sImps))
 	sIdx.StructsOffset = sIdx.FunctionsOffset + int32(encoder.Size(sFns))
 	sIdx.FieldsOffset = sIdx.StructsOffset + int32(encoder.Size(sStrcts))
-	//sIdx.TypesOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
 	
 	sIdx.ParametersOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
 	
@@ -683,7 +638,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 	sIdx.ArgumentsOffset = sIdx.ExpressionsOffset + int32(encoder.Size(sExprs))
 	sIdx.CallsOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
 	sIdx.OutputNamesOffset = sIdx.CallsOffset + int32(encoder.Size(sCalls))
-	sIdx.ObjectsOffset = sIdx.OutputNamesOffset + int32(encoder.Size(sOutNames))
 
 	serialized = append(serialized, encoder.Serialize(sIdx)...)
 	serialized = append(serialized, encoder.Serialize(sPrgrm)...)
@@ -701,7 +655,6 @@ func Serialize (cxt *CXProgram) *[]byte {
 	serialized = append(serialized, encoder.Serialize(sArgs)...)
 	serialized = append(serialized, encoder.Serialize(sCalls)...)
 	serialized = append(serialized, encoder.Serialize(sOutNames)...)
-	serialized = append(serialized, encoder.Serialize(sObjs)...)
 	
 	return &serialized
 }
@@ -781,13 +734,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 	// Output names
 	var dsOutNames []byte
-	sOutNames := (*prgrm)[dsIdx.OutputNamesOffset:dsIdx.ObjectsOffset]
+	sOutNames := (*prgrm)[dsIdx.OutputNamesOffset:]
 	encoder.DeserializeRaw(sOutNames, &dsOutNames)
-
-	// Objects
-	var dsObjs []byte
-	sObjs := (*prgrm)[dsIdx.ObjectsOffset:]
-	encoder.DeserializeRaw(sObjs, &dsObjs)
 
 	/*
 	   Deserializing elements
@@ -1245,46 +1193,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			defs = append(defs, &def)
 		}
 
-		// clauses
-		var dsClauses []byte
-		sClauses := dsNames[dsMod.ClausesOffset : dsMod.ClausesOffset + dsMod.ClausesSize]
-		encoder.DeserializeRaw(sClauses, &dsClauses)
-
-		// query
-		var dsQuery []byte
-		sQuery := dsNames[dsMod.QueryOffset : dsMod.QueryOffset + dsMod.QuerySize]
-		encoder.DeserializeRaw(sQuery, &dsQuery)
-
-		// objects
-		objs := make([]*CXObject, 0)
-		objSize := encoder.Size(sObject{})
-		objsOffset := int(dsMod.ObjectsOffset) * objSize
-		for i := 0; i < int(dsMod.ObjectsSize); i++ {
-			obj := CXObject{}
-
-			var dsObj sObject
-			sObj := dsObjs[objsOffset + i*objSize : objsOffset + (i+1)*objSize]
-			encoder.DeserializeRaw(sObj, &dsObj)
-
-			// object name
-			var dsName []byte
-			sName := dsNames[dsObj.NameOffset : dsObj.NameOffset + dsObj.NameSize]
-			encoder.DeserializeRaw(sName, &dsName)
-
-			obj.Name = string(dsName)
-
-			// appending final object
-			objs = append(objs, &obj)
-		}
-		
 		mod.Name = string(dsModName)
 		mod.Imports = imps
 		mod.Functions = modFns
 		mod.Structs = strcts
 		mod.Definitions = defs
-		mod.Objects = objs
 		mod.Context = &cxt
-		//fmt.Println(string(dsName))
 	}
 
 	// Call stack

@@ -611,7 +611,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 		// identity functions
-	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput((*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput(0, (*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
 	case "identity": identity((*argsCopy)[0], expr, call)
 		// cast functions
 	case "[]byte.str", "byte.str", "bool.str", "i32.str", "i64.str", "f32.str", "f64.str": err = castToStr((*argsCopy)[0], expr, call)
@@ -679,10 +679,18 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "f32.mul": err = mulF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f32.sub": err = subF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f32.div": err = divF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.cos": err = cosF32((*argsCopy)[0], expr, call)
+	case "f32.sin": err = sinF32((*argsCopy)[0], expr, call)
 	case "f64.add": err = addF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f64.mul": err = mulF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f64.sub": err = subF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f64.div": err = divF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.cos": err = cosF64((*argsCopy)[0], expr, call)
+	case "f64.sin": err = sinF64((*argsCopy)[0], expr, call)
+	case "i32.abs": err = absI32((*argsCopy)[0], expr, call)
+	case "i64.abs": err = absI64((*argsCopy)[0], expr, call)
+	case "f32.abs": err = absF32((*argsCopy)[0], expr, call)
+	case "f64.abs": err = absF64((*argsCopy)[0], expr, call)
 	case "i32.mod": err = modI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.mod": err = modI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// bitwise operators
@@ -767,14 +775,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "aff.print": err = aff_print((*argsCopy)[0], call)
 	case "aff.len": err = aff_len((*argsCopy)[0], expr, call)
 
-	case "setClauses": err = setClauses((*argsCopy)[0], call.Operator.Module)
-	case "addObject": err = addObject((*argsCopy)[0], call.Operator.Module)
-	case "setQuery": err = setQuery((*argsCopy)[0], call.Operator.Module)
-	case "remObject": err = remObject((*argsCopy)[0], call.Operator.Module)
-	case "remObjects": err = remObjects(call.Operator.Module)
-	case "remExpr": err = remExpr((*argsCopy)[0], call.Operator)
-	case "remArg": err = remArg((*argsCopy)[0], call.Operator)
-	case "addExpr": err = addExpr((*argsCopy)[0], (*argsCopy)[1], call.Operator, expr.Line)
+	case "rem.expr": err = rem_expr((*argsCopy)[0], call.Operator)
+	case "rem.arg": err = rem_arg((*argsCopy)[0], call.Operator)
+	case "add.expr": err = add_expr((*argsCopy)[0], (*argsCopy)[1], call)
 		// debugging functions
 	case "halt":
 		var msg string
@@ -830,13 +833,16 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "gl.NewTexture": err = gl_NewTexture((*argsCopy)[0], expr, call)
 
 	case "gl.BindTexture": err = gl_BindTexture((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Color3f": err = gl_Color3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.Color4f": err = gl_Color4f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
 	case "gl.Begin": err = gl_Begin((*argsCopy)[0])
 	case "gl.End": err = gl_End()
 	case "gl.Normal3f": err = gl_Normal3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.TexCoord2f": err = gl_TexCoord2f((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Vertex2f": err = gl_Vertex2f((*argsCopy)[0], (*argsCopy)[1])
 	case "gl.Vertex3f": err = gl_Vertex3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.Hint": err = gl_Hint((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.Ortho": err = gl_Ortho((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4], (*argsCopy)[5])
 
 	case "gl.Enable": err = gl_Enable((*argsCopy)[0])
 	case "gl.Disable": err = gl_Enable((*argsCopy)[0])
@@ -856,6 +862,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "glfw.ShouldClose": err = glfw_ShouldClose((*argsCopy)[0], expr, call)
 	case "glfw.PollEvents": err = glfw_PollEvents()
 	case "glfw.SwapBuffers": err = glfw_SwapBuffers((*argsCopy)[0])
+	case "glfw.GetFramebufferSize": err = glfw_GetFramebufferSize((*argsCopy)[0], expr, call)
 	case "glfw.SetKeyCallback": err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// Operating System
 	case "os.Create": err = os_Create((*argsCopy)[0])

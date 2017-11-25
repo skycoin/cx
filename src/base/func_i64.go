@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"errors"
 	"time"
+	"math"
 	"math/rand"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -17,7 +18,7 @@ func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 + num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -33,7 +34,7 @@ func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 - num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -49,7 +50,7 @@ func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int64(num1 * num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -69,11 +70,25 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		
 		output := encoder.SerializeAtomic(int64(num1 / num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
 	}
+}
+
+func absI64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("i64.abs", "i64", arg1); err == nil {
+		var num1 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+
+		output := encoder.Serialize(int64(math.Abs(float64(num1))))
+
+		assignOutput(0, &output, "i64", expr, call)
+		return nil
+	} else {
+		return err
+	}	
 }
 
 func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
@@ -89,7 +104,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 % num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -105,7 +120,7 @@ func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 & num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -121,7 +136,7 @@ func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 
 		output := encoder.Serialize(int64(num1 | num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -137,7 +152,7 @@ func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int64(num1 ^ num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -153,7 +168,7 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 
 		output := encoder.Serialize(int64(num1 &^ num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -169,7 +184,7 @@ func shiftLeftI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) err
 
 		output := encoder.Serialize(int64(num1 << num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -185,7 +200,7 @@ func shiftRightI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) er
 
 		output := encoder.Serialize(int64(num1 >> num2))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -207,7 +222,7 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		rand.Seed(time.Now().UTC().UnixNano())
 		output := encoder.Serialize(int64(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -235,7 +250,7 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw((*arr.Value)[((index)*8)+4:((index+1)*8)+4], &value)
 		output := encoder.Serialize(value)
 
-		assignOutput(&output, "i64", expr, call)
+		assignOutput(0, &output, "i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -273,7 +288,7 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
-		assignOutput(&final, "[]i64", expr, call)
+		assignOutput(0, &final, "[]i64", expr, call)
 		
 		return nil
 	} else {
@@ -284,7 +299,7 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i64.len", "[]i64", arr); err == nil {
 		size := (*arr.Value)[:4]
-		assignOutput(&size, "i32", expr, call)
+		assignOutput(0, &size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -306,7 +321,7 @@ func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -328,7 +343,7 @@ func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -350,7 +365,7 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -372,7 +387,7 @@ func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -394,7 +409,7 @@ func gteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(&val, "bool", expr, call)
+		assignOutput(0, &val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -411,7 +426,7 @@ func concatI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		assignOutput(&sOutput, "[]i64", expr, call)
+		assignOutput(0, &sOutput, "[]i64", expr, call)
 		return nil
 	} else {
 		return err
@@ -429,7 +444,7 @@ func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		sOutput := encoder.Serialize(output)
 
 		//*arg1.Value = sOutput
-		assignOutput(&sOutput, "[]i64", expr, call)
+		assignOutput(0, &sOutput, "[]i64", expr, call)
 		return nil
 	} else {
 		return err

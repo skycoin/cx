@@ -11,9 +11,9 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func assignOutput (output *[]byte, typ string, expr *CXExpression, call *CXCall) {
-	outName := expr.OutputNames[0].Name
-	expr.OutputNames[0].Typ = typ
+func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpression, call *CXCall) {
+	outName := expr.OutputNames[outNameNumber].Name
+	expr.OutputNames[outNameNumber].Typ = typ
 
 	for _, char := range outName {
 		if char == '.' {
@@ -206,12 +206,12 @@ func checkSixTypes (fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg
 	return nil
 }
 
-func random(min, max int) int {
+func random (min, max int) int {
 	rand.Seed(time.Now().UTC().UnixNano())
 	return rand.Intn(max - min) + min
 }
 
-func removeDuplicatesInt(elements []int) []int {
+func removeDuplicatesInt (elements []int) []int {
 	// Use map to record duplicates as we find them.
 	encountered := map[int]bool{}
 	result := []int{}
@@ -230,7 +230,7 @@ func removeDuplicatesInt(elements []int) []int {
 	return result
 }
 
-func removeDuplicates(s []string) []string {
+func removeDuplicates (s []string) []string {
 	seen := make(map[string]struct{}, len(s))
 	j := 0
 	for _, v := range s {
@@ -253,21 +253,6 @@ func concat (strs ...string) string {
 	
 	return buffer.String()
 }
-
-
-
-// (modules (main (definitions (str ))
-//                (functions (= double (addF64 ((f64 n) (f64 n))))
-//                           (= triple (subF64 ((f64 n) (f64 n))))))
-// 	 (math (definitions)))
-
-// (modules (module main
-//                  (definitions
-//                      (definition greeting str "hello")
-//                      (definition ten i32 10)
-//                    (definition ten i32 10)
-//                      )))
-
 
 func PrintValue (identName string, value *[]byte, typName string, cxt *CXProgram) string {
 	var argName string
@@ -346,10 +331,6 @@ func PrintValue (identName string, value *[]byte, typName string, cxt *CXProgram
 
 	return argName
 }
-
-// func PrintValue (value *[]byte, typName string) string {
-// 	return ""
-// }
 
 func rep (str string, n int) string {
 	return strings.Repeat(str, n)
@@ -480,7 +461,6 @@ func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
 	default:
 		return arg
 	}
-	//panic(fmt.Sprintf("CastArgumentForArray: unrecognized type %s", typ))
 }
 
 func isBasicType (typ string) bool {
@@ -536,6 +516,214 @@ func IsGlobal (identName string, mod *CXModule) bool {
 		}
 	}
 	return false
+}
+
+func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("makeArray", "i32", size); err == nil {
+		var _len int32
+		encoder.DeserializeRaw(*size.Value, &_len)
+
+		switch typ {
+		case "[]bool":
+			arr := make([]int32, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]byte":
+			arr := make([]byte, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]str":
+			arr := make([]string, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]i32":
+			arr := make([]int32, _len)
+			val := encoder.Serialize(arr)
+			
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]i64":
+			arr := make([]int64, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]f32":
+			arr := make([]float32, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "[]f64":
+			arr := make([]float64, _len)
+			val := encoder.Serialize(arr)
+
+			assignOutput(0, &val, typ, expr, call)
+			return nil
+		case "default":
+			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ))
+		}
+		return nil
+	} else {
+		return err
+	}
+}
+
+func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
+	var bs []byte
+
+	found := false
+	if mod, err := cxt.GetCurrentModule(); err == nil {
+		var foundStrct *CXStruct
+
+		if typ[:2] == "[]" {
+			// empty serialized struct array
+			return []byte{0, 0, 0, 0}, nil
+		}
+		
+		for _, strct := range mod.Structs {
+			if strct.Name == typ {
+				found = true
+				foundStrct = strct
+				break
+			}
+		}
+		if !found {
+			typeParts := strings.Split(typ, ".")
+			if len(typeParts) > 1 {
+				for _, imp := range mod.Imports {
+					if typeParts[0] == imp.Name {
+						for _, strct := range imp.Structs {
+							if strct.Name == typeParts[1] {
+								found = true
+								foundStrct = strct
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if !found {
+			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
+		}
+		
+		for _, fld := range foundStrct.Fields {
+			isBasic := false
+			for _, basic := range BASIC_TYPES {
+				if fld.Typ == basic {
+					isBasic = true
+					bs = append(bs, *MakeDefaultValue(basic)...)
+					break
+				}
+			}
+
+			if !isBasic {
+				var typ string
+				if fld.Typ[:2] == "[]" {
+					typ = fld.Typ[2:]
+				} else {
+					typ = fld.Typ
+				}
+				if _, err := cxt.GetStruct(typ, mod.Name); err == nil {
+					if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
+						bs = append(bs, byts...)
+					} else {
+						return nil, err
+					}
+				} else {
+					return nil, err
+				}
+			}
+		}
+	} else {
+		return nil, err
+	}
+	return bs, nil
+}
+
+func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
+	var arrSize int32
+	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
+
+	if index < 0 {
+		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index)), 0, 0
+	}
+
+	if index >= arrSize {
+		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize)), 0, 0
+	}
+
+	if strct, err := call.Context.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
+		instances := (*arr.Value)[4:]
+		lastFld := strct.Fields[len(strct.Fields) - 1]
+		
+		var lowerBound int32
+		var upperBound int32
+		
+		var size int32
+		encoder.DeserializeAtomic((*arr.Value)[:4], &size)
+
+		// in here we can use <=. we can't do this in resolveStrctField
+		for c := int32(0); c <= index; c++ {
+			subArray := instances[upperBound:]
+			_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+
+			lowerBound = upperBound
+			upperBound = upperBound + off + size
+		}
+
+		output := instances[lowerBound:upperBound]
+		return output, nil, lowerBound + 4, upperBound - lowerBound
+	} else {
+		return nil, err, 0, 0
+	}
+}
+
+func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
+	var arrSize int32
+	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
+
+	if index < 0 {
+		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index))
+	}
+
+	if index >= arrSize {
+		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize))
+	}
+
+	switch arr.Typ {
+	case "[]byte":
+		return (*arr.Value)[index + 4:index + 1 + 4], nil
+	case "[]bool", "[]i32", "[]f32":
+		return (*arr.Value)[index * 4 + 4:(index + 1) * 4 + 4], nil
+	case "[]str":
+		noSize := (*arr.Value)[4:]
+
+		var offset int32
+		for c := 0; c < int(index); c++ {
+			var strSize int32
+			encoder.DeserializeRaw(noSize[offset:offset+4], &strSize)
+			offset += strSize + 4
+		}
+
+		sStrSize := noSize[offset:offset + 4]
+		var strSize int32
+		encoder.DeserializeRaw(sStrSize, &strSize)
+
+		return noSize[offset:offset+strSize+4], nil
+	case "[]i64", "f64":
+		return (*arr.Value)[index * 8 + 4:(index + 1) * 8 + 4], nil
+	}
+	
+	return nil, nil
 }
 
 func (cxt *CXProgram) PrintProgram(withAffs bool) {

@@ -83,11 +83,9 @@
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */
-                        DSTACK DPROGRAM DQUERY DSTATE
+                        DSTACK DPROGRAM DSTATE
                         /* Affordances */
                         AFF TAG INFER WEIGHT
-                        /* Prolog */
-                        CCLAUSES QUERY COBJECT COBJECTS
 
 %type   <tok>           typeSpecifier
                         
@@ -132,84 +130,6 @@ line:
         |       debugging
         |       affordance
         |       remover
-        |       prolog
-        ;
-
-prolog:
-                COBJECTS
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				for i, object := range mod.Objects {
-					fmt.Printf("%d.- %s\n", i, object.Name)
-				}
-			}
-                }
-        // |       CCLAUSES STRING
-        //         {
-	// 		clauses := strings.TrimPrefix($2, "\"")
-	// 		clauses = strings.TrimSuffix(clauses, "\"")
-
-	// 		b := bytes.NewBufferString(clauses)
-	// 		m = m.Consult(b)
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
-	// 			mod.AddClauses(clauses)
-	// 		}
-        //         }
-        |       COBJECT IDENT
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.AddObject(MakeObject($2));
-			}
-                }
-        |       QUERY STRING
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				query := strings.TrimPrefix($2, "\"")
-				query = strings.TrimSuffix(query, "\"")
-				mod.AddQuery(query)
-			}
-                }
-        // |       DQUERY STRING
-        //         {
-	// 		query := strings.TrimPrefix($2, "\"")
-	// 		query = strings.TrimSuffix(query, "\"")
-
-	// 		goal, err := read.Term(query)
-	// 		if err == nil {
-	// 			variables := term.Variables(goal)
-	// 			answers := m.ProveAll(goal)
-
-	// 			yesNoAnswer := false
-	// 			if len(answers) == 0 {
-	// 				fmt.Println("no.")
-	// 				yesNoAnswer = true
-	// 			} else if variables.Size() == 0 {
-	// 				fmt.Println("yes.")
-	// 				yesNoAnswer = true
-	// 			}
-
-	// 			if !yesNoAnswer {
-	// 				for i, answer := range answers {
-	// 					lines := make([]string, 0)
-	// 					variables.ForEach(func(name string, variable interface{}) {
-	// 						v := variable.(*term.Variable)
-	// 						val := answer.Resolve_(v)
-	// 						line := fmt.Sprintf("%s = %s", name, val)
-	// 						lines = append(lines, line)
-	// 					})
-
-	// 					warnf("%s", strings.Join(lines, "\n"))
-	// 					if i == len(answers)-1 {
-	// 						fmt.Printf("\t.\n\n")
-	// 					} else {
-	// 						warnf("\t;\n")
-	// 					}
-	// 				}
-	// 			}
-	// 		} else {
-	// 			fmt.Println("Problem parsing the query.")
-	// 		}
-        //         }
         ;
 
 importDeclaration:
@@ -583,22 +503,6 @@ remover:        REM FUNC IDENT
 				}
 			}
                 }
-        // |       REM CLAUSES
-        //         {
-	// 		m = golog.NewInteractiveMachine()
-        //         }
-        |       REM OBJECT IDENT
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.RemoveObject($3)
-			}
-                }
-        |       REM OBJECTS
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				mod.RemoveObjects()
-			}
-                }
                 // no, too complex. just wipe out entire expression
         // |       REM ARG INT EXPR INT FUNC IDENT
         //         {
@@ -678,34 +582,34 @@ selector:       SPACKAGE IDENT
 				}
 			}
                 }
-        // |       SFUNC IDENT
-        //         {
-	// 		var previousFunction *CXFunction
-	// 		if fn, err := cxt.GetCurrentFunction(); err == nil {
-	// 			previousFunction = fn
-	// 		} else {
-	// 			fmt.Println("A current function does not exist")
-	// 		}
-	// 		if _, err := cxt.SelectFunction($2); err == nil {
-	// 			//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
-	// 		} else {
-	// 			fmt.Println(err)
-	// 		}
+        |       SFUNC IDENT
+                {
+			var previousFunction *CXFunction
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				previousFunction = fn
+			} else {
+				fmt.Println("A current function does not exist")
+			}
+			if _, err := cxt.SelectFunction($2); err == nil {
+				//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
+			} else {
+				fmt.Println(err)
+			}
 
-	// 		replTargetMod = ""
-	// 		replTargetStrct = ""
-	// 		replTargetFn = $2
+			replTargetMod = ""
+			replTargetStrct = ""
+			replTargetFn = $2
 			
-	// 		$<string>$ = previousFunction.Name
-        //         }
-        //         selectorExpressionsAndStatements
-        //         {
-	// 		if $<bool>4 {
-	// 			if _, err := cxt.SelectFunction($<string>3); err == nil {
-	// 				//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
-	// 			}
-	// 		}
-        //         }
+			$<string>$ = previousFunction.Name
+                }
+                selectorExpressionsAndStatements
+                {
+			if $<bool>4 {
+				if _, err := cxt.SelectFunction($<string>3); err == nil {
+					//fmt.Println(fmt.Sprintf("== Changed to function '%s' ==", fn.Name))
+				}
+			}
+                }
         |       SSTRUCT IDENT
                 {
 			var previousStruct *CXStruct
@@ -1093,8 +997,6 @@ expressionsAndStatements:
         |       debugging
         |       affordance
         |       remover
-        |       prolog
-//        |       structLitDefs
         |       expressionsAndStatements nonAssignExpression
         |       expressionsAndStatements assignExpression
         |       expressionsAndStatements statement
@@ -1103,8 +1005,6 @@ expressionsAndStatements:
         |       expressionsAndStatements debugging
         |       expressionsAndStatements affordance
         |       expressionsAndStatements remover
-        |       expressionsAndStatements prolog
-//        |       expressionsAndStatements structLitDefs
         ;
 
 
