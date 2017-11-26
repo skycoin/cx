@@ -15,6 +15,8 @@ type Ball struct {
 	radius f32
 }
 
+var ball Ball
+
 func drawBall (ball Ball) () {
 	full_angle := f32.mul(2.0, 3.141592654)
 	var x f32
@@ -33,6 +35,15 @@ func drawBall (ball Ball) () {
 	gl.End()
 }
 
+func ballDirection (window str, key i32, scancode i32, action i32, mods i32) () {
+	if and(i32.eq(key, 263), i32.eq(action, 1)) {
+		ball.vx = -0.01
+	}
+	if and(i32.eq(key, 262), i32.eq(action, 1)) {
+		ball.vx = 0.01
+	}
+}
+
 func main () () {
 	glfw.Init()
 
@@ -42,6 +53,8 @@ func main () () {
 	gl.Init()
 	program := gl.CreateProgram()
 	gl.LinkProgram(program)
+
+	glfw.SetKeyCallback("window", "ballDirection")
 
 	ball = new Ball{
 		radius: 0.05,
@@ -77,7 +90,11 @@ func main () () {
 		ball.x = f32.add(ball.x, ball.vx)
 		ball.y = f32.add(ball.y, ball.vy)
 
+
+		
 		drawBall(ball)
+
+
 		
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")

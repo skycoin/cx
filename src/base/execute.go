@@ -868,6 +868,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "os.Create": err = os_Create((*argsCopy)[0])
 	case "os.Open": err = os_Open((*argsCopy)[0])
 	case "os.Close": err = os_Close((*argsCopy)[0])
+	case "os.GetWorkingDirectory": err = os_GetWorkingDirectory(expr, call)
 	case "":
 	}
 

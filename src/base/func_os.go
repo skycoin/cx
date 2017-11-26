@@ -1,14 +1,14 @@
 package base
 
 import (
-	//"errors"
 	"os"
+	//"path/filepath"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
-func os_Create(fileName *CXArgument) error {
+func os_Create (fileName *CXArgument) error {
 	if err := checkType("os.Create", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
@@ -25,7 +25,7 @@ func os_Create(fileName *CXArgument) error {
 	}
 }
 
-func os_Open(fileName *CXArgument) error {
+func os_Open (fileName *CXArgument) error {
 	if err := checkType("os.Open", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
@@ -56,4 +56,10 @@ func os_Close (fileName *CXArgument) error {
 	} else {
 		return err
 	}
+}
+
+func os_GetWorkingDirectory (expr *CXExpression, call *CXCall) error {
+	path := encoder.Serialize(call.Context.Path)
+	assignOutput(0, &path, "str", expr, call)
+	return nil
 }

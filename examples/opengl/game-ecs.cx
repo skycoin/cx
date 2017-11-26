@@ -206,18 +206,19 @@ func setupScene () () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-        tex_characters = gl.NewTexture("examples/opengl/textures/roguelike_characters.png")
-	tex_city = gl.NewTexture("examples/opengl/textures/roguelike_city.png")
-	tex_dungeon = gl.NewTexture("examples/opengl/textures/roguelike_dungeon.png")
-	tex_indoor = gl.NewTexture("examples/opengl/textures/roguelike_indoor.png")
-	tex_pack = gl.NewTexture("examples/opengl/textures/roguelike_pack.png")
-	// tooltips symbols
-	tex_act_up = gl.NewTexture("examples/opengl/textures/up.png")
-	tex_act_down = gl.NewTexture("examples/opengl/textures/down.png")
-	tex_act_right = gl.NewTexture("examples/opengl/textures/right.png")
-	tex_act_left = gl.NewTexture("examples/opengl/textures/left.png")
-	tex_act_water = gl.NewTexture("examples/opengl/textures/water.png")
+	wd := os.GetWorkingDirectory()
 
+        tex_characters = gl.NewTexture(str.concat(wd, "textures/roguelike_characters.png"))
+	tex_city = gl.NewTexture(str.concat(wd, "textures/roguelike_city.png"))
+	tex_dungeon = gl.NewTexture(str.concat(wd, "textures/roguelike_dungeon.png"))
+	tex_indoor = gl.NewTexture(str.concat(wd, "textures/roguelike_indoor.png"))
+	tex_pack = gl.NewTexture(str.concat(wd, "textures/roguelike_pack.png"))
+	// tooltips symbols
+	tex_act_up = gl.NewTexture(str.concat(wd, "textures/up.png"))
+	tex_act_down = gl.NewTexture(str.concat(wd, "textures/down.png"))
+	tex_act_right = gl.NewTexture(str.concat(wd, "textures/right.png"))
+	tex_act_left = gl.NewTexture(str.concat(wd, "textures/left.png"))
+	tex_act_water = gl.NewTexture(str.concat(wd, "textures/water.png"))
 	
 	
 	var floors []Appearance

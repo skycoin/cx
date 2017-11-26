@@ -588,6 +588,7 @@ func glfw.SetKeyCallback (window str, fnName str) () {}
 func os.Create (fileName str) () {}
 func os.Open (fileName str) () {}
 func os.Close (fileName str) () {}
+func os.GetWorkingDirectory () (path str) {}
 
 package glfw
 
@@ -873,6 +874,16 @@ type Point struct {
 	y int32
 }
 
+func getWorkingDirectory (file string) string {
+	var c int = len(file) - 1
+	for ; c > 0; c-- {
+		if file[c - 1] == os.PathSeparator {
+			break
+		}
+	}
+	return file[:c]
+}
+
 func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
@@ -960,6 +971,11 @@ func main () {
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
 
+	// setting project's working directory
+	if !replMode {
+		cxt.Path = getWorkingDirectory(sourceCode[0].Name())
+	}
+	
 	// parsing all source code files
 	for _, source := range sourceCode {
 		yyParse(NewLexer(source))

@@ -299,18 +299,20 @@ func setupScene () () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-        tex_characters = gl.NewTexture("examples/opengl/textures/roguelike_characters.png")
-	tex_city = gl.NewTexture("examples/opengl/textures/roguelike_city.png")
-	tex_dungeon = gl.NewTexture("examples/opengl/textures/roguelike_dungeon.png")
-	tex_indoor = gl.NewTexture("examples/opengl/textures/roguelike_indoor.png")
-	tex_pack = gl.NewTexture("examples/opengl/textures/roguelike_pack.png")
+	wd := os.GetWorkingDirectory()
+	
+	tex_characters = gl.NewTexture(str.concat(wd, "textures/roguelike_characters.png"))
+	tex_city = gl.NewTexture(str.concat(wd, "textures/roguelike_city.png"))
+	tex_dungeon = gl.NewTexture(str.concat(wd, "textures/roguelike_dungeon.png"))
+	tex_indoor = gl.NewTexture(str.concat(wd, "textures/roguelike_indoor.png"))
+	tex_pack = gl.NewTexture(str.concat(wd, "textures/roguelike_pack.png"))
 	// action symbols
-	tex_act_up = gl.NewTexture("examples/opengl/textures/up.png")
-	tex_act_down = gl.NewTexture("examples/opengl/textures/down.png")
-	tex_act_right = gl.NewTexture("examples/opengl/textures/right.png")
-	tex_act_left = gl.NewTexture("examples/opengl/textures/left.png")
-	tex_act_water = gl.NewTexture("examples/opengl/textures/water.png")
-
+	tex_act_up = gl.NewTexture(str.concat(wd, "textures/up.png"))
+	tex_act_down = gl.NewTexture(str.concat(wd, "textures/down.png"))
+	tex_act_right = gl.NewTexture(str.concat(wd, "textures/right.png"))
+	tex_act_left = gl.NewTexture(str.concat(wd, "textures/left.png"))
+	tex_act_water = gl.NewTexture(str.concat(wd, "textures/water.png"))
+	
 	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
 	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
 	setSprite(sp_knight1, true, 0, 16, 187, 203, w_characters, h_characters, tex_characters)

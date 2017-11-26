@@ -150,7 +150,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
           Operating System
         */
 
-	"os.Create":true, "os.Open":true, "os.Close":true,
+	"os.Create":true, "os.Open":true, "os.Close":true, "os.GetWorkingDirectory":true,
 }
 
 /*
@@ -161,6 +161,7 @@ type CXProgram struct {
 	Modules []*CXModule
 	CurrentModule *CXModule
 	CallStack *CXCallStack
+	Path string
 	Terminated bool
 	// Inputs []*CXDefinition
 	Outputs []*CXDefinition

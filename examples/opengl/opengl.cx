@@ -471,11 +471,13 @@ func main () () {
 
 	stop := not(glfw.ShouldClose("window"))
 
-	tex_characters := gl.NewTexture("examples/opengl/textures/roguelike_characters.png")
-	tex_city := gl.NewTexture("examples/opengl/textures/roguelike_city.png")
-	tex_dungeon := gl.NewTexture("examples/opengl/textures/roguelike_dungeon.png")
-	tex_indoor := gl.NewTexture("examples/opengl/textures/roguelike_indoor.png")
-	tex_pack := gl.NewTexture("examples/opengl/textures/roguelike_pack.png")
+	wd := os.GetWorkingDirectory()
+	
+	tex_characters := gl.NewTexture(str.concat(wd, "textures/roguelike_characters.png"))
+	tex_city := gl.NewTexture(str.concat(wd, "textures/roguelike_city.png"))
+	tex_dungeon := gl.NewTexture(str.concat(wd, "textures/roguelike_dungeon.png"))
+	tex_indoor := gl.NewTexture(str.concat(wd, "textures/roguelike_indoor.png"))
+	tex_pack := gl.NewTexture(str.concat(wd, "textures/roguelike_pack.png"))
 	
 	w_characters := 918
 	h_characters := 203

@@ -155,6 +155,7 @@ func main () () {
 	test.i32(i32.sub(10, 10), 0, "")
 	test.i32(i32.mul(10, 10), 100, "")
 	test.i32(i32.div(10, 10), 1, "")
+	test.i32(i32.abs(-10), 10, "")
 
 	i32.div(10, 0)
 	test.error("i32.div did not raise a division by 0 error")
@@ -165,6 +166,7 @@ func main () () {
 	test.i64(i64.sub(i64v, i64v), i32.i64(0), "")
 	test.i64(i64.mul(i64v, i64v), i32.i64(100), "")
 	test.i64(i64.div(i64v, i64v), i32.i64(1), "")
+	test.i64(i64.abs(i32.i64(-10)), i32.i64(10), "")
 	
 	i64.div(i64v, i32.i64(0))
 	test.error("i64.div did not raise a division by 0 error")
@@ -173,6 +175,10 @@ func main () () {
 	test.f32(f32.sub(10.0, 10.0), 0.0, "")
 	test.f32(f32.mul(10.0, 10.0), 100.0, "")
 	test.f32(f32.div(10.0, 10.0), 1.0, "")
+	test.f32(f32.abs(-10.5), 10.5, "")
+
+	test.f32(f32.sin(2.0), 0.9092974, "")
+	test.f32(f32.cos(2.0), -0.41614684, "")
 
 	f64v := i32.f64(10)
 
@@ -180,6 +186,10 @@ func main () () {
 	test.f64(f64.sub(f64v, f64v), i32.f64(0), "")
 	test.f64(f64.mul(f64v, f64v), i32.f64(100), "")
 	test.f64(f64.div(f64v, f64v), i32.f64(1), "")
+	test.f64(f64.abs(f32.f64(-10.5)), f32.f64(10.5), "")
+
+	//test.f64(f64.sin(f32.f64(2.0)), f32.f64(0.9092974268256816), "")
+	//test.f64(f64.cos(f32.f64(2.0)), f32.f64(-0.4161468365471424), "")
 
 	test.i32(i32.mod(10, 10), 0, "")
 	test.i64(i64.mod(i64v, i64v), i32.i64(0), "")
