@@ -144,7 +144,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true,
 	"glfw.PollEvents":true, "glfw.SwapBuffers":true, "glfw.GetFramebufferSize":true,
 
-	"glfw.SetKeyCallback":true,
+	"glfw.SetKeyCallback":true, "glfw.GetTime":true,
 
 	/*
           Operating System

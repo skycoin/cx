@@ -1,0 +1,46 @@
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+func main () () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Triangle")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	program := gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	var ratio f32
+
+	for not(glfw.ShouldClose("window")) {
+		bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
+		gl.MatrixMode(gl.MODELVIEW)
+
+		gl.Begin(gl.TRIANGLES)
+		gl.Color3f(1.0, 0.0, 0.0)
+		gl.Vertex3f(-0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 1.0, 0.0)
+		gl.Vertex3f(0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 0.0, 1.0);
+		gl.Vertex3f(0.0, 0.6, 0.0);
+		gl.End();
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}

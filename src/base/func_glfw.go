@@ -118,7 +118,12 @@ func glfw_SwapBuffers (window *CXArgument) error {
 	}
 }
 
-
+func glfw_GetTime (expr *CXExpression, call *CXCall) error {
+	time := glfw.GetTime()
+	sTime := encoder.Serialize(time)
+	assignOutput(0, &sTime, "f64", expr, call)
+	return nil
+}
 
 func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
 	var wName string

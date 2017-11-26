@@ -580,6 +580,7 @@ func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
 func glfw.GetFramebufferSize (window str) (width i32, height i32) {}
 func glfw.SetKeyCallback (window str, fnName str) () {}
+func glfw.GetTime () (time f64) {}
 
 /*
   Operating System

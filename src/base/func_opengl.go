@@ -94,7 +94,13 @@ func gl_BindVertexArray (array *CXArgument) error {
 
 		encoder.DeserializeAtomic(*array.Value, &arr)
 
-		gl.BindVertexArray(uint32(arr))
+		if runtime.GOOS == "darwin" {
+			gl.BindVertexArrayAPPLE(uint32(arr))
+		} else {
+			gl.BindVertexArray(uint32(arr))
+		}
+		
+		
 		return nil
 	} else {
 		return err
@@ -241,8 +247,6 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 
 func gl_Strs (source, freeFn *CXArgument) error {
 	if err := checkTwoTypes("gl.Strs", "str", "str", source, freeFn); err == nil {
-		//fmt.Println(*source.Value)
-		
 		var fnName string
 		var dsSource string
 		encoder.DeserializeRaw(*freeFn.Value, &fnName)

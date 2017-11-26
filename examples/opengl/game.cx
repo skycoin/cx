@@ -557,7 +557,7 @@ func main () () {
 	lSize := i32.mul(size, size)
 
 	setupScene()
-
+	
 	for stop {
 		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 		

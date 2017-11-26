@@ -1,0 +1,114 @@
+/*
+ Based on code from https://kylewbanks.com/blog/tutorial-opengl-with-golang-part-2-drawing-the-game-board
+*/
+
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 600
+var height i32 = 600
+
+var vertexShaderSource str = "
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+          }
+"
+
+var fragmentShaderSource str = "
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+"
+
+var square []f32 = []f32{
+	-0.5, 0.5, 0.0,
+	-0.5, -0.5, 0.0,
+	0.5, -0.5, 0.0,
+
+	-0.5, 0.5, 0.0,
+	0.5, 0.5, 0.0,
+	0.5, -0.5, 0.0
+}
+
+func addNull (source str) (s str) {
+	bSource := str.[]byte(source)
+	bSource := []byte.append(bSource, i32.byte(0))
+	s = []byte.str(bSource)
+}
+
+func compileShader(source str, shaderType i32) (shader i32) {
+	shader := gl.CreateShader(shaderType)
+
+	gl.Strs(source, "csources")
+	gl.ShaderSource(shader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(shader)
+}
+
+func initGlfw (window str) () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
+	glfw.CreateWindow("window", width, height, "Square")
+	glfw.MakeContextCurrent("window")
+}
+
+func initOpenGL () (program i32) {
+	gl.Init()
+
+	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+
+	program := gl.CreateProgram()
+	
+	gl.AttachShader(program, vertexShader)
+	gl.AttachShader(program, fragmentShader)
+	gl.LinkProgram(program)
+}
+
+func makeVao (points []f32) (vao i32) {
+	var vbo i32
+	gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, []f32.len(points)), points, gl.DYNAMIC_DRAW)
+
+	var vao i32
+	gl.GenVertexArrays(1, vao)
+	
+	gl.BindVertexArray(vao)
+	gl.EnableVertexAttribArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
+}
+
+func draw (vao i32, window str, program i32) () {
+	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	gl.UseProgram(program)
+
+	gl.BindVertexArray(vao)
+	gl.DrawArrays(gl.TRIANGLES, 0, i32.div([]f32.len(square), 3))
+
+	glfw.PollEvents()
+	glfw.SwapBuffers("window")
+}
+
+func main () () {
+	initGlfw("window")
+	program := initOpenGL()
+	vao := makeVao(square)
+
+	var ratio f32
+
+	for not(glfw.ShouldClose("window")) {
+		bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+
+		draw(vao, "window", program)
+	}
+}

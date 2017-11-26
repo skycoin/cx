@@ -96,7 +96,7 @@ var height i32 = 600
 var rows i32 = 20
 var columns i32 = 20
 
-var size i32 = 8
+var size i32 = 10
 
 var tex_characters i32
 var tex_city i32
@@ -465,7 +465,7 @@ func renderFunction () () {
 }
 
 func initWorld () () {
-	entityCount = 100
+	entityCount = 150
 
 	// components
 	COMPONENT_NONE := 0
@@ -485,10 +485,6 @@ func initWorld () () {
 	world.velocity = []Velocity.make(entityCount)
 	world.appearance = []Appearance.make(entityCount)
 	world.appearance = []Appearance.make(entityCount)
-}
-
-func apptest (app Appearance) () {
-	
 }
 
 func main () () {
@@ -532,7 +528,7 @@ func main () () {
 
 	createPlayer([]Appearance.read(sprites.Chars, 0), new Displacement{x: 1, y: 1})
 	createRock([]Appearance.read(sprites.Rocks, 0), new Displacement{x: 3, y: 1})
-	
+
 	for stop {
 		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 

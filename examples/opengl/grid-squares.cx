@@ -1,0 +1,165 @@
+/*
+ Based on code from https://kylewbanks.com/blog/tutorial-opengl-with-golang-part-2-drawing-the-game-board
+*/
+
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 600
+var height i32 = 600
+var rows i32 = 20
+var columns i32 = 20
+
+var vertexShaderSource str = "
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+          }
+"
+
+var fragmentShaderSource str = "
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+"
+
+type Cell struct {
+	drawable i32
+	x i32
+	y i32
+}
+
+var square []f32 = []f32{
+	-0.5, 0.5, 0.0,
+	-0.5, -0.5, 0.0,
+	0.5, -0.5, 0.0,
+
+	-0.5, 0.5, 0.0,
+	0.5, 0.5, 0.0,
+	0.5, -0.5, 0.0
+}
+
+func addNull (source str) (s str) {
+	bSource := str.[]byte(source)
+	bSource := []byte.append(bSource, i32.byte(0))
+	s = []byte.str(bSource)
+}
+
+func compileShader(source str, shaderType i32) (shader i32) {
+	shader := gl.CreateShader(shaderType)
+
+	gl.Strs(source, "csources")
+	gl.ShaderSource(shader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(shader)
+}
+
+func makeVao (points []f32) (vao i32) {
+	var vbo i32
+	gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, []f32.len(points)), points, gl.STATIC_DRAW)
+
+	var vao i32
+	
+	gl.GenVertexArrays(1, vao)
+	gl.BindVertexArray(vao)
+	gl.EnableVertexAttribArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
+}
+
+func newCell (x i32, y i32) (cell Cell) {
+	points := []f32.make([]f32.len(square))
+	[]f32.copy(points, square)
+
+	for i := 0; i32.lt(i, []f32.len(points)); i = i32.add(i, 1) {
+		var position f32
+		var size f32
+
+		if i32.eq(i32.mod(i, 3), 0) {
+			size = f32.div(1.0, i32.f32(columns))
+			position = f32.mul(i32.f32(x), size)
+		}
+		if i32.eq(i32.mod(i, 3), 1) {
+			size = f32.div(1.0, i32.f32(rows))
+			position = f32.mul(i32.f32(y), size)
+		}
+
+		if f32.lt([]f32.read(points, i), 0.0) {
+			points = []f32.write(points, i, f32.sub(f32.mul(position, 2.0), 1.0))
+		} else {
+			points = []f32.write(points, i, f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0))
+		}
+	}
+
+	cell = new Cell{
+		drawable: makeVao(points),
+		x: x,
+		y: y
+	}
+}
+
+func makeCells () (cells []Cell) {
+	var cells []Cell
+	for x := 0; i32.lt(x, rows); x = i32.add(x, 1) {
+		for y := 0; i32.lt(y, columns); y = i32.add(y, 1) {
+			cell := newCell(x, y)
+			cells = []Cell.append(cells, cell)
+		}
+	}
+}
+
+func initGlfw (window str) () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
+	glfw.CreateWindow("window", width, height, "Square")
+	glfw.MakeContextCurrent("window")
+}
+
+func initOpenGL () (program i32) {
+	gl.Init()
+
+	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+
+	program := gl.CreateProgram()
+	
+	gl.AttachShader(program, vertexShader)
+	gl.AttachShader(program, fragmentShader)
+	gl.LinkProgram(program)
+}
+
+func drawCell (cell Cell) () {
+	gl.BindVertexArray(cell.drawable)
+	gl.DrawArrays(gl.TRIANGLES, 0, i32.div([]f32.len(square), 3))
+}
+
+func draw (cells []Cell, window str, program i32) () {
+	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	gl.UseProgram(program)
+
+	for i := 0; i32.lt(i, i32.mul(rows, columns)); i = i32.add(i, 1) {
+		drawCell([]Cell.read(cells, i))
+	}
+
+	glfw.PollEvents()
+	glfw.SwapBuffers("window")
+}
+
+func main () () {
+	initGlfw("window")
+	program := initOpenGL()
+
+	cells := makeCells()
+
+	for not(glfw.ShouldClose("window")) {
+		draw(cells, "window", program)
+	}
+}

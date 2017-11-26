@@ -91,7 +91,7 @@ var size i32 = 14
 var vertexShaderSource str = "
           #version 120
           void main() {
-            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex * 200;
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
           }
 "
 
