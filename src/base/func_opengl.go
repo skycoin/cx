@@ -88,6 +88,25 @@ func gl_BindBuffer (target, buffer *CXArgument) error {
 	}
 }
 
+func gl_Viewport (x, y, width, height *CXArgument) error {
+	if err := checkFourTypes("gl.Viewport", "i32", "i32", "i32", "i32", x, y, width, height); err == nil {
+		var _x int32
+		var _y int32
+		var _width int32
+		var _height int32
+
+		encoder.DeserializeAtomic(*x.Value, &_x)
+		encoder.DeserializeAtomic(*y.Value, &_y)
+		encoder.DeserializeAtomic(*width.Value, &_width)
+		encoder.DeserializeAtomic(*height.Value, &_height)
+		
+		gl.Viewport(_x, _y, _width, _height)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func gl_BindVertexArray (array *CXArgument) error {
 	if err := checkType("gl.BindVertexArray", "i32", array); err == nil {
 		var arr int32

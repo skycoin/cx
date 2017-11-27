@@ -516,6 +516,7 @@ func gl.LinkProgram (progId i32) () {}
 func gl.Clear (mask i32) () {}
 func gl.UseProgram (progId i32) () {}
 
+func gl.Viewport (x i32, y i32, width i32, height i32) () {}
 func gl.BindBuffer (target i32, buffer i32) () {}
 func gl.BindVertexArray (target i32) () {}
 func gl.EnableVertexAttribArray (index i32) () {}

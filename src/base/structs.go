@@ -134,7 +134,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.Disable":true, "gl.Hint":true,
 
 	"gl.NewTexture":true, "gl.DepthMask":true, "gl.TexEnvi":true,
-	"gl.BlendFunc":true, "gl.Ortho":true,
+	"gl.BlendFunc":true, "gl.Ortho":true, "gl.Viewport":true,
 	
 	/*
           GLFW

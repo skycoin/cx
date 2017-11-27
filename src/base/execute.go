@@ -843,6 +843,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "gl.Vertex3f": err = gl_Vertex3f((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.Hint": err = gl_Hint((*argsCopy)[0], (*argsCopy)[1])
 	case "gl.Ortho": err = gl_Ortho((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4], (*argsCopy)[5])
+	case "gl.Viewport": err = gl_Viewport((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
 
 	case "gl.Enable": err = gl_Enable((*argsCopy)[0])
 	case "gl.Disable": err = gl_Enable((*argsCopy)[0])
