@@ -852,8 +852,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "gl.DepthFunc": err = gl_DepthFunc((*argsCopy)[0])
 	case "gl.DepthMask": err = gl_DepthMask((*argsCopy)[0])
 	case "gl.BlendFunc": err = gl_BlendFunc((*argsCopy)[0], (*argsCopy)[1])
+	case "gl.TexCoord2d": err = gl_TexCoord2d((*argsCopy)[0], (*argsCopy)[1])
 	case "gl.Lightfv": err = gl_Lightfv((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.TexEnvi": err = gl_TexEnvi((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+	case "gl.Scalef": err = gl_Scalef((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "gl.Frustum": err = gl_Frustum((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4], (*argsCopy)[5])
 		// GLFW
 	case "glfw.Init": err = glfw_Init()

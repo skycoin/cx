@@ -538,6 +538,8 @@ func gl.MatrixMode (mode i32) () {}
 func gl.LoadIdentity () () {}
 func gl.Rotatef (angle f32, x f32, y f32, z f32) () {}
 func gl.Translatef (x f32, y f32, z f32) () {}
+func gl.Scalef (x f32, y f32, z f32) () {}
+func gl.TexCoord2d (s f32, t f32) () {}
 func gl.PushMatrix () () {}
 func gl.PopMatrix () () {}
 func gl.EnableClientState (array i32) () {}

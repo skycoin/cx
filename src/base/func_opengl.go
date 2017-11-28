@@ -798,6 +798,38 @@ func gl_DepthMask (flag *CXArgument) error {
 	}
 }
 
+func gl_Scalef (x, y, z *CXArgument) error {
+	if err := checkThreeTypes("gl.Scalef", "f32", "f32", "f32", x, y, z); err == nil {
+		var _x float32
+		var _y float32
+		var _z float32
+
+		encoder.DeserializeRaw(*x.Value, &_x)
+		encoder.DeserializeRaw(*y.Value, &_y)
+		encoder.DeserializeRaw(*z.Value, &_z)
+
+		gl.Scalef(_x, _y, _z)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func gl_TexCoord2d (s, t *CXArgument) error {
+	if err := checkTwoTypes("gl.TexCoord2d", "f32", "f32", s, t); err == nil {
+		var _s float32
+		var _t float32
+
+		encoder.DeserializeRaw(*s.Value, &_s)
+		encoder.DeserializeRaw(*t.Value, &_t)
+
+		gl.TexCoord2d(float64(_s), float64(_t))
+		return nil
+	} else {
+		return err
+	}
+}
+
 func gl_TexEnvi (target, pname, param *CXArgument) error {
 	if err := checkThreeTypes("gl.TexEnvi", "i32", "i32", "i32", target, pname, param); err == nil {
 		var _target int32
@@ -845,26 +877,6 @@ func gl_Hint (target, mode *CXArgument) error {
 	}
 }
 
-//gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 func Foo () {
 	fmt.Println("gl.POLYGON", gl.POLYGON)
-	
-	// fmt.Println("gl.SRC_ALPHA", gl.SRC_ALPHA)
-	// fmt.Println("gl.ONE_MINUS_SRC_ALPHA", gl.ONE_MINUS_SRC_ALPHA)
-	
-	// fmt.Println("gl.TEXTURE_ENV", gl.TEXTURE_ENV)
-	// fmt.Println("gl.TEXTURE_ENV_MODE", gl.TEXTURE_ENV_MODE)
-	// fmt.Println("gl.MODULATE", gl.MODULATE)
-	// fmt.Println("gl.DECAL", gl.DECAL)
-	// fmt.Println("gl.BLEND", gl.BLEND)
-	// fmt.Println("gl.REPLACE", gl.REPLACE)
-	
-	// fmt.Println("gl.BLEND", gl.BLEND)
-	// fmt.Println("gl.DEPTH_TEST", gl.DEPTH_TEST)
-	// fmt.Println("gl.LIGHTING", gl.LIGHTING)
-	// fmt.Println("gl.LEQUAL", gl.LEQUAL)
-	// fmt.Println("gl.LIGHT0", gl.LIGHT0)
-	// fmt.Println("gl.AMBIENT", gl.AMBIENT)
-	// fmt.Println("gl.DIFFUSE", gl.DIFFUSE)
-	// fmt.Println("gl.POSITION", gl.POSITION)
 }

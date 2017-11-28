@@ -1,0 +1,74 @@
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+var frame f64
+var texture []i32
+
+func cube () () {
+	gl.BindTexture(gl.TEXTURE_2D, []i32.read(texture, f64.i32(frame)))
+	gl.Scalef(0.1, 0.2, 0.0)
+	gl.Begin(gl.QUADS)
+	gl.TexCoord2d(0.0, 0.0); 
+	gl.Vertex3f(-1.0, 1.0, 0.0);
+	gl.TexCoord2d(1.0, 0.0); 
+	gl.Vertex3f(1.0, 1.0, 0.0);
+	gl.TexCoord2d(1.0, 1.0); 
+	gl.Vertex3f(1.0, -1.0, 0.0);
+	gl.TexCoord2d(0.0, 1.0);
+	gl.Vertex3f(-1.0, -1.0, 0.0);
+	gl.End();
+}
+
+func display () () {
+	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	
+	gl.LoadIdentity()
+	gl.Enable(gl.TEXTURE_2D)
+	gl.Translatef(0.0, 0.0, 0.0)
+	cube()
+	glfw.PollEvents()
+	glfw.SwapBuffers("window")
+	frame = f64.add(frame, f32.f64(0.1))
+	if f64.gt(frame, i32.f64(2)) {
+		frame = i32.f64(0)
+	}
+}
+
+func init () () {
+	wd := os.GetWorkingDirectory()
+	texture = []i32.append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk1.png")))
+	texture = []i32.append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk2.png")))
+}
+
+func main () () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
+	glfw.CreateWindow("window", width, height, "Texture Animation")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	program := gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	init()
+	
+	stop := not(glfw.ShouldClose("window"))
+	for not(glfw.ShouldClose("window")) {
+		//gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+		gl.UseProgram(program)
+
+		display()
+
+		//glfw.PollEvents()
+		//glfw.SwapBuffers("window")
+	}
+}

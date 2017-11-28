@@ -259,21 +259,15 @@ func drawSpace (x i32, y i32, texture i32) () {
  	texX1, texX2, texY1, texY2 := getTextureCoords(1861, 1113, 84, 84, 2262)
 
 	gl.Begin(gl.QUADS)
-
 	gl.Normal3f(0.0, 0.0, 0.0)
-	
 	gl.TexCoord2f(texX1, texY2)
 	gl.Vertex3f(-0.5, -0.5, 0.5)
-	
 	gl.TexCoord2f(texX1, texY1)
 	gl.Vertex3f(-0.5, 0.5, 0.5)
-	
 	gl.TexCoord2f(texX2, texY1)
 	gl.Vertex3f(0.5, 0.5, 0.5)
-	
 	gl.TexCoord2f(texX2, texY2)
 	gl.Vertex3f(0.5, -0.5, 0.5)
-
 	gl.End()
 }
 
@@ -317,31 +311,19 @@ func drawTile (x i32, y i32, texture i32, sprite Sprite) () {
 	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
 
 	gl.Translatef(i32.f32(x), i32.f32(y), f32.mul(i32.f32(size), -1.0))
-	//gl.Translatef(f32.add(i32.f32(x), 0.0), f32.add(i32.f32(y), 0.0), f32.mul(i32.f32(size), -1.5))
 	
-	//gl.Rotatef(20.0, 1.0, 0.0, 0.0)
-	//gl.Rotatef(10.0, 0.0, 1.0, 0.0)
-
 	gl.BindTexture(gl.TEXTURE_2D, texture)
-	
 	gl.Color4f(1.0, 1.0, 1.0, 1.0)
-
 	gl.Begin(gl.QUADS)
-
 	gl.Normal3f(0.0, 0.0, 0.0)
-	//gl.TexCoord2f(sprite.x1, sprite.y2)
 	gl.TexCoord2f(sprite.x1, sprite.y2)
 	gl.Vertex3f(-1.0, -1.0, 0.0)
-	//gl.TexCoord2f(sprite.x1, sprite.y1)
 	gl.TexCoord2f(sprite.x2, sprite.y2)
 	gl.Vertex3f(1.0, -1.0, 0.0)
-	//gl.TexCoord2f(sprite.x2, sprite.y1)
 	gl.TexCoord2f(sprite.x2, sprite.y1)
 	gl.Vertex3f(1.0, 1.0, 0.0)
-	//gl.TexCoord2f(sprite.x2, sprite.y2)
 	gl.TexCoord2f(sprite.x1, sprite.y1)
 	gl.Vertex3f(-1.0, 1.0, 0.0)
-
 	gl.End()
 }
 
@@ -386,9 +368,6 @@ func setupScene () () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 }
-
-//gl.MatrixMode(gl.PROJECTION)
-//gl.LoadIdentity()
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
 	i = i32.add(i32.mul(w, r), c)
