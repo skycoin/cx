@@ -1562,6 +1562,7 @@ func gl.LinkProgram (progId i32) () {}
 func gl.Clear (mask i32) () {}
 func gl.UseProgram (progId i32) () {}
 
+func gl.Viewport (x i32, y i32, width i32, height i32) () {}
 func gl.BindBuffer (target i32, buffer i32) () {}
 func gl.BindVertexArray (target i32) () {}
 func gl.EnableVertexAttribArray (index i32) () {}
@@ -1583,16 +1584,20 @@ func gl.MatrixMode (mode i32) () {}
 func gl.LoadIdentity () () {}
 func gl.Rotatef (angle f32, x f32, y f32, z f32) () {}
 func gl.Translatef (x f32, y f32, z f32) () {}
+func gl.Scalef (x f32, y f32, z f32) () {}
+func gl.TexCoord2d (s f32, t f32) () {}
 func gl.PushMatrix () () {}
 func gl.PopMatrix () () {}
 func gl.EnableClientState (array i32) () {}
 
 func gl.BindTexture (target i32, texture i32) () {}
+func gl.Color3f (red f32, green f32, blue f32) () {}
 func gl.Color4f (red f32, green f32, blue f32, alpha f32) () {}
 func gl.Begin (mode i32) () {}
 func gl.End () () {}
 func gl.Normal3f (nx f32, ny f32, nz f32) () {}
 func gl.TexCoord2f (s f32, t f32) () {}
+func gl.Vertex2f (nx f32, ny f32) () {}
 func gl.Vertex3f (nx f32, ny f32, nz f32) () {}
 
 func gl.Enable (cap i32) () {}
@@ -1608,6 +1613,8 @@ func gl.DepthMask (flag bool) () {}
 func gl.TexEnvi (target i32, pname i32, param i32) () {}
 func gl.BlendFunc (sfactor i32, dfactor i32) () {}
 func gl.Hint (target i32, mode i32) () {}
+
+func gl.Ortho (left f32, right f32, bottom f32, top f32, zNear f32, zFar f32) () {}
 ```
 
 And here's a list for the GLFW functions:
@@ -1620,8 +1627,9 @@ func glfw.MakeContextCurrent (window str) () {}
 func glfw.ShouldClose (window str) (flag bool) {}
 func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
-
+func glfw.GetFramebufferSize (window str) (width i32, height i32) {}
 func glfw.SetKeyCallback (window str, fnName str) () {}
+func glfw.GetTime () (time f64) {}
 ```
 
 If you're interested on having a look at the applications that have
