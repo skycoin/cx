@@ -15,15 +15,7 @@ import (
 
 func addI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.add", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeAtomic(*arg1.Value, &num1)
-		encoder.DeserializeAtomic(*arg2.Value, &num2)
-
-		output := encoder.SerializeAtomic(int32(num1 + num2))
-
-		assignOutput(0, &output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 + n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -31,15 +23,7 @@ func addI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func subI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.sub", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.SerializeAtomic(int32(num1 - num2))
-
-		assignOutput(0, &output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 - n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -47,15 +31,7 @@ func subI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func mulI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.mul", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.SerializeAtomic(int32(num1 * num2))
-
-		assignOutput(0, &output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 * n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -74,7 +50,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.SerializeAtomic(int32(num1 / num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -88,7 +64,7 @@ func absI32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.Serialize(int32(math.Abs(float64(num1))))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -108,7 +84,7 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int32(num1 % num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -124,7 +100,7 @@ func andI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		
 		output := encoder.Serialize(int32(num1 & num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -140,7 +116,7 @@ func orI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 
 		output := encoder.Serialize(int32(num1 | num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -156,7 +132,7 @@ func xorI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(int32(num1 ^ num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -172,7 +148,7 @@ func andNotI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 
 		output := encoder.Serialize(int32(num1 &^ num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -188,7 +164,7 @@ func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) err
 
 		output := encoder.Serialize(int32(num1 << num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -204,7 +180,7 @@ func shiftRightI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) er
 
 		output := encoder.Serialize(int32(num1 >> num2))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -226,7 +202,7 @@ func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		rand.Seed(time.Now().UTC().UnixNano())
 		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -253,7 +229,7 @@ func readI32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
 		output := encoder.Serialize(value)
 
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -291,7 +267,7 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
-		assignOutput(0, &final, "[]i32", expr, call)
+		assignOutput(0, final, "[]i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -301,7 +277,7 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 func lenI32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i32.len", "[]i32", arr); err == nil {
 		size := (*arr.Value)[:4]
-		assignOutput(0, &size, "i32", expr, call)
+		assignOutput(0, size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -326,7 +302,7 @@ func ltI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = []byte{0, 0, 0, 0}
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -348,7 +324,7 @@ func gtI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -372,7 +348,7 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = []byte{0, 0, 0, 0}
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -394,7 +370,7 @@ func lteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -416,7 +392,7 @@ func gteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -433,7 +409,7 @@ func concatI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		assignOutput(0, &sOutput, "[]i32", expr, call)
+		assignOutput(0, sOutput, "[]i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -451,7 +427,7 @@ func appendI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		sOutput := encoder.Serialize(output)
 
 		//*arg1.Value = sOutput
-		assignOutput(0, &sOutput, "[]i32", expr, call)
+		assignOutput(0, sOutput, "[]i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -477,6 +453,6 @@ func readI32 (expr *CXExpression, call *CXCall) error {
 	}
 	output := encoder.Serialize(num)
 
-	assignOutput(0, &output, "i32", expr, call)
+	assignOutput(0, output, "i32", expr, call)
 	return nil
 }

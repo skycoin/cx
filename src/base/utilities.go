@@ -11,7 +11,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpression, call *CXCall) {
+func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.OutputNames[outNameNumber].Name
 	expr.OutputNames[outNameNumber].Typ = typ
 
@@ -29,11 +29,11 @@ func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpres
 					copy(firstChunk, (*def.Value)[:offset])
 					copy(secondChunk, (*def.Value)[offset+size:])
 
-					final := append(firstChunk, *output...)
+					final := append(firstChunk, output...)
 					final = append(final, secondChunk...)
 					
 					*def.Value = final
-					return
+					return nil
 				}
 			}
 
@@ -60,33 +60,21 @@ func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpres
 							copy(firstChunk, (*def.Value)[:offset])
 							copy(secondChunk, (*def.Value)[offset+size:])
 
-							final := append(firstChunk, *output...)
+							final := append(firstChunk, output...)
 							final = append(final, secondChunk...)
 
-
-							// final := append((*def.Value)[:offset], *output...)
-							// final = append(final, (*def.Value)[offset+size:]...)
-
-							// if identParts[1] == "appearance" || identParts[1] == "displacement" {
-							// 	fmt.Println()
-							// 	fmt.Println(outName)
-							// 	fmt.Println("def.Value", len(*def.Value))
-							// 	fmt.Println("final", len(final))
-							// }
-							
 							*def.Value = final
-							//fmt.Println("after", def.Name, len(*def.Value))
-							return
+							return nil
 						} else {
 							
 							for c := 0; c < len(byts); c++ {
-								byts[c] = (*output)[c]
+								byts[c] = (output)[c]
 							}
 						}
 					} else {
 						panic(err)
 					}
-					return
+					return nil
 				}
 			}
 			break
@@ -97,16 +85,16 @@ func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpres
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
 					idx, _ := strconv.ParseInt(identParts[1], 10, 64)
-					for c := 0; c < len(*output); c++ {
+					for c := 0; c < len(output); c++ {
 						if typ == "i64" || typ == "f64" {
-							(*def.Value)[(int(idx)*8) + 4 + c] = (*output)[c]
+							(*def.Value)[(int(idx)*8) + 4 + c] = (output)[c]
 						} else if typ == "byte" {
-							(*def.Value)[int(idx) + c] = (*output)[c]
+							(*def.Value)[int(idx) + c] = (output)[c]
 						} else {
-							(*def.Value)[(int(idx)*4) + 4 + c] = (*output)[c]
+							(*def.Value)[(int(idx)*4) + 4 + c] = (output)[c]
 						}
 					}
-					return
+					return nil
 				}
 			}
 			break
@@ -114,19 +102,19 @@ func assignOutput (outNameNumber int, output *[]byte, typ string, expr *CXExpres
 	}
 
 	if def, err := expr.Module.GetDefinition(outName); err == nil {
-		def.Value = output
-		return
+		def.Value = &output
+		return nil
 	}
 
 	for _, def := range call.State {
 		if def.Name == outName {
-			def.Value = output
-			return
+			def.Value = &output
+			return nil
 		}
 	}
 
-	call.State = append(call.State, MakeDefinition(outName, output, typ))
-	return
+	call.State = append(call.State, MakeDefinition(outName, &output, typ))
+	return nil
 }
 
 func checkType (fnName string, typ string, arg *CXArgument) error {
@@ -528,43 +516,43 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 			arr := make([]int32, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]byte":
 			arr := make([]byte, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]str":
 			arr := make([]string, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]i32":
 			arr := make([]int32, _len)
 			val := encoder.Serialize(arr)
 			
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]i64":
 			arr := make([]int64, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]f32":
 			arr := make([]float32, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]f64":
 			arr := make([]float64, _len)
 			val := encoder.Serialize(arr)
 
-			assignOutput(0, &val, typ, expr, call)
+			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "default":
 			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ))
@@ -991,4 +979,19 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 		}
 		i++
 	}
+}
+
+
+func oneI32oneI32 (fn func(int32)int32, arg1, arg2 *CXArgument) []byte {
+	var num1 int32
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	return encoder.SerializeAtomic(int32(fn(num1)))
+}
+
+func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
+	var num1 int32
+	var num2 int32
+	encoder.DeserializeAtomic(*arg1.Value, &num1)
+	encoder.DeserializeAtomic(*arg2.Value, &num2)
+	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }

@@ -24,7 +24,7 @@ func and (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) 
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -46,7 +46,7 @@ func or (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) e
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -66,7 +66,7 @@ func not (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -147,7 +147,7 @@ func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	encoder.DeserializeRaw(*arg.Value, &name)
 
 	if arg, err := resolveIdent(name, call); err == nil {
-		assignOutput(0, arg.Value, arg.Typ, expr, call)
+		assignOutput(0, *arg.Value, arg.Typ, expr, call)
 		return nil
 	} else {
 		return err
@@ -178,7 +178,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 			}
 		}
 
-		assignOutput(0, &zeroVal, typName, expr, call)
+		assignOutput(0, zeroVal, typName, expr, call)
 		return nil
 	} else {
 		return err
@@ -188,7 +188,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 func serialize_program (expr *CXExpression, call *CXCall) error {
 	val := Serialize(call.Context)
 
-	assignOutput(0, val, "[]byte", expr, call)
+	assignOutput(0, *val, "[]byte", expr, call)
 	return nil
 }
 
@@ -224,7 +224,7 @@ func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) 
 
 					//fmt.Println(final)
 					
-					assignOutput(0, &final, rArr.Typ, expr, call)
+					assignOutput(0, final, rArr.Typ, expr, call)
 					//*rArr.Value = final
 					
 					//fmt.Println("arrSize", arrSize, rStrctInst.Typ, len(output))
@@ -253,7 +253,7 @@ func cstm_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 			if instance, err, _, _ := getStrctFromArray(rArr, _index, expr, call); err == nil {
 				output := make([]byte, len(instance))
 				copy(output, instance)
-				assignOutput(0, &output, rArr.Typ[2:], expr, call)
+				assignOutput(0, output, rArr.Typ[2:], expr, call)
 			} else {
 				return err
 			}
@@ -293,7 +293,7 @@ func cstm_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 					// final = append(final, (*rArr.Value)[offset+size:]...)
 
 					//*rArr.Value = final
-					assignOutput(0, &final, rArr.Typ, expr, call)
+					assignOutput(0, final, rArr.Typ, expr, call)
 				} else {
 					return err
 				}
@@ -319,7 +319,7 @@ func cstm_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 		if rArr, err := resolveIdent(_arr, call); err == nil {
 			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
 			output := encoder.Serialize(len)
-			assignOutput(0, &output, "i32", expr, call)
+			assignOutput(0, output, "i32", expr, call)
 			return nil
 		} else {
 			return err
@@ -339,7 +339,7 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 
 		if _len == 0 {
 			output := []byte{0, 0, 0, 0}
-			assignOutput(0, &output, _typ, expr, call)
+			assignOutput(0, output, _typ, expr, call)
 			return nil
 		}
 
@@ -355,7 +355,7 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 
 		instances = append(*length.Value, instances...)
 		
-		assignOutput(0, &instances, _typ, expr, call)
+		assignOutput(0, instances, _typ, expr, call)
 		return nil
 	} else {
 		return err

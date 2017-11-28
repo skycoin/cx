@@ -29,7 +29,7 @@ func gl_CreateProgram (expr *CXExpression, call *CXCall) error {
 	prog := gl.CreateProgram()
 	output := encoder.Serialize(int32(prog))
 
-	assignOutput(0, &output, "i32", expr, call)
+	assignOutput(0, output, "i32", expr, call)
 	return nil
 }
 
@@ -256,7 +256,7 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 		shader := gl.CreateShader(uint32(xtyp))
 		sShader := encoder.Serialize(int32(shader))
 
-		assignOutput(0, &sShader, "i32", expr, call)
+		assignOutput(0, sShader, "i32", expr, call)
 
 		return nil
 	} else {
@@ -777,7 +777,7 @@ func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
 		texture := newTexture(name)
 		output := encoder.Serialize(int32(texture))
 		
-		assignOutput(0, &output, "i32", expr, call)
+		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
 		return err

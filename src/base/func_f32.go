@@ -21,7 +21,7 @@ func addF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 	output := encoder.Serialize(float32(num1 + num2))
 
-	assignOutput(0, &output, "f32", expr, call)
+	assignOutput(0, output, "f32", expr, call)
 	return nil
 }
 
@@ -34,7 +34,7 @@ func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 - num2))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -50,7 +50,7 @@ func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 * num2))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -70,7 +70,7 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 		output := encoder.Serialize(float32(num1 / num2))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -84,7 +84,7 @@ func absF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.Serialize(float32(math.Abs(float64(num1))))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -98,7 +98,7 @@ func cosF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.Serialize(float32(math.Cos(float64(num1))))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -112,7 +112,7 @@ func sinF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		output := encoder.Serialize(float32(math.Sin(float64(num1))))
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -139,7 +139,7 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		encoder.DeserializeRaw((*arr.Value)[(index+1)*4:(index+2)*4], &value)
 		output := encoder.Serialize(value)
 
-		assignOutput(0, &output, "f32", expr, call)
+		assignOutput(0, output, "f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -177,7 +177,7 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
-		assignOutput(0, &final, "[]f32", expr, call)
+		assignOutput(0, final, "[]f32", expr, call)
 		
 		return nil
 	} else {
@@ -188,7 +188,7 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]f32.len", "[]f32", arr); err == nil {
 		size := (*arr.Value)[:4]
-		assignOutput(0, &size, "i32", expr, call)
+		assignOutput(0, size, "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -210,7 +210,7 @@ func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -232,7 +232,7 @@ func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -254,7 +254,7 @@ func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -276,7 +276,7 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 		
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -298,7 +298,7 @@ func gteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 			val = encoder.Serialize(int32(0))
 		}
 
-		assignOutput(0, &val, "bool", expr, call)
+		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
 		return err
@@ -315,7 +315,7 @@ func concatF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		output := append(slice1, slice2...)
 		sOutput := encoder.Serialize(output)
 
-		assignOutput(0, &sOutput, "[]f32", expr, call)
+		assignOutput(0, sOutput, "[]f32", expr, call)
 		return nil
 	} else {
 		return err
@@ -333,7 +333,7 @@ func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 		sOutput := encoder.Serialize(output)
 
 		//*arg1.Value = sOutput
-		assignOutput(0, &sOutput, "[]f32", expr, call)
+		assignOutput(0, sOutput, "[]f32", expr, call)
 		return nil
 	} else {
 		return err

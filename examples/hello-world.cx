@@ -1,5 +1,6 @@
 package main
 
 func main () () {
+	i32.print(i32.add(5, 5))
 	str.print("Hello World!")
 }

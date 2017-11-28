@@ -611,7 +611,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 		// identity functions
-	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput(0, (*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput(0, *(*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
 	case "identity": identity((*argsCopy)[0], expr, call)
 		// cast functions
 	case "[]byte.str", "byte.str", "bool.str", "i32.str", "i64.str", "f32.str", "f64.str": err = castToStr((*argsCopy)[0], expr, call)

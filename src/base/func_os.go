@@ -60,6 +60,6 @@ func os_Close (fileName *CXArgument) error {
 
 func os_GetWorkingDirectory (expr *CXExpression, call *CXCall) error {
 	path := encoder.Serialize(call.Context.Path)
-	assignOutput(0, &path, "str", expr, call)
+	assignOutput(0, path, "str", expr, call)
 	return nil
 }
