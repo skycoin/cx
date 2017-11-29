@@ -251,9 +251,11 @@ func cstm_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 
 		if rArr, err := resolveIdent(_arr, call); err == nil {
 			if instance, err, _, _ := getStrctFromArray(rArr, _index, expr, call); err == nil {
-				output := make([]byte, len(instance))
-				copy(output, instance)
-				assignOutput(0, output, rArr.Typ[2:], expr, call)
+				//output := make([]byte, len(instance))
+				//copy(output, instance)
+				//assignOutput(0, output, rArr.Typ[2:], expr, call)
+
+				assignOutput(0, instance, rArr.Typ[2:], expr, call)
 			} else {
 				return err
 			}
@@ -280,15 +282,38 @@ func cstm_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 		if rArr, err := resolveIdent(_arr, call); err == nil {
 			if rInst, err := resolveIdent(_instance, call); err == nil {
 				if _, err, offset, size := getStrctFromArray(rArr, _index, expr, call); err == nil {
+					// finalSize := int(offset) + (len(*rArr.Value) - int((offset + size))) + len(*rInst.Value)
+					// final := make([]byte, finalSize, finalSize)
+
+
+					// firstChunkSize := int(offset)
+					// newValSize := len(*rInst.Value)
+
+					// for c := 0; c < len(final); c++ {
+					// 	if c < firstChunkSize {
+					// 		final[c] = (*rArr.Value)[c]
+					// 	} else if c >= firstChunkSize && c < firstChunkSize + newValSize {
+					// 		final[c] = (*rInst.Value)[c - (firstChunkSize)]
+					// 	} else if c >= firstChunkSize + newValSize {
+					// 		final[c] = (*rArr.Value)[c - (firstChunkSize + newValSize)]
+					// 	}
+					// }
+					
+
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*rArr.Value) - int((offset + size)))
 
 					copy(firstChunk, (*rArr.Value)[:offset])
 					copy(secondChunk, (*rArr.Value)[offset+size:])
 
+
+
+					// firstChunk := (*rArr.Value)[:offset]
+					// secondChunk := (*rArr.Value)[offset+size:]
+
 					final := append(firstChunk, *rInst.Value...)
 					final = append(final, secondChunk...)
-					
+
 					// final := append((*rArr.Value)[:offset], *rInst.Value...)
 					// final = append(final, (*rArr.Value)[offset+size:]...)
 

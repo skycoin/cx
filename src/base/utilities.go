@@ -982,7 +982,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 }
 
 
-func oneI32oneI32 (fn func(int32)int32, arg1, arg2 *CXArgument) []byte {
+func oneI32oneI32 (fn func(int32)int32, arg1 *CXArgument) []byte {
 	var num1 int32
 	encoder.DeserializeAtomic(*arg1.Value, &num1)
 	return encoder.SerializeAtomic(int32(fn(num1)))

@@ -10,8 +10,6 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-// "character arrays" (not string arrays)
-
 func ltStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.lt", "str", "str", arg1, arg2); err == nil {
 		var str1 string

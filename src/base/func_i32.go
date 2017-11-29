@@ -59,13 +59,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func absI32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i32.abs", "i32", arg1); err == nil {
-		var num1 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-
-		output := encoder.Serialize(int32(math.Abs(float64(num1))))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, oneI32oneI32(func(n1 int32) int32 {return int32(math.Abs(float64(n1)))}, arg1), "i32", expr, call)
 	} else {
 		return err
 	}	
@@ -75,16 +69,14 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	if err := checkTwoTypes("i32.mod", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
+		encoder.DeserializeAtomic(*arg1.Value, &num1)
+		encoder.DeserializeAtomic(*arg2.Value, &num2)
 
 		if num2 == int32(0) {
 			return errors.New("i32.mod: Division by 0")
 		}
 
-		output := encoder.Serialize(int32(num1 % num2))
-
-		assignOutput(0, output, "i32", expr, call)
+		assignOutput(0, encoder.Serialize(int32(num1 % num2)), "i32", expr, call)
 		return nil
 	} else {
 		return err
@@ -93,15 +85,7 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func andI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.and", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-		
-		output := encoder.Serialize(int32(num1 & num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 & n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -109,15 +93,7 @@ func andI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func orI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.or", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.Serialize(int32(num1 | num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 | n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -125,15 +101,7 @@ func orI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 
 func xorI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.xor", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.Serialize(int32(num1 ^ num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 ^ n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -141,15 +109,7 @@ func xorI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 
 func andNotI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitclear", "i32", "i32", arg1, arg2); err == nil {
-		var num1 int32
-		var num2 int32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.Serialize(int32(num1 &^ num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 &^ n2}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -157,15 +117,9 @@ func andNotI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 
 func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitshl", "i32", "i32", arg1, arg2); err == nil {
-		var num1 uint32
-		var num2 uint32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.Serialize(int32(num1 << num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {
+			return int32(uint32(n1) << uint32(n2))
+		}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -173,15 +127,9 @@ func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) err
 
 func shiftRightI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitshr", "i32", "i32", arg1, arg2); err == nil {
-		var num1 uint32
-		var num2 uint32
-		encoder.DeserializeRaw(*arg1.Value, &num1)
-		encoder.DeserializeRaw(*arg2.Value, &num2)
-
-		output := encoder.Serialize(int32(num1 >> num2))
-
-		assignOutput(0, output, "i32", expr, call)
-		return nil
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {
+			return int32(uint32(n1) >> uint32(n2))
+		}, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
@@ -251,11 +199,6 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]i32.write: index %d exceeds array of length %d", index, size))
 		}
-
-		// i := (int(index)+1)*4
-		// for c := 0; c < 4; c++ {
-		// 	(*arr.Value)[i + c] = (*val.Value)[c]
-		// }
 
 		offset := int(index) * 4 + 4
 		firstChunk := make([]byte, offset)

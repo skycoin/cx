@@ -268,7 +268,19 @@ func main () () {
 
 	cells := makeCells()
 
+	// FPS
+	lastTime := glfw.GetTime()
+	nbFrames := 0	
 	for not(glfw.ShouldClose("window")) {
+		// FPS
+		currentTime := glfw.GetTime()
+		nbFrames = i32.add(nbFrames, 1)
+		if f64.gteq(f64.sub(currentTime, lastTime), f32.f64(1.0)) {
+			//f32.print(f32.div(1000.0, i32.f32(nbFrames)))
+			f32.print(i32.f32(nbFrames))
+			nbFrames = 0
+			lastTime = f64.add(lastTime, f32.f64(1.0))
+		}
 
 		for c := 0; i32.lt(c, i32.mul(rows, columns)); c = i32.add(c, 1) {
 			cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
