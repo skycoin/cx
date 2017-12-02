@@ -659,7 +659,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 	return &serialized
 }
 
-func Deserialize (prgrm *[]byte) *CXProgram {
+func Deserialize (prgrm []byte) *CXProgram {
 	cxt := CXProgram{}
 
 	// First we deserialize the sIndex, as it contains the offsets of everything

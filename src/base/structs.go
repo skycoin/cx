@@ -201,7 +201,7 @@ type CXModule struct {
 type CXDefinition struct {
 	Name string
 	Typ string
-	Value *[]byte
+	Value []byte
 
 	Module *CXModule
 	Context *CXProgram
@@ -262,7 +262,7 @@ type CXExpression struct {
 
 type CXArgument struct {
 	Typ string
-	Value *[]byte
+	Value []byte
 }
 
 /*
