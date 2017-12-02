@@ -218,7 +218,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 						identName := encoder.Serialize(param.Name)
 						args = append(args, &CXArgument{
 							Typ: identType,
-							Value: identName,
+							Value: &identName,
 						})
 					}
 				}
@@ -247,7 +247,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							identName := encoder.Serialize(def.Name)
 							args = append(args, &CXArgument{
 								Typ: identType,
-								Value: identName,
+								Value: &identName,
 							})
 						}
 					}
@@ -265,7 +265,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 									args = append(args, &CXArgument{
 										Typ: identType,
-										Value: identName,
+										Value: &identName,
 									})
 								}
 							}
@@ -282,7 +282,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 								
 				// 				args = append(args, &CXArgument{
 				// 					Typ: identType,
-				// 					Value: identName,
+				// 					Value: &identName,
 				// 				})
 				// 			}
 				// 		}
@@ -326,7 +326,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 			if ex.Operator.Name == "initDef" {
 				var typ string
-				encoder.DeserializeRaw(ex.Arguments[0].Value, &typ)
+				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
 
 				if reqType != typ && typ[2:] != reqType {
 					continue
@@ -338,7 +338,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				
 				args = append(args, &CXArgument{
 					Typ: identType,
-					Value: val,
+					Value: &val,
 				})
 				continue
 			}
@@ -349,7 +349,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 					if ex.Operator.Name == "identity" {
 						for _, expr := range expr.Function.Expressions {
 							var identName string
-							encoder.DeserializeRaw(ex.Arguments[0].Value, &identName)
+							encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
 							if expr.OutputNames != nil && expr.OutputNames[0].Name == identName {
 								typ = expr.OutputNames[0].Typ
 								break
@@ -366,7 +366,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							identName := encoder.Serialize(outName.Name)
 							args = append(args, &CXArgument{
 								Typ: identType,
-								Value: identName,
+								Value: &identName,
 							})
 						}
 					}
@@ -383,7 +383,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 										args = append(args, &CXArgument{
 											Typ: identType,
-											Value: identName,
+											Value: &identName,
 										})
 									}
 								}
@@ -400,7 +400,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 					// 				args = append(args, &CXArgument{
 					// 					Typ: identType,
-					// 					Value: identName,
+					// 					Value: &identName,
 					// 				})
 					// 			}
 					// 		}
@@ -415,7 +415,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							identName := encoder.Serialize(outName.Name)
 							args = append(args, &CXArgument{
 								Typ: identType,
-								Value: identName,
+								Value: &identName,
 							})
 						}
 					}
@@ -427,12 +427,12 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 			theArg := arg
 			var argName string
-			encoder.DeserializeRaw(arg.Value, &argName)
+			encoder.DeserializeRaw(*arg.Value, &argName)
 
 			if len(defsTypes[i]) > 2 && defsTypes[i][:2] == "[]" {
 				if arr, err := resolveIdent(argName, expr.Context.CallStack.Calls[len(expr.Context.CallStack.Calls) - 1]); err == nil {
 					var size int32
-					encoder.DeserializeAtomic(arr.Value[:4], &size)
+					encoder.DeserializeAtomic((*arr.Value)[:4], &size)
 					
 					for c := int32(0); c < size; c++ {
 						affs = append(affs, &CXAffordance{

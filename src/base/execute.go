@@ -43,7 +43,7 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 			defs[i+len(args)] = &CXDefinition{
 				Name: out.Name,
 				Typ: out.Typ,
-				Value: zeroValue,
+				Value: &zeroValue,
 				Module: mod,
 				Context: cxt,
 			}
@@ -75,28 +75,28 @@ func PrintCallStack (callStack []*CXCall) {
 			var valF64 float64
 			switch def.Typ {
 			case "i32":
-				encoder.DeserializeRaw(def.Value, &valI32)
+				encoder.DeserializeRaw(*def.Value, &valI32)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %d", def.Name, valI32)
 				} else {
 					fmt.Printf("%s: %d, ", def.Name, valI32)
 				}
 			case "i64":
-				encoder.DeserializeRaw(def.Value, &valI64)
+				encoder.DeserializeRaw(*def.Value, &valI64)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %d", def.Name, valI64)
 				} else {
 					fmt.Printf("%s: %d, ", def.Name, valI64)
 				}
 			case "f32":
-				encoder.DeserializeRaw(def.Value, &valF32)
+				encoder.DeserializeRaw(*def.Value, &valF32)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %f", def.Name, valF32)
 				} else {
 					fmt.Printf("%s: %f, ", def.Name, valF32)
 				}
 			case "f64":
-				encoder.DeserializeRaw(def.Value, &valF64)
+				encoder.DeserializeRaw(*def.Value, &valF64)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %f", def.Name, valF64)
 				} else {
@@ -104,13 +104,13 @@ func PrintCallStack (callStack []*CXCall) {
 				}
 			case "byte":
 				if idx == lenState - 1 {
-					fmt.Printf("%s: %d", def.Name, def.Value[0])
+					fmt.Printf("%s: %d", def.Name, (*def.Value)[0])
 				} else {
-					fmt.Printf("%s: %d, ", def.Name, def.Value[0])
+					fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
 				}
 			case "[]byte":
 				var val []byte
-				encoder.DeserializeRaw(def.Value, &val)
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %v", def.Name, val)
 				} else {
@@ -118,7 +118,7 @@ func PrintCallStack (callStack []*CXCall) {
 				}
 			case "[]i32":
 				var val []int32
-				encoder.DeserializeRaw(def.Value, &val)
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %v", def.Name, val)
 				} else {
@@ -126,7 +126,7 @@ func PrintCallStack (callStack []*CXCall) {
 				}
 			case "[]i64":
 				var val []int64
-				encoder.DeserializeRaw(def.Value, &val)
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %v", def.Name, val)
 				} else {
@@ -134,7 +134,7 @@ func PrintCallStack (callStack []*CXCall) {
 				}
 			case "[]f32":
 				var val []float32
-				encoder.DeserializeRaw(def.Value, &val)
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %v", def.Name, val)
 				} else {
@@ -142,7 +142,7 @@ func PrintCallStack (callStack []*CXCall) {
 				}
 			case "[]f64":
 				var val []float64
-				encoder.DeserializeRaw(def.Value, &val)
+				encoder.DeserializeRaw(*def.Value, &val)
 				if idx == lenState - 1 {
 					fmt.Printf("%s: %v", def.Name, val)
 				} else {
@@ -279,11 +279,11 @@ func replPrintEvaluation (arg *CXArgument) {
 	switch arg.Typ {
 	case "str":
 		var val string
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "bool":
 		var val int32
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		if val == 0 {
 			fmt.Printf("false\n")
 		} else {
@@ -293,39 +293,39 @@ func replPrintEvaluation (arg *CXArgument) {
 		fmt.Printf("%#v\n", arg.Value)
 	case "i32":
 		var val int32
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "i64":
 		var val int64
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "f32":
 		var val float32
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "f64":
 		var val float64
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "[]byte":
 		var val []byte
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "[]i32":
 		var val []int32
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "[]i64":
 		var val []int64
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "[]f32":
 		var val []float32
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	case "[]f64":
 		var val []float64
-		encoder.DeserializeRaw(arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		fmt.Printf("%#v\n", val)
 	default:
 		fmt.Printf("")
@@ -519,21 +519,21 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "evolve":
 		var fnName string
 		var fnBag string
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &fnName)
-		encoder.DeserializeRaw((*argsCopy)[1].Value, &fnBag)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &fnName)
+		encoder.DeserializeRaw(*(*argsCopy)[1].Value, &fnBag)
 		
 		var inps []float64
-		encoder.DeserializeRaw((*argsCopy)[2].Value, &inps)
+		encoder.DeserializeRaw(*(*argsCopy)[2].Value, &inps)
 		
 		var outs []float64
-		encoder.DeserializeRaw((*argsCopy)[3].Value, &outs)
+		encoder.DeserializeRaw(*(*argsCopy)[3].Value, &outs)
 
 		var numberExprs int32
-		encoder.DeserializeRaw((*argsCopy)[4].Value, &numberExprs)
+		encoder.DeserializeRaw(*(*argsCopy)[4].Value, &numberExprs)
 		var iterations int32
-		encoder.DeserializeRaw((*argsCopy)[5].Value, &iterations)
+		encoder.DeserializeRaw(*(*argsCopy)[5].Value, &iterations)
 		var epsilon float64
-		encoder.DeserializeRaw((*argsCopy)[6].Value, &epsilon)
+		encoder.DeserializeRaw(*(*argsCopy)[6].Value, &epsilon)
 
 		err = call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call)
 		// flow control
@@ -542,7 +542,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// I/O functions
 	case "bool.print":
 		var val int32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		if val == 0 {
 			fmt.Println("false")
 		} else {
@@ -550,29 +550,29 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		}
 	case "str.print":
 		var val string
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "byte.print":
 		fmt.Println((*(*argsCopy)[0].Value)[0])
 	case "i32.print":
 		var val int32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "i64.print":
 		var val int64
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "f32.print":
 		var val float32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "f64.print":
 		var val float64
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]bool.print":
 		var val []int32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Print("[")
 		for i, v := range val {
 			if v == 0 {
@@ -588,27 +588,27 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println()
 	case "[]byte.print":
 		var val []byte
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]str.print":
 		var val []string
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]i32.print":
 		var val []int32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]i64.print":
 		var val []int64
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]f32.print":
 		var val []float32
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]f64.print":
 		var val []float64
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &val)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 		// identity functions
 	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput(0, *(*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
@@ -781,7 +781,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// debugging functions
 	case "halt":
 		var msg string
-		encoder.DeserializeRaw((*argsCopy)[0].Value, &msg)
+		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &msg)
 		fmt.Println(msg)
 		call.Line++
 		*exc = true
@@ -1292,7 +1292,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				
 				if argsRefs[i].Typ == "ident" {
 					var lookingFor string
-					encoder.DeserializeRaw(argsRefs[i].Value, &lookingFor)
+					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
 					if arg, err := resolveIdent(lookingFor, call); err == nil {
 						argsCopy[i] = arg
 					} else {

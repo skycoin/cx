@@ -52,7 +52,7 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 				argIdentRemoved := false
 				for _, removedVar := range removedVars {
 					var identName string
-					encoder.DeserializeRaw(arg.Value, &identName)
+					encoder.DeserializeRaw(*arg.Value, &identName)
 					if i > removeIndex && identName == removedVar.Name {
 						indexesToRemove = append([]int{i}, indexesToRemove...)
 						argIdentRemoved = true
@@ -68,7 +68,7 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 						argIsOutput := false
 						for _, outName := range fn.Expressions[j].OutputNames {
 							var identName string
-							encoder.DeserializeRaw(arg.Value, &identName)
+							encoder.DeserializeRaw(*arg.Value, &identName)
 							if identName == outName.Name {
 								indexesToRemove = append([]int{i}, indexesToRemove...)
 								broke = true
@@ -352,7 +352,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 								continue
 							}
 							output := program.Outputs[0].Value
-							encoder.DeserializeRaw(output, &result)
+							encoder.DeserializeRaw(*output, &result)
 
 							//fmt.Println(program.Outputs[0].Value)
 
@@ -414,7 +414,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	
 	for _, def := range call.State {
 		if def.Name == expr.OutputNames[0].Name {
-			def.Value = sFinalError
+			def.Value = &sFinalError
 			return nil
 		}
 	}
