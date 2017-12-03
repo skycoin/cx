@@ -35,13 +35,77 @@
 		fmt.Fprintf(os.Stderr, format, args...)
 		os.Stderr.Sync()
 	}
+
+	func arithmeticOp (op string, arg1, arg2 *CXArgument, line int) *CXArgument {
+		var opName string
+		var typArg1 string
+		var typArg2 string
+		_ = typArg2
+
+		if arg1.Typ == "ident" {
+			var identName string
+			encoder.DeserializeRaw(*arg1.Value, &identName)
+
+			if typ, err := GetIdentType(identName, cxt); err == nil {
+				typArg1 = typ
+			} else {
+				fmt.Println(err)
+			}
+		} else {
+			typArg1 = arg1.Typ
+		}
+
+		if arg2.Typ == "ident" {
+			var identName string
+			encoder.DeserializeRaw(*arg2.Value, &identName)
+
+			if typ, err := GetIdentType(identName, cxt); err == nil {
+				typArg2 = typ
+			} else {
+				fmt.Println(err)
+			}
+		} else {
+			typArg2 = arg1.Typ
+		}
+		
+		switch op {
+		case "+":
+			opName = fmt.Sprintf("%s.add", typArg1)
+		case "-":
+			opName = fmt.Sprintf("%s.sub", typArg1)
+		case "*":
+			opName = fmt.Sprintf("%s.mul", typArg1)
+		case "/":
+			opName = fmt.Sprintf("%s.div", typArg1)
+		}
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			if op, err := cxt.GetFunction(opName, CORE_MODULE); err == nil {
+				expr := MakeExpression(op)
+				if !replMode {
+					expr.FileLine = line
+				}
+				fn.AddExpression(expr)
+				expr.AddTag(tag)
+				tag = ""
+				expr.AddArgument(arg1)
+				expr.AddArgument(arg2)
+
+				outName := MakeGenSym(NON_ASSIGN_PREFIX)
+				byteName := encoder.Serialize(outName)
+				
+				expr.AddOutputName(outName)
+				return MakeArgument(&byteName, "ident")
+			}
+		}
+		return nil
+	}
 %}
 
 %union {
 	i int
 	i32 int32
-	f32 float32
 	i64 int64
+	f32 float32
 	f64 float64
 	tok string
 	bool bool
@@ -70,10 +134,13 @@
 }
 
 %token  <i32>           INT BOOLEAN
+%token  <i64>           LONG
 %token  <f32>           FLOAT
+%token  <f64>           DOUBLE
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
+                        PLUS MINUS MULT DIV
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
                         /* Selectors */
@@ -98,11 +165,16 @@
 %type   <fields>        fields structFields
 %type   <expression>    assignExpression
 %type   <expressions>   elseStatement
-//%type   <names>         nonAssignExpression
+
 %type   <bool>          selectorLines selectorExpressionsAndStatements selectorFields
 %type   <stringA>       inferObj inferObjs inferRule inferRules inferClauses inferPred inferCond inferAction inferActions inferActionArg inferTarget inferTargets
 %type   <string>        inferArg inferOp inferWeight
 
+%left                   PLUS MINUS
+%left                   MULT DIV
+%right                  LPAREN IDENT
+
+                        
 %%
 
 lines:
@@ -2106,15 +2178,45 @@ structLiteral:
         ;
 
 argument:
-                INT
+                argument PLUS argument
+                {
+			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument MINUS argument
+                {
+			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument MULT argument
+                {
+			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument DIV argument
+                {
+			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       LPAREN argument RPAREN
+                {
+			$$ = $2
+                }
+        |       INT
                 {
 			val := encoder.Serialize($1)
                         $$ = MakeArgument(&val, "i32")
+                }
+        |       LONG
+                {
+			val := encoder.Serialize($1)
+                        $$ = MakeArgument(&val, "i64")
                 }
         |       FLOAT
                 {
 			val := encoder.Serialize($1)
 			$$ = MakeArgument(&val, "f32")
+                }
+        |       DOUBLE
+                {
+			val := encoder.Serialize($1)
+			$$ = MakeArgument(&val, "f64")
                 }
         |       BOOLEAN
                 {

@@ -8,6 +8,10 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
+/\+/         { lval.tok = yylex.Text(); return PLUS }
+/-/          { lval.tok = yylex.Text(); return MINUS }
+/\*/         { lval.tok = yylex.Text(); return MULT }
+/\//         { lval.tok = yylex.Text(); return DIV }
 /:dState/    { return DSTATE     }
 /:dStack/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
@@ -78,6 +82,16 @@
 /false/ {
 	lval.i32 = int32(0)
 	return BOOLEAN
+}
+/-?[0-9]+L/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	lval.i64 = int64(result)
+	return LONG
+}
+/-?[0-9]+\.[0-9]*D/ {
+	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	lval.f64 = float64(result)
+	return DOUBLE
 }
 /-?[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())

@@ -17,6 +17,7 @@ Table of Contents
       * [Other Options](#other-options)
    * [CX Tutorial](#cx-tutorial)
    * [Hello World](#hello-world)
+   * [Arithmetic Operations](#arithmetic-operations)
    * [Comments](#comments)
    * [Data](#data)
       * [Atomic Data](#atomic-data)
@@ -254,6 +255,41 @@ signature. As a consequence,
 if we want to print a string, as in the example above, we have to call
 *str*'s print function, where *str* is a package containing string
 related functions.
+
+# Arithmetic Operations
+
+In the following sections you might see function calls like:
+
+```
+i32.add(5, 10)
+i64.sub(i32.i64(10), i32.i64(5)) 
+```
+
+In previous versions of CX, you couldn't write
+*infix* operations (e.g. `5 + 10`), but this is not the case
+anymore. In other words, the two examples above can now be written as:
+
+```
+5 + 10
+10 - 5
+```
+
+Also, now you don't need to use the cast functions `i32.i64`,
+`f32.f64`, etc. If you want to tell the compiler that you want a
+number to be interpreted as an *i64* or as an *f64*, you can use the
+suffixes `L` and `D`:
+
+```
+i64.add(31L, 62L)
+f64.mul(25D, 25D)
+```
+
+or
+
+```
+31L + 62L
+25D * 25D
+```
 
 # Comments
 

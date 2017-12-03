@@ -995,3 +995,111 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 	encoder.DeserializeAtomic(*arg2.Value, &num2)
 	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }
+
+func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
+	identParts := strings.Split(lookingFor, ".")
+
+	mod, err := cxt.GetCurrentModule();
+	if err != nil {
+		return "", err
+	}
+
+	if len(identParts) > 1 {
+		if extMod, err := cxt.GetModule(identParts[0]); err == nil {
+			// then it's an external definition or struct
+			isImported := false
+			for _, imp := range mod.Imports {
+				if imp.Name == identParts[0] {
+					isImported = true
+					break
+				}
+			}
+			if isImported {
+				if def, err := extMod.GetDefinition(concat(identParts[1:]...)); err == nil {
+					return def.Typ, nil
+				}
+			} else {
+				return "", errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", extMod.Name))
+			}
+		} else {
+			// then it's a global struct
+			if def, err := mod.GetDefinition(identParts[0]); err == nil {
+				return def.Typ, nil
+			} else {
+				// then it's a local struct
+				
+
+
+				
+				if fn, err := cxt.GetCurrentFunction(); err == nil {
+					for _, inp := range fn.Inputs {
+						if inp.Name == identParts[0] {
+							return inp.Typ, nil
+						}
+					}
+					for _, out := range fn.Outputs {
+						if out.Name == identParts[0] {
+							return out.Typ, nil
+						}
+					}
+					for _, expr := range fn.Expressions {
+						for _, out := range expr.OutputNames {
+							if out.Name == identParts[0] {
+								return out.Typ, nil
+							}
+						}
+					}
+				} else {
+					return "", err
+				}
+			}
+		}
+	} else {
+		// then it's a local or global definition
+		arrayParts := strings.Split(lookingFor, "[")
+		if len(arrayParts) > 1 {
+			lookingFor = arrayParts[0]
+		}
+
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			for _, inp := range fn.Inputs {
+				if inp.Name == arrayParts[0] {
+					if len(arrayParts) > 1 {
+						return inp.Typ[2:], nil
+					} else {
+						return inp.Typ, nil
+					}
+				}
+			}
+			for _, out := range fn.Outputs {
+				if out.Name == arrayParts[0] {
+					if len(arrayParts) > 1 {
+						return out.Typ[2:], nil
+					} else {
+						return out.Typ, nil
+					}
+				}
+			}
+			for _, expr := range fn.Expressions {
+				for _, out := range expr.OutputNames {
+					if out.Name == arrayParts[0] {
+						if len(arrayParts) > 1 {
+							return out.Typ[2:], nil
+						} else {
+							return out.Typ, nil
+						}
+					}
+				}
+			}
+		} else {
+			return "", err
+		}
+
+		// then it's a global definition
+		if def, err := mod.GetDefinition(lookingFor); err == nil {
+			return def.Typ, nil
+		}
+	}
+	
+	return "", errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
+}
