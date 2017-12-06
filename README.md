@@ -325,7 +325,9 @@ used with identifiers (variables).
 
 ## Arithmetic Operators
 
-\* These shorthands can also be used with identifiers (variables).
+\* These shorthands can also be used with other
+data types, such as *i64*, *f32*, etc., and they can also be
+used with identifiers (variables).
 
 | Shorthand 	|   Native Function  	|
 |:---------:	|:------------------:	|
@@ -340,15 +342,29 @@ used with identifiers (variables).
 |   5 >> 5  	|  i32.bitshr(5, 5)  	|
 |   5 ** 5  	|    i32.pow(5, 5)   	|
 |   5 & 5   	|  i32.bitand(5, 5)  	|
-|   5 | 5   	|   i32.bitor(5, 5)  	|
+|   5 \| 5   	|   i32.bitor(5, 5)  	|
 |   5 ^ 5   	|  i32.bitxor(5, 5)  	|
 |   5 &^ 5  	| i32.bitclear(5, 5) 	|
 
 ## Arithmetic Assignment Operators
 
-\* These shorthands can also be used with identifiers (variables).
+\* These shorthands can also be used with other
+data types that make sense (for example, there's no `f64.mod` native function), such as *i64*, *f32*, etc., and they can also be
+used with identifiers (variables).
 
-
+| Shorthand 	|      Native Function     	|
+|:---------:	|:------------------------:	|
+|  foo += 5 	|   foo = i32.add(foo, 5)  	|
+|  foo -= 5 	|   foo = i32.sub(foo, 5)  	|
+|  foo *= 5 	|   foo = i32.mul(foo, 5)  	|
+|  foo /= 5 	|   foo = i32.div(foo, 5)  	|
+|  foo %= 5 	|   foo = i32.mod(foo, 5)  	|
+| foo <<= 5 	| foo = i32.bitshl(foo, 5) 	|
+| foo >>= 5 	| foo = i32.bitshr(foo, 5) 	|
+| foo **= 5 	|   foo = i32.pow(foo, 5)  	|
+|  foo &= 5 	| foo = i32.bitand(foo, 5) 	|
+|  foo \|= 5 	|  foo = i32.bitor(foo, 5) 	|
+|  foo ^= 5 	| foo = i32.bitxor(foo, 5) 	|
 
 # Comments
 
