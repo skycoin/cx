@@ -1310,19 +1310,19 @@ affordance system.
 
 ```
 if cloudy $0.8 {
-  allow(x.lightSensitive == true)
+  allow(*.lightSensitive == true)
   obj(drones $1.0)
 }
 if and(cloudy $0.5, hot $0.1) {
-  allow(x.numberWheels > 2)
-  reject(x.solarPowered == true)
+  allow(*.numberWheels > 2)
+  reject(*.solarPowered == true)
   obj(rovers $1.0)
 }
 if true {
-  allow(x.class == "bipedal")
+  allow(*.class == "bipedal")
 }  
 if or(drones $1.0, rovers $1.0) {
-  reject(x.class == "bipedal")
+  reject(*.class == "bipedal")
 }
 ```
 
