@@ -30,7 +30,8 @@ func main () () {
 
 	rules := ->{
 		if obj1 $0.3 {
-			allow(x.x < 5)
+			//allow(*.x < 5)
+			allow(* == *)
 		}
 	}
 	

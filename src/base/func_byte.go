@@ -7,7 +7,7 @@ import (
 )
 
 func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("readByteA", "[]byte", "i32", arr, idx); err == nil {
+	if err := checkTwoTypes("[]byte.read", "[]byte", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -36,7 +36,7 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 }
 
 func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkThreeTypes("writeByteA", "[]byte", "i32", "byte", arr, idx, val); err == nil {
+	if err := checkThreeTypes("[]byte.write", "[]byte", "i32", "byte", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
@@ -71,7 +71,7 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 }
 
 func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkType("lenByteA", "[]byte", arr); err == nil {
+	if err := checkType("[]byte.len", "[]byte", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
 		return nil
@@ -81,7 +81,7 @@ func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("ltByte", "byte", "byte", arg1, arg2); err == nil {
+	if err := checkTwoTypes("byte.lt", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
 
@@ -101,7 +101,7 @@ func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gtByte", "byte", "byte", arg1, arg2); err == nil {
+	if err := checkTwoTypes("byte.gt", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
 
@@ -121,7 +121,7 @@ func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 }
 
 func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("eqByte", "byte", "byte", arg1, arg2); err == nil {
+	if err := checkTwoTypes("byte.eq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
 
@@ -140,8 +140,28 @@ func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
+func uneqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("byte.uneq", "byte", "byte", arg1, arg2); err == nil {
+		byte1 := (*arg1.Value)[0]
+		byte2 := (*arg2.Value)[0]
+
+		var val []byte
+
+		if byte1 != byte2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("lteqByte", "byte", "byte", arg1, arg2); err == nil {
+	if err := checkTwoTypes("byte.lteq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
 
@@ -161,7 +181,7 @@ func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 }
 
 func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
-	if err := checkTwoTypes("gteqByte", "byte", "byte", arg1, arg2); err == nil {
+	if err := checkTwoTypes("byte.gteq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
 
@@ -205,7 +225,6 @@ func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 		output := append(slice, (*arg2.Value)[0])
 		sOutput := encoder.Serialize(output)
 
-		//*arg1.Value = sOutput
 		assignOutput(0, sOutput, "[]byte", expr, call)
 		return nil
 	} else {

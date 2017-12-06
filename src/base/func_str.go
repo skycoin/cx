@@ -76,6 +76,28 @@ func eqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
+func uneqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("str.uneq", "str", "str", arg1, arg2); err == nil {
+		var str1 string
+		var str2 string
+		encoder.DeserializeRaw(*arg1.Value, &str1)
+		encoder.DeserializeRaw(*arg2.Value, &str2)
+
+		var val []byte
+
+		if str1 != str2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func lteqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.lteq", "str", "str", arg1, arg2); err == nil {
 		var str1 string

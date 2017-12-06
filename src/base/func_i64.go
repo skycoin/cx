@@ -77,6 +77,22 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
+func powI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i64.pow", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		output := encoder.Serialize(int64(math.Pow(float64(num1), float64(num2))))
+
+		assignOutput(0, output, "i64", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absI64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i64.abs", "i64", arg1); err == nil {
 		var num1 int64
@@ -360,6 +376,28 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		var val []byte
 
 		if num1 == num2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func uneqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i64.uneq", "i64", "i64", arg1, arg2); err == nil {
+		var num1 int64
+		var num2 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		var val []byte
+
+		if num1 != num2 {
 			val = encoder.Serialize(int32(1))
 		} else {
 			val = encoder.Serialize(int32(0))

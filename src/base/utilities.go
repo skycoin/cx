@@ -451,6 +451,32 @@ func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
 	}
 }
 
+func ArgToString (arg *CXArgument) string {
+	switch arg.Typ {
+	case "ident", "string":
+		var identName string
+		encoder.DeserializeRaw(*arg.Value, &identName)
+		return identName
+	case "f32":
+		var f32 float32
+		encoder.DeserializeRaw(*arg.Value, &f32)
+		return fmt.Sprintf("%f", f32)
+	case "i32":
+		var i32 int32
+		encoder.DeserializeRaw(*arg.Value, &i32)
+		return fmt.Sprintf("%d", i32)
+	case "i64":
+		var i64 int64
+		encoder.DeserializeRaw(*arg.Value, &i64)
+		return fmt.Sprintf("%d", i64)
+	case "f64":
+		var f64 float64
+		encoder.DeserializeRaw(*arg.Value, &f64)
+		return fmt.Sprintf("%f", f64)
+	}
+	return ""
+}
+
 func isBasicType (typ string) bool {
 	for _, basic := range BASIC_TYPES {
 		if basic == typ {
@@ -1027,10 +1053,6 @@ func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
 				return def.Typ, nil
 			} else {
 				// then it's a local struct
-				
-
-
-				
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					for _, inp := range fn.Inputs {
 						if inp.Name == identParts[0] {
@@ -1080,9 +1102,14 @@ func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
 					}
 				}
 			}
-			for _, expr := range fn.Expressions {
+			for i, expr := range fn.Expressions {
 				for _, out := range expr.OutputNames {
 					if out.Name == arrayParts[0] {
+
+						if expr.Operator.Name == "identity" {
+							return fn.Expressions[i-1].OutputNames[0].Typ, nil
+						}
+						
 						if len(arrayParts) > 1 {
 							return out.Typ[2:], nil
 						} else {

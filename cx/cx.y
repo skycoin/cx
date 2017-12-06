@@ -36,11 +36,11 @@
 		os.Stderr.Sync()
 	}
 
-	func arithmeticOp (op string, arg1, arg2 *CXArgument, line int) *CXArgument {
+	func binaryOp (op string, arg1, arg2 *CXArgument, line int) *CXArgument {
 		var opName string
 		var typArg1 string
-		var typArg2 string
-		_ = typArg2
+		// var typArg2 string
+		// _ = typArg2
 
 		if arg1.Typ == "ident" {
 			var identName string
@@ -50,23 +50,24 @@
 				typArg1 = typ
 			} else {
 				fmt.Println(err)
+				//typArg1 = "ident"
 			}
 		} else {
 			typArg1 = arg1.Typ
 		}
 
-		if arg2.Typ == "ident" {
-			var identName string
-			encoder.DeserializeRaw(*arg2.Value, &identName)
+		// if arg2.Typ == "ident" {
+		// 	var identName string
+		// 	encoder.DeserializeRaw(*arg2.Value, &identName)
 
-			if typ, err := GetIdentType(identName, cxt); err == nil {
-				typArg2 = typ
-			} else {
-				fmt.Println(err)
-			}
-		} else {
-			typArg2 = arg1.Typ
-		}
+		// 	if typ, err := GetIdentType(identName, cxt); err == nil {
+		// 		typArg2 = typ
+		// 	} else {
+		// 		fmt.Println(err)
+		// 	}
+		// } else {
+		// 	typArg2 = arg1.Typ
+		// }
 		
 		switch op {
 		case "+":
@@ -77,7 +78,32 @@
 			opName = fmt.Sprintf("%s.mul", typArg1)
 		case "/":
 			opName = fmt.Sprintf("%s.div", typArg1)
+		case "%":
+			opName = fmt.Sprintf("%s.mod", typArg1)
+		case ">":
+			opName = fmt.Sprintf("%s.gt", typArg1)
+		case "<":
+			opName = fmt.Sprintf("%s.lt", typArg1)
+		case "<=":
+			opName = fmt.Sprintf("%s.lteq", typArg1)
+		case ">=":
+			opName = fmt.Sprintf("%s.gteq", typArg1)
+		case "<<":
+			opName = fmt.Sprintf("%s.bitshl", typArg1)
+		case ">>":
+			opName = fmt.Sprintf("%s.bitshr", typArg1)
+		case "**":
+			opName = fmt.Sprintf("%s.pow", typArg1)
+		case "&&":
+			opName = "and"
+		case "||":
+			opName = "or"
+		case "==":
+			opName = fmt.Sprintf("%s.eq", typArg1)
+		case "!=":
+			opName = fmt.Sprintf("%s.uneq", typArg1)
 		}
+
 		if fn, err := cxt.GetCurrentFunction(); err == nil {
 			if op, err := cxt.GetFunction(opName, CORE_MODULE); err == nil {
 				expr := MakeExpression(op)
@@ -99,10 +125,81 @@
 		}
 		return nil
 	}
+
+        func unaryOp (op string, arg1 *CXArgument, line int) *CXArgument {
+		var opName string
+		var typArg1 string
+
+		if arg1.Typ == "ident" {
+			var identName string
+			encoder.DeserializeRaw(*arg1.Value, &identName)
+
+			if typ, err := GetIdentType(identName, cxt); err == nil {
+				typArg1 = typ
+			} else {
+				fmt.Println(err)
+			}
+		} else {
+			typArg1 = arg1.Typ
+		}
+
+		switch op {
+		case "++":
+			opName = fmt.Sprintf("%s.add", typArg1)
+		case "--":
+			opName = fmt.Sprintf("%s.sub", typArg1)
+		}
+		
+		if fn, err := cxt.GetCurrentFunction(); err == nil {
+			if op, err := cxt.GetFunction(opName, CORE_MODULE); err == nil {
+				expr := MakeExpression(op)
+				if !replMode {
+					expr.FileLine = line
+				}
+				fn.AddExpression(expr)
+				expr.AddTag(tag)
+				tag = ""
+
+				
+				expr.AddArgument(arg1)
+
+				// var one *CXArgument
+
+				switch typArg1 {
+				case "i32":
+					sOne := encoder.Serialize(int32(1))
+					expr.AddArgument(MakeArgument(&sOne, "i32"))
+				case "i64":
+					sOne := encoder.Serialize(int64(1))
+					expr.AddArgument(MakeArgument(&sOne, "i64"))
+				case "f32":
+					sOne := encoder.Serialize(float32(1))
+					expr.AddArgument(MakeArgument(&sOne, "f32"))
+				case "f64":
+					sOne := encoder.Serialize(float64(1))
+					expr.AddArgument(MakeArgument(&sOne, "f64"))
+				}
+
+				var outName string
+				if arg1.Typ == "ident" {
+					encoder.DeserializeRaw(*arg1.Value, &outName)
+				} else {
+					outName = MakeGenSym(NON_ASSIGN_PREFIX)
+				}
+				
+				byteName := encoder.Serialize(outName)
+				
+				expr.AddOutputName(outName)
+				return MakeArgument(&byteName, "ident")
+			}
+		}
+		return nil
+	}
 %}
 
 %union {
 	i int
+	byt byte
 	i32 int32
 	i64 int64
 	f32 float32
@@ -133,6 +230,7 @@
 	names []string
 }
 
+%token  <byt>           BYTENUM
 %token  <i32>           INT BOOLEAN
 %token  <i64>           LONG
 %token  <f32>           FLOAT
@@ -140,7 +238,14 @@
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENT
                         VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
-                        PLUS MINUS MULT DIV
+                        EQUALWORD GTHANWORD LTHANWORD
+                        GTHANEQ LTHANEQ UNEQUAL AND OR
+                        PLUS MINUS MULT DIV AFFVAR
+                        PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
+                        NOT
+                        BITAND BITXOR BITOR BITCLEAR
+                        PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
+                        LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
                         /* Types */
                         BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
                         /* Selectors */
@@ -154,7 +259,7 @@
                         /* Affordances */
                         AFF TAG INFER WEIGHT
 
-%type   <tok>           typeSpecifier
+%type   <tok>           typeSpecifier assignOperator relationalOp
                         
 %type   <parameter>     parameter
 %type   <parameters>    parameters functionParameters
@@ -168,10 +273,21 @@
 
 %type   <bool>          selectorLines selectorExpressionsAndStatements selectorFields
 %type   <stringA>       inferObj inferObjs inferRule inferRules inferClauses inferPred inferCond inferAction inferActions inferActionArg inferTarget inferTargets
-%type   <string>        inferArg inferOp inferWeight
+%type   <string>        inferWeight
 
+%left                   OR
+%left                   AND
+%left                   BITOR
+%left                   BITXOR
+%left                   BITAND
+%left                   EQUAL UNEQUAL
+%left                   GTHAN LTHAN GTHANEQ LTHANEQ
+%left                   LEFTSHIFT RIGHTSHIFT
 %left                   PLUS MINUS
-%left                   MULT DIV
+%left                   REMAINDER MULT DIV
+%left                   EXP
+%left                   PLUSPLUS MINUSMINUS
+%left                   NOT
 %right                  LPAREN IDENT
 
                         
@@ -715,6 +831,17 @@ selector:       SPACKAGE IDENT
 assignOperator:
                 ASSIGN
         |       CASSIGN
+        |       PLUSEQ
+        |       MINUSEQ
+        |       MULTEQ
+        |       DIVEQ
+        |       REMAINDEREQ
+        |       EXPEQ
+        |       LEFTSHIFTEQ
+        |       RIGHTSHIFTEQ
+        |       BITANDEQ
+        |       BITXOREQ
+        |       BITOREQ
         ;
 
 typeSpecifier:
@@ -1005,8 +1132,6 @@ functionDeclaration:
 					for _, param := range dups {
 						for _, dup := range dups {
 							if param.Name == dup.Name && param != dup {
-								fmt.Println(param.Name)
-								fmt.Println(dup.Name)
 								panic(fmt.Sprintf("%d: duplicate input and/or output parameters in function '%s'", yyS[yypt-0].line+1, $2))
 							}
 						}
@@ -1233,7 +1358,6 @@ assignExpression:
 			}
 
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
-
 				for i, argL := range argsL {
 					if argsR[i] == nil {
 						continue
@@ -1246,7 +1370,6 @@ assignExpression:
 					var idFn string
 
 					if len(typeParts) > 1 {
-						//typ = typeParts[0] // ident
 						typ = "str"
 						secondTyp = typeParts[1] // i32, f32, etc
 					} else if typeParts[0] == "ident" {
@@ -1256,31 +1379,100 @@ assignExpression:
 						typ = typeParts[0] // i32, f32, etc
 					}
 
-					if secondTyp == "" {
-						idFn = MakeIdentityOpName(typ)
-					} else {
-						//idFn = MakeIdentityOpName(secondTyp)
-						idFn = "identity"
-					}
-
-					if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
-						expr := MakeExpression(op)
-						if !replMode {
-							expr.FileLine = yyS[yypt-0].line + 1
+					if $2 == ":=" || $2 == "=" {
+						if secondTyp == "" {
+							idFn = MakeIdentityOpName(typ)
+						} else {
+							idFn = "identity"
 						}
 
-						fn.AddExpression(expr)
-						expr.AddTag(tag)
-						tag = ""
+						if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
+							expr := MakeExpression(op)
+							if !replMode {
+								expr.FileLine = yyS[yypt-0].line + 1
+							}
 
-						var outName string
-						encoder.DeserializeRaw(*argL.Value, &outName)
-						
-						//expr.AddOutputName(string(*argL.Value))
-						expr.AddOutputName(outName)
+							fn.AddExpression(expr)
+							expr.AddTag(tag)
+							tag = ""
 
-						arg := MakeArgument(argsR[i].Value, typ)
-						expr.AddArgument(arg)
+							var outName string
+							encoder.DeserializeRaw(*argL.Value, &outName)
+							
+							expr.AddOutputName(outName)
+
+							arg := MakeArgument(argsR[i].Value, typ)
+							expr.AddArgument(arg)
+						}
+					} else {
+						// +=, -=, *=, etc.
+						var opName string
+						var typName string
+
+						if secondTyp == "ident" {
+							var identName string
+							encoder.DeserializeRaw(*argsR[i].Value, &identName)
+
+							if argTyp, err := GetIdentType(identName, cxt); err == nil {
+								typName = argTyp
+							} else {
+								panic(err)
+							}
+						} else if secondTyp == "" {
+							typName = typ
+						} else {
+							typName = secondTyp
+						}
+
+						// here here
+
+						switch $2 {
+						case "+=":
+							opName = "add"
+						case "-=":
+							opName = "sub"
+						case "*=":
+							opName = "mul"
+						case "/=":
+							opName = "div"
+						case "%=":
+							opName = "mod"
+						case "**=":
+							opName = "pow"
+						case "<<=":
+							opName = "bitshl"
+						case ">>=":
+							opName = "bitshr"
+						case "&=":
+							opName = "bitand"
+						case "^=":
+							opName = "bitxor"
+						case "|=":
+							opName = "bitor"
+						}
+
+						if op, err := cxt.GetFunction(fmt.Sprintf("%s.%s", typName, opName), CORE_MODULE); err == nil {
+							expr := MakeExpression(op)
+							if !replMode {
+								expr.FileLine = yyS[yypt-0].line + 1
+							}
+
+							fn.AddExpression(expr)
+							expr.AddTag(tag)
+							tag = ""
+
+							var outName string
+							encoder.DeserializeRaw(*argL.Value, &outName)
+							
+							expr.AddOutputName(outName)
+							expr.AddArgument(argL)
+							
+							if len(typeParts) > 1 {
+								expr.AddArgument(MakeArgument(argsR[i].Value, "ident"))
+							} else {
+								expr.AddArgument(MakeArgument(argsR[i].Value, typeParts[0]))
+							}
+						}
 					}
 				}
 			}
@@ -1336,7 +1528,6 @@ nonAssignExpression:
 							expr.AddTag(tag)
 							tag = ""
 							for _, arg := range $2 {
-
 								typeParts := strings.Split(arg.Typ, ".")
 
 								arg.Typ = typeParts[0]
@@ -1363,6 +1554,14 @@ nonAssignExpression:
 				}
 			}
 			
+                }
+        |       argument PLUSPLUS
+                {
+			$$ = []*CXArgument{unaryOp($2, $1, yyS[yypt-0].line + 1)}
+                }
+        |       argument MINUSMINUS
+                {
+			$$ = []*CXArgument{unaryOp($2, $1, yyS[yypt-0].line + 1)}
                 }
         ;
 
@@ -1863,6 +2062,10 @@ forLoopAssignExpression:
                 {
 			$<bool>$ = true
                 }
+        |       nonAssignExpression
+                {
+			$<bool>$ = true
+                }
         ;
 
 elseStatement:
@@ -1964,44 +2167,41 @@ inferCond:      IDENT LPAREN inferPred RPAREN
                 }
         ;
 
-inferArg:       IDENT
-                {
-			$$ = fmt.Sprintf("%s", $1)
-                }
-        |       STRING
-                {
-			str := strings.TrimPrefix($1, "\"")
-                        str = strings.TrimSuffix(str, "\"")
-			$$ = str
-                }
-        |       FLOAT
-                {
-			$$ = fmt.Sprintf("%f", $1)
-                }
-        |       INT
-                {
-			$$ = fmt.Sprintf("%d", $1)
-                }
-        |       nonAssignExpression
-                {
-			var ident string
-			encoder.DeserializeRaw(*$1[0].Value, &ident)
-			$$ = ident
-                }
-        ;
+// inferArg:       IDENT
+//                 {
+// 			$$ = fmt.Sprintf("%s", $1)
+//                 }
+//         |       STRING
+//                 {
+// 			str := strings.TrimPrefix($1, "\"")
+//                         str = strings.TrimSuffix(str, "\"")
+// 			$$ = str
+//                 }
+//         |       FLOAT
+//                 {
+// 			$$ = fmt.Sprintf("%f", $1)
+//                 }
+//         |       INT
+//                 {
+// 			$$ = fmt.Sprintf("%d", $1)
+//                 }
+//         |       nonAssignExpression
+//                 {
+// 			var ident string
+// 			encoder.DeserializeRaw(*$1[0].Value, &ident)
+// 			$$ = ident
+//                 }
+//         ;
 
-inferOp:        EQUAL
-                {
-			$$ = "=="
-                }
+// inferOp:        EQUAL
+//         |       GTHAN
+//         |       LTHAN
+// ;
+
+relationalOp:   EQUAL
         |       GTHAN
-                {
-			$$ = ">"
-                }
         |       LTHAN
-                {
-			$$ = "<"
-                }
+        |       UNEQUAL
                 ;
 
 inferActionArg:
@@ -2013,9 +2213,25 @@ inferActionArg:
                 {
                     $$ = []string{$1}
                 }
-        |       inferArg inferOp inferArg
+        |       AFFVAR relationalOp argument
                 {
-			$$ = []string{$1, $3, $2}
+			argStr := ArgToString($3)
+			$$ = []string{$1, argStr, $2}
+                }
+        |       MULT relationalOp argument
+                {
+			argStr := ArgToString($3)
+			$$ = []string{$1, argStr, $2}
+                }
+        |       MULT relationalOp nonAssignExpression
+                {
+			var identName string
+			encoder.DeserializeRaw(*$3[0].Value, &identName)
+			$$ = []string{$1, identName, $2}
+                }
+        |       MULT relationalOp MULT
+                {
+			$$ = []string{$1, $1, $2}
                 }
         ;
 
@@ -2180,23 +2396,97 @@ structLiteral:
 argument:
                 argument PLUS argument
                 {
-			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
         |       argument MINUS argument
                 {
-			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
         |       argument MULT argument
                 {
-			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
         |       argument DIV argument
                 {
-			$$ = arithmeticOp($2, $1, $3, yyS[yypt-0].line + 1)
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument REMAINDER argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument LEFTSHIFT argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument RIGHTSHIFT argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument EXP argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument EQUAL argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument UNEQUAL argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument GTHAN argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument GTHANEQ argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument LTHAN argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument LTHANEQ argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument OR argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       argument AND argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       NOT argument
+                {
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				if op, err := cxt.GetFunction("not", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+					fn.AddExpression(expr)
+					expr.AddTag(tag)
+					tag = ""
+					expr.AddArgument($2)
+
+					outName := MakeGenSym(NON_ASSIGN_PREFIX)
+					byteName := encoder.Serialize(outName)
+					
+					expr.AddOutputName(outName)
+					$$ = MakeArgument(&byteName, "ident")
+				}
+			}
 		}
         |       LPAREN argument RPAREN
                 {
 			$$ = $2
+                }
+        |       BYTENUM
+                {
+			val := encoder.Serialize($1)
+                        $$ = MakeArgument(&val, "byte")
                 }
         |       INT
                 {

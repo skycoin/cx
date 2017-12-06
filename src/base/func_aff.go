@@ -17,11 +17,11 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 	obj2IsX := false
 	var toCompare float64
 	bothX := false
-	if obj1[0] == "x" && obj2[0] == "x" && len(obj1) == 1 && len(obj2) == 1 {
+	if obj1[0] == "*" && obj2[0] == "*" && len(obj1) == 1 && len(obj2) == 1 {
 		bothX = true
 	}
 	
-	if obj1[0] == "x" {
+	if obj1[0] == "*" {
 		oneIsX = true
 		obj1IsX = true
 	} else {
@@ -59,7 +59,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			}
 		}
 	}
-	if obj2[0] == "x" {
+	if obj2[0] == "*" {
 		oneIsX = true
 		obj2IsX = true
 	} else {
@@ -655,7 +655,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					objs = append(objs, "false")
 				}
 				weights = append(weights, andWeight)
-			case "x":
+			case "*":
 				if falseRule {
 					continue
 				}

@@ -49,14 +49,14 @@ func main () () {
 			obj(threat $0.9)
 		}
 		if threat $0.0 {
-			allow(x.energy < 5)
+			allow(*.energy < 5)
 		}
 		if threat $0.5 {
-			reject(x.energy < 5)
-			allow(x.energy > 5)
+			reject(*.energy < 5)
+			allow(*.energy > 5)
 		}
 		if threat $0.8 {
-			reject(x.energy < 7)
+			reject(*.energy < 7)
 		}
 	}
 	

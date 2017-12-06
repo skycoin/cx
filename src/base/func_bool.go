@@ -6,6 +6,50 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+func eqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("bool.eq", "bool", "bool", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		var val []byte
+
+		if num1 == num2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func uneqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("bool.uneq", "bool", "bool", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		var val []byte
+
+		if num1 != num2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("readBoolA", "[]bool", "i32", arr, idx); err == nil {
 		var index int32
@@ -123,3 +167,4 @@ func copyBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 		return err
 	}
 }
+

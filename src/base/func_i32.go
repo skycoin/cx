@@ -57,6 +57,22 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
+func powI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i32.pow", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeAtomic(*arg1.Value, &num1)
+		encoder.DeserializeAtomic(*arg2.Value, &num2)
+
+		output := encoder.SerializeAtomic(int32(math.Pow(float64(num1), float64(num2))))
+
+		assignOutput(0, output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absI32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i32.abs", "i32", arg1); err == nil {
 		return assignOutput(0, oneI32oneI32(func(n1 int32) int32 {return int32(math.Abs(float64(n1)))}, arg1), "i32", expr, call)
@@ -289,6 +305,28 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			val = []byte{1, 0, 0, 0}
 		} else {
 			val = []byte{0, 0, 0, 0}
+		}
+
+		assignOutput(0, val, "bool", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
+func uneqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("i32.uneq", "i32", "i32", arg1, arg2); err == nil {
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+		encoder.DeserializeRaw(*arg2.Value, &num2)
+
+		var val []byte
+
+		if num1 != num2 {
+			val = encoder.Serialize(int32(1))
+		} else {
+			val = encoder.Serialize(int32(0))
 		}
 
 		assignOutput(0, val, "bool", expr, call)

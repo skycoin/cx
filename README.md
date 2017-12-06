@@ -256,7 +256,7 @@ if we want to print a string, as in the example above, we have to call
 *str*'s print function, where *str* is a package containing string
 related functions.
 
-# Arithmetic Operations
+# Shorthands to Native Functions
 
 In the following sections you might see function calls like:
 
@@ -290,6 +290,65 @@ or
 31L + 62L
 25D * 25D
 ```
+
+A bunch of shorthands for are now implemented
+Many shorthands to native functions are now implemented. These
+shorthands are similar to those present in many other programming
+languages, like `&&` (the *and* logical operator) or `>` (the
+*greather than* relational operator). The following subsections
+present these shorthands.
+
+## Relational Operators
+
+\* These shorthands can also be used with other
+data types, such as *i64*, *f32*, *str*, etc., and they can also be
+used with identifiers (variables).
+
+| Shorthand 	| Native Function 	|
+|:---------:	|:---------------:	|
+|   5 == 5  	|   i32.eq(5, 5)  	|
+|   5 != 5  	|  i32.uneq(5, 5) 	|
+|   5 > 5   	|   i32.gt(5, 5)  	|
+|   5 >= 5  	|  i32.gteq(5, 5) 	|
+|   5 < 5   	|   i32.lt(5, 5)  	|
+|   5 <= 5  	|  i32.lteq(5, 5) 	|
+
+## Logical Operators
+
+\* These shorthands can also be used with identifiers (variables).
+
+|   Shorthand   	| Native Function 	|
+|:-------------:	|:---------------:	|
+|     !true     	|    not(true)    	|
+|  true && true 	| and(true, true) 	|
+| true || false 	| or(true, false) 	|
+
+## Arithmetic Operators
+
+\* These shorthands can also be used with identifiers (variables).
+
+| Shorthand 	|   Native Function  	|
+|:---------:	|:------------------:	|
+|    5++    	|    i32.add(5, 1)   	|
+|    5--    	|    i32.sub(5, 1)   	|
+|   5 + 5   	|    i32.add(5, 5)   	|
+|   5 - 5   	|    i32.sub(5, 5)   	|
+|   5 * 5   	|    i32.mul(5, 5)   	|
+|   5 / 5   	|    i32.div(5, 5)   	|
+|   5 % 5   	|    i32.mod(5, 5)   	|
+|   5 << 5  	|  i32.bitshl(5, 5)  	|
+|   5 >> 5  	|  i32.bitshr(5, 5)  	|
+|   5 ** 5  	|    i32.pow(5, 5)   	|
+|   5 & 5   	|  i32.bitand(5, 5)  	|
+|   5 | 5   	|   i32.bitor(5, 5)  	|
+|   5 ^ 5   	|  i32.bitxor(5, 5)  	|
+|   5 &^ 5  	| i32.bitclear(5, 5) 	|
+
+## Arithmetic Assignment Operators
+
+\* These shorthands can also be used with identifiers (variables).
+
+
 
 # Comments
 

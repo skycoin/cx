@@ -8,10 +8,43 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/\+/         { lval.tok = yylex.Text(); return PLUS }
-/-/          { lval.tok = yylex.Text(); return MINUS }
-/\*/         { lval.tok = yylex.Text(); return MULT }
-/\//         { lval.tok = yylex.Text(); return DIV }
+/!/          { lval.tok = yylex.Text(); return NOT      }
+/\+\+/       { lval.tok = yylex.Text(); return PLUSPLUS }
+/--/         { lval.tok = yylex.Text(); return MINUSMINUS }
+/\+=/        { lval.tok = yylex.Text(); return PLUSEQ }
+/-=/         { lval.tok = yylex.Text(); return MINUSEQ }
+/\*=/        { lval.tok = yylex.Text(); return MULTEQ }
+/\/=/        { lval.tok = yylex.Text(); return DIVEQ           }
+/\%=/        { lval.tok = yylex.Text(); return REMAINDEREQ     }
+/<<=/        { lval.tok = yylex.Text(); return LEFTSHIFTEQ     }
+/>>=/        { lval.tok = yylex.Text(); return RIGHTSHIFTEQ    }
+/\*\*=/      { lval.tok = yylex.Text(); return EXPEQ           }
+/&=/         { lval.tok = yylex.Text(); return BITANDEQ        }
+/\^=/        { lval.tok = yylex.Text(); return BITXOREQ       }
+/\|=/        { lval.tok = yylex.Text(); return BITOREQ        }
+/=/          { lval.tok = yylex.Text(); return ASSIGN      }
+/:=/         { lval.tok = yylex.Text(); return CASSIGN     }
+/&&/         { lval.tok = yylex.Text(); return AND         }
+/\|\|/       { lval.tok = yylex.Text(); return OR         }
+/==/         { lval.tok = yylex.Text(); return EQUAL      }
+/>/          { lval.tok = yylex.Text(); return GTHAN      }
+/</          { lval.tok = yylex.Text(); return LTHAN      }
+/>=/         { lval.tok = yylex.Text(); return GTHANEQ    }
+/<=/         { lval.tok = yylex.Text(); return LTHANEQ    }
+/!=/         { lval.tok = yylex.Text(); return UNEQUAL    }
+/\+/         { lval.tok = yylex.Text(); return PLUS       }
+/-/          { lval.tok = yylex.Text(); return MINUS      }
+/\*([.\[\]a-zA-Z0-9_]+)/          { lval.tok = yylex.Text(); return AFFVAR      }
+/\*/         { lval.tok = yylex.Text(); return MULT       }
+/\//         { lval.tok = yylex.Text(); return DIV        }
+/%/          { lval.tok = yylex.Text(); return REMAINDER  }
+/<</         { lval.tok = yylex.Text(); return LEFTSHIFT  }
+/>>/         { lval.tok = yylex.Text(); return RIGHTSHIFT }
+/\*\*/       { lval.tok = yylex.Text(); return EXP        }
+/&/          { lval.tok = yylex.Text(); return BITAND }
+/\^/         { lval.tok = yylex.Text(); return BITXOR }
+/\|/         { lval.tok = yylex.Text(); return BITOR }
+/&^/         { lval.tok = yylex.Text(); return BITCLEAR }
 /:dState/    { return DSTATE     }
 /:dStack/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
@@ -48,12 +81,7 @@
 /\[/         { return LBRACK     }
 /\]/         { return RBRACK     }
 /:/          { return COLON      }
-/=/          { return ASSIGN     }
-/:=/         { return CASSIGN    }
 /->/         { return INFER      }
-/>/          { return GTHAN      }
-/</          { return LTHAN      }
-/==/         { return EQUAL      }
 /\$/         { return WEIGHT     }
 /new/        { return NEW        }
 /bool/       { lval.tok = yylex.Text(); return BOOL     }
@@ -82,6 +110,11 @@
 /false/ {
 	lval.i32 = int32(0)
 	return BOOLEAN
+}
+/-?[0-9]+B/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	lval.byt = byte(result)
+	return BYTENUM
 }
 /-?[0-9]+L/ {
 	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
@@ -241,16 +274,19 @@ func i32.add (n1 i32, n2 i32) (out i32) {}
 func i32.sub (n1 i32, n2 i32) (out i32) {}
 func i32.mul (n1 i32, n2 i32) (out i32) {}
 func i32.div (n1 i32, n2 i32) (out i32) {}
+func i32.pow (n1 i32, n2 i32) (out i32) {}
 
 func i64.add (n1 i64, n2 i64) (out i64) {}
 func i64.sub (n1 i64, n2 i64) (out i64) {}
 func i64.mul (n1 i64, n2 i64) (out i64) {}
 func i64.div (n1 i64, n2 i64) (out i64) {}
+func i64.pow (n1 i64, n2 i64) (out i64) {}
 
 func f32.add (n1 f32, n2 f32) (out f32) {}
 func f32.sub (n1 f32, n2 f32) (out f32) {}
 func f32.mul (n1 f32, n2 f32) (out f32) {}
 func f32.div (n1 f32, n2 f32) (out f32) {}
+func f32.pow (n1 f32, n2 f32) (out f32) {}
 
 func f32.cos (n f32) (out f32) {}
 func f32.sin (n f32) (out f32) {}
@@ -259,6 +295,7 @@ func f64.add (n1 f64, n2 f64) (out f64) {}
 func f64.sub (n1 f64, n2 f64) (out f64) {}
 func f64.mul (n1 f64, n2 f64) (out f64) {}
 func f64.div (n1 f64, n2 f64) (out f64) {}
+func f64.pow (n1 f64, n2 f64) (out f64) {}
 
 func f64.cos (n f64) (out f64) {}
 func f64.sin (n f64) (out f64) {}
@@ -289,39 +326,48 @@ func and (c1 bool, c2 bool) (out bool) {}
 func or (c1 bool, c2 bool) (out bool) {}
 func not (c1 bool) (out bool) {}
 
+func bool.eq (b1 bool, b2 bool) (out bool) {}
+func bool.uneq (b1 bool, b2 bool) (out bool) {}
+
 func i32.lt (n1 i32, n2 i32) (out bool) {}
 func i32.gt (n1 i32, n2 i32) (out bool) {}
 func i32.eq (n1 i32, n2 i32) (out bool) {}
+func i32.uneq (n1 i32, n2 i32) (out bool) {}
 func i32.lteq (n1 i32, n2 i32) (out bool) {}
 func i32.gteq (n1 i32, n2 i32) (out bool) {}
 
 func i64.lt (n1 i64, n2 i64) (out bool) {}
 func i64.gt (n1 i64, n2 i64) (out bool) {}
 func i64.eq (n1 i64, n2 i64) (out bool) {}
+func i64.uneq (n1 i64, n2 i64) (out bool) {}
 func i64.lteq (n1 i64, n2 i64) (out bool) {}
 func i64.gteq (n1 i64, n2 i64) (out bool) {}
 
 func f32.lt (n1 f32, n2 f32) (out bool) {}
 func f32.gt (n1 f32, n2 f32) (out bool) {}
 func f32.eq (n1 f32, n2 f32) (out bool) {}
+func f32.uneq (n1 f32, n2 f32) (out bool) {}
 func f32.lteq (n1 f32, n2 f32) (out bool) {}
 func f32.gteq (n1 f32, n2 f32) (out bool) {}
 
 func f64.lt (n1 f64, n2 f64) (out bool) {}
 func f64.gt (n1 f64, n2 f64) (out bool) {}
 func f64.eq (n1 f64, n2 f64) (out bool) {}
+func f64.uneq (n1 f64, n2 f64) (out bool) {}
 func f64.lteq (n1 f64, n2 f64) (out bool) {}
 func f64.gteq (n1 f64, n2 f64) (out bool) {}
 
 func str.lt (n1 str, n2 str) (out bool) {}
 func str.gt (n1 str, n2 str) (out bool) {}
 func str.eq (n1 str, n2 str) (out bool) {}
+func str.uneq (n1 str, n2 str) (out bool) {}
 func str.lteq (n1 str, n2 str) (out bool) {}
 func str.gteq (n1 str, n2 str) (out bool) {}
 
 func byte.lt (n1 byte, n2 byte) (out bool) {}
 func byte.gt (n1 byte, n2 byte) (out bool) {}
 func byte.eq (n1 byte, n2 byte) (out bool) {}
+func byte.uneq (n1 byte, n2 byte) (out bool) {}
 func byte.lteq (n1 byte, n2 byte) (out bool) {}
 func byte.gteq (n1 byte, n2 byte) (out bool) {}
 

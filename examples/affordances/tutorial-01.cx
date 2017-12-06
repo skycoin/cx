@@ -20,7 +20,7 @@ func main () () {
 
 	rules := ->{
 		if obj1 $0.3 {
-			allow(x > i32.add(2, 2))
+			allow(* > 1.0D)
 		}
 	}
 

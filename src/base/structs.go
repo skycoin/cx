@@ -13,6 +13,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"f64.add":true, "f64.mul":true, "f64.sub":true, "f64.div":true,
 	"i32.abs":true, "i64.abs":true, "f32.abs":true, "f64.abs":true,
 	"i32.mod":true, "i64.mod":true,
+	"i32.pow":true, "i64.pow":true, "f32.pow":true, "f64.pow":true,
 	"f32.cos":true, "f32.sin":true, "f64.cos":true, "f64.sin":true,
 	"i32.bitand":true, "i32.bitor":true, "i32.bitxor":true, "i32.bitclear":true,
 	"i64.bitand":true, "i64.bitor":true, "i64.bitxor":true, "i64.bitclear":true,
@@ -68,13 +69,14 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"[]i32.[]i64":true, "[]f32.[]i64":true, "[]f64.[]i64":true,
 	"[]i32.[]f32":true, "[]i64.[]f32":true, "[]f64.[]f32":true,
 	"[]i32.[]f64":true, "[]i64.[]f64":true, "[]f32.[]f64":true,
-	
-	"i32.lt":true, "i32.gt":true, "i32.eq":true, "i32.lteq":true, "i32.gteq":true,
-	"i64.lt":true, "i64.gt":true, "i64.eq":true, "i64.lteq":true, "i64.gteq":true,
-	"f32.lt":true, "f32.gt":true, "f32.eq":true, "f32.lteq":true, "f32.gteq":true,
-	"f64.lt":true, "f64.gt":true, "f64.eq":true, "f64.lteq":true, "f64.gteq":true,
-	"str.lt":true, "str.gt":true, "str.eq":true, "str.lteq":true, "str.gteq":true,
-	"byte.lt":true, "byte.gt":true, "byte.eq":true, "byte.lteq":true, "byte.gteq":true,
+
+	"bool.eq":true, "bool.uneq":true,
+	"i32.lt":true, "i32.gt":true, "i32.eq":true, "i32.uneq":true, "i32.lteq":true, "i32.gteq":true,
+	"i64.lt":true, "i64.gt":true, "i64.eq":true, "i64.uneq":true, "i64.lteq":true, "i64.gteq":true,
+	"f32.lt":true, "f32.gt":true, "f32.eq":true, "f32.uneq":true, "f32.lteq":true, "f32.gteq":true,
+	"f64.lt":true, "f64.gt":true, "f64.eq":true, "f64.uneq":true, "f64.lteq":true, "f64.gteq":true,
+	"str.lt":true, "str.gt":true, "str.eq":true, "str.uneq":true, "str.lteq":true, "str.gteq":true,
+	"byte.lt":true, "byte.gt":true, "byte.eq":true, "byte.uneq":true, "byte.lteq":true, "byte.gteq":true,
 
 	"str.read":true, "i32.read":true,
 

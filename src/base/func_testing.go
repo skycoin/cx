@@ -47,7 +47,6 @@ func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, 
 
 	if !equal {
 		if _message == "" {
-			//fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value", expr.FileLine))
 			fmt.Printf("%d: result was not equal to the expected value\n", expr.FileLine)
 			return errors.New("")
 		} else {
