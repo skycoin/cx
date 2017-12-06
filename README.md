@@ -321,7 +321,7 @@ used with identifiers (variables).
 |:-------------:	|:---------------:	|
 |     !true     	|    not(true)    	|
 |  true && true 	| and(true, true) 	|
-| true || false 	| or(true, false) 	|
+| true \|\| false 	| or(true, false) 	|
 
 ## Arithmetic Operators
 
