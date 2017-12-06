@@ -397,7 +397,7 @@ func main () {
 					expr.Operator.Name, expr.Operator.Module.Name, expr.FileLine, tagStr, asmNL))
 
 				for _, arg := range expr.Arguments {
-					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, arg.Value, arg.Typ, asmNL))
+					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, *arg.Value, arg.Typ, asmNL))
 				}
 				
 				for _, outName := range expr.OutputNames {
@@ -415,7 +415,7 @@ func main () {
 		}
 
 		for _, def := range mod.Definitions {
-			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, def.Value, def.Typ, asmNL))
+			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, *def.Value, def.Typ, asmNL))
 		}
 	}
 
