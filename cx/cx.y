@@ -264,7 +264,7 @@
 %type   <parameter>     parameter
 %type   <parameters>    parameters functionParameters
 %type   <argument>      argument definitionAssignment
-%type   <arguments>     arguments argumentsList nonAssignExpression
+%type   <arguments>     arguments argumentsList nonAssignExpression conditionControl
 %type   <definition>    structLitDef
 %type   <definitions>   structLitDefs structLiteral
 %type   <fields>        fields structFields
@@ -1573,6 +1573,17 @@ beginFor:       FOR
                 }
                 ;
 
+conditionControl:
+                nonAssignExpression
+                {
+			$$ = $1
+                }
+        |       argument
+                {
+			$$ = []*CXArgument{$1}
+                }
+        ;
+
 statement:      RETURN
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -1611,7 +1622,7 @@ statement:      RETURN
 				}
 			}
                 }
-        |       IF nonAssignExpression
+        |       IF conditionControl
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -1646,93 +1657,15 @@ statement:      RETURN
 					
 					thenLines := encoder.Serialize(int32(1))
 
-					//predVal := []byte($2)
-					predVal := $2[0].Value
-
-					goToExpr.AddArgument(MakeArgument(predVal, "ident"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
-				}
-			}
-                }
-        |       IF IDENT
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
-						expr := MakeExpression(goToFn)
-						if !replMode {
-							expr.FileLine = yyS[yypt-0].line + 1
-						}
-						fn.AddExpression(expr)
-					}
-				}
-			}
-                }
-                LBRACE
-                {
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				$<i>$ = len(fn.Expressions)
-			}
-                }
-                expressionsAndStatements RBRACE elseStatement
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>5 - 1]
-					var elseLines []byte
-					if $<i>8 > 0 {
-						elseLines = encoder.Serialize(int32(len(fn.Expressions) - $<i>5 - $<i>8 + 1))
+					var typ string
+					if len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident." {
+						typ = "ident"
 					} else {
-						elseLines = encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 1))
+						typ = $2[0].Typ
 					}
-					//elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 - 3))
-					thenLines := encoder.Serialize(int32(1))
 
-					predVal := encoder.Serialize($2)
-
-					goToExpr.AddArgument(MakeArgument(&predVal, "ident"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
-				}
-			}
-                }
-        |       IF BOOLEAN
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
-						expr := MakeExpression(goToFn)
-						if !replMode {
-							expr.FileLine = yyS[yypt-0].line + 1
-						}
-						fn.AddExpression(expr)
-					}
-				}
-			}
-                }
-                LBRACE
-                {
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				$<i>$ = len(fn.Expressions)
-			}
-                }
-                expressionsAndStatements RBRACE elseStatement
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>5 - 1]
-					var elseLines []byte
-					if $<i>8 > 0 {
-						elseLines = encoder.Serialize(int32(len(fn.Expressions) - $<i>5 - $<i>8 + 1))
-					} else {
-						elseLines = encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 1))
-					}
-					thenLines := encoder.Serialize(int32(1))
-
-					predVal := encoder.Serialize($2)
-					
-					goToExpr.AddArgument(MakeArgument(&predVal, "bool"))
+					//goToExpr.AddArgument(MakeArgument(predVal, "ident"))
+					goToExpr.AddArgument(MakeArgument($2[0].Value, typ))
 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
 					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
 				}
@@ -1908,7 +1841,8 @@ statement:      RETURN
 				$<i>$ = len(fn.Expressions)
 			}
                 }
-                ';' nonAssignExpression
+//                              ';' nonAssignExpression
+                ';' conditionControl
                 {//$<i>6
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				$<i>$ = len(fn.Expressions)

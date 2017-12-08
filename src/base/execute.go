@@ -378,6 +378,30 @@ func main () {
 		}
 
 		for _, fn := range mod.Functions {
+			isUsed := false
+			if fn.Name != MAIN_FUNC {
+				for _, mod := range cxt.Modules {
+					for _, chkFn := range mod.Functions {
+						for _, expr := range chkFn.Expressions {
+							if expr.Operator.Name == fn.Name {
+								isUsed = true
+								break
+							}
+						}
+						if isUsed {
+							break
+						}
+					}
+				}
+			} else {
+				isUsed = true
+			}
+			
+			if !isUsed {
+				continue
+			}
+
+			
 			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);%s`, fn.Name, asmNL))
 
 			for _, inp := range fn.Inputs {
@@ -387,8 +411,30 @@ func main () {
 			for _, out := range fn.Outputs {
 				program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", "%s"));%s`, out.Name, out.Typ, asmNL))
 			}
-
+			
+			var optExpressions []*CXExpression
 			for _, expr := range fn.Expressions {
+				if expr.Operator.Name == "identity" {
+					var nonAssignIdent string
+					encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
+
+					for _, idExpr := range fn.Expressions {
+						for i, out := range idExpr.OutputNames {
+							if out.Name == nonAssignIdent {
+								idExpr.OutputNames[i] = expr.OutputNames[0]
+								break
+							}
+						}
+					}
+					continue
+				}
+				optExpressions = append(optExpressions, expr)
+			}
+
+			fn.Expressions = optExpressions
+
+			for _, expr := range optExpressions {
+				//for _, expr := range fn.Expressions {
 				var tagStr string
 				if expr.Tag != "" {
 					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)
@@ -404,6 +450,10 @@ func main () {
 					program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");%s`, outName.Name, asmNL))
 				}
 			}
+
+
+
+			
 		}
 
 		for _, strct := range mod.Structs {
@@ -812,6 +862,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "cstm.write": err = cstm_write((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "cstm.len": err = cstm_len((*argsCopy)[0], expr, call)
 	case "cstm.make": err = cstm_make((*argsCopy)[0], (*argsCopy)[1], expr, call)
+		// Time
+	case "time.now": time_now(expr, call)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
 		// OpenGL

@@ -1,5 +1,6 @@
 package base
 
+const MAIN_FUNC = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const CORE_MODULE = "core"
 var BASIC_TYPES []string = []string{
@@ -103,6 +104,11 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 	"cstm.append":true, "cstm.read":true, "cstm.write":true, "cstm.len":true,
 	"cstm.make":true,
+
+	/*
+          Time
+        */
+	"time.now":true,
 
 	/*
           Runtime

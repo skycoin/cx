@@ -564,6 +564,12 @@ func cstm.make (len i32, typ str) (arr str) {}
   Runtime
 */
 
+func time.now () (timestamp f64) {}
+
+/*
+  Runtime
+*/
+
 func runtime.LockOSThread () () {}
 
 /*
@@ -1047,6 +1053,8 @@ func main () {
 	
 	lineNo = 0
 
+	//cxt.Compile(false)
+
 	if replMode || len(sourceCode) == 0 {
 		mod := MakeModule("main")
 		cxt.AddModule(mod)
@@ -1054,7 +1062,6 @@ func main () {
 		mod.AddFunction(fn)
 
 		replTargetFn = "main"
-		
 		repl()
 	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
 		if err := cxt.Run(false, -1); err != nil {
