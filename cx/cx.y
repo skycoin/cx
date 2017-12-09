@@ -42,6 +42,14 @@
 		// var typArg2 string
 		// _ = typArg2
 
+		if (len(arg1.Typ) > len("ident.") && arg1.Typ[:len("ident.")] == "ident.") {
+			arg1.Typ = "ident"
+		}
+
+		if (len(arg2.Typ) > len("ident.") && arg2.Typ[:len("ident.")] == "ident.") {
+			arg2.Typ = "ident"
+		}
+		
 		if arg1.Typ == "ident" {
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
@@ -50,7 +58,6 @@
 				typArg1 = typ
 			} else {
 				fmt.Println(err)
-				//typArg1 = "ident"
 			}
 		} else {
 			typArg1 = arg1.Typ
@@ -94,6 +101,14 @@
 			opName = fmt.Sprintf("%s.bitshr", typArg1)
 		case "**":
 			opName = fmt.Sprintf("%s.pow", typArg1)
+		case "&":
+			opName = fmt.Sprintf("%s.bitand", typArg1)
+		case "|":
+			opName = fmt.Sprintf("%s.bitor", typArg1)
+		case "^":
+			opName = fmt.Sprintf("%s.bitxor", typArg1)
+		case "&^":
+			opName = fmt.Sprintf("%s.bitclear", typArg1)
 		case "&&":
 			opName = "and"
 		case "||":
@@ -275,8 +290,10 @@
 %type   <stringA>       inferObj inferObjs inferRule inferRules inferClauses inferPred inferCond inferAction inferActions inferActionArg inferTarget inferTargets
 %type   <string>        inferWeight
 
+
 %left                   OR
 %left                   AND
+%left                   BITCLEAR
 %left                   BITOR
 %left                   BITXOR
 %left                   BITAND
@@ -884,6 +901,13 @@ definitionAssignment:
 definitionDeclaration:
                 VAR IDENT typeSpecifier definitionAssignment
                 {
+
+			if $4 != nil {
+				if $3 != $4.Typ {
+					panic(fmt.Sprintf("%d: variable of type '%s' cannot be initialized with value of type '%s'", yyS[yypt-0].line + 1, $3, $4.Typ))
+				}
+			}
+
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				var val *CXArgument;
 				if $4 == nil {
@@ -891,21 +915,28 @@ definitionDeclaration:
 				} else {
 					switch $3 {
 					case "byte":
-						var ds int32
-						encoder.DeserializeRaw(*$4.Value, &ds)
-						//new := encoder.Serialize(byte(ds))
-						new := []byte{byte(ds)}
-						val = MakeArgument(&new, "byte")
+						// var ds int32
+						// encoder.DeserializeRaw(*$4.Value, &ds)
+
+						//fmt.Println("here", $4.Value)
+                                        
+						//new := []byte{byte(ds)}
+						//val = MakeArgument(&new, "byte")
+						val = MakeArgument($4.Value, "byte")
 					case "i64":
-						var ds int32
-						encoder.DeserializeRaw(*$4.Value, &ds)
-						new := encoder.Serialize(int64(ds))
-						val = MakeArgument(&new, "i64")
+						// var ds int32
+						// encoder.DeserializeRaw(*$4.Value, &ds)
+						// new := encoder.Serialize(int64(ds))
+						// val = MakeArgument(&new, "i64")
+
+						val = MakeArgument($4.Value, "i64")
 					case "f64":
-						var ds float32
-						encoder.DeserializeRaw(*$4.Value, &ds)
-						new := encoder.Serialize(float64(ds))
-						val = MakeArgument(&new, "f64")
+						// var ds float32
+						// encoder.DeserializeRaw(*$4.Value, &ds)
+						// new := encoder.Serialize(float64(ds))
+						// val = MakeArgument(&new, "f64")
+
+						val = MakeArgument($4.Value, "f64")
 					default:
 						val = $4
 					}
@@ -2145,7 +2176,7 @@ inferActionArg:
                 }
         |       IDENT
                 {
-                    $$ = []string{$1}
+			$$ = []string{$1}
                 }
         |       AFFVAR relationalOp argument
                 {
@@ -2327,71 +2358,351 @@ structLiteral:
                 }
         ;
 
+/*
+  Fix this, there has to be a way to compress these rules
+*/
 argument:
                 argument PLUS argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression PLUS nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument PLUS nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression PLUS argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
+
         |       argument MINUS argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression MINUS nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument MINUS nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression MINUS argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument MULT argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression MULT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument MULT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression MULT argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument DIV argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression DIV nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument DIV nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression DIV argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument REMAINDER argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression REMAINDER nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument REMAINDER nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression REMAINDER argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument LEFTSHIFT argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression LEFTSHIFT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument LEFTSHIFT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression LEFTSHIFT argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument RIGHTSHIFT argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression RIGHTSHIFT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument RIGHTSHIFT nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression RIGHTSHIFT argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument EXP argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression EXP nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument EXP nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression EXP argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument EQUAL argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression EQUAL nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument EQUAL nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression EQUAL argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument UNEQUAL argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression UNEQUAL nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument UNEQUAL nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression UNEQUAL argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument GTHAN argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression GTHAN nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument GTHAN nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression GTHAN argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument GTHANEQ argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression GTHANEQ nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument GTHANEQ nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression GTHANEQ argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument LTHAN argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression LTHAN nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument LTHAN nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression LTHAN argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument LTHANEQ argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression LTHANEQ nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument LTHANEQ nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression LTHANEQ argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument OR argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression OR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument OR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression OR argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       argument AND argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
+        |       nonAssignExpression AND nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument AND nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression AND argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
+        |       argument BITAND argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITAND nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument BITAND nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITAND argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
+        |       argument BITOR argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITOR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument BITOR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITOR argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
+        |       argument BITXOR argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITXOR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument BITXOR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITXOR argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
+        |       argument BITCLEAR argument
+                {
+			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITCLEAR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1[0], $3[0], yyS[yypt-0].line + 1)
+		}
+        |       argument BITCLEAR nonAssignExpression
+                {
+			$$ = binaryOp($2, $1, $3[0], yyS[yypt-0].line + 1)
+		}
+        |       nonAssignExpression BITCLEAR argument
+                {
+			$$ = binaryOp($2, $1[0], $3, yyS[yypt-0].line + 1)
+		}
+
         |       NOT argument
                 {
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
@@ -2404,6 +2715,32 @@ argument:
 					expr.AddTag(tag)
 					tag = ""
 					expr.AddArgument($2)
+
+					outName := MakeGenSym(NON_ASSIGN_PREFIX)
+					byteName := encoder.Serialize(outName)
+					
+					expr.AddOutputName(outName)
+					$$ = MakeArgument(&byteName, "ident")
+				}
+			}
+		}
+        |       NOT nonAssignExpression
+                {
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				if op, err := cxt.GetFunction("not", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+					fn.AddExpression(expr)
+					expr.AddTag(tag)
+					tag = ""
+
+					if (len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident.") {
+						$2[0].Typ = "ident"
+					}
+					
+					expr.AddArgument($2[0])
 
 					outName := MakeGenSym(NON_ASSIGN_PREFIX)
 					byteName := encoder.Serialize(outName)

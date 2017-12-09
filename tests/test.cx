@@ -52,11 +52,11 @@ func testFunc () () {}
 
 var globalBool bool = true
 var globalStr str = "´¨å≥π hello ´¨å≥π"
-var globalByte byte = 3
+var globalByte byte = 3B
 var globalI32 i32 = 5
-var globalI64 i64 = 20
+var globalI64 i64 = 20L
 var globalF32 f32 = 3.5
-var globalF64 f64 = 6.5
+var globalF64 f64 = 6.5D
 var globalBoolA []bool = []bool{true, false, true}
 var globalByteA []byte = []byte{5, 10, 15}
 var globalStrA []str = []str{"one", "two", "three"}
@@ -248,10 +248,57 @@ func main () () {
 	test.f64(5.0D * (10.0D + 2.0D), 60.0D, "")
 	test.f64(10.0D + (5.0D * (3.0D + 15.0D)), 100.0D, "")
 
+	fooBool := true
+	test.bool(!fooBool || fooBool, true, "")
+	
 	i64.div(5L, 0L)
 	test.error("i64.div did not raise a division by 0 error")
 	f64.div(5.0D, 0.0D)
 	test.error("f64.div did not raise a division by 0 error")
+
+	// testing chains of shorthand operators
+
+	test.i32(3 + 3 + 3, 9, "")
+	test.i32(3 - 3 - 3, -3, "")
+	test.i32(3 * 3 * 3, 27, "")
+	test.i32(3 / 3 / 3, 0, "")
+	test.i32(3 % 3 % 3, 0, "")
+	test.i32(3 << 3 << 3, 192, "")
+	test.i32(3 >> 3 >> 3, 0, "")
+	test.i32(2 ** 2 ** 2, 16, "")
+	test.i32(2 & 2 & 2, 2, "")
+	test.i32(2 | 2 | 2, 2, "")
+	test.i32(2 ^ 2 ^ 2, 2, "")
+	test.i32(2 &^ 2 &^ 2, 0, "")
+
+	fooChain2 := 2
+	fooChain3 := 3
+
+	test.i32(fooChain3 + fooChain3 + fooChain3, 9, "")
+	test.i32(fooChain3 - fooChain3 - fooChain3, -3, "")
+	test.i32(fooChain3 * fooChain3 * fooChain3, 27, "")
+	test.i32(fooChain3 / fooChain3 / fooChain3, 0, "")
+	test.i32(fooChain3 % fooChain3 % fooChain3, 0, "")
+	test.i32(fooChain3 << fooChain3 << fooChain3, 192, "")
+	test.i32(fooChain3 >> fooChain3 >> fooChain3, 0, "")
+	test.i32(fooChain2 ** fooChain2 ** fooChain2, 16, "")
+	test.i32(fooChain2 & fooChain2 & fooChain2, fooChain2, "")
+	test.i32(fooChain2 | fooChain2 | fooChain2, fooChain2, "")
+	test.i32(fooChain2 ^ fooChain2 ^ fooChain2, fooChain2, "")
+	test.i32(fooChain2 &^ fooChain2 &^ fooChain2, 0, "")
+
+	test.i32(i32.add(1, 2) + i32.add(1, 2) + i32.add(1, 2), 9, "")
+	test.i32(i32.add(1, 2) - i32.add(1, 2) - i32.add(1, 2), -3, "")
+	test.i32(i32.add(1, 2) * i32.add(1, 2) * i32.add(1, 2), 27, "")
+	test.i32(i32.add(1, 2) / i32.add(1, 2) / i32.add(1, 2), 0, "")
+	test.i32(i32.add(1, 2) % i32.add(1, 2) % i32.add(1, 2), 0, "")
+	test.i32(i32.add(1, 2) << i32.add(1, 2) << i32.add(1, 2), 192, "")
+	test.i32(i32.add(1, 2) >> i32.add(1, 2) >> i32.add(1, 2), 0, "")
+	test.i32(i32.add(1, 1) ** i32.add(1, 1) ** i32.add(1, 1), 16, "")
+	test.i32(i32.add(1, 1) & i32.add(1, 1) & i32.add(1, 1), i32.add(1, 1), "")
+	test.i32(i32.add(1, 1) | i32.add(1, 1) | i32.add(1, 1), i32.add(1, 1), "")
+	test.i32(i32.add(1, 1) ^ i32.add(1, 1) ^ i32.add(1, 1), i32.add(1, 1), "")
+	test.i32(i32.add(1, 1) &^ i32.add(1, 1) &^ i32.add(1, 1), 0, "")
 
 	// variable initialization
 	
@@ -1492,11 +1539,11 @@ test:
 	structArraysAffs := aff.query(structArrays, objs, structArraysRules)
 	test.str(aff.name(structArraysAffs, 0), "testI32A", "")
 	localNonArraysAffs := aff.query(localNonArrays, objs, localNonArraysRules)
-	test.str(aff.name(localNonArraysAffs, 0), "foo1", "")
+	test.str(aff.name(localNonArraysAffs, 0), "fooChain2", "")
 	localArraysAffs := aff.query(localArrays, objs, localArraysRules)
 	test.str(aff.name(localArraysAffs, 0), "i32A", "")
 	localStructNonArraysAffs := aff.query(localStructNonArrays, objs, localStructNonArraysRules)
-	test.str(aff.name(localStructNonArraysAffs, 0), "foo1", "")
+	test.str(aff.name(localStructNonArraysAffs, 0), "fooChain2", "")
 	localStructArraysAffs := aff.query(localStructArrays, objs, localStructArraysRules)
 	test.str(aff.name(localStructArraysAffs, 0), "i32A", "")
 	globalNonArraysAffs := aff.query(globalNonArrays, objs, globalNonArraysRules)

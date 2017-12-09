@@ -41,10 +41,10 @@
 /<</         { lval.tok = yylex.Text(); return LEFTSHIFT  }
 />>/         { lval.tok = yylex.Text(); return RIGHTSHIFT }
 /\*\*/       { lval.tok = yylex.Text(); return EXP        }
+/&\^/         { lval.tok = yylex.Text(); return BITCLEAR }
 /&/          { lval.tok = yylex.Text(); return BITAND }
 /\^/         { lval.tok = yylex.Text(); return BITXOR }
 /\|/         { lval.tok = yylex.Text(); return BITOR }
-/&^/         { lval.tok = yylex.Text(); return BITCLEAR }
 /:dState/    { return DSTATE     }
 /:dStack/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
