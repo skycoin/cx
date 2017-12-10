@@ -2,7 +2,6 @@
 	package main
 	import (
 		"strings"
-		"bytes"
 		"fmt"
 		"os"
 		"time"
@@ -11,8 +10,6 @@
 		. "github.com/skycoin/cx/src/base"
                 )
 
-	var program bytes.Buffer
-	
 	var cxt = MakeContext()
 
 	var lineNo int = 0
@@ -314,13 +311,15 @@ lines:
                 /* empty */
         |       lines line
                 {
-			// if replMode && dProgram {
+			// if replMode {
 			// 	cxt.PrintProgram(false)
 			// }
                 }
         |       lines ';'
                 {
-                    
+			// if replMode {
+			// 	cxt.PrintProgram(false)
+			// }
                 }
         ;
 
@@ -1008,6 +1007,7 @@ structDeclaration:
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
 
+
 				// creating manipulation functions for this type a la common lisp
 				// append
 				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2))
@@ -1032,6 +1032,57 @@ structDeclaration:
 				} else {
 					fmt.Println(err)
 				}
+
+				// serialize
+				fn = MakeFunction(fmt.Sprintf("%s.serialize", $2))
+				fn.AddInput(MakeParameter("strctInst", $2))
+				fn.AddOutput(MakeParameter("byts", "[]byte"))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.serialize", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+					expr.AddOutputName("byts")
+					sStrctInst := encoder.Serialize("strctInst")
+					strctInstArg := MakeArgument(&sStrctInst, "str")
+					expr.AddArgument(strctInstArg)
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+
+
+
+				// deserialize
+				fn = MakeFunction(fmt.Sprintf("%s.deserialize", $2))
+				fn.AddInput(MakeParameter("byts", "[]byte"))
+				fn.AddOutput(MakeParameter("strctInst", $2))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("cstm.deserialize", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+					}
+
+					expr.AddOutputName("strctInst")
+					sByts := encoder.Serialize("byts")
+					sBytsArg := MakeArgument(&sByts, "str")
+
+					sTyp := encoder.Serialize($2)
+					sTypArg := MakeArgument(&sTyp, "str")
+					
+					expr.AddArgument(sBytsArg)
+					expr.AddArgument(sTypArg)
+					
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+
+				
 				// read
 				fn = MakeFunction(fmt.Sprintf("[]%s.read", $2))
 				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
@@ -1218,6 +1269,12 @@ functionStatements:
 
 expressionsAndStatements:
                 nonAssignExpression
+                /* { */
+                /*     if replMode { */
+                /*             //cxt.PrintProgram(false) */
+                /*             cxt.Run(false, -1) */
+                /*                 } */
+                /* } */
         |       assignExpression
         |       statement
         |       selector

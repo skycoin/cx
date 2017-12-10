@@ -92,7 +92,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"aff.query":true, "aff.execute":true, "aff.print":true, "aff.concat":true,
 	"aff.len":true, "aff.index":true, "aff.name":true,
 
-	"serialize":true, "deserialize":true, "evolve":true,
+	//"serialize":true, "deserialize":true,
+	"evolve":true,
 
 	"initDef":true,
 
@@ -103,7 +104,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true,
 
 	"cstm.append":true, "cstm.read":true, "cstm.write":true, "cstm.len":true,
-	"cstm.make":true,
+	"cstm.make":true, "cstm.serialize":true, "cstm.deserialize":true,
 
 	/*
           Time
@@ -160,6 +161,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
         */
 
 	"os.Create":true, "os.Open":true, "os.Close":true, "os.GetWorkingDirectory":true,
+	"os.Write":true, "os.WriteFile":true, "os.ReadFile":true,
 }
 
 /*

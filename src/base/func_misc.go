@@ -2,6 +2,7 @@ package base
 
 import (
 	"time"
+	//"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -382,6 +383,51 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 		
 		assignOutput(0, instances, _typ, expr, call)
 		return nil
+	} else {
+		return err
+	}
+}
+
+func cstm_serialize (instance *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("cstm.serialize", "str", instance); err == nil {
+		var _instance string
+		encoder.DeserializeRaw(*instance.Value, &_instance)
+		
+		if rInst, err := resolveIdent(_instance, call); err == nil {
+			sInst := encoder.Serialize(*rInst.Value)
+			assignOutput(0, sInst, "[]byte", expr, call)
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+}
+
+func cstm_deserialize (byts, typ *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("cstm.deserialize", "str", "str", byts, typ); err == nil {
+		var _byts string
+		var _typ string
+		encoder.DeserializeRaw(*byts.Value, &_byts)
+		encoder.DeserializeRaw(*typ.Value, &_typ)
+		
+		if rByts, err := resolveIdent(_byts, call); err == nil {
+
+			// fmt.Println("here", rByts)
+			// fmt.Println("here", rByts.Value)
+			// fmt.Println("here", rByts.Typ)
+
+			var dsStrct []byte
+			encoder.DeserializeRaw(*rByts.Value, &dsStrct)
+
+			//sByts := encoder.Serialize(*rByts.Value)
+			//assignOutput(0, sByts, _typ, expr, call)
+			assignOutput(0, dsStrct, _typ, expr, call)
+			return nil
+		} else {
+			return err
+		}
 	} else {
 		return err
 	}

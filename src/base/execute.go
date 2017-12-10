@@ -562,10 +562,10 @@ var isErrorPresent bool
 func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*CXArgument, exc *bool, excError *error) {
 	var err error
 	switch opName {
-	case "serialize": serialize_program(expr, call)
-	case "deserialize":
-		// it only prints the deserialized program for now
-		Deserialize((*argsCopy)[0].Value).PrintProgram(false)
+	// case "serialize": serialize_program(expr, call)
+	// case "deserialize":
+	// 	// it only prints the deserialized program for now
+	// 	Deserialize((*argsCopy)[0].Value).PrintProgram(false)
 	case "evolve":
 		var fnName string
 		var fnBag string
@@ -638,6 +638,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println()
 	case "[]byte.print":
 		var val []byte
+		//fmt.Println(*(*argsCopy)[0].Value)
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
 		fmt.Println(val)
 	case "[]str.print":
@@ -862,6 +863,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "cstm.write": err = cstm_write((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
 	case "cstm.len": err = cstm_len((*argsCopy)[0], expr, call)
 	case "cstm.make": err = cstm_make((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "cstm.serialize": err = cstm_serialize((*argsCopy)[0], expr, call)
+	case "cstm.deserialize": err = cstm_deserialize((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// Time
 	case "time.now": time_now(expr, call)
 		// Runtime
@@ -934,7 +937,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "glfw.SetKeyCallback": err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// Operating System
 	case "os.Create": err = os_Create((*argsCopy)[0])
+	case "os.ReadFile": err = os_ReadFile((*argsCopy)[0], expr, call)
+	case "os.WriteFile": err = os_WriteFile((*argsCopy)[0], (*argsCopy)[1])
 	case "os.Open": err = os_Open((*argsCopy)[0])
+	case "os.Write": err = os_Write((*argsCopy)[0], (*argsCopy)[1])
 	case "os.Close": err = os_Close((*argsCopy)[0])
 	case "os.GetWorkingDirectory": err = os_GetWorkingDirectory(expr, call)
 	case "":

@@ -182,6 +182,8 @@ func countNewLines (s []byte) int {
 
 func readline (fi *bufio.Reader) (string, bool) {
 	s, err := fi.ReadString(';')
+	//s, err := fi.ReadString('\n')
+	
 	if err != nil {
 		return "", false
 	}
@@ -227,6 +229,9 @@ func repl () {
 			}
 			b := bytes.NewBufferString(inp)
 			yyParse(NewLexer(b))
+
+			//cxt.Run(false, -1)
+
 		} else {
 			if replTargetFn != "" {
 				replTargetFn = ""
@@ -527,8 +532,8 @@ func aff.concat (arr1 []str, arr2 []str) (conc []str) {}
 func aff.len (commands []str) (len i32) {}
 
 func evolve (fnName str, fnBag str, inps []f64, outs []f64, numberExprs i32, iterations i32, epsilon f64) (success f64) {}
-func serialize () (sPrgrm []byte) {}
-func deserialize (sPrgrm []byte) (err bool) {}
+// func serialize () (sPrgrm []byte) {}
+// func deserialize (sPrgrm []byte) (err bool) {}
 
 func initDef (typ str) (_typ str) {}
 
@@ -559,12 +564,14 @@ func cstm.read (arr str, index i32) (strctInst str) {}
 func cstm.write (arr str, index i32, inst str) (_arr str) {}
 func cstm.len (arr str) (len i32) {}
 func cstm.make (len i32, typ str) (arr str) {}
+func cstm.serialize (strctInst str) (byts []byte) {}
+func cstm.deserialize (byts str, typ str) (strctInst str) {}
 
 /*
-  Runtime
+  Time
 */
 
-func time.now () (timestamp f64) {}
+func time.now () (unixnano f64) {}
 
 /*
   Runtime
@@ -656,6 +663,9 @@ func glfw.GetTime () (time f64) {}
 */
 
 func os.Create (fileName str) () {}
+func os.ReadFile (fileName str) (byts []byte) {}
+func os.Write (fileName str, byts []byte) () {}
+func os.WriteFile (fileName str, byts []byte) () {}
 func os.Open (fileName str) () {}
 func os.Close (fileName str) () {}
 func os.GetWorkingDirectory () (path str) {}
@@ -1033,10 +1043,6 @@ func main () {
 		return
 	}
 
-	if baseOutput {
-		program.WriteString(`package main;import (. "github.com/skycoin/cx/src/base";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var goToExpr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {`)
-	}
-
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
@@ -1071,8 +1077,6 @@ func main () {
 	}
 	
 	if baseOutput {
-		program.WriteString(`cxt.Run(false, -1);}`)
-		ioutil.WriteFile(fmt.Sprintf("%s.go", compileOutput), []byte(program.String()), 0644)
 		cxt.Compile(true)
 	}
 	if compileMode {
