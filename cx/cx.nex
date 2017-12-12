@@ -45,7 +45,7 @@
 /&/          { lval.tok = yylex.Text(); return BITAND }
 /\^/         { lval.tok = yylex.Text(); return BITXOR }
 /\|/         { lval.tok = yylex.Text(); return BITOR }
-/:dState/            { return DSTATE     }
+/(:dl)|(:dLocals)/   { return DSTATE     }
 /(:ds)|(:dStack)/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
 /:package/   { return SPACKAGE   }
@@ -192,7 +192,7 @@ func readline (fi *bufio.Reader) (string, bool) {
 
 func repl () {
 	fmt.Println("CX REPL")
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx")
 
 	inREPL = true
 
