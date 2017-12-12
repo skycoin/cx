@@ -1908,6 +1908,11 @@ var ContextVersionMinor i32 = 139267
 var OpenGLProfile i32 = 139272
 var OpenGLCoreProfile i32 = 204801
 var OpenGLForwardCompatible i32 = 139270
+
+var MouseButtonLast i32 = 7
+var MouseButtonLeft i32 = 0
+var MouseButtonRight i32 = 1
+var MouseButtonMiddle i32 = 2
 ```
 
 If you're interested on having a look at the applications that have

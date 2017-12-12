@@ -210,7 +210,7 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 	
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
 		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
-
+			
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -275,16 +275,5 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 }
 
 func Bar () {
-	fmt.Println("glfw.CURSOR", glfw.CursorMode)
-	fmt.Println("glfw.STICKY_KEYS", glfw.StickyKeysMode)
-	fmt.Println("glfw.STICKY_MOUSE_BUTTONS", glfw.StickyMouseButtonsMode)
-
-	fmt.Println("glfw.CURSOR_NORMAL", glfw.CursorNormal)
-	fmt.Println("glfw.CURSOR_HIDDEN", glfw.CursorHidden)
-	fmt.Println("glfw.CURSOR_DISABLED", glfw.CursorDisabled)
-
-	fmt.Println("glfw.TRUE", glfw.True)
-	fmt.Println("glfw.FALSE", glfw.False)
-
-	fmt.Println("glfw.PRESS", glfw.Press)
+	//fmt.Println("glfw.CURSOR", glfw.CursorMode)
 }

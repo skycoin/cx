@@ -705,7 +705,11 @@ package glfw
 
 var False i32 = 0
 var True i32 = 1
+
 var Press i32 = 1
+var Release i32 = 0
+var Repeat i32 = 2
+var KeyUnknown i32 = -1
 
 var Cursor i32 = 208897
 var StickyKeys i32 = 208898
@@ -720,6 +724,11 @@ var ContextVersionMinor i32 = 139267
 var OpenGLProfile i32 = 139272
 var OpenGLCoreProfile i32 = 204801
 var OpenGLForwardCompatible i32 = 139270
+
+var MouseButtonLast i32 = 7
+var MouseButtonLeft i32 = 0
+var MouseButtonRight i32 = 1
+var MouseButtonMiddle i32 = 2
 
 package gl
 

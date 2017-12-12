@@ -33,17 +33,17 @@ func castToStr (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		assignOutput(0, output, strTyp, expr, call)
 	case "i64":
 		var val int64
-		encoder.DeserializeAtomic(*arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		output := encoder.Serialize(fmt.Sprintf("%d", val))
 		assignOutput(0, output, strTyp, expr, call)
 	case "f32":
 		var val float32
-		encoder.DeserializeAtomic(*arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		output := encoder.Serialize(fmt.Sprintf("%f", val))
 		assignOutput(0, output, strTyp, expr, call)
 	case "f64":
 		var val float64
-		encoder.DeserializeAtomic(*arg.Value, &val)
+		encoder.DeserializeRaw(*arg.Value, &val)
 		output := encoder.Serialize(fmt.Sprintf("%f", val))
 		assignOutput(0, output, strTyp, expr, call)
 	default:

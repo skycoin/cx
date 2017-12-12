@@ -3,80 +3,74 @@ package main
 import "gl"
 import "glfw"
 
-var width i32 = 800
-var height i32 = 600
-
-type Ball struct {
-	x f32
-	y f32
-	vx f32
-	vy f32
-	gravity f32
-	radius f32
-}
-
-var ball Ball
-
-func drawBall (ball Ball) () {
-	full_angle := f32.mul(2.0, 3.141592654)
-	var x f32
-	var y f32
-
-	gl.Begin(gl.POLYGON)
-	gl.Color3f(1.0, 1.0, 1.0)
-
-	for i := 0; i32.lt(i, 20); i = i32.add(i, 1) {
-		x = f32.add(ball.x, f32.mul(ball.radius, f32.cos(f32.div(f32.mul(i32.f32(i), full_angle), 20.0))))
-		y = f32.add(ball.y, f32.mul(ball.radius, f32.sin(f32.div(f32.mul(i32.f32(i), full_angle), 20.0))))
-
-		gl.Vertex2f(x, y)
-	}
-
-	gl.End()
-}
-
-func ballDirection (window str, key i32, scancode i32, action i32, mods i32) () {
-	if and(i32.eq(key, 263), i32.eq(action, 1)) {
-		ball.vx = -0.01
-	}
-	if and(i32.eq(key, 262), i32.eq(action, 1)) {
-		ball.vx = 0.01
-	}
-}
+var width i32 = 400
+var height i32 = 300
 
 func mouseButton (window str, key i32, action i32, mods i32) () {
-	str.print("button")
+	x, y := glfw.GetCursorPos("window")
+	if key == glfw.MouseButtonLeft {
+		if action == glfw.Press {
+			str.print("mouse button left pressed at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+		if action == glfw.Release {
+			str.print("mouse button left released at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+	}
+
+	if key == glfw.MouseButtonRight {
+		if action == glfw.Press {
+			str.print("mouse button right pressed at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+		if action == glfw.Release {
+			str.print("mouse button right released at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+	}
+
+	if key == glfw.MouseButtonMiddle {
+		if action == glfw.Press {
+			str.print("mouse button middle pressed at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+		if action == glfw.Release {
+			str.print("mouse button middle released at:")
+			str.print(str.concat("x: ", f64.str(x)))
+			str.print(str.concat("y: ", f64.str(y)))
+		}
+	}
 }
 
-func mouseCursor (window str, key i32, action i32, mods i32) () {
-	str.print("cursor")
+func mouseCursor (window str, xpos f64, ypos f64) () {
+	x, y := glfw.GetCursorPos("window")
+	str.print("mouse cursor at:")
+	str.print(str.concat("x: ", f64.str(x)))
+	str.print(str.concat("y: ", f64.str(y)))
 }
 
 func main () () {
 	glfw.Init()
 
-	glfw.CreateWindow("window", width, height, "Bouncing Ball")
+	glfw.CreateWindow("window", width, height, "Mouse Interaction")
 	glfw.MakeContextCurrent("window")
 	
 	gl.Init()
 	program := gl.CreateProgram()
 	gl.LinkProgram(program)
 
-	glfw.SetKeyCallback("window", "ballDirection")
 	glfw.SetMouseButtonCallback("window", "mouseButton")
-	glfw.SetCursorPosCallback("window", "mouseCursor")
+	
+	// Uncomment this like to print where is the cursor at any moment
+	//glfw.SetCursorPosCallback("window", "mouseCursor")
 
-	ball = new Ball{
-		radius: 0.05,
-		x: 0.0,
-		y: 0.0,
-		vx: 0.01,
-		vy: 0.01,
-		gravity: 0.01
-	}
-
-	var ratio f32
-
+	
 	//glfw.SetInputMode("window", glfw.Cursor, glfw.CursorDisabled)
 	//glfw.SetInputMode("window", glfw.Cursor, glfw.CursorHidden)
 	//glfw.SetInputMode("window", glfw.Cursor, glfw.CursorNormal)
@@ -88,27 +82,6 @@ func main () () {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(program)
-		
-		gl.MatrixMode(gl.PROJECTION)
-		gl.LoadIdentity()
-		gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
-		gl.MatrixMode(gl.MODELVIEW)
-
-		//Bounce on window bottom
-		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
-			ball.vy = f32.abs(ball.vy)
-		} else {
-			ball.vy = f32.sub(ball.vy, ball.gravity)
-		}
-
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
-
-		xoo, yoo := glfw.GetCursorPos("window")
-		f64.print(xoo)
-		f64.print(yoo)
-
-		drawBall(ball)
 		
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")
