@@ -45,8 +45,8 @@
 /&/          { lval.tok = yylex.Text(); return BITAND }
 /\^/         { lval.tok = yylex.Text(); return BITXOR }
 /\|/         { lval.tok = yylex.Text(); return BITOR }
-/:dState/    { return DSTATE     }
-/:dStack/    { return DSTACK     }
+/:dState/            { return DSTATE     }
+/(:ds)|(:dStack)/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
 /:package/   { return SPACKAGE   }
 /:struct/    { return SSTRUCT    }
@@ -181,8 +181,8 @@ func countNewLines (s []byte) int {
 }
 
 func readline (fi *bufio.Reader) (string, bool) {
-	s, err := fi.ReadString(';')
-	//s, err := fi.ReadString('\n')
+	//s, err := fi.ReadString(';')
+	s, err := fi.ReadString('\n')
 	
 	if err != nil {
 		return "", false
@@ -197,7 +197,7 @@ func repl () {
 	inREPL = true
 
 	fi := bufio.NewReader(os.NewFile(0, "stdin"))
-
+	
 	for {
 		var inp string
 		var ok bool
@@ -227,11 +227,38 @@ func repl () {
 			if replTargetStrct != "" {
 				inp = fmt.Sprintf(":struct %s {%s}", replTargetStrct, inp)
 			}
+
+
+			var numExprs int
+			var currFn string
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				currFn = fn.Name
+				numExprs = len(fn.Expressions)
+			}
+			
 			b := bytes.NewBufferString(inp)
 			yyParse(NewLexer(b))
 
-			//cxt.Run(false, -1)
+			var numExprsAdded int
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				numExprsAdded = len(fn.Expressions) - numExprs
+			}
 
+			//cxt.Run(false, numExprsAdded)
+			if numExprsAdded > 0 && currFn == MAIN_FUNC {
+				if fn, err := cxt.GetCurrentFunction(); err == nil {
+					for true {
+						cxt.Run(dStack, 1)
+						
+						if len(cxt.CallStack.Calls) == 1 && cxt.CallStack.Calls[0].Line == len(fn.Expressions) {
+							break
+						}
+					}
+				}
+			}
+			
+			
+			
 		} else {
 			if replTargetFn != "" {
 				replTargetFn = ""
@@ -656,6 +683,10 @@ func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
 func glfw.GetFramebufferSize (window str) (width i32, height i32) {}
 func glfw.SetKeyCallback (window str, fnName str) () {}
+func glfw.SetMouseButtonCallback (window str, fnName str) () {}
+func glfw.SetCursorPosCallback (window str, fnName str) () {}
+func glfw.GetCursorPos (window str) (x f64, y f64) {}
+func glfw.SetInputMode (window str, mode i32, value i32) () {}
 func glfw.GetTime () (time f64) {}
 
 /*
@@ -674,6 +705,15 @@ package glfw
 
 var False i32 = 0
 var True i32 = 1
+var Press i32 = 1
+
+var Cursor i32 = 208897
+var StickyKeys i32 = 208898
+var StickyMouseButtons i32 = 208899
+var CursorNormal i32 = 212993
+var CursorHidden i32 = 212994
+var CursorDisabled i32 = 212995
+
 var Resizable i32 = 131075
 var ContextVersionMajor i32 = 139266
 var ContextVersionMinor i32 = 139267
@@ -969,6 +1009,7 @@ func main () {
 	runtime.GOMAXPROCS(2)
 
 	//Foo()
+	//Bar()
 
 	//signal.Listen("0.0.0.0:7999")
 

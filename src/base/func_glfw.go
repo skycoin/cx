@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -24,6 +25,42 @@ func glfw_WindowHint (target *CXArgument, hint *CXArgument) error {
 		encoder.DeserializeAtomic(*hint.Value, &h)
 
 		glfw.WindowHint(glfw.Hint(tgt), int(h))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func glfw_SetInputMode (window, mode, value *CXArgument) error {
+	if err := checkThreeTypes("glfw.SetInputMode", "str", "i32", "i32", window, mode, value); err == nil {
+		var winName string
+		var _mode int32
+		var _value int32
+
+		encoder.DeserializeRaw(*window.Value, &winName)
+		encoder.DeserializeAtomic(*mode.Value, &_mode)
+		encoder.DeserializeAtomic(*value.Value, &_value)
+
+		windows[winName].SetInputMode(glfw.InputMode(_mode), int(_value))
+		return nil
+	} else {
+		return err
+	}
+}
+
+func glfw_GetCursorPos (window *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("glfw.GetCursorPos", "str", window); err == nil {
+		var winName string
+		encoder.DeserializeRaw(*window.Value, &winName)
+		
+		x, y := windows[winName].GetCursorPos()
+
+		sX := encoder.Serialize(x)
+		sY := encoder.Serialize(y)
+
+		assignOutput(0, sX, "f64", expr, call)
+		assignOutput(1, sY, "f64", expr, call)
+		
 		return nil
 	} else {
 		return err
@@ -64,6 +101,8 @@ func glfw_MakeContextCurrent (window *CXArgument) error {
 		return err
 	}
 }
+
+
 
 func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("glfw.ShouldClose", "str", window); err == nil {
@@ -161,4 +200,91 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 
 	windows[wName].SetKeyCallback(callback)
 	return nil
+}
+
+func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+	var wName string
+	var name string
+	encoder.DeserializeRaw(*window.Value, &wName)
+	encoder.DeserializeRaw(*fnName.Value, &name)
+	
+	callback := func(w *glfw.Window, xpos float64, ypos float64) {
+		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+
+			var winName []byte
+			for key, win := range windows {
+				if w == win {
+					winName = []byte(key)
+					break
+				}
+			}
+
+			sXpos := encoder.Serialize(xpos)
+			sYpos := encoder.Serialize(ypos)
+
+			state := make([]*CXDefinition, len(fn.Inputs))
+
+			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
+			state[1] = MakeDefinition(fn.Inputs[1].Name, &sXpos,fn.Inputs[1].Typ)
+			state[2] = MakeDefinition(fn.Inputs[2].Name, &sYpos,fn.Inputs[2].Typ)
+			
+			subcall := MakeCall(fn, state, call, call.Module, call.Context)
+			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+		}
+	}
+
+	windows[wName].SetCursorPosCallback(callback)
+	return nil
+}
+
+func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+	var wName string
+	var name string
+	encoder.DeserializeRaw(*window.Value, &wName)
+	encoder.DeserializeRaw(*fnName.Value, &name)
+	
+	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+
+			var winName []byte
+			for key, win := range windows {
+				if w == win {
+					winName = []byte(key)
+					break
+				}
+			}
+
+			sKey := encoder.Serialize(int32(key))
+			sAction := encoder.Serialize(int32(action))
+			sModifierKey := encoder.Serialize(int32(mods))
+
+			state := make([]*CXDefinition, len(fn.Inputs))
+
+			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
+			state[1] = MakeDefinition(fn.Inputs[1].Name, &sKey,fn.Inputs[1].Typ)
+			state[2] = MakeDefinition(fn.Inputs[2].Name, &sAction,fn.Inputs[2].Typ)
+			state[3] = MakeDefinition(fn.Inputs[3].Name, &sModifierKey,fn.Inputs[3].Typ)
+			
+			subcall := MakeCall(fn, state, call, call.Module, call.Context)
+			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+		}
+	}
+
+	windows[wName].SetMouseButtonCallback(callback)
+	return nil
+}
+
+func Bar () {
+	fmt.Println("glfw.CURSOR", glfw.CursorMode)
+	fmt.Println("glfw.STICKY_KEYS", glfw.StickyKeysMode)
+	fmt.Println("glfw.STICKY_MOUSE_BUTTONS", glfw.StickyMouseButtonsMode)
+
+	fmt.Println("glfw.CURSOR_NORMAL", glfw.CursorNormal)
+	fmt.Println("glfw.CURSOR_HIDDEN", glfw.CursorHidden)
+	fmt.Println("glfw.CURSOR_DISABLED", glfw.CursorDisabled)
+
+	fmt.Println("glfw.TRUE", glfw.True)
+	fmt.Println("glfw.FALSE", glfw.False)
+
+	fmt.Println("glfw.PRESS", glfw.Press)
 }

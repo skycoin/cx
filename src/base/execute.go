@@ -58,100 +58,102 @@ func PrintCallStack (callStack []*CXCall) {
 	for i, call := range callStack {
 		tabs := strings.Repeat("___", i)
 		if tabs == "" {
-			fmt.Printf("%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			//fmt.Printf("%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			fmt.Printf("%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
 		} else {
-			fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			//fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			fmt.Printf("↓%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
 		}
 
-		lenState := len(call.State)
-		idx := 0
-		for _, def := range call.State {
-			if def.Name == "_" || (len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX) {
-				continue
-			}
-			var valI32 int32
-			var valI64 int64
-			var valF32 float32
-			var valF64 float64
-			switch def.Typ {
-			case "i32":
-				encoder.DeserializeRaw(*def.Value, &valI32)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %d", def.Name, valI32)
-				} else {
-					fmt.Printf("%s: %d, ", def.Name, valI32)
-				}
-			case "i64":
-				encoder.DeserializeRaw(*def.Value, &valI64)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %d", def.Name, valI64)
-				} else {
-					fmt.Printf("%s: %d, ", def.Name, valI64)
-				}
-			case "f32":
-				encoder.DeserializeRaw(*def.Value, &valF32)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %f", def.Name, valF32)
-				} else {
-					fmt.Printf("%s: %f, ", def.Name, valF32)
-				}
-			case "f64":
-				encoder.DeserializeRaw(*def.Value, &valF64)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %f", def.Name, valF64)
-				} else {
-					fmt.Printf("%s: %f, ", def.Name, valF64)
-				}
-			case "byte":
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %d", def.Name, (*def.Value)[0])
-				} else {
-					fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
-				}
-			case "[]byte":
-				var val []byte
-				encoder.DeserializeRaw(*def.Value, &val)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, val)
-				} else {
-					fmt.Printf("%s: %v, ", def.Name, val)
-				}
-			case "[]i32":
-				var val []int32
-				encoder.DeserializeRaw(*def.Value, &val)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, val)
-				} else {
-					fmt.Printf("%s: %v, ", def.Name, val)
-				}
-			case "[]i64":
-				var val []int64
-				encoder.DeserializeRaw(*def.Value, &val)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, val)
-				} else {
-					fmt.Printf("%s: %v, ", def.Name, val)
-				}
-			case "[]f32":
-				var val []float32
-				encoder.DeserializeRaw(*def.Value, &val)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, val)
-				} else {
-					fmt.Printf("%s: %v, ", def.Name, val)
-				}
-			case "[]f64":
-				var val []float64
-				encoder.DeserializeRaw(*def.Value, &val)
-				if idx == lenState - 1 {
-					fmt.Printf("%s: %v", def.Name, val)
-				} else {
-					fmt.Printf("%s: %v, ", def.Name, val)
-				}
-			}
+		// lenState := len(call.State)
+		// idx := 0
+		// for _, def := range call.State {
+		// 	if def.Name == "_" || (len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX) {
+		// 		continue
+		// 	}
+		// 	var valI32 int32
+		// 	var valI64 int64
+		// 	var valF32 float32
+		// 	var valF64 float64
+		// 	switch def.Typ {
+		// 	case "i32":
+		// 		encoder.DeserializeRaw(*def.Value, &valI32)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, valI32)
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, valI32)
+		// 		}
+		// 	case "i64":
+		// 		encoder.DeserializeRaw(*def.Value, &valI64)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, valI64)
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, valI64)
+		// 		}
+		// 	case "f32":
+		// 		encoder.DeserializeRaw(*def.Value, &valF32)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %f", def.Name, valF32)
+		// 		} else {
+		// 			fmt.Printf("%s: %f, ", def.Name, valF32)
+		// 		}
+		// 	case "f64":
+		// 		encoder.DeserializeRaw(*def.Value, &valF64)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %f", def.Name, valF64)
+		// 		} else {
+		// 			fmt.Printf("%s: %f, ", def.Name, valF64)
+		// 		}
+		// 	case "byte":
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, (*def.Value)[0])
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
+		// 		}
+		// 	case "[]byte":
+		// 		var val []byte
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]i32":
+		// 		var val []int32
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]i64":
+		// 		var val []int64
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]f32":
+		// 		var val []float32
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]f64":
+		// 		var val []float64
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	}
 			
-			idx++
-		}
+		// 	idx++
+		// }
 		fmt.Println()
 	}
 }
@@ -518,15 +520,13 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 		}
 	} else {
 		// initialization and checking
-		if mod, err := cxt.SelectModule("main"); err == nil {
-			if fn, err := mod.SelectFunction("main"); err == nil {
+		if mod, err := cxt.SelectModule(MAIN_MOD); err == nil {
+			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 				// main function
 				state := make([]*CXDefinition, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
 				
 				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
-
-				//return mainCall.call(withDebug, nCalls, callCounter)
 
 				var lastCall *CXCall
 				var err error
@@ -935,6 +935,10 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "glfw.GetTime": err = glfw_GetTime(expr, call)
 	case "glfw.GetFramebufferSize": err = glfw_GetFramebufferSize((*argsCopy)[0], expr, call)
 	case "glfw.SetKeyCallback": err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "glfw.SetMouseButtonCallback": err = glfw_SetMouseButtonCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "glfw.SetCursorPosCallback": err = glfw_SetCursorPosCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "glfw.GetCursorPos": err = glfw_GetCursorPos((*argsCopy)[0], expr, call)
+	case "glfw.SetInputMode": err = glfw_SetInputMode((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 		// Operating System
 	case "os.Create": err = os_Create((*argsCopy)[0])
 	case "os.ReadFile": err = os_ReadFile((*argsCopy)[0], expr, call)

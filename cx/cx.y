@@ -614,28 +614,56 @@ stepping:       TSTEP INT INT
 
 debugging:      DSTATE
                 {
+			// if len(cxt.CallStack.Calls) > 0 {
+			// 	for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
+			// 		fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Typ, PrintValue(def.Name, def.Value, def.Typ, cxt))
+			// 	}
+			// }
 			if len(cxt.CallStack.Calls) > 0 {
-				for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
-					fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Typ, PrintValue(def.Name, def.Value, def.Typ, cxt))
+				//PrintCallStack(cxt.CallStack.Calls)
+
+				if len(cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State) > 0 {
+					//fmt.Println()
+					//fmt.Println("Call's State:")
+					for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
+
+
+						//fmt.Println(len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX)
+
+						var isNonAssign bool
+						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX {
+							isNonAssign = true
+						}
+
+						if !isNonAssign {
+							if IsBasicType(def.Typ) {
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
+							} else {
+								fmt.Println(def.Name)
+								PrintValue(def.Name, def.Value, def.Typ, cxt)
+							}
+						}
+
+						
+						//fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
+					}
+					//fmt.Println()
 				}
 			}
                 }
-        |       DSTACK BOOLEAN
+        |       DSTACK
                 {
-			if $2 > 0 {
-				dStack = true
-                        } else {
+			if dStack {
 				dStack = false
+				fmt.Println("* printing stack: false")
+                        } else {
+				dStack = true
+				fmt.Println("* printing stack: true")
 			}
                 }
         |       DPROGRAM
                 {
 			cxt.PrintProgram(false)
-			// if $2 > 0 {
-			// 	dProgram = true
-                        // } else {
-			// 	dProgram = false
-			// }
                 }
         ;
 

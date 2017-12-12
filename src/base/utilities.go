@@ -477,7 +477,7 @@ func ArgToString (arg *CXArgument) string {
 	return ""
 }
 
-func isBasicType (typ string) bool {
+func IsBasicType (typ string) bool {
 	for _, basic := range BASIC_TYPES {
 		if basic == typ {
 			return true
@@ -741,7 +741,6 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 }
 
 func (cxt *CXProgram) PrintProgram(withAffs bool) {
-
 	fmt.Println("Program")
 	if withAffs {
 		for i, aff := range cxt.GetAffordances() {

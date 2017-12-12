@@ -1732,6 +1732,71 @@ func gl.Hint (target i32, mode i32) () {}
 func gl.Ortho (left f32, right f32, bottom f32, top f32, zNear f32, zFar f32) () {}
 ```
 
+OpenGL constants:
+
+```
+var FALSE i32 = 0
+var TRUE i32 = 1
+var QUADS i32 = 7
+var COLOR_BUFFER_BIT i32 = 16384
+var DEPTH_BUFFER_BIT i32 = 256
+var ARRAY_BUFFER i32 = 34962
+var FLOAT i32 = 5126
+var TRIANGLES i32 = 4
+var POLYGON i32 = 9
+var VERTEX_SHADER i32 = 35633
+var FRAGMENT_SHADER i32 = 35632
+var MODELVIEW i32 = 5888
+
+var TEXTURE_2D i32 = 3553
+
+var PROJECTION i32 = 5889
+var TEXTURE i32 = 5890
+var COLOR i32 = 6144
+
+var MODELVIEW_MATRIX i32 = 2982
+var VERTEX_ARRAY i32 = 32884
+
+var STREAM_DRAW i32 = 35040
+var STREAM_READ i32 = 35041
+var STREAM_COPY i32 = 35042
+
+var STATIC_DRAW i32 = 35044
+var STATIC_READ i32 = 35045
+var STATIC_COPY i32 = 35046
+
+var DYNAMIC_DRAW i32 = 35048
+var DYNAMIC_READ i32 = 35049
+var DYNAMIC_COPY i32 = 35050
+
+var BLEND i32 = 3042
+var DEPTH_TEST i32 = 2929
+var LIGHTING i32 = 2896
+var LEQUAL i32 = 515
+var LIGHT0 i32 = 16384
+var AMBIENT i32 = 4608
+var DIFFUSE i32 = 4609
+var POSITION i32 = 4611
+
+var TEXTURE_ENV i32 = 8960
+var TEXTURE_ENV_MODE i32 = 8704
+var MODULATE i32 = 8448
+var DECAL i32 = 8449
+var BLEND i32 = 3042
+var REPLACE i32 = 7681
+
+var SRC_ALPHA i32 = 770
+var ONE_MINUS_SRC_ALPHA i32 = 771
+
+var DITHER i32 = 3024
+var POINT_SMOOTH i32 = 2832
+var LINE_SMOOTH i32 = 2848
+var POLYGON_SMOOTH i32 = 2881
+var DONT_CARE i32 = 4352
+var POLYGON_SMOOTH_HINT i32 = 3155
+var MULTISAMPLE_ARB i32 = 32925
+```
+
 And here's a list for the GLFW functions:
 
 ```
@@ -1744,9 +1809,34 @@ func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
 func glfw.GetFramebufferSize (window str) (width i32, height i32) {}
 func glfw.SetKeyCallback (window str, fnName str) () {}
+func glfw.SetMouseButtonCallback (window str, fnName str) () {}
+func glfw.SetCursorPosCallback (window str, fnName str) () {}
+func glfw.GetCursorPos (window str) (x f64, y f64) {}
+func glfw.SetInputMode (window str, mode i32, value i32) () {}
 func glfw.GetTime () (time f64) {}
 ```
 
+GLFW constants:
+
+```
+var False i32 = 0
+var True i32 = 1
+var Press i32 = 1
+
+var Cursor i32 = 208897
+var StickyKeys i32 = 208898
+var StickyMouseButtons i32 = 208899
+var CursorNormal i32 = 212993
+var CursorHidden i32 = 212994
+var CursorDisabled i32 = 212995
+
+var Resizable i32 = 131075
+var ContextVersionMajor i32 = 139266
+var ContextVersionMinor i32 = 139267
+var OpenGLProfile i32 = 139272
+var OpenGLCoreProfile i32 = 204801
+var OpenGLForwardCompatible i32 = 139270
+```
+
 If you're interested on having a look at the applications that have
-been created using these APIs, check [*opengl.cx*](https://github.com/skycoin/cx/blob/master/examples/opengl.cx), [*game.cx*](https://github.com/skycoin/cx/blob/master/examples/game.cx)
-and [*game-ecs.cx*](https://github.com/skycoin/cx/blob/master/examples/game-ecs.cx) in the [examples folder](https://github.com/skycoin/cx/tree/master/examples).
+been created using these APIs, check the [opengl examples folder](https://github.com/skycoin/cx/tree/master/examples/opengl).

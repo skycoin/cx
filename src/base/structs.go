@@ -1,6 +1,7 @@
 package base
 
 const MAIN_FUNC = "main"
+const MAIN_MOD = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const CORE_MODULE = "core"
 var BASIC_TYPES []string = []string{
@@ -154,7 +155,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true,
 	"glfw.PollEvents":true, "glfw.SwapBuffers":true, "glfw.GetFramebufferSize":true,
 
-	"glfw.SetKeyCallback":true, "glfw.GetTime":true,
+	"glfw.SetKeyCallback":true, "glfw.GetTime":true, "glfw.SetMouseButtonCallback":true,
+	"glfw.SetCursorPosCallback":true, "glfw.GetCursorPos":true, "glfw.SetInputMode":true,
 
 	/*
           Operating System

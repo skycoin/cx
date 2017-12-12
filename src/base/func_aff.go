@@ -104,12 +104,12 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			continue
 		}
 		// we need to check that it isn't basic
-		isBasic := false
-		for _, basic := range BASIC_TYPES {
-			if basic == aff.Typ {
-				isBasic = true
-			}
-		}
+		// isBasic := false
+		// for _, basic := range BASIC_TYPES {
+		// 	if basic == aff.Typ {
+		// 		isBasic = true
+		// 	}
+		// }
 
 		var obj1Val []byte
 		var obj1Typ string
@@ -118,7 +118,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 
 		//fmt.Println(aff.Typ)
 
-		if !isBasic {
+		if !IsBasicType(aff.Typ) {
 			var typ string
 			if aff.Typ[:2] == "[]" {
 				typ = aff.Typ[2:]
@@ -906,7 +906,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 
 								var val []byte
 								var err error
-								if isBasicType(arr.Typ) {
+								if IsBasicType(arr.Typ) {
 									val, err = getValueFromArray(arr, int32(i))
 								} else {
 									val, err, _, _ = getStrctFromArray(arr, int32(i), expr, call)

@@ -295,7 +295,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		// Adding possible struct instances
 		var customTypes []string
 		for _, inp := range expr.Operator.Inputs {
-			if !isBasicType(inp.Typ) {
+			if !IsBasicType(inp.Typ) {
 				customTypes = append(customTypes, inp.Typ)
 			}
 		}
