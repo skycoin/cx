@@ -869,6 +869,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "time.now": time_now(expr, call)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
+		// GLText
+	case "gltext.LoadTrueType": err = gltext_LoadTrueType((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3], (*argsCopy)[4], (*argsCopy)[5])
+	case "gltext.Printf": err = gltext_Printf((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
 		// OpenGL
 	case "gl.Init": err = gl_Init()
 	case "gl.CreateProgram": err = gl_CreateProgram(expr, call)

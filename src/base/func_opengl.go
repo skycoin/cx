@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	// "github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/gl/v2.1/gl"
 	"runtime"
 	"strings"
@@ -878,5 +877,5 @@ func gl_Hint (target, mode *CXArgument) error {
 }
 
 func Foo () {
-	fmt.Println("gl.POLYGON", gl.POLYGON)
+	fmt.Println("gl.LESS", gl.LESS)
 }

@@ -42,6 +42,20 @@ if [ ! -d "$GOPATH/src/github.com/go-gl/glfw/v3.2/glfw" ]; then
     fi
 fi
 
+if [ ! -d "$GOPATH/src/github.com/go-gl/gltext" ]; then
+    echo "NOTE:\tRepository src/github.com/go-gl/gltext is not present in $GOPATH"
+    echo "NOTE:\tInstalling it via 'go get github.com/go-gl/gltext'"
+    
+    go get github.com/go-gl/gltext
+    
+    if [ $? -eq 0 ]; then
+        echo "OK:\tRepository github.com/go-gl/gltext was installed successfully"
+    else
+        echo "FAIL:\tCouldn't install github.com/go-gl/gltext"
+        exit 0
+    fi
+fi
+
 if [ ! -d "$GOPATH/src/github.com/blynn/nex" ]; then
     echo "NOTE:\tRepository github.com/blynn/nex is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/blynn/nex'"

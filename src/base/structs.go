@@ -117,7 +117,13 @@ var NATIVE_FUNCTIONS = map[string]bool{
         */
 
 	"runtime.LockOSThread":true,
-	
+
+	/*
+          GLText
+        */
+
+	"gltext.LoadTrueType":true, "gltext.Printf":true,
+
 	/*
           OpenGL
         */

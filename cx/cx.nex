@@ -607,6 +607,13 @@ func time.now () (unixnano f64) {}
 func runtime.LockOSThread () () {}
 
 /*
+  GLText
+*/
+
+func gltext.LoadTrueType (font str, file str, scale i32, low i32, high i32, dir i32) () {}
+func gltext.Printf (font str, x f32, y f32, fs str) () {}
+
+/*
   OpenGL
 */
 
@@ -701,6 +708,12 @@ func os.Open (fileName str) () {}
 func os.Close (fileName str) () {}
 func os.GetWorkingDirectory () (path str) {}
 
+package gltext
+
+var LeftToRight i32 = 0
+var RightToLeft i32 = 1
+var TopToBottom i32 = 2
+
 package glfw
 
 var False i32 = 0
@@ -750,6 +763,8 @@ var TEXTURE_2D i32 = 3553
 var PROJECTION i32 = 5889
 var TEXTURE i32 = 5890
 var COLOR i32 = 6144
+
+var LESS i32 = 513
 
 var MODELVIEW_MATRIX i32 = 2982
 var VERTEX_ARRAY i32 = 32884
