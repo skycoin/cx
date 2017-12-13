@@ -302,18 +302,7 @@ func MakeExpression (op *CXFunction) *CXExpression {
 	return &CXExpression{Operator: op}
 }
 
-// var argPool = sync.Pool{
-// 	New: func() interface{} {
-// 		return &CXArgument{}
-// 	},
-// }
-
 func MakeArgument (value *[]byte, typ string) *CXArgument {
-	// arg := argPool.Get().(*CXArgument)
-	// arg.Typ = typ
-	// arg.Value = value
-	// return arg
-	
 	return &CXArgument{
 		Typ: typ,
 		Value: value,
