@@ -165,6 +165,7 @@ import (
 	"net/http"
 	
 	"runtime"
+	//"runtime/debug"
 
 	//"github.com/skycoin/viscript/signal"
 	
@@ -1034,6 +1035,8 @@ func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
+	//debug.SetGCPercent(-1)
+
 	//Foo()
 	//Bar()
 
@@ -1121,7 +1124,7 @@ func main () {
 
 	allSourceCode := bytes.NewBuffer(nil)
 	for _, source := range sourceCode {
-	//io.TeeReader(source, )
+		//io.TeeReader(source, )
 		io.Copy(allSourceCode, source)
 	}
 
@@ -1153,7 +1156,7 @@ func main () {
 	//cxt.Compile(false)
 
 	if replMode || len(sourceCode) == 0 {
-		mod := MakeModule("main")
+	mod := MakeModule("main")
 		cxt.AddModule(mod)
 		fn := MakeFunction("main")
 		mod.AddFunction(fn)
@@ -1167,11 +1170,11 @@ func main () {
 		}
 	}
 	
-	if baseOutput {
-		cxt.Compile(true)
-	}
+if baseOutput {
+	cxt.Compile(true)
+}
 	if compileMode {
-		baseFilename := fmt.Sprintf("%s.go", compileOutput)
+	baseFilename := fmt.Sprintf("%s.go", compileOutput)
 		build := exec.Command("go", "build", baseFilename)
 		build.Run()
 		removeBase := exec.Command("rm", baseFilename)

@@ -12,6 +12,7 @@ func bar () () {
 }
 
 
+
 package bar
 import "foo"
 
