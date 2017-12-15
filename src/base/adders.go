@@ -1,7 +1,6 @@
 package base
 
 import (
-
 )
 
 func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
@@ -42,17 +41,28 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	fn.Context = mod.Context
 	fn.Module = mod
 	fn.NumberOutputs = len(fn.Outputs)
-	mod.CurrentFunction = fn
+	//mod.CurrentFunction = fn
+	
 	found := false
 	for i, f := range mod.Functions {
 		if f.Name == fn.Name {
-			mod.Functions[i] = fn
+			//mod.Functions[i] = fn
+			mod.Functions[i].Name = fn.Name
+			mod.Functions[i].Inputs = fn.Inputs
+			mod.Functions[i].Outputs = fn.Outputs
+			mod.Functions[i].Expressions = fn.Expressions
+			mod.Functions[i].NumberOutputs = fn.NumberOutputs
+			mod.Functions[i].CurrentExpression = fn.CurrentExpression
+			mod.Functions[i].Module = fn.Module
+			mod.Functions[i].Context = fn.Context
+			mod.CurrentFunction = mod.Functions[i]
 			found = true
 			break
 		}
 	}
 	if !found {
 		mod.Functions = append(mod.Functions, fn)
+		mod.CurrentFunction = fn
 	}
 
 	return mod
