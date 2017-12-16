@@ -117,6 +117,48 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	return nil
 }
 
+func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
+	if len(inputs) == len(args) {
+		defs := make([]*CXDefinition, len(args) + len(outputs), len(args) + len(outputs) + 10)
+		for i, arg := range args {
+			defs[i] = &CXDefinition{
+				Name: inputs[i].Name,
+				Typ: arg.Typ,
+				Value: arg.Value,
+				Module: mod,
+				Context: cxt,
+			}
+		}
+		for i, out := range outputs {
+			var zeroValue []byte
+			isBasic := false
+			for _, basic := range BASIC_TYPES {
+				if basic == out.Typ {
+					zeroValue = *MakeDefaultValue(basic)
+					isBasic = true
+					break
+				}
+			}
+			if !isBasic {
+				var err error
+				if zeroValue, err = ResolveStruct(out.Typ, cxt); err != nil {
+					return nil, err
+				}
+			}
+			defs[i+len(args)] = &CXDefinition{
+				Name: out.Name,
+				Typ: out.Typ,
+				Value: &zeroValue,
+				Module: mod,
+				Context: cxt,
+			}
+		}
+		return defs, nil
+	} else {
+		return nil, errors.New("Not enough definition names provided")
+	}
+}
+
 func checkType (fnName string, typ string, arg *CXArgument) error {
 	if arg.Typ != typ {
 		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ, typ))
@@ -589,6 +631,317 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 	}
 }
 
+func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
+	var offset int32 = 0
+	for _, f := range strct.Fields {
+
+		var fldType string
+		
+		isArray := false
+		isBasic := false
+		if f.Typ[:2] == "[]" {
+			isArray = true
+			for _, basic := range BASIC_TYPES {
+				if basic == f.Typ[2:] {
+					isBasic = true
+					break
+				}
+			}
+		} else {
+			for _, basic := range BASIC_TYPES {
+				if basic == f.Typ {
+					isBasic = true
+					break
+				}
+			}
+		}
+
+		if isBasic {
+			fldType = f.Typ
+		} else {
+			if isArray {
+				fldType = "[]"
+			} else {
+				fldType = "struct"
+			}
+		}
+		
+		if f.Name == fld {
+			var size int32
+			
+			switch fldType {
+			case "byte":
+				size = 1
+			case "bool", "i32", "f32":
+				size = 4
+			case "i64", "f64":
+				size = 8
+			case "[]str":
+				var noElms int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &noElms)
+
+				noSize := (*val)[offset+4:]
+				
+				var subOffset int32
+				for c := 0; c < int(noElms); c++ {
+					var strSize int32
+					encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
+					subOffset += strSize + 4
+				}
+				size = subOffset
+
+				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+			case "str", "[]byte":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+
+				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+			case "[]bool", "[]i32", "[]f32":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+				
+				return (*val)[offset:offset+(size * 4) + 4], f.Typ, offset, (size * 4) + 4
+			case "[]i64", "[]f64":
+				var arrOffset int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+				size = arrOffset
+				
+				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
+			case "[]":
+				if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+					lastFld := strct.Fields[len(strct.Fields) - 1]
+					instances := (*val)[offset+4:]
+
+					var upperBound int32
+					var size int32
+					encoder.DeserializeAtomic((*val)[offset:offset + 4], &size)
+					
+					if size == 0 {
+						return (*val)[offset:offset+4], f.Typ, offset, 4
+					}
+
+					for c := int32(0); c < size; c++ {
+						subArray := instances[upperBound:]
+						_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+						
+						upperBound = upperBound + off + size
+					}
+
+					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
+				}
+			case "struct":
+				if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+					lastFld := strct.Fields[len(strct.Fields) - 1]
+
+					instances := (*val)[offset:]
+					_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
+					
+					return (*val)[offset:offset + off + size], f.Typ, offset, off + size
+				}
+			}
+			return (*val)[offset:offset+size], f.Typ, offset, size
+		}
+		
+		switch fldType {
+		case "byte":
+			offset += 1
+		case "bool", "i32", "f32":
+			offset += 4
+		case "i64", "f64":
+			offset += 8
+		case "[]str":
+			var noElms int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &noElms)
+
+			noSize := (*val)[offset+4:]
+
+			var subOffset int32
+			for c := 0; c < int(noElms); c++ {
+				var strSize int32
+				encoder.DeserializeRaw(noSize[subOffset:subOffset+4], &strSize)
+				subOffset += strSize + 4
+			}
+			offset += subOffset + 4
+		case "str", "[]byte":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+			offset += arrOffset + 4
+		case "[]bool", "[]i32", "[]f32":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+			
+			offset += (arrOffset * 4) + 4
+		case "[]i64", "[]f64":
+			var arrOffset int32
+			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
+
+			offset += (arrOffset * 8) + 4
+		case "[]":
+			if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+				instances := (*val)[offset+4:]
+				lastFld := strct.Fields[len(strct.Fields) - 1]
+				
+				var upperBound int32
+				
+				var size int32
+				encoder.DeserializeAtomic((*val)[offset:offset+4], &size)
+
+				// we don't need this. if size == 0, the loop won't execute
+				// and we'll return lowerBound(0) + 4 = 4
+				// if size == 0 {
+				// 	offset += 4
+				// }
+				
+				for c := int32(0); c < size; c++ {
+					subArray := instances[upperBound:]
+					_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
+
+					upperBound = upperBound + off + size
+				}
+				offset += upperBound + 4
+			}
+		case "struct":
+			if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+				lastFld := strct.Fields[len(strct.Fields) - 1]
+
+				instances := (*val)[offset:]
+				_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
+
+				offset += off + size
+			}
+		}
+	}
+	
+	return nil, "", 0, 0
+}
+
+func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
+	switch typ {
+	case "[]byte":
+		return (*val)[index+4:(index+1)+4], "byte"
+	case "[]bool":
+		return (*val)[(index+1)*4:(index+2)*4], "bool"
+	case "[]i32":
+		return (*val)[(index+1)*4:(index+2)*4], "i32"
+	case "[]i64":
+		return (*val)[((index)*8)+4:((index+1)*8)+4], "i64"
+	case "[]f32":
+		return (*val)[(index+1)*4:(index+2)*4], "f32"
+	case "[]f64":
+		return (*val)[((index)*8)+4:((index+1)*8)+4], "f64"
+	}
+	
+	return nil, ""
+}
+
+func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
+	var resolvedIdent *CXDefinition
+	
+	isStructFld := false
+	isArray := false
+
+	identParts := strings.Split(lookingFor, ".")
+
+	if len(identParts) > 1 {
+		if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+			// then it's an external definition or struct
+			isImported := false
+			for _, imp := range call.Operator.Module.Imports {
+				if imp.Name == identParts[0] {
+					isImported = true
+					break
+				}
+			}
+			if isImported {
+				if def, err := mod.GetDefinition(concat(identParts[1:]...)); err == nil {
+					resolvedIdent = def
+				}
+			} else {
+				return nil, errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", mod.Name))
+			}
+		} else {
+			// then it's a global struct
+			mod := call.Operator.Module
+			//if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
+			if def, err := mod.GetDefinition(identParts[0]); err == nil {
+				isStructFld = true
+				//resolvedIdent = def
+				if strct, err := mod.Context.GetStruct(def.Typ, mod.Name); err == nil {
+					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
+					arg := MakeArgument(&byts, typ)
+					return arg, nil
+					
+				} else {
+					return nil, err
+				}
+			} else {
+				// then it's a local struct
+				isStructFld = true
+
+				for _, stateDef := range call.State {
+					if stateDef.Name == identParts[0] {
+						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
+							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
+							arg := MakeArgument(&byts, typ)
+							return arg, nil
+							
+						} else {
+							return nil, err
+						}
+					}
+				}
+			}
+		}
+	} else {
+		// then it's a local or global definition
+		local := false
+		arrayParts := strings.Split(lookingFor, "[")
+		if len(arrayParts) > 1 {
+			lookingFor = arrayParts[0]
+		}
+		for _, stateDef := range call.State {
+			if stateDef.Name == arrayParts[0] {
+				local = true
+				resolvedIdent = stateDef
+				break
+			}
+		}
+
+		if len(arrayParts) > 1 && local {
+			if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
+				isArray = true
+				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
+				arg := MakeArgument(&byts, typ)
+				return arg, nil
+			} else {
+				//excError = err
+				return nil, err
+			}
+		}
+
+		if !local {
+			mod := call.Operator.Module
+			if def, err := mod.GetDefinition(lookingFor); err == nil {
+				resolvedIdent = def
+			}
+		}
+	}
+
+	if resolvedIdent == nil && !isStructFld && !isArray {
+		return nil, errors.New(fmt.Sprintf("'%s' is undefined", lookingFor))
+	}
+	
+	if resolvedIdent != nil && !isStructFld && !isArray {
+		// if it was a struct field, we already created the argument above for efficiency reasons
+		// the same goes to arrays in the form ident[index]
+		arg := MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+		return arg, nil
+	}
+	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
+}
+
 func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	var bs []byte
 
@@ -1006,6 +1359,109 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 	}
 }
 
+func PrintCallStack (callStack []*CXCall) {
+	for i, call := range callStack {
+		tabs := strings.Repeat("___", i)
+		if tabs == "" {
+			//fmt.Printf("%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			fmt.Printf("%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
+		} else {
+			//fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
+			fmt.Printf("↓%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
+		}
+
+		// lenState := len(call.State)
+		// idx := 0
+		// for _, def := range call.State {
+		// 	if def.Name == "_" || (len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX) {
+		// 		continue
+		// 	}
+		// 	var valI32 int32
+		// 	var valI64 int64
+		// 	var valF32 float32
+		// 	var valF64 float64
+		// 	switch def.Typ {
+		// 	case "i32":
+		// 		encoder.DeserializeRaw(*def.Value, &valI32)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, valI32)
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, valI32)
+		// 		}
+		// 	case "i64":
+		// 		encoder.DeserializeRaw(*def.Value, &valI64)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, valI64)
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, valI64)
+		// 		}
+		// 	case "f32":
+		// 		encoder.DeserializeRaw(*def.Value, &valF32)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %f", def.Name, valF32)
+		// 		} else {
+		// 			fmt.Printf("%s: %f, ", def.Name, valF32)
+		// 		}
+		// 	case "f64":
+		// 		encoder.DeserializeRaw(*def.Value, &valF64)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %f", def.Name, valF64)
+		// 		} else {
+		// 			fmt.Printf("%s: %f, ", def.Name, valF64)
+		// 		}
+		// 	case "byte":
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %d", def.Name, (*def.Value)[0])
+		// 		} else {
+		// 			fmt.Printf("%s: %d, ", def.Name, (*def.Value)[0])
+		// 		}
+		// 	case "[]byte":
+		// 		var val []byte
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]i32":
+		// 		var val []int32
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]i64":
+		// 		var val []int64
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]f32":
+		// 		var val []float32
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	case "[]f64":
+		// 		var val []float64
+		// 		encoder.DeserializeRaw(*def.Value, &val)
+		// 		if idx == lenState - 1 {
+		// 			fmt.Printf("%s: %v", def.Name, val)
+		// 		} else {
+		// 			fmt.Printf("%s: %v, ", def.Name, val)
+		// 		}
+		// 	}
+			
+		// 	idx++
+		// }
+		fmt.Println()
+	}
+}
 
 func oneI32oneI32 (fn func(int32)int32, arg1 *CXArgument) []byte {
 	var num1 int32

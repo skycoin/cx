@@ -271,20 +271,9 @@ func MakeFieldFromParameter (param *CXParameter) *CXField {
 func MakeDefaultValue (typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
-	case "str": zeroVal = encoder.Serialize("")
-	case "bool": zeroVal = encoder.Serialize(int32(0))
-	case "byte": zeroVal = []byte{byte(0)}
-	case "i32": zeroVal = encoder.Serialize(int32(0))
-	case "i64": zeroVal = encoder.Serialize(int64(0))
-	case "f32": zeroVal = encoder.Serialize(float32(0))
-	case "f64": zeroVal = encoder.Serialize(float64(0))
-	case "[]byte": zeroVal = encoder.Serialize([]byte{})
-	case "[]bool": zeroVal = encoder.Serialize([]int32{})
-	case "[]str": zeroVal = encoder.Serialize([]string{})
-	case "[]i32": zeroVal = encoder.Serialize([]int32{})
-	case "[]i64": zeroVal = encoder.Serialize([]int64{})
-	case "[]f32": zeroVal = encoder.Serialize([]float32{})
-	case "[]f64": zeroVal = encoder.Serialize([]float64{})
+	case "byte": zeroVal = make([]byte, 1, 1)
+	case "i64", "f64": zeroVal = make([]byte, 8, 8)
+	default: zeroVal = make([]byte, 4, 4)
 	}
 	return &zeroVal
 }
