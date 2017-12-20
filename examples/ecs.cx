@@ -39,7 +39,7 @@ func createEntity (world World) (entity i32) {
 	for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
 		mask := []i32.read(world.mask, entity)
 		if i32.eq(mask, COMPONENT_NONE) {
-			return
+			return entity
 		}
 	}
 	halt("No more entities left")

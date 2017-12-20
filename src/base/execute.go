@@ -650,6 +650,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		isErrorPresent = false
 		case "test.bool", "test.byte", "test.str", "test.i32", "test.i64", "test.f32", "test.f64", "test.[]bool", "test.[]byte", "test.[]str", "test.[]i32", "test.[]f32", "test.[]f64":
 		err = test_value((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr)
+		// multi dimensional array functions
+	case "mdim.append": err = mdim_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "mdim.read": err = mdim_read((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// custom types functions
 	case "cstm.append": err = cstm_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "cstm.read": err = cstm_read((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -726,6 +729,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "glfw.CreateWindow": err = glfw_CreateWindow((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], (*argsCopy)[3])
 	case "glfw.MakeContextCurrent": err = glfw_MakeContextCurrent((*argsCopy)[0])
 	case "glfw.ShouldClose": err = glfw_ShouldClose((*argsCopy)[0], expr, call)
+	case "glfw.SetShouldClose": err = glfw_SetShouldClose((*argsCopy)[0], (*argsCopy)[0])
 	case "glfw.PollEvents": err = glfw_PollEvents()
 	case "glfw.SwapBuffers": err = glfw_SwapBuffers((*argsCopy)[0])
 	case "glfw.GetTime": err = glfw_GetTime(expr, call)

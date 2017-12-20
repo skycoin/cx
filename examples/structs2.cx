@@ -15,7 +15,7 @@ func main () (out i32) {
 		var newPoint Point
 		newPoint.x = c
 		newPoint.y = i32.add(c, 1)
-		[]Point.append(points, newPoint)
+		points = []Point.append(points, newPoint)
 	}
 	
 	var canvas Canvas

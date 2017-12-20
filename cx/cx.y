@@ -51,7 +51,7 @@
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
-			if typ, err := GetIdentType(identName, cxt); err == nil {
+			if typ, err := GetIdentType(identName, line, cxt); err == nil {
 				typArg1 = typ
 			} else {
 				fmt.Println(err)
@@ -64,7 +64,7 @@
 		// 	var identName string
 		// 	encoder.DeserializeRaw(*arg2.Value, &identName)
 
-		// 	if typ, err := GetIdentType(identName, cxt); err == nil {
+		// 	if typ, err := GetIdentType(identName, line, cxt); err == nil {
 		// 		typArg2 = typ
 		// 	} else {
 		// 		fmt.Println(err)
@@ -72,7 +72,11 @@
 		// } else {
 		// 	typArg2 = arg1.Typ
 		// }
+
 		
+		// fmt.Println(typArg1)
+		// fmt.Println(arg1.Typ)
+
 		switch op {
 		case "+":
 			opName = fmt.Sprintf("%s.add", typArg1)
@@ -146,7 +150,7 @@
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
-			if typ, err := GetIdentType(identName, cxt); err == nil {
+			if typ, err := GetIdentType(identName, line, cxt); err == nil {
 				typArg1 = typ
 			} else {
 				fmt.Println(err)
@@ -259,7 +263,7 @@
                         PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
                         LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
                         /* Types */
-                        BOOL STR I32 I64 F32 F64 BYTE BOOLA BYTEA I32A I64A F32A F64A STRA
+                        BASICTYPE
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
@@ -271,12 +275,12 @@
                         /* Affordances */
                         AFF TAG INFER WEIGHT
 
-%type   <tok>           typeSpecifier assignOperator relationalOp
+%type   <tok>           assignOperator relationalOp
                         
 %type   <parameter>     parameter
 %type   <parameters>    parameters functionParameters
 %type   <argument>      argument definitionAssignment
-%type   <arguments>     arguments argumentsList nonAssignExpression conditionControl
+%type   <arguments>     arguments argumentsList nonAssignExpression conditionControl returnArg
 %type   <definition>    structLitDef
 %type   <definitions>   structLitDefs structLiteral
 %type   <fields>        fields structFields
@@ -888,23 +892,23 @@ assignOperator:
         |       BITOREQ
         ;
 
-typeSpecifier:
-                I32 {$$ = $1}
-        |       I64 {$$ = $1}
-        |       F32 {$$ = $1}
-        |       F64 {$$ = $1}
-        |       BOOL {$$ = $1}
-        |       BYTE {$$ = $1}
-        |       BOOLA {$$ = $1}
-        |       STRA {$$ = $1}
-        |       BYTEA {$$ = $1}
-        |       I32A {$$ = $1}
-        |       I64A {$$ = $1}
-        |       F32A {$$ = $1}
-        |       F64A {$$ = $1}
-        |       STR {$$ = $1}
-        |       NEW IDENT {$$ = $2}
-        ;
+/* typeSpecifier: */
+/*                 I32 {$$ = $1} */
+/*         |       I64 {$$ = $1} */
+/*         |       F32 {$$ = $1} */
+/*         |       F64 {$$ = $1} */
+/*         |       BOOL {$$ = $1} */
+/*         |       BYTE {$$ = $1} */
+/*         |       BOOLA {$$ = $1} */
+/*         |       STRA {$$ = $1} */
+/*         |       BYTEA {$$ = $1} */
+/*         |       I32A {$$ = $1} */
+/*         |       I64A {$$ = $1} */
+/*         |       F32A {$$ = $1} */
+/*         |       F64A {$$ = $1} */
+/*         |       STR {$$ = $1} */
+/*         |       NEW IDENT {$$ = $2} */
+/*         ; */
 
 packageDeclaration:
                 PACKAGE IDENT
@@ -926,7 +930,7 @@ definitionAssignment:
                 ;
 
 definitionDeclaration:
-                VAR IDENT typeSpecifier definitionAssignment
+                VAR IDENT BASICTYPE definitionAssignment
                 {
 
 			if $4 != nil {
@@ -1260,7 +1264,7 @@ functionDeclaration:
         ;
 
 parameter:
-                IDENT typeSpecifier
+                IDENT BASICTYPE
                 {
 			$$ = MakeParameter($1, $2)
                 }
@@ -1322,7 +1326,7 @@ expressionsAndStatements:
 
 
 assignExpression:
-                VAR IDENT typeSpecifier definitionAssignment
+                VAR IDENT BASICTYPE definitionAssignment
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
@@ -1529,7 +1533,7 @@ assignExpression:
 							var identName string
 							encoder.DeserializeRaw(*argsR[i].Value, &identName)
 
-							if argTyp, err := GetIdentType(identName, cxt); err == nil {
+							if argTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
 								typName = argTyp
 							} else {
 								panic(err)
@@ -1700,11 +1704,73 @@ conditionControl:
                 }
         ;
 
-statement:      RETURN
+returnArg:
+                ';'
+                {
+                    $$ = nil
+                }
+        |       argumentsList
+                {
+			$$ = $1
+                }
+                ;
+
+statement:      RETURN returnArg
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
+					if $2 != nil {
+						for i, arg := range $2 {
+							var typ string
+							identParts := strings.Split(arg.Typ, ".")
+
+							typ = identParts[0]
+
+							// if len(identParts) > 1 {
+							// 	typ = identParts[0]
+							// } else {
+							// 	typ = identParts[0]
+							// }
+							
+							var idFn string
+							if IsBasicType(typ) {
+								idFn = MakeIdentityOpName(typ)
+							} else {
+								idFn = "identity"
+							}
+
+							if op, err := cxt.GetFunction(idFn, CORE_MODULE); err == nil {
+								expr := MakeExpression(op)
+								if !replMode {
+									expr.FileLine = yyS[yypt-0].line + 1
+								}
+								fn.AddExpression(expr)
+								if idFn == "identity" {
+									expr.AddArgument(MakeArgument(arg.Value, "str"))
+								} else {
+									expr.AddArgument(MakeArgument(arg.Value, typ))
+								}
+
+								var resolvedType string
+								if typ == "ident" {
+									var identName string
+									encoder.DeserializeRaw(*arg.Value, &identName)
+									if resolvedType, err = GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err != nil {
+										panic(err)
+									}
+								} else {
+									resolvedType = typ
+								}
+
+								if resolvedType != fn.Outputs[i].Typ {
+									panic(fmt.Sprintf("%d: wrong return type", yyS[yypt-0].line + 1))
+								}
+								
+								expr.AddOutputName(fn.Outputs[i].Name)
+							}
+						}
+					}
+					if goToFn, err := cxt.GetFunction("baseGoTo", CORE_MODULE); err == nil {
 						expr := MakeExpression(goToFn)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
@@ -1719,6 +1785,28 @@ statement:      RETURN
 				}
 			}
                 }
+        /* |       RETURN argumentsList */
+        /*         { */
+	/* 		if mod, err := cxt.GetCurrentModule(); err == nil { */
+	/* 			if fn, err := mod.GetCurrentFunction(); err == nil { */
+	/* 				// if op, err := cxt.GetFunction("identity", CORE_MODULE); err == nil { */
+	/* 				// 	expr := MakeExpression */
+	/* 				// } */
+	/* 				if goToFn, err := cxt.GetFunction("baseGoTo", CORE_MODULE); err == nil { */
+	/* 					expr := MakeExpression(goToFn) */
+	/* 					if !replMode { */
+	/* 						expr.FileLine = yyS[yypt-0].line + 1 */
+	/* 					} */
+	/* 					fn.AddExpression(expr) */
+	/* 					val := MakeDefaultValue("bool") */
+	/* 					expr.AddArgument(MakeArgument(val, "bool")) */
+	/* 					lines := encoder.SerializeAtomic(int32(-len(fn.Expressions))) */
+	/* 					expr.AddArgument(MakeArgument(&lines, "i32")) */
+	/* 					expr.AddArgument(MakeArgument(&lines, "i32")) */
+	/* 				} */
+	/* 			} */
+	/* 		} */
+        /*         } */
         |       GOTO IDENT
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
@@ -2446,8 +2534,7 @@ structLiteral:
 /*
   Fix this, there has to be a way to compress these rules
 */
-argument:
-                argument PLUS argument
+argument:       argument PLUS argument
                 {
 			$$ = binaryOp($2, $1, $3, yyS[yypt-0].line + 1)
 		}
@@ -2883,7 +2970,7 @@ argument:
 			val := encoder.Serialize($1)
 			$$ = MakeArgument(&val, "ident")
                 }
-        |       typeSpecifier LBRACE structLitDefs RBRACE
+        |       NEW IDENT LBRACE structLitDefs RBRACE
                 {
 			val := encoder.Serialize($2)
 		
@@ -2904,11 +2991,11 @@ argument:
 							sOutName := encoder.Serialize(outName)
 
 							expr.AddOutputName(outName)
-							typ := encoder.Serialize($1)
+							typ := encoder.Serialize($2)
 							expr.AddArgument(MakeArgument(&typ, "str"))
 
-							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $1))
-							for _, def := range $3 {
+							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
+							for _, def := range $4 {
 								typeParts := strings.Split(def.Typ, ".")
 
 								var typ string
@@ -2961,7 +3048,7 @@ argument:
 			val := encoder.Serialize($3)
 			$$ = MakeArgument(&val, "[]str")
                 }
-        |       typeSpecifier LBRACE argumentsList RBRACE
+        |       BASICTYPE LBRACE argumentsList RBRACE
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil && inFn {
@@ -3065,7 +3152,7 @@ argument:
 			}
                 }
                 // empty arrays
-        |       typeSpecifier LBRACE RBRACE
+        |       BASICTYPE LBRACE RBRACE
                 {
 			switch $1 {
 			case "[]bool":
@@ -3112,8 +3199,7 @@ arguments:
                 }
         ;
 
-argumentsList:
-                argument
+argumentsList:  argument
                 {
 			var args []*CXArgument
 			args = append(args, $1)

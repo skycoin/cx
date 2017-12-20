@@ -79,6 +79,8 @@ version`. It should output something similar to:
 go version go1.8.3 darwin/amd64
 ```
 
+**You need a version greater than 1.8**
+
 Some linux distros' package managers install very old versions of
 Go. You can try first with a binary from your favorite package
 manager, but if the installation starts showing errors, try with the
@@ -155,11 +157,12 @@ Run these commands in a terminal:
 go get github.com/skycoin/skycoin/...
 go get github.com/go-gl/gl/v2.1/gl
 go get github.com/go-gl/glfw/v3.2/glfw
+go get github.com/go-gl/gltext
 go get github.com/blynn/nex
 go get github.com/cznic/goyacc
 go get github.com/skycoin/cx/...
 nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
-goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y >/dev/null 2>&1
+goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y
 go install github.com/skycoin/cx/cx/
 ```
 

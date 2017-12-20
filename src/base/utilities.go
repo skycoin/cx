@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 	"bytes"
+	"regexp"
 	"strings"
 	"strconv"
 	"errors"
@@ -519,13 +520,27 @@ func ArgToString (arg *CXArgument) string {
 	return ""
 }
 
-func IsBasicType (typ string) bool {
-	for _, basic := range BASIC_TYPES {
-		if basic == typ {
-			return true
-		}
+func IsMultiDim (typ string) bool {
+	if len(typ) > 4 && typ[:4] == "[][]" {
+		return true
+	} else {
+		return false
 	}
-	return false
+}
+
+func IsBasicType (typ string) bool {
+	re := regexp.MustCompile("(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
+	if re.FindString(typ) != "" {
+		return true
+	} else {
+		return false
+	}
+	// for _, basic := range BASIC_TYPES {
+	// 	if basic == typ {
+	// 		return true
+	// 	}
+	// }
+	// return false
 }
 
 func IsNative (fnName string) bool {
@@ -1016,6 +1031,125 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	return bs, nil
 }
 
+// func foo (value []byte, typ string, toRead int, acc int) int {
+// 	// I have to read N elements at this level
+// 	var arrSize int32
+// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+
+// 	// Is it a complex element? Then it's a new level
+// 	if typ[:4] == "[][]" {
+// 		eltSize := foo(value[4:], typ[2:], int(arrSize) - 1, acc + 4)
+// 	} else {
+// 		// We reached the deepest level
+
+
+// 		offset := 0
+// 		for c := 0; c < toRead; c++ {
+// 			var thisSize int32
+// 			encoder.DeserializeAtomic(value[offset + int(arrSize): offset + int(arrSize) + 4], &thisSize)
+// 			offset += int(thisSize) * 4
+// 			// and this will give us the deepest array's size [][]i32
+// 			// now I just need to handle how we're going to keep reading (< toRead)
+// 		}
+		
+// 		return int(arrSize) * 4
+// 	}
+// }
+
+// func offsetToArrayFromArray (value []byte, typ string, howManyLeft, accSize int) int32 {
+// 	// recursive solution
+// 	var arrSize int32
+// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+	
+// 	if typ[:4] == "[][]" {
+// 		return offsetToArrayFromArray(value[4:], typ[2:], howManyLeft - 1, accSize + 4)
+// 	} else {
+// 		return arrSize * int32(4)
+// 	}
+
+
+
+// 	// iterative solution
+// 	var offset int32
+// 	var sizeStack []int32
+// 	var typDepth int
+
+
+
+
+	
+// 	for c := 0; c < len(value); c += 4 {
+// 		currTyp := typ[typDepth:] // at this step I'm always going to get a type
+
+		
+// 		var currSize int32
+// 		encoder.DeserializeAtomic(value[c:c+4], &currSize)
+// 		sizeStack = append(sizeStack, currSize)
+
+		
+// 		if len(currTyp) > 4 && currTyp[:4] == "[][]" {
+			
+			
+			
+
+// 			typDepth += 2
+// 		} else {
+// 			offset += currSize * 4
+// 			currTyp = "[]" + currTyp
+// 		}
+// 	}
+// }
+
+// func getArrayFromArray (value []byte, typ string, index int32) ([]byte, error) {
+// 	var arrSize int32
+// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+
+// 	if index < 0 {
+// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", typ, index))
+// 	}
+
+// 	if index >= arrSize {
+// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", typ, index, arrSize))
+// 	}
+
+
+// 	if typ[:4] == "[][]" {
+// 		getArrayFromArray(value[4:], typ[2:], 0)
+// 	} else {
+		
+// 	}
+
+	
+
+
+
+
+	
+
+// 	// depth := 0
+// 	// basicTyp := ""
+// 	// for i, ch := range typ {
+// 	// 	if ch == '[' || ch == ']' {
+// 	// 		depth++
+// 	// 	} else {
+// 	// 		basicTyp := typ[i:]
+// 	// 		break
+// 	// 	}
+// 	// }
+
+// 	// // re := regexp.MustCompile("(bool|str|i32|i64|f32|f64|byte)")
+// 	// // typ := re.FindStringSubmatch(arr.Typ)
+	
+// 	// switch typ {
+// 	// case "byte":
+		
+// 	// case "bool", "i32", "str", "f32":
+		
+// 	// case "i64", "f64":
+		
+// 	// }
+// }
+
 func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
 	var arrSize int32
 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
@@ -1103,7 +1237,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	i := 0
 	for _, mod := range cxt.Modules {
-		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" {
+		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
 			continue
 		}
 
@@ -1477,7 +1611,7 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }
 
-func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
+func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) {
 	identParts := strings.Split(lookingFor, ".")
 
 	mod, err := cxt.GetCurrentModule();
@@ -1503,32 +1637,74 @@ func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
 				return "", errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", extMod.Name))
 			}
 		} else {
-			// then it's a global struct
-			if def, err := mod.GetDefinition(identParts[0]); err == nil {
-				return def.Typ, nil
-			} else {
-				// then it's a local struct
-				if fn, err := cxt.GetCurrentFunction(); err == nil {
-					for _, inp := range fn.Inputs {
-						if inp.Name == identParts[0] {
-							return inp.Typ, nil
-						}
-					}
-					for _, out := range fn.Outputs {
-						if out.Name == identParts[0] {
-							return out.Typ, nil
-						}
-					}
-					for _, expr := range fn.Expressions {
-						for _, out := range expr.OutputNames {
-							if out.Name == identParts[0] {
-								return out.Typ, nil
+			// local struct instance
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				for _, inp := range fn.Inputs {
+					if inp.Name == identParts[0] {
+						if strct, err := cxt.GetStruct(inp.Typ, mod.Name); err == nil {
+							for _, fld := range strct.Fields {
+								if fld.Name == identParts[1] {
+									return fld.Typ, nil
+								}
 							}
 						}
 					}
-				} else {
-					return "", err
 				}
+				for _, out := range fn.Outputs {
+					if out.Name == identParts[0] {
+						if strct, err := cxt.GetStruct(out.Typ, mod.Name); err == nil {
+							for _, fld := range strct.Fields {
+								if fld.Name == identParts[1] {
+									return fld.Typ, nil
+								}
+							}
+						}
+					}
+				}
+				for _, expr := range fn.Expressions {
+					if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
+						var typ string
+						encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
+						
+						if strct, err := cxt.GetStruct(typ, mod.Name); err == nil {
+							for _, fld := range strct.Fields {
+								if fld.Name == identParts[1] {
+									return fld.Typ, nil
+								}
+							}
+						}
+					}
+					for _, out := range expr.OutputNames {
+						if out.Name == lookingFor {
+							return out.Typ, nil
+						}
+						if out.Name == identParts[0] {
+							if strct, err := cxt.GetStruct(out.Typ, mod.Name); err == nil {
+								for _, fld := range strct.Fields {
+									if fld.Name == identParts[1] {
+										return fld.Typ, nil
+									}
+								}
+							}
+						}
+					}
+				}
+			} else {
+				return "", err
+			}
+
+			// global struct instance
+			if def, err := mod.GetDefinition(identParts[0]); err == nil {
+				if strct, err := cxt.GetStruct(def.Typ, mod.Name); err == nil {
+					for _, fld := range strct.Fields {
+						if fld.Name == identParts[1] {
+							return fld.Typ, nil
+						}
+					}
+				}
+			} else {
+				// then it's a local struct
+				
 			}
 		}
 	} else {
@@ -1583,5 +1759,5 @@ func GetIdentType (lookingFor string, cxt *CXProgram) (string, error) {
 		}
 	}
 	
-	return "", errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
+	return "", errors.New(fmt.Sprintf("%d: identifier '%s' could not be resolved", line, lookingFor))
 }

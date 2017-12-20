@@ -475,15 +475,15 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		obj := getSprite(idx)
 
 		if obj.isObstacle {
-			return
+			return;
 		}
 
 		if i32.gteq(p1y, i32.sub(size, 1)) {
 			p1y = i32.sub(size, 1)
-			return
+			return;
 		} else {
 			p1y = i32.add(p1y, 1)
-			return
+			return;
 		}
 	}
 	if and(i32.eq(key, 264), i32.eq(action, 1)) {
@@ -492,15 +492,15 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		obj := getSprite(idx)
 		
 		if obj.isObstacle {
-			return
+			return;
 		}
 		
 		if i32.lteq(p1y, 0) {
 			p1y = 0
-			return
+			return;
 		} else {
 			p1y = i32.add(p1y, -1)
-			return
+			return;
 		}
 	}
 	if and(i32.eq(key, 263), i32.eq(action, 1)) {
@@ -508,15 +508,15 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		idx := []i32.read(foreground, i)
 		obj := getSprite(idx)
 		if obj.isObstacle {
-			return
+			return;
 		}
 		
 		if i32.lteq(p1x, 0) {
 			p1x = 0
-			return
+			return;
 		} else {
 			p1x = i32.add(p1x, -1)
-			return
+			return;
 		}
 	}
 	if and(i32.eq(key, 262), i32.eq(action, 1)) {
@@ -524,15 +524,15 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		idx := []i32.read(foreground, i)
 		obj := getSprite(idx)
 		if obj.isObstacle {
-			return
+			return;
 		}
 		
 		if i32.gteq(p1x, i32.sub(size, 1)) {
 			p1x = i32.sub(size, 1)
-			return
+			return;
 		} else {
 			p1x = i32.add(p1x, 1)
-			return
+			return;
 		}
 	}
 	// str.print(window)

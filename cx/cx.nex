@@ -84,20 +84,76 @@
 /->/         { return INFER      }
 /\$/         { return WEIGHT     }
 /new/        { return NEW        }
-/bool/       { lval.tok = yylex.Text(); return BOOL     }
-/str/        { lval.tok = yylex.Text(); return STR      }
-/i32/        { lval.tok = yylex.Text(); return I32      }
-/i64/        { lval.tok = yylex.Text(); return I64      }
-/f32/        { lval.tok = yylex.Text(); return F32      }
-/f64/        { lval.tok = yylex.Text(); return F64      }
-/byte/       { lval.tok = yylex.Text(); return BYTE     }
-/\[\]str/    { lval.tok = yylex.Text(); return STRA     }
-/\[\]bool/   { lval.tok = yylex.Text(); return BOOLA    }
-/\[\]byte/   { lval.tok = yylex.Text(); return BYTEA    }
-/\[\]i32/    { lval.tok = yylex.Text(); return I32A     }
-/\[\]i64/    { lval.tok = yylex.Text(); return I64A     }
-/\[\]f32/    { lval.tok = yylex.Text(); return F32A     }
-/\[\]f64/    { lval.tok = yylex.Text(); return F64A     }
+/(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
+	typ := yylex.Text();
+
+	if IsMultiDim(typ) {
+		if mod, err := cxt.GetCurrentModule(); err == nil {
+			if _, err := cxt.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
+				currFn, err := cxt.GetCurrentFunction();
+				if err != nil {
+					panic(err)
+				}
+				// append
+				fn := MakeFunction(fmt.Sprintf("%s.append", typ))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("%s", typ)))
+				fn.AddInput(MakeParameter("elt", typ[2:]))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("%s", typ)))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("mdim.append", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = lval.line + 1
+					}
+					expr.AddOutputName("_arr")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sElt := encoder.Serialize("elt")
+					sEltArg := MakeArgument(&sElt, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(sEltArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+
+				// read
+				fn = MakeFunction(fmt.Sprintf("%s.read", typ))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("%s", typ)))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddOutput(MakeParameter("elt", typ[2:]))
+				mod.AddFunction(fn)
+
+				if op, err := cxt.GetFunction("mdim.read", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = lval.line + 1
+					}
+					expr.AddOutputName("elt")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+			}
+		} else {
+			fmt.Println(err)
+		}
+	}
+	
+	lval.tok = typ
+	return BASICTYPE
+}
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
@@ -195,7 +251,7 @@ func readline (fi *bufio.Reader) (string, bool) {
 
 func repl () {
 	fmt.Println("CX REPL")
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
 
 	inREPL = true
 
@@ -589,6 +645,9 @@ func test.[]i64 (result []i64, expected []i64, message str) () {}
 func test.[]f32 (result []f32, expected []f32, message str) () {}
 func test.[]f64 (result []f64, expected []f64, message str) () {}
 
+func mdim.append (arr str, elt str) (_arr str) {}
+func mdim.read (arr str, index i32) (elt str) {}
+
 func cstm.append (arr str, strctInst str) (_arr str) {}
 func cstm.read (arr str, index i32) (strctInst str) {}
 func cstm.write (arr str, index i32, inst str) (_arr str) {}
@@ -689,6 +748,7 @@ func glfw.WindowHint (target i32, hint i32) () {}
 func glfw.CreateWindow (window str, width i32, height i32, title str) () {}
 func glfw.MakeContextCurrent (window str) () {}
 func glfw.ShouldClose (window str) (flag bool) {}
+func glfw.SetShouldClose (window str, value bool) (flag bool) {}
 func glfw.PollEvents () () {}
 func glfw.SwapBuffers (window str) () {}
 func glfw.GetFramebufferSize (window str) (width i32, height i32) {}

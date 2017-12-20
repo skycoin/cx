@@ -104,6 +104,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"test.[]bool":true, "test.[]byte":true, "test.[]str":true, "test.[]i32":true,
 	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true,
 
+	"mdim.append":true, "mdim.read":true,
+	
 	"cstm.append":true, "cstm.read":true, "cstm.write":true, "cstm.len":true,
 	"cstm.make":true, "cstm.serialize":true, "cstm.deserialize":true,
 
@@ -158,7 +160,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
         */
 
 	"glfw.Init":true, "glfw.WindowHint":true, "glfw.CreateWindow":true,
-	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true,
+	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true, "glfw.SetShouldClose":true,
 	"glfw.PollEvents":true, "glfw.SwapBuffers":true, "glfw.GetFramebufferSize":true,
 
 	"glfw.SetKeyCallback":true, "glfw.GetTime":true, "glfw.SetMouseButtonCallback":true,

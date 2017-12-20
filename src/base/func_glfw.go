@@ -236,6 +236,25 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 	return nil
 }
 
+func glfw_SetShouldClose (window, value *CXArgument) error {
+	if err := checkTwoTypes("glfw.SetShouldClose", "str", "bool", window, value); err == nil {
+		var _window string
+		var _value int32
+
+		encoder.DeserializeRaw(*window.Value, &_window)
+		encoder.DeserializeRaw(*value.Value, &_value)
+
+		if _value > 0 {
+			windows[_window].SetShouldClose(true)
+		} else {
+			windows[_window].SetShouldClose(false)
+		}
+		return nil
+	} else {
+		return err
+	}
+}
+
 func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
 	var wName string
 	var name string
