@@ -110,7 +110,11 @@ export PATH=$PATH:$GOPATH/bin/
 
 Don't just copy/paste that; think on what you're doing!
 
-## Installing OpenGL and GLFW Dependencies
+# Additional Notes Before the Actual Installation
+
+## Linux: Installing OpenGL and GLFW Dependencies
+
+### Debian-based Linux Distributions
 
 \* Based on instructions from [Viscript](https://github.com/skycoin/viscript)'s repository.
 
@@ -127,6 +131,15 @@ sudo apt-get install libxinerama-dev
 ```
 
 and you should be ready to go.
+
+## Windows: Installing GCC
+
+You might need to install GCC (MinGW). Try installing everything first
+without installing GCC, and if an error similar to "gcc: command not
+found" is shown, you can fix this by installing MinGW.
+
+Don't get GCC through Cygwin; apparently, [Cygwin has compatibility
+issues with Go](https://github.com/golang/go/issues/7265#issuecomment-66091041).
 
 ## Installing CX - Method 1: The "so easy it might not work" Solution
 
@@ -148,6 +161,13 @@ $GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
 
 As an alternative, you could clone into this repository and run cx.sh
 in a terminal.
+
+### Windows
+
+Windows is still a nuisance when trying to provide an easy solution to
+install CX. The Windows version of this solution would be to manually
+download the provided [batch script](https://github.com/skycoin/cx/blob/master/cx.bat) (which is similar to the bash
+script for *nix systems described above), and run it in a terminal.
 
 ## Installing CX - Method 2: The "not so easy, but still easy" Solution
 
@@ -1061,6 +1081,36 @@ label2:
 	str.print("this should be printed")
 ```
 
+## Return
+
+If you want to make a function stop its execution and return to its
+calling function, you can use `return`, followed by the arguments that
+you want to return as outputs, separated by commas if more than one.
+
+```
+func safeDiv (num i32, den i32) (res i32) {
+    if den == 0 {
+        return 0
+    }
+    res := num / den    
+}
+```
+
+`return` can also be used without any arguments, but in this case, you
+need to place a semicolon (;) in front of it. If a semicolon is not
+present, the CX parser will consider the code in the following lines
+to be the function's output:
+
+```
+func foo () (num i32) {
+    num := 5
+    return
+    i32.add(5, 5)
+}
+```
+
+The function above will return 10, instead of 5.
+
 # Functions
 
 We have already seen some examples of function calls, and an example
@@ -1135,8 +1185,8 @@ package myPackage
 You just need to write the keyword *package* followed by the name you
 want to give to your package. Unlike Golang, you can have multiple
 packages in a single source file and CX won't complain about it
-(although you are encouraged to place different packages in different
-files). Whenever CX reads "package something", every CX statement that
+(although you are encouraged to place different packages [in different
+files](#working-with-different-files)). Whenever CX reads "package something", every CX statement that
 follows will be attached to the "something" package, and this
 behaviour will continue until "package somethingElse" is
 encountered. Let's create a Math package:
@@ -1166,6 +1216,26 @@ func main () () {
 
 If we don't *import Math*, CX will raise an error telling us that the
 module *Math* is not being imported or does not exist.
+
+## Working with Different Files
+
+As mentioned in the previous section, you can place different chunks
+of code in different CX files. These files could share the same
+package (i.e., they all start with the same `package` declaration),
+they could work with different packages, or a combination of these.
+
+If you decide to work with different files, remember to give all of
+them as input to the `cx` command. For example:
+
+```
+cx file1.cx file2.cx file3.cx
+```
+
+In previous versions of CX, the order in which you gave these files as
+input was important: if a function needed by `file2.cx` was present in
+`file1.cx`, you needed to give `file1.cx` as input before
+`file2.cx`. Now this is no longer needed, and you can use whichever
+order you want.
 
 # Debugging
 
