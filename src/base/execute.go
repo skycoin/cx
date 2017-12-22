@@ -653,6 +653,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// multi dimensional array functions
 	case "mdim.append": err = mdim_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "mdim.read": err = mdim_read((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "mdim.write": err = mdim_write((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr, call)
+	case "mdim.len": err = mdim_len((*argsCopy)[0], expr, call)
+	case "mdim.make": err = mdim_make((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// custom types functions
 	case "cstm.append": err = cstm_append((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "cstm.read": err = cstm_read((*argsCopy)[0], (*argsCopy)[1], expr, call)

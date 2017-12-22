@@ -1031,124 +1031,95 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	return bs, nil
 }
 
-// func foo (value []byte, typ string, toRead int, acc int) int {
-// 	// I have to read N elements at this level
-// 	var arrSize int32
-// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, int32, int32) {
+	var arrSize int32
+	encoder.DeserializeAtomic(value[:4], &arrSize)
 
-// 	// Is it a complex element? Then it's a new level
-// 	if typ[:4] == "[][]" {
-// 		eltSize := foo(value[4:], typ[2:], int(arrSize) - 1, acc + 4)
-// 	} else {
-// 		// We reached the deepest level
+	if index < 0 {
+		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", typ, index)), 0, 0
+	}
 
+	if index >= arrSize {
+		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", typ, index, arrSize)), 0, 0
+	}
 
-// 		offset := 0
-// 		for c := 0; c < toRead; c++ {
-// 			var thisSize int32
-// 			encoder.DeserializeAtomic(value[offset + int(arrSize): offset + int(arrSize) + 4], &thisSize)
-// 			offset += int(thisSize) * 4
-// 			// and this will give us the deepest array's size [][]i32
-// 			// now I just need to handle how we're going to keep reading (< toRead)
-// 		}
-		
-// 		return int(arrSize) * 4
-// 	}
-// }
+	var typSize int
+	switch typ[len(typ)-4:] {
+	case "]i64", "]f64":
+		typSize = 8
+	case "bool", "]i32", "]f32":
+		typSize = 4
+	case "byte", "]str":
+		typSize = 1
+	}
 
-// func offsetToArrayFromArray (value []byte, typ string, howManyLeft, accSize int) int32 {
-// 	// recursive solution
-// 	var arrSize int32
-// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+	if typ[len(typ)-3:] == "str" {
+		typ = "[]" + typ
+	}
 	
-// 	if typ[:4] == "[][]" {
-// 		return offsetToArrayFromArray(value[4:], typ[2:], howManyLeft - 1, accSize + 4)
-// 	} else {
-// 		return arrSize * int32(4)
-// 	}
-
-
-
-// 	// iterative solution
-// 	var offset int32
-// 	var sizeStack []int32
-// 	var typDepth int
-
-
-
-
+	var sizes []int32
+	var counters []int32
 	
-// 	for c := 0; c < len(value); c += 4 {
-// 		currTyp := typ[typDepth:] // at this step I'm always going to get a type
-
-		
-// 		var currSize int32
-// 		encoder.DeserializeAtomic(value[c:c+4], &currSize)
-// 		sizeStack = append(sizeStack, currSize)
-
-		
-// 		if len(currTyp) > 4 && currTyp[:4] == "[][]" {
+	var finalOffset int = -1
+	var finalSize int = -1
+	
+	var i int
+	for i = 0; i < len(value); {
+		if typ[:4] == "[][]" {
+			var size int32
+			encoder.DeserializeAtomic(value[i:i+4], &size)
 			
+			sizes = append(sizes, size)
+			counters = append(counters, size)
 			
+			typ = typ[2:]
+			i += 4
+		}
+
+		if typ[2] != '[' {
+			var size int32
+			encoder.DeserializeAtomic(value[i:i+4], &size)
 			
+			i += int(size) * typSize + 4
+			counters[len(counters)-1]--
+		}
 
-// 			typDepth += 2
-// 		} else {
-// 			offset += currSize * 4
-// 			currTyp = "[]" + currTyp
-// 		}
-// 	}
-// }
+		if len(counters) > 0 {
+			for c := len(counters); c > 0; c-- {
+				if counters[c-1] < 1 {
+					typ = "[]" + typ
+					sizes = sizes[:len(sizes)-1]
+					counters = counters[:len(counters)-1]
+					if len(counters) > 0 {
+						counters[len(counters)-1]--
+					}
+				}
+			}
+		}
 
-// func getArrayFromArray (value []byte, typ string, index int32) ([]byte, error) {
-// 	var arrSize int32
-// 	encoder.DeserializeAtomic(value[:4], &arrSize)
+		if finalOffset < 0 {
+			if index == 0 {
+				finalOffset = 4
+			} else if sizes[0] - counters[0] == index {
+				finalOffset = i
+			}
+		}
 
-// 	if index < 0 {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", typ, index))
-// 	}
+		if finalSize < 0 {
+			if finalOffset > 0 && (len(sizes) == 0 || index == sizes[0] - 1) {
+				finalSize = len(value)
+			} else if sizes[0] - counters[0] == index + 1 {
+				finalSize = i
+			}
+		}
 
-// 	if index >= arrSize {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", typ, index, arrSize))
-// 	}
+		if finalOffset > 0 && finalSize > 0 {
+			break
+		}
+	}
 
-
-// 	if typ[:4] == "[][]" {
-// 		getArrayFromArray(value[4:], typ[2:], 0)
-// 	} else {
-		
-// 	}
-
-	
-
-
-
-
-	
-
-// 	// depth := 0
-// 	// basicTyp := ""
-// 	// for i, ch := range typ {
-// 	// 	if ch == '[' || ch == ']' {
-// 	// 		depth++
-// 	// 	} else {
-// 	// 		basicTyp := typ[i:]
-// 	// 		break
-// 	// 	}
-// 	// }
-
-// 	// // re := regexp.MustCompile("(bool|str|i32|i64|f32|f64|byte)")
-// 	// // typ := re.FindStringSubmatch(arr.Typ)
-	
-// 	// switch typ {
-// 	// case "byte":
-		
-// 	// case "bool", "i32", "str", "f32":
-		
-// 	// case "i64", "f64":
-		
-// 	// }
-// }
+	return value[finalOffset:finalSize], nil, int32(finalOffset), int32(finalSize - finalOffset)
+}
 
 func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
 	var arrSize int32

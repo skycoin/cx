@@ -1581,6 +1581,142 @@ globalStructArrays:
 	i32.id(0)
 	
 
+
+
+
+
+	// multi-dimensional arrays
+
+	// i32
+	var fooI32 [][]i32
+	fooI32 = [][]i32.append(fooI32, []i32{1, 2, 3})
+	fooI32 = [][]i32.append(fooI32, []i32{4, 5})
+
+	var barI32 [][]i32
+	barI32 = [][]i32.append(barI32, []i32{11, 12})
+	barI32 = [][]i32.append(barI32, []i32{13, 14, 15, 16})
+	barI32 = [][]i32.append(barI32, []i32{20})
+
+	var fooI32barI32 [][][]i32
+	fooI32barI32 = [][][]i32.append(fooI32barI32, fooI32)
+	fooI32barI32 = [][][]i32.append(fooI32barI32, barI32)
+
+	resI32 := [][][]i32.read(fooI32barI32, 1)
+	resI32ult := [][]i32.read(resI32, 1)
+
+	[]i32.print(resI32ult)
+	
+	fooI32barI32 = [][][]i32.write(fooI32barI32, 1, fooI32)
+	
+	resI32 := [][][]i32.read(fooI32barI32, 1)
+	resI32ult := [][]i32.read(resI32, 1)
+	
+	[]i32.print(resI32ult)
+
+	// i64
+	var fooI64 [][]i64
+	fooI64 = [][]i64.append(fooI64, []i64{1, 2, 3})
+	fooI64 = [][]i64.append(fooI64, []i64{4, 5})
+
+	var barI64 [][]i64
+	barI64 = [][]i64.append(barI64, []i64{11, 12})
+	barI64 = [][]i64.append(barI64, []i64{13, 14, 15, 16})
+	barI64 = [][]i64.append(barI64, []i64{20})
+
+	var fooI64barI64 [][][]i64
+	fooI64barI64 = [][][]i64.append(fooI64barI64, fooI64)
+	fooI64barI64 = [][][]i64.append(fooI64barI64, barI64)
+
+	resI64 := [][][]i64.read(fooI64barI64, 1)
+	resI64ult := [][]i64.read(resI64, 0)
+	
+	[]i64.print(resI64ult)
+
+	fooI64barI64 = [][][]i64.write(fooI64barI64, 1, fooI64)
+	
+	resI64 := [][][]i64.read(fooI64barI64, 1)
+	resI64ult := [][]i64.read(resI64, 1)
+	
+	[]i64.print(resI64ult)
+
+	// f32
+	var fooF32 [][]f32
+	fooF32 = [][]f32.append(fooF32, []f32{1.3, 2.3, 3.3})
+	fooF32 = [][]f32.append(fooF32, []f32{4.3, 5.3})
+
+	var barF32 [][]f32
+	barF32 = [][]f32.append(barF32, []f32{11.3, 12.3})
+	barF32 = [][]f32.append(barF32, []f32{13.3, 14.3, 15.3, 16.3})
+	barF32 = [][]f32.append(barF32, []f32{20.3})
+
+	var fooF32barF32 [][][]f32
+	fooF32barF32 = [][][]f32.append(fooF32barF32, fooF32)
+	fooF32barF32 = [][][]f32.append(fooF32barF32, barF32)
+
+	resF32 := [][][]f32.read(fooF32barF32, 1)
+	resF32ult := [][]f32.read(resF32, 1)
+	
+	[]f32.print(resF32ult)
+
+	fooF32barF32 = [][][]f32.write(fooF32barF32, 1, fooF32)
+	
+	resF32 := [][][]f32.read(fooF32barF32, 1)
+	resF32ult := [][]f32.read(resF32, 1)
+	
+	[]f32.print(resF32ult)
+
+	// byte
+	var fooByte [][]byte
+	fooByte = [][]byte.append(fooByte, []byte{1, 2, 3})
+	fooByte = [][]byte.append(fooByte, []byte{4, 5})
+
+	var barByte [][]byte
+	barByte = [][]byte.append(barByte, []byte{11, 12})
+	barByte = [][]byte.append(barByte, []byte{13, 14, 15, 16})
+	barByte = [][]byte.append(barByte, []byte{20})
+
+	var fooBytebarByte [][][]byte
+	fooBytebarByte = [][][]byte.append(fooBytebarByte, fooByte)
+	fooBytebarByte = [][][]byte.append(fooBytebarByte, barByte)
+
+	res := [][][]byte.read(fooBytebarByte, 1)
+	result := [][]byte.read(res, 1)
+	
+	[]byte.print(result)
+
+	fooBytebarByte = [][][]byte.write(fooBytebarByte, 1, fooByte)
+	
+	res := [][][]byte.read(fooBytebarByte, 1)
+	result := [][]byte.read(res, 1)
+	
+	[]byte.print(result)
+
+	// str
+	var fooStr [][]str
+	fooStr = [][]str.append(fooStr, []str{"one", "two", "three"})
+	fooStr = [][]str.append(fooStr, []str{"four", "five"})
+
+	var barStr [][]str
+	barStr = [][]str.append(barStr, []str{"eleven", "twelve"})
+	barStr = [][]str.append(barStr, []str{"thirteen", "fourteen", "fifteen", "sixteen"})
+	barStr = [][]str.append(barStr, []str{"twenty"})
+
+	var fooStrbarStr [][][]str
+	fooStrbarStr = [][][]str.append(fooStrbarStr, fooStr)
+	fooStrbarStr = [][][]str.append(fooStrbarStr, barStr)
+
+	resStr := [][][]str.read(fooStrbarStr, 1)
+	resStrult := [][]str.read(resStr, 0)
+	
+	[]str.print(resStrult)
+
+	fooStrbarStr = [][][]str.write(fooStrbarStr, 1, fooStr)
+	
+	resStr := [][][]str.read(fooStrbarStr, 1)
+	resStrult := [][]str.read(resStr, 0)
+	
+	[]str.print(resStrult)
+	
 	test.error("Congratulations, CX passed all the tests!")
 	
 	test.stop()

@@ -1185,10 +1185,10 @@ structDeclaration:
 				} else {
 					fmt.Println(err)
 				}
+				
 				// make
 				fn = MakeFunction(fmt.Sprintf("[]%s.make", $2))
 				fn.AddInput(MakeParameter("len", "i32"))
-				//fn.AddInput(MakeParameter("typ", "str"))
 				fn.AddOutput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
 				mod.AddFunction(fn)
 

@@ -69,6 +69,10 @@ language at runtime what can be done with a CX object (functions,
 expressions, packages, etc.), and interactively or automatically choose
 one of the affordances to be applied.
 
+# Changelog
+
+Check out the latest additions and bug fixes in the changelog.
+
 # Installation
 
 CX has been successfully installed and tested in recent versions of
@@ -644,6 +648,35 @@ of length 3. We'll learn more about variables in the next section.
 
 As a final note, CX also provides us with functions to cast arrays of one type to
 another, for example: *[]f32.[]i32*, *[]i64.[]f64*, etc.
+
+### Multidimensional Arrays
+
+If you want to group together arrays, you can create *multidimensional
+arrays*. As an example, imagine that we want to hold a tilemap for a
+videogame. We could represent the map as a 2-dimensional array which
+contains the index of the sprite that needs to be drawn in that tile:
+
+
+```
+1 1 1 0 1 1 1
+1 0 0 0 0 0 1
+1 2 0 0 2 0 1
+1 0 2 0 0 0 1
+1 0 0 0 0 0 1
+1 1 1 1 1 1 1
+```
+
+We can create this map using the following code:
+
+```
+tilemap := [][]i32.make(6)
+tilemap = [][]i32.write(tilemap, 0, []i32{1, 1, 1, 0, 1, 1, 1})
+tilemap = [][]i32.write(tilemap, 1, []i32{1, 0, 0, 0, 0, 0, 1})
+tilemap = [][]i32.write(tilemap, 2, []i32{1, 2, 0, 0, 2, 0, 1})
+tilemap = [][]i32.write(tilemap, 3, []i32{1, 0, 2, 0, 0, 0, 1})
+tilemap = [][]i32.write(tilemap, 4, []i32{1, 0, 0, 0, 0, 0, 1})
+tilemap = [][]i32.write(tilemap, 5, []i32{1, 1, 1, 1, 1, 1, 1})
+```
 
 ## Variables
 

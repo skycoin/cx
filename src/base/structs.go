@@ -104,7 +104,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"test.[]bool":true, "test.[]byte":true, "test.[]str":true, "test.[]i32":true,
 	"test.[]i64":true, "test.[]f32":true, "test.[]f64":true,
 
-	"mdim.append":true, "mdim.read":true,
+	"mdim.append":true, "mdim.read":true, "mdim.write":true, "mdim.len":true,
+	"mdim.make":true,
 	
 	"cstm.append":true, "cstm.read":true, "cstm.write":true, "cstm.len":true,
 	"cstm.make":true, "cstm.serialize":true, "cstm.deserialize":true,

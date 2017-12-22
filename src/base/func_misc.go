@@ -235,8 +235,8 @@ func mdim_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 		encoder.DeserializeAtomic(*index.Value, &_index)
 
 		if rArr, err := resolveIdent(_arr, call); err == nil {
-			if instance, err, _, _ := getStrctFromArray(rArr, _index, expr, call); err == nil {
-				assignOutput(0, instance, rArr.Typ[2:], expr, call)
+			if array, err, _, _ := GetArrayFromArray(*rArr.Value, rArr.Typ, _index); err == nil {
+				assignOutput(0, array, rArr.Typ[2:], expr, call)
 			} else {
 				return err
 			}
@@ -247,6 +247,97 @@ func mdim_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 		return err
 	}
 	return nil
+}
+
+func mdim_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkThreeTypes("mdim.write", "str", "i32", "str", arr, index, instance); err == nil {
+		var _arr string
+		var _index int32
+		var _instance string
+
+		encoder.DeserializeRaw(*arr.Value, &_arr)
+		encoder.DeserializeAtomic(*index.Value, &_index)
+		encoder.DeserializeRaw(*instance.Value, &_instance)
+
+		if rArr, err := resolveIdent(_arr, call); err == nil {
+			if rInst, err := resolveIdent(_instance, call); err == nil {
+				if _, err, offset, size := GetArrayFromArray(*rArr.Value, rArr.Typ, _index); err == nil {
+					firstChunk := make([]byte, offset)
+					secondChunk := make([]byte, len(*rArr.Value) - int((offset + size)))
+
+					copy(firstChunk, (*rArr.Value)[:offset])
+					copy(secondChunk, (*rArr.Value)[offset+size:])
+
+					final := append(firstChunk, *rInst.Value...)
+					final = append(final, secondChunk...)
+
+					assignOutput(0, final, rArr.Typ, expr, call)
+				} else {
+					return err
+				}
+			} else {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+	return nil
+}
+
+func mdim_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("mdim.len", "str", arr); err == nil {
+		var _arr string
+		var len int32
+
+		encoder.DeserializeRaw(*arr.Value, &_arr)
+		
+		if rArr, err := resolveIdent(_arr, call); err == nil {
+			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
+			output := encoder.Serialize(len)
+			assignOutput(0, output, "i32", expr, call)
+			return nil
+		} else {
+			return err
+		}
+	} else {
+		return err
+	}
+}
+
+func mdim_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("mdim.make", "i32", "str", length, typ); err == nil {
+		var _len int32
+		var _typ string
+
+		encoder.DeserializeRaw(*length.Value, &_len)
+		encoder.DeserializeRaw(*typ.Value, &_typ)
+
+		if _len == 0 {
+			output := []byte{0, 0, 0, 0}
+			assignOutput(0, output, _typ, expr, call)
+			return nil
+		}
+		
+		var typSize int
+		switch _typ[len(_typ)-4:] {
+		case "]i64", "]f64":
+			typSize = 8
+		case "bool", "]i32", "]f32":
+			typSize = 4
+		case "byte", "]str":
+			typSize = 1
+		}
+
+		instances := append(*length.Value, make([]byte, int(_len) * typSize)...)
+		
+		assignOutput(0, instances, _typ, expr, call)
+		return nil
+	} else {
+		return err
+	}
 }
 
 // custom type arrays functions

@@ -57,24 +57,21 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 
 func wrapX (x i32) (newX i32) {
 	if i32.eq(x, columns) {
-		newX = 0
-		return
+		return 0
 	}
 	if i32.eq(x, -1) {
 		newX = i32.sub(columns, 1)
-		return
+		return newX
 	}
 	newX = x
 }
 
 func wrapY (y i32) (newY i32) {
 	if i32.eq(y, rows) {
-		newY = 0
-		return
+		return 0
 	}
 	if i32.eq(y, -1) {
-		newY = i32.sub(rows, 1)
-		return
+		return i32.sub(rows, 1)
 	}
 	newY = y
 }
@@ -244,7 +241,7 @@ func initOpenGL () (program i32) {
 
 func drawCell (cell Cell) () {
 	if not(cell.alive) {
-		return
+		return;
 	}
 	gl.BindVertexArray(cell.drawable)
 	gl.DrawArrays(gl.TRIANGLES, 0, i32.div([]f32.len(square), 3))
