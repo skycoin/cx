@@ -71,7 +71,7 @@ one of the affordances to be applied.
 
 # Changelog
 
-Check out the latest additions and bug fixes in the changelog.
+Check out the latest additions and bug fixes in the [changelog](https://github.com/skycoin/cx/blob/master/CHANGELOG.md).
 
 # Installation
 
