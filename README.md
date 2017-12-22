@@ -5,6 +5,7 @@ Table of Contents
 
    * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language)
+   * [Changelog](#changelog)
    * [Installation](#installation)
       * [Installing Go](#installing-go)
    * [Additional Notes Before the Actual Installation](#additional-notes-before-the-actual-installation)
@@ -35,6 +36,7 @@ Table of Contents
          * [Bytes](#bytes)
          * [Strings](#strings)
       * [Arrays](#arrays)
+         * [Multidimensional Arrays](#multidimensional-arrays)
       * [Variables](#variables)
          * [Local Variables](#local-variables)
          * [Global Variables](#global-variables)
