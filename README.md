@@ -48,6 +48,7 @@ Table of Contents
       * [Go-to](#go-to)
       * [Return](#return)
    * [Functions](#functions)
+   * [Methods](#methods)
    * [Packages](#packages)
       * [Creating and Importing Packages](#creating-and-importing-packages)
       * [Working with Different Files](#working-with-different-files)
