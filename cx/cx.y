@@ -1233,7 +1233,99 @@ functionParameters:
         ;
 
 functionDeclaration:
-                FUNC IDENT functionParameters functionParameters
+                /* Methods */
+                FUNC functionParameters IDENT functionParameters functionParameters
+                {
+			if len($2) > 1 {
+				panic(fmt.Sprintf("%d: method '%s' has multiple receivers", yyS[yypt-0].line+1, $3))
+			}
+
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%d: cannot define methods on basic type %s", yyS[yypt-0].line+1, $2[0].Typ))
+				}
+				
+				inFn = true
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				mod.AddFunction(fn)
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+
+					//checking if there are duplicate parameters
+					dups := append($4, $5...)
+					dups = append(dups, $2...)
+					for _, param := range dups {
+						for _, dup := range dups {
+							if param.Name == dup.Name && param != dup {
+								panic(fmt.Sprintf("%d: duplicate receiver, input and/or output parameters in method '%s'", yyS[yypt-0].line+1, $3))
+							}
+						}
+					}
+
+					for _, rec := range $2 {
+						fn.AddInput(rec)
+					}
+					for _, inp := range $4 {
+						fn.AddInput(inp)
+					}
+					for _, out := range $5 {
+						fn.AddOutput(out)
+					}
+				}
+			}
+                }
+                functionStatements
+        |       FUNC functionParameters IDENT functionParameters
+                {
+			if len($2) > 1 {
+				panic(fmt.Sprintf("%d: method '%s' has multiple receivers", yyS[yypt-0].line+1, $3))
+			}
+			
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%d: cannot define methods on basic type %s", yyS[yypt-0].line+1, $2[0].Typ))
+				}
+				
+				inFn = true
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				mod.AddFunction(fn)
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+
+					//checking if there are duplicate parameters
+					dups := append($2, $4...)
+					for _, param := range dups {
+						for _, dup := range dups {
+							if param.Name == dup.Name && param != dup {
+								panic(fmt.Sprintf("%d: duplicate receiver, input and/or output parameters in method '%s'", yyS[yypt-0].line+1, $3))
+							}
+						}
+					}
+
+					for _, rec := range $2 {
+						fn.AddInput(rec)
+					}
+					for _, inp := range $4 {
+						fn.AddInput(inp)
+					}
+				}
+			}
+                }
+                functionStatements
+                /* Functions */
+        |       FUNC IDENT functionParameters
+                {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				inFn = true
+				fn := MakeFunction($2)
+				mod.AddFunction(fn)
+				if fn, err := mod.GetCurrentFunction(); err == nil {
+					for _, inp := range $3 {
+						fn.AddInput(inp)
+					}
+				}
+			}
+                }
+                functionStatements
+        |       FUNC IDENT functionParameters functionParameters
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				inFn = true
@@ -1301,12 +1393,6 @@ functionStatements:
 
 expressionsAndStatements:
                 nonAssignExpression
-                /* { */
-                /*     if replMode { */
-                /*             //cxt.PrintProgram(false) */
-                /*             cxt.Run(false, -1) */
-                /*                 } */
-                /* } */
         |       assignExpression
         |       statement
         |       selector
@@ -1605,11 +1691,25 @@ nonAssignExpression:
 			var modName string
 			var fnName string
 			var err error
+			var isMethod bool
+			//var receiverType string
 			identParts := strings.Split($1, ".")
 			
 			if len(identParts) == 2 {
-				modName = identParts[0]
-				fnName = identParts[1]
+				mod, _ := cxt.GetCurrentModule()
+				if typ, err := GetIdentType(identParts[0], yyS[yypt-0].line + 1, cxt); err == nil {
+					// then it's a method call
+					if IsStructInstance(typ, mod) {
+						isMethod = true
+						//receiverType = typ
+						modName = mod.Name
+						fnName = fmt.Sprintf("%s.%s", typ, identParts[1])
+					}
+				} else {
+					// then it's a module
+					modName = identParts[0]
+					fnName = identParts[1]
+				}
 			} else {
 				fnName = identParts[0]
 				mod, e := cxt.GetCurrentModule()
@@ -1647,6 +1747,12 @@ nonAssignExpression:
 							fn.AddExpression(expr)
 							expr.AddTag(tag)
 							tag = ""
+
+							if isMethod {
+								sIdent := encoder.Serialize(identParts[0])
+								$2 = append([]*CXArgument{MakeArgument(&sIdent, "ident")}, $2...)
+							}
+							
 							for _, arg := range $2 {
 								typeParts := strings.Split(arg.Typ, ".")
 

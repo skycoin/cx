@@ -1705,6 +1705,12 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 				}
 			}
 			for i, expr := range fn.Expressions {
+				if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
+					var typ string
+					encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
+
+					return typ, nil
+				}
 				for _, out := range expr.OutputNames {
 					if out.Name == arrayParts[0] {
 

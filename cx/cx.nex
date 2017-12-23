@@ -140,6 +140,7 @@
 	identParts := strings.Split(yylex.Text(), ".")
 	if len(identParts) > 1 {
 		CreateMDimFuncs(identParts[0], lval.line + 1)
+		//lval.tok = 
 	}
 	
 	return IDENT
@@ -607,7 +608,9 @@ func cstm.deserialize (byts str, typ str) (strctInst str) {}
   Time
 */
 
-func time.now () (unixnano f64) {}
+func time.Unix () (unix i64) {}
+func time.UnixMilli () (unixmilli i64) {}
+func time.UnixNano () (unixnano i64) {}
 
 /*
   Runtime
@@ -1020,12 +1023,6 @@ func (yylex Lexer) Error (e string) {
 	}
 	
 	yylex.Stop()
-}
-
-type Point struct {
-	name string
-	x int32
-	y int32
 }
 
 // If a new multi-dimensional array type is detected,

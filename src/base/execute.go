@@ -665,7 +665,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "cstm.serialize": err = cstm_serialize((*argsCopy)[0], expr, call)
 	case "cstm.deserialize": err = cstm_deserialize((*argsCopy)[0], (*argsCopy)[1], expr, call)
 		// Time
-	case "time.now": time_now(expr, call)
+	case "time.Unix": time_Unix(expr, call)
+	case "time.UnixMilli": time_UnixMilli(expr, call)
+	case "time.UnixNano": time_UnixNano(expr, call)
 		// Runtime
 	case "runtime.LockOSThread": runtime.LockOSThread()
 		// GLText

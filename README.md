@@ -910,11 +910,16 @@ we can also directly specify what are going to be the values for the
 set to the color variable defined above, and the vertices field is set
 to the points array, also defined above.
 
-Lastly, we can see how the empty points are re-assigned by using the
+We can see how the empty points are re-assigned by using the
 *[]Point.write* function. *myShape.vertices* is sent to *[]Point.write* as the
 first argument, which means that we want to write a new value of type
 *Point* in the *vertices* array. Each of the three calls writes a new
 *Point* literal to each of the available indexes (0, 1 and 3).
+
+As a final note, you can create functions associated to structs, which
+are called `methods` (following Go's convention). You can learn more
+about CX methods by reading their
+[own section here, in this document](#methods).
 
 # Expressions
 
@@ -1179,6 +1184,61 @@ that are defined below it, such as the *main* function:
 func main () () {
   area := circleArea(i32.f32(2))
   f32.print(area)
+}
+```
+
+# Methods
+
+Functions can be associated with structs (custom types) by creating
+them as methods. The advantages of methods are that the programmers
+are restricted to calling the function only on a variable of the
+specified type, and that you can have several functions named the same
+way, but that behave differently depending on the variable type that
+they are being called on. For example, let's consider the following
+two structures:
+
+```
+type Point struct {
+	x i32
+	y i32
+}
+
+type Player struct {
+	name str
+	x i32
+	y i32
+}
+```
+
+Both of these structures could have methods called `Position`, which
+print the x and y coordinates of a particular instance:
+
+```
+func (pl Player) Position () {
+	str.print("This is a player")
+	i32.print(pl.x)
+    i32.print(pl.y)
+}
+
+func (pnt Point) Position () {
+	str.print("This is a point")
+	i32.print(pnt.x)
+    i32.print(pnt.y)
+}
+```
+
+To call these methods, you just have to write the name of a variable
+of the desired type, followed by a period and the name of the method:
+
+```
+func main () {
+    var myPoint Point
+	var myPlayer Player
+	myPoint.x = 10
+	myPlayer.x = 30
+
+	myPoint.Position()
+	myPlayer.Position()
 }
 ```
 

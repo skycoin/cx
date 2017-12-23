@@ -113,7 +113,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	/*
           Time
         */
-	"time.now":true,
+	"time.Unix":true, "time.UnixMilli":true, "time.UnixNano":true,
 
 	/*
           Runtime

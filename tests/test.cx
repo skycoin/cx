@@ -33,6 +33,33 @@ type nestedStructArrays struct {
 	nested3 []testStruct
 }
 
+// Methods start
+
+type Point struct {
+	x i32
+	y i32
+}
+
+type Player struct {
+	name str
+	x i32
+	y i32
+}
+
+func (pl Player) Position (place str) {
+	str.print("This is a player")
+	str.print(place)
+	i32.print(pl.x)
+}
+
+func (pnt Point) Position () {
+	str.print("This is a point")
+	i32.print(pnt.x)
+}
+
+// Methods ends
+
+
 var testBool bool
 var testStr str
 var testByte byte
@@ -1716,6 +1743,17 @@ globalStructArrays:
 	resStrult := [][]str.read(resStr, 0)
 	
 	[]str.print(resStrult)
+
+
+	// Methods
+
+	var myPoint Point
+	var myPlayer Player
+	myPoint.x = 10
+	myPlayer.x = 30
+
+	myPoint.Position()
+	myPlayer.Position("World")
 	
 	test.error("Congratulations, CX passed all the tests!")
 	
