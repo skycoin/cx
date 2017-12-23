@@ -18,7 +18,7 @@ func main () () {
 	gl.LinkProgram(program)
 	
 	wd := os.GetWorkingDirectory()
-	fontFile := str.concat(wd, "Roboto-Light.ttf")
+	fontFile := str.concat(wd, "fonts/roboto-light.ttf")
 
 	os.Open(fontFile)
 	gltext.LoadTrueType("Roboto100", fontFile, 100, 32, 127, gltext.LeftToRight)
