@@ -1,0 +1,230 @@
+package main
+
+import "gl"
+import "glfw"
+import "gltext"
+
+var width i32 = 400
+var height i32 = 400
+
+var COIN_TEXTURE i32
+var STAR_TEXTURE i32
+
+var coins []Coin
+var stars []Star
+
+type Coin struct {
+	x f32
+	y f32
+	a f32
+}
+
+type Star struct {
+	x f32
+	y f32
+	b f32
+}
+
+func (coin Coin) Move () {
+	// We need pointers
+	coin.x += 0.05
+}
+
+func (coin Coin) Draw () {
+	gl.LoadIdentity()
+	gl.Translatef(coin.x, coin.y, 0.0)
+	// this is the only difference between Coin.Draw and Star.Draw actually
+	gl.BindTexture(gl.TEXTURE_2D, COIN_TEXTURE)
+	gl.Scalef(0.05, 0.05, 0.0)
+	gl.Begin(gl.QUADS)
+	gl.TexCoord2d(0.0, 0.0)
+	gl.Vertex3f(-1.0, 1.0, 0.0)
+	gl.TexCoord2d(1.0, 0.0)
+	gl.Vertex3f(1.0, 1.0, 0.0)
+	gl.TexCoord2d(1.0, 1.0)
+	gl.Vertex3f(1.0, -1.0, 0.0)
+	gl.TexCoord2d(0.0, 1.0)
+	gl.Vertex3f(-1.0, -1.0, 0.0)
+	gl.End()
+}
+
+func (star Star) Draw () {
+	gl.LoadIdentity()
+	gl.Translatef(star.x, star.y, 0.0)
+	// this is the only difference between Coin.Draw and Star.Draw actually
+	gl.BindTexture(gl.TEXTURE_2D, STAR_TEXTURE)
+	gl.Scalef(0.05, 0.05, 0.0)
+	gl.Begin(gl.QUADS)
+	gl.TexCoord2d(0.0, 0.0)
+	gl.Vertex3f(-1.0, 1.0, 0.0)
+	gl.TexCoord2d(1.0, 0.0)
+	gl.Vertex3f(1.0, 1.0, 0.0)
+	gl.TexCoord2d(1.0, 1.0)
+	gl.Vertex3f(1.0, -1.0, 0.0)
+	gl.TexCoord2d(0.0, 1.0)
+	gl.Vertex3f(-1.0, -1.0, 0.0)
+	gl.End()
+}
+
+func keyPress (window str, key i32, scancode i32, action i32, mods i32) {
+	// 77 is the keycode corresponding to keyboard key "m"
+	if key == 77 && action == 1 {
+		for c := 0; c < []Coin.len(coins); c++ {
+			coin := []Coin.read(coins, c)
+			coin.MoveUp()
+		}
+	}
+
+	if key == 32 && action == 1 {
+		var newCoins []Coin
+		var newStars []Star
+
+		// first we'll find what stars are not being overlapped
+		for s := 0; s < []Star.len(stars); s++ {
+			var star Star
+			star = []Star.read(stars, s)
+
+			isOverlapped := false
+
+			for c := 0; c < []Coin.len(coins); c++ {
+				var coin Coin
+				coin = []Coin.read(coins, c)
+				
+				if star.x + 0.05 > coin.x && star.x - 0.05 < coin.x &&
+					star.y + 0.05 > coin.y && star.y - 0.05 < coin.y {
+					isOverlapped = true
+				}
+			}
+
+			if !isOverlapped {
+				// we save the stars that are not being overlapped
+				newStars = []Star.append(newStars, star)
+			}
+		}
+
+		// now we'll find what coins are not being overlapped
+		for c := 0; c < []Coin.len(coins); c++ {
+			var coin Coin
+			coin = []Coin.read(coins, c)
+
+			isOverlapped := false
+
+			for s := 0; s < []Star.len(stars); s++ {
+				var star Star
+				star = []Star.read(stars, s)
+				
+				if coin.x + 0.05 > star.x && coin.x - 0.05 < star.x &&
+					coin.y + 0.05 > star.y && coin.y - 0.05 < star.y {
+					isOverlapped = true
+				}
+			}
+
+			// we save the coins that are not being overlapped
+			if !isOverlapped {
+				newCoins = []Coin.append(newCoins, coin)
+			}
+		}
+
+		// we overwrite the old struct instances with the new ones
+		coins = newCoins
+		stars = newStars
+	}
+}
+
+func mouseButton (window str, key i32, action i32, mods i32) {
+	x, y := glfw.GetCursorPos("window")
+	if key == glfw.MouseButtonLeft {
+		if action == glfw.Press {
+			coins = []Coin.append(coins, new Coin{
+				// we need to scale the width and height to min = -1.0 and max = 1.0
+				x: (2.0 * f64.f32(x) / i32.f32(width)) - 1.0,
+				y: -1.0 * ((2.0 * f64.f32(y) / i32.f32(height)) - 1.0)
+			})
+		}
+	}
+
+	if key == glfw.MouseButtonRight {
+		if action == glfw.Press {
+
+			// we'll create a new array of coins, which will contain all the old coins
+			// except for the one we clicked on
+			var newCoins []Coin
+			
+			for c := 0; c < []Coin.len(coins); c++ {
+				coin := []Coin.read(coins, c)
+				sx := (2.0 * f64.f32(x) / i32.f32(width)) - 1.0
+				sy := -1.0 * ((2.0 * f64.f32(y) / i32.f32(height)) - 1.0)
+
+				// the size of a coin is 0.05, so we use that as an offset for the boundaries
+				if !(sx + 0.05 > coin.x && sx - 0.05 < coin.x &&
+					sy + 0.05 > coin.y && sy - 0.05 < coin.y) {
+					newCoins = []Coin.append(newCoins, coin)
+				}
+			}
+
+			// we replace the old coins with the new coins
+			coins = newCoins
+		}
+	}
+}
+
+func init () {
+	wd := os.GetWorkingDirectory()
+	COIN_TEXTURE = gl.NewTexture(str.concat(wd, "textures/coin.png"))
+	STAR_TEXTURE = gl.NewTexture(str.concat(wd, "textures/star.png"))
+}
+
+func main () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Mouse Interaction")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	program := gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	wd := os.GetWorkingDirectory()
+	fontFile := str.concat(wd, "fonts/roboto-light.ttf")
+
+	os.Open(fontFile)
+	gltext.LoadTrueType("Roboto50", fontFile, 50, 32, 127, gltext.LeftToRight)
+	os.Close(fontFile)
+
+	init()
+
+	glfw.SetKeyCallback("window", "keyPress")
+	glfw.SetMouseButtonCallback("window", "mouseButton")
+	
+	for c := 0; c < 10; c++ {
+		stars = []Star.append(stars, new Star{
+			x: i32.f32(i32.rand(0, 200)) / 100.0 - 1.0,
+			y: i32.f32(i32.rand(0, 200)) / 100.0 - 1.0
+		})
+	}
+
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.DepthMask(true)
+
+	for not(glfw.ShouldClose("window")) {
+		gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		
+		gl.Enable(gl.TEXTURE_2D)
+
+		for c := 0; c < []Coin.len(coins); c++ {
+			coin := []Coin.read(coins, c)
+			coin.Draw()
+		}
+		for c := 0; c < []Star.len(stars); c++ {
+			star := []Star.read(stars, c)
+			star.Draw()
+		}
+		
+		gl.UseProgram(program)
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}

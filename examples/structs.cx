@@ -24,22 +24,6 @@ func returnStruct () (p Point) {
 }
 
 func main () (out i32) {
-	// var uPoint Point
-	// i32.print(uPoint.x)
-	// i32.print(uPoint.y)
-
-	// var myPoint Point
-	// myPoint.x = i32.add(5, 10)
-	// myPoint.y = i32.add(myPoint.x, 20)
-
-	// i32.print(i32.add(myPoint.x, myPoint.y))
-
-	// printPoint(myPoint)
-
-	// ret := returnStruct()
-	// i32.print(ret.x)
-	// i32.print(ret.y)
-
 	var strs Strings
 	i64.print(strs.lBound)
 	str.print(strs.string)
