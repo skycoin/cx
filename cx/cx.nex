@@ -120,7 +120,7 @@
 	lval.f64 = float64(result)
 	return DOUBLE
 }
-/-?[0-9]+/ {
+/&?-?[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())
 	lval.i32 = int32(result)
 	return INT
@@ -140,7 +140,6 @@
 	identParts := strings.Split(yylex.Text(), ".")
 	if len(identParts) > 1 {
 		CreateMDimFuncs(identParts[0], lval.line + 1)
-		//lval.tok = 
 	}
 	
 	return IDENT

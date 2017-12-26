@@ -25,6 +25,4 @@ func main () (out f64) {
 	for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
 		f64.print(simFn([]f64.read(inps, c)))
 	}
-
-	halt()
 }

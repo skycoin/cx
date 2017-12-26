@@ -1351,7 +1351,10 @@ label4:
 	// for loop
 
 	var forVal i32
-	
+
+	for 5 == 4 {
+		forVal = 555
+	}
 	for false {
 		forVal = 555
 	}

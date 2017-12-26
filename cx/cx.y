@@ -2019,7 +2019,7 @@ statement:      RETURN returnArg
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
 						if !replMode {
-							goToExpr.FileLine = lineNo
+							goToExpr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(goToExpr)
 
@@ -2036,7 +2036,13 @@ statement:      RETURN returnArg
 				}
 			}
                 }
-        |       beginFor IDENT
+        |       beginFor
+                argument
+                {
+			if fn, err := cxt.GetCurrentFunction(); err == nil {
+				$<i>$ = len(fn.Expressions)
+			}
+                }
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -2054,21 +2060,18 @@ statement:      RETURN returnArg
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>1]
-
-					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>1 + 1))
+					goToExpr := fn.Expressions[$<i>3]
+					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>3 + 1))
 					thenLines := encoder.Serialize(int32(1))
-					
-					predVal := encoder.Serialize($2)
-					
-					goToExpr.AddArgument(MakeArgument(&predVal, "ident"))
+
+					goToExpr.AddArgument($2)
 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
 					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
 					
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
 						if !replMode {
-							goToExpr.FileLine = lineNo
+							goToExpr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(goToExpr)
 
@@ -2081,66 +2084,6 @@ statement:      RETURN returnArg
 						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
 						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
 					}
-				}
-			}
-                }
-        |       beginFor BOOLEAN
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
-						expr := MakeExpression(goToFn)
-						if !replMode {
-							expr.FileLine = yyS[yypt-0].line + 1
-						}
-						fn.AddExpression(expr)
-					}
-				}
-			}
-                }
-                LBRACE
-                {
-			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				$<i>$ = len(fn.Expressions)
-			}
-                }
-                expressionsAndStatements RBRACE
-                {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.GetCurrentFunction(); err == nil {
-					goToExpr := fn.Expressions[$<i>5 - 1]
-					
-					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>5 + 2))
-					thenLines := encoder.Serialize(int32(1))
-					
-					var predVal []byte
-					if $2 == int32(1) {
-						predVal = encoder.Serialize(int32(1))
-					} else {
-						predVal = encoder.Serialize(int32(0))
-					}
-
-					goToExpr.AddArgument(MakeArgument(&predVal, "bool"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
-					
-					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
-						goToExpr := MakeExpression(goToFn)
-						if !replMode {
-							goToExpr.FileLine = lineNo
-						}
-						fn.AddExpression(goToExpr)
-
-						elseLines := encoder.Serialize(int32(0))
-						thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>5))
-
-						alwaysTrue := encoder.Serialize(int32(1))
-
-						goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
-					}
-					
 				}
 			}
                 }
@@ -2226,7 +2169,7 @@ statement:      RETURN returnArg
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
 							if !replMode {
-								goToExpr.FileLine = lineNo
+								goToExpr.FileLine = yyS[yypt-0].line + 1
 							}
 							fn.AddExpression(goToExpr)
 
@@ -2258,7 +2201,7 @@ statement:      RETURN returnArg
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
 							if !replMode {
-								goToExpr.FileLine = lineNo
+								goToExpr.FileLine = yyS[yypt-0].line + 1
 							}
 							fn.AddExpression(goToExpr)
 							
@@ -3331,4 +3274,3 @@ argumentsList:  argument
         ;
 
 %%
-
