@@ -273,7 +273,9 @@
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
-                        AFF TAG INFER WEIGHT
+                        AFF TAG INFER VALUE
+                        /* Pointers */
+                        ADDR
 
 %type   <tok>           assignOperator relationalOp
                         
@@ -927,6 +929,19 @@ definitionAssignment:
                 {
 			$$ = $2
                 }
+        |       assignOperator ADDR argument
+                {
+			$3.Typ = "*" + $3.Typ
+			$$ = $3
+                }
+        |       assignOperator VALUE argument
+                {
+			if $3.Typ[0] != '*' {
+				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+			}
+			$3.Typ = $3.Typ[1:]
+			$$ = $3
+                }
                 ;
 
 definitionDeclaration:
@@ -1053,13 +1068,13 @@ structDeclaration:
 					if !replMode {
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
-					expr.AddOutputName("_arr")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
 					sStrctInst := encoder.Serialize("strctInst")
 					strctInstArg := MakeArgument(&sStrctInst, "str")
 					expr.AddArgument(arrArg)
 					expr.AddArgument(strctInstArg)
+					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1076,10 +1091,10 @@ structDeclaration:
 					if !replMode {
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
-					expr.AddOutputName("byts")
 					sStrctInst := encoder.Serialize("strctInst")
 					strctInstArg := MakeArgument(&sStrctInst, "str")
 					expr.AddArgument(strctInstArg)
+					expr.AddOutputName("byts")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1099,7 +1114,6 @@ structDeclaration:
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
 
-					expr.AddOutputName("strctInst")
 					sByts := encoder.Serialize("byts")
 					sBytsArg := MakeArgument(&sByts, "str")
 
@@ -1108,6 +1122,7 @@ structDeclaration:
 					
 					expr.AddArgument(sBytsArg)
 					expr.AddArgument(sTypArg)
+					expr.AddOutputName("strctInst")
 					
 					fn.AddExpression(expr)
 				} else {
@@ -1127,13 +1142,13 @@ structDeclaration:
 					if !replMode {
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
-					expr.AddOutputName("strctInst")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
 					sIndex := encoder.Serialize("index")
 					indexArg := MakeArgument(&sIndex, "ident")
 					expr.AddArgument(arrArg)
 					expr.AddArgument(indexArg)
+					expr.AddOutputName("strctInst")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1160,7 +1175,6 @@ structDeclaration:
 					expr.AddArgument(arrArg)
 					expr.AddArgument(indexArg)
 					expr.AddArgument(instArg)
-
 					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
 				} else {
@@ -1177,10 +1191,10 @@ structDeclaration:
 					if !replMode {
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
-					expr.AddOutputName("len")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
 					expr.AddArgument(arrArg)
+					expr.AddOutputName("len")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1197,13 +1211,13 @@ structDeclaration:
 					if !replMode {
 						expr.FileLine = yyS[yypt-0].line + 1
 					}
-					expr.AddOutputName("arr")
 					sLen := encoder.Serialize("len")
 					sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
 					lenArg := MakeArgument(&sLen, "ident")
 					typArg := MakeArgument(&sTyp, "str")
 					expr.AddArgument(lenArg)
 					expr.AddArgument(typArg)
+					expr.AddOutputName("arr")
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1364,6 +1378,11 @@ parameter:
                 {
 			$$ = MakeParameter($1, $2)
                 }
+        |       IDENT MULT IDENT
+                {
+			typ := "*" + $3
+			$$ = MakeParameter($1, typ)
+                }
         ;
 
 parameters:
@@ -1424,11 +1443,11 @@ assignExpression:
 							}
 
 							fn.AddExpression(expr)
-							expr.AddOutputName($2)
 							
 							typ := encoder.Serialize($3)
 							arg := MakeArgument(&typ, "str")
 							expr.AddArgument(arg)
+							expr.AddOutputName($2)
 
 							if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 								for _, fld := range strct.Fields {
@@ -1437,10 +1456,10 @@ assignExpression:
 										expr.FileLine = yyS[yypt-0].line + 1
 									}
 									fn.AddExpression(expr)
-									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 									typ := []byte(fld.Typ)
 									arg := MakeArgument(&typ, "str")
 									expr.AddArgument(arg)
+									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 								}
 							}
 						}
@@ -1458,8 +1477,8 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								expr.AddOutputName($2)
 								expr.AddArgument(val)
+								expr.AddOutputName($2)
 							}
 						case "byte":
 							var ds int32
@@ -1473,8 +1492,8 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								expr.AddOutputName($2)
 								expr.AddArgument(val)
+								expr.AddOutputName($2)
 							}
 						case "i64":
 							var ds int32
@@ -1488,8 +1507,8 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								expr.AddOutputName($2)
 								expr.AddArgument(val)
+								expr.AddOutputName($2)
 							}
 						case "f64":
 							var ds float32
@@ -1503,8 +1522,8 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								expr.AddOutputName($2)
 								expr.AddArgument(val)
+								expr.AddOutputName($2)
 							}
 						default:
 							val := $4
@@ -1527,8 +1546,8 @@ assignExpression:
 									expr.FileLine = yyS[yypt-0].line + 1
 								}
 								fn.AddExpression(expr)
-								expr.AddOutputName($2)
 								expr.AddArgument(val)
+								expr.AddOutputName($2)
 							}
 						}
 					}
@@ -1546,10 +1565,10 @@ assignExpression:
 							expr.FileLine = yyS[yypt-0].line + 1
 						}
 						fn.AddExpression(expr)
-						expr.AddOutputName($2)
 						typ := encoder.Serialize(fmt.Sprintf("[]%s", $5))
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
+						expr.AddOutputName($2)
 					}
 				}
 			}
@@ -1565,6 +1584,7 @@ assignExpression:
 
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				for i, argL := range argsL {
+					//fmt.Println("here", argsR[i].Typ)
 					if argsR[i] == nil {
 						continue
 					}
@@ -1574,6 +1594,16 @@ assignExpression:
 					var typ string
 					var secondTyp string
 					var idFn string
+					var ptrs string
+
+					for i, char := range typeParts[0] {
+						if char != '*' {
+							typeParts[0] = typeParts[0][i:]
+							break
+						} else {
+							ptrs += "*"
+						}
+					}
 
 					if len(typeParts) > 1 {
 						typ = "str"
@@ -1604,11 +1634,44 @@ assignExpression:
 
 							var outName string
 							encoder.DeserializeRaw(*argL.Value, &outName)
+
+							// checking if identifier was previously declared
+							if outType, err := GetIdentType(outName, yyS[yypt-0].line + 1, cxt); err == nil {
+								if len(typeParts) > 1 {
+									if outType != secondTyp {
+										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, secondTyp))
+									}
+								} else if typeParts[0] == "ident" {
+									var identName string
+									encoder.DeserializeRaw(*argsR[i].Value, &identName)
+									if rightTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
+										if outType != ptrs + rightTyp {
+											panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, rightTyp))
+										}
+									}
+								} else {
+									if outType != typ {
+										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, typ))
+									}
+								}
+							}
+
+							if len(typeParts) > 1 || typeParts[0] == "ident" {
+								var identName string
+								encoder.DeserializeRaw(*argsR[i].Value, &identName)
+								identName = ptrs + identName
+								sIdentName := encoder.Serialize(identName)
+								arg := MakeArgument(&sIdentName, typ)
+								expr.AddArgument(arg)
+							} else {
+								arg := MakeArgument(argsR[i].Value, typ)
+								expr.AddArgument(arg)
+							}
+
+							// arg := MakeArgument(argsR[i].Value, typ)
+							// expr.AddArgument(arg)
 							
 							expr.AddOutputName(outName)
-
-							arg := MakeArgument(argsR[i].Value, typ)
-							expr.AddArgument(arg)
 						}
 					} else {
 						// +=, -=, *=, etc.
@@ -1629,8 +1692,6 @@ assignExpression:
 						} else {
 							typName = secondTyp
 						}
-
-						// here here
 
 						switch $2 {
 						case "+=":
@@ -1669,8 +1730,29 @@ assignExpression:
 
 							var outName string
 							encoder.DeserializeRaw(*argL.Value, &outName)
-							
-							expr.AddOutputName(outName)
+
+							// checking if identifier was previously declared
+							if outType, err := GetIdentType(outName, yyS[yypt-0].line + 1, cxt); err == nil {
+								if len(typeParts) > 1 {
+									if outType != secondTyp {
+										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, secondTyp))
+									}
+								} else if typeParts[0] == "ident" {
+									var identName string
+									encoder.DeserializeRaw(*argsR[i].Value, &identName)
+									if rightTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
+										if outType != rightTyp {
+											panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, rightTyp))
+										}
+									}
+								} else {
+									if outType != typ {
+										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, typ))
+									}
+								}
+							}
+
+							// needs to be in this order or addoutputname won't know the type when the operator is identity()
 							expr.AddArgument(argL)
 							
 							if len(typeParts) > 1 {
@@ -1678,6 +1760,7 @@ assignExpression:
 							} else {
 								expr.AddArgument(MakeArgument(argsR[i].Value, typeParts[0]))
 							}
+							expr.AddOutputName(outName)
 						}
 					}
 				}
@@ -2229,11 +2312,11 @@ statement:      RETURN returnArg
 						}
 
 						fn.AddExpression(expr)
-						expr.AddOutputName($2)
-						
+
 						typ := encoder.Serialize($3)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
+						expr.AddOutputName($2)
 					}
 				}
 			}
@@ -2405,18 +2488,18 @@ inferActionArg:
 			argStr := ArgToString($3)
 			$$ = []string{$1, argStr, $2}
                 }
-        |       MULT relationalOp argument
-                {
-			argStr := ArgToString($3)
-			$$ = []string{$1, argStr, $2}
-                }
-        |       MULT relationalOp nonAssignExpression
+        // |       MULT relationalOp argument
+        //         {
+	// 		argStr := ArgToString($3)
+	// 		$$ = []string{$1, argStr, $2}
+        //         }
+        |       AFFVAR relationalOp nonAssignExpression
                 {
 			var identName string
 			encoder.DeserializeRaw(*$3[0].Value, &identName)
 			$$ = []string{$1, identName, $2}
                 }
-        |       MULT relationalOp MULT
+        |       AFFVAR relationalOp AFFVAR
                 {
 			$$ = []string{$1, $1, $2}
                 }
@@ -2495,11 +2578,11 @@ inferObj:
                 {
 			$$ = []string{}
                 }
-        |       IDENT WEIGHT inferWeight
+        |       IDENT VALUE inferWeight
                 {
 			$$ = []string{$1, $3, "weight"}
                 }
-        |       IDENT WEIGHT nonAssignExpression
+        |       IDENT VALUE nonAssignExpression
                 {
 			var ident string
 			encoder.DeserializeRaw(*$3[0].Value, &ident)
@@ -3039,9 +3122,9 @@ argument:       argument PLUS argument
 							outName := MakeGenSym(NON_ASSIGN_PREFIX)
 							sOutName := encoder.Serialize(outName)
 
-							expr.AddOutputName(outName)
 							typ := encoder.Serialize($2)
 							expr.AddArgument(MakeArgument(&typ, "str"))
+							expr.AddOutputName(outName)
 
 							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
 							for _, def := range $4 {
@@ -3077,9 +3160,9 @@ argument:       argument PLUS argument
 									tag = ""
 
 									outName := fmt.Sprintf("%s.%s", outName, def.Name)
-									expr.AddOutputName(outName)
 									arg := MakeArgument(def.Value, typ)
 									expr.AddArgument(arg)
+									expr.AddOutputName(outName)
 								}
 							}
 						}
@@ -3111,11 +3194,11 @@ argument:       argument PLUS argument
 						sOutName := encoder.Serialize(outName)
 
 						fn.AddExpression(expr)
-						expr.AddOutputName(outName)
 
 						typ := encoder.Serialize($1)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
+						expr.AddOutputName(outName)
 						
 						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", $1), mod.Name); err == nil {
 							for _, arg := range $3 {
@@ -3123,8 +3206,8 @@ argument:       argument PLUS argument
 								arg.Typ = typeParts[0]
 								expr := MakeExpression(op)
 								fn.AddExpression(expr)
-								expr.AddOutputName(outName)
 								expr.AddArgument(MakeArgument(&sOutName, "ident"))
+								expr.AddOutputName(outName)
 								expr.AddArgument(CastArgumentForArray($1, arg))
 							}
 						}
@@ -3259,6 +3342,49 @@ argumentsList:  argument
 			args := $1
 			$$ = args
                 }
+        |       ADDR argument
+                {
+			var args []*CXArgument
+			$2.Typ = "*" + $2.Typ
+			args = append(args, $2)
+			$$ = args
+                }
+        |       VALUE argument
+                {
+			if $2.Typ != "ident" {
+				fmt.Sprintf("%d: cannot dereference type '%s'", yyS[yypt-0].line + 1, $2.Typ)
+			}
+			var identName string
+			encoder.DeserializeRaw(*$2.Value, &identName)
+			if typ, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
+				fmt.Println(identName)
+				fmt.Println(typ)
+			} else {
+				panic(err)
+			}
+			if $2.Typ[0] != '*' {
+				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+			}
+
+			var args []*CXArgument
+			$2.Typ = $2.Typ[1:]
+			args = append(args, $2)
+			$$ = args
+                }
+        |       VALUE nonAssignExpression
+                {
+			if len($2) > 1 {
+				panic(fmt.Sprintf("%d: dereference operation not permitted with multiple-value function", yyS[yypt-0].line + 1))
+			}
+			if $2[0].Typ[0] != '*' {
+				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+			}
+			
+			$2[0].Typ = $2[0].Typ[1:]
+			args := $2
+			$$ = args
+                }
+                
         |       argumentsList COMMA argument
                 {
 			$1 = append($1, $3)
@@ -3269,6 +3395,33 @@ argumentsList:  argument
 			args := $3
 
 			$1 = append($1, args...)
+			$$ = $1
+                }
+        |       argumentsList COMMA ADDR argument
+                {
+			$4.Typ = "*" + $4.Typ
+			$1 = append($1, $4)
+			$$ = $1
+                }
+        |       argumentsList COMMA VALUE argument
+                {
+			if $4.Typ[0] != '*' {
+				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+			}
+			$4.Typ = $4.Typ[1:]
+			$1 = append($1, $4)
+			$$ = $1
+                }
+        |       argumentsList COMMA VALUE nonAssignExpression
+                {
+			if len($4) > 1 {
+				panic(fmt.Sprintf("%d: dereference operation not permitted with multiple-value function", yyS[yypt-0].line + 1))
+			}
+			if $4[0].Typ[0] != '*' {
+				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+			}
+			$4[0].Typ = $4[0].Typ[1:]
+			$1 = append($1, $4...)
 			$$ = $1
                 }
         ;

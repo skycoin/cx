@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
@@ -181,10 +182,41 @@ func (expr *CXExpression) AddArgument (arg *CXArgument) *CXExpression {
 func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	if len(expr.Operator.Outputs) > 0 {
 		nextOutIdx := len(expr.OutputNames)
+
+		var typ string
+		var ptrs string
+		if expr.Operator.Name == ID_FN || expr.Operator.Name == INIT_FN {
+			var tmp string
+			encoder.DeserializeRaw(*expr.Arguments[0].Value, &tmp)
+
+			if tmp[0] == '*' {
+				for i, char := range tmp {
+					if char != '*' {
+						tmp = tmp[i:]
+						break
+					} else {
+						ptrs += "*"
+					}
+				}
+			}
+			
+			if expr.Operator.Name == INIT_FN {
+				typ = tmp
+			} else {
+				var err error
+				if typ, err = GetIdentType(tmp, expr.FileLine, expr.Context); err != nil {
+					panic(err)
+				}
+			}
+		} else {
+			typ = expr.Operator.Outputs[nextOutIdx].Typ
+		}
+		
 		outDef := MakeDefinition(
 			outName,
 			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ),
-			expr.Operator.Outputs[nextOutIdx].Typ)
+			//expr.Operator.Outputs[nextOutIdx].Typ)
+			typ)
 		
 		outDef.Module = expr.Module
 		outDef.Context = expr.Context

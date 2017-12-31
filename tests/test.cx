@@ -1424,9 +1424,9 @@ label4:
 			obj(threat $0.9)
 		}
 		if threat $0.0 {
-			allow(*.energy < 5)
+			allow(?.energy < 5)
 		}
-	}, []str{"lowMorale", "0.600000", "weight", "single", "if", "threat", "0.900000", "weight", "obj", "endif", "threat", "0.000000", "weight", "single", "if", "*.energy", "5", "<", "allow", "endif"}, "")
+	}, []str{"lowMorale", "0.600000", "weight", "single", "if", "threat", "0.900000", "weight", "obj", "endif", "threat", "0.000000", "weight", "single", "if", "?.energy", "5", "<", "allow", "endif"}, "")
 
 
 	// affordance query and execution
@@ -1438,7 +1438,7 @@ label4:
 			obj(obj3 $1.0)
 		}
 		if or(obj4 $0.5, obj3 $1.0) {
-			allow(* > 10000)
+			allow(? > 10000)
 		}
 	}
 	
@@ -1459,14 +1459,14 @@ test:
 	nonArraysRules := ->{
 		if true {
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	arrays := ->{pkg(main) fn(main) exp(arrays)}
 	arraysRules := ->{
 		if true {
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	structNonArrays := ->{pkg(main) fn(main) exp(structNonArrays)}
@@ -1474,7 +1474,7 @@ test:
 		if true {
 			search(structs)
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	structArrays := ->{pkg(main) fn(main) exp(structArrays)}
@@ -1482,7 +1482,7 @@ test:
 		if true {
 			search(structs)
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	localNonArrays := ->{pkg(main) fn(main) exp(localNonArrays)}
@@ -1490,7 +1490,7 @@ test:
 		if true {
 			search(locals)
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	localArrays := ->{pkg(main) fn(main) exp(localArrays)}
@@ -1498,7 +1498,7 @@ test:
 		if true {
 			search(locals)
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	localStructNonArrays := ->{pkg(main) fn(main) exp(localStructNonArrays)}
@@ -1507,7 +1507,7 @@ test:
 			search(locals)
 			search(structs)
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	localStructArrays := ->{pkg(main) fn(main) exp(localStructArrays)}
@@ -1516,7 +1516,7 @@ test:
 			search(locals)
 			search(structs)
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	globalNonArrays := ->{pkg(main) fn(main) exp(globalNonArrays)}
@@ -1524,7 +1524,7 @@ test:
 		if true {
 			search(globals)
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	globalArrays := ->{pkg(main) fn(main) exp(globalArrays)}
@@ -1532,7 +1532,7 @@ test:
 		if true {
 			search(globals)
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	globalStructNonArrays := ->{pkg(main) fn(main) exp(globalStructNonArrays)}
@@ -1541,7 +1541,7 @@ test:
 			search(globals)
 			search(structs)
 			search(nonArrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 	globalStructArrays := ->{pkg(main) fn(main) exp(globalStructArrays)}
@@ -1550,7 +1550,7 @@ test:
 			search(globals)
 			search(structs)
 			search(arrays)
-			allow(* == *)
+			allow(? == ?)
 		}
 	}
 

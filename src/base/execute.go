@@ -853,16 +853,19 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
-				// if argsRefs[i].Typ == "str" {
-				// 	fmt.Println(argsRefs[i].Value)
-				// }
-
 				
-				if argsRefs[i].Typ == "ident" {
+				if argsRefs[i].Typ == "ident" || argsRefs[i].Typ == "&ident" || argsRefs[i].Typ == "*ident" {
 					var lookingFor string
 					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
 					if arg, err := resolveIdent(lookingFor, call); err == nil {
+
 						argsCopy[i] = arg
+						if argsRefs[i].Typ == "&ident" {
+							argsCopy[i].Typ = "*" + argsCopy[i].Typ
+						}
+						if argsRefs[i].Typ == "*ident" {
+							argsCopy[i].Typ = argsCopy[i].Typ[1:]
+						}
 					} else {
 						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
 					}
@@ -892,8 +895,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			}
 
 			// check if struct array function
-			//fmt.Println("here", opName)
-
 			if isNative {
 				checkNative(opName, expr, call, &argsCopy, &exc, &excError)
 				if exc && isTesting {

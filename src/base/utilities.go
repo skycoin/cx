@@ -14,7 +14,13 @@ import (
 
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.OutputNames[outNameNumber].Name
-	expr.OutputNames[outNameNumber].Typ = typ
+
+	// if expr.OutputNames[outNameNumber].Typ != typ {
+	// 	fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+	// }
+	// fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+
+	///expr.OutputNames[outNameNumber].Typ = typ
 
 	for _, char := range outName {
 		if char == '.' {
@@ -23,7 +29,6 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
 				if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
-
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
 
@@ -32,8 +37,12 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 
 					final := append(firstChunk, output...)
 					final = append(final, secondChunk...)
-					
-					*def.Value = final
+
+					if def.Typ[0] == '*' {
+						*def.Value = final
+					} else {
+						def.Value = &final
+					}
 					return nil
 				}
 			}
@@ -64,7 +73,11 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 							final := append(firstChunk, output...)
 							final = append(final, secondChunk...)
 
-							*def.Value = final
+							if def.Typ[0] == '*' {
+								*def.Value = final
+							} else {
+								def.Value = &final
+							}
 							return nil
 						} else {
 							
@@ -80,6 +93,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			}
 			break
 		}
+		
 		if char == '[' {
 			identParts := strings.Split(outName, "[")
 
@@ -103,16 +117,29 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	}
 
 	if def, err := expr.Module.GetDefinition(outName); err == nil {
-		def.Value = &output
+		if def.Typ[0] == '*' {
+			*def.Value = output
+		} else {
+			def.Value = &output
+		}
 		return nil
 	}
 
 	for _, def := range call.State {
 		if def.Name == outName {
-			def.Value = &output
+			//fmt.Println(outName, typ, def.Typ)
+			if def.Typ[0] == '*' {
+				*def.Value = output
+			} else {
+				def.Value = &output
+			}
 			return nil
 		}
 	}
+	
+	// if len(call.State) > 0 {
+	// 	fmt.Println(call.State[0].Name, outName)
+	// }
 
 	call.State = append(call.State, MakeDefinition(outName, &output, typ))
 	return nil
@@ -133,12 +160,9 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 		for i, out := range outputs {
 			var zeroValue []byte
 			isBasic := false
-			for _, basic := range BASIC_TYPES {
-				if basic == out.Typ {
-					zeroValue = *MakeDefaultValue(basic)
-					isBasic = true
-					break
-				}
+			if IsBasicType(out.Typ) {
+				zeroValue = *MakeDefaultValue(out.Typ)
+				isBasic = true
 			}
 			if !isBasic {
 				var err error
@@ -529,7 +553,7 @@ func IsMultiDim (typ string) bool {
 }
 
 func IsBasicType (typ string) bool {
-	re := regexp.MustCompile("(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
+	re := regexp.MustCompile("\\**(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
 	if re.FindString(typ) != "" {
 		return true
 	} else {
@@ -879,7 +903,6 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		} else {
 			// then it's a global struct
 			mod := call.Operator.Module
-			//if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
 				isStructFld = true
 				//resolvedIdent = def
@@ -1268,7 +1291,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 		j = 0
 		for _, fn := range mod.Functions {
-
+			mod.SelectFunction(fn.Name)
 			inOuts := make(map[string]string)
 			for _, in := range fn.Inputs {
 				inOuts[in.Name] = in.Typ
@@ -1312,22 +1335,9 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 					if arg.Typ == "ident" {
 						var id string
 						encoder.DeserializeRaw(*arg.Value, &id)
-						if arg.Typ != "" &&
-							inOuts[id] != "" {
-							typ = inOuts[id]
-						} else if arg.Value != nil {
-							var found *CXDefinition
-							for _, def := range mod.Definitions {
-								if def.Name == id {
-									found = def
-									break
-								}
-							}
-							if found != nil && found.Typ != "" {
-								typ = found.Typ
-							}
-						} else {
-							typ = arg.Typ
+						var err error
+						if typ, err = GetIdentType(id, expr.FileLine, cxt); err != nil {
+							panic(err)
 						}
 					} else {
 						typ = arg.Typ
@@ -1395,7 +1405,13 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							encoder.DeserializeRaw(*arg.Value, &val)
 							argName = fmt.Sprintf("%#v", val)
 						default:
-							argName = string(*arg.Value)
+							if arg.Typ[0] == '*' || arg.Typ[0] == '&' {
+								var identName string
+								encoder.DeserializeRaw(*arg.Value, &identName)
+								argName = identName
+							} else {
+								argName = string(*arg.Value)
+							}
 						}
 					}
 
@@ -1589,7 +1605,7 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 	if err != nil {
 		return "", err
 	}
-
+	
 	if len(identParts) > 1 {
 		if extMod, err := cxt.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct

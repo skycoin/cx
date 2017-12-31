@@ -34,7 +34,6 @@
 /!=/         { lval.tok = yylex.Text(); return UNEQUAL    }
 /\+/         { lval.tok = yylex.Text(); return PLUS       }
 /-/          { lval.tok = yylex.Text(); return MINUS      }
-/\*([.\[\]a-zA-Z0-9_]+)/          { lval.tok = yylex.Text(); return AFFVAR      }
 /\*/         { lval.tok = yylex.Text(); return MULT       }
 /\//         { lval.tok = yylex.Text(); return DIV        }
 /%/          { lval.tok = yylex.Text(); return REMAINDER  }
@@ -82,15 +81,20 @@
 /\]/         { return RBRACK     }
 /:/          { return COLON      }
 /->/         { return INFER      }
-/\$/         { return WEIGHT     }
+/\$/         { return VALUE      }
+/#/          { return ADDR       }
 /new/        { return NEW        }
-/(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
+/\**(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
 	typ := yylex.Text();
 
 	CreateMDimFuncs(typ, lval.line + 1)
 	
 	lval.tok = typ
 	return BASICTYPE
+}
+/\?([.\[\]a-zA-Z0-9_]*)/ {
+	lval.tok = yylex.Text();
+	return AFFVAR
 }
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()

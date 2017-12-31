@@ -143,11 +143,23 @@ func sleep (ms *CXArgument) error {
 }
 
 func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+	var ptrs string
 	var name string
 	encoder.DeserializeRaw(*arg.Value, &name)
 
+	if name[0] == '*' {
+		for i, char := range name {
+			if char != '*' {
+				name = name[i:]
+				break
+			} else {
+				ptrs += "*"
+			}
+		}
+	}
+
 	if arg, err := resolveIdent(name, call); err == nil {
-		assignOutput(0, *arg.Value, arg.Typ, expr, call)
+		assignOutput(0, *arg.Value, ptrs + arg.Typ, expr, call)
 		return nil
 	} else {
 		return err

@@ -152,6 +152,17 @@ func (cxt *CXProgram) GetModule (modName string) (*CXModule, error) {
 }
 
 func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, error) {
+	// checking if pointer to struct
+	if strctName[0] == '*' {
+		for i, char := range strctName {
+			if char != '*' {
+				// removing '*', we only need the struct name
+				strctName = strctName[i:]
+				break
+			}
+		}
+	}
+	
 	var foundMod *CXModule
 	for _, mod := range cxt.Modules {
 		if modName == mod.Name {
