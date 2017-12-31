@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"fmt"
 	"errors"
+	"math/rand"
+	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -283,6 +285,7 @@ if *memprofile != "" {
 }
 
 func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
+	rand.Seed(time.Now().UTC().UnixNano())
 	if cxt.Terminated {
 		// user wants to re-run the program
 		cxt.Terminated = false
