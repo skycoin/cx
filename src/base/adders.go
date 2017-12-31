@@ -201,17 +201,22 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 			}
 			
 			if expr.Operator.Name == INIT_FN {
-				typ = tmp
+				// then tmp is the type (e.g. initDef("i32") to initialize an i32)
+				typ = ptrs + tmp
 			} else {
 				var err error
-				if typ, err = GetIdentType(tmp, expr.FileLine, expr.Context); err != nil {
+				// then tmp is an identifier
+				if typ, err = GetIdentType(tmp, expr.FileLine, expr.Context); err == nil {
+					typ = ptrs + typ
+				} else {
 					panic(err)
 				}
 			}
 		} else {
 			typ = expr.Operator.Outputs[nextOutIdx].Typ
 		}
-		
+
+		//print(typ + " " + outName + "\n")
 		outDef := MakeDefinition(
 			outName,
 			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ),

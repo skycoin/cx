@@ -1646,12 +1646,12 @@ assignExpression:
 									encoder.DeserializeRaw(*argsR[i].Value, &identName)
 									if rightTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
 										if outType != ptrs + rightTyp {
-											panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, rightTyp))
+											panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, ptrs + rightTyp))
 										}
 									}
 								} else {
 									if outType != typ {
-										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, typ))
+										panic(fmt.Sprintf("%d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", yyS[yypt-0].line + 1, outName, outType, ptrs + typ))
 									}
 								}
 							}
@@ -3184,7 +3184,7 @@ argument:       argument PLUS argument
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil && inFn {
-					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
+					if op, err := cxt.GetFunction(INIT_FN, mod.Name); err == nil {
 						expr := MakeExpression(op)
 						if !replMode {
 							expr.FileLine = yyS[yypt-0].line + 1
@@ -3195,12 +3195,25 @@ argument:       argument PLUS argument
 
 						fn.AddExpression(expr)
 
-						typ := encoder.Serialize($1)
+						var appendFnTyp string
+						var ptrs string
+						if $1[0] == '*' {
+							for i, char := range $1 {
+								if char != '*' {
+									appendFnTyp = $1[i:]
+									break
+								} else {
+									ptrs += "*"
+								}
+							}
+						}
+						
+						typ := encoder.Serialize(appendFnTyp)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
 						expr.AddOutputName(outName)
 						
-						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", $1), mod.Name); err == nil {
+						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", appendFnTyp), mod.Name); err == nil {
 							for _, arg := range $3 {
 								typeParts := strings.Split(arg.Typ, ".")
 								arg.Typ = typeParts[0]
@@ -3208,10 +3221,11 @@ argument:       argument PLUS argument
 								fn.AddExpression(expr)
 								expr.AddArgument(MakeArgument(&sOutName, "ident"))
 								expr.AddOutputName(outName)
-								expr.AddArgument(CastArgumentForArray($1, arg))
+								expr.AddArgument(CastArgumentForArray(appendFnTyp, arg))
 							}
 						}
-						$$ = MakeArgument(&sOutName, "ident")
+
+						$$ = MakeArgument(&sOutName, ptrs + "ident")
 					}
 				} else {
 					// then it's for a global definition
@@ -3351,23 +3365,22 @@ argumentsList:  argument
                 }
         |       VALUE argument
                 {
-			if $2.Typ != "ident" {
-				fmt.Sprintf("%d: cannot dereference type '%s'", yyS[yypt-0].line + 1, $2.Typ)
+			if $2.Typ[0] != '*' {
+				fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1)
 			}
 			var identName string
 			encoder.DeserializeRaw(*$2.Value, &identName)
 			if typ, err := GetIdentType(identName, yyS[yypt-0].line + 1, cxt); err == nil {
-				fmt.Println(identName)
-				fmt.Println(typ)
+				if typ[0] != '*' {
+					panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
+				}
 			} else {
 				panic(err)
 			}
-			if $2.Typ[0] != '*' {
-				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
-			}
 
 			var args []*CXArgument
-			$2.Typ = $2.Typ[1:]
+			//$2.Typ = $2.Typ[1:]
+			$2.Typ = "$" + $2.Typ
 			args = append(args, $2)
 			$$ = args
                 }
@@ -3380,7 +3393,8 @@ argumentsList:  argument
 				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
 			}
 			
-			$2[0].Typ = $2[0].Typ[1:]
+			//$2[0].Typ = $2[0].Typ[1:]
+			$2[0].Typ = "$" + $2[0].Typ
 			args := $2
 			$$ = args
                 }
@@ -3408,7 +3422,8 @@ argumentsList:  argument
 			if $4.Typ[0] != '*' {
 				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
 			}
-			$4.Typ = $4.Typ[1:]
+			//$4.Typ = $4.Typ[1:]
+			$4.Typ = "$" + $4.Typ
 			$1 = append($1, $4)
 			$$ = $1
                 }
@@ -3420,7 +3435,8 @@ argumentsList:  argument
 			if $4[0].Typ[0] != '*' {
 				panic(fmt.Sprintf("%d: dereference operation not permitted on non-pointer types", yyS[yypt-0].line + 1))
 			}
-			$4[0].Typ = $4[0].Typ[1:]
+			//$4[0].Typ = $4[0].Typ[1:]
+			$4[0].Typ = "$" + $4[0].Typ
 			$1 = append($1, $4...)
 			$$ = $1
                 }

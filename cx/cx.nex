@@ -291,8 +291,7 @@ func repl () {
 	}
 }
 
-var coreModule string = `
-package core
+var coreModule string = `package core
 func str.id (x str) (_22x str) {}
 func bool.id (x bool) (_x bool) {}
 func byte.id (x byte) (_x byte) {}

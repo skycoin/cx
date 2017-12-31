@@ -1221,7 +1221,7 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 	return nil, nil
 }
 
-func (cxt *CXProgram) PrintProgram(withAffs bool) {
+func (cxt *CXProgram) PrintProgram (withAffs bool) {
 	fmt.Println("Program")
 	if withAffs {
 		for i, aff := range cxt.GetAffordances() {
@@ -1405,7 +1405,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 							encoder.DeserializeRaw(*arg.Value, &val)
 							argName = fmt.Sprintf("%#v", val)
 						default:
-							if arg.Typ[0] == '*' || arg.Typ[0] == '&' {
+							if arg.Typ[0] == '*' || arg.Typ[0] == '$' {
 								var identName string
 								encoder.DeserializeRaw(*arg.Value, &identName)
 								argName = identName
@@ -1720,7 +1720,7 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 					}
 				}
 			}
-			for i, expr := range fn.Expressions {
+			for _, expr := range fn.Expressions {
 				if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
 					var typ string
 					encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
@@ -1729,10 +1729,11 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 				}
 				for _, out := range expr.OutputNames {
 					if out.Name == arrayParts[0] {
+						//fmt.Println("here", out.Name, out.Typ)
 
-						if expr.Operator.Name == "identity" {
-							return fn.Expressions[i-1].OutputNames[0].Typ, nil
-						}
+						// if expr.Operator.Name == "identity" {
+						// 	return fn.Expressions[i-1].OutputNames[0].Typ, nil
+						// }
 						
 						if len(arrayParts) > 1 {
 							return out.Typ[2:], nil
