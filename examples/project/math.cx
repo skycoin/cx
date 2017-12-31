@@ -1,0 +1,9 @@
+package math
+
+func double () {
+	i32.div(5, 0)
+}
+
+func triple () {
+	
+}

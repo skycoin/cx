@@ -27,6 +27,7 @@
 	//var dProgram bool = false
 	var tag string = ""
 	var asmNL = "\n"
+	var fileName string
 
 	func warnf(format string, args ...interface{}) {
 		fmt.Fprintf(os.Stderr, format, args...)
