@@ -4,4 +4,5 @@ import "math"
 func main () {
 	str.print("hi")
 	foo := math.double()
+	i32.print(foo)
 }

@@ -1274,34 +1274,45 @@ func main () {
 		cxt.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 
-	allSourceCode := bytes.NewBuffer(nil)
-	for _, source := range sourceCode {
-		//io.TeeReader(source, )
-		io.Copy(allSourceCode, source)
+	sourceCodeCopy := make([]string, len(sourceCode))
+	for i, source := range sourceCode {
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, source)
+		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
-	re := regexp.MustCompile("(package|func)\\s([.\\[\\]a-zA-Z0-9_]+)")
-	allSC := string(allSourceCode.Bytes())
+	allSC := strings.Join(sourceCodeCopy, "")
+	//fmt.Println(allSC)
+	re := regexp.MustCompile("(package|func|var)\\s([.\\[\\]a-zA-Z0-9_]+)\\s?([\\*.\\[\\]a-zA-Z0-9_]+)?")
 	for _, match := range re.FindAllStringSubmatch(allSC, -1) {
 		if match[1] == "package" {
-			mod := MakeModule(match[len(match)-1])
+			mod := MakeModule(match[2])
 			cxt.AddModule(mod)
+		} else if match[1] == "var" {
+			if mod, err := cxt.GetCurrentModule(); err == nil {
+				// match[2] = ident, match[3] = type
+				defValue := MakeDefaultValue(match[3])
+				def := MakeDefinition(match[2], defValue, match[3])
+				mod.AddDefinition(def)
+			} else {
+				panic(err)
+			}
 		} else {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
-				fn := MakeFunction(match[len(match)-1])
+				fn := MakeFunction(match[2])
 				mod.AddFunction(fn)
 			} else {
 				fmt.Println(err)
 			}
 		}
 	}
-
-	yyParse(NewLexer(allSourceCode))
 	
 	// parsing all source code files
-	// for _, source := range sourceCode {
-	// 	yyParse(NewLexer(source))
-	// }
+	for i, source := range sourceCodeCopy {
+		fileName = args[i]
+		b := bytes.NewBufferString(source)
+		yyParse(NewLexer(b))
+	}
 	
 	lineNo = 0
 

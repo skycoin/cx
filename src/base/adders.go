@@ -206,7 +206,7 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 			} else {
 				var err error
 				// then tmp is an identifier
-				if typ, err = GetIdentType(tmp, expr.FileLine, expr.Context); err == nil {
+				if typ, err = GetIdentType(tmp, expr.FileLine, expr.FileName, expr.Context); err == nil {
 					typ = ptrs + typ
 				} else {
 					panic(err)

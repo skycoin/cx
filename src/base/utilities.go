@@ -1336,7 +1336,7 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 						var id string
 						encoder.DeserializeRaw(*arg.Value, &id)
 						var err error
-						if typ, err = GetIdentType(id, expr.FileLine, cxt); err != nil {
+						if typ, err = GetIdentType(id, expr.FileLine, expr.FileName, cxt); err != nil {
 							panic(err)
 						}
 					} else {
@@ -1598,7 +1598,7 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }
 
-func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) {
+func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram) (string, error) {
 	identParts := strings.Split(lookingFor, ".")
 
 	mod, err := cxt.GetCurrentModule();
@@ -1753,5 +1753,5 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 		}
 	}
 	
-	return "", errors.New(fmt.Sprintf("%d: identifier '%s' could not be resolved", line, lookingFor))
+	return "", errors.New(fmt.Sprintf("%s: %d: identifier '%s' could not be resolved", fileName, line, lookingFor))
 }

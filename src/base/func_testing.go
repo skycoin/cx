@@ -11,9 +11,9 @@ func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) e
 		var _message string
 		encoder.DeserializeRaw(*message.Value, &_message)
 		if _message == "" {
-			fmt.Println(fmt.Sprintf("%d: an error was expected and did not occur", expr.FileLine))
+			fmt.Println(fmt.Sprintf("%s: %d: an error was expected and did not occur", expr.FileName, expr.FileLine))
 		} else {
-			fmt.Println(fmt.Sprintf("%d: %s", expr.FileLine, _message))
+			fmt.Println(fmt.Sprintf("%s: %d: %s", expr.FileName, expr.FileLine, _message))
 		}
 		
 		return nil
@@ -24,7 +24,7 @@ func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) e
 
 func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
 	if result.Typ != expected.Typ {
-		fmt.Println(fmt.Sprintf("%d: result and expected value are not of the same type", expr.FileLine))
+		fmt.Println(fmt.Sprintf("%s: %d: result and expected value are not of the same type", expr.FileName, expr.FileLine))
 		return nil
 	}
 	
@@ -47,10 +47,10 @@ func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, 
 
 	if !equal {
 		if _message == "" {
-			fmt.Printf("%d: result was not equal to the expected value\n", expr.FileLine)
+			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 			return errors.New("")
 		} else {
-			fmt.Println(fmt.Sprintf("%d: result was not equal to the expected value; %s\n", expr.FileLine, _message))
+			fmt.Println(fmt.Sprintf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, _message))
 			return errors.New("")
 		}
 	}

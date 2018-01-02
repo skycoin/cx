@@ -641,7 +641,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println(msg)
 		call.Line++
 		*exc = true
-		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
+		*excError = errors.New(fmt.Sprintf("%s: %d: call to halt", expr.FileName, expr.FileLine))
 	case "test.start": isTesting = true
 	case "test.stop": isTesting = false
 	case "test.error":
@@ -758,7 +758,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	// there was an error and we'll report line number and err msg
 	if err != nil {
 		*exc = true
-		*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		*excError = errors.New(fmt.Sprintf("%s: %d: %s", expr.FileName, expr.FileLine, err))
 	}
 }
 
@@ -843,11 +843,11 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			if len(argsRefs) != len(expr.Operator.Inputs) {
 				
 				if len(argsRefs) == 1 {
-					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d was provided",
-						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d was provided",
+						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				} else {
-					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
-						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d were provided",
+						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				}
 			}
 			
@@ -867,7 +867,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 							argsCopy[i].Typ = "*" + argsCopy[i].Typ
 						}
 					} else {
-						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
+						return errors.New(fmt.Sprintf("%s: %d: %s", expr.FileName, expr.FileLine, err.Error()))
 					}
 				} else {
 					argsCopy[i] = argsRefs[i]
@@ -877,8 +877,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				if len(expr.Operator.Inputs) > 0 &&
 					expr.Operator.Inputs[i].Typ !=
 					argsCopy[i].Typ {
-					return errors.New(fmt.Sprintf("%d: %s: argument %d is type '%s'; expected type '%s'\n",
-						expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
+					return errors.New(fmt.Sprintf("%s: %d: %s: argument %d is type '%s'; expected type '%s'\n",
+						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}
 			}
 

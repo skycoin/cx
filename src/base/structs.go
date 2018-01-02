@@ -276,6 +276,7 @@ type CXExpression struct {
 	OutputNames []*CXDefinition
 	Line int
 	FileLine int
+	FileName string
 	Tag string
 	
 	Function *CXFunction
