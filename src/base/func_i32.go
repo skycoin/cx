@@ -3,7 +3,6 @@ package base
 import (
 	"fmt"
 	"errors"
-	"time"
 	"math"
 	"math/rand"
 	"os"
@@ -162,8 +161,7 @@ func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		if minimum > maximum {
 			return errors.New(fmt.Sprintf("i32.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
-
-		rand.Seed(time.Now().UTC().UnixNano())
+		
 		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
 		assignOutput(0, output, "i32", expr, call)
