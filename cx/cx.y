@@ -1929,6 +1929,12 @@ statement:      RETURN returnArg
                 {
 			if mod, err := cxt.GetCurrentModule(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
+					if len($2) > len(fn.Outputs) {
+						panic(fmt.Sprintf("%s: %d: too many arguments to return", fileName, yyS[yypt-0].line + 1))
+					}
+					if len($2) < len(fn.Outputs) {
+						panic(fmt.Sprintf("%s: %d: not enough arguments to return", fileName, yyS[yypt-0].line + 1))
+					}
 					if $2 != nil {
 						for i, arg := range $2 {
 							var typ string
@@ -1974,7 +1980,7 @@ statement:      RETURN returnArg
 								}
 
 								if resolvedType != fn.Outputs[i].Typ {
-									panic(fmt.Sprintf("%s: %d: wrong return type", fileName, yyS[yypt-0].line + 1))
+									panic(fmt.Sprintf("%s: %d: wrong output type", fileName, yyS[yypt-0].line + 1))
 								}
 								
 								expr.AddOutputName(fn.Outputs[i].Name)
