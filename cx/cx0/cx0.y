@@ -4,6 +4,7 @@
 		"fmt"
 		"bytes"
 		. "github.com/skycoin/cx/src/base"
+		"github.com/skycoin/skycoin/src/cipher/encoder"
 	)
 
 	var CXT = MakeContext()
@@ -83,6 +84,7 @@
                         /* Pointers */
                         ADDR
 
+%type   <fields>        fields structFields
 %type   <parameter>     parameter
 %type   <parameters>    parameters functionParameters
 
@@ -251,21 +253,240 @@ definitionDeclaration:
 
 fields:
                 parameter
+                {
+			var flds []*CXField
+                        flds = append(flds, MakeFieldFromParameter($1))
+			$$ = flds
+                }
         |       ';'
+                {
+			var flds []*CXField
+			$$ = flds
+                }
         |       debugging
+                {
+			var flds []*CXField
+			$$ = flds
+                }
         |       fields parameter
+                {
+			$1 = append($1, MakeFieldFromParameter($2))
+			$$ = $1
+                }
         |       fields ';'
+                {
+			$$ = $1
+                }
         |       fields debugging
+                {
+			$$ = $1
+                }
                 ;
 
 structFields:
                 LBRACE fields RBRACE
+                {
+			$$ = $2
+                }
         |       LBRACE RBRACE
+                {
+			$$ = nil
+                }
         ;
 
 structDeclaration:
                 TYPSTRUCT IDENT
+                {
+			if mod, err := CXT.GetCurrentModule(); err == nil {
+				strct := MakeStruct($2)
+				mod.AddStruct(strct)
+
+
+				// creating manipulation functions for this type a la common lisp
+				// append
+				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("strctInst", $2))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.append", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sStrctInst := encoder.Serialize("strctInst")
+					strctInstArg := MakeArgument(&sStrctInst, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(strctInstArg)
+					expr.AddOutputName("_arr")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+
+				// serialize
+				fn = MakeFunction(fmt.Sprintf("%s.serialize", $2))
+				fn.AddInput(MakeParameter("strctInst", $2))
+				fn.AddOutput(MakeParameter("byts", "[]byte"))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.serialize", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sStrctInst := encoder.Serialize("strctInst")
+					strctInstArg := MakeArgument(&sStrctInst, "str")
+					expr.AddArgument(strctInstArg)
+					expr.AddOutputName("byts")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+
+
+
+				// deserialize
+				fn = MakeFunction(fmt.Sprintf("%s.deserialize", $2))
+				fn.AddInput(MakeParameter("byts", "[]byte"))
+				fn.AddOutput(MakeParameter("strctInst", $2))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.deserialize", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+
+					sByts := encoder.Serialize("byts")
+					sBytsArg := MakeArgument(&sByts, "str")
+
+					sTyp := encoder.Serialize($2)
+					sTypArg := MakeArgument(&sTyp, "str")
+					
+					expr.AddArgument(sBytsArg)
+					expr.AddArgument(sTypArg)
+					expr.AddOutputName("strctInst")
+					
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+
+				
+				// read
+				fn = MakeFunction(fmt.Sprintf("[]%s.read", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddOutput(MakeParameter("strctInst", $2))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.read", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					expr.AddOutputName("strctInst")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// write
+				fn = MakeFunction(fmt.Sprintf("[]%s.write", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddInput(MakeParameter("inst", $2))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.write", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					sInst := encoder.Serialize("inst")
+					instArg := MakeArgument(&sInst, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					expr.AddArgument(instArg)
+					expr.AddOutputName("_arr")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				// len
+				fn = MakeFunction(fmt.Sprintf("[]%s.len", $2))
+				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				fn.AddOutput(MakeParameter("len", "i32"))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.len", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					expr.AddArgument(arrArg)
+					expr.AddOutputName("len")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+				
+				// make
+				fn = MakeFunction(fmt.Sprintf("[]%s.make", $2))
+				fn.AddInput(MakeParameter("len", "i32"))
+				fn.AddOutput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("cstm.make", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = yyS[yypt-0].line + 1
+						expr.FileName = fileName
+					}
+					sLen := encoder.Serialize("len")
+					sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
+					lenArg := MakeArgument(&sLen, "ident")
+					typArg := MakeArgument(&sTyp, "str")
+					expr.AddArgument(lenArg)
+					expr.AddArgument(typArg)
+					expr.AddOutputName("arr")
+					fn.AddExpression(expr)
+				} else {
+					fmt.Println(err)
+				}
+			}
+                }
                 STRUCT structFields
+                {
+			if strct, err := CXT.GetCurrentStruct(); err == nil {
+				for _, fld := range $5 {
+					fldFromParam := MakeField(fld.Name, fld.Typ)
+					strct.AddField(fldFromParam)
+				}
+			}
+                }
         ;
 
 functionParameters:

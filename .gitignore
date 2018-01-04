@@ -50,3 +50,5 @@ testing.byts
 overlap_check.cx
 blue.png
 red.png
+*.nn.go
+cx0.go
