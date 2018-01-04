@@ -1,0 +1,329 @@
+/(\r\n|\r|\n)/ {
+	lval.line++
+}
+/(\t| )/ {
+	/* skip blanks and tabs */
+}
+/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
+	/* skip comments */
+	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
+}
+/!/          { }
+/\+\+/       { lval.tok = yylex.Text(); return PLUSPLUS }
+/--/         { lval.tok = yylex.Text(); return MINUSMINUS }
+/\+=/        { lval.tok = yylex.Text(); return PLUSEQ }
+/-=/         { lval.tok = yylex.Text(); return MINUSEQ }
+/\*=/        { lval.tok = yylex.Text(); return MULTEQ }
+/\/=/        { lval.tok = yylex.Text(); return DIVEQ           }
+/\%=/        { lval.tok = yylex.Text(); return REMAINDEREQ     }
+/<<=/        { lval.tok = yylex.Text(); return LEFTSHIFTEQ     }
+/>>=/        { lval.tok = yylex.Text(); return RIGHTSHIFTEQ    }
+/\*\*=/      { lval.tok = yylex.Text(); return EXPEQ           }
+/&=/         { lval.tok = yylex.Text(); return BITANDEQ        }
+/\^=/        { lval.tok = yylex.Text(); return BITXOREQ       }
+/\|=/        { lval.tok = yylex.Text(); return BITOREQ        }
+/=/          { lval.tok = yylex.Text(); return ASSIGN      }
+/:=/         { lval.tok = yylex.Text(); return CASSIGN     }
+/&&/         { lval.tok = yylex.Text(); return AND         }
+/\|\|/       { lval.tok = yylex.Text(); return OR         }
+/==/         { lval.tok = yylex.Text(); return EQUAL      }
+/>/          { lval.tok = yylex.Text(); return GTHAN      }
+/</          { lval.tok = yylex.Text(); return LTHAN      }
+/>=/         { lval.tok = yylex.Text(); return GTHANEQ    }
+/<=/         { lval.tok = yylex.Text(); return LTHANEQ    }
+/!=/         { lval.tok = yylex.Text(); return UNEQUAL    }
+/\+/         { lval.tok = yylex.Text(); return PLUS       }
+/-/          { lval.tok = yylex.Text(); return MINUS      }
+/\*/         { lval.tok = yylex.Text(); return MULT       }
+/\//         { lval.tok = yylex.Text(); return DIV        }
+/%/          { lval.tok = yylex.Text(); return REMAINDER  }
+/<</         { lval.tok = yylex.Text(); return LEFTSHIFT  }
+/>>/         { lval.tok = yylex.Text(); return RIGHTSHIFT }
+/\*\*/       { lval.tok = yylex.Text(); return EXP        }
+/&\^/         { lval.tok = yylex.Text(); return BITCLEAR }
+/&/          { lval.tok = yylex.Text(); return BITAND }
+/\^/         { lval.tok = yylex.Text(); return BITXOR }
+/\|/         { lval.tok = yylex.Text(); return BITOR }
+/(:dl)|(:dLocals)/   { return DSTATE     }
+/(:ds)|(:dStack)/    { return DSTACK     }
+/(:dProgram)|(:dp)/  { return DPROGRAM   }
+/:package/   { return SPACKAGE   }
+/:struct/    { return SSTRUCT    }
+/:func/      { return SFUNC      }
+/:rem/       { return REM        }
+/:step/      { return STEP       }
+/:tStep/     { return TSTEP      }
+/:pStep/     { return PSTEP      }
+/:aff/       { return AFF        }
+/package/    { return PACKAGE    }
+/type/       { return TYPSTRUCT  }
+/struct/     { return STRUCT     }
+/return/     { return RETURN     }
+/goto/       { return GOTO       }
+/if/         { return IF         }
+/else/       { return ELSE       }
+/for/        { return FOR        }
+/,/          { return COMMA      }
+/func/       { return FUNC       }
+/clauses/    { return CLAUSES    }
+/expr/       { return EXPR       }
+/def/        { return DEF        }
+/field/      { return FIELD      }
+/input/      { return INPUT      }
+/output/     { return OUTPUT     }
+/import/     { return IMPORT     }
+/var/        { return VAR        }
+/\(/         { return LPAREN     }
+/\)/         { return RPAREN     }
+/\{/         { return LBRACE     }
+/\}/         { return RBRACE     }
+/\[/         { return LBRACK     }
+/\]/         { return RBRACK     }
+/:/          { return COLON      }
+/->/         { return INFER      }
+/\$/         { return VALUE      }
+/#/          { return ADDR       }
+/new/        { return NEW        }
+/\**(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
+	typ := yylex.Text();
+
+	CreateMDimFuncs(typ, lval.line + 1)
+	
+	lval.tok = typ
+	return BASICTYPE
+}
+/\?([.\[\]a-zA-Z0-9_]*)/ {
+	lval.tok = yylex.Text();
+	return AFFVAR
+}
+/"([^"]*)"/ { /* " */
+	lval.tok = yylex.Text()
+	lval.line = lval.line + countNewLines([]byte(lval.tok))
+	return STRING
+}
+/true/ {
+	lval.i32 = int32(1)
+	return BOOLEAN
+}
+/false/ {
+	lval.i32 = int32(0)
+	return BOOLEAN
+}
+/-?[0-9]+B/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	lval.byt = byte(result)
+	return BYTENUM
+}
+/-?[0-9]+L/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	lval.i64 = int64(result)
+	return LONG
+}
+/-?[0-9]+\.[0-9]*D/ {
+	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	lval.f64 = float64(result)
+	return DOUBLE
+}
+/&?-?[0-9]+/ {
+	result ,_ := strconv.Atoi(yylex.Text())
+	lval.i32 = int32(result)
+	return INT
+}
+/-?[0-9]+\.[0-9]*/ {
+	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
+	lval.f32 = float32(result)
+	return FLOAT
+}
+/[.\[\]a-zA-Z0-9_]+:/ {
+	lval.tok = yylex.Text()
+	return TAG
+}
+/[.\[\]a-zA-Z0-9_]+/ {
+	lval.tok = yylex.Text()
+
+	identParts := strings.Split(yylex.Text(), ".")
+	if len(identParts) > 1 {
+		CreateMDimFuncs(identParts[0], lval.line + 1)
+	}
+	
+	return IDENT
+}
+/;/ { return int(yylex.Text()[0]) }
+//
+package cx0
+import (
+	"fmt"
+	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+	. "github.com/skycoin/cx/src/base"
+)
+
+func (yylex Lexer) Error (e string) {
+	if inREPL {
+		fmt.Printf("syntax error: %s\n", e)
+	} else {
+		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
+	}
+	
+	yylex.Stop()
+}
+
+func countNewLines (s []byte) int {
+	count := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\n' {
+			count++
+		}
+	}
+	return count
+}
+
+// If a new multi-dimensional array type is detected,
+// this function creates functions on-the-fly to handle the operations for this type
+func CreateMDimFuncs (typ string, line int) {
+	if IsMultiDim(typ) {
+		if mod, err := CXT.GetCurrentModule(); err == nil {
+			if _, err := CXT.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
+				currFn, err := CXT.GetCurrentFunction();
+				if err != nil {
+					panic(err)
+				}
+				// append
+				fn := MakeFunction(fmt.Sprintf("%s.append", typ))
+				fn.AddInput(MakeParameter("arr", typ))
+				fn.AddInput(MakeParameter("elt", typ[2:]))
+				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("%s", typ)))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("mdim.append", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = line
+					}
+					expr.AddOutputName("_arr")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sElt := encoder.Serialize("elt")
+					sEltArg := MakeArgument(&sElt, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(sEltArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+
+				// read
+				fn = MakeFunction(fmt.Sprintf("%s.read", typ))
+				fn.AddInput(MakeParameter("arr", typ))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddOutput(MakeParameter("elt", typ[2:]))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("mdim.read", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = line
+					}
+					expr.AddOutputName("elt")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+
+				// write
+				fn = MakeFunction(fmt.Sprintf("%s.write", typ))
+				fn.AddInput(MakeParameter("arr", typ))
+				fn.AddInput(MakeParameter("index", "i32"))
+				fn.AddInput(MakeParameter("elt", fmt.Sprintf("%s", typ[2:])))
+				fn.AddOutput(MakeParameter("_arr", typ))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("mdim.write", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = line
+					}
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					sIndex := encoder.Serialize("index")
+					indexArg := MakeArgument(&sIndex, "ident")
+					sElt := encoder.Serialize("elt")
+					eltArg := MakeArgument(&sElt, "str")
+					expr.AddArgument(arrArg)
+					expr.AddArgument(indexArg)
+					expr.AddArgument(eltArg)
+
+					expr.AddOutputName("_arr")
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+
+				// len
+				fn = MakeFunction(fmt.Sprintf("%s.len", typ))
+				fn.AddInput(MakeParameter("arr", typ))
+				fn.AddOutput(MakeParameter("len", "i32"))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("mdim.len", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = line
+					}
+					expr.AddOutputName("len")
+					sArr := encoder.Serialize("arr")
+					arrArg := MakeArgument(&sArr, "str")
+					expr.AddArgument(arrArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+
+				// make
+				fn = MakeFunction(fmt.Sprintf("%s.make", typ))
+				fn.AddInput(MakeParameter("len", "i32"))
+				fn.AddOutput(MakeParameter("arr", typ))
+				mod.AddFunction(fn)
+
+				if op, err := CXT.GetFunction("mdim.make", CORE_MODULE); err == nil {
+					expr := MakeExpression(op)
+					if !replMode {
+						expr.FileLine = line
+					}
+					expr.AddOutputName("arr")
+					sLen := encoder.Serialize("len")
+					sTyp := encoder.Serialize(typ)
+					lenArg := MakeArgument(&sLen, "ident")
+					typArg := MakeArgument(&sTyp, "str")
+					expr.AddArgument(lenArg)
+					expr.AddArgument(typArg)
+					fn.AddExpression(expr)
+					// returning selection to last function
+					mod.CurrentFunction = currFn
+				} else {
+					fmt.Println(err)
+				}
+			}
+		} else {
+			fmt.Println(err)
+		}
+	}
+}
+
+func main () {
+	
+}

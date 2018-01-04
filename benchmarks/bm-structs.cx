@@ -7,7 +7,8 @@ type BenchMark struct {
 }
 
 func main () () {
-	size := 1000000
+	//size := 1000000
+	size := 100000
 	bm := new BenchMark{
 		a: []i32.make(size),
 		b: []i64.make(size),

@@ -5,12 +5,14 @@
 		"fmt"
 		"os"
 		"time"
-		
+
+		//"github.com/skycoin/cx/cx/cx0"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
                 )
 
 	var cxt = MakeContext()
+	//var cxt = cx0.CXT
 
 	var lineNo int = 0
 	var webMode bool = false
@@ -1246,11 +1248,11 @@ structDeclaration:
 functionParameters:
                 LPAREN parameters RPAREN
                 {
-                    $$ = $2
+			$$ = $2
                 }
         |       LPAREN RPAREN
                 {
-                    $$ = nil
+			$$ = nil
                 }
         ;
 
@@ -3244,8 +3246,10 @@ argument:       argument PLUS argument
 									ptrs += "*"
 								}
 							}
+						} else {
+							appendFnTyp = $1
 						}
-						
+
 						typ := encoder.Serialize(appendFnTyp)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)

@@ -129,7 +129,7 @@ func testModifiedGlobals () () {
 	testF64A = []f64{33.5, 133.5, 233.5}
 }
 
-func modifyingStruct (receivedStruct testStruct) () {
+func modifyingStruct (receivedStruct *testStruct) () {
 	receivedStruct.testBool = false
 	receivedStruct.testStr = "bye ≈∫® bye"
 	receivedStruct.testByte = i32.byte(100)
@@ -1105,8 +1105,8 @@ label4:
 	test.[]f32(testF32A, []f32{33.5, 133.5, 233.5}, "")
 	test.[]f64(testF64A, []f64{33.5, 133.5, 233.5}, "")
 
-	modifyingStruct(myStruct)
-
+	modifyingStruct(#myStruct)
+	
 	test.bool(myStruct.testBool, false, "")
 	test.str(myStruct.testStr, "bye ≈∫® bye", "")
 	test.byte(myStruct.testByte, i32.byte(100), "")

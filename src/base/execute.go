@@ -209,29 +209,29 @@ func main () {
 				program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", "%s"));%s`, out.Name, out.Typ, asmNL))
 			}
 			
-			var optExpressions []*CXExpression
+			// var optExpressions []*CXExpression
+			// for _, expr := range fn.Expressions {
+			// 	if expr.Operator.Name == "identity" {
+			// 		var nonAssignIdent string
+			// 		encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
+
+			// 		for _, idExpr := range fn.Expressions {
+			// 			for i, out := range idExpr.OutputNames {
+			// 				if out.Name == nonAssignIdent {
+			// 					idExpr.OutputNames[i] = expr.OutputNames[0]
+			// 					break
+			// 				}
+			// 			}
+			// 		}
+			// 		continue
+			// 	}
+			// 	optExpressions = append(optExpressions, expr)
+			// }
+
+			// fn.Expressions = optExpressions
+
+			//for _, expr := range optExpressions {
 			for _, expr := range fn.Expressions {
-				if expr.Operator.Name == "identity" {
-					var nonAssignIdent string
-					encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
-
-					for _, idExpr := range fn.Expressions {
-						for i, out := range idExpr.OutputNames {
-							if out.Name == nonAssignIdent {
-								idExpr.OutputNames[i] = expr.OutputNames[0]
-								break
-							}
-						}
-					}
-					continue
-				}
-				optExpressions = append(optExpressions, expr)
-			}
-
-			fn.Expressions = optExpressions
-
-			for _, expr := range optExpressions {
-				//for _, expr := range fn.Expressions {
 				var tagStr string
 				if expr.Tag != "" {
 					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)

@@ -161,7 +161,7 @@ import (
 	"strconv"
 	"encoding/json"
 
-	"regexp"
+	//"regexp"
 	
 //	"flag"
 
@@ -174,6 +174,7 @@ import (
 	//"github.com/skycoin/viscript/signal"
 	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/cx/cx/cx0"
 	. "github.com/skycoin/cx/src/base"
 )
 
@@ -1268,6 +1269,7 @@ func main () {
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
+	cx0.CXT = cxt
 
 	// setting project's working directory
 	if !replMode {
@@ -1282,30 +1284,8 @@ func main () {
 	}
 
 	allSC := strings.Join(sourceCodeCopy, "")
-	//fmt.Println(allSC)
-	re := regexp.MustCompile("(package|func|var)\\s([.\\[\\]a-zA-Z0-9_]+)\\s?([\\*.\\[\\]a-zA-Z0-9_]+)?")
-	for _, match := range re.FindAllStringSubmatch(allSC, -1) {
-		if match[1] == "package" {
-			mod := MakeModule(match[2])
-			cxt.AddModule(mod)
-		} else if match[1] == "var" {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				// match[2] = ident, match[3] = type
-				defValue := MakeDefaultValue(match[3])
-				def := MakeDefinition(match[2], defValue, match[3])
-				mod.AddDefinition(def)
-			} else {
-				panic(err)
-			}
-		} else {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				fn := MakeFunction(match[2])
-				mod.AddFunction(fn)
-			} else {
-				fmt.Println(err)
-			}
-		}
-	}
+	cx0.Parse(allSC)
+	cxt = cx0.CXT
 	
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
