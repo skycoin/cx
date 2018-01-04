@@ -1460,20 +1460,20 @@ assignExpression:
 							expr.AddArgument(arg)
 							expr.AddOutputName($2)
 
-							if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
-								for _, fld := range strct.Fields {
-									expr := MakeExpression(op)
-									if !replMode {
-										expr.FileLine = yyS[yypt-0].line + 1
-										expr.FileName = fileName
-									}
-									fn.AddExpression(expr)
-									typ := []byte(fld.Typ)
-									arg := MakeArgument(&typ, "str")
-									expr.AddArgument(arg)
-									expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
-								}
-							}
+							// if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
+							// 	for _, fld := range strct.Fields {
+							// 		expr := MakeExpression(op)
+							// 		if !replMode {
+							// 			expr.FileLine = yyS[yypt-0].line + 1
+							// 			expr.FileName = fileName
+							// 		}
+							// 		fn.AddExpression(expr)
+							// 		typ := []byte(fld.Typ)
+							// 		arg := MakeArgument(&typ, "str")
+							// 		expr.AddArgument(arg)
+							// 		expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
+							// 	}
+							// }
 						}
 					} else {
 						switch $3 {
