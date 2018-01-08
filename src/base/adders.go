@@ -1,61 +1,57 @@
 package base
 
 import (
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
-	mod.Context = cxt
+func (prgrm *CXProgram) AddModule (mod *CXModule) *CXProgram {
+	mod.Program = prgrm
 	found := false
-	for _, md := range cxt.Modules {
+	for _, md := range prgrm.Modules {
 		if md.Name == mod.Name {
-			cxt.CurrentModule = md
+			prgrm.CurrentModule = md
 			found = true
 			break
 		}
 	}
 	if !found {
-		cxt.Modules = append(cxt.Modules, mod)
-		cxt.CurrentModule = mod
+		prgrm.Modules = append(prgrm.Modules, mod)
+		prgrm.CurrentModule = mod
 	}
-	return cxt
+	return prgrm
 }
 
-func (mod *CXModule) AddDefinition (def *CXDefinition) *CXModule {
-	def.Context = mod.Context
+func (mod *CXModule) AddGlobal (def *CXArgument) *CXModule {
+	def.Program = mod.Program
 	def.Module = mod
 	found := false
-	for i, df := range mod.Definitions {
+	for i, df := range mod.Globals {
 		if df.Name == def.Name {
-			mod.Definitions[i] = def
+			mod.Globals[i] = def
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Definitions = append(mod.Definitions, def)
+		mod.Globals = append(mod.Globals, def)
 	}
 	return mod
 }
 
 func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
-	fn.Context = mod.Context
+	fn.Program = mod.Program
 	fn.Module = mod
-	fn.NumberOutputs = len(fn.Outputs)
-	//mod.CurrentFunction = fn
 	
 	found := false
 	for i, f := range mod.Functions {
 		if f.Name == fn.Name {
-			//mod.Functions[i] = fn
 			mod.Functions[i].Name = fn.Name
 			mod.Functions[i].Inputs = fn.Inputs
 			mod.Functions[i].Outputs = fn.Outputs
 			mod.Functions[i].Expressions = fn.Expressions
-			mod.Functions[i].NumberOutputs = fn.NumberOutputs
 			mod.Functions[i].CurrentExpression = fn.CurrentExpression
 			mod.Functions[i].Module = fn.Module
-			mod.Functions[i].Context = fn.Context
+			mod.Functions[i].Program = fn.Program
 			mod.CurrentFunction = mod.Functions[i]
 			found = true
 			break
@@ -70,8 +66,8 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 }
 
 func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
-	cxt := mod.Context
-	strct.Context = cxt
+	prgrm := mod.Program
+	strct.Program = prgrm
 	strct.Module = mod
 	mod.CurrentStruct = strct
 	found := false
@@ -103,7 +99,7 @@ func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
 	return mod
 }
 
-func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
+func (strct *CXStruct) AddField (fld *CXArgument) *CXStruct {
 	found := false
 	for _, fl := range strct.Fields {
 		if fl.Name == fld.Name {
@@ -118,16 +114,15 @@ func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
 }
 
 func (fn *CXFunction) AddExpression (expr *CXExpression) *CXFunction {
-	expr.Context = fn.Context
+	expr.Program = fn.Program
 	expr.Module = fn.Module
 	expr.Function = fn
-	expr.Line = len(fn.Expressions)
 	fn.Expressions = append(fn.Expressions, expr)
 	fn.CurrentExpression = expr
 	return fn
 }
 
-func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
+func (fn *CXFunction) AddInput (param *CXArgument) *CXFunction {
 	found := false
 	for _, inp := range fn.Inputs {
 		if inp.Name == param.Name {
@@ -142,7 +137,7 @@ func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
 	return fn
 }
 
-func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
+func (fn *CXFunction) AddOutput (param *CXArgument) *CXFunction {
 	found := false
 	for _, out := range fn.Outputs {
 		if out.Name == param.Name {
@@ -157,71 +152,17 @@ func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
 	return fn
 }
 
-func (expr *CXExpression) AddArgument (arg *CXArgument) *CXExpression {
-	expr.Arguments = append(expr.Arguments, arg)
-	return expr
-}
-
-// func (expr *CXExpression) AddArgumentPointer (arg *CXArgument) *CXExpression {
-// 	expr.Arguments = append(expr.Arguments, arg)
-// 	expr.Context
-// 	return expr
-// }
-
-func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
-	if len(expr.Operator.Outputs) > 0 {
-		nextOutIdx := len(expr.OutputNames)
-
-		var typ string
-		var ptrs string
-		if expr.Operator.Name == ID_FN || expr.Operator.Name == INIT_FN {
-			var tmp string
-			encoder.DeserializeRaw(*expr.Arguments[0].Value, &tmp)
-			
-			if tmp[0] == '*' {
-				for i, char := range tmp {
-					if char != '*' {
-						tmp = tmp[i:]
-						break
-					} else {
-						ptrs += "*"
-					}
-				}
-			}
-			
-			if expr.Operator.Name == INIT_FN {
-				// then tmp is the type (e.g. initDef("i32") to initialize an i32)
-				typ = ptrs + tmp
-			} else {
-				var err error
-				// then tmp is an identifier
-				if typ, err = GetIdentType(tmp, expr.FileLine, expr.FileName, expr.Context); err == nil {
-					typ = ptrs + typ
-				} else {
-					panic(err)
-				}
-			}
-		} else {
-			typ = expr.Operator.Outputs[nextOutIdx].Typ
+func (expr *CXExpression) AddOutput (param *CXArgument) *CXExpression {
+	found := false
+	for _, out := range expr.Outputs {
+		if out.Name == param.Name {
+			found = true
+			break
 		}
-
-		//print(typ + " " + outName + "\n")
-		outDef := MakeDefinition(
-			outName,
-			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ),
-			//expr.Operator.Outputs[nextOutIdx].Typ)
-			typ)
-		
-		outDef.Module = expr.Module
-		outDef.Context = expr.Context
-		
-		expr.OutputNames = append(expr.OutputNames, outDef)
 	}
-	
-	return expr
-}
+	if !found {
+		expr.Outputs = append(expr.Outputs, param)
+	}
 
-func (expr *CXExpression) AddTag (tag string) *CXExpression {
-	expr.Tag = tag
 	return expr
 }

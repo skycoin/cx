@@ -72,29 +72,29 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	}
 }
 
-func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXDefinition, error) {
-	mod, err := cxt.GetCurrentModule()
+// func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXDefinition, error) {
+// 	mod, err := cxt.GetCurrentModule()
 
-	if err == nil {
-		return mod.GetCurrentDefinitions()
-	} else {
-		return nil, err
-	}
-}
+// 	if err == nil {
+// 		return mod.GetCurrentDefinitions()
+// 	} else {
+// 		return nil, err
+// 	}
+// }
 
-func (mod *CXModule) GetCurrentDefinitions () ([]*CXDefinition, error) {
-	return mod.GetDefinitions()
-}
+// func (mod *CXModule) GetCurrentDefinitions () ([]*CXDefinition, error) {
+// 	return mod.GetDefinitions()
+// }
 
-func (mod *CXModule) GetDefinitions () ([]*CXDefinition, error) {
-	if mod.Definitions != nil {
-		return mod.Definitions, nil
-	} else {
-		return nil, errors.New("definitions array is nil")
-	}
-}
+// func (mod *CXModule) GetDefinitions () ([]*CXDefinition, error) {
+// 	if mod.Definitions != nil {
+// 		return mod.Definitions, nil
+// 	} else {
+// 		return nil, errors.New("definitions array is nil")
+// 	}
+// }
 
-func (cxt *CXProgram) GetDefinition (name string) (*CXDefinition, error) {
+func (cxt *CXProgram) GetGlobal (name string) (*CXArgument, error) {
 	if mod, err := cxt.GetCurrentModule(); err == nil {
 		var found *CXDefinition
 		for _, def := range mod.Definitions {
@@ -114,7 +114,7 @@ func (cxt *CXProgram) GetDefinition (name string) (*CXDefinition, error) {
 	}
 }
 
-func (strct *CXStruct) GetFields() ([]*CXField, error) {
+func (strct *CXStruct) GetFields () ([]*CXArgument, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
@@ -201,9 +201,9 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	}
 }
 
-func (mod *CXModule) GetDefinition (defName string) (*CXDefinition, error) {
-	var foundDef *CXDefinition
-	for _, def := range mod.Definitions {
+func (mod *CXModule) GetGlobal (defName string) (*CXArgument, error) {
+	var foundDef *CXArgument
+	for _, def := range mod.Globals {
 		if def.Name == defName {
 			foundDef = def
 			break

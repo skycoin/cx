@@ -177,32 +177,53 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"os.Write":true, "os.WriteFile":true, "os.ReadFile":true,
 }
 
+// types
+const (
+	BOOL = iota
+	STR = iota
+	BYTE = iota
+	I32 = iota
+	I64 = iota
+	F32 = iota
+	F64 = iota
+)
+
+// memory locations
+const (
+	STACK = iota
+	HEAP = iota
+)
+
 /*
   Context
 */
 
+type Heap []byte
+
 type CXProgram struct {
 	Modules []*CXModule
 	CurrentModule *CXModule
-	CallStack *CXCallStack
-	Path string
+
+	Inputs []*CXArgument
+	Outputs []*CXArgument
+	
+	CallStack []*CXCall
+	Stacks []CXStack
+	Heaps []Heap
+
 	Terminated bool
-	// Inputs []*CXDefinition
-	Outputs []*CXDefinition
-	Steps []*CXCallStack
 }
 
-type CXCallStack struct {
-	Calls []*CXCall
+type CXStack struct {
+	Stack []byte
+	StackPointer int
+	FramePointer int
 }
 
 type CXCall struct {
 	Operator *CXFunction
 	Line int
-	State []*CXDefinition
 	ReturnAddress *CXCall
-	Context *CXProgram
-	Module *CXModule
 }
 
 /*
@@ -210,24 +231,16 @@ type CXCall struct {
 */
 
 type CXModule struct {
+	Index int
 	Name string
 	Imports []*CXModule
 	Functions []*CXFunction
 	Structs []*CXStruct
-	Definitions []*CXDefinition
+	Globals []*CXArgument
 
 	CurrentFunction *CXFunction
 	CurrentStruct *CXStruct
-	Context *CXProgram
-}
-
-type CXDefinition struct {
-	Name string
-	Typ string
-	Value *[]byte
-
-	Module *CXModule
-	Context *CXProgram
+	Program *CXProgram
 }
 
 /*
@@ -235,16 +248,13 @@ type CXDefinition struct {
 */
 
 type CXStruct struct {
+	Index int
 	Name string
-	Fields []*CXField
+	Fields []*CXArgument
+	Size int
 
 	Module *CXModule
-	Context *CXProgram
-}
-
-type CXField struct {
-	Name string
-	Typ string
+	Program *CXProgram
 }
 
 /*
@@ -252,41 +262,44 @@ type CXField struct {
 */
 
 type CXFunction struct {
+	Index int
 	Name string
-	Inputs []*CXParameter
-	Outputs []*CXParameter
+	Inputs []*CXArgument
+	Outputs []*CXArgument
 	Expressions []*CXExpression
-
-	// for optimization
-	NumberOutputs int
+	Size int // automatic memory size
 
 	CurrentExpression *CXExpression
 	Module *CXModule
-	Context *CXProgram
-}
-
-type CXParameter struct {
-	Name string
-	Typ string
+	Program *CXProgram
 }
 
 type CXExpression struct {
+	Index int
 	Operator *CXFunction
-	Arguments []*CXArgument
-	OutputNames []*CXDefinition
-	Line int
+	Inputs []*CXArgument
+	Outputs []*CXArgument
+	// debugging
 	FileLine int
 	FileName string
-	Tag string
 	
 	Function *CXFunction
 	Module *CXModule
-	Context *CXProgram
+	Program *CXProgram
 }
 
 type CXArgument struct {
-	Typ string
-	Value *[]byte
+	Index int
+	Name string
+	Type int
+
+	MemoryType int
+	Offset int
+	IsArray bool
+	IsPointer bool
+	
+	Module *CXModule
+	Program *CXProgram
 }
 
 /*

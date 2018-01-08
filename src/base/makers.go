@@ -24,8 +24,8 @@ func MakeContext () *CXProgram {
 	return newContext
 }
 
-func MakeParameterCopy (param *CXParameter) *CXParameter {
-	return &CXParameter{
+func MakeParameterCopy (param *CXArgument) *CXArgument {
+	return &CXArgument{
 		Name: param.Name,
 		Typ: param.Typ,
 	}
@@ -57,8 +57,8 @@ func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt 
 
 func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunction {
 	newFn := &CXFunction{}
-	inputsCopy := make([]*CXParameter, len(fn.Inputs))
-	outputsCopy := make([]*CXParameter, len(fn.Outputs))
+	inputsCopy := make([]*CXArgument, len(fn.Inputs))
+	outputsCopy := make([]*CXArgument, len(fn.Outputs))
 	exprsCopy := make([]*CXExpression, len(fn.Expressions))
 	for i, inp := range fn.Inputs {
 		inputsCopy[i] = MakeParameterCopy(inp)
@@ -88,15 +88,15 @@ func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunctio
 	return newFn
 }
 
-func MakeFieldCopy (fld *CXField) *CXField {
-	return &CXField{
+func MakeFieldCopy (fld *CXArgument) *CXArgument {
+	return &CXArgument{
 		Name: fld.Name,
 		Typ: fld.Typ,
 	}
 }
 
 func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXProgram) *CXStruct {
-	fldsCopy := make([]*CXField, len(strct.Fields))
+	fldsCopy := make([]*CXArgument, len(strct.Fields))
 	for i, fld := range strct.Fields {
 		fldsCopy[i] = MakeFieldCopy(fld)
 	}
@@ -108,9 +108,9 @@ func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXProgram) *CXStruct {
 	}
 }
 
-func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXProgram) *CXDefinition {
+func MakeDefinitionCopy (def *CXArgument, mod *CXModule, cxt *CXProgram) *CXArgument {
 	valCopy := *def.Value
-	return &CXDefinition{
+	return &CXArgument{
 		Name: def.Name,
 		Typ: def.Typ,
 		Value: &valCopy,
@@ -123,7 +123,7 @@ func MakeModuleCopy (mod *CXModule, cxt *CXProgram) *CXModule {
 	newMod := &CXModule{Context: cxt}
 	fnsCopy := make([]*CXFunction, len(mod.Functions))
 	strctsCopy := make([]*CXStruct, len(mod.Structs))
-	defsCopy := make([]*CXDefinition, len(mod.Definitions))
+	defsCopy := make([]*CXArgument, len(mod.Definitions))
 	
 	for k, fn := range mod.Functions {
 		fnsCopy[k] = MakeFunctionCopy(fn, newMod, cxt)
@@ -153,7 +153,7 @@ func MakeModuleCopy (mod *CXModule, cxt *CXProgram) *CXModule {
 }
 
 func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
-	stateCopy := make([]*CXDefinition, len(call.State))
+	stateCopy := make([]*CXArgument, len(call.State))
 	for k, v := range call.State {
 		stateCopy[k] = MakeDefinitionCopy(v, mod, cxt)
 	}
@@ -244,27 +244,27 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 func MakeModule (name string) *CXModule {
 	return &CXModule{
 		Name: name,
-		Definitions: make([]*CXDefinition, 0, 10),
+		Definitions: make([]*CXArgument, 0, 10),
 		Imports: make([]*CXModule, 0),
 		Functions: make([]*CXFunction, 0, 10),
 		Structs: make([]*CXStruct, 0),
 	}
 }
 
-func MakeDefinition (name string, value *[]byte, typ string) *CXDefinition {
-	return &CXDefinition{
+func MakeDefinition (name string, value *[]byte, typ string) *CXArgument {
+	return &CXArgument{
 		Name: name,
 		Typ: typ,
 		Value: value,
 	}
 }
 
-func MakeField (name string, typ string) *CXField {
-	return &CXField{Name: name, Typ: typ}
+func MakeField (name string, typ string) *CXArgument {
+	return &CXArgument{Name: name, Typ: typ}
 }
 
-func MakeFieldFromParameter (param *CXParameter) *CXField {
-	return &CXField{Name: param.Name, Typ: param.Typ}
+func MakeFieldFromParameter (param *CXArgument) *CXArgument {
+	return &CXArgument{Name: param.Name, Typ: param.Typ}
 }
 
 // Used only for native types
@@ -282,8 +282,8 @@ func MakeStruct (name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
 
-func MakeParameter (name string, typ string) *CXParameter {
-	return &CXParameter{Name: name,
+func MakeParameter (name string, typ string) *CXArgument {
+	return &CXArgument{Name: name,
 		Typ: typ}
 }
 
@@ -307,7 +307,7 @@ func MakeValue (value string) *[]byte {
 	return &byts
 }
 
-func MakeCall (op *CXFunction, state []*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
+func MakeCall (op *CXFunction, state []*CXArgument, ret *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
 	return &CXCall{
 		Operator: op,
 		Line: 0,

@@ -1314,7 +1314,7 @@ func main () {
 	}
 	
 if baseOutput {
-	cxt.Compile(true)
+	//cxt.Compile(true)
 }
 	if compileMode {
 	baseFilename := fmt.Sprintf("%s.go", compileOutput)
