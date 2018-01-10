@@ -8,16 +8,15 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
+func (prgrm *CXProgram) Run () error {
 	rand.Seed(time.Now().UTC().UnixNano())
-	if cxt.Terminated {
-		// user wants to re-run the program
-		cxt.Terminated = false
-	}
+	
+}
 
-	var callCounter int = 0
-	// we are going to do this if the CallStack is empty
-	if cxt.CallStack != nil && len(cxt.CallStack) > 0 {
+func (prgrm *CXProgram) Run (nCalls int) error {
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
 		// we resume the program
 		var lastCall *CXCall
 		var err error
@@ -28,9 +27,9 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 			untilEnd = true
 		}
 
-		for !cxt.Terminated && nCalls > 0 {
-			lastCall = cxt.CallStack[len(cxt.CallStack) - 1]
-			err = lastCall.call(withDebug, 1, callCounter)
+		for !prgrm.Terminated && nCalls > 0 {
+			lastCall = prgrm.CallStack[len(prgrm.CallStack) - 1]
+			err = lastCall.call(1, callCounter, prgrm)
 			if err != nil {
 				return err
 			}
@@ -40,13 +39,13 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 		}
 	} else {
 		// initialization and checking
-		if mod, err := cxt.SelectModule(MAIN_MOD); err == nil {
+		if mod, err := prgrm.SelectModule(MAIN_MOD); err == nil {
 			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 				// main function
 				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 				
-				cxt.CallStack = append(cxt.CallStack, mainCall)
+				prgrm.CallStack = append(prgrm.CallStack, mainCall)
 
 				var lastCall *CXCall
 				var err error
@@ -57,9 +56,9 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 					untilEnd = true
 				}
 				
-				for !cxt.Terminated && nCalls > 0 {
-					lastCall = cxt.CallStack[len(cxt.CallStack) - 1]
-					err = lastCall.call(withDebug, 1, callCounter)
+				for !prgrm.Terminated && nCalls > 0 {
+					lastCall = prgrm.CallStack[len(prgrm.CallStack) - 1]
+					err = lastCall.call(1, callCounter, prgrm)
 					if err != nil {
 						return err
 					}
@@ -79,16 +78,12 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 var isTesting bool
 var isErrorPresent bool
 
-func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
+func (call *CXCall) call (nCalls, callCounter int, prgrm *CXProgram) error {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
 		return nil
 	}
 	callCounter++
-
-	if withDebug {
-		PrintCallStack(call.Program.CallStack.Calls)
-	}
 
 	// exceptions
 	var exc bool
@@ -96,7 +91,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
-		call.Program.CallStack.Calls = call.Program.CallStack.Calls[:len(call.Program.CallStack.Calls) - 1]
+		prgrm.CallStack = prgrm.CallStack[:len(prgrm.CallStack) - 1]
 		numOutputs := len(call.Operator.Outputs)
 		for i, out := range call.Operator.Outputs {
 			found := true
@@ -122,12 +117,12 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						found = true
 						// break
 						if i == numOutputs {
-							return call.ReturnAddress.call(withDebug, nCalls, callCounter)
+							return call.ReturnAddress.call(nCalls, callCounter)
 						}
 					} else {
 						// no return address. should only be for main
-						call.Program.Terminated = true
-						call.Program.Outputs = append(call.Program.Outputs, def)
+						prgrm.Terminated = true
+						prgrm.Outputs = append(prgrm.Outputs, def)
 					}
 				}
 			}
@@ -139,11 +134,11 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 		}
 
 		if call.ReturnAddress != nil {
-			return call.ReturnAddress.call(withDebug, nCalls, callCounter)
+			return call.ReturnAddress.call(nCalls, callCounter)
 		} else {
 			// no return address. should only be for main
-			call.Program.Terminated = true
-			//call.Program.Outputs = append(call.Program.Outputs, def)
+			prgrm.Terminated = true
+			//prgrm.Outputs = append(prgrm.Outputs, def)
 		}
 	} else {
 		fn := call.Operator
@@ -230,24 +225,24 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX {
 							if isBasic {
-								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, prgrm))
 							} else {
 								fmt.Println(def.Name)
-								PrintValue(def.Name, def.Value, def.Typ, call.Program)
+								PrintValue(def.Name, def.Value, def.Typ, prgrm)
 							}
 						}
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, prgrm))
 					}
 					fmt.Println()
 					return excError
 				}
 				
 				call.Line++
-				return call.call(withDebug, nCalls, callCounter)
+				return call.call(nCalls, callCounter)
 			} else {
 				// operator was not a native function
 				if exc && isTesting {
@@ -258,23 +253,23 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {
-						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
+						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, prgrm))
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, prgrm))
 					}
 					fmt.Println()
 					return excError
 				}
 				
 				call.Line++ // once the subcall finishes, call next line
-				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Module, call.Program); err == nil {
-					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Program)
+				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Module, prgrm); err == nil {
+					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, prgrm)
 
-					call.Program.CallStack.Calls = append(call.Program.CallStack.Calls, subcall)
-					return subcall.call(withDebug, nCalls, callCounter)
+					prgrm.CallStack.Calls = append(prgrm.CallStack.Calls, subcall)
+					return subcall.call(nCalls, callCounter)
 				} else {
 					fmt.Println(err)
 				}

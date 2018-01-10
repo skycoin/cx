@@ -207,7 +207,7 @@ type CXProgram struct {
 	Inputs []*CXArgument
 	Outputs []*CXArgument
 	
-	CallStack []*CXCall
+	CallStack [1024]CXCall
 	Stacks []CXStack
 	Heaps []Heap
 
@@ -215,7 +215,7 @@ type CXProgram struct {
 }
 
 type CXStack struct {
-	Stack []byte
+	Stack [1024]byte
 	StackPointer int
 	FramePointer int
 }

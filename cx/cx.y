@@ -575,13 +575,13 @@ stepping:       TSTEP INT INT
 				// Maybe nothing for now
 			} else {
 				if $2 < 0 {
-					// nCalls := $2 * -1
-					// for i := int32(0); i < nCalls; i++ {
-					// 	time.Sleep(time.Duration(int32($3)) * time.Millisecond)
-					// 	cxt.UnRun(1)
-					// }
-					panic("a positive number must be provided")
+					nCalls := $2 * -1
+					for i := int32(0); i < nCalls; i++ {
+						time.Sleep(time.Duration(int32($3)) * time.Millisecond)
+						cxt.UnRun(1)
+					}
 				} else {
+
 					for i := int32(0); i < $2; i++ {
 						time.Sleep(time.Duration(int32($3)) * time.Millisecond)
 						err := cxt.Run(dStack, 1)
@@ -601,9 +601,8 @@ stepping:       TSTEP INT INT
 				}
 			} else {
 				if $2 < 0 {
-					// nCalls := $2 * -1
-					// cxt.UnRun(int(nCalls))
-					panic("a positive number must be provided")
+					nCalls := $2 * -1
+					cxt.UnRun(int(nCalls))
 				} else {
 					//fmt.Println(cxt.Run(dStack, int($2)))
 
