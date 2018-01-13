@@ -8,42 +8,55 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/!/          { lval.tok = yylex.Text(); return NOT      }
-/\+\+/       { lval.tok = yylex.Text(); return PLUSPLUS }
-/--/         { lval.tok = yylex.Text(); return MINUSMINUS }
-/\+=/        { lval.tok = yylex.Text(); return PLUSEQ }
-/-=/         { lval.tok = yylex.Text(); return MINUSEQ }
-/\*=/        { lval.tok = yylex.Text(); return MULTEQ }
-/\/=/        { lval.tok = yylex.Text(); return DIVEQ           }
-/\%=/        { lval.tok = yylex.Text(); return REMAINDEREQ     }
-/<<=/        { lval.tok = yylex.Text(); return LEFTSHIFTEQ     }
-/>>=/        { lval.tok = yylex.Text(); return RIGHTSHIFTEQ    }
-/\*\*=/      { lval.tok = yylex.Text(); return EXPEQ           }
-/&=/         { lval.tok = yylex.Text(); return BITANDEQ        }
-/\^=/        { lval.tok = yylex.Text(); return BITXOREQ       }
-/\|=/        { lval.tok = yylex.Text(); return BITOREQ        }
-/=/          { lval.tok = yylex.Text(); return ASSIGN      }
-/:=/         { lval.tok = yylex.Text(); return CASSIGN     }
-/&&/         { lval.tok = yylex.Text(); return AND         }
-/\|\|/       { lval.tok = yylex.Text(); return OR         }
-/==/         { lval.tok = yylex.Text(); return EQUAL      }
-/>/          { lval.tok = yylex.Text(); return GTHAN      }
-/</          { lval.tok = yylex.Text(); return LTHAN      }
-/>=/         { lval.tok = yylex.Text(); return GTHANEQ    }
-/<=/         { lval.tok = yylex.Text(); return LTHANEQ    }
-/!=/         { lval.tok = yylex.Text(); return UNEQUAL    }
-/\+/         { lval.tok = yylex.Text(); return PLUS       }
-/-/          { lval.tok = yylex.Text(); return MINUS      }
-/\*/         { lval.tok = yylex.Text(); return MULT       }
-/\//         { lval.tok = yylex.Text(); return DIV        }
-/%/          { lval.tok = yylex.Text(); return REMAINDER  }
-/<</         { lval.tok = yylex.Text(); return LEFTSHIFT  }
-/>>/         { lval.tok = yylex.Text(); return RIGHTSHIFT }
-/\*\*/       { lval.tok = yylex.Text(); return EXP        }
-/&\^/         { lval.tok = yylex.Text(); return BITCLEAR }
-/&/          { lval.tok = yylex.Text(); return BITAND }
-/\^/         { lval.tok = yylex.Text(); return BITXOR }
-/\|/         { lval.tok = yylex.Text(); return BITOR }
+/bool/                    { return BOOL }
+/break/                   { return BREAK }
+/case/                    { return CASE }
+/const/                   { return CONST }
+/continue/                { return CONTINUE }
+/default/                 { return DEFAULT }
+/else/                    { return ELSE }
+/enum/                    { return ENUM }
+/f32/                     { return F32 }
+/f64/                     { return F32 }
+/for/                     {return FOR}
+/goto/                    {return GOTO}
+/i8/                      {return I8}
+/i16/                     {return I16}
+/i32/                     {return I32}
+/i64/                     {return I64}
+/if/                      {return IF}
+/return/                  {return RETURN}
+/str/                     {return STR}
+/struct/                  {return STRUCT}
+/switch/ {return SWITCH}
+/type/ {return TYPE}
+/ui8/ {return UI8}
+/ui16/ {return UI16}
+/ui32/ {return UI32}
+/ui64/ {return UI64}
+/union/ {return UNION}
+/>>=/ {return RIGHT_ASSIGN}
+/<<=/ {return LEFT_ASSIGN}
+/\+=/ {return ADD_ASSIGN}
+/-=/ {return SUB_ASSIGN}
+/\*=/ {return MUL_ASSIGN}
+/\/=/ {return DIV_ASSIGN}
+/%=/ {return MOD_ASSIGN}
+/&=/ {return AND_ASSIGN}
+/\^=/ {return XOR_ASSIGN}
+/|=/ {return OR_ASSIGN}
+/>>/ {return RIGHT_OP}
+/<</ {return LEFT_OP}
+/\+\+/ {return INC_OP}
+/--/ {return DEC_OP}
+/&&/ {return AND_OP}
+/||/ {return OR_OP}
+/<=/ {return LE_OP}
+/>=/ {return GE_OP}
+/==/ {return EQ_OP}
+/!=/ {return NE_OP}
+/!/          { return '!' }
+/:=/         { return CASSIGN }
 /(:dl)|(:dLocals)/   { return DSTATE     }
 /(:ds)|(:dStack)/    { return DSTACK     }
 /(:dProgram)|(:dp)/  { return DPROGRAM   }
@@ -75,8 +88,6 @@
 /var/        { return VAR        }
 /\(/         { return LPAREN     }
 /\)/         { return RPAREN     }
-/\{/         { return LBRACE     }
-/\}/         { return RBRACE     }
 /\[/         { return LBRACK     }
 /\]/         { return RBRACK     }
 /:/          { return COLON      }
@@ -84,22 +95,10 @@
 /\$/         { return VALUE      }
 /#/          { return ADDR       }
 /new/        { return NEW        }
-/\**(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
-	typ := yylex.Text();
-
-	CreateMDimFuncs(typ, lval.line + 1)
-	
-	lval.tok = typ
-	return BASICTYPE
-}
-/\?([.\[\]a-zA-Z0-9_]*)/ {
-	lval.tok = yylex.Text();
-	return AFFVAR
-}
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
-	return STRING
+	return STRING_LITERAL
 }
 /true/ {
 	lval.i32 = int32(1)
@@ -138,17 +137,10 @@
 	lval.tok = yylex.Text()
 	return TAG
 }
-/[.\[\]a-zA-Z0-9_]+/ {
+/[_a-zA-Z][_a-zA-Z0-9]{0,30}/ {
 	lval.tok = yylex.Text()
-
-	identParts := strings.Split(yylex.Text(), ".")
-	if len(identParts) > 1 {
-		CreateMDimFuncs(identParts[0], lval.line + 1)
-	}
-	
-	return IDENT
+	return IDENTIFIER
 }
-/;/ { return int(yylex.Text()[0]) }
 //
 package main
 import (
@@ -911,7 +903,6 @@ func unsafeEval (code string) (out string) {
 			
 		}
 	}
-	
 
 	outC := make(chan string)
 	go func() {

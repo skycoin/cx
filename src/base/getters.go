@@ -72,7 +72,7 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	}
 }
 
-// func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXDefinition, error) {
+// func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXArgument, error) {
 // 	mod, err := cxt.GetCurrentModule()
 
 // 	if err == nil {
@@ -82,13 +82,13 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 // 	}
 // }
 
-// func (mod *CXModule) GetCurrentDefinitions () ([]*CXDefinition, error) {
+// func (mod *CXModule) GetCurrentDefinitions () ([]*CXArgument, error) {
 // 	return mod.GetDefinitions()
 // }
 
-// func (mod *CXModule) GetDefinitions () ([]*CXDefinition, error) {
-// 	if mod.Definitions != nil {
-// 		return mod.Definitions, nil
+// func (mod *CXModule) GetDefinitions () ([]*CXArgument, error) {
+// 	if mod.Globals != nil {
+// 		return mod.Globals, nil
 // 	} else {
 // 		return nil, errors.New("definitions array is nil")
 // 	}
@@ -96,8 +96,8 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 
 func (cxt *CXProgram) GetGlobal (name string) (*CXArgument, error) {
 	if mod, err := cxt.GetCurrentModule(); err == nil {
-		var found *CXDefinition
-		for _, def := range mod.Definitions {
+		var found *CXArgument
+		for _, def := range mod.Globals {
 			if def.Name == name {
 				found = def
 				break
@@ -291,10 +291,10 @@ func (fn *CXFunction) GetExpression (line int) (*CXExpression, error) {
 	}
 }
 
-func (expr *CXExpression) GetArguments () ([]*CXArgument, error) {
-	if expr.Arguments != nil {
-		return expr.Arguments, nil
-	} else {
-		return nil, errors.New("expression has no arguments")
-	}
-}
+// func (expr *CXExpression) GetArguments () ([]*CXArgument, error) {
+// 	if expr.Arguments != nil {
+// 		return expr.Arguments, nil
+// 	} else {
+// 		return nil, errors.New("expression has no arguments")
+// 	}
+// }

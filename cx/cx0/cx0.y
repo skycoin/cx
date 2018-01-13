@@ -4,10 +4,9 @@
 		"fmt"
 		"bytes"
 		. "github.com/skycoin/cx/src/base"
-		"github.com/skycoin/skycoin/src/cipher/encoder"
 	)
 
-	var CXT = MakeContext()
+	var PRGRM *CXProgram
 
 	var replMode bool = false
 	var inREPL bool = false
@@ -34,23 +33,11 @@
 
 	line int
 
-	parameter *CXParameter
-	parameters []*CXParameter
-
 	argument *CXArgument
 	arguments []*CXArgument
 
-        definition *CXDefinition
-	definitions []*CXDefinition
-
 	expression *CXExpression
 	expressions []*CXExpression
-
-	field *CXField
-	fields []*CXField
-
-	name string
-	names []string
 }
 
 %token  <byt>           BYTENUM
@@ -84,9 +71,8 @@
                         /* Pointers */
                         ADDR
 
-%type   <fields>        fields structFields
-%type   <parameter>     parameter
-%type   <parameters>    parameters functionParameters
+%type   <argument>      parameter
+%type   <arguments>     fields structFields parameters functionParameters
 
 %left                   OR
 %left                   AND
@@ -216,7 +202,7 @@ packageDeclaration:
                 PACKAGE IDENT
                 {
 			mod := MakeModule($2)
-			CXT.AddModule(mod)
+			PRGRM.AddModule(mod)
                 }
                 ;
 
@@ -230,10 +216,9 @@ definitionAssignment:
 definitionDeclaration:
                 VAR IDENT BASICTYPE definitionAssignment
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				byts := []byte{}
-				def := MakeDefinition($2, &byts, $3)
-				mod.AddDefinition(def)
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
+				def := MakeGlobal($2, TypeNameToInt($3))
+				mod.AddGlobal(def)
 			} else {
 				panic(err)
 			}
@@ -241,10 +226,9 @@ definitionDeclaration:
                 }
         |       VAR IDENT IDENT
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				byts := []byte{}
-				def := MakeDefinition($2, &byts, $3)
-				mod.AddDefinition(def)
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
+				def := MakeGlobal($2, TypeNameToInt($3))
+				mod.AddGlobal(def)
 			} else {
 				panic(err)
 			}
@@ -254,23 +238,23 @@ definitionDeclaration:
 fields:
                 parameter
                 {
-			var flds []*CXField
-                        flds = append(flds, MakeFieldFromParameter($1))
+			var flds []*CXArgument
+                        flds = append(flds, $1)
 			$$ = flds
                 }
         |       ';'
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       debugging
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       fields parameter
                 {
-			$1 = append($1, MakeFieldFromParameter($2))
+			$1 = append($1, $2)
 			$$ = $1
                 }
         |       fields ';'
@@ -297,192 +281,16 @@ structFields:
 structDeclaration:
                 TYPSTRUCT IDENT
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
-
-
-				// creating manipulation functions for this type a la common lisp
-				// append
-				fn := MakeFunction(fmt.Sprintf("[]%s.append", $2))
-				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
-				fn.AddInput(MakeParameter("strctInst", $2))
-				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.append", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sStrctInst := encoder.Serialize("strctInst")
-					strctInstArg := MakeArgument(&sStrctInst, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(strctInstArg)
-					expr.AddOutputName("_arr")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-
-				// serialize
-				fn = MakeFunction(fmt.Sprintf("%s.serialize", $2))
-				fn.AddInput(MakeParameter("strctInst", $2))
-				fn.AddOutput(MakeParameter("byts", "[]byte"))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.serialize", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sStrctInst := encoder.Serialize("strctInst")
-					strctInstArg := MakeArgument(&sStrctInst, "str")
-					expr.AddArgument(strctInstArg)
-					expr.AddOutputName("byts")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-
-
-
-				// deserialize
-				fn = MakeFunction(fmt.Sprintf("%s.deserialize", $2))
-				fn.AddInput(MakeParameter("byts", "[]byte"))
-				fn.AddOutput(MakeParameter("strctInst", $2))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.deserialize", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-
-					sByts := encoder.Serialize("byts")
-					sBytsArg := MakeArgument(&sByts, "str")
-
-					sTyp := encoder.Serialize($2)
-					sTypArg := MakeArgument(&sTyp, "str")
-					
-					expr.AddArgument(sBytsArg)
-					expr.AddArgument(sTypArg)
-					expr.AddOutputName("strctInst")
-					
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-
-				
-				// read
-				fn = MakeFunction(fmt.Sprintf("[]%s.read", $2))
-				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
-				fn.AddInput(MakeParameter("index", "i32"))
-				fn.AddOutput(MakeParameter("strctInst", $2))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.read", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sIndex := encoder.Serialize("index")
-					indexArg := MakeArgument(&sIndex, "ident")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddOutputName("strctInst")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-				// write
-				fn = MakeFunction(fmt.Sprintf("[]%s.write", $2))
-				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
-				fn.AddInput(MakeParameter("index", "i32"))
-				fn.AddInput(MakeParameter("inst", $2))
-				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("[]%s", $2)))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.write", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sIndex := encoder.Serialize("index")
-					indexArg := MakeArgument(&sIndex, "ident")
-					sInst := encoder.Serialize("inst")
-					instArg := MakeArgument(&sInst, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddArgument(instArg)
-					expr.AddOutputName("_arr")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-				// len
-				fn = MakeFunction(fmt.Sprintf("[]%s.len", $2))
-				fn.AddInput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
-				fn.AddOutput(MakeParameter("len", "i32"))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.len", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					expr.AddArgument(arrArg)
-					expr.AddOutputName("len")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
-				
-				// make
-				fn = MakeFunction(fmt.Sprintf("[]%s.make", $2))
-				fn.AddInput(MakeParameter("len", "i32"))
-				fn.AddOutput(MakeParameter("arr", fmt.Sprintf("[]%s", $2)))
-				mod.AddFunction(fn)
-
-				if op, err := CXT.GetFunction("cstm.make", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = yyS[yypt-0].line + 1
-						expr.FileName = fileName
-					}
-					sLen := encoder.Serialize("len")
-					sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
-					lenArg := MakeArgument(&sLen, "ident")
-					typArg := MakeArgument(&sTyp, "str")
-					expr.AddArgument(lenArg)
-					expr.AddArgument(typArg)
-					expr.AddOutputName("arr")
-					fn.AddExpression(expr)
-				} else {
-					fmt.Println(err)
-				}
 			}
                 }
                 STRUCT structFields
                 {
-			if strct, err := CXT.GetCurrentStruct(); err == nil {
+			if strct, err := PRGRM.GetCurrentStruct(); err == nil {
 				for _, fld := range $5 {
-					fldFromParam := MakeField(fld.Name, fld.Typ)
+					fldFromParam := MakeField(fld.Name, fld.Type)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -508,13 +316,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -547,13 +355,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 			
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -579,7 +387,7 @@ functionDeclaration:
                 /* Functions */
         |       FUNC IDENT functionParameters functionStatements
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
@@ -592,7 +400,7 @@ functionDeclaration:
                 }
         |       FUNC IDENT functionParameters functionParameters functionStatements
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := PRGRM.GetCurrentModule(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
@@ -622,23 +430,25 @@ functionDeclaration:
 parameter:
                 IDENT BASICTYPE
                 {
-			$$ = MakeParameter($1, $2)
+			$$ = MakeParameter($1, TypeNameToInt($2))
                 }
         |       IDENT IDENT
                 {
-			$$ = MakeParameter($1, $2)
+			$$ = MakeParameter($1, TypeNameToInt($2))
                 }
         |       IDENT MULT IDENT
                 {
-			typ := "*" + $3
-			$$ = MakeParameter($1, typ)
+			typ := TypeNameToInt($3)
+			param := MakeParameter($1, typ)
+			param.IsPointer = true
+			$$ = param
                 }
         ;
 
 parameters:
                 parameter
                 {
-			var params []*CXParameter
+			var params []*CXArgument
                         params = append(params, $1)
                         $$ = params
                 }

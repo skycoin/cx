@@ -87,7 +87,7 @@
 /\**(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
 	typ := yylex.Text();
 
-	CreateMDimFuncs(typ, lval.line + 1)
+	// CreateMDimFuncs(typ, lval.line + 1)
 	
 	lval.tok = typ
 	return BASICTYPE
@@ -141,10 +141,10 @@
 /[.\[\]a-zA-Z0-9_]+/ {
 	lval.tok = yylex.Text()
 
-	identParts := strings.Split(yylex.Text(), ".")
-	if len(identParts) > 1 {
-		CreateMDimFuncs(identParts[0], lval.line + 1)
-	}
+	// identParts := strings.Split(yylex.Text(), ".")
+	// if len(identParts) > 1 {
+	// 	CreateMDimFuncs(identParts[0], lval.line + 1)
+	// }
 	
 	return IDENT
 }
@@ -154,8 +154,8 @@ package cx0
 import (
 	"fmt"
 	"strconv"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
-	. "github.com/skycoin/cx/src/base"
+	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	// . "github.com/skycoin/cx/src/base"
 )
 
 func (yylex Lexer) Error (e string) {
@@ -178,151 +178,151 @@ func countNewLines (s []byte) int {
 	return count
 }
 
-// If a new multi-dimensional array type is detected,
-// this function creates functions on-the-fly to handle the operations for this type
-func CreateMDimFuncs (typ string, line int) {
-	if IsMultiDim(typ) {
-		if mod, err := CXT.GetCurrentModule(); err == nil {
-			if _, err := CXT.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
-				currFn, err := CXT.GetCurrentFunction();
-				if err != nil {
-					panic(err)
-				}
-				// append
-				fn := MakeFunction(fmt.Sprintf("%s.append", typ))
-				fn.AddInput(MakeParameter("arr", typ))
-				fn.AddInput(MakeParameter("elt", typ[2:]))
-				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("%s", typ)))
-				mod.AddFunction(fn)
+// // If a new multi-dimensional array type is detected,
+// // this function creates functions on-the-fly to handle the operations for this type
+// func CreateMDimFuncs (typ string, line int) {
+// 	if IsMultiDim(typ) {
+// 		if mod, err := CXT.GetCurrentModule(); err == nil {
+// 			if _, err := CXT.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
+// 				currFn, err := CXT.GetCurrentFunction();
+// 				if err != nil {
+// 					panic(err)
+// 				}
+// 				// append
+// 				fn := MakeFunction(fmt.Sprintf("%s.append", typ))
+// 				fn.AddInput(MakeParameter("arr", typ))
+// 				fn.AddInput(MakeParameter("elt", typ[2:]))
+// 				fn.AddOutput(MakeParameter("_arr", fmt.Sprintf("%s", typ)))
+// 				mod.AddFunction(fn)
 
-				if op, err := CXT.GetFunction("mdim.append", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = line
-					}
-					expr.AddOutputName("_arr")
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sElt := encoder.Serialize("elt")
-					sEltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(sEltArg)
-					fn.AddExpression(expr)
-					// returning selection to last function
-					mod.CurrentFunction = currFn
-				} else {
-					fmt.Println(err)
-				}
+// 				if op, err := CXT.GetFunction("mdim.append", CORE_MODULE); err == nil {
+// 					expr := MakeExpression(op)
+// 					if !replMode {
+// 						expr.FileLine = line
+// 					}
+// 					expr.AddOutputName("_arr")
+// 					sArr := encoder.Serialize("arr")
+// 					arrArg := MakeArgument(&sArr, "str")
+// 					sElt := encoder.Serialize("elt")
+// 					sEltArg := MakeArgument(&sElt, "str")
+// 					expr.AddArgument(arrArg)
+// 					expr.AddArgument(sEltArg)
+// 					fn.AddExpression(expr)
+// 					// returning selection to last function
+// 					mod.CurrentFunction = currFn
+// 				} else {
+// 					fmt.Println(err)
+// 				}
 
-				// read
-				fn = MakeFunction(fmt.Sprintf("%s.read", typ))
-				fn.AddInput(MakeParameter("arr", typ))
-				fn.AddInput(MakeParameter("index", "i32"))
-				fn.AddOutput(MakeParameter("elt", typ[2:]))
-				mod.AddFunction(fn)
+// 				// read
+// 				fn = MakeFunction(fmt.Sprintf("%s.read", typ))
+// 				fn.AddInput(MakeParameter("arr", typ))
+// 				fn.AddInput(MakeParameter("index", "i32"))
+// 				fn.AddOutput(MakeParameter("elt", typ[2:]))
+// 				mod.AddFunction(fn)
 
-				if op, err := CXT.GetFunction("mdim.read", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = line
-					}
-					expr.AddOutputName("elt")
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sIndex := encoder.Serialize("index")
-					indexArg := MakeArgument(&sIndex, "ident")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					fn.AddExpression(expr)
-					// returning selection to last function
-					mod.CurrentFunction = currFn
-				} else {
-					fmt.Println(err)
-				}
+// 				if op, err := CXT.GetFunction("mdim.read", CORE_MODULE); err == nil {
+// 					expr := MakeExpression(op)
+// 					if !replMode {
+// 						expr.FileLine = line
+// 					}
+// 					expr.AddOutputName("elt")
+// 					sArr := encoder.Serialize("arr")
+// 					arrArg := MakeArgument(&sArr, "str")
+// 					sIndex := encoder.Serialize("index")
+// 					indexArg := MakeArgument(&sIndex, "ident")
+// 					expr.AddArgument(arrArg)
+// 					expr.AddArgument(indexArg)
+// 					fn.AddExpression(expr)
+// 					// returning selection to last function
+// 					mod.CurrentFunction = currFn
+// 				} else {
+// 					fmt.Println(err)
+// 				}
 
-				// write
-				fn = MakeFunction(fmt.Sprintf("%s.write", typ))
-				fn.AddInput(MakeParameter("arr", typ))
-				fn.AddInput(MakeParameter("index", "i32"))
-				fn.AddInput(MakeParameter("elt", fmt.Sprintf("%s", typ[2:])))
-				fn.AddOutput(MakeParameter("_arr", typ))
-				mod.AddFunction(fn)
+// 				// write
+// 				fn = MakeFunction(fmt.Sprintf("%s.write", typ))
+// 				fn.AddInput(MakeParameter("arr", typ))
+// 				fn.AddInput(MakeParameter("index", "i32"))
+// 				fn.AddInput(MakeParameter("elt", fmt.Sprintf("%s", typ[2:])))
+// 				fn.AddOutput(MakeParameter("_arr", typ))
+// 				mod.AddFunction(fn)
 
-				if op, err := CXT.GetFunction("mdim.write", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = line
-					}
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					sIndex := encoder.Serialize("index")
-					indexArg := MakeArgument(&sIndex, "ident")
-					sElt := encoder.Serialize("elt")
-					eltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddArgument(eltArg)
+// 				if op, err := CXT.GetFunction("mdim.write", CORE_MODULE); err == nil {
+// 					expr := MakeExpression(op)
+// 					if !replMode {
+// 						expr.FileLine = line
+// 					}
+// 					sArr := encoder.Serialize("arr")
+// 					arrArg := MakeArgument(&sArr, "str")
+// 					sIndex := encoder.Serialize("index")
+// 					indexArg := MakeArgument(&sIndex, "ident")
+// 					sElt := encoder.Serialize("elt")
+// 					eltArg := MakeArgument(&sElt, "str")
+// 					expr.AddArgument(arrArg)
+// 					expr.AddArgument(indexArg)
+// 					expr.AddArgument(eltArg)
 
-					expr.AddOutputName("_arr")
-					fn.AddExpression(expr)
-					// returning selection to last function
-					mod.CurrentFunction = currFn
-				} else {
-					fmt.Println(err)
-				}
+// 					expr.AddOutputName("_arr")
+// 					fn.AddExpression(expr)
+// 					// returning selection to last function
+// 					mod.CurrentFunction = currFn
+// 				} else {
+// 					fmt.Println(err)
+// 				}
 
-				// len
-				fn = MakeFunction(fmt.Sprintf("%s.len", typ))
-				fn.AddInput(MakeParameter("arr", typ))
-				fn.AddOutput(MakeParameter("len", "i32"))
-				mod.AddFunction(fn)
+// 				// len
+// 				fn = MakeFunction(fmt.Sprintf("%s.len", typ))
+// 				fn.AddInput(MakeParameter("arr", typ))
+// 				fn.AddOutput(MakeParameter("len", "i32"))
+// 				mod.AddFunction(fn)
 
-				if op, err := CXT.GetFunction("mdim.len", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = line
-					}
-					expr.AddOutputName("len")
-					sArr := encoder.Serialize("arr")
-					arrArg := MakeArgument(&sArr, "str")
-					expr.AddArgument(arrArg)
-					fn.AddExpression(expr)
-					// returning selection to last function
-					mod.CurrentFunction = currFn
-				} else {
-					fmt.Println(err)
-				}
+// 				if op, err := CXT.GetFunction("mdim.len", CORE_MODULE); err == nil {
+// 					expr := MakeExpression(op)
+// 					if !replMode {
+// 						expr.FileLine = line
+// 					}
+// 					expr.AddOutputName("len")
+// 					sArr := encoder.Serialize("arr")
+// 					arrArg := MakeArgument(&sArr, "str")
+// 					expr.AddArgument(arrArg)
+// 					fn.AddExpression(expr)
+// 					// returning selection to last function
+// 					mod.CurrentFunction = currFn
+// 				} else {
+// 					fmt.Println(err)
+// 				}
 
-				// make
-				fn = MakeFunction(fmt.Sprintf("%s.make", typ))
-				fn.AddInput(MakeParameter("len", "i32"))
-				fn.AddOutput(MakeParameter("arr", typ))
-				mod.AddFunction(fn)
+// 				// make
+// 				fn = MakeFunction(fmt.Sprintf("%s.make", typ))
+// 				fn.AddInput(MakeParameter("len", "i32"))
+// 				fn.AddOutput(MakeParameter("arr", typ))
+// 				mod.AddFunction(fn)
 
-				if op, err := CXT.GetFunction("mdim.make", CORE_MODULE); err == nil {
-					expr := MakeExpression(op)
-					if !replMode {
-						expr.FileLine = line
-					}
-					expr.AddOutputName("arr")
-					sLen := encoder.Serialize("len")
-					sTyp := encoder.Serialize(typ)
-					lenArg := MakeArgument(&sLen, "ident")
-					typArg := MakeArgument(&sTyp, "str")
-					expr.AddArgument(lenArg)
-					expr.AddArgument(typArg)
-					fn.AddExpression(expr)
-					// returning selection to last function
-					mod.CurrentFunction = currFn
-				} else {
-					fmt.Println(err)
-				}
-			}
-		} else {
-			fmt.Println(err)
-		}
-	}
-}
+// 				if op, err := CXT.GetFunction("mdim.make", CORE_MODULE); err == nil {
+// 					expr := MakeExpression(op)
+// 					if !replMode {
+// 						expr.FileLine = line
+// 					}
+// 					expr.AddOutputName("arr")
+// 					sLen := encoder.Serialize("len")
+// 					sTyp := encoder.Serialize(typ)
+// 					lenArg := MakeArgument(&sLen, "ident")
+// 					typArg := MakeArgument(&sTyp, "str")
+// 					expr.AddArgument(lenArg)
+// 					expr.AddArgument(typArg)
+// 					fn.AddExpression(expr)
+// 					// returning selection to last function
+// 					mod.CurrentFunction = currFn
+// 				} else {
+// 					fmt.Println(err)
+// 				}
+// 			}
+// 		} else {
+// 			fmt.Println(err)
+// 		}
+// 	}
+// }
 
 func main () {
 	

@@ -179,19 +179,21 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 // types
 const (
-	BOOL = iota
-	STR = iota
-	BYTE = iota
-	I32 = iota
-	I64 = iota
-	F32 = iota
-	F64 = iota
+	TYPE_BOOL = iota
+	TYPE_STR
+	TYPE_BYTE
+	TYPE_I32
+	TYPE_I64
+	TYPE_F32
+	TYPE_F64
+
+	TYPE_THRESHOLD
 )
 
 // memory locations
 const (
 	STACK = iota
-	HEAP = iota
+	HEAP
 )
 
 /*
@@ -199,6 +201,7 @@ const (
 */
 
 type Heap []byte
+type Stack []byte
 
 type CXProgram struct {
 	Modules []*CXModule
@@ -207,7 +210,9 @@ type CXProgram struct {
 	Inputs []*CXArgument
 	Outputs []*CXArgument
 	
-	CallStack [1024]CXCall
+	CallStack []CXCall
+	CallCounter int
+	
 	Stacks []CXStack
 	Heaps []Heap
 
@@ -215,15 +220,14 @@ type CXProgram struct {
 }
 
 type CXStack struct {
-	Stack [1024]byte
+	Stack Stack
 	StackPointer int
-	FramePointer int
 }
 
 type CXCall struct {
 	Operator *CXFunction
 	Line int
-	ReturnAddress *CXCall
+	FramePointer int
 }
 
 /*
@@ -267,7 +271,12 @@ type CXFunction struct {
 	Inputs []*CXArgument
 	Outputs []*CXArgument
 	Expressions []*CXExpression
+	InputsSize int // to make getting outputs from stack easier, pre-computed for performance
 	Size int // automatic memory size
+	Length int // number of expressions, pre-computed for performance
+
+	IsNative bool
+	OpCode int
 
 	CurrentExpression *CXExpression
 	Module *CXModule
@@ -292,12 +301,14 @@ type CXArgument struct {
 	Index int
 	Name string
 	Type int
+	Size int // size of type, 1, 4, 8 bytes
 
 	MemoryType int
 	Offset int
 	IsArray bool
 	IsPointer bool
-	
+	IsStruct bool
+
 	Module *CXModule
 	Program *CXProgram
 }
