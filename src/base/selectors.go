@@ -5,24 +5,24 @@ import (
 	"errors"
 )
 
-func (cxt *CXProgram) SelectModule (name string) (*CXModule, error) {
+func (cxt *CXProgram) SelectPackage (name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectModule(name)
+	// 		cxt.SelectPackage(name)
 	// 	},
 	// }
 	// saveProgramStep(prgrmStep, cxt)
 	
-	var found *CXModule
-	for _, mod := range cxt.Modules {
+	var found *CXPackage
+	for _, mod := range cxt.Packages {
 		if mod.Name == name {
-			cxt.CurrentModule = mod
+			cxt.CurrentPackage = mod
 			found = mod
 		}
 	}
 
 	if found == nil {
-		return nil, errors.New(fmt.Sprintf("Module '%s' does not exist", name))
+		return nil, errors.New(fmt.Sprintf("Package '%s' does not exist", name))
 	}
 
 	return found, nil
@@ -36,7 +36,7 @@ func (cxt *CXProgram) SelectFunction (name string) (*CXFunction, error) {
 	// }
 	// saveProgramStep(prgrmStep, cxt)
 	
-	mod, err := cxt.GetCurrentModule()
+	mod, err := cxt.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectFunction(name)
 	} else {
@@ -44,10 +44,10 @@ func (cxt *CXProgram) SelectFunction (name string) (*CXFunction, error) {
 	}
 }
 
-func (mod *CXModule) SelectFunction (name string) (*CXFunction, error) {
+func (mod *CXPackage) SelectFunction (name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
 	// 			mod.SelectFunction(name)
 	// 		}
 	// 	},
@@ -77,7 +77,7 @@ func (cxt *CXProgram) SelectStruct (name string) (*CXStruct, error) {
 	// }
 	// saveProgramStep(prgrmStep, cxt)
 	
-	mod, err := cxt.GetCurrentModule()
+	mod, err := cxt.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectStruct(name)
 	} else {
@@ -85,10 +85,10 @@ func (cxt *CXProgram) SelectStruct (name string) (*CXStruct, error) {
 	}
 }
 
-func (mod *CXModule) SelectStruct (name string) (*CXStruct, error) {
+func (mod *CXPackage) SelectStruct (name string) (*CXStruct, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
 	// 			mod.SelectStruct(name)
 	// 		}
 	// 	},
@@ -118,7 +118,7 @@ func (cxt *CXProgram) SelectExpression (line int) (*CXExpression, error) {
 	// }
 	// saveProgramStep(prgrmStep, cxt)
 
-	mod, err := cxt.GetCurrentModule()
+	mod, err := cxt.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectExpression(line)
 	} else {
@@ -126,10 +126,10 @@ func (cxt *CXProgram) SelectExpression (line int) (*CXExpression, error) {
 	}
 }
 
-func (mod *CXModule) SelectExpression (line int) (*CXExpression, error) {
+func (mod *CXPackage) SelectExpression (line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
 	// 			mod.SelectExpression(line)
 	// 		}
 	// 	},
@@ -146,7 +146,7 @@ func (mod *CXModule) SelectExpression (line int) (*CXExpression, error) {
 func (fn *CXFunction) SelectExpression (line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
 	// 			if fn, err := mod.GetCurrentFunction(); err == nil {
 	// 				fn.SelectExpression(line)
 	// 			}

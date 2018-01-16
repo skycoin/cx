@@ -17,7 +17,7 @@ func MakeGenSym (name string) string {
 
 func MakeProgram (callStackSize int, stackSize int, initialHeapSize int) *CXProgram {
 	newPrgrm := &CXProgram{
-		Modules: make([]*CXModule, 0),
+		Packages: make([]*CXPackage, 0),
 		CallStack: make([]CXCall, callStackSize, callStackSize),
 		Stacks: make([]CXStack, 1, 1),
 		Heaps: make([]Heap, 1, 1),
@@ -27,11 +27,11 @@ func MakeProgram (callStackSize int, stackSize int, initialHeapSize int) *CXProg
 	return newPrgrm
 }
 
-func MakeModule (name string) *CXModule {
-	return &CXModule{
+func MakePackage (name string) *CXPackage {
+	return &CXPackage{
 		Name: name,
 		Globals: make([]*CXArgument, 0, 10),
-		Imports: make([]*CXModule, 0),
+		Imports: make([]*CXPackage, 0),
 		Functions: make([]*CXFunction, 0, 10),
 		Structs: make([]*CXStruct, 0),
 	}
@@ -106,7 +106,7 @@ func MakeStack (size int) CXStack {
 	}
 }
 
-func MakeCall (op *CXFunction, ret *CXCall, mod *CXModule, cxt *CXProgram) CXCall {
+func MakeCall (op *CXFunction, ret *CXCall, mod *CXPackage, cxt *CXProgram) CXCall {
 	return CXCall{
 		Operator: op,
 		Line: 0,

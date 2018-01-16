@@ -9,10 +9,14 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	if mod, err := prgrm.SelectModule(MAIN_MOD); err == nil {
+	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 		if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
+			if len(fn.Expressions) < 1 {
+				return nil
+			}
 			// main function
 			mainCall := MakeCall(fn, nil, mod, mod.Program)
 			
@@ -51,10 +55,8 @@ func execNative (prgrm *CXProgram) {
 	fp := call.FramePointer
 	
 	switch opCode {
-	case OP_IDENTITY:
-		opIdentity(expr, stack, fp)
-	case OP_ADD:
-		opAdd(expr, stack, fp)
+	case OP_IDENTITY: identity(expr, stack, fp)
+	case OP_I32_ADD: i32_add(expr, stack, fp)
 	case OP_SUB:
 	case OP_MUL:
 	case OP_DIV:
@@ -69,7 +71,7 @@ func execNative (prgrm *CXProgram) {
 	case OP_BITCLEAR:
 	case OP_BITSHL:
 	case OP_BITSHR:
-	case OP_PRINT:
+	case OP_I32_PRINT:
 	case OP_MAKE:
 	case OP_READ:
 	case OP_WRITE:

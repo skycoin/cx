@@ -1,29 +1,39 @@
 %{
 	package main
 	import (
-		"strings"
+		//"strings"
 		"fmt"
+		//		"os"
+		//	"time"
+
+		//"github.com/skycoin/cx/cx/cx0"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
-                )
+	)
 
 	var prgrm = MakeProgram(1024, 1024, 1024)
+	var data Data
+	var dataOffset int
 
-	var lineNo int = 0
-	var webMode bool = false
-	var baseOutput bool = false
-	var replMode bool = false
-	var helpMode bool = false
-	var compileMode bool = false
-	var replTargetFn string = ""
-	var replTargetStrct string = ""
-	var replTargetMod string = ""
-	var dStack bool = false
-	var inREPL bool = false
-	var inFn bool = false
-	var tag string = ""
-	var asmNL = "\n"
-	var fileName string
+	// Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
+	// This function writes those bytes to prgrm.Data
+	func WritePrimary (typ int, byts []byte) []*CXExpression {
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			arg := MakeArgument(typ)
+			arg.MemoryType = MEM_DATA
+			arg.Offset = dataOffset
+			arg.Package = pkg
+			arg.Program = prgrm
+			size := len(byts)
+			arg.Size = size
+			dataOffset += size
+			expr := MakeExpression(nil)
+			expr.Outputs = append(expr.Outputs, arg)
+			return []*CXExpression{expr}
+		} else {
+			panic(err)
+		}
+	}
 %}
 
 %union {
@@ -40,31 +50,45 @@
 
 	line int
 
+	/* parameter *CXParameter */
+	/* parameters []*CXParameter */
+
 	argument *CXArgument
 	arguments []*CXArgument
 
+        /* definition *CXDefinition */
+	/* definitions []*CXDefinition */
+
 	expression *CXExpression
 	expressions []*CXExpression
+
+	/* field *CXField */
+	/* fields []*CXField */
+
+	/* name string */
+	/* names []string */
 }
 
-%token  <byt>           BYTENUM
-%token  <i32>           INT BOOLEAN
-%token  <i64>           LONG
-%token  <f32>           FLOAT
-%token  <f64>           DOUBLE
+%token  <byt>           BYTE_LITERAL
+%token  <i32>           INT_LITERAL BOOLEAN_LITERAL
+%token  <i64>           LONG_LITERAL
+%token  <f32>           FLOAT_LITERAL
+%token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
-                        VAR COMMA COMMENT STRING PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
+                        VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
+                        SEMICOLON EXCL
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
-                        PLUS MINUS MULT DIV AFFVAR
+                        ADD_OP SUB_OP MUL_OP DIV_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
                         BITAND BITXOR BITOR BITCLEAR
                         PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
                         LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
 
-                        STRING_LITERAL
+
+
                         DEC_OP INC_OP PTR_OP LEFT_OP RIGHT_OP
                         GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
@@ -76,7 +100,7 @@
                         UI8 UI16 UI32 UI64
                         UNION ENUM CONST CASE DEFAULT SWITCH BREAK CONTINUE
                         TYPE
-
+                        
                         /* Types */
                         BASICTYPE
                         /* Selectors */
@@ -92,80 +116,368 @@
                         /* Pointers */
                         ADDR
 
-//%type   <tok>           assignOperator
-                        
-//%type   <argument>      argument definitionAssignment parameter
-//%type   <arguments>     arguments argumentsList nonAssignExpression conditionControl returnArg parameters functionParameters
-// %type   <expression>    assignExpression
-// %type   <expressions>   elseStatement
+%type   <i>             type_specifier
+%type   <argument>      declaration_specifiers
+%type   <argument>      declarator
+%type   <argument>      direct_declarator
+%type   <argument>      parameter_declaration
+%type   <arguments>     parameter_type_list
+%type   <arguments>     parameter_list
+                                                
+%type   <expressions>   assignment_expression
+%type   <expressions>   constant_expression
+%type   <expressions>   conditional_expression
+%type   <expressions>   logical_or_expression
+%type   <expressions>   logical_and_expression
+%type   <expressions>   exclusive_or_expression
+%type   <expressions>   and_expression
+%type   <expressions>   equality_expression
+%type   <expressions>   relational_expression
+%type   <expressions>   shift_expression
+%type   <expressions>   additive_expression
+%type   <expressions>   multiplicative_expression
+%type   <expressions>   unary_expression
+%type   <expressions>   argument_expression_list
+%type   <expressions>   postfix_expression
+%type   <expressions>   primary_expression
 
-// %type   <bool>          selectorExpressionsAndStatements
+%type   <expressions>   expression
+%type   <expressions>   compound_statement
+%type   <expressions>   labeled_statement
+%type   <expressions>   expression_statement
+%type   <expressions>   selection_statement
+%type   <expressions>   iteration_statement
+%type   <expressions>   jump_statement
+%type   <expressions>   statement
 
+/* %start                  translation_unit */
 %%
 
+translation_unit:
+                external_declaration
+        |       translation_unit external_declaration
+        ;
+
+external_declaration:
+                package_declaration
+        // |       global_declaration
+        |       function_declaration
+        /* |       method_declaration */
+        /* |       struct_declaration */
+        ;
+
+package_declaration:
+                PACKAGE IDENTIFIER SEMICOLON
+                {
+			pkg := MakePackage($2)
+			prgrm.AddPackage(pkg)
+                }
+                ;
+
+function_declaration:
+                FUNC IDENTIFIER LPAREN parameter_type_list RPAREN compound_statement
+        |       FUNC IDENTIFIER LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
+                {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				fn := MakeFunction($2)
+				pkg.AddFunction(fn)
+
+				fmt.Println("")
+				
+				for _, inp := range $4 {
+					fn.AddInput(inp)
+				}
+				for _, inp := range $7 {
+					fn.AddOutput(inp)
+				}
+				for _, expr := range $9 {
+					fn.AddExpression(expr)
+				}
+			} else {
+				panic(err)
+			}
+                }
+        ;
+
+/* method_declaration: */
+/*                 FUNC */
+/*         ; */
+
+
+// parameter_type_list
+parameter_type_list:
+                //parameter_list COMMA ELLIPSIS
+		parameter_list
+                ;
+
+parameter_list:
+                parameter_declaration
+                {
+			// var args []*CXArgument
+			// args = append(args, $1)
+			// $$ = args
+			$$ = []*CXArgument{$1}
+                }
+	|       parameter_list COMMA parameter_declaration
+                {
+			$$ = append($1, $3)
+                }
+                ;
+
+parameter_declaration:
+                declarator declaration_specifiers
+                {
+			$2.Name = $1.Name
+			$2.IsArray = $1.IsArray
+			$$ = $2
+                }
+        //                      |declaration_specifiers abstract_declarator
+	/* |    declaration_specifiers */
+                ;
+
+identifier_list:
+                IDENTIFIER
+	|       identifier_list COMMA IDENTIFIER
+                ;
+
+// declarator
+declarator:     /* pointer direct_declarator */
+        /*         { */
+        /*             $2.IsPointer = true */
+        /*             $$ = $2 */
+        /*         } */
+	/* |        */direct_declarator
+                ;
+
+direct_declarator:
+                IDENTIFIER
+                {
+			arg := MakeArgument(TYPE_UNDEFINED)
+			arg.Name = $1
+			$$ = arg
+                }
+	|       LPAREN   declarator RPAREN
+                { $$ = $2 }
+	|       direct_declarator '[' ']'
+                {
+			$1.IsArray = true
+			$$ = $1
+                }
+        //	|direct_declarator '[' MUL_OP ']'
+        //              	|direct_declarator '[' type_qualifier_list MUL_OP ']'
+        //              	|direct_declarator '[' type_qualifier_list assignment_expression ']'
+        //              	|direct_declarator '[' type_qualifier_list ']'
+        //              	|direct_declarator '[' assignment_expression ']'
+	// |    direct_declarator LPAREN parameter_type_list RPAREN
+	// |    direct_declarator LPAREN RPAREN
+	// |    direct_declarator LPAREN identifier_list RPAREN
+                ;
+
+// check
+pointer:  MUL_OP   type_qualifier_list pointer // check
+	| MUL_OP   type_qualifier_list // check
+	| MUL_OP   pointer
+	| MUL_OP
+	;
+
+type_qualifier_list:
+                type_qualifier
+	|       type_qualifier_list type_qualifier
+                ;
+
+
+
+
+
+
+
+
+
+// declaration_specifiers
+declaration_specifiers:
+                pointer type_specifier
+                {
+			arg := MakeArgument($2)
+                        arg.IsPointer = true
+			$$ = arg
+                }
+        |       type_specifier
+                {
+			$$ = MakeArgument($1)
+                }
+		/* type_specifier declaration_specifiers */
+	/* |       type_specifier */
+	/* |       type_qualifier declaration_specifiers */
+	/* |       type_qualifier */
+                ;
+
+type_qualifier: CONST
+        |       VAR
+                ;
+
+type_specifier:
+                BOOL
+                { $$ = TYPE_BOOL }
+        |       BYTE
+                { $$ = TYPE_BYTE }
+        |       STR
+                { $$ = TYPE_STR }
+        |       F32
+                { $$ = TYPE_F32 }
+        |       F64
+                { $$ = TYPE_BOOL }
+        |       I8
+                { $$ = TYPE_BOOL }
+        |       I16
+                { $$ = TYPE_BOOL }
+        |       I32
+                { $$ = TYPE_BOOL }
+        |       I64
+                { $$ = TYPE_BOOL }
+        |       UI8
+                { $$ = TYPE_BOOL }
+        |       UI16
+                { $$ = TYPE_BOOL }
+        |       UI32
+                { $$ = TYPE_BOOL }
+        |       UI64
+                { $$ = TYPE_BOOL }
+        /* |       pointer type_specifier */
+	/* |       struct_or_union_specifier */
+        /*         { */
+        /*             $$ = "struct" */
+        /*         } */
+	/* |       enum_specifier */
+        /*         { */
+        /*             $$ = "enum" */
+        /*         } */
+	/* |       TYPEDEF_NAME // check */
+                ;
+
+
+
+
+
+
+
+
+
+// expressions
 primary_expression:
                 IDENTIFIER
-                string
-        | '('   expression ')'
-                ;
+                {
+			// exprs := WritePrimary(TYPE_IDENTIFIER, encoder.Serialize($1))
+			// exprs[0].Outputs[0].Name = $1
+			// $$ = exprs
 
-enumeration_constant:
-                IDENTIFIER
-                ;
-
-string:         STRING_LITERAL
+			arg := MakeArgument(TYPE_IDENTIFIER)
+			arg.Name = $1
+			$$ = []*CXExpression{&CXExpression{Outputs: []*CXArgument{arg}}}
+                }
+        |       STRING_LITERAL
+                {
+			$$ = WritePrimary(TYPE_STRING, encoder.Serialize($1))
+                }
+        |       BOOLEAN_LITERAL
+                {
+			$$ = WritePrimary(TYPE_BOOL, encoder.Serialize($1))
+                }
+        |       BYTE_LITERAL
+                {
+			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1))
+                }
+        |       INT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_INT, encoder.Serialize($1))
+                }
+        |       FLOAT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_FLOAT, encoder.Serialize($1))
+                }
+        |       DOUBLE_LITERAL
+                {
+			$$ = WritePrimary(TYPE_DOUBLE, encoder.Serialize($1))
+                }
+        |       LONG_LITERAL
+                {
+			$$ = WritePrimary(TYPE_LONG, encoder.Serialize($1))
+                }
+        |       LPAREN   expression RPAREN
+                { $$ = $2 }
                 ;
 
 postfix_expression:
                 primary_expression
-	|       postfix_expression '[' expression ']'
-	|       postfix_expression '(' ')'
-	|       postfix_expression '(' argument_expression_list ')'
-	|       postfix_expression '.' IDENTIFIER
-	|       postfix_expression PTR_OP IDENTIFIER // check
+	// |       postfix_expression '[' expression ']'
+	|       postfix_expression LPAREN RPAREN
+                {
+			opName := $1[0].Outputs[0].Name
+			expr := MakeExpression(opName)
+
+			
+			prgrm.GetFunction(opName, )
+			
+                }
+	|       postfix_expression LPAREN argument_expression_list RPAREN
+	/* |       postfix_expression PERIOD IDENTIFIER */
+	|       postfix_expression MUL_OP IDENTIFIER // check
 	|       postfix_expression INC_OP
-	|       postfix_expression DEC_OP
-	| '('   type_name ')' '{' initializer_list '}' // check
-	| '('   type_name ')' '{' initializer_list ',' '}' // check
+        |       postfix_expression DEC_OP
+        |       postfix_expression PERIOD postfix_expression
+                {
+			left := $1[len($1) - 1].Outputs[0]
+			right := $2[0].Outputs[0]
+			
+			if left.IsRest {
+				
+			} else {
+				// then left is a first (e.g first.rest)
+				// let's check if it's a package
+				if pkg, err := prgrm.GetPackage(left.Name); err != nil {
+					// the external property will be propagated to the following arguments
+					// this way we avoid considering these arguments as module names
+					left.IsExternal = true
+					right.IsExternal
+					
+				} else {
+					// it's not a package, then it's a struct
+				}
+			}
+                }
                 ;
 
 argument_expression_list:
                 assignment_expression
-	|       argument_expression_list ',' assignment_expression
+	|       argument_expression_list COMMA assignment_expression
                 ;
 
 unary_expression:
                 postfix_expression
 	|       INC_OP unary_expression
 	|       DEC_OP unary_expression
-	|       unary_operator cast_expression // check
+	|       unary_operator unary_expression // check
                 ;
 
 unary_operator:
                 '&'
-	|       '*'
-	|       '+'
-	|       '-'
+	|       MUL_OP
+	|       ADD_OP
+	|       SUB_OP
 	|       '~' // check
 	|       '!'
                 ;
 
-cast_expression: // check
-                unary_expression
-	| '('   type_name ')' cast_expression // check
-                ;
-
 multiplicative_expression:
-                cast_expression
-	|       multiplicative_expression '*' cast_expression
-	|       multiplicative_expression '/' cast_expression
-	|       multiplicative_expression '%' cast_expression
+                unary_expression
+	|       multiplicative_expression MUL_OP unary_expression
+	|       multiplicative_expression '/' unary_expression
+	|       multiplicative_expression '%' unary_expression
                 ;
 
 additive_expression:
                 multiplicative_expression
-	|       additive_expression '+' multiplicative_expression
-	|       additive_expression '-' multiplicative_expression
+	|       additive_expression ADD_OP multiplicative_expression
+	|       additive_expression SUB_OP multiplicative_expression
                 ;
 
 shift_expression:
@@ -214,7 +526,7 @@ logical_or_expression:
 
 conditional_expression:
                 logical_or_expression
-	|       logical_or_expression '?' expression ':' conditional_expression
+	|       logical_or_expression '?' expression COLON conditional_expression
                 ;
 
 assignment_expression:
@@ -223,7 +535,7 @@ assignment_expression:
                 ;
 
 assignment_operator:
-                '='
+                ASSIGN
 	|       MUL_ASSIGN
 	|       DIV_ASSIGN
 	|       MOD_ASSIGN
@@ -237,302 +549,163 @@ assignment_operator:
                 ;
 
 expression:     assignment_expression
-	|       expression ',' assignment_expression
+                { $$ = []*CXExpression{$1} }
+	|       expression COMMA assignment_expression
+                { $$ = append($1, $3) }
                 ;
 
 constant_expression:
                 conditional_expression
                 ;
 
-declaration:    declaration_specifiers ';'
-	|       declaration_specifiers init_declarator_list ';'
-                ;
 
-declaration_specifiers:
-		type_specifier declaration_specifiers
-	|       type_specifier
-	|       type_qualifier declaration_specifiers
-	|       type_qualifier
-                ;
 
-init_declarator_list:
-                init_declarator
-	|       init_declarator_list ',' init_declarator
-                ;
 
-init_declarator:
-                declarator '=' initializer
-	|       declarator
-                ;
 
-// storage_class_specifier:
-//                 TYPEDEF	/* identifiers must be flagged as TYPEDEF_NAME */
-// 	|       EXTERN
-// 	|       STATIC
-// 	|       THREAD_LOCAL
-// 	|       AUTO
-// 	|       REGISTER
-//                 ;
 
-type_specifier: BOOL
-        |       BYTE
-        |       F32
-        |       F64
-        |       I8
-        |       I16
-        |       I32
-        |       I64
-        |       STR
-        |       UI8
-        |       UI16
-        |       UI32
-        |       UI64
-	|       struct_or_union_specifier
-	|       enum_specifier
-	/* |       TYPEDEF_NAME // check */
-                ;
-
-struct_or_union_specifier:
-                struct_or_union '{' struct_declaration_list '}'
-	|       struct_or_union IDENTIFIER '{' struct_declaration_list '}'
-	|       struct_or_union IDENTIFIER
-                ;
-
-struct_or_union:
-                STRUCT
-	|       UNION // check
-                ;
-
-struct_declaration_list:
-                struct_declaration
-	|       struct_declaration_list struct_declaration
-                ;
-
-struct_declaration:
-                specifier_qualifier_list ';'	/* for anonymous struct/union */
-	|       specifier_qualifier_list struct_declarator_list ';'
-                ;
-
-specifier_qualifier_list:
-                type_specifier specifier_qualifier_list
-	|       type_specifier
-	|       type_qualifier specifier_qualifier_list
-	|       type_qualifier
-                ;
-
-struct_declarator_list:
-                struct_declarator
-	|       struct_declarator_list ',' struct_declarator
-                ;
-
-struct_declarator:
-                ':' constant_expression
-	|       declarator ':' constant_expression
-	|       declarator
-                ;
-
-enum_specifier: ENUM '{' enumerator_list '}'
-	|       ENUM '{' enumerator_list ',' '}'
-	|       ENUM IDENTIFIER '{' enumerator_list '}'
-	|       ENUM IDENTIFIER '{' enumerator_list ',' '}'
-	|       ENUM IDENTIFIER
-                ;
-
-enumerator_list:enumerator
-	|       enumerator_list ',' enumerator
-                ;
-
-enumerator:     enumeration_constant '=' constant_expression
-	|       enumeration_constant
-                ;
-
-type_qualifier: CONST
-	/* |       RESTRICT */
-	/* |       VOLATILE */
-	/* |       ATOMIC */
-                ;
-
-/* function_specifier: */
-/*                 INLINE */
-/* 	|       NORETURN */
+/* declaration: */
+/*                 declaration_specifiers init_declarator_list SEMICOLON */
 /*                 ; */
 
-/* alignment_specifier: */
-/*                 ALIGNAS '(' type_name ')' */
-/* 	|       ALIGNAS '(' constant_expression ')' */
+/* declaration_specifiers: */
+/* 		type_specifier declaration_specifiers */
+/* 	|       type_specifier */
+/* 	|       type_qualifier declaration_specifiers */
+/* 	|       type_qualifier */
 /*                 ; */
 
-declarator:     pointer direct_declarator
-	|       direct_declarator
-                ;
-
-direct_declarator:
-                IDENTIFIER
-	| '('   declarator ')'
-	|       direct_declarator '[' ']'
-	|       direct_declarator '[' '*' ']'
-	|       direct_declarator '[' type_qualifier_list '*' ']'
-	|       direct_declarator '[' type_qualifier_list assignment_expression ']'
-	|       direct_declarator '[' type_qualifier_list ']'
-	|       direct_declarator '[' assignment_expression ']'
-	|       direct_declarator '(' parameter_type_list ')'
-	|       direct_declarator '(' ')'
-	|       direct_declarator '(' identifier_list ')'
-                ;
-
-pointer: '*'    type_qualifier_list pointer
-	| '*'   type_qualifier_list
-	| '*'   pointer
-	| '*'
-	;
-
-                type_qualifier_list: type_qualifier
-	|       type_qualifier_list type_qualifier
-                ;
 
 
-parameter_type_list:
-                // parameter_list ',' ELLIPSIS
-	// |       
-		parameter_list
-                ;
+/* init_declarator_list: */
+/*                 init_declarator */
+/* 	|       init_declarator_list COMMA init_declarator */
+/*                 ; */
 
-parameter_list: parameter_declaration
-	|       parameter_list ',' parameter_declaration
-                ;
+/* init_declarator: */
+/*                 declarator '=' initializer */
+/* 	|       declarator */
+/*                 ; */
 
-parameter_declaration:
-                declaration_specifiers declarator
-	|       declaration_specifiers abstract_declarator
-	|       declaration_specifiers
-                ;
 
-identifier_list:IDENTIFIER
-	|       identifier_list ',' IDENTIFIER
-                ;
 
-type_name:      specifier_qualifier_list abstract_declarator
-	|       specifier_qualifier_list
-                ;
 
-abstract_declarator:
-                pointer direct_abstract_declarator
-	|       pointer
-	|       direct_abstract_declarator
-                ;
 
-direct_abstract_declarator:
-                '(' abstract_declarator ')'
-	| '[' ']'
-	| '[' '*' ']'
-	| '['   type_qualifier_list assignment_expression ']'
-	| '['   type_qualifier_list ']'
-	| '['   assignment_expression ']'
-	|       direct_abstract_declarator '[' ']'
-	|       direct_abstract_declarator '[' '*' ']'
-	|       direct_abstract_declarator '[' type_qualifier_list assignment_expression ']'
-	|       direct_abstract_declarator '[' type_qualifier_list ']'
-	|       direct_abstract_declarator '[' assignment_expression ']'
-	| '(' ')'
-	| '('   parameter_type_list ')'
-	|       direct_abstract_declarator '(' ')'
-	|       direct_abstract_declarator '(' parameter_type_list ')'
-                ;
 
-initializer: '{'initializer_list '}'
-	| '{'   initializer_list ',' '}'
-	|       assignment_expression
-                ;
 
-initializer_list:
-                designation initializer
-	|       initializer
-	|       initializer_list ',' designation initializer
-	|       initializer_list ',' initializer
-                ;
 
-designation:    designator_list '='
-                ;
 
-designator_list:designator
-	|       designator_list designator
-                ;
 
-designator: '[' constant_expression ']'
-	| '.'   IDENTIFIER
-                ;
+/* initializer: */
+/*                 LBRACE initializer_list RBRACE */
+/* 	| LBRACE   initializer_list COMMA RBRACE */
+/* 	|       assignment_expression */
+/*                 ; */
 
-statement:      labeled_statement
-	|       compound_statement
+/* initializer_list: */
+/*                 designation initializer */
+/* 	|       initializer */
+/* 	|       initializer_list COMMA designation initializer */
+/* 	|       initializer_list COMMA initializer */
+/*                 ; */
+
+/* designation:    designator_list '=' */
+/*                 ; */
+
+/* designator_list: */
+/*                 designator */
+/* 	|       designator_list designator */
+/*                 ; */
+
+/* designator: */
+/*                 '[' constant_expression ']' */
+/* 	| PERIOD   IDENTIFIER */
+/*                 ; */
+
+
+
+
+
+
+// statements
+statement:      /* labeled_statement */
+	/* |        */compound_statement
 	|       expression_statement
-	|       selection_statement
-	|       iteration_statement
-	|       jump_statement
+	/* |       selection_statement */
+	/* |       iteration_statement */
+	/* |       jump_statement */
                 ;
 
 labeled_statement:
-                IDENTIFIER ':' statement
-	|       CASE constant_expression ':' statement
-	|       DEFAULT ':' statement
+                IDENTIFIER COLON statement
+	|       CASE constant_expression COLON statement
+	|       DEFAULT COLON statement
                 ;
 
 compound_statement:
-                '{' '}'
-	| '{'   block_item_list '}'
+                LBRACE RBRACE
+	|       LBRACE block_item_list RBRACE
                 ;
 
-block_item_list:block_item
-	|       block_item_list block_item
+block_item_list:
+                statement
+	|       block_item_list statement
                 ;
 
-block_item:     declaration
-	|       statement
-                ;
+// block_item:     /* declaration */
+// 	/* |        */statement
+//                 ;
 
 expression_statement:
-                ';'
-	|       expression ';'
+                SEMICOLON
+                { $$ = nil }
+	|       expression SEMICOLON
+                { $$ = []*CXExpression{$1} }
                 ;
 
 selection_statement:
-                IF '(' expression ')' statement ELSE statement
-	|       IF '(' expression ')' statement
-	|       SWITCH '(' expression ')' statement
+                /* IF LPAREN expression RPAREN statement */
+	/* |    IF LPAREN expression RPAREN statement ELSE statement */
+                IF expression compound_statement elseif_list else_statement
+	|       SWITCH LPAREN expression RPAREN statement
                 ;
+
+elseif:         ELSE IF expression compound_statement
+        ;
+
+elseif_list:
+        |       elseif_list elseif
+        ;
+
+else_statement:
+        |       ELSE compound_statement
+        ;
+
+
+
 
 iteration_statement:
-                FOR '(' expression_statement expression_statement ')' statement
-	|       FOR '(' expression_statement expression_statement expression ')' statement
-	|       FOR '(' declaration expression_statement ')' statement
-	|       FOR '(' declaration expression_statement expression ')' statement
+                FOR LPAREN expression_statement expression_statement RPAREN statement
+	|       FOR LPAREN expression_statement expression_statement expression RPAREN statement
+	/* |       FOR LPAREN declaration expression_statement RPAREN statement */
+	/* |       FOR LPAREN declaration expression_statement expression RPAREN statement */
                 ;
 
-jump_statement: GOTO IDENTIFIER ';'
-	|       CONTINUE ';'
-	|       BREAK ';'
-	|       RETURN ';'
-	|       RETURN expression ';'
+jump_statement: GOTO IDENTIFIER SEMICOLON
+	|       CONTINUE SEMICOLON
+	|       BREAK SEMICOLON
+	|       RETURN SEMICOLON
+	|       RETURN expression SEMICOLON
                 ;
 
-translation_unit:
-                external_declaration
-	|       translation_unit external_declaration
-                ;
 
-external_declaration:
-                function_definition
-	|       declaration
-                ;
 
-function_definition:
-                declaration_specifiers declarator declaration_list compound_statement
-	|       declaration_specifiers declarator compound_statement
-                ;
 
-declaration_list:
-                declaration
-	|       declaration_list declaration
-                ;
+
+
+
+
+
+
 
 
 
@@ -542,38 +715,94 @@ declaration_list:
 // lines:
 //                 /* empty */
 //         |       lines line
-//         |       lines ';'
-//                 ;
+//         |       lines SEMICOLON
+//         ;
 
 // line:
-//                 packageDeclaration
+//                 definitionDeclaration
+//         |       structDeclaration
+//         |       packageDeclaration
 //         |       importDeclaration
 //         |       functionDeclaration
+//         |       selector
+//         |       stepping
+//         |       debugging
+//         |       affordance
+//         |       remover
 //         ;
 
 // importDeclaration:
 //                 IMPORT STRING
-//                 {
-// 			impName := strings.TrimPrefix($2, "\"")
-// 			impName = strings.TrimSuffix(impName, "\"")
-// 			if imp, err := prgrm.GetModule(impName); err == nil {
-// 				if mod, err := prgrm.GetCurrentModule(); err == nil {
-// 					mod.AddImport(imp)
-// 				}
-// 			}
-//                 }
+//         ;
+
+// affordance:
+//                 TAG
+//                 /* Function Affordances */
+//         |       AFF FUNC IDENT
+//         |       AFF FUNC IDENT LBRACE INT RBRACE
+//         |       AFF FUNC IDENT LBRACE STRING RBRACE
+//         |       AFF FUNC IDENT LBRACE STRING INT RBRACE
+//                 /* Module Affordances */
+//         |       AFF PACKAGE IDENT
+//         |       AFF PACKAGE IDENT LBRACE INT RBRACE
+//         |       AFF PACKAGE IDENT LBRACE STRING RBRACE
+//         |       AFF PACKAGE IDENT LBRACE STRING INT RBRACE
+//                 /* Struct Affordances */
+//         |       AFF STRUCT IDENT
+//         |       AFF STRUCT IDENT LBRACE INT RBRACE
+//         |       AFF STRUCT IDENT LBRACE STRING RBRACE
+//         |       AFF STRUCT IDENT LBRACE STRING INT RBRACE
+//                 /* Struct Affordances */
+//         |       AFF EXPR IDENT
+//         |       AFF EXPR IDENT LBRACE INT RBRACE
+//         |       AFF EXPR IDENT LBRACE STRING RBRACE
+//         |       AFF EXPR IDENT LBRACE STRING INT RBRACE
+//         ;
+
+// stepping:       TSTEP INT INT
+
+//         |       DSTACK
+//         |       DPROGRAM
+//         ;
+
+// remover:        REM FUNC IDENT
+//         |       REM PACKAGE IDENT
+//         |       REM DEF IDENT
+//         |       REM STRUCT IDENT
+//         |       REM IMPORT STRING
+//         |       REM EXPR IDENT FUNC IDENT
+//         |       REM FIELD IDENT STRUCT IDENT
+//         |       REM INPUT IDENT FUNC IDENT
+//         |       REM OUTPUT IDENT FUNC IDENT
+//         ;
+
+// selectorLines:
+//                 /* empty */
+//         |       LBRACE lines RBRACE
 //         ;
 
 // selectorExpressionsAndStatements:
 //                 /* empty */
-//                 {
-// 			$$ = false
-//                 }
 //         |       LBRACE expressionsAndStatements RBRACE
-//                 {
-// 			$$ = true
-//                 }
 //         ;
+
+// selectorFields:
+//                 /* empty */
+//         |       LBRACE fields RBRACE
+//         ;
+
+// selector:       SPACKAGE IDENT
+//                 selectorLines
+//         |       SFUNC IDENT
+//                 selectorExpressionsAndStatements
+//         |       SSTRUCT IDENT
+//                 selectorFields
+//         ;
+
+
+
+
+
 
 // assignOperator:
 //                 ASSIGN
@@ -593,345 +822,116 @@ declaration_list:
 
 // packageDeclaration:
 //                 PACKAGE IDENT
-//                 {
-// 			mod := MakeModule($2)
-// 			prgrm.AddModule(mod)
-//                 }
 //                 ;
 
 // definitionAssignment:
 //                 /* empty */
-//                 {
-// 			$$ = nil
-//                 }
 //         |       assignOperator argument
-//                 {
-// 			$$ = $2
-//                 }
+//         |       assignOperator ADDR argument
+//         |       assignOperator VALUE argument
 //                 ;
+
+// definitionDeclaration:
+//                 VAR IDENT BASICTYPE definitionAssignment
+//         |       VAR IDENT IDENT
+//         ;
+
+// fields:
+//                 parameter
+//         |       SEMICOLON
+//         |       debugging
+//         |       fields parameter
+//         |       fields SEMICOLON
+//         |       fields debugging
+//                 ;
+
+// structFields:
+//                 LBRACE fields RBRACE
+//         |       LBRACE RBRACE
+//         ;
+
+// structDeclaration:
+//                 TYPSTRUCT IDENT
+//                 STRUCT structFields
+//         ;
 
 // functionParameters:
 //                 LPAREN parameters RPAREN
-//                 {
-// 			$$ = $2
-//                 }
 //         |       LPAREN RPAREN
-//                 {
-// 			$$ = nil
-//                 }
 //         ;
 
 // functionDeclaration:
-//                 FUNC IDENT functionParameters
-//                 {
-// 			if mod, err := prgrm.GetCurrentModule(); err == nil {
-// 				inFn = true
-// 				fn := MakeFunction($2)
-// 				mod.AddFunction(fn)
-// 				if fn, err := mod.GetCurrentFunction(); err == nil {
-// 					for _, inp := range $3 {
-// 						fn.AddInput(inp)
-// 					}
-// 				}
-// 			}
-//                 }
+//                 /* Methods */
+//                 FUNC functionParameters IDENT functionParameters functionParameters
+//                 functionStatements
+//         |       FUNC functionParameters IDENT functionParameters
+//                 functionStatements
+//                 /* Functions */
+//         |       FUNC IDENT functionParameters
 //                 functionStatements
 //         |       FUNC IDENT functionParameters functionParameters
-//                 {
-// 			if mod, err := prgrm.GetCurrentModule(); err == nil {
-// 				inFn = true
-// 				fn := MakeFunction($2)
-// 				mod.AddFunction(fn)
-// 				if fn, err := mod.GetCurrentFunction(); err == nil {
-
-// 					//checking if there are duplicate parameters
-// 					dups := append($3, $4...)
-// 					for _, param := range dups {
-// 						for _, dup := range dups {
-// 							if param.Name == dup.Name && param != dup {
-// 								panic(fmt.Sprintf("%s: %d: duplicate input and/or output parameters in function '%s'", fileName, yyS[yypt-0].line+1, $2))
-// 							}
-// 						}
-// 					}
-					
-// 					for _, inp := range $3 {
-// 						fn.AddInput(inp)
-// 					}
-// 					for _, out := range $4 {
-// 						fn.AddOutput(out)
-// 					}
-// 				}
-// 			}
-//                 }
 //                 functionStatements
 //         ;
 
 // parameter:
 //                 IDENT BASICTYPE
-//                 {
-// 			$$ = MakeParameter($1, TypeNameToInt($2))
-//                 }
 //         |       IDENT IDENT
-//                 {
-// 			$$ = MakeParameter($1, TypeNameToInt($2))
-//                 }
 //         |       IDENT MULT IDENT
-//                 {
-// 			typ := TypeNameToInt($3)
-// 			param := MakeParameter($1, typ)
-// 			param.IsPointer = true
-// 			$$ = param
-//                 }
 //         ;
 
 // parameters:
 //                 parameter
-//                 {
-// 			var params []*CXArgument
-//                         params = append(params, $1)
-//                         $$ = params
-//                 }
 //         |       parameters COMMA parameter
-//                 {
-// 			$1 = append($1, $3)
-//                         $$ = $1
-//                 }
 //         ;
 
 // functionStatements:
 //                 LBRACE expressionsAndStatements RBRACE
-//                 {
-// 			inFn = false
-//                 }
 //         |       LBRACE RBRACE
-//                 {
-// 			inFn = false
-//                 }
 //         ;
 
 // expressionsAndStatements:
 //                 nonAssignExpression
 //         |       assignExpression
 //         |       statement
+//         |       selector
+//         |       stepping
+//         |       debugging
+//         |       affordance
+//         |       remover
 //         |       expressionsAndStatements nonAssignExpression
 //         |       expressionsAndStatements assignExpression
 //         |       expressionsAndStatements statement
+//         |       expressionsAndStatements selector
+//         |       expressionsAndStatements stepping
+//         |       expressionsAndStatements debugging
+//         |       expressionsAndStatements affordance
+//         |       expressionsAndStatements remover
 //         ;
 
 
 // assignExpression:
 //                 VAR IDENT BASICTYPE definitionAssignment
-//                 {
-//                     $$ = nil
-//                 }
 //         |       VAR IDENT LBRACK RBRACK IDENT
-//                 {
-//                     $$ = nil
-//                 }
 //         |       argumentsList assignOperator argumentsList
-//                 {
-// 			argsL := $1
-// 			argsR := $3
-
-// 			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-// 				offset := 0
-// 				for _, inp := range fn.Inputs {
-// 					offset += inp.Size
-// 				}
-// 				for _, expr := range fn.Expressions {
-// 					for _, inp := range expr.Inputs {
-// 						offset += inp.Size
-// 					}
-// 					for _, out := range expr.Outputs {
-// 						offset += out.Size
-// 					}
-// 				}
-
-// 				expr := MakeExpression(op)
-// 				if !replMode {
-// 					expr.FileLine = yyS[yypt-0].line + 1
-// 					expr.FileName = fileName
-// 				}
-
-				
-				
-// 				for i, argL := range argsL {
-// 					if op, err := prgrm.GetFunction(idFn, CORE_MODULE); err == nil {
-// 						expr := MakeExpression(op)
-// 						if !replMode {
-// 							expr.FileLine = yyS[yypt-0].line + 1
-// 							expr.FileName = fileName
-// 						}
-
-// 						fn.AddExpression(expr)
-// 						expr.AddTag(tag)
-// 						tag = ""
-
-// 						var outName string
-// 						encoder.DeserializeRaw(*argL.Value, &outName)
-
-// 						// checking if identifier was previously declared
-// 						if outType, err := GetIdentType(outName, yyS[yypt-0].line + 1, fileName, prgrm); err == nil {
-// 							if len(typeParts) > 1 {
-// 								if outType != secondTyp {
-// 									panic(fmt.Sprintf("%s: %d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", fileName, yyS[yypt-0].line + 1, outName, outType, secondTyp))
-// 								}
-// 							} else if typeParts[0] == "ident" {
-// 								var identName string
-// 								encoder.DeserializeRaw(*argsR[i].Value, &identName)
-// 								if rightTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, fileName, prgrm); err == nil {
-// 									if outType != ptrs + rightTyp {
-// 										panic(fmt.Sprintf("%s: %d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", fileName, yyS[yypt-0].line + 1, outName, outType, ptrs + rightTyp))
-// 									}
-// 								}
-// 							}
-// 						}
-
-// 						if len(typeParts) > 1 || typeParts[0] == "ident" {
-// 							var identName string
-// 							encoder.DeserializeRaw(*argsR[i].Value, &identName)
-// 							identName = ptrs + identName
-// 							sIdentName := encoder.Serialize(identName)
-// 							arg := MakeArgument(&sIdentName, typ)
-// 							expr.AddArgument(arg)
-// 						} else {
-// 							arg := MakeArgument(argsR[i].Value, typ)
-// 							expr.AddArgument(arg)
-// 						}
-						
-// 						expr.AddOutputName(outName)
-// 					}
-// 				}
-// 			}
-//                 }
 //         ;
 
 // nonAssignExpression:
 //                 IDENT arguments
-//                 {
-// 			var modName string
-// 			var fnName string
-// 			var err error
-// 			var isMethod bool
-// 			//var receiverType string
-// 			identParts := strings.Split($1, ".")
-			
-// 			if len(identParts) == 2 {
-// 				mod, _ := prgrm.GetCurrentModule()
-// 				if typ, err := GetIdentType(identParts[0], yyS[yypt-0].line + 1, fileName, prgrm); err == nil {
-// 					// then it's a method call
-// 					if IsStructInstance(typ, mod) {
-// 						isMethod = true
-// 						//receiverType = typ
-// 						modName = mod.Name
-// 						fnName = fmt.Sprintf("%s.%s", typ, identParts[1])
-// 					}
-// 				} else {
-// 					// then it's a module
-// 					modName = identParts[0]
-// 					fnName = identParts[1]
-// 				}
-// 			} else {
-// 				fnName = identParts[0]
-// 				mod, e := prgrm.GetCurrentModule()
-// 				modName = mod.Name
-// 				err = e
-// 			}
-
-// 			found := false
-// 			currModName := ""
-// 			if mod, err := prgrm.GetCurrentModule(); err == nil {
-// 				currModName = mod.Name
-// 				for _, imp := range mod.Imports {
-// 					if modName == imp.Name {
-// 						found = true
-// 						break
-// 					}
-// 				}
-// 			}
-
-// 			isModule := false
-// 			if _, err := prgrm.GetModule(modName); err == nil {
-// 				isModule = true
-// 			}
-			
-// 			if !found && !IsNative(modName + "." + fnName) && modName != currModName && isModule {
-// 				fmt.Printf("%s: %d: module '%s' was not imported or does not exist\n", fileName, yyS[yypt-0].line + 1, modName)
-// 			} else {
-// 				if err == nil {
-// 					if fn, err := prgrm.GetCurrentFunction(); err == nil {
-// 						if op, err := prgrm.GetFunction(fnName, modName); err == nil {
-// 							expr := MakeExpression(op)
-// 							if !replMode {
-// 								expr.FileLine = yyS[yypt-0].line + 1
-// 								expr.FileName = fileName
-// 							}
-// 							fn.AddExpression(expr)
-// 							expr.AddTag(tag)
-// 							tag = ""
-
-// 							if isMethod {
-// 								sIdent := encoder.Serialize(identParts[0])
-// 								$2 = append([]*CXArgument{MakeArgument(&sIdent, "ident")}, $2...)
-// 							}
-							
-// 							for _, arg := range $2 {
-// 								typeParts := strings.Split(arg.Type, ".")
-
-// 								arg.Type = typeParts[0]
-// 								expr.AddArgument(arg)
-// 							}
-
-// 							lenOut := len(op.Outputs)
-// 							outNames := make([]string, lenOut)
-// 							args := make([]*CXArgument, lenOut)
-							
-// 							for i, out := range op.Outputs {
-// 								outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
-// 								byteName := encoder.Serialize(outNames[i])
-// 								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Type))
-
-// 								expr.AddOutputName(outNames[i])
-// 							}
-							
-// 							$$ = args
-// 						} else {
-// 							fmt.Printf("%s: %d: function '%s' not defined\n", fileName, yyS[yypt-0].line + 1, $1)
-// 						}
-// 					}
-// 				}
-// 			}
-//                 }
+//         |       argument PLUSPLUS
+//         |       argument MINUSMINUS
 //         ;
 
 // beginFor:       FOR
-//                 {
-// 			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-// 				$<i>$ = len(fn.Expressions)
-// 			}
-//                 }
 //                 ;
 
 // conditionControl:
 //                 nonAssignExpression
-//                 {
-// 			$$ = $1
-//                 }
 //         |       argument
-//                 {
-// 			$$ = []*CXArgument{$1}
-//                 }
 //         ;
 
 // returnArg:
-//                 ';'
-//                 {
-// 			$$ = nil
-//                 }
+//                 SEMICOLON
 //         |       argumentsList
-//                 {
-// 			$$ = $1
-//                 }
 //                 ;
 
 // statement:      RETURN returnArg
@@ -947,72 +947,23 @@ declaration_list:
 //                 LBRACE expressionsAndStatements RBRACE
 //         |       beginFor // $<i>1
 //                 forLoopAssignExpression // $2
-//                 ';' conditionControl
-//                 ';' forLoopAssignExpression //$<bool>9
+//                 SEMICOLON conditionControl
+//                 SEMICOLON forLoopAssignExpression //$<bool>9
 //                 LBRACE expressionsAndStatements RBRACE
-//         |       VAR IDENT IDENT
-//         |       ';'
+//         |       VAR IDENT IDENT                
+//         |       SEMICOLON
 //         ;
 
-// forLoopAssignExpression:
-//                 {
-// 			$<bool>$ = false
-//                 }
+// forLoopAssignExpression:                
 //         |       assignExpression
-//                 {
-// 			$<bool>$ = true
-//                 }
 //         |       nonAssignExpression
-//                 {
-// 			$<bool>$ = true
-//                 }
 //         ;
 
 // elseStatement:
 //                 /* empty */
-//                 {
-//                     $<i>$ = 0
-//                 }
 //         |       ELSE
-//                 {
-//                     if mod, err := prgrm.GetCurrentModule(); err == nil {
-//                         if fn, err := mod.GetCurrentFunction(); err == nil {
-//                             if goToFn, err := prgrm.GetFunction("baseGoTo", mod.Name); err == nil {
-// 				    expr := MakeExpression(goToFn)
-// 				    if !replMode {
-// 					    expr.FileLine = yyS[yypt-0].line + 1
-// 					    expr.FileName = fileName
-// 				    }
-// 				    fn.AddExpression(expr)
-//                             }
-//                         }
-//                     }
-//                 }
 //                 LBRACE
-//                 {
-// 			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-// 				$<i>$ = len(fn.Expressions)
-// 			}
-//                 }
 //                 expressionsAndStatements RBRACE
-//                 {
-// 			if mod, err := prgrm.GetCurrentModule(); err == nil {
-// 				if fn, err := mod.GetCurrentFunction(); err == nil {
-// 					goToExpr := fn.Expressions[$<i>4 - 1]
-					
-// 					elseLines := encoder.Serialize(int32(0))
-// 					thenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>4 + 1))
-
-// 					alwaysTrue := encoder.Serialize(int32(1))
-
-// 					goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-// 					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-// 					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
-
-// 					$<i>$ = len(fn.Expressions) - $<i>4
-// 				}
-// 			}
-//                 }
 //                 ;
 
 // expressions:
@@ -1022,98 +973,240 @@ declaration_list:
 //         |       expressions assignExpression
 //         ;
 
+
+
+
+
+
+
+
+
+
+
+// inferPred:      inferObj
+//         |       inferCond
+//         |       inferPred COMMA inferObj
+//         |       inferPred COMMA inferCond
+//         ;
+
+// inferCond:      IDENT LPAREN inferPred RPAREN
+//         |       BOOLEAN
+//         ;
+
+// relationalOp:   EQUAL
+//         |       GTHAN
+//         |       LTHAN
+//         |       UNEQUAL
+//                 ;
+
+// inferActionArg:
+//                 inferObj
+//         |       IDENT
+//         |       AFFVAR relationalOp argument
+//         |       AFFVAR relationalOp nonAssignExpression
+//         |       AFFVAR relationalOp AFFVAR
+//         ;
+
+// inferAction:
+// 		IDENT LPAREN inferActionArg RPAREN
+//         ;
+
+// inferActions:
+//                 inferAction
+//         |       inferActions inferAction
+//                 ;
+
+// inferRule:      IF inferCond LBRACE inferActions RBRACE
+//         |       IF inferObj LBRACE inferActions RBRACE
+//         ;
+
+// inferRules:     inferRule
+//         |       inferRules inferRule
+//         ;
+
+// inferWeight:    FLOAT
+//         |       INT
+//         |       IDENT
+//         ;
+
+// inferObj:
+//         |       IDENT VALUE inferWeight
+//         |       IDENT VALUE nonAssignExpression
+// ;
+
+// inferObjs:      inferObj
+//         |       inferObjs COMMA inferObj
+//         ;
+
+// inferTarget:    IDENT LPAREN IDENT RPAREN
+//         ;
+
+// inferTargets:   inferTarget
+//         |       inferTargets inferTarget
+//         ;
+
+// inferClauses:   inferObjs
+//         |       inferRules
+//         |       inferTargets
+//         ;
+
+
+
+
+// structLitDef:
+//                 TAG argument
+//         |       TAG nonAssignExpression
+                    
+// ;
+
+// structLitDefs:  structLitDef
+//         |       structLitDefs COMMA structLitDef
+//         ;
+
+// structLiteral:
+//         |       
+// 		LBRACE structLitDefs RBRACE
+//         ;
+
 // /*
 //   Fix this, there has to be a way to compress these rules
 // */
-// argument:       LPAREN argument RPAREN
-//                 {
-// 			$$ = $2
-//                 }
-//         |       BYTENUM
-//                 {
-// 			val := encoder.Serialize($1)
-//                         $$ = MakeArgument(&val, "byte")
-//                 }
-//         |       INT
-//                 {
-// 			val := encoder.Serialize($1)
-//                         $$ = MakeArgument(&val, "i32")
-//                 }
-//         |       LONG
-//                 {
-// 			val := encoder.Serialize($1)
-//                         $$ = MakeArgument(&val, "i64")
-//                 }
-//         |       FLOAT
-//                 {
-// 			val := encoder.Serialize($1)
-// 			$$ = MakeArgument(&val, "f32")
-//                 }
-//         |       DOUBLE
-//                 {
-// 			val := encoder.Serialize($1)
-// 			$$ = MakeArgument(&val, "f64")
-//                 }
-//         |       BOOLEAN
-//                 {
-// 			val := encoder.Serialize($1)
-// 			$$ = MakeArgument(&val, "bool")
-//                 }
-//         |       STRING
-//                 {
-// 			str := strings.TrimPrefix($1, "\"")
-//                         str = strings.TrimSuffix(str, "\"")
+// argument:       argument PLUS argument
+//         |       nonAssignExpression PLUS nonAssignExpression
+//         |       argument PLUS nonAssignExpression
+//         |       nonAssignExpression PLUS argument
 
-// 			val := encoder.Serialize(str)
-			
-//                         $$ = MakeArgument(&val, "str")
-//                 }
+
+//         |       argument MINUS argument
+//         |       nonAssignExpression MINUS nonAssignExpression
+//         |       argument MINUS nonAssignExpression
+//         |       nonAssignExpression MINUS argument
+
+//         |       argument MULT argument
+//         |       nonAssignExpression MULT nonAssignExpression
+//         |       argument MULT nonAssignExpression
+//         |       nonAssignExpression MULT argument
+
+//         |       argument DIV argument
+//         |       nonAssignExpression DIV nonAssignExpression
+//         |       argument DIV nonAssignExpression
+//         |       nonAssignExpression DIV argument
+
+//         |       argument REMAINDER argument
+//         |       nonAssignExpression REMAINDER nonAssignExpression
+//         |       argument REMAINDER nonAssignExpression
+//         |       nonAssignExpression REMAINDER argument
+
+//         |       argument LEFTSHIFT argument
+//         |       nonAssignExpression LEFTSHIFT nonAssignExpression
+//         |       argument LEFTSHIFT nonAssignExpression
+//         |       nonAssignExpression LEFTSHIFT argument
+
+//         |       argument RIGHTSHIFT argument
+//         |       nonAssignExpression RIGHTSHIFT nonAssignExpression
+//         |       argument RIGHTSHIFT nonAssignExpression
+//         |       nonAssignExpression RIGHTSHIFT argument
+
+//         |       argument EXP argument
+//         |       nonAssignExpression EXP nonAssignExpression
+//         |       argument EXP nonAssignExpression
+//         |       nonAssignExpression EXP argument
+
+//         |       argument EQUAL argument
+//         |       nonAssignExpression EQUAL nonAssignExpression
+//         |       argument EQUAL nonAssignExpression
+//         |       nonAssignExpression EQUAL argument
+
+//         |       argument UNEQUAL argument
+//         |       nonAssignExpression UNEQUAL nonAssignExpression
+//         |       argument UNEQUAL nonAssignExpression
+//         |       nonAssignExpression UNEQUAL argument
+
+//         |       argument GTHAN argument
+//         |       nonAssignExpression GTHAN nonAssignExpression
+//         |       argument GTHAN nonAssignExpression
+//         |       nonAssignExpression GTHAN argument
+
+//         |       argument GTHANEQ argument
+//         |       nonAssignExpression GTHANEQ nonAssignExpression
+//         |       argument GTHANEQ nonAssignExpression
+//         |       nonAssignExpression GTHANEQ argument
+
+//         |       argument LTHAN argument
+//         |       nonAssignExpression LTHAN nonAssignExpression
+//         |       argument LTHAN nonAssignExpression
+//         |       nonAssignExpression LTHAN argument
+
+//         |       argument LTHANEQ argument
+//         |       nonAssignExpression LTHANEQ nonAssignExpression
+//         |       argument LTHANEQ nonAssignExpression
+//         |       nonAssignExpression LTHANEQ argument
+
+//         |       argument OR argument
+//         |       nonAssignExpression OR nonAssignExpression
+//         |       argument OR nonAssignExpression
+//         |       nonAssignExpression OR argument
+
+//         |       argument AND argument
+//         |       nonAssignExpression AND nonAssignExpression
+//         |       argument AND nonAssignExpression
+//         |       nonAssignExpression AND argument
+
+//         |       argument BITAND argument
+//         |       nonAssignExpression BITAND nonAssignExpression
+//         |       argument BITAND nonAssignExpression
+//         |       nonAssignExpression BITAND argument
+
+//         |       argument BITOR argument
+//         |       nonAssignExpression BITOR nonAssignExpression
+//         |       argument BITOR nonAssignExpression
+//         |       nonAssignExpression BITOR argument
+
+//         |       argument BITXOR argument
+//         |       nonAssignExpression BITXOR nonAssignExpression
+//         |       argument BITXOR nonAssignExpression
+//         |       nonAssignExpression BITXOR argument
+
+//         |       argument BITCLEAR argument
+//         |       nonAssignExpression BITCLEAR nonAssignExpression
+//         |       argument BITCLEAR nonAssignExpression
+//         |       nonAssignExpression BITCLEAR argument
+
+//         |       NOT argument
+//         |       NOT nonAssignExpression
+//         |       LPAREN argument RPAREN
+//         |       BYTENUM
+//         |       INT
+//         |       LONG
+//         |       FLOAT
+//         |       DOUBLE
+//         |       BOOLEAN
+//         |       STRING
 //         |       IDENT
-//                 {
-// 			val := encoder.Serialize($1)
-// 			$$ = MakeArgument(&val, "ident")
-//                 }
+//         |       NEW IDENT LBRACE structLitDefs RBRACE
 //         |       IDENT LBRACK INT RBRACK
-//                 {
-// 			val := encoder.Serialize(fmt.Sprintf("%s[%d", $1, $3))
-// 			$$ = MakeArgument(&val, "ident")
-//                 }
+//         |       INFER LBRACE inferClauses RBRACE
+//         |       BASICTYPE LBRACE argumentsList RBRACE
+//                 // empty arrays
+//         |       BASICTYPE LBRACE RBRACE
 //         ;
 
 // arguments:
 //                 LPAREN argumentsList RPAREN
-//                 {
-//                     $$ = $2
-//                 }
 //         |       LPAREN RPAREN
-//                 {
-//                     $$ = nil
-//                 }
 //         ;
 
 // argumentsList:  argument
-//                 {
-// 			var args []*CXArgument
-// 			args = append(args, $1)
-// 			$$ = args
-//                 }
 //         |       nonAssignExpression
-//                 {
-// 			args := $1
-// 			$$ = args
-//                 }
+//         |       ADDR argument
+//         |       VALUE argument
+//         |       VALUE nonAssignExpression
+                
 //         |       argumentsList COMMA argument
-//                 {
-// 			$1 = append($1, $3)
-// 			$$ = $1
-//                 }
 //         |       argumentsList COMMA nonAssignExpression
-//                 {
-// 			args := $3
-
-// 			$1 = append($1, args...)
-// 			$$ = $1
-//                 }
+//         |       argumentsList COMMA ADDR argument
+//         |       argumentsList COMMA VALUE argument
+//         |       argumentsList COMMA VALUE nonAssignExpression
 //         ;
 
 %%

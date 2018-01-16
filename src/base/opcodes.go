@@ -3,7 +3,7 @@ package base
 // op codes
 const (
 	OP_IDENTITY = iota
-	OP_ADD
+	OP_I32_ADD
 	OP_SUB
 	OP_MUL
 	OP_DIV
@@ -18,7 +18,7 @@ const (
 	OP_BITCLEAR
 	OP_BITSHL
 	OP_BITSHR
-	OP_PRINT
+	OP_I32_PRINT
 	OP_MAKE
 	OP_READ
 	OP_WRITE

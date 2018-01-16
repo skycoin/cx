@@ -8,96 +8,66 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/bool/                    { lval.tok = yylex.Text(); return BOOL }
-/byte/                    { lval.tok = yylex.Text(); return BYTE }
-/break/                   { return BREAK }
-/case/                    { return CASE }
-/const/                   { return CONST }
-/continue/                { return CONTINUE }
-/default/                 { return DEFAULT }
-/else/                    { return ELSE }
-/enum/                    { return ENUM }
-/f32/                     { lval.tok = yylex.Text(); return F32 }
-/f64/                     { lval.tok = yylex.Text(); return F32 }
-/for/                     {return FOR}
-/goto/                    {return GOTO}
-/i8/                      {lval.tok = yylex.Text(); return I8}
-/i16/                     {lval.tok = yylex.Text(); return I16}
-/i32/                     {lval.tok = yylex.Text(); return I32}
-/i64/                     {lval.tok = yylex.Text(); return I64}
-/if/                      {return IF}
-/return/                  {return RETURN}
-/str/                     {return STR}
-/struct/                  {return STRUCT}
-/switch/                  {return SWITCH}
-/type/                    {return TYPE}
-/ui8/                     {lval.tok = yylex.Text(); return UI8}
-/ui16/                    {lval.tok = yylex.Text(); return UI16}
-/ui32/                    {lval.tok = yylex.Text(); return UI32}
-/ui64/                    {lval.tok = yylex.Text(); return UI64}
-/union/                   {return UNION}
-/\+/         { lval.tok = yylex.Text(); return ADD_OP }
-/-/          { lval.tok = yylex.Text(); return SUB_OP }
-/\*/         { lval.tok = yylex.Text(); return MUL_OP }
-/\//         { lval.tok = yylex.Text(); return DIV_OP }
-/%/          { lval.tok = yylex.Text(); return MOD_OP }
-/>>=/                     {return RIGHT_ASSIGN}
-/<<=/                     {return LEFT_ASSIGN}
-/\+=/                     {return ADD_ASSIGN}
-/-=/                      {return SUB_ASSIGN}
-/\*=/                     {return MUL_ASSIGN}
-/\/=/                     {return DIV_ASSIGN}
-/%=/                      {return MOD_ASSIGN}
-/&=/                      {return AND_ASSIGN}
-/\^=/                     {return XOR_ASSIGN}
-/\|=/                      {return OR_ASSIGN}
-/>>/                      {return RIGHT_OP}
-/<</                      {return LEFT_OP}
-/\+\+/                    {return INC_OP}
-/--/                      {return DEC_OP}
-/&&/                      {return AND_OP}
-/||/                      {return OR_OP}
-/<=/                      {return LE_OP}
-/>=/                      {return GE_OP}
-/==/                      {return EQ_OP}
-/!=/                      {return NE_OP}
-/;/                       { return SEMICOLON }
-/!/                       { return EXCL }
-/\(/                      { return LPAREN }
-/\)/                      { return RPAREN }
-/\{/                      { return LBRACE }
-/\}/                      { return RBRACE }
-/\./                      { return PERIOD }
-/,/                       { return COMMA }
-/=/                       { return ASSIGN }
-/:=/                      { return CASSIGN }
-/(:dl)|(:dLocals)/        { return DSTATE     }
-/(:ds)|(:dStack)/         { return DSTACK     }
-/(:dProgram)|(:dp)/       { return DPROGRAM   }
-/:package/                { return SPACKAGE   }
-/:struct/                 { return SSTRUCT    }
-/:func/                   { return SFUNC      }
-/:rem/                    { return REM        }
-/:step/                   { return STEP       }
-/:tStep/     { return TSTEP      }
-/:pStep/     { return PSTEP      }
-/:aff/       { return AFF        }
-/package/    { return PACKAGE    }
-/type/       { return TYPSTRUCT  }
-/struct/     { return STRUCT     }
-/return/     { return RETURN     }
-/goto/       { return GOTO       }
-/if/         { return IF         }
-/for/        { return FOR        }
-/func/       { return FUNC       }
-/clauses/    { return CLAUSES    }
-/expr/       { return EXPR       }
-/def/        { return DEF        }
-/field/      { return FIELD      }
-/input/      { return INPUT      }
-/output/     { return OUTPUT     }
-/import/     { return IMPORT     }
-/var/        { return VAR        }
+/i8/ { lval.tok = yylex.Text(); return LNAME }
+/i16/ { lval.tok = yylex.Text(); return LNAME }
+/i32/ { lval.tok = yylex.Text(); return LNAME }
+/i64/ { lval.tok = yylex.Text(); return LNAME }
+/ui8/ { lval.tok = yylex.Text(); return LNAME }
+/ui16/ { lval.tok = yylex.Text(); return LNAME }
+/ui32/ { lval.tok = yylex.Text(); return LNAME }
+/ui64/ { lval.tok = yylex.Text(); return LNAME }
+/f32/ { lval.tok = yylex.Text(); return LNAME }
+/f64/ { lval.tok = yylex.Text(); return LNAME }
+/c64/ { lval.tok = yylex.Text(); return LNAME }
+/c128/ { lval.tok = yylex.Text(); return LNAME }
+/bool/ { lval.tok = yylex.Text(); return LNAME }
+/str/ { lval.tok = yylex.Text(); return LNAME }
+/break/ { lval.tok = yylex.Text(); return LBREAK }
+/case/ { lval.tok = yylex.Text(); return LCASE }
+/chan/ { lval.tok = yylex.Text(); return LCHAN }
+/const/ { lval.tok = yylex.Text(); return LCONST }
+/continue/ { lval.tok = yylex.Text(); return LCONTINUE }
+/default/ { lval.tok = yylex.Text(); return LDEFAULT }
+/else/ { lval.tok = yylex.Text(); return LELSE }
+/defer/ { lval.tok = yylex.Text(); return LDEFER }
+/fallthrough/ { lval.tok = yylex.Text(); return LFALL }
+/for/ { lval.tok = yylex.Text(); return LFOR }
+/func/ { lval.tok = yylex.Text(); return LFUNC }
+/go/ { lval.tok = yylex.Text(); return LGO }
+/goto/ { lval.tok = yylex.Text(); return LGOTO }
+/if/ { lval.tok = yylex.Text(); return LIF }
+/import/ { lval.tok = yylex.Text(); return LIMPORT }
+/interface/ { lval.tok = yylex.Text(); return LINTERFACE }
+/map/ { lval.tok = yylex.Text(); return LMAP }
+/package/ { lval.tok = yylex.Text(); return LPACKAGE }
+/range/ { lval.tok = yylex.Text(); return LRANGE }
+/return/ { lval.tok = yylex.Text(); return LRETURN }
+/select/ { lval.tok = yylex.Text(); return LSELECT }
+/struct/ { lval.tok = yylex.Text(); return LSTRUCT }
+/switch/ { lval.tok = yylex.Text(); return LSWITCH }
+/type/ { lval.tok = yylex.Text(); return LTYPE }
+/var/ { lval.tok = yylex.Text(); return LVAR }
+/append/ { lval.tok = yylex.Text(); return LNAME }
+/cap/ { lval.tok = yylex.Text(); return LNAME }
+/close/ { lval.tok = yylex.Text(); return LNAME }
+/complex/ { lval.tok = yylex.Text(); return LNAME }
+/copy/ { lval.tok = yylex.Text(); return LNAME }
+/delete/ { lval.tok = yylex.Text(); return LNAME }
+/imag/ { lval.tok = yylex.Text(); return LNAME }
+/len/ { lval.tok = yylex.Text(); return LNAME }
+/make/ { lval.tok = yylex.Text(); return LNAME }
+/new/ { lval.tok = yylex.Text(); return LNAME }
+/panic/ { lval.tok = yylex.Text(); return LNAME }
+/print/ { lval.tok = yylex.Text(); return LNAME }
+/println/ { lval.tok = yylex.Text(); return LNAME }
+/real/ { lval.tok = yylex.Text(); return LNAME }
+/recover/ { lval.tok = yylex.Text(); return LNAME }
+/notwithstanding/ { lval.tok = yylex.Text(); return LIGNORE }
+/thetruthofthematter/ { lval.tok = yylex.Text(); return LIGNORE }
+/despiteallobjections/ { lval.tok = yylex.Text(); return LIGNORE }
+/whereas/ { lval.tok = yylex.Text(); return LIGNORE }
+/insofaras/ { lval.tok = yylex.Text(); return LIGNORE }
+/;/ {lval.tok = yylex.Text(); return ';'}
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
@@ -126,7 +96,7 @@
 	lval.f64 = float64(result)
 	return DOUBLE_LITERAL
 }
-/-?[0-9]+/ {
+/&?-?[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())
 	lval.i32 = int32(result)
 	return INT_LITERAL
@@ -138,7 +108,7 @@
 }
 /[_a-zA-Z][_a-zA-Z0-9]*/ {
 	lval.tok = yylex.Text()
-	return IDENTIFIER
+	return LNAME
 }
 //
 package main
@@ -446,8 +416,8 @@ func main () {
 	//prgrm.Compile(false)
 
 	if replMode || len(sourceCode) == 0 {
-	mod := MakePackage(MAIN_PKG)
-		prgrm.AddPackage(mod)
+	mod := MakeModule("main")
+		prgrm.AddModule(mod)
 		fn := MakeFunction("main")
 		mod.AddFunction(fn)
 

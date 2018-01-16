@@ -4,26 +4,26 @@ import (
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (prgrm *CXProgram) AddModule (mod *CXModule) *CXProgram {
+func (prgrm *CXProgram) AddPackage (mod *CXPackage) *CXProgram {
 	mod.Program = prgrm
 	found := false
-	for _, md := range prgrm.Modules {
+	for _, md := range prgrm.Packages {
 		if md.Name == mod.Name {
-			prgrm.CurrentModule = md
+			prgrm.CurrentPackage = md
 			found = true
 			break
 		}
 	}
 	if !found {
-		prgrm.Modules = append(prgrm.Modules, mod)
-		prgrm.CurrentModule = mod
+		prgrm.Packages = append(prgrm.Packages, mod)
+		prgrm.CurrentPackage = mod
 	}
 	return prgrm
 }
 
-func (mod *CXModule) AddGlobal (def *CXArgument) *CXModule {
+func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
 	def.Program = mod.Program
-	def.Module = mod
+	def.Package = mod
 	found := false
 	for i, df := range mod.Globals {
 		if df.Name == def.Name {
@@ -38,9 +38,9 @@ func (mod *CXModule) AddGlobal (def *CXArgument) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
+func (mod *CXPackage) AddFunction (fn *CXFunction) *CXPackage {
 	fn.Program = mod.Program
-	fn.Module = mod
+	fn.Package = mod
 	
 	found := false
 	for i, f := range mod.Functions {
@@ -50,7 +50,7 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 			mod.Functions[i].Outputs = fn.Outputs
 			mod.Functions[i].Expressions = fn.Expressions
 			mod.Functions[i].CurrentExpression = fn.CurrentExpression
-			mod.Functions[i].Module = fn.Module
+			mod.Functions[i].Package = fn.Package
 			mod.Functions[i].Program = fn.Program
 			mod.CurrentFunction = mod.Functions[i]
 			found = true
@@ -65,10 +65,10 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
+func (mod *CXPackage) AddStruct (strct *CXStruct) *CXPackage {
 	prgrm := mod.Program
 	strct.Program = prgrm
-	strct.Module = mod
+	strct.Package = mod
 	mod.CurrentStruct = strct
 	found := false
 	for i, s := range mod.Structs {
@@ -84,7 +84,7 @@ func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
+func (mod *CXPackage) AddImport (imp *CXPackage) *CXPackage {
 	found := false
 	for _, im := range mod.Imports {
 		if im.Name == imp.Name {
@@ -115,7 +115,7 @@ func (strct *CXStruct) AddField (fld *CXArgument) *CXStruct {
 
 func (fn *CXFunction) AddExpression (expr *CXExpression) *CXFunction {
 	expr.Program = fn.Program
-	expr.Module = fn.Module
+	expr.Package = fn.Package
 	expr.Function = fn
 	fn.Expressions = append(fn.Expressions, expr)
 	fn.CurrentExpression = expr

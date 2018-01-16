@@ -1,7 +1,7 @@
 package base
 
 const MAIN_FUNC = "main"
-const MAIN_MOD = "main"
+const MAIN_PKG = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const CORE_MODULE = "core"
 const ID_FN = "identity"
@@ -179,33 +179,44 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 // types
 const (
-	TYPE_BOOL = iota
-	TYPE_STR
+	TYPE_UNDEFINED = iota
+	
+	TYPE_IDENTIFIER
+	TYPE_BOOL
 	TYPE_BYTE
-	TYPE_I32
-	TYPE_I64
+	TYPE_STR
 	TYPE_F32
 	TYPE_F64
+	TYPE_I8
+	TYPE_I16
+	TYPE_I32
+	TYPE_I64
+	TYPE_UI8
+	TYPE_UI16
+	TYPE_UI32
+	TYPE_UI64
 
 	TYPE_THRESHOLD
 )
 
 // memory locations
 const (
-	STACK = iota
-	HEAP
+	MEM_STACK = iota
+	MEM_HEAP
+	MEM_DATA
 )
 
 /*
   Context
 */
 
+type Data []byte
 type Heap []byte
 type Stack []byte
 
 type CXProgram struct {
-	Modules []*CXModule
-	CurrentModule *CXModule
+	Packages []*CXPackage
+	CurrentPackage *CXPackage
 
 	Inputs []*CXArgument
 	Outputs []*CXArgument
@@ -215,6 +226,8 @@ type CXProgram struct {
 	
 	Stacks []CXStack
 	Heaps []Heap
+
+	Data Data
 
 	Terminated bool
 }
@@ -231,13 +244,13 @@ type CXCall struct {
 }
 
 /*
-  Modules
+  Packages
 */
 
-type CXModule struct {
+type CXPackage struct {
 	Index int
 	Name string
-	Imports []*CXModule
+	Imports []*CXPackage
 	Functions []*CXFunction
 	Structs []*CXStruct
 	Globals []*CXArgument
@@ -257,7 +270,7 @@ type CXStruct struct {
 	Fields []*CXArgument
 	Size int
 
-	Module *CXModule
+	Package *CXPackage
 	Program *CXProgram
 }
 
@@ -279,7 +292,7 @@ type CXFunction struct {
 	OpCode int
 
 	CurrentExpression *CXExpression
-	Module *CXModule
+	Package *CXPackage
 	Program *CXProgram
 }
 
@@ -293,7 +306,7 @@ type CXExpression struct {
 	FileName string
 	
 	Function *CXFunction
-	Module *CXModule
+	Package *CXPackage
 	Program *CXProgram
 }
 
@@ -301,15 +314,17 @@ type CXArgument struct {
 	Index int
 	Name string
 	Type int
-	Size int // size of type, 1, 4, 8 bytes
+	Size int // size of type, 1, 4, 8 bytes. variable for MEM_DATA
 
 	MemoryType int
 	Offset int
 	IsArray bool
 	IsPointer bool
 	IsStruct bool
+	IsExternal bool
+	IsRest bool // pkg.var <- var is rest
 
-	Module *CXModule
+	Package *CXPackage
 	Program *CXProgram
 }
 

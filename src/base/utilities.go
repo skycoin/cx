@@ -1,33 +1,33 @@
 package base
 
-// import (
-// 	"fmt"
-// 	"math/rand"
-// 	"time"
-// 	"bytes"
-// 	"regexp"
-// 	"strings"
-// 	"strconv"
-// 	"errors"
-// 	"github.com/skycoin/skycoin/src/cipher/encoder"
-// )
+import (
+	"fmt"
+	// "math/rand"
+	// "time"
+	"bytes"
+	// "regexp"
+	// "strings"
+	// "strconv"
+	// "errors"
+	// "github.com/skycoin/skycoin/src/cipher/encoder"
+)
 
 // func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 // 	outName := expr.OutputNames[outNameNumber].Name
 
-// 	// if expr.OutputNames[outNameNumber].Typ != typ {
-// 	// 	fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+// 	// if expr.OutputNames[outNameNumber].Type != typ {
+// 	// 	fmt.Println(expr.OutputNames[outNameNumber].Type, typ, expr.Operator.Name)
 // 	// }
-// 	// fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+// 	// fmt.Println(expr.OutputNames[outNameNumber].Type, typ, expr.Operator.Name)
 
-// 	///expr.OutputNames[outNameNumber].Typ = typ
+// 	///expr.OutputNames[outNameNumber].Type = typ
 
 // 	for _, char := range outName {
 // 		if char == '.' {
 // 			identParts := strings.Split(outName, ".")
 
 // 			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
-// 				if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+// 				if strct, err := call.Context.GetStruct(def.Type, expr.Module.Name); err == nil {
 // 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
 // 					firstChunk := make([]byte, offset)
 // 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
@@ -38,7 +38,7 @@ package base
 // 					final := append(firstChunk, output...)
 // 					final = append(final, secondChunk...)
 
-// 					if def.Typ[0] == '*' {
+// 					if def.Type[0] == '*' {
 // 						*def.Value = final
 // 					} else {
 // 						def.Value = &final
@@ -49,7 +49,7 @@ package base
 
 // 			for _, def := range call.State {
 // 				if def.Name == identParts[0] {
-// 					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+// 					if strct, err := call.Context.GetStruct(def.Type, expr.Module.Name); err == nil {
 // 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
 // 						isBasic := false
@@ -73,7 +73,7 @@ package base
 // 							final := append(firstChunk, output...)
 // 							final = append(final, secondChunk...)
 
-// 							if def.Typ[0] == '*' {
+// 							if def.Type[0] == '*' {
 // 								*def.Value = final
 // 							} else {
 // 								def.Value = &final
@@ -117,7 +117,7 @@ package base
 // 	}
 
 // 	if def, err := expr.Module.GetDefinition(outName); err == nil {
-// 		if def.Typ[0] == '*' {
+// 		if def.Type[0] == '*' {
 // 			*def.Value = output
 // 		} else {
 // 			def.Value = &output
@@ -127,8 +127,8 @@ package base
 
 // 	for _, def := range call.State {
 // 		if def.Name == outName {
-// 			//fmt.Println(outName, typ, def.Typ)
-// 			if def.Typ[0] == '*' {
+// 			//fmt.Println(outName, typ, def.Type)
+// 			if def.Type[0] == '*' {
 // 				*def.Value = output
 // 			} else {
 // 				def.Value = &output
@@ -151,7 +151,7 @@ package base
 // 		for i, arg := range args {
 // 			defs[i] = &CXDefinition{
 // 				Name: inputs[i].Name,
-// 				Typ: arg.Typ,
+// 				Typ: arg.Type,
 // 				Value: arg.Value,
 // 				Module: mod,
 // 				Context: cxt,
@@ -160,19 +160,19 @@ package base
 // 		for i, out := range outputs {
 // 			var zeroValue []byte
 // 			isBasic := false
-// 			if IsBasicType(out.Typ) {
-// 				zeroValue = *MakeDefaultValue(out.Typ)
+// 			if IsBasicType(out.Type) {
+// 				zeroValue = *MakeDefaultValue(out.Type)
 // 				isBasic = true
 // 			}
 // 			if !isBasic {
 // 				var err error
-// 				if zeroValue, err = ResolveStruct(out.Typ, cxt); err != nil {
+// 				if zeroValue, err = ResolveStruct(out.Type, cxt); err != nil {
 // 					return nil, err
 // 				}
 // 			}
 // 			defs[i+len(args)] = &CXDefinition{
 // 				Name: out.Name,
-// 				Typ: out.Typ,
+// 				Typ: out.Type,
 // 				Value: &zeroValue,
 // 				Module: mod,
 // 				Context: cxt,
@@ -185,78 +185,78 @@ package base
 // }
 
 // func checkType (fnName string, typ string, arg *CXArgument) error {
-// 	if arg.Typ != typ {
-// 		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ, typ))
+// 	if arg.Type != typ {
+// 		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Type, typ))
 // 	}
 // 	return nil
 // }
 
 // func checkTwoTypes (fnName string, typ1 string, typ2 string, arg1 *CXArgument, arg2 *CXArgument) error {
-// 	if arg1.Typ != typ1 || arg2.Typ != typ2 {
-// 		if arg1.Typ != typ1 {
-// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+// 	if arg1.Type != typ1 || arg2.Type != typ2 {
+// 		if arg1.Type != typ1 {
+// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Type, typ1))
 // 		}
-// 		return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+// 		return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Type, typ2))
 // 	}
 // 	return nil
 // }
 
 // func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1 *CXArgument, arg2 *CXArgument, arg3 *CXArgument) error {
-// 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 {
-// 		if arg1.Typ != typ1 {
-// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
-// 		} else if arg2.Typ != typ2 {
-// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
+// 	if arg1.Type != typ1 || arg2.Type != typ2 || arg3.Type != typ3 {
+// 		if arg1.Type != typ1 {
+// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Type, typ1))
+// 		} else if arg2.Type != typ2 {
+// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Type, typ2))
 // 		}
-// 		return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+// 		return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Type, typ3))
 // 	}
 // 	return nil
 // }
 
 // func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, arg4 *CXArgument) error {
-// 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
-// 		if arg1.Typ != typ1 {
-// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
-// 		} else if arg2.Typ != typ2 {
-// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
-// 		} else if arg3.Typ != typ3 {
-// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
+// 	if arg1.Type != typ1 || arg2.Type != typ2 || arg3.Type != typ3 || arg4.Type != typ4 {
+// 		if arg1.Type != typ1 {
+// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Type, typ1))
+// 		} else if arg2.Type != typ2 {
+// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Type, typ2))
+// 		} else if arg3.Type != typ3 {
+// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Type, typ3))
 // 		}
-// 		return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
+// 		return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Type, typ4))
 // 	}
 // 	return nil
 // }
 
 // func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, arg3, arg4, arg5 *CXArgument) error {
-// 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 {
-// 		if arg1.Typ != typ1 {
-// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
-// 		} else if arg2.Typ != typ2 {
-// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
-// 		} else if arg3.Typ != typ3 {
-// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
-// 		} else if arg4.Typ != typ4 {
-// 			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
+// 	if arg1.Type != typ1 || arg2.Type != typ2 || arg3.Type != typ3 || arg4.Type != typ4 || arg5.Type != typ5 {
+// 		if arg1.Type != typ1 {
+// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Type, typ1))
+// 		} else if arg2.Type != typ2 {
+// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Type, typ2))
+// 		} else if arg3.Type != typ3 {
+// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Type, typ3))
+// 		} else if arg4.Type != typ4 {
+// 			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Type, typ4))
 // 		}
-// 		return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Typ, typ5))
+// 		return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Type, typ5))
 // 	}
 // 	return nil
 // }
 
 // func checkSixTypes (fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg2, arg3, arg4, arg5, arg6 *CXArgument) error {
-// 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 || arg6.Typ != typ6 {
-// 		if arg1.Typ != typ1 {
-// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
-// 		} else if arg2.Typ != typ2 {
-// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
-// 		} else if arg3.Typ != typ3 {
-// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Typ, typ3))
-// 		} else if arg4.Typ != typ4 {
-// 			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Typ, typ4))
-// 		} else if arg5.Typ != typ5 {
-// 			return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Typ, typ5))
+// 	if arg1.Type != typ1 || arg2.Type != typ2 || arg3.Type != typ3 || arg4.Type != typ4 || arg5.Type != typ5 || arg6.Type != typ6 {
+// 		if arg1.Type != typ1 {
+// 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Type, typ1))
+// 		} else if arg2.Type != typ2 {
+// 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Type, typ2))
+// 		} else if arg3.Type != typ3 {
+// 			return errors.New(fmt.Sprintf("%s: argument 3 is type '%s'; expected type '%s'", fnName, arg3.Type, typ3))
+// 		} else if arg4.Type != typ4 {
+// 			return errors.New(fmt.Sprintf("%s: argument 4 is type '%s'; expected type '%s'", fnName, arg4.Type, typ4))
+// 		} else if arg5.Type != typ5 {
+// 			return errors.New(fmt.Sprintf("%s: argument 5 is type '%s'; expected type '%s'", fnName, arg5.Type, typ5))
 // 		}
-// 		return errors.New(fmt.Sprintf("%s: argument 6 is type '%s'; expected type '%s'", fnName, arg6.Typ, typ6))
+// 		return errors.New(fmt.Sprintf("%s: argument 6 is type '%s'; expected type '%s'", fnName, arg6.Type, typ6))
 // 	}
 // 	return nil
 // }
@@ -412,12 +412,12 @@ package base
 		
 // 		fmt.Printf("%s(Definitions %s", rep(tab, 2), nl)
 
-// 		for _, def := range mod.Definitions {
+// 		for _, def := range mod.Globals {
 // 			fmt.Printf("%s(Definition %s %s %s)%s",
 // 				rep(tab, 3),
 // 				def.Name,
-// 				def.Typ,
-// 				PrintValue(def.Value, def.Typ),
+// 				def.Type,
+// 				PrintValue(def.Value, def.Type),
 // 				nl)
 // 		}
 		
@@ -429,7 +429,7 @@ package base
 // 			fmt.Printf("%s(Struct %s", rep(tab, 3), nl)
 
 // 			for _, fld := range strct.Fields {
-// 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Typ, nl)
+// 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Type, nl)
 // 			}
 			
 // 			fmt.Printf("%s)%s", rep(tab, 3), nl) // structs
@@ -444,13 +444,13 @@ package base
 
 // 			fmt.Printf("%s(Inputs %s", rep(tab, 4), nl)
 // 			for _, inp := range fn.Inputs {
-// 				fmt.Printf("%s(Input %s %s)%s", rep(tab, 5), inp.Name, inp.Typ, nl)
+// 				fmt.Printf("%s(Input %s %s)%s", rep(tab, 5), inp.Name, inp.Type, nl)
 // 			}
 // 			fmt.Printf("%s)%s", rep(tab, 4), nl) // inputs
 
 // 			fmt.Printf("%s(Outputs %s", rep(tab, 4), nl)
 // 			for _, out := range fn.Outputs {
-// 				fmt.Printf("%s(Output %s %s)%s", rep(tab, 5), out.Name, out.Typ, nl)
+// 				fmt.Printf("%s(Output %s %s)%s", rep(tab, 5), out.Name, out.Type, nl)
 // 			}
 // 			fmt.Printf("%s)%s", rep(tab, 4), nl) // outputs
 
@@ -469,7 +469,7 @@ package base
 				
 // 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
 // 				for _, arg := range expr.Arguments {
-// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ), arg.Typ, nl)
+// 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Type), arg.Type, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
 				
@@ -519,7 +519,7 @@ package base
 // }
 
 // func ArgToString (arg *CXArgument) string {
-// 	switch arg.Typ {
+// 	switch arg.Type {
 // 	case "ident", "string":
 // 		var identName string
 // 		encoder.DeserializeRaw(*arg.Value, &identName)
@@ -591,7 +591,7 @@ func IsBasicType (typ int) bool {
 // 	return false
 // }
 // func IsGlobal (identName string, mod *CXModule) bool {
-// 	for _, def := range mod.Definitions {
+// 	for _, def := range mod.Globals {
 // 		if def.Name == identName {
 // 			return true
 // 		}
@@ -655,7 +655,7 @@ func IsBasicType (typ int) bool {
 // 			assignOutput(0, val, typ, expr, call)
 // 			return nil
 // 		case "default":
-// 			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Typ))
+// 			return errors.New(fmt.Sprintf("makeArray: argument 1 is type '%s'; expected type 'i32'", size.Type))
 // 		}
 // 		return nil
 // 	} else {
@@ -671,17 +671,17 @@ func IsBasicType (typ int) bool {
 		
 // 		isArray := false
 // 		isBasic := false
-// 		if f.Typ[:2] == "[]" {
+// 		if f.Type[:2] == "[]" {
 // 			isArray = true
 // 			for _, basic := range BASIC_TYPES {
-// 				if basic == f.Typ[2:] {
+// 				if basic == f.Type[2:] {
 // 					isBasic = true
 // 					break
 // 				}
 // 			}
 // 		} else {
 // 			for _, basic := range BASIC_TYPES {
-// 				if basic == f.Typ {
+// 				if basic == f.Type {
 // 					isBasic = true
 // 					break
 // 				}
@@ -689,7 +689,7 @@ func IsBasicType (typ int) bool {
 // 		}
 
 // 		if isBasic {
-// 			fldType = f.Typ
+// 			fldType = f.Type
 // 		} else {
 // 			if isArray {
 // 				fldType = "[]"
@@ -722,27 +722,27 @@ func IsBasicType (typ int) bool {
 // 				}
 // 				size = subOffset
 
-// 				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+// 				return (*val)[offset:offset+size + 4], f.Type, offset, size + 4
 // 			case "str", "[]byte":
 // 				var arrOffset int32
 // 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 // 				size = arrOffset
 
-// 				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+// 				return (*val)[offset:offset+size + 4], f.Type, offset, size + 4
 // 			case "[]bool", "[]i32", "[]f32":
 // 				var arrOffset int32
 // 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 // 				size = arrOffset
 				
-// 				return (*val)[offset:offset+(size * 4) + 4], f.Typ, offset, (size * 4) + 4
+// 				return (*val)[offset:offset+(size * 4) + 4], f.Type, offset, (size * 4) + 4
 // 			case "[]i64", "[]f64":
 // 				var arrOffset int32
 // 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 // 				size = arrOffset
 				
-// 				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
+// 				return (*val)[offset:offset+(size * 8) + 4], f.Type, offset, (size * 8) + 4
 // 			case "[]":
-// 				if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+// 				if strct, err := strct.Context.GetStruct(f.Type[2:], strct.Module.Name); err == nil {
 // 					lastFld := strct.Fields[len(strct.Fields) - 1]
 // 					instances := (*val)[offset+4:]
 
@@ -751,7 +751,7 @@ func IsBasicType (typ int) bool {
 // 					encoder.DeserializeAtomic((*val)[offset:offset + 4], &size)
 					
 // 					if size == 0 {
-// 						return (*val)[offset:offset+4], f.Typ, offset, 4
+// 						return (*val)[offset:offset+4], f.Type, offset, 4
 // 					}
 
 // 					for c := int32(0); c < size; c++ {
@@ -761,19 +761,19 @@ func IsBasicType (typ int) bool {
 // 						upperBound = upperBound + off + size
 // 					}
 
-// 					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
+// 					return (*val)[offset:offset + upperBound + 4], f.Type, offset, upperBound + 4
 // 				}
 // 			case "struct":
-// 				if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+// 				if strct, err := strct.Context.GetStruct(f.Type, strct.Module.Name); err == nil {
 // 					lastFld := strct.Fields[len(strct.Fields) - 1]
 
 // 					instances := (*val)[offset:]
 // 					_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
 					
-// 					return (*val)[offset:offset + off + size], f.Typ, offset, off + size
+// 					return (*val)[offset:offset + off + size], f.Type, offset, off + size
 // 				}
 // 			}
-// 			return (*val)[offset:offset+size], f.Typ, offset, size
+// 			return (*val)[offset:offset+size], f.Type, offset, size
 // 		}
 		
 // 		switch fldType {
@@ -811,7 +811,7 @@ func IsBasicType (typ int) bool {
 
 // 			offset += (arrOffset * 8) + 4
 // 		case "[]":
-// 			if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+// 			if strct, err := strct.Context.GetStruct(f.Type[2:], strct.Module.Name); err == nil {
 // 				instances := (*val)[offset+4:]
 // 				lastFld := strct.Fields[len(strct.Fields) - 1]
 				
@@ -835,7 +835,7 @@ func IsBasicType (typ int) bool {
 // 				offset += upperBound + 4
 // 			}
 // 		case "struct":
-// 			if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+// 			if strct, err := strct.Context.GetStruct(f.Type, strct.Module.Name); err == nil {
 // 				lastFld := strct.Fields[len(strct.Fields) - 1]
 
 // 				instances := (*val)[offset:]
@@ -899,7 +899,7 @@ func IsBasicType (typ int) bool {
 // 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
 // 				isStructFld = true
 // 				//resolvedIdent = def
-// 				if strct, err := mod.Context.GetStruct(def.Typ, mod.Name); err == nil {
+// 				if strct, err := mod.Context.GetStruct(def.Type, mod.Name); err == nil {
 // 					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
 // 					arg := MakeArgument(&byts, typ)
 // 					return arg, nil
@@ -913,7 +913,7 @@ func IsBasicType (typ int) bool {
 
 // 				for _, stateDef := range call.State {
 // 					if stateDef.Name == identParts[0] {
-// 						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
+// 						if strct, err := mod.Context.GetStruct(stateDef.Type, mod.Name); err == nil {
 // 							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
 // 							arg := MakeArgument(&byts, typ)
 // 							return arg, nil
@@ -943,7 +943,7 @@ func IsBasicType (typ int) bool {
 // 		if len(arrayParts) > 1 && local {
 // 			if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
 // 				isArray = true
-// 				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
+// 				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Type)
 // 				arg := MakeArgument(&byts, typ)
 // 				return arg, nil
 // 			} else {
@@ -967,7 +967,7 @@ func IsBasicType (typ int) bool {
 // 	if resolvedIdent != nil && !isStructFld && !isArray {
 // 		// if it was a struct field, we already created the argument above for efficiency reasons
 // 		// the same goes to arrays in the form ident[index]
-// 		arg := MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+// 		arg := MakeArgument(resolvedIdent.Value, resolvedIdent.Type)
 // 		return arg, nil
 // 	}
 // 	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
@@ -1016,7 +1016,7 @@ func IsBasicType (typ int) bool {
 // 		for _, fld := range foundStrct.Fields {
 // 			isBasic := false
 // 			for _, basic := range BASIC_TYPES {
-// 				if fld.Typ == basic {
+// 				if fld.Type == basic {
 // 					isBasic = true
 // 					bs = append(bs, *MakeDefaultValue(basic)...)
 // 					break
@@ -1025,13 +1025,13 @@ func IsBasicType (typ int) bool {
 
 // 			if !isBasic {
 // 				var typ string
-// 				if fld.Typ[:2] == "[]" {
-// 					typ = fld.Typ[2:]
+// 				if fld.Type[:2] == "[]" {
+// 					typ = fld.Type[2:]
 // 				} else {
-// 					typ = fld.Typ
+// 					typ = fld.Type
 // 				}
 // 				if _, err := cxt.GetStruct(typ, mod.Name); err == nil {
-// 					if byts, err := ResolveStruct(fld.Typ, cxt); err == nil {
+// 					if byts, err := ResolveStruct(fld.Type, cxt); err == nil {
 // 						bs = append(bs, byts...)
 // 					} else {
 // 						return nil, err
@@ -1142,14 +1142,14 @@ func IsBasicType (typ int) bool {
 // 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
 
 // 	if index < 0 {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index)), 0, 0
+// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Type, index)), 0, 0
 // 	}
 
 // 	if index >= arrSize {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize)), 0, 0
+// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Type, index, arrSize)), 0, 0
 // 	}
 
-// 	if strct, err := call.Context.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
+// 	if strct, err := call.Context.GetStruct(arr.Type[2:], expr.Module.Name); err == nil {
 // 		instances := (*arr.Value)[4:]
 // 		lastFld := strct.Fields[len(strct.Fields) - 1]
 		
@@ -1180,14 +1180,14 @@ func IsBasicType (typ int) bool {
 // 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
 
 // 	if index < 0 {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Typ, index))
+// 		return nil, errors.New(fmt.Sprintf("%s.read: negative index %d", arr.Type, index))
 // 	}
 
 // 	if index >= arrSize {
-// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize))
+// 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Type, index, arrSize))
 // 	}
 
-// 	switch arr.Typ {
+// 	switch arr.Type {
 // 	case "[]byte":
 // 		return (*arr.Value)[index + 4:index + 1 + 4], nil
 // 	case "[]bool", "[]i32", "[]f32":
@@ -1214,264 +1214,227 @@ func IsBasicType (typ int) bool {
 // 	return nil, nil
 // }
 
-// func (cxt *CXProgram) PrintProgram (withAffs bool) {
-// 	fmt.Println("Program")
-// 	if withAffs {
-// 		for i, aff := range cxt.GetAffordances() {
-// 			fmt.Printf(" * %d.- %s\n", i, aff.Description)
-// 		}
-// 	}
+func (prgrm *CXProgram) PrintProgram () {
+	fmt.Println("Program")
+	
+	i := 0
+	for _, mod := range prgrm.Packages {
+		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
+			continue
+		}
 
-// 	i := 0
-// 	for _, mod := range cxt.Modules {
-// 		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
-// 			continue
-// 		}
+		fmt.Printf("%d.- Package: %s\n", i, mod.Name)
+		
+		if len(mod.Imports) > 0 {
+			fmt.Println("\tImports")
+		}
 
-// 		fmt.Printf("%d.- Module: %s\n", i, mod.Name)
+		j := 0
+		for _, imp := range mod.Imports {
+			fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
+			j++
+		}
 
-// 		if withAffs {
-// 			for i, aff := range mod.GetAffordances() {
-// 				fmt.Printf("\t * %d.- %s\n", i, aff.Description)
-// 			}
-// 		}
+		if len(mod.Globals) > 0 {
+			fmt.Println("\tDefinitions")
+		}
 
-// 		if len(mod.Imports) > 0 {
-// 			fmt.Println("\tImports")
-// 		}
+		j = 0
+		for _, v := range mod.Globals {
+			fmt.Printf("\t\t%d.- Definition: %s %d\n", j, v.Name, v.Type)
+			j++
+		}
 
-// 		j := 0
-// 		for _, imp := range mod.Imports {
-// 			fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
-// 			j++
-// 		}
+		if len(mod.Structs) > 0 {
+			fmt.Println("\tStructs")
+		}
 
-// 		if len(mod.Definitions) > 0 {
-// 			fmt.Println("\tDefinitions")
-// 		}
+		j = 0
+		for _, strct := range mod.Structs {
+			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
 
-// 		j = 0
-// 		for _, v := range mod.Definitions {
-// 			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ)
-// 			j++
-// 		}
-
-// 		if len(mod.Structs) > 0 {
-// 			fmt.Println("\tStructs")
-// 		}
-
-// 		j = 0
-// 		for _, strct := range mod.Structs {
-// 			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
-
-// 			if withAffs {
-// 				for i, aff := range strct.GetAffordances() {
-// 					fmt.Printf("\t\t * %d.- %s\n", i, aff.Description)
-// 				}
-// 			}
-
-// 			for k, fld := range strct.Fields {
-// 				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
-// 					k, fld.Name, fld.Typ)
-// 			}
+			for k, fld := range strct.Fields {
+				fmt.Printf("\t\t\t%d.- Field: %s %d\n",
+					k, fld.Name, fld.Type)
+			}
 			
-// 			j++
-// 		}
+			j++
+		}
 
-// 		if len(mod.Functions) > 0 {
-// 			fmt.Println("\tFunctions")
-// 		}
+		if len(mod.Functions) > 0 {
+			fmt.Println("\tFunctions")
+		}
 
-// 		j = 0
-// 		for _, fn := range mod.Functions {
-// 			mod.SelectFunction(fn.Name)
-// 			inOuts := make(map[string]string)
-// 			for _, in := range fn.Inputs {
-// 				inOuts[in.Name] = in.Typ
-// 			}
+		j = 0
+		for _, fn := range mod.Functions {
+			mod.SelectFunction(fn.Name)
 			
-			
-// 			var inps bytes.Buffer
-// 			for i, inp := range fn.Inputs {
-// 				if i == len(fn.Inputs) - 1 {
-// 					inps.WriteString(concat(inp.Name, " ", inp.Typ))
-// 				} else {
-// 					inps.WriteString(concat(inp.Name, " ", inp.Typ, ", "))
-// 				}
-// 			}
+			var inps bytes.Buffer
+			for i, inp := range fn.Inputs {
+				if i == len(fn.Inputs) - 1 {
+					inps.WriteString(fmt.Sprintf("%s %d", inp.Name, inp.Type))
+				} else {
+					inps.WriteString(fmt.Sprintf("%s %d, ", inp.Name, inp.Type))
+				}
+			}
 
-// 			var outs bytes.Buffer
-// 			for i, out := range fn.Outputs {
-// 				if i == len(fn.Outputs) - 1 {
-// 					outs.WriteString(concat(out.Name, " ", out.Typ))
-// 				} else {
-// 					outs.WriteString(concat(out.Name, " ", out.Typ, ", "))
-// 				}
-// 			}
+			var outs bytes.Buffer
+			for i, out := range fn.Outputs {
+				if i == len(fn.Outputs) - 1 {
+					outs.WriteString(fmt.Sprintf("%s %d", out.Name, out.Type))
+				} else {
+					outs.WriteString(fmt.Sprintf("%s %d, ", out.Name, out.Type))
+				}
+			}
 
-// 			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
-// 				j, fn.Name, inps.String(), outs.String())
+			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
+				j, fn.Name, inps.String(), outs.String())
 
-// 			if withAffs {
-// 				for i, aff := range fn.GetAffordances() {
-// 					fmt.Printf("\t\t * %d.- %s\n", i, aff.Description)
-// 				}
-// 			}
+			k := 0
+			for _, expr := range fn.Expressions {
+				//Arguments
+				var args bytes.Buffer
 
-// 			k := 0
-// 			for _, expr := range fn.Expressions {
-// 				//Arguments
-// 				var args bytes.Buffer
+				for i, arg := range expr.Inputs {
+					typ := ""
+					// if arg.Type == "ident" {
+					// 	var id string
+					// 	encoder.DeserializeRaw(*arg.Value, &id)
+					// 	var err error
+					// 	// if typ, err = GetIdentType(id, expr.FileLine, expr.FileName, prgrm); err != nil {
+					// 	// 	panic(err)
+					// 	// }
+					// } else {
+					// 	typ = arg.Type
+					// }
 
-// 				for i, arg := range expr.Arguments {
-// 					typ := ""
-// 					if arg.Typ == "ident" {
-// 						var id string
-// 						encoder.DeserializeRaw(*arg.Value, &id)
-// 						var err error
-// 						if typ, err = GetIdentType(id, expr.FileLine, expr.FileName, cxt); err != nil {
-// 							panic(err)
-// 						}
-// 					} else {
-// 						typ = arg.Typ
-// 					}
+					// var argName string
+					// encoder.DeserializeRaw(*arg.Value, &argName)
 
-// 					var argName string
-// 					encoder.DeserializeRaw(*arg.Value, &argName)
+					// if arg.Type != "ident" {
+					// 	switch typ {
+					// 	case "str":
+					// 		argName = fmt.Sprintf("%#v", argName)
+					// 	case "bool":
+					// 		var val int32
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		if val == 0 {
+					// 			argName = "false"
+					// 		} else {
+					// 			argName = "true"
+					// 		}
+					// 	case "byte":
+					// 		argName = fmt.Sprintf("%#v", *arg.Value)
+					// 	case "i32":
+					// 		var val int32
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "i64":
+					// 		var val int64
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "f32":
+					// 		var val float32
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "f64":
+					// 		var val float64
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]bool":
+					// 		var val []bool
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]byte":
+					// 		var val []byte
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]str":
+					// 		var val []string
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]i32":
+					// 		var val []int32
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]i64":
+					// 		var val []int64
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]f32":
+					// 		var val []float32
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	case "[]f64":
+					// 		var val []float64
+					// 		encoder.DeserializeRaw(*arg.Value, &val)
+					// 		argName = fmt.Sprintf("%#v", val)
+					// 	default:
+					// 		if arg.Type[0] == '*' || arg.Type[0] == '$' {
+					// 			var identName string
+					// 			encoder.DeserializeRaw(*arg.Value, &identName)
+					// 			argName = identName
+					// 		} else {
+					// 			argName = string(*arg.Value)
+					// 		}
+					// 	}
+					// }
 
-// 					if arg.Typ != "ident" {
-// 						switch typ {
-// 						case "str":
-// 							argName = fmt.Sprintf("%#v", argName)
-// 						case "bool":
-// 							var val int32
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							if val == 0 {
-// 								argName = "false"
-// 							} else {
-// 								argName = "true"
-// 							}
-// 						case "byte":
-// 							argName = fmt.Sprintf("%#v", *arg.Value)
-// 						case "i32":
-// 							var val int32
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "i64":
-// 							var val int64
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "f32":
-// 							var val float32
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "f64":
-// 							var val float64
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]bool":
-// 							var val []bool
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]byte":
-// 							var val []byte
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]str":
-// 							var val []string
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]i32":
-// 							var val []int32
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]i64":
-// 							var val []int64
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]f32":
-// 							var val []float32
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						case "[]f64":
-// 							var val []float64
-// 							encoder.DeserializeRaw(*arg.Value, &val)
-// 							argName = fmt.Sprintf("%#v", val)
-// 						default:
-// 							if arg.Typ[0] == '*' || arg.Typ[0] == '$' {
-// 								var identName string
-// 								encoder.DeserializeRaw(*arg.Value, &identName)
-// 								argName = identName
-// 							} else {
-// 								argName = string(*arg.Value)
-// 							}
-// 						}
-// 					}
+					// if arg.Offset > -1 {
+					// 	offset := arg.Offset
+					// 	size := arg.Size
+					// 	var val []byte
+					// 	encoder.DeserializeRaw((*prgrm.Heap)[offset:offset+size], &val)
+					// 	arg.Value = &val
+					// }
 
-// 					// if arg.Offset > -1 {
-// 					// 	offset := arg.Offset
-// 					// 	size := arg.Size
-// 					// 	var val []byte
-// 					// 	encoder.DeserializeRaw((*cxt.Heap)[offset:offset+size], &val)
-// 					// 	arg.Value = &val
-// 					// }
+					if i == len(expr.Inputs) - 1 {
+						args.WriteString(arg.Name + " " + typ)
+					} else {
+						args.WriteString(arg.Name + " " + typ + ", ")
+					}
+				}
 
-// 					if i == len(expr.Arguments) - 1 {
-// 						args.WriteString(concat(argName, " ", typ))
-// 					} else {
-// 						args.WriteString(concat(argName, " ", typ, ", "))
-// 					}
-// 				}
+				if len(expr.Outputs) > 0 {
+					var outNames bytes.Buffer
+					for i, outName := range expr.Outputs {
+						if i == len(expr.Outputs) - 1 {
+							outNames.WriteString(outName.Name)
+						} else {
+							outNames.WriteString(outName.Name + ", ")
+						}
+					}
 
-// 				if len(expr.OutputNames) > 0 {
-// 					var outNames bytes.Buffer
-// 					for i, outName := range expr.OutputNames {
-// 						if i == len(expr.OutputNames) - 1 {
-// 							outNames.WriteString(outName.Name)
-// 						} else {
-// 							outNames.WriteString(concat(outName.Name, ", "))
-// 						}
-// 					}
+					var exprTag string
+					// if expr.Tag != "" {
+					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					// }
 
-// 					var exprTag string
-// 					if expr.Tag != "" {
-// 						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
-// 					}
-
-// 					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
-// 						k,
-// 						outNames.String(),
-// 						expr.Operator.Name,
-// 						args.String(),
-// 						exprTag)
-// 				} else {
-// 					var exprTag string
-// 					if expr.Tag != "" {
-// 						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
-// 					}
+					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
+						k,
+						outNames.String(),
+						expr.Operator.Name,
+						args.String(),
+						exprTag)
+				} else {
+					var exprTag string
+					// if expr.Tag != "" {
+					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					// }
 					
-// 					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
-// 						k,
-// 						expr.Operator.Name,
-// 						args.String(),
-// 						exprTag)
-// 				}
-
-				
-
-// 				if withAffs {
-// 					for i, aff := range expr.GetAffordances(nil) {
-// 						fmt.Printf("\t\t\t * %d.- %s\n", i, aff.Description)
-// 					}
-// 				}
-				
-// 				k++
-// 			}
-// 			j++
-// 		}
-// 		i++
-// 	}
-// }
+					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
+						k,
+						expr.Operator.Name,
+						args.String(),
+						exprTag)
+				}
+				k++
+			}
+			j++
+		}
+		i++
+	}
+}
 
 // func PrintCallStack (callStack []*CXCall) {
 // 	for i, call := range callStack {
@@ -1494,7 +1457,7 @@ func IsBasicType (typ int) bool {
 // 		// 	var valI64 int64
 // 		// 	var valF32 float32
 // 		// 	var valF64 float64
-// 		// 	switch def.Typ {
+// 		// 	switch def.Type {
 // 		// 	case "i32":
 // 		// 		encoder.DeserializeRaw(*def.Value, &valI32)
 // 		// 		if idx == lenState - 1 {
@@ -1611,7 +1574,7 @@ func IsBasicType (typ int) bool {
 // 			}
 // 			if isImported {
 // 				if def, err := extMod.GetDefinition(concat(identParts[1:]...)); err == nil {
-// 					return def.Typ, nil
+// 					return def.Type, nil
 // 				}
 // 			} else {
 // 				return "", errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", extMod.Name))
@@ -1621,10 +1584,10 @@ func IsBasicType (typ int) bool {
 // 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 // 				for _, inp := range fn.Inputs {
 // 					if inp.Name == identParts[0] {
-// 						if strct, err := cxt.GetStruct(inp.Typ, mod.Name); err == nil {
+// 						if strct, err := cxt.GetStruct(inp.Type, mod.Name); err == nil {
 // 							for _, fld := range strct.Fields {
 // 								if fld.Name == identParts[1] {
-// 									return fld.Typ, nil
+// 									return fld.Type, nil
 // 								}
 // 							}
 // 						}
@@ -1632,10 +1595,10 @@ func IsBasicType (typ int) bool {
 // 				}
 // 				for _, out := range fn.Outputs {
 // 					if out.Name == identParts[0] {
-// 						if strct, err := cxt.GetStruct(out.Typ, mod.Name); err == nil {
+// 						if strct, err := cxt.GetStruct(out.Type, mod.Name); err == nil {
 // 							for _, fld := range strct.Fields {
 // 								if fld.Name == identParts[1] {
-// 									return fld.Typ, nil
+// 									return fld.Type, nil
 // 								}
 // 							}
 // 						}
@@ -1649,20 +1612,20 @@ func IsBasicType (typ int) bool {
 // 						if strct, err := cxt.GetStruct(typ, mod.Name); err == nil {
 // 							for _, fld := range strct.Fields {
 // 								if fld.Name == identParts[1] {
-// 									return fld.Typ, nil
+// 									return fld.Type, nil
 // 								}
 // 							}
 // 						}
 // 					}
 // 					for _, out := range expr.OutputNames {
 // 						if out.Name == lookingFor {
-// 							return out.Typ, nil
+// 							return out.Type, nil
 // 						}
 // 						if out.Name == identParts[0] {
-// 							if strct, err := cxt.GetStruct(out.Typ, mod.Name); err == nil {
+// 							if strct, err := cxt.GetStruct(out.Type, mod.Name); err == nil {
 // 								for _, fld := range strct.Fields {
 // 									if fld.Name == identParts[1] {
-// 										return fld.Typ, nil
+// 										return fld.Type, nil
 // 									}
 // 								}
 // 							}
@@ -1675,10 +1638,10 @@ func IsBasicType (typ int) bool {
 
 // 			// global struct instance
 // 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
-// 				if strct, err := cxt.GetStruct(def.Typ, mod.Name); err == nil {
+// 				if strct, err := cxt.GetStruct(def.Type, mod.Name); err == nil {
 // 					for _, fld := range strct.Fields {
 // 						if fld.Name == identParts[1] {
-// 							return fld.Typ, nil
+// 							return fld.Type, nil
 // 						}
 // 					}
 // 				}
@@ -1698,18 +1661,18 @@ func IsBasicType (typ int) bool {
 // 			for _, inp := range fn.Inputs {
 // 				if inp.Name == arrayParts[0] {
 // 					if len(arrayParts) > 1 {
-// 						return inp.Typ[2:], nil
+// 						return inp.Type[2:], nil
 // 					} else {
-// 						return inp.Typ, nil
+// 						return inp.Type, nil
 // 					}
 // 				}
 // 			}
 // 			for _, out := range fn.Outputs {
 // 				if out.Name == arrayParts[0] {
 // 					if len(arrayParts) > 1 {
-// 						return out.Typ[2:], nil
+// 						return out.Type[2:], nil
 // 					} else {
-// 						return out.Typ, nil
+// 						return out.Type, nil
 // 					}
 // 				}
 // 			}
@@ -1722,16 +1685,16 @@ func IsBasicType (typ int) bool {
 // 				}
 // 				for _, out := range expr.OutputNames {
 // 					if out.Name == arrayParts[0] {
-// 						//fmt.Println("here", out.Name, out.Typ)
+// 						//fmt.Println("here", out.Name, out.Type)
 
 // 						// if expr.Operator.Name == "identity" {
-// 						// 	return fn.Expressions[i-1].OutputNames[0].Typ, nil
+// 						// 	return fn.Expressions[i-1].OutputNames[0].Type, nil
 // 						// }
 						
 // 						if len(arrayParts) > 1 {
-// 							return out.Typ[2:], nil
+// 							return out.Type[2:], nil
 // 						} else {
-// 							return out.Typ, nil
+// 							return out.Type, nil
 // 						}
 // 					}
 // 				}
@@ -1742,7 +1705,7 @@ func IsBasicType (typ int) bool {
 
 // 		// then it's a global definition
 // 		if def, err := mod.GetDefinition(lookingFor); err == nil {
-// 			return def.Typ, nil
+// 			return def.Type, nil
 // 		}
 // 	}
 	
