@@ -3,6 +3,7 @@ package base
 const MAIN_FUNC = "main"
 const MAIN_PKG = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
+const LOCAL_PREFIX = "lcl"
 const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
@@ -199,6 +200,39 @@ const (
 	TYPE_THRESHOLD
 )
 
+var TypeCounter int
+var TypeCodes map[string]int = map[string]int{
+	"identifier": TYPE_IDENTIFIER,
+	"bool": TYPE_BOOL,
+	"byte": TYPE_BYTE,
+	"str": TYPE_STR,
+	"f32": TYPE_F32,
+	"f64": TYPE_F64,
+	"i8": TYPE_I8,
+	"i16": TYPE_I16,
+	"i32": TYPE_I32,
+	"i64": TYPE_I64,
+	"ui8": TYPE_UI8,
+	"ui16": TYPE_UI16,
+	"ui32": TYPE_UI32,
+	"ui64": TYPE_UI64,
+}
+var TypeNames map[int]string = map[int]string{
+	TYPE_IDENTIFIER: "identifier",
+	TYPE_BYTE: "byte",
+	TYPE_STR: "str",
+	TYPE_F32: "f32",
+	TYPE_F64: "f64",
+	TYPE_I8: "i8",
+	TYPE_I16: "i16",
+	TYPE_I32: "i32",
+	TYPE_I64: "i64",
+	TYPE_UI8: "ui8",
+	TYPE_UI16: "ui16",
+	TYPE_UI32: "ui32",
+	TYPE_UI64: "ui64",
+}
+
 // memory locations
 const (
 	MEM_STACK = iota
@@ -321,7 +355,6 @@ type CXArgument struct {
 	IsArray bool
 	IsPointer bool
 	IsStruct bool
-	IsExternal bool
 	IsRest bool // pkg.var <- var is rest
 
 	Package *CXPackage

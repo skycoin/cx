@@ -15,6 +15,22 @@
 	var data Data
 	var dataOffset int
 
+	var lineNo int = 0
+	var webMode bool = false
+	var baseOutput bool = false
+	var replMode bool = false
+	var helpMode bool = false
+	var compileMode bool = false
+	var replTargetFn string = ""
+	var replTargetStrct string = ""
+	var replTargetMod string = ""
+	// var dStack bool = false
+	var inREPL bool = false
+	// var inFn bool = false
+	// var tag string = ""
+	// var asmNL = "\n"
+	var fileName string
+
 	// Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
 	// This function writes those bytes to prgrm.Data
 	func WritePrimary (typ int, byts []byte) []*CXExpression {
@@ -62,6 +78,8 @@
 	expression *CXExpression
 	expressions []*CXExpression
 
+        function *CXFunction
+
 	/* field *CXField */
 	/* fields []*CXField */
 
@@ -80,7 +98,7 @@
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
-                        ADD_OP SUB_OP MUL_OP DIV_OP AFFVAR
+                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
                         BITAND BITXOR BITOR BITCLEAR
@@ -142,6 +160,7 @@
 %type   <expressions>   primary_expression
 
 %type   <expressions>   expression
+%type   <expressions>   block_item_list
 %type   <expressions>   compound_statement
 %type   <expressions>   labeled_statement
 %type   <expressions>   expression_statement
@@ -149,6 +168,8 @@
 %type   <expressions>   iteration_statement
 %type   <expressions>   jump_statement
 %type   <expressions>   statement
+
+%type   <function>      function_header
 
 /* %start                  translation_unit */
 %%
@@ -174,27 +195,32 @@ package_declaration:
                 }
                 ;
 
-function_declaration:
-                FUNC IDENTIFIER LPAREN parameter_type_list RPAREN compound_statement
-        |       FUNC IDENTIFIER LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
+function_header:
+                FUNC IDENTIFIER
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				fn := MakeFunction($2)
 				pkg.AddFunction(fn)
 
-				fmt.Println("")
-				
-				for _, inp := range $4 {
-					fn.AddInput(inp)
-				}
-				for _, inp := range $7 {
-					fn.AddOutput(inp)
-				}
-				for _, expr := range $9 {
-					fn.AddExpression(expr)
-				}
+                                $$ = fn
 			} else {
 				panic(err)
+			}
+                }
+        ;
+
+function_declaration:
+                function_header LPAREN parameter_type_list RPAREN compound_statement
+        |       function_header LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
+                {
+			for _, inp := range $3 {
+				$1.AddInput(inp)
+			}
+			for _, inp := range $6 {
+				$1.AddOutput(inp)
+			}
+			for _, expr := range $8 {
+				$1.AddExpression(expr)
 			}
                 }
         ;
@@ -325,23 +351,23 @@ type_specifier:
         |       F32
                 { $$ = TYPE_F32 }
         |       F64
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_F64 }
         |       I8
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_I8 }
         |       I16
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_I16 }
         |       I32
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_I32 }
         |       I64
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_I64 }
         |       UI8
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_UI8 }
         |       UI16
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_UI16 }
         |       UI32
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_UI32 }
         |       UI64
-                { $$ = TYPE_BOOL }
+                { $$ = TYPE_UI64 }
         /* |       pointer type_specifier */
 	/* |       struct_or_union_specifier */
         /*         { */
@@ -370,13 +396,27 @@ primary_expression:
 			// exprs[0].Outputs[0].Name = $1
 			// $$ = exprs
 
-			arg := MakeArgument(TYPE_IDENTIFIER)
-			arg.Name = $1
-			$$ = []*CXExpression{&CXExpression{Outputs: []*CXArgument{arg}}}
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				arg := MakeArgument(TYPE_IDENTIFIER)
+				arg.Name = $1
+				arg.Package = pkg
+				$$ = []*CXExpression{&CXExpression{Outputs: []*CXArgument{arg}}}
+			} else {
+				panic(err)
+			}
+                }
+        |       type_specifier PERIOD IDENTIFIER
+                {
+			// these will always be native functions
+			if opCode, ok := OpCodes[TypeNames[$1] + "." + $3]; ok {
+				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
+			} else {
+				panic(ok)
+			}
                 }
         |       STRING_LITERAL
                 {
-			$$ = WritePrimary(TYPE_STRING, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1))
                 }
         |       BOOLEAN_LITERAL
                 {
@@ -388,19 +428,19 @@ primary_expression:
                 }
         |       INT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_INT, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1))
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_FLOAT, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_F32, encoder.Serialize($1))
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_DOUBLE, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1))
                 }
         |       LONG_LITERAL
                 {
-			$$ = WritePrimary(TYPE_LONG, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1))
                 }
         |       LPAREN   expression RPAREN
                 { $$ = $2 }
@@ -411,36 +451,79 @@ postfix_expression:
 	// |       postfix_expression '[' expression ']'
 	|       postfix_expression LPAREN RPAREN
                 {
-			opName := $1[0].Outputs[0].Name
-			expr := MakeExpression(opName)
+			arg := $1[0].Outputs[0]
+			opName := arg.Name
 
-			
-			prgrm.GetFunction(opName, )
-			
+			if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
+				$$ = []*CXExpression{MakeExpression(op)}
+			} else {
+				panic(err)
+			}
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
-	/* |       postfix_expression PERIOD IDENTIFIER */
-	|       postfix_expression MUL_OP IDENTIFIER // check
-	|       postfix_expression INC_OP
-        |       postfix_expression DEC_OP
-        |       postfix_expression PERIOD postfix_expression
                 {
-			left := $1[len($1) - 1].Outputs[0]
-			right := $2[0].Outputs[0]
-			
-			if left.IsRest {
+			// i32.add(5, 5)
+			if $1[0].Operator != nil && $1[0].Operator.IsNative {
 				
 			} else {
-				// then left is a first (e.g first.rest)
-				// let's check if it's a package
-				if pkg, err := prgrm.GetPackage(left.Name); err != nil {
+				// then it's not a native function call
+				arg := $1[0].Outputs[0]
+				opName := arg.Name
+				if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
+					expr := MakeExpression(op)
+
+					for _, inpExpr := range $3 {
+						expr.AddInput(inpExpr.Outputs[0])
+					}
+					
+					$$ = []*CXExpression{expr}
+				} else {
+					panic(err)
+				}
+			}
+                }
+	/* |       postfix_expression PERIOD IDENTIFIER */
+	/* |       postfix_expression PERIOD IDENTIFIER // check */
+        /*         { */
+
+        /*         } */
+	|       postfix_expression INC_OP
+                {
+			$$ = $1
+                }
+        |       postfix_expression DEC_OP
+                {
+			$$ = $1
+                }
+        |       postfix_expression PERIOD IDENTIFIER
+                {
+			left := $1[0].Outputs[0]
+			//right := $3[0].Outputs[0]
+			
+			if left.IsRest {
+				// then it can't be a module name
+				// and we propagate the property to the right expression
+				// right.IsRest = true
+			} else {
+				// then left is a first (e.g first.rest) and right is a rest
+				// right.IsRest = true
+				// let's check if left is a package
+				if _, err := prgrm.GetPackage(left.Name); err != nil {
 					// the external property will be propagated to the following arguments
 					// this way we avoid considering these arguments as module names
-					left.IsExternal = true
-					right.IsExternal
-					
+					//right.Package = pkg
+					$$ = $1
 				} else {
-					// it's not a package, then it's a struct
+					// left is not a package, then it's a struct or a function call
+					// if right.Operator != nil {
+					// 	// then left is a function call that returns a struct instance
+					// 	// we just return an expression with the GetField operator
+						
+					// } else {
+					// 	// then left is a struct instance
+
+					// 	// GetField(left, right)
+					// }
 				}
 			}
                 }
@@ -454,8 +537,11 @@ argument_expression_list:
 unary_expression:
                 postfix_expression
 	|       INC_OP unary_expression
+                {$$ = $2}
 	|       DEC_OP unary_expression
+                {$$ = $2}
 	|       unary_operator unary_expression // check
+                {$$ = $2}
                 ;
 
 unary_operator:
@@ -516,7 +602,9 @@ inclusive_or_expression:
 
 logical_and_expression:
                 inclusive_or_expression
+                { $$ = nil }
 	|       logical_and_expression AND_OP inclusive_or_expression
+                { $$ = nil }
                 ;
 
 logical_or_expression:
@@ -549,9 +637,8 @@ assignment_operator:
                 ;
 
 expression:     assignment_expression
-                { $$ = []*CXExpression{$1} }
 	|       expression COMMA assignment_expression
-                { $$ = append($1, $3) }
+                { $$ = append($1, $3...) }
                 ;
 
 constant_expression:
@@ -637,13 +724,18 @@ statement:      /* labeled_statement */
 
 labeled_statement:
                 IDENTIFIER COLON statement
+                { $$ = nil }
 	|       CASE constant_expression COLON statement
+                { $$ = nil }
 	|       DEFAULT COLON statement
+                { $$ = nil }
                 ;
 
 compound_statement:
                 LBRACE RBRACE
+                { $$ = nil }
 	|       LBRACE block_item_list RBRACE
+                { $$ = $2 }
                 ;
 
 block_item_list:
@@ -659,14 +751,25 @@ expression_statement:
                 SEMICOLON
                 { $$ = nil }
 	|       expression SEMICOLON
-                { $$ = []*CXExpression{$1} }
+                {
+			if fn, err := prgrm.GetCurrentFunction(); err == nil {
+				fmt.Println($1)
+				// fmt.Println(fn.IsNative)
+				fn.AddExpression($1[0])
+			} else {
+				panic(err)
+			}
+			$$ = $1
+                }
                 ;
 
 selection_statement:
                 /* IF LPAREN expression RPAREN statement */
 	/* |    IF LPAREN expression RPAREN statement ELSE statement */
                 IF expression compound_statement elseif_list else_statement
+                { $$ = nil }
 	|       SWITCH LPAREN expression RPAREN statement
+                { $$ = nil }
                 ;
 
 elseif:         ELSE IF expression compound_statement
@@ -685,16 +788,23 @@ else_statement:
 
 iteration_statement:
                 FOR LPAREN expression_statement expression_statement RPAREN statement
+                { $$ = nil }
 	|       FOR LPAREN expression_statement expression_statement expression RPAREN statement
+                { $$ = nil }
 	/* |       FOR LPAREN declaration expression_statement RPAREN statement */
 	/* |       FOR LPAREN declaration expression_statement expression RPAREN statement */
                 ;
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
+                { $$ = nil }
 	|       CONTINUE SEMICOLON
+                { $$ = nil }
 	|       BREAK SEMICOLON
+                { $$ = nil }
 	|       RETURN SEMICOLON
+                { $$ = nil }
 	|       RETURN expression SEMICOLON
+                { $$ = nil }
                 ;
 
 

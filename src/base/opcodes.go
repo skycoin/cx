@@ -55,3 +55,27 @@ const (
 	OP_TIME_UNIXMILLI
 	OP_TIME_UNIXNANO
 )
+
+
+// For the parser. These shouldn't be used in the runtime for performance reasons
+var OpNames map[int]string = map[int]string{
+	OP_IDENTITY: "identity",
+	OP_I32_ADD: "i32.add",
+}
+
+// For the parser. These shouldn't be used in the runtime for performance reasons
+var OpCodes map[string]int = map[string]int{
+	"identity": OP_IDENTITY,
+	"i32.add": OP_I32_ADD,
+}
+
+// // inputs, then outputs
+// var OpSignature map[int][2][]int = map[int][2][]int{
+// 	OP_IDENTITY: [2][]int{[]int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}},
+// 	OP_I32_ADD: [2][]int{[]int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}},
+// }
+
+var Natives map[int]*CXFunction = map[int]*CXFunction{
+	OP_IDENTITY: MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_I32_ADD: MakeNative(OP_I32_ADD, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+}

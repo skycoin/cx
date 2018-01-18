@@ -43,7 +43,7 @@ func MakeGlobal (name string, typ int) *CXArgument {
 		Name: name,
 		Type: typ,
 		Size: size,
-		MemoryType: HEAP,
+		MemoryType: MEM_HEAP,
 		Offset: HeapOffset,
 	}
 	HeapOffset += size
@@ -75,7 +75,7 @@ func MakeParameter (name string, typ int) *CXArgument {
 		Name: name,
 		Type: typ,
 		Size: size,
-		MemoryType: STACK,
+		MemoryType: MEM_STACK,
 		// this will be added in AddInput & AddOutput
 		// the parent function knows how many parameters it has
 		// Offset: offset,
@@ -92,6 +92,22 @@ func MakeArgument (typ int) *CXArgument {
 
 func MakeFunction (name string) *CXFunction {
 	return &CXFunction{Name: name}
+}
+
+func MakeNative (opCode int, inputs []int, outputs []int) *CXFunction {
+	fn := &CXFunction{
+		OpCode: opCode,
+		IsNative: true,
+	}
+	
+	for _, typCode := range inputs {
+		fn.Inputs = append(fn.Inputs, MakeParameter("", typCode))
+	}
+	for _, typCode := range outputs {
+		fn.Outputs = append(fn.Outputs, MakeParameter("", typCode))
+	}
+
+	return fn
 }
 
 func MakeValue (value string) *[]byte {

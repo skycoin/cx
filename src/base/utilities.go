@@ -1725,10 +1725,14 @@ func GetArgSize (typ int) int {
 	}
 }
 
-var TypeCounter int
-var TypeCodes map[string]int
-var TypeNames map[int]string
+// func TypeNameToInt (typName string) int {
+// 	return TypeCodes[typName]
+// }
 
-func TypeNameToInt (typName string) int {
-	return TypeCodes[typName]
-}
+// func OpCodeToName (opCode int) string {
+// 	return ""
+// }
+
+// func NameToOpCode (name string) int {
+// 	return 0
+// }
