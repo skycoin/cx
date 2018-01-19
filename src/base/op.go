@@ -14,7 +14,6 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 func i32_add (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	// fmt.Println("offset", inp2.MemoryType)
-	fmt.Println("here", ReadI32(stack, fp, inp1), fp, inp1.MemoryType)
 	outB1 := FromI32(ReadI32(stack, fp, inp1) + ReadI32(stack, fp, inp2))
 	// fmt.Println("before", stack)
 	WriteToStack(stack, fp, out1.Offset, outB1)
@@ -32,6 +31,7 @@ func FromI32 (in int32) []byte {
 }
 
 func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
+	fmt.Println("data", inp.MemoryType, inp.Offset, inp.Size)
 	switch inp.MemoryType {
 	case MEM_STACK:
 		byts := stack.Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
@@ -49,7 +49,7 @@ func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
 
 func WriteToStack (stack *CXStack, fp int, offset int, out []byte) {
 	// fmt.Println("before", stack)
-	fmt.Println("fp", fp, offset)
+	// fmt.Println("fp", fp, offset)
 	for c := 0; c < len(out); c++ {
 		(*stack).Stack[fp + offset + c] = out[c]
 	}

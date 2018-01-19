@@ -120,7 +120,8 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		if prgrm.CallCounter < 0 {
 			// then the program finished
 			prgrm.Terminated = true
-			fmt.Println(prgrm.Stacks[0].Stack)
+			// fmt.Println(prgrm.Stacks[0].Stack)
+			fmt.Println(prgrm.Data)
 		} else {
 			// copying the outputs to the previous stack frame
 			returnAddr := &prgrm.CallStack[prgrm.CallCounter]
@@ -131,11 +132,12 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			expr := returnOp.Expressions[returnLine]
 			outOffset := 0
-			for _, out := range expr.Outputs {
+			for i, out := range expr.Outputs {
 				// copy byte by byte to the previous stack frame
 				for c := 0; c < out.Size; c++ {
 					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-						prgrm.Stacks[0].Stack[fp + outOffset + c]
+						//prgrm.Stacks[0].Stack[fp + outOffset + c]
+						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
 				}
 				outOffset += out.Size
 			}
@@ -155,14 +157,13 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
 		if expr.Operator.IsNative {
-			previousFP := call.FramePointer
-			call.FramePointer = prgrm.Stacks[0].StackPointer
-			fmt.Println("house", call.FramePointer)
+			// previousFP := call.FramePointer
+			// call.FramePointer = prgrm.Stacks[0].StackPointer
 			// the stack pointer is moved to create room for the next call
-			prgrm.Stacks[0].StackPointer += fn.Size
+			// prgrm.Stacks[0].StackPointer += fn.Size
 			execNative(prgrm)
-			prgrm.Stacks[0].StackPointer = call.FramePointer
-			call.FramePointer = previousFP
+			// prgrm.Stacks[0].StackPointer = call.FramePointer
+			// call.FramePointer = previousFP
 			call.Line++
 		} else {
 			/*
@@ -226,7 +227,6 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			fp := newCall.FramePointer
 
-			// fmt.Println("hoho", prgrm.Stacks[0].StackPointer)
 			fmt.Println("hoho", newCall.FramePointer)
 			
 			for i, inp := range newCall.Operator.Inputs {

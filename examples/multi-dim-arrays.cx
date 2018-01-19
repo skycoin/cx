@@ -1,0 +1,22 @@
+package main
+
+func main (num i32) (out i32) {
+	// creating a multi-dimensional array
+	tilemap := [][]i32.make(6)
+	// populating the array
+	tilemap = [][]i32.write(tilemap, 0, []i32{1, 1, 1, 0, 1, 1, 1})
+	tilemap = [][]i32.write(tilemap, 1, []i32{1, 0, 0, 0, 0, 0, 1})
+	tilemap = [][]i32.write(tilemap, 2, []i32{1, 2, 0, 0, 2, 0, 1})
+	tilemap = [][]i32.write(tilemap, 3, []i32{1, 0, 2, 0, 0, 0, 1})
+	tilemap = [][]i32.write(tilemap, 4, []i32{1, 0, 0, 0, 0, 0, 1})
+	tilemap = [][]i32.write(tilemap, 5, []i32{1, 1, 1, 1, 1, 1, 1})
+
+	// reading from array
+	row = [][]i32.read(tilemap, 3)
+	[]i32.print(row)
+
+	// modifying the array
+	tilemap = [][]i32.write(tilemap, 5, []i32{1, 1, 1})
+	mod = [][]i32.read(tilemap, 5)
+	[]i32.print(mod)
+}

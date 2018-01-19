@@ -681,7 +681,6 @@ assignment_expression:
                 {
 			if $3[0].Operator.IsNative {
 				for i, _ := range $3[0].Operator.Outputs {
-					fmt.Println("hello", $1[0].Outputs[i].Name, $1[0].Outputs[i].Size)
 					$1[0].Outputs[i].Size = Natives[$3[0].Operator.OpCode].Outputs[i].Size
 				}
 			} else {

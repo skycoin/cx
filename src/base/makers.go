@@ -99,12 +99,19 @@ func MakeNative (opCode int, inputs []int, outputs []int) *CXFunction {
 		OpCode: opCode,
 		IsNative: true,
 	}
-	
+
+	offset := 0
 	for _, typCode := range inputs {
-		fn.Inputs = append(fn.Inputs, MakeParameter("", typCode))
+		inp := MakeParameter("", typCode)
+		inp.Offset = offset
+		offset += inp.Size
+		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, typCode := range outputs {
 		fn.Outputs = append(fn.Outputs, MakeParameter("", typCode))
+		out := MakeParameter("", typCode)
+		out.Offset = offset
+		offset += out.Size
 	}
 
 	return fn

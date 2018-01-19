@@ -126,10 +126,12 @@ func (fn *CXFunction) AddInput (param *CXArgument) *CXFunction {
 	// The language designer is responsible of adding inputs first, then outputs
 	// Calculating input's offset to the stack
 	inpOffset := 0
+
 	for _, inp := range fn.Inputs {
 		inpOffset += inp.Size
 	}
 	param.Offset = inpOffset
+	
 	found := false
 	for _, inp := range fn.Inputs {
 		if inp.Name == param.Name {
@@ -160,6 +162,7 @@ func (fn *CXFunction) AddOutput (param *CXArgument) *CXFunction {
 		inpOffset += out.Size
 	}
 	param.Offset = inpOffset
+	
 	found := false
 	for _, out := range fn.Outputs {
 		if out.Name == param.Name {
