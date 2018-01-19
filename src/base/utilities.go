@@ -1410,12 +1410,15 @@ func (prgrm *CXProgram) PrintProgram () {
 					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
 					// }
 
-					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
-						k,
-						outNames.String(),
-						expr.Operator.Name,
-						args.String(),
-						exprTag)
+					if expr.Operator != nil {
+						fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
+							k,
+							outNames.String(),
+							expr.Operator.Name,
+							args.String(),
+							exprTag)
+					}
+					
 				} else {
 					var exprTag string
 					// if expr.Tag != "" {

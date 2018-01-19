@@ -318,7 +318,6 @@ type CXFunction struct {
 	Inputs []*CXArgument
 	Outputs []*CXArgument
 	Expressions []*CXExpression
-	InputsSize int // to make getting outputs from stack easier, pre-computed for performance
 	Size int // automatic memory size
 	Length int // number of expressions, pre-computed for performance
 

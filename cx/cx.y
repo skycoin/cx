@@ -43,6 +43,7 @@
 			size := len(byts)
 			arg.Size = size
 			dataOffset += size
+			prgrm.Data = append(prgrm.Data, Data(byts)...)
 			expr := MakeExpression(nil)
 			expr.Outputs = append(expr.Outputs, arg)
 			return []*CXExpression{expr}
@@ -148,6 +149,7 @@
 %type   <expressions>   logical_or_expression
 %type   <expressions>   logical_and_expression
 %type   <expressions>   exclusive_or_expression
+%type   <expressions>   inclusive_or_expression
 %type   <expressions>   and_expression
 %type   <expressions>   equality_expression
 %type   <expressions>   relational_expression
@@ -190,6 +192,7 @@ external_declaration:
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
+			fmt.Println()
 			pkg := MakePackage($2)
 			prgrm.AddPackage(pkg)
                 }
@@ -213,15 +216,67 @@ function_declaration:
                 function_header LPAREN parameter_type_list RPAREN compound_statement
         |       function_header LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
                 {
+			// fixing output parameters' offsets (they need to be + last input offset)
+			offset := $3[len($3) - 1].Offset + $3[len($3) - 1].Size
+			for _, out := range $6 {
+				out.Offset += offset
+				offset += out.Size
+			}
+
+			// adding all the inputs, outputs and expressions
 			for _, inp := range $3 {
 				$1.AddInput(inp)
 			}
-			for _, inp := range $6 {
-				$1.AddOutput(inp)
+			for _, out := range $6 {
+				$1.AddOutput(out)
 			}
 			for _, expr := range $8 {
 				$1.AddExpression(expr)
 			}
+
+			$1.Length = len($1.Expressions)
+
+			var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
+			for _, inp := range $1.Inputs {
+				if inp.Name != "" {
+					symbols[inp.Name] = inp
+				}
+			}
+			for _, out := range $1.Outputs {
+				if out.Name != "" {
+					symbols[out.Name] = out
+				}
+			}
+			for _, expr := range $1.Expressions {
+				for _, inp := range expr.Inputs {
+					if inp.Name != "" {
+						if arg, found := symbols[inp.Name]; !found {
+							// it should exist. error
+							panic("input does not exist")
+						} else {
+							// inp.Offset = off
+							// arg.Offset = offset
+							inp.Offset = arg.Offset
+							inp.Size = arg.Size
+						}
+					}
+				}
+				for _, out := range expr.Outputs {
+					if out.Name != "" {
+						if arg, found := symbols[out.Name]; !found {
+							out.Offset = offset
+							symbols[out.Name] = out
+							offset += out.Size
+						} else {
+							fmt.Println("hawaii", out.Name, out.Size, arg.Size)
+							out.Offset = arg.Offset
+							out.Size = arg.Size
+							fmt.Println("hawaii", out.Name, out.Size, arg.Size)
+						}
+					}
+				}
+			}
+			$1.Size = offset
                 }
         ;
 
@@ -239,13 +294,12 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
-			// var args []*CXArgument
-			// args = append(args, $1)
-			// $$ = args
 			$$ = []*CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
+			lastPar := $1[len($1) - 1]
+			$3.Offset = lastPar.Offset + lastPar.Size
 			$$ = append($1, $3)
                 }
                 ;
@@ -255,6 +309,8 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.IsArray = $1.IsArray
+			// input and output parameters are always in the stack
+			$2.MemoryType = MEM_STACK
 			$$ = $2
                 }
         //                      |declaration_specifiers abstract_declarator
@@ -300,11 +356,11 @@ direct_declarator:
                 ;
 
 // check
-pointer:  MUL_OP   type_qualifier_list pointer // check
-	| MUL_OP   type_qualifier_list // check
-	| MUL_OP   pointer
-	| MUL_OP
-	;
+pointer:        MUL_OP   type_qualifier_list pointer // check
+        |       MUL_OP   type_qualifier_list // check
+        |       MUL_OP   pointer
+        |       MUL_OP
+                ;
 
 type_qualifier_list:
                 type_qualifier
@@ -325,11 +381,14 @@ declaration_specifiers:
                 {
 			arg := MakeArgument($2)
                         arg.IsPointer = true
+			arg.Size = GetArgSize($2)
 			$$ = arg
                 }
         |       type_specifier
                 {
-			$$ = MakeArgument($1)
+			arg := MakeArgument($1)
+			arg.Size = GetArgSize($1)
+			$$ = arg
                 }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -462,25 +521,22 @@ postfix_expression:
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
-			// i32.add(5, 5)
-			if $1[0].Operator != nil && $1[0].Operator.IsNative {
-				
-			} else {
-				// then it's not a native function call
-				arg := $1[0].Outputs[0]
-				opName := arg.Name
-				if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
-					expr := MakeExpression(op)
-
-					for _, inpExpr := range $3 {
-						expr.AddInput(inpExpr.Outputs[0])
-					}
-					
-					$$ = []*CXExpression{expr}
+			/*
+			  i32.add(5, 5), foo(10, 20)
+			*/
+			expr := $1[0]
+			if $1[0].Operator == nil {
+				if op, err := prgrm.GetFunction($1[0].Outputs[0].Name, $1[0].Outputs[0].Package.Name); err == nil {
+					expr.Operator = op
 				} else {
 					panic(err)
 				}
 			}
+			
+			for _, inpExpr := range $3 {
+				expr.AddInput(inpExpr.Outputs[0])
+			}
+			$$ = $1
                 }
 	/* |       postfix_expression PERIOD IDENTIFIER */
 	/* |       postfix_expression PERIOD IDENTIFIER // check */
@@ -532,6 +588,9 @@ postfix_expression:
 argument_expression_list:
                 assignment_expression
 	|       argument_expression_list COMMA assignment_expression
+                {
+			$$ = append($1, $3...)
+                }
                 ;
 
 unary_expression:
@@ -602,7 +661,6 @@ inclusive_or_expression:
 
 logical_and_expression:
                 inclusive_or_expression
-                { $$ = nil }
 	|       logical_and_expression AND_OP inclusive_or_expression
                 { $$ = nil }
                 ;
@@ -620,6 +678,21 @@ conditional_expression:
 assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
+                {
+			if $3[0].Operator.IsNative {
+				for i, _ := range $3[0].Operator.Outputs {
+					fmt.Println("hello", $1[0].Outputs[i].Name, $1[0].Outputs[i].Size)
+					$1[0].Outputs[i].Size = Natives[$3[0].Operator.OpCode].Outputs[i].Size
+				}
+			} else {
+				for i, out := range $3[0].Operator.Outputs {
+					$1[0].Outputs[i].Size = out.Size
+				}
+			}
+
+			$3[0].Outputs = $1[0].Outputs
+			$$ = $3
+                }
                 ;
 
 assignment_operator:
@@ -735,12 +808,17 @@ compound_statement:
                 LBRACE RBRACE
                 { $$ = nil }
 	|       LBRACE block_item_list RBRACE
-                { $$ = $2 }
+                {
+                    $$ = $2
+                }
                 ;
 
 block_item_list:
                 statement
 	|       block_item_list statement
+                {
+			$$ = append($1, $2...)
+                }
                 ;
 
 // block_item:     /* declaration */
@@ -752,13 +830,11 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {
-			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-				fmt.Println($1)
-				// fmt.Println(fn.IsNative)
-				fn.AddExpression($1[0])
-			} else {
-				panic(err)
-			}
+			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// 	fn.AddExpression($1[0])
+			// } else {
+			// 	panic(err)
+			// }
 			$$ = $1
                 }
                 ;
