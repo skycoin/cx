@@ -1,79 +1,16 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	// "errors"
 	"math/rand"
 	"time"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func execNative (prgrm *CXProgram) {
-	call := &prgrm.CallStack[prgrm.CallCounter]
-	stack := &prgrm.Stacks[0]
-	expr := call.Operator.Expressions[call.Line]
-	opCode := expr.Operator.OpCode
-	fp := call.FramePointer
-	
-	switch opCode {
-	case OP_IDENTITY: identity(expr, stack, fp)
-	case OP_I32_ADD: i32_add(expr, stack, fp)
-	case OP_SUB:
-	case OP_MUL:
-	case OP_DIV:
-	case OP_ABS:
-	case OP_MOD:
-	case OP_POW:
-	case OP_COS:
-	case OP_SIN:
-	case OP_BITAND:
-	case OP_BITOR:
-	case OP_BITXOR:
-	case OP_BITCLEAR:
-	case OP_BITSHL:
-	case OP_BITSHR:
-	case OP_I32_PRINT:
-	case OP_MAKE:
-	case OP_READ:
-	case OP_WRITE:
-	case OP_LEN:
-	case OP_CONCAT:
-	case OP_APPEND:
-	case OP_COPY:
-	case OP_CAST:
-	case OP_EQ:
-	case OP_UNEQ:
-	case OP_LT:
-	case OP_GT:
-	case OP_LTEQ:
-	case OP_GTEQ:
-	case OP_RAND:
-	case OP_AND:
-	case OP_OR:
-	case OP_NOT:
-	case OP_SLEEP:
-	case OP_HALT:
-	case OP_GOTO:
-	case OP_REMCX:
-	case OP_ADDCX:
-	case OP_QUERY:
-	case OP_EXECUTE:
-	case OP_INDEX:
-	case OP_NAME:
-	case OP_EVOLVE:
-	case OP_TEST_START:
-	case OP_TEST_STOP:
-	case OP_TEST_ERROR:
-	case OP_TEST:
-	case OP_TIME_UNIX:
-	case OP_TIME_UNIXMILLI:
-	case OP_TIME_UNIXNANO:
-	}
-}
-
 func (prgrm *CXProgram) Run () error {
-	fmt.Println("")
-	prgrm.PrintProgram()
+	// fmt.Println("")
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -121,7 +58,7 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			// then the program finished
 			prgrm.Terminated = true
 			// fmt.Println(prgrm.Stacks[0].Stack)
-			fmt.Println(prgrm.Data)
+			// fmt.Println("prgrm.Data", prgrm.Data)
 		} else {
 			// copying the outputs to the previous stack frame
 			returnAddr := &prgrm.CallStack[prgrm.CallCounter]
@@ -136,7 +73,6 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				// copy byte by byte to the previous stack frame
 				for c := 0; c < out.Size; c++ {
 					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-						//prgrm.Stacks[0].Stack[fp + outOffset + c]
 						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
 				}
 				outOffset += out.Size
@@ -227,11 +163,9 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			fp := newCall.FramePointer
 
-			fmt.Println("hoho", newCall.FramePointer)
-			
-			for i, inp := range newCall.Operator.Inputs {
+			for i, inp := range expr.Inputs {
 				var byts []byte
-				switch expr.Inputs[i].MemoryType {
+				switch inp.MemoryType {
 				case MEM_STACK:
 					byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
 				case MEM_DATA:
@@ -240,8 +174,7 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 					panic("implement the other mem types")
 				}
 				for c := 0; c < inp.Size; c++ {
-					// fmt.Println(fp)
-					prgrm.Stacks[0].Stack[fp + inp.Offset + c] = 
+					prgrm.Stacks[0].Stack[fp + newCall.Operator.Inputs[i].Offset + c] = 
 					byts[c]
 				}
 			}

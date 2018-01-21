@@ -1292,107 +1292,33 @@ func (prgrm *CXProgram) PrintProgram () {
 
 			k := 0
 			for _, expr := range fn.Expressions {
+				if expr.Operator == nil {
+					continue
+				}
 				//Arguments
 				var args bytes.Buffer
 
 				for i, arg := range expr.Inputs {
-					typ := ""
-					// if arg.Type == "ident" {
-					// 	var id string
-					// 	encoder.DeserializeRaw(*arg.Value, &id)
-					// 	var err error
-					// 	// if typ, err = GetIdentType(id, expr.FileLine, expr.FileName, prgrm); err != nil {
-					// 	// 	panic(err)
-					// 	// }
-					// } else {
-					// 	typ = arg.Type
-					// }
-
-					// var argName string
-					// encoder.DeserializeRaw(*arg.Value, &argName)
-
-					// if arg.Type != "ident" {
-					// 	switch typ {
-					// 	case "str":
-					// 		argName = fmt.Sprintf("%#v", argName)
-					// 	case "bool":
-					// 		var val int32
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		if val == 0 {
-					// 			argName = "false"
-					// 		} else {
-					// 			argName = "true"
-					// 		}
-					// 	case "byte":
-					// 		argName = fmt.Sprintf("%#v", *arg.Value)
-					// 	case "i32":
-					// 		var val int32
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "i64":
-					// 		var val int64
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "f32":
-					// 		var val float32
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "f64":
-					// 		var val float64
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]bool":
-					// 		var val []bool
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]byte":
-					// 		var val []byte
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]str":
-					// 		var val []string
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]i32":
-					// 		var val []int32
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]i64":
-					// 		var val []int64
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]f32":
-					// 		var val []float32
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	case "[]f64":
-					// 		var val []float64
-					// 		encoder.DeserializeRaw(*arg.Value, &val)
-					// 		argName = fmt.Sprintf("%#v", val)
-					// 	default:
-					// 		if arg.Type[0] == '*' || arg.Type[0] == '$' {
-					// 			var identName string
-					// 			encoder.DeserializeRaw(*arg.Value, &identName)
-					// 			argName = identName
-					// 		} else {
-					// 			argName = string(*arg.Value)
-					// 		}
-					// 	}
-					// }
-
-					// if arg.Offset > -1 {
-					// 	offset := arg.Offset
-					// 	size := arg.Size
-					// 	var val []byte
-					// 	encoder.DeserializeRaw((*prgrm.Heap)[offset:offset+size], &val)
-					// 	arg.Value = &val
-					// }
+					var name string
+					switch arg.MemoryType {
+					case MEM_DATA:
+						name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
+					default:
+						name = arg.Name
+					}
 
 					if i == len(expr.Inputs) - 1 {
-						args.WriteString(arg.Name + " " + typ)
+						args.WriteString(name + " " + TypeNames[arg.Type])
 					} else {
-						args.WriteString(arg.Name + " " + typ + ", ")
+						args.WriteString(name + " " + TypeNames[arg.Type] + ", ")
 					}
+				}
+
+				var opName string
+				if expr.Operator.IsNative {
+					opName = OpNames[expr.Operator.OpCode]
+				} else {
+					opName = expr.Operator.Name
 				}
 
 				if len(expr.Outputs) > 0 {
@@ -1414,7 +1340,7 @@ func (prgrm *CXProgram) PrintProgram () {
 						fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
 							k,
 							outNames.String(),
-							expr.Operator.Name,
+							opName,
 							args.String(),
 							exprTag)
 					}
@@ -1427,7 +1353,7 @@ func (prgrm *CXProgram) PrintProgram () {
 					
 					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
 						k,
-						expr.Operator.Name,
+						opName,
 						args.String(),
 						exprTag)
 				}

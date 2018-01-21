@@ -146,11 +146,6 @@ func (fn *CXFunction) AddInput (param *CXArgument) *CXFunction {
 	return fn
 }
 
-func (expr *CXExpression) AddInput (inp *CXArgument) *CXExpression {
-	expr.Inputs = append(expr.Inputs, inp)
-	return expr
-}
-
 func (fn *CXFunction) AddOutput (param *CXArgument) *CXFunction {
 	// The language designer is responsible of adding inputs first, then outputs
 	// Calculating output's offset to the stack
@@ -177,17 +172,22 @@ func (fn *CXFunction) AddOutput (param *CXArgument) *CXFunction {
 	return fn
 }
 
-func (expr *CXExpression) AddOutput (param *CXArgument) *CXExpression {
-	found := false
-	for _, out := range expr.Outputs {
-		if out.Name == param.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		expr.Outputs = append(expr.Outputs, param)
-	}
+func (expr *CXExpression) AddInput (inp *CXArgument) *CXExpression {
+	expr.Inputs = append(expr.Inputs, inp)
+	return expr
+}
 
+func (expr *CXExpression) AddOutput (param *CXArgument) *CXExpression {
+	// found := false
+	// for _, out := range expr.Outputs {
+	// 	if out.Name == param.Name {
+	// 		found = true
+	// 		break
+	// 	}
+	// }
+	// if !found {
+	// 	expr.Outputs = append(expr.Outputs, param)
+	// }
+	expr.Outputs = append(expr.Outputs, param)
 	return expr
 }

@@ -218,7 +218,8 @@ var TypeCodes map[string]int = map[string]int{
 	"ui64": TYPE_UI64,
 }
 var TypeNames map[int]string = map[int]string{
-	TYPE_IDENTIFIER: "identifier",
+	TYPE_IDENTIFIER: "ident",
+	TYPE_BOOL: "bool",
 	TYPE_BYTE: "byte",
 	TYPE_STR: "str",
 	TYPE_F32: "f32",
@@ -337,6 +338,7 @@ type CXExpression struct {
 	// debugging
 	FileLine int
 	FileName string
+	Label string
 	
 	Function *CXFunction
 	Package *CXPackage

@@ -1,12 +1,12 @@
 %{
 	package main
 	import (
-		//"strings"
-		"fmt"
-		//		"os"
-		//	"time"
+		// "strings"
+		// "fmt"
+		// "os"
+		// "time"
 
-		//"github.com/skycoin/cx/cx/cx0"
+		// "github.com/skycoin/cx/cx/cx0"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/src/base"
 	)
@@ -192,7 +192,6 @@ external_declaration:
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			fmt.Println()
 			pkg := MakePackage($2)
 			prgrm.AddPackage(pkg)
                 }
@@ -247,12 +246,13 @@ function_declaration:
 					symbols[out.Name] = out
 				}
 			}
+
 			for _, expr := range $1.Expressions {
 				for _, inp := range expr.Inputs {
 					if inp.Name != "" {
 						if arg, found := symbols[inp.Name]; !found {
 							// it should exist. error
-							panic("input does not exist")
+							panic("identifier '" + inp.Name + "' does not exist")
 						} else {
 							// inp.Offset = off
 							// arg.Offset = offset
@@ -268,10 +268,8 @@ function_declaration:
 							symbols[out.Name] = out
 							offset += out.Size
 						} else {
-							fmt.Println("hawaii", out.Name, out.Size, arg.Size)
 							out.Offset = arg.Offset
 							out.Size = arg.Size
-							fmt.Println("hawaii", out.Name, out.Size, arg.Size)
 						}
 					}
 				}
@@ -451,10 +449,6 @@ type_specifier:
 primary_expression:
                 IDENTIFIER
                 {
-			// exprs := WritePrimary(TYPE_IDENTIFIER, encoder.Serialize($1))
-			// exprs[0].Outputs[0].Name = $1
-			// $$ = exprs
-
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				arg := MakeArgument(TYPE_IDENTIFIER)
 				arg.Name = $1
@@ -501,7 +495,7 @@ primary_expression:
                 {
 			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1))
                 }
-        |       LPAREN   expression RPAREN
+        |       LPAREN expression RPAREN
                 { $$ = $2 }
                 ;
 
@@ -510,14 +504,18 @@ postfix_expression:
 	// |       postfix_expression '[' expression ']'
 	|       postfix_expression LPAREN RPAREN
                 {
-			arg := $1[0].Outputs[0]
-			opName := arg.Name
+			// expr := $1[0]
+			$$ = $1
+			// fmt.Println("yoyo", expr)
 
-			if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
-				$$ = []*CXExpression{MakeExpression(op)}
-			} else {
-				panic(err)
-			}
+			// arg := $1[0].Outputs[0]
+			// opName := arg.Name
+
+			// if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
+			// 	$$ = []*CXExpression{MakeExpression(op)}
+			// } else {
+			// 	panic(err)
+			// }
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
@@ -525,18 +523,32 @@ postfix_expression:
 			  i32.add(5, 5), foo(10, 20)
 			*/
 			expr := $1[0]
-			if $1[0].Operator == nil {
+			if expr.Operator == nil {
 				if op, err := prgrm.GetFunction($1[0].Outputs[0].Name, $1[0].Outputs[0].Package.Name); err == nil {
 					expr.Operator = op
 				} else {
 					panic(err)
 				}
 			}
-			
+
+			var nestedExprs []*CXExpression
 			for _, inpExpr := range $3 {
-				expr.AddInput(inpExpr.Outputs[0])
+				if inpExpr.Operator == nil {
+					// then it's a literal
+					expr.AddInput(inpExpr.Outputs[0])
+				} else {
+					// then it's a function call
+					if len(inpExpr.Outputs) < 1 {
+						out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
+						inpExpr.AddOutput(out)
+						expr.AddInput(out)
+					}
+					nestedExprs = append(nestedExprs, inpExpr)
+				}
 			}
-			$$ = $1
+			
+			nestedExprs = append(nestedExprs, $1...)
+			$$ = nestedExprs
                 }
 	/* |       postfix_expression PERIOD IDENTIFIER */
 	/* |       postfix_expression PERIOD IDENTIFIER // check */
@@ -553,35 +565,40 @@ postfix_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			left := $1[0].Outputs[0]
-			//right := $3[0].Outputs[0]
-			
-			if left.IsRest {
-				// then it can't be a module name
-				// and we propagate the property to the right expression
-				// right.IsRest = true
-			} else {
-				// then left is a first (e.g first.rest) and right is a rest
-				// right.IsRest = true
-				// let's check if left is a package
-				if _, err := prgrm.GetPackage(left.Name); err != nil {
-					// the external property will be propagated to the following arguments
-					// this way we avoid considering these arguments as module names
-					//right.Package = pkg
-					$$ = $1
-				} else {
-					// left is not a package, then it's a struct or a function call
-					// if right.Operator != nil {
-					// 	// then left is a function call that returns a struct instance
-					// 	// we just return an expression with the GetField operator
-						
-					// } else {
-					// 	// then left is a struct instance
-
-					// 	// GetField(left, right)
-					// }
-				}
+			fullName := $1[len($1) - 1].Outputs[0].Name + "." + $3
+			if opCode, ok := OpCodes[fullName]; ok {
+				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
 			}
+			
+			// left := $1[0].Outputs[0]
+			// //right := $3[0].Outputs[0]
+			
+			// if left.IsRest {
+			// 	// then it can't be a module name
+			// 	// and we propagate the property to the right expression
+			// 	// right.IsRest = true
+			// } else {
+			// 	// then left is a first (e.g first.rest) and right is a rest
+			// 	// right.IsRest = true
+			// 	// let's check if left is a package
+			// 	if _, err := prgrm.GetPackage(left.Name); err != nil {
+			// 		// the external property will be propagated to the following arguments
+			// 		// this way we avoid considering these arguments as module names
+			// 		//right.Package = pkg
+			// 		$$ = $1
+			// 	} else {
+			// 		// left is not a package, then it's a struct or a function call
+			// 		// if right.Operator != nil {
+			// 		// 	// then left is a function call that returns a struct instance
+			// 		// 	// we just return an expression with the GetField operator
+						
+			// 		// } else {
+			// 		// 	// then left is a struct instance
+
+			// 		// 	// GetField(left, right)
+			// 		// }
+			// 	}
+			// }
                 }
                 ;
 
@@ -679,18 +696,29 @@ assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
-			if $3[0].Operator.IsNative {
-				for i, _ := range $3[0].Operator.Outputs {
-					$1[0].Outputs[i].Size = Natives[$3[0].Operator.OpCode].Outputs[i].Size
-				}
-			} else {
-				for i, out := range $3[0].Operator.Outputs {
-					$1[0].Outputs[i].Size = out.Size
-				}
-			}
+			idx := len($3) - 1
 
-			$3[0].Outputs = $1[0].Outputs
-			$$ = $3
+			if $3[idx].Operator == nil {
+				$3[idx].Operator = Natives[OP_IDENTITY]
+				$1[0].Outputs[0].Size = $3[idx].Outputs[0].Size
+				$3[idx].Inputs = $3[idx].Outputs
+				$3[idx].Outputs = $1[0].Outputs
+				
+				$$ = $3
+			} else {
+				if $3[idx].Operator.IsNative {
+					for i, _ := range $3[idx].Operator.Outputs {
+						$1[0].Outputs[i].Size = Natives[$3[idx].Operator.OpCode].Outputs[i].Size
+					}
+				} else {
+					for i, out := range $3[idx].Operator.Outputs {
+						$1[0].Outputs[i].Size = out.Size
+					}
+				}
+
+				$3[idx].Outputs = $1[0].Outputs
+				$$ = $3
+			}
                 }
                 ;
 
@@ -790,7 +818,7 @@ statement:      /* labeled_statement */
 	/* |        */compound_statement
 	|       expression_statement
 	/* |       selection_statement */
-	/* |       iteration_statement */
+	|       iteration_statement
 	/* |       jump_statement */
                 ;
 
@@ -829,19 +857,18 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {
-			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
-			// 	fn.AddExpression($1[0])
-			// } else {
-			// 	panic(err)
-			// }
-			$$ = $1
+			if $1[len($1) - 1].Operator == nil {
+				$$ = nil
+			} else {
+				$$ = $1
+			}
                 }
                 ;
 
 selection_statement:
                 /* IF LPAREN expression RPAREN statement */
 	/* |    IF LPAREN expression RPAREN statement ELSE statement */
-                IF expression compound_statement elseif_list else_statement
+                IF LPAREN expression RPAREN compound_statement elseif_list else_statement
                 { $$ = nil }
 	|       SWITCH LPAREN expression RPAREN statement
                 { $$ = nil }
@@ -860,12 +887,47 @@ else_statement:
 
 
 
-
 iteration_statement:
-                FOR LPAREN expression_statement expression_statement RPAREN statement
-                { $$ = nil }
-	|       FOR LPAREN expression_statement expression_statement expression RPAREN statement
-                { $$ = nil }
+                // FOR expression_statement expression_statement statement
+        //         { $$ = nil }
+	// |       
+		FOR LPAREN expression_statement expression_statement expression RPAREN statement
+                {
+			jmpFn := Natives[OP_JMP]
+			
+			upExpr := MakeExpression(jmpFn)
+			trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true))
+			upLines := WritePrimary(TYPE_I32, encoder.Serialize(int32((len($7) + len($5) + len($4) + 2) * -1)))
+			downLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
+			upExpr.AddInput(trueArg[0].Outputs[0])
+			upExpr.AddInput(upLines[0].Outputs[0])
+			upExpr.AddInput(downLines[0].Outputs[0])
+			
+			downExpr := MakeExpression(jmpFn)
+			
+			if len($4[len($4) - 1].Outputs) < 1 {
+				predicate := MakeParameter(MakeGenSym(LOCAL_PREFIX), $4[len($4) - 1].Operator.Outputs[0].Type)
+				$4[len($4) - 1].AddOutput(predicate)
+				downExpr.AddInput(predicate)
+			} else {
+				predicate := $4[len($4) - 1].Outputs[0]
+				downExpr.AddInput(predicate)
+			}
+			thenLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
+			elseLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(len($5) + len($7) + 1)))
+			
+			downExpr.AddInput(thenLines[0].Outputs[0])
+			downExpr.AddInput(elseLines[0].Outputs[0])
+			
+			exprs := $3
+			exprs = append(exprs, $4...)
+			exprs = append(exprs, downExpr)
+			exprs = append(exprs, $7...)
+			exprs = append(exprs, $5...)
+			exprs = append(exprs, upExpr)
+			
+			$$ = exprs
+                }
 	/* |       FOR LPAREN declaration expression_statement RPAREN statement */
 	/* |       FOR LPAREN declaration expression_statement expression RPAREN statement */
                 ;
