@@ -119,6 +119,18 @@ IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    echo NOTE:   Compiling CX
 )
 
+%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.nex
+IF ERRORLEVEL 1 (
+   echo FAIL:   There was a problem compiling CX's lexical analyzer (first pass)
+   EXIT /B 2
+)
+
+%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.go %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.y
+IF ERRORLEVEL 1 (
+   echo FAIL:   There was a problem compiling CX's parser (first pass)
+   EXIT /B 2
+)
+
 %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cx\cx.nex
 IF ERRORLEVEL 1 (
    echo FAIL:   There was a problem compiling CX's lexical analyzer
