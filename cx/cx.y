@@ -99,7 +99,7 @@
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
-                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP AFFVAR
+                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
                         BITAND BITXOR BITOR BITCLEAR
@@ -161,7 +161,18 @@
 %type   <expressions>   postfix_expression
 %type   <expressions>   primary_expression
 
+%type   <expressions>   declaration
+//                      %type   <expressions>   init_declarator_list
+//                      %type   <expressions>   init_declarator
+
+%type   <expressions>   initializer
+%type   <expressions>   initializer_list
+%type   <expressions>   designation
+%type   <expressions>   designator_list
+%type   <expressions>   designator
+
 %type   <expressions>   expression
+%type   <expressions>   block_item
 %type   <expressions>   block_item_list
 %type   <expressions>   compound_statement
 %type   <expressions>   labeled_statement
@@ -321,12 +332,12 @@ identifier_list:
                 ;
 
 // declarator
-declarator:     /* pointer direct_declarator */
-        /*         { */
-        /*             $2.IsPointer = true */
-        /*             $$ = $2 */
-        /*         } */
-	/* |        */direct_declarator
+declarator:     MUL_OP direct_declarator
+                {
+                    $2.IsPointer = true
+                    $$ = $2
+                }
+	|       direct_declarator
                 ;
 
 direct_declarator:
@@ -338,11 +349,11 @@ direct_declarator:
                 }
 	|       LPAREN   declarator RPAREN
                 { $$ = $2 }
-	|       direct_declarator '[' ']'
-                {
-			$1.IsArray = true
-			$$ = $1
-                }
+	/* |       direct_declarator '[' ']' */
+        /*         { */
+	/* 		$1.IsArray = true */
+	/* 		$$ = $1 */
+        /*         } */
         //	|direct_declarator '[' MUL_OP ']'
         //              	|direct_declarator '[' type_qualifier_list MUL_OP ']'
         //              	|direct_declarator '[' type_qualifier_list assignment_expression ']'
@@ -354,16 +365,16 @@ direct_declarator:
                 ;
 
 // check
-pointer:        MUL_OP   type_qualifier_list pointer // check
-        |       MUL_OP   type_qualifier_list // check
-        |       MUL_OP   pointer
-        |       MUL_OP
-                ;
+/* pointer:        /\* MUL_OP   type_qualifier_list pointer // check *\/ */
+/*         /\* |       MUL_OP   type_qualifier_list // check *\/ */
+/*         /\* |       MUL_OP   pointer *\/ */
+/*         /\* |        *\/MUL_OP */
+/*                 ; */
 
-type_qualifier_list:
-                type_qualifier
-	|       type_qualifier_list type_qualifier
-                ;
+/* type_qualifier_list: */
+/*                 type_qualifier */
+/* 	|       type_qualifier_list type_qualifier */
+/*                 ; */
 
 
 
@@ -375,7 +386,7 @@ type_qualifier_list:
 
 // declaration_specifiers
 declaration_specifiers:
-                pointer type_specifier
+                unary_operator type_specifier
                 {
 			arg := MakeArgument($2)
                         arg.IsPointer = true
@@ -394,9 +405,9 @@ declaration_specifiers:
 	/* |       type_qualifier */
                 ;
 
-type_qualifier: CONST
-        |       VAR
-                ;
+/* type_qualifier: CONST */
+/*         |       VAR */
+/*                 ; */
 
 type_specifier:
                 BOOL
@@ -425,7 +436,6 @@ type_specifier:
                 { $$ = TYPE_UI32 }
         |       UI64
                 { $$ = TYPE_UI64 }
-        /* |       pointer type_specifier */
 	/* |       struct_or_union_specifier */
         /*         { */
         /*             $$ = "struct" */
@@ -456,15 +466,6 @@ primary_expression:
 				$$ = []*CXExpression{&CXExpression{Outputs: []*CXArgument{arg}}}
 			} else {
 				panic(err)
-			}
-                }
-        |       type_specifier PERIOD IDENTIFIER
-                {
-			// these will always be native functions
-			if opCode, ok := OpCodes[TypeNames[$1] + "." + $3]; ok {
-				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
-			} else {
-				panic(ok)
 			}
                 }
         |       STRING_LITERAL
@@ -502,12 +503,19 @@ primary_expression:
 postfix_expression:
                 primary_expression
 	// |       postfix_expression '[' expression ']'
+        |       type_specifier PERIOD IDENTIFIER
+                {
+			// these will always be native functions
+			if opCode, ok := OpCodes[TypeNames[$1] + "." + $3]; ok {
+				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
+			} else {
+				panic(ok)
+			}
+                }
 	|       postfix_expression LPAREN RPAREN
                 {
 			// expr := $1[0]
 			$$ = $1
-			// fmt.Println("yoyo", expr)
-
 			// arg := $1[0].Outputs[0]
 			// opName := arg.Name
 
@@ -550,11 +558,6 @@ postfix_expression:
 			nestedExprs = append(nestedExprs, $1...)
 			$$ = nestedExprs
                 }
-	/* |       postfix_expression PERIOD IDENTIFIER */
-	/* |       postfix_expression PERIOD IDENTIFIER // check */
-        /*         { */
-
-        /*         } */
 	|       postfix_expression INC_OP
                 {
 			$$ = $1
@@ -565,7 +568,10 @@ postfix_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			fullName := $1[len($1) - 1].Outputs[0].Name + "." + $3
+
+
+
+                fullName := $1[len($1) - 1].Outputs[0].Name + "." + $3
 			if opCode, ok := OpCodes[fullName]; ok {
 				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
 			}
@@ -621,7 +627,7 @@ unary_expression:
                 ;
 
 unary_operator:
-                '&'
+                REF_OP
 	|       MUL_OP
 	|       ADD_OP
 	|       SUB_OP
@@ -663,7 +669,7 @@ equality_expression:
                 ;
 
 and_expression: equality_expression
-	|       and_expression '&' equality_expression
+	|       and_expression REF_OP equality_expression
                 ;
 
 exclusive_or_expression:
@@ -750,27 +756,50 @@ constant_expression:
 
 
 
-/* declaration: */
-/*                 declaration_specifiers init_declarator_list SEMICOLON */
-/*                 ; */
 
-/* declaration_specifiers: */
-/* 		type_specifier declaration_specifiers */
-/* 	|       type_specifier */
-/* 	|       type_qualifier declaration_specifiers */
-/* 	|       type_qualifier */
-/*                 ; */
+declaration:
+                VAR declarator declaration_specifiers SEMICOLON
+                {
+                    $$ = nil
+                }
+        |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
+                {
+                    $$ = nil
+                }
+                ;
 
+/* init_declarator: */
+/*                 declarator '=' initializer */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
+/*         |       declarator */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
+/*                 ; */
 
 
 /* init_declarator_list: */
 /*                 init_declarator */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
 /* 	|       init_declarator_list COMMA init_declarator */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
 /*                 ; */
 
 /* init_declarator: */
 /*                 declarator '=' initializer */
-/* 	|       declarator */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
+/*         |       declarator */
+/*                 { */
+/*                     $$ = nil */
+/*                 } */
 /*                 ; */
 
 
@@ -778,35 +807,58 @@ constant_expression:
 
 
 
+initializer:
+        /*         LBRACE initializer_list RBRACE */
+	/* |       LBRACE   initializer_list COMMA RBRACE */
+	/* |        */assignment_expression
+                ;
 
+initializer_list:
+                designation initializer
+                {
+                    $$ = nil
+                }
+	|       initializer
+                {
+                    $$ = nil
+                }
+	|       initializer_list COMMA designation initializer
+                {
+                    $$ = nil
+                }
+	|       initializer_list COMMA initializer
+                {
+                    $$ = nil
+                }
+                ;
 
+designation:    designator_list '='
+                {
+                    $$ = nil
+                }
+                ;
 
+designator_list:
+                designator
+                {
+                    $$ = nil
+                }
+	|       designator_list designator
+                {
+                    $$ = nil
+                }
+                ;
 
-/* initializer: */
-/*                 LBRACE initializer_list RBRACE */
-/* 	| LBRACE   initializer_list COMMA RBRACE */
-/* 	|       assignment_expression */
-/*                 ; */
-
-/* initializer_list: */
-/*                 designation initializer */
-/* 	|       initializer */
-/* 	|       initializer_list COMMA designation initializer */
-/* 	|       initializer_list COMMA initializer */
-/*                 ; */
-
-/* designation:    designator_list '=' */
-/*                 ; */
-
-/* designator_list: */
-/*                 designator */
-/* 	|       designator_list designator */
-/*                 ; */
-
-/* designator: */
-/*                 '[' constant_expression ']' */
-/* 	| PERIOD   IDENTIFIER */
-/*                 ; */
+designator:
+                '[' constant_expression ']'
+                {
+                    $$ = nil
+                }
+	|       PERIOD IDENTIFIER
+                {
+                    $$ = nil
+                }
+                ;
 
 
 
@@ -841,16 +893,16 @@ compound_statement:
                 ;
 
 block_item_list:
-                statement
-	|       block_item_list statement
+                block_item
+	|       block_item_list block_item
                 {
 			$$ = append($1, $2...)
                 }
                 ;
 
-// block_item:     /* declaration */
-// 	/* |        */statement
-//                 ;
+block_item:     declaration
+        |       statement
+                ;
 
 expression_statement:
                 SEMICOLON
@@ -943,517 +995,5 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 	|       RETURN expression SEMICOLON
                 { $$ = nil }
                 ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// lines:
-//                 /* empty */
-//         |       lines line
-//         |       lines SEMICOLON
-//         ;
-
-// line:
-//                 definitionDeclaration
-//         |       structDeclaration
-//         |       packageDeclaration
-//         |       importDeclaration
-//         |       functionDeclaration
-//         |       selector
-//         |       stepping
-//         |       debugging
-//         |       affordance
-//         |       remover
-//         ;
-
-// importDeclaration:
-//                 IMPORT STRING
-//         ;
-
-// affordance:
-//                 TAG
-//                 /* Function Affordances */
-//         |       AFF FUNC IDENT
-//         |       AFF FUNC IDENT LBRACE INT RBRACE
-//         |       AFF FUNC IDENT LBRACE STRING RBRACE
-//         |       AFF FUNC IDENT LBRACE STRING INT RBRACE
-//                 /* Module Affordances */
-//         |       AFF PACKAGE IDENT
-//         |       AFF PACKAGE IDENT LBRACE INT RBRACE
-//         |       AFF PACKAGE IDENT LBRACE STRING RBRACE
-//         |       AFF PACKAGE IDENT LBRACE STRING INT RBRACE
-//                 /* Struct Affordances */
-//         |       AFF STRUCT IDENT
-//         |       AFF STRUCT IDENT LBRACE INT RBRACE
-//         |       AFF STRUCT IDENT LBRACE STRING RBRACE
-//         |       AFF STRUCT IDENT LBRACE STRING INT RBRACE
-//                 /* Struct Affordances */
-//         |       AFF EXPR IDENT
-//         |       AFF EXPR IDENT LBRACE INT RBRACE
-//         |       AFF EXPR IDENT LBRACE STRING RBRACE
-//         |       AFF EXPR IDENT LBRACE STRING INT RBRACE
-//         ;
-
-// stepping:       TSTEP INT INT
-
-//         |       DSTACK
-//         |       DPROGRAM
-//         ;
-
-// remover:        REM FUNC IDENT
-//         |       REM PACKAGE IDENT
-//         |       REM DEF IDENT
-//         |       REM STRUCT IDENT
-//         |       REM IMPORT STRING
-//         |       REM EXPR IDENT FUNC IDENT
-//         |       REM FIELD IDENT STRUCT IDENT
-//         |       REM INPUT IDENT FUNC IDENT
-//         |       REM OUTPUT IDENT FUNC IDENT
-//         ;
-
-// selectorLines:
-//                 /* empty */
-//         |       LBRACE lines RBRACE
-//         ;
-
-// selectorExpressionsAndStatements:
-//                 /* empty */
-//         |       LBRACE expressionsAndStatements RBRACE
-//         ;
-
-// selectorFields:
-//                 /* empty */
-//         |       LBRACE fields RBRACE
-//         ;
-
-// selector:       SPACKAGE IDENT
-//                 selectorLines
-//         |       SFUNC IDENT
-//                 selectorExpressionsAndStatements
-//         |       SSTRUCT IDENT
-//                 selectorFields
-//         ;
-
-
-
-
-
-
-// assignOperator:
-//                 ASSIGN
-//         |       CASSIGN
-//         |       PLUSEQ
-//         |       MINUSEQ
-//         |       MULTEQ
-//         |       DIVEQ
-//         |       REMAINDEREQ
-//         |       EXPEQ
-//         |       LEFTSHIFTEQ
-//         |       RIGHTSHIFTEQ
-//         |       BITANDEQ
-//         |       BITXOREQ
-//         |       BITOREQ
-//         ;
-
-// packageDeclaration:
-//                 PACKAGE IDENT
-//                 ;
-
-// definitionAssignment:
-//                 /* empty */
-//         |       assignOperator argument
-//         |       assignOperator ADDR argument
-//         |       assignOperator VALUE argument
-//                 ;
-
-// definitionDeclaration:
-//                 VAR IDENT BASICTYPE definitionAssignment
-//         |       VAR IDENT IDENT
-//         ;
-
-// fields:
-//                 parameter
-//         |       SEMICOLON
-//         |       debugging
-//         |       fields parameter
-//         |       fields SEMICOLON
-//         |       fields debugging
-//                 ;
-
-// structFields:
-//                 LBRACE fields RBRACE
-//         |       LBRACE RBRACE
-//         ;
-
-// structDeclaration:
-//                 TYPSTRUCT IDENT
-//                 STRUCT structFields
-//         ;
-
-// functionParameters:
-//                 LPAREN parameters RPAREN
-//         |       LPAREN RPAREN
-//         ;
-
-// functionDeclaration:
-//                 /* Methods */
-//                 FUNC functionParameters IDENT functionParameters functionParameters
-//                 functionStatements
-//         |       FUNC functionParameters IDENT functionParameters
-//                 functionStatements
-//                 /* Functions */
-//         |       FUNC IDENT functionParameters
-//                 functionStatements
-//         |       FUNC IDENT functionParameters functionParameters
-//                 functionStatements
-//         ;
-
-// parameter:
-//                 IDENT BASICTYPE
-//         |       IDENT IDENT
-//         |       IDENT MULT IDENT
-//         ;
-
-// parameters:
-//                 parameter
-//         |       parameters COMMA parameter
-//         ;
-
-// functionStatements:
-//                 LBRACE expressionsAndStatements RBRACE
-//         |       LBRACE RBRACE
-//         ;
-
-// expressionsAndStatements:
-//                 nonAssignExpression
-//         |       assignExpression
-//         |       statement
-//         |       selector
-//         |       stepping
-//         |       debugging
-//         |       affordance
-//         |       remover
-//         |       expressionsAndStatements nonAssignExpression
-//         |       expressionsAndStatements assignExpression
-//         |       expressionsAndStatements statement
-//         |       expressionsAndStatements selector
-//         |       expressionsAndStatements stepping
-//         |       expressionsAndStatements debugging
-//         |       expressionsAndStatements affordance
-//         |       expressionsAndStatements remover
-//         ;
-
-
-// assignExpression:
-//                 VAR IDENT BASICTYPE definitionAssignment
-//         |       VAR IDENT LBRACK RBRACK IDENT
-//         |       argumentsList assignOperator argumentsList
-//         ;
-
-// nonAssignExpression:
-//                 IDENT arguments
-//         |       argument PLUSPLUS
-//         |       argument MINUSMINUS
-//         ;
-
-// beginFor:       FOR
-//                 ;
-
-// conditionControl:
-//                 nonAssignExpression
-//         |       argument
-//         ;
-
-// returnArg:
-//                 SEMICOLON
-//         |       argumentsList
-//                 ;
-
-// statement:      RETURN returnArg
-//         |       GOTO IDENT
-//         |       IF conditionControl
-//                 LBRACE
-//                 expressionsAndStatements RBRACE elseStatement
-//         |       beginFor
-//                 nonAssignExpression
-//                 LBRACE expressionsAndStatements RBRACE
-//         |       beginFor
-//                 argument
-//                 LBRACE expressionsAndStatements RBRACE
-//         |       beginFor // $<i>1
-//                 forLoopAssignExpression // $2
-//                 SEMICOLON conditionControl
-//                 SEMICOLON forLoopAssignExpression //$<bool>9
-//                 LBRACE expressionsAndStatements RBRACE
-//         |       VAR IDENT IDENT                
-//         |       SEMICOLON
-//         ;
-
-// forLoopAssignExpression:                
-//         |       assignExpression
-//         |       nonAssignExpression
-//         ;
-
-// elseStatement:
-//                 /* empty */
-//         |       ELSE
-//                 LBRACE
-//                 expressionsAndStatements RBRACE
-//                 ;
-
-// expressions:
-//                 nonAssignExpression
-//         |       assignExpression
-//         |       expressions nonAssignExpression
-//         |       expressions assignExpression
-//         ;
-
-
-
-
-
-
-
-
-
-
-
-// inferPred:      inferObj
-//         |       inferCond
-//         |       inferPred COMMA inferObj
-//         |       inferPred COMMA inferCond
-//         ;
-
-// inferCond:      IDENT LPAREN inferPred RPAREN
-//         |       BOOLEAN
-//         ;
-
-// relationalOp:   EQUAL
-//         |       GTHAN
-//         |       LTHAN
-//         |       UNEQUAL
-//                 ;
-
-// inferActionArg:
-//                 inferObj
-//         |       IDENT
-//         |       AFFVAR relationalOp argument
-//         |       AFFVAR relationalOp nonAssignExpression
-//         |       AFFVAR relationalOp AFFVAR
-//         ;
-
-// inferAction:
-// 		IDENT LPAREN inferActionArg RPAREN
-//         ;
-
-// inferActions:
-//                 inferAction
-//         |       inferActions inferAction
-//                 ;
-
-// inferRule:      IF inferCond LBRACE inferActions RBRACE
-//         |       IF inferObj LBRACE inferActions RBRACE
-//         ;
-
-// inferRules:     inferRule
-//         |       inferRules inferRule
-//         ;
-
-// inferWeight:    FLOAT
-//         |       INT
-//         |       IDENT
-//         ;
-
-// inferObj:
-//         |       IDENT VALUE inferWeight
-//         |       IDENT VALUE nonAssignExpression
-// ;
-
-// inferObjs:      inferObj
-//         |       inferObjs COMMA inferObj
-//         ;
-
-// inferTarget:    IDENT LPAREN IDENT RPAREN
-//         ;
-
-// inferTargets:   inferTarget
-//         |       inferTargets inferTarget
-//         ;
-
-// inferClauses:   inferObjs
-//         |       inferRules
-//         |       inferTargets
-//         ;
-
-
-
-
-// structLitDef:
-//                 TAG argument
-//         |       TAG nonAssignExpression
-                    
-// ;
-
-// structLitDefs:  structLitDef
-//         |       structLitDefs COMMA structLitDef
-//         ;
-
-// structLiteral:
-//         |       
-// 		LBRACE structLitDefs RBRACE
-//         ;
-
-// /*
-//   Fix this, there has to be a way to compress these rules
-// */
-// argument:       argument PLUS argument
-//         |       nonAssignExpression PLUS nonAssignExpression
-//         |       argument PLUS nonAssignExpression
-//         |       nonAssignExpression PLUS argument
-
-
-//         |       argument MINUS argument
-//         |       nonAssignExpression MINUS nonAssignExpression
-//         |       argument MINUS nonAssignExpression
-//         |       nonAssignExpression MINUS argument
-
-//         |       argument MULT argument
-//         |       nonAssignExpression MULT nonAssignExpression
-//         |       argument MULT nonAssignExpression
-//         |       nonAssignExpression MULT argument
-
-//         |       argument DIV argument
-//         |       nonAssignExpression DIV nonAssignExpression
-//         |       argument DIV nonAssignExpression
-//         |       nonAssignExpression DIV argument
-
-//         |       argument REMAINDER argument
-//         |       nonAssignExpression REMAINDER nonAssignExpression
-//         |       argument REMAINDER nonAssignExpression
-//         |       nonAssignExpression REMAINDER argument
-
-//         |       argument LEFTSHIFT argument
-//         |       nonAssignExpression LEFTSHIFT nonAssignExpression
-//         |       argument LEFTSHIFT nonAssignExpression
-//         |       nonAssignExpression LEFTSHIFT argument
-
-//         |       argument RIGHTSHIFT argument
-//         |       nonAssignExpression RIGHTSHIFT nonAssignExpression
-//         |       argument RIGHTSHIFT nonAssignExpression
-//         |       nonAssignExpression RIGHTSHIFT argument
-
-//         |       argument EXP argument
-//         |       nonAssignExpression EXP nonAssignExpression
-//         |       argument EXP nonAssignExpression
-//         |       nonAssignExpression EXP argument
-
-//         |       argument EQUAL argument
-//         |       nonAssignExpression EQUAL nonAssignExpression
-//         |       argument EQUAL nonAssignExpression
-//         |       nonAssignExpression EQUAL argument
-
-//         |       argument UNEQUAL argument
-//         |       nonAssignExpression UNEQUAL nonAssignExpression
-//         |       argument UNEQUAL nonAssignExpression
-//         |       nonAssignExpression UNEQUAL argument
-
-//         |       argument GTHAN argument
-//         |       nonAssignExpression GTHAN nonAssignExpression
-//         |       argument GTHAN nonAssignExpression
-//         |       nonAssignExpression GTHAN argument
-
-//         |       argument GTHANEQ argument
-//         |       nonAssignExpression GTHANEQ nonAssignExpression
-//         |       argument GTHANEQ nonAssignExpression
-//         |       nonAssignExpression GTHANEQ argument
-
-//         |       argument LTHAN argument
-//         |       nonAssignExpression LTHAN nonAssignExpression
-//         |       argument LTHAN nonAssignExpression
-//         |       nonAssignExpression LTHAN argument
-
-//         |       argument LTHANEQ argument
-//         |       nonAssignExpression LTHANEQ nonAssignExpression
-//         |       argument LTHANEQ nonAssignExpression
-//         |       nonAssignExpression LTHANEQ argument
-
-//         |       argument OR argument
-//         |       nonAssignExpression OR nonAssignExpression
-//         |       argument OR nonAssignExpression
-//         |       nonAssignExpression OR argument
-
-//         |       argument AND argument
-//         |       nonAssignExpression AND nonAssignExpression
-//         |       argument AND nonAssignExpression
-//         |       nonAssignExpression AND argument
-
-//         |       argument BITAND argument
-//         |       nonAssignExpression BITAND nonAssignExpression
-//         |       argument BITAND nonAssignExpression
-//         |       nonAssignExpression BITAND argument
-
-//         |       argument BITOR argument
-//         |       nonAssignExpression BITOR nonAssignExpression
-//         |       argument BITOR nonAssignExpression
-//         |       nonAssignExpression BITOR argument
-
-//         |       argument BITXOR argument
-//         |       nonAssignExpression BITXOR nonAssignExpression
-//         |       argument BITXOR nonAssignExpression
-//         |       nonAssignExpression BITXOR argument
-
-//         |       argument BITCLEAR argument
-//         |       nonAssignExpression BITCLEAR nonAssignExpression
-//         |       argument BITCLEAR nonAssignExpression
-//         |       nonAssignExpression BITCLEAR argument
-
-//         |       NOT argument
-//         |       NOT nonAssignExpression
-//         |       LPAREN argument RPAREN
-//         |       BYTENUM
-//         |       INT
-//         |       LONG
-//         |       FLOAT
-//         |       DOUBLE
-//         |       BOOLEAN
-//         |       STRING
-//         |       IDENT
-//         |       NEW IDENT LBRACE structLitDefs RBRACE
-//         |       IDENT LBRACK INT RBRACK
-//         |       INFER LBRACE inferClauses RBRACE
-//         |       BASICTYPE LBRACE argumentsList RBRACE
-//                 // empty arrays
-//         |       BASICTYPE LBRACE RBRACE
-//         ;
-
-// arguments:
-//                 LPAREN argumentsList RPAREN
-//         |       LPAREN RPAREN
-//         ;
-
-// argumentsList:  argument
-//         |       nonAssignExpression
-//         |       ADDR argument
-//         |       VALUE argument
-//         |       VALUE nonAssignExpression
-                
-//         |       argumentsList COMMA argument
-//         |       argumentsList COMMA nonAssignExpression
-//         |       argumentsList COMMA ADDR argument
-//         |       argumentsList COMMA VALUE argument
-//         |       argumentsList COMMA VALUE nonAssignExpression
-//         ;
 
 %%

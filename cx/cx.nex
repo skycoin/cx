@@ -36,6 +36,7 @@
 /ui32/                    {lval.tok = yylex.Text(); return UI32}
 /ui64/                    {lval.tok = yylex.Text(); return UI64}
 /union/                   {return UNION}
+/&/          { lval.tok = yylex.Text(); return REF_OP }
 /\+/         { lval.tok = yylex.Text(); return ADD_OP }
 /-/          { lval.tok = yylex.Text(); return SUB_OP }
 /\*/         { lval.tok = yylex.Text(); return MUL_OP }
