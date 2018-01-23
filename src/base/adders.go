@@ -1,6 +1,7 @@
 package base
 
 import (
+	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
@@ -8,17 +9,6 @@ func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
 	found := false
 	for _, md := range cxt.Modules {
 		if md.Name == mod.Name {
-			// cxt.Modules[i].Name = mod.Name
-			// cxt.Modules[i].Imports = mod.Imports
-			// cxt.Modules[i].Functions = mod.Functions
-			// cxt.Modules[i].Structs = mod.Structs
-			// cxt.Modules[i].Definitions = mod.Definitions
-			// cxt.Modules[i].CurrentFunction = mod.CurrentFunction
-			// cxt.Modules[i].CurrentStruct = mod.CurrentStruct
-			// cxt.Modules[i].Context = mod.Context
-			
-			// cxt.CurrentModule = cxt.Modules[i]
-
 			cxt.CurrentModule = md
 			found = true
 			break

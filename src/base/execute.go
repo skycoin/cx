@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"fmt"
 	"errors"
+	"math/rand"
+	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -207,29 +209,29 @@ func main () {
 				program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", "%s"));%s`, out.Name, out.Typ, asmNL))
 			}
 			
-			var optExpressions []*CXExpression
+			// var optExpressions []*CXExpression
+			// for _, expr := range fn.Expressions {
+			// 	if expr.Operator.Name == "identity" {
+			// 		var nonAssignIdent string
+			// 		encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
+
+			// 		for _, idExpr := range fn.Expressions {
+			// 			for i, out := range idExpr.OutputNames {
+			// 				if out.Name == nonAssignIdent {
+			// 					idExpr.OutputNames[i] = expr.OutputNames[0]
+			// 					break
+			// 				}
+			// 			}
+			// 		}
+			// 		continue
+			// 	}
+			// 	optExpressions = append(optExpressions, expr)
+			// }
+
+			// fn.Expressions = optExpressions
+
+			//for _, expr := range optExpressions {
 			for _, expr := range fn.Expressions {
-				if expr.Operator.Name == "identity" {
-					var nonAssignIdent string
-					encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
-
-					for _, idExpr := range fn.Expressions {
-						for i, out := range idExpr.OutputNames {
-							if out.Name == nonAssignIdent {
-								idExpr.OutputNames[i] = expr.OutputNames[0]
-								break
-							}
-						}
-					}
-					continue
-				}
-				optExpressions = append(optExpressions, expr)
-			}
-
-			fn.Expressions = optExpressions
-
-			for _, expr := range optExpressions {
-				//for _, expr := range fn.Expressions {
 				var tagStr string
 				if expr.Tag != "" {
 					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)
@@ -283,6 +285,7 @@ if *memprofile != "" {
 }
 
 func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
+	rand.Seed(time.Now().UTC().UnixNano())
 	if cxt.Terminated {
 		// user wants to re-run the program
 		cxt.Terminated = false
@@ -641,7 +644,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println(msg)
 		call.Line++
 		*exc = true
-		*excError = errors.New(fmt.Sprintf("%d: call to halt", expr.FileLine))
+		*excError = errors.New(fmt.Sprintf("%s: %d: call to halt", expr.FileName, expr.FileLine))
 	case "test.start": isTesting = true
 	case "test.stop": isTesting = false
 	case "test.error":
@@ -758,7 +761,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	// there was an error and we'll report line number and err msg
 	if err != nil {
 		*exc = true
-		*excError = errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err))
+		*excError = errors.New(fmt.Sprintf("%s: %d: %s", expr.FileName, expr.FileLine, err))
 	}
 }
 
@@ -843,20 +846,16 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			if len(argsRefs) != len(expr.Operator.Inputs) {
 				
 				if len(argsRefs) == 1 {
-					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d was provided",
-						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d was provided",
+						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				} else {
-					return errors.New(fmt.Sprintf("%d: %s: expected %d arguments; %d were provided",
-						expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d were provided",
+						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				}
 			}
 			
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
-				// if argsRefs[i].Typ == "str" {
-				// 	fmt.Println(argsRefs[i].Value)
-				// }
-
 				
 				if argsRefs[i].Typ == "ident" {
 					var lookingFor string
@@ -874,8 +873,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				if len(expr.Operator.Inputs) > 0 &&
 					expr.Operator.Inputs[i].Typ !=
 					argsCopy[i].Typ {
-					return errors.New(fmt.Sprintf("%d: %s: argument %d is type '%s'; expected type '%s'\n",
-						expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
+					return errors.New(fmt.Sprintf("%s: %d: %s: argument %d is type '%s'; expected type '%s'\n",
+						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}
 			}
 
@@ -892,8 +891,6 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			}
 
 			// check if struct array function
-			//fmt.Println("here", opName)
-
 			if isNative {
 				checkNative(opName, expr, call, &argsCopy, &exc, &excError)
 				if exc && isTesting {

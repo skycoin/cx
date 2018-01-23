@@ -34,7 +34,6 @@
 /!=/         { lval.tok = yylex.Text(); return UNEQUAL    }
 /\+/         { lval.tok = yylex.Text(); return PLUS       }
 /-/          { lval.tok = yylex.Text(); return MINUS      }
-/\*([.\[\]a-zA-Z0-9_]+)/          { lval.tok = yylex.Text(); return AFFVAR      }
 /\*/         { lval.tok = yylex.Text(); return MULT       }
 /\//         { lval.tok = yylex.Text(); return DIV        }
 /%/          { lval.tok = yylex.Text(); return REMAINDER  }
@@ -82,15 +81,19 @@
 /\]/         { return RBRACK     }
 /:/          { return COLON      }
 /->/         { return INFER      }
-/\$/         { return WEIGHT     }
+/\$/         { return VALUE      }
 /new/        { return NEW        }
-/(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
+/\**(\[\])*(bool|str|i32|i64|f32|f64|byte)/ {
 	typ := yylex.Text();
 
 	CreateMDimFuncs(typ, lval.line + 1)
 	
 	lval.tok = typ
 	return BASICTYPE
+}
+/\?([.\[\]a-zA-Z0-9_]*)/ {
+	lval.tok = yylex.Text();
+	return AFFVAR
 }
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
@@ -157,7 +160,7 @@ import (
 	"strconv"
 	"encoding/json"
 
-	"regexp"
+	//"regexp"
 	
 //	"flag"
 
@@ -170,6 +173,7 @@ import (
 	//"github.com/skycoin/viscript/signal"
 	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/cx/cx/cx0"
 	. "github.com/skycoin/cx/src/base"
 )
 
@@ -287,8 +291,7 @@ func repl () {
 	}
 }
 
-var coreModule string = `
-package core
+var coreModule string = `package core
 func str.id (x str) (_22x str) {}
 func bool.id (x bool) (_x bool) {}
 func byte.id (x byte) (_x byte) {}
@@ -1265,40 +1268,30 @@ func main () {
 	// adding core module and native functions to it
 	b := bytes.NewBufferString(coreModule)
 	yyParse(NewLexer(b))
+	cx0.CXT = cxt
 
 	// setting project's working directory
 	if !replMode {
 		cxt.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 
-	allSourceCode := bytes.NewBuffer(nil)
-	for _, source := range sourceCode {
-		//io.TeeReader(source, )
-		io.Copy(allSourceCode, source)
+	sourceCodeCopy := make([]string, len(sourceCode))
+	for i, source := range sourceCode {
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, source)
+		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
-	re := regexp.MustCompile("(package|func)\\s([.\\[\\]a-zA-Z0-9_]+)")
-	allSC := string(allSourceCode.Bytes())
-	for _, match := range re.FindAllStringSubmatch(allSC, -1) {
-		if match[1] == "package" {
-			mod := MakeModule(match[len(match)-1])
-			cxt.AddModule(mod)
-		} else {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				fn := MakeFunction(match[len(match)-1])
-				mod.AddFunction(fn)
-			} else {
-				fmt.Println(err)
-			}
-		}
-	}
-
-	yyParse(NewLexer(allSourceCode))
+	allSC := strings.Join(sourceCodeCopy, "")
+	cx0.Parse(allSC)
+	cxt = cx0.CXT
 	
 	// parsing all source code files
-	// for _, source := range sourceCode {
-	// 	yyParse(NewLexer(source))
-	// }
+	for i, source := range sourceCodeCopy {
+		fileName = args[i]
+		b := bytes.NewBufferString(source)
+		yyParse(NewLexer(b))
+	}
 	
 	lineNo = 0
 

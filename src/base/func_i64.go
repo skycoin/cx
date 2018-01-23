@@ -3,7 +3,6 @@ package base
 import (
 	"fmt"
 	"errors"
-	"time"
 	"math"
 	"math/rand"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -235,7 +234,6 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 			return errors.New(fmt.Sprintf("i64.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
 
-		rand.Seed(time.Now().UTC().UnixNano())
 		output := encoder.Serialize(int64(rand.Intn(int(maximum - minimum)) + int(minimum)))
 
 		assignOutput(0, output, "i64", expr, call)

@@ -82,17 +82,17 @@ func main () (out str) {
 	var col i32 = 1
 
 	rules := ->{
-		if true {allow(* == *)}
+		if true {allow(? == ?)}
 		
-		if northWall $1.0 {reject(* == 1)}
-		if southWall $1.0 {reject(* == 2)}
-		if westWall  $1.0 {reject(* == 3)}
-		if eastWall  $1.0 {reject(* == 4)}
+		if northWall $1.0 {reject(? == 1)}
+		if southWall $1.0 {reject(? == 2)}
+		if westWall  $1.0 {reject(? == 3)}
+		if eastWall  $1.0 {reject(? == 4)}
 
-		if northWormhole $1.0 {allow(* == 1)}
-		if southWormhole $1.0 {allow(* == 2)}
-		if westWormhole  $1.0 {allow(* == 3)}
-		if eastWormhole  $1.0 {allow(* == 4)}
+		if northWormhole $1.0 {allow(? == 1)}
+		if southWormhole $1.0 {allow(? == 2)}
+		if westWormhole  $1.0 {allow(? == 3)}
+		if eastWormhole  $1.0 {allow(? == 4)}
 	}
 	target := ->{pkg(main) fn(main) exp(robot)}
 

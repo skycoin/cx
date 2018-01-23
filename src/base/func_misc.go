@@ -163,6 +163,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		if IsBasicType(typName) {
 			zeroVal = *MakeDefaultValue(typName)
 		} else {
+			call.Context.SelectModule(expr.Module.Name)
 			if byts, err := ResolveStruct(typName, call.Context); err == nil {
 				zeroVal = byts
 			} else {

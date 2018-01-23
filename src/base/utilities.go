@@ -14,8 +14,14 @@ import (
 
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.OutputNames[outNameNumber].Name
-	expr.OutputNames[outNameNumber].Typ = typ
 
+	// if expr.OutputNames[outNameNumber].Typ != typ {
+	// 	fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+	// }
+	// fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+
+	///expr.OutputNames[outNameNumber].Typ = typ
+	
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
@@ -23,7 +29,6 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
 				if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
-
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
 
@@ -80,6 +85,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			}
 			break
 		}
+		
 		if char == '[' {
 			identParts := strings.Split(outName, "[")
 
@@ -133,12 +139,9 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 		for i, out := range outputs {
 			var zeroValue []byte
 			isBasic := false
-			for _, basic := range BASIC_TYPES {
-				if basic == out.Typ {
-					zeroValue = *MakeDefaultValue(basic)
-					isBasic = true
-					break
-				}
+			if IsBasicType(out.Typ) {
+				zeroValue = *MakeDefaultValue(out.Typ)
+				isBasic = true
 			}
 			if !isBasic {
 				var err error
@@ -529,7 +532,7 @@ func IsMultiDim (typ string) bool {
 }
 
 func IsBasicType (typ string) bool {
-	re := regexp.MustCompile("(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
+	re := regexp.MustCompile("\\**(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
 	if re.FindString(typ) != "" {
 		return true
 	} else {
@@ -879,7 +882,6 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		} else {
 			// then it's a global struct
 			mod := call.Operator.Module
-			//if def, err := mod.GetDefinition(concat(identParts[:]...)); err == nil {
 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
 				isStructFld = true
 				//resolvedIdent = def
@@ -1198,7 +1200,7 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 	return nil, nil
 }
 
-func (cxt *CXProgram) PrintProgram(withAffs bool) {
+func (cxt *CXProgram) PrintProgram (withAffs bool) {
 	fmt.Println("Program")
 	if withAffs {
 		for i, aff := range cxt.GetAffordances() {
@@ -1208,6 +1210,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 	i := 0
 	for _, mod := range cxt.Modules {
+		cxt.SelectModule(mod.Name)
 		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
 			continue
 		}
@@ -1268,7 +1271,7 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 
 		j = 0
 		for _, fn := range mod.Functions {
-
+			mod.SelectFunction(fn.Name)
 			inOuts := make(map[string]string)
 			for _, in := range fn.Inputs {
 				inOuts[in.Name] = in.Typ
@@ -1312,22 +1315,9 @@ func (cxt *CXProgram) PrintProgram(withAffs bool) {
 					if arg.Typ == "ident" {
 						var id string
 						encoder.DeserializeRaw(*arg.Value, &id)
-						if arg.Typ != "" &&
-							inOuts[id] != "" {
-							typ = inOuts[id]
-						} else if arg.Value != nil {
-							var found *CXDefinition
-							for _, def := range mod.Definitions {
-								if def.Name == id {
-									found = def
-									break
-								}
-							}
-							if found != nil && found.Typ != "" {
-								typ = found.Typ
-							}
-						} else {
-							typ = arg.Typ
+						var err error
+						if typ, err = GetIdentType(id, expr.FileLine, expr.FileName, cxt); err != nil {
+							panic(err)
 						}
 					} else {
 						typ = arg.Typ
@@ -1582,14 +1572,14 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }
 
-func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) {
+func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram) (string, error) {
 	identParts := strings.Split(lookingFor, ".")
 
 	mod, err := cxt.GetCurrentModule();
 	if err != nil {
 		return "", err
 	}
-
+	
 	if len(identParts) > 1 {
 		if extMod, err := cxt.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct
@@ -1605,7 +1595,7 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 					return def.Typ, nil
 				}
 			} else {
-				return "", errors.New(fmt.Sprintf("module '%s' was not imported or does not exist", extMod.Name))
+				return "", errors.New(fmt.Sprintf("%s: %d: module '%s' was not imported or does not exist", fileName, line, extMod.Name))
 			}
 		} else {
 			// local struct instance
@@ -1704,7 +1694,7 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 					}
 				}
 			}
-			for i, expr := range fn.Expressions {
+			for _, expr := range fn.Expressions {
 				if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
 					var typ string
 					encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
@@ -1713,10 +1703,11 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 				}
 				for _, out := range expr.OutputNames {
 					if out.Name == arrayParts[0] {
+						//fmt.Println("here", out.Name, out.Typ)
 
-						if expr.Operator.Name == "identity" {
-							return fn.Expressions[i-1].OutputNames[0].Typ, nil
-						}
+						// if expr.Operator.Name == "identity" {
+						// 	return fn.Expressions[i-1].OutputNames[0].Typ, nil
+						// }
 						
 						if len(arrayParts) > 1 {
 							return out.Typ[2:], nil
@@ -1735,6 +1726,6 @@ func GetIdentType (lookingFor string, line int, cxt *CXProgram) (string, error) 
 			return def.Typ, nil
 		}
 	}
-	
-	return "", errors.New(fmt.Sprintf("%d: identifier '%s' could not be resolved", line, lookingFor))
+
+	return "", errors.New(fmt.Sprintf("%s: %d: identifier '%s' could not be resolved", fileName, line, lookingFor))
 }

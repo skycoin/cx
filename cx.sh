@@ -128,13 +128,25 @@ else
     echo "NOTE:\tCompiling CX"
 fi
 
-nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
+$GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx0/cx0.nex
+if [ ! $? -eq 0 ]; then
+    echo "FAIL:\tThere was a problem compiling CX's lexical analyzer (first pass)"
+    exit 0
+fi
+
+$GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx0/cx0.go $GOPATH/src/github.com/skycoin/cx/cx/cx0/cx0.y
+if [ ! $? -eq 0 ]; then
+    echo "FAIL:\tThere was a problem compiling CX's parser (first pass)"
+    exit 0
+fi
+
+$GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y
+$GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
