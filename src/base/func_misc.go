@@ -370,8 +370,6 @@ func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) 
 
 					final := append(encoder.Serialize(arrSize + 1), firstChunk...)
 					final = append(final, secondChunk...)
-
-					//fmt.Println(final)
 					
 					assignOutput(0, final, rArr.Typ, expr, call)
 					//*rArr.Value = final

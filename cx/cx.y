@@ -1064,6 +1064,8 @@ structDeclaration:
 					expr.AddArgument(arrArg)
 					expr.AddArgument(strctInstArg)
 					expr.AddOutputName("_arr")
+					
+					
 					fn.AddExpression(expr)
 				} else {
 					fmt.Println(err)
@@ -1591,10 +1593,20 @@ assignExpression:
 					var typ string
 					var secondTyp string
 					var idFn string
+					var ptrs string
+
+					for i, char := range typeParts[0] {
+						if char != '*' {
+							typeParts[0] = typeParts[0][i:]
+							break
+						} else {
+							ptrs += "*"
+						}
+					}
 
 					if len(typeParts) > 1 {
 						typ = "str"
-						secondTyp = typeParts[1] // i32, f32, etc
+						secondTyp = strings.Join(typeParts[1:], ".")
 					} else if typeParts[0] == "ident" {
 						typ = "str"
 						secondTyp = "ident"
@@ -1622,11 +1634,44 @@ assignExpression:
 
 							var outName string
 							encoder.DeserializeRaw(*argL.Value, &outName)
+
+							// // checking if identifier was previously declared
+							// if outType, err := GetIdentType(outName, yyS[yypt-0].line + 1, fileName, cxt); err == nil {
+							// 	if len(typeParts) > 1 {
+							// 		if outType != secondTyp {
+							// 			panic(fmt.Sprintf("%s: %d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", fileName, yyS[yypt-0].line + 1, outName, outType, secondTyp))
+							// 		}
+							// 	} else if typeParts[0] == "ident" {
+							// 		var identName string
+							// 		encoder.DeserializeRaw(*argsR[i].Value, &identName)
+							// 		if rightTyp, err := GetIdentType(identName, yyS[yypt-0].line + 1, fileName, cxt); err == nil {
+							// 			if outType != ptrs + rightTyp {
+							// 				panic(fmt.Sprintf("%s: %d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", fileName, yyS[yypt-0].line + 1, outName, outType, ptrs + rightTyp))
+							// 			}
+							// 		}
+							// 	} else {
+							// 		if outType != typ {
+							// 			panic(fmt.Sprintf("%s: %d: identifier '%s' was previously declared as '%s'; cannot use type '%s' in assignment", fileName, yyS[yypt-0].line + 1, outName, outType, ptrs + typ))
+							// 		}
+							// 	}
+							// }
+
+							if len(typeParts) > 1 || typeParts[0] == "ident" {
+								var identName string
+								encoder.DeserializeRaw(*argsR[i].Value, &identName)
+								identName = ptrs + identName
+								sIdentName := encoder.Serialize(identName)
+								arg := MakeArgument(&sIdentName, typ)
+								expr.AddArgument(arg)
+							} else {
+								arg := MakeArgument(argsR[i].Value, typ)
+								expr.AddArgument(arg)
+							}
+
+							// arg := MakeArgument(argsR[i].Value, typ)
+							// expr.AddArgument(arg)
 							
 							expr.AddOutputName(outName)
-
-							arg := MakeArgument(argsR[i].Value, typ)
-							expr.AddArgument(arg)
 						}
 					} else {
 						// +=, -=, *=, etc.
@@ -3177,22 +3222,39 @@ argument:       argument PLUS argument
 
 						fn.AddExpression(expr)
 
-						typ := encoder.Serialize($1)
+						var appendFnTyp string
+						var ptrs string
+						if $1[0] == '*' {
+							for i, char := range $1 {
+								if char != '*' {
+									appendFnTyp = $1[i:]
+									break
+								} else {
+									ptrs += "*"
+								}
+							}
+						} else {
+							appendFnTyp = $1
+						}
+
+						typ := encoder.Serialize(appendFnTyp)
 						arg := MakeArgument(&typ, "str")
 						expr.AddArgument(arg)
+						expr.AddOutputName(outName)
 						
-						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", $1), mod.Name); err == nil {
+						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", appendFnTyp), mod.Name); err == nil {
 							for _, arg := range $3 {
 								typeParts := strings.Split(arg.Typ, ".")
 								arg.Typ = typeParts[0]
 								expr := MakeExpression(op)
 								fn.AddExpression(expr)
-								expr.AddOutputName(outName)
 								expr.AddArgument(MakeArgument(&sOutName, "ident"))
-								expr.AddArgument(CastArgumentForArray($1, arg))
+								expr.AddOutputName(outName)
+								expr.AddArgument(CastArgumentForArray(appendFnTyp, arg))
 							}
 						}
-						$$ = MakeArgument(&sOutName, "ident")
+
+						$$ = MakeArgument(&sOutName, ptrs + "ident")
 					}
 				} else {
 					// then it's for a global definition

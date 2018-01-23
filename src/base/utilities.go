@@ -20,7 +20,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	// }
 	// fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
 
-	///expr.OutputNames[outNameNumber].Typ = typ
+	expr.OutputNames[outNameNumber].Typ = typ
 	
 	for _, char := range outName {
 		if char == '.' {
@@ -109,13 +109,13 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	}
 
 	if def, err := expr.Module.GetDefinition(outName); err == nil {
-		def.Value = &output
+		*def.Value = output
 		return nil
 	}
 
 	for _, def := range call.State {
 		if def.Name == outName {
-			def.Value = &output
+			*def.Value = output
 			return nil
 		}
 	}
@@ -953,7 +953,19 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
-		arg := MakeArgument(resolvedIdent.Value, resolvedIdent.Typ)
+
+		
+		var typ string
+		if !IsBasicType(resolvedIdent.Typ) {
+			if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+				typ = fmt.Sprintf("%s.%s", mod.Name, resolvedIdent.Typ)
+			} else {
+				typ = resolvedIdent.Typ
+			}
+		} else {
+			typ = resolvedIdent.Typ
+		}
+		arg := MakeArgument(resolvedIdent.Value, typ)
 		return arg, nil
 	}
 	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))

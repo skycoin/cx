@@ -1209,6 +1209,9 @@ label4:
 	extractedStructFromArray2 = []testStruct.read(newNestedStructArrays.nested2, 5)
 	extractedStructFromArray3 = []testStruct.read(newNestedStructArrays.nested3, 8)
 
+	str.print("hello")
+	i32.print(extractedStructFromArray1.testI32)
+
 	test.i32(extractedStructFromArray1.testI32, 2, "")
 	test.i32(extractedStructFromArray2.testI32, 6, "")
 	test.i32(extractedStructFromArray3.testI32, 10, "")
@@ -1638,10 +1641,10 @@ globalStructArrays:
 	
 	fooI32barI32 = [][][]i32.write(fooI32barI32, 1, fooI32)
 	
-	resI32 := [][][]i32.read(fooI32barI32, 1)
-	resI32ult := [][]i32.read(resI32, 1)
+	resI322 := [][][]i32.read(fooI32barI32, 1)
+	resI32ult2 := [][]i32.read(resI322, 1)
 	
-	[]i32.print(resI32ult)
+	[]i32.print(resI32ult2)
 
 	// i64
 	var fooI64 [][]i64
@@ -1657,10 +1660,10 @@ globalStructArrays:
 	fooI64barI64 = [][][]i64.append(fooI64barI64, fooI64)
 	fooI64barI64 = [][][]i64.append(fooI64barI64, barI64)
 
-	resI64 := [][][]i64.read(fooI64barI64, 1)
-	resI64ult := [][]i64.read(resI64, 0)
+	resI642 := [][][]i64.read(fooI64barI64, 1)
+	resI64ult2 := [][]i64.read(resI642, 0)
 	
-	[]i64.print(resI64ult)
+	[]i64.print(resI64ult2)
 
 	fooI64barI64 = [][][]i64.write(fooI64barI64, 1, fooI64)
 	
@@ -1683,8 +1686,8 @@ globalStructArrays:
 	fooF32barF32 = [][][]f32.append(fooF32barF32, fooF32)
 	fooF32barF32 = [][][]f32.append(fooF32barF32, barF32)
 
-	resF32 := [][][]f32.read(fooF32barF32, 1)
-	resF32ult := [][]f32.read(resF32, 1)
+	resF322 := [][][]f32.read(fooF32barF32, 1)
+	resF32ult := [][]f32.read(resF322, 1)
 	
 	[]f32.print(resF32ult)
 
@@ -1716,8 +1719,8 @@ globalStructArrays:
 
 	fooBytebarByte = [][][]byte.write(fooBytebarByte, 1, fooByte)
 	
-	res := [][][]byte.read(fooBytebarByte, 1)
-	result := [][]byte.read(res, 1)
+	res2 := [][][]byte.read(fooBytebarByte, 1)
+	result := [][]byte.read(res2, 1)
 	
 	[]byte.print(result)
 
