@@ -51,6 +51,14 @@
 			panic(err)
 		}
 	}
+
+	func TotalLength (lengths []int) int {
+		var total int = 1
+		for _, i := range lengths {
+			total *= i
+		}
+		return total
+	}
 %}
 
 %union {
@@ -107,7 +115,6 @@
                         LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
 
 
-
                         DEC_OP INC_OP PTR_OP LEFT_OP RIGHT_OP
                         GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
@@ -142,6 +149,8 @@
 %type   <argument>      parameter_declaration
 %type   <arguments>     parameter_type_list
 %type   <arguments>     parameter_list
+%type   <arguments>     fields
+%type   <arguments>     struct_fields
                                                 
 %type   <expressions>   assignment_expression
 %type   <expressions>   constant_expression
@@ -197,7 +206,40 @@ external_declaration:
         // |       global_declaration
         |       function_declaration
         /* |       method_declaration */
-        /* |       struct_declaration */
+        |       struct_declaration
+        ;
+
+// parameter_declaration
+
+struct_declaration:
+                TYPE IDENTIFIER STRUCT struct_fields
+                {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				strct := MakeStruct($2)
+				pkg.AddStruct(strct)
+				
+                                for _, fld := range $4 {
+                                        strct.AddField(fld)
+				}
+			} else {
+				panic(err)
+			}
+                }
+                ;
+
+struct_fields:
+                LBRACE RBRACE
+                { $$ = nil}
+        |       LBRACE fields RBRACE
+                { $$ = $2}
+        ;
+
+fields:         parameter_declaration SEMICOLON
+                { $$ = []*CXArgument{$1} }
+        |       fields parameter_declaration SEMICOLON
+                {
+                    $$ = append($1, $2)
+                }
         ;
 
 package_declaration:
@@ -227,10 +269,21 @@ function_declaration:
         |       function_header LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
                 {
 			// fixing output parameters' offsets (they need to be + last input offset)
-			offset := $3[len($3) - 1].Offset + $3[len($3) - 1].Size
+			var offset int
+			lastInput := $3[len($3) - 1]
+			if lastInput.IsArray {
+				offset = lastInput.Offset + lastInput.Size * TotalLength(lastInput.Lengths)
+			} else {
+				offset = lastInput.Offset + lastInput.Size
+			}
+			
 			for _, out := range $6 {
 				out.Offset += offset
-				offset += out.Size
+				if out.IsArray {
+					offset += out.Size * TotalLength(out.Lengths)
+				} else {
+					offset += out.Size
+				}
 			}
 
 			// adding all the inputs, outputs and expressions
@@ -268,6 +321,7 @@ function_declaration:
 							// inp.Offset = off
 							// arg.Offset = offset
 							inp.Offset = arg.Offset
+							inp.Lengths = arg.Lengths
 							inp.Size = arg.Size
 						}
 					}
@@ -277,9 +331,15 @@ function_declaration:
 						if arg, found := symbols[out.Name]; !found {
 							out.Offset = offset
 							symbols[out.Name] = out
-							offset += out.Size
+							if out.IsArray {
+								// fmt.Println("huehue", out.Size * TotalLength(out.Lengths))
+								offset += out.Size * TotalLength(out.Lengths)
+							} else {
+								offset += out.Size
+							}
 						} else {
 							out.Offset = arg.Offset
+							out.Lengths = arg.Lengths
 							out.Size = arg.Size
 						}
 					}
@@ -331,13 +391,13 @@ identifier_list:
 	|       identifier_list COMMA IDENTIFIER
                 ;
 
-// declarator
-declarator:     MUL_OP direct_declarator
-                {
-                    $2.IsPointer = true
-                    $$ = $2
-                }
-	|       direct_declarator
+declarator:     // MUL_OP direct_declarator
+        //         {
+        //             $2.IsPointer = true
+        //             $$ = $2
+        //         }
+        // |       
+		direct_declarator
                 ;
 
 direct_declarator:
@@ -347,13 +407,13 @@ direct_declarator:
 			arg.Name = $1
 			$$ = arg
                 }
-	|       LPAREN   declarator RPAREN
+	|       LPAREN declarator RPAREN
                 { $$ = $2 }
-	/* |       direct_declarator '[' ']' */
-        /*         { */
-	/* 		$1.IsArray = true */
-	/* 		$$ = $1 */
-        /*         } */
+	// |       direct_declarator '[' ']'
+        //         {
+	// 		$1.IsArray = true
+	// 		$$ = $1
+        //         }
         //	|direct_declarator '[' MUL_OP ']'
         //              	|direct_declarator '[' type_qualifier_list MUL_OP ']'
         //              	|direct_declarator '[' type_qualifier_list assignment_expression ']'
@@ -383,14 +443,20 @@ direct_declarator:
 
 
 
-
 // declaration_specifiers
 declaration_specifiers:
-                unary_operator type_specifier
+                unary_operator declaration_specifiers
                 {
-			arg := MakeArgument($2)
-                        arg.IsPointer = true
-			arg.Size = GetArgSize($2)
+			arg := $2
+			$2.IsPointer = true
+			$$ = arg
+                }
+        |       LBRACK INT_LITERAL RBRACK declaration_specifiers
+                {
+			arg := $4
+                        arg.IsArray = true
+			arg.Lengths = append([]int{int($2)}, arg.Lengths...)
+			// arg.Size = GetArgSize($4.Type)
 			$$ = arg
                 }
         |       type_specifier
@@ -399,15 +465,38 @@ declaration_specifiers:
 			arg.Size = GetArgSize($1)
 			$$ = arg
                 }
+        |       IDENTIFIER
+                {
+			// custom type in the current package
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				if strct, err := prgrm.GetStruct($1, pkg.Name); err == nil {
+					arg := MakeArgument(TYPE_CUSTOM)
+					arg.Size = strct.Size
+				} else {
+					panic("type '" + $1 + "' does not exist")
+				}
+
+				
+				// if typ, ok := TypeTable[pkg.Name + "." + $1]; ok {
+				// 	arg := MakeArgument(typ)
+				// 	$$ = arg
+				// } else {
+				// 	panic("type '" + $1 + "' does not exist")
+				// }
+			} else {
+				panic(err)
+			}
+			
+                }
+        |       IDENTIFIER PERIOD IDENTIFIER
+                {
+                    // custom type in an imported package
+                }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
 	/* |       type_qualifier declaration_specifiers */
 	/* |       type_qualifier */
                 ;
-
-/* type_qualifier: CONST */
-/*         |       VAR */
-/*                 ; */
 
 type_specifier:
                 BOOL
@@ -502,7 +591,21 @@ primary_expression:
 
 postfix_expression:
                 primary_expression
-	// |       postfix_expression '[' expression ']'
+	|       postfix_expression LBRACK expression RBRACK
+                {
+
+			$1[0].Outputs[0].IsArray = true
+			// $1[0].Outputs[0].NumIndexes += 1
+			$1[0].Outputs[0].Indexes = append($1[0].Outputs[0].Indexes, $3[0].Outputs[0])
+			expr := $1[len($1) - 1]
+			// expr.Operator = Natives[OP_READ_ARRAY]
+			if len(expr.Inputs) < 1 {
+				expr.Inputs = append(expr.Inputs, $1[0].Outputs[0])
+			}
+			expr.Inputs = append(expr.Inputs, $3[0].Outputs[0])
+
+			$$ = $1
+                }
         |       type_specifier PERIOD IDENTIFIER
                 {
 			// these will always be native functions
@@ -703,26 +806,30 @@ assignment_expression:
 	|       unary_expression assignment_operator assignment_expression
                 {
 			idx := len($3) - 1
-
+			
 			if $3[idx].Operator == nil {
 				$3[idx].Operator = Natives[OP_IDENTITY]
 				$1[0].Outputs[0].Size = $3[idx].Outputs[0].Size
+				$1[0].Outputs[0].Lengths = $3[idx].Outputs[0].Lengths
 				$3[idx].Inputs = $3[idx].Outputs
 				$3[idx].Outputs = $1[0].Outputs
 				
 				$$ = $3
 			} else {
 				if $3[idx].Operator.IsNative {
-					for i, _ := range $3[idx].Operator.Outputs {
+					for i, out := range $3[idx].Operator.Outputs {
 						$1[0].Outputs[i].Size = Natives[$3[idx].Operator.OpCode].Outputs[i].Size
+						$1[0].Outputs[i].Lengths = out.Lengths
 					}
 				} else {
 					for i, out := range $3[idx].Operator.Outputs {
 						$1[0].Outputs[i].Size = out.Size
+						$1[0].Outputs[i].Lengths = out.Lengths
 					}
 				}
 
 				$3[idx].Outputs = $1[0].Outputs
+				
 				$$ = $3
 			}
                 }
@@ -760,11 +867,17 @@ constant_expression:
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-                    $$ = nil
+			// this will tell the runtime that it's just a declaration
+			expr := MakeExpression(nil)
+
+			$3.Name = $2.Name
+			expr.AddOutput($3)
+
+			$$ = []*CXExpression{expr}
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-                    $$ = nil
+			$$ = nil
                 }
                 ;
 
@@ -828,31 +941,31 @@ initializer_list:
                 }
 	|       initializer_list COMMA initializer
                 {
-                    $$ = nil
+			$$ = nil
                 }
                 ;
 
-designation:    designator_list '='
+designation:    designator_list ASSIGN
                 {
-                    $$ = nil
+			$$ = nil
                 }
                 ;
 
 designator_list:
                 designator
                 {
-                    $$ = nil
+			$$ = nil
                 }
 	|       designator_list designator
                 {
-                    $$ = nil
+			$$ = nil
                 }
                 ;
 
 designator:
-                '[' constant_expression ']'
+                LBRACK constant_expression RBRACK
                 {
-                    $$ = nil
+			$$ = nil
                 }
 	|       PERIOD IDENTIFIER
                 {

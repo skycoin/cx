@@ -9,8 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	// fmt.Println("")
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -47,7 +46,6 @@ func (prgrm *CXProgram) Run () error {
 
 func (call *CXCall) call (prgrm *CXProgram) error {
 	// CX is still single-threaded, so only one stack
-	// fmt.Println(call.Line, call.Operator.Length, prgrm.CallCounter)
 	if call.Line >= call.Operator.Length {
 		/*
                   popping the stack
@@ -92,7 +90,10 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		fn := call.Operator
 		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
-		if expr.Operator.IsNative {
+		if expr.Operator == nil {
+			// then it's a declaration
+			call.Line++
+		} else if expr.Operator.IsNative {
 			// previousFP := call.FramePointer
 			// call.FramePointer = prgrm.Stacks[0].StackPointer
 			// the stack pointer is moved to create room for the next call
@@ -107,50 +108,6 @@ func (call *CXCall) call (prgrm *CXProgram) error {
                           with the current expression's operator
                         */
 
-
-
-
-
-
-			
-
-			/*
-                  preparing inputs and outputs in the stack for the next function call
-                */
-			// fmt.Println("hi")
-			// sp := prgrm.Stacks[0].StackPointer
-			// fp := call.FramePointer
-			// tmp := sp
-			// for _, inp := range expr.Inputs {
-			// 	// we write the input values for the next frame
-			// 	size := inp.Size
-
-			// 	var byts []byte
-			// 	switch inp.MemoryType {
-			// 	case MEM_STACK:
-			// 		byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
-			// 	case MEM_DATA:
-			// 		byts = inp.Program.Data[inp.Offset : inp.Offset + inp.Size]
-			// 	default:
-			// 		panic("implement the other mem types")
-			// 	}
-				
-			// 	for c := 0; c < size; c++ {
-			// 		// we copy each byte outside of current frame
-			// 		// prgrm.Stacks[0].Stack[tmp+c] = prgrm.Stacks[0].Stack[fp+offset+c]
-			// 		prgrm.Stacks[0].Stack[tmp+c] = byts[c]
-			// 	}
-			// 	tmp += size
-			// }
-			// for _, out := range expr.Outputs {
-			// 	// we make room to receive the outputs
-			// 	tmp += out.Size
-			// }
-
-
-			
-			// once the subcall finishes, call next line
-			// call.Line++
 			// we're going to use the next call in the callstack
 			prgrm.CallCounter++
 			newCall := &prgrm.CallStack[prgrm.CallCounter]

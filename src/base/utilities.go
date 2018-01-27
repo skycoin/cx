@@ -1641,6 +1641,8 @@ func (prgrm *CXProgram) PrintProgram () {
 // 	return "", errors.New(fmt.Sprintf("%s: %d: identifier '%s' could not be resolved", fileName, line, lookingFor))
 // }
 
+// var TypeTable map[string]int
+
 func GetArgSize (typ int) int {
 	switch typ {
 	case TYPE_BOOL, TYPE_BYTE:

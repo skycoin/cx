@@ -181,6 +181,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 // types
 const (
 	TYPE_UNDEFINED = iota
+
+	TYPE_CUSTOM
 	
 	TYPE_IDENTIFIER
 	TYPE_BOOL
@@ -349,14 +351,21 @@ type CXArgument struct {
 	Index int
 	Name string
 	Type int
-	Size int // size of type, 1, 4, 8 bytes. variable for MEM_DATA
+	Size int // size of underlaying basic type
 
 	MemoryType int
 	Offset int
+	
 	IsArray bool
 	IsPointer bool
 	IsStruct bool
+	IsField bool
 	IsRest bool // pkg.var <- var is rest
+
+	Sizes []int // used to access struct fields
+	Lengths []int // declared lengths at compile time
+	// NumIndexes int // how many levels we'll go deep. NumIndexes <= len(Lengths)
+	Indexes []*CXArgument
 
 	Package *CXPackage
 	Program *CXProgram
@@ -367,10 +376,10 @@ type CXArgument struct {
 */
 
 type CXAffordance struct {
-	Description string
-	Operator string
-	Name string
-	Typ string
-	Index string
-	Action func()
+	Description string;
+	Operator string;
+	Name string;
+	Typ string;
+	Index string;
+	Action func();
 }

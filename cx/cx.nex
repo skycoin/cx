@@ -64,6 +64,8 @@
 /!=/                      {return NE_OP}
 /;/                       { return SEMICOLON }
 /!/                       { return EXCL }
+/\[/                      { return LBRACK }
+/\]/                      { return RBRACK }
 /\(/                      { return LPAREN }
 /\)/                      { return RPAREN }
 /\{/                      { return LBRACE }

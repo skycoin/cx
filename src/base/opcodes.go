@@ -3,6 +3,7 @@ package base
 // op codes
 const (
 	OP_IDENTITY = iota
+	OP_READ_ARRAY
 	OP_JMP
 	
 	OP_I32_ADD
@@ -82,6 +83,7 @@ func execNative (prgrm *CXProgram) {
 	
 	switch opCode {
 	case OP_IDENTITY: identity(expr, stack, fp)
+	case OP_READ_ARRAY: read_array(expr, stack, fp)
 	case OP_JMP: jmp(expr, stack, fp, call)
 		
 	case OP_I32_ADD: i32_add(expr, stack, fp)
@@ -153,6 +155,7 @@ func execNative (prgrm *CXProgram) {
 // For the parser. These shouldn't be used in the runtime for performance reasons
 var OpNames map[int]string = map[int]string{
 	OP_IDENTITY: "identity",
+	OP_READ_ARRAY: "read",
 	OP_JMP: "jmp",
 	OP_I32_ADD: "i32.add",
 	OP_I32_SUB: "i32.sub",
@@ -172,6 +175,7 @@ var OpNames map[int]string = map[int]string{
 // For the parser. These shouldn't be used in the runtime for performance reasons
 var OpCodes map[string]int = map[string]int{
 	"identity": OP_IDENTITY,
+	"read": OP_READ_ARRAY,
 	"jmp": OP_JMP,
 	"i32.add": OP_I32_ADD,
 	"i32.sub": OP_I32_SUB,
@@ -190,6 +194,7 @@ var OpCodes map[string]int = map[string]int{
 
 var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_IDENTITY: MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_I32_ADD: MakeNative(OP_I32_ADD, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_SUB: MakeNative(OP_I32_SUB, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_PRINT: MakeNative(OP_I32_PRINT, []int{TYPE_I32}, []int{}),
