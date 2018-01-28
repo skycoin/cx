@@ -186,12 +186,24 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 
 func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 	offsetOffset := 0
+
 	for i, idxArg := range arg.Indexes {
 		var subSize int = 1
 		for _, len := range arg.Lengths[i+1:] {
 			subSize *= len
 		}
 		offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.Size
+	}
+
+	if len(arg.Fields) > 0 {
+		fld := arg.Fields[0]
+		for i, idxArg := range fld.Indexes {
+			var subSize int = 1
+			for _, len := range fld.Lengths[i+1:] {
+				subSize *= len
+			}
+			offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
+		}
 	}
 	return arg.Offset + offsetOffset
 }

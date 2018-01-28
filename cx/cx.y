@@ -42,6 +42,7 @@
 			arg.Program = prgrm
 			size := len(byts)
 			arg.Size = size
+			arg.TotalSize = size
 			dataOffset += size
 			prgrm.Data = append(prgrm.Data, Data(byts)...)
 			expr := MakeExpression(nil)
@@ -58,6 +59,157 @@
 			total *= i
 		}
 		return total
+	}
+
+	func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
+		// adding inputs, outputs
+		for _, inp := range inputs {
+			fn.AddInput(inp)
+		}
+		for _, out := range outputs {
+			fn.AddOutput(out)
+		}
+
+		// getting offset to use by statements (excluding inputs, outputs and receiver)
+		var offset int
+		if len(fn.Outputs) > 0 {
+			lastOutput := fn.Outputs[len(fn.Outputs) - 1]
+			offset = lastOutput.Offset + lastOutput.TotalSize
+		} else if len(fn.Inputs) > 0 {
+			lastInput := fn.Inputs[len(fn.Inputs) - 1]
+			offset = lastInput.Offset + lastInput.TotalSize
+		}
+
+		// for _, out := range outputs {
+		// 	out.Offset += offset
+		// 	offset += out.TotalSize
+		// }
+
+		for _, expr := range exprs {
+			fn.AddExpression(expr)
+		}
+
+		fn.Length = len(fn.Expressions)
+
+		var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
+		for _, inp := range fn.Inputs {
+			if inp.Name != "" {
+				symbols[inp.Name] = inp
+			}
+		}
+		for _, out := range fn.Outputs {
+			if out.Name != "" {
+				symbols[out.Name] = out
+			}
+		}
+
+		for _, expr := range fn.Expressions {
+			for _, inp := range expr.Inputs {
+				if inp.Name != "" {
+					if arg, found := symbols[inp.Name]; !found {
+						// it should exist. error
+						panic("identifier '" + inp.Name + "' does not exist")
+					} else {
+						inp.Offset = arg.Offset
+
+						if inp.IsStruct {
+							// checking if it's accessing fields
+							inp.Offset = arg.Offset
+							// this will only work for one field atm
+							if len(inp.Fields) > 0 {
+								var found bool
+								for _, fld := range arg.CustomType.Fields {
+									if inp.Fields[0].Name == fld.Name {
+										inp.Fields[0].Lengths = fld.Lengths
+										inp.Fields[0].Size = fld.Size
+										inp.Fields[0].TotalSize = fld.TotalSize
+										found = true
+										break
+									}
+									inp.Offset += fld.TotalSize
+								}
+								if !found {
+									panic("field '" + inp.Fields[0].Name + "' not found")
+								}
+							}
+						} else {
+							inp.Offset = arg.Offset
+						}
+						
+						inp.Lengths = arg.Lengths
+						inp.Size = arg.Size
+						inp.TotalSize = arg.TotalSize
+					}
+				}
+			}
+			for _, out := range expr.Outputs {
+				if out.Name != "" {
+					if arg, found := symbols[out.Name]; !found {
+						out.Offset = offset
+						symbols[out.Name] = out
+						offset += out.TotalSize
+					} else {
+						if out.IsStruct {
+							// checking if it's accessing fields
+							out.Offset = arg.Offset
+							// this will only work for one field atm
+							if len(out.Fields) > 0 {
+								var found bool
+								for _, fld := range arg.CustomType.Fields {
+									if out.Fields[0].Name == fld.Name {
+										out.Fields[0].Lengths = fld.Lengths
+										out.Fields[0].Size = fld.Size
+										out.Fields[0].TotalSize = fld.TotalSize
+										found = true
+										break
+									}
+									out.Offset += fld.TotalSize
+								}
+								if !found {
+									panic("field '" + out.Fields[0].Name + "' not found")
+								}
+							}
+						} else {
+							out.Offset = arg.Offset
+						}
+
+						out.Lengths = arg.Lengths
+						out.Size = arg.Size
+						out.TotalSize = arg.TotalSize
+					}
+				}
+			}
+		}
+		fn.Size = offset
+	}
+
+	func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
+		expr := exprs[0]
+		if expr.Operator == nil {
+			if op, err := prgrm.GetFunction(expr.Outputs[0].Name, expr.Outputs[0].Package.Name); err == nil {
+				expr.Operator = op
+			} else {
+				panic(err)
+			}
+		}
+
+		var nestedExprs []*CXExpression
+		for _, inpExpr := range args {
+			if inpExpr.Operator == nil {
+				// then it's a literal
+				expr.AddInput(inpExpr.Outputs[0])
+			} else {
+				// then it's a function call
+				if len(inpExpr.Outputs) < 1 {
+					out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
+					inpExpr.AddOutput(out)
+					expr.AddInput(out)
+				}
+				nestedExprs = append(nestedExprs, inpExpr)
+			}
+		}
+		
+		return append(nestedExprs, exprs...)
 	}
 %}
 
@@ -148,6 +300,7 @@
 %type   <argument>      direct_declarator
 %type   <argument>      parameter_declaration
 %type   <arguments>     parameter_type_list
+%type   <arguments>     function_parameters
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
@@ -217,10 +370,13 @@ struct_declaration:
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				strct := MakeStruct($2)
 				pkg.AddStruct(strct)
-				
+
+				var size int
                                 for _, fld := range $4 {
                                         strct.AddField(fld)
+					size += fld.TotalSize
 				}
+				strct.Size = size
 			} else {
 				panic(err)
 			}
@@ -229,16 +385,28 @@ struct_declaration:
 
 struct_fields:
                 LBRACE RBRACE
-                { $$ = nil}
+                { $$ = nil }
         |       LBRACE fields RBRACE
-                { $$ = $2}
+                { $$ = $2 }
         ;
 
 fields:         parameter_declaration SEMICOLON
-                { $$ = []*CXArgument{$1} }
+                {
+			if $1.IsArray {
+				$1.TotalSize = $1.Size * TotalLength($1.Lengths)
+			} else {
+				$1.TotalSize = $1.Size
+			}
+			$$ = []*CXArgument{$1}
+                }
         |       fields parameter_declaration SEMICOLON
                 {
-                    $$ = append($1, $2)
+			if $2.IsArray {
+				$2.TotalSize = $2.Size * TotalLength($2.Lengths)
+			} else {
+				$2.TotalSize = $2.Size
+			}
+			$$ = append($1, $2)
                 }
         ;
 
@@ -262,96 +430,46 @@ function_header:
 				panic(err)
 			}
                 }
+        |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
+                {
+			if len($3) > 1 {
+				panic("method has multiple receivers")
+			}
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				fn := MakeFunction($5)
+				pkg.AddFunction(fn)
+
+                                fn.AddInput($3[0])
+
+                                $$ = fn
+			} else {
+				panic(err)
+			}
+                }
         ;
 
+function_parameters:
+                LPAREN RPAREN
+                { $$ = nil }
+        |       LPAREN parameter_type_list RPAREN
+                { $$ = $2 }
+                ;
+
 function_declaration:
-                function_header LPAREN parameter_type_list RPAREN compound_statement
-        |       function_header LPAREN parameter_type_list RPAREN LPAREN parameter_type_list RPAREN compound_statement
+                function_header function_parameters compound_statement
                 {
-			// fixing output parameters' offsets (they need to be + last input offset)
-			var offset int
-			lastInput := $3[len($3) - 1]
-			if lastInput.IsArray {
-				offset = lastInput.Offset + lastInput.Size * TotalLength(lastInput.Lengths)
-			} else {
-				offset = lastInput.Offset + lastInput.Size
-			}
-			
-			for _, out := range $6 {
-				out.Offset += offset
-				if out.IsArray {
-					offset += out.Size * TotalLength(out.Lengths)
-				} else {
-					offset += out.Size
-				}
-			}
-
-			// adding all the inputs, outputs and expressions
-			for _, inp := range $3 {
-				$1.AddInput(inp)
-			}
-			for _, out := range $6 {
-				$1.AddOutput(out)
-			}
-			for _, expr := range $8 {
-				$1.AddExpression(expr)
-			}
-
-			$1.Length = len($1.Expressions)
-
-			var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
-			for _, inp := range $1.Inputs {
-				if inp.Name != "" {
-					symbols[inp.Name] = inp
-				}
-			}
-			for _, out := range $1.Outputs {
-				if out.Name != "" {
-					symbols[out.Name] = out
-				}
-			}
-
-			for _, expr := range $1.Expressions {
-				for _, inp := range expr.Inputs {
-					if inp.Name != "" {
-						if arg, found := symbols[inp.Name]; !found {
-							// it should exist. error
-							panic("identifier '" + inp.Name + "' does not exist")
-						} else {
-							// inp.Offset = off
-							// arg.Offset = offset
-							inp.Offset = arg.Offset
-							inp.Lengths = arg.Lengths
-							inp.Size = arg.Size
-						}
-					}
-				}
-				for _, out := range expr.Outputs {
-					if out.Name != "" {
-						if arg, found := symbols[out.Name]; !found {
-							out.Offset = offset
-							symbols[out.Name] = out
-							if out.IsArray {
-								// fmt.Println("huehue", out.Size * TotalLength(out.Lengths))
-								offset += out.Size * TotalLength(out.Lengths)
-							} else {
-								offset += out.Size
-							}
-						} else {
-							out.Offset = arg.Offset
-							out.Lengths = arg.Lengths
-							out.Size = arg.Size
-						}
-					}
-				}
-			}
-			$1.Size = offset
+			FunctionDeclaration($1, $2, nil, $3)
+                }
+        |       function_header function_parameters function_parameters compound_statement
+                {
+			FunctionDeclaration($1, $2, $3, $4)
                 }
         ;
 
 /* method_declaration: */
 /*                 FUNC */
 /*         ; */
+
 
 
 // parameter_type_list
@@ -363,12 +481,22 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
+			if $1.IsArray {
+				$1.TotalSize = $1.Size * TotalLength($1.Lengths)
+			} else {
+				$1.TotalSize = $1.Size
+			}
 			$$ = []*CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
+			if $3.IsArray {
+				$3.TotalSize = $3.Size * TotalLength($3.Lengths)
+			} else {
+				$3.TotalSize = $3.Size
+			}
 			lastPar := $1[len($1) - 1]
-			$3.Offset = lastPar.Offset + lastPar.Size
+			$3.Offset = lastPar.Offset + lastPar.TotalSize
 			$$ = append($1, $3)
                 }
                 ;
@@ -377,7 +505,7 @@ parameter_declaration:
                 declarator declaration_specifiers
                 {
 			$2.Name = $1.Name
-			$2.IsArray = $1.IsArray
+			// $2.IsArray = $1.IsArray
 			// input and output parameters are always in the stack
 			$2.MemoryType = MEM_STACK
 			$$ = $2
@@ -456,6 +584,7 @@ declaration_specifiers:
 			arg := $4
                         arg.IsArray = true
 			arg.Lengths = append([]int{int($2)}, arg.Lengths...)
+			arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 			// arg.Size = GetArgSize($4.Type)
 			$$ = arg
                 }
@@ -463,6 +592,7 @@ declaration_specifiers:
                 {
 			arg := MakeArgument($1)
 			arg.Size = GetArgSize($1)
+			arg.TotalSize = arg.Size
 			$$ = arg
                 }
         |       IDENTIFIER
@@ -471,18 +601,18 @@ declaration_specifiers:
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				if strct, err := prgrm.GetStruct($1, pkg.Name); err == nil {
 					arg := MakeArgument(TYPE_CUSTOM)
+					arg.CustomType = strct
 					arg.Size = strct.Size
+					arg.TotalSize = strct.Size
+
+					// for _, fld := range strct.Fields {
+					// 	arg.Sizes = append(arg.Sizes, fld.Size)
+					// }
+
+					$$ = arg
 				} else {
 					panic("type '" + $1 + "' does not exist")
 				}
-
-				
-				// if typ, ok := TypeTable[pkg.Name + "." + $1]; ok {
-				// 	arg := MakeArgument(typ)
-				// 	$$ = arg
-				// } else {
-				// 	panic("type '" + $1 + "' does not exist")
-				// }
 			} else {
 				panic(err)
 			}
@@ -490,7 +620,7 @@ declaration_specifiers:
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-                    // custom type in an imported package
+			// custom type in an imported package
                 }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -596,7 +726,14 @@ postfix_expression:
 
 			$1[0].Outputs[0].IsArray = true
 			// $1[0].Outputs[0].NumIndexes += 1
-			$1[0].Outputs[0].Indexes = append($1[0].Outputs[0].Indexes, $3[0].Outputs[0])
+
+			if len($1[0].Outputs[0].Fields) > 0 {
+				fld := $1[0].Outputs[0].Fields[len($1[0].Outputs[0].Fields) - 1]
+				fld.Indexes = append(fld.Indexes, $3[0].Outputs[0])
+			} else {
+				$1[0].Outputs[0].Indexes = append($1[0].Outputs[0].Indexes, $3[0].Outputs[0])
+			}
+			
 			expr := $1[len($1) - 1]
 			// expr.Operator = Natives[OP_READ_ARRAY]
 			if len(expr.Inputs) < 1 {
@@ -617,49 +754,11 @@ postfix_expression:
                 }
 	|       postfix_expression LPAREN RPAREN
                 {
-			// expr := $1[0]
-			$$ = $1
-			// arg := $1[0].Outputs[0]
-			// opName := arg.Name
-
-			// if op, err := prgrm.GetFunction(opName, arg.Package.Name); err == nil {
-			// 	$$ = []*CXExpression{MakeExpression(op)}
-			// } else {
-			// 	panic(err)
-			// }
+			$$ = FunctionCall($1, nil)
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
-			/*
-			  i32.add(5, 5), foo(10, 20)
-			*/
-			expr := $1[0]
-			if expr.Operator == nil {
-				if op, err := prgrm.GetFunction($1[0].Outputs[0].Name, $1[0].Outputs[0].Package.Name); err == nil {
-					expr.Operator = op
-				} else {
-					panic(err)
-				}
-			}
-
-			var nestedExprs []*CXExpression
-			for _, inpExpr := range $3 {
-				if inpExpr.Operator == nil {
-					// then it's a literal
-					expr.AddInput(inpExpr.Outputs[0])
-				} else {
-					// then it's a function call
-					if len(inpExpr.Outputs) < 1 {
-						out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
-						inpExpr.AddOutput(out)
-						expr.AddInput(out)
-					}
-					nestedExprs = append(nestedExprs, inpExpr)
-				}
-			}
-			
-			nestedExprs = append(nestedExprs, $1...)
-			$$ = nestedExprs
+			$$ = FunctionCall($1, $3)
                 }
 	|       postfix_expression INC_OP
                 {
@@ -671,43 +770,50 @@ postfix_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
+			left := $1[0].Outputs[0]
+			// right := $3[0].Outputs[0]
 
-
-
-                fullName := $1[len($1) - 1].Outputs[0].Name + "." + $3
-			if opCode, ok := OpCodes[fullName]; ok {
-				$$ = []*CXExpression{MakeExpression(Natives[opCode])}
-			}
-			
-			// left := $1[0].Outputs[0]
-			// //right := $3[0].Outputs[0]
-			
-			// if left.IsRest {
-			// 	// then it can't be a module name
-			// 	// and we propagate the property to the right expression
-			// 	// right.IsRest = true
-			// } else {
-			// 	// then left is a first (e.g first.rest) and right is a rest
-			// 	// right.IsRest = true
-			// 	// let's check if left is a package
-			// 	if _, err := prgrm.GetPackage(left.Name); err != nil {
-			// 		// the external property will be propagated to the following arguments
-			// 		// this way we avoid considering these arguments as module names
-			// 		//right.Package = pkg
-			// 		$$ = $1
-			// 	} else {
-			// 		// left is not a package, then it's a struct or a function call
-			// 		// if right.Operator != nil {
-			// 		// 	// then left is a function call that returns a struct instance
-			// 		// 	// we just return an expression with the GetField operator
+			if left.IsRest {
+				// fmt.Println("first")
+				// then it can't be a module name
+				// and we propagate the property to the right expression
+				// right.IsRest = true
+			} else {
+				// fmt.Println("second")
+				// then left is a first (e.g first.rest) and right is a rest
+				// right.IsRest = true
+				// let's check if left is a package
+				if _, err := prgrm.GetPackage(left.Name); err == nil {
+					// fmt.Println("second first")
+					// the external property will be propagated to the following arguments
+					// this way we avoid considering these arguments as module names
+					//right.Package = pkg
+					$$ = $1
+				} else {
+					if opCode, ok := OpCodes[$1[0].Outputs[0].Name + "." + $3]; ok {
+						$1[0].Operator = Natives[opCode]
+					} else {
+						left.IsStruct = true
+						fld := MakeArgument(TYPE_IDENTIFIER)
+						fld.Name = $3
+						left.Fields = append(left.Fields, fld)
+					}
+					
+					// if fld, err := left
+					// left.Offset += 
+					
+					// left is not a package, then it's a struct or a function call
+					// if right.Operator != nil {
+					// 	// then left is a function call that returns a struct instance
+					// 	// we just return an expression with the GetField operator
 						
-			// 		// } else {
-			// 		// 	// then left is a struct instance
+					// } else {
+					// 	// then left is a struct instance
 
-			// 		// 	// GetField(left, right)
-			// 		// }
-			// 	}
-			// }
+					// 	// GetField(left, right)
+					// }
+				}
+			}
                 }
                 ;
 

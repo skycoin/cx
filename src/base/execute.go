@@ -9,7 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -21,7 +21,6 @@ func (prgrm *CXProgram) Run () error {
 			mainCall := MakeCall(fn, nil, mod, mod.Program)
 			
 			// initializing program resources
-			//prgrm.CallStack = append(prgrm.CallStack, mainCall)
 			prgrm.CallStack[0] = mainCall
 			prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 			prgrm.Stacks[0].StackPointer = fn.Size
@@ -69,11 +68,11 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			outOffset := 0
 			for i, out := range expr.Outputs {
 				// copy byte by byte to the previous stack frame
-				for c := 0; c < out.Size; c++ {
+				for c := 0; c < out.TotalSize; c++ {
 					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
 						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
 				}
-				outOffset += out.Size
+				outOffset += out.TotalSize
 			}
 
 			// return the stack pointer to its previous state
@@ -94,20 +93,13 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			// then it's a declaration
 			call.Line++
 		} else if expr.Operator.IsNative {
-			// previousFP := call.FramePointer
-			// call.FramePointer = prgrm.Stacks[0].StackPointer
-			// the stack pointer is moved to create room for the next call
-			// prgrm.Stacks[0].StackPointer += fn.Size
 			execNative(prgrm)
-			// prgrm.Stacks[0].StackPointer = call.FramePointer
-			// call.FramePointer = previousFP
 			call.Line++
 		} else {
 			/*
                           It was not a native, so we need to create another call
                           with the current expression's operator
                         */
-
 			// we're going to use the next call in the callstack
 			prgrm.CallCounter++
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
@@ -118,20 +110,22 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			// the stack pointer is moved to create room for the next call
 			prgrm.Stacks[0].StackPointer += fn.Size
 
-			fp := newCall.FramePointer
+			fp := call.FramePointer
+			newFP := newCall.FramePointer
 
 			for i, inp := range expr.Inputs {
 				var byts []byte
 				switch inp.MemoryType {
 				case MEM_STACK:
-					byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
+					byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
 				case MEM_DATA:
-					byts = prgrm.Data[inp.Offset : inp.Offset + inp.Size]
+					byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
 				default:
 					panic("implement the other mem types")
 				}
-				for c := 0; c < inp.Size; c++ {
-					prgrm.Stacks[0].Stack[fp + newCall.Operator.Inputs[i].Offset + c] = 
+				// we copy the inputs for the next call
+				for c := 0; c < inp.TotalSize; c++ {
+					prgrm.Stacks[0].Stack[newFP + newCall.Operator.Inputs[i].Offset + c] = 
 					byts[c]
 				}
 			}

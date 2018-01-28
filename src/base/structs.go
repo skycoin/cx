@@ -351,7 +351,9 @@ type CXArgument struct {
 	Index int
 	Name string
 	Type int
+	CustomType *CXStruct
 	Size int // size of underlaying basic type
+	TotalSize int // total size of an array, performance reasons
 
 	MemoryType int
 	Offset int
@@ -362,10 +364,11 @@ type CXArgument struct {
 	IsField bool
 	IsRest bool // pkg.var <- var is rest
 
-	Sizes []int // used to access struct fields
+	// Sizes []int // used to access struct fields
 	Lengths []int // declared lengths at compile time
 	// NumIndexes int // how many levels we'll go deep. NumIndexes <= len(Lengths)
 	Indexes []*CXArgument
+	Fields []*CXArgument // strct.fld1.fld2().fld3
 
 	Package *CXPackage
 	Program *CXProgram
