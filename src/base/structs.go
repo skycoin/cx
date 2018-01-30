@@ -340,7 +340,11 @@ type CXExpression struct {
 	// debugging
 	FileLine int
 	FileName string
+
+	// used for jmp statements
 	Label string
+	ThenLines int
+	ElseLines int
 	
 	Function *CXFunction
 	Package *CXPackage
@@ -357,6 +361,7 @@ type CXArgument struct {
 
 	MemoryType int
 	Offset int
+	OffsetOffset int // for struct fields
 	
 	IsArray bool
 	IsPointer bool

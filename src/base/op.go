@@ -80,10 +80,11 @@ func goTo (expr *CXExpression, call *CXCall) {
 }
 
 func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	// inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	inp1 := expr.Inputs[0]
 	var predicate bool
-	var thenLines int32
-	var elseLines int32
+	// var thenLines int32
+	// var elseLines int32
 
 	switch inp1.MemoryType {
 	case MEM_STACK:
@@ -98,13 +99,17 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 
 	if predicate {
 		// thenLines and elseLines will always be in the data segment
-		thenLinesB := inp2.Program.Data[inp2.Offset : inp2.Offset + inp2.Size]
-		encoder.DeserializeRaw(thenLinesB, &thenLines)
-		call.Line = call.Line + int(thenLines)
+		// thenLinesB := inp2.Program.Data[inp2.Offset : inp2.Offset + inp2.Size]
+		// encoder.DeserializeRaw(thenLinesB, &thenLines)
+		// call.Line = call.Line + int(thenLines)
+
+		call.Line = call.Line + expr.ThenLines
 	} else {
-		elseLinesB := inp3.Program.Data[inp3.Offset : inp3.Offset + inp3.Size]
-		encoder.DeserializeRaw(elseLinesB, &elseLines)
-		call.Line = call.Line + int(elseLines)
+		// elseLinesB := inp3.Program.Data[inp3.Offset : inp3.Offset + inp3.Size]
+		// encoder.DeserializeRaw(elseLinesB, &elseLines)
+		// call.Line = call.Line + int(elseLines)
+
+		call.Line = call.Line + expr.ElseLines
 	}
 }
 
@@ -157,7 +162,11 @@ func FromI64 (in int64) []byte {
 }
 
 func FromBool (in bool) []byte {
-	return encoder.Serialize(in)
+	if in {
+		return []byte{1}
+	} else {
+		return []byte{0}
+	}
 }
 
 func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, int) {
@@ -185,8 +194,11 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 }
 
 func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+	if len(arg.Indexes) < 1 && len(arg.Fields) < 1 {
+		return arg.Offset
+	}
+	
 	offsetOffset := 0
-
 	for i, idxArg := range arg.Indexes {
 		var subSize int = 1
 		for _, len := range arg.Lengths[i+1:] {
@@ -196,13 +208,16 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 	}
 
 	if len(arg.Fields) > 0 {
-		fld := arg.Fields[0]
-		for i, idxArg := range fld.Indexes {
-			var subSize int = 1
-			for _, len := range fld.Lengths[i+1:] {
-				subSize *= len
+		for _, fld := range arg.Fields {
+			offsetOffset += fld.Offset
+			for i, idxArg := range fld.Indexes {
+				var subSize int = 1
+				for _, len := range fld.Lengths[i+1:] {
+					subSize *= len
+				}
+				offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
 			}
-			offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
+			
 		}
 	}
 	return arg.Offset + offsetOffset
@@ -222,6 +237,18 @@ func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
 	}
 	
 	return
+}
+
+func ReadFromStack (stack *CXStack, fp int, inp *CXArgument) (out []byte) {
+	offset := GetFinalOffset(stack, fp, inp)
+	switch inp.MemoryType {
+	case MEM_STACK:
+		return stack.Stack[fp + offset : fp + offset + inp.Size]
+	case MEM_DATA:
+		return inp.Program.Data[offset : offset + inp.Size]
+	default:
+		panic("implement the other mem types in readI32")
+	}
 }
 
 func ReadI64 (stack *CXStack, fp int, inp *CXArgument) (out int64) {

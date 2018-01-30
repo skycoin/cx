@@ -114,12 +114,19 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			newFP := newCall.FramePointer
 
 			for i, inp := range expr.Inputs {
+				
 				var byts []byte
+				finalOffset := inp.Offset
+				if inp.Indexes != nil {
+					finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
+				}
 				switch inp.MemoryType {
 				case MEM_STACK:
-					byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
+					// byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
+					byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
 				case MEM_DATA:
-					byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
+					// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
+					byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
 				default:
 					panic("implement the other mem types")
 				}

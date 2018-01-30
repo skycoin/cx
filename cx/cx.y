@@ -61,6 +61,59 @@
 		return total
 	}
 
+	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
+		if sym.Name != "" {
+			if arg, found := (*symbols)[sym.Name]; !found {
+				// it should exist. error
+				if shouldExist {
+					panic("identifier '" + sym.Name + "' does not exist")
+				} else {
+					sym.Offset = *offset
+					(*symbols)[sym.Name] = sym
+					*offset += sym.TotalSize
+				}
+			} else {
+				sym.Offset = arg.Offset
+
+				if sym.IsStruct {
+					// checking if it's accessing fields
+					sym.Offset = arg.Offset
+					if len(sym.Fields) > 0 {
+						var found bool
+
+						if len(sym.Fields) > 0 {
+							strct := arg.CustomType
+							for _, nameFld := range sym.Fields {
+								for _, fld := range strct.Fields {
+									if nameFld.Name == fld.Name {
+										nameFld.Lengths = fld.Lengths
+										nameFld.Size = fld.Size
+										nameFld.TotalSize = fld.TotalSize
+										found = true
+										if fld.CustomType != nil {
+											strct = fld.CustomType
+										}
+										break
+									}
+									nameFld.Offset += fld.TotalSize
+								}
+								if !found {
+									panic("field '" + nameFld.Name + "' not found")
+								}
+							}
+						}
+					}
+				} else {
+					sym.Offset = arg.Offset
+				}
+				
+				sym.Lengths = arg.Lengths
+				sym.Size = arg.Size
+				sym.TotalSize = arg.TotalSize
+			}
+		}
+	}
+
 	func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
 		// adding inputs, outputs
 		for _, inp := range inputs {
@@ -70,19 +123,14 @@
 			fn.AddOutput(out)
 		}
 
-		// getting offset to use by statements (excluding inputs, outputs and receiver)
+		// // getting offset to use by statements (excluding inputs, outputs and receiver)
 		var offset int
-		if len(fn.Outputs) > 0 {
-			lastOutput := fn.Outputs[len(fn.Outputs) - 1]
-			offset = lastOutput.Offset + lastOutput.TotalSize
-		} else if len(fn.Inputs) > 0 {
-			lastInput := fn.Inputs[len(fn.Inputs) - 1]
-			offset = lastInput.Offset + lastInput.TotalSize
-		}
-
-		// for _, out := range outputs {
-		// 	out.Offset += offset
-		// 	offset += out.TotalSize
+		// if len(fn.Outputs) > 0 {
+		// 	lastOutput := fn.Outputs[len(fn.Outputs) - 1]
+		// 	offset = lastOutput.Offset + lastOutput.TotalSize
+		// } else if len(fn.Inputs) > 0 {
+		// 	lastInput := fn.Inputs[len(fn.Inputs) - 1]
+		// 	offset = lastInput.Offset + lastInput.TotalSize
 		// }
 
 		for _, expr := range exprs {
@@ -93,104 +141,52 @@
 
 		var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
 		for _, inp := range fn.Inputs {
-			if inp.Name != "" {
-				symbols[inp.Name] = inp
-			}
+			GiveOffset(&symbols, inp, &offset, false)
+			// if inp.Name != "" {
+			// 	symbols[inp.Name] = inp
+			// }
 		}
 		for _, out := range fn.Outputs {
-			if out.Name != "" {
-				symbols[out.Name] = out
-			}
+			GiveOffset(&symbols, out, &offset, false)
+			// if out.Name != "" {
+			// 	symbols[out.Name] = out
+			// }
 		}
 
 		for _, expr := range fn.Expressions {
 			for _, inp := range expr.Inputs {
-				if inp.Name != "" {
-					if arg, found := symbols[inp.Name]; !found {
-						// it should exist. error
-						panic("identifier '" + inp.Name + "' does not exist")
-					} else {
-						inp.Offset = arg.Offset
-
-						if inp.IsStruct {
-							// checking if it's accessing fields
-							inp.Offset = arg.Offset
-							// this will only work for one field atm
-							if len(inp.Fields) > 0 {
-								var found bool
-								for _, fld := range arg.CustomType.Fields {
-									if inp.Fields[0].Name == fld.Name {
-										inp.Fields[0].Lengths = fld.Lengths
-										inp.Fields[0].Size = fld.Size
-										inp.Fields[0].TotalSize = fld.TotalSize
-										found = true
-										break
-									}
-									inp.Offset += fld.TotalSize
-								}
-								if !found {
-									panic("field '" + inp.Fields[0].Name + "' not found")
-								}
-							}
-						} else {
-							inp.Offset = arg.Offset
-						}
-						
-						inp.Lengths = arg.Lengths
-						inp.Size = arg.Size
-						inp.TotalSize = arg.TotalSize
-					}
-				}
+				GiveOffset(&symbols, inp, &offset, true)
 			}
 			for _, out := range expr.Outputs {
-				if out.Name != "" {
-					if arg, found := symbols[out.Name]; !found {
-						out.Offset = offset
-						symbols[out.Name] = out
-						offset += out.TotalSize
-					} else {
-						if out.IsStruct {
-							// checking if it's accessing fields
-							out.Offset = arg.Offset
-							// this will only work for one field atm
-							if len(out.Fields) > 0 {
-								var found bool
-								for _, fld := range arg.CustomType.Fields {
-									if out.Fields[0].Name == fld.Name {
-										out.Fields[0].Lengths = fld.Lengths
-										out.Fields[0].Size = fld.Size
-										out.Fields[0].TotalSize = fld.TotalSize
-										found = true
-										break
-									}
-									out.Offset += fld.TotalSize
-								}
-								if !found {
-									panic("field '" + out.Fields[0].Name + "' not found")
-								}
-							}
-						} else {
-							out.Offset = arg.Offset
-						}
-
-						out.Lengths = arg.Lengths
-						out.Size = arg.Size
-						out.TotalSize = arg.TotalSize
-					}
-				}
+				GiveOffset(&symbols, out, &offset, false)
 			}
 		}
 		fn.Size = offset
 	}
 
 	func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
-		expr := exprs[0]
+		expr := exprs[len(exprs) - 1]
+		
 		if expr.Operator == nil {
-			if op, err := prgrm.GetFunction(expr.Outputs[0].Name, expr.Outputs[0].Package.Name); err == nil {
+			opName := expr.Outputs[0].Name
+			opPkg := expr.Outputs[0].Package
+			if len(expr.Outputs[0].Fields) > 0 {
+				opName = expr.Outputs[0].Fields[0].Name
+				// it wasn't a field, but a method call. removing it as a field
+				expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
+				// we remove information about the "field" (method name)
+				expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
+				expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
+				// expr.AddInput(expr.Outputs[0])
+			}
+			
+			if op, err := prgrm.GetFunction(opName, opPkg.Name); err == nil {
 				expr.Operator = op
 			} else {
 				panic(err)
 			}
+			
+			expr.Outputs = nil
 		}
 
 		var nestedExprs []*CXExpression
@@ -771,10 +767,8 @@ postfix_expression:
         |       postfix_expression PERIOD IDENTIFIER
                 {
 			left := $1[0].Outputs[0]
-			// right := $3[0].Outputs[0]
-
+			
 			if left.IsRest {
-				// fmt.Println("first")
 				// then it can't be a module name
 				// and we propagate the property to the right expression
 				// right.IsRest = true
@@ -784,7 +778,6 @@ postfix_expression:
 				// right.IsRest = true
 				// let's check if left is a package
 				if _, err := prgrm.GetPackage(left.Name); err == nil {
-					// fmt.Println("second first")
 					// the external property will be propagated to the following arguments
 					// this way we avoid considering these arguments as module names
 					//right.Package = pkg
@@ -1168,11 +1161,16 @@ iteration_statement:
 			
 			upExpr := MakeExpression(jmpFn)
 			trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true))
-			upLines := WritePrimary(TYPE_I32, encoder.Serialize(int32((len($7) + len($5) + len($4) + 2) * -1)))
-			downLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
+			// upLines := WritePrimary(TYPE_I32, encoder.Serialize(int32((len($7) + len($5) + len($4) + 2) * -1)))
+			// downLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
+			upLines := (len($7) + len($5) + len($4) + 2) * -1
+			downLines := 0
+			
 			upExpr.AddInput(trueArg[0].Outputs[0])
-			upExpr.AddInput(upLines[0].Outputs[0])
-			upExpr.AddInput(downLines[0].Outputs[0])
+			upExpr.ThenLines = upLines
+			upExpr.ElseLines = downLines
+			// upExpr.AddInput(upLines[0].Outputs[0])
+			// upExpr.AddInput(downLines[0].Outputs[0])
 			
 			downExpr := MakeExpression(jmpFn)
 			
@@ -1184,11 +1182,15 @@ iteration_statement:
 				predicate := $4[len($4) - 1].Outputs[0]
 				downExpr.AddInput(predicate)
 			}
-			thenLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
-			elseLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(len($5) + len($7) + 1)))
+			// thenLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))
+			// elseLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(len($5) + len($7) + 1)))
+			thenLines := 0
+			elseLines := len($5) + len($7) + 1
 			
-			downExpr.AddInput(thenLines[0].Outputs[0])
-			downExpr.AddInput(elseLines[0].Outputs[0])
+			// downExpr.AddInput(thenLines[0].Outputs[0])
+			// downExpr.AddInput(elseLines[0].Outputs[0])
+			downExpr.ThenLines = thenLines
+			downExpr.ElseLines = elseLines
 			
 			exprs := $3
 			exprs = append(exprs, $4...)
