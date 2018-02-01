@@ -178,12 +178,15 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"os.Write":true, "os.WriteFile":true, "os.ReadFile":true,
 }
 
+const TYPE_POINTER_SIZE int = 4
+
 // types
 const (
 	TYPE_UNDEFINED = iota
 
 	TYPE_CUSTOM
-	
+	TYPE_POINTER
+
 	TYPE_IDENTIFIER
 	TYPE_BOOL
 	TYPE_BYTE
@@ -362,9 +365,15 @@ type CXArgument struct {
 	MemoryType int
 	Offset int
 	OffsetOffset int // for struct fields
+
+	IndirectionLevels int
+	DereferenceLevels int
+	Pointee *CXArgument
 	
 	IsArray bool
 	IsPointer bool
+	IsReference bool
+	IsDereference bool
 	IsStruct bool
 	IsField bool
 	IsRest bool // pkg.var <- var is rest

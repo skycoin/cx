@@ -63,7 +63,7 @@
 /==/                      {return EQ_OP}
 /!=/                      {return NE_OP}
 /;/                       { return SEMICOLON }
-/!/                       { return EXCL }
+/!/                       { lval.tok = yylex.Text(); return NEG_OP }
 /\[/                      { return LBRACK }
 /\]/                      { return RBRACK }
 /\(/                      { return LPAREN }

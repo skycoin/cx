@@ -1,7 +1,7 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	// "errors"
 	"math/rand"
 	"time"
@@ -54,7 +54,7 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		if prgrm.CallCounter < 0 {
 			// then the program finished
 			prgrm.Terminated = true
-			// fmt.Println(prgrm.Stacks[0].Stack)
+			fmt.Println(prgrm.Stacks[0].Stack)
 			// fmt.Println("prgrm.Data", prgrm.Data)
 		} else {
 			// copying the outputs to the previous stack frame
@@ -114,7 +114,6 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			newFP := newCall.FramePointer
 
 			for i, inp := range expr.Inputs {
-				
 				var byts []byte
 				finalOffset := inp.Offset
 				if inp.Indexes != nil {

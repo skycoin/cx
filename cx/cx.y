@@ -71,13 +71,45 @@
 					sym.Offset = *offset
 					(*symbols)[sym.Name] = sym
 					*offset += sym.TotalSize
+
+					if sym.IsPointer {
+						pointer := sym
+						for c := 0; c < sym.IndirectionLevels; c++ {
+							pointer = pointer.Pointee
+							pointer.Offset = *offset
+							*offset += pointer.TotalSize
+						}
+					}
+
+
+					
+
+
+
+					
 				}
 			} else {
-				sym.Offset = arg.Offset
+				if sym.DereferenceLevels > 0 {
+					if arg.IndirectionLevels >= sym.DereferenceLevels {
+						pointer := arg
+						for c := 0; c < sym.DereferenceLevels; c++ {
+							pointer = pointer.Pointee
+						}
+						
+						sym.Offset = pointer.Offset
+					} else {
+						panic("invalid indirect of " + sym.Name)
+					}
+				} else {
+					sym.Offset = arg.Offset
+				}
 
+
+
+
+				
 				if sym.IsStruct {
 					// checking if it's accessing fields
-					sym.Offset = arg.Offset
 					if len(sym.Fields) > 0 {
 						var found bool
 
@@ -103,9 +135,9 @@
 							}
 						}
 					}
-				} else {
-					sym.Offset = arg.Offset
-				}
+				}//  else {
+				// 	sym.Offset = arg.Offset
+				// }
 				
 				sym.Lengths = arg.Lengths
 				sym.Size = arg.Size
@@ -175,8 +207,9 @@
 				// it wasn't a field, but a method call. removing it as a field
 				expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
 				// we remove information about the "field" (method name)
+				expr.AddInput(expr.Outputs[0])
 				expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
-				expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
+				// expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
 				// expr.AddInput(expr.Outputs[0])
 			}
 			
@@ -251,11 +284,11 @@
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
                         VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        SEMICOLON EXCL
+                        SEMICOLON
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
-                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP AFFVAR
+                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP NEG_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
                         BITAND BITXOR BITOR BITCLEAR
@@ -290,6 +323,7 @@
                         /* Pointers */
                         ADDR
 
+%type   <tok>           unary_operator
 %type   <i>             type_specifier
 %type   <argument>      declaration_specifiers
 %type   <argument>      declarator
@@ -515,13 +549,7 @@ identifier_list:
 	|       identifier_list COMMA IDENTIFIER
                 ;
 
-declarator:     // MUL_OP direct_declarator
-        //         {
-        //             $2.IsPointer = true
-        //             $$ = $2
-        //         }
-        // |       
-		direct_declarator
+declarator:     direct_declarator
                 ;
 
 direct_declarator:
@@ -567,13 +595,39 @@ direct_declarator:
 
 
 
-// declaration_specifiers
 declaration_specifiers:
-                unary_operator declaration_specifiers
+                MUL_OP declaration_specifiers
                 {
-			arg := $2
 			$2.IsPointer = true
-			$$ = arg
+			$2.IndirectionLevels++
+
+			if $2.Pointee == nil {
+				pointee := MakeArgument($2.Type)
+				pointee.Size = $2.Size
+				pointee.TotalSize = $2.TotalSize
+				pointee.IsPointer = false
+				
+				$2.Pointee = pointee
+				$2.Type = TYPE_POINTER
+				$2.Size = TYPE_POINTER_SIZE
+				$2.TotalSize = TYPE_POINTER_SIZE
+			} else {
+				pointer := $2
+				for c := 0; c < $2.IndirectionLevels - 1; c++ {
+					pointer = pointer.Pointee
+				}
+				pointee := MakeArgument(pointer.Type)
+				pointee.Size = pointer.Size
+				pointee.TotalSize = pointer.TotalSize
+				pointee.IsPointer = false
+
+				pointer.Type = TYPE_POINTER
+				pointer.Size = TYPE_POINTER_SIZE
+				pointer.TotalSize = TYPE_POINTER_SIZE
+				pointer.Pointee = pointee
+			}
+			
+			$$ = $2
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers
                 {
@@ -825,7 +879,19 @@ unary_expression:
 	|       DEC_OP unary_expression
                 {$$ = $2}
 	|       unary_operator unary_expression // check
-                {$$ = $2}
+                {
+			exprOut := $2[len($2) - 1].Outputs[0]
+			switch $1 {
+			case "*":
+				exprOut.DereferenceLevels++
+				exprOut.IsReference = false
+				// fmt.Println("here", exprOut.Pointee)
+				// $2[len($2) - 1].Outputs[0] = exprOut.Pointee
+			case "&":
+				exprOut.IsReference = true
+			}
+			$$ = $2
+                }
                 ;
 
 unary_operator:
@@ -833,8 +899,7 @@ unary_operator:
 	|       MUL_OP
 	|       ADD_OP
 	|       SUB_OP
-	|       '~' // check
-	|       '!'
+	|       NEG_OP
                 ;
 
 multiplicative_expression:
