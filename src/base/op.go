@@ -6,45 +6,123 @@ import (
 	"time"
 )
 
+func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+	// checking if needs to dereferenced
+	var offset int32
+	offset = int32(arg.Offset)
+	if arg.DereferenceLevels > 0 {
+		for c := 0; c < arg.DereferenceLevels; c++ {
+			switch arg.MemoryType {
+			case MEM_STACK:
+				byts := stack.Stack[fp + int(offset) : fp + int(offset) + arg.Size]
+				encoder.DeserializeAtomic(byts, &offset)
+			case MEM_DATA:
+				byts := arg.Program.Data[offset : int(offset) + arg.Size]
+				encoder.DeserializeAtomic(byts, &offset)
+			default:
+				panic("implement the other mem types in readI32")
+			}
+		}
+	}
+	
+	if len(arg.Indexes) < 1 && len(arg.Fields) < 1 {
+		if arg.IsPointer {
+			return int(offset)
+		} else {
+			switch arg.MemoryType {
+			case MEM_STACK:
+				return fp + int(offset)
+			case MEM_DATA:
+				return int(offset)
+			}
+		}
+	}
+	
+	offsetOffset := 0
+	for i, idxArg := range arg.Indexes {
+		var subSize int = 1
+		for _, len := range arg.Lengths[i+1:] {
+			subSize *= len
+		}
+		offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.Size
+	}
+
+	if len(arg.Fields) > 0 {
+		for _, fld := range arg.Fields {
+			offsetOffset += fld.Offset
+			for i, idxArg := range fld.Indexes {
+				var subSize int = 1
+				for _, len := range fld.Lengths[i+1:] {
+					subSize *= len
+				}
+				offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
+			}
+			
+		}
+	}
+
+	if arg.IsPointer {
+		return int(offset) + offsetOffset
+	} else {
+		return fp + int(offset) + offsetOffset
+	}
+}
+
 // Creates a copy of its argument in the stack. opCopy should be used to copy an argument in a heap.
 func identity (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(stack, fp, inp1)
 	out1Offset := GetFinalOffset(stack, fp, out1)
-	switch inp1.MemoryType {
-	case MEM_STACK:
-		byts := stack.Stack[fp + inp1Offset : fp + inp1Offset + inp1.Size]
-		WriteToStack(stack, fp, out1Offset, byts)
-	case MEM_DATA:
-		byts := inp1.Program.Data[inp1Offset : inp1Offset + inp1.Size]
-		WriteToStack(stack, fp, out1Offset, byts)
-	default:
-		panic("implement the other mem types in readI32")
+
+	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
+		switch inp1.MemoryType {
+		case MEM_STACK:
+			byts := encoder.SerializeAtomic(int32(inp1Offset))
+			WriteToStack(stack, out1Offset, byts)
+		case MEM_DATA:
+			byts := encoder.SerializeAtomic(int32(inp1Offset))
+			WriteToStack(stack, out1Offset, byts)
+		default:
+			panic("implement the other mem types in readI32")
+		}
+	} else if inp1.IsReference {
+		WriteToStack(stack, out1Offset, FromI32(int32(inp1Offset)))
+	} else {
+		switch inp1.MemoryType {
+		case MEM_STACK:
+			byts := stack.Stack[inp1Offset : inp1Offset + inp1.Size]
+			WriteToStack(stack, out1Offset, byts)
+		case MEM_DATA:
+			byts := inp1.Program.Data[inp1Offset : inp1Offset + inp1.Size]
+			WriteToStack(stack, out1Offset, byts)
+		default:
+			panic("implement the other mem types in readI32")
+		}
 	}
 }
 
 func i32_add (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI32(ReadI32(stack, fp, inp1) + ReadI32(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i32_sub (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI32(ReadI32(stack, fp, inp1) - ReadI32(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i32_gt (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI32(stack, fp, inp1) > ReadI32(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i32_lt (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI32(stack, fp, inp1) < ReadI32(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i32_print (expr *CXExpression, stack *CXStack, fp int) {
@@ -55,13 +133,13 @@ func i32_print (expr *CXExpression, stack *CXStack, fp int) {
 func i64_add (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(stack, fp, inp1) + ReadI64(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i64_sub (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(stack, fp, inp1) - ReadI64(stack, fp, inp2))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func i64_print (expr *CXExpression, stack *CXStack, fp int) {
@@ -116,7 +194,7 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 func time_UnixMilli (expr *CXExpression, stack *CXStack, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI64(time.Now().UnixNano() / int64(1000000))
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func read_array (expr *CXExpression, stack *CXStack, fp int) {
@@ -138,17 +216,14 @@ func read_array (expr *CXExpression, stack *CXStack, fp int) {
 	}
 	
 	// outB1 := ReadI32(stack, fp, )
-	WriteToStack(stack, fp, out1.Offset, outB1)
+	WriteToStack(stack, GetFinalOffset(stack, fp, out1), outB1)
 }
 
 func write_array (expr *CXExpression, stack *CXStack, fp int) {
-	// inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	indexes := make([]int32, len(expr.Inputs[1:]))
 	for i, idx := range expr.Inputs[1:] {
 		indexes[i] = ReadI32(stack, fp, idx)
 	}
-	// outB1 := ReadArray(stack, fp, inp1, indexes)
-	// WriteToStack(stack, fp, out1.Offset, outB1)
 }
 
 // Utilities
@@ -180,54 +255,13 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 	}
 
 	return offset, size
-
-	// switch inp.MemoryType {
-	// case MEM_STACK:
-	// 	out = stack.Stack[fp + inp.Offset : fp + inp.Offset + size]
-	// case MEM_DATA:
-	// 	out = inp.Program.Data[inp.Offset : inp.Offset + size]
-	// default:
-	// 	panic("implement the other mem types in readI32")
-	// }
-
-	// return
-}
-
-func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
-	if len(arg.Indexes) < 1 && len(arg.Fields) < 1 {
-		return arg.Offset
-	}
-	
-	offsetOffset := 0
-	for i, idxArg := range arg.Indexes {
-		var subSize int = 1
-		for _, len := range arg.Lengths[i+1:] {
-			subSize *= len
-		}
-		offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.Size
-	}
-
-	if len(arg.Fields) > 0 {
-		for _, fld := range arg.Fields {
-			offsetOffset += fld.Offset
-			for i, idxArg := range fld.Indexes {
-				var subSize int = 1
-				for _, len := range fld.Lengths[i+1:] {
-					subSize *= len
-				}
-				offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
-			}
-			
-		}
-	}
-	return arg.Offset + offsetOffset
 }
 
 func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
 	offset := GetFinalOffset(stack, fp, inp)
 	switch inp.MemoryType {
 	case MEM_STACK:
-		byts := stack.Stack[fp + offset : fp + offset + inp.Size]
+		byts := stack.Stack[offset : offset + inp.Size]
 		encoder.DeserializeAtomic(byts, &out)
 	case MEM_DATA:
 		byts := inp.Program.Data[offset : offset + inp.Size]
@@ -243,7 +277,7 @@ func ReadFromStack (stack *CXStack, fp int, inp *CXArgument) (out []byte) {
 	offset := GetFinalOffset(stack, fp, inp)
 	switch inp.MemoryType {
 	case MEM_STACK:
-		return stack.Stack[fp + offset : fp + offset + inp.Size]
+		return stack.Stack[offset : offset + inp.Size]
 	case MEM_DATA:
 		return inp.Program.Data[offset : offset + inp.Size]
 	default:
@@ -252,12 +286,13 @@ func ReadFromStack (stack *CXStack, fp int, inp *CXArgument) (out []byte) {
 }
 
 func ReadI64 (stack *CXStack, fp int, inp *CXArgument) (out int64) {
+	offset := GetFinalOffset(stack, fp, inp)
 	switch inp.MemoryType {
 	case MEM_STACK:
-		byts := stack.Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
+		byts := stack.Stack[offset : offset + inp.Size]
 		encoder.DeserializeRaw(byts, &out)
 	case MEM_DATA:
-		byts := inp.Program.Data[inp.Offset : inp.Offset + inp.Size]
+		byts := inp.Program.Data[offset : offset + inp.Size]
 		encoder.DeserializeRaw(byts, &out)
 	default:
 		panic("implement the other mem types in readI32")
@@ -267,12 +302,13 @@ func ReadI64 (stack *CXStack, fp int, inp *CXArgument) (out int64) {
 }
 
 func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
+	offset := GetFinalOffset(stack, fp, inp)
 	switch inp.MemoryType {
 	case MEM_STACK:
-		byts := stack.Stack[fp + inp.Offset : fp + inp.Offset + inp.Size]
+		byts := stack.Stack[offset : offset + inp.Size]
 		encoder.DeserializeRaw(byts, &out)
 	case MEM_DATA:
-		byts := inp.Program.Data[inp.Offset : inp.Offset + inp.Size]
+		byts := inp.Program.Data[offset : offset + inp.Size]
 		encoder.DeserializeRaw(byts, &out)
 	default:
 		panic("implement the other mem types in readI32")
@@ -281,11 +317,10 @@ func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
 	return
 }
 
-func WriteToStack (stack *CXStack, fp int, offset int, out []byte) {
+func WriteToStack (stack *CXStack, offset int, out []byte) {
 	// fmt.Println("before", stack)
-	// fmt.Println("fp", fp, offset)
 	for c := 0; c < len(out); c++ {
-		(*stack).Stack[fp + offset + c] = out[c]
+		(*stack).Stack[offset + c] = out[c]
 	}
 	// fmt.Println("after", stack)
 }

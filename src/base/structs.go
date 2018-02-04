@@ -369,6 +369,7 @@ type CXArgument struct {
 	IndirectionLevels int
 	DereferenceLevels int
 	Pointee *CXArgument
+	PointeeMemoryType int
 	
 	IsArray bool
 	IsPointer bool

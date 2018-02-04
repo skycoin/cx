@@ -74,40 +74,34 @@
 
 					if sym.IsPointer {
 						pointer := sym
-						for c := 0; c < sym.IndirectionLevels; c++ {
+						for c := 0; c < sym.IndirectionLevels - 1; c++ {
 							pointer = pointer.Pointee
 							pointer.Offset = *offset
 							*offset += pointer.TotalSize
 						}
 					}
-
-
-					
-
-
-
-					
 				}
 			} else {
 				if sym.DereferenceLevels > 0 {
 					if arg.IndirectionLevels >= sym.DereferenceLevels {
 						pointer := arg
-						for c := 0; c < sym.DereferenceLevels; c++ {
+
+						for c := 0; c < sym.DereferenceLevels - 1; c++ {
 							pointer = pointer.Pointee
 						}
-						
+
 						sym.Offset = pointer.Offset
+						sym.IndirectionLevels = pointer.IndirectionLevels
+						sym.IsPointer = pointer.IsPointer
 					} else {
 						panic("invalid indirect of " + sym.Name)
 					}
 				} else {
 					sym.Offset = arg.Offset
+					sym.IsPointer = arg.IsPointer
+					sym.IndirectionLevels = arg.IndirectionLevels
 				}
 
-
-
-
-				
 				if sym.IsStruct {
 					// checking if it's accessing fields
 					if len(sym.Fields) > 0 {
@@ -135,10 +129,10 @@
 							}
 						}
 					}
-				}//  else {
-				// 	sym.Offset = arg.Offset
-				// }
-				
+				}
+
+				// sym.IsPointer = arg.IsPointer
+				sym.Pointee = arg.Pointee
 				sym.Lengths = arg.Lengths
 				sym.Size = arg.Size
 				sym.TotalSize = arg.TotalSize
@@ -174,15 +168,9 @@
 		var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
 		for _, inp := range fn.Inputs {
 			GiveOffset(&symbols, inp, &offset, false)
-			// if inp.Name != "" {
-			// 	symbols[inp.Name] = inp
-			// }
 		}
 		for _, out := range fn.Outputs {
 			GiveOffset(&symbols, out, &offset, false)
-			// if out.Name != "" {
-			// 	symbols[out.Name] = out
-			// }
 		}
 
 		for _, expr := range fn.Expressions {
@@ -598,34 +586,66 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
-			$2.IsPointer = true
-			$2.IndirectionLevels++
-
-			if $2.Pointee == nil {
-				pointee := MakeArgument($2.Type)
-				pointee.Size = $2.Size
-				pointee.TotalSize = $2.TotalSize
-				pointee.IsPointer = false
-				
-				$2.Pointee = pointee
-				$2.Type = TYPE_POINTER
+			if !$2.IsPointer {
+				$2.IsPointer = true
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
+				$2.IndirectionLevels++
 			} else {
 				pointer := $2
-				for c := 0; c < $2.IndirectionLevels - 1; c++ {
+
+				for c := $2.IndirectionLevels - 1; c > 0 ; c-- {
 					pointer = pointer.Pointee
+					pointer.IndirectionLevels = c
+					pointer.IsPointer = true
 				}
+
 				pointee := MakeArgument(pointer.Type)
-				pointee.Size = pointer.Size
-				pointee.TotalSize = pointer.TotalSize
-				pointee.IsPointer = false
+				// pointee.Size = pointer.Size
+				// pointee.TotalSize = pointer.TotalSize
+				pointee.IsPointer = true
+
+				$2.IndirectionLevels++
 
 				pointer.Type = TYPE_POINTER
 				pointer.Size = TYPE_POINTER_SIZE
 				pointer.TotalSize = TYPE_POINTER_SIZE
 				pointer.Pointee = pointee
 			}
+
+			
+			// if $2.Pointee == nil {
+			// 	pointee := MakeArgument($2.Type)
+			// 	pointee.Size = $2.Size
+			// 	pointee.TotalSize = $2.TotalSize
+			// 	pointee.IsPointer = false
+
+			// 	$2.IsPointer = true
+			// 	$2.IndirectionLevels++
+			// 	$2.Pointee = pointee
+			// 	$2.Type = TYPE_POINTER
+			// 	$2.Size = TYPE_POINTER_SIZE
+			// 	$2.TotalSize = TYPE_POINTER_SIZE
+			// } else {
+			// 	pointer := $2
+			// 	for c := $2.IndirectionLevels - 1; c >= 0 ; c-- {
+			// 		pointer = pointer.Pointee
+			// 		pointer.IndirectionLevels = c
+			// 		pointer.IsPointer = true
+			// 	}
+			// 	pointee := MakeArgument(pointer.Type)
+			// 	pointee.Size = pointer.Size
+			// 	pointee.TotalSize = pointer.TotalSize
+			// 	pointee.IsPointer = false
+
+			// 	pointer.IsPointer = true
+			// 	$2.IndirectionLevels++
+
+			// 	pointer.Type = TYPE_POINTER
+			// 	pointer.Size = TYPE_POINTER_SIZE
+			// 	pointer.TotalSize = TYPE_POINTER_SIZE
+			// 	pointer.Pointee = pointee
+			// }
 			
 			$$ = $2
                 }
@@ -775,7 +795,6 @@ postfix_expression:
                 {
 
 			$1[0].Outputs[0].IsArray = true
-			// $1[0].Outputs[0].NumIndexes += 1
 
 			if len($1[0].Outputs[0].Fields) > 0 {
 				fld := $1[0].Outputs[0].Fields[len($1[0].Outputs[0].Fields) - 1]
@@ -785,7 +804,6 @@ postfix_expression:
 			}
 			
 			expr := $1[len($1) - 1]
-			// expr.Operator = Natives[OP_READ_ARRAY]
 			if len(expr.Inputs) < 1 {
 				expr.Inputs = append(expr.Inputs, $1[0].Outputs[0])
 			}
@@ -804,10 +822,13 @@ postfix_expression:
                 }
 	|       postfix_expression LPAREN RPAREN
                 {
+			
+			$1[0].Inputs = nil
 			$$ = FunctionCall($1, nil)
                 }
 	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
+			$1[0].Inputs = nil
 			$$ = FunctionCall($1, $3)
                 }
 	|       postfix_expression INC_OP
@@ -827,7 +848,6 @@ postfix_expression:
 				// and we propagate the property to the right expression
 				// right.IsRest = true
 			} else {
-				// fmt.Println("second")
 				// then left is a first (e.g first.rest) and right is a rest
 				// right.IsRest = true
 				// let's check if left is a package
@@ -875,9 +895,9 @@ argument_expression_list:
 unary_expression:
                 postfix_expression
 	|       INC_OP unary_expression
-                {$$ = $2}
+                { $$ = $2 }
 	|       DEC_OP unary_expression
-                {$$ = $2}
+                { $$ = $2 }
 	|       unary_operator unary_expression // check
                 {
 			exprOut := $2[len($2) - 1].Outputs[0]
@@ -885,8 +905,6 @@ unary_expression:
 			case "*":
 				exprOut.DereferenceLevels++
 				exprOut.IsReference = false
-				// fmt.Println("here", exprOut.Pointee)
-				// $2[len($2) - 1].Outputs[0] = exprOut.Pointee
 			case "&":
 				exprOut.IsReference = true
 			}
