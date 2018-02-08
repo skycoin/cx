@@ -5,7 +5,7 @@ import (
 	// "errors"
 	"math/rand"
 	"time"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func (prgrm *CXProgram) Run () error {
@@ -119,15 +119,19 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				if inp.Indexes != nil {
 					finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 				}
-				switch inp.MemoryType {
-				case MEM_STACK:
-					// byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
-					byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
-				case MEM_DATA:
-					// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
-					byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
-				default:
-					panic("implement the other mem types")
+				if inp.IsReference {
+					byts = encoder.Serialize(int32(finalOffset))
+				} else {
+					switch inp.MemoryType {
+					case MEM_STACK:
+						// byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
+						byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
+					case MEM_DATA:
+						// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
+						byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
+					default:
+						panic("implement the other mem types")
+					}
 				}
 				// we copy the inputs for the next call
 				for c := 0; c < inp.TotalSize; c++ {

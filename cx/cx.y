@@ -11,7 +11,7 @@
 		. "github.com/skycoin/cx/src/base"
 	)
 
-	var prgrm = MakeProgram(1024, 1024, 1024)
+	var prgrm = MakeProgram(256, 256, 256)
 	var data Data
 	var dataOffset int
 
@@ -43,6 +43,7 @@
 			size := len(byts)
 			arg.Size = size
 			arg.TotalSize = size
+			arg.PointeeSize = size
 			dataOffset += size
 			prgrm.Data = append(prgrm.Data, Data(byts)...)
 			expr := MakeExpression(nil)
@@ -82,8 +83,36 @@
 					}
 				}
 			} else {
+				var isFieldPointer bool
+				if len(sym.Fields) > 0 {
+					var found bool
+
+					strct := arg.CustomType
+					for _, nameFld := range sym.Fields {
+						for _, fld := range strct.Fields {
+							if nameFld.Name == fld.Name {
+								if fld.IsPointer {
+									sym.IsPointer = true
+									// sym.IndirectionLevels = fld.IndirectionLevels
+									isFieldPointer = true
+								}
+								found = true
+								if fld.CustomType != nil {
+									strct = fld.CustomType
+								}
+								break
+							}
+						}
+						if !found {
+							panic("field '" + nameFld.Name + "' not found")
+						}
+					}
+				}
+				
 				if sym.DereferenceLevels > 0 {
-					if arg.IndirectionLevels >= sym.DereferenceLevels {
+					if arg.IndirectionLevels >= sym.DereferenceLevels || isFieldPointer { // ||
+					// 	sym.IndirectionLevels >= sym.DereferenceLevels
+					// {
 						pointer := arg
 
 						for c := 0; c < sym.DereferenceLevels - 1; c++ {
@@ -102,40 +131,55 @@
 					sym.IndirectionLevels = arg.IndirectionLevels
 				}
 
-				if sym.IsStruct {
+				//if sym.IsStruct {
 					// checking if it's accessing fields
-					if len(sym.Fields) > 0 {
-						var found bool
+				if len(sym.Fields) > 0 {
+					var found bool
 
-						if len(sym.Fields) > 0 {
-							strct := arg.CustomType
-							for _, nameFld := range sym.Fields {
-								for _, fld := range strct.Fields {
-									if nameFld.Name == fld.Name {
-										nameFld.Lengths = fld.Lengths
-										nameFld.Size = fld.Size
-										nameFld.TotalSize = fld.TotalSize
-										found = true
-										if fld.CustomType != nil {
-											strct = fld.CustomType
-										}
-										break
-									}
-									nameFld.Offset += fld.TotalSize
+					strct := arg.CustomType
+					for _, nameFld := range sym.Fields {
+						for _, fld := range strct.Fields {
+							if nameFld.Name == fld.Name {
+								// if fld.IsPointer {
+								// 	sym.IsPointer = true
+								// }
+								nameFld.Lengths = fld.Lengths
+								nameFld.Size = fld.Size
+								nameFld.TotalSize = fld.TotalSize
+								nameFld.DereferenceLevels = sym.DereferenceLevels
+								// fmt.Println(nameFld.Name, fld.IsPointer)
+								nameFld.IsPointer = fld.IsPointer
+								found = true
+								if fld.CustomType != nil {
+									strct = fld.CustomType
 								}
-								if !found {
-									panic("field '" + nameFld.Name + "' not found")
-								}
+								break
 							}
+							nameFld.Offset += fld.TotalSize
+						}
+						if !found {
+							panic("field '" + nameFld.Name + "' not found")
 						}
 					}
 				}
+			//}
 
 				// sym.IsPointer = arg.IsPointer
+				sym.Type = arg.Type
 				sym.Pointee = arg.Pointee
 				sym.Lengths = arg.Lengths
-				sym.Size = arg.Size
-				sym.TotalSize = arg.TotalSize
+				sym.PointeeSize = arg.PointeeSize
+				if sym.IsReference && !arg.IsStruct {
+					// sym.Size = TYPE_POINTER_SIZE
+					sym.TotalSize = TYPE_POINTER_SIZE
+					
+					sym.Size = arg.Size
+					// sym.TotalSize = arg.TotalSize
+				} else {
+					sym.Size = arg.Size
+					sym.TotalSize = arg.TotalSize
+				}
+				
 			}
 		}
 	}
@@ -410,20 +454,10 @@ struct_fields:
 
 fields:         parameter_declaration SEMICOLON
                 {
-			if $1.IsArray {
-				$1.TotalSize = $1.Size * TotalLength($1.Lengths)
-			} else {
-				$1.TotalSize = $1.Size
-			}
 			$$ = []*CXArgument{$1}
                 }
         |       fields parameter_declaration SEMICOLON
                 {
-			if $2.IsArray {
-				$2.TotalSize = $2.Size * TotalLength($2.Lengths)
-			} else {
-				$2.TotalSize = $2.Size
-			}
 			$$ = append($1, $2)
                 }
         ;
@@ -588,6 +622,8 @@ declaration_specifiers:
                 {
 			if !$2.IsPointer {
 				$2.IsPointer = true
+				$2.PointeeSize = $2.Size
+				// fmt.Println("here", $2.Size)
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
 				$2.IndirectionLevels++
@@ -607,45 +643,11 @@ declaration_specifiers:
 
 				$2.IndirectionLevels++
 
-				pointer.Type = TYPE_POINTER
+				// pointer.Type = TYPE_POINTER
 				pointer.Size = TYPE_POINTER_SIZE
 				pointer.TotalSize = TYPE_POINTER_SIZE
 				pointer.Pointee = pointee
 			}
-
-			
-			// if $2.Pointee == nil {
-			// 	pointee := MakeArgument($2.Type)
-			// 	pointee.Size = $2.Size
-			// 	pointee.TotalSize = $2.TotalSize
-			// 	pointee.IsPointer = false
-
-			// 	$2.IsPointer = true
-			// 	$2.IndirectionLevels++
-			// 	$2.Pointee = pointee
-			// 	$2.Type = TYPE_POINTER
-			// 	$2.Size = TYPE_POINTER_SIZE
-			// 	$2.TotalSize = TYPE_POINTER_SIZE
-			// } else {
-			// 	pointer := $2
-			// 	for c := $2.IndirectionLevels - 1; c >= 0 ; c-- {
-			// 		pointer = pointer.Pointee
-			// 		pointer.IndirectionLevels = c
-			// 		pointer.IsPointer = true
-			// 	}
-			// 	pointee := MakeArgument(pointer.Type)
-			// 	pointee.Size = pointer.Size
-			// 	pointee.TotalSize = pointer.TotalSize
-			// 	pointee.IsPointer = false
-
-			// 	pointer.IsPointer = true
-			// 	$2.IndirectionLevels++
-
-			// 	pointer.Type = TYPE_POINTER
-			// 	pointer.Size = TYPE_POINTER_SIZE
-			// 	pointer.TotalSize = TYPE_POINTER_SIZE
-			// 	pointer.Pointee = pointee
-			// }
 			
 			$$ = $2
                 }
@@ -661,6 +663,7 @@ declaration_specifiers:
         |       type_specifier
                 {
 			arg := MakeArgument($1)
+			arg.Type = $1
 			arg.Size = GetArgSize($1)
 			arg.TotalSize = arg.Size
 			$$ = arg
@@ -793,8 +796,15 @@ postfix_expression:
                 primary_expression
 	|       postfix_expression LBRACK expression RBRACK
                 {
-
-			$1[0].Outputs[0].IsArray = true
+			$1[0].Outputs[0].IsArray = false
+			$1[0].Outputs[0].DereferenceOperations = append($1[0].Outputs[0].DereferenceOperations, DEREF_ARRAY)
+			
+			if !$1[0].Outputs[0].IsDereferenceFirst {
+				$1[0].Outputs[0].IsArrayFirst = true
+			}
+			// if !$1[0].Outputs[0].IsArrayFirst {
+			// 	$1[0].Outputs[0].IsDereferenceFirst = true
+			// }
 
 			if len($1[0].Outputs[0].Fields) > 0 {
 				fld := $1[0].Outputs[0].Fields[len($1[0].Outputs[0].Fields) - 1]
@@ -861,6 +871,7 @@ postfix_expression:
 						$1[0].Operator = Natives[opCode]
 					} else {
 						left.IsStruct = true
+						left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 						fld := MakeArgument(TYPE_IDENTIFIER)
 						fld.Name = $3
 						left.Fields = append(left.Fields, fld)
@@ -904,9 +915,26 @@ unary_expression:
 			switch $1 {
 			case "*":
 				exprOut.DereferenceLevels++
+				exprOut.DereferenceOperations = append(exprOut.DereferenceOperations, DEREF_POINTER)
+				if !exprOut.IsArrayFirst {
+					exprOut.IsDereferenceFirst = true
+				}
+				// if !exprOut.IsDereferenceFirst {
+				// 	exprOut.IsArrayFirst = true
+				// }
 				exprOut.IsReference = false
 			case "&":
+				// fmt.Println("hohoho", $2[len($2) - 1])
+				// fmt.Println("huehue", exprOut)
+				
+				// exprOut.IsPointer = true
+				// exprOut.IndirectionLevels++
+				// exprOut.DereferenceLevels++
+				
 				exprOut.IsReference = true
+				exprOut.IsPointer = true
+				// exprOut.Size = TYPE_POINTER_SIZE
+				// exprOut.TotalSize = TYPE_POINTER_SIZE
 			}
 			$$ = $2
                 }

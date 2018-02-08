@@ -6,70 +6,168 @@ import (
 	"time"
 )
 
-func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
-	// checking if needs to dereferenced
-	var offset int32
-	offset = int32(arg.Offset)
-	if arg.DereferenceLevels > 0 {
-		for c := 0; c < arg.DereferenceLevels; c++ {
-			switch arg.MemoryType {
-			case MEM_STACK:
-				byts := stack.Stack[fp + int(offset) : fp + int(offset) + arg.Size]
-				encoder.DeserializeAtomic(byts, &offset)
-			case MEM_DATA:
-				byts := arg.Program.Data[offset : int(offset) + arg.Size]
-				encoder.DeserializeAtomic(byts, &offset)
-			default:
-				panic("implement the other mem types in readI32")
-			}
-		}
-	}
-	
-	if len(arg.Indexes) < 1 && len(arg.Fields) < 1 {
-		if arg.IsPointer {
-			return int(offset)
-		} else {
-			switch arg.MemoryType {
-			case MEM_STACK:
-				return fp + int(offset)
-			case MEM_DATA:
-				return int(offset)
-			}
-		}
-	}
-	
-	offsetOffset := 0
-	for i, idxArg := range arg.Indexes {
-		var subSize int = 1
-		for _, len := range arg.Lengths[i+1:] {
-			subSize *= len
-		}
-		offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.Size
-	}
+// func GetDereferenceOffset (stack *CXStack, fp int, offset int32, offsetOffset int, arg *CXArgument, flag bool) (finalOffset int32) {
+// 	for c := 0; c < arg.DereferenceLevels; c++ {
+// 		switch arg.MemoryType {
+// 		case MEM_STACK:
+// 			var byts []byte
+// 			if flag {
+// 				byts = stack.Stack[fp + int(offset) + offsetOffset : fp + int(offset) + offsetOffset + arg.Size]
+// 			} else {
+// 				byts = stack.Stack[fp + int(offset) : fp + int(offset) + arg.Size]
+// 			}
+// 			encoder.DeserializeAtomic(byts, &finalOffset)
+// 			return
+// 		case MEM_DATA:
+// 			var byts []byte
+// 			if flag {
+// 				byts = arg.Program.Data[int(offset) + offsetOffset : int(offset) + offsetOffset + arg.Size]
+// 			} else {
+// 				byts = arg.Program.Data[int(offset) : int(offset) + arg.Size]
+// 			}
+// 			encoder.DeserializeAtomic(byts, &finalOffset)
+// 			return
+// 		default:
+// 			panic("implement the other mem types in readI32")
+// 		}
+// 	}
+// 	return offset
+// }
 
-	if len(arg.Fields) > 0 {
-		for _, fld := range arg.Fields {
-			offsetOffset += fld.Offset
-			for i, idxArg := range fld.Indexes {
-				var subSize int = 1
-				for _, len := range fld.Lengths[i+1:] {
-					subSize *= len
-				}
-				offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
-			}
-			
-		}
+func GetDereferenceOffset (memory *[]byte, fp int, offset int32, size int, levels int) int32 {
+	for c := 0; c < levels; c++ {
+		var byts []byte
+		byts = (*memory)[fp + int(offset) : fp + int(offset) + size]
+		encoder.DeserializeAtomic(byts, &offset)
 	}
-
-	if arg.IsPointer {
-		return int(offset) + offsetOffset
-	} else {
-		return fp + int(offset) + offsetOffset
-	}
+	return offset
 }
+
+func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+	var elt *CXArgument
+	var finalOffset int = arg.Offset
+	var fldIdx int
+	elt = arg
+
+	for _, op := range arg.DereferenceOperations {
+			switch op {
+			case DEREF_ARRAY:
+				for i, idxArg := range elt.Indexes {
+					var subSize int = 1
+					for _, len := range elt.Lengths[i+1:] {
+						subSize *= len
+					}
+					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+				}
+			case DEREF_FIELD:
+				elt = arg.Fields[fldIdx]
+				finalOffset += elt.Offset
+				fldIdx++
+			case DEREF_POINTER:
+				for c := 0; c < elt.DereferenceLevels; c++ {
+					switch arg.MemoryType {
+					case MEM_STACK:
+						var offset int32
+						byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
+						encoder.DeserializeAtomic(byts, &offset)
+						finalOffset = int(offset)
+					case MEM_DATA:
+						var offset int32
+						byts := arg.Program.Data[finalOffset : finalOffset + elt.Size]
+						encoder.DeserializeAtomic(byts, &offset)
+						finalOffset = int(offset)
+					default:
+						panic("implement the other mem types in readI32")
+					}
+				}
+			}
+		}
+
+	return finalOffset
+}
+
+// func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+// 	// checking if needs to dereferenced
+// 	var offset int32
+// 	offset = int32(arg.Offset)
+// 	if len(arg.Indexes) < 1 && len(arg.Fields) < 1 {
+// 		if arg.IsPointer {
+// 			if arg.DereferenceLevels > 0 {
+// 				for c := 0; c < arg.DereferenceLevels; c++ {
+// 					switch arg.MemoryType {
+// 					case MEM_STACK:
+// 						byts := stack.Stack[fp + int(offset) : fp + int(offset) + arg.Size]
+// 						encoder.DeserializeAtomic(byts, &offset)
+// 					case MEM_DATA:
+// 						byts := arg.Program.Data[offset : int(offset) + arg.Size]
+// 						encoder.DeserializeAtomic(byts, &offset)
+// 					default:
+// 						panic("implement the other mem types in readI32")
+// 					}
+// 				}
+// 			}
+// 			return int(offset)
+// 		} else {
+// 			switch arg.MemoryType {
+// 			case MEM_STACK:
+// 				return fp + int(offset)
+// 			case MEM_DATA:
+// 				return int(offset)
+// 			}
+// 		}
+// 	}
+
+// 	offsetOffset := 0
+// 	if arg.IsDereferenceFirst {
+// 		offset = GetDereferenceOffset(stack, fp, offset, offsetOffset, arg, false)
+// 		for i, idxArg := range arg.Indexes {
+// 			var subSize int = 1
+// 			for _, len := range arg.Lengths[i+1:] {
+// 				subSize *= len
+// 			}
+// 			offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.PointeeSize
+// 		}
+// 	} else {
+// 		for i, idxArg := range arg.Indexes {
+// 			var subSize int = 1
+// 			for _, len := range arg.Lengths[i+1:] {
+// 				subSize *= len
+// 			}
+// 			offsetOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.Size
+// 		}
+
+// 		offset = GetDereferenceOffset(stack, fp, offset, offsetOffset, arg, true)
+// 		if len(arg.Fields) > 0 && arg.IsPointer {
+// 			offsetOffset = 0
+// 		}
+// 	}
+
+// 	fieldOffset := 0
+// 	if len(arg.Fields) > 0 {
+// 		for _, fld := range arg.Fields {
+// 			fieldOffset += fld.Offset
+// 			for i, idxArg := range fld.Indexes {
+// 				var subSize int = 1
+// 				for _, len := range fld.Lengths[i+1:] {
+// 					subSize *= len
+// 				}
+// 				fieldOffset += int(ReadI32(stack, fp, idxArg)) * subSize * fld.Size
+// 			}
+// 		}
+// 	}
+
+// 	fmt.Println(arg.Name, offset, offsetOffset, fieldOffset)
+	
+// 	if arg.IsPointer {
+// 		return int(offset) + offsetOffset + fieldOffset
+// 	} else {
+// 		return fp + int(offset) + offsetOffset + fieldOffset
+// 	}
+// }
 
 // Creates a copy of its argument in the stack. opCopy should be used to copy an argument in a heap.
 func identity (expr *CXExpression, stack *CXStack, fp int) {
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(stack, fp, inp1)
 	out1Offset := GetFinalOffset(stack, fp, out1)

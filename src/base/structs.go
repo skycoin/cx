@@ -178,17 +178,17 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"os.Write":true, "os.WriteFile":true, "os.ReadFile":true,
 }
 
+const (
+	DEREF_ARRAY = iota
+	DEREF_FIELD
+	DEREF_POINTER
+)
+
 const TYPE_POINTER_SIZE int = 4
 
 // types
 const (
-	TYPE_UNDEFINED = iota
-
-	TYPE_CUSTOM
-	TYPE_POINTER
-
-	TYPE_IDENTIFIER
-	TYPE_BOOL
+	TYPE_BOOL = iota
 	TYPE_BYTE
 	TYPE_STR
 	TYPE_F32
@@ -203,6 +203,11 @@ const (
 	TYPE_UI64
 
 	TYPE_THRESHOLD
+	
+	TYPE_UNDEFINED
+	TYPE_CUSTOM
+	TYPE_POINTER
+	TYPE_IDENTIFIER
 )
 
 var TypeCounter int
@@ -361,6 +366,7 @@ type CXArgument struct {
 	CustomType *CXStruct
 	Size int // size of underlaying basic type
 	TotalSize int // total size of an array, performance reasons
+	PointeeSize int
 
 	MemoryType int
 	Offset int
@@ -370,11 +376,14 @@ type CXArgument struct {
 	DereferenceLevels int
 	Pointee *CXArgument
 	PointeeMemoryType int
-	
+	DereferenceOperations []int // offset by array index, struct field, pointer
+
 	IsArray bool
+	IsArrayFirst bool // and then dereference
 	IsPointer bool
 	IsReference bool
 	IsDereference bool
+	IsDereferenceFirst bool // and then array
 	IsStruct bool
 	IsField bool
 	IsRest bool // pkg.var <- var is rest

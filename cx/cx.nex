@@ -198,7 +198,7 @@ func unsafeEval (code string) (out string) {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
 			lexer.Stop()
-		}
+		}  
 	}()
 	
 	// storing strings sent to standard output
