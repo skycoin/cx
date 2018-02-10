@@ -34,56 +34,52 @@ import (
 // 	return offset
 // }
 
-func GetDereferenceOffset (memory *[]byte, fp int, offset int32, size int, levels int) int32 {
-	for c := 0; c < levels; c++ {
-		var byts []byte
-		byts = (*memory)[fp + int(offset) : fp + int(offset) + size]
-		encoder.DeserializeAtomic(byts, &offset)
-	}
-	return offset
-}
-
 func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+	// it's from the data segment
+	if arg.MemoryType == MEM_DATA {
+		return arg.Offset
+	}
+	
 	var elt *CXArgument
 	var finalOffset int = arg.Offset
 	var fldIdx int
 	elt = arg
 
 	for _, op := range arg.DereferenceOperations {
-			switch op {
-			case DEREF_ARRAY:
-				for i, idxArg := range elt.Indexes {
-					var subSize int = 1
-					for _, len := range elt.Lengths[i+1:] {
-						subSize *= len
-					}
-					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+		switch op {
+		case DEREF_ARRAY:
+			for i, idxArg := range elt.Indexes {
+				var subSize int = 1
+				for _, len := range elt.Lengths[i+1:] {
+					subSize *= len
 				}
-			case DEREF_FIELD:
-				elt = arg.Fields[fldIdx]
-				finalOffset += elt.Offset
-				fldIdx++
-			case DEREF_POINTER:
-				for c := 0; c < elt.DereferenceLevels; c++ {
-					switch arg.MemoryType {
-					case MEM_STACK:
-						var offset int32
-						byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
-						encoder.DeserializeAtomic(byts, &offset)
-						finalOffset = int(offset)
-					case MEM_DATA:
-						var offset int32
-						byts := arg.Program.Data[finalOffset : finalOffset + elt.Size]
-						encoder.DeserializeAtomic(byts, &offset)
-						finalOffset = int(offset)
-					default:
-						panic("implement the other mem types in readI32")
-					}
+				finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+			}
+		case DEREF_FIELD:
+			elt = arg.Fields[fldIdx]
+			finalOffset += elt.Offset
+			fldIdx++
+		case DEREF_POINTER:
+			for c := 0; c < elt.DereferenceLevels; c++ {
+				switch arg.MemoryType {
+				case MEM_STACK:
+					var offset int32
+					byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
+					encoder.DeserializeAtomic(byts, &offset)
+					finalOffset = int(offset)
+				case MEM_DATA:
+					var offset int32
+					byts := arg.Program.Data[finalOffset : finalOffset + elt.Size]
+					encoder.DeserializeAtomic(byts, &offset)
+					finalOffset = int(offset)
+				default:
+					panic("implement the other mem types in readI32")
 				}
 			}
 		}
+	}
 
-	return finalOffset
+	return fp + finalOffset
 }
 
 // func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
@@ -156,8 +152,6 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 // 		}
 // 	}
 
-// 	fmt.Println(arg.Name, offset, offsetOffset, fieldOffset)
-	
 // 	if arg.IsPointer {
 // 		return int(offset) + offsetOffset + fieldOffset
 // 	} else {

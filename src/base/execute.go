@@ -9,7 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {

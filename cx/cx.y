@@ -2,7 +2,7 @@
 	package main
 	import (
 		// "strings"
-		// "fmt"
+		"fmt"
 		// "os"
 		// "time"
 
@@ -111,8 +111,8 @@
 				
 				if sym.DereferenceLevels > 0 {
 					if arg.IndirectionLevels >= sym.DereferenceLevels || isFieldPointer { // ||
-					// 	sym.IndirectionLevels >= sym.DereferenceLevels
-					// {
+						// 	sym.IndirectionLevels >= sym.DereferenceLevels
+						// {
 						pointer := arg
 
 						for c := 0; c < sym.DereferenceLevels - 1; c++ {
@@ -132,7 +132,7 @@
 				}
 
 				//if sym.IsStruct {
-					// checking if it's accessing fields
+				// checking if it's accessing fields
 				if len(sym.Fields) > 0 {
 					var found bool
 
@@ -162,7 +162,7 @@
 						}
 					}
 				}
-			//}
+				//}
 
 				// sym.IsPointer = arg.IsPointer
 				sym.Type = arg.Type
@@ -263,6 +263,8 @@
 				// then it's a function call
 				if len(inpExpr.Outputs) < 1 {
 					out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
+					out.Size = inpExpr.Operator.Outputs[0].Size
+					out.TotalSize = inpExpr.Operator.Outputs[0].Size
 					inpExpr.AddOutput(out)
 					expr.AddInput(out)
 				}
@@ -420,7 +422,8 @@ external_declaration:
                 package_declaration
         // |       global_declaration
         |       function_declaration
-        /* |       method_declaration */
+        /* |    method_declaration */
+        |       import_declaration
         |       struct_declaration
         ;
 
@@ -469,6 +472,13 @@ package_declaration:
 			prgrm.AddPackage(pkg)
                 }
                 ;
+
+import_declaration:
+                IMPORT STRING_LITERAL SEMICOLON
+                {
+			
+                }
+        ;
 
 function_header:
                 FUNC IDENTIFIER
@@ -623,7 +633,6 @@ declaration_specifiers:
 			if !$2.IsPointer {
 				$2.IsPointer = true
 				$2.PointeeSize = $2.Size
-				// fmt.Println("here", $2.Size)
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
 				$2.IndirectionLevels++
@@ -694,6 +703,20 @@ declaration_specifiers:
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
 			// custom type in an imported package
+			if pkg, err := prgrm.GetPackage($1); err == nil {
+				if strct, err := prgrm.GetStruct($3, pkg.Name); err == nil {
+					arg := MakeArgument(TYPE_CUSTOM)
+					arg.CustomType = strct
+					arg.Size = strct.Size
+					arg.TotalSize = strct.Size
+
+					$$ = arg
+				} else {
+					panic("type '" + $1 + "' does not exist")
+				}
+			} else {
+				panic(err)
+			}
                 }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -798,13 +821,10 @@ postfix_expression:
                 {
 			$1[0].Outputs[0].IsArray = false
 			$1[0].Outputs[0].DereferenceOperations = append($1[0].Outputs[0].DereferenceOperations, DEREF_ARRAY)
-			
+
 			if !$1[0].Outputs[0].IsDereferenceFirst {
 				$1[0].Outputs[0].IsArrayFirst = true
 			}
-			// if !$1[0].Outputs[0].IsArrayFirst {
-			// 	$1[0].Outputs[0].IsDereferenceFirst = true
-			// }
 
 			if len($1[0].Outputs[0].Fields) > 0 {
 				fld := $1[0].Outputs[0].Fields[len($1[0].Outputs[0].Fields) - 1]
@@ -858,39 +878,63 @@ postfix_expression:
 				// and we propagate the property to the right expression
 				// right.IsRest = true
 			} else {
+				left.IsRest = true
 				// then left is a first (e.g first.rest) and right is a rest
-				// right.IsRest = true
 				// let's check if left is a package
-				if _, err := prgrm.GetPackage(left.Name); err == nil {
+				if pkg, err := prgrm.GetPackage(left.Name); err == nil {
 					// the external property will be propagated to the following arguments
 					// this way we avoid considering these arguments as module names
-					//right.Package = pkg
-					$$ = $1
+					left.Package = pkg
+					if glbl, err := left.Package.GetGlobal($3); err == nil {
+						fmt.Println("hi", glbl.Name)
+						// then it's a global
+					} else if fn, err := prgrm.GetFunction($3, pkg.Name); err == nil {
+						// then it's a function
+						$1[0].Outputs = nil
+						$1[0].Operator = fn
+					} // else if strct, err := prgrm.GetStruct($3, pkg.Name); err == nil {
+					// 	// then it's a struct
+					// 	left.IsStruct = true
+					// 	left.CustomType = strct
+					// 	left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
+					// 	fld := MakeArgument(TYPE_IDENTIFIER)
+					// 	fld.Name = $3
+					// 	left.Fields = append(left.Fields, fld)
+					// }
 				} else {
-					if opCode, ok := OpCodes[$1[0].Outputs[0].Name + "." + $3]; ok {
-						$1[0].Operator = Natives[opCode]
+					// if opCode, ok := OpCodes[$1[0].Outputs[0].Name + "." + $3]; ok {
+					// 	// then it's a native
+					// 	fmt.Println("bye", $1[0].Outputs)
+					// 	$1[0].Operator = Natives[opCode]
+					// } else
+					if _, err := left.Package.GetGlobal($1[0].Outputs[0].Name); err == nil {
+						// then it's a global
+						
 					} else {
+						// then it's a struct
 						left.IsStruct = true
 						left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 						fld := MakeArgument(TYPE_IDENTIFIER)
 						fld.Name = $3
 						left.Fields = append(left.Fields, fld)
 					}
-					
-					// if fld, err := left
-					// left.Offset += 
-					
-					// left is not a package, then it's a struct or a function call
-					// if right.Operator != nil {
-					// 	// then left is a function call that returns a struct instance
-					// 	// we just return an expression with the GetField operator
-						
-					// } else {
-					// 	// then left is a struct instance
-
-					// 	// GetField(left, right)
-					// }
 				}
+				
+				// else {
+				// 	// if fld, err := left
+				// 	// left.Offset += 
+					
+				// 	// left is not a package, then it's a struct or a function call
+				// 	// if right.Operator != nil {
+				// 	// 	// then left is a function call that returns a struct instance
+				// 	// 	// we just return an expression with the GetField operator
+						
+				// 	// } else {
+				// 	// 	// then left is a struct instance
+
+				// 	// 	// GetField(left, right)
+				// 	// }
+				// }
 			}
                 }
                 ;
@@ -924,9 +968,6 @@ unary_expression:
 				// }
 				exprOut.IsReference = false
 			case "&":
-				// fmt.Println("hohoho", $2[len($2) - 1])
-				// fmt.Println("huehue", exprOut)
-				
 				// exprOut.IsPointer = true
 				// exprOut.IndirectionLevels++
 				// exprOut.DereferenceLevels++
@@ -1061,7 +1102,9 @@ assignment_operator:
 
 expression:     assignment_expression
 	|       expression COMMA assignment_expression
-                { $$ = append($1, $3...) }
+                {
+			$$ = append($1, $3...)
+                }
                 ;
 
 constant_expression:

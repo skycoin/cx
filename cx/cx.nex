@@ -103,6 +103,8 @@
 /var/        { return VAR        }
 /"([^"]*)"/ { /* " */
 	lval.tok = yylex.Text()
+	// new := strings.Trim("hhellohh", "h")
+	// fmt.Println(new)
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return STRING_LITERAL
 }
@@ -155,9 +157,9 @@ import (
 	"strconv"
 	"encoding/json"
 
-	//"regexp"
+	// "regexp"
 	
-//	"flag"
+	// "flag"
 
 	"net"
 	"net/http"
