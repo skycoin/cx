@@ -102,9 +102,10 @@
 /import/     { return IMPORT     }
 /var/        { return VAR        }
 /"([^"]*)"/ { /* " */
-	lval.tok = yylex.Text()
-	// new := strings.Trim("hhellohh", "h")
-	// fmt.Println(new)
+	tokVal := yylex.Text()
+	tokVal = strings.TrimPrefix(tokVal, "\"")
+	tokVal = strings.TrimSuffix(tokVal, "\"")
+	lval.tok = tokVal
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return STRING_LITERAL
 }

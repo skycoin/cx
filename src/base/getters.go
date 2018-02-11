@@ -12,7 +12,15 @@ func (cxt *CXProgram) GetCurrentPackage () (*CXPackage, error) {
 	} else {
 		return nil, errors.New("current module is nil")
 	}
-	
+}
+
+func (pkg *CXPackage) GetImport (impName string) (*CXPackage, error) {
+	for _, imp := range pkg.Imports {
+		if imp.Name == impName {
+			return imp, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("package '%s' not imported", impName))
 }
 
 func (cxt *CXProgram) GetCurrentStruct () (*CXStruct, error) {
@@ -22,7 +30,6 @@ func (cxt *CXProgram) GetCurrentStruct () (*CXStruct, error) {
 	} else {
 		return nil, errors.New("current module or struct is nil")
 	}
-	
 }
 
 func (mod *CXPackage) GetCurrentStruct () (*CXStruct, error) {
@@ -41,7 +48,6 @@ func (cxt *CXProgram) GetCurrentFunction () (*CXFunction, error) {
 	} else {
 		return nil, errors.New("current module or function is nil")
 	}
-	
 }
 
 func (mod *CXPackage) GetCurrentFunction () (*CXFunction, error) {
@@ -143,7 +149,7 @@ func (cxt *CXProgram) GetPackage (modName string) (*CXPackage, error) {
 		if found != nil {
 			return found, nil
 		} else {
-			return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
+			return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
 		}
 		
 	} else {
@@ -201,9 +207,9 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	}
 }
 
-func (mod *CXPackage) GetGlobal (defName string) (*CXArgument, error) {
+func (pkg *CXPackage) GetGlobal (defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
-	for _, def := range mod.Globals {
+	for _, def := range pkg.Globals {
 		if def.Name == defName {
 			foundDef = def
 			break
@@ -213,7 +219,7 @@ func (mod *CXPackage) GetGlobal (defName string) (*CXArgument, error) {
 	if foundDef != nil {
 		return foundDef, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("definition '%s' not found in module '%s'", defName, mod.Name))
+		return nil, errors.New(fmt.Sprintf("definition '%s' not found in module '%s'", defName, pkg.Name))
 	}
 }
 

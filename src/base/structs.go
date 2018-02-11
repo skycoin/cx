@@ -182,6 +182,7 @@ const (
 	DEREF_ARRAY = iota
 	DEREF_FIELD
 	DEREF_POINTER
+	DEREF_DEREF
 )
 
 const TYPE_POINTER_SIZE int = 4
@@ -270,8 +271,7 @@ type CXProgram struct {
 	CallCounter int
 	
 	Stacks []CXStack
-	Heaps []Heap
-
+	Heap Heap
 	Data Data
 
 	Terminated bool
@@ -410,3 +410,4 @@ type CXAffordance struct {
 	Index string;
 	Action func();
 }
+

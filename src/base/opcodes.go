@@ -37,6 +37,7 @@ const (
 	OP_I32_PRINT
 	OP_I64_PRINT
 	OP_BOOL_PRINT
+	OP_STR_PRINT
 	OP_MAKE
 	OP_READ
 	OP_WRITE
@@ -114,6 +115,7 @@ func execNative (prgrm *CXProgram) {
 	case OP_I32_PRINT: i32_print(expr, stack, fp)
 	case OP_I64_PRINT: i64_print(expr, stack, fp)
 	case OP_BOOL_PRINT: bool_print(expr, stack, fp)
+	case OP_STR_PRINT: str_print(expr, stack, fp)
 	case OP_MAKE:
 	case OP_READ:
 	case OP_WRITE:
@@ -167,6 +169,8 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_SUB: "i64.sub",
 	OP_I64_PRINT: "i64.print",
 
+	OP_STR_PRINT: "str.print",
+
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
 
 	OP_BOOL_PRINT: "bool.print",
@@ -187,6 +191,8 @@ var OpCodes map[string]int = map[string]int{
 	"i64.sub": OP_I64_SUB,
 	"i64.print": OP_I64_PRINT,
 
+	"str.print": OP_STR_PRINT,
+
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
 
 	"bool.print": OP_BOOL_PRINT,
@@ -206,6 +212,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_PRINT: MakeNative(OP_I64_PRINT, []int{TYPE_I64}, []int{}),
 
 	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_I32}, []int{}),
+	
+	OP_STR_PRINT: MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
 	OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),

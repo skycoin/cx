@@ -1,7 +1,7 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	// "errors"
 	"math/rand"
 	"time"
@@ -9,7 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -54,7 +54,8 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		if prgrm.CallCounter < 0 {
 			// then the program finished
 			prgrm.Terminated = true
-			fmt.Println(prgrm.Stacks[0].Stack)
+			// fmt.Println(prgrm.Stacks[0].Stack)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
 			// fmt.Println("prgrm.Data", prgrm.Data)
 		} else {
 			// copying the outputs to the previous stack frame
@@ -65,14 +66,21 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			fp := call.FramePointer
 
 			expr := returnOp.Expressions[returnLine]
-			outOffset := 0
 			for i, out := range expr.Outputs {
+				WriteMemory(
+					&prgrm.Stacks[0],
+					GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
+					out,
+					ReadMemory(
+						&prgrm.Stacks[0],
+						GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i]),
+						call.Operator.Outputs[i]))
+
 				// copy byte by byte to the previous stack frame
-				for c := 0; c < out.TotalSize; c++ {
-					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
-				}
-				outOffset += out.TotalSize
+				// for c := 0; c < out.TotalSize; c++ {
+				// 	prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
+				// 		prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
+				// }
 			}
 
 			// return the stack pointer to its previous state
@@ -115,10 +123,11 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			for i, inp := range expr.Inputs {
 				var byts []byte
-				finalOffset := inp.Offset
-				if inp.Indexes != nil {
-					finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
-				}
+				// finalOffset := inp.Offset
+				finalOffset := GetFinalOffset(&prgrm.Stacks[0], fp, inp)
+				// if inp.Indexes != nil {
+				// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
+				// }
 				if inp.IsReference {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
