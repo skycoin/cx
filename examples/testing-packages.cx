@@ -1,0 +1,151 @@
+package foo1;
+
+var fooV1 i32;
+
+// type meow struct {
+// 	x i32;
+// }
+
+// func double (n i32) (res i32) {
+// 	res = i32.add(n, 10);
+// }
+
+package foo2;
+
+var fooV2 i32;
+
+// type meow struct {
+// 	y i32;
+// }
+
+// func double (n i32) (res i32) {
+// 	res = i32.add(n, n);
+// }
+
+package main;
+import "foo1";
+import "foo2";
+
+var fooV i32;
+
+// func foo () {
+// 	bar();
+// }
+
+// func bar () {
+// 	str.print("meowmeowmeow");
+// }
+
+func sum (num i32) (out i32) {
+	out = i32.add(num, 1);
+}
+
+func main () {
+	// if (true) {
+	// 	str.print("yess");
+	// 	if (true) {
+	// 		str.print("huuhhu");
+	// 	}
+	// 	str.print("huehue");
+	// } else {
+	// 	str.print("nooo");
+	// 	str.print("hmhmhm");
+	// }
+
+	// str.print("resuming");
+	// i32.print(sum(5));
+	// foo();
+	
+
+
+	// foo1.fooV1 = 22;
+	// foo2.fooV2 = 33;
+	// fooV = 11;
+
+	// i32.print(foo1.fooV1);
+	// i32.print(foo2.fooV2);
+	// i32.print(fooV);
+	
+
+
+
+	// i32.print(foo1.fooV);
+	// foo1.fooV = 33;
+	// i32.print(foo1.fooV);
+
+	// i32.print(foo2.fooV);
+	// foo1.fooV = 33;
+
+	// i32.print(&foo1.fooV);
+	// i32.print(&foo2.fooV);
+
+	
+	
+	// i32.print(foo1.double(33));
+	// i32.print(foo2.double(33));
+
+	// var num i32;
+	// num = i32.add(5, 5);
+	// foo = num;
+	// bar = num;
+	
+	// foo = i32.add(6, 5);
+	// foo = 33;
+	// bar = 44;
+	// i32.print(foo);
+	
+	// bar = i32.add(i32.add(num, num), num);
+	// i32.print(foo);
+	// fooFn();
+	// foo = 10;
+	// barFn();
+
+	// var bar1 foo1.meow;
+	// var bar2 foo2.meow;
+	// bar1.x = 10;
+	// bar2.y = 20;
+
+	// i32.print(bar1.x);
+	// i32.print(bar2.y);
+
+
+
+
+
+	
+
+	// var name str;
+	// name = "hihi313131";
+
+	// str.print(name);
+
+
+	// var foo i32;
+	// foo = 5;
+	// i32.print(sum(foo));
+	// foo = sum(foo);
+	// foo = i32.add(5, 3);
+	// i32.print(foo);
+	// foo = 13;
+	// i32.print(foo);
+	// i32.print(sum(foo));
+	// i32.print(sum(foo));
+	// i32.print(i32.add(foo, foo));
+	
+
+	var c i32;
+	var d i32;
+	var start i64;
+	var end i64;
+	var duration i64;
+	
+	start = time.UnixMilli();
+	// for (d = 0; i32.lt(c, 6000000); c = i32.add(c, 1)) {
+	for (c = 0; i32.lt(c, 6000000); c = sum(c)) {
+		// i32.print(c);
+	}
+	end = time.UnixMilli();
+	
+	duration = i64.sub(end, start);
+	i64.print(duration);
+}

@@ -12,7 +12,7 @@
 	)
 
 	var prgrm = MakeProgram(256, 256, 256)
-	var data Data
+	// var data Data
 	var dataOffset int
 
 	var lineNo int = 0
@@ -30,6 +30,8 @@
 	// var tag string = ""
 	// var asmNL = "\n"
 	var fileName string
+
+	var sysInitExprs []*CXExpression
 
 	// Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
 	// This function writes those bytes to prgrm.Data
@@ -269,7 +271,7 @@
 					out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
 					out.Size = inpExpr.Operator.Outputs[0].Size
 					out.TotalSize = inpExpr.Operator.Outputs[0].Size
-					out.Package = inpExpr.Operator.Outputs[0].Package
+					out.Package = inpExpr.Package
 					inpExpr.AddOutput(out)
 					expr.AddInput(out)
 				}
@@ -295,25 +297,13 @@
 
 	line int
 
-	/* parameter *CXParameter */
-	/* parameters []*CXParameter */
-
 	argument *CXArgument
 	arguments []*CXArgument
-
-        /* definition *CXDefinition */
-	/* definitions []*CXDefinition */
 
 	expression *CXExpression
 	expressions []*CXExpression
 
         function *CXFunction
-
-	/* field *CXField */
-	/* fields []*CXField */
-
-	/* name string */
-	/* names []string */
 }
 
 %token  <byt>           BYTE_LITERAL
@@ -323,7 +313,7 @@
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
                         VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        SEMICOLON
+                        SEMICOLON NEWLINE
                         ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
@@ -406,6 +396,7 @@
 %type   <expressions>   block_item
 %type   <expressions>   block_item_list
 %type   <expressions>   compound_statement
+%type   <expressions>   else_statement
 %type   <expressions>   labeled_statement
 %type   <expressions>   expression_statement
 %type   <expressions>   selection_statement
@@ -435,15 +426,46 @@ global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				expr := WritePrimary($3.Type, make([]byte, $3.Size))
-				exprOut := expr[0].Outputs[0]
-				$3.Name = $2.Name
-				$3.MemoryType = MEM_DATA
-				$3.Offset = exprOut.Offset
-				$3.Size = exprOut.Size
-				$3.TotalSize = exprOut.TotalSize
-				$3.Package = exprOut.Package
-				pkg.AddGlobal($3)
+				if _, err := prgrm.GetGlobal($2.Name); err != nil {
+					expr := WritePrimary($3.Type, make([]byte, $3.Size))
+					exprOut := expr[0].Outputs[0]
+					$3.Name = $2.Name
+					$3.MemoryType = MEM_DATA
+					$3.Offset = exprOut.Offset
+					$3.Size = exprOut.Size
+					$3.TotalSize = exprOut.TotalSize
+					$3.Package = exprOut.Package
+					pkg.AddGlobal($3)
+				}
+			} else {
+				panic(err)
+			}
+                }
+        |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
+                {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				if glbl, err := prgrm.GetGlobal($2.Name); err != nil {
+					expr := WritePrimary($3.Type, make([]byte, $3.Size))
+					exprOut := expr[0].Outputs[0]
+					$3.Name = $2.Name
+					$3.MemoryType = MEM_DATA
+					$3.Offset = exprOut.Offset
+					$3.Size = exprOut.Size
+					$3.TotalSize = exprOut.TotalSize
+					$3.Package = exprOut.Package
+					pkg.AddGlobal($3)
+				} else {
+					expr := $5[len($5) - 1]
+					$3.Name = $2.Name
+					$3.MemoryType = MEM_DATA
+					$3.Offset = glbl.Offset
+					$3.Size = glbl.Size
+					$3.TotalSize = glbl.TotalSize
+					$3.Package = glbl.Package
+
+					expr.AddOutput($3)
+					sysInitExprs = append(sysInitExprs, $5...)
+				}
 			} else {
 				panic(err)
 			}
@@ -454,15 +476,17 @@ struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				strct := MakeStruct($2)
-				pkg.AddStruct(strct)
+				if _, err := prgrm.GetStruct($2, pkg.Name); err != nil {
+					strct := MakeStruct($2)
+					pkg.AddStruct(strct)
 
-				var size int
-                                for _, fld := range $4 {
-                                        strct.AddField(fld)
-					size += fld.TotalSize
+					var size int
+					for _, fld := range $4 {
+						strct.AddField(fld)
+						size += fld.TotalSize
+					}
+					strct.Size = size
 				}
-				strct.Size = size
 			} else {
 				panic(err)
 			}
@@ -489,8 +513,12 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			pkg := MakePackage($2)
-			prgrm.AddPackage(pkg)
+			if pkg, err := prgrm.GetPackage($2); err != nil {
+				pkg := MakePackage($2)
+				prgrm.AddPackage(pkg)
+			} else {
+				prgrm.SelectPackage(pkg.Name)
+			}
                 }
                 ;
 
@@ -498,10 +526,12 @@ import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				if imp, err := prgrm.GetPackage($2); err == nil {
-					pkg.AddImport(imp)
-				} else {
-					panic(err)
+				if _, err := pkg.GetImport($2); err != nil {
+					if imp, err := prgrm.GetPackage($2); err == nil {
+						pkg.AddImport(imp)
+					} else {
+						panic(err)
+					}
 				}
 			} else {
 				panic(err)
@@ -513,10 +543,14 @@ function_header:
                 FUNC IDENTIFIER
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				fn := MakeFunction($2)
-				pkg.AddFunction(fn)
-
-                                $$ = fn
+				if fn, err := prgrm.GetFunction($2, pkg.Name); err == nil {
+					$$ = fn
+				} else {
+					fn := MakeFunction($2)
+					pkg.AddFunction(fn)
+					$$ = fn
+				}
+				
 			} else {
 				panic(err)
 			}
@@ -527,12 +561,15 @@ function_header:
 				panic("method has multiple receivers")
 			}
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				fn := MakeFunction($5)
-				pkg.AddFunction(fn)
-
-                                fn.AddInput($3[0])
-
-                                $$ = fn
+				if fn, err := prgrm.GetFunction($5, pkg.Name); err == nil {
+					fn.AddInput($3[0])
+					$$ = fn
+				} else {
+					fn := MakeFunction($5)
+					pkg.AddFunction(fn)
+					fn.AddInput($3[0])
+					$$ = fn
+				}
 			} else {
 				panic(err)
 			}
@@ -751,21 +788,6 @@ declaration_specifiers:
 			} else {
 				panic(err)
 			}
-			
-			// if pkg, err := prgrm.GetPackage($1); err == nil {
-			// 	if strct, err := prgrm.GetStruct($3, pkg.Name); err == nil {
-			// 		arg := MakeArgument(TYPE_CUSTOM)
-			// 		arg.CustomType = strct
-			// 		arg.Size = strct.Size
-			// 		arg.TotalSize = strct.Size
-
-			// 		$$ = arg
-			// 	} else {
-			// 		panic("type '" + $1 + "' does not exist")
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
                 }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -1176,7 +1198,35 @@ declaration:
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			$$ = nil
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				if $5[len($5) - 1].Operator == nil {
+					// then it's a literal, e.g. var foo i32 = 10;
+					expr := MakeExpression(Natives[OP_IDENTITY])
+					expr.Package = pkg
+					
+					$3.Name = $2.Name
+					$3.Package = pkg
+					
+					expr.AddOutput($3)
+					expr.AddInput($5[len($5) - 1].Outputs[0])
+					
+					$$ = []*CXExpression{expr}
+				} else {
+					// then it's an expression (it has an operator)
+					$3.Name = $2.Name
+					$3.Package = pkg
+					
+					expr := $5[len($5) - 1]
+					expr.AddOutput($3)
+					
+					// exprs := $5
+					// exprs = append(exprs, expr)
+					
+					$$ = $5
+				}
+			} else {
+				panic(err)
+			}
                 }
                 ;
 
@@ -1281,7 +1331,7 @@ designator:
 statement:      /* labeled_statement */
 	/* |        */compound_statement
 	|       expression_statement
-	/* |       selection_statement */
+	|       selection_statement
 	|       iteration_statement
 	/* |       jump_statement */
                 ;
@@ -1333,7 +1383,42 @@ selection_statement:
                 /* IF LPAREN expression RPAREN statement */
 	/* |    IF LPAREN expression RPAREN statement ELSE statement */
                 IF LPAREN expression RPAREN compound_statement elseif_list else_statement
-                { $$ = nil }
+                {
+			jmpFn := Natives[OP_JMP]
+			pkg, err := prgrm.GetCurrentPackage()
+			if err != nil {
+				panic(err)
+			}
+			ifExpr := MakeExpression(jmpFn)
+			ifExpr.Package = pkg
+
+			predicate := $3[len($3) - 1].Outputs[0]
+			predicate.Package = pkg
+			ifExpr.AddInput(predicate)
+
+			thenLines := 0
+			elseLines := len($5) + 1
+
+			ifExpr.ThenLines = thenLines
+			ifExpr.ElseLines = elseLines
+
+			skipExpr := MakeExpression(jmpFn)
+			skipExpr.Package = pkg
+
+			trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true))
+			skipLines := len($7)
+
+			skipExpr.AddInput(trueArg[0].Outputs[0])
+			skipExpr.ThenLines = skipLines
+			skipExpr.ElseLines = 0
+
+			exprs := []*CXExpression{ifExpr}
+			exprs = append(exprs, $5...)
+			exprs = append(exprs, skipExpr)
+			exprs = append(exprs, $7...)
+			
+			$$ = exprs
+                }
 	|       SWITCH LPAREN expression RPAREN statement
                 { $$ = nil }
                 ;
@@ -1346,7 +1431,9 @@ elseif_list:
         ;
 
 else_statement:
+                { $$ = nil }
         |       ELSE compound_statement
+                { $$ = $2 }
         ;
 
 
@@ -1358,13 +1445,14 @@ iteration_statement:
 		FOR LPAREN expression_statement expression_statement expression RPAREN statement
                 {
 			jmpFn := Natives[OP_JMP]
-			
-			upExpr := MakeExpression(jmpFn)
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				upExpr.Package = pkg
-			} else {
+
+			pkg, err := prgrm.GetCurrentPackage()
+			if err != nil {
 				panic(err)
 			}
+			
+			upExpr := MakeExpression(jmpFn)
+			upExpr.Package = pkg
 			
 			trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true))
 			// upLines := WritePrimary(TYPE_I32, encoder.Serialize(int32((len($7) + len($5) + len($4) + 2) * -1)))
@@ -1379,18 +1467,16 @@ iteration_statement:
 			// upExpr.AddInput(downLines[0].Outputs[0])
 			
 			downExpr := MakeExpression(jmpFn)
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				downExpr.Package = pkg
-			} else {
-				panic(err)
-			}
+			downExpr.Package = pkg
 			
 			if len($4[len($4) - 1].Outputs) < 1 {
 				predicate := MakeParameter(MakeGenSym(LOCAL_PREFIX), $4[len($4) - 1].Operator.Outputs[0].Type)
+				predicate.Package = pkg
 				$4[len($4) - 1].AddOutput(predicate)
 				downExpr.AddInput(predicate)
 			} else {
 				predicate := $4[len($4) - 1].Outputs[0]
+				predicate.Package = pkg
 				downExpr.AddInput(predicate)
 			}
 			// thenLines := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(0)))

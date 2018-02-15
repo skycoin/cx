@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -45,6 +46,7 @@ func (mod *CXPackage) AddFunction (fn *CXFunction) *CXPackage {
 	found := false
 	for i, f := range mod.Functions {
 		if f.Name == fn.Name {
+			fmt.Println("here", fn.Inputs)
 			mod.Functions[i].Name = fn.Name
 			mod.Functions[i].Inputs = fn.Inputs
 			mod.Functions[i].Outputs = fn.Outputs

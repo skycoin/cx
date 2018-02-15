@@ -89,9 +89,9 @@ func execNative (prgrm *CXProgram) {
 		
 	case OP_I32_ADD: i32_add(expr, stack, fp)
 	case OP_I32_SUB: i32_sub(expr, stack, fp)
-	case OP_I32_MUL:
-	case OP_I32_DIV:
-	case OP_I32_ABS:
+	case OP_I32_MUL: i32_mul(expr, stack, fp)
+	case OP_I32_DIV: i32_div(expr, stack, fp)
+	case OP_I32_ABS: 
 	case OP_I32_MOD:
 	case OP_I32_POW:
 
@@ -161,6 +161,8 @@ var OpNames map[int]string = map[int]string{
 	OP_JMP: "jmp",
 	OP_I32_ADD: "i32.add",
 	OP_I32_SUB: "i32.sub",
+	OP_I32_MUL: "i32.mul",
+	OP_I32_DIV: "i32.div",
 	OP_I32_PRINT: "i32.print",
 	OP_I32_GT: "i32.gt",
 	OP_I32_LT: "i32.lt",
@@ -183,6 +185,8 @@ var OpCodes map[string]int = map[string]int{
 	"jmp": OP_JMP,
 	"i32.add": OP_I32_ADD,
 	"i32.sub": OP_I32_SUB,
+	"i32.mul": OP_I32_MUL,
+	"i32.div": OP_I32_DIV,
 	"i32.print": OP_I32_PRINT,
 	"i32.gt": OP_I32_GT,
 	"i32.lt": OP_I32_LT,
@@ -201,8 +205,12 @@ var OpCodes map[string]int = map[string]int{
 var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_IDENTITY: MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	
 	OP_I32_ADD: MakeNative(OP_I32_ADD, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_SUB: MakeNative(OP_I32_SUB, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_MUL: MakeNative(OP_I32_MUL, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_DIV: MakeNative(OP_I32_DIV, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_ABS: MakeNative(OP_I32_ABS, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_PRINT: MakeNative(OP_I32_PRINT, []int{TYPE_I32}, []int{}),
 	OP_I32_LT: MakeNative(OP_I32_LT, []int{TYPE_I32, TYPE_I32}, []int{TYPE_BOOL}),
 	OP_I32_GT: MakeNative(OP_I32_GT, []int{TYPE_I32, TYPE_I32}, []int{TYPE_BOOL}),

@@ -1,0 +1,187 @@
+/(\r\n|\r|\n)/ {
+	lval.line++
+	token := f(NEWLINE)
+	if token != NEWLINE {
+		return token
+	}
+}
+/(\t| )/ {
+	/* skip blanks and tabs */
+}
+/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
+	/* skip comments */
+}
+/bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
+/byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
+/break/                   { return f(BREAK) }
+/case/                    { return f(CASE) }
+/const/                   { return f(CONST) }
+/continue/                { return f(CONTINUE) }
+/default/                 { return f(DEFAULT) }
+/else/                    { return f(ELSE) }
+/enum/                    { return f(ENUM) }
+/f32/                     { lval.tok = yylex.Text(); return f(F32) }
+/f64/                     { lval.tok = yylex.Text(); return f(F32) }
+/for/                     { return f(FOR)}
+/goto/                    { return f(GOTO)}
+/i8/                      { lval.tok = yylex.Text(); return f(I8)}
+/i16/                     { lval.tok = yylex.Text(); return f(I16)}
+/i32/                     { lval.tok = yylex.Text(); return f(I32)}
+/i64/                     { lval.tok = yylex.Text(); return f(I64)}
+/if/                      { return f(IF)}
+/return/                  { return f(RETURN)}
+/str/                     { return f(STR)}
+/struct/                  { return f(STRUCT)}
+/switch/                  { return f(SWITCH)}
+/type/                    { return f(TYPE)}
+/ui8/                     { lval.tok = yylex.Text(); return f(UI8)}
+/ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
+/ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
+/ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
+/union/                   { return f(UNION)}
+/&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
+/\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
+/-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
+/\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
+/\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
+/%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
+/>>=/                     { return f(RIGHT_ASSIGN)}
+/<<=/                     { return f(LEFT_ASSIGN)}
+/\+=/                     { return f(ADD_ASSIGN)}
+/-=/                      { return f(SUB_ASSIGN)}
+/\*=/                     { return f(MUL_ASSIGN)}
+/\/=/                     { return f(DIV_ASSIGN)}
+/%=/                      { return f(MOD_ASSIGN)}
+/&=/                      { return f(AND_ASSIGN)}
+/\^=/                     { return f(XOR_ASSIGN)}
+/\|=/                     { return f(OR_ASSIGN)}
+/>>/                      { return f(RIGHT_OP)}
+/<</                      { return f(LEFT_OP)}
+/\+\+/                    { return f(INC_OP)}
+/--/                      { return f(DEC_OP)}
+/&&/                      { return f(AND_OP)}
+/||/                      { return f(OR_OP)}
+/<=/                      { return f(LE_OP)}
+/>=/                      { return f(GE_OP)}
+/==/                      { return f(EQ_OP)}
+/!=/                      { return f(NE_OP)}
+/;/                       { return f(SEMICOLON) }
+/!/                       { lval.tok = yylex.Text(); return f(NEG_OP) }
+/\[/                      { return f(LBRACK) }
+/\]/                      { return f(RBRACK) }
+/\(/                      { return f(LPAREN) }
+/\)/                      { return f(RPAREN) }
+/\{/                      { return f(LBRACE) }
+/\}/                      { return f(RBRACE) }
+/\./                      { return f(PERIOD) }
+/,/                       { return f(COMMA) }
+/=/                       { return f(ASSIGN) }
+/:=/                      { return f(CASSIGN) }
+/(:dl)|(:dLocals)/        { return f(DSTATE)     }
+/(:ds)|(:dStack)/         { return f(DSTACK)     }
+/(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
+/:package/                { return f(SPACKAGE)   }
+/:struct/                 { return f(SSTRUCT)    }
+/:func/                   { return f(SFUNC)      }
+/:rem/                    { return f(REM)        }
+/:step/                   { return f(STEP)       }
+/:tStep/                  { return f(TSTEP)      }
+/:pStep/                  { return f(PSTEP)      }
+/:aff/                    { return f(AFF)        }
+/package/                 { return f(PACKAGE)    }
+/type/                    { return f(TYPSTRUCT)  }
+/struct/                  { return f(STRUCT)     }
+/return/                  { return f(RETURN)     }
+/goto/                    { return f(GOTO)       }
+/if/                      { return f(IF)         }
+/for/                     { return f(FOR)        }
+/func/                    { return f(FUNC)       }
+/clauses/                 { return f(CLAUSES)    }
+/expr/                    { return f(EXPR)       }
+/def/                     { return f(DEF)        }
+/field/                   { return f(FIELD)      }
+/input/                   { return f(INPUT)      }
+/output/                  { return f(OUTPUT)     }
+/import/                  { return f(IMPORT)     }
+/var/                     { return f(VAR)        }
+/"([^"]*)"/ { /* " */
+	tokVal := yylex.Text()
+	tokVal = strings.TrimPrefix(tokVal, "\"")
+	tokVal = strings.TrimSuffix(tokVal, "\"")
+	lval.tok = tokVal
+	return f(STRING_LITERAL)
+}
+/true/ {
+	lval.i32 = int32(1)
+	return f(BOOLEAN_LITERAL)
+}
+/false/ {
+	lval.i32 = int32(0)
+	return f(BOOLEAN_LITERAL)
+}
+/-?[0-9]+B/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	lval.byt = byte(result)
+	return f(BYTE_LITERAL)
+}
+/-?[0-9]+L/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	lval.i64 = int64(result)
+	return f(LONG_LITERAL)
+}
+/-?[0-9]+\.[0-9]*D/ {
+	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	lval.f64 = float64(result)
+	return f(DOUBLE_LITERAL)
+}
+/-?[0-9]+/ {
+	result ,_ := strconv.Atoi(yylex.Text())
+	lval.i32 = int32(result)
+	return f(INT_LITERAL)
+}
+/-?[0-9]+\.[0-9]*/ {
+	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
+	lval.f32 = float32(result)
+	return f(FLOAT_LITERAL)
+}
+/[_a-zA-Z][_a-zA-Z0-9]*/ {
+	lval.tok = yylex.Text()
+	return f(IDENTIFIER)
+}
+//
+package cx0
+import (
+	"fmt"
+	"strconv"
+)
+
+var insert bool
+
+func f (token int) int {
+	if insert && token == NEWLINE {
+		//fmt.Println("uno")
+		insert = false
+		return SEMICOLON
+	} else {
+		switch token {
+		case IDENTIFIER, I32, RPAREN:
+			insert = true
+		default: insert = false
+		}
+		return token
+	}
+}
+
+func (yylex Lexer) Error (e string) {
+	if inREPL {
+		fmt.Printf("syntax error: %s\n", e)
+	} else {
+		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
+	}
+	
+	yylex.Stop()
+}
+
+func main () {
+	
+}

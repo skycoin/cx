@@ -1,7 +1,7 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	// "errors"
 	"math/rand"
 	"time"
@@ -13,16 +13,13 @@ func (prgrm *CXProgram) Run () error {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
-		if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
-			if len(fn.Expressions) < 1 {
-				return nil
-			}
-			// main function
+		// initializing program resources
+		prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
+		
+		if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
+			// *init function
 			mainCall := MakeCall(fn, nil, mod, mod.Program)
-			
-			// initializing program resources
 			prgrm.CallStack[0] = mainCall
-			prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 			prgrm.Stacks[0].StackPointer = fn.Size
 
 			var err error
@@ -34,6 +31,37 @@ func (prgrm *CXProgram) Run () error {
 					return err
 				}
 			}
+			// we reset call state
+			prgrm.Terminated = false
+			prgrm.CallCounter = 0
+		} else {
+			return err
+		}
+		
+		if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
+			if len(fn.Expressions) < 1 {
+				return nil
+			}
+			// main function
+			mainCall := MakeCall(fn, nil, mod, mod.Program)
+			
+			// initializing program resources
+			prgrm.CallStack[0] = mainCall
+			// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
+			prgrm.Stacks[0].StackPointer = fn.Size
+
+			var err error
+
+			for !prgrm.Terminated {
+				call := &prgrm.CallStack[prgrm.CallCounter]
+				err = call.call(prgrm)
+				if err != nil {
+					return err
+				}
+			}
+			fmt.Println(prgrm.Stacks[0].Stack)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
+			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
 			return err
@@ -54,9 +82,6 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 		if prgrm.CallCounter < 0 {
 			// then the program finished
 			prgrm.Terminated = true
-			// fmt.Println(prgrm.Stacks[0].Stack)
-			// fmt.Println("prgrm.Heap", prgrm.Heap)
-			// fmt.Println("prgrm.Data", prgrm.Data)
 		} else {
 			// copying the outputs to the previous stack frame
 			returnAddr := &prgrm.CallStack[prgrm.CallCounter]

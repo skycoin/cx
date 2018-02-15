@@ -1,5 +1,9 @@
 /(\r\n|\r|\n)/ {
 	lval.line++
+	token := f(NEWLINE)
+	if token != NEWLINE {
+		return token
+	}
 }
 /(\t| )/ {
 	/* skip blanks and tabs */
@@ -8,143 +12,143 @@
 	/* skip comments */
 	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
 }
-/bool/                    { lval.tok = yylex.Text(); return BOOL }
-/byte/                    { lval.tok = yylex.Text(); return BYTE }
-/break/                   { return BREAK }
-/case/                    { return CASE }
-/const/                   { return CONST }
-/continue/                { return CONTINUE }
-/default/                 { return DEFAULT }
-/else/                    { return ELSE }
-/enum/                    { return ENUM }
-/f32/                     { lval.tok = yylex.Text(); return F32 }
-/f64/                     { lval.tok = yylex.Text(); return F32 }
-/for/                     {return FOR}
-/goto/                    {return GOTO}
-/i8/                      {lval.tok = yylex.Text(); return I8}
-/i16/                     {lval.tok = yylex.Text(); return I16}
-/i32/                     {lval.tok = yylex.Text(); return I32}
-/i64/                     {lval.tok = yylex.Text(); return I64}
-/if/                      {return IF}
-/return/                  {return RETURN}
-/str/                     {return STR}
-/struct/                  {return STRUCT}
-/switch/                  {return SWITCH}
-/type/                    {return TYPE}
-/ui8/                     {lval.tok = yylex.Text(); return UI8}
-/ui16/                    {lval.tok = yylex.Text(); return UI16}
-/ui32/                    {lval.tok = yylex.Text(); return UI32}
-/ui64/                    {lval.tok = yylex.Text(); return UI64}
-/union/                   {return UNION}
-/&/          { lval.tok = yylex.Text(); return REF_OP }
-/\+/         { lval.tok = yylex.Text(); return ADD_OP }
-/-/          { lval.tok = yylex.Text(); return SUB_OP }
-/\*/         { lval.tok = yylex.Text(); return MUL_OP }
-/\//         { lval.tok = yylex.Text(); return DIV_OP }
-/%/          { lval.tok = yylex.Text(); return MOD_OP }
-/>>=/                     {return RIGHT_ASSIGN}
-/<<=/                     {return LEFT_ASSIGN}
-/\+=/                     {return ADD_ASSIGN}
-/-=/                      {return SUB_ASSIGN}
-/\*=/                     {return MUL_ASSIGN}
-/\/=/                     {return DIV_ASSIGN}
-/%=/                      {return MOD_ASSIGN}
-/&=/                      {return AND_ASSIGN}
-/\^=/                     {return XOR_ASSIGN}
-/\|=/                      {return OR_ASSIGN}
-/>>/                      {return RIGHT_OP}
-/<</                      {return LEFT_OP}
-/\+\+/                    {return INC_OP}
-/--/                      {return DEC_OP}
-/&&/                      {return AND_OP}
-/||/                      {return OR_OP}
-/<=/                      {return LE_OP}
-/>=/                      {return GE_OP}
-/==/                      {return EQ_OP}
-/!=/                      {return NE_OP}
-/;/                       { return SEMICOLON }
-/!/                       { lval.tok = yylex.Text(); return NEG_OP }
-/\[/                      { return LBRACK }
-/\]/                      { return RBRACK }
-/\(/                      { return LPAREN }
-/\)/                      { return RPAREN }
-/\{/                      { return LBRACE }
-/\}/                      { return RBRACE }
-/\./                      { return PERIOD }
-/,/                       { return COMMA }
-/=/                       { return ASSIGN }
-/:=/                      { return CASSIGN }
-/(:dl)|(:dLocals)/        { return DSTATE     }
-/(:ds)|(:dStack)/         { return DSTACK     }
-/(:dProgram)|(:dp)/       { return DPROGRAM   }
-/:package/                { return SPACKAGE   }
-/:struct/                 { return SSTRUCT    }
-/:func/                   { return SFUNC      }
-/:rem/                    { return REM        }
-/:step/                   { return STEP       }
-/:tStep/     { return TSTEP      }
-/:pStep/     { return PSTEP      }
-/:aff/       { return AFF        }
-/package/    { return PACKAGE    }
-/type/       { return TYPSTRUCT  }
-/struct/     { return STRUCT     }
-/return/     { return RETURN     }
-/goto/       { return GOTO       }
-/if/         { return IF         }
-/for/        { return FOR        }
-/func/       { return FUNC       }
-/clauses/    { return CLAUSES    }
-/expr/       { return EXPR       }
-/def/        { return DEF        }
-/field/      { return FIELD      }
-/input/      { return INPUT      }
-/output/     { return OUTPUT     }
-/import/     { return IMPORT     }
-/var/        { return VAR        }
+/bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
+/byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
+/break/                   { return f(BREAK) }
+/case/                    { return f(CASE) }
+/const/                   { return f(CONST) }
+/continue/                { return f(CONTINUE) }
+/default/                 { return f(DEFAULT) }
+/else/                    { return f(ELSE) }
+/enum/                    { return f(ENUM) }
+/f32/                     { lval.tok = yylex.Text(); return f(F32) }
+/f64/                     { lval.tok = yylex.Text(); return f(F32) }
+/for/                     { return f(FOR)}
+/goto/                    { return f(GOTO)}
+/i8/                      { lval.tok = yylex.Text(); return f(I8)}
+/i16/                     { lval.tok = yylex.Text(); return f(I16)}
+/i32/                     { lval.tok = yylex.Text(); return f(I32)}
+/i64/                     { lval.tok = yylex.Text(); return f(I64)}
+/if/                      { return f(IF)}
+/return/                  { return f(RETURN)}
+/str/                     { return f(STR)}
+/struct/                  { return f(STRUCT)}
+/switch/                  { return f(SWITCH)}
+/type/                    { return f(TYPE)}
+/ui8/                     { lval.tok = yylex.Text(); return f(UI8)}
+/ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
+/ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
+/ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
+/union/                   { return f(UNION)}
+/&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
+/\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
+/-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
+/\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
+/\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
+/%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
+/>>=/                     { return f(RIGHT_ASSIGN)}
+/<<=/                     { return f(LEFT_ASSIGN)}
+/\+=/                     { return f(ADD_ASSIGN)}
+/-=/                      { return f(SUB_ASSIGN)}
+/\*=/                     { return f(MUL_ASSIGN)}
+/\/=/                     { return f(DIV_ASSIGN)}
+/%=/                      { return f(MOD_ASSIGN)}
+/&=/                      { return f(AND_ASSIGN)}
+/\^=/                     { return f(XOR_ASSIGN)}
+/\|=/                     { return f(OR_ASSIGN)}
+/>>/                      { return f(RIGHT_OP)}
+/<</                      { return f(LEFT_OP)}
+/\+\+/                    { return f(INC_OP)}
+/--/                      { return f(DEC_OP)}
+/&&/                      { return f(AND_OP)}
+/||/                      { return f(OR_OP)}
+/<=/                      { return f(LE_OP)}
+/>=/                      { return f(GE_OP)}
+/==/                      { return f(EQ_OP)}
+/!=/                      { return f(NE_OP)}
+/;/                       { return f(SEMICOLON) }
+/!/                       { lval.tok = yylex.Text(); return f(NEG_OP) }
+/\[/                      { return f(LBRACK) }
+/\]/                      { return f(RBRACK) }
+/\(/                      { return f(LPAREN) }
+/\)/                      { return f(RPAREN) }
+/\{/                      { return f(LBRACE) }
+/\}/                      { return f(RBRACE) }
+/\./                      { return f(PERIOD) }
+/,/                       { return f(COMMA) }
+/=/                       { return f(ASSIGN) }
+/:=/                      { return f(CASSIGN) }
+/(:dl)|(:dLocals)/        { return f(DSTATE)     }
+/(:ds)|(:dStack)/         { return f(DSTACK)     }
+/(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
+/:package/                { return f(SPACKAGE)   }
+/:struct/                 { return f(SSTRUCT)    }
+/:func/                   { return f(SFUNC)      }
+/:rem/                    { return f(REM)        }
+/:step/                   { return f(STEP)       }
+/:tStep/                  { return f(TSTEP)      }
+/:pStep/                  { return f(PSTEP)      }
+/:aff/                    { return f(AFF)        }
+/package/                 { return f(PACKAGE)    }
+/type/                    { return f(TYPSTRUCT)  }
+/struct/                  { return f(STRUCT)     }
+/return/                  { return f(RETURN)     }
+/goto/                    { return f(GOTO)       }
+/if/                      { return f(IF)         }
+/for/                     { return f(FOR)        }
+/func/                    { return f(FUNC)       }
+/clauses/                 { return f(CLAUSES)    }
+/expr/                    { return f(EXPR)       }
+/def/                     { return f(DEF)        }
+/field/                   { return f(FIELD)      }
+/input/                   { return f(INPUT)      }
+/output/                  { return f(OUTPUT)     }
+/import/                  { return f(IMPORT)     }
+/var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
 	tokVal := yylex.Text()
 	tokVal = strings.TrimPrefix(tokVal, "\"")
 	tokVal = strings.TrimSuffix(tokVal, "\"")
 	lval.tok = tokVal
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
-	return STRING_LITERAL
+	return f(STRING_LITERAL)
 }
 /true/ {
 	lval.i32 = int32(1)
-	return BOOLEAN_LITERAL
+	return f(BOOLEAN_LITERAL)
 }
 /false/ {
 	lval.i32 = int32(0)
-	return BOOLEAN_LITERAL
+	return f(BOOLEAN_LITERAL)
 }
 /-?[0-9]+B/ {
 	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
 	lval.byt = byte(result)
-	return BYTE_LITERAL
+	return f(BYTE_LITERAL)
 }
 /-?[0-9]+L/ {
 	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
 	lval.i64 = int64(result)
-	return LONG_LITERAL
+	return f(LONG_LITERAL)
 }
 /-?[0-9]+\.[0-9]*D/ {
 	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
 	lval.f64 = float64(result)
-	return DOUBLE_LITERAL
+	return f(DOUBLE_LITERAL)
 }
 /-?[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())
 	lval.i32 = int32(result)
-	return INT_LITERAL
+	return f(INT_LITERAL)
 }
 /-?[0-9]+\.[0-9]*/ {
 	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
 	lval.f32 = float32(result)
-	return FLOAT_LITERAL
+	return f(FLOAT_LITERAL)
 }
 /[_a-zA-Z][_a-zA-Z0-9]*/ {
 	lval.tok = yylex.Text()
-	return IDENTIFIER
+	return f(IDENTIFIER)
 }
 //
 package main
@@ -171,9 +175,25 @@ import (
 	//"github.com/skycoin/viscript/signal"
 	
 	//"github.com/skycoin/skycoin/src/cipher/encoder"
-//"github.com/skycoin/cx/cx/cx0"
+	"github.com/skycoin/cx/cx/cx0"
 	. "github.com/skycoin/cx/src/base"
 )
+
+var insert bool
+
+func f (token int) int {
+	if insert && token == NEWLINE {
+		insert = false
+		return SEMICOLON
+	} else {
+		switch token {
+		case IDENTIFIER, I32, RPAREN:
+			insert = true
+		default: insert = false
+		}
+		return token
+	}
+}
 
 func countNewLines (s []byte) int {
 	count := 0
@@ -349,11 +369,6 @@ func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
-	//debug.SetGCPercent(-1)
-
-	//Foo()
-	//Bar()
-
 	//signal.Listen("0.0.0.0:7999")
 
 	args := os.Args[1:]
@@ -427,7 +442,7 @@ func main () {
 		return
 	}
 
-	//cx0.PRGRM = prgrm
+	cx0.PRGRM = prgrm
 
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
@@ -436,9 +451,10 @@ func main () {
 		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
-	//allSC := strings.Join(sourceCodeCopy, "")
-	// cx0.Parse(allSC)
-	// prgrm = cx0.PRGRM
+	allSC := strings.Join(sourceCodeCopy, "")
+	cx0.Parse(allSC)
+	prgrm = cx0.PRGRM
+	dataOffset = cx0.DataOffset
 	
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
@@ -446,13 +462,30 @@ func main () {
 		b := bytes.NewBufferString(source)
 		yyParse(NewLexer(b))
 	}
+
+	// adding *init function that initializes all the global variables
+	if main, err := prgrm.GetPackage(MAIN_PKG); err == nil {
+		initFn := MakeFunction(SYS_INIT_FUNC)
+		main.AddFunction(initFn)
+
+		// if mainFn, err := prgrm.GetFunction(MAIN_FUNC, MAIN_PKG); err == nil {
+		// 	// expr := MakeExpression(mainFn)
+		// 	// expr.Package = main
+		// 	// if we receive arguments from the OS, we'll add them here
+		// 	// sysInitExprs = append(sysInitExprs, expr)
+		// } else {
+		// 	panic(err)
+		// }
+
+		FunctionDeclaration(initFn, nil, nil, sysInitExprs)
+	} else {
+		panic(err)
+	}
 	
 	lineNo = 0
 
-	//prgrm.Compile(false)
-
 	if replMode || len(sourceCode) == 0 {
-	mod := MakePackage(MAIN_PKG)
+		mod := MakePackage(MAIN_PKG)
 		prgrm.AddPackage(mod)
 		fn := MakeFunction("main")
 		mod.AddFunction(fn)
@@ -466,11 +499,11 @@ func main () {
 		}
 	}
 	
-if baseOutput {
-	//prgrm.Compile(true)
-}
+	if baseOutput {
+		//prgrm.Compile(true)
+	}
 	if compileMode {
-	baseFilename := fmt.Sprintf("%s.go", compileOutput)
+		baseFilename := fmt.Sprintf("%s.go", compileOutput)
 		build := exec.Command("go", "build", baseFilename)
 		build.Run()
 		removeBase := exec.Command("rm", baseFilename)

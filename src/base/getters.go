@@ -151,7 +151,6 @@ func (cxt *CXProgram) GetPackage (modName string) (*CXPackage, error) {
 		} else {
 			return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
 		}
-		
 	} else {
 		return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
 	}
