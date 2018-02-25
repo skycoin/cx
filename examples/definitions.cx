@@ -1,9 +1,7 @@
-package main
+package main;
 
 var global1 i32 = 5
 var global2 f32 = 3.14159
-
-var foo i32 = 10
 
 func printGlobals () () {
 	i32.print(global1)

@@ -133,19 +133,19 @@ func main () {
 	// i32.print(i32.add(foo, foo));
 	
 
-	var c i32;
-	var d i32;
-	var start i64;
-	var end i64;
-	var duration i64;
+	var c i32
+	var d i32
+	var start i64
+	var end i64
+	var duration i64
 	
-	start = time.UnixMilli();
-	// for (d = 0; i32.lt(c, 6000000); c = i32.add(c, 1)) {
-	for (c = 0; i32.lt(c, 6000000); c = sum(c)) {
+	start = time.UnixMilli()
+	// for d = 0; i32.lt(c, 6000000); c = i32.add(c, 1) {
+	for c = 0; i32.lt(c, 6000000); c = sum(c) {
 		// i32.print(c);
 	}
-	end = time.UnixMilli();
+	end = time.UnixMilli()
 	
-	duration = i64.sub(end, start);
-	i64.print(duration);
+	duration = i64.sub(end, start)
+	i64.print(duration)
 }

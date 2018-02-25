@@ -1,6 +1,7 @@
 package base
 
 import (
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -51,7 +52,7 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 		predicateB := stack.Stack[fp + inp1.Offset : fp + inp1.Offset + inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
 	case MEM_DATA:
-		predicateB := inp1.Program.Data[fp + inp1.Offset : fp + inp1.Offset + inp1.Size]
+		predicateB := inp1.Program.Data[inp1.Offset : inp1.Offset + inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
 	default:
 		panic("implement the other mem types in readI32")

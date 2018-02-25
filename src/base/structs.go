@@ -369,10 +369,20 @@ type CXExpression struct {
 	Label string
 	ThenLines int
 	ElseLines int
+
+	IsStructLiteral bool
+	IsArrayLiteral bool
 	
 	Function *CXFunction
 	Package *CXPackage
 	Program *CXProgram
+}
+
+type CXConstant struct {
+	// native constants. only used for pre-packaged constants (e.g. math package's PI)
+	// these fields are used to feed WritePrimary
+	Type int
+	Value []byte
 }
 
 type CXArgument struct {

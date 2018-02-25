@@ -278,47 +278,13 @@
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
                                                 
-/* %type   <expressions>   assignment_expression */
-/* %type   <expressions>   constant_expression */
-/* %type   <expressions>   conditional_expression */
-/* %type   <expressions>   logical_or_expression */
-/* %type   <expressions>   logical_and_expression */
-/* %type   <expressions>   exclusive_or_expression */
-/* %type   <expressions>   inclusive_or_expression */
-/* %type   <expressions>   and_expression */
-/* %type   <expressions>   equality_expression */
-/* %type   <expressions>   relational_expression */
-/* %type   <expressions>   shift_expression */
-/* %type   <expressions>   additive_expression */
-/* %type   <expressions>   multiplicative_expression */
-/* %type   <expressions>   unary_expression */
-/* %type   <expressions>   argument_expression_list */
-/* %type   <expressions>   postfix_expression */
-
-/* %type   <expressions>   declaration */
-//                      %type   <expressions>   init_declarator_list
-//                      %type   <expressions>   init_declarator
-
-/* %type   <expressions>   initializer */
-/* %type   <expressions>   initializer_list */
-/* %type   <expressions>   designation */
-/* %type   <expressions>   designator_list */
-/* %type   <expressions>   designator */
-
-/* %type   <expressions>   expression */
-/* %type   <expressions>   block_item */
-/* %type   <expressions>   block_item_list */
-/* %type   <expressions>   compound_statement */
-/* %type   <expressions>   else_statement */
-/* %type   <expressions>   labeled_statement */
-/* %type   <expressions>   expression_statement */
-/* %type   <expressions>   selection_statement */
-/* %type   <expressions>   iteration_statement */
-/* %type   <expressions>   jump_statement */
-/* %type   <expressions>   statement */
-
 %type   <function>      function_header
 
+                        // for struct literals
+%right                  IDENTIFIER LBRACE
+
+//%start
+                        
 %%
 
 translation_unit:
@@ -389,9 +355,9 @@ struct_declaration:
                 ;
 
 struct_fields:
-                LBRACE RBRACE
+                LBRACE RBRACE SEMICOLON
                 { $$ = nil }
-        |       LBRACE fields RBRACE
+        |       LBRACE fields RBRACE SEMICOLON
                 { $$ = $2 }
         ;
 
@@ -415,7 +381,7 @@ package_declaration:
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
-        ;
+                ;
 
 function_header:
                 FUNC IDENTIFIER
@@ -680,16 +646,26 @@ type_specifier:
 
 
 
-
-
-
-
+struct_literal_fields:
+                // empty
+        |       IDENTIFIER COLON constant_expression
+        |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
+                ;
 
 
 // expressions
+array_literal_expression:
+                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
+        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
+        |       LBRACK INT_LITERAL RBRACK array_literal_expression
+        ;
+
 primary_expression:
                 IDENTIFIER
         |       STRING_LITERAL
+        |       IDENTIFIER LBRACE struct_literal_fields RBRACE
         |       BOOLEAN_LITERAL
         |       BYTE_LITERAL
         |       INT_LITERAL
@@ -697,6 +673,7 @@ primary_expression:
         |       DOUBLE_LITERAL
         |       LONG_LITERAL
         |       LPAREN expression RPAREN
+        |       array_literal_expression
                 ;
 
 postfix_expression:
@@ -873,8 +850,8 @@ statement:      compound_statement
 /*                 ; */
 
 compound_statement:
-                LBRACE RBRACE
-	|       LBRACE block_item_list RBRACE
+                LBRACE RBRACE SEMICOLON
+	|       LBRACE block_item_list RBRACE SEMICOLON
                 ;
 
 block_item_list:
@@ -892,29 +869,31 @@ expression_statement:
                 ;
 
 selection_statement:
-                /* IF LPAREN expression RPAREN statement */
-	/* |    IF LPAREN expression RPAREN statement ELSE statement */
-                IF LPAREN expression RPAREN compound_statement elseif_list else_statement
+                IF expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
+        |       IF expression LBRACE block_item_list RBRACE else_statement SEMICOLON
+        |       IF expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
+        |       IF expression compound_statement
 	|       SWITCH LPAREN expression RPAREN statement
                 ;
 
-elseif:         ELSE IF expression compound_statement
+elseif:         ELSE IF expression LBRACE block_item_list RBRACE
         ;
 
 elseif_list:
+                elseif
         |       elseif_list elseif
         ;
 
 else_statement:
-        |       ELSE compound_statement
+                ELSE LBRACE block_item_list RBRACE
         ;
 
-
-
 iteration_statement:
-		FOR LPAREN expression_statement expression_statement expression RPAREN statement
-	/* |       FOR LPAREN declaration expression_statement RPAREN statement */
-	/* |       FOR LPAREN declaration expression_statement expression RPAREN statement */
+                FOR expression compound_statement
+        |       FOR expression_statement expression_statement compound_statement
+        |       FOR expression_statement expression_statement expression compound_statement
+        |       FOR declaration expression_statement compound_statement
+        |       FOR declaration expression_statement expression compound_statement
                 ;
 
 /* jump_statement: GOTO IDENTIFIER SEMICOLON */

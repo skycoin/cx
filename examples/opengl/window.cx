@@ -1,12 +1,12 @@
 package main
 
-import "gl"
-import "glfw"
+// import "gl"
+// import "glfw"
 
 var width i32 = 800
 var height i32 = 600
 
-func main () () {
+func main () {
 	glfw.Init()
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 2)
@@ -16,12 +16,11 @@ func main () () {
 	glfw.MakeContextCurrent("window")
 	
 	gl.Init()
-	program := gl.CreateProgram()
+	var program i32
+	program = gl.CreateProgram()
 	gl.LinkProgram(program)
 	
-	stop := not(glfw.ShouldClose("window"))
-
-	for not(glfw.ShouldClose("window")) {
+	for bool.not(glfw.ShouldClose("window")) {
 		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 
 		gl.UseProgram(program)

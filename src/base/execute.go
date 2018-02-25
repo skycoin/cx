@@ -9,7 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -72,6 +72,7 @@ func (prgrm *CXProgram) Run () error {
 }
 
 func (call *CXCall) call (prgrm *CXProgram) error {
+	// fmt.Println(prgrm.Stacks[0].Stack)
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*
@@ -159,7 +160,8 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 					switch inp.MemoryType {
 					case MEM_STACK:
 						// byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
-						byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
+						// byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
+						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_DATA:
 						// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
 						byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]

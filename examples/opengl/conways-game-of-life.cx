@@ -4,8 +4,8 @@
 
 package main
 
-import "gl"
-import "glfw"
+// import "gl"
+// import "glfw"
 
 var width i32 = 600
 var height i32 = 600
@@ -36,15 +36,15 @@ type Cell struct {
 	y i32
 }
 
-var square []f32 = []f32{
-	-0.5, 0.5, 0.0,
-	-0.5, -0.5, 0.0,
-	0.5, -0.5, 0.0,
+// var square []f32 = []f32{
+// 	-0.5, 0.5, 0.0,
+// 	-0.5, -0.5, 0.0,
+// 	0.5, -0.5, 0.0,
 
-	-0.5, 0.5, 0.0,
-	0.5, 0.5, 0.0,
-	0.5, -0.5, 0.0
-}
+// 	-0.5, 0.5, 0.0,
+// 	0.5, 0.5, 0.0,
+// 	0.5, -0.5, 0.0
+// }
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
 	i = i32.add(i32.mul(w, r), c)
@@ -57,68 +57,105 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 
 func wrapX (x i32) (newX i32) {
 	if i32.eq(x, columns) {
-		return 0
+		newX = 0
+		// return 0
 	}
 	if i32.eq(x, -1) {
 		newX = i32.sub(columns, 1)
-		return newX
+		// return newX
 	}
 	newX = x
 }
 
 func wrapY (y i32) (newY i32) {
 	if i32.eq(y, rows) {
-		return 0
+		newY = 0
+		// return 0
 	}
 	if i32.eq(y, -1) {
-		return i32.sub(rows, 1)
+		newY = i32.sub(rows, 1)
+		// return i32.sub(rows, 1)
 	}
 	newY = y
 }
 
-func aliveNeighbours (cell Cell, cells []Cell) (aliveCount i32) {
-	upCellX := cell.x
-	upCellY := wrapY(i32.add(cell.y, 1))
-	upRightCellX := wrapX(i32.add(cell.x, 1))
-	upRightCellY := wrapY(i32.add(cell.y, 1))
-	rightCellX := wrapX(i32.add(cell.x, 1))
-	rightCellY := cell.y
-	downRightCellX := wrapX(i32.add(cell.x, 1))
-	downRightCellY := wrapY(i32.add(cell.y, -1))
-	downCellX := cell.x
-	downCellY := wrapY(i32.add(cell.y, -1))
-	downLeftCellX := wrapX(i32.add(cell.x, -1))
-	downLeftCellY := wrapY(i32.add(cell.y, -1))
-	leftCellX := wrapX(i32.add(cell.x, -1))
-	leftCellY := cell.y
-	upLeftCellX := wrapX(i32.add(cell.x, -1))
-	upLeftCellY := wrapY(i32.add(cell.y, 1))
+func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
+	var upCellX i32
+	var upCellY i32
+	var upRightCellX i32
+	var upRightCellY i32
+	var rightCellX i32
+	var rightCellY i32
+	var downRightCellX i32
+	var downRightCellY i32
+	var downCellX i32
+	var downCellY i32
+	var downLeftCellX i32
+	var downLeftCellY i32
+	var leftCellX i32
+	var leftCellY i32
+	var upLeftCellX i32
+	var upLeftCellY i32
 	
-	upCell := []Cell.read(cells, map2Dto1D(upCellX, upCellY, columns))
-	upRightCell := []Cell.read(cells, map2Dto1D(upRightCellX, upRightCellY, columns))
-	rightCell := []Cell.read(cells, map2Dto1D(rightCellX, rightCellY, columns))
-	downRightCell := []Cell.read(cells, map2Dto1D(downRightCellX, downRightCellY, columns))
-	downCell := []Cell.read(cells, map2Dto1D(downCellX, downCellY, columns))
-	downLeftCell := []Cell.read(cells, map2Dto1D(downLeftCellX, downLeftCellY, columns))
-	leftCell := []Cell.read(cells, map2Dto1D(leftCellX, leftCellY, columns))
-	upLeftCell := []Cell.read(cells, map2Dto1D(upLeftCellX, upLeftCellY, columns))
+	upCellX = cell.x
+	upCellY = wrapY(i32.add(cell.y, 1))
+	upRightCellX = wrapX(i32.add(cell.x, 1))
+	upRightCellY = wrapY(i32.add(cell.y, 1))
+	rightCellX = wrapX(i32.add(cell.x, 1))
+	rightCellY = cell.y
+	downRightCellX = wrapX(i32.add(cell.x, 1))
+	downRightCellY = wrapY(i32.add(cell.y, -1))
+	downCellX = cell.x
+	downCellY = wrapY(i32.add(cell.y, -1))
+	downLeftCellX = wrapX(i32.add(cell.x, -1))
+	downLeftCellY = wrapY(i32.add(cell.y, -1))
+	leftCellX = wrapX(i32.add(cell.x, -1))
+	leftCellY = cell.y
+	upLeftCellX = wrapX(i32.add(cell.x, -1))
+	upLeftCellY = wrapY(i32.add(cell.y, 1))
+	
+	upCell = cells[map2Dto1D(upCellX, upCellY, columns)]
+	upRightCell = cells[map2Dto1D(upRightCellX, upRightCellY, columns)]
+	rightCell = cells[map2Dto1D(rightCellX, rightCellY, columns)]
+	downRightCell = cells[map2Dto1D(downRightCellX, downRightCellY, columns)]
+	downCell = cells[map2Dto1D(downCellX, downCellY, columns)]
+	downLeftCell = cells[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
+	leftCell = cells[map2Dto1D(leftCellX, leftCellY, columns)]
+	upLeftCell = cells[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
 
-	if upCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if upRightCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if rightCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if downRightCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if downCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if downLeftCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if leftCell.alive {aliveCount = i32.add(aliveCount, 1)}
-	if upLeftCell.alive {aliveCount = i32.add(aliveCount, 1)}
+	if upCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if upRightCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if rightCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if downRightCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if downCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if downLeftCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if leftCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
+	if upLeftCell.alive {
+		aliveCount = i32.add(aliveCount, 1)
+	}
 
 }
 
-func changeState (cell Cell, cells []Cell) (newCell Cell) {
+func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 	cell.alive = cell.aliveNext
 	cell.aliveNext = cell.alive
 
-	aliveCount := aliveNeighbours(cell, cells)
+	var aliveCount i32
+	aliveCount = aliveNeighbours(cell, cells)
 
 	if cell.alive {
 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
@@ -144,8 +181,9 @@ func changeState (cell Cell, cells []Cell) (newCell Cell) {
 }
 
 func addNull (source str) (s str) {
-	bSource := str.[]byte(source)
-	bSource := []byte.append(bSource, i32.byte(0))
+	var bSource str
+	bSource = str.[]byte(source)
+	bSource = []byte.append(bSource, i32.byte(0))
 	s = []byte.str(bSource)
 }
 
@@ -197,11 +235,10 @@ func newCell (x i32, y i32) (cell Cell) {
 		}
 	}
 
-	cell = new Cell{
+	cell = Cell{
 		drawable: makeVao(points),
 		x: x,
-		y: y
-	}
+		y: y}
 }
 
 func makeCells () (cells []Cell) {

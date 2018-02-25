@@ -29,6 +29,7 @@
 /i32/                     { lval.tok = yylex.Text(); return f(I32)}
 /i64/                     { lval.tok = yylex.Text(); return f(I64)}
 /if/                      { return f(IF)}
+/new/                     { return f(NEW)}
 /return/                  { return f(RETURN)}
 /str/                     { return f(STR)}
 /struct/                  { return f(STRUCT)}
@@ -66,6 +67,7 @@
 /==/                      { return f(EQ_OP)}
 /!=/                      { return f(NE_OP)}
 /;/                       { return f(SEMICOLON) }
+/:/                       { return f(COLON) }
 /!/                       { lval.tok = yylex.Text(); return f(NEG_OP) }
 /\[/                      { return f(LBRACK) }
 /\]/                      { return f(RBRACK) }
@@ -164,7 +166,17 @@ func f (token int) int {
 		return SEMICOLON
 	} else {
 		switch token {
-		case IDENTIFIER, I32, RPAREN:
+		case IDENTIFIER,
+			
+			BOOL, BYTE, STR,
+			I8, I16, I32, I64,
+			UI8, UI16, UI32, UI64,
+			F32, F64,
+			
+			BOOLEAN_LITERAL, BYTE_LITERAL, STRING_LITERAL,
+			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
+			
+			RPAREN, RBRACE, RBRACK:
 			insert = true
 		default: insert = false
 		}

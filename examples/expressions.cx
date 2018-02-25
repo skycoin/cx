@@ -13,15 +13,15 @@ func returnName () (name str) {
 }
 
 func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
-	add := i32.add(num1, num2)
-	sub := i32.sub(num1, num2)
-	mul := i32.mul(num1, num2)
-	div := i32.div(num1, num2)
+	add = i32.add(num1, num2)
+	sub = i32.sub(num1, num2)
+	mul = i32.mul(num1, num2)
+	div = i32.div(num1, num2)
 }
 
 func main () (out i32) {
 	sayHi()
 	sayMyName("Homer")
 	str.print(returnName())
-	a, s, out, d := multiReturn(20, 20)
+	a, s, out, d = multiReturn(20, 20)
 }

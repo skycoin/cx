@@ -60,11 +60,11 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 func ReadMemory (stack *CXStack, offset int, arg *CXArgument) (out []byte) {
 	switch arg.MemoryType {
 	case MEM_STACK:
-		out = stack.Stack[offset : offset + arg.Size]
+		out = stack.Stack[offset : offset + arg.TotalSize]
 	case MEM_DATA:
-		out = arg.Program.Data[offset : offset + arg.Size]
+		out = arg.Program.Data[offset : offset + arg.TotalSize]
 	case MEM_HEAP:
-		out = arg.Program.Heap[offset : offset + arg.Size]
+		out = arg.Program.Heap[offset : offset + arg.TotalSize]
 	default:
 		panic("implement the other mem types")
 	}
@@ -107,7 +107,19 @@ func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
 
 // Utilities
 
+func FromBool (in bool) []byte {
+	if in {
+		return []byte{1}
+	} else {
+		return []byte{0}
+	}
+}
+
 func FromI32 (in int32) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
+func FromUI32 (in uint32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
@@ -115,12 +127,12 @@ func FromI64 (in int64) []byte {
 	return encoder.Serialize(in)
 }
 
-func FromBool (in bool) []byte {
-	if in {
-		return []byte{1}
-	} else {
-		return []byte{0}
-	}
+func FromF32 (in float32) []byte {
+	return encoder.Serialize(in)
+}
+
+func FromF64 (in float64) []byte {
+	return encoder.Serialize(in)
 }
 
 func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, int) {
@@ -136,19 +148,15 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 	return offset, size
 }
 
+func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
+	offset := GetFinalOffset(stack, fp, inp)
+	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
+	return
+}
+
 func ReadStr (stack *CXStack, fp int, inp *CXArgument) (out string) {
 	offset := GetFinalOffset(stack, fp, inp)
-	switch inp.MemoryType {
-	case MEM_STACK:
-		byts := stack.Stack[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	case MEM_DATA:
-		byts := inp.Program.Data[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	default:
-		panic("implement the other mem types in readI32")
-	}
-	
+	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
@@ -160,33 +168,19 @@ func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
 
 func ReadI64 (stack *CXStack, fp int, inp *CXArgument) (out int64) {
 	offset := GetFinalOffset(stack, fp, inp)
-	switch inp.MemoryType {
-	case MEM_STACK:
-		byts := stack.Stack[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	case MEM_DATA:
-		byts := inp.Program.Data[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	default:
-		panic("implement the other mem types in readI32")
-	}
-	
+	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
-func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
+func ReadF32 (stack *CXStack, fp int, inp *CXArgument) (out float32) {
 	offset := GetFinalOffset(stack, fp, inp)
-	switch inp.MemoryType {
-	case MEM_STACK:
-		byts := stack.Stack[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	case MEM_DATA:
-		byts := inp.Program.Data[offset : offset + inp.Size]
-		encoder.DeserializeRaw(byts, &out)
-	default:
-		panic("implement the other mem types in readI32")
-	}
-	
+	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
+	return
+}
+
+func ReadF64 (stack *CXStack, fp int, inp *CXArgument) (out float64) {
+	offset := GetFinalOffset(stack, fp, inp)
+	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 

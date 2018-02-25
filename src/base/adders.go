@@ -10,7 +10,7 @@ func (prgrm *CXProgram) AddPackage (mod *CXPackage) *CXProgram {
 	found := false
 	for _, md := range prgrm.Packages {
 		if md.Name == mod.Name {
-			prgrm.CurrentPackage = md
+ 			prgrm.CurrentPackage = md
 			found = true
 			break
 		}

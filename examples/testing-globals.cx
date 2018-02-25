@@ -1,0 +1,116 @@
+package main
+
+var fooV i32 = i32.add(i32.add(10, 20), i32.add(30, 40))
+// var fooV i32 = i32.add(i32.add(10, 20), i32.add(30, 40))
+// var fooV i32 = i32.add(i32.add(10, 20), i32.add(30, 40))
+
+// var fooV i32 = i32.add(10, 10)
+// var fooV i32 = i32.add(sum(10), 10);
+
+
+// var fooV i32 = 5;
+// var fooV i32 = sum(sum(sum(10)));
+
+func sum (num i32) (res i32) {
+	// i32.print(num)
+	res = i32.add(num, 1)
+}
+
+func main () {
+	// var foo i32 = 10;
+	var bar i32 = 20;
+	// var foo i32 = bar;
+	var foo i32 = sum(i32.add(i32.add(10, 10), 1));
+	bar = fooV
+	bar = 33;
+	
+	// var foo i32 = i32.add(i32.add(2, 2), i32.add(3, 3));
+	// var bar i32 = sum(sum(sum(4)));
+
+	i32.print(foo)
+	i32.print(bar)
+
+	i32.print(fooV)
+
+	// foo = 5;
+	// bar = 10;
+
+	
+	// i32.print(fooV)
+	// var foo i32
+	// foo = 222;
+	// i32.print(111);
+	// // foo = i32.add(i32.add(foo, 1), 1)
+	// // foo = i32.add(i32.add(foo, 1), 1)
+	// foo = sum(foo);
+	// foo = sum(foo);
+	// foo = sum(foo);
+	// foo = sum(foo);
+	// foo = sum(foo);
+	// i32.print(i32.add(foo, i32.add(13, 10)))
+
+
+	
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+	// i32.print(i32.add(i32.add(1, 2), i32.add(3, 4)))
+
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.add(i32.add(1, 2), i32.add(3, 4))
+	// i32.print(fooV)
+	// i32.print(sum(3))
+	
+	// sum(sum(3))
+	// sum(sum(3))
+	// sum(sum(3))
+	// sum(sum(3))
+
+
+	
+	// var dur i64;
+	// dur = time.UnixMilli()
+	
+	// i64.print(dur);
+
+
+	// var num1 i64;
+	// var num2 i64;
+	// num1 = 33L;
+	// num2 = 44L;
+
+	// num1 = time.UnixMilli();
+	// num2 = time.UnixMilli();
+	
+	// i64.print(num1);
+	// i64.print(num2);
+	// i64.print(i64.sub(num2, num1));
+
+
+
+	
+	// var c i32;
+	// var start i64;
+	// var end i64;
+	// var duration i64;
+	
+	// start = time.UnixMilli();
+	// // for (c = 0; i32.lt(c, 6000000); c = i32.add(c, 1)) {
+	// for (c = 0; i32.lt(c, 10000); c = sum(c)) {
+	// 	// i32.print(c);
+	// }
+	// end = time.UnixMilli();
+
+	// duration = i64.sub(end, start);
+	// i64.print(duration);
+}

@@ -2,7 +2,8 @@ package main
 
 func main () (out i32) {
      	if false {
-		error := i32.div(50, 0)
+		var error i32
+		error = i32.div(50, 0)
 		str.print("This will never be printed")
 	}
 
