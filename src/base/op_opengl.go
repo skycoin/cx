@@ -78,13 +78,20 @@ func gl_GenBuffers (expr *CXExpression, stack *CXStack, fp int) {
 }
 
 func gl_BufferData (expr *CXExpression, stack *CXStack, fp int) {
-	// inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	// gl.BufferData(uint32(ReadI32(stack, fp, inp1)), int(ReadI32(stack, fp, inp2)), uint32(ReadI32(stack, fp, inp3)), ReadBool(stack, fp, inp4))
+	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.BufferData(uint32(ReadI32(stack, fp, inp1)), int(ReadI32(stack, fp, inp2)), gl.Ptr(ReadF32A(stack, fp, inp3)), uint32(ReadI32(stack, fp, inp4)))
 }
 
 func gl_GenVertexArrays (expr *CXExpression, stack *CXStack, fp int) {
-	// inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	// gl.BufferData(uint32(ReadI32(stack, fp, inp1)), int(ReadI32(stack, fp, inp2)), uint32(ReadI32(stack, fp, inp3)), ReadBool(stack, fp, inp4))
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	tmp := uint32(ReadI32(stack, fp, inp2))
+	if runtime.GOOS == "darwin" {
+		gl.GenVertexArraysAPPLE(ReadI32(stack, fp, inp1), &tmp)
+	} else {
+		gl.GenVertexArrays(ReadI32(stack, fp, inp1), &tmp)
+	}
+	outB1 := FromI32(int32(tmp))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
 }
 
 func gl_CreateShader (expr *CXExpression, stack *CXStack, fp int) {
@@ -94,11 +101,11 @@ func gl_CreateShader (expr *CXExpression, stack *CXStack, fp int) {
 }
 
 func gl_Strs (expr *CXExpression, stack *CXStack, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[0]
-	fnName := ReadStr(stack, fp, inp1)
-	dsSource := ReadStr(stack, fp, inp2)
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	dsSource := ReadStr(stack, fp, inp1)
+	fnName := ReadStr(stack, fp, inp2)
 
-	csources, free := gl.Strs(dsSource)
+	csources, free := gl.Strs(dsSource + string('\000'))
 	
 	freeFns[fnName] = &free
 	cSources[fnName] = csources
@@ -139,6 +146,7 @@ func gl_CompileShader (expr *CXExpression, stack *CXStack, fp int) {
 
 func gl_GetShaderiv (expr *CXExpression, stack *CXStack, fp int) {
 	// pointers
+	panic("gl.GetShaderiv")
 }
 
 func gl_AttachShader (expr *CXExpression, stack *CXStack, fp int) {
@@ -254,6 +262,7 @@ func gl_DepthFunc (expr *CXExpression, stack *CXStack, fp int) {
 
 func gl_Lightfv (expr *CXExpression, stack *CXStack, fp int) {
 	// pointers
+	panic("gl.Lightfv")
 }
 
 func gl_Frustum (expr *CXExpression, stack *CXStack, fp int) {
@@ -263,6 +272,7 @@ func gl_Frustum (expr *CXExpression, stack *CXStack, fp int) {
 
 func gl_NewTexture (expr *CXExpression, stack *CXStack, fp int) {
 	// custom function. not part of opengl standard. implement if needed later on
+	panic("gl.NewTexture")
 }
 
 func gl_DepthMask (expr *CXExpression, stack *CXStack, fp int) {

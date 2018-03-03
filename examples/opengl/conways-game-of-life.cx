@@ -4,9 +4,6 @@
 
 package main
 
-// import "gl"
-// import "glfw"
-
 var width i32 = 600
 var height i32 = 600
 var rows i32 = 15
@@ -18,7 +15,6 @@ var vertexShaderSource str = "
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
           }
 "
-
 var fragmentShaderSource str = "
           #version 120
           void main() {
@@ -36,15 +32,7 @@ type Cell struct {
 	y i32
 }
 
-// var square []f32 = []f32{
-// 	-0.5, 0.5, 0.0,
-// 	-0.5, -0.5, 0.0,
-// 	0.5, -0.5, 0.0,
-
-// 	-0.5, 0.5, 0.0,
-// 	0.5, 0.5, 0.0,
-// 	0.5, -0.5, 0.0
-// }
+var square [18]f32
 
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
 	i = i32.add(i32.mul(w, r), c)
@@ -80,6 +68,7 @@ func wrapY (y i32) (newY i32) {
 }
 
 func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
+	aliveCount = 0
 	var upCellX i32
 	var upCellY i32
 	var upRightCellX i32
@@ -113,7 +102,16 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	leftCellY = cell.y
 	upLeftCellX = wrapX(i32.add(cell.x, -1))
 	upLeftCellY = wrapY(i32.add(cell.y, 1))
-	
+
+	var upCell Cell
+	var upRightCell Cell
+	var rightCell Cell
+	var downRightCell Cell
+	var downCell Cell
+	var downLeftCell Cell
+	var leftCell Cell
+	var upLeftCell Cell
+
 	upCell = cells[map2Dto1D(upCellX, upCellY, columns)]
 	upRightCell = cells[map2Dto1D(upRightCellX, upRightCellY, columns)]
 	rightCell = cells[map2Dto1D(rightCellX, rightCellY, columns)]
@@ -147,7 +145,6 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	if upLeftCell.alive {
 		aliveCount = i32.add(aliveCount, 1)
 	}
-
 }
 
 func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
@@ -157,13 +154,16 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 	var aliveCount i32
 	aliveCount = aliveNeighbours(cell, cells)
 
+	// i32.print(aliveCount)
+
 	if cell.alive {
+	// if i32.lt(i32.rand(0, 100), 15) {
 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
 		if i32.lt(aliveCount, 2) {
 			cell.aliveNext = false
 		}
 		// 2. Any live cell with two or three live neighbours lives on to the next generation.
-		if or(i32.eq(aliveCount, 2), i32.eq(aliveCount, 3)) {
+		if bool.or(i32.eq(aliveCount, 2), i32.eq(aliveCount, 3)) {
 			cell.aliveNext = true
 		}
 		// 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
@@ -176,35 +176,28 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 			cell.aliveNext = true
 		}
 	}
-
+	
 	newCell = cell
 }
 
-func addNull (source str) (s str) {
-	var bSource str
-	bSource = str.[]byte(source)
-	bSource = []byte.append(bSource, i32.byte(0))
-	s = []byte.str(bSource)
-}
-
 func compileShader(source str, shaderType i32) (shader i32) {
-	shader := gl.CreateShader(shaderType)
-
+	shader = gl.CreateShader(shaderType)
+	
 	gl.Strs(source, "csources")
 	gl.ShaderSource(shader, 1, "csources")
 	gl.Free("csources")
 	gl.CompileShader(shader)
 }
 
-func makeVao (points []f32) (vao i32) {
+func makeVao (points [18]f32) (vao i32) {
 	var vbo i32
-	gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
+	vbo = gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, []f32.len(points)), points, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, 18), points, gl.STATIC_DRAW)
 
 	var vao i32
 	
-	gl.GenVertexArrays(1, vao)
+	vao = gl.GenVertexArrays(1, vao)
 	gl.BindVertexArray(vao)
 	gl.EnableVertexAttribArray(0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -212,10 +205,13 @@ func makeVao (points []f32) (vao i32) {
 }
 
 func newCell (x i32, y i32) (cell Cell) {
-	points := []f32.make([]f32.len(square))
-	[]f32.copy(points, square)
+	// points = []f32.make([]f32.len(square))
+	// []f32.copy(points, square)
+	var points [18]f32
+	points = square
 
-	for i := 0; i32.lt(i, []f32.len(points)); i = i32.add(i, 1) {
+	var i i32
+	for i = 0; i32.lt(i, 18); i = i32.add(i, 1) {
 		var position f32
 		var size f32
 
@@ -228,10 +224,12 @@ func newCell (x i32, y i32) (cell Cell) {
 			position = f32.mul(i32.f32(y), size)
 		}
 
-		if f32.lt([]f32.read(points, i), 0.0) {
-			points = []f32.write(points, i, f32.sub(f32.mul(position, 2.0), 1.0))
+		if f32.lt(points[i], 0.0) {
+			// points = []f32.write(points, i, f32.sub(f32.mul(position, 2.0), 1.0))
+			points[i] = f32.sub(f32.mul(position, 2.0), 1.0)
 		} else {
-			points = []f32.write(points, i, f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0))
+			// points = []f32.write(points, i, f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0))
+			points[i] = f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0)
 		}
 	}
 
@@ -241,14 +239,19 @@ func newCell (x i32, y i32) (cell Cell) {
 		y: y}
 }
 
-func makeCells () (cells []Cell) {
-	var cells []Cell
-	for x := 0; i32.lt(x, rows); x = i32.add(x, 1) {
-		for y := 0; i32.lt(y, columns); y = i32.add(y, 1) {
-			cell := newCell(x, y)
-			cell.alive = i32.lt(i32.rand(0, 100), 15)
+func makeCells () (cells [225]Cell) {
+	// var cells [225]Cell
+	var x i32
+	var y i32
+	var counter i32
+	for x = 0; i32.lt(x, rows); x = i32.add(x, 1) {
+		for y = 0; i32.lt(y, columns); y = i32.add(y, 1) {
+			var cell Cell
+			cell = newCell(x, y)
+			cell.alive = i32.lt(i32.rand(0, 100), 80)
 			cell.aliveNext = cell.alive
-			cells = []Cell.append(cells, cell)
+			cells[counter] = cell
+			counter = i32.add(counter, 1)
 		}
 	}
 }
@@ -266,58 +269,117 @@ func initGlfw (window str) () {
 func initOpenGL () (program i32) {
 	gl.Init()
 
-	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
-	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+	// vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	// fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
-	program := gl.CreateProgram()
+	var vertexShader i32
+	var fragmentShader i32
+	
+	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
+	
+	gl.Strs("
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+          }
+", "csources")
+	gl.ShaderSource(vertexShader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(vertexShader)
+
+	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
+
+	gl.Strs("
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+", "csources")
+	gl.ShaderSource(fragmentShader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(fragmentShader)
+
+	
+
+	program = gl.CreateProgram()
 	
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
 	gl.LinkProgram(program)
 }
 
-func drawCell (cell Cell) () {
-	if not(cell.alive) {
-		return;
+func drawCell (cell Cell) {
+	// if bool.not(cell.alive) {
+	// 	return;
+	// }
+
+	// bool.print(cell.alive)
+	// var boo bool
+	// boo = cell.alive
+
+	if cell.alive {
+	// if i32.lt(i32.rand(0, 100), 15) {
+		// i32.print(cell.drawable)
+		gl.BindVertexArray(cell.drawable)
+		gl.DrawArrays(gl.TRIANGLES, 0, i32.div(18, 3))
 	}
-	gl.BindVertexArray(cell.drawable)
-	gl.DrawArrays(gl.TRIANGLES, 0, i32.div([]f32.len(square), 3))
 }
 
-func draw (cells []Cell, window str, program i32) () {
+func draw (cells [225]Cell, window str, program i32) () {
 	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 	gl.UseProgram(program)
 
-	for i := 0; i32.lt(i, i32.mul(rows, columns)); i = i32.add(i, 1) {
-		drawCell([]Cell.read(cells, i))
+	var i i32
+	for i = 0; i32.lt(i, 225); i = i32.add(i, 1) {
+		drawCell(cells[i])
 	}
 
 	glfw.PollEvents()
 	glfw.SwapBuffers("window")
 }
 
-func main () () {
+func main () {
+	square = [18]f32{
+		-0.5, 0.5, 0.0,
+		-0.5, -0.5, 0.0,
+		0.5, -0.5, 0.0,
+
+		-0.5, 0.5, 0.0,
+		0.5, 0.5, 0.0,
+		0.5, -0.5, 0.0}
+
 	initGlfw("window")
-	program := initOpenGL()
+	
+	var program i32
+	program = initOpenGL()
 
-	cells := makeCells()
+	var cells [225]Cell
+	cells = makeCells()
 
-	// FPS
-	lastTime := glfw.GetTime()
-	nbFrames := 0	
-	for not(glfw.ShouldClose("window")) {
-		// FPS
-		currentTime := glfw.GetTime()
+	// Start FPS
+	var lastTime f64
+	var currentTime f64
+	var nbFrames i32
+	lastTime = glfw.GetTime()
+	nbFrames = 0
+	// End FPS
+
+	for bool.not(glfw.ShouldClose("window")) {
+		// time.Sleep(100)
+		// Start FPS
+		currentTime = glfw.GetTime()
 		nbFrames = i32.add(nbFrames, 1)
-		if f64.gteq(f64.sub(currentTime, lastTime), f32.f64(1.0)) {
-			//f32.print(f32.div(1000.0, i32.f32(nbFrames)))
-			f32.print(i32.f32(nbFrames))
+		if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
+			i32.print(nbFrames)
 			nbFrames = 0
-			lastTime = f64.add(lastTime, f32.f64(1.0))
+			lastTime = f64.add(lastTime, 1.0D)
 		}
+		// End FPS
 
-		for c := 0; i32.lt(c, i32.mul(rows, columns)); c = i32.add(c, 1) {
-			cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
+		var c i32
+		for c = 0; i32.lt(c, 225); c = i32.add(c, 1) {
+			// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
+			cells[c] = changeState(cells[c], cells)
 		}
 		
 		draw(cells, "window", program)

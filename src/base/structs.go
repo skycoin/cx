@@ -413,6 +413,7 @@ type CXArgument struct {
 	IsStruct bool
 	IsField bool
 	IsRest bool // pkg.var <- var is rest
+	IsLocalDeclaration bool
 
 	// Sizes []int // used to access struct fields
 	Lengths []int // declared lengths at compile time

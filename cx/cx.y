@@ -11,7 +11,8 @@
 		. "github.com/skycoin/cx/src/base"
 	)
 
-	var prgrm = MakeProgram(256, 256, 256)
+	// var prgrm = MakeProgram(256, 256, 256)
+	var prgrm = MakeProgram(200000, 200000, 200000)
 	// var data Data
 	var dataOffset int
 
@@ -131,6 +132,15 @@
 		return from
 	}
 
+	func ArrayLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+		for _, f := range from {
+			f.Outputs[0].Name = to[0].Outputs[0].Name
+			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_ARRAY)
+		}
+		
+		return from
+	}
+
 	func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		idx := len(from) - 1
 
@@ -143,7 +153,6 @@
 			from[idx].Outputs = to[len(to) - 1].Outputs
 
 			return append(to[:len(to) - 1], from...)
-			// return append(to, from...)
 		} else {
 			if from[idx].Operator.IsNative {
 				for i, out := range from[idx].Operator.Outputs {
@@ -216,18 +225,30 @@
 
 	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 		if sym.Name != "" {
-			if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
-				if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
-					sym.Offset = glbl.Offset
-					sym.MemoryType = glbl.MemoryType
-					sym.Size = glbl.Size
-					sym.TotalSize = glbl.TotalSize
-					sym.Package = glbl.Package
-					sym.Program = glbl.Program
-					// sym.IsReference = glbl.IsReference
-					(*symbols)[sym.Package.Name + "." + sym.Name] = sym
-					return
+			// if sym.IsLocalDeclaration {
+			// 	// then subsequent symbol references need to be treated as local
+			// 	if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; found {
+			// 		arg.IsLocalDeclaration = true
+			// 	}
+			// }
+			if !sym.IsLocalDeclaration {
+				if _, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
+					if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
+						// sym.Offset = glbl.Offset
+						// sym.MemoryType = glbl.MemoryType
+						// sym.Size = glbl.Size
+						// sym.TotalSize = glbl.TotalSize
+						// sym.Package = glbl.Package
+						// sym.Program = glbl.Program
+						// sym.Lengths = glbl.Lengths
+
+						// sym.IsReference = glbl.IsReference
+						(*symbols)[sym.Package.Name + "." + sym.Name] = glbl
+						// return
+					}
 				}
+			}
+			if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
 				if shouldExist {
 					// it should exist. error
 					panic("identifier '" + sym.Name + "' does not exist")
@@ -322,7 +343,6 @@
 						}
 					}
 				}
-				//}
 
 				// sym.IsPointer = arg.IsPointer
 				sym.Type = arg.Type
@@ -339,12 +359,19 @@
 					sym.Size = arg.Size
 					// sym.TotalSize = arg.TotalSize
 				} else {
-					sym.Size = arg.Size
-					sym.TotalSize = arg.TotalSize
+					// we need to implement a more robust system, like the one in op.go
+					if len(sym.Fields) > 0 {
+						sym.Size = sym.Fields[len(sym.Fields) - 1].Size
+						sym.TotalSize = sym.Fields[len(sym.Fields) - 1].TotalSize
+					} else {
+						sym.Size = arg.Size
+						sym.TotalSize = arg.TotalSize
+					}
+					
 				}
 
 				var subTotalSize int
-				if len(sym.Indexes) > 0 {
+				if len(sym.Indexes) > 0 && len(sym.Fields) < 1 {
 					// then we need to adjust TotalSize depending on the number of indexes
 					for i, _ := range sym.Indexes {
 						var subSize int = 1
@@ -378,22 +405,43 @@
 		fn.Length = len(fn.Expressions)
 
 		var symbols map[string]*CXArgument = make(map[string]*CXArgument, 0)
-		
+		var symbolsScope map[string]bool = make(map[string]bool, 0)
+
 		for _, inp := range fn.Inputs {
+			if inp.IsLocalDeclaration {
+				symbolsScope[inp.Package.Name + "." + inp.Name] = true
+			}
+			inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
+
 			GiveOffset(&symbols, inp, &offset, false)
 		}
 		for _, out := range fn.Outputs {
+			if out.IsLocalDeclaration {
+				symbolsScope[out.Package.Name + "." + out.Name] = true
+			}
+			out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
+			
 			GiveOffset(&symbols, out, &offset, false)
 		}
 
 		for _, expr := range fn.Expressions {
 			for _, inp := range expr.Inputs {
+				if inp.IsLocalDeclaration {
+					symbolsScope[inp.Package.Name + "." + inp.Name] = true
+				}
+				inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
+				
 				GiveOffset(&symbols, inp, &offset, true)
 				for _, idx := range inp.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
 			}
 			for _, out := range expr.Outputs {
+				if out.IsLocalDeclaration {
+					symbolsScope[out.Package.Name + "." + out.Name] = true
+				}
+				out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
+				
 				GiveOffset(&symbols, out, &offset, false)
 				for _, idx := range out.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
@@ -475,11 +523,14 @@
 	selectStatement selectStatement
 	selectStatements []selectStatement
 
+	arrayArguments [][]*CXExpression
+
         function *CXFunction
 }
 
 %token  <byt>           BYTE_LITERAL
-%token  <i32>           INT_LITERAL BOOLEAN_LITERAL
+%token  <bool>          BOOLEAN_LITERAL
+%token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
 %token  <f32>           FLOAT_LITERAL
 %token  <f64>           DOUBLE_LITERAL
@@ -523,6 +574,7 @@
                         /* Pointers */
                         ADDR
 
+%type   <tok>           after_period
 %type   <tok>           unary_operator
 %type   <i>             type_specifier
 %type   <argument>      declaration_specifiers
@@ -552,6 +604,9 @@
 %type   <expressions>   argument_expression_list
 %type   <expressions>   postfix_expression
 %type   <expressions>   primary_expression
+
+// %type   <arrayArguments>   array_literal_expression_list
+%type   <expressions>   array_literal_expression_list
 %type   <expressions>   array_literal_expression
 
 %type   <expressions>   struct_literal_fields
@@ -612,6 +667,7 @@ global_declaration:
 					$3.Name = $2.Name
 					$3.MemoryType = MEM_DATA
 					$3.Offset = exprOut.Offset
+					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
 					$3.TotalSize = exprOut.TotalSize
 					$3.Package = exprOut.Package
@@ -630,6 +686,7 @@ global_declaration:
 					$3.Name = $2.Name
 					$3.MemoryType = MEM_DATA
 					$3.Offset = exprOut.Offset
+					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
 					$3.TotalSize = exprOut.TotalSize
 					$3.Package = exprOut.Package
@@ -642,6 +699,7 @@ global_declaration:
 						$3.Name = $2.Name
 						$3.MemoryType = MEM_DATA
 						$3.Offset = glbl.Offset
+						$3.Lengths = glbl.Lengths
 						$3.Size = glbl.Size
 						$3.TotalSize = glbl.TotalSize
 						$3.Package = glbl.Package
@@ -655,6 +713,7 @@ global_declaration:
 						$3.MemoryType = MEM_DATA
 						$3.Offset = glbl.Offset
 						$3.Size = glbl.Size
+						$3.Lengths = glbl.Lengths
 						$3.TotalSize = glbl.TotalSize
 						$3.Package = glbl.Package
 
@@ -1037,12 +1096,6 @@ struct_literal_fields:
                 { $$ = nil }
         |       IDENTIFIER COLON constant_expression
                 {
-			// expr := MakeExpression(nil)
-			// expr.Inputs = append(expr.Inputs, $3)
-			// $$ = []*CXExpression{}
-			
-			// $$ = nil
-
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				arg := MakeArgument(TYPE_IDENTIFIER)
 				arg.Name = $1
@@ -1057,8 +1110,6 @@ struct_literal_fields:
 			} else {
 				panic(err)
 			}
-
-			
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
@@ -1079,19 +1130,148 @@ struct_literal_fields:
                 }
                 ;
 
+// here
+array_literal_expression_list:
+                assignment_expression
+                {
+			$1[len($1) - 1].IsArrayLiteral = true
+			// $$ = [][]*CXExpression{$1}
+			$$ = $1
+                }
+	|       array_literal_expression_list COMMA assignment_expression
+                {
+			
+			// $$ = append($1, $3)
+			$3[len($3) - 1].IsArrayLiteral = true
+			$$ = append($1, $3...)
+                }
+                ;
+
 // expressions
 array_literal_expression:
-                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE array_literal_expression_list RBRACE
                 {
+			// var result []*CXExpression
+			// for _, exprs := range $6 {
+			// 	result = append(result, exprs...)
+			// }
+
+			// $$ = result
+
 			$$ = $6
                 }
         |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
                 {
 			$$ = nil
                 }
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = $6
+			var result []*CXExpression
+
+			pkg, err := prgrm.GetCurrentPackage()
+			if err != nil {
+				panic(err)
+			}
+
+			symName := MakeGenSym(LOCAL_PREFIX)
+
+			var endPointsCounter int
+			for _, expr := range $6 {
+				if expr.IsArrayLiteral {
+					expr.IsArrayLiteral = false
+					
+					sym := MakeParameter(symName, $4)
+					sym.Package = pkg
+
+					idxExpr := WritePrimary(TYPE_I32, encoder.Serialize(int32(endPointsCounter)))
+					endPointsCounter++
+
+					sym.Indexes = append(sym.Indexes, idxExpr[0].Outputs[0])
+					sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_ARRAY)
+
+					symExpr := MakeExpression(nil)
+					symExpr.Outputs = append(symExpr.Outputs, sym)
+
+					// result = append(result, Assignment([]*CXExpression{symExpr}, []*CXExpression{expr})...)
+					if expr.Operator == nil {
+						// then it's a literal
+						symExpr.Operator = Natives[OP_IDENTITY]
+						// expr.Outputs[0].Size = symExpr.Outputs[0].Size
+						// expr.Outputs[0].Lengths = symExpr.Outputs[0].Lengths
+
+						symExpr.Inputs = expr.Outputs
+						// symExpr.Outputs = expr.
+					} else {
+						symExpr.Operator = expr.Operator
+						symExpr.Inputs = expr.Inputs
+
+						// hack to get the correct lengths below
+						expr.Outputs = append(expr.Outputs, sym)
+					}
+					
+					// result = append(result, expr)
+					result = append(result, symExpr)
+					
+					// sym.Lengths = append(sym.Lengths, int($2))
+					sym.Lengths = append(expr.Outputs[0].Lengths, int($2))
+					sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
+				} else {
+					result = append(result, expr)
+				}
+			}
+			
+			// for i, exprs := range $6 {
+			// 	expr := exprs[len(exprs) - 1]
+				
+			// 	if expr.IsArrayLiteral {
+			// 		expr.IsArrayLiteral = false
+			// 	}
+				
+			// 	sym := MakeParameter(symName, $4)
+			// 	sym.Package = pkg
+
+			// 	idxExpr := WritePrimary(TYPE_I32, encoder.Serialize(int32(i)))
+			// 	sym.Indexes = append(sym.Indexes, idxExpr[0].Outputs[0])
+			// 	sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_ARRAY)
+
+			// 	symExpr := MakeExpression(nil)
+			// 	symExpr.Outputs = append(symExpr.Outputs, sym)
+
+			// 	result = append(result, exprs[:len(exprs) - 1]...)
+			// 	result = append(result, Assignment([]*CXExpression{symExpr}, []*CXExpression{expr})...)
+				
+			// 	sym.Lengths = append(sym.Lengths, int($2))
+			// 	sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
+			// }
+
+			// result[len(result) - 1].IsArrayLiteral = true
+			// result[len(result) - 1].Outputs[0].Indexes = nil
+			
+			symNameOutput := MakeGenSym(LOCAL_PREFIX)
+			
+			symOutput := MakeParameter(symNameOutput, $4)
+			symOutput.Lengths = append(symOutput.Lengths, int($2))
+			symOutput.Package = pkg
+			symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
+
+			// symOutput.DereferenceOperations = append(symOutput.DereferenceOperations, DEREF_ARRAY)
+			// symOutput.DereferenceOperations = append(symOutput.DereferenceOperations, DEREF_ARRAY)
+
+			symInput := MakeParameter(symName, $4)
+			symInput.Lengths = append(symInput.Lengths, int($2))
+			symInput.Package = pkg
+			symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
+			
+			symExpr := MakeExpression(Natives[OP_IDENTITY])
+			symExpr.Package = pkg
+			symExpr.Outputs = append(symExpr.Outputs, symOutput)
+			symExpr.Inputs = append(symExpr.Inputs, symInput)
+
+			// marking the output so multidimensional arrays identify the expressions
+			symExpr.IsArrayLiteral = true
+			result = append(result, symExpr)
+
+			$$ = result
                 }
         |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
                 {
@@ -1099,6 +1279,89 @@ array_literal_expression:
                 }
         |       LBRACK INT_LITERAL RBRACK array_literal_expression
                 {
+			// var result []*CXExpression
+
+			// pkg, err := prgrm.GetCurrentPackage()
+			// if err != nil {
+			// 	panic(err)
+			// }
+
+			// symName := MakeGenSym(LOCAL_PREFIX)
+
+			// var endPointsCounter int
+			// for _, expr := range $4 {
+			// 	if expr.IsArrayLiteral {
+			// 		// in the next dimension, these are no longer endpoints
+			// 		expr.IsArrayLiteral = false
+					
+			// 		sym := MakeParameter(symName, expr.Outputs[0].Type)
+			// 		sym.Package = pkg
+
+			// 		idxExpr := WritePrimary(TYPE_I32, encoder.Serialize(int32(endPointsCounter)))
+			// 		endPointsCounter++
+					
+			// 		sym.Indexes = append(sym.Indexes, idxExpr[0].Outputs[0])
+			// 		sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_ARRAY)
+
+			// 		symExpr := MakeExpression(Natives[OP_IDENTITY])
+			// 		symExpr.Outputs = append(symExpr.Outputs, sym)
+
+					
+					
+			// 		symExpr.Inputs = append(symExpr.Inputs, expr.Outputs[0])
+
+			// 		result = append(result, expr)
+			// 		result = append(result, symExpr)
+					
+			// 		sym.Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths...)
+			// 		sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
+					
+			// 	} else {
+			// 		result = append(result, expr)
+			// 	}
+			// }
+			
+			// symNameOutput := MakeGenSym(LOCAL_PREFIX)
+			
+			// symOutput := MakeParameter(symNameOutput, $4[0].Outputs[0].Type)
+			// symOutput.Lengths = append([]int{int($2)}, $4[0].Outputs[0].Lengths...)
+			// symOutput.Package = pkg
+			// symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
+
+			// // symOutput.DereferenceOperations = append(symOutput.DereferenceOperations, DEREF_ARRAY)
+
+			// symInput := MakeParameter(symName, $4[0].Outputs[0].Type)
+			// symInput.Lengths = append([]int{int($2)}, $4[0].Outputs[0].Lengths...)
+			// symInput.Package = pkg
+			// symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
+
+			// // symInput.DereferenceOperations = append(symInput.DereferenceOperations, DEREF_ARRAY)
+			
+			// symExpr := MakeExpression(Natives[OP_IDENTITY])
+			// symExpr.Package = pkg
+			// symExpr.Outputs = append(symExpr.Outputs, symOutput)
+			// symExpr.Inputs = append(symExpr.Inputs, symInput)
+
+			// // marking the output so multidimensional arrays identify the expressions
+			// symExpr.IsArrayLiteral = true
+			// result = append(result, symExpr)
+
+			// $$ = result
+
+			// $4[len($4) - 1].Outputs[0].Lengths = append($4[len($4) - 1].Outputs[0].Lengths, int($2))
+			// $4[len($4) - 1].Outputs[0].TotalSize = $4[len($4) - 1].Outputs[0].Size * TotalLength($4[len($4) - 1].Outputs[0].Lengths)
+
+			for _, expr := range $4 {
+				if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
+					// expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, int($2))
+					expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
+					expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
+				}
+			}
+
+			// sym.Lengths = append(expr.Outputs[0].Lengths, int($2))
+			// sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
+
 			$$ = $4
                 }
         ;
@@ -1180,6 +1443,13 @@ primary_expression:
                 }
                 ;
 
+after_period:   type_specifier
+                {
+			$$ = TypeNames[$1]
+                }
+        |       IDENTIFIER
+        ;
+
 postfix_expression:
                 primary_expression
 	|       postfix_expression LBRACK expression RBRACK
@@ -1190,7 +1460,6 @@ postfix_expression:
 				// this way we avoid calling deref_array multiple times (one for each index)
 				$1[len($1) - 1].Outputs[0].DereferenceOperations = append($1[len($1) - 1].Outputs[0].DereferenceOperations, DEREF_ARRAY)
 			}
-			
 
 			if !$1[len($1) - 1].Outputs[0].IsDereferenceFirst {
 				$1[len($1) - 1].Outputs[0].IsArrayFirst = true
@@ -1206,7 +1475,7 @@ postfix_expression:
 					idxSym := MakeParameter(MakeGenSym(LOCAL_PREFIX), $3[len($3) - 1].Operator.Outputs[0].Type)
 					idxSym.Size = $3[len($3) - 1].Operator.Outputs[0].Size
 					idxSym.TotalSize = $3[len($3) - 1].Operator.Outputs[0].Size
-					
+
 					idxSym.Package = $3[len($3) - 1].Package
 					$3[len($3) - 1].Outputs = append($3[len($3) - 1].Outputs, idxSym)
 
@@ -1228,7 +1497,8 @@ postfix_expression:
 
 			$$ = $1
                 }
-        |       type_specifier PERIOD IDENTIFIER
+        /* |       type_specifier PERIOD type_specifier */
+        |       type_specifier PERIOD after_period
                 {
 			// these will always be native functions
 			if opCode, ok := OpCodes[TypeNames[$1] + "." + $3]; ok {
@@ -1303,7 +1573,7 @@ postfix_expression:
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			left := $1[0].Outputs[0]
+			left := $1[len($1) - 1].Outputs[0]
 			
 			if left.IsRest {
 				// then it can't be a module name
@@ -1321,24 +1591,24 @@ postfix_expression:
 
 						if glbl, err := imp.GetGlobal($3); err == nil {
 							// then it's a global
-							$1[0].Outputs[0] = glbl
+							$1[len($1) - 1].Outputs[0] = glbl
 						} else if fn, err := prgrm.GetFunction($3, imp.Name); err == nil {
 							// then it's a function
 							// $1[0].Outputs = nil
-							$1[0].Operator = fn
+							$1[len($1) - 1].Operator = fn
 						} else {
 							panic(err)
 						}
 					} else {
-						if code, ok := ConstCodes[$1[0].Outputs[0].Name + "." + $3]; ok {
+						if code, ok := ConstCodes[$1[len($1) - 1].Outputs[0].Name + "." + $3]; ok {
 							constant := Constants[code]
 							val := WritePrimary(constant.Type, constant.Value)
-							$1[0].Outputs[0] = val[0].Outputs[0]
-						} else if _, ok := OpCodes[$1[0].Outputs[0].Name + "." + $3]; ok {
+							$1[len($1) - 1].Outputs[0] = val[0].Outputs[0]
+						} else if _, ok := OpCodes[$1[len($1) - 1].Outputs[0].Name + "." + $3]; ok {
 							// then it's a native
 							// TODO: we'd be referring to the function itself, not a function call
 							// (functions as first-class objects)
-							$1[0].Outputs[0].Name = $1[0].Outputs[0].Name + "." + $3
+							$1[len($1) - 1].Outputs[0].Name = $1[len($1) - 1].Outputs[0].Name + "." + $3
 						} else {
 							// then it's a struct
 							left.IsStruct = true
@@ -1464,10 +1734,11 @@ assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
-			if $3[0].IsStructLiteral{
+			if $3[0].IsArrayLiteral {
+				$$ = ArrayLiteralAssignment($1, $3)
+			} else if $3[0].IsStructLiteral {
 				$$ = StructLiteralAssignment($1, $3)
 			} else {
-				
 				$$ = Assignment($1, $3)
 			}
                 }
@@ -1504,6 +1775,8 @@ constant_expression:
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
+			$3.IsLocalDeclaration = true
+			
 			// this will tell the runtime that it's just a declaration
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				expr := MakeExpression(nil)
@@ -1520,6 +1793,8 @@ declaration:
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
+			$3.IsLocalDeclaration = true
+			
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				if $5[len($5) - 1].Operator == nil {
 					// then it's a literal, e.g. var foo i32 = 10;
@@ -1537,6 +1812,7 @@ declaration:
 					// then it's an expression (it has an operator)
 					$3.Name = $2.Name
 					$3.Package = pkg
+					
 					
 					expr := $5[len($5) - 1]
 					expr.AddOutput($3)

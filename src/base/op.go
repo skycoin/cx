@@ -6,10 +6,14 @@ import (
 )
 
 func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
-	// it's from the data segment
-	if arg.MemoryType == MEM_DATA {
-		return arg.Offset
-	}
+	// // it's from the data segment
+	// if arg.MemoryType == MEM_DATA {
+	// 	if len(arg.Indexes) > 0 {
+	// 		fmt.Println("hmm", arg.Name, arg.Offset, arg.Indexes[0].MemoryType)
+	// 	}
+		
+	// 	return arg.Offset
+	// }
 	
 	var elt *CXArgument
 	var finalOffset int = arg.Offset
@@ -50,7 +54,7 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 		}
 	}
 
-	if arg.IsPointer {
+	if arg.IsPointer || arg.MemoryType == MEM_DATA {
 		return finalOffset
 	} else {
 		return fp + finalOffset
@@ -115,6 +119,10 @@ func FromBool (in bool) []byte {
 	}
 }
 
+func FromByte (in byte) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
 func FromI32 (in int32) []byte {
 	return encoder.SerializeAtomic(in)
 }
@@ -148,9 +156,24 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 	return offset, size
 }
 
+func ReadF32A (stack *CXStack, fp int, inp *CXArgument) (out []float32) {
+	// Only used by native functions (i.e. functions implemented in Golang)
+	offset := GetFinalOffset(stack, fp, inp)
+	byts := ReadMemory(stack, offset, inp)
+	byts = append(encoder.SerializeAtomic(int32(len(byts) / 4)), byts...)
+	encoder.DeserializeRaw(byts, &out)
+	return
+}
+
 func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(stack, fp, inp)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
+	return
+}
+
+func ReadByte (stack *CXStack, fp int, inp *CXArgument) (out byte) {
+	offset := GetFinalOffset(stack, fp, inp)
+	encoder.DeserializeAtomic(ReadMemory(stack, offset, inp), &out)
 	return
 }
 

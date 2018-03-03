@@ -4,8 +4,8 @@
 
 package main
 
-import "gl"
-import "glfw"
+// import "gl"
+// import "glfw"
 
 var width i32 = 600
 var height i32 = 600
@@ -24,6 +24,7 @@ var fragmentShaderSource str = "
           }
 "
 
+// var square [18]f32
 var square []f32 = []f32{
 	-0.5, 0.5, 0.0,
 	-0.5, -0.5, 0.0,
@@ -99,6 +100,26 @@ func draw (vao i32, window str, program i32) () {
 }
 
 func main () () {
+	// square[0] = -0.5
+	// square[1] = 0.5
+	// square[2] = 0.0
+	// square[3] = -0.5
+	// square[4] = -0.5
+	// square[5] = 0.0
+	// square[6] = 0.5
+	// square[7] = -0.5
+	// square[8] = 0.0
+	
+	// square[9] = -0.5
+	// square[10] = 0.5
+	// square[11] = 0.0
+	// square[12] = 0.5
+	// square[13] = 0.5
+	// square[14] = 0.0
+	// square[15] = 0.5
+	// square[16] = -0.5
+	// square[17] = 0.0
+	
 	initGlfw("window")
 	program := initOpenGL()
 	vao := makeVao(square)

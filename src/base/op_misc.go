@@ -7,7 +7,6 @@ import (
 
 // creates a copy of its argument in the stack
 func identity (expr *CXExpression, stack *CXStack, fp int) {
-
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(stack, fp, inp1)
 	out1Offset := GetFinalOffset(stack, fp, out1)
@@ -30,6 +29,7 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 		// WriteToStack(stack, out1Offset, FromI32(int32(inp1Offset)))
 		WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
 	} else {
+		// fmt.Println("hi", inp1.Offset, inp1Offset)
 		byts := ReadMemory(stack, inp1Offset, inp1)
 		WriteMemory(stack, out1Offset, out1, byts)
 	}
@@ -47,12 +47,14 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	// var thenLines int32
 	// var elseLines int32
 
+	inp1Offset := GetFinalOffset(stack, fp, inp1)
+
 	switch inp1.MemoryType {
 	case MEM_STACK:
-		predicateB := stack.Stack[fp + inp1.Offset : fp + inp1.Offset + inp1.Size]
+		predicateB := stack.Stack[inp1Offset: inp1Offset + inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
 	case MEM_DATA:
-		predicateB := inp1.Program.Data[inp1.Offset : inp1.Offset + inp1.Size]
+		predicateB := inp1.Program.Data[inp1Offset : inp1Offset + inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
 	default:
 		panic("implement the other mem types in readI32")

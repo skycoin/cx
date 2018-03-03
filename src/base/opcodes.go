@@ -5,7 +5,20 @@ const (
 	OP_IDENTITY = iota
 	OP_READ_ARRAY
 	OP_JMP
-	
+
+	OP_BOOL_PRINT
+	OP_BOOL_NOT
+	OP_BOOL_OR
+	OP_BOOL_AND
+
+	OP_BYTE_PRINT
+
+	OP_I32_BYTE
+	OP_I32_STR
+	OP_I32_I32
+	OP_I32_I64
+	OP_I32_F32
+	OP_I32_F64
 	OP_I32_PRINT
 	OP_I32_ADD
 	OP_I32_SUB
@@ -83,8 +96,7 @@ const (
 	OP_F64_SIN
 	
 
-	OP_BOOL_PRINT
-	OP_BOOL_NOT
+	
 	
 	OP_BITAND
 	OP_BITOR
@@ -122,6 +134,8 @@ const (
 	OP_TEST_STOP
 	OP_TEST_ERROR
 	OP_TEST
+
+	OP_TIME_SLEEP
 	OP_TIME_UNIX
 	OP_TIME_UNIX_MILLI
 	OP_TIME_UNIX_NANO
@@ -208,7 +222,20 @@ func execNative (prgrm *CXProgram) {
 	case OP_IDENTITY: identity(expr, stack, fp)
 	case OP_READ_ARRAY: read_array(expr, stack, fp)
 	case OP_JMP: jmp(expr, stack, fp, call)
-		
+
+	case OP_BYTE_PRINT: byte_print(expr, stack, fp)
+
+	case OP_BOOL_PRINT: bool_print(expr, stack, fp)
+	case OP_BOOL_NOT: bool_not(expr, stack, fp)
+	case OP_BOOL_OR: bool_or(expr, stack, fp)
+	case OP_BOOL_AND: bool_and(expr, stack, fp)
+
+	case OP_I32_BYTE: i32_i32(expr, stack, fp)
+	case OP_I32_STR: i32_i32(expr, stack, fp)
+	case OP_I32_I32: i32_i32(expr, stack, fp)
+	case OP_I32_I64: i32_i32(expr, stack, fp)
+	case OP_I32_F32: i32_i32(expr, stack, fp)
+	case OP_I32_F64: i32_i32(expr, stack, fp)
 	case OP_I32_PRINT: i32_print(expr, stack, fp)
 	case OP_I32_ADD: i32_add(expr, stack, fp)
 	case OP_I32_SUB: i32_sub(expr, stack, fp)
@@ -292,8 +319,7 @@ func execNative (prgrm *CXProgram) {
 	case OP_BITSHL:
 	case OP_BITSHR:
 		
-	case OP_BOOL_PRINT: bool_print(expr, stack, fp)
-	case OP_BOOL_NOT: bool_not(expr, stack, fp)
+	
 		
 	case OP_STR_PRINT: str_print(expr, stack, fp)
 	case OP_MAKE:
@@ -323,6 +349,8 @@ func execNative (prgrm *CXProgram) {
 	case OP_TEST_STOP:
 	case OP_TEST_ERROR:
 	case OP_TEST:
+
+	case OP_TIME_SLEEP: time_Sleep(expr, stack, fp)
 	case OP_TIME_UNIX:
 	case OP_TIME_UNIX_MILLI: time_UnixMilli(expr, stack, fp)
 	case OP_TIME_UNIX_NANO:
@@ -406,7 +434,20 @@ var OpNames map[int]string = map[int]string{
 	OP_IDENTITY: "identity",
 	OP_READ_ARRAY: "read",
 	OP_JMP: "jmp",
-	
+
+	OP_BYTE_PRINT: "byte.print",
+
+	OP_BOOL_PRINT: "bool.print",
+	OP_BOOL_NOT: "bool.not",
+	OP_BOOL_OR: "bool.or",
+	OP_BOOL_AND: "bool.and",
+
+	OP_I32_BYTE: "i32.byte",
+	OP_I32_STR: "i32.str",
+	OP_I32_I32: "i32.i32",
+	OP_I32_I64: "i32.i64",
+	OP_I32_F32: "i32.f32",
+	OP_I32_F64: "i32.f64",
 	OP_I32_PRINT: "i32.print",
 	OP_I32_ADD: "i32.add",
 	OP_I32_SUB: "i32.sub",
@@ -485,11 +526,8 @@ var OpNames map[int]string = map[int]string{
 
 	OP_STR_PRINT: "str.print",
 
+	OP_TIME_SLEEP: "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
-
-	
-	OP_BOOL_PRINT: "bool.print",
-	OP_BOOL_NOT: "bool.not",
 
 
 
@@ -569,13 +607,20 @@ var OpCodes map[string]int = map[string]int{
 	"identity": OP_IDENTITY,
 	"read": OP_READ_ARRAY,
 	"jmp": OP_JMP,
-	
 
+	"byte.print": OP_BYTE_PRINT,
 
+	"bool.print": OP_BOOL_PRINT,
+	"bool.not": OP_BOOL_NOT,
+	"bool.or": OP_BOOL_OR,
+	"bool.and": OP_BOOL_AND,
 
-
-
-
+	"i32.byte" : OP_I32_BYTE,
+	"i32.str" : OP_I32_STR,
+	"i32.i32" : OP_I32_I32,
+	"i32.i64" : OP_I32_I64,
+	"i32.f32" : OP_I32_F32,
+	"i32.f64" : OP_I32_F64,
 	"i32.print": OP_I32_PRINT,
 	"i32.add": OP_I32_ADD,
 	"i32.sub": OP_I32_SUB,
@@ -659,10 +704,8 @@ var OpCodes map[string]int = map[string]int{
 
 	"str.print": OP_STR_PRINT,
 
+	"time.Sleep": OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
-
-	"bool.print": OP_BOOL_PRINT,
-	"bool.not": OP_BOOL_NOT,
 
 
 
@@ -743,6 +786,19 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 
+	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
+
+	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
+	OP_BOOL_NOT: MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_OR: MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_AND: MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+
+	OP_I32_BYTE: MakeNative(OP_I32_BYTE, []int{TYPE_I32}, []int{TYPE_BYTE}),
+	OP_I32_STR: MakeNative(OP_I32_STR, []int{TYPE_I32}, []int{TYPE_STR}),
+	OP_I32_I32: MakeNative(OP_I32_I32, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_I64: MakeNative(OP_I32_I64, []int{TYPE_I32}, []int{TYPE_I64}),
+	OP_I32_F32: MakeNative(OP_I32_F32, []int{TYPE_I32}, []int{TYPE_F32}),
+	OP_I32_F64: MakeNative(OP_I32_F64, []int{TYPE_I32}, []int{TYPE_F64}),
 	
 	OP_I32_PRINT: MakeNative(OP_I32_PRINT, []int{TYPE_I32}, []int{}),
 	OP_I32_ADD: MakeNative(OP_I32_ADD, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
@@ -819,12 +875,10 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_UNEQ: MakeNative(OP_F64_UNEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
 	OP_F64_COS: MakeNative(OP_F64_COS, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_SIN: MakeNative(OP_F64_SIN, []int{TYPE_F64}, []int{TYPE_F64}),
-
-	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
-	OP_BOOL_NOT: MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
 	
 	OP_STR_PRINT: MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 
+	OP_TIME_SLEEP: MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
 
 	// opengl
@@ -840,7 +894,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_DRAW_ARRAYS: MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_BUFFERS: MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_BUFFER_DATA: MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{}),
-	OP_GL_GEN_VERTEX_ARRAYS: MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_GEN_VERTEX_ARRAYS: MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CREATE_SHADER: MakeNative(OP_GL_CREATE_SHADER, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_STRS: MakeNative(OP_GL_STRS, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GL_FREE: MakeNative(OP_GL_FREE, []int{TYPE_STR}, []int{}),

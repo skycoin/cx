@@ -1324,6 +1324,10 @@ func (prgrm *CXProgram) PrintProgram () {
 				if len(expr.Outputs) > 0 {
 					var outNames bytes.Buffer
 					for i, outName := range expr.Outputs {
+						// var indexes string
+						// for _, idx := range outName.Indexes {
+						// 	indexes += fmt.Sprintf("[%d]", idx)
+						// }
 						if i == len(expr.Outputs) - 1 {
 							outNames.WriteString(outName.Name)
 						} else {

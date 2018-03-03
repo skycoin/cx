@@ -75,6 +75,7 @@ func MakeParameter (name string, typ int) *CXArgument {
 		Name: name,
 		Type: typ,
 		Size: size,
+		TotalSize: size,
 		MemoryType: MEM_STACK,
 		// this will be added in AddInput & AddOutput
 		// the parent function knows how many parameters it has

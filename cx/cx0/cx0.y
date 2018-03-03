@@ -45,137 +45,6 @@
 		return total
 	}
 
-	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
-		if sym.Name != "" {
-			if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
-				if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
-					sym.Offset = glbl.Offset
-					sym.MemoryType = glbl.MemoryType
-					sym.Size = glbl.Size
-					sym.TotalSize = glbl.TotalSize
-					sym.Package = glbl.Package
-					sym.Program = glbl.Program
-					// sym.IsReference = glbl.IsReference
-					(*symbols)[sym.Package.Name + "." + sym.Name] = sym
-					return
-				}
-				if shouldExist {
-					// it should exist. error
-					panic("identifier '" + sym.Name + "' does not exist")
-				}
-				
-				sym.Offset = *offset
-				(*symbols)[sym.Package.Name + "." + sym.Name] = sym
-				*offset += sym.TotalSize
-
-				if sym.IsPointer {
-					pointer := sym
-					for c := 0; c < sym.IndirectionLevels - 1; c++ {
-						pointer = pointer.Pointee
-						pointer.Offset = *offset
-						*offset += pointer.TotalSize
-					}
-				}
-			} else {
-				var isFieldPointer bool
-				if len(sym.Fields) > 0 {
-					var found bool
-
-					strct := arg.CustomType
-					for _, nameFld := range sym.Fields {
-						for _, fld := range strct.Fields {
-							if nameFld.Name == fld.Name {
-								if fld.IsPointer {
-									sym.IsPointer = true
-									// sym.IndirectionLevels = fld.IndirectionLevels
-									isFieldPointer = true
-								}
-								found = true
-								if fld.CustomType != nil {
-									strct = fld.CustomType
-								}
-								break
-							}
-						}
-						if !found {
-							panic("field '" + nameFld.Name + "' not found")
-						}
-					}
-				}
-				
-				if sym.DereferenceLevels > 0 {
-					if arg.IndirectionLevels >= sym.DereferenceLevels || isFieldPointer { // ||
-						// 	sym.IndirectionLevels >= sym.DereferenceLevels
-						// {
-						pointer := arg
-
-						for c := 0; c < sym.DereferenceLevels - 1; c++ {
-							pointer = pointer.Pointee
-						}
-
-						sym.Offset = pointer.Offset
-						sym.IndirectionLevels = pointer.IndirectionLevels
-						sym.IsPointer = pointer.IsPointer
-					} else {
-						panic("invalid indirect of " + sym.Name)
-					}
-				} else {
-					sym.Offset = arg.Offset
-					sym.IsPointer = arg.IsPointer
-					sym.IndirectionLevels = arg.IndirectionLevels
-				}
-
-				//if sym.IsStruct {
-				// checking if it's accessing fields
-				if len(sym.Fields) > 0 {
-					var found bool
-
-					strct := arg.CustomType
-					for _, nameFld := range sym.Fields {
-						for _, fld := range strct.Fields {
-							if nameFld.Name == fld.Name {
-								nameFld.Lengths = fld.Lengths
-								nameFld.Size = fld.Size
-								nameFld.TotalSize = fld.TotalSize
-								nameFld.DereferenceLevels = sym.DereferenceLevels
-								nameFld.IsPointer = fld.IsPointer
-								found = true
-								if fld.CustomType != nil {
-									strct = fld.CustomType
-								}
-								break
-							}
-							nameFld.Offset += fld.TotalSize
-						}
-						if !found {
-							panic("field '" + nameFld.Name + "' not found")
-						}
-					}
-				}
-				//}
-
-				// sym.IsPointer = arg.IsPointer
-				sym.Type = arg.Type
-				sym.Pointee = arg.Pointee
-				sym.Lengths = arg.Lengths
-				sym.PointeeSize = arg.PointeeSize
-				sym.Package = arg.Package
-				sym.Program = arg.Program
-				sym.MemoryType = arg.MemoryType
-				if sym.IsReference && !arg.IsStruct {
-					// sym.Size = TYPE_POINTER_SIZE
-					sym.TotalSize = TYPE_POINTER_SIZE
-					
-					sym.Size = arg.Size
-					// sym.TotalSize = arg.TotalSize
-				} else {
-					sym.Size = arg.Size
-					sym.TotalSize = arg.TotalSize
-				}
-			}
-		}
-	}
-
 	func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
 		// adding inputs, outputs
 		for _, inp := range inputs {
@@ -304,13 +173,11 @@ global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := WritePrimary($3.Type, make([]byte, $3.Size))
+				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
 				$3.MemoryType = MEM_DATA
 				$3.Offset = exprOut.Offset
-				$3.Size = exprOut.Size
-				$3.TotalSize = exprOut.TotalSize
 				$3.Package = exprOut.Package
 				pkg.AddGlobal($3)
 			} else {
@@ -676,10 +543,14 @@ primary_expression:
         |       array_literal_expression
                 ;
 
+after_period:   type_specifier
+        |       IDENTIFIER
+        ;
+
 postfix_expression:
                 primary_expression
 	|       postfix_expression LBRACK expression RBRACK
-        |       type_specifier PERIOD IDENTIFIER
+        |       type_specifier PERIOD after_period
 	|       postfix_expression LPAREN RPAREN
 	|       postfix_expression LPAREN argument_expression_list RPAREN
 	|       postfix_expression INC_OP
