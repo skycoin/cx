@@ -168,6 +168,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 	"glfw.SetKeyCallback":true, "glfw.GetTime":true, "glfw.SetMouseButtonCallback":true,
 	"glfw.SetCursorPosCallback":true, "glfw.GetCursorPos":true, "glfw.SetInputMode":true,
+	"glfw.GetKey":true,
 
 	/*
           Operating System

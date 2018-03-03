@@ -710,6 +710,7 @@ func glfw.SetCursorPosCallback (window str, fnName str) () {}
 func glfw.GetCursorPos (window str) (x f64, y f64) {}
 func glfw.SetInputMode (window str, mode i32, value i32) () {}
 func glfw.GetTime () (time f64) {}
+func glfw.GetKey (window str, key i32) (action i32) {}
 
 /*
   Operating System

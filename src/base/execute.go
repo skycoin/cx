@@ -740,6 +740,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	case "glfw.SetShouldClose": err = glfw_SetShouldClose((*argsCopy)[0], (*argsCopy)[0])
 	case "glfw.PollEvents": err = glfw_PollEvents()
 	case "glfw.SwapBuffers": err = glfw_SwapBuffers((*argsCopy)[0])
+	case "glfw.GetKey": err = glfw_GetKey((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "glfw.GetTime": err = glfw_GetTime(expr, call)
 	case "glfw.GetFramebufferSize": err = glfw_GetFramebufferSize((*argsCopy)[0], expr, call)
 	case "glfw.SetKeyCallback": err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)

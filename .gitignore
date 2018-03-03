@@ -55,3 +55,8 @@ cx0.go
 golang-empty-grammar.y
 golang-grammar.y
 my.patch
+micro.org
+macro.org
+run.sh
+testing-pointers.cx
+cx.sig

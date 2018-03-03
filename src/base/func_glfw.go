@@ -292,6 +292,24 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 	return nil
 }
 
+func glfw_GetKey (window, key *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkTwoTypes("glfw.GetKey", "str", "i32", window, key); err == nil {
+		var wName string
+		var _key int32
+		
+		encoder.DeserializeRaw(*window.Value, &wName)
+		encoder.DeserializeAtomic(*key.Value, &_key)
+		
+		action := windows[wName].GetKey(glfw.Key(_key))
+		
+		output := encoder.SerializeAtomic(int32(action))
+		assignOutput(0, output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func Bar () {
 	//fmt.Println("glfw.CURSOR", glfw.CursorMode)
 }
