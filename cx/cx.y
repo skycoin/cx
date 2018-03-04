@@ -11,8 +11,8 @@
 		. "github.com/skycoin/cx/src/base"
 	)
 
-	// var prgrm = MakeProgram(256, 256, 256)
-	var prgrm = MakeProgram(200000, 200000, 200000)
+	var prgrm = MakeProgram(256, 256, 256)
+	// var prgrm = MakeProgram(200000, 200000, 200000)
 	// var data Data
 	var dataOffset int
 
@@ -988,6 +988,15 @@ declaration_specifiers:
 			}
 			
 			$$ = $2
+                }
+        |       LBRACK RBRACK declaration_specifiers
+                {
+			arg := $3
+                        arg.IsArray = true
+			// arg.MemoryType = MEM_HEAP
+			arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
+			arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
+			$$ = arg
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers
                 {

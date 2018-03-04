@@ -8,6 +8,7 @@ const LOCAL_PREFIX = "lcl"
 const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
+const SLICE_SIZE = 32
 var BASIC_TYPES []string = []string{
 	"bool", "str", "byte", "i32", "i64", "f32", "f64",
 	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
