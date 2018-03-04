@@ -299,9 +299,8 @@ func glfw_GetKey (window, key *CXArgument, expr *CXExpression, call *CXCall) err
 		
 		encoder.DeserializeRaw(*window.Value, &wName)
 		encoder.DeserializeAtomic(*key.Value, &_key)
-		
+
 		action := windows[wName].GetKey(glfw.Key(_key))
-		
 		output := encoder.SerializeAtomic(int32(action))
 		assignOutput(0, output, "i32", expr, call)
 		return nil
