@@ -97,16 +97,15 @@
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
                         VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         SEMICOLON NEWLINE
-                        ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
+                        ASSIGN CASSIGN IMPORT RETURN GOTO GT_OP LT_OP GTEQ_OP LTEQ_OP EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
                         ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP NEG_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
-                        BITAND BITXOR BITOR BITCLEAR
+                        BITXOR_OP BITOR_OP BITCLEAR_OP
                         PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
                         LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
-
 
                         DEC_OP INC_OP PTR_OP LEFT_OP RIGHT_OP
                         GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
@@ -589,8 +588,8 @@ unary_operator:
 multiplicative_expression:
                 unary_expression
 	|       multiplicative_expression MUL_OP unary_expression
-	|       multiplicative_expression '/' unary_expression
-	|       multiplicative_expression '%' unary_expression
+	|       multiplicative_expression DIV_OP unary_expression
+	|       multiplicative_expression MOD_OP unary_expression
                 ;
 
 additive_expression:
@@ -607,10 +606,10 @@ shift_expression:
 
 relational_expression:
                 shift_expression
-	|       relational_expression '<' shift_expression
-	|       relational_expression '>' shift_expression
-	|       relational_expression LE_OP shift_expression
-	|       relational_expression GE_OP shift_expression
+	|       relational_expression LT_OP shift_expression
+	|       relational_expression GT_OP shift_expression
+	|       relational_expression LTEQ_OP shift_expression
+	|       relational_expression GTEQ_OP shift_expression
                 ;
 
 equality_expression:
@@ -625,12 +624,12 @@ and_expression: equality_expression
 
 exclusive_or_expression:
                 and_expression
-	|       exclusive_or_expression '^' and_expression
+	|       exclusive_or_expression BITXOR_OP and_expression
                 ;
 
 inclusive_or_expression:
                 exclusive_or_expression
-	|       inclusive_or_expression '|' exclusive_or_expression
+	|       inclusive_or_expression BITOR_OP exclusive_or_expression
                 ;
 
 logical_and_expression:

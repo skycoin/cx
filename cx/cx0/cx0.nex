@@ -21,7 +21,7 @@
 /else/                    { return f(ELSE) }
 /enum/                    { return f(ENUM) }
 /f32/                     { lval.tok = yylex.Text(); return f(F32) }
-/f64/                     { lval.tok = yylex.Text(); return f(F32) }
+/f64/                     { lval.tok = yylex.Text(); return f(F64) }
 /for/                     { return f(FOR)}
 /goto/                    { return f(GOTO)}
 /i8/                      { lval.tok = yylex.Text(); return f(I8)}
@@ -39,13 +39,17 @@
 /ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
 /ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
 /ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
-/union/                   { return f(UNION)}
+/union/                   { return f(UNION) }
 /&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
 /\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
 /-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
 /\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
 /\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
 /%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
+/>/                       { return f(GT_OP) }
+/</                       { return f(LT_OP) }
+/>=/                      { return f(GTEQ_OP) }
+/<=/                      { return f(LTEQ_OP) }
 />>=/                     { return f(RIGHT_ASSIGN)}
 /<<=/                     { return f(LEFT_ASSIGN)}
 /\+=/                     { return f(ADD_ASSIGN)}
@@ -61,10 +65,12 @@
 /\+\+/                    { return f(INC_OP)}
 /--/                      { return f(DEC_OP)}
 /&&/                      { return f(AND_OP)}
-/||/                      { return f(OR_OP)}
+/\|\|/                      { return f(OR_OP)}
 /<=/                      { return f(LE_OP)}
 />=/                      { return f(GE_OP)}
 /==/                      { return f(EQ_OP)}
+/\|/                      { return f(BITOR_OP)}
+/\^/                      { return f(BITXOR_OP)}
 /!=/                      { return f(NE_OP)}
 /;/                       { return f(SEMICOLON) }
 /:/                       { return f(COLON) }
@@ -107,18 +113,16 @@
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
-	tokVal := yylex.Text()
-	tokVal = strings.TrimPrefix(tokVal, "\"")
-	tokVal = strings.TrimSuffix(tokVal, "\"")
-	lval.tok = tokVal
 	return f(STRING_LITERAL)
 }
 /true/ {
-	lval.i32 = int32(1)
+	// lval.i32 = int32(1)
+	lval.bool = true
 	return f(BOOLEAN_LITERAL)
 }
 /false/ {
-	lval.i32 = int32(0)
+	// lval.i32 = int32(0)
+	lval.bool = false
 	return f(BOOLEAN_LITERAL)
 }
 /-?[0-9]+B/ {

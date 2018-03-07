@@ -47,6 +47,10 @@
 /\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
 /\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
 /%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
+/>/                       { return f(GT_OP) }
+/</                       { return f(LT_OP) }
+/>=/                      { return f(GTEQ_OP) }
+/<=/                      { return f(LTEQ_OP) }
 />>=/                     { return f(RIGHT_ASSIGN)}
 /<<=/                     { return f(LEFT_ASSIGN)}
 /\+=/                     { return f(ADD_ASSIGN)}
@@ -62,10 +66,12 @@
 /\+\+/                    { return f(INC_OP)}
 /--/                      { return f(DEC_OP)}
 /&&/                      { return f(AND_OP)}
-/||/                      { return f(OR_OP)}
+/\|\|/                    { return f(OR_OP)}
 /<=/                      { return f(LE_OP)}
 />=/                      { return f(GE_OP)}
 /==/                      { return f(EQ_OP)}
+/\|/                      { return f(BITOR_OP)}
+/\^/                      { return f(BITXOR_OP)}
 /!=/                      { return f(NE_OP)}
 /;/                       { return f(SEMICOLON) }
 /:/                       { return f(COLON) }

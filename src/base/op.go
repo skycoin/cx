@@ -87,6 +87,9 @@ func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
 			WriteToData(&arg.Program.Data, offset, byts)
 		}
 	case MEM_HEAP:
+
+		// encoder.Serialize(int32(len(byts)))
+		
 		switch arg.MemoryType {
 		case MEM_STACK:
 			WriteToStack(stack, offset, byts)

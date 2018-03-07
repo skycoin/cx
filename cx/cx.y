@@ -11,8 +11,8 @@
 		. "github.com/skycoin/cx/src/base"
 	)
 
-	var prgrm = MakeProgram(256, 256, 256)
-	// var prgrm = MakeProgram(200000, 200000, 200000)
+	// var prgrm = MakeProgram(256, 256, 256)
+	var prgrm = MakeProgram(200000, 200000, 200000)
 	// var data Data
 	var dataOffset int
 
@@ -39,6 +39,53 @@
 		Condition []*CXExpression
 		Then []*CXExpression
 		Else []*CXExpression
+	}
+
+	func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
+		pkg, err := prgrm.GetCurrentPackage()
+		if err != nil {
+			panic(err)
+		}
+		
+		var left *CXArgument
+		var right *CXArgument
+
+		if len(leftExprs[len(leftExprs) - 1].Outputs) < 1 {
+			name := MakeParameter(MakeGenSym(LOCAL_PREFIX), leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type)
+			name.Size = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
+			name.TotalSize = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
+			name.Package = pkg
+
+			leftExprs[len(leftExprs) - 1].Outputs = append(leftExprs[len(leftExprs) - 1].Outputs, name)
+		}
+
+		if len(rightExprs[len(rightExprs) - 1].Outputs) < 1 {
+			name := MakeParameter(MakeGenSym(LOCAL_PREFIX), rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Type)
+			name.Size = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
+			name.TotalSize = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
+			name.Package = pkg
+
+			rightExprs[len(rightExprs) - 1].Outputs = append(rightExprs[len(rightExprs) - 1].Outputs, name)
+		}
+
+		left = leftExprs[len(leftExprs) - 1].Outputs[0]
+		right = rightExprs[len(rightExprs) - 1].Outputs[0]
+
+		expr := MakeExpression(operator)
+		expr.Inputs = append(expr.Inputs, left)
+		expr.Inputs = append(expr.Inputs, right)
+
+		outName := MakeParameter(MakeGenSym(LOCAL_PREFIX), left.Type)
+		outName.Size = GetArgSize(left.Type)
+		outName.TotalSize = GetArgSize(left.Type)
+
+		outName.Package = pkg
+
+		expr.Outputs = append(expr.Outputs, outName)
+		
+		out = append(leftExprs, rightExprs...)
+		out = append(out, expr)
+		return
 	}
 
 	// Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
@@ -352,6 +399,7 @@
 				sym.Package = arg.Package
 				sym.Program = arg.Program
 				sym.MemoryType = arg.MemoryType
+				
 				if sym.IsReference && !arg.IsStruct {
 					// sym.Size = TYPE_POINTER_SIZE
 					sym.TotalSize = TYPE_POINTER_SIZE
@@ -537,13 +585,13 @@
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
                         VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
                         SEMICOLON NEWLINE
-                        ASSIGN CASSIGN IMPORT RETURN GOTO GTHAN LTHAN EQUAL COLON NEW
+                        ASSIGN CASSIGN IMPORT RETURN GOTO GT_OP LT_OP GTEQ_OP LTEQ_OP EQUAL COLON NEW
                         EQUALWORD GTHANWORD LTHANWORD
                         GTHANEQ LTHANEQ UNEQUAL AND OR
                         ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP NEG_OP AFFVAR
                         PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
                         NOT
-                        BITAND BITXOR BITOR BITCLEAR
+                        BITXOR_OP BITOR_OP BITCLEAR_OP
                         PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
                         LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
 
@@ -1678,60 +1726,213 @@ unary_operator:
 
 multiplicative_expression:
                 unary_expression
-	|       multiplicative_expression MUL_OP unary_expression
-	|       multiplicative_expression '/' unary_expression
-	|       multiplicative_expression '%' unary_expression
+        |       multiplicative_expression MUL_OP unary_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_MUL]
+			case TYPE_I64: op = Natives[OP_I64_MUL]
+			case TYPE_F32: op = Natives[OP_F32_MUL]
+			case TYPE_F64: op = Natives[OP_F64_MUL]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       multiplicative_expression DIV_OP unary_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_DIV]
+			case TYPE_I64: op = Natives[OP_I64_DIV]
+			case TYPE_F32: op = Natives[OP_F32_DIV]
+			case TYPE_F64: op = Natives[OP_F64_DIV]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       multiplicative_expression MOD_OP unary_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_MOD]
+			case TYPE_I64: op = Natives[OP_I64_MOD]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 additive_expression:
                 multiplicative_expression
-	|       additive_expression ADD_OP multiplicative_expression
+        |       additive_expression ADD_OP multiplicative_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_ADD]
+			case TYPE_I64: op = Natives[OP_I64_ADD]
+			case TYPE_F32: op = Natives[OP_F32_ADD]
+			case TYPE_F64: op = Natives[OP_F64_ADD]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
 	|       additive_expression SUB_OP multiplicative_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_SUB]
+			case TYPE_I64: op = Natives[OP_I64_SUB]
+			case TYPE_F32: op = Natives[OP_F32_SUB]
+			case TYPE_F64: op = Natives[OP_F64_SUB]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 shift_expression:
                 additive_expression
-	|       shift_expression LEFT_OP additive_expression
-	|       shift_expression RIGHT_OP additive_expression
+        |       shift_expression LEFT_OP additive_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_BITSHL]
+			case TYPE_I64: op = Natives[OP_I64_BITSHL]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       shift_expression RIGHT_OP additive_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_BITSHR]
+			case TYPE_I64: op = Natives[OP_I64_BITSHR]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 relational_expression:
                 shift_expression
-	|       relational_expression '<' shift_expression
-	|       relational_expression '>' shift_expression
-	|       relational_expression LE_OP shift_expression
-	|       relational_expression GE_OP shift_expression
+        |       relational_expression LT_OP shift_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_LT]
+			case TYPE_I64: op = Natives[OP_I64_LT]
+			case TYPE_F32: op = Natives[OP_F32_LT]
+			case TYPE_F64: op = Natives[OP_F64_LT]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       relational_expression GT_OP shift_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_GT]
+			case TYPE_I64: op = Natives[OP_I64_GT]
+			case TYPE_F32: op = Natives[OP_F32_GT]
+			case TYPE_F64: op = Natives[OP_F64_GT]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       relational_expression LTEQ_OP shift_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_LTEQ]
+			case TYPE_I64: op = Natives[OP_I64_LTEQ]
+			case TYPE_F32: op = Natives[OP_F32_LTEQ]
+			case TYPE_F64: op = Natives[OP_F64_LTEQ]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       relational_expression GTEQ_OP shift_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_GTEQ]
+			case TYPE_I64: op = Natives[OP_I64_GTEQ]
+			case TYPE_F32: op = Natives[OP_F32_GTEQ]
+			case TYPE_F64: op = Natives[OP_F64_GTEQ]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 equality_expression:
                 relational_expression
-	|       equality_expression EQ_OP relational_expression
-	|       equality_expression NE_OP relational_expression
+        |       equality_expression EQ_OP relational_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_EQ]
+			case TYPE_I64: op = Natives[OP_I64_EQ]
+			case TYPE_F32: op = Natives[OP_F32_EQ]
+			case TYPE_F64: op = Natives[OP_F64_EQ]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
+        |       equality_expression NE_OP relational_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_UNEQ]
+			case TYPE_I64: op = Natives[OP_I64_UNEQ]
+			case TYPE_F32: op = Natives[OP_F32_UNEQ]
+			case TYPE_F64: op = Natives[OP_F64_UNEQ]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 and_expression: equality_expression
-	|       and_expression REF_OP equality_expression
+        |       and_expression REF_OP equality_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_BITAND]
+			case TYPE_I64: op = Natives[OP_I64_BITAND]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 exclusive_or_expression:
                 and_expression
-	|       exclusive_or_expression '^' and_expression
+        |       exclusive_or_expression BITXOR_OP and_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_BITXOR]
+			case TYPE_I64: op = Natives[OP_I64_BITXOR]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 inclusive_or_expression:
                 exclusive_or_expression
-	|       inclusive_or_expression '|' exclusive_or_expression
+        |       inclusive_or_expression BITOR_OP exclusive_or_expression
+                {
+			var op *CXFunction
+			switch $1[len($1) - 1].Outputs[0].Type {
+			case TYPE_I32: op = Natives[OP_I32_BITOR]
+			case TYPE_I64: op = Natives[OP_I64_BITOR]
+			}
+			$$ = ArithmeticOperation($1, $3, op)
+                }
                 ;
 
 logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
-                { $$ = nil }
+                {
+			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_AND])
+                }
                 ;
 
 logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
+                {
+			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_OR])
+                }
                 ;
 
 conditional_expression:

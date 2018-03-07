@@ -1,7 +1,7 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	// "errors"
 	"math/rand"
 	"time"
@@ -9,7 +9,7 @@ import (
 )
 
 func (prgrm *CXProgram) Run () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -60,7 +60,7 @@ func (prgrm *CXProgram) Run () error {
 				}
 			}
 			// fmt.Println(prgrm.Stacks[0].Stack)
-			fmt.Println("prgrm.Heap", prgrm.Heap)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
 			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
