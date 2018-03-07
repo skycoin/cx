@@ -2,7 +2,7 @@
 	package main
 	import (
 		// "strings"
-		// "fmt"
+		"fmt"
 		// "os"
 		// "time"
 
@@ -207,6 +207,7 @@
 					to[0].Outputs[i].Lengths = out.Lengths
 				}
 			} else {
+				fmt.Println("huehue", to[0].Outputs)
 				for i, out := range from[idx].Operator.Outputs {
 					to[0].Outputs[i].Size = out.Size
 					to[0].Outputs[i].Lengths = out.Lengths
@@ -652,7 +653,7 @@
 %type   <expressions>   argument_expression_list
 %type   <expressions>   postfix_expression
 %type   <expressions>   primary_expression
-
+                        
 // %type   <arrayArguments>   array_literal_expression_list
 %type   <expressions>   array_literal_expression_list
 %type   <expressions>   array_literal_expression
@@ -666,7 +667,6 @@
 //                      %type   <expressions>   init_declarator
 
 %type   <expressions>   initializer
-%type   <expressions>   initializer_list
 %type   <expressions>   designation
 %type   <expressions>   designator_list
 %type   <expressions>   designator
@@ -899,15 +899,7 @@ function_declaration:
                 }
         ;
 
-/* method_declaration: */
-/*                 FUNC */
-/*         ; */
-
-
-
-// parameter_type_list
 parameter_type_list:
-                //parameter_list COMMA ELLIPSIS
 		parameter_list
                 ;
 
@@ -944,13 +936,6 @@ parameter_declaration:
 			$2.MemoryType = MEM_STACK
 			$$ = $2
                 }
-        //                      |declaration_specifiers abstract_declarator
-	/* |    declaration_specifiers */
-                ;
-
-identifier_list:
-                IDENTIFIER
-	|       identifier_list COMMA IDENTIFIER
                 ;
 
 declarator:     direct_declarator
@@ -1187,7 +1172,6 @@ struct_literal_fields:
                 }
                 ;
 
-// here
 array_literal_expression_list:
                 assignment_expression
                 {
@@ -1554,7 +1538,6 @@ postfix_expression:
 
 			$$ = $1
                 }
-        /* |       type_specifier PERIOD type_specifier */
         |       type_specifier PERIOD after_period
                 {
 			// these will always be native functions
@@ -1594,7 +1577,8 @@ postfix_expression:
 			$1[0].Inputs = nil
 			$$ = FunctionCall($1, nil)
                 }
-	|       postfix_expression LPAREN argument_expression_list RPAREN
+	/* |       postfix_expression LPAREN argument_expression_list RPAREN */
+	|       postfix_expression LPAREN expression RPAREN
                 {
 			if $1[len($1) - 1].Operator == nil {
 				// if fn, err := prgrm.GetFunction($1[len($1) - 1].Outputs[0].Name,
@@ -1696,7 +1680,7 @@ unary_expression:
                 { $$ = $2 }
 	|       DEC_OP unary_expression
                 { $$ = $2 }
-	|       unary_operator unary_expression // check
+	|       unary_operator unary_expression
                 {
 			exprOut := $2[len($2) - 1].Outputs[0]
 			switch $1 {
@@ -1944,6 +1928,8 @@ assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
+			fmt.Println("here", $1[0].Outputs[0])
+
 			if $3[0].IsArrayLiteral {
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[0].IsStructLiteral {
@@ -2038,68 +2024,7 @@ declaration:
                 }
                 ;
 
-/* init_declarator: */
-/*                 declarator '=' initializer */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/*         |       declarator */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/*                 ; */
-
-
-/* init_declarator_list: */
-/*                 init_declarator */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/* 	|       init_declarator_list COMMA init_declarator */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/*                 ; */
-
-/* init_declarator: */
-/*                 declarator '=' initializer */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/*         |       declarator */
-/*                 { */
-/*                     $$ = nil */
-/*                 } */
-/*                 ; */
-
-
-
-
-
-
-initializer:
-        /*         LBRACE initializer_list RBRACE */
-	/* |       LBRACE   initializer_list COMMA RBRACE */
-	/* |        */assignment_expression
-                ;
-
-initializer_list:
-                designation initializer
-                {
-                    $$ = nil
-                }
-	|       initializer
-                {
-                    $$ = nil
-                }
-	|       initializer_list COMMA designation initializer
-                {
-                    $$ = nil
-                }
-	|       initializer_list COMMA initializer
-                {
-			$$ = nil
-                }
+initializer:    assignment_expression
                 ;
 
 designation:    designator_list ASSIGN
