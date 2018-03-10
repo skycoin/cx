@@ -173,6 +173,8 @@
 	func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		for _, f := range from {
 			f.Outputs[0].Name = to[0].Outputs[0].Name
+			// f.Outputs[0].IsReference = to[0].Outputs[0].IsReference
+			// f.Outputs[0].IsPointer = to[0].Outputs[0].IsPointer
 			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
 		}
 		
@@ -202,16 +204,25 @@
 			return append(to[:len(to) - 1], from...)
 		} else {
 			if from[idx].Operator.IsNative {
-				for i, out := range from[idx].Operator.Outputs {
-					to[0].Outputs[i].Size = Natives[from[idx].Operator.OpCode].Outputs[i].Size
-					to[0].Outputs[i].Lengths = out.Lengths
-				}
+				// we'll delegate multiple-value returns to the 'expression' grammar rule
+				// for i, out := range from[idx].Operator.Outputs {
+				// 	to[0].Outputs[i].Size = Natives[from[idx].Operator.OpCode].Outputs[i].Size
+				// 	to[0].Outputs[i].Lengths = out.Lengths
+				// }
+
+				// only assigning as if the operator had only one output defined
+				to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
+				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			} else {
-				fmt.Println("huehue", to[0].Outputs)
-				for i, out := range from[idx].Operator.Outputs {
-					to[0].Outputs[i].Size = out.Size
-					to[0].Outputs[i].Lengths = out.Lengths
-				}
+				// we'll delegate multiple-value returns to the 'expression' grammar rule
+				// for i, out := range from[idx].Operator.Outputs {
+				// 	to[0].Outputs[i].Size = out.Size
+				// 	to[0].Outputs[i].Lengths = out.Lengths
+				// }
+
+				// only assigning as if the operator had only one output defined
+				to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
+				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			}
 			
 			from[idx].Outputs = to[0].Outputs
@@ -416,7 +427,6 @@
 						sym.Size = arg.Size
 						sym.TotalSize = arg.TotalSize
 					}
-					
 				}
 
 				var subTotalSize int
@@ -1192,13 +1202,6 @@ array_literal_expression_list:
 array_literal_expression:
                 LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE array_literal_expression_list RBRACE
                 {
-			// var result []*CXExpression
-			// for _, exprs := range $6 {
-			// 	result = append(result, exprs...)
-			// }
-
-			// $$ = result
-
 			$$ = $6
                 }
         |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
@@ -1577,8 +1580,7 @@ postfix_expression:
 			$1[0].Inputs = nil
 			$$ = FunctionCall($1, nil)
                 }
-	/* |       postfix_expression LPAREN argument_expression_list RPAREN */
-	|       postfix_expression LPAREN expression RPAREN
+	|       postfix_expression LPAREN argument_expression_list RPAREN
                 {
 			if $1[len($1) - 1].Operator == nil {
 				// if fn, err := prgrm.GetFunction($1[len($1) - 1].Outputs[0].Name,
@@ -1683,6 +1685,7 @@ unary_expression:
 	|       unary_operator unary_expression
                 {
 			exprOut := $2[len($2) - 1].Outputs[0]
+			fmt.Println("here", exprOut)
 			switch $1 {
 			case "*":
 				exprOut.DereferenceLevels++
@@ -1928,8 +1931,6 @@ assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
-			fmt.Println("here", $1[0].Outputs[0])
-
 			if $3[0].IsArrayLiteral {
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[0].IsStructLiteral {
@@ -1957,6 +1958,7 @@ assignment_operator:
 expression:     assignment_expression
 	|       expression COMMA assignment_expression
                 {
+			$3[len($3) - 1].Outputs = append($1[len($1) - 1].Outputs, $3[len($3) - 1].Outputs...)
 			$$ = append($1, $3...)
                 }
                 ;

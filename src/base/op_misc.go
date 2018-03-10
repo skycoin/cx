@@ -21,7 +21,7 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 			WriteToHeap(&out1.Program.Heap, out1Offset, byts)
 		case MEM_DATA:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
-			WriteToData(&out1.Program.Data, out1Offset, byts)
+			WriteToData(&inp1.Program.Data, out1Offset, byts)
 		default:
 			panic("implement the other mem types in readI32")
 		}

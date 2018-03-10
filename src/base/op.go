@@ -87,9 +87,6 @@ func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
 			WriteToData(&arg.Program.Data, offset, byts)
 		}
 	case MEM_HEAP:
-
-		// encoder.Serialize(int32(len(byts)))
-		
 		switch arg.MemoryType {
 		case MEM_STACK:
 			WriteToStack(stack, offset, byts)
@@ -223,8 +220,19 @@ func WriteToStack (stack *CXStack, offset int, out []byte) {
 }
 
 func WriteToHeap (heap *Heap, offset int, out []byte) {
+	size := encoder.Serialize(int32(len(out)))
+	
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	for c := 1; c < 5; c++ {
+		header[c] = size[c - 1]
+	}
+	
+	for c := 0; c < OBJECT_HEADER_SIZE; c++ {
+		(*heap)[offset + c] = header[c]
+	}
+
 	for c := 0; c < len(out); c++ {
-		(*heap)[offset + c] = out[c]
+		(*heap)[offset + OBJECT_HEADER_SIZE + c] = out[c]
 	}
 }
 

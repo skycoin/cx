@@ -5,6 +5,7 @@ Table of Contents
 
    * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language)
+   * [CX Playground](#cx-playground)
    * [Changelog](#changelog)
    * [Installation](#installation)
       * [Installing Go](#installing-go)
@@ -71,6 +72,11 @@ the concept of affordances, where the user can ask the programming
 language at runtime what can be done with a CX object (functions,
 expressions, packages, etc.), and interactively or automatically choose
 one of the affordances to be applied.
+
+# CX Playground
+
+If you want to test some CX examples, you can do it in the CX
+[Playground (http://cx.skycoin.net/)](http://cx.skycoin.net/).
 
 # Changelog
 

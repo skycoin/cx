@@ -1,7 +1,7 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	// "errors"
 	"math/rand"
 	"time"
@@ -11,6 +11,8 @@ import (
 func (prgrm *CXProgram) Run () error {
 	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	fmt.Println("prgrm.Data", prgrm.Data)
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 		// initializing program resources
