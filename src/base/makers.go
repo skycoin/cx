@@ -20,10 +20,12 @@ func MakeProgram (callStackSize int, stackSize int, initialHeapSize int) *CXProg
 		Packages: make([]*CXPackage, 0),
 		CallStack: make([]CXCall, callStackSize, callStackSize),
 		Stacks: make([]CXStack, 1, 1),
-		// Heaps: make([]Heap, 1, 1),
+		Heap: MakeHeap(initialHeapSize),
 	}
+	
 	newPrgrm.Stacks[0] = MakeStack(stackSize)
-	newPrgrm.Heap = Heap(make([]byte, initialHeapSize))
+	newPrgrm.Stacks[0].Program = newPrgrm
+	
 	return newPrgrm
 }
 
@@ -127,6 +129,14 @@ func MakeStack (size int) CXStack {
 	return CXStack{
 		Stack: make([]byte, size, size),
 		StackPointer: 0,
+	}
+}
+
+func MakeHeap (size int) CXHeap {
+	return CXHeap{
+		Heap: make([]byte, size, size),
+		// HeapPointer: 0,
+		HeapPointer: NULL_HEAP_ADDRESS_OFFSET,
 	}
 }
 

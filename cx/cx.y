@@ -2,7 +2,7 @@
 	package main
 	import (
 		// "strings"
-		"fmt"
+		// "fmt"
 		// "os"
 		// "time"
 
@@ -11,9 +11,8 @@
 		. "github.com/skycoin/cx/src/base"
 	)
 
-	// var prgrm = MakeProgram(256, 256, 256)
-	var prgrm = MakeProgram(200000, 200000, 200000)
-	// var data Data
+	var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// var prgrm = MakeProgram(200000, 200000, 200000)
 	var dataOffset int
 
 	var lineNo int = 0
@@ -85,6 +84,7 @@
 		
 		out = append(leftExprs, rightExprs...)
 		out = append(out, expr)
+
 		return
 	}
 
@@ -171,10 +171,74 @@
 	}
 
 	func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+		pkg, err := prgrm.GetCurrentPackage()
+		if err != nil {
+			panic(err)
+		}
+
+		out := MakeParameter(MakeGenSym(LOCAL_PREFIX), TYPE_CUSTOM)
+		
+		out.CustomType = from[len(from) - 1].Outputs[0].CustomType
+		out.Size = from[len(from) - 1].Outputs[0].CustomType.Size
+		out.TotalSize = from[len(from) - 1].Outputs[0].CustomType.Size
+		// out.MemoryType = from[len(from) - 1].Outputs[0].MemoryType
+		out.Package = pkg
+		out.Program = prgrm
+
+		// var isReference bool
+
+		// for _, f := range from {
+		// 	// if f.Outputs[0].IsReference {
+		// 	// 	fmt.Println("huehue", f.Outputs[0].Name)
+		// 	// 	isReference = true
+		// 	// }
+		// 	f.Outputs[0].Name = out.Name
+		// 	f.Outputs[0].Program = prgrm
+		// 	f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
+		// }
+
+		// if isReference {
+		// 	// for _, f := range from {
+		// 	// 	f.Outputs[0].IsReference = true
+		// 	// }
+
+
+		// 	// from[len(from) - 1].Outputs[0].MemoryType = MEM_HEAP
+		// 	out.IsReference = true
+		// 	out.MemoryType = MEM_HEAP
+			
+		// 	// refName := MakeParameter(MakeGenSym(LOCAL_PREFIX), TYPE_CUSTOM)
+		// 	// refName.Size = exprOut.Size
+		// 	// refName.TotalSize = exprOut.Size
+		// 	// refName.Package = pkg
+
+		// 	// refName.IsReference = true
+		// 	// refName.IsPointer = true
+
+		// 	// refName.CustomType = exprOut.CustomType
+		// 	// refName.Fields = exprOut.Fields
+
+		// 	// expr := MakeExpression(Natives[OP_IDENTITY])
+		// 	// expr.Package= pkg
+		// 	// expr.AddInput(exprOut)
+		// 	// expr.AddOutput(refName)
+		// }
+
+		// expr := MakeExpression(Natives[OP_IDENTITY])
+		// expr.Package = pkg
+		// fmt.Println("huh", out.Name, out.MemoryType, out.IsReference)
+		// expr.AddInput(out)
+
+		// exprs := append(from, expr)
+		
+		// return Assignment(to, exprs)
+
+
+
+		
+		// before
 		for _, f := range from {
 			f.Outputs[0].Name = to[0].Outputs[0].Name
-			// f.Outputs[0].IsReference = to[0].Outputs[0].IsReference
-			// f.Outputs[0].IsPointer = to[0].Outputs[0].IsPointer
 			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
 		}
 		
@@ -197,9 +261,11 @@
 			from[idx].Operator = Natives[OP_IDENTITY]
 			to[0].Outputs[0].Size = from[idx].Outputs[0].Size
 			to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
+			to[0].Outputs[0].Program = prgrm
 			
 			from[idx].Inputs = from[idx].Outputs
 			from[idx].Outputs = to[len(to) - 1].Outputs
+			from[idx].Program = prgrm
 
 			return append(to[:len(to) - 1], from...)
 		} else {
@@ -213,6 +279,8 @@
 				// only assigning as if the operator had only one output defined
 				to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+				// to[0].Outputs[0].MemoryType = from[idx].Outputs[0].MemoryType
+				to[0].Outputs[0].Program = prgrm
 			} else {
 				// we'll delegate multiple-value returns to the 'expression' grammar rule
 				// for i, out := range from[idx].Operator.Outputs {
@@ -223,9 +291,21 @@
 				// only assigning as if the operator had only one output defined
 				to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+				// to[0].Outputs[0].MemoryType = from[idx].Outputs[0].MemoryType
+				to[0].Outputs[0].Program = prgrm
 			}
-			
+
+			// if len(from[idx].Outputs) > 0 && from[idx].Outputs[0].IsReference {
+			// 	to[0].Outputs[0].IsReference = true
+			// 	to[0].Outputs[0].MemoryType = MEM_HEAP
+			// }
+
 			from[idx].Outputs = to[0].Outputs
+			from[idx].Program = to[0].Program
+
+			if from[0].IsStructLiteral {
+				from[idx].Outputs[0].MemoryType = MEM_HEAP
+			}
 
 			return append(to[:len(to) - 1], from...)
 			// return append(to, from...)
@@ -280,6 +360,43 @@
 		exprs = append(exprs, elseExprs...)
 		
 		return exprs
+	}
+
+	func GetSymType (sym *CXArgument, fn *CXFunction) int {
+		if sym.Name == "" {
+			// then literal
+			return sym.Type
+		}
+		if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
+			// then it's a global
+			return glbl.Type
+		} else {
+			// then it's a local
+			for _, inp := range fn.Inputs {
+				if inp.Name == sym.Name {
+					return inp.Type
+				}
+			}
+			for _, out := range fn.Outputs {
+				if out.Name == sym.Name {
+					return out.Type
+				}
+			}
+
+			for _, expr := range fn.Expressions {
+				for _, inp := range expr.Inputs {
+					if inp.Name == sym.Name {
+						return inp.Type
+					}
+				}
+				for _, out := range expr.Outputs {
+					if out.Name == sym.Name {
+						return out.Type
+					}
+				}
+			}
+		}
+		return TYPE_UNDEFINED
 	}
 
 	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
@@ -410,11 +527,13 @@
 				sym.PointeeSize = arg.PointeeSize
 				sym.Package = arg.Package
 				sym.Program = arg.Program
+
 				sym.MemoryType = arg.MemoryType
 				
 				if sym.IsReference && !arg.IsStruct {
 					// sym.Size = TYPE_POINTER_SIZE
-					sym.TotalSize = TYPE_POINTER_SIZE
+					// sym.TotalSize = TYPE_POINTER_SIZE
+					sym.TotalSize = arg.TotalSize
 					
 					sym.Size = arg.Size
 					// sym.TotalSize = arg.TotalSize
@@ -473,6 +592,11 @@
 			inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
 
 			GiveOffset(&symbols, inp, &offset, false)
+			
+			// if _, found := symbols[inp.Package.Name + "." + inp.Name]; !found {
+			// 	AddPointer(fn, inp)
+			// }
+			AddPointer(fn, inp)
 		}
 		for _, out := range fn.Outputs {
 			if out.IsLocalDeclaration {
@@ -481,6 +605,11 @@
 			out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
 			
 			GiveOffset(&symbols, out, &offset, false)
+			
+			// if _, found := symbols[out.Package.Name + "." + out.Name]; !found {
+			// 	AddPointer(fn, out)
+			// }
+			AddPointer(fn, out)
 		}
 
 		for _, expr := range fn.Expressions {
@@ -494,6 +623,11 @@
 				for _, idx := range inp.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
+
+				// if _, found := symbols[inp.Package.Name + "." + inp.Name]; !found {
+				// 	AddPointer(fn, inp)
+				// }
+				AddPointer(fn, inp)
 			}
 			for _, out := range expr.Outputs {
 				if out.IsLocalDeclaration {
@@ -505,9 +639,17 @@
 				for _, idx := range out.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
+
+				// if _, found := symbols[out.Package.Name + "." + out.Name]; !found {
+				// 	AddPointer(fn, out)
+				// }
+				AddPointer(fn, out)
 			}
+			
+			SetCorrectArithmeticOp(expr)
 		}
 		fn.Size = offset
+		// fmt.Println("here", fn.ListOfPointers, fn.Name)
 	}
 
 	func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
@@ -1004,6 +1146,7 @@ declaration_specifiers:
                 {
 			if !$2.IsPointer {
 				$2.IsPointer = true
+				$2.MemoryType = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
@@ -1435,6 +1578,11 @@ primary_expression:
 						fld.Name = expr.Outputs[0].Name
 
 						expr.IsStructLiteral = true
+
+						// expr.Outputs[0].MemoryType = MEM_HEAP
+						expr.Outputs[0].Package = pkg
+						expr.Outputs[0].Program = prgrm
+
 						expr.Outputs[0].CustomType = strct
 						expr.Outputs[0].Size = strct.Size
 						expr.Outputs[0].TotalSize = strct.Size
@@ -1608,11 +1756,41 @@ postfix_expression:
                 }
 	|       postfix_expression INC_OP
                 {
-			$$ = $1
+			pkg, err := prgrm.GetCurrentPackage()
+			if err != nil {
+				panic(err)
+			}
+			
+			expr := MakeExpression(Natives[OP_I32_ADD])
+			val := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(1)))
+
+			expr.AddInput($1[len($1) - 1].Outputs[0])
+			expr.AddInput(val[len(val) - 1].Outputs[0])
+			expr.AddOutput($1[len($1) - 1].Outputs[0])
+
+			expr.Package = pkg
+			
+			exprs := append($1, expr)
+			$$ = exprs
                 }
         |       postfix_expression DEC_OP
                 {
-			$$ = $1
+			pkg, err := prgrm.GetCurrentPackage()
+			if err != nil {
+				panic(err)
+			}
+			
+			expr := MakeExpression(Natives[OP_I32_SUB])
+			val := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(1)))
+
+			expr.AddInput($1[len($1) - 1].Outputs[0])
+			expr.AddInput(val[len(val) - 1].Outputs[0])
+			expr.AddOutput($1[len($1) - 1].Outputs[0])
+
+			expr.Package = pkg
+			
+			exprs := append($1, expr)
+			$$ = exprs
                 }
         |       postfix_expression PERIOD IDENTIFIER
                 {
@@ -1679,13 +1857,18 @@ argument_expression_list:
 unary_expression:
                 postfix_expression
 	|       INC_OP unary_expression
-                { $$ = $2 }
+                {
+			// TODO
+			$$ = $2
+                }
 	|       DEC_OP unary_expression
-                { $$ = $2 }
+                {
+			// TODO
+			$$ = $2
+                }
 	|       unary_operator unary_expression
                 {
 			exprOut := $2[len($2) - 1].Outputs[0]
-			fmt.Println("here", exprOut)
 			switch $1 {
 			case "*":
 				exprOut.DereferenceLevels++
@@ -1693,11 +1876,45 @@ unary_expression:
 				if !exprOut.IsArrayFirst {
 					exprOut.IsDereferenceFirst = true
 				}
-                
+
+				// exprOut.MemoryType = MEM_HEAP
 				exprOut.IsReference = false
 			case "&":
-				exprOut.IsReference = true
-				exprOut.IsPointer = true
+				// pkg, err := prgrm.GetCurrentPackage()
+				// if err != nil {
+				// 	panic(err)
+				// }
+
+				$2[0].Outputs[0].IsReference = true
+				// $2[0].Outputs[0].MemoryType = MEM_HEAP
+				$2[0].Outputs[0].IsPointer = true
+
+				// exprOut.IsReference = true
+				// exprOut.MemoryType = MEM_HEAP
+				// exprOut.IsPointer = true
+
+
+
+
+
+				
+				// refName := MakeParameter(MakeGenSym(LOCAL_PREFIX), TYPE_CUSTOM)
+				// refName.Size = exprOut.Size
+				// refName.TotalSize = exprOut.Size
+				// refName.Package = pkg
+
+				// refName.IsReference = true
+				// refName.IsPointer = true
+
+				// refName.CustomType = exprOut.CustomType
+				// refName.Fields = exprOut.Fields
+
+				// expr := MakeExpression(Natives[OP_IDENTITY])
+				// expr.Package= pkg
+				// expr.AddInput(exprOut)
+				// expr.AddOutput(refName)
+
+				// $2 = append($2, expr)
 			}
 			$$ = $2
                 }
@@ -1715,34 +1932,36 @@ multiplicative_expression:
                 unary_expression
         |       multiplicative_expression MUL_OP unary_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_MUL]
-			case TYPE_I64: op = Natives[OP_I64_MUL]
-			case TYPE_F32: op = Natives[OP_F32_MUL]
-			case TYPE_F64: op = Natives[OP_F64_MUL]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_MUL]
+			// case TYPE_I64: op = Natives[OP_I64_MUL]
+			// case TYPE_F32: op = Natives[OP_F32_MUL]
+			// case TYPE_F64: op = Natives[OP_F64_MUL]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_MUL])
                 }
         |       multiplicative_expression DIV_OP unary_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_DIV]
-			case TYPE_I64: op = Natives[OP_I64_DIV]
-			case TYPE_F32: op = Natives[OP_F32_DIV]
-			case TYPE_F64: op = Natives[OP_F64_DIV]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_DIV]
+			// case TYPE_I64: op = Natives[OP_I64_DIV]
+			// case TYPE_F32: op = Natives[OP_F32_DIV]
+			// case TYPE_F64: op = Natives[OP_F64_DIV]
+			// }
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_DIV])
                 }
         |       multiplicative_expression MOD_OP unary_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_MOD]
-			case TYPE_I64: op = Natives[OP_I64_MOD]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_MOD]
+			// case TYPE_I64: op = Natives[OP_I64_MOD]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_MOD])
                 }
                 ;
 
@@ -1750,25 +1969,28 @@ additive_expression:
                 multiplicative_expression
         |       additive_expression ADD_OP multiplicative_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_ADD]
-			case TYPE_I64: op = Natives[OP_I64_ADD]
-			case TYPE_F32: op = Natives[OP_F32_ADD]
-			case TYPE_F64: op = Natives[OP_F64_ADD]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_ADD]
+			// case TYPE_I64: op = Natives[OP_I64_ADD]
+			// case TYPE_F32: op = Natives[OP_F32_ADD]
+			// case TYPE_F64: op = Natives[OP_F64_ADD]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_ADD])
                 }
 	|       additive_expression SUB_OP multiplicative_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_SUB]
-			case TYPE_I64: op = Natives[OP_I64_SUB]
-			case TYPE_F32: op = Natives[OP_F32_SUB]
-			case TYPE_F64: op = Natives[OP_F64_SUB]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_SUB]
+			// case TYPE_I64: op = Natives[OP_I64_SUB]
+			// case TYPE_F32: op = Natives[OP_F32_SUB]
+			// case TYPE_F64: op = Natives[OP_F64_SUB]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_SUB])
                 }
                 ;
 
@@ -1776,21 +1998,23 @@ shift_expression:
                 additive_expression
         |       shift_expression LEFT_OP additive_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_BITSHL]
-			case TYPE_I64: op = Natives[OP_I64_BITSHL]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_BITSHL]
+			// case TYPE_I64: op = Natives[OP_I64_BITSHL]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_BITSHL])
                 }
         |       shift_expression RIGHT_OP additive_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_BITSHR]
-			case TYPE_I64: op = Natives[OP_I64_BITSHR]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_BITSHR]
+			// case TYPE_I64: op = Natives[OP_I64_BITSHR]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_BITSHR])
                 }
                 ;
 
@@ -1798,47 +2022,56 @@ relational_expression:
                 shift_expression
         |       relational_expression LT_OP shift_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_LT]
-			case TYPE_I64: op = Natives[OP_I64_LT]
-			case TYPE_F32: op = Natives[OP_F32_LT]
-			case TYPE_F64: op = Natives[OP_F64_LT]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_LT]
+			// case TYPE_I64: op = Natives[OP_I64_LT]
+			// case TYPE_F32: op = Natives[OP_F32_LT]
+			// case TYPE_F64: op = Natives[OP_F64_LT]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			
+			// We'll determine what type in GiveOffset
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_LT])
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_GT]
-			case TYPE_I64: op = Natives[OP_I64_GT]
-			case TYPE_F32: op = Natives[OP_F32_GT]
-			case TYPE_F64: op = Natives[OP_F64_GT]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_GT]
+			// case TYPE_I64: op = Natives[OP_I64_GT]
+			// case TYPE_F32: op = Natives[OP_F32_GT]
+			// case TYPE_F64: op = Natives[OP_F64_GT]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_GT])
                 }
         |       relational_expression LTEQ_OP shift_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_LTEQ]
-			case TYPE_I64: op = Natives[OP_I64_LTEQ]
-			case TYPE_F32: op = Natives[OP_F32_LTEQ]
-			case TYPE_F64: op = Natives[OP_F64_LTEQ]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_LTEQ]
+			// case TYPE_I64: op = Natives[OP_I64_LTEQ]
+			// case TYPE_F32: op = Natives[OP_F32_LTEQ]
+			// case TYPE_F64: op = Natives[OP_F64_LTEQ]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_LTEQ])
                 }
         |       relational_expression GTEQ_OP shift_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_GTEQ]
-			case TYPE_I64: op = Natives[OP_I64_GTEQ]
-			case TYPE_F32: op = Natives[OP_F32_GTEQ]
-			case TYPE_F64: op = Natives[OP_F64_GTEQ]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_GTEQ]
+			// case TYPE_I64: op = Natives[OP_I64_GTEQ]
+			// case TYPE_F32: op = Natives[OP_F32_GTEQ]
+			// case TYPE_F64: op = Natives[OP_F64_GTEQ]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_GTEQ])
                 }
                 ;
 
@@ -1846,14 +2079,15 @@ equality_expression:
                 relational_expression
         |       equality_expression EQ_OP relational_expression
                 {
-			var op *CXFunction
-			switch $1[len($1) - 1].Outputs[0].Type {
-			case TYPE_I32: op = Natives[OP_I32_EQ]
-			case TYPE_I64: op = Natives[OP_I64_EQ]
-			case TYPE_F32: op = Natives[OP_F32_EQ]
-			case TYPE_F64: op = Natives[OP_F64_EQ]
-			}
-			$$ = ArithmeticOperation($1, $3, op)
+			// var op *CXFunction
+			// switch $1[len($1) - 1].Outputs[0].Type {
+			// case TYPE_I32: op = Natives[OP_I32_EQ]
+			// case TYPE_I64: op = Natives[OP_I64_EQ]
+			// case TYPE_F32: op = Natives[OP_F32_EQ]
+			// case TYPE_F64: op = Natives[OP_F64_EQ]
+			// }
+			// $$ = ArithmeticOperation($1, $3, op)
+			$$ = ArithmeticOperation($1, $3, Natives[OP_I32_EQ])
                 }
         |       equality_expression NE_OP relational_expression
                 {

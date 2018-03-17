@@ -47,6 +47,7 @@ plb-master
 kenney*
 fib.pl
 testing.cx
+clean-test.cx
 testing-pointers.cx
 texture-animation4.cx
 serial

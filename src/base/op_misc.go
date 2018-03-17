@@ -12,26 +12,30 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 	out1Offset := GetFinalOffset(stack, fp, out1)
 
 	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
-		switch inp1.MemoryType {
+		switch out1.MemoryType {
 		case MEM_STACK:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToStack(stack, out1Offset, byts)
 		case MEM_HEAP:
-			byts := encoder.SerializeAtomic(int32(inp1Offset))
-			WriteToHeap(&out1.Program.Heap, out1Offset, byts)
+			heapOffset := AllocateSeq(stack.Program, inp1.TotalSize + OBJECT_HEADER_SIZE)
+			
+			byts := ReadMemory(stack, inp1Offset, inp1)
+			WriteToHeap(&stack.Program.Heap, heapOffset, byts)
+			// WriteToHeap(&stack.Program.Heap, heapOffset + NULL_HEAP_ADDRESS_OFFSET, byts)
+
+			// offset := encoder.SerializeAtomic(int32(heapOffset + NULL_HEAP_ADDRESS_OFFSET))
+			offset := encoder.SerializeAtomic(int32(heapOffset))
+			WriteToStack(stack, out1Offset, offset)
 		case MEM_DATA:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
-			WriteToData(&inp1.Program.Data, out1Offset, byts)
+			WriteToData(&stack.Program.Data, out1Offset, byts)
 		default:
-			panic("implement the other mem types in readI32")
+			panic("implement the other mem types")
 		}
 	} else if inp1.IsReference {
-		// WriteToStack(stack, out1Offset, FromI32(int32(inp1Offset)))
 		WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
 	} else {
-		// fmt.Println("hi", inp1.Offset, inp1Offset)
-		byts := ReadMemory(stack, inp1Offset, inp1)
-		WriteMemory(stack, out1Offset, out1, byts)
+		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
 	}
 }
 
@@ -44,8 +48,8 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	// inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	inp1 := expr.Inputs[0]
 	var predicate bool
-	// var thenLines int32
-	// var elseLines int32
+	 // var thenLines int32
+	// var elseLin   es int32
 
 	inp1Offset := GetFinalOffset(stack, fp, inp1)
 

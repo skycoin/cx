@@ -9,7 +9,17 @@ const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 const SLICE_SIZE = 32
-const OBJECT_HEADER_SIZE = 5
+const MARK_SIZE = 1
+const OBJECT_HEADER_SIZE = 9
+const FORWARDING_ADDRESS_SIZE = 4
+const OBJECT_SIZE = 4
+const CALLSTACK_SIZE = 2000000
+const STACK_SIZE = 2000000
+const INIT_HEAP_SIZE = 2000000
+const NULL_HEAP_ADDRESS_OFFSET = 4
+const NULL_HEAP_ADDRESS = 0
+
+
 var BASIC_TYPES []string = []string{
 	"bool", "str", "byte", "i32", "i64", "f32", "f64",
 	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
@@ -246,6 +256,7 @@ var TypeCodes map[string]int = map[string]int{
 	"ui32": TYPE_UI32,
 	"ui64": TYPE_UI64,
 }
+
 var TypeNames map[int]string = map[int]string{
 	TYPE_IDENTIFIER: "ident",
 	TYPE_BOOL: "bool",
@@ -289,15 +300,24 @@ type CXProgram struct {
 	CallCounter int
 	
 	Stacks []CXStack
-	Heap Heap
+	Heap CXHeap
 	Data Data
 
 	Terminated bool
 }
 
+type CXHeap struct {
+	Heap Heap
+	HeapPointer int
+
+	Program *CXProgram
+}
+
 type CXStack struct {
 	Stack Stack
 	StackPointer int
+
+	Program *CXProgram
 }
 
 type CXCall struct {
@@ -350,6 +370,8 @@ type CXFunction struct {
 	Size int // automatic memory size
 	Length int // number of expressions, pre-computed for performance
 
+	ListOfPointers []*CXArgument
+
 	IsNative bool
 	OpCode int
 
@@ -398,7 +420,7 @@ type CXArgument struct {
 
 	MemoryType int
 	Offset int
-	OffsetOffset int // for struct fields
+	// OffsetOffset int // for struct fields
 
 	IndirectionLevels int
 	DereferenceLevels int
