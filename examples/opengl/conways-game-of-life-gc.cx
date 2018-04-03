@@ -239,8 +239,8 @@ func newCell (x i32, y i32) (cell Cell) {
 		y: y}
 }
 
-func makeCells () (cells [225]Cell) {
-	// var cells [225]Cell
+func makeCells () (clls *[225]Cell) {
+	var cells [225]Cell
 	var x i32
 	var y i32
 	var counter i32
@@ -254,6 +254,8 @@ func makeCells () (cells [225]Cell) {
 			counter = i32.add(counter, 1)
 		}
 	}
+
+	clls = &cells
 }
 
 func initGlfw (window str) () {
@@ -353,7 +355,7 @@ func main () {
 	var program i32
 	program = initOpenGL()
 
-	var cells [225]Cell
+	var cells *[225]Cell
 	cells = makeCells()
 
 	// Start FPS
@@ -378,7 +380,6 @@ func main () {
 
 		var c i32
 		for c = 0; i32.lt(c, 225); c = i32.add(c, 1) {
-			// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
 			cells[c] = changeState(cells[c], cells)
 		}
 		

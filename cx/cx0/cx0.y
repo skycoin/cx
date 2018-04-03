@@ -306,22 +306,22 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
-			if $1.IsArray {
-				$1.TotalSize = $1.Size * TotalLength($1.Lengths)
-			} else {
-				$1.TotalSize = $1.Size
-			}
+			// if $1.IsArray {
+			// 	$1.TotalSize = $1.Size * TotalLength($1.Lengths)
+			// } else {
+			// 	$1.TotalSize = $1.Size
+			// }
 			$$ = []*CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
-			if $3.IsArray {
-				$3.TotalSize = $3.Size * TotalLength($3.Lengths)
-			} else {
-				$3.TotalSize = $3.Size
-			}
-			lastPar := $1[len($1) - 1]
-			$3.Offset = lastPar.Offset + lastPar.TotalSize
+			// if $3.IsArray {
+			// 	$3.TotalSize = $3.Size * TotalLength($3.Lengths)
+			// } else {
+			// 	$3.TotalSize = $3.Size
+			// }
+			// lastPar := $1[len($1) - 1]
+			// $3.Offset = lastPar.Offset + lastPar.TotalSize
 			$$ = append($1, $3)
                 }
                 ;

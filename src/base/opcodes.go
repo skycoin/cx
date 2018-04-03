@@ -5,6 +5,7 @@ const (
 	OP_IDENTITY = iota
 	OP_READ_ARRAY
 	OP_JMP
+	OP_DEBUG
 
 	OP_BOOL_PRINT
 	OP_BOOL_NOT
@@ -222,6 +223,7 @@ func execNative (prgrm *CXProgram) {
 	case OP_IDENTITY: identity(expr, stack, fp)
 	case OP_READ_ARRAY: read_array(expr, stack, fp)
 	case OP_JMP: jmp(expr, stack, fp, call)
+	case OP_DEBUG: prgrm.PrintStack()
 
 	case OP_BYTE_PRINT: byte_print(expr, stack, fp)
 
@@ -434,6 +436,7 @@ var OpNames map[int]string = map[int]string{
 	OP_IDENTITY: "identity",
 	OP_READ_ARRAY: "read",
 	OP_JMP: "jmp",
+	OP_DEBUG: "debug",
 
 	OP_BYTE_PRINT: "byte.print",
 
@@ -607,6 +610,7 @@ var OpCodes map[string]int = map[string]int{
 	"identity": OP_IDENTITY,
 	"read": OP_READ_ARRAY,
 	"jmp": OP_JMP,
+	"debug": OP_DEBUG,
 
 	"byte.print": OP_BYTE_PRINT,
 
@@ -785,6 +789,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_IDENTITY: MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
+	OP_DEBUG: MakeNative(OP_DEBUG, []int{}, []int{}),
 
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 

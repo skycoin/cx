@@ -20,6 +20,7 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 	var fldIdx int
 	elt = arg
 
+	// fmt.Println("start", arg.Name, finalOffset)
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
@@ -45,7 +46,6 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 				case MEM_HEAP:
 					var offset int32
 					byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
-					// byts := stack.Program.Heap.Heap[finalOffset : finalOffset + elt.Size]
 					encoder.DeserializeAtomic(byts, &offset)
 					finalOffset = int(offset) + OBJECT_HEADER_SIZE
 				case MEM_DATA:
@@ -58,12 +58,13 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 				}
 			}
 		}
+		// fmt.Println("update", finalOffset)
 	}
 
 	// return fp + finalOffset
 
-	// if arg.IsPointer || arg.MemoryType == MEM_DATA {
-	if arg.MemoryType == MEM_DATA {
+	if arg.IsPointer || arg.MemoryType == MEM_DATA {
+	// if arg.MemoryType == MEM_DATA {
 		// if arg.IsPointer {
 		// 	fmt.Println("hi", arg.Name, arg.Offset, arg.MemoryType)
 		// }
@@ -75,22 +76,22 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 }
 
 func ReadMemory (stack *CXStack, offset int, arg *CXArgument) (out []byte) {
+	// fmt.Println("hoho", arg.Name, arg.Size, arg.TotalSize, offset)
 	switch arg.MemoryType {
 	case MEM_STACK:
 		out = stack.Stack[offset : offset + arg.TotalSize]
 	case MEM_DATA:
 		out = stack.Program.Data[offset : offset + arg.TotalSize]
 	case MEM_HEAP:
-		out = stack.Program.Heap.Heap[offset : offset + arg.TotalSize]
-		// out = arg.Program.Heap.Heap[offset + NULL_HEAP_ADDRESS_OFFSET : offset + NULL_HEAP_ADDRESS_OFFSET + arg.TotalSize]
+		// fmt.Println("teehee", arg.Name, offset, stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + OBJECT_HEADER_SIZE + offset : NULL_HEAP_ADDRESS_OFFSET + OBJECT_HEADER_SIZE + offset + arg.TotalSize])
+
+		// testingOffset := offset + NULL_HEAP_ADDRESS_OFFSET
+		// fmt.Println("ff", arg.Offset, offset, testingOffset)
+		out = stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + offset : NULL_HEAP_ADDRESS_OFFSET + offset + arg.TotalSize]
 	default:
 		panic("implement the other mem types")
 	}
 	return
-}
-
-func GCMarkCompact (stack *CXStack, heap *CXHeap) {
-	
 }
 
 // marks all the alive objects in the heap
@@ -108,16 +109,6 @@ func Mark (prgrm *CXProgram) {
 		
 		fp += op.Size
 	}
-}
-
-func ComputeLocations (prgrm *CXProgram) {
-	// for c := int32(0); c < INIT_HEAP_SIZE; {
-	// 	var objSize int32
-		
-	// 	encoder.DeserializeAtomic(prgrm.Heap.Heap[int(heapOffset) + 1 + TYPE_POINTER_SIZE : int(heapOffset) + 1 + TYPE_POINTER_SIZE + OBJECT_SIZE], &objSize)
-
-	// 	c += objSize
-	// }
 }
 
 func MarkAndCompact (prgrm *CXProgram) {
@@ -213,36 +204,55 @@ func AllocateSeq (prgrm *CXProgram, size int) (offset int) {
 func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
 	switch arg.MemoryType {
 	case MEM_STACK:
-		switch arg.MemoryType {
-		case MEM_STACK:
-			WriteToStack(stack, offset, byts)
-		case MEM_HEAP:
-			WriteToHeap(&stack.Program.Heap, offset, byts)
-		case MEM_DATA:
-			WriteToData(&stack.Program.Data, offset, byts)
-		}
+		WriteToStack(stack, offset, byts)
 	case MEM_HEAP:
-		switch arg.MemoryType {
-		case MEM_STACK:
-			WriteToStack(stack, offset, byts)
-		case MEM_HEAP:
-			WriteToHeap(&stack.Program.Heap, offset, byts)
-		case MEM_DATA:
-			WriteToData(&stack.Program.Data, offset, byts)
-		}
+		WriteToHeap(&stack.Program.Heap, offset, byts)
 	case MEM_DATA:
-		switch arg.MemoryType {
-		case MEM_STACK:
-			WriteToStack(stack, offset, byts)
-		case MEM_HEAP:
-			WriteToHeap(&stack.Program.Heap, offset, byts)
-		case MEM_DATA:
-			WriteToData(&stack.Program.Data, offset, byts)
-		}
+		WriteToData(&stack.Program.Data, offset, byts)
 	default:
 		panic("implement the other mem types")
 	}
 }
+
+// func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
+// 	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
+// 		switch out1.MemoryType {
+// 		case MEM_STACK:
+// 			byts := encoder.SerializeAtomic(int32(inp1Offset))
+// 			WriteToStack(stack, out1Offset, byts)
+// 		case MEM_HEAP:
+// 			heapOffset := AllocateSeq(stack.Program, inp1.TotalSize + OBJECT_HEADER_SIZE)
+			
+// 			byts := ReadMemory(stack, inp1Offset, inp1)
+// 			WriteToHeap(&stack.Program.Heap, heapOffset, byts)
+// 			// WriteToHeap(&stack.Program.Heap, heapOffset + NULL_HEAP_ADDRESS_OFFSET, byts)
+
+// 			// offset := encoder.SerializeAtomic(int32(heapOffset + NULL_HEAP_ADDRESS_OFFSET))
+// 			offset := encoder.SerializeAtomic(int32(heapOffset))
+// 			WriteToStack(stack, out1Offset, offset)
+// 		case MEM_DATA:
+// 			byts := encoder.SerializeAtomic(int32(inp1Offset))
+// 			WriteToData(&stack.Program.Data, out1Offset, byts)
+// 		default:
+// 			panic("implement the other mem types")
+// 		}
+// 	} else if inp1.IsReference {
+// 		WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
+// 	} else {
+// 		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
+// 	}
+	
+// 	switch arg.MemoryType {
+// 	case MEM_STACK:
+// 		WriteToStack(stack, offset, byts)
+// 	case MEM_HEAP:
+// 		WriteToHeap(&stack.Program.Heap, offset, byts)
+// 	case MEM_DATA:
+// 		WriteToData(&stack.Program.Data, offset, byts)
+// 	default:
+// 		panic("implement the other mem types")
+// 	}
+// }
 
 // Utilities
 

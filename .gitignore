@@ -48,6 +48,7 @@ kenney*
 fib.pl
 testing.cx
 clean-test.cx
+testing-gc.cx
 testing-pointers.cx
 texture-animation4.cx
 serial

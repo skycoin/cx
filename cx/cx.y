@@ -432,6 +432,7 @@
 				
 				sym.Offset = *offset
 				(*symbols)[sym.Package.Name + "." + sym.Name] = sym
+
 				*offset += sym.TotalSize
 
 				if sym.IsPointer {
@@ -540,7 +541,8 @@
 				} else {
 					// we need to implement a more robust system, like the one in op.go
 					if len(sym.Fields) > 0 {
-						sym.Size = sym.Fields[len(sym.Fields) - 1].Size
+						// sym.Size = sym.Fields[len(sym.Fields) - 1].Size
+						sym.Size = arg.Size
 						sym.TotalSize = sym.Fields[len(sym.Fields) - 1].TotalSize
 					} else {
 						sym.Size = arg.Size
@@ -549,7 +551,10 @@
 				}
 
 				var subTotalSize int
-				if len(sym.Indexes) > 0 && len(sym.Fields) < 1 {
+
+				// if len(sym.Indexes) > 0 && len(sym.Fields) < 1 {
+				if len(sym.Indexes) > 0 && len(sym.Fields) < 1 && !sym.IsPointer {
+					// if len(sym.Indexes) > 0 {
 					// then we need to adjust TotalSize depending on the number of indexes
 					for i, _ := range sym.Indexes {
 						var subSize int = 1
@@ -592,10 +597,7 @@
 			inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
 
 			GiveOffset(&symbols, inp, &offset, false)
-			
-			// if _, found := symbols[inp.Package.Name + "." + inp.Name]; !found {
-			// 	AddPointer(fn, inp)
-			// }
+
 			AddPointer(fn, inp)
 		}
 		for _, out := range fn.Outputs {
@@ -606,9 +608,6 @@
 			
 			GiveOffset(&symbols, out, &offset, false)
 			
-			// if _, found := symbols[out.Package.Name + "." + out.Name]; !found {
-			// 	AddPointer(fn, out)
-			// }
 			AddPointer(fn, out)
 		}
 
@@ -649,7 +648,6 @@
 			SetCorrectArithmeticOp(expr)
 		}
 		fn.Size = offset
-		// fmt.Println("here", fn.ListOfPointers, fn.Name)
 	}
 
 	func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
@@ -1058,22 +1056,22 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
-			if $1.IsArray {
-				$1.TotalSize = $1.Size * TotalLength($1.Lengths)
-			} else {
-				$1.TotalSize = $1.Size
-			}
+			// if $1.IsArray {
+			// 	$1.TotalSize = $1.Size * TotalLength($1.Lengths)
+			// } else {
+			// 	$1.TotalSize = $1.Size
+			// }
 			$$ = []*CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
-			if $3.IsArray {
-				$3.TotalSize = $3.Size * TotalLength($3.Lengths)
-			} else {
-				$3.TotalSize = $3.Size
-			}
-			lastPar := $1[len($1) - 1]
-			$3.Offset = lastPar.Offset + lastPar.TotalSize
+			// if $3.IsArray {
+			// 	$3.TotalSize = $3.Size * TotalLength($3.Lengths)
+			// } else {
+			// 	$3.TotalSize = $3.Size
+			// }
+			// lastPar := $1[len($1) - 1]
+			// $3.Offset = lastPar.Offset + lastPar.TotalSize
 			$$ = append($1, $3)
                 }
                 ;
@@ -1085,7 +1083,7 @@ parameter_declaration:
 			$2.Package = $1.Package
 			// $2.IsArray = $1.IsArray
 			// input and output parameters are always in the stack
-			$2.MemoryType = MEM_STACK
+			// $2.MemoryType = MEM_STACK
 			$$ = $2
                 }
                 ;

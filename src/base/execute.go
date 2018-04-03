@@ -2,7 +2,6 @@ package base
 
 import (
 	// "fmt"
-	// "errors"
 	"math/rand"
 	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"

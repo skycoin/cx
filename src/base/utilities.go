@@ -1214,6 +1214,83 @@ func IsBasicType (typ int) bool {
 // 	return nil, nil
 // }
 
+func (prgrm *CXProgram) PrintStack () {
+	fmt.Println()
+	fmt.Println("===Stack===")
+
+	fp := 0
+
+	
+	for c := 0; c <= prgrm.CallCounter; c++ {
+		op := prgrm.CallStack[c].Operator
+
+		var dupNames []string
+
+		fmt.Println(">>>", op.Name, "()")
+
+		for _, inp := range op.Inputs {
+			fmt.Println("Inputs")
+			fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset : inp.Offset + inp.TotalSize])
+
+			dupNames = append(dupNames, inp.Package.Name + inp.Name)
+		}
+		
+		for _, out := range op.Outputs {
+			fmt.Println("Outputs")
+			fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset : out.Offset + out.TotalSize])
+
+			dupNames = append(dupNames, out.Package.Name + out.Name)
+		}
+
+		fmt.Println("Expressions")
+		
+		for _, expr := range op.Expressions {
+			for _, inp := range expr.Inputs {
+				if inp.Name == "" || expr.Operator == nil {
+					continue
+				}
+				var dup bool
+				for _, name := range dupNames {
+					if name == inp.Package.Name + inp.Name {
+						dup = true
+						break
+					}
+				}
+				if dup {
+					continue
+				}
+				
+				fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset : inp.Offset + inp.TotalSize])
+
+				dupNames = append(dupNames, inp.Package.Name + inp.Name)
+			}
+			
+			for _, out := range expr.Outputs {
+				if out.Name == "" || expr.Operator == nil {
+					continue
+				}
+				var dup bool
+				for _, name := range dupNames {
+					if name == out.Package.Name + out.Name {
+						dup = true
+						break
+					}
+				}
+				if dup {
+					continue
+				}
+				
+				fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset : out.Offset + out.TotalSize])
+
+				dupNames = append(dupNames, out.Package.Name + out.Name)
+			}
+		}
+
+		fp += op.Size
+	}
+	fmt.Println()
+}
+
 func (prgrm *CXProgram) PrintProgram () {
 	fmt.Println("Program")
 	

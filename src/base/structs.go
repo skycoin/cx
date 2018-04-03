@@ -432,7 +432,7 @@ type CXArgument struct {
 	IsArrayFirst bool // and then dereference
 	IsPointer bool
 	IsReference bool
-	IsDereference bool
+	// IsDereference bool
 	IsDereferenceFirst bool // and then array
 	IsStruct bool
 	IsField bool
