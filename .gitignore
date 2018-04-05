@@ -47,6 +47,7 @@ plb-master
 kenney*
 fib.pl
 testing.cx
+testing2.cx
 clean-test.cx
 testing-gc.cx
 testing-pointers.cx

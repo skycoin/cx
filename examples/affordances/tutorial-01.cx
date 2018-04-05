@@ -1,32 +1,26 @@
-// Affordances Tutorial 01
-// Basic filtering of local variables
 package main
 
-func main () () {
-	foo1 := 1
-	foo2 := 2
-	foo3 := 3
-	foo4 := 4
-	foo5 := 5
-	foo6 := 6
-	foo7 := 7
-	foo8 := 8
+func main () {
+  	foo1 := 1
+  	foo2 := 2
+  	foo3 := 3
 	
 	target := ->{
-		pkg(main) fn(main) exp(message)
-	}
+  		pkg(main) fn(main) exp(message)
+  	}
+  	
+  	objs := ->{ obj1 $0.5 }
 	
-	objs := ->{ obj1 $0.5 }
-
-	rules := ->{
-		if obj1 $0.3 {
-			allow(* > 1.0D)
-		}
-	}
-
-	affs := aff.query(target, objs, rules)
-	aff.print(affs)
-
+  	rules := ->{
+  		if obj1 $0.3 {
+  			allow(* > 1.0D)
+  		}
+  	}
+	
+  	affs := aff.query(target, objs, rules)
+  	aff.print(affs)
+	
 message:
-	i32.print(0)
+  	i32.print(0)
 }
+
