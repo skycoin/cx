@@ -1,0 +1,141 @@
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+type Testing struct {
+	fld1 i64
+	fld2 i32
+}
+
+// func escape (x i32, y i32) (p *Point) {
+// 	p = &Point{
+// 		x: 10,
+// 		y: 20}
+// }
+
+func escape (x1 i32, y1 i32) {
+	
+	var p *Point
+	var check i32
+	check = 61
+	var q *Point
+
+	
+	var foo Point
+	foo = Point{
+		x: x1,
+		y: y1}
+
+	var foo2 Point
+	foo2 = Point{
+		x: 17,
+		y: 19}
+
+	p = &foo
+	q = &foo2
+
+	str.print("here")
+	i32.print((*p).x)
+	i32.print((*p).y)
+	i32.print((*q).x)
+	i32.print((*q).y)
+
+	// debug()
+}
+
+func main () {
+	// var check i32
+	// check = 111
+	// var foo *Point
+	// var bar *Point
+	// foo = escape(10, 20)
+	// foo = escape(70, 40)
+
+	
+	
+	
+	// var foo i32
+	// foo = 23
+
+	// var p1 *Testing
+	// var bar Testing
+	// bar = Testing{
+	// 	fld2: 81,
+	// 	fld1: 31L}
+	// p1 = &bar
+
+	var check1 i32
+	check1 = 71
+
+	var check2 i32
+	check2 = 41
+
+	escape(7, 13)
+
+	// var c i32
+	// for c = 0; c < 2; c++ {
+	// 	// i32.print(c)
+	// 	// escape(c, i32.add(c, 1))
+	// 	escape(7, 13)
+	// }
+
+
+	// var p *Point
+	// var foo Point
+	// foo = Point{
+	// 	x: 33,
+	// 	y: 66}
+
+	// p = &foo
+	
+
+
+	
+	// var p2 *Point
+	// var foo2 Point
+	// foo2 = Point{
+	// 	x: 44,
+	// 	y: 77}
+
+	// p2 = &foo2
+
+	// var p3 *Point
+	// var foo3 Point
+	// foo3 = Point{
+	// 	x: 61,
+	// 	y: 81}
+
+	// p3 = &foo3
+
+	// i32.print((*p3).x)
+	// i32.print((*p3).y)
+	
+
+
+
+
+
+
+
+
+
+
+
+
+	// i32.print(p.x)
+
+	
+
+	// i32.print((*foo).x)
+	// i32.print((*foo).y)
+	
+	// var foo [2][2]i32
+	// foo = [2][2]i32{
+	// 	[2]i32{1, 2},
+	// 	[2]i32{3, 4}}
+
+	// i32.print(foo[1][1])
+}

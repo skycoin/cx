@@ -1,0 +1,16 @@
+package main
+
+func main () () {
+	test.start()
+	
+	test.i32(10 + 10, 20, "")
+	test.i32(10 - 10, 0, "")
+	test.i32(10 * 10, 100, "")
+	test.i32(10 / 10, 1, "")
+	test.i32(i32.abs(-10), 10, "")
+
+	i32.div(10, 0)
+	test.error("i32.div did not raise a 'division by 0' error")
+
+	test.stop()
+}

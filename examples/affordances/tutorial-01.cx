@@ -20,11 +20,16 @@ func main () () {
 
 	rules := ->{
 		if obj1 $0.3 {
-			allow(* > 1.0D)
+			allow(? > 1.0D)
 		}
 	}
 
+	
+	
 	affs := aff.query(target, objs, rules)
+
+	[]str.print(rules)
+	
 	aff.print(affs)
 
 message:
