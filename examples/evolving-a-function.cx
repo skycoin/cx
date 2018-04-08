@@ -26,3 +26,4 @@ func main () (out f64) {
 		f64.print(simFn([]f64.read(inps, c)))
 	}
 }
+

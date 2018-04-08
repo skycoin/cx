@@ -331,7 +331,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
-			$2.MemoryType = MEM_STACK
+			// $2.MemoryType = MEM_STACK
 			$$ = $2
                 }
                 ;
@@ -366,6 +366,7 @@ declaration_specifiers:
                 {
 			if !$2.IsPointer {
 				$2.IsPointer = true
+				$2.MemoryType = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE

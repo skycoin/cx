@@ -12,7 +12,6 @@
 	)
 
 	var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	// var prgrm = MakeProgram(200000, 200000, 200000)
 	var dataOffset int
 
 	var lineNo int = 0
@@ -181,52 +180,26 @@
 		out.CustomType = from[len(from) - 1].Outputs[0].CustomType
 		out.Size = from[len(from) - 1].Outputs[0].CustomType.Size
 		out.TotalSize = from[len(from) - 1].Outputs[0].CustomType.Size
-		// out.MemoryType = from[len(from) - 1].Outputs[0].MemoryType
 		out.Package = pkg
 		out.Program = prgrm
 
+
+		
 		// var isReference bool
 
 		// for _, f := range from {
-		// 	// if f.Outputs[0].IsReference {
-		// 	// 	fmt.Println("huehue", f.Outputs[0].Name)
-		// 	// 	isReference = true
-		// 	// }
 		// 	f.Outputs[0].Name = out.Name
 		// 	f.Outputs[0].Program = prgrm
 		// 	f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
 		// }
 
 		// if isReference {
-		// 	// for _, f := range from {
-		// 	// 	f.Outputs[0].IsReference = true
-		// 	// }
-
-
-		// 	// from[len(from) - 1].Outputs[0].MemoryType = MEM_HEAP
 		// 	out.IsReference = true
 		// 	out.MemoryType = MEM_HEAP
-			
-		// 	// refName := MakeParameter(MakeGenSym(LOCAL_PREFIX), TYPE_CUSTOM)
-		// 	// refName.Size = exprOut.Size
-		// 	// refName.TotalSize = exprOut.Size
-		// 	// refName.Package = pkg
-
-		// 	// refName.IsReference = true
-		// 	// refName.IsPointer = true
-
-		// 	// refName.CustomType = exprOut.CustomType
-		// 	// refName.Fields = exprOut.Fields
-
-		// 	// expr := MakeExpression(Natives[OP_IDENTITY])
-		// 	// expr.Package= pkg
-		// 	// expr.AddInput(exprOut)
-		// 	// expr.AddOutput(refName)
 		// }
 
 		// expr := MakeExpression(Natives[OP_IDENTITY])
 		// expr.Package = pkg
-		// fmt.Println("huh", out.Name, out.MemoryType, out.IsReference)
 		// expr.AddInput(out)
 
 		// exprs := append(from, expr)
@@ -234,12 +207,37 @@
 		// return Assignment(to, exprs)
 
 
+		
+
 
 		
 		// before
 		for _, f := range from {
+			// fmt.Println("hah", f.Outputs[0].Size, f.Outputs[0].TotalSize, to[0].Outputs[0].Size, to[0].Outputs[0].TotalSize)
 			f.Outputs[0].Name = to[0].Outputs[0].Name
+
+			// f.Outputs[0].Size = to[0].Outputs[0].Size
+			// f.Outputs[0].TotalSize = to[0].Outputs[0].TotalSize
+
+			if len(to[0].Outputs[0].Indexes) > 0 {
+				f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
+				f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
+				f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_ARRAY)
+			}
+
 			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
+
+			// fmt.Println(f.Outputs[0].DereferenceOperations)
+
+
+
+			// if len(to[0].Outputs[0].Fields) > 0 {
+			// 	fmt.Println("huhhuhuhu")
+			// 	f.Outputs[0].Fields = to[0].Outputs[0].Fields
+			// 	f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
+			// }
+			
+			// f.Outputs[0].Package = to[0].Outputs[0].Package
 		}
 		
 		return from
@@ -444,6 +442,21 @@
 					}
 				}
 			} else {
+
+				if sym.IsReference {
+					if arg.HeapOffset < 1 {
+						// then it hasn't been assigned
+						// an offset of 0 is impossible because the symbol was declared before
+						arg.HeapOffset = *offset
+						// sym.HeapOffset = *offset
+						*offset += TYPE_POINTER_SIZE
+					}
+					
+					// if not, then it has been assigned before
+					// and we just reassign it to this symbol
+					// we'll do this below, where we're assigning everything to sym
+				}
+
 				var isFieldPointer bool
 				if len(sym.Fields) > 0 {
 					var found bool
@@ -523,11 +536,13 @@
 
 				// sym.IsPointer = arg.IsPointer
 				sym.Type = arg.Type
+				sym.CustomType = arg.CustomType
 				sym.Pointee = arg.Pointee
 				sym.Lengths = arg.Lengths
 				sym.PointeeSize = arg.PointeeSize
 				sym.Package = arg.Package
 				sym.Program = arg.Program
+				sym.HeapOffset = arg.HeapOffset
 
 				sym.MemoryType = arg.MemoryType
 				
@@ -578,7 +593,7 @@
 			fn.AddOutput(out)
 		}
 
-		// // getting offset to use by statements (excluding inputs, outputs and receiver)
+		// getting offset to use by statements (excluding inputs, outputs and receiver)
 		var offset int
 
 		for _, expr := range exprs {
@@ -2198,9 +2213,6 @@ expression:     assignment_expression
 constant_expression:
                 conditional_expression
                 ;
-
-
-
 
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON

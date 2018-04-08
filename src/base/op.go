@@ -6,21 +6,13 @@ import (
 )
 
 func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
-	// // it's from the data segment
-	// if arg.MemoryType == MEM_DATA {
-	// 	if len(arg.Indexes) > 0 {
-	// 		fmt.Println("hmm", arg.Name, arg.Offset, arg.Indexes[0].MemoryType)
-	// 	}
-		
-	// 	return arg.Offset
-	// }
-	
 	var elt *CXArgument
 	var finalOffset int = arg.Offset
 	var fldIdx int
 	elt = arg
 
-	// fmt.Println("start", arg.Name, finalOffset)
+	// fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations)
+
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
@@ -29,7 +21,13 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 				for _, len := range elt.Lengths[i+1:] {
 					subSize *= len
 				}
-				finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+				// fmt.Println("the wacky teriyaki", elt.Name, elt.Size, elt.TotalSize)
+				if elt.IsStruct {
+					// fmt.Println("hoho", elt.Name, elt.IsStruct, arg.CustomType.Size)
+					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.CustomType.Size
+				} else {
+					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+				}
 			}
 		case DEREF_FIELD:
 			elt = arg.Fields[fldIdx]
@@ -37,31 +35,43 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 			fldIdx++
 		case DEREF_POINTER:
 			for c := 0; c < elt.DereferenceLevels; c++ {
-				switch arg.MemoryType {
-				case MEM_STACK:
-					var offset int32
-					byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
-					encoder.DeserializeAtomic(byts, &offset)
-					finalOffset = int(offset)
-				case MEM_HEAP:
-					var offset int32
-					byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
-					encoder.DeserializeAtomic(byts, &offset)
+				var offset int32
+
+				byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
+				
+				encoder.DeserializeAtomic(byts, &offset)
+
+				if arg.MemoryType == MEM_HEAP {
 					finalOffset = int(offset) + OBJECT_HEADER_SIZE
-				case MEM_DATA:
-					var offset int32
-					byts := stack.Program.Data[finalOffset : finalOffset + elt.Size]
-					encoder.DeserializeAtomic(byts, &offset)
+				} else {
 					finalOffset = int(offset)
-				default:
-					panic("implement the other mem types in readI32")
 				}
+				
+				// switch arg.MemoryType {
+				// case MEM_STACK:
+				// 	var offset int32
+				// 	byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
+				// 	encoder.DeserializeAtomic(byts, &offset)
+				// 	finalOffset = int(offset)
+				// case MEM_HEAP:
+				// 	var offset int32
+				// 	// byts := stack.Stack[fp + finalOffset : fp + finalOffset + elt.Size]
+				// 	fmt.Println("what")
+				// 	byts := stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + finalOffset : NULL_HEAP_ADDRESS_OFFSET + finalOffset + elt.Size]
+				// 	encoder.DeserializeAtomic(byts, &offset)
+				// 	finalOffset = int(offset) + OBJECT_HEADER_SIZE
+				// case MEM_DATA:
+				// 	var offset int32
+				// 	byts := stack.Program.Data[finalOffset : finalOffset + elt.Size]
+				// 	encoder.DeserializeAtomic(byts, &offset)
+				// 	finalOffset = int(offset)
+				// default:
+				// 	panic("implement the other mem types in readI32")
+				// }
 			}
 		}
-		// fmt.Println("update", finalOffset)
+		// fmt.Println("update", arg.Name, finalOffset)
 	}
-
-	// return fp + finalOffset
 
 	if arg.IsPointer || arg.MemoryType == MEM_DATA {
 	// if arg.MemoryType == MEM_DATA {
@@ -71,23 +81,20 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 		
 		return finalOffset
 	} else {
+		// fmt.Println(".")
 		return fp + finalOffset
 	}
 }
 
 func ReadMemory (stack *CXStack, offset int, arg *CXArgument) (out []byte) {
-	// fmt.Println("hoho", arg.Name, arg.Size, arg.TotalSize, offset)
 	switch arg.MemoryType {
 	case MEM_STACK:
 		out = stack.Stack[offset : offset + arg.TotalSize]
 	case MEM_DATA:
 		out = stack.Program.Data[offset : offset + arg.TotalSize]
 	case MEM_HEAP:
-		// fmt.Println("teehee", arg.Name, offset, stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + OBJECT_HEADER_SIZE + offset : NULL_HEAP_ADDRESS_OFFSET + OBJECT_HEADER_SIZE + offset + arg.TotalSize])
-
-		// testingOffset := offset + NULL_HEAP_ADDRESS_OFFSET
-		// fmt.Println("ff", arg.Offset, offset, testingOffset)
-		out = stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + offset : NULL_HEAP_ADDRESS_OFFSET + offset + arg.TotalSize]
+		// out = stack.Program.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + offset : NULL_HEAP_ADDRESS_OFFSET + offset + arg.TotalSize]
+		out = stack.Program.Heap.Heap[offset : offset + arg.TotalSize]
 	default:
 		panic("implement the other mem types")
 	}
@@ -174,16 +181,9 @@ func MarkAndCompact (prgrm *CXProgram) {
 
 // allocates memory in the heap
 func AllocateSeq (prgrm *CXProgram, size int) (offset int) {
-	// heap := prgrm.Heap
 	result := prgrm.Heap.HeapPointer
 	newFree := result + size
-
-	// if prgrm.Heap.HeapPointer > 0 {
-	// 	MarkAndCompact(prgrm)
-	// 	result = prgrm.Heap.HeapPointer
-	// 	newFree = prgrm.Heap.HeapPointer + size
-	// }
-
+	
 	if newFree > INIT_HEAP_SIZE {
 		// call GC
 		MarkAndCompact(prgrm)
@@ -371,19 +371,14 @@ func WriteToHeap (heap *CXHeap, offset int, out []byte) {
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c - 5]
 	}
-	
+
 	for c := 0; c < OBJECT_HEADER_SIZE; c++ {
 		(*heap).Heap[offset + c] = header[c]
 	}
-	
 
 	for c := 0; c < len(out); c++ {
 		(*heap).Heap[offset + OBJECT_HEADER_SIZE + c] = out[c]
 	}
-
-	// for c := 0; c < len(out); c++ {
-	// 	(*heap)[offset + c] = out[c]
-	// }
 }
 
 func WriteToData (data *Data, offset int, out []byte) {

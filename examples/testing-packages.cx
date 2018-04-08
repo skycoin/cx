@@ -24,3 +24,4 @@ func main () {
 	i32.print(double)
 	i32.print(triple)
 }
+

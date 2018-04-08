@@ -17,15 +17,29 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToStack(stack, out1Offset, byts)
 		case MEM_HEAP:
-			heapOffset := AllocateSeq(stack.Program, inp1.TotalSize + OBJECT_HEADER_SIZE)
-			
+
+			// if heapoffset > 0 look in here and don't allocate
+			var heapOffset int
+			if inp1.HeapOffset > 0 {
+				// then it's a reference to the symbol
+				var off int32
+				encoder.DeserializeAtomic(stack.Stack[fp + inp1.HeapOffset : fp + inp1.HeapOffset + TYPE_POINTER_SIZE], &off)
+
+				if off > 0 {
+					// non-nil, i.e. object is already allocated
+					heapOffset = int(off)
+				} else {
+					// nil, needs to be allocated
+					heapOffset = AllocateSeq(stack.Program, inp1.TotalSize + OBJECT_HEADER_SIZE)
+					WriteToStack(stack, fp + inp1.HeapOffset, encoder.SerializeAtomic(int32(heapOffset)))
+				}
+			}
+
 			byts := ReadMemory(stack, inp1Offset, inp1)
 			WriteToHeap(&stack.Program.Heap, heapOffset, byts)
-			// WriteToHeap(&stack.Program.Heap, heapOffset + NULL_HEAP_ADDRESS_OFFSET, byts)
-
-			// offset := encoder.SerializeAtomic(int32(heapOffset + NULL_HEAP_ADDRESS_OFFSET))
+			
 			offset := encoder.SerializeAtomic(int32(heapOffset))
-			WriteToStack(stack, out1Offset, offset)
+			WriteToStack(stack, fp + out1Offset, offset)
 		case MEM_DATA:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToData(&stack.Program.Data, out1Offset, byts)

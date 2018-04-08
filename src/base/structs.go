@@ -13,9 +13,9 @@ const MARK_SIZE = 1
 const OBJECT_HEADER_SIZE = 9
 const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
-const CALLSTACK_SIZE = 2000000
-const STACK_SIZE = 2000000
-const INIT_HEAP_SIZE = 2000000
+const CALLSTACK_SIZE = 200
+const STACK_SIZE = 200
+const INIT_HEAP_SIZE = 200
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 
@@ -410,7 +410,7 @@ type CXConstant struct {
 }
 
 type CXArgument struct {
-	Index int
+	// Index int
 	Name string
 	Type int
 	CustomType *CXStruct
@@ -420,6 +420,7 @@ type CXArgument struct {
 
 	MemoryType int
 	Offset int
+	HeapOffset int
 	// OffsetOffset int // for struct fields
 
 	IndirectionLevels int

@@ -1,7 +1,7 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	"math/rand"
 	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -58,8 +58,8 @@ func (prgrm *CXProgram) Run () error {
 					return err
 				}
 			}
-			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			// fmt.Println("prgrm.Heap", prgrm.Heap)
+			fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
+			fmt.Println("prgrm.Heap", prgrm.Heap)
 			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
@@ -92,20 +92,20 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			expr := returnOp.Expressions[returnLine]
 			for i, out := range expr.Outputs {
-				WriteMemory(
-					&prgrm.Stacks[0],
-					GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
-					out,
-					ReadMemory(
-						&prgrm.Stacks[0],
-						GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i]),
-						call.Operator.Outputs[i]))
+				// WriteMemory(
+				// 	&prgrm.Stacks[0],
+				// 	GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
+				// 	out,
+				// 	ReadMemory(
+				// 		&prgrm.Stacks[0],
+				// 		GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i]),
+				// 		call.Operator.Outputs[i]))
 
 				// copy byte by byte to the previous stack frame
-				// for c := 0; c < out.TotalSize; c++ {
-				// 	prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-				// 		prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
-				// }
+				for c := 0; c < out.TotalSize; c++ {
+					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
+						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
+				}
 			}
 
 			// return the stack pointer to its previous state
@@ -164,6 +164,8 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 					case MEM_DATA:
 						// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
 						byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
+					case MEM_HEAP:
+						byts = prgrm.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + finalOffset : NULL_HEAP_ADDRESS_OFFSET + finalOffset + inp.TotalSize]
 					default:
 						panic("implement the other mem types")
 					}
