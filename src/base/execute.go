@@ -101,11 +101,18 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				// 		GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i]),
 				// 		call.Operator.Outputs[i]))
 
-				// copy byte by byte to the previous stack frame
-				for c := 0; c < out.TotalSize; c++ {
-					prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-						prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
-				}
+				WriteToStack(
+					&prgrm.Stacks[0],
+					GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
+					prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize])
+				
+
+				
+				// // copy byte by byte to the previous stack frame
+				// for c := 0; c < out.TotalSize; c++ {
+				// 	prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
+				// 		prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
+				// }
 			}
 
 			// return the stack pointer to its previous state
@@ -158,23 +165,43 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				} else {
 					switch inp.MemoryType {
 					case MEM_STACK:
-						// byts = prgrm.Stacks[0].Stack[fp + inp.Offset : fp + inp.Offset + inp.TotalSize]
-						// byts = prgrm.Stacks[0].Stack[fp + finalOffset : fp + finalOffset + inp.TotalSize]
 						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_DATA:
-						// byts = prgrm.Data[inp.Offset : inp.Offset + inp.TotalSize]
 						byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_HEAP:
-						byts = prgrm.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + finalOffset : NULL_HEAP_ADDRESS_OFFSET + finalOffset + inp.TotalSize]
+						// byts = prgrm.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + finalOffset : NULL_HEAP_ADDRESS_OFFSET + finalOffset + inp.TotalSize]
+						byts = prgrm.Heap.Heap[finalOffset : finalOffset + inp.TotalSize]
+						fmt.Println("woof", finalOffset, byts)
 					default:
 						panic("implement the other mem types")
 					}
 				}
-				// we copy the inputs for the next call
-				for c := 0; c < inp.TotalSize; c++ {
-					prgrm.Stacks[0].Stack[newFP + newCall.Operator.Inputs[i].Offset + c] = 
-					byts[c]
-				}
+
+				WriteToStack(
+					&prgrm.Stacks[0],
+					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i]),
+					byts)
+
+				// if inp.MemoryType == MEM_HEAP {
+				// 	// we send a frame pointer = 0
+				// 	WriteToStack(
+				// 		&prgrm.Stacks[0],
+				// 		GetFinalOffset(&prgrm.Stacks[0], 0, newCall.Operator.Inputs[i]),
+				// 		byts)
+				// } else {
+				// 	WriteToStack(
+				// 		&prgrm.Stacks[0],
+				// 		GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i]),
+				// 		byts)
+				// }
+				
+				
+
+				// // we copy the inputs for the next call
+				// for c := 0; c < inp.TotalSize; c++ {
+				// 	prgrm.Stacks[0].Stack[newFP + newCall.Operator.Inputs[i].Offset + c] = 
+				// 	byts[c]
+				// }
 			}
 		}
 	}

@@ -207,6 +207,14 @@ var NATIVE_FUNCTIONS = map[string]bool{
 }
 
 const (
+	DECL_POINTER = iota // 0
+	DECL_ARRAY // 1
+	DECL_SLICE // 2
+	DECL_STRUCT // 3
+	DECL_BASIC // 4
+)
+
+const (
 	DEREF_ARRAY = iota
 	DEREF_FIELD
 	DEREF_POINTER
@@ -410,7 +418,6 @@ type CXConstant struct {
 }
 
 type CXArgument struct {
-	// Index int
 	Name string
 	Type int
 	CustomType *CXStruct
@@ -418,6 +425,8 @@ type CXArgument struct {
 	TotalSize int // total size of an array, performance reasons
 	PointeeSize int
 
+	// MemoryFrom int // these will later be removed and a single memory pointer will be used
+	// MemoryTo int
 	MemoryType int
 	Offset int
 	HeapOffset int
@@ -428,6 +437,7 @@ type CXArgument struct {
 	Pointee *CXArgument
 	PointeeMemoryType int
 	DereferenceOperations []int // offset by array index, struct field, pointer
+	DeclarationSpecifiers []int // used to determine finalSize
 
 	IsArray bool
 	IsArrayFirst bool // and then dereference
@@ -439,7 +449,7 @@ type CXArgument struct {
 	IsField bool
 	IsRest bool // pkg.var <- var is rest
 	IsLocalDeclaration bool
-
+	
 	// Sizes []int // used to access struct fields
 	Lengths []int // declared lengths at compile time
 	// NumIndexes int // how many levels we'll go deep. NumIndexes <= len(Lengths)

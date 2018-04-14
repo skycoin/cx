@@ -1,7 +1,7 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -11,13 +11,14 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 	inp1Offset := GetFinalOffset(stack, fp, inp1)
 	out1Offset := GetFinalOffset(stack, fp, out1)
 
+	// fmt.Println("hue", out1.Name, " = ", inp1.Name)
+
 	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
 		switch out1.MemoryType {
 		case MEM_STACK:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToStack(stack, out1Offset, byts)
 		case MEM_HEAP:
-
 			// if heapoffset > 0 look in here and don't allocate
 			var heapOffset int
 			if inp1.HeapOffset > 0 {
@@ -47,8 +48,10 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 			panic("implement the other mem types")
 		}
 	} else if inp1.IsReference {
+		fmt.Println("house", inp1.Name)
 		WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
 	} else {
+		// fmt.Println("oh hi mark", inp1.Name, out1Offset, ReadMemory(stack, inp1Offset, inp1))
 		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
 	}
 }

@@ -51,6 +51,7 @@ testing2.cx
 clean-test.cx
 testing-gc.cx
 testing-pointers.cx
+testing-pointers-to-structs.cx
 texture-animation4.cx
 serial
 testing.byts

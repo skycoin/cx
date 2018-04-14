@@ -397,6 +397,82 @@
 		return TYPE_UNDEFINED
 	}
 
+	func SetFinalSize (symbols *map[string]*CXArgument, sym *CXArgument) {
+		var elt *CXArgument
+		var finalSize int = sym.TotalSize
+		var fldIdx int
+		elt = sym
+
+		if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; found {
+			for _, op := range sym.DereferenceOperations {
+				switch op {
+				case DEREF_ARRAY:
+					for i, _ := range elt.Indexes {
+						var subSize int = 1
+						for _, len := range elt.Lengths[i:] {
+							subSize *= len
+						}
+						finalSize /= subSize
+					}
+				case DEREF_FIELD:
+					elt = sym.Fields[fldIdx]
+					finalSize = elt.TotalSize
+					fldIdx++
+				case DEREF_POINTER:
+					// var derefSize int
+					// if elt.Type < TYPE_THRESHOLD {
+					// 	derefSize = GetArgSize(elt.Type)
+					// } else {
+					// 	// derefSize = elt.CustomType.Size
+					// 	fmt.Println("here here", arg.Lengths, arg.DeclarationSpecifiers)
+					// 	derefSize = arg.TotalSize
+
+					// 	// lastC := len(arg.DeclarationSpecifiers) - 1
+					// 	// for c := lastC; c >= 0; c-- {
+					// 	// 	if c == lastC && arg.DeclarationSpecifiers[c] != DECL_POINTER {
+					// 	// 		panic("non-pointer")
+					// 	// 	}
+							
+					// 	// }
+
+					// 	var subSize int
+					// 	for _, decl := range arg.DeclarationSpecifiers {
+					// 		switch decl {
+					// 		case DECL_ARRAY:
+					// 			for _, len := range arg.Lengths {
+					// 				subSize *= len
+					// 			}
+					// 		case DECL_BASIC:
+					// 			subSize = GetArgSize(elt.Type)
+					// 		case DECL_STRUCT:
+					// 			subSize = elt.CustomType.Size
+					// 		}
+					// 	}
+					// }
+
+					var subSize int
+					for _, decl := range arg.DeclarationSpecifiers {
+						switch decl {
+						case DECL_ARRAY:
+							for _, len := range arg.Lengths {
+								subSize *= len
+							}
+						case DECL_BASIC:
+							subSize = GetArgSize(elt.Type)
+						case DECL_STRUCT:
+							subSize = arg.CustomType.Size
+						}
+					}
+
+					// finalSize = derefSize
+					finalSize = subSize
+				}
+			}
+		}
+
+		sym.TotalSize = finalSize
+	}
+
 	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 		if sym.Name != "" {
 			// if sym.IsLocalDeclaration {
@@ -565,21 +641,24 @@
 					}
 				}
 
-				var subTotalSize int
+				
 
-				// if len(sym.Indexes) > 0 && len(sym.Fields) < 1 {
-				if len(sym.Indexes) > 0 && len(sym.Fields) < 1 && !sym.IsPointer {
-					// if len(sym.Indexes) > 0 {
-					// then we need to adjust TotalSize depending on the number of indexes
-					for i, _ := range sym.Indexes {
-						var subSize int = 1
-						for _, len := range sym.Lengths[i+1:] {
-							subSize *= len
-						}
-						subTotalSize += subSize * sym.Size
-					}
-					sym.TotalSize = sym.TotalSize - subTotalSize
-				}
+				// var subTotalSize int
+				// if len(sym.Indexes) > 0 && len(sym.Fields) < 1 && !sym.IsPointer {
+				// 	// if len(sym.Indexes) > 0 {
+				// 	// then we need to adjust TotalSize depending on the number of indexes
+				// 	for i, _ := range sym.Indexes {
+				// 		var subSize int = 1
+				// 		for _, len := range sym.Lengths[i+1:] {
+				// 			subSize *= len
+				// 		}
+				// 		subTotalSize += subSize * sym.Size
+				// 	}
+				// 	// sym.TotalSize = sym.TotalSize - subTotalSize
+				// 	sym.TotalSize = subTotalSize
+				// }
+				
+
 			}
 		}
 	}
@@ -612,6 +691,7 @@
 			inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
 
 			GiveOffset(&symbols, inp, &offset, false)
+			SetFinalSize(&symbols, inp)
 
 			AddPointer(fn, inp)
 		}
@@ -622,6 +702,7 @@
 			out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
 			
 			GiveOffset(&symbols, out, &offset, false)
+			SetFinalSize(&symbols, out)
 			
 			AddPointer(fn, out)
 		}
@@ -634,6 +715,7 @@
 				inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
 				
 				GiveOffset(&symbols, inp, &offset, true)
+				SetFinalSize(&symbols, inp)
 				for _, idx := range inp.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
@@ -650,6 +732,7 @@
 				out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
 				
 				GiveOffset(&symbols, out, &offset, false)
+				SetFinalSize(&symbols, out)
 				for _, idx := range out.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
@@ -1157,6 +1240,7 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
+			$2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
 			if !$2.IsPointer {
 				$2.IsPointer = true
 				$2.MemoryType = MEM_HEAP
@@ -1190,6 +1274,7 @@ declaration_specifiers:
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
+			$3.DeclarationSpecifiers = append($3.DeclarationSpecifiers, DECL_SLICE)
 			arg := $3
                         arg.IsArray = true
 			// arg.MemoryType = MEM_HEAP
@@ -1199,6 +1284,7 @@ declaration_specifiers:
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers
                 {
+			$4.DeclarationSpecifiers = append($4.DeclarationSpecifiers, DECL_ARRAY)
 			arg := $4
                         arg.IsArray = true
 			arg.Lengths = append([]int{int($2)}, arg.Lengths...)
@@ -1209,6 +1295,7 @@ declaration_specifiers:
         |       type_specifier
                 {
 			arg := MakeArgument($1)
+			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 			arg.Type = $1
 			arg.Size = GetArgSize($1)
 			arg.TotalSize = arg.Size
@@ -1220,6 +1307,7 @@ declaration_specifiers:
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 				if strct, err := prgrm.GetStruct($1, pkg.Name); err == nil {
 					arg := MakeArgument(TYPE_CUSTOM)
+					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 					arg.CustomType = strct
 					arg.Size = strct.Size
 					arg.TotalSize = strct.Size
@@ -1242,10 +1330,11 @@ declaration_specifiers:
 						arg.CustomType = strct
 						arg.Size = strct.Size
 						arg.TotalSize = strct.Size
+						arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 
 						$$ = arg
 					} else {
-						panic("type '" + $1 + "' does not exist")
+						panic("type '" + $3 + "' does not exist")
 					}
 				} else {
 					panic(err)

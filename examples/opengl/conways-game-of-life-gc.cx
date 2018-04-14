@@ -6,8 +6,8 @@ package main
 
 var width i32 = 600
 var height i32 = 600
-var rows i32 = 15
-var columns i32 = 15
+var rows i32 = 6
+var columns i32 = 6
 
 var vertexShaderSource str = "
           #version 120
@@ -45,6 +45,7 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 }
 
 func wrapX (x i32) (newX i32) {
+	newX = x
 	if i32.eq(x, columns) {
 		newX = 0
 		// return 0
@@ -53,10 +54,13 @@ func wrapX (x i32) (newX i32) {
 		newX = i32.sub(columns, 1)
 		// return newX
 	}
-	newX = x
+	// str.print("wrapX")
+	// i32.print(x)
+	// i32.print(newX)
 }
 
 func wrapY (y i32) (newY i32) {
+	newY = y
 	if i32.eq(y, rows) {
 		newY = 0
 		// return 0
@@ -65,10 +69,12 @@ func wrapY (y i32) (newY i32) {
 		newY = i32.sub(rows, 1)
 		// return i32.sub(rows, 1)
 	}
-	newY = y
+	// str.print("wrapY")
+	// i32.print(y)
+	// i32.print(newY)
 }
 
-func aliveNeighbours (cell Cell, cells *[225]Cell) (aliveCount i32) {
+func aliveNeighbours (cell Cell, cells *[36]Cell) (aliveCount i32) {
 	aliveCount = 0
 	var upCellX i32
 	var upCellY i32
@@ -86,7 +92,7 @@ func aliveNeighbours (cell Cell, cells *[225]Cell) (aliveCount i32) {
 	var leftCellY i32
 	var upLeftCellX i32
 	var upLeftCellY i32
-	
+
 	upCellX = cell.x
 	upCellY = wrapY(i32.add(cell.y, 1))
 	upRightCellX = wrapX(i32.add(cell.x, 1))
@@ -113,14 +119,21 @@ func aliveNeighbours (cell Cell, cells *[225]Cell) (aliveCount i32) {
 	var leftCell Cell
 	var upLeftCell Cell
 
+	// str.print("entering")
+	// i32.print(map2Dto1D(upCellX, upCellY, columns))
+	// i32.print(upCellX)
+	// i32.print(upCellY)
+
 	upCell = (*cells)[map2Dto1D(upCellX, upCellY, columns)]
-	upRightCell = (*cells)[map2Dto1D(upRightCellX, upRightCellY, columns)]
-	rightCell = (*cells)[map2Dto1D(rightCellX, rightCellY, columns)]
-	downRightCell = (*cells)[map2Dto1D(downRightCellX, downRightCellY, columns)]
-	downCell = (*cells)[map2Dto1D(downCellX, downCellY, columns)]
-	downLeftCell = (*cells)[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
-	leftCell = (*cells)[map2Dto1D(leftCellX, leftCellY, columns)]
-	upLeftCell = (*cells)[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
+	// upRightCell = (*cells)[map2Dto1D(upRightCellX, upRightCellY, columns)]
+	// rightCell = (*cells)[map2Dto1D(rightCellX, rightCellY, columns)]
+	// downRightCell = (*cells)[map2Dto1D(downRightCellX, downRightCellY, columns)]
+	// downCell = (*cells)[map2Dto1D(downCellX, downCellY, columns)]
+	// downLeftCell = (*cells)[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
+	// leftCell = (*cells)[map2Dto1D(leftCellX, leftCellY, columns)]
+	// upLeftCell = (*cells)[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
+
+	// str.print("exit")
 
 	if upCell.alive {
 		aliveCount = i32.add(aliveCount, 1)
@@ -148,9 +161,13 @@ func aliveNeighbours (cell Cell, cells *[225]Cell) (aliveCount i32) {
 	}
 }
 
-func changeState (cell Cell, cells *[225]Cell) (newCell Cell) {
+func changeState (cell Cell, cells *[36]Cell) (newCell Cell) {
 	cell.alive = cell.aliveNext
 	cell.aliveNext = cell.alive
+
+	str.print("before")
+	i32.print(cell.x)
+	i32.print(cell.y)
 
 	var aliveCount i32
 	aliveCount = aliveNeighbours(cell, cells)
@@ -238,8 +255,8 @@ func newCell (x i32, y i32) (cell Cell) {
 		y: y}
 }
 
-func makeCells () (clls *[225]Cell) {
-	var cells [225]Cell
+func makeCells () (clls *[36]Cell) {
+	var cells [36]Cell
 	var x i32
 	var y i32
 	var counter i32
@@ -326,12 +343,12 @@ func drawCell (cell Cell) {
 	}
 }
 
-func draw (cells [225]Cell, window str, program i32) () {
+func draw (cells [36]Cell, window str, program i32) () {
 	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 	gl.UseProgram(program)
 
 	var i i32
-	for i = 0; i32.lt(i, 225); i = i32.add(i, 1) {
+	for i = 0; i32.lt(i, 36); i = i32.add(i, 1) {
 		drawCell(cells[i])
 	}
 
@@ -354,7 +371,7 @@ func main () {
 	var program i32
 	program = initOpenGL()
 
-	var cells *[225]Cell
+	var cells *[36]Cell
 	cells = makeCells()
 
 	// // Start FPS
@@ -379,9 +396,15 @@ func main () {
 		// // End FPS
 
 		var c i32
-		for c = 0; i32.lt(c, 225); c = i32.add(c, 1) {
+		for c = 0; i32.lt(c, 36); c = i32.add(c, 1) {
 			// changeState(cells[c], cells)
+			// (*cells)[c] = changeState((*cells)[c], cells)
+			i32.print((*cells)[c])
+			i32.print((*cells)[c].drawable)
+			i32.print((*cells)[c].x)
 			(*cells)[c] = changeState((*cells)[c], cells)
+			
+			// changeState((*cells)[c], cells)
 		}
 		
 		// draw(cells, "window", program)

@@ -44,31 +44,32 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 }
 
 func wrapX (x i32) (newX i32) {
-	if i32.eq(x, columns) {
+	newX = x
+	if i32.gteq(x, columns) {
 		newX = 0
 		// return 0
 	}
-	if i32.eq(x, -1) {
+	if i32.lteq(x, -1) {
 		newX = i32.sub(columns, 1)
 		// return newX
 	}
-	newX = x
 }
 
 func wrapY (y i32) (newY i32) {
-	if i32.eq(y, rows) {
+	newY = y
+	if i32.gteq(y, rows) {
 		newY = 0
 		// return 0
 	}
-	if i32.eq(y, -1) {
+	if i32.lteq(y, -1) {
 		newY = i32.sub(rows, 1)
 		// return i32.sub(rows, 1)
 	}
-	newY = y
 }
 
 func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	aliveCount = 0
+	
 	var upCellX i32
 	var upCellY i32
 	var upRightCellX i32
@@ -85,7 +86,7 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	var leftCellY i32
 	var upLeftCellX i32
 	var upLeftCellY i32
-	
+
 	upCellX = cell.x
 	upCellY = wrapY(i32.add(cell.y, 1))
 	upRightCellX = wrapX(i32.add(cell.x, 1))
@@ -112,6 +113,22 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	var leftCell Cell
 	var upLeftCell Cell
 
+	// i32.print(wrapX(cell.x))
+	// i32.print(wrapY(cell.y))
+
+	// i32.print(upLeftCellX)
+	// i32.print(upLeftCellY)
+	// i32.print(columns)
+	
+	// // i32.print(map2Dto1D(upCellX, upCellY, columns))
+	// // i32.print(map2Dto1D(downCellX, downCellY, columns))
+	// i32.print(map2Dto1D(upLeftCellX, upLeftCellY, columns))
+
+	// str.print("exit")
+
+
+	
+
 	upCell = cells[map2Dto1D(upCellX, upCellY, columns)]
 	upRightCell = cells[map2Dto1D(upRightCellX, upRightCellY, columns)]
 	rightCell = cells[map2Dto1D(rightCellX, rightCellY, columns)]
@@ -120,6 +137,8 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	downLeftCell = cells[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
 	leftCell = cells[map2Dto1D(leftCellX, leftCellY, columns)]
 	upLeftCell = cells[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
+
+	// str.print("entering")
 
 	if upCell.alive {
 		aliveCount = i32.add(aliveCount, 1)
@@ -145,6 +164,8 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	if upLeftCell.alive {
 		aliveCount = i32.add(aliveCount, 1)
 	}
+
+	// i32.print(aliveCount)
 }
 
 func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
@@ -152,12 +173,10 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 	cell.aliveNext = cell.alive
 
 	var aliveCount i32
+	// aliveCount = 2
 	aliveCount = aliveNeighbours(cell, cells)
 
-	// i32.print(aliveCount)
-
 	if cell.alive {
-	// if i32.lt(i32.rand(0, 100), 15) {
 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
 		if i32.lt(aliveCount, 2) {
 			cell.aliveNext = false
@@ -176,7 +195,7 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 			cell.aliveNext = true
 		}
 	}
-	
+
 	newCell = cell
 }
 
@@ -365,7 +384,6 @@ func main () {
 	// End FPS
 
 	for bool.not(glfw.ShouldClose("window")) {
-		// time.Sleep(100)
 		// Start FPS
 		currentTime = glfw.GetTime()
 		nbFrames = i32.add(nbFrames, 1)
@@ -376,10 +394,16 @@ func main () {
 		}
 		// End FPS
 
-		var c i32
-		for c = 0; i32.lt(c, 225); c = i32.add(c, 1) {
+		// var coco Cell
+
+		var d i32
+		for d = 0; i32.lt(d, 225); d = i32.add(d, 1) {
 			// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
-			cells[c] = changeState(cells[c], cells)
+			// i32.print(d)
+			// cells[d] = changeState(cells[d], cells)
+			// cells[10] = cells[11]
+			// coco = changeState(cells[c], cells)
+			// changeState(cells[d], cells)
 		}
 		
 		draw(cells, "window", program)
