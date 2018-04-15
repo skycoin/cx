@@ -92,7 +92,8 @@
 	func WritePrimary (typ int, byts []byte) []*CXExpression {
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			arg := MakeArgument(typ)
-			arg.MemoryType = MEM_DATA
+			arg.MemoryFrom = MEM_DATA
+			arg.MemoryTo = MEM_DATA
 			arg.Offset = dataOffset
 			arg.Package = pkg
 			arg.Program = prgrm
@@ -302,7 +303,7 @@
 			from[idx].Program = to[0].Program
 
 			if from[0].IsStructLiteral {
-				from[idx].Outputs[0].MemoryType = MEM_HEAP
+                                from[idx].Outputs[0].MemoryTo = MEM_HEAP
 			}
 
 			return append(to[:len(to) - 1], from...)
@@ -620,7 +621,8 @@
 				sym.Program = arg.Program
 				sym.HeapOffset = arg.HeapOffset
 
-				sym.MemoryType = arg.MemoryType
+				sym.MemoryFrom = arg.MemoryFrom
+				sym.MemoryTo = arg.MemoryTo
 				
 				if sym.IsReference && !arg.IsStruct {
 					// sym.Size = TYPE_POINTER_SIZE
@@ -961,7 +963,8 @@ global_declaration:
 					expr := WritePrimary($3.Type, make([]byte, $3.Size))
 					exprOut := expr[0].Outputs[0]
 					$3.Name = $2.Name
-					$3.MemoryType = MEM_DATA
+					$3.MemoryFrom = MEM_DATA
+					$3.MemoryTo = MEM_DATA
 					$3.Offset = exprOut.Offset
 					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
@@ -980,7 +983,8 @@ global_declaration:
 					expr := WritePrimary($3.Type, make([]byte, $3.Size))
 					exprOut := expr[0].Outputs[0]
 					$3.Name = $2.Name
-					$3.MemoryType = MEM_DATA
+					$3.MemoryFrom = MEM_DATA
+					$3.MemoryTo = MEM_DATA
 					$3.Offset = exprOut.Offset
 					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
@@ -991,9 +995,9 @@ global_declaration:
 					if $5[len($5) - 1].Operator == nil {
 						expr := MakeExpression(Natives[OP_IDENTITY])
 						expr.Package = pkg
-						
 						$3.Name = $2.Name
-						$3.MemoryType = MEM_DATA
+						$3.MemoryFrom = MEM_DATA
+						$3.MemoryTo = MEM_DATA
 						$3.Offset = glbl.Offset
 						$3.Lengths = glbl.Lengths
 						$3.Size = glbl.Size
@@ -1006,7 +1010,8 @@ global_declaration:
 						sysInitExprs = append(sysInitExprs, expr)
 					} else {
 						$3.Name = $2.Name
-						$3.MemoryType = MEM_DATA
+						$3.MemoryFrom = MEM_DATA
+						$3.MemoryTo = MEM_DATA
 						$3.Offset = glbl.Offset
 						$3.Size = glbl.Size
 						$3.Lengths = glbl.Lengths
@@ -1243,7 +1248,8 @@ declaration_specifiers:
 			$2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
 			if !$2.IsPointer {
 				$2.IsPointer = true
-				$2.MemoryType = MEM_HEAP
+				$2.MemoryFrom = MEM_STACK
+				$2.MemoryTo = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
@@ -1988,7 +1994,7 @@ unary_expression:
 				// }
 
 				$2[0].Outputs[0].IsReference = true
-				// $2[0].Outputs[0].MemoryType = MEM_HEAP
+				// $2[0].Outputs[0].MemoryTo = MEM_STACK
 				$2[0].Outputs[0].IsPointer = true
 
 				// exprOut.IsReference = true

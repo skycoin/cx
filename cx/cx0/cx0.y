@@ -18,7 +18,8 @@
 	func WritePrimary (typ int, byts []byte) []*CXExpression {
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			arg := MakeArgument(typ)
-			arg.MemoryType = MEM_DATA
+			arg.MemoryFrom = MEM_DATA
+			arg.MemoryTo = MEM_DATA
 			arg.Offset = DataOffset
 			arg.Package = pkg
 			arg.Program = PRGRM
@@ -175,7 +176,8 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryType = MEM_DATA
+				$3.MemoryFrom = MEM_DATA
+				$3.MemoryTo = MEM_DATA
 				$3.Offset = exprOut.Offset
 				$3.Package = exprOut.Package
 				pkg.AddGlobal($3)
@@ -189,7 +191,8 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.Size))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryType = MEM_DATA
+				$3.MemoryFrom = MEM_DATA
+				$3.MemoryTo = MEM_DATA
 				$3.Offset = exprOut.Offset
 				$3.Size = exprOut.Size
 				$3.TotalSize = exprOut.TotalSize
@@ -366,7 +369,8 @@ declaration_specifiers:
                 {
 			if !$2.IsPointer {
 				$2.IsPointer = true
-				$2.MemoryType = MEM_HEAP
+				$2.MemoryFrom = MEM_STACK
+				$2.MemoryTo = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE

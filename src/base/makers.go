@@ -45,7 +45,8 @@ func MakeGlobal (name string, typ int) *CXArgument {
 		Name: name,
 		Type: typ,
 		Size: size,
-		MemoryType: MEM_HEAP,
+		MemoryTo: MEM_DATA,
+		MemoryFrom: MEM_DATA,
 		Offset: HeapOffset,
 	}
 	HeapOffset += size
@@ -78,10 +79,9 @@ func MakeParameter (name string, typ int) *CXArgument {
 		Type: typ,
 		Size: size,
 		TotalSize: size,
-		MemoryType: MEM_STACK,
-		// this will be added in AddInput & AddOutput
-		// the parent function knows how many parameters it has
-		// Offset: offset,
+		MemoryFrom: MEM_STACK,
+		// MemoryTo can change depending on being a pointer or not for example
+		// that is determined at compile time
 	}
 }
 

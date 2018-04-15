@@ -400,7 +400,7 @@ func main () {
 		for d = 0; i32.lt(d, 225); d = i32.add(d, 1) {
 			// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
 			// i32.print(d)
-			// cells[d] = changeState(cells[d], cells)
+			cells[d] = changeState(cells[d], cells)
 			// cells[10] = cells[11]
 			// coco = changeState(cells[c], cells)
 			// changeState(cells[d], cells)

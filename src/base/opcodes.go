@@ -221,7 +221,7 @@ func execNative (prgrm *CXProgram) {
 
 	switch opCode {
 	case OP_IDENTITY: identity(expr, stack, fp)
-	case OP_READ_ARRAY: read_array(expr, stack, fp)
+		// case OP_READ_ARRAY: read_array(expr, stack, fp)
 	case OP_JMP: jmp(expr, stack, fp, call)
 	case OP_DEBUG: prgrm.PrintStack()
 

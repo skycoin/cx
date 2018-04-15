@@ -163,15 +163,13 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				if inp.IsReference {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					switch inp.MemoryType {
+					switch inp.MemoryTo {
 					case MEM_STACK:
 						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_DATA:
 						byts = prgrm.Data[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_HEAP:
-						// byts = prgrm.Heap.Heap[NULL_HEAP_ADDRESS_OFFSET + finalOffset : NULL_HEAP_ADDRESS_OFFSET + finalOffset + inp.TotalSize]
 						byts = prgrm.Heap.Heap[finalOffset : finalOffset + inp.TotalSize]
-						fmt.Println("woof", finalOffset, byts)
 					default:
 						panic("implement the other mem types")
 					}

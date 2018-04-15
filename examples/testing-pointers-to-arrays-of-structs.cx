@@ -1,0 +1,115 @@
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+func makePoints () (foo1 *[3]Point) {
+	var check111 i32
+	check111 = 51
+	var check22 i32
+	check22 = 61
+	var bar [3]Point
+
+	bar[0] = Point{x: 10, y: 20}
+	bar[1] = Point{x: 30, y: 40}
+	bar[2] = Point{x: 50, y: 60}
+
+	foo1 = &bar
+}
+
+func double (num i32) (double i32) {
+	double = i32.add(num, num)
+}
+
+func test (check i32, p Point) () {
+	i32.print(p.x)
+	i32.print(p.y)
+
+	var check2 i32
+	check2 = 109
+}
+
+func test2 (points [3]Point) {
+	// var check2 i32
+	// check2 = 51
+	i32.print(points)
+}
+
+func test3 (points *[3]Point) (newPoints *[3]Point) {
+	var check1 i32
+	check1 = 81
+
+	// i32.print((*points)[1].x)
+	// i32.print((*points)[2].y)
+
+	i32.print(points)
+	i32.print(newPoints)
+
+	newPoints = points
+	
+	var check2 i32
+	check2 = 91
+}
+
+func main () {
+	// var cho *[3]Point
+	// var gall [3]Point
+	// gall[0] = Point{x: 10, y: 20}
+	// gall[1] = Point{x: 30, y: 40}
+	// gall[2] = Point{x: 50, y: 60}
+	// cho = &gall
+
+	// gall[2].y = 99
+
+	// i32.print(gall[2].y)
+	// i32.print((*cho)[0].x)
+
+	
+	// var check1 i32
+	// check1 = 111
+
+
+
+	var foo *[3]Point
+	foo = makePoints()
+
+	// var check2 i32
+	// check2 = 111
+	
+	// i32.print((*foo)[0].x)
+	// i32.print((*foo)[0].y)
+
+	// test(99, (*foo)[1])
+	// test2((*foo))
+
+	var checky i32
+	checky = 113
+
+	var newPoints *[3]Point
+	newPoints = test3(foo)
+	
+	// i32.print((*newPoints)[1].x)
+	// i32.print((*newPoints)[2].x)
+
+
+
+
+
+	
+	// test((*foo)[1])
+
+	// var bar [3]Point
+
+	// bar[0] = Point{x: 10, y: 20}
+	// bar[1] = Point{x: 30, y: 40}
+	// bar[2] = Point{x: 50, y: 60}
+
+	// foo = &bar
+
+	// var check i32
+	// check = 1
+
+	// i32.print((*foo)[check].y)
+}
