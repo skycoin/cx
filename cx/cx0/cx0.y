@@ -18,8 +18,8 @@
 	func WritePrimary (typ int, byts []byte) []*CXExpression {
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			arg := MakeArgument(typ)
-			arg.MemoryFrom = MEM_DATA
-			arg.MemoryTo = MEM_DATA
+			arg.MemoryRead = MEM_DATA
+			arg.MemoryWrite = MEM_DATA
 			arg.Offset = DataOffset
 			arg.Package = pkg
 			arg.Program = PRGRM
@@ -176,8 +176,8 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryFrom = MEM_DATA
-				$3.MemoryTo = MEM_DATA
+				$3.MemoryRead = MEM_DATA
+				$3.MemoryWrite = MEM_DATA
 				$3.Offset = exprOut.Offset
 				$3.Package = exprOut.Package
 				pkg.AddGlobal($3)
@@ -191,8 +191,8 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.Size))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryFrom = MEM_DATA
-				$3.MemoryTo = MEM_DATA
+				$3.MemoryRead = MEM_DATA
+				$3.MemoryWrite = MEM_DATA
 				$3.Offset = exprOut.Offset
 				$3.Size = exprOut.Size
 				$3.TotalSize = exprOut.TotalSize
@@ -367,10 +367,10 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
+			$2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
 			if !$2.IsPointer {
 				$2.IsPointer = true
-				$2.MemoryFrom = MEM_STACK
-				$2.MemoryTo = MEM_HEAP
+				// $2.MemoryRead = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
@@ -401,6 +401,7 @@ declaration_specifiers:
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
+			$3.DeclarationSpecifiers = append($3.DeclarationSpecifiers, DECL_SLICE)
 			arg := $3
                         arg.IsArray = true
 			arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
@@ -409,6 +410,7 @@ declaration_specifiers:
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers
                 {
+			$4.DeclarationSpecifiers = append($4.DeclarationSpecifiers, DECL_ARRAY)
 			arg := $4
                         arg.IsArray = true
 			arg.Lengths = append([]int{int($2)}, arg.Lengths...)
@@ -419,6 +421,7 @@ declaration_specifiers:
         |       type_specifier
                 {
 			arg := MakeArgument($1)
+			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 			arg.Type = $1
 			arg.Size = GetArgSize($1)
 			arg.TotalSize = arg.Size
@@ -430,6 +433,7 @@ declaration_specifiers:
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				if strct, err := PRGRM.GetStruct($1, pkg.Name); err == nil {
 					arg := MakeArgument(TYPE_CUSTOM)
+					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 					arg.CustomType = strct
 					arg.Size = strct.Size
 					arg.TotalSize = strct.Size
@@ -452,6 +456,7 @@ declaration_specifiers:
 						arg.CustomType = strct
 						arg.Size = strct.Size
 						arg.TotalSize = strct.Size
+						arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 
 						$$ = arg
 					} else {

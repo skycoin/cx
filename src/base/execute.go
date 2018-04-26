@@ -1,7 +1,7 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	"math/rand"
 	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -19,7 +19,7 @@ func (prgrm *CXProgram) Run () error {
 			// *init function
 			mainCall := MakeCall(fn, nil, mod, mod.Program)
 			prgrm.CallStack[0] = mainCall
-			prgrm.Stacks[0].StackPointer = fn.Size
+  			prgrm.Stacks[0].StackPointer = fn.Size
 
 			var err error
 
@@ -58,8 +58,8 @@ func (prgrm *CXProgram) Run () error {
 					return err
 				}
 			}
-			fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			fmt.Println("prgrm.Heap", prgrm.Heap)
+			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
 			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
@@ -92,19 +92,24 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 
 			expr := returnOp.Expressions[returnLine]
 			for i, out := range expr.Outputs {
-				// WriteMemory(
-				// 	&prgrm.Stacks[0],
-				// 	GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
-				// 	out,
-				// 	ReadMemory(
-				// 		&prgrm.Stacks[0],
-				// 		GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i]),
-				// 		call.Operator.Outputs[i]))
-
-				WriteToStack(
+				WriteMemory(
 					&prgrm.Stacks[0],
-					GetFinalOffset(&prgrm.Stacks[0], returnFP, out),
-					prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize])
+					GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE),
+					out,
+					ReadMemory(
+						&prgrm.Stacks[0],
+						GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i], MEM_READ),
+						call.Operator.Outputs[i]))
+
+				// writing outputs back to previous stack frame
+				// fmt.Println("output", out.Name, prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize], GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE))
+
+
+				// // >
+				// WriteToStack(
+				// 	&prgrm.Stacks[0],
+				// 	GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE),
+				// 	prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize])
 				
 
 				
@@ -114,6 +119,7 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 				// 		prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
 				// }
 			}
+
 
 			// return the stack pointer to its previous state
 			prgrm.Stacks[0].StackPointer = call.FramePointer
@@ -148,22 +154,35 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 			newCall.Line = 0
 			newCall.FramePointer = prgrm.Stacks[0].StackPointer
 			// the stack pointer is moved to create room for the next call
-			prgrm.Stacks[0].StackPointer += fn.Size
+			// prgrm.Stacks[0].StackPointer += fn.Size
+			prgrm.Stacks[0].StackPointer += newCall.Operator.Size
 
 			fp := call.FramePointer
 			newFP := newCall.FramePointer
 
+			
+
+			// wiping next stack frame (removing garbage)
+			for c := 0; c < expr.Operator.Size; c++ {
+				prgrm.Stacks[0].Stack[newFP + c] = 0
+			}
+
+
 			for i, inp := range expr.Inputs {
 				var byts []byte
 				// finalOffset := inp.Offset
-				finalOffset := GetFinalOffset(&prgrm.Stacks[0], fp, inp)
+				finalOffset := GetFinalOffset(&prgrm.Stacks[0], fp, inp, MEM_READ)
+				// finalOffset := fp + inp.Offset
+				
+				
 				// if inp.Indexes != nil {
 				// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 				// }
 				if inp.IsReference {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					switch inp.MemoryTo {
+					// fmt.Println("here", inp.Name, inp.MemoryWrite)
+					switch inp.MemoryWrite {
 					case MEM_STACK:
 						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]
 					case MEM_DATA:
@@ -175,13 +194,15 @@ func (call *CXCall) call (prgrm *CXProgram) error {
 					}
 				}
 
+				// writing inputs to new stack frame
+				// fmt.Println("input", expr.Operator.Name, byts, GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE))
 				WriteToStack(
 					&prgrm.Stacks[0],
-					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i]),
+					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE),
 					byts)
 
 				// if inp.MemoryType == MEM_HEAP {
-				// 	// we send a frame pointer = 0
+				// 	// we send a frame pointer 1= 0
 				// 	WriteToStack(
 				// 		&prgrm.Stacks[0],
 				// 		GetFinalOffset(&prgrm.Stacks[0], 0, newCall.Operator.Inputs[i]),

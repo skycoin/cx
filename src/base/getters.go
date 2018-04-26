@@ -223,12 +223,12 @@ func (pkg *CXPackage) GetGlobal (defName string) (*CXArgument, error) {
 }
 
 func (cxt *CXProgram) GetFunction (fnName string, modName string) (*CXFunction, error) {
-	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
-		modName = CORE_MODULE
-	} else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
-		fnName = fmt.Sprintf("%s.%s", modName, fnName)
-		modName = CORE_MODULE
-	}
+	// if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
+	// 	modName = CORE_MODULE
+	// } else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
+	// 	fnName = fmt.Sprintf("%s.%s", modName, fnName)
+	// 	modName = CORE_MODULE
+	// }
 
 	// I need to first look for the function in the current module
 	// if we find modName + fnName as it is in the current module, we give that one priority

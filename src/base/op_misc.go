@@ -1,18 +1,18 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // creates a copy of its argument in the stack
 func identity (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	inp1Offset := GetFinalOffset(stack, fp, inp1)
-	out1Offset := GetFinalOffset(stack, fp, out1)
+	inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
+	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
 
 	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
-		switch out1.MemoryTo {
+		switch inp1.MemoryWrite {
 		case MEM_STACK:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToStack(stack, out1Offset, byts)
@@ -35,21 +35,33 @@ func identity (expr *CXExpression, stack *CXStack, fp int) {
 			}
 
 			byts := ReadMemory(stack, inp1Offset, inp1)
-			WriteToHeap(&stack.Program.Heap, heapOffset, byts)
+			// creating a header for this object
+			size := encoder.Serialize(int32(len(byts)))
+
+			var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+				header[c] = size[c - 5]
+			}
+
+			obj := append(header, byts...)
 			
+			// WriteToHeap(&stack.Program.Heap, heapOffset, byts)
+			WriteToHeap(&stack.Program.Heap, heapOffset, obj)
+
 			offset := encoder.SerializeAtomic(int32(heapOffset))
-			WriteToStack(stack, fp + out1Offset, offset)
+
+			// WriteToStack(stack, fp + out1Offset, offset)
+			WriteToStack(stack, out1Offset, offset)
 		case MEM_DATA:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToData(&stack.Program.Data, out1Offset, byts)
 		default:
 			panic("implement the other mem types")
 		}
-	} else if inp1.IsReference || (inp1.IsPointer && out1.IsPointer) {
-		fmt.Println("house", inp1.Name, out1Offset, FromI32(int32(inp1Offset)), inp1.MemoryTo, inp1.MemoryFrom)
-		WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
+	} else if (inp1.IsReference && out1.IsPointer) || (inp1.IsPointer && out1.IsPointer) {
+		// WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
+		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
 	} else {
-		// fmt.Println("oh hi mark", inp1.Name, out1Offset, ReadMemory(stack, inp1Offset, inp1))
 		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
 	}
 }
@@ -63,12 +75,12 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	// inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	inp1 := expr.Inputs[0]
 	var predicate bool
-	 // var thenLines int32
-	// var elseLin   es int32
+	// var thenLines int32
+	// var elseLines int32
 
-	inp1Offset := GetFinalOffset(stack, fp, inp1)
+	inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
 
-	switch inp1.MemoryFrom {
+	switch inp1.MemoryRead {
 	case MEM_STACK:
 		predicateB := stack.Stack[inp1Offset: inp1Offset + inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
@@ -85,24 +97,3 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 		call.Line = call.Line + expr.ElseLines
 	}
 }
-
-// func read_array (expr *CXExpression, stack *CXStack, fp int) {
-// 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-// 	indexes := make([]int32, len(expr.Inputs[1:]))
-// 	for i, idx := range expr.Inputs[1:] {
-// 		indexes[i] = ReadI32(stack, fp, idx)
-// 	}
-// 	offset, size := ReadArray(stack, fp, inp1, indexes)
-// 	var outB1 []byte
-
-// 	switch inp1.MemoryType {
-// 	case MEM_STACK:
-// 		outB1 = stack.Stack[fp + offset : fp + offset + size]
-// 	case MEM_DATA:
-// 		outB1 = inp1.Program.Data[offset : offset + size]
-// 	default:
-// 		panic("implement the other mem types in readI32")
-// 	}
-	
-// 	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
-// }

@@ -7,7 +7,7 @@ import (
 func time_UnixMilli (expr *CXExpression, stack *CXStack, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI64(time.Now().UnixNano() / int64(1000000))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
 func time_Sleep (expr *CXExpression, stack *CXStack, fp int) {

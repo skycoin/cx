@@ -92,8 +92,8 @@
 	func WritePrimary (typ int, byts []byte) []*CXExpression {
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			arg := MakeArgument(typ)
-			arg.MemoryFrom = MEM_DATA
-			arg.MemoryTo = MEM_DATA
+			arg.MemoryRead = MEM_DATA
+			arg.MemoryWrite = MEM_DATA
 			arg.Offset = dataOffset
 			arg.Package = pkg
 			arg.Program = prgrm
@@ -256,6 +256,26 @@
 	func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		idx := len(from) - 1
 
+		if from[idx].IsArrayLiteral {
+			from[0].Outputs[0].SynonymousTo = to[0].Outputs[0].Name
+		}
+
+		if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
+			for _, expr := range from {
+				expr.Outputs[0].MemoryRead = glbl.MemoryRead
+				expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
+			}
+			
+			// to[0].Outputs[0].MemoryWrite = MEM_DATA
+		}
+
+		// if len(from[idx].Outputs) > 0 && len(to[0].Outputs) > 0 {
+		// 	if from[idx].Outputs[0].IsReference && to[0].Outputs[0].IsPointer {
+		// 		fmt.Println("huehue", from[idx].Outputs[0].Name, to[0].Outputs[0].Name)
+		// 	}
+		// }
+		
+
 		if from[idx].Operator == nil {
 			from[idx].Operator = Natives[OP_IDENTITY]
 			to[0].Outputs[0].Size = from[idx].Outputs[0].Size
@@ -269,12 +289,6 @@
 			return append(to[:len(to) - 1], from...)
 		} else {
 			if from[idx].Operator.IsNative {
-				// we'll delegate multiple-value returns to the 'expression' grammar rule
-				// for i, out := range from[idx].Operator.Outputs {
-				// 	to[0].Outputs[i].Size = Natives[from[idx].Operator.OpCode].Outputs[i].Size
-				// 	to[0].Outputs[i].Lengths = out.Lengths
-				// }
-
 				// only assigning as if the operator had only one output defined
 				to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
@@ -282,28 +296,18 @@
 				to[0].Outputs[0].Program = prgrm
 			} else {
 				// we'll delegate multiple-value returns to the 'expression' grammar rule
-				// for i, out := range from[idx].Operator.Outputs {
-				// 	to[0].Outputs[i].Size = out.Size
-				// 	to[0].Outputs[i].Lengths = out.Lengths
-				// }
-
 				// only assigning as if the operator had only one output defined
 				to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 				// to[0].Outputs[0].MemoryType = from[idx].Outputs[0].MemoryType
 				to[0].Outputs[0].Program = prgrm
 			}
-
-			// if len(from[idx].Outputs) > 0 && from[idx].Outputs[0].IsReference {
-			// 	to[0].Outputs[0].IsReference = true
-			// 	to[0].Outputs[0].MemoryType = MEM_HEAP
-			// }
-
+			
 			from[idx].Outputs = to[0].Outputs
 			from[idx].Program = to[0].Program
 
 			if from[0].IsStructLiteral {
-                                from[idx].Outputs[0].MemoryTo = MEM_HEAP
+                                from[idx].Outputs[0].MemoryRead = MEM_HEAP
 			}
 
 			return append(to[:len(to) - 1], from...)
@@ -420,53 +424,25 @@
 					finalSize = elt.TotalSize
 					fldIdx++
 				case DEREF_POINTER:
-					// var derefSize int
-					// if elt.Type < TYPE_THRESHOLD {
-					// 	derefSize = GetArgSize(elt.Type)
-					// } else {
-					// 	// derefSize = elt.CustomType.Size
-					// 	fmt.Println("here here", arg.Lengths, arg.DeclarationSpecifiers)
-					// 	derefSize = arg.TotalSize
-
-					// 	// lastC := len(arg.DeclarationSpecifiers) - 1
-					// 	// for c := lastC; c >= 0; c-- {
-					// 	// 	if c == lastC && arg.DeclarationSpecifiers[c] != DECL_POINTER {
-					// 	// 		panic("non-pointer")
-					// 	// 	}
-							
-					// 	// }
-
-					// 	var subSize int
-					// 	for _, decl := range arg.DeclarationSpecifiers {
-					// 		switch decl {
-					// 		case DECL_ARRAY:
-					// 			for _, len := range arg.Lengths {
-					// 				subSize *= len
-					// 			}
-					// 		case DECL_BASIC:
-					// 			subSize = GetArgSize(elt.Type)
-					// 		case DECL_STRUCT:
-					// 			subSize = elt.CustomType.Size
-					// 		}
-					// 	}
-					// }
-
-					var subSize int
-					for _, decl := range arg.DeclarationSpecifiers {
-						switch decl {
-						case DECL_ARRAY:
-							for _, len := range arg.Lengths {
-								subSize *= len
+					if len(arg.DeclarationSpecifiers) > 0 {
+						var subSize int
+						subSize = 1
+						for _, decl := range arg.DeclarationSpecifiers {
+							switch decl {
+							case DECL_ARRAY:
+								for _, len := range arg.Lengths {
+									subSize *= len
+								}
+							case DECL_BASIC:
+								subSize = GetArgSize(elt.Type)
+							case DECL_STRUCT:
+								subSize = arg.CustomType.Size
 							}
-						case DECL_BASIC:
-							subSize = GetArgSize(elt.Type)
-						case DECL_STRUCT:
-							subSize = arg.CustomType.Size
 						}
-					}
 
-					// finalSize = derefSize
-					finalSize = subSize
+						// finalSize = derefSize
+						finalSize = subSize
+					}
 				}
 			}
 		}
@@ -474,52 +450,52 @@
 		sym.TotalSize = finalSize
 	}
 
-	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
-		if sym.Name != "" {
-			// if sym.IsLocalDeclaration {
-			// 	// then subsequent symbol references need to be treated as local
-			// 	if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; found {
-			// 		arg.IsLocalDeclaration = true
-			// 	}
-			// }
-			if !sym.IsLocalDeclaration {
-				if _, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
-					if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
-						// sym.Offset = glbl.Offset
-						// sym.MemoryType = glbl.MemoryType
-						// sym.Size = glbl.Size
-						// sym.TotalSize = glbl.TotalSize
-						// sym.Package = glbl.Package
-						// sym.Program = glbl.Program
-						// sym.Lengths = glbl.Lengths
-
-						// sym.IsReference = glbl.IsReference
-						(*symbols)[sym.Package.Name + "." + sym.Name] = glbl
-						// return
-					}
+	func GetGlobalSymbol (symbols *map[string]*CXArgument, symPackage *CXPackage, symName string) {
+		if _, found := (*symbols)[symPackage.Name + "." + symName]; !found {
+				if glbl, err := symPackage.GetGlobal(symName); err == nil {
+					(*symbols)[symPackage.Name + "." + symName] = glbl
 				}
 			}
+	}
+
+	func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
+		if sym.Name != "" {
+			GetGlobalSymbol(symbols, sym.Package, sym.Name)
+			// if _, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
+			// 	fmt.Println("mehmeh", sym.Package.Name + "." + sym.Name)
+			// 	if glbl, err := sym.Package.GetGlobal(sym.Name); err == nil {
+			// 		fmt.Println("meh", sym.Package.Name + "." + sym.Name)
+			// 		(*symbols)[sym.Package.Name + "." + sym.Name] = glbl
+			// 	}
+			// }
 			if arg, found := (*symbols)[sym.Package.Name + "." + sym.Name]; !found {
 				if shouldExist {
 					// it should exist. error
 					panic("identifier '" + sym.Name + "' does not exist")
 				}
-				
-				sym.Offset = *offset
-				(*symbols)[sym.Package.Name + "." + sym.Name] = sym
 
-				*offset += sym.TotalSize
+				if sym.SynonymousTo != "" {
+					// then the offset needs to be shared
+					GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
+					sym.Offset = (*symbols)[sym.Package.Name + "." + sym.SynonymousTo].Offset
+					
+					(*symbols)[sym.Package.Name + "." + sym.Name] = sym
+				} else {
+					sym.Offset = *offset
+					(*symbols)[sym.Package.Name + "." + sym.Name] = sym
 
-				if sym.IsPointer {
-					pointer := sym
-					for c := 0; c < sym.IndirectionLevels - 1; c++ {
-						pointer = pointer.Pointee
-						pointer.Offset = *offset
-						*offset += pointer.TotalSize
+					*offset += sym.TotalSize
+
+					if sym.IsPointer {
+						pointer := sym
+						for c := 0; c < sym.IndirectionLevels - 1; c++ {
+							pointer = pointer.Pointee
+							pointer.Offset = *offset
+							*offset += pointer.TotalSize
+						}
 					}
 				}
 			} else {
-
 				if sym.IsReference {
 					if arg.HeapOffset < 1 {
 						// then it hasn't been assigned
@@ -621,8 +597,15 @@
 				sym.Program = arg.Program
 				sym.HeapOffset = arg.HeapOffset
 
-				sym.MemoryFrom = arg.MemoryFrom
-				sym.MemoryTo = arg.MemoryTo
+				if !sym.IsReference {
+					sym.MemoryRead = arg.MemoryRead
+					sym.MemoryWrite = arg.MemoryWrite
+				}
+
+				if sym.DereferenceLevels > 0 {
+					sym.MemoryRead = MEM_HEAP
+					sym.MemoryWrite = MEM_HEAP
+				}
 				
 				if sym.IsReference && !arg.IsStruct {
 					// sym.Size = TYPE_POINTER_SIZE
@@ -643,9 +626,8 @@
 					}
 				}
 
-				
-
 				// var subTotalSize int
+				// don't uncomment. only left in case it is needed in the next 4-5 commits
 				// if len(sym.Indexes) > 0 && len(sym.Fields) < 1 && !sym.IsPointer {
 				// 	// if len(sym.Indexes) > 0 {
 				// 	// then we need to adjust TotalSize depending on the number of indexes
@@ -655,12 +637,15 @@
 				// 			subSize *= len
 				// 		}
 				// 		subTotalSize += subSize * sym.Size
+
+				
+				
 				// 	}
 				// 	// sym.TotalSize = sym.TotalSize - subTotalSize
 				// 	sym.TotalSize = subTotalSize
 				// }
-				
 
+				// fmt.Println("totalSize", sym.Name, sym.TotalSize, arg.TotalSize)
 			}
 		}
 	}
@@ -687,6 +672,7 @@
 		var symbolsScope map[string]bool = make(map[string]bool, 0)
 
 		for _, inp := range fn.Inputs {
+			// fmt.Println("inpBegin", inp.Name, inp.MemoryRead, inp.MemoryWrite)
 			if inp.IsLocalDeclaration {
 				symbolsScope[inp.Package.Name + "." + inp.Name] = true
 			}
@@ -696,8 +682,14 @@
 			SetFinalSize(&symbols, inp)
 
 			AddPointer(fn, inp)
+
+			// inp.MemoryRead = MEM_STACK
+			// inp.MemoryWrite = MEM_STACK
+			// fmt.Println("inpEnd", inp.MemoryRead, inp.MemoryWrite)
+			// fmt.Println("realSize", inp.Name, inp.TotalSize)
 		}
 		for _, out := range fn.Outputs {
+			// fmt.Println("outBegin", out.Name, out.MemoryRead, out.MemoryWrite)
 			if out.IsLocalDeclaration {
 				symbolsScope[out.Package.Name + "." + out.Name] = true
 			}
@@ -707,17 +699,25 @@
 			SetFinalSize(&symbols, out)
 			
 			AddPointer(fn, out)
+
+			// out.MemoryRead = MEM_STACK
+			// out.MemoryWrite = MEM_STACK
+			// fmt.Println("outEnd", out.MemoryRead, out.MemoryWrite)
 		}
 
 		for _, expr := range fn.Expressions {
 			for _, inp := range expr.Inputs {
+				// if inp.Name != "" {
+				// 	fmt.Println("inpExprBegin", inp.Name, inp.MemoryRead, inp.MemoryWrite)
+				// }
 				if inp.IsLocalDeclaration {
 					symbolsScope[inp.Package.Name + "." + inp.Name] = true
 				}
 				inp.IsLocalDeclaration = symbolsScope[inp.Package.Name + "." + inp.Name]
-				
+
 				GiveOffset(&symbols, inp, &offset, true)
 				SetFinalSize(&symbols, inp)
+				
 				for _, idx := range inp.Indexes {
 					GiveOffset(&symbols, idx, &offset, true)
 				}
@@ -726,8 +726,14 @@
 				// 	AddPointer(fn, inp)
 				// }
 				AddPointer(fn, inp)
+				// if inp.Name != "" {
+				// 	fmt.Println("inpExprEnd", inp.Name, inp.MemoryRead, inp.MemoryWrite)
+				// }
 			}
 			for _, out := range expr.Outputs {
+				// if out.Name != "" {
+				// 	fmt.Println("outExprBegin", out.Name, out.MemoryRead, out.MemoryWrite)
+				// }
 				if out.IsLocalDeclaration {
 					symbolsScope[out.Package.Name + "." + out.Name] = true
 				}
@@ -743,10 +749,30 @@
 				// 	AddPointer(fn, out)
 				// }
 				AddPointer(fn, out)
+				// if out.Name != "" {
+				// 	fmt.Println("outExprEnd", out.MemoryRead, out.MemoryWrite)
+				// }
+				
 			}
 			
 			SetCorrectArithmeticOp(expr)
 		}
+
+		// checking if assigning pointer to pointer
+		for _, expr := range fn.Expressions {
+			if expr.Operator == Natives[OP_IDENTITY] {
+				for i, out := range expr.Outputs {
+					if out.IsPointer && expr.Inputs[i].IsPointer {
+						// we're modifying the actual pointer
+						expr.Inputs[i].MemoryRead = MEM_STACK
+						expr.Inputs[i].MemoryWrite = MEM_STACK
+						out.MemoryRead = MEM_STACK
+						out.MemoryWrite = MEM_STACK
+					}
+				}
+			}
+		}
+		
 		fn.Size = offset
 	}
 
@@ -904,7 +930,6 @@
 %type   <expressions>   postfix_expression
 %type   <expressions>   primary_expression
                         
-// %type   <arrayArguments>   array_literal_expression_list
 %type   <expressions>   array_literal_expression_list
 %type   <expressions>   array_literal_expression
 
@@ -963,8 +988,8 @@ global_declaration:
 					expr := WritePrimary($3.Type, make([]byte, $3.Size))
 					exprOut := expr[0].Outputs[0]
 					$3.Name = $2.Name
-					$3.MemoryFrom = MEM_DATA
-					$3.MemoryTo = MEM_DATA
+					$3.MemoryRead = MEM_DATA
+					$3.MemoryWrite = MEM_DATA
 					$3.Offset = exprOut.Offset
 					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
@@ -983,12 +1008,12 @@ global_declaration:
 					expr := WritePrimary($3.Type, make([]byte, $3.Size))
 					exprOut := expr[0].Outputs[0]
 					$3.Name = $2.Name
-					$3.MemoryFrom = MEM_DATA
-					$3.MemoryTo = MEM_DATA
+					$3.MemoryRead = MEM_DATA
+					$3.MemoryWrite = MEM_DATA
 					$3.Offset = exprOut.Offset
 					$3.Lengths = exprOut.Lengths
 					$3.Size = exprOut.Size
-					$3.TotalSize = exprOut.TotalSize
+					 $3.TotalSize = exprOut.TotalSize
 					$3.Package = exprOut.Package
 					pkg.AddGlobal($3)
 				} else {
@@ -996,8 +1021,8 @@ global_declaration:
 						expr := MakeExpression(Natives[OP_IDENTITY])
 						expr.Package = pkg
 						$3.Name = $2.Name
-						$3.MemoryFrom = MEM_DATA
-						$3.MemoryTo = MEM_DATA
+						$3.MemoryRead = MEM_DATA
+						$3.MemoryWrite = MEM_DATA
 						$3.Offset = glbl.Offset
 						$3.Lengths = glbl.Lengths
 						$3.Size = glbl.Size
@@ -1010,8 +1035,8 @@ global_declaration:
 						sysInitExprs = append(sysInitExprs, expr)
 					} else {
 						$3.Name = $2.Name
-						$3.MemoryFrom = MEM_DATA
-						$3.MemoryTo = MEM_DATA
+						$3.MemoryRead = MEM_DATA
+						$3.MemoryWrite = MEM_DATA
 						$3.Offset = glbl.Offset
 						$3.Size = glbl.Size
 						$3.Lengths = glbl.Lengths
@@ -1248,8 +1273,7 @@ declaration_specifiers:
 			$2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
 			if !$2.IsPointer {
 				$2.IsPointer = true
-				$2.MemoryFrom = MEM_STACK
-				$2.MemoryTo = MEM_HEAP
+				// $2.MemoryRead = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE
@@ -1442,7 +1466,6 @@ array_literal_expression_list:
                 }
 	|       array_literal_expression_list COMMA assignment_expression
                 {
-			
 			// $$ = append($1, $3)
 			$3[len($3) - 1].IsArrayLiteral = true
 			$$ = append($1, $3...)
@@ -1994,8 +2017,9 @@ unary_expression:
 				// }
 
 				$2[0].Outputs[0].IsReference = true
-				// $2[0].Outputs[0].MemoryTo = MEM_STACK
-				$2[0].Outputs[0].IsPointer = true
+				$2[0].Outputs[0].MemoryRead = MEM_STACK
+				$2[0].Outputs[0].MemoryWrite = MEM_HEAP
+				// $2[0].Outputs[0].IsPointer = true
 
 				// exprOut.IsReference = true
 				// exprOut.MemoryType = MEM_HEAP
@@ -2273,6 +2297,24 @@ assignment_expression:
                 conditional_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
+			// for i, expr := range $1 {
+			// 	fmt.Println("huehue")
+			// 	if expr.Outputs[0].MemoryWrite == MEM_DATA {
+			// 		$3[i].Outputs[0].MemoryWrite = MEM_DATA
+			// 	}
+			// }
+
+			// for i, expr := range $1 {
+			// 	if 
+
+				
+			// 	fmt.Println("huehue")
+			// 	if expr.Outputs[0].MemoryWrite == MEM_DATA {
+			// 		$3[i].Outputs[0].MemoryWrite = MEM_DATA
+			// 	}
+			// }
+
+			// if $3[0].IsArrayLiteral {
 			if $3[0].IsArrayLiteral {
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[0].IsStructLiteral {

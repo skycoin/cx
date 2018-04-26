@@ -5,10 +5,18 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
+func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument, opType int) int {
 	var elt *CXArgument
 	var finalOffset int = arg.Offset
 	var fldIdx int
+	var memType int
+
+	if opType == MEM_READ {
+		memType = arg.MemoryRead
+	} else {
+		memType = arg.MemoryWrite
+	}
+
 	elt = arg
 
 	var dbg bool
@@ -16,33 +24,43 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 		dbg = false
 	}
 	if dbg {
-		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations)
+		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations, opType, arg.MemoryRead, arg.MemoryWrite)
 	}
 
+	var addObjectHeader bool
+	_ = addObjectHeader
+	
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
+			// if addObjectHeader {
+			// 	finalOffset += OBJECT_HEADER_SIZE
+			// 	addObjectHeader = false
+			// }
 			for i, idxArg := range elt.Indexes {
 				var subSize int = 1
 				for _, len := range elt.Lengths[i+1:] {
 					subSize *= len
 				}
 
-				// for _, decl := range arg.DeclarationSpecifiers {
-					
-				// }
-
 				if arg.CustomType != nil {
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.CustomType.Size
 				} else {
+					// fmt.Println("huehue", elt.Size, ReadI32(stack, fp, idxArg), subSize)
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+					// fmt.Println("finalOffset", finalOffset)
 				}
 			}
 		case DEREF_FIELD:
+			// if addObjectHeader {
+			// 	finalOffset += OBJECT_HEADER_SIZE
+			// 	addObjectHeader = false
+			// }
 			elt = arg.Fields[fldIdx]
 			finalOffset += elt.Offset
 			fldIdx++
 		case DEREF_POINTER:
+			addObjectHeader = true
 			for c := 0; c < elt.DereferenceLevels; c++ {
 				var offset int32
 
@@ -52,11 +70,10 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 
 				if offset != 0 {
 					finalOffset = int(offset) + OBJECT_HEADER_SIZE
+					// finalOffset = int(offset)
 				} else {
 					finalOffset = 0
 				}
-				
-				// fmt.Println("ah hah!", int(offset))
 			}
 		}
 		if dbg {
@@ -64,8 +81,17 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 		}
 	}
 
-	if !arg.IsReference && (arg.IsPointer || arg.MemoryFrom == MEM_DATA) {
-		// not sure if arg.MemoryFrom or arg.MemoryTo
+	// if addObjectHeader {
+	// 	finalOffset += OBJECT_HEADER_SIZE
+	// 	fmt.Println("finalOffset", finalOffset)
+	// }
+	
+	// if isDerefPointer || arg.IsReference || arg.MemoryRead == MEM_DATA {
+	// if arg.Name != "buntas" && (!arg.IsReference && (arg.IsPointer || arg.MemoryRead == MEM_DATA)) {
+	// if !arg.IsReference && (arg.IsPointer || arg.MemoryRead == MEM_DATA) {
+	// if arg.MemoryWrite == MEM_HEAP || arg.MemoryWrite == MEM_DATA {
+	if memType == MEM_HEAP || memType == MEM_DATA {
+		// not sure if arg.MemoryRead or arg.MemoryWrite
 		if dbg {
 			fmt.Println("result1", finalOffset)
 			fmt.Println(")")
@@ -83,7 +109,7 @@ func GetFinalOffset (stack *CXStack, fp int, arg *CXArgument) int {
 }
 
 func ReadMemory (stack *CXStack, offset int, arg *CXArgument) (out []byte) {
-	switch arg.MemoryFrom {
+	switch arg.MemoryRead {
 	case MEM_STACK:
 		// if offset + arg.TotalSize > len(stack.Stack) {
 		// 	fmt.Println("huehue", arg.Name, arg.Size, arg.TotalSize, arg.Offset, arg.DereferenceOperations, arg.DeclarationSpecifiers)
@@ -183,6 +209,7 @@ func AllocateSeq (prgrm *CXProgram, size int) (offset int) {
 	newFree := result + size
 	
 	if newFree > INIT_HEAP_SIZE {
+		fmt.Println("houhou")
 		// call GC
 		MarkAndCompact(prgrm)
 		result = prgrm.Heap.HeapPointer
@@ -200,8 +227,7 @@ func AllocateSeq (prgrm *CXProgram, size int) (offset int) {
 }
 
 func WriteMemory (stack *CXStack, offset int, arg *CXArgument, byts []byte) {
-	fmt.Println("huehue", arg.MemoryFrom, arg.MemoryTo)
-	switch arg.MemoryTo {
+	switch arg.MemoryWrite {
 	case MEM_STACK:
 		WriteToStack(stack, offset, byts)
 	case MEM_HEAP:
@@ -262,7 +288,7 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 
 func ReadF32A (stack *CXStack, fp int, inp *CXArgument) (out []float32) {
 	// Only used by native functions (i.e. functions implemented in Golang)
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	byts := ReadMemory(stack, offset, inp)
 	byts = append(encoder.SerializeAtomic(int32(len(byts) / 4)), byts...)
 	encoder.DeserializeRaw(byts, &out)
@@ -270,49 +296,49 @@ func ReadF32A (stack *CXStack, fp int, inp *CXArgument) (out []float32) {
 }
 
 func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadByte (stack *CXStack, fp int, inp *CXArgument) (out byte) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeAtomic(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadStr (stack *CXStack, fp int, inp *CXArgument) (out string) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadI32 (stack *CXStack, fp int, inp *CXArgument) (out int32) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeAtomic(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadI64 (stack *CXStack, fp int, inp *CXArgument) (out int64) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadF32 (stack *CXStack, fp int, inp *CXArgument) (out float32) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadF64 (stack *CXStack, fp int, inp *CXArgument) (out float64) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
 func ReadFromStack (stack *CXStack, fp int, inp *CXArgument) (out []byte) {
-	offset := GetFinalOffset(stack, fp, inp)
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	out = ReadMemory(stack, offset, inp)
 	return
 }
@@ -324,19 +350,20 @@ func WriteToStack (stack *CXStack, offset int, out []byte) {
 }
 
 func WriteToHeap (heap *CXHeap, offset int, out []byte) {
-	size := encoder.Serialize(int32(len(out)))
+	// size := encoder.Serialize(int32(len(out)))
 	
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c - 5]
-	}
+	// var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	// for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+	// 	header[c] = size[c - 5]
+	// }
 
-	for c := 0; c < OBJECT_HEADER_SIZE; c++ {
-		(*heap).Heap[offset + c] = header[c]
-	}
+	// for c := 0; c < OBJECT_HEADER_SIZE; c++ {
+	// 	(*heap).Heap[offset + c] = header[c]
+	// }
 
 	for c := 0; c < len(out); c++ {
-		(*heap).Heap[offset + OBJECT_HEADER_SIZE + c] = out[c]
+		// (*heap).Heap[offset + OBJECT_HEADER_SIZE + c] = out[c]
+		(*heap).Heap[offset + c] = out[c]
 	}
 }
 

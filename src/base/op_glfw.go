@@ -23,8 +23,8 @@ func glfw_SetInputMode (expr *CXExpression, stack *CXStack, fp int) {
 func glfw_GetCursorPos (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	x, y := windows[ReadStr(stack, fp, inp1)].GetCursorPos()
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, FromF64(x))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out2), out2, FromF64(y))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, FromF64(x))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out2, MEM_WRITE), out2, FromF64(y))
 }
 
 func glfw_CreateWindow (expr *CXExpression, stack *CXStack, fp int) {
@@ -44,17 +44,17 @@ func glfw_MakeContextCurrent (expr *CXExpression, stack *CXStack, fp int) {
 func glfw_ShouldClose (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	if windows[ReadStr(stack, fp, inp1)].ShouldClose() {
-		WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, FromBool(true))
+		WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, FromBool(true))
 	} else {
-		WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, FromBool(false))
+		WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, FromBool(false))
 	}
 }
 
 func glfw_GetFramebufferSize (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	width, height := windows[ReadStr(stack, fp, inp1)].GetFramebufferSize()
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, FromI32(int32(width)))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out2), out2, FromI32(int32(height)))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, FromI32(int32(width)))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out2, MEM_WRITE), out2, FromI32(int32(height)))
 }
 
 func glfw_PollEvents () {
@@ -68,7 +68,7 @@ func glfw_SwapBuffers (expr *CXExpression, stack *CXStack, fp int) {
 
 func glfw_GetTime (expr *CXExpression, stack *CXStack, fp int) {
 	out1 := expr.Outputs[0]
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, FromF64(glfw.GetTime()))
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, FromF64(glfw.GetTime()))
 }
 
 func glfw_SetKeyCallback (expr *CXExpression, stack *CXStack, fp int) {

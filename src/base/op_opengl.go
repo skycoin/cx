@@ -17,7 +17,7 @@ func gl_Init () {
 func gl_CreateProgram (expr *CXExpression, stack *CXStack, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateProgram()))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
 func gl_LinkProgram (expr *CXExpression, stack *CXStack, fp int) {
@@ -74,7 +74,7 @@ func gl_GenBuffers (expr *CXExpression, stack *CXStack, fp int) {
 	tmp := uint32(ReadI32(stack, fp, inp2))
 	gl.GenBuffers(ReadI32(stack, fp, inp1), &tmp)
 	outB1 := FromI32(int32(tmp))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
 func gl_BufferData (expr *CXExpression, stack *CXStack, fp int) {
@@ -91,13 +91,13 @@ func gl_GenVertexArrays (expr *CXExpression, stack *CXStack, fp int) {
 		gl.GenVertexArrays(ReadI32(stack, fp, inp1), &tmp)
 	}
 	outB1 := FromI32(int32(tmp))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
 func gl_CreateShader (expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateShader(uint32(ReadI32(stack, fp, inp1)))))
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1), out1, outB1)
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
 func gl_Strs (expr *CXExpression, stack *CXStack, fp int) {

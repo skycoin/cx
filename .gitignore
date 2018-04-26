@@ -53,6 +53,7 @@ testing-gc.cx
 testing-pointers.cx
 testing-pointers-to-structs.cx
 texture-animation4.cx
+testing-nested-calls.cx
 serial
 testing.byts
 overlap_check.cx
@@ -65,3 +66,5 @@ micro.org
 log.org
 run.sh
 cx.sig
+.floo*
+tasks.org

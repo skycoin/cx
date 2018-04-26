@@ -1377,7 +1377,7 @@ func (prgrm *CXProgram) PrintProgram () {
 
 				for i, arg := range expr.Inputs {
 					var name string
-					switch arg.MemoryFrom {
+					switch arg.MemoryRead {
 					case MEM_DATA:
 						name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
 					default:

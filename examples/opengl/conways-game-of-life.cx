@@ -120,8 +120,8 @@ func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
 	// i32.print(upLeftCellY)
 	// i32.print(columns)
 	
-	// // i32.print(map2Dto1D(upCellX, upCellY, columns))
-	// // i32.print(map2Dto1D(downCellX, downCellY, columns))
+	// i32.print(map2Dto1D(upCellX, upCellY, columns))
+	// i32.print(map2Dto1D(downCellX, downCellY, columns))
 	// i32.print(map2Dto1D(upLeftCellX, upLeftCellY, columns))
 
 	// str.print("exit")
@@ -176,6 +176,8 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 	// aliveCount = 2
 	aliveCount = aliveNeighbours(cell, cells)
 
+	// i32.print(aliveCount)
+
 	if cell.alive {
 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
 		if i32.lt(aliveCount, 2) {
@@ -197,6 +199,11 @@ func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
 	}
 
 	newCell = cell
+
+	// var counter i32
+	// for counter = 0; counter < 225; counter++ {
+	// 	i32.print(cells[counter].x)
+	// }
 }
 
 func compileShader(source str, shaderType i32) (shader i32) {
@@ -337,7 +344,7 @@ func drawCell (cell Cell) {
 	// boo = cell.alive
 
 	if cell.alive {
-	// if i32.lt(i32.rand(0, 100), 15) {
+		// if i32.lt(i32.rand(0, 100), 15) {
 		// i32.print(cell.drawable)
 		gl.BindVertexArray(cell.drawable)
 		gl.DrawArrays(gl.TRIANGLES, 0, i32.div(18, 3))
@@ -367,6 +374,7 @@ func main () {
 		0.5, 0.5, 0.0,
 		0.5, -0.5, 0.0}
 
+
 	initGlfw("window")
 	
 	var program i32
@@ -375,6 +383,7 @@ func main () {
 	var cells [225]Cell
 	cells = makeCells()
 
+
 	// Start FPS
 	var lastTime f64
 	var currentTime f64
@@ -382,6 +391,8 @@ func main () {
 	lastTime = glfw.GetTime()
 	nbFrames = 0
 	// End FPS
+
+	
 
 	for bool.not(glfw.ShouldClose("window")) {
 		// Start FPS
