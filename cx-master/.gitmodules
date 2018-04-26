@@ -1,0 +1,3 @@
+[submodule "cx-games"]
+	path = cx-games
+	url = https://github.com/skycoin/cx-games
