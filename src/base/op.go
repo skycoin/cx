@@ -209,7 +209,6 @@ func AllocateSeq (prgrm *CXProgram, size int) (offset int) {
 	newFree := result + size
 	
 	if newFree > INIT_HEAP_SIZE {
-		fmt.Println("houhou")
 		// call GC
 		MarkAndCompact(prgrm)
 		result = prgrm.Heap.HeapPointer
