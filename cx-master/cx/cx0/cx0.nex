@@ -146,7 +146,7 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	. "github.com/skycoin/cx/src/base"
+	. "github.com/skycoin/cx/cx-master/src/base"
 )
 
 func (yylex Lexer) Error (e string) {
@@ -173,7 +173,7 @@ func countNewLines (s []byte) int {
 // this function creates functions on-the-fly to handle the operations for this type
 func CreateMDimFuncs (typ string, line int) {
 	if IsMultiDim(typ) {
-		if mod, err := CXT.GetCurrentModule(); err == nil {
+		if mod, err := CXT.GetCurrentPackage(); err == nil {
 			if _, err := CXT.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
 				currFn, err := CXT.GetCurrentFunction();
 				if err != nil {

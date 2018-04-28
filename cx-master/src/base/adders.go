@@ -4,26 +4,26 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (cxt *CXProgram) AddModule (mod *CXModule) *CXProgram {
-	mod.Context = cxt
+func (cxt *CXProgram) AddModule (mod *CXPackage) *CXProgram {
+	mod.Program = cxt
 	found := false
-	for _, md := range cxt.Modules {
+	for _, md := range cxt.Packages {
 		if md.Name == mod.Name {
-			cxt.CurrentModule = md
+			cxt.CurrentPackage = md
 			found = true
 			break
 		}
 	}
 	if !found {
-		cxt.Modules = append(cxt.Modules, mod)
-		cxt.CurrentModule = mod
+		cxt.Packages = append(cxt.Packages, mod)
+		cxt.CurrentPackage = mod
 	}
 	return cxt
 }
 
-func (mod *CXModule) AddDefinition (def *CXDefinition) *CXModule {
-	def.Context = mod.Context
-	def.Module = mod
+func (mod *CXPackage) AddDefinition (def *CXDefinition) *CXPackage {
+	def.Program = mod.Program
+	def.Package = mod
 	found := false
 	for i, df := range mod.Definitions {
 		if df.Name == def.Name {
@@ -38,9 +38,9 @@ func (mod *CXModule) AddDefinition (def *CXDefinition) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
-	fn.Context = mod.Context
-	fn.Module = mod
+func (mod *CXPackage) AddFunction (fn *CXFunction) *CXPackage {
+	fn.Program = mod.Program
+	fn.Package = mod
 	fn.NumberOutputs = len(fn.Outputs)
 	//mod.CurrentFunction = fn
 	
@@ -54,8 +54,8 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 			mod.Functions[i].Expressions = fn.Expressions
 			mod.Functions[i].NumberOutputs = fn.NumberOutputs
 			mod.Functions[i].CurrentExpression = fn.CurrentExpression
-			mod.Functions[i].Module = fn.Module
-			mod.Functions[i].Context = fn.Context
+			mod.Functions[i].Package = fn.Package
+			mod.Functions[i].Program = fn.Program
 			mod.CurrentFunction = mod.Functions[i]
 			found = true
 			break
@@ -69,10 +69,10 @@ func (mod *CXModule) AddFunction (fn *CXFunction) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
-	cxt := mod.Context
-	strct.Context = cxt
-	strct.Module = mod
+func (mod *CXPackage) AddStruct (strct *CXStruct) *CXPackage {
+	cxt := mod.Program
+	strct.Program = cxt
+	strct.Package = mod
 	mod.CurrentStruct = strct
 	found := false
 	for i, s := range mod.Structs {
@@ -88,7 +88,7 @@ func (mod *CXModule) AddStruct (strct *CXStruct) *CXModule {
 	return mod
 }
 
-func (mod *CXModule) AddImport (imp *CXModule) *CXModule {
+func (mod *CXPackage) AddImport (imp *CXPackage) *CXPackage {
 	found := false
 	for _, im := range mod.Imports {
 		if im.Name == imp.Name {
@@ -118,8 +118,8 @@ func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
 }
 
 func (fn *CXFunction) AddExpression (expr *CXExpression) *CXFunction {
-	expr.Context = fn.Context
-	expr.Module = fn.Module
+	expr.Program = fn.Program
+	expr.Package = fn.Package
 	expr.Function = fn
 	expr.Line = len(fn.Expressions)
 	fn.Expressions = append(fn.Expressions, expr)
@@ -177,7 +177,7 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 			} else {
 				var err error
 				// then tmp is an identifier
-				if typ, err = GetIdentType(tmp, expr.FileLine, expr.FileName, expr.Context); err == nil {
+				if typ, err = GetIdentType(tmp, expr.FileLine, expr.FileName, expr.Program); err == nil {
 				} else {
 					panic(err)
 				}
@@ -190,11 +190,11 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 		outDef := MakeDefinition(
 			outName,
 			MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ),
-			//expr.Operator.Outputs[nextOutIdx].Typ)
+			//expr.Operator.Outputs[nextOutIdx].Type)
 			typ)
 		
-		outDef.Module = expr.Module
-		outDef.Context = expr.Context
+		outDef.Package = expr.Package
+		outDef.Program = expr.Program
 		
 		expr.OutputNames = append(expr.OutputNames, outDef)
 	}

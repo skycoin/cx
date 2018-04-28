@@ -23,7 +23,7 @@ func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) e
 }
 
 func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
-	if result.Typ != expected.Typ {
+	if result.Type != expected.Type {
 		fmt.Println(fmt.Sprintf("%s: %d: result and expected value are not of the same type", expr.FileName, expr.FileLine))
 		return nil
 	}

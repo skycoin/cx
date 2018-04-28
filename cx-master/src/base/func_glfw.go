@@ -170,7 +170,7 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 	encoder.DeserializeRaw(*fnName.Value, &name)
 	
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
 
 			var winName []byte
 			for key, win := range windows {
@@ -192,8 +192,8 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 			state[3] = MakeDefinition(fn.Inputs[3].Name, &sAction,fn.Inputs[3].Typ)
 			state[4] = MakeDefinition(fn.Inputs[4].Name, &sModifierKey,fn.Inputs[4].Typ)
 			
-			subcall := MakeCall(fn, state, call, call.Module, call.Context)
-			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+			subcall := MakeCall(fn, state, call, call.Package, call.Program)
+			call.Program.CallStack = append(call.Program.CallStack, *subcall)
 		}
 	}
 
@@ -208,7 +208,7 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 	encoder.DeserializeRaw(*fnName.Value, &name)
 	
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
-		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
 			
 			var winName []byte
 			for key, win := range windows {
@@ -227,8 +227,8 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 			state[1] = MakeDefinition(fn.Inputs[1].Name, &sXpos,fn.Inputs[1].Typ)
 			state[2] = MakeDefinition(fn.Inputs[2].Name, &sYpos,fn.Inputs[2].Typ)
 			
-			subcall := MakeCall(fn, state, call, call.Module, call.Context)
-			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+			subcall := MakeCall(fn, state, call, call.Package, call.Program)
+			call.Program.CallStack = append(call.Program.CallStack, *subcall)
 		}
 	}
 
@@ -262,7 +262,7 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 	encoder.DeserializeRaw(*fnName.Value, &name)
 	
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := call.Context.GetFunction(name, expr.Module.Name); err == nil {
+		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
 
 			var winName []byte
 			for key, win := range windows {
@@ -283,8 +283,8 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 			state[2] = MakeDefinition(fn.Inputs[2].Name, &sAction,fn.Inputs[2].Typ)
 			state[3] = MakeDefinition(fn.Inputs[3].Name, &sModifierKey,fn.Inputs[3].Typ)
 			
-			subcall := MakeCall(fn, state, call, call.Module, call.Context)
-			call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+			subcall := MakeCall(fn, state, call, call.Package, call.Program)
+			call.Program.CallStack = append(call.Program.CallStack, *subcall)
 		}
 	}
 

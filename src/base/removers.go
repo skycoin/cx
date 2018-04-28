@@ -98,9 +98,9 @@ func (fn *CXFunction) RemoveExpression (line int) {
 		} else {
 			fn.Expressions = append(fn.Expressions[:line], fn.Expressions[line+1:]...)
 		}
-		for i, expr := range fn.Expressions {
-			expr.Index = i
-		}
+		// for i, expr := range fn.Expressions {
+		// 	expr.Index = i
+		// }
 	}
 }
 

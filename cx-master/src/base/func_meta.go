@@ -42,14 +42,14 @@ func add_arg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
 
 func add_expr (tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 	if err := checkType("add.expr", "str", fnName); err == nil {
-		mod := call.Module
+		mod := call.Package
 
 		var opName string
 		var tg string
 		encoder.DeserializeRaw(*fnName.Value, &opName)
 		encoder.DeserializeRaw(*tag.Value, &tg)
 		
-		if fn, err := mod.Context.GetFunction(opName, mod.Name); err == nil {
+		if fn, err := mod.Program.GetFunction(opName, mod.Name); err == nil {
 			expr := MakeExpression(fn)
 			expr.AddTag(tg)
 			

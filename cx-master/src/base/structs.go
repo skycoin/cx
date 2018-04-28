@@ -163,7 +163,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
         */
 
 	"glfw.Init":true, "glfw.WindowHint":true, "glfw.CreateWindow":true,
-	"glfw.MakeContextCurrent":true, "glfw.ShouldClose":true, "glfw.SetShouldClose":true,
+	"glfw.MakeProgramCurrent":true, "glfw.ShouldClose":true, "glfw.SetShouldClose":true,
 	"glfw.PollEvents":true, "glfw.SwapBuffers":true, "glfw.GetFramebufferSize":true,
 
 	"glfw.SetKeyCallback":true, "glfw.GetTime":true, "glfw.SetMouseButtonCallback":true,
@@ -179,18 +179,24 @@ var NATIVE_FUNCTIONS = map[string]bool{
 }
 
 /*
-  Context
+  Program
 */
 
 type CXProgram struct {
-	Modules []*CXModule
-	CurrentModule *CXModule
-	CallStack *CXCallStack
+	Packages []*CXPackage
+	CurrentPackage *CXPackage
+
+	Inputs []*CXDefinition
+	Outputs []*CXDefinition
+	
+	// CallStack *CXCallStack
+	CallStack []CXCall
+
 	Path string
 	Terminated bool
-	// Inputs []*CXDefinition
-	Outputs []*CXDefinition
-	Steps []*CXCallStack
+	
+	// Steps []*CXCallStack
+	Steps [][]CXCall
 }
 
 type CXCallStack struct {
@@ -202,24 +208,24 @@ type CXCall struct {
 	Line int
 	State []*CXDefinition
 	ReturnAddress *CXCall
-	Context *CXProgram
-	Module *CXModule
+	Program *CXProgram
+	Package *CXPackage
 }
 
 /*
-  Modules
+  Packages
 */
 
-type CXModule struct {
+type CXPackage struct {
 	Name string
-	Imports []*CXModule
+	Imports []*CXPackage
 	Functions []*CXFunction
 	Structs []*CXStruct
 	Definitions []*CXDefinition
 
 	CurrentFunction *CXFunction
 	CurrentStruct *CXStruct
-	Context *CXProgram
+	Program *CXProgram
 }
 
 type CXDefinition struct {
@@ -227,8 +233,8 @@ type CXDefinition struct {
 	Typ string
 	Value *[]byte
 
-	Module *CXModule
-	Context *CXProgram
+	Package *CXPackage
+	Program *CXProgram
 }
 
 /*
@@ -239,8 +245,8 @@ type CXStruct struct {
 	Name string
 	Fields []*CXField
 
-	Module *CXModule
-	Context *CXProgram
+	Package *CXPackage
+	Program *CXProgram
 }
 
 type CXField struct {
@@ -262,8 +268,8 @@ type CXFunction struct {
 	NumberOutputs int
 
 	CurrentExpression *CXExpression
-	Module *CXModule
-	Context *CXProgram
+	Package *CXPackage
+	Program *CXProgram
 }
 
 type CXParameter struct {
@@ -275,19 +281,66 @@ type CXExpression struct {
 	Operator *CXFunction
 	Arguments []*CXArgument
 	OutputNames []*CXDefinition
+
+	// Inputs []*CXArgument
+	// Outputs []*CXArgument
+	
 	Line int
 	FileLine int
 	FileName string
 	Tag string
 	
 	Function *CXFunction
-	Module *CXModule
-	Context *CXProgram
+	Package *CXPackage
+	Program *CXProgram
 }
 
 type CXArgument struct {
-	Typ string
+	Name string
+	Type int
+	CustomType *CXStruct
+	Size int // size of underlaying basic type
+	TotalSize int // total size of an array, performance reasons
+	PointeeSize int
+
+	MemoryRead int // these will later be removed and a single memory pointer will be used
+	MemoryWrite int
+	Offset int
+	HeapOffset int
+	// OffsetOffset int // for struct fields
+
+	IndirectionLevels int
+	DereferenceLevels int
+	Pointee *CXArgument
+	PointeeMemoryType int
+	DereferenceOperations []int // offset by array index, struct field, pointer
+	DeclarationSpecifiers []int // used to determine finalSize
+
+	IsArray bool
+	IsArrayFirst bool // and then dereference
+	IsPointer bool
+	IsReference bool
+	// IsDereference bool
+	IsDereferenceFirst bool // and then array
+	IsStruct bool
+	IsField bool
+	IsRest bool // pkg.var <- var is rest
+	IsLocalDeclaration bool
+	
+	// Sizes []int // used to access struct fields
+	Lengths []int // declared lengths at compile time
+	// NumIndexes int // how many levels we'll go deep. NumIndexes <= len(Lengths)
+	Indexes []*CXArgument
+	Fields []*CXArgument // strct.fld1.fld2().fld3
+
+	SynonymousTo string // when the symbol is just a temporary holder for another symbol
+
+	Package *CXPackage
+	Program *CXProgram
+
+	// interpreted
 	Value *[]byte
+	Typ string
 }
 
 /*

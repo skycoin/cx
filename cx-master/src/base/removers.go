@@ -5,20 +5,20 @@ import (
 )
 
 func (cxt *CXProgram) RemoveModule (modName string) {
-	lenMods := len(cxt.Modules)
-	for i, mod := range cxt.Modules {
+	lenMods := len(cxt.Packages)
+	for i, mod := range cxt.Packages {
 		if mod.Name == modName {
 			if i == lenMods - 1 {
-				cxt.Modules = cxt.Modules[:len(cxt.Modules) - 1]
+				cxt.Packages = cxt.Packages[:len(cxt.Packages) - 1]
 			} else {
-				cxt.Modules = append(cxt.Modules[:i], cxt.Modules[i+1:]...)
+				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
 			}
 			break
 		}
 	}
 }
 
-func (mod *CXModule) RemoveDefinition (defName string) {
+func (mod *CXPackage) RemoveDefinition (defName string) {
 	lenDefs := len(mod.Definitions)
 	for i, def := range mod.Definitions {
 		if def.Name == defName {
@@ -32,7 +32,7 @@ func (mod *CXModule) RemoveDefinition (defName string) {
 	}
 }
 
-func (mod *CXModule) RemoveFunction (fnName string) {
+func (mod *CXPackage) RemoveFunction (fnName string) {
 	lenFns := len(mod.Functions)
 	for i, fn := range mod.Functions {
 		if fn.Name == fnName {
@@ -46,7 +46,7 @@ func (mod *CXModule) RemoveFunction (fnName string) {
 	}
 }
 
-func (mod *CXModule) RemoveStruct (strctName string) {
+func (mod *CXPackage) RemoveStruct (strctName string) {
 	lenStrcts := len(mod.Structs)
 	for i, strct := range mod.Structs {
 		if strct.Name == strctName {
@@ -60,7 +60,7 @@ func (mod *CXModule) RemoveStruct (strctName string) {
 	}
 }
 
-func (mod *CXModule) RemoveImport (impName string) {
+func (mod *CXPackage) RemoveImport (impName string) {
 	lenImps := len(mod.Imports)
 	for i, imp := range mod.Imports {
 		if imp.Name == impName {

@@ -8,10 +8,10 @@
 
 		//"github.com/skycoin/cx/cx/cx0"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
-		. "github.com/skycoin/cx/src/base"
+		. "github.com/skycoin/cx/cx-master/src/base"
                 )
 
-	var cxt = MakeContext()
+	var cxt = MakeProgram()
 	//var cxt = cx0.CXT
 
 	var lineNo int = 0
@@ -42,15 +42,15 @@
 		// var typArg2 string
 		// _ = typArg2
 
-		if (len(arg1.Typ) > len("ident.") && arg1.Typ[:len("ident.")] == "ident.") {
-			arg1.Typ = "ident"
+		if (len(arg1.Type) > len("ident.") && arg1.Type[:len("ident.")] == "ident.") {
+			arg1.Type = "ident"
 		}
 
-		if (len(arg2.Typ) > len("ident.") && arg2.Typ[:len("ident.")] == "ident.") {
-			arg2.Typ = "ident"
+		if (len(arg2.Type) > len("ident.") && arg2.Type[:len("ident.")] == "ident.") {
+			arg2.Type = "ident"
 		}
 		
-		if arg1.Typ == "ident" {
+		if arg1.Type == "ident" {
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
@@ -60,10 +60,10 @@
 				fmt.Println(err)
 			}
 		} else {
-			typArg1 = arg1.Typ
+			typArg1 = arg1.Type
 		}
 
-		// if arg2.Typ == "ident" {
+		// if arg2.Type == "ident" {
 		// 	var identName string
 		// 	encoder.DeserializeRaw(*arg2.Value, &identName)
 
@@ -73,12 +73,12 @@
 		// 		fmt.Println(err)
 		// 	}
 		// } else {
-		// 	typArg2 = arg1.Typ
+		// 	typArg2 = arg1.Type
 		// }
 
 		
 		// fmt.Println(typArg1)
-		// fmt.Println(arg1.Typ)
+		// fmt.Println(arg1.Type)
 
 		switch op {
 		case "+":
@@ -150,7 +150,7 @@
 		var opName string
 		var typArg1 string
 
-		if arg1.Typ == "ident" {
+		if arg1.Type == "ident" {
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
@@ -160,7 +160,7 @@
 				fmt.Println(err)
 			}
 		} else {
-			typArg1 = arg1.Typ
+			typArg1 = arg1.Type
 		}
 
 		switch op {
@@ -202,7 +202,7 @@
 				}
 
 				var outName string
-				if arg1.Typ == "ident" {
+				if arg1.Type == "ident" {
 					encoder.DeserializeRaw(*arg1.Value, &outName)
 				} else {
 					outName = MakeGenSym(NON_ASSIGN_PREFIX)
@@ -351,7 +351,7 @@ importDeclaration:
 			impName := strings.TrimPrefix($2, "\"")
 			impName = strings.TrimSuffix(impName, "\"")
 			if imp, err := cxt.GetModule(impName); err == nil {
-				if mod, err := cxt.GetCurrentModule(); err == nil {
+				if mod, err := cxt.GetCurrentPackage(); err == nil {
 					mod.AddImport(imp)
 				}
 			}
@@ -366,7 +366,7 @@ affordance:
                 /* Function Affordances */
         |       AFF FUNC IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetFunction($3, mod.Name); err == nil {
 					affs := fn.GetAffordances()
 					for i, aff := range affs {
@@ -377,7 +377,7 @@ affordance:
                 }
         |       AFF FUNC IDENT LBRACE INT RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetFunction($3, mod.Name); err == nil {
 					affs := fn.GetAffordances()
 					affs[$5].ApplyAffordance()
@@ -386,7 +386,7 @@ affordance:
                 }
         |       AFF FUNC IDENT LBRACE STRING RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetFunction($3, mod.Name); err == nil {
 					affs := fn.GetAffordances()
 					filter := strings.TrimPrefix($5, "\"")
@@ -400,7 +400,7 @@ affordance:
                 }
         |       AFF FUNC IDENT LBRACE STRING INT RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetFunction($3, mod.Name); err == nil {
 					affs := fn.GetAffordances()
 					filter := strings.TrimPrefix($5, "\"")
@@ -452,7 +452,7 @@ affordance:
                 /* Struct Affordances */
         |       AFF STRUCT IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 					affs := strct.GetAffordances()
 					for i, aff := range affs {
@@ -465,7 +465,7 @@ affordance:
         |       AFF STRUCT IDENT LBRACE INT RBRACE
                 {
 
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 					affs := strct.GetAffordances()
 					affs[$5].ApplyAffordance()
@@ -474,7 +474,7 @@ affordance:
                 }
         |       AFF STRUCT IDENT LBRACE STRING RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 					affs := strct.GetAffordances()
 					filter := strings.TrimPrefix($5, "\"")
@@ -488,7 +488,7 @@ affordance:
                 }
         |       AFF STRUCT IDENT LBRACE STRING INT RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
 					affs := strct.GetAffordances()
 					filter := strings.TrimPrefix($5, "\"")
@@ -501,7 +501,7 @@ affordance:
                 /* Struct Affordances */
         |       AFF EXPR IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
@@ -520,7 +520,7 @@ affordance:
                 }
         |       AFF EXPR IDENT LBRACE INT RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
@@ -534,7 +534,7 @@ affordance:
                 }
         |       AFF EXPR IDENT LBRACE STRING RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
@@ -550,7 +550,7 @@ affordance:
                 }
         |       AFF EXPR IDENT LBRACE STRING INT RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
 						if expr.Tag == $3 {
@@ -625,7 +625,7 @@ debugging:      DSTATE
                 {
 			// if len(cxt.CallStack.Calls) > 0 {
 			// 	for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
-			// 		fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Typ, PrintValue(def.Name, def.Value, def.Typ, cxt))
+			// 		fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Type, PrintValue(def.Name, def.Value, def.Type, cxt))
 			// 	}
 			// }
 			if len(cxt.CallStack.Calls) > 0 {
@@ -643,16 +643,16 @@ debugging:      DSTATE
 						}
 
 						if !isNonAssign {
-							if IsBasicType(def.Typ) {
-								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
+							if IsBasicType(def.Type) {
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Type, cxt))
 							} else {
 								fmt.Println(def.Name)
-								PrintValue(def.Name, def.Value, def.Typ, cxt)
+								PrintValue(def.Name, def.Value, def.Type, cxt)
 							}
 						}
 
 						
-						//fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
+						//fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Type, cxt))
 					}
 					//fmt.Println()
 				}
@@ -676,7 +676,7 @@ debugging:      DSTATE
 
 remover:        REM FUNC IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				mod.RemoveFunction($3)
 			}
                 }
@@ -686,13 +686,13 @@ remover:        REM FUNC IDENT
                 }
         |       REM DEF IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				mod.RemoveDefinition($3)
 			}
                 }
         |       REM STRUCT IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				mod.RemoveStruct($3)
 			}
                 }
@@ -701,14 +701,14 @@ remover:        REM FUNC IDENT
 			impName := strings.TrimPrefix($3, "\"")
 			impName = strings.TrimSuffix(impName, "\"")
 			
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				mod.RemoveImport(impName)
 			}
                 }
         |       REM EXPR IDENT FUNC IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
+				if fn, err := mod.Program.GetFunction($5, mod.Name); err == nil {
 					for i, expr := range fn.Expressions {
 						if expr.Tag == $3 {
 							fn.RemoveExpression(i)
@@ -719,7 +719,7 @@ remover:        REM FUNC IDENT
                 }
         |       REM FIELD IDENT STRUCT IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if strct, err := cxt.GetStruct($5, mod.Name); err == nil {
 					strct.RemoveField($3)
 				}
@@ -728,16 +728,16 @@ remover:        REM FUNC IDENT
                 }
         |       REM INPUT IDENT FUNC IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
+				if fn, err := mod.Program.GetFunction($5, mod.Name); err == nil {
 					fn.RemoveInput($3)
 				}
 			}
                 }
         |       REM OUTPUT IDENT FUNC IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
+				if fn, err := mod.Program.GetFunction($5, mod.Name); err == nil {
 					fn.RemoveOutput($3)
 				}
 			}
@@ -745,8 +745,8 @@ remover:        REM FUNC IDENT
                 // no, too complex. just wipe out entire expression
         // |       REM ARG INT EXPR INT FUNC IDENT
         //         {
-	// 		if mod, err := cxt.GetCurrentModule(); err == nil {
-	// 			if fn, err := mod.Context.GetFunction($5, mod.Name); err == nil {
+	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
+	// 			if fn, err := mod.Program.GetFunction($5, mod.Name); err == nil {
 	// 				fn.RemoveExpression(int($3))
 	// 			}
 	// 		}
@@ -785,7 +785,7 @@ selectorFields:
                 {
 			if strct, err := cxt.GetCurrentStruct(); err == nil {
 				for _, fld := range $2 {
-					fldFromParam := MakeField(fld.Name, fld.Typ)
+					fldFromParam := MakeField(fld.Name, fld.Type)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -795,8 +795,8 @@ selectorFields:
 
 selector:       SPACKAGE IDENT
                 {
-			var previousModule *CXModule
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			var previousModule *CXPackage
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				previousModule = mod
 			} else {
 				fmt.Println("A current module does not exist")
@@ -937,12 +937,12 @@ definitionDeclaration:
                 {
 
 			if $4 != nil {
-				if $3 != $4.Typ {
-					panic(fmt.Sprintf("%s: %d: variable of type '%s' cannot be initialized with value of type '%s'", fileName, yyS[yypt-0].line + 1, $3, $4.Typ))
+				if $3 != $4.Type {
+					panic(fmt.Sprintf("%s: %d: variable of type '%s' cannot be initialized with value of type '%s'", fileName, yyS[yypt-0].line + 1, $3, $4.Type))
 				}
 			}
 
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				var val *CXArgument;
 				if $4 == nil {
 					val = MakeArgument(MakeDefaultValue($3), $3)
@@ -982,7 +982,7 @@ definitionDeclaration:
         |       VAR IDENT IDENT
                 {
 			// we have to initialize all the fields
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if zeroVal, err := ResolveStruct($3, cxt); err == nil {
 					mod.AddDefinition(MakeDefinition($2, &zeroVal, $3))
 				} else {
@@ -1038,7 +1038,7 @@ structFields:
 structDeclaration:
                 TYPSTRUCT IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
 
@@ -1225,7 +1225,7 @@ structDeclaration:
                 {
 			if strct, err := cxt.GetCurrentStruct(); err == nil {
 				for _, fld := range $5 {
-					fldFromParam := MakeField(fld.Name, fld.Typ)
+					fldFromParam := MakeField(fld.Name, fld.Type)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -1251,13 +1251,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -1291,13 +1291,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 			
-			if mod, err := cxt.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -1324,7 +1324,7 @@ functionDeclaration:
                 /* Functions */
         |       FUNC IDENT functionParameters
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
@@ -1338,7 +1338,7 @@ functionDeclaration:
                 functionStatements
         |       FUNC IDENT functionParameters functionParameters
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
@@ -1425,7 +1425,7 @@ expressionsAndStatements:
 assignExpression:
                 VAR IDENT BASICTYPE definitionAssignment
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if $4 == nil {
 						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
@@ -1450,7 +1450,7 @@ assignExpression:
 							// 			expr.FileName = fileName
 							// 		}
 							// 		fn.AddExpression(expr)
-							// 		typ := []byte(fld.Typ)
+							// 		typ := []byte(fld.Type)
 							// 		arg := MakeArgument(&typ, "str")
 							// 		expr.AddArgument(arg)
 							// 		expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
@@ -1555,7 +1555,7 @@ assignExpression:
                 }
         |       VAR IDENT LBRACK RBRACK IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
 						expr := MakeExpression(op)
@@ -1588,7 +1588,7 @@ assignExpression:
 						continue
 					}
 					// argL is going to be the output name
-					typeParts := strings.Split(argsR[i].Typ, ".")
+					typeParts := strings.Split(argsR[i].Type, ".")
 
 					var typ string
 					var secondTyp string
@@ -1780,7 +1780,7 @@ nonAssignExpression:
 			identParts := strings.Split($1, ".")
 			
 			if len(identParts) == 2 {
-				mod, _ := cxt.GetCurrentModule()
+				mod, _ := cxt.GetCurrentPackage()
 				if typ, err := GetIdentType(identParts[0], yyS[yypt-0].line + 1, fileName, cxt); err == nil {
 					// then it's a method call
 					if IsStructInstance(typ, mod) {
@@ -1796,14 +1796,14 @@ nonAssignExpression:
 				}
 			} else {
 				fnName = identParts[0]
-				mod, e := cxt.GetCurrentModule()
+				mod, e := cxt.GetCurrentPackage()
 				modName = mod.Name
 				err = e
 			}
 
 			found := false
 			currModName := ""
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				currModName = mod.Name
 				for _, imp := range mod.Imports {
 					if modName == imp.Name {
@@ -1839,9 +1839,9 @@ nonAssignExpression:
 							}
 							
 							for _, arg := range $2 {
-								typeParts := strings.Split(arg.Typ, ".")
+								typeParts := strings.Split(arg.Type, ".")
 
-								arg.Typ = typeParts[0]
+								arg.Type = typeParts[0]
 								expr.AddArgument(arg)
 							}
 
@@ -1852,7 +1852,7 @@ nonAssignExpression:
 							for i, out := range op.Outputs {
 								outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
 								byteName := encoder.Serialize(outNames[i])
-								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
+								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Type))
 
 								expr.AddOutputName(outNames[i])
 							}
@@ -1908,7 +1908,7 @@ returnArg:
 
 statement:      RETURN returnArg
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if len($2) > len(fn.Outputs) {
 						panic(fmt.Sprintf("%s: %d: too many arguments to return", fileName, yyS[yypt-0].line + 1))
@@ -1919,7 +1919,7 @@ statement:      RETURN returnArg
 					if $2 != nil {
 						for i, arg := range $2 {
 							var typ string
-							identParts := strings.Split(arg.Typ, ".")
+							identParts := strings.Split(arg.Type, ".")
 
 							typ = identParts[0]
 
@@ -1960,7 +1960,7 @@ statement:      RETURN returnArg
 									resolvedType = typ
 								}
 
-								if resolvedType != fn.Outputs[i].Typ {
+								if resolvedType != fn.Outputs[i].Type {
 									panic(fmt.Sprintf("%s: %d: wrong output type", fileName, yyS[yypt-0].line + 1))
 								}
 								
@@ -1986,7 +1986,7 @@ statement:      RETURN returnArg
                 }
         /* |       RETURN argumentsList */
         /*         { */
-	/* 		if mod, err := cxt.GetCurrentModule(); err == nil { */
+	/* 		if mod, err := cxt.GetCurrentPackage(); err == nil { */
 	/* 			if fn, err := mod.GetCurrentFunction(); err == nil { */
 	/* 				// if op, err := cxt.GetFunction("identity", CORE_MODULE); err == nil { */
 	/* 				// 	expr := MakeExpression */
@@ -2008,7 +2008,7 @@ statement:      RETURN returnArg
         /*         } */
         |       GOTO IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					// this one is goTo, not baseGoTo
 					if goToFn, err := cxt.GetFunction("goTo", mod.Name); err == nil {
@@ -2028,7 +2028,7 @@ statement:      RETURN returnArg
                 }
         |       IF conditionControl
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
@@ -2049,7 +2049,7 @@ statement:      RETURN returnArg
                 }
                 expressionsAndStatements RBRACE elseStatement
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
                                         goToExpr := fn.Expressions[$<i>5 - 1]
 
@@ -2063,10 +2063,10 @@ statement:      RETURN returnArg
 					thenLines := encoder.Serialize(int32(1))
 
 					var typ string
-					if len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident." {
+					if len($2[0].Type) > len("ident.") && $2[0].Type[:len("ident.")] == "ident." {
 						typ = "ident"
 					} else {
-						typ = $2[0].Typ
+						typ = $2[0].Type
 					}
 
 					//goToExpr.AddArgument(MakeArgument(predVal, "ident"))
@@ -2084,7 +2084,7 @@ statement:      RETURN returnArg
 			}
                 }
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
@@ -2099,7 +2099,7 @@ statement:      RETURN returnArg
                 }
                 LBRACE expressionsAndStatements RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					goToExpr := fn.Expressions[$<i>3]
 					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>3 + 1))
@@ -2141,7 +2141,7 @@ statement:      RETURN returnArg
 			}
                 }
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						expr := MakeExpression(goToFn)
@@ -2156,7 +2156,7 @@ statement:      RETURN returnArg
                 }
                 LBRACE expressionsAndStatements RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					goToExpr := fn.Expressions[$<i>3]
 					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>3 + 1))
@@ -2202,7 +2202,7 @@ statement:      RETURN returnArg
                 }
                 {//$<i>7
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
-				if mod, err := cxt.GetCurrentModule(); err == nil {
+				if mod, err := cxt.GetCurrentPackage(); err == nil {
 					if fn, err := mod.GetCurrentFunction(); err == nil {
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							expr := MakeExpression(goToFn)
@@ -2226,7 +2226,7 @@ statement:      RETURN returnArg
 			if fn, err := cxt.GetCurrentFunction(); err == nil {
 				goToExpr := fn.Expressions[$<i>7 - 1]
 				if $<bool>9 {
-					if mod, err := cxt.GetCurrentModule(); err == nil {
+					if mod, err := cxt.GetCurrentPackage(); err == nil {
 						if fn, err := mod.GetCurrentFunction(); err == nil {
 							if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 								expr := MakeExpression(goToFn)
@@ -2253,7 +2253,7 @@ statement:      RETURN returnArg
                 }
                 LBRACE expressionsAndStatements RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					goToExpr := fn.Expressions[$<i>10 - 1]
 
@@ -2323,7 +2323,7 @@ statement:      RETURN returnArg
                 }
         |       VAR IDENT IDENT
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
 					if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
 						expr := MakeExpression(op)
@@ -2366,7 +2366,7 @@ elseStatement:
                 }
         |       ELSE
                 {
-                    if mod, err := cxt.GetCurrentModule(); err == nil {
+                    if mod, err := cxt.GetCurrentPackage(); err == nil {
                         if fn, err := mod.GetCurrentFunction(); err == nil {
                             if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 				    expr := MakeExpression(goToFn)
@@ -2387,7 +2387,7 @@ elseStatement:
                 }
                 expressionsAndStatements RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					goToExpr := fn.Expressions[$<i>4 - 1]
 					
@@ -2652,12 +2652,12 @@ structLitDef:
                 TAG argument
                 {
 			name := strings.TrimSuffix($1, ":")
-			$$ = MakeDefinition(name, $2.Value, $2.Typ)
+			$$ = MakeDefinition(name, $2.Value, $2.Type)
                 }
         |       TAG nonAssignExpression
                 {
 			name := strings.TrimSuffix($1, ":")
-			$$ = MakeDefinition(name, $2[0].Value, $2[0].Typ)
+			$$ = MakeDefinition(name, $2[0].Value, $2[0].Type)
                 }
                     
 ;
@@ -3064,8 +3064,8 @@ argument:       argument PLUS argument
 					expr.AddTag(tag)
 					tag = ""
 
-					if (len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident.") {
-						$2[0].Typ = "ident"
+					if (len($2[0].Type) > len("ident.") && $2[0].Type[:len("ident.")] == "ident.") {
+						$2[0].Type = "ident"
 					}
 					
 					expr.AddArgument($2[0])
@@ -3134,7 +3134,7 @@ argument:       argument PLUS argument
 				$$ = MakeArgument(&val, "ident")
 			} else {
 				// then it's a struct literal
-				if mod, err := cxt.GetCurrentModule(); err == nil {
+				if mod, err := cxt.GetCurrentPackage(); err == nil {
 					if fn, err := cxt.GetCurrentFunction(); err == nil {
 						if op, err := cxt.GetFunction("initDef", mod.Name); err == nil {
 							expr := MakeExpression(op)
@@ -3153,7 +3153,7 @@ argument:       argument PLUS argument
 
 							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
 							for _, def := range $4 {
-								typeParts := strings.Split(def.Typ, ".")
+								typeParts := strings.Split(def.Type, ".")
 
 								var typ string
 								var secondTyp string
@@ -3208,7 +3208,7 @@ argument:       argument PLUS argument
                 }
         |       BASICTYPE LBRACE argumentsList RBRACE
                 {
-			if mod, err := cxt.GetCurrentModule(); err == nil {
+			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := cxt.GetCurrentFunction(); err == nil && inFn {
 					if op, err := cxt.GetFunction(INIT_FN, mod.Name); err == nil {
 						expr := MakeExpression(op)
@@ -3244,8 +3244,8 @@ argument:       argument PLUS argument
 						
 						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", appendFnTyp), mod.Name); err == nil {
 							for _, arg := range $3 {
-								typeParts := strings.Split(arg.Typ, ".")
-								arg.Typ = typeParts[0]
+								typeParts := strings.Split(arg.Type, ".")
+								arg.Type = typeParts[0]
 								expr := MakeExpression(op)
 								fn.AddExpression(expr)
 								expr.AddArgument(MakeArgument(&sOutName, "ident"))

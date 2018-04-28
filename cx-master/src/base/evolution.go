@@ -180,7 +180,7 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 			panic(err)
 		}
 
-		if solMod, err := cxt.GetCurrentModule(); err == nil {
+		if solMod, err := cxt.GetCurrentPackage(); err == nil {
 			if mod, err := cxt.GetModule("main"); err == nil {
 				mod.AddFunction(MakeFunction("main"))
 				if fn, err := cxt.GetCurrentFunction(); err == nil {
@@ -210,9 +210,9 @@ func (cxt *CXProgram) adaptInput (testValue float64) {
 }
 
 func (fromCxt *CXProgram) transferSolution (solutionName string, toCxt *CXProgram) {
-	if fromMod, err := fromCxt.GetCurrentModule(); err == nil {
+	if fromMod, err := fromCxt.GetCurrentPackage(); err == nil {
 		if fromFn, err := fromCxt.GetFunction(solutionName, fromMod.Name); err == nil {
-			if toMod, err := toCxt.GetCurrentModule(); err == nil {
+			if toMod, err := toCxt.GetCurrentPackage(); err == nil {
 				for _, fn := range toMod.Functions {
 					if fn.Name == solutionName {
 						//idx = i
@@ -232,7 +232,6 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	if fn, err := cxt.GetCurrentFunction(); err == nil {
 		preExistingExpressions := len(fn.Expressions)
 		for i := 0; i < numberExprs - preExistingExpressions; i++ {
-
 			if i != numberExprs - preExistingExpressions - 1 {
 				affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
 				
@@ -243,7 +242,6 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 					expr.BuildExpression(nil)
 				}
 			} else {
-				
 				fnOutTypNames := make([]string, 0)
 				for _, out := range fn.Outputs {
 					fnOutTypNames = append(fnOutTypNames, out.Typ)
@@ -264,7 +262,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 						possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
 					}
 				}
-				for _, op := range fn.Module.Functions {
+				for _, op := range fn.Package.Functions {
 					possibleOp := true
 					for i, out := range op.Outputs {
 						if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
@@ -304,7 +302,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 		}
 	}
 
-	cxtCopy := MakeContextCopy(cxt, -1)
+	cxtCopy := MakeProgramCopy(cxt, -1)
 	
 	best := cxtCopy
 	best.adaptPreEvolution(solutionName)
@@ -313,7 +311,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 
 	var finalError float64
 	
-	if mod, err := cxt.GetCurrentModule(); err == nil {
+	if mod, err := cxt.GetCurrentPackage(); err == nil {
 		if fn, err := cxt.GetFunction(solutionName, mod.Name); err == nil {
 			if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
 				//fmt.Printf("Evolving function '%s'\n", solutionName)
@@ -323,7 +321,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 					programs[0] = best // the best solution will always be at index 0
 
 					for i := 1; i < 5; i++ {
-						programs[i] = MakeContextCopy(programs[0], 0)
+						programs[i] = MakeProgramCopy(programs[0], 0)
 						// we need to mutate these 4
 						programs[i].MutateSolution(solutionName, fnBag, numberExprs)
 						//programs[i].PrintProgram(false)
@@ -335,7 +333,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 						var error float64 = 0
 						for i, inp := range inputs {
 							program.adaptInput(inp)
-							//fmt.Println(program.Modules[0].Functions[0].Expressions[0].Arguments[0].Value)
+							//fmt.Println(program.Packages[0].Functions[0].Expressions[0].Arguments[0].Value)
 
 							//program.PrintProgram(false)
 							//fmt.Println(inp)

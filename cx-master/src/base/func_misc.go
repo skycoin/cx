@@ -163,8 +163,8 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		if IsBasicType(typName) {
 			zeroVal = *MakeDefaultValue(typName)
 		} else {
-			call.Context.SelectModule(expr.Module.Name)
-			if byts, err := ResolveStruct(typName, call.Context); err == nil {
+			call.Program.SelectModule(expr.Package.Name)
+			if byts, err := ResolveStruct(typName, call.Program); err == nil {
 				zeroVal = byts
 			} else {
 				return err
@@ -179,7 +179,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func serialize_program (expr *CXExpression, call *CXCall) error {
-	val := Serialize(call.Context)
+	val := Serialize(call.Program)
 
 	assignOutput(0, *val, "[]byte", expr, call)
 	return nil
@@ -512,7 +512,7 @@ func cstm_make (length, typ *CXArgument, expr *CXExpression, call *CXCall) error
 		}
 
 		var instances []byte
-		if oneInst, err := ResolveStruct(_typ[2:], call.Context); err == nil {
+		if oneInst, err := ResolveStruct(_typ[2:], call.Program); err == nil {
 			for c := int32(0); c < _len; c++ {
 				//var another []byte
 				another := make([]byte, len(oneInst))

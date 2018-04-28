@@ -16,7 +16,7 @@ func callsEqual (call1, call2 *CXCall) bool {
 		len(call1.State) != len(call2.State) ||
 		call1.Operator != call2.Operator ||
 		call1.ReturnAddress != call2.ReturnAddress ||
-		call1.Module != call2.Module {
+		call1.Package != call2.Package {
 		return false
 	}
 
@@ -30,21 +30,21 @@ func callsEqual (call1, call2 *CXCall) bool {
 }
 
 func saveStep (call *CXCall) {
-	lenCallStack := len(call.Context.CallStack.Calls)
+	lenCallStack := len(call.Program.CallStack)
 	newStep := MakeCallStack(lenCallStack)
 
-	if len(call.Context.Steps) < 1 {
+	if len(call.Program.Steps) < 1 {
 		// First call, copy everything
-		for i, call := range call.Context.CallStack.Calls {
-			newStep.Calls[i] = MakeCallCopy(call, call.Module, call.Context)
+		for i, call := range call.Program.CallStack {
+			newStep[i] = MakeCallCopy(&call, call.Package, call.Program)
 		}
 
-		call.Context.Steps = append(call.Context.Steps, newStep)
+		call.Program.Steps = append(call.Program.Steps, newStep)
 		return
 	}
 	
-	lastStep := call.Context.Steps[len(call.Context.Steps) - 1]
-	lenLastStep := len(lastStep.Calls)
+	lastStep := call.Program.Steps[len(call.Program.Steps) - 1]
+	lenLastStep := len(lastStep)
 	
 	smallerLen := 0
 	if lenLastStep < lenCallStack {
@@ -55,30 +55,29 @@ func saveStep (call *CXCall) {
 	
 	// Everytime a call changes, we need to make a hard copy of it
 	// If the call doesn't change, we keep saving a pointer to it
-
-	for i, call := range call.Context.CallStack.Calls[:smallerLen] {
-		if callsEqual(call, lastStep.Calls[i]) {
+	for i, call := range call.Program.CallStack[:smallerLen] {
+		if callsEqual(&call, &lastStep[i]) {
 			// if they are equal
 			// append reference
-			newStep.Calls[i] = lastStep.Calls[i]
+			newStep[i] = lastStep[i]
 		} else {
-			newStep.Calls[i] = MakeCallCopy(call, call.Module, call.Context)
+			newStep[i] = MakeCallCopy(&call, call.Package, call.Program)
 		}
 	}
 
 	// sizes can be different. if this is the case, we hard copy the rest
-	for i, call := range call.Context.CallStack.Calls[smallerLen:] {
-		newStep.Calls[i + smallerLen] = MakeCallCopy(call, call.Module, call.Context)
+	for i, call := range call.Program.CallStack[smallerLen:] {
+		newStep[i + smallerLen] = MakeCallCopy(&call, call.Package, call.Program)
 	}
 	
-	call.Context.Steps = append(call.Context.Steps, newStep)
+	call.Program.Steps = append(call.Program.Steps, newStep)
 	return
 }
 
 // It "un-runs" a program
 func (cxt *CXProgram) Reset () {
 	cxt.CallStack = MakeCallStack(0)
-	cxt.Steps = make([]*CXCallStack, 0)
+	cxt.Steps = make([][]CXCall, 0)
 	cxt.Outputs = make([]*CXDefinition, 0)
 	//cxt.ProgramSteps = nil
 }
@@ -91,14 +90,14 @@ func (cxt *CXProgram) ResetTo (stepNumber int) {
 		}
 		reqStep := cxt.Steps[stepNumber]
 
-		newStep := MakeCallStack(len(reqStep.Calls))
+		newStep := MakeCallStack(len(reqStep))
 		
 		var lastCall *CXCall
-		for j, call := range reqStep.Calls {
-			newCall := MakeCallCopy(call, call.Module, call.Context)
+		for j, call := range reqStep {
+			newCall := MakeCallCopy(&call, call.Package, call.Program)
 			newCall.ReturnAddress = lastCall
-			lastCall = newCall
-			newStep.Calls[j] = newCall
+			lastCall = &newCall
+			newStep[j] = newCall
 		}
 
 		cxt.CallStack = newStep
@@ -114,14 +113,14 @@ func (cxt *CXProgram) UnRun (nCalls int) {
 
 		reqStep := cxt.Steps[len(cxt.Steps) - nCalls]
 
-		newStep := MakeCallStack(len(reqStep.Calls))
+		newStep := MakeCallStack(len(reqStep))
 		
 		var lastCall *CXCall
-		for j, call := range reqStep.Calls {
-			newCall := MakeCallCopy(call, call.Module, call.Context)
+		for j, call := range reqStep {
+			newCall := MakeCallCopy(&call, call.Package, call.Program)
 			newCall.ReturnAddress = lastCall
-			lastCall = newCall
-			newStep.Calls[j] = newCall
+			lastCall = &newCall
+			newStep[j] = newCall
 		}
 
 		cxt.CallStack = newStep
@@ -168,7 +167,7 @@ func main () {
 		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
 	}
 
-	for _, mod := range cxt.Modules {
+	for _, mod := range cxt.Packages {
 		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);%s`, mod.Name, asmNL))
 		for _, imp := range mod.Imports {
 			program.WriteString(fmt.Sprintf(`imp, _ = cxt.GetModule("%s");mod.AddImport(imp);%s`, imp.Name, asmNL))
@@ -177,7 +176,7 @@ func main () {
 		for _, fn := range mod.Functions {
 			isUsed := false
 			if fn.Name != MAIN_FUNC {
-				for _, mod := range cxt.Modules {
+				for _, mod := range cxt.Packages {
 					for _, chkFn := range mod.Functions {
 						for _, expr := range chkFn.Expressions {
 							if expr.Operator.Name == fn.Name {
@@ -237,7 +236,7 @@ func main () {
 					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)
 				}
 				program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
-					expr.Operator.Name, expr.Operator.Module.Name, expr.FileLine, tagStr, asmNL))
+					expr.Operator.Name, expr.Operator.Package.Name, expr.FileLine, tagStr, asmNL))
 
 				for _, arg := range expr.Arguments {
 					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, *arg.Value, arg.Typ, asmNL))
@@ -293,7 +292,7 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
-	if cxt.CallStack != nil && len(cxt.CallStack.Calls) > 0 {
+	if cxt.CallStack != nil && len(cxt.CallStack) > 0 {
 		// we resume the program
 		var lastCall *CXCall
 		var err error
@@ -305,7 +304,7 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 		}
 
 		for !cxt.Terminated && nCalls > 0 {
-			lastCall = cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
+			lastCall = &cxt.CallStack[len(cxt.CallStack) - 1]
 			err = lastCall.call(withDebug, 1, callCounter)
 			if err != nil {
 				return err
@@ -320,9 +319,9 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 				// main function
 				state := make([]*CXDefinition, 0, 20)
-				mainCall := MakeCall(fn, state, nil, mod, mod.Context)
+				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 				
-				cxt.CallStack.Calls = append(cxt.CallStack.Calls, mainCall)
+				cxt.CallStack = append(cxt.CallStack, *mainCall)
 
 				var lastCall *CXCall
 				var err error
@@ -334,7 +333,7 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 				}
 				
 				for !cxt.Terminated && nCalls > 0 {
-					lastCall = cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1]
+					lastCall = &cxt.CallStack[len(cxt.CallStack) - 1]
 					err = lastCall.call(withDebug, 1, callCounter)
 					if err != nil {
 						return err
@@ -381,7 +380,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		var epsilon float64
 		encoder.DeserializeRaw(*(*argsCopy)[6].Value, &epsilon)
 
-		err = call.Context.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call)
+		err = call.Program.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call)
 		// flow control
 	case "baseGoTo": err = baseGoTo(call, (*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "goTo": err = goTo(call, (*argsCopy)[0])
@@ -775,7 +774,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 	//saveStep(call)
 	if withDebug {
-		PrintCallStack(call.Context.CallStack.Calls)
+		PrintCallStack(call.Program.CallStack)
 	}
 
 	// exceptions
@@ -784,7 +783,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
-		call.Context.CallStack.Calls = call.Context.CallStack.Calls[:len(call.Context.CallStack.Calls) - 1]
+		call.Program.CallStack = call.Program.CallStack[:len(call.Program.CallStack) - 1]
 		numOutputs := len(call.Operator.Outputs)
 		for i, out := range call.Operator.Outputs {
 			found := true
@@ -814,8 +813,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 						}
 					} else {
 						// no return address. should only be for main
-						call.Context.Terminated = true
-						call.Context.Outputs = append(call.Context.Outputs, def)
+						call.Program.Terminated = true
+						call.Program.Outputs = append(call.Program.Outputs, def)
 					}
 				}
 			}
@@ -830,8 +829,8 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 			return call.ReturnAddress.call(withDebug, nCalls, callCounter)
 		} else {
 			// no return address. should only be for main
-			call.Context.Terminated = true
-			//call.Context.Outputs = append(call.Context.Outputs, def)
+			call.Program.Terminated = true
+			//call.Program.Outputs = append(call.Program.Outputs, def)
 		}
 	} else {
 		fn := call.Operator
@@ -911,17 +910,17 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 
 						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX {
 							if isBasic {
-								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
 							} else {
 								fmt.Println(def.Name)
-								PrintValue(def.Name, def.Value, def.Typ, call.Context)
+								PrintValue(def.Name, def.Value, def.Typ, call.Program)
 							}
 						}
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Context))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
 					}
 					fmt.Println()
 					return excError
@@ -939,22 +938,22 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 					fmt.Println()
 					fmt.Println("Call's State:")
 					for _, def := range call.State {
-						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Context))
+						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
 					}
 					fmt.Println()
 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Context))
+						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
 					}
 					fmt.Println()
 					return excError
 				}
 				
 				call.Line++ // once the subcall finishes, call next line
-				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Module, call.Context); err == nil {
-					subcall := MakeCall(expr.Operator, argDefs, call, call.Module, call.Context)
+				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Package, call.Program); err == nil {
+					subcall := MakeCall(expr.Operator, argDefs, call, call.Package, call.Program)
 
-					call.Context.CallStack.Calls = append(call.Context.CallStack.Calls, subcall)
+					call.Program.CallStack = append(call.Program.CallStack, *subcall)
 					return subcall.call(withDebug, nCalls, callCounter)
 				} else {
 					fmt.Println(err)

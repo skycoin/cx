@@ -10,10 +10,10 @@ import (
 */
 
 type sIndex struct {
-	ContextOffset int32
+	ProgramOffset int32
 	NamesOffset int32
 	ValuesOffset int32
-	ModulesOffset int32
+	PackagesOffset int32
 	DefinitionsOffset int32
 	ImportsOffset int32
 	FunctionsOffset int32
@@ -28,9 +28,9 @@ type sIndex struct {
 }
 
 type sProgram struct {
-	ModulesOffset int32
-	ModulesSize int32
-	CurrentModuleOffset int32
+	PackagesOffset int32
+	PackagesSize int32
+	CurrentPackageOffset int32
 	CallStackOffset int32
 	CallStackSize int32
 	Terminated int32
@@ -44,8 +44,8 @@ type sCall struct {
 	StateOffset int32
 	StateSize int32
 	ReturnAddressOffset int32
-	//ContextOffset // this might not be a problem, because the context will always be at byte 0
-	ModuleOffset int32
+	//ProgramOffset // this might not be a problem, because the context will always be at byte 0
+	PackageOffset int32
 }
 
 /*
@@ -76,7 +76,7 @@ type sDefinition struct {
 	ValueOffset int32
 	ValueSize int32
 
-	ModuleOffset int32
+	PackageOffset int32
 }
 
 /*
@@ -88,7 +88,7 @@ type sStruct struct {
 	NameSize int32
 	FieldsOffset int32
 	FieldsSize int32
-	ModuleOffset int32
+	PackageOffset int32
 }
 
 type sField struct {
@@ -117,7 +117,7 @@ type sFunction struct {
 	ExpressionsOffset int32
 	ExpressionsSize int32
 	CurrentExpressionOffset int32
-	ModuleOffset int32
+	PackageOffset int32
 }
 
 type sParameter struct {
@@ -138,7 +138,7 @@ type sExpression struct {
 	TagOffset int32
 	TagSize int32
 	FunctionOffset int32
-	ModuleOffset int32
+	PackageOffset int32
 }
 
 type sArgument struct {
@@ -177,7 +177,7 @@ func serializeValue (value, sValues *[]byte, sValuesCounter *int) (offset, size 
 	return offset, size
 }
 
-func serializeImports (imps []*CXModule, sModsMap *map[string]int, sImps *[]byte, sImpsCounter *int) (offset, size int32) {
+func serializeImports (imps []*CXPackage, sModsMap *map[string]int, sImps *[]byte, sImpsCounter *int) (offset, size int32) {
 	if imps != nil && len(imps) > 0 {
 		offset = int32(*sImpsCounter)
 		size = int32(len(imps))
@@ -245,17 +245,17 @@ func Serialize (cxt *CXProgram) *[]byte {
 	// context
 	sPrgrm := &sProgram{}
 
-	sPrgrm.ModulesOffset = int32(sModsCounter)
-	sPrgrm.ModulesSize = int32(len(cxt.Modules))
+	sPrgrm.PackagesOffset = int32(sModsCounter)
+	sPrgrm.PackagesSize = int32(len(cxt.Packages))
 
-	//sPrgrm.CurrentModuleOffset =
+	//sPrgrm.CurrentPackageOffset =
 
 	// adding function names first so expressions can reference their operators
 	// module names too
-	cxtModules := make([]*CXModule, 0)
-	modFunctions := make([][]*CXFunction, len(cxt.Modules))
+	cxtModules := make([]*CXPackage, 0)
+	modFunctions := make([][]*CXFunction, len(cxt.Packages))
 	modCounter := 0
-	for _, mod := range cxt.Modules {
+	for _, mod := range cxt.Packages {
 		sModsMap[mod.Name] = sModsCounter
 		cxtModules = append(cxtModules, mod)
 		sModsCounter++
@@ -345,7 +345,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 					
 					for _, expr := range fn.Expressions {
 						sExpr := sExpression{}
-						opName := fmt.Sprintf("%s.%s", expr.Operator.Module.Name, expr.Operator.Name)
+						opName := fmt.Sprintf("%s.%s", expr.Operator.Package.Name, expr.Operator.Name)
 
 						// operator
 
@@ -382,8 +382,8 @@ func Serialize (cxt *CXProgram) *[]byte {
 								sOutName.ValueOffset, sOutName.ValueSize = serializeValue(outName.Value, &sValues, &sValuesCounter)
 
 								// outputName Module
-								sOutName.ModuleOffset =
-									int32(sModsMap[outName.Module.Name])
+								sOutName.PackageOffset =
+									int32(sModsMap[outName.Package.Name])
 
 
 								// saving the output name
@@ -439,7 +439,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 						}
 						
 						// module
-						sExpr.ModuleOffset = int32(sModsMap[expr.Module.Name])
+						sExpr.PackageOffset = int32(sModsMap[expr.Package.Name])
 
 						// save the expression
 						sExprs = append(sExprs, encoder.Serialize(sExpr)...)
@@ -452,7 +452,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				}
 
 				// module
-				sFn.ModuleOffset = int32(sModsMap[fn.Module.Name])
+				sFn.PackageOffset = int32(sModsMap[fn.Package.Name])
 
 				if mod.CurrentFunction == fn {
 					sMod.CurrentFunctionOffset = int32(sFnsCounter)
@@ -496,7 +496,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				}
 
 				// module
-				sStrct.ModuleOffset = int32(sModsMap[strct.Module.Name])
+				sStrct.PackageOffset = int32(sModsMap[strct.Package.Name])
 
 				if mod.CurrentStruct == strct {
 					sMod.CurrentStructOffset = int32(sStrctsCounter)
@@ -526,7 +526,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				// definition value
 				sDef.ValueOffset, sDef.ValueSize = serializeValue(def.Value, &sValues, &sValuesCounter)
 
-				sDef.ModuleOffset = int32(sModsMap[def.Module.Name])
+				sDef.PackageOffset = int32(sModsMap[def.Package.Name])
 
 				// save the definition
 				sDefs = append(sDefs, encoder.Serialize(sDef)...)
@@ -534,8 +534,8 @@ func Serialize (cxt *CXProgram) *[]byte {
 			}
 		}
 
-		if cxt.CurrentModule == mod {
-			sPrgrm.CurrentModuleOffset = int32(sModsCounter)
+		if cxt.CurrentPackage == mod {
+			sPrgrm.CurrentPackageOffset = int32(sModsCounter)
 		}
 
 		// save the mod
@@ -552,13 +552,13 @@ func Serialize (cxt *CXProgram) *[]byte {
 	
 	// Call stack
 	sPrgrm.CallStackOffset = int32(sCallsCounter)
-	sPrgrm.CallStackSize = int32(len(cxt.CallStack.Calls))
+	sPrgrm.CallStackSize = int32(len(cxt.CallStack))
 	lastCallOffset := int32(-1)
-	for _, call := range cxt.CallStack.Calls {
+	for _, call := range cxt.CallStack {
 		sCall := sCall{}
 
 		// Operator
-		opName := fmt.Sprintf("%s.%s", call.Operator.Module.Name, call.Operator.Name)
+		opName := fmt.Sprintf("%s.%s", call.Operator.Package.Name, call.Operator.Name)
 
 		// looking for the function's offset
 		opOffset := -1
@@ -596,7 +596,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 				// state definition value
 				sDef.ValueOffset, sDef.ValueSize = serializeValue(def.Value, &sValues, &sValuesCounter)
 
-				sDef.ModuleOffset = int32(sModsMap[def.Module.Name])
+				sDef.PackageOffset = int32(sModsMap[def.Package.Name])
 
 				// save the definition
 				sDefs = append(sDefs, encoder.Serialize(sDef)...)
@@ -612,7 +612,7 @@ func Serialize (cxt *CXProgram) *[]byte {
 		}
 
 		// Module
-		sCall.ModuleOffset = int32(sModsMap[call.Module.Name])
+		sCall.PackageOffset = int32(sModsMap[call.Package.Name])
 
 		// save the call
 		sCalls = append(sCalls, encoder.Serialize(sCall)...)
@@ -622,11 +622,11 @@ func Serialize (cxt *CXProgram) *[]byte {
 
 	// whole program
 	sIdx := sIndex{}
-	sIdx.ContextOffset = int32(encoder.Size(sIdx))
-	sIdx.NamesOffset = sIdx.ContextOffset + int32(encoder.Size(sPrgrm))
+	sIdx.ProgramOffset = int32(encoder.Size(sIdx))
+	sIdx.NamesOffset = sIdx.ProgramOffset + int32(encoder.Size(sPrgrm))
 	sIdx.ValuesOffset = sIdx.NamesOffset + int32(encoder.Size(sNames))
-	sIdx.ModulesOffset = sIdx.ValuesOffset + int32(encoder.Size(sValues))
-	sIdx.DefinitionsOffset = sIdx.ModulesOffset + int32(encoder.Size(sMods))
+	sIdx.PackagesOffset = sIdx.ValuesOffset + int32(encoder.Size(sValues))
+	sIdx.DefinitionsOffset = sIdx.PackagesOffset + int32(encoder.Size(sMods))
 	sIdx.ImportsOffset = sIdx.DefinitionsOffset + int32(encoder.Size(sDefs))
 	sIdx.FunctionsOffset = sIdx.ImportsOffset + int32(encoder.Size(sImps))
 	sIdx.StructsOffset = sIdx.FunctionsOffset + int32(encoder.Size(sFns))
@@ -636,8 +636,8 @@ func Serialize (cxt *CXProgram) *[]byte {
 	
 	sIdx.ExpressionsOffset = sIdx.ParametersOffset + int32(encoder.Size(sParams))
 	sIdx.ArgumentsOffset = sIdx.ExpressionsOffset + int32(encoder.Size(sExprs))
-	sIdx.CallsOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
-	sIdx.OutputNamesOffset = sIdx.CallsOffset + int32(encoder.Size(sCalls))
+	// sIdx.Offset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
+	sIdx.OutputNamesOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sCalls))
 
 	serialized = append(serialized, encoder.Serialize(sIdx)...)
 	serialized = append(serialized, encoder.Serialize(sPrgrm)...)
@@ -669,7 +669,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 	// // Context
 	var dsPrgrm sProgram
-	sPrgrm := (*prgrm)[dsIdx.ContextOffset:dsIdx.NamesOffset]
+	sPrgrm := (*prgrm)[dsIdx.ProgramOffset:dsIdx.NamesOffset]
 	encoder.DeserializeRaw(sPrgrm, &dsPrgrm)
 	
 	// Names
@@ -679,12 +679,12 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 	// Values
 	var dsValues []byte
-	sValues := (*prgrm)[dsIdx.ValuesOffset:dsIdx.ModulesOffset]
+	sValues := (*prgrm)[dsIdx.ValuesOffset:dsIdx.PackagesOffset]
 	encoder.DeserializeRaw(sValues, &dsValues)
 
 	// Modules
 	var dsMods []byte
-	sMods := (*prgrm)[dsIdx.ModulesOffset:dsIdx.DefinitionsOffset]
+	sMods := (*prgrm)[dsIdx.PackagesOffset:dsIdx.DefinitionsOffset]
 	encoder.DeserializeRaw(sMods, &dsMods)
 
 	// Definitions
@@ -724,13 +724,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 	// Arguments
 	var dsArgs []byte
-	sArgs := (*prgrm)[dsIdx.ArgumentsOffset:dsIdx.CallsOffset]
+	sArgs := (*prgrm)[dsIdx.ArgumentsOffset:dsIdx.OutputNamesOffset]
 	encoder.DeserializeRaw(sArgs, &dsArgs)
-
-	// Calls
-	var dsCalls []byte
-	sCalls := (*prgrm)[dsIdx.CallsOffset:dsIdx.OutputNamesOffset]
-	encoder.DeserializeRaw(sCalls, &dsCalls)
 
 	// Output names
 	var dsOutNames []byte
@@ -741,13 +736,13 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 	   Deserializing elements
         */
 
-	// Initializing CXModules for referencing modules as imports
+	// Initializing CXPackages for referencing modules as imports
 	// Also initializing CXFunctions for referencing functions as expression operators
-	mods := make([]*CXModule, 0)
+	mods := make([]*CXPackage, 0)
 	fns := make([]*CXFunction, 0)
 	modSize := encoder.Size(sModule{})
-	for i := 0; i < int(dsPrgrm.ModulesSize); i++ {
-		mod := CXModule{}
+	for i := 0; i < int(dsPrgrm.PackagesSize); i++ {
+		mod := CXPackage{}
 		
 		var dsMod sModule
 		sMod := dsMods[i*modSize:(i+1)*modSize]
@@ -780,7 +775,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sName, &dsName)
 
 			fn.Name = string(dsName)
-			fn.Module = &mod
+			fn.Package = &mod
 
 			// Adding function's FQN and reference to map
 			//fns[fmt.Sprintf("%s.%s", string(dsModName), string(dsName))] = &fn
@@ -789,9 +784,9 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 	}
 	
 	// Modules
-	modsOffset := int(dsPrgrm.ModulesOffset) * modSize
-	for i := 0; i < int(dsPrgrm.ModulesSize); i++ {
-		//mod := CXModule{}
+	modsOffset := int(dsPrgrm.PackagesOffset) * modSize
+	for i := 0; i < int(dsPrgrm.PackagesSize); i++ {
+		//mod := CXPackage{}
 		
 		var dsMod sModule
 		sMod := dsMods[i*modSize:(i+1)*modSize]
@@ -802,9 +797,9 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		sModName := dsNames[dsMod.NameOffset:dsMod.NameOffset + dsMod.NameSize]
 		encoder.DeserializeRaw(sModName, &dsModName)
 
-		// Getting CXModule
+		// Getting CXPackage
 		//mod := MakeModule(string(dsModName))
-		var mod *CXModule
+		var mod *CXPackage
 		for _, m := range mods {
 			if m.Name == string(dsModName) {
 				mod = m
@@ -815,13 +810,13 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		//mod := mods[string(dsModName)]
 
 		// Adding current module to context
-		if int(dsPrgrm.CurrentModuleOffset) * modSize == modsOffset + i*modSize {
-			cxt.CurrentModule = mod
+		if int(dsPrgrm.CurrentPackageOffset) * modSize == modsOffset + i*modSize {
+			cxt.CurrentPackage = mod
 		}
 
 		// Imports (this []byte is holding module offsets, not sModules)
-		//imps := make(map[string]*CXModule, 0)
-		imps := make([]*CXModule, 0)
+		//imps := make(map[string]*CXPackage, 0)
+		imps := make([]*CXPackage, 0)
 		impSize := encoder.Size(int32(0))
 		impsOffset := int(dsMod.ImportsOffset)
 
@@ -870,7 +865,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			encoder.DeserializeRaw(sName, &dsName)
 
 			for _, f := range fns {
-				if f.Name == string(dsName) && f.Module.Name == string(dsModName) {
+				if f.Name == string(dsName) && f.Package.Name == string(dsModName) {
 					fn = f
 					break
 				}
@@ -1038,8 +1033,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 					outName.Name = string(dsName)
 					outName.Typ = string(dsTypName)
 					outName.Value = &dsValue
-					outName.Module = mod
-					outName.Context = &cxt
+					outName.Package = mod
+					outName.Program = &cxt
 					// outName.Offset = -1
 					// outName.Size = -1
 					
@@ -1066,8 +1061,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 				expr.Tag = string(dsTag)
 				expr.FileLine = int(dsExpr.FileLine)
 				expr.Function = fn
-				expr.Context = &cxt
-				expr.Module = mod
+				expr.Program = &cxt
+				expr.Package = mod
 				
 				// Appending final expression
 				exprs = append(exprs, &expr)
@@ -1079,7 +1074,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			fn.Outputs = outs
 			fn.Expressions = exprs
 			// Current expression was added in the expression's loop
-			fn.Module = mod
+			fn.Package = mod
 
 			// Appending final function to modFns
 			//modFns[string(dsName)] = fn
@@ -1146,8 +1141,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			
 			strct.Name = string(dsName)
 			strct.Fields = flds
-			strct.Module = mod
-			strct.Context = &cxt
+			strct.Package = mod
+			strct.Program = &cxt
 
 			// Appending final struct
 			//strcts[string(dsName)] = &strct
@@ -1183,8 +1178,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			def.Name = string(dsName)
 			def.Typ = string(dsTypName)
 			def.Value = &dsValue
-			def.Module = mod
-			def.Context = &cxt
+			def.Package = mod
+			def.Program = &cxt
 			// def.Offset = -1
 			// def.Size = -1
 
@@ -1198,7 +1193,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		mod.Functions = modFns
 		mod.Structs = strcts
 		mod.Definitions = defs
-		mod.Context = &cxt
+		mod.Program = &cxt
 	}
 
 	// Call stack
@@ -1219,7 +1214,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		// Call's module
 		var dsMod sModule
 		modSize := encoder.Size(sModule{})
-		sMod := dsMods[int(dsCall.ModuleOffset)*modSize : int(dsCall.ModuleOffset)*modSize + modSize]
+		sMod := dsMods[int(dsCall.PackageOffset)*modSize : int(dsCall.PackageOffset)*modSize + modSize]
 		encoder.DeserializeRaw(sMod, &dsMod)
 
 		// Call's module name
@@ -1228,7 +1223,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		encoder.DeserializeRaw(sModName, &dsModName)
 
 		//mod := mods[string(dsModName)]
-		var mod *CXModule
+		var mod *CXPackage
 		for _, m := range mods {
 			if m.Name == string(dsModName) {
 				mod = m
@@ -1250,7 +1245,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 
 		// Call's Operator Module
 		var dsOpMod sModule
-		sOpMod := dsMods[int(dsOp.ModuleOffset)*modSize : int(dsOp.ModuleOffset)*modSize + modSize]
+		sOpMod := dsMods[int(dsOp.PackageOffset)*modSize : int(dsOp.PackageOffset)*modSize + modSize]
 		encoder.DeserializeRaw(sOpMod, &dsOpMod)
 
 		// Call's Operator Module Name
@@ -1295,8 +1290,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 			def.Name = string(dsName)
 			def.Typ = string(dsTypName)
 			def.Value = &dsValue
-			def.Module = mod
-			def.Context = &cxt
+			def.Package = mod
+			def.Program = &cxt
 
 			// Appending final definition
 			defs = append(defs, &def)
@@ -1305,8 +1300,8 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		call.Line = int(dsCall.Line)
 		call.State = defs
 		call.ReturnAddress = lastCall
-		call.Module = mod
-		call.Context = &cxt
+		call.Package = mod
+		call.Program = &cxt
 
 		lastCall = &call
 
@@ -1317,7 +1312,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 	//fmt.Println(calls)
 
 	callStack := CXCallStack{}
-	callStack.Calls = calls
+	callStack = calls
 
 	if dsPrgrm.Terminated > 0 {
 		cxt.Terminated = true
@@ -1325,7 +1320,7 @@ func Deserialize (prgrm *[]byte) *CXProgram {
 		cxt.Terminated = false
 	}
 	
-	cxt.Modules = mods
+	cxt.Packages = mods
 	cxt.CallStack = &callStack
 	cxt.Steps = make([]*CXCallStack, 0)
 

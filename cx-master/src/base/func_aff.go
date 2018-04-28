@@ -36,8 +36,8 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 				if arg, err := resolveIdent(obj1[0], call); err == nil {
 					if len(obj1) > 1 {
 						// then it's a struct
-						if mod, err := call.Context.GetCurrentModule(); err == nil {
-							if strct, err := call.Context.GetStruct(arg.Typ, mod.Name); err == nil {
+						if mod, err := call.Program.GetCurrentPackage(); err == nil {
+							if strct, err := call.Program.GetStruct(arg.Typ, mod.Name); err == nil {
 								id1Val, id1Typ, _, _ := resolveStructField(obj1[1], arg.Value, strct)
 								switch id1Typ {
 								case "i32":
@@ -71,8 +71,8 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			if arg, err := resolveIdent(obj2[0], call); err == nil {
 				if len(obj2) > 1 {
 					// then it's a struct
-					if mod, err := call.Context.GetCurrentModule(); err == nil {
-						if strct, err := call.Context.GetStruct(arg.Typ, mod.Name); err == nil {
+					if mod, err := call.Program.GetCurrentPackage(); err == nil {
+						if strct, err := call.Program.GetStruct(arg.Typ, mod.Name); err == nil {
 							id2Val, id2Typ, _, _ := resolveStructField(obj2[1], arg.Value, strct)
 							switch id2Typ {
 								case "i32":
@@ -126,12 +126,12 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			} else {
 				typ = aff.Typ
 			}
-			if mod, err := call.Context.GetCurrentModule(); err == nil {
-				if strct, err := call.Context.GetStruct(typ, mod.Name); err == nil {
+			if mod, err := call.Program.GetCurrentPackage(); err == nil {
+				if strct, err := call.Program.GetStruct(typ, mod.Name); err == nil {
 					if arg, err := resolveIdent(aff.Name, call); err == nil {
 						if aff.Index != "" {
 							if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
-								if expr, err := call.Context.GetCurrentExpression(); err == nil {
+								if expr, err := call.Program.GetCurrentExpression(); err == nil {
 									if val, err, _, _ := getStrctFromArray(arg, int32(i), expr, call); err == nil {
 										if obj1IsX {
 											obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], &val, strct)
@@ -338,8 +338,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					if arg, err := resolveIdent(obj2[0], call); err == nil {
 						if len(obj2) > 1 {
 							// then it's a struct
-							if mod, err := call.Context.GetCurrentModule(); err == nil {
-								if strct, err := call.Context.GetStruct(arg.Typ, mod.Name); err == nil {
+							if mod, err := call.Program.GetCurrentPackage(); err == nil {
+								if strct, err := call.Program.GetStruct(arg.Typ, mod.Name); err == nil {
 									id2Val, id2Typ, _, _ := resolveStructField(obj2[1], arg.Value, strct)
 									switch id2Typ {
 									case "i32":
@@ -383,7 +383,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		var prevFn string
 		var prevStrct string
 		
-		if mod, err := call.Context.GetCurrentModule(); err == nil {
+		if mod, err := call.Program.GetCurrentPackage(); err == nil {
 			prevMod = mod.Name
 			if fn, err := mod.GetCurrentFunction(); err == nil {
 				prevFn = fn.Name
@@ -399,23 +399,23 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 			switch t {
 			case "pkg":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectModule(obj)
+				call.Program.SelectModule(obj)
 				targetTyp = "pkg"
 				stack = stack[:len(stack) - 1]
 			case "fn":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectFunction(obj)
+				call.Program.SelectFunction(obj)
 				targetTyp = "fn"
 				stack = stack[:len(stack) - 1]
 			case "strct":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectStruct(obj)
+				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
 				stack = stack[:len(stack) - 1]
 			case "exp":
 				obj := stack[len(stack) - 1]
 				
-				if fn, err := call.Context.GetCurrentFunction(); err == nil {
+				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
 						if expr.Tag == obj {
@@ -451,19 +451,19 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		// now getting the affordances
 		switch targetTyp {
 		case "pkg":
-			if mod, err := call.Context.GetCurrentModule(); err == nil {
+			if mod, err := call.Program.GetCurrentPackage(); err == nil {
 				affs = mod.GetAffordances()
 			}
 		case "fn":
-			if fn, err := call.Context.GetCurrentFunction(); err == nil {
+			if fn, err := call.Program.GetCurrentFunction(); err == nil {
 				affs = fn.GetAffordances()
 			}
 		case "strct":
-			if strct, err := call.Context.GetCurrentStruct(); err == nil {
+			if strct, err := call.Program.GetCurrentStruct(); err == nil {
 				affs = strct.GetAffordances()
 			}
 		case "exp":
-			if expr, err := call.Context.GetCurrentExpression(); err == nil {
+			if expr, err := call.Program.GetCurrentExpression(); err == nil {
 				lastArg := expr.Arguments[len(expr.Arguments) - 1]
 				expr.RemoveArgument()
 				affs = expr.GetAffordances(settings)
@@ -495,8 +495,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					if arg, err := resolveIdent(obj2[0], call); err == nil {
 						if len(obj2) > 1 {
 							// then it's a struct
-							if mod, err := call.Context.GetCurrentModule(); err == nil {
-								if strct, err := call.Context.GetStruct(arg.Typ, mod.Name); err == nil {
+							if mod, err := call.Program.GetCurrentPackage(); err == nil {
+								if strct, err := call.Program.GetStruct(arg.Typ, mod.Name); err == nil {
 									id2Val, id2Typ, _, _ := resolveStructField(obj2[1], arg.Value, strct)
 									switch id2Typ {
 									case "i32":
@@ -752,13 +752,13 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		// restoring previous selected cx objects
 
 		if prevMod != "" {
-			call.Context.SelectModule(prevMod)
+			call.Program.SelectModule(prevMod)
 		}
 		if prevFn != "" {
-			call.Context.SelectFunction(prevFn)
+			call.Program.SelectFunction(prevFn)
 		}
 		if prevStrct != "" {
-			call.Context.SelectStruct(prevStrct)
+			call.Program.SelectStruct(prevStrct)
 		}
 
 		// making commands
@@ -829,7 +829,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		var prevFn string
 		var prevStrct string
 		
-		if mod, err := call.Context.GetCurrentModule(); err == nil {
+		if mod, err := call.Program.GetCurrentPackage(); err == nil {
 			prevMod = mod.Name
 			if fn, err := mod.GetCurrentFunction(); err == nil {
 				prevFn = fn.Name
@@ -845,23 +845,23 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 			switch t {
 			case "pkg":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectModule(obj)
+				call.Program.SelectModule(obj)
 				targetTyp = "pkg"
 				stack = stack[:len(stack) - 1]
 			case "fn":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectFunction(obj)
+				call.Program.SelectFunction(obj)
 				targetTyp = "fn"
 				stack = stack[:len(stack) - 1]
 			case "strct":
 				obj := stack[len(stack) - 1]
-				call.Context.SelectStruct(obj)
+				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
 				stack = stack[:len(stack) - 1]
 			case "exp":
 				obj := stack[len(stack) - 1]
 				
-				if fn, err := call.Context.GetCurrentFunction(); err == nil {
+				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
 						if expr.Tag == obj {
@@ -885,19 +885,19 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		// now getting the affordances
 		switch targetTyp {
 		case "pkg":
-			// if mod, err := call.Context.GetCurrentModule(); err == nil {
+			// if mod, err := call.Program.GetCurrentPackage(); err == nil {
 			
 			// }
 		case "fn":
-			// if fn, err := call.Context.GetCurrentFunction(); err == nil {
+			// if fn, err := call.Program.GetCurrentFunction(); err == nil {
 			
 			// }
 		case "strct":
-			// if strct, err := call.Context.GetCurrentStruct(); err == nil {
+			// if strct, err := call.Program.GetCurrentStruct(); err == nil {
 			
 			// }
 		case "exp":
-			if expr, err := call.Context.GetCurrentExpression(); err == nil {
+			if expr, err := call.Program.GetCurrentExpression(); err == nil {
 				// one CX object can have different types of affordances
 				switch op {
 				case "AddArgument":
@@ -938,13 +938,13 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 
 
 		if prevMod != "" {
-			call.Context.SelectModule(prevMod)
+			call.Program.SelectModule(prevMod)
 		}
 		if prevFn != "" {
-			call.Context.SelectFunction(prevFn)
+			call.Program.SelectFunction(prevFn)
 		}
 		if prevStrct != "" {
-			call.Context.SelectStruct(prevStrct)
+			call.Program.SelectStruct(prevStrct)
 		}
 
 		return nil

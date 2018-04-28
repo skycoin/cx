@@ -3,11 +3,11 @@
 	import (
 		"fmt"
 		"bytes"
-		. "github.com/skycoin/cx/src/base"
+		. "github.com/skycoin/cx/cx-master/src/base"
 		// "github.com/skycoin/skycoin/src/cipher/encoder"
 	)
 
-	var CXT = MakeContext()
+	var CXT = MakeProgram()
 
 	var replMode bool = false
 	var inREPL bool = false
@@ -230,7 +230,7 @@ definitionAssignment:
 definitionDeclaration:
                 VAR IDENT BASICTYPE definitionAssignment
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
 				byts := []byte{}
 				def := MakeDefinition($2, &byts, $3)
 				mod.AddDefinition(def)
@@ -241,7 +241,7 @@ definitionDeclaration:
                 }
         |       VAR IDENT IDENT
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
 				byts := []byte{}
 				def := MakeDefinition($2, &byts, $3)
 				mod.AddDefinition(def)
@@ -297,7 +297,7 @@ structFields:
 structDeclaration:
                 TYPSTRUCT IDENT
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
 				strct := MakeStruct($2)
 				mod.AddStruct(strct)
 
@@ -482,7 +482,7 @@ structDeclaration:
                 {
 			if strct, err := CXT.GetCurrentStruct(); err == nil {
 				for _, fld := range $5 {
-					fldFromParam := MakeField(fld.Name, fld.Typ)
+					fldFromParam := MakeField(fld.Name, fld.Type)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -508,13 +508,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -547,13 +547,13 @@ functionDeclaration:
 				panic(fmt.Sprintf("%s: %d: method '%s' has multiple receivers", fileName, yyS[yypt-0].line+1, $3))
 			}
 			
-			if mod, err := CXT.GetCurrentModule(); err == nil {
-				if IsBasicType($2[0].Typ) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
+				if IsBasicType($2[0].Type) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -579,7 +579,7 @@ functionDeclaration:
                 /* Functions */
         |       FUNC IDENT functionParameters functionStatements
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)
@@ -592,7 +592,7 @@ functionDeclaration:
                 }
         |       FUNC IDENT functionParameters functionParameters functionStatements
                 {
-			if mod, err := CXT.GetCurrentModule(); err == nil {
+			if mod, err := CXT.GetCurrentPackage(); err == nil {
 				inFn = true
 				fn := MakeFunction($2)
 				mod.AddFunction(fn)

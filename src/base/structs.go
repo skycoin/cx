@@ -130,6 +130,12 @@ type CXProgram struct {
 	Data Data
 
 	Terminated bool
+
+
+	// from interpreted
+	Steps [][]CXCall
+
+	
 }
 
 type CXHeap struct {
@@ -157,7 +163,6 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-	Index int
 	Name string
 	Imports []*CXPackage
 	Functions []*CXFunction
@@ -174,7 +179,6 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
-	Index int
 	Name string
 	Fields []*CXArgument
 	Size int
@@ -188,7 +192,6 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
-	Index int
 	Name string
 	Inputs []*CXArgument
 	Outputs []*CXArgument
@@ -207,7 +210,6 @@ type CXFunction struct {
 }
 
 type CXExpression struct {
-	Index int
 	Operator *CXFunction
 	Inputs []*CXArgument
 	Outputs []*CXArgument
@@ -277,6 +279,9 @@ type CXArgument struct {
 
 	Package *CXPackage
 	Program *CXProgram
+
+	// interpreted
+	Value *[]byte
 }
 
 /*
@@ -284,11 +289,11 @@ type CXArgument struct {
 */
 
 type CXAffordance struct {
-	Description string;
-	Operator string;
-	Name string;
-	Typ string;
-	Index string;
-	Action func();
+	Description string
+	Operator string
+	Name string
+	Typ string
+	Index string
+	Action func()
 }
 

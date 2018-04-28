@@ -173,8 +173,8 @@ import (
 	//"github.com/skycoin/viscript/signal"
 	
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/skycoin/cx/cx/cx0"
-	. "github.com/skycoin/cx/src/base"
+	"github.com/skycoin/cx/cx-master/cx/cx0"
+	. "github.com/skycoin/cx/cx-master/src/base"
 )
 
 func countNewLines (s []byte) int {
@@ -851,14 +851,14 @@ func unsafeEval (code string) (out string) {
 	yyParse(lexer)
 
 	if err := cxt.Run(false, -1); err != nil {
-		cxt = MakeContext()
+		cxt = MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
 	if len(cxt.Outputs) > 0 {
 		outVal := *cxt.Outputs[0].Value
 	
-		switch cxt.Outputs[0].Typ {
+		switch cxt.Outputs[0].Type {
 		case "bool":
 			var out bool
 			encoder.DeserializeRaw(outVal, &out)
@@ -924,7 +924,7 @@ func unsafeEval (code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	cxt = MakeContext()
+	cxt = MakeProgram()
 	return out
 }
 
@@ -946,7 +946,7 @@ func Eval (code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		cxt = MakeContext()
+		cxt = MakeProgram()
 		return "Timed out."
 	}
 }
@@ -1032,7 +1032,7 @@ func (yylex Lexer) Error (e string) {
 // this function creates functions on-the-fly to handle the operations for this type
 func CreateMDimFuncs (typ string, line int) {
 	if IsMultiDim(typ) {
-		if mod, err := cxt.GetCurrentModule(); err == nil {
+		if mod, err := cxt.GetCurrentPackage(); err == nil {
 			if _, err := cxt.GetFunction(fmt.Sprintf("%s.append", typ), mod.Name); err != nil {
 				currFn, err := cxt.GetCurrentFunction();
 				if err != nil {

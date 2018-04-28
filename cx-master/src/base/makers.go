@@ -14,13 +14,13 @@ func MakeGenSym (name string) string {
 	return gensym
 }
 
-func MakeContext () *CXProgram {
+func MakeProgram () *CXProgram {
 	//heap := make([]byte, 0)
 	newContext := &CXProgram{
-		Modules: make([]*CXModule, 0),
+		Packages: make([]*CXPackage, 0),
 		CallStack: MakeCallStack(0),
 		//Heap: &heap,
-		Steps: make([]*CXCallStack, 0)}
+		Steps: make([][]CXCall, 0)}
 	return newContext
 }
 
@@ -39,7 +39,7 @@ func MakeArgumentCopy (arg *CXArgument) *CXArgument {
 	}
 }
 
-func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXExpression {
+func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXExpression {
 	argsCopy := make([]*CXArgument, len(expr.Arguments))
 	for i, arg := range expr.Arguments {
 		argsCopy[i] = MakeArgumentCopy(arg)
@@ -50,12 +50,12 @@ func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXModule, cxt 
 		OutputNames: expr.OutputNames,
 		Line: expr.Line,
 		Function: fn,
-		Module: mod,
-		Context: cxt,
+		Package: mod,
+		Program: cxt,
 	}
 }
 
-func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunction {
+func MakeFunctionCopy (fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFunction {
 	newFn := &CXFunction{}
 	inputsCopy := make([]*CXParameter, len(fn.Inputs))
 	outputsCopy := make([]*CXParameter, len(fn.Outputs))
@@ -82,8 +82,8 @@ func MakeFunctionCopy (fn *CXFunction, mod *CXModule, cxt *CXProgram) *CXFunctio
 	if len(exprsCopy) > 0 {
 		newFn.CurrentExpression = exprsCopy[len(exprsCopy) - 1]
 	}
-	newFn.Module = mod
-	newFn.Context = cxt
+	newFn.Package = mod
+	newFn.Program = cxt
 
 	return newFn
 }
@@ -95,7 +95,7 @@ func MakeFieldCopy (fld *CXField) *CXField {
 	}
 }
 
-func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXProgram) *CXStruct {
+func MakeStructCopy (strct *CXStruct, mod *CXPackage, cxt *CXProgram) *CXStruct {
 	fldsCopy := make([]*CXField, len(strct.Fields))
 	for i, fld := range strct.Fields {
 		fldsCopy[i] = MakeFieldCopy(fld)
@@ -103,24 +103,24 @@ func MakeStructCopy (strct *CXStruct, mod *CXModule, cxt *CXProgram) *CXStruct {
 	return &CXStruct{
 		Name: strct.Name,
 		Fields: fldsCopy,
-		Module: mod,
-		Context: cxt,
+		Package: mod,
+		Program: cxt,
 	}
 }
 
-func MakeDefinitionCopy (def *CXDefinition, mod *CXModule, cxt *CXProgram) *CXDefinition {
+func MakeDefinitionCopy (def *CXDefinition, mod *CXPackage, cxt *CXProgram) *CXDefinition {
 	valCopy := *def.Value
 	return &CXDefinition{
 		Name: def.Name,
 		Typ: def.Typ,
 		Value: &valCopy,
-		Module: mod,
-		Context: cxt,
+		Package: mod,
+		Program: cxt,
 	}
 }
 
-func MakeModuleCopy (mod *CXModule, cxt *CXProgram) *CXModule {
-	newMod := &CXModule{Context: cxt}
+func MakeModuleCopy (mod *CXPackage, cxt *CXProgram) *CXPackage {
+	newMod := &CXPackage{Program: cxt}
 	fnsCopy := make([]*CXFunction, len(mod.Functions))
 	strctsCopy := make([]*CXStruct, len(mod.Structs))
 	defsCopy := make([]*CXDefinition, len(mod.Definitions))
@@ -147,52 +147,54 @@ func MakeModuleCopy (mod *CXModule, cxt *CXProgram) *CXModule {
 	newMod.Functions = fnsCopy
 	newMod.Structs = strctsCopy
 	newMod.Definitions = defsCopy
-	newMod.Context = cxt
+	newMod.Program = cxt
 	
 	return newMod
 }
 
-func MakeCallCopy (call *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
+func MakeCallCopy (call *CXCall, mod *CXPackage, cxt *CXProgram) CXCall {
 	stateCopy := make([]*CXDefinition, len(call.State))
 	for k, v := range call.State {
 		stateCopy[k] = MakeDefinitionCopy(v, mod, cxt)
 	}
-	return &CXCall{
+	return CXCall{
 		Operator: call.Operator,
 		Line: call.Line,
 		State: stateCopy,
 		ReturnAddress: call.ReturnAddress,
-		Module: mod,
-		Context: cxt,
+		Package: mod,
+		Program: cxt,
 	}
 }
 
-func MakeCallStack (size int) *CXCallStack {
-	return &CXCallStack{
-		Calls: make([]*CXCall, size),
-	}
+func MakeCallStack (size int) []CXCall {
+	// return &CXCallStack{
+	// 	Calls: make([]*CXCall, size),
+	// }
+
+	return make([]CXCall, size)
 }
 
-func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
+func MakeProgramCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	newContext := &CXProgram{}
 
-	modsCopy := make([]*CXModule, len(cxt.Modules))
+	modsCopy := make([]*CXPackage, len(cxt.Packages))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
 	}
 	
-	for k, mod := range cxt.Modules {
+	for k, mod := range cxt.Packages {
 		modsCopy[k] = MakeModuleCopy(mod, newContext)
 	}
 
 	// Setting current module in copy
 	for _, mod := range modsCopy {
-		if mod.Name == cxt.CurrentModule.Name {
-			newContext.CurrentModule = mod
+		if mod.Name == cxt.CurrentPackage.Name {
+			newContext.CurrentPackage = mod
 		}
 	}
 
-	newContext.Modules = modsCopy
+	newContext.Packages = modsCopy
 
 	// Making imports copies
 	for _, mod := range modsCopy {
@@ -205,7 +207,7 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	for _, mod := range modsCopy {
 		for _, fn := range mod.Functions {
 			for _, expr := range fn.Expressions {
-				if op, err := newContext.GetFunction(expr.Operator.Name, expr.Module.Name); err == nil {
+				if op, err := newContext.GetFunction(expr.Operator.Name, expr.Package.Name); err == nil {
 					expr.Operator = op
 				}
 			}
@@ -214,24 +216,24 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 
 	if len(cxt.Steps) > 0 {
 		reqStep := cxt.Steps[stepNumber]
-		newStep := MakeCallStack(len(reqStep.Calls))
+		newStep := MakeCallStack(len(reqStep))
 		
 		var lastCall *CXCall
-		for j, call := range reqStep.Calls {
-			var callModule *CXModule
+		for j, call := range reqStep {
+			var callModule *CXPackage
 			for _, mod := range modsCopy {
-				if call.Module.Name == mod.Name {
+				if call.Package.Name == mod.Name {
 					callModule = mod
 				}
 			}
 			
-			newCall := MakeCallCopy(call, callModule, newContext)
-			if callOp, err := newContext.GetFunction(call.Operator.Name, call.Operator.Module.Name); err == nil {
+			newCall := MakeCallCopy(&call, callModule, newContext)
+			if callOp, err := newContext.GetFunction(call.Operator.Name, call.Operator.Package.Name); err == nil {
 				newCall.Operator = callOp
 			}
 			newCall.ReturnAddress = lastCall
-			lastCall = newCall
-			newStep.Calls[j] = newCall
+			lastCall = &newCall
+			newStep[j] = newCall
 		}
 		
 		newContext.CallStack = newStep
@@ -241,11 +243,11 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	return newContext
 }
 
-func MakeModule (name string) *CXModule {
-	return &CXModule{
+func MakeModule (name string) *CXPackage {
+	return &CXPackage{
 		Name: name,
 		Definitions: make([]*CXDefinition, 0, 10),
-		Imports: make([]*CXModule, 0),
+		Imports: make([]*CXPackage, 0),
 		Functions: make([]*CXFunction, 0, 10),
 		Structs: make([]*CXStruct, 0),
 	}
@@ -307,14 +309,14 @@ func MakeValue (value string) *[]byte {
 	return &byts
 }
 
-func MakeCall (op *CXFunction, state []*CXDefinition, ret *CXCall, mod *CXModule, cxt *CXProgram) *CXCall {
+func MakeCall (op *CXFunction, state []*CXDefinition, ret *CXCall, mod *CXPackage, cxt *CXProgram) *CXCall {
 	return &CXCall{
 		Operator: op,
 		Line: 0,
 		State: state,
 		ReturnAddress: ret,
-		Module: mod,
-		Context: cxt,}
+		Package: mod,
+		Program: cxt,}
 }
 
 func MakeAffordance (desc string, action func()) *CXAffordance {

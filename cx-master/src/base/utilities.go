@@ -27,7 +27,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			identParts := strings.Split(outName, ".")
 
 			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
-				if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+				if strct, err := call.Program.GetStruct(def.Typ, expr.Module.Name); err == nil {
 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
@@ -45,7 +45,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
-					if strct, err := call.Context.GetStruct(def.Typ, expr.Module.Name); err == nil {
+					if strct, err := call.Program.GetStruct(def.Typ, expr.Module.Name); err == nil {
 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
 						isBasic := false
@@ -124,7 +124,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	return nil
 }
 
-func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXModule, cxt *CXProgram) ([]*CXDefinition, error) {
+func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXPackage, cxt *CXProgram) ([]*CXDefinition, error) {
 	if len(inputs) == len(args) {
 		defs := make([]*CXDefinition, len(args) + len(outputs), len(args) + len(outputs) + 10)
 		for i, arg := range args {
@@ -133,7 +133,7 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 				Typ: arg.Typ,
 				Value: arg.Value,
 				Module: mod,
-				Context: cxt,
+				Program: cxt,
 			}
 		}
 		for i, out := range outputs {
@@ -154,7 +154,7 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 				Typ: out.Typ,
 				Value: &zeroValue,
 				Module: mod,
-				Context: cxt,
+				Program: cxt,
 			}
 		}
 		return defs, nil
@@ -350,7 +350,7 @@ func PrintValue (identName string, value *[]byte, typName string, cxt *CXProgram
 		argName = fmt.Sprintf("%#v", val)
 	default:
 		// struct or custom type
-		if mod, err := cxt.GetCurrentModule(); err == nil {
+		if mod, err := cxt.GetCurrentPackage(); err == nil {
 			if strct, err := cxt.GetStruct(typName, mod.Name); err == nil {
 				for _, fld := range strct.Fields {
 					val, typ, _, _ := resolveStructField(fld.Name, value, strct)
@@ -380,7 +380,7 @@ func rep (str string, n int) string {
 	
 // 	fmt.Println()
 // 	fmt.Printf("(Modules %s", nl)
-// 	for _, mod := range cxt.Modules {
+// 	for _, mod := range cxt.Packages {
 // 		if mod.Name == CORE_MODULE {
 // 			continue
 // 		}
@@ -561,8 +561,8 @@ func IsArray (typ string) bool {
 	}
 	return false
 }
-func IsStructInstance (typ string, mod *CXModule) bool {
-	if _, err := mod.Context.GetStruct(typ, mod.Name); err == nil {
+func IsStructInstance (typ string, mod *CXPackage) bool {
+	if _, err := mod.Program.GetStruct(typ, mod.Name); err == nil {
 		return true
 	} else {
 		return false
@@ -576,7 +576,7 @@ func IsLocal (identName string, call *CXCall) bool {
 	}
 	return false
 }
-func IsGlobal (identName string, mod *CXModule) bool {
+func IsGlobal (identName string, mod *CXPackage) bool {
 	for _, def := range mod.Definitions {
 		if def.Name == identName {
 			return true
@@ -728,7 +728,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				
 				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
 			case "[]":
-				if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+				if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
 					lastFld := strct.Fields[len(strct.Fields) - 1]
 					instances := (*val)[offset+4:]
 
@@ -750,7 +750,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
 				}
 			case "struct":
-				if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+				if strct, err := strct.Program.GetStruct(f.Typ, strct.Module.Name); err == nil {
 					lastFld := strct.Fields[len(strct.Fields) - 1]
 
 					instances := (*val)[offset:]
@@ -797,7 +797,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 
 			offset += (arrOffset * 8) + 4
 		case "[]":
-			if strct, err := strct.Context.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+			if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
 				instances := (*val)[offset+4:]
 				lastFld := strct.Fields[len(strct.Fields) - 1]
 				
@@ -821,7 +821,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				offset += upperBound + 4
 			}
 		case "struct":
-			if strct, err := strct.Context.GetStruct(f.Typ, strct.Module.Name); err == nil {
+			if strct, err := strct.Program.GetStruct(f.Typ, strct.Module.Name); err == nil {
 				lastFld := strct.Fields[len(strct.Fields) - 1]
 
 				instances := (*val)[offset:]
@@ -863,7 +863,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 	identParts := strings.Split(lookingFor, ".")
 
 	if len(identParts) > 1 {
-		if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+		if mod, err := call.Program.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct
 			isImported := false
 			for _, imp := range call.Operator.Module.Imports {
@@ -885,7 +885,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
 				isStructFld = true
 				//resolvedIdent = def
-				if strct, err := mod.Context.GetStruct(def.Typ, mod.Name); err == nil {
+				if strct, err := mod.Program.GetStruct(def.Typ, mod.Name); err == nil {
 					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
 					arg := MakeArgument(&byts, typ)
 					return arg, nil
@@ -899,7 +899,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 
 				for _, stateDef := range call.State {
 					if stateDef.Name == identParts[0] {
-						if strct, err := mod.Context.GetStruct(stateDef.Typ, mod.Name); err == nil {
+						if strct, err := mod.Program.GetStruct(stateDef.Typ, mod.Name); err == nil {
 							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
 							arg := MakeArgument(&byts, typ)
 							return arg, nil
@@ -957,7 +957,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		
 		var typ string
 		if !IsBasicType(resolvedIdent.Typ) {
-			if mod, err := call.Context.GetModule(identParts[0]); err == nil {
+			if mod, err := call.Program.GetModule(identParts[0]); err == nil {
 				typ = fmt.Sprintf("%s.%s", mod.Name, resolvedIdent.Typ)
 			} else {
 				typ = resolvedIdent.Typ
@@ -975,7 +975,7 @@ func ResolveStruct (typ string, cxt *CXProgram) ([]byte, error) {
 	var bs []byte
 
 	found := false
-	if mod, err := cxt.GetCurrentModule(); err == nil {
+	if mod, err := cxt.GetCurrentPackage(); err == nil {
 		var foundStrct *CXStruct
 
 		if typ[:2] == "[]" {
@@ -1147,7 +1147,7 @@ func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *
 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize)), 0, 0
 	}
 
-	if strct, err := call.Context.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
+	if strct, err := call.Program.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
 		instances := (*arr.Value)[4:]
 		lastFld := strct.Fields[len(strct.Fields) - 1]
 		
@@ -1221,7 +1221,7 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 	}
 
 	i := 0
-	for _, mod := range cxt.Modules {
+	for _, mod := range cxt.Packages {
 		cxt.SelectModule(mod.Name)
 		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
 			continue
@@ -1466,7 +1466,7 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 	}
 }
 
-func PrintCallStack (callStack []*CXCall) {
+func PrintCallStack (callStack []CXCall) {
 	for i, call := range callStack {
 		tabs := strings.Repeat("___", i)
 		if tabs == "" {
@@ -1587,7 +1587,7 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram) (string, error) {
 	identParts := strings.Split(lookingFor, ".")
 
-	mod, err := cxt.GetCurrentModule();
+	mod, err := cxt.GetCurrentPackage();
 	if err != nil {
 		return "", err
 	}
