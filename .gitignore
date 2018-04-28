@@ -68,3 +68,6 @@ run.sh
 cx.sig
 .floo*
 tasks.org
+both/
+dist/
+cxweb/
