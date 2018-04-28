@@ -60,3 +60,8 @@ macro.org
 run.sh
 testing-pointers.cx
 cx.sig
+cxweb/
+dist/
+tasks.org
+both/
+log.org
