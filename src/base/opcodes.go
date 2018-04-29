@@ -96,16 +96,6 @@ const (
 	OP_F64_COS
 	OP_F64_SIN
 	
-
-	
-	
-	OP_BITAND
-	OP_BITOR
-	OP_BITXOR
-	OP_BITCLEAR
-	OP_BITSHL
-	OP_BITSHR
-	
 	OP_STR_PRINT
 	OP_MAKE
 	OP_READ
@@ -118,6 +108,7 @@ const (
 	OP_EQ
 	OP_UNEQ
 	OP_RAND
+
 	OP_AND
 	OP_OR
 	OP_NOT
@@ -313,15 +304,7 @@ func execNative (prgrm *CXProgram) {
 	case OP_F64_UNEQ: f64_uneq(expr, stack, fp)
 	case OP_F64_COS: f64_cos(expr, stack, fp)
 	case OP_F64_SIN: f64_sin(expr, stack, fp)
-		
-	case OP_BITAND:
-	case OP_BITOR:
-	case OP_BITXOR:
-	case OP_BITCLEAR:
-	case OP_BITSHL:
-	case OP_BITSHR:
-		
-	
+
 		
 	case OP_STR_PRINT: str_print(expr, stack, fp)
 	case OP_MAKE:
