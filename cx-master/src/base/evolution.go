@@ -10,7 +10,7 @@ import (
 // This method removes 1 or more expressions
 // Then adds the equivalent of removed expressions
 
-func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpression {
+func (expr *CXExpression) BuildExpression (outNames []*CXArgument) *CXExpression {
 	numInps := len(expr.Operator.Inputs)
 	numOuts := len(expr.Operator.Outputs)
 
@@ -27,7 +27,7 @@ func (expr *CXExpression) BuildExpression (outNames []*CXDefinition) *CXExpressi
 			affs[r].ApplyAffordance()
 		}
 	} else {
-		expr.OutputNames = outNames
+		expr.Outputs = outNames
 	}
 	
 	return expr
@@ -38,12 +38,12 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 	if fn, err := cxt.GetCurrentFunction(); err == nil {
 		removeIndex := random(0, len(fn.Expressions))
 
-		removedVars := fn.Expressions[removeIndex].OutputNames
+		removedVars := fn.Expressions[removeIndex].Outputs
 
 		indexesToRemove := make([]int, 0)
 		
 		for i, expr := range fn.Expressions {
-			for _, arg := range expr.Arguments {
+			for _, arg := range expr.Inputs {
 				if i == removeIndex {
 					indexesToRemove = append([]int{i}, indexesToRemove...)
 					break
@@ -62,11 +62,11 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 					break
 				}
 				
-				for _, arg := range fn.Expressions[i].Arguments {
+				for _, arg := range fn.Expressions[i].Inputs {
 					broke := false
 					for _, j := range indexesToRemove {
 						argIsOutput := false
-						for _, outName := range fn.Expressions[j].OutputNames {
+						for _, outName := range fn.Expressions[j].Outputs {
 							var identName string
 							encoder.DeserializeRaw(*arg.Value, &identName)
 							if identName == outName.Name {
@@ -104,7 +104,7 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 		hasOutputs := false
 		fnOutputs := fn.Outputs
 		for _, expr := range fn.Expressions {
-			exprOutNames := expr.OutputNames
+			exprOutNames := expr.Outputs
 
 			if len(exprOutNames) != len(fnOutputs) {
 				break
@@ -148,7 +148,7 @@ func (cxt *CXProgram) MutateSolution (solutionName string, fnBag string, numberE
 
 			if expr, err := fn.GetCurrentExpression(); err == nil {
 				if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
-					outNames := make([]*CXDefinition, len(fn.Outputs))
+					outNames := make([]*CXArgument, len(fn.Outputs))
 					for i, out := range fn.Outputs {
 						outDef := MakeDefinition(
 							out.Name,
@@ -191,7 +191,7 @@ func (cxt *CXProgram) adaptPreEvolution (solutionName string) {
 						if expr, err := cxt.GetCurrentExpression(); err == nil {
 							expr.AddOutputName("out")
 							tmpVal := encoder.Serialize(float64(0))
-							expr.AddArgument(MakeArgument(&tmpVal, "f64"))
+							expr.AddInput(MakeArgument(&tmpVal, "f64"))
 						}
 					}
 				}
@@ -205,7 +205,7 @@ func (cxt *CXProgram) adaptInput (testValue float64) {
 		val := encoder.Serialize(testValue)
 		arg := MakeArgument(&val, "f64")
 		
-		fn.Expressions[0].Arguments[0] = arg
+		fn.Expressions[0].Inputs[0] = arg
 	}
 }
 
@@ -284,7 +284,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 				affs[r].ApplyAffordance()
 				
 				//making sure last expression assigns to output
-				outNames := make([]*CXDefinition, len(fn.Outputs))
+				outNames := make([]*CXArgument, len(fn.Outputs))
 				for i, out := range fn.Outputs {
 					outDef := MakeDefinition(
 						out.Name,
@@ -333,7 +333,7 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 						var error float64 = 0
 						for i, inp := range inputs {
 							program.adaptInput(inp)
-							//fmt.Println(program.Packages[0].Functions[0].Expressions[0].Arguments[0].Value)
+							//fmt.Println(program.Packages[0].Functions[0].Expressions[0].Inputs[0].Value)
 
 							//program.PrintProgram(false)
 							//fmt.Println(inp)
@@ -411,13 +411,13 @@ func (cxt *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs
 	sFinalError := encoder.Serialize(finalError)
 	
 	for _, def := range call.State {
-		if def.Name == expr.OutputNames[0].Name {
+		if def.Name == expr.Outputs[0].Name {
 			def.Value = &sFinalError
 			return nil
 		}
 	}
 	
-	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sFinalError, "f64"))
+	call.State = append(call.State, MakeDefinition(expr.Outputs[0].Name, &sFinalError, "f64"))
 	return nil
 }
 

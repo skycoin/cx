@@ -196,8 +196,8 @@ func CreateMDimFuncs (typ string, line int) {
 					arrArg := MakeArgument(&sArr, "str")
 					sElt := encoder.Serialize("elt")
 					sEltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(sEltArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(sEltArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -222,8 +222,8 @@ func CreateMDimFuncs (typ string, line int) {
 					arrArg := MakeArgument(&sArr, "str")
 					sIndex := encoder.Serialize("index")
 					indexArg := MakeArgument(&sIndex, "ident")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -250,9 +250,9 @@ func CreateMDimFuncs (typ string, line int) {
 					indexArg := MakeArgument(&sIndex, "ident")
 					sElt := encoder.Serialize("elt")
 					eltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddArgument(eltArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
+					expr.AddInput(eltArg)
 
 					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
@@ -276,7 +276,7 @@ func CreateMDimFuncs (typ string, line int) {
 					expr.AddOutputName("len")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
-					expr.AddArgument(arrArg)
+					expr.AddInput(arrArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -300,8 +300,8 @@ func CreateMDimFuncs (typ string, line int) {
 					sTyp := encoder.Serialize(typ)
 					lenArg := MakeArgument(&sLen, "ident")
 					typArg := MakeArgument(&sTyp, "str")
-					expr.AddArgument(lenArg)
-					expr.AddArgument(typArg)
+					expr.AddInput(lenArg)
+					expr.AddInput(typArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn

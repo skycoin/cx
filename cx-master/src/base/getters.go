@@ -72,7 +72,7 @@ func (fn *CXFunction) GetCurrentExpression () (*CXExpression, error) {
 	}
 }
 
-func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXDefinition, error) {
+func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXArgument, error) {
 	mod, err := cxt.GetCurrentPackage()
 
 	if err == nil {
@@ -82,22 +82,22 @@ func (cxt *CXProgram) GetCurrentDefinitions () ([]*CXDefinition, error) {
 	}
 }
 
-func (mod *CXPackage) GetCurrentDefinitions () ([]*CXDefinition, error) {
+func (mod *CXPackage) GetCurrentDefinitions () ([]*CXArgument, error) {
 	return mod.GetDefinitions()
 }
 
-func (mod *CXPackage) GetDefinitions () ([]*CXDefinition, error) {
-	if mod.Definitions != nil {
-		return mod.Definitions, nil
+func (mod *CXPackage) GetDefinitions () ([]*CXArgument, error) {
+	if mod.Globals != nil {
+		return mod.Globals, nil
 	} else {
 		return nil, errors.New("definitions array is nil")
 	}
 }
 
-func (cxt *CXProgram) GetDefinition (name string) (*CXDefinition, error) {
+func (cxt *CXProgram) GetDefinition (name string) (*CXArgument, error) {
 	if mod, err := cxt.GetCurrentPackage(); err == nil {
-		var found *CXDefinition
-		for _, def := range mod.Definitions {
+		var found *CXArgument
+		for _, def := range mod.Globals {
 			if def.Name == name {
 				found = def
 				break
@@ -114,7 +114,7 @@ func (cxt *CXProgram) GetDefinition (name string) (*CXDefinition, error) {
 	}
 }
 
-func (strct *CXStruct) GetFields() ([]*CXField, error) {
+func (strct *CXStruct) GetFields() ([]*CXArgument, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
@@ -190,9 +190,9 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	}
 }
 
-func (mod *CXPackage) GetDefinition (defName string) (*CXDefinition, error) {
-	var foundDef *CXDefinition
-	for _, def := range mod.Definitions {
+func (mod *CXPackage) GetDefinition (defName string) (*CXArgument, error) {
+	var foundDef *CXArgument
+	for _, def := range mod.Globals {
 		if def.Name == defName {
 			foundDef = def
 			break
@@ -281,8 +281,8 @@ func (fn *CXFunction) GetExpression (line int) (*CXExpression, error) {
 }
 
 func (expr *CXExpression) GetArguments () ([]*CXArgument, error) {
-	if expr.Arguments != nil {
-		return expr.Arguments, nil
+	if expr.Inputs != nil {
+		return expr.Inputs, nil
 	} else {
 		return nil, errors.New("expression has no arguments")
 	}

@@ -257,7 +257,7 @@ func repl () {
 					for true {
 						cxt.Run(dStack, 1)
 						
-						if len(cxt.CallStack.Calls) == 1 && cxt.CallStack.Calls[0].Line == len(fn.Expressions) {
+						if len(cxt.CallStack) == 1 && cxt.CallStack[0].Line == len(fn.Expressions) {
 							break
 						}
 					}
@@ -858,7 +858,7 @@ func unsafeEval (code string) (out string) {
 	if len(cxt.Outputs) > 0 {
 		outVal := *cxt.Outputs[0].Value
 	
-		switch cxt.Outputs[0].Type {
+		switch cxt.Outputs[0].Typ {
 		case "bool":
 			var out bool
 			encoder.DeserializeRaw(outVal, &out)
@@ -1055,8 +1055,8 @@ func CreateMDimFuncs (typ string, line int) {
 					arrArg := MakeArgument(&sArr, "str")
 					sElt := encoder.Serialize("elt")
 					sEltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(sEltArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(sEltArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -1081,8 +1081,8 @@ func CreateMDimFuncs (typ string, line int) {
 					arrArg := MakeArgument(&sArr, "str")
 					sIndex := encoder.Serialize("index")
 					indexArg := MakeArgument(&sIndex, "ident")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -1109,9 +1109,9 @@ func CreateMDimFuncs (typ string, line int) {
 					indexArg := MakeArgument(&sIndex, "ident")
 					sElt := encoder.Serialize("elt")
 					eltArg := MakeArgument(&sElt, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddArgument(eltArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
+					expr.AddInput(eltArg)
 
 					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
@@ -1135,7 +1135,7 @@ func CreateMDimFuncs (typ string, line int) {
 					expr.AddOutputName("len")
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
-					expr.AddArgument(arrArg)
+					expr.AddInput(arrArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn
@@ -1159,8 +1159,8 @@ func CreateMDimFuncs (typ string, line int) {
 					sTyp := encoder.Serialize(typ)
 					lenArg := MakeArgument(&sLen, "ident")
 					typArg := MakeArgument(&sTyp, "str")
-					expr.AddArgument(lenArg)
-					expr.AddArgument(typArg)
+					expr.AddInput(lenArg)
+					expr.AddInput(typArg)
 					fn.AddExpression(expr)
 					// returning selection to last function
 					mod.CurrentFunction = currFn

@@ -113,7 +113,7 @@ func goTo (call *CXCall, tag *CXArgument) error {
 		encoder.DeserializeRaw(*tag.Value, &tg)
 
 		for _, expr := range call.Operator.Expressions {
-			if expr.Tag == tg {
+			if expr.Label == tg {
 				call.Line = expr.Line - 1
 				break
 			}
@@ -179,9 +179,12 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 }
 
 func serialize_program (expr *CXExpression, call *CXCall) error {
-	val := Serialize(call.Program)
+	// val := Serialize(call.Program)
 
-	assignOutput(0, *val, "[]byte", expr, call)
+	// remove this once Serialize is fixed
+	val := []byte{0}
+
+	assignOutput(0, val, "[]byte", expr, call)
 	return nil
 }
 

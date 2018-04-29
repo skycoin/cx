@@ -418,7 +418,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
-						if expr.Tag == obj {
+						if expr.Label == obj {
 							fn.SelectExpression(expr.Line)
 							found = true
 							targetTyp = "exp"
@@ -464,10 +464,10 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 			}
 		case "exp":
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
-				lastArg := expr.Arguments[len(expr.Arguments) - 1]
+				lastArg := expr.Inputs[len(expr.Inputs) - 1]
 				expr.RemoveArgument()
 				affs = expr.GetAffordances(settings)
-				expr.AddArgument(lastArg)
+				expr.AddInput(lastArg)
 			}
 		default:
 			return errors.New("aff.query: no target was specified")
@@ -864,7 +864,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
-						if expr.Tag == obj {
+						if expr.Label == obj {
 							fn.SelectExpression(expr.Line)
 							found = true
 							targetTyp = "exp"
@@ -900,7 +900,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
 				// one CX object can have different types of affordances
 				switch op {
-				case "AddArgument":
+				case "AddInput":
 					if index != "" {
 						if arr, err := resolveIdent(name, call); err == nil {
 							if i, err := strconv.ParseInt(index, 10, 64); err == nil {
@@ -915,7 +915,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 								
 								if err == nil {
 									expr.RemoveArgument()
-									expr.AddArgument(MakeArgument(&val, arr.Typ[2:]))
+									expr.AddInput(MakeArgument(&val, arr.Typ[2:]))
 								} else {
 									return err
 								}
@@ -928,7 +928,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 					} else {
 						sName := encoder.Serialize(name)
 						expr.RemoveArgument()
-						expr.AddArgument(MakeArgument(&sName, "ident"))
+						expr.AddInput(MakeArgument(&sName, "ident"))
 					}
 				}
 			}

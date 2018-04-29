@@ -12,7 +12,7 @@ func rem_arg (tag *CXArgument, caller *CXFunction) error {
 		encoder.DeserializeRaw(*tag.Value, &tg)
 
 		for _, expr := range caller.Expressions {
-			if expr.Tag == tg {
+			if expr.Label == tg {
 				expr.RemoveArgument()
 				return nil
 			}
@@ -29,8 +29,8 @@ func add_arg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
 		encoder.DeserializeRaw(*tag.Value, &tg)
 		
 		for _, expr := range caller.Expressions {
-			if expr.Tag == tg {
-				expr.AddArgument(MakeArgument(ident.Value, "ident"))
+			if expr.Label == tg {
+				expr.AddInput(MakeArgument(ident.Value, "ident"))
 				return nil
 			}
 		}
@@ -51,7 +51,7 @@ func add_expr (tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 		
 		if fn, err := mod.Program.GetFunction(opName, mod.Name); err == nil {
 			expr := MakeExpression(fn)
-			expr.AddTag(tg)
+			expr.AddLabel(tg)
 			
 			call.Operator.AddExpression(expr)
 			return nil
@@ -68,7 +68,7 @@ func rem_expr (tag *CXArgument, caller *CXFunction) error {
 	encoder.DeserializeRaw(*tag.Value, &tg)
 	if err := checkType("remExpr", "str", tag); err == nil {
 		for i, expr := range caller.Expressions {
-			if expr.Tag == tg {
+			if expr.Label == tg {
 				caller.RemoveExpression(i)
 				return nil
 			}

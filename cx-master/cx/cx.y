@@ -42,15 +42,15 @@
 		// var typArg2 string
 		// _ = typArg2
 
-		if (len(arg1.Type) > len("ident.") && arg1.Type[:len("ident.")] == "ident.") {
-			arg1.Type = "ident"
+		if (len(arg1.Typ) > len("ident.") && arg1.Typ[:len("ident.")] == "ident.") {
+			arg1.Typ = "ident"
 		}
 
-		if (len(arg2.Type) > len("ident.") && arg2.Type[:len("ident.")] == "ident.") {
-			arg2.Type = "ident"
+		if (len(arg2.Typ) > len("ident.") && arg2.Typ[:len("ident.")] == "ident.") {
+			arg2.Typ = "ident"
 		}
 		
-		if arg1.Type == "ident" {
+		if arg1.Typ == "ident" {
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
@@ -60,10 +60,10 @@
 				fmt.Println(err)
 			}
 		} else {
-			typArg1 = arg1.Type
+			typArg1 = arg1.Typ
 		}
 
-		// if arg2.Type == "ident" {
+		// if arg2.Typ == "ident" {
 		// 	var identName string
 		// 	encoder.DeserializeRaw(*arg2.Value, &identName)
 
@@ -73,12 +73,12 @@
 		// 		fmt.Println(err)
 		// 	}
 		// } else {
-		// 	typArg2 = arg1.Type
+		// 	typArg2 = arg1.Typ
 		// }
 
 		
 		// fmt.Println(typArg1)
-		// fmt.Println(arg1.Type)
+		// fmt.Println(arg1.Typ)
 
 		switch op {
 		case "+":
@@ -131,10 +131,10 @@
 					expr.FileName = fileName
 				}
 				fn.AddExpression(expr)
-				expr.AddTag(tag)
+				expr.AddLabel(tag)
 				tag = ""
-				expr.AddArgument(arg1)
-				expr.AddArgument(arg2)
+				expr.AddInput(arg1)
+				expr.AddInput(arg2)
 
 				outName := MakeGenSym(NON_ASSIGN_PREFIX)
 				byteName := encoder.Serialize(outName)
@@ -150,7 +150,7 @@
 		var opName string
 		var typArg1 string
 
-		if arg1.Type == "ident" {
+		if arg1.Typ == "ident" {
 			var identName string
 			encoder.DeserializeRaw(*arg1.Value, &identName)
 
@@ -160,7 +160,7 @@
 				fmt.Println(err)
 			}
 		} else {
-			typArg1 = arg1.Type
+			typArg1 = arg1.Typ
 		}
 
 		switch op {
@@ -178,31 +178,31 @@
 					expr.FileName = fileName
 				}
 				fn.AddExpression(expr)
-				expr.AddTag(tag)
+				expr.AddLabel(tag)
 				tag = ""
 
 				
-				expr.AddArgument(arg1)
+				expr.AddInput(arg1)
 
 				// var one *CXArgument
 
 				switch typArg1 {
 				case "i32":
 					sOne := encoder.Serialize(int32(1))
-					expr.AddArgument(MakeArgument(&sOne, "i32"))
+					expr.AddInput(MakeArgument(&sOne, "i32"))
 				case "i64":
 					sOne := encoder.Serialize(int64(1))
-					expr.AddArgument(MakeArgument(&sOne, "i64"))
+					expr.AddInput(MakeArgument(&sOne, "i64"))
 				case "f32":
 					sOne := encoder.Serialize(float32(1))
-					expr.AddArgument(MakeArgument(&sOne, "f32"))
+					expr.AddInput(MakeArgument(&sOne, "f32"))
 				case "f64":
 					sOne := encoder.Serialize(float64(1))
-					expr.AddArgument(MakeArgument(&sOne, "f64"))
+					expr.AddInput(MakeArgument(&sOne, "f64"))
 				}
 
 				var outName string
-				if arg1.Type == "ident" {
+				if arg1.Typ == "ident" {
 					encoder.DeserializeRaw(*arg1.Value, &outName)
 				} else {
 					outName = MakeGenSym(NON_ASSIGN_PREFIX)
@@ -232,20 +232,20 @@
 
 	line int
 
-	parameter *CXParameter
-	parameters []*CXParameter
+	parameter *CXArgument
+	parameters []*CXArgument
 
 	argument *CXArgument
 	arguments []*CXArgument
 
-        definition *CXDefinition
-	definitions []*CXDefinition
+        definition *CXArgument
+	definitions []*CXArgument
 
 	expression *CXExpression
 	expressions []*CXExpression
 
-	field *CXField
-	fields []*CXField
+	field *CXArgument
+	fields []*CXArgument
 
 	name string
 	names []string
@@ -504,7 +504,7 @@ affordance:
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
-						if expr.Tag == $3 {
+						if expr.Label == $3 {
 							PrintAffordances(expr.GetAffordances(nil))
 							break
 						}
@@ -523,7 +523,7 @@ affordance:
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
-						if expr.Tag == $3 {
+						if expr.Label == $3 {
 							affs := expr.GetAffordances(nil)
 							affs[$5].ApplyAffordance()
 							break
@@ -537,7 +537,7 @@ affordance:
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
-						if expr.Tag == $3 {
+						if expr.Label == $3 {
 							affs := expr.GetAffordances(nil)
 							filter := strings.TrimPrefix($5, "\"")
 							filter = strings.TrimSuffix(filter, "\"")
@@ -553,7 +553,7 @@ affordance:
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 					for _, expr := range fn.Expressions {
-						if expr.Tag == $3 {
+						if expr.Label == $3 {
 							affs := expr.GetAffordances(nil)
 							filter := strings.TrimPrefix($5, "\"")
 							filter = strings.TrimSuffix(filter, "\"")
@@ -623,16 +623,16 @@ stepping:       TSTEP INT INT
 
 debugging:      DSTATE
                 {
-			// if len(cxt.CallStack.Calls) > 0 {
-			// 	for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
-			// 		fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Type, PrintValue(def.Name, def.Value, def.Type, cxt))
+			// if len(cxt.CallStack) > 0 {
+			// 	for _, def := range cxt.CallStack[len(cxt.CallStack) - 1].State {
+			// 		fmt.Printf("%s(%s):\t\t%s\n", def.Name, def.Typ, PrintValue(def.Name, def.Value, def.Typ, cxt))
 			// 	}
 			// }
-			if len(cxt.CallStack.Calls) > 0 {
-				//PrintCallStack(cxt.CallStack.Calls)
+			if len(cxt.CallStack) > 0 {
+				//PrintCallStack(cxt.CallStack)
 
-				if len(cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State) > 0 {
-					for _, def := range cxt.CallStack.Calls[len(cxt.CallStack.Calls) - 1].State {
+				if len(cxt.CallStack[len(cxt.CallStack) - 1].State) > 0 {
+					for _, def := range cxt.CallStack[len(cxt.CallStack) - 1].State {
 
 
 						//fmt.Println(len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX)
@@ -643,16 +643,16 @@ debugging:      DSTATE
 						}
 
 						if !isNonAssign {
-							if IsBasicType(def.Type) {
-								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Type, cxt))
+							if IsBasicType(def.Typ) {
+								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
 							} else {
 								fmt.Println(def.Name)
-								PrintValue(def.Name, def.Value, def.Type, cxt)
+								PrintValue(def.Name, def.Value, def.Typ, cxt)
 							}
 						}
 
 						
-						//fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Type, cxt))
+						//fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, cxt))
 					}
 					//fmt.Println()
 				}
@@ -687,7 +687,7 @@ remover:        REM FUNC IDENT
         |       REM DEF IDENT
                 {
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
-				mod.RemoveDefinition($3)
+				mod.RemoveGlobal($3)
 			}
                 }
         |       REM STRUCT IDENT
@@ -710,7 +710,7 @@ remover:        REM FUNC IDENT
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
 				if fn, err := mod.Program.GetFunction($5, mod.Name); err == nil {
 					for i, expr := range fn.Expressions {
-						if expr.Tag == $3 {
+						if expr.Label == $3 {
 							fn.RemoveExpression(i)
 						}
 					}
@@ -785,7 +785,7 @@ selectorFields:
                 {
 			if strct, err := cxt.GetCurrentStruct(); err == nil {
 				for _, fld := range $2 {
-					fldFromParam := MakeField(fld.Name, fld.Type)
+					fldFromParam := MakeField(fld.Name, fld.Typ)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -937,8 +937,8 @@ definitionDeclaration:
                 {
 
 			if $4 != nil {
-				if $3 != $4.Type {
-					panic(fmt.Sprintf("%s: %d: variable of type '%s' cannot be initialized with value of type '%s'", fileName, yyS[yypt-0].line + 1, $3, $4.Type))
+				if $3 != $4.Typ {
+					panic(fmt.Sprintf("%s: %d: variable of type '%s' cannot be initialized with value of type '%s'", fileName, yyS[yypt-0].line + 1, $3, $4.Typ))
 				}
 			}
 
@@ -995,18 +995,18 @@ definitionDeclaration:
 fields:
                 parameter
                 {
-			var flds []*CXField
+			var flds []*CXArgument
                         flds = append(flds, MakeFieldFromParameter($1))
 			$$ = flds
                 }
         |       ';'
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       debugging
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       fields parameter
@@ -1061,8 +1061,8 @@ structDeclaration:
 					arrArg := MakeArgument(&sArr, "str")
 					sStrctInst := encoder.Serialize("strctInst")
 					strctInstArg := MakeArgument(&sStrctInst, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(strctInstArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(strctInstArg)
 					expr.AddOutputName("_arr")
 					
 					
@@ -1085,7 +1085,7 @@ structDeclaration:
 					}
 					sStrctInst := encoder.Serialize("strctInst")
 					strctInstArg := MakeArgument(&sStrctInst, "str")
-					expr.AddArgument(strctInstArg)
+					expr.AddInput(strctInstArg)
 					expr.AddOutputName("byts")
 					fn.AddExpression(expr)
 				} else {
@@ -1113,8 +1113,8 @@ structDeclaration:
 					sTyp := encoder.Serialize($2)
 					sTypArg := MakeArgument(&sTyp, "str")
 					
-					expr.AddArgument(sBytsArg)
-					expr.AddArgument(sTypArg)
+					expr.AddInput(sBytsArg)
+					expr.AddInput(sTypArg)
 					expr.AddOutputName("strctInst")
 					
 					fn.AddExpression(expr)
@@ -1140,8 +1140,8 @@ structDeclaration:
 					arrArg := MakeArgument(&sArr, "str")
 					sIndex := encoder.Serialize("index")
 					indexArg := MakeArgument(&sIndex, "ident")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
 					expr.AddOutputName("strctInst")
 					fn.AddExpression(expr)
 				} else {
@@ -1167,9 +1167,9 @@ structDeclaration:
 					indexArg := MakeArgument(&sIndex, "ident")
 					sInst := encoder.Serialize("inst")
 					instArg := MakeArgument(&sInst, "str")
-					expr.AddArgument(arrArg)
-					expr.AddArgument(indexArg)
-					expr.AddArgument(instArg)
+					expr.AddInput(arrArg)
+					expr.AddInput(indexArg)
+					expr.AddInput(instArg)
 					expr.AddOutputName("_arr")
 					fn.AddExpression(expr)
 				} else {
@@ -1189,7 +1189,7 @@ structDeclaration:
 					}
 					sArr := encoder.Serialize("arr")
 					arrArg := MakeArgument(&sArr, "str")
-					expr.AddArgument(arrArg)
+					expr.AddInput(arrArg)
 					expr.AddOutputName("len")
 					fn.AddExpression(expr)
 				} else {
@@ -1212,8 +1212,8 @@ structDeclaration:
 					sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
 					lenArg := MakeArgument(&sLen, "ident")
 					typArg := MakeArgument(&sTyp, "str")
-					expr.AddArgument(lenArg)
-					expr.AddArgument(typArg)
+					expr.AddInput(lenArg)
+					expr.AddInput(typArg)
 					expr.AddOutputName("arr")
 					fn.AddExpression(expr)
 				} else {
@@ -1225,7 +1225,7 @@ structDeclaration:
                 {
 			if strct, err := cxt.GetCurrentStruct(); err == nil {
 				for _, fld := range $5 {
-					fldFromParam := MakeField(fld.Name, fld.Type)
+					fldFromParam := MakeField(fld.Name, fld.Typ)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -1252,12 +1252,12 @@ functionDeclaration:
 			}
 
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
-				if IsBasicType($2[0].Type) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -1292,12 +1292,12 @@ functionDeclaration:
 			}
 			
 			if mod, err := cxt.GetCurrentPackage(); err == nil {
-				if IsBasicType($2[0].Type) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -1380,7 +1380,7 @@ parameter:
 parameters:
                 parameter
                 {
-			var params []*CXParameter
+			var params []*CXArgument
                         params = append(params, $1)
                         $$ = params
                 }
@@ -1439,7 +1439,7 @@ assignExpression:
 							
 							typ := encoder.Serialize($3)
 							arg := MakeArgument(&typ, "str")
-							expr.AddArgument(arg)
+							expr.AddInput(arg)
 							expr.AddOutputName($2)
 
 							// if strct, err := cxt.GetStruct($3, mod.Name); err == nil {
@@ -1450,9 +1450,9 @@ assignExpression:
 							// 			expr.FileName = fileName
 							// 		}
 							// 		fn.AddExpression(expr)
-							// 		typ := []byte(fld.Type)
+							// 		typ := []byte(fld.Typ)
 							// 		arg := MakeArgument(&typ, "str")
-							// 		expr.AddArgument(arg)
+							// 		expr.AddInput(arg)
 							// 		expr.AddOutputName(fmt.Sprintf("%s.%s", $2, fld.Name))
 							// 	}
 							// }
@@ -1472,7 +1472,7 @@ assignExpression:
 									expr.FileName = fileName
 								}
 								fn.AddExpression(expr)
-								expr.AddArgument(val)
+								expr.AddInput(val)
 								expr.AddOutputName($2)
 							}
 						case "byte":
@@ -1488,7 +1488,7 @@ assignExpression:
 									expr.FileName = fileName
 								}
 								fn.AddExpression(expr)
-								expr.AddArgument(val)
+								expr.AddInput(val)
 								expr.AddOutputName($2)
 							}
 						case "i64":
@@ -1504,7 +1504,7 @@ assignExpression:
 									expr.FileName = fileName
 								}
 								fn.AddExpression(expr)
-								expr.AddArgument(val)
+								expr.AddInput(val)
 								expr.AddOutputName($2)
 							}
 						case "f64":
@@ -1520,7 +1520,7 @@ assignExpression:
 									expr.FileName = fileName
 								}
 								fn.AddExpression(expr)
-								expr.AddArgument(val)
+								expr.AddInput(val)
 								expr.AddOutputName($2)
 							}
 						default:
@@ -1545,7 +1545,7 @@ assignExpression:
 									expr.FileName = fileName
 								}
 								fn.AddExpression(expr)
-								expr.AddArgument(val)
+								expr.AddInput(val)
 								expr.AddOutputName($2)
 							}
 						}
@@ -1567,7 +1567,7 @@ assignExpression:
 						fn.AddExpression(expr)
 						typ := encoder.Serialize(fmt.Sprintf("[]%s", $5))
 						arg := MakeArgument(&typ, "str")
-						expr.AddArgument(arg)
+						expr.AddInput(arg)
 						expr.AddOutputName($2)
 					}
 				}
@@ -1588,7 +1588,7 @@ assignExpression:
 						continue
 					}
 					// argL is going to be the output name
-					typeParts := strings.Split(argsR[i].Type, ".")
+					typeParts := strings.Split(argsR[i].Typ, ".")
 
 					var typ string
 					var secondTyp string
@@ -1629,7 +1629,7 @@ assignExpression:
 							}
 
 							fn.AddExpression(expr)
-							expr.AddTag(tag)
+							expr.AddLabel(tag)
 							tag = ""
 
 							var outName string
@@ -1662,14 +1662,14 @@ assignExpression:
 								identName = ptrs + identName
 								sIdentName := encoder.Serialize(identName)
 								arg := MakeArgument(&sIdentName, typ)
-								expr.AddArgument(arg)
+								expr.AddInput(arg)
 							} else {
 								arg := MakeArgument(argsR[i].Value, typ)
-								expr.AddArgument(arg)
+								expr.AddInput(arg)
 							}
 
 							// arg := MakeArgument(argsR[i].Value, typ)
-							// expr.AddArgument(arg)
+							// expr.AddInput(arg)
 							
 							expr.AddOutputName(outName)
 						}
@@ -1726,7 +1726,7 @@ assignExpression:
 							}
 
 							fn.AddExpression(expr)
-							expr.AddTag(tag)
+							expr.AddLabel(tag)
 							tag = ""
 
 							var outName string
@@ -1754,12 +1754,12 @@ assignExpression:
 							}
 
 							// needs to be in this order or addoutputname won't know the type when the operator is identity()
-							expr.AddArgument(argL)
+							expr.AddInput(argL)
 							
 							if len(typeParts) > 1 {
-								expr.AddArgument(MakeArgument(argsR[i].Value, "ident"))
+								expr.AddInput(MakeArgument(argsR[i].Value, "ident"))
 							} else {
-								expr.AddArgument(MakeArgument(argsR[i].Value, typeParts[0]))
+								expr.AddInput(MakeArgument(argsR[i].Value, typeParts[0]))
 							}
 							expr.AddOutputName(outName)
 						}
@@ -1830,7 +1830,7 @@ nonAssignExpression:
 								expr.FileName = fileName
 							}
 							fn.AddExpression(expr)
-							expr.AddTag(tag)
+							expr.AddLabel(tag)
 							tag = ""
 
 							if isMethod {
@@ -1839,10 +1839,10 @@ nonAssignExpression:
 							}
 							
 							for _, arg := range $2 {
-								typeParts := strings.Split(arg.Type, ".")
+								typeParts := strings.Split(arg.Typ, ".")
 
-								arg.Type = typeParts[0]
-								expr.AddArgument(arg)
+								arg.Typ = typeParts[0]
+								expr.AddInput(arg)
 							}
 
 							lenOut := len(op.Outputs)
@@ -1852,7 +1852,7 @@ nonAssignExpression:
 							for i, out := range op.Outputs {
 								outNames[i] = MakeGenSym(NON_ASSIGN_PREFIX)
 								byteName := encoder.Serialize(outNames[i])
-								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Type))
+								args[i] = MakeArgument(&byteName, fmt.Sprintf("ident.%s", out.Typ))
 
 								expr.AddOutputName(outNames[i])
 							}
@@ -1919,7 +1919,7 @@ statement:      RETURN returnArg
 					if $2 != nil {
 						for i, arg := range $2 {
 							var typ string
-							identParts := strings.Split(arg.Type, ".")
+							identParts := strings.Split(arg.Typ, ".")
 
 							typ = identParts[0]
 
@@ -1944,9 +1944,9 @@ statement:      RETURN returnArg
 								}
 								fn.AddExpression(expr)
 								if idFn == "identity" {
-									expr.AddArgument(MakeArgument(arg.Value, "str"))
+									expr.AddInput(MakeArgument(arg.Value, "str"))
 								} else {
-									expr.AddArgument(MakeArgument(arg.Value, typ))
+									expr.AddInput(MakeArgument(arg.Value, typ))
 								}
 
 								var resolvedType string
@@ -1960,7 +1960,7 @@ statement:      RETURN returnArg
 									resolvedType = typ
 								}
 
-								if resolvedType != fn.Outputs[i].Type {
+								if resolvedType != fn.Outputs[i].Typ {
 									panic(fmt.Sprintf("%s: %d: wrong output type", fileName, yyS[yypt-0].line + 1))
 								}
 								
@@ -1976,10 +1976,10 @@ statement:      RETURN returnArg
 						}
 						fn.AddExpression(expr)
 						val := MakeDefaultValue("bool")
-						expr.AddArgument(MakeArgument(val, "bool"))
+						expr.AddInput(MakeArgument(val, "bool"))
 						lines := encoder.SerializeAtomic(int32(-len(fn.Expressions)))
-						expr.AddArgument(MakeArgument(&lines, "i32"))
-						expr.AddArgument(MakeArgument(&lines, "i32"))
+						expr.AddInput(MakeArgument(&lines, "i32"))
+						expr.AddInput(MakeArgument(&lines, "i32"))
 					}
 				}
 			}
@@ -1998,10 +1998,10 @@ statement:      RETURN returnArg
 	/* 					} */
 	/* 					fn.AddExpression(expr) */
 	/* 					val := MakeDefaultValue("bool") */
-	/* 					expr.AddArgument(MakeArgument(val, "bool")) */
+	/* 					expr.AddInput(MakeArgument(val, "bool")) */
 	/* 					lines := encoder.SerializeAtomic(int32(-len(fn.Expressions))) */
-	/* 					expr.AddArgument(MakeArgument(&lines, "i32")) */
-	/* 					expr.AddArgument(MakeArgument(&lines, "i32")) */
+	/* 					expr.AddInput(MakeArgument(&lines, "i32")) */
+	/* 					expr.AddInput(MakeArgument(&lines, "i32")) */
 	/* 				} */
 	/* 			} */
 	/* 		} */
@@ -2021,7 +2021,7 @@ statement:      RETURN returnArg
 
 						//label := []byte($2)
 						label := encoder.Serialize($2)
-						expr.AddArgument(MakeArgument(&label, "str"))
+						expr.AddInput(MakeArgument(&label, "str"))
 					}
 				}
 			}
@@ -2063,16 +2063,16 @@ statement:      RETURN returnArg
 					thenLines := encoder.Serialize(int32(1))
 
 					var typ string
-					if len($2[0].Type) > len("ident.") && $2[0].Type[:len("ident.")] == "ident." {
+					if len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident." {
 						typ = "ident"
 					} else {
-						typ = $2[0].Type
+						typ = $2[0].Typ
 					}
 
-					//goToExpr.AddArgument(MakeArgument(predVal, "ident"))
-					goToExpr.AddArgument(MakeArgument($2[0].Value, typ))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+					//goToExpr.AddInput(MakeArgument(predVal, "ident"))
+					goToExpr.AddInput(MakeArgument($2[0].Value, typ))
+					goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+					goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 				}
 			}
                 }
@@ -2108,9 +2108,9 @@ statement:      RETURN returnArg
 					//if multiple value return, take first one for condition
 					predVal := $2[0].Value
 					
-					goToExpr.AddArgument(MakeArgument(predVal, "ident"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+					goToExpr.AddInput(MakeArgument(predVal, "ident"))
+					goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+					goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 					
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
@@ -2125,9 +2125,9 @@ statement:      RETURN returnArg
 
 						alwaysTrue := encoder.Serialize(int32(1))
 
-						goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&alwaysTrue, "bool"))
+						goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 					}
 					
 				}
@@ -2162,9 +2162,9 @@ statement:      RETURN returnArg
 					elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>3 + 1))
 					thenLines := encoder.Serialize(int32(1))
 
-					goToExpr.AddArgument($2)
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+					goToExpr.AddInput($2)
+					goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+					goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 					
 					if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 						goToExpr := MakeExpression(goToFn)
@@ -2179,9 +2179,9 @@ statement:      RETURN returnArg
 
 						alwaysTrue := encoder.Serialize(int32(1))
 
-						goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&alwaysTrue, "bool"))
+						goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 					}
 				}
 			}
@@ -2244,9 +2244,9 @@ statement:      RETURN returnArg
 
 					predVal := $5[0].Value
 					
-					goToExpr.AddArgument(MakeArgument(predVal, "ident"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					// goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+					goToExpr.AddInput(MakeArgument(predVal, "ident"))
+					goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+					// goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 				}
 				$<i>$ = len(fn.Expressions)
 			}
@@ -2263,9 +2263,9 @@ statement:      RETURN returnArg
 						thenLines := encoder.Serialize(int32(-($<i>10 - $<i>3) + 1))
 						elseLines := encoder.Serialize(int32(0))
 
-						goToExpr.AddArgument(MakeArgument(predVal, "bool"))
-						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+						goToExpr.AddInput(MakeArgument(predVal, "bool"))
+						goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
@@ -2280,15 +2280,15 @@ statement:      RETURN returnArg
 							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>7) + 1)
 							elseLines := encoder.Serialize(int32(0))
 
-							goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-							goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-							goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+							goToExpr.AddInput(MakeArgument(&alwaysTrue, "bool"))
+							goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+							goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 
 							condGoToExpr := fn.Expressions[$<i>7 - 1]
 
 							condThenLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>7 + 1))
 							
-							condGoToExpr.AddArgument(MakeArgument(&condThenLines, "i32"))
+							condGoToExpr.AddInput(MakeArgument(&condThenLines, "i32"))
 						}
 					} else {
 						predVal := $5[0].Value
@@ -2296,9 +2296,9 @@ statement:      RETURN returnArg
 						thenLines := encoder.Serialize(int32(1))
 						elseLines := encoder.Serialize(int32(len(fn.Expressions) - $<i>7 + 2))
 						
-						goToExpr.AddArgument(MakeArgument(predVal, "ident"))
-						goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-						goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+						goToExpr.AddInput(MakeArgument(predVal, "ident"))
+						goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+						goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 
 						if goToFn, err := cxt.GetFunction("baseGoTo", mod.Name); err == nil {
 							goToExpr := MakeExpression(goToFn)
@@ -2313,9 +2313,9 @@ statement:      RETURN returnArg
 							thenLines := encoder.Serialize(int32(-len(fn.Expressions) + $<i>3 + 1))
 							elseLines := encoder.Serialize(int32(0))
 
-							goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-							goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-							goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+							goToExpr.AddInput(MakeArgument(&alwaysTrue, "bool"))
+							goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+							goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 						}
 					}
 				}
@@ -2336,7 +2336,7 @@ statement:      RETURN returnArg
 
 						typ := encoder.Serialize($3)
 						arg := MakeArgument(&typ, "str")
-						expr.AddArgument(arg)
+						expr.AddInput(arg)
 						expr.AddOutputName($2)
 					}
 				}
@@ -2396,9 +2396,9 @@ elseStatement:
 
 					alwaysTrue := encoder.Serialize(int32(1))
 
-					goToExpr.AddArgument(MakeArgument(&alwaysTrue, "bool"))
-					goToExpr.AddArgument(MakeArgument(&thenLines, "i32"))
-					goToExpr.AddArgument(MakeArgument(&elseLines, "i32"))
+					goToExpr.AddInput(MakeArgument(&alwaysTrue, "bool"))
+					goToExpr.AddInput(MakeArgument(&thenLines, "i32"))
+					goToExpr.AddInput(MakeArgument(&elseLines, "i32"))
 
 					$<i>$ = len(fn.Expressions) - $<i>4
 				}
@@ -2652,19 +2652,19 @@ structLitDef:
                 TAG argument
                 {
 			name := strings.TrimSuffix($1, ":")
-			$$ = MakeDefinition(name, $2.Value, $2.Type)
+			$$ = MakeDefinition(name, $2.Value, $2.Typ)
                 }
         |       TAG nonAssignExpression
                 {
 			name := strings.TrimSuffix($1, ":")
-			$$ = MakeDefinition(name, $2[0].Value, $2[0].Type)
+			$$ = MakeDefinition(name, $2[0].Value, $2[0].Typ)
                 }
                     
 ;
 
 structLitDefs:  structLitDef
                 {
-			var defs []*CXDefinition
+			var defs []*CXArgument
 			$$ = append(defs, $1)
                 }
         |       structLitDefs COMMA structLitDef
@@ -3039,9 +3039,9 @@ argument:       argument PLUS argument
 						expr.FileName = fileName
 					}
 					fn.AddExpression(expr)
-					expr.AddTag(tag)
+					expr.AddLabel(tag)
 					tag = ""
-					expr.AddArgument($2)
+					expr.AddInput($2)
 
 					outName := MakeGenSym(NON_ASSIGN_PREFIX)
 					byteName := encoder.Serialize(outName)
@@ -3061,14 +3061,14 @@ argument:       argument PLUS argument
 						expr.FileName = fileName
 					}
 					fn.AddExpression(expr)
-					expr.AddTag(tag)
+					expr.AddLabel(tag)
 					tag = ""
 
-					if (len($2[0].Type) > len("ident.") && $2[0].Type[:len("ident.")] == "ident.") {
-						$2[0].Type = "ident"
+					if (len($2[0].Typ) > len("ident.") && $2[0].Typ[:len("ident.")] == "ident.") {
+						$2[0].Typ = "ident"
 					}
 					
-					expr.AddArgument($2[0])
+					expr.AddInput($2[0])
 
 					outName := MakeGenSym(NON_ASSIGN_PREFIX)
 					byteName := encoder.Serialize(outName)
@@ -3148,12 +3148,12 @@ argument:       argument PLUS argument
 							sOutName := encoder.Serialize(outName)
 
 							typ := encoder.Serialize($2)
-							expr.AddArgument(MakeArgument(&typ, "str"))
+							expr.AddInput(MakeArgument(&typ, "str"))
 							expr.AddOutputName(outName)
 
 							$$ = MakeArgument(&sOutName, fmt.Sprintf("ident.%s", $2))
 							for _, def := range $4 {
-								typeParts := strings.Split(def.Type, ".")
+								typeParts := strings.Split(def.Typ, ".")
 
 								var typ string
 								var secondTyp string
@@ -3182,12 +3182,12 @@ argument:       argument PLUS argument
 										expr.FileName = fileName
 									}
 									fn.AddExpression(expr)
-									expr.AddTag(tag)
+									expr.AddLabel(tag)
 									tag = ""
 
 									outName := fmt.Sprintf("%s.%s", outName, def.Name)
 									arg := MakeArgument(def.Value, typ)
-									expr.AddArgument(arg)
+									expr.AddInput(arg)
 									expr.AddOutputName(outName)
 								}
 							}
@@ -3239,18 +3239,18 @@ argument:       argument PLUS argument
 
 						typ := encoder.Serialize(appendFnTyp)
 						arg := MakeArgument(&typ, "str")
-						expr.AddArgument(arg)
+						expr.AddInput(arg)
 						expr.AddOutputName(outName)
 						
 						if op, err := cxt.GetFunction(fmt.Sprintf("%s.append", appendFnTyp), mod.Name); err == nil {
 							for _, arg := range $3 {
-								typeParts := strings.Split(arg.Type, ".")
-								arg.Type = typeParts[0]
+								typeParts := strings.Split(arg.Typ, ".")
+								arg.Typ = typeParts[0]
 								expr := MakeExpression(op)
 								fn.AddExpression(expr)
-								expr.AddArgument(MakeArgument(&sOutName, "ident"))
+								expr.AddInput(MakeArgument(&sOutName, "ident"))
 								expr.AddOutputName(outName)
-								expr.AddArgument(CastArgumentForArray(appendFnTyp, arg))
+								expr.AddInput(CastArgumentForArray(appendFnTyp, arg))
 							}
 						}
 

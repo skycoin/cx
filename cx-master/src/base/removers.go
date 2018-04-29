@@ -18,14 +18,14 @@ func (cxt *CXProgram) RemoveModule (modName string) {
 	}
 }
 
-func (mod *CXPackage) RemoveDefinition (defName string) {
-	lenDefs := len(mod.Definitions)
-	for i, def := range mod.Definitions {
+func (mod *CXPackage) RemoveGlobal (defName string) {
+	lenDefs := len(mod.Globals)
+	for i, def := range mod.Globals {
 		if def.Name == defName {
 			if i == lenDefs - 1 {
-				mod.Definitions = mod.Definitions[:len(mod.Definitions) - 1]
+				mod.Globals = mod.Globals[:len(mod.Globals) - 1]
 			} else {
-				mod.Definitions = append(mod.Definitions[:i], mod.Definitions[i+1:]...)
+				mod.Globals = append(mod.Globals[:i], mod.Globals[i+1:]...)
 			}
 			break
 		}
@@ -137,13 +137,13 @@ func (fn *CXFunction) RemoveOutput (outName string) {
 }
 
 func (expr *CXExpression) RemoveArgument () {
-	if len(expr.Arguments) > 0 {
-		expr.Arguments = expr.Arguments[:len(expr.Arguments) - 1]
+	if len(expr.Inputs) > 0 {
+		expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
 	}
 }
 
 func (expr *CXExpression) RemoveOutputName () {
-	if len(expr.OutputNames) > 0 {
-		expr.OutputNames = expr.OutputNames[:len(expr.OutputNames) - 1]
+	if len(expr.Outputs) > 0 {
+		expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
 	}
 }

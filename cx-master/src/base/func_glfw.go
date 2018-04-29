@@ -185,7 +185,7 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 			sAction := encoder.Serialize(int32(action))
 			sModifierKey := encoder.Serialize(int32(mods))
 
-			state := make([]*CXDefinition, len(fn.Inputs))
+			state := make([]*CXArgument, len(fn.Inputs))
 			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
 			state[1] = MakeDefinition(fn.Inputs[1].Name, &sKey,fn.Inputs[1].Typ)
 			state[2] = MakeDefinition(fn.Inputs[2].Name, &sScancode,fn.Inputs[2].Typ)
@@ -221,7 +221,7 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 			sXpos := encoder.Serialize(xpos)
 			sYpos := encoder.Serialize(ypos)
 
-			state := make([]*CXDefinition, len(fn.Inputs))
+			state := make([]*CXArgument, len(fn.Inputs))
 
 			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
 			state[1] = MakeDefinition(fn.Inputs[1].Name, &sXpos,fn.Inputs[1].Typ)
@@ -276,7 +276,7 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 			sAction := encoder.Serialize(int32(action))
 			sModifierKey := encoder.Serialize(int32(mods))
 
-			state := make([]*CXDefinition, len(fn.Inputs))
+			state := make([]*CXArgument, len(fn.Inputs))
 
 			state[0] = MakeDefinition(fn.Inputs[0].Name, &winName,fn.Inputs[0].Typ)
 			state[1] = MakeDefinition(fn.Inputs[1].Name, &sKey,fn.Inputs[1].Typ)

@@ -1447,6 +1447,7 @@ label4:
 	
 	affs := aff.query(target, objs, rules)
 	aff.print(affs)
+	[]str.print(affs)
 	aff.execute(target, affs, 0)
 
 	

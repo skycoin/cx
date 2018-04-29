@@ -182,34 +182,53 @@ var NATIVE_FUNCTIONS = map[string]bool{
   Program
 */
 
+type Data []byte
+type Heap []byte
+type Stack []byte
+
 type CXProgram struct {
-	Packages []*CXPackage
-	CurrentPackage *CXPackage
+	Packages []*CXPackage // b
+	CurrentPackage *CXPackage // b
 
-	Inputs []*CXDefinition
-	Outputs []*CXDefinition
+	Inputs []*CXArgument // b
+	Outputs []*CXArgument // b
 	
-	// CallStack *CXCallStack
-	CallStack []CXCall
+	CallStack []CXCall // b
+	CallCounter int // c
 
-	Path string
-	Terminated bool
+	Stacks []CXStack // c
+	Heap CXHeap // c
+	Data Data // c
 	
-	// Steps []*CXCallStack
-	Steps [][]CXCall
+	Path string // i
+	
+	Terminated bool // c
+	
+	Steps [][]CXCall // i
 }
 
-type CXCallStack struct {
-	Calls []*CXCall
+type CXHeap struct {
+	Heap Heap // c
+	HeapPointer int // c
+
+	Program *CXProgram // c
+}
+
+type CXStack struct {
+	Stack Stack // c
+	StackPointer int // c
+
+	Program *CXProgram // c
 }
 
 type CXCall struct {
-	Operator *CXFunction
-	Line int
-	State []*CXDefinition
-	ReturnAddress *CXCall
-	Program *CXProgram
-	Package *CXPackage
+	Operator *CXFunction // b
+	Line int // b
+	FramePointer int // c
+	State []*CXArgument // i
+	ReturnAddress *CXCall // i
+	Program *CXProgram // b
+	Package *CXPackage // b
 }
 
 /*
@@ -217,24 +236,15 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-	Name string
-	Imports []*CXPackage
-	Functions []*CXFunction
-	Structs []*CXStruct
-	Definitions []*CXDefinition
+	Name string // b
+	Imports []*CXPackage // b
+	Functions []*CXFunction // b
+	Structs []*CXStruct // b
+	Globals []*CXArgument // b
 
-	CurrentFunction *CXFunction
-	CurrentStruct *CXStruct
-	Program *CXProgram
-}
-
-type CXDefinition struct {
-	Name string
-	Typ string
-	Value *[]byte
-
-	Package *CXPackage
-	Program *CXProgram
+	CurrentFunction *CXFunction // b
+	CurrentStruct *CXStruct // b
+	Program *CXProgram // b
 }
 
 /*
@@ -242,16 +252,12 @@ type CXDefinition struct {
 */
 
 type CXStruct struct {
-	Name string
-	Fields []*CXField
+	Name string // b
+	Fields []*CXArgument // b
+	Size int // c
 
-	Package *CXPackage
-	Program *CXProgram
-}
-
-type CXField struct {
-	Name string
-	Typ string
+	Package *CXPackage // b
+	Program *CXProgram // b
 }
 
 /*
@@ -259,43 +265,60 @@ type CXField struct {
 */
 
 type CXFunction struct {
-	Name string
-	Inputs []*CXParameter
-	Outputs []*CXParameter
-	Expressions []*CXExpression
+	Name string // b
+	Inputs []*CXArgument // b
+	Outputs []*CXArgument // b
+	Expressions []*CXExpression // b
 
+	
 	// for optimization
-	NumberOutputs int
+	NumberOutputs int // i
 
-	CurrentExpression *CXExpression
-	Package *CXPackage
-	Program *CXProgram
-}
+	// these come from compiled version
+	Size int  // c
+	Length int // c
+	
+	ListOfPointers []*CXArgument // c
+	IsNative bool // c
+	OpCode int // c
 
-type CXParameter struct {
-	Name string
-	Typ string
+	CurrentExpression *CXExpression // b
+	Package *CXPackage // b
+	Program *CXProgram // b
 }
 
 type CXExpression struct {
-	Operator *CXFunction
-	Arguments []*CXArgument
-	OutputNames []*CXDefinition
+	Operator *CXFunction // b
+	Inputs []*CXArgument // b
+	Outputs []*CXArgument // b
+	
+	Line int // i
+	FileLine int // b
+	FileName string // b
+	Label string // b
 
-	// Inputs []*CXArgument
-	// Outputs []*CXArgument
+	ThenLines int // c
+	ElseLines int // c
 	
-	Line int
-	FileLine int
-	FileName string
-	Tag string
+	IsStructLiteral bool // c
+	IsArrayLiteral bool // c
 	
-	Function *CXFunction
-	Package *CXPackage
-	Program *CXProgram
+	
+	Function *CXFunction // b
+	Package *CXPackage // b
+	Program *CXProgram // b
+}
+
+type CXConstant struct {
+	// native constants. only used for pre-packaged constants (e.g. math package's PI)
+	// these fields are used to feed WritePrimary
+	Type int // c
+	Value []byte // c
 }
 
 type CXArgument struct {
+	// everything is from compiled except the ones at the bottom
+	
 	Name string
 	Type int
 	CustomType *CXStruct
@@ -339,8 +362,8 @@ type CXArgument struct {
 	Program *CXProgram
 
 	// interpreted
-	Value *[]byte
-	Typ string
+	Value *[]byte // i
+	Typ string // i
 }
 
 /*
@@ -348,10 +371,10 @@ type CXArgument struct {
 */
 
 type CXAffordance struct {
-	Description string
-	Operator string
-	Name string
-	Typ string
-	Index string
-	Action func()
+	Description string // i
+	Operator string // i
+	Name string // i
+	Typ string // i
+	Index string // i
+	Action func() // i
 }

@@ -1,6 +1,7 @@
 package base
 
 import (
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -21,19 +22,19 @@ func (cxt *CXProgram) AddModule (mod *CXPackage) *CXProgram {
 	return cxt
 }
 
-func (mod *CXPackage) AddDefinition (def *CXDefinition) *CXPackage {
+func (mod *CXPackage) AddDefinition (def *CXArgument) *CXPackage {
 	def.Program = mod.Program
 	def.Package = mod
 	found := false
-	for i, df := range mod.Definitions {
+	for i, df := range mod.Globals {
 		if df.Name == def.Name {
-			mod.Definitions[i] = def
+			mod.Globals[i] = def
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Definitions = append(mod.Definitions, def)
+		mod.Globals = append(mod.Globals, def)
 	}
 	return mod
 }
@@ -103,7 +104,7 @@ func (mod *CXPackage) AddImport (imp *CXPackage) *CXPackage {
 	return mod
 }
 
-func (strct *CXStruct) AddField (fld *CXField) *CXStruct {
+func (strct *CXStruct) AddField (fld *CXArgument) *CXStruct {
 	found := false
 	for _, fl := range strct.Fields {
 		if fl.Name == fld.Name {
@@ -127,7 +128,7 @@ func (fn *CXFunction) AddExpression (expr *CXExpression) *CXFunction {
 	return fn
 }
 
-func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
+func (fn *CXFunction) AddInput (param *CXArgument) *CXFunction {
 	found := false
 	for _, inp := range fn.Inputs {
 		if inp.Name == param.Name {
@@ -142,7 +143,7 @@ func (fn *CXFunction) AddInput (param *CXParameter) *CXFunction {
 	return fn
 }
 
-func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
+func (fn *CXFunction) AddOutput (param *CXArgument) *CXFunction {
 	found := false
 	for _, out := range fn.Outputs {
 		if out.Name == param.Name {
@@ -157,19 +158,19 @@ func (fn *CXFunction) AddOutput (param *CXParameter) *CXFunction {
 	return fn
 }
 
-func (expr *CXExpression) AddArgument (arg *CXArgument) *CXExpression {
-	expr.Arguments = append(expr.Arguments, arg)
+func (expr *CXExpression) AddInput (arg *CXArgument) *CXExpression {
+	expr.Inputs = append(expr.Inputs, arg)
 	return expr
 }
 
 func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 	if len(expr.Operator.Outputs) > 0 {
-		nextOutIdx := len(expr.OutputNames)
+		nextOutIdx := len(expr.Outputs)
 
 		var typ string
 		if expr.Operator.Name == ID_FN || expr.Operator.Name == INIT_FN {
 			var tmp string
-			encoder.DeserializeRaw(*expr.Arguments[0].Value, &tmp)
+			encoder.DeserializeRaw(*expr.Inputs[0].Value, &tmp)
 			
 			if expr.Operator.Name == INIT_FN {
 				// then tmp is the type (e.g. initDef("i32") to initialize an i32)
@@ -196,13 +197,13 @@ func (expr *CXExpression) AddOutputName (outName string) *CXExpression {
 		outDef.Package = expr.Package
 		outDef.Program = expr.Program
 		
-		expr.OutputNames = append(expr.OutputNames, outDef)
+		expr.Outputs = append(expr.Outputs, outDef)
 	}
 	
 	return expr
 }
 
-func (expr *CXExpression) AddTag (tag string) *CXExpression {
-	expr.Tag = tag
+func (expr *CXExpression) AddLabel (lbl string) *CXExpression {
+	expr.Label = lbl
 	return expr
 }

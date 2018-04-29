@@ -78,7 +78,7 @@ func saveStep (call *CXCall) {
 func (cxt *CXProgram) Reset () {
 	cxt.CallStack = MakeCallStack(0)
 	cxt.Steps = make([][]CXCall, 0)
-	cxt.Outputs = make([]*CXDefinition, 0)
+	cxt.Outputs = make([]*CXArgument, 0)
 	//cxt.ProgramSteps = nil
 }
 
@@ -212,12 +212,12 @@ func main () {
 			// for _, expr := range fn.Expressions {
 			// 	if expr.Operator.Name == "identity" {
 			// 		var nonAssignIdent string
-			// 		encoder.DeserializeRaw(*expr.Arguments[0].Value, &nonAssignIdent)
+			// 		encoder.DeserializeRaw(*expr.Inputs[0].Value, &nonAssignIdent)
 
 			// 		for _, idExpr := range fn.Expressions {
-			// 			for i, out := range idExpr.OutputNames {
+			// 			for i, out := range idExpr.Outputs {
 			// 				if out.Name == nonAssignIdent {
-			// 					idExpr.OutputNames[i] = expr.OutputNames[0]
+			// 					idExpr.Outputs[i] = expr.Outputs[0]
 			// 					break
 			// 				}
 			// 			}
@@ -232,17 +232,17 @@ func main () {
 			//for _, expr := range optExpressions {
 			for _, expr := range fn.Expressions {
 				var tagStr string
-				if expr.Tag != "" {
-					tagStr = fmt.Sprintf(`expr.Tag = "%s";`, expr.Tag)
+				if expr.Label != "" {
+					tagStr = fmt.Sprintf(`expr.Label = "%s";`, expr.Label)
 				}
 				program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
 					expr.Operator.Name, expr.Operator.Package.Name, expr.FileLine, tagStr, asmNL))
 
-				for _, arg := range expr.Arguments {
+				for _, arg := range expr.Inputs {
 					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, *arg.Value, arg.Typ, asmNL))
 				}
 				
-				for _, outName := range expr.OutputNames {
+				for _, outName := range expr.Outputs {
 					program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");%s`, outName.Name, asmNL))
 				}
 			}
@@ -260,7 +260,7 @@ func main () {
 			}
 		}
 
-		for _, def := range mod.Definitions {
+		for _, def := range mod.Globals {
 			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, *def.Value, def.Typ, asmNL))
 		}
 	}
@@ -318,7 +318,7 @@ func (cxt *CXProgram) Run (withDebug bool, nCalls int) error {
 		if mod, err := cxt.SelectModule(MAIN_MOD); err == nil {
 			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 				// main function
-				state := make([]*CXDefinition, 0, 20)
+				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 				
 				cxt.CallStack = append(cxt.CallStack, *mainCall)
@@ -791,7 +791,7 @@ func (call *CXCall) call (withDebug bool, nCalls, callCounter int) error {
 				/////////// throw error if output was not defined, or handle outputs from last expression
 				if out.Name == def.Name {
 					if call.ReturnAddress != nil {
-						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].OutputNames[i].Name
+						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].Outputs[i].Name
 
 						found := false
 						for _, retDef := range call.ReturnAddress.State {

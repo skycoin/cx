@@ -34,20 +34,20 @@
 
 	line int
 
-	parameter *CXParameter
-	parameters []*CXParameter
+	parameter *CXArgument
+	parameters []*CXArgument
 
 	argument *CXArgument
 	arguments []*CXArgument
 
-        definition *CXDefinition
-	definitions []*CXDefinition
+        definition *CXArgument
+	definitions []*CXArgument
 
 	expression *CXExpression
 	expressions []*CXExpression
 
-	field *CXField
-	fields []*CXField
+	field *CXArgument
+	fields []*CXArgument
 
 	name string
 	names []string
@@ -254,18 +254,18 @@ definitionDeclaration:
 fields:
                 parameter
                 {
-			var flds []*CXField
+			var flds []*CXArgument
                         flds = append(flds, MakeFieldFromParameter($1))
 			$$ = flds
                 }
         |       ';'
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       debugging
                 {
-			var flds []*CXField
+			var flds []*CXArgument
 			$$ = flds
                 }
         |       fields parameter
@@ -320,9 +320,9 @@ structDeclaration:
 				// 	arrArg := MakeArgument(&sArr, "str")
 				// 	sStrctInst := encoder.Serialize("strctInst")
 				// 	strctInstArg := MakeArgument(&sStrctInst, "str")
-				// 	expr.AddArgument(arrArg)
-				// 	expr.AddArgument(strctInstArg)
-				// 	expr.AddOutputName("_arr")
+				// 	expr.AddInput(arrArg)
+				// 	expr.AddInput(strctInstArg)
+				// 	expr.AddOutput("_arr")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -342,8 +342,8 @@ structDeclaration:
 				// 	}
 				// 	sStrctInst := encoder.Serialize("strctInst")
 				// 	strctInstArg := MakeArgument(&sStrctInst, "str")
-				// 	expr.AddArgument(strctInstArg)
-				// 	expr.AddOutputName("byts")
+				// 	expr.AddInput(strctInstArg)
+				// 	expr.AddOutput("byts")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -370,9 +370,9 @@ structDeclaration:
 				// 	sTyp := encoder.Serialize($2)
 				// 	sTypArg := MakeArgument(&sTyp, "str")
 					
-				// 	expr.AddArgument(sBytsArg)
-				// 	expr.AddArgument(sTypArg)
-				// 	expr.AddOutputName("strctInst")
+				// 	expr.AddInput(sBytsArg)
+				// 	expr.AddInput(sTypArg)
+				// 	expr.AddOutput("strctInst")
 					
 				// 	fn.AddExpression(expr)
 				// } else {
@@ -397,9 +397,9 @@ structDeclaration:
 				// 	arrArg := MakeArgument(&sArr, "str")
 				// 	sIndex := encoder.Serialize("index")
 				// 	indexArg := MakeArgument(&sIndex, "ident")
-				// 	expr.AddArgument(arrArg)
-				// 	expr.AddArgument(indexArg)
-				// 	expr.AddOutputName("strctInst")
+				// 	expr.AddInput(arrArg)
+				// 	expr.AddInput(indexArg)
+				// 	expr.AddOutput("strctInst")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -424,10 +424,10 @@ structDeclaration:
 				// 	indexArg := MakeArgument(&sIndex, "ident")
 				// 	sInst := encoder.Serialize("inst")
 				// 	instArg := MakeArgument(&sInst, "str")
-				// 	expr.AddArgument(arrArg)
-				// 	expr.AddArgument(indexArg)
-				// 	expr.AddArgument(instArg)
-				// 	expr.AddOutputName("_arr")
+				// 	expr.AddInput(arrArg)
+				// 	expr.AddInput(indexArg)
+				// 	expr.AddInput(instArg)
+				// 	expr.AddOutput("_arr")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -446,8 +446,8 @@ structDeclaration:
 				// 	}
 				// 	sArr := encoder.Serialize("arr")
 				// 	arrArg := MakeArgument(&sArr, "str")
-				// 	expr.AddArgument(arrArg)
-				// 	expr.AddOutputName("len")
+				// 	expr.AddInput(arrArg)
+				// 	expr.AddOutput("len")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -469,9 +469,9 @@ structDeclaration:
 				// 	sTyp := encoder.Serialize(fmt.Sprintf("[]%s", $2))
 				// 	lenArg := MakeArgument(&sLen, "ident")
 				// 	typArg := MakeArgument(&sTyp, "str")
-				// 	expr.AddArgument(lenArg)
-				// 	expr.AddArgument(typArg)
-				// 	expr.AddOutputName("arr")
+				// 	expr.AddInput(lenArg)
+				// 	expr.AddInput(typArg)
+				// 	expr.AddOutput("arr")
 				// 	fn.AddExpression(expr)
 				// } else {
 				// 	fmt.Println(err)
@@ -482,7 +482,7 @@ structDeclaration:
                 {
 			if strct, err := CXT.GetCurrentStruct(); err == nil {
 				for _, fld := range $5 {
-					fldFromParam := MakeField(fld.Name, fld.Type)
+					fldFromParam := MakeField(fld.Name, fld.Typ)
 					strct.AddField(fldFromParam)
 				}
 			}
@@ -509,12 +509,12 @@ functionDeclaration:
 			}
 
 			if mod, err := CXT.GetCurrentPackage(); err == nil {
-				if IsBasicType($2[0].Type) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -548,12 +548,12 @@ functionDeclaration:
 			}
 			
 			if mod, err := CXT.GetCurrentPackage(); err == nil {
-				if IsBasicType($2[0].Type) {
-					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Type))
+				if IsBasicType($2[0].Typ) {
+					panic(fmt.Sprintf("%s: %d: cannot define methods on basic type %s", fileName, yyS[yypt-0].line+1, $2[0].Typ))
 				}
 				
 				inFn = true
-				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Type, $3))
+				fn := MakeFunction(fmt.Sprintf("%s.%s", $2[0].Typ, $3))
 				mod.AddFunction(fn)
 				if fn, err := mod.GetCurrentFunction(); err == nil {
 
@@ -638,7 +638,7 @@ parameter:
 parameters:
                 parameter
                 {
-			var params []*CXParameter
+			var params []*CXArgument
                         params = append(params, $1)
                         $$ = params
                 }

@@ -153,12 +153,12 @@ func concatStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 		sOutput := encoder.Serialize(output)
 
 		for _, def := range call.State {
-			if def.Name == expr.OutputNames[0].Name {
+			if def.Name == expr.Outputs[0].Name {
 				def.Value = &sOutput
 				return nil
 			}
 		}
-		call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sOutput, "str"))
+		call.State = append(call.State, MakeDefinition(expr.Outputs[0].Name, &sOutput, "str"))
 		assignOutput(0, sOutput, "str", expr, call)
 		return nil
 	} else {

@@ -13,21 +13,21 @@ import (
 )
 
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
-	outName := expr.OutputNames[outNameNumber].Name
+	outName := expr.Outputs[outNameNumber].Name
 
-	// if expr.OutputNames[outNameNumber].Typ != typ {
-	// 	fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+	// if expr.Outputs[outNameNumber].Typ != typ {
+	// 	fmt.Println(expr.Outputs[outNameNumber].Typ, typ, expr.Operator.Name)
 	// }
-	// fmt.Println(expr.OutputNames[outNameNumber].Typ, typ, expr.Operator.Name)
+	// fmt.Println(expr.Outputs[outNameNumber].Typ, typ, expr.Operator.Name)
 
-	expr.OutputNames[outNameNumber].Typ = typ
+	expr.Outputs[outNameNumber].Typ = typ
 	
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
 
-			if def, err := expr.Module.GetDefinition(identParts[0]); err == nil {
-				if strct, err := call.Program.GetStruct(def.Typ, expr.Module.Name); err == nil {
+			if def, err := expr.Package.GetDefinition(identParts[0]); err == nil {
+				if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
@@ -45,7 +45,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
-					if strct, err := call.Program.GetStruct(def.Typ, expr.Module.Name); err == nil {
+					if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
 
 						isBasic := false
@@ -108,7 +108,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 		}
 	}
 
-	if def, err := expr.Module.GetDefinition(outName); err == nil {
+	if def, err := expr.Package.GetDefinition(outName); err == nil {
 		*def.Value = output
 		return nil
 	}
@@ -124,15 +124,15 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	return nil
 }
 
-func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParameter, mod *CXPackage, cxt *CXProgram) ([]*CXDefinition, error) {
+func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument, mod *CXPackage, cxt *CXProgram) ([]*CXArgument, error) {
 	if len(inputs) == len(args) {
-		defs := make([]*CXDefinition, len(args) + len(outputs), len(args) + len(outputs) + 10)
+		defs := make([]*CXArgument, len(args) + len(outputs), len(args) + len(outputs) + 10)
 		for i, arg := range args {
-			defs[i] = &CXDefinition{
+			defs[i] = &CXArgument{
 				Name: inputs[i].Name,
 				Typ: arg.Typ,
 				Value: arg.Value,
-				Module: mod,
+				Package: mod,
 				Program: cxt,
 			}
 		}
@@ -149,11 +149,11 @@ func argsToDefs (args []*CXArgument, inputs []*CXParameter, outputs []*CXParamet
 					return nil, err
 				}
 			}
-			defs[i+len(args)] = &CXDefinition{
+			defs[i+len(args)] = &CXArgument{
 				Name: out.Name,
 				Typ: out.Typ,
 				Value: &zeroValue,
-				Module: mod,
+				Package: mod,
 				Program: cxt,
 			}
 		}
@@ -391,7 +391,7 @@ func rep (str string, n int) string {
 		
 // 		fmt.Printf("%s(Definitions %s", rep(tab, 2), nl)
 
-// 		for _, def := range mod.Definitions {
+// 		for _, def := range mod.Globals {
 // 			fmt.Printf("%s(Definition %s %s %s)%s",
 // 				rep(tab, 3),
 // 				def.Name,
@@ -441,13 +441,13 @@ func rep (str string, n int) string {
 // 				fmt.Printf("%s(Operator %s)%s", rep(tab, 6), expr.Operator.Name, nl)
 				
 // 				fmt.Printf("%s(OutputNames %s", rep(tab, 6), nl)
-// 				for _, outName := range expr.OutputNames {
+// 				for _, outName := range expr.Outputs {
 // 					fmt.Printf("%s(OutputName %s)%s", rep(tab, 7), outName.Name, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
 				
 // 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
-// 				for _, arg := range expr.Arguments {
+// 				for _, arg := range expr.Inputs {
 // 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ), arg.Typ, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
@@ -577,13 +577,13 @@ func IsLocal (identName string, call *CXCall) bool {
 	return false
 }
 func IsGlobal (identName string, mod *CXPackage) bool {
-	for _, def := range mod.Definitions {
+	for _, def := range mod.Globals {
 		if def.Name == identName {
 			return true
 		}
 	}
 	for _, imp := range mod.Imports {
-		for _, def := range imp.Definitions {
+		for _, def := range imp.Globals {
 			if def.Name == identName {
 				return true
 			}
@@ -728,7 +728,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				
 				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
 			case "[]":
-				if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+				if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Package.Name); err == nil {
 					lastFld := strct.Fields[len(strct.Fields) - 1]
 					instances := (*val)[offset+4:]
 
@@ -750,7 +750,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
 				}
 			case "struct":
-				if strct, err := strct.Program.GetStruct(f.Typ, strct.Module.Name); err == nil {
+				if strct, err := strct.Program.GetStruct(f.Typ, strct.Package.Name); err == nil {
 					lastFld := strct.Fields[len(strct.Fields) - 1]
 
 					instances := (*val)[offset:]
@@ -797,7 +797,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 
 			offset += (arrOffset * 8) + 4
 		case "[]":
-			if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Module.Name); err == nil {
+			if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Package.Name); err == nil {
 				instances := (*val)[offset+4:]
 				lastFld := strct.Fields[len(strct.Fields) - 1]
 				
@@ -821,7 +821,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				offset += upperBound + 4
 			}
 		case "struct":
-			if strct, err := strct.Program.GetStruct(f.Typ, strct.Module.Name); err == nil {
+			if strct, err := strct.Program.GetStruct(f.Typ, strct.Package.Name); err == nil {
 				lastFld := strct.Fields[len(strct.Fields) - 1]
 
 				instances := (*val)[offset:]
@@ -855,7 +855,7 @@ func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
 }
 
 func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
-	var resolvedIdent *CXDefinition
+	var resolvedIdent *CXArgument
 	
 	isStructFld := false
 	isArray := false
@@ -866,7 +866,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		if mod, err := call.Program.GetModule(identParts[0]); err == nil {
 			// then it's an external definition or struct
 			isImported := false
-			for _, imp := range call.Operator.Module.Imports {
+			for _, imp := range call.Operator.Package.Imports {
 				if imp.Name == identParts[0] {
 					isImported = true
 					break
@@ -881,7 +881,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 			}
 		} else {
 			// then it's a global struct
-			mod := call.Operator.Module
+			mod := call.Operator.Package
 			if def, err := mod.GetDefinition(identParts[0]); err == nil {
 				isStructFld = true
 				//resolvedIdent = def
@@ -939,7 +939,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		}
 
 		if !local {
-			mod := call.Operator.Module
+			mod := call.Operator.Package
 			if def, err := mod.GetDefinition(lookingFor); err == nil {
 				resolvedIdent = def
 			}
@@ -1147,7 +1147,7 @@ func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *
 		return nil, errors.New(fmt.Sprintf("%s.read: index %d exceeds array of length %d", arr.Typ, index, arrSize)), 0, 0
 	}
 
-	if strct, err := call.Program.GetStruct(arr.Typ[2:], expr.Module.Name); err == nil {
+	if strct, err := call.Program.GetStruct(arr.Typ[2:], expr.Package.Name); err == nil {
 		instances := (*arr.Value)[4:]
 		lastFld := strct.Fields[len(strct.Fields) - 1]
 		
@@ -1227,7 +1227,7 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 			continue
 		}
 
-		fmt.Printf("%d.- Module: %s\n", i, mod.Name)
+		fmt.Printf("%d.- Package: %s\n", i, mod.Name)
 
 		if withAffs {
 			for i, aff := range mod.GetAffordances() {
@@ -1245,12 +1245,12 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 			j++
 		}
 
-		if len(mod.Definitions) > 0 {
+		if len(mod.Globals) > 0 {
 			fmt.Println("\tDefinitions")
 		}
 
 		j = 0
-		for _, v := range mod.Definitions {
+		for _, v := range mod.Globals {
 			fmt.Printf("\t\t%d.- Definition: %s %s\n", j, v.Name, v.Typ)
 			j++
 		}
@@ -1322,7 +1322,7 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 				//Arguments
 				var args bytes.Buffer
 
-				for i, arg := range expr.Arguments {
+				for i, arg := range expr.Inputs {
 					typ := ""
 					if arg.Typ == "ident" {
 						var id string
@@ -1409,17 +1409,17 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 					// 	arg.Value = &val
 					// }
 
-					if i == len(expr.Arguments) - 1 {
+					if i == len(expr.Inputs) - 1 {
 						args.WriteString(concat(argName, " ", typ))
 					} else {
 						args.WriteString(concat(argName, " ", typ, ", "))
 					}
 				}
 
-				if len(expr.OutputNames) > 0 {
+				if len(expr.Outputs) > 0 {
 					var outNames bytes.Buffer
-					for i, outName := range expr.OutputNames {
-						if i == len(expr.OutputNames) - 1 {
+					for i, outName := range expr.Outputs {
+						if i == len(expr.Outputs) - 1 {
 							outNames.WriteString(outName.Name)
 						} else {
 							outNames.WriteString(concat(outName.Name, ", "))
@@ -1427,8 +1427,8 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 					}
 
 					var exprTag string
-					if expr.Tag != "" {
-						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					if expr.Label != "" {
+						exprTag = fmt.Sprintf(" :tag %s", expr.Label)
 					}
 
 					fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
@@ -1439,8 +1439,8 @@ func (cxt *CXProgram) PrintProgram (withAffs bool) {
 						exprTag)
 				} else {
 					var exprTag string
-					if expr.Tag != "" {
-						exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
+					if expr.Label != "" {
+						exprTag = fmt.Sprintf(" :tag %s", expr.Label)
 					}
 					
 					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
@@ -1635,9 +1635,9 @@ func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram)
 					}
 				}
 				for _, expr := range fn.Expressions {
-					if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
+					if expr.Operator.Name == "initDef" && expr.Outputs[0].Name == identParts[0] {
 						var typ string
-						encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
+						encoder.DeserializeRaw(*expr.Inputs[0].Value, &typ)
 						
 						if strct, err := cxt.GetStruct(typ, mod.Name); err == nil {
 							for _, fld := range strct.Fields {
@@ -1647,7 +1647,7 @@ func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram)
 							}
 						}
 					}
-					for _, out := range expr.OutputNames {
+					for _, out := range expr.Outputs {
 						if out.Name == lookingFor {
 							return out.Typ, nil
 						}
@@ -1707,18 +1707,18 @@ func GetIdentType (lookingFor string, line int, fileName string, cxt *CXProgram)
 				}
 			}
 			for _, expr := range fn.Expressions {
-				if expr.Operator.Name == "initDef" && expr.OutputNames[0].Name == identParts[0] {
+				if expr.Operator.Name == "initDef" && expr.Outputs[0].Name == identParts[0] {
 					var typ string
-					encoder.DeserializeRaw(*expr.Arguments[0].Value, &typ)
+					encoder.DeserializeRaw(*expr.Inputs[0].Value, &typ)
 
 					return typ, nil
 				}
-				for _, out := range expr.OutputNames {
+				for _, out := range expr.Outputs {
 					if out.Name == arrayParts[0] {
 						//fmt.Println("here", out.Name, out.Typ)
 
 						// if expr.Operator.Name == "identity" {
-						// 	return fn.Expressions[i-1].OutputNames[0].Typ, nil
+						// 	return fn.Expressions[i-1].Outputs[0].Typ, nil
 						// }
 						
 						if len(arrayParts) > 1 {

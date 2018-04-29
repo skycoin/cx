@@ -134,8 +134,6 @@ type CXProgram struct {
 
 	// from interpreted
 	Steps [][]CXCall
-
-	
 }
 
 type CXHeap struct {
@@ -213,6 +211,7 @@ type CXExpression struct {
 	Operator *CXFunction
 	Inputs []*CXArgument
 	Outputs []*CXArgument
+	
 	// debugging
 	FileLine int
 	FileName string
@@ -279,9 +278,6 @@ type CXArgument struct {
 
 	Package *CXPackage
 	Program *CXProgram
-
-	// interpreted
-	Value *[]byte
 }
 
 /*

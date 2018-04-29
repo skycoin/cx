@@ -13,10 +13,10 @@ import (
 type byFnName []*CXFunction
 type byTypName []string
 type byModName []*CXPackage
-type byDefName []*CXDefinition
+type byDefName []*CXArgument
 type byStrctName []*CXStruct
-type byFldName []*CXField
-type byParamName []*CXParameter
+type byFldName []*CXArgument
+type byParamName []*CXArgument
 
 /*
   Lens
@@ -195,10 +195,10 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 
 	// The operator for this function doesn't require arguments
-	if len(op.Inputs) > 0 && len(expr.Arguments) < len(op.Inputs) {
+	if len(op.Inputs) > 0 && len(expr.Inputs) < len(op.Inputs) {
 		fn := expr.Function
 		mod := expr.Package
-		reqType := op.Inputs[len(expr.Arguments)].Typ // Required type for the current op's input
+		reqType := op.Inputs[len(expr.Inputs)].Typ // Required type for the current op's input
 		defsTypes := make([]string, 0)
 		args := make([]*CXArgument, 0)
 		identType := "ident"
@@ -227,7 +227,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		
 		// Adding definitions (global vars)
 		if focusAll || focusAllScopes || focusGlobals {
-			for _, def := range mod.Definitions {
+			for _, def := range mod.Globals {
 				if reqType == def.Typ || reqType == def.Typ[2:] {
 					if focusAll || focusAllTypes ||
 						(focusArrays && IsArray(def.Typ)) ||
@@ -308,7 +308,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 
 			// checking if it's a nonAssign local
 			isNonAssign := false
-			for _, outName := range ex.OutputNames {
+			for _, outName := range ex.Outputs {
 				if len(outName.Name) > len(NON_ASSIGN_PREFIX) && outName.Name[:len(NON_ASSIGN_PREFIX)] == NON_ASSIGN_PREFIX {
 					isNonAssign = true
 					break
@@ -318,21 +318,21 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				continue
 			}
 
-			if len(ex.Operator.Outputs) != len(ex.OutputNames) ||
-				len(ex.Operator.Inputs) != len(ex.Arguments) {
+			if len(ex.Operator.Outputs) != len(ex.Outputs) ||
+				len(ex.Operator.Inputs) != len(ex.Inputs) {
 				// Then it's not a completed expression
 				continue
 			}
 
 			if ex.Operator.Name == "initDef" {
 				var typ string
-				encoder.DeserializeRaw(*ex.Arguments[0].Value, &typ)
+				encoder.DeserializeRaw(*ex.Inputs[0].Value, &typ)
 
 				if reqType != typ && typ[2:] != reqType {
 					continue
 				}
 				
-				val := encoder.Serialize(ex.OutputNames[0].Name)
+				val := encoder.Serialize(ex.Outputs[0].Name)
 
 				defsTypes = append(defsTypes, typ)
 				
@@ -344,14 +344,14 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 			}
 
 			if focusAll || focusAllScopes || focusLocals {
-				for _, outName := range ex.OutputNames {
+				for _, outName := range ex.Outputs {
 					typ := outName.Typ
 					if ex.Operator.Name == "identity" {
 						for _, expr := range expr.Function.Expressions {
 							var identName string
-							encoder.DeserializeRaw(*ex.Arguments[0].Value, &identName)
-							if expr.OutputNames != nil && expr.OutputNames[0].Name == identName {
-								typ = expr.OutputNames[0].Typ
+							encoder.DeserializeRaw(*ex.Inputs[0].Value, &identName)
+							if expr.Outputs != nil && expr.Outputs[0].Name == identName {
+								typ = expr.Outputs[0].Typ
 								break
 							}
 						}
@@ -436,13 +436,13 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 					
 					for c := int32(0); c < size; c++ {
 						affs = append(affs, &CXAffordance{
-							Description: concat("AddArgument ", argName, " ", defsTypes[i]),
-							Operator: "AddArgument",
+							Description: concat("AddInput ", argName, " ", defsTypes[i]),
+							Operator: "AddInput",
 							Name: argName,
 							Index: fmt.Sprintf("%d", c),
 							Typ: defsTypes[i],
 							Action: func() {
-								expr.AddArgument(theArg)
+								expr.AddInput(theArg)
 							}})
 					}
 				}
@@ -450,23 +450,23 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 			}
 			
 			affs = append(affs, &CXAffordance{
-				Description: concat("AddArgument ", argName, " ", defsTypes[i]),
-				Operator: "AddArgument",
+				Description: concat("AddInput ", argName, " ", defsTypes[i]),
+				Operator: "AddInput",
 				Name: argName,
 				Typ: defsTypes[i],
 				Action: func() {
-					expr.AddArgument(theArg)
+					expr.AddInput(theArg)
 				}})
 		}
 	}
 
 	// Output names affordances
-	if len(expr.OutputNames) < len(expr.Operator.Outputs) {
+	if len(expr.Outputs) < len(expr.Operator.Outputs) {
 		outName := MakeGenSym("var")
 		affs = append(affs, &CXAffordance{
-			Description: concat("AddOutputName ", outName),
+			Description: concat("AddOutput ", outName),
 			
-			Operator: "AddOutputName",
+			Operator: "AddOutput",
 			Name: outName,
 			Action: func() {
 				expr.AddOutputName(outName)
@@ -602,7 +602,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	mod := fn.Package
 // 	opsNames := make([]string, 0)
 // 	ops := make([]*CXFunction, 0)
-// 	//defs := make([]*CXDefinition, 0)
+// 	//defs := make([]*CXArgument, 0)
 // 	// we only need the names and all of them will be of type ident
 // 	defs := make([]string, 0)
 // 	defsTypes := make([]*CXType, 0)
@@ -637,14 +637,14 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 	}
 
 // 	//Getting global definitions from current module
-// 	for defName, def := range mod.Definitions {
+// 	for defName, def := range mod.Globals {
 // 		defs = append(defs, defName)
 // 		defsTypes = append(defsTypes, def.Typ)
 // 	}
 
 // 	//Getting global definitions from imported modules
 // 	for _, imp := range mod.Imports {
-// 		for defName, def := range imp.Definitions {
+// 		for defName, def := range imp.Globals {
 // 			defs = append(defs, defName)
 // 			defsTypes = append(defsTypes, def.Typ)
 // 		}
@@ -676,7 +676,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 
 
-// 		for i, outName := range expr.OutputNames {
+// 		for i, outName := range expr.Outputs {
 // 			cont := true
 // 			for _, def := range defs {
 // 				if outName == def {
@@ -806,7 +806,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 						expr := MakeExpression(varExpr, theOp)
 // 						fn.AddExpression(expr)
 // 						for _, arg := range argsCopy {
-// 							expr.AddArgument(arg)
+// 							expr.AddInput(arg)
 // 						}
 // 					}})
 // 			}
