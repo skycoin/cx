@@ -399,6 +399,7 @@ func main () {
 	flagMode := false
 	var compileOutput string = "o"
 	for i, arg := range args {
+		if arg == 
 		if arg == "--web" || arg == "-w" {
 			webMode = true
 			flagMode = true

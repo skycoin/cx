@@ -10,11 +10,12 @@
 	var dataOffset int
 
 	var lineNo int = 0
-	var webMode bool = false
-	var baseOutput bool = false
-	var replMode bool = false
-	var helpMode bool = false
-	var compileMode bool = false
+	var webMode bool
+	var baseOutput bool
+	var replMode bool
+	var helpMode bool
+	var interpretMode bool
+	var compileMode bool
 	var replTargetFn string = ""
 	var replTargetStrct string = ""
 	var replTargetMod string = ""
