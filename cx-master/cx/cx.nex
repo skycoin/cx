@@ -1313,9 +1313,9 @@ func main () {
 		}
 	}
 	
-if baseOutput {
-	cxt.Compile(true)
-}
+	if baseOutput {
+		cxt.Compile(true)
+	}
 	if compileMode {
 	baseFilename := fmt.Sprintf("%s.go", compileOutput)
 		build := exec.Command("go", "build", baseFilename)
