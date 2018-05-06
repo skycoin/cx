@@ -185,8 +185,9 @@ import (
 	//"github.com/skycoin/viscript/signal"
 	
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	. "github.com/skycoin/cx/src/compiled"
+	// "github.com/skycoin/cx/src/interpreted"
 )
 
 var insert bool
@@ -255,7 +256,7 @@ func unsafeEval (code string) (out string) {
 	lexer = NewLexer(b)
 	yyParse(lexer)
 
-	if err := prgrm.Run(); err != nil {
+	if err := prgrm.RunCompiled(); err != nil {
 		prgrm = MakeProgram(1024, 1024, 1024)
 		return fmt.Sprintf("%s", err)
 	}
@@ -385,6 +386,8 @@ func getWorkingDirectory (file string) string {
 	return file[:c]
 }
 
+var prgrm *CXProgram
+
 func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
@@ -399,7 +402,6 @@ func main () {
 	flagMode := false
 	var compileOutput string = "o"
 	for i, arg := range args {
-		if arg == 
 		if arg == "--web" || arg == "-w" {
 			webMode = true
 			flagMode = true
@@ -412,6 +414,11 @@ func main () {
 		}
 		if arg == "--base" || arg == "-b" {
 			baseOutput = true
+			flagMode = true
+			continue
+		}
+		if arg == "--interpret" || arg == "-i" {
+			interpretMode = true
 			flagMode = true
 			continue
 		}
@@ -444,6 +451,12 @@ func main () {
 			}
 			sourceCode = append(sourceCode, file)
 		}
+	}
+
+	if interpretMode {
+		prgrm = MakeProgram(0, STACK_SIZE, INIT_HEAP_SIZE)
+	} else {
+		prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	}
 
 	if helpMode {
@@ -512,9 +525,17 @@ func main () {
 		replTargetFn = "main"
 		//repl()
 	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
-		if err := prgrm.Run(); err != nil {
-			fmt.Println(err)
-			//repl()
+		if interpretMode {
+			// prgrm.PrintProgram()
+			if err := prgrm.RunInterpreted(false, -1); err != nil {
+				fmt.Println(err)
+				//repl()
+			}
+		} else {
+			if err := prgrm.RunCompiled(); err != nil {
+				fmt.Println(err)
+				//repl()
+			}
 		}
 	}
 	

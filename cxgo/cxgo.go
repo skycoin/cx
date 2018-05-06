@@ -5,20 +5,21 @@ package main
 import __yyfmt__ "fmt"
 
 import (
-	. "github.com/skycoin/cx/src/compiled"
-	"github.com/skycoin/cx/src/interpreted"
+	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	// "github.com/skycoin/cx/src/interpreted"
 )
 
-var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+// var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 var dataOffset int
 
 var lineNo int = 0
-var webMode bool = false
-var baseOutput bool = false
-var replMode bool = false
-var helpMode bool = false
-var compileMode bool = false
+var webMode bool
+var baseOutput bool
+var replMode bool
+var helpMode bool
+var interpretMode bool
+var compileMode bool
 var replTargetFn string = ""
 var replTargetStrct string = ""
 var replTargetMod string = ""
@@ -27,8 +28,7 @@ var inREPL bool = false
 
 var sysInitExprs []*CXExpression
 
-var cxt = interpreted.MakeProgram()
-
+// var cxt = interpreted.MakeProgram()
 //var cxt = cx0.CXT
 
 var dStack bool = false
@@ -1488,7 +1488,8 @@ yynewstate:
 	case 28:
 		{
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				arg := MakeArgument(TYPE_UNDEFINED)
+				arg := MakeArgument("")
+				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
@@ -1514,7 +1515,8 @@ yynewstate:
 		}
 	case 33:
 		{
-			arg := MakeArgument(yyS[yypt-0].i)
+			arg := MakeArgument("")
+			arg.AddType(TypeNames[yyS[yypt-0].i])
 			arg.Type = yyS[yypt-0].i
 			arg.Size = GetArgSize(yyS[yypt-0].i)
 			yyVAL.argument = DeclarationSpecifiers(arg, 0, DECL_BASIC)

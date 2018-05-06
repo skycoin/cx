@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	. "github.com/skycoin/cx/src/compiled"
+	. "github.com/skycoin/cx/cx"
 )
 
 // to decide what shorthand op to use
@@ -203,7 +203,8 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 				pointer.IsPointer = true
 			}
 
-			pointee := MakeArgument(pointer.Type)
+			pointee := MakeArgument("")
+			pointee.AddType(TypeNames[pointer.Type])
 			pointee.IsPointer = true
 
 			declSpec.IndirectionLevels++
@@ -244,7 +245,8 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			if imp, err := pkg.GetImport(pkgName); err == nil {
 				if strct, err := prgrm.GetStruct(ident, imp.Name); err == nil {
-					arg := MakeArgument(TYPE_CUSTOM)
+					arg := MakeArgument("")
+					arg.AddType(TypeNames[TYPE_CUSTOM])
 					arg.CustomType = strct
 					arg.Size = strct.Size
 					arg.TotalSize = strct.Size
@@ -264,7 +266,8 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 		// custom type in the current package
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 			if strct, err := prgrm.GetStruct(ident, pkg.Name); err == nil {
-				arg := MakeArgument(TYPE_CUSTOM)
+				arg := MakeArgument("")
+				arg.AddType(TypeNames[TYPE_CUSTOM])
 				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 				arg.CustomType = strct
 				arg.Size = strct.Size
@@ -283,7 +286,8 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 
 func StructLiteralFields (ident string) *CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := MakeArgument(TYPE_IDENTIFIER)
+		arg := MakeArgument("")
+		arg.AddType(TypeNames[TYPE_IDENTIFIER])
 		arg.Name = ident
 		arg.Package = pkg
 
@@ -311,7 +315,7 @@ func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []
 		if expr.IsArrayLiteral {
 			expr.IsArrayLiteral = false
 			
-			sym := MakeParameter(symName, typSpec)
+			sym := MakeArgument(symName).AddType(TypeNames[typSpec])
 			sym.Package = pkg
 
 			idxExpr := WritePrimary(TYPE_I32, encoder.Serialize(int32(endPointsCounter)))
@@ -353,12 +357,12 @@ func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []
 	
 	symNameOutput := MakeGenSym(LOCAL_PREFIX)
 	
-	symOutput := MakeParameter(symNameOutput, typSpec)
+	symOutput := MakeArgument(symNameOutput).AddType(TypeNames[typSpec])
 	symOutput.Lengths = append(symOutput.Lengths, arrSize)
 	symOutput.Package = pkg
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
-	symInput := MakeParameter(symName, typSpec)
+	symInput := MakeArgument(symName).AddType(TypeNames[typSpec])
 	symInput.Lengths = append(symInput.Lengths, arrSize)
 	symInput.Package = pkg
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
@@ -377,7 +381,8 @@ func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []
 
 func PrimaryIdentifier (ident string) []*CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := MakeArgument(TYPE_IDENTIFIER)
+		arg := MakeArgument("")
+		arg.AddType(TypeNames[TYPE_IDENTIFIER])
 		arg.Name = ident
 		arg.Package = pkg
 
@@ -395,7 +400,8 @@ func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpress
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		if strct, err := prgrm.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
-				fld := MakeArgument(TYPE_IDENTIFIER)
+				fld := MakeArgument("")
+				fld.AddType(TypeNames[TYPE_IDENTIFIER])
 				fld.Name = expr.Outputs[0].Name
 
 				expr.IsStructLiteral = true
@@ -439,7 +445,7 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 		if len(postExprs[len(postExprs) - 1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
 			// we create a gensym for it
-			idxSym := MakeParameter(MakeGenSym(LOCAL_PREFIX), postExprs[len(postExprs) - 1].Operator.Outputs[0].Type)
+			idxSym := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[postExprs[len(postExprs) - 1].Operator.Outputs[0].Type])
 			idxSym.Size = postExprs[len(postExprs) - 1].Operator.Outputs[0].Size
 			idxSym.TotalSize = postExprs[len(postExprs) - 1].Operator.Outputs[0].Size
 
@@ -577,7 +583,8 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 					// then it's a struct
 					left.IsStruct = true
 					left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
-					fld := MakeArgument(TYPE_IDENTIFIER)
+					fld := MakeArgument("")
+					fld.AddType(TypeNames[TYPE_IDENTIFIER])
 					fld.Name = ident
 					left.Fields = append(left.Fields, fld)
 				}
@@ -843,7 +850,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 	var right *CXArgument
 
 	if len(leftExprs[len(leftExprs) - 1].Outputs) < 1 {
-		name := MakeParameter(MakeGenSym(LOCAL_PREFIX), leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type)
+		name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type])
 		name.Size = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
 		name.Package = pkg
@@ -852,7 +859,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 	}
 
 	if len(rightExprs[len(rightExprs) - 1].Outputs) < 1 {
-		name := MakeParameter(MakeGenSym(LOCAL_PREFIX), rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Type)
+		name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Type])
 		name.Size = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
 		name.TotalSize = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
 		name.Package = pkg
@@ -867,7 +874,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 	expr.Inputs = append(expr.Inputs, left)
 	expr.Inputs = append(expr.Inputs, right)
 
-	outName := MakeParameter(MakeGenSym(LOCAL_PREFIX), left.Type)
+	outName := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[left.Type])
 	outName.Size = GetArgSize(left.Type)
 	outName.TotalSize = GetArgSize(left.Type)
 
@@ -885,7 +892,8 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 // This function writes those bytes to prgrm.Data
 func WritePrimary (typ int, byts []byte) []*CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := MakeArgument(typ)
+		arg := MakeArgument("")
+		arg.AddType(TypeNames[typ])
 		arg.MemoryRead = MEM_DATA
 		arg.MemoryWrite = MEM_DATA
 		arg.Offset = dataOffset
@@ -938,7 +946,7 @@ func IterationExpressions (init []*CXExpression, cond []*CXExpression, incr []*C
 	downExpr.Package = pkg
 
 	if len(cond[len(cond) - 1].Outputs) < 1 {
-		predicate := MakeParameter(MakeGenSym(LOCAL_PREFIX), cond[len(cond) - 1].Operator.Outputs[0].Type)
+		predicate := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[cond[len(cond) - 1].Operator.Outputs[0].Type])
 		predicate.Package = pkg
 		cond[len(cond) - 1].AddOutput(predicate)
 		downExpr.AddInput(predicate)
@@ -970,7 +978,7 @@ func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExp
 		panic(err)
 	}
 
-	out := MakeParameter(MakeGenSym(LOCAL_PREFIX), TYPE_CUSTOM)
+	out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[TYPE_CUSTOM])
 	
 	out.CustomType = from[len(from) - 1].Outputs[0].CustomType
 	out.Size = from[len(from) - 1].Outputs[0].CustomType.Size
@@ -1033,14 +1041,12 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 			// only assigning as if the operator had only one output defined
 			to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
-			// to[0].Outputs[0].MemoryType = from[idx].Outputs[0].MemoryType
 			to[0].Outputs[0].Program = prgrm
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
 			to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
-			// to[0].Outputs[0].MemoryType = from[idx].Outputs[0].MemoryType
 			to[0].Outputs[0].Program = prgrm
 		}
 		
@@ -1071,7 +1077,7 @@ func SelectionExpressions (condExprs []*CXExpression, thenExprs []*CXExpression,
 		predicate = condExprs[len(condExprs) - 1].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate = MakeParameter(MakeGenSym(LOCAL_PREFIX), condExprs[len(condExprs) - 1].Operator.Outputs[0].Type)
+		predicate = MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[condExprs[len(condExprs) - 1].Operator.Outputs[0].Type])
 		condExprs[len(condExprs) - 1].Outputs = append(condExprs[len(condExprs) - 1].Outputs, predicate)
 	}
 	predicate.Package = pkg
@@ -1502,6 +1508,9 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
 			// we remove information about the "field" (method name)
 			expr.AddInput(expr.Outputs[0])
+
+			
+			
 			expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
 			// expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
 			// expr.AddInput(expr.Outputs[0])
@@ -1524,7 +1533,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 		} else {
 			// then it's a function call
 			if len(inpExpr.Outputs) < 1 {
-				out := MakeParameter(MakeGenSym(LOCAL_PREFIX), inpExpr.Operator.Outputs[0].Type)
+				out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
 				out.Size = inpExpr.Operator.Outputs[0].Size
 				out.TotalSize = inpExpr.Operator.Outputs[0].Size
 				out.Package = inpExpr.Package

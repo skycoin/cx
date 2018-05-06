@@ -7,7 +7,7 @@ import __yyfmt__ "fmt"
 import (
 	// "fmt"
 	"bytes"
-	. "github.com/skycoin/cx/src/compiled"
+	. "github.com/skycoin/cx/cx"
 )
 
 var PRGRM *CXProgram
@@ -21,7 +21,8 @@ var fileName string
 
 func WritePrimary(typ int, byts []byte) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		arg := MakeArgument(typ)
+		arg := MakeArgument("")
+		arg.AddType(TypeNames[typ])
 		arg.MemoryRead = MEM_DATA
 		arg.MemoryWrite = MEM_DATA
 		arg.Offset = DataOffset
@@ -1591,7 +1592,8 @@ yynewstate:
 	case 30:
 		{
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				arg := MakeArgument(TYPE_UNDEFINED)
+				arg := MakeArgument("")
+				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = yyS[yypt-0].tok
 				arg.Package = pkg
 				yyVAL.argument = arg
@@ -1622,7 +1624,8 @@ yynewstate:
 					pointer.IsPointer = true
 				}
 
-				pointee := MakeArgument(pointer.Type)
+				pointee := MakeArgument("")
+				pointee.AddType(TypeNames[pointer.Type])
 				// pointee.Size = pointer.Size
 				// pointee.TotalSize = pointer.TotalSize
 				pointee.IsPointer = true
@@ -1658,7 +1661,8 @@ yynewstate:
 		}
 	case 35:
 		{
-			arg := MakeArgument(yyS[yypt-0].i)
+			arg := MakeArgument("")
+			arg.AddType(TypeNames[yyS[yypt-0].i])
 			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 			arg.Type = yyS[yypt-0].i
 			arg.Size = GetArgSize(yyS[yypt-0].i)
@@ -1670,7 +1674,8 @@ yynewstate:
 			// custom type in the current package
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				if strct, err := PRGRM.GetStruct(yyS[yypt-0].tok, pkg.Name); err == nil {
-					arg := MakeArgument(TYPE_CUSTOM)
+					arg := MakeArgument("")
+					arg.AddType(TypeNames[TYPE_CUSTOM])
 					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 					arg.CustomType = strct
 					arg.Size = strct.Size
@@ -1690,7 +1695,8 @@ yynewstate:
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				if imp, err := pkg.GetImport(yyS[yypt-2].tok); err == nil {
 					if strct, err := PRGRM.GetStruct(yyS[yypt-0].tok, imp.Name); err == nil {
-						arg := MakeArgument(TYPE_CUSTOM)
+						arg := MakeArgument("")
+						arg.AddType(TypeNames[TYPE_CUSTOM])
 						arg.CustomType = strct
 						arg.Size = strct.Size
 						arg.TotalSize = strct.Size

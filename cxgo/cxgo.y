@@ -2,11 +2,12 @@
 	package main
 	import (
 		"github.com/skycoin/skycoin/src/cipher/encoder"
-		. "github.com/skycoin/cx/src/compiled"
-		"github.com/skycoin/cx/src/interpreted"
+		. "github.com/skycoin/cx/cx"
+		// "github.com/skycoin/cx/src/interpreted"
 	)
 
-	var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	
+	// var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	var dataOffset int
 
 	var lineNo int = 0
@@ -26,7 +27,7 @@
 
 
 
-	var cxt = interpreted.MakeProgram()
+	// var cxt = interpreted.MakeProgram()
 	//var cxt = cx0.CXT
 
 	var dStack bool = false
@@ -301,7 +302,8 @@ direct_declarator:
                 IDENTIFIER
                 {
 			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				arg := MakeArgument(TYPE_UNDEFINED)
+				arg := MakeArgument("")
+                                arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
 				$$ = arg
@@ -360,7 +362,8 @@ declaration_specifiers:
                 }
         |       type_specifier
                 {
-			arg := MakeArgument($1)
+			arg := MakeArgument("")
+			arg.AddType(TypeNames[$1])
 			arg.Type = $1
 			arg.Size = GetArgSize($1)
 			$$ = DeclarationSpecifiers(arg, 0, DECL_BASIC)
