@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -239,6 +240,15 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 	return nil
 }
 
+func DeclarationSpecifiersBasic (typ int) *CXArgument {
+	arg := MakeArgument("")
+	arg.AddType(TypeNames[typ])
+	arg.Type = typ
+	// arg.Typ = "ident"
+	arg.Size = GetArgSize(typ)
+	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
+}
+
 func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool) *CXArgument {
 	if isExternal {
 		// custom type in an imported package
@@ -381,8 +391,9 @@ func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []
 
 func PrimaryIdentifier (ident string) []*CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		arg := MakeArgument("")
+		arg := MakeArgument(ident)
 		arg.AddType(TypeNames[TYPE_IDENTIFIER])
+		// arg.Typ = "ident"
 		arg.Name = ident
 		arg.Package = pkg
 
@@ -894,6 +905,7 @@ func WritePrimary (typ int, byts []byte) []*CXExpression {
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		arg := MakeArgument("")
 		arg.AddType(TypeNames[typ])
+		arg.AddValue(&byts)
 		arg.MemoryRead = MEM_DATA
 		arg.MemoryWrite = MEM_DATA
 		arg.Offset = dataOffset
@@ -1035,6 +1047,8 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		from[idx].Outputs = to[len(to) - 1].Outputs
 		from[idx].Program = prgrm
 
+		// fmt.Println("hihi", to[0].Outputs[0])
+		
 		return append(to[:len(to) - 1], from...)
 	} else {
 		if from[idx].Operator.IsNative {
@@ -1056,6 +1070,8 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		if from[0].IsStructLiteral {
 			from[idx].Outputs[0].MemoryRead = MEM_HEAP
 		}
+
+		// fmt.Println("hihi", to[0].Outputs[0])
 
 		return append(to[:len(to) - 1], from...)
 		// return append(to, from...)
@@ -1534,6 +1550,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			// then it's a function call
 			if len(inpExpr.Outputs) < 1 {
 				out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
+				// out.Typ = "ident"
 				out.Size = inpExpr.Operator.Outputs[0].Size
 				out.TotalSize = inpExpr.Operator.Outputs[0].Size
 				out.Package = inpExpr.Package

@@ -362,11 +362,7 @@ declaration_specifiers:
                 }
         |       type_specifier
                 {
-			arg := MakeArgument("")
-			arg.AddType(TypeNames[$1])
-			arg.Type = $1
-			arg.Size = GetArgSize($1)
-			$$ = DeclarationSpecifiers(arg, 0, DECL_BASIC)
+			$$ = DeclarationSpecifiersBasic()
                 }
         |       IDENTIFIER
                 {

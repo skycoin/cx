@@ -23,6 +23,7 @@ func WritePrimary(typ int, byts []byte) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		arg := MakeArgument("")
 		arg.AddType(TypeNames[typ])
+		arg.AddValue(&byts)
 		arg.MemoryRead = MEM_DATA
 		arg.MemoryWrite = MEM_DATA
 		arg.Offset = DataOffset

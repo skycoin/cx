@@ -1515,11 +1515,7 @@ yynewstate:
 		}
 	case 33:
 		{
-			arg := MakeArgument("")
-			arg.AddType(TypeNames[yyS[yypt-0].i])
-			arg.Type = yyS[yypt-0].i
-			arg.Size = GetArgSize(yyS[yypt-0].i)
-			yyVAL.argument = DeclarationSpecifiers(arg, 0, DECL_BASIC)
+			yyVAL.argument = DeclarationSpecifiersBasic()
 		}
 	case 34:
 		{
