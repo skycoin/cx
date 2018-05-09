@@ -1515,7 +1515,7 @@ yynewstate:
 		}
 	case 33:
 		{
-			yyVAL.argument = DeclarationSpecifiersBasic()
+			yyVAL.argument = DeclarationSpecifiersBasic(yyS[yypt-0].i)
 		}
 	case 34:
 		{

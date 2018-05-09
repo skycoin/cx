@@ -534,7 +534,7 @@ const (
 func SelectorFields (flds []*CXArgument) bool {
 	if strct, err := prgrm.GetCurrentStruct(); err == nil {
 		for _, fld := range flds {
-			fldFromParam := MakeField(fld.Name).AddType(fld.Typ)
+			fldFromParam := MakeArgument(fld.Name).AddType(fld.Typ)
 			strct.AddField(fldFromParam)
 		}
 	}
@@ -848,7 +848,7 @@ func StructDeclaration (ident string, line int) {
 func StructDeclarationFields (flds []*CXArgument) {
 	if strct, err := prgrm.GetCurrentStruct(); err == nil {
 		for _, fld := range flds {
-			fldFromParam := MakeField(fld.Name).AddType(fld.Typ)
+			fldFromParam := MakeArgument(fld.Name).AddType(fld.Typ)
 			strct.AddField(fldFromParam)
 		}
 	}

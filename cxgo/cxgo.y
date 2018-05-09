@@ -362,7 +362,7 @@ declaration_specifiers:
                 }
         |       type_specifier
                 {
-			$$ = DeclarationSpecifiersBasic()
+			$$ = DeclarationSpecifiersBasic($1)
                 }
         |       IDENTIFIER
                 {
