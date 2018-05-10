@@ -251,12 +251,12 @@ func ltI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			}
 		}
 		
-		val := make([]byte, 4)
+		val := make([]byte, 1)
 		
 		if lt {
-			val = []byte{1, 0, 0, 0}
+			val = []byte{1}
 		} else {
-			val = []byte{0, 0, 0, 0}
+			val = []byte{0}
 		}
 
 		assignOutput(0, val, "bool", expr, call)

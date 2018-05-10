@@ -71,25 +71,26 @@ func MakeStruct (name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
 
-func MakeParameter (name string, typ int) *CXArgument {
-	size := GetArgSize(typ)
-	return &CXArgument{
-		Name: name,
-		Type: typ,
-		Size: size,
-		TotalSize: size,
-		MemoryRead: MEM_STACK,
-		// MemoryWrite can change depending on being a pointer or not for example
-		// that is determined at compile time
-	}
-}
+// func MakeParameter (name string, typ int) *CXArgument {
+// 	size := GetArgSize(typ)
+// 	return &CXArgument{
+// 		Name: name,
+// 		Type: typ,
+// 		Size: size,
+// 		TotalSize: size,
+// 		MemoryRead: MEM_STACK,
+// 		// MemoryWrite can change depending on being a pointer or not for example
+// 		// that is determined at compile time
+// 	}
+// }
 
 func MakeExpression (op *CXFunction) *CXExpression {
 	return &CXExpression{Operator: op}
 }
 
 func MakeArgument (name string) *CXArgument {
-	return &CXArgument{Name: name, Typ: "ident"}
+	sName := encoder.Serialize(name)
+	return &CXArgument{Name: name, Typ: "ident", Value: &sName}
 }
 
 func MakeFunction (name string) *CXFunction {
@@ -104,14 +105,14 @@ func MakeNative (opCode int, inputs []int, outputs []int) *CXFunction {
 
 	offset := 0
 	for _, typCode := range inputs {
-		inp := MakeParameter("", typCode)
+		inp := MakeArgument("").AddType(TypeNames[typCode])
 		inp.Offset = offset
 		offset += inp.Size
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, typCode := range outputs {
-		fn.Outputs = append(fn.Outputs, MakeParameter("", typCode))
-		out := MakeParameter("", typCode)
+		fn.Outputs = append(fn.Outputs, MakeArgument("").AddType(TypeNames[typCode]))
+		out := MakeArgument("").AddType(TypeNames[typCode])
 		out.Offset = offset
 		offset += out.Size
 	}

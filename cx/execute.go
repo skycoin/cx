@@ -77,20 +77,20 @@ func saveStep (call *CXCall) {
 }
 
 // It "un-runs" a program
-func (cxt *CXProgram) Reset () {
-	cxt.CallStack = MakeCallStack(0)
-	cxt.Steps = make([][]CXCall, 0)
-	cxt.Outputs = make([]*CXArgument, 0)
-	//cxt.ProgramSteps = nil
+func (prgrm *CXProgram) Reset () {
+	prgrm.CallStack = MakeCallStack(0)
+	prgrm.Steps = make([][]CXCall, 0)
+	prgrm.Outputs = make([]*CXArgument, 0)
+	//prgrm.ProgramSteps = nil
 }
 
-func (cxt *CXProgram) ResetTo (stepNumber int) {
+func (prgrm *CXProgram) ResetTo (stepNumber int) {
 	// if no steps, we do nothing. the program will run from step 0
-	if len(cxt.Steps) > 0 {
-		if stepNumber > len(cxt.Steps) {
-			stepNumber = len(cxt.Steps) - 1
+	if len(prgrm.Steps) > 0 {
+		if stepNumber > len(prgrm.Steps) {
+			stepNumber = len(prgrm.Steps) - 1
 		}
-		reqStep := cxt.Steps[stepNumber]
+		reqStep := prgrm.Steps[stepNumber]
 
 		newStep := MakeCallStack(len(reqStep))
 		
@@ -102,18 +102,18 @@ func (cxt *CXProgram) ResetTo (stepNumber int) {
 			newStep[j] = newCall
 		}
 
-		cxt.CallStack = newStep
-		cxt.Steps = cxt.Steps[:stepNumber]
+		prgrm.CallStack = newStep
+		prgrm.Steps = prgrm.Steps[:stepNumber]
 	}
 }
 
-func (cxt *CXProgram) UnRun (nCalls int) {
-	if len(cxt.Steps) > 0 && nCalls > 0 {
-		if nCalls > len(cxt.Steps) {
-			nCalls = len(cxt.Steps) - 1
+func (prgrm *CXProgram) UnRun (nCalls int) {
+	if len(prgrm.Steps) > 0 && nCalls > 0 {
+		if nCalls > len(prgrm.Steps) {
+			nCalls = len(prgrm.Steps) - 1
 		}
 
-		reqStep := cxt.Steps[len(cxt.Steps) - nCalls]
+		reqStep := prgrm.Steps[len(prgrm.Steps) - nCalls]
 
 		newStep := MakeCallStack(len(reqStep))
 		
@@ -125,13 +125,13 @@ func (cxt *CXProgram) UnRun (nCalls int) {
 			newStep[j] = newCall
 		}
 
-		cxt.CallStack = newStep
-		cxt.Steps = cxt.Steps[:len(cxt.Steps) - nCalls]
+		prgrm.CallStack = newStep
+		prgrm.Steps = prgrm.Steps[:len(prgrm.Steps) - nCalls]
 	}
 }
 
 // Compiling from CXGO to CX Base
-func (cxt *CXProgram) Compile (withProfiling bool) {
+func (prgrm *CXProgram) Compile (withProfiling bool) {
 	var asmNL string = "\n"
 	var program bytes.Buffer
 
@@ -147,7 +147,7 @@ import (
 	"runtime/pprof"
 );
 
-var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var fld *CXField;var arg *CXArgument;var tag string = "";
+var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var fld *CXField;var arg *CXArgument;var tag string = "";
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile 'file'")
 var memprofile = flag.String("memprofile", "", "write memory profile to 'file'")
@@ -166,19 +166,19 @@ func main () {
 	}
 `)
 	} else {
-		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var cxt = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
+		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
 	}
 
-	for _, mod := range cxt.Packages {
-		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");cxt.AddModule(mod);%s`, mod.Name, asmNL))
+	for _, mod := range prgrm.Packages {
+		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");prgrm.AddModule(mod);%s`, mod.Name, asmNL))
 		for _, imp := range mod.Imports {
-			program.WriteString(fmt.Sprintf(`imp, _ = cxt.GetModule("%s");mod.AddImport(imp);%s`, imp.Name, asmNL))
+			program.WriteString(fmt.Sprintf(`imp, _ = prgrm.GetModule("%s");mod.AddImport(imp);%s`, imp.Name, asmNL))
 		}
 
 		for _, fn := range mod.Functions {
 			isUsed := false
 			if fn.Name != MAIN_FUNC {
-				for _, mod := range cxt.Packages {
+				for _, mod := range prgrm.Packages {
 					for _, chkFn := range mod.Functions {
 						for _, expr := range chkFn.Expressions {
 							if expr.Operator.Name == fn.Name {
@@ -237,7 +237,7 @@ func main () {
 				if expr.Label != "" {
 					tagStr = fmt.Sprintf(`expr.Label = "%s";`, expr.Label)
 				}
-				program.WriteString(fmt.Sprintf(`op, _ = cxt.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
+				program.WriteString(fmt.Sprintf(`op, _ = prgrm.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
 					expr.Operator.Name, expr.Operator.Package.Name, expr.FileLine, tagStr, asmNL))
 
 				for _, arg := range expr.Inputs {
@@ -281,76 +281,8 @@ if *memprofile != "" {
     }
 `)
 
-	program.WriteString(`cxt.Run(false, -1);}`)
+	program.WriteString(`prgrm.Run(false, -1);}`)
 	ioutil.WriteFile(fmt.Sprintf("o.go"), []byte(program.String()), 0644)
-}
-
-func (cxt *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
-	rand.Seed(time.Now().UTC().UnixNano())
-	if cxt.Terminated {
-		// user wants to re-run the program
-		cxt.Terminated = false
-	}
-
-	var callCounter int = 0
-	// we are going to do this if the CallStack is empty
-	if cxt.CallStack != nil && len(cxt.CallStack) > 0 {
-		// we resume the program
-		var lastCall *CXCall
-		var err error
-
-		var untilEnd = false
-		if nCalls < 1 {
-			nCalls = 1 // so the for loop executes
-			untilEnd = true
-		}
-
-		for !cxt.Terminated && nCalls > 0 {
-			lastCall = &cxt.CallStack[len(cxt.CallStack) - 1]
-			err = lastCall.icall(withDebug, 1, callCounter)
-			if err != nil {
-				return err
-			}
-			if !untilEnd {
-				nCalls = nCalls - 1
-			}
-		}
-	} else {
-		// initialization and checking
-		if mod, err := cxt.SelectPackage(MAIN_PKG); err == nil {
-			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
-				// main function
-				state := make([]*CXArgument, 0, 20)
-				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
-				
-				cxt.CallStack = append(cxt.CallStack, mainCall)
-
-				var lastCall *CXCall
-				var err error
-
-				var untilEnd = false
-				if nCalls < 1 {
-					nCalls = 1 // so the for loop executes
-					untilEnd = true
-				}
-				
-				for !cxt.Terminated && nCalls > 0 {
-					lastCall = &cxt.CallStack[len(cxt.CallStack) - 1]
-					err = lastCall.icall(withDebug, 1, callCounter)
-					if err != nil {
-						return err
-					}
-					if !untilEnd {
-						nCalls = nCalls - 1
-					}
-				}
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
 }
 
 var isTesting bool
@@ -384,17 +316,16 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 
 		// err = call.Program.Evolve(fnName, fnBag, inps, outs, int(numberExprs), int(iterations), epsilon, expr, call)
 		// flow control
+	case "jmp":
+		jmp(expr, &call.Program.Stacks[0], 0, call)
+		
 	case "baseGoTo": err = baseGoTo(call, (*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
 	case "goTo": err = goTo(call, (*argsCopy)[0])
 		// I/O functions
 	case "bool.print":
-		var val int32
+		var val bool
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
-		if val == 0 {
-			fmt.Println("false")
-		} else {
-			fmt.Println("true")
-		}
+		fmt.Println(val)
 	case "str.print":
 		var val string
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &val)
@@ -460,7 +391,9 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		fmt.Println(val)
 		// identity functions
 	case "str.id", "bool.id", "byte.id", "i32.id", "i64.id", "f32.id", "f64.id", "[]bool.id", "[]byte.id", "[]str.id", "[]i32.id", "[]i64.id", "[]f32.id", "[]f64.id": assignOutput(0, *(*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
-	case "identity": identity((*argsCopy)[0], expr, call)
+	case "identity":
+		assignOutput(0, *(*argsCopy)[0].Value, (*argsCopy)[0].Typ, expr, call)
+		// identity((*argsCopy)[0], expr, call)
 		// cast functions
 	case "[]byte.str", "byte.str", "bool.str", "i32.str", "i64.str", "f32.str", "f64.str": err = castToStr((*argsCopy)[0], expr, call)
 	case "str.[]byte": err = castToByteA((*argsCopy)[0], expr, call)
@@ -767,6 +700,100 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 	}
 }
 
+func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
+	prgrm.PrintProgram()
+	rand.Seed(time.Now().UTC().UnixNano())
+	if prgrm.Terminated {
+		// user wants to re-run the program
+		prgrm.Terminated = false
+	}
+
+	var callCounter int = 0
+	// we are going to do this if the CallStack is empty
+	if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
+		// we resume the program
+		var lastCall *CXCall
+		var err error
+
+		var untilEnd = false
+		if nCalls < 1 {
+			nCalls = 1 // so the for loop executes
+			untilEnd = true
+		}
+
+		for !prgrm.Terminated && nCalls > 0 {
+			lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+			err = lastCall.icall(withDebug, 1, callCounter)
+			if err != nil {
+				return err
+			}
+			if !untilEnd {
+				nCalls = nCalls - 1
+			}
+		}
+	} else {
+		// initialization and checking
+		if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
+
+			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
+				// *init function
+				state := make([]*CXArgument, 0, 20)
+				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
+
+				prgrm.CallStack = append(prgrm.CallStack, mainCall)
+
+				var err error
+
+				for !prgrm.Terminated {
+					call := &prgrm.CallStack[prgrm.CallCounter]
+					err = call.icall(withDebug, 1, callCounter)
+					if err != nil {
+						return err
+					}
+				}
+
+				// we reset call state
+				prgrm.Terminated = false
+				prgrm.CallCounter = 0
+			} else {
+				return err
+			}
+			
+			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
+				// main function
+				state := make([]*CXArgument, 0, 20)
+				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
+				
+				prgrm.CallStack = append(prgrm.CallStack, mainCall)
+
+				var lastCall *CXCall
+				var err error
+
+				var untilEnd = false
+				if nCalls < 1 {
+					nCalls = 1 // so the for loop executes
+					untilEnd = true
+				}
+				
+				for !prgrm.Terminated && nCalls > 0 {
+					lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+					err = lastCall.icall(withDebug, 1, callCounter)
+					if err != nil {
+						return err
+					}
+					if !untilEnd {
+						nCalls = nCalls - 1
+					}
+				}
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
@@ -803,6 +830,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 								break
 							}
 						}
+
 						if !found {
 							def.Name = retName
 							call.ReturnAddress.State = append(call.ReturnAddress.State, def)
@@ -836,29 +864,30 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 		}
 	} else {
 		fn := call.Operator
-		
+
 		if expr, err := fn.GetExpression(call.Line); err == nil {
+			if expr.Operator == nil {
+				// then it's a declaration
+				call.Line++
+				return call.icall(withDebug, nCalls, callCounter)
+			}
 			
 			// getting arguments
 			argsRefs, _ := expr.GetInputs()
-
 			argsCopy := make([]*CXArgument, len(argsRefs))
-			//argNames := make([]string, len(argsRefs))
-
+			
 			if len(argsRefs) != len(expr.Operator.Inputs) {
-				
 				if len(argsRefs) == 1 {
-					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d was provided",
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				} else {
-					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d arguments; %d were provided",
+					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d were provided",
 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				}
 			}
 			
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
-				
 				if argsRefs[i].Typ == "ident" {
 					var lookingFor string
 					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
@@ -874,20 +903,27 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 				// checking if arguments types match with expressions required types
 				if len(expr.Operator.Inputs) > 0 &&
 					expr.Operator.Inputs[i].Typ !=
-					argsCopy[i].Typ {
-					return errors.New(fmt.Sprintf("%s: %d: %s: argument %d is type '%s'; expected type '%s'\n",
+					argsCopy[i].Typ &&
+					expr.Operator.Inputs[i].Typ != "" {
+					return errors.New(fmt.Sprintf("%s: %d: %s: input %d is type '%s'; expected type '%s'\n",
 						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}
 			}
 
 			var opName string
+			var isNative bool
 			if expr.Operator != nil {
-				opName = expr.Operator.Name
+				if expr.Operator.IsNative {
+					isNative = true
+					opName = OpNames[expr.Operator.OpCode]
+				} else {
+					// fmt.Println("hoehoe")
+					opName = expr.Operator.Name
+				}
 			} else {
 				opName = "id" // return the same
 			}
 
-			isNative := false
 			if _, ok := NATIVE_FUNCTIONS[opName]; ok {
 				isNative = true
 			}
@@ -920,7 +956,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 						}
 					}
 					fmt.Println()
-					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
+					fmt.Printf("%s() Inputs:\n", expr.Operator.Name)
 					for i, arg := range argsCopy {
 						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
 					}
@@ -1014,7 +1050,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 
 
 func (prgrm *CXProgram) RunCompiled () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {

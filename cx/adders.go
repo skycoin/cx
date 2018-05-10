@@ -74,6 +74,7 @@ func (arg *CXArgument) AddValue (val *[]byte) *CXArgument {
 func (arg *CXArgument) AddType (typ string) *CXArgument {
 	arg.Typ = typ
 	if typCode, found := TypeCodes[typ]; found {
+		
 		size := GetArgSize(typCode)
 		arg.Size = size
 		arg.TotalSize = size

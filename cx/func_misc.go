@@ -1,6 +1,7 @@
 package base
 
 import (
+	// "fmt"
 	"time"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -70,6 +71,36 @@ func not (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
+	}
+}
+
+func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
+	inp1 := expr.Inputs[0]
+	var predicate bool
+
+	// inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
+
+	// switch inp1.MemoryRead {
+	// case MEM_STACK:
+	// 	predicateB := stack.Stack[inp1Offset: inp1Offset + inp1.Size]
+	// 	encoder.DeserializeAtomic(predicateB, &predicate)
+	// case MEM_DATA:
+	// 	predicateB := inp1.Program.Data[inp1Offset : inp1Offset + inp1.Size]
+	// 	encoder.DeserializeAtomic(predicateB, &predicate)
+	// default:
+	// 	panic("implement the other mem types in readI32")
+	// }
+
+	if arg, err := resolveIdent(inp1.Name, call); err == nil {
+		encoder.DeserializeRaw(*arg.Value, &predicate)
+	} else {
+		encoder.DeserializeRaw(*inp1.Value, &predicate)
+	}
+
+	if predicate {
+		call.Line = call.Line + expr.ThenLines
+	} else {
+		call.Line = call.Line + expr.ElseLines
 	}
 }
 
@@ -177,6 +208,7 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return err
 	}
 }
+
 
 func serialize_program (expr *CXExpression, call *CXCall) error {
 	// val := Serialize(call.Program)

@@ -771,7 +771,8 @@ var OpCodes map[string]int = map[string]int{
 var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_IDENTITY: MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
+	// OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
+	OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
 	OP_DEBUG: MakeNative(OP_DEBUG, []int{}, []int{}),
 
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),

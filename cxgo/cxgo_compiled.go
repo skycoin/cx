@@ -1550,7 +1550,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			// then it's a function call
 			if len(inpExpr.Outputs) < 1 {
 				out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
-				// out.Typ = "ident"
+				out.Typ = "ident"
 				out.Size = inpExpr.Operator.Outputs[0].Size
 				out.TotalSize = inpExpr.Operator.Outputs[0].Size
 				out.Package = inpExpr.Package
