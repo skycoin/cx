@@ -437,6 +437,41 @@ func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpress
 	return result
 }
 
+func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CXExpression) []*CXExpression {
+	var result []*CXExpression
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+		if _, err := pkg.GetImport(impName); err == nil {
+			if strct, err := prgrm.GetStruct(ident, impName); err == nil {
+				for _, expr := range strctFlds {
+					fld := MakeArgument("")
+					fld.AddType(TypeNames[TYPE_IDENTIFIER])
+					fld.Name = expr.Outputs[0].Name
+
+					expr.IsStructLiteral = true
+
+					expr.Outputs[0].Package = pkg
+					expr.Outputs[0].Program = prgrm
+
+					expr.Outputs[0].CustomType = strct
+					expr.Outputs[0].Size = strct.Size
+					expr.Outputs[0].TotalSize = strct.Size
+					expr.Outputs[0].Name = ident
+					expr.Outputs[0].Fields = append(expr.Outputs[0].Fields, fld)
+					result = append(result, expr)
+				}
+			} else {
+				panic("type '" + ident + "' does not exist")
+			}
+		} else {
+			panic(err)
+		}
+	} else {
+		panic(err)
+	}
+
+	return result
+}
+
 func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	prevExprs[len(prevExprs) - 1].Outputs[0].IsArray = false
 	pastOps := prevExprs[len(prevExprs) - 1].Outputs[0].DereferenceOperations
@@ -1047,8 +1082,6 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		from[idx].Outputs = to[len(to) - 1].Outputs
 		from[idx].Program = prgrm
 
-		// fmt.Println("hihi", to[0].Outputs[0])
-		
 		return append(to[:len(to) - 1], from...)
 	} else {
 		if from[idx].Operator.IsNative {
@@ -1070,8 +1103,6 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 		if from[0].IsStructLiteral {
 			from[idx].Outputs[0].MemoryRead = MEM_HEAP
 		}
-
-		// fmt.Println("hihi", to[0].Outputs[0])
 
 		return append(to[:len(to) - 1], from...)
 		// return append(to, from...)

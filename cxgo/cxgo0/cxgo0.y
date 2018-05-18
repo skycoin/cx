@@ -1,7 +1,7 @@
 %{
 	package cxgo0
 	import (
-		// "fmt"
+		"fmt"
 		"bytes"
 		. "github.com/skycoin/cx/cx"
 	)
@@ -252,6 +252,19 @@ package_declaration:
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
+                {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				if _, err := pkg.GetImport($2); err != nil {
+					if imp, err := PRGRM.GetPackage($2); err == nil {
+						pkg.AddImport(imp)
+					} else {
+						panic(err)
+					}
+				}
+			} else {
+				panic(err)
+			}
+                }
                 ;
 
 function_header:
@@ -436,6 +449,7 @@ declaration_specifiers:
                 {
 			// custom type in the current package
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				fmt.Println("huh")
 				if strct, err := PRGRM.GetStruct($1, pkg.Name); err == nil {
 					arg := MakeArgument("")
 					arg.AddType(TypeNames[TYPE_CUSTOM])
@@ -553,10 +567,19 @@ array_literal_expression:
         |       LBRACK INT_LITERAL RBRACK array_literal_expression
         ;
 
+slice_literal_expression:
+                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK slice_literal_expression
+                ;
+
 primary_expression:
                 IDENTIFIER
         |       STRING_LITERAL
         |       IDENTIFIER LBRACE struct_literal_fields RBRACE
+        |       IDENTIFIER PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
         |       BOOLEAN_LITERAL
         |       BYTE_LITERAL
         |       INT_LITERAL
@@ -565,6 +588,7 @@ primary_expression:
         |       LONG_LITERAL
         |       LPAREN expression RPAREN
         |       array_literal_expression
+        |       slice_literal_expression
                 ;
 
 after_period:   type_specifier

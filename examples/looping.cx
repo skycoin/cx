@@ -13,7 +13,6 @@ func main () () {
 		c = i32.add(c, 1)
 	}
 
-
 	for c = i32.add(i32.add(10, 0), 1); i32.lt(c, 20); c = i32.add(c, 1) {
 		i32.print(c)
 		i32.print(i32.add(c, 1))

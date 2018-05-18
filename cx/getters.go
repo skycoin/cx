@@ -297,7 +297,7 @@ func (fn *CXFunction) GetExpression (line int) (*CXExpression, error) {
 }
 
 func (expr *CXExpression) GetInputs () ([]*CXArgument, error) {
-	if expr.Inputs != nil {
+	if expr.Inputs != nil {		
 		return expr.Inputs, nil
 	} else {
 		return nil, errors.New("expression has no arguments")

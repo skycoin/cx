@@ -13,8 +13,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-var freeFns map[string]*func() = make(map[string]*func(), 0)
-var cSources map[string]**uint8 = make(map[string]**uint8, 0)
+// var freeFns map[string]*func() = make(map[string]*func(), 0)
+// var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
 func gl_Init () error {
 	if err := gl.Init(); err == nil {

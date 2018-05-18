@@ -15,13 +15,6 @@ import (
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.Outputs[outNameNumber].Name
 
-	// if expr.Outputs[outNameNumber].Typ != typ {
-	// 	fmt.Println(expr.Outputs[outNameNumber].Typ, typ, expr.Operator.Name)
-	// }
-	// fmt.Println(expr.Outputs[outNameNumber].Typ, typ, expr.Operator.Name)
-
-	///expr.Outputs[outNameNumber].Typ = typ
-
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
@@ -124,6 +117,8 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 		}
 		return nil
 	}
+
+	
 
 	for _, def := range call.State {
 		if def.Name == outName {
@@ -883,7 +878,32 @@ func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
 	return nil, ""
 }
 
+func getArrayIndex (arg *CXArgument, call *CXCall) int32 {
+	if len(arg.Indexes) > 0 {
+		var index int32
+		if arg.Indexes[0].Typ == "ident" {
+			var ident string
+			encoder.DeserializeRaw(*arg.Indexes[0].Value, &ident)
+			if sym, err := resolveIdent(ident, call); err == nil {
+				encoder.DeserializeAtomic(*sym.Value, &index)
+			} else {
+				panic(err)
+			}
+		} else {
+			encoder.DeserializeAtomic(*arg.Indexes[0].Value, &index)
+		}
+
+		return index
+	}
+
+	return int32(-1)
+}
+
 func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
+	if lookingFor == "" {
+		return nil, errors.New("a valid identifier was not provided")
+	}
+	
 	var resolvedIdent *CXArgument
 	
 	isStructFld := false
@@ -918,7 +938,6 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
 					arg := MakeArgument("").AddValue(&byts).AddType(typ)
 					return arg, nil
-					
 				} else {
 					return nil, err
 				}
@@ -1075,7 +1094,7 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 	}
 
 	var typSize int
-	switch typ[len(typ)-4:] {
+	switch typ[len(typ) - 4:] {
 	case "]i64", "]f64":
 		typSize = 8
 	case "bool", "]i32", "]f32":
@@ -1084,7 +1103,7 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 		typSize = 1
 	}
 
-	if typ[len(typ)-3:] == "str" {
+	if typ[len(typ) - 3:] == "str" {
 		typ = "[]" + typ
 	}
 	
@@ -1190,6 +1209,10 @@ func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *
 	}
 }
 
+func printStruct (strct interface{}) {
+	fmt.Printf("%+v\n", strct)
+}
+
 func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 	var arrSize int32
 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
@@ -1203,11 +1226,11 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 	}
 
 	switch arr.Typ {
-	case "[]byte":
+	case "byte":
 		return (*arr.Value)[index + 4:index + 1 + 4], nil
-	case "[]bool", "[]i32", "[]f32":
+	case "bool", "i32", "f32":
 		return (*arr.Value)[index * 4 + 4:(index + 1) * 4 + 4], nil
-	case "[]str":
+	case "str":
 		noSize := (*arr.Value)[4:]
 
 		var offset int32
@@ -1222,7 +1245,7 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 		encoder.DeserializeRaw(sStrSize, &strSize)
 
 		return noSize[offset:offset+strSize+4], nil
-	case "[]i64", "f64":
+	case "i64", "f64":
 		return (*arr.Value)[index * 8 + 4:(index + 1) * 8 + 4], nil
 	}
 	

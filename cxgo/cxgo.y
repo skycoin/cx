@@ -1,6 +1,7 @@
 %{
 	package main
 	import (
+		// "fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		// "github.com/skycoin/cx/src/interpreted"
@@ -124,7 +125,9 @@
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
-                                                
+
+%type   <stringA>       package_identifier
+                                                    
 %type   <expressions>   assignment_expression
 %type   <expressions>   constant_expression
 %type   <expressions>   conditional_expression
@@ -145,6 +148,9 @@
                         
 %type   <expressions>   array_literal_expression_list
 %type   <expressions>   array_literal_expression
+
+%type   <expressions>   slice_literal_expression_list
+%type   <expressions>   slice_literal_expression
 
 %type   <expressions>   struct_literal_fields
 %type   <selectStatement>   elseif
@@ -246,10 +252,12 @@ function_header:
                 FUNC IDENTIFIER
                 {
 			$$ = FunctionHeader($2, nil, false)
+			inFn = true
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
 			$$ = FunctionHeader($5, $3, true)
+			inFn = true
                 }
         ;
 
@@ -264,10 +272,12 @@ function_declaration:
                 function_header function_parameters compound_statement
                 {
 			FunctionDeclaration($1, $2, nil, $3)
+			inFn = false
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
 			FunctionDeclaration($1, $2, $3, $4)
+			inFn = false
                 }
         ;
 
@@ -368,9 +378,9 @@ declaration_specifiers:
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false)
                 }
-        |       IDENTIFIER PERIOD IDENTIFIER
+        |       package_identifier
                 {
-			$$ = DeclarationSpecifiersStruct($3, $1, true)
+			$$ = DeclarationSpecifiersStruct($1[1], $1[0], true)
                 }
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
@@ -472,7 +482,74 @@ array_literal_expression:
 
 			$$ = $4
                 }
-        ;
+                ;
+
+
+
+
+
+
+
+slice_literal_expression_list:
+                assignment_expression
+                {
+			$1[len($1) - 1].IsArrayLiteral = true
+			$$ = $1
+                }
+	|       slice_literal_expression_list COMMA assignment_expression
+                {
+			$3[len($3) - 1].IsArrayLiteral = true
+			$$ = append($1, $3...)
+                }
+                ;
+
+slice_literal_expression:
+                LBRACK RBRACK IDENTIFIER LBRACE slice_literal_expression_list RBRACE
+                {
+			$$ = $5
+                }
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
+                {
+			if interpretMode {
+				$$ = BasicArrayLiteralDeclaration(TypeNames[$3], $5, yyS[yypt-0].line + 1, false)
+			} else {
+				$$ = ArrayLiteralExpression(int(SLICE_SIZE), $3, $5)
+			}
+                }
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       LBRACK RBRACK slice_literal_expression
+                {
+			if interpretMode {
+				
+			} else {
+				
+			}
+
+			for _, expr := range $3 {
+				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
+					expr.Outputs[0].Lengths = append([]int{int(SLICE_SIZE)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
+					expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
+				}
+			}
+
+			$$ = $3
+                }
+                ;
+
+package_identifier:
+                IDENTIFIER PERIOD IDENTIFIER
+                {
+			$$ = []string{$1, $2}
+                }
+                ;
+
 
 primary_expression:
                 IDENTIFIER
@@ -483,13 +560,18 @@ primary_expression:
                 {
 			$$ = PrimaryStructLiteral($1, $3)
                 }
+        // |       package_identifier LBRACE struct_literal_fields RBRACE
+        //         {
+	// 		$$ = PrimaryStructLiteralExternal($1[0], $1[1], $3)
+        //         }
         |       STRING_LITERAL
                 {
 			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1))
                 }
         |       BOOLEAN_LITERAL
                 {
-			$$ = WritePrimary(TYPE_BOOL, encoder.Serialize($1))
+			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1))
+			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
@@ -514,6 +596,10 @@ primary_expression:
         |       LPAREN expression RPAREN
                 { $$ = $2 }
         |       array_literal_expression
+                {
+			$$ = $1
+                }
+        |       slice_literal_expression
                 {
 			$$ = $1
                 }
@@ -556,6 +642,7 @@ postfix_expression:
                 {
 			PostfixExpressionField($1, $3)
                 }
+        /* |       postfix_expression LBRACE struct_literal_fields RBRACE */
                 ;
 
 argument_expression_list:

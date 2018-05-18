@@ -113,6 +113,11 @@
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
+	tokVal := yylex.Text()
+	tokVal = strings.TrimPrefix(tokVal, "\"")
+	tokVal = strings.TrimSuffix(tokVal, "\"")
+	lval.tok = tokVal
+	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return f(STRING_LITERAL)
 }
 /true/ {
@@ -186,6 +191,16 @@ func f (token int) int {
 		}
 		return token
 	}
+}
+
+func countNewLines (s []byte) int {
+	count := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\n' {
+			count++
+		}
+	}
+	return count
 }
 
 func (yylex Lexer) Error (e string) {

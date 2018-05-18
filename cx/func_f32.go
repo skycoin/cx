@@ -224,9 +224,9 @@ func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		var val []byte
 
 		if num1 < num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -246,9 +246,9 @@ func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		var val []byte
 
 		if num1 > num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -268,9 +268,9 @@ func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		var val []byte
 
 		if num1 == num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -290,9 +290,9 @@ func uneqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		var val []byte
 
 		if num1 != num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -312,9 +312,9 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		var val []byte
 
 		if num1 <= num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 		
 		assignOutput(0, val, "bool", expr, call)

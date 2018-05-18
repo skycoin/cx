@@ -286,9 +286,9 @@ func ReadArray (stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, 
 }
 
 func ReadF32A (stack *CXStack, fp int, inp *CXArgument) (out []float32) {
-	// Only used by native functions (i.e. functions implemented in Golang)
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	byts := ReadMemory(stack, offset, inp)
+	// fmt.Println("here", byts)
 	byts = append(encoder.SerializeAtomic(int32(len(byts) / 4)), byts...)
 	encoder.DeserializeRaw(byts, &out)
 	return

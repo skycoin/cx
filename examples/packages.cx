@@ -11,22 +11,21 @@ func bar () () {
 	str.print("From foo package")
 }
 
-
-
 package bar
 import "foo"
 
 func returnPoint () (aPoint foo.Point) {
-	aPoint = new foo.Point{x: 10, y: 20}
+	aPoint = foo.Point{x: 10, y: 20}
 }
 
 package main
-import "foo"
-import "bar"
+// import "foo"
+// import "bar"
 
 func main () () {
-	aPoint := bar.returnPoint()
-	i32.print(aPoint.x)
+	var aPoint Point
+	aPoint = bar.returnPoint()
+	i32.print5(aPoint.x)
 	i32.print(aPoint.y)
 
 	var foo1 foo.Point
