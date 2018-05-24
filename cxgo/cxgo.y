@@ -1,7 +1,7 @@
 %{
 	package main
 	import (
-		// "fmt"
+		"fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		// "github.com/skycoin/cx/src/interpreted"
@@ -126,7 +126,7 @@
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
 
-%type   <stringA>       package_identifier
+/* %type   <stringA>       package_identifier */
                                                     
 %type   <expressions>   assignment_expression
 %type   <expressions>   constant_expression
@@ -145,6 +145,8 @@
 %type   <expressions>   argument_expression_list
 %type   <expressions>   postfix_expression
 %type   <expressions>   primary_expression
+
+%type   <expressions>   struct_literal_expression
                         
 %type   <expressions>   array_literal_expression_list
 %type   <expressions>   array_literal_expression
@@ -300,7 +302,7 @@ parameter_declaration:
                 declarator declaration_specifiers
                 {
 			$2.Name = $1.Name
-			$2.Package = $1.Package
+			// $2.Package = $1.Package
 			$$ = $2
                 }
                 ;
@@ -378,10 +380,14 @@ declaration_specifiers:
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false)
                 }
-        |       package_identifier
+        |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($1[1], $1[0], true)
+			$$ = DeclarationSpecifiersStruct($3, $1, true)
                 }
+        /* |       package_identifier */
+        /*         { */
+	/* 		$$ = DeclarationSpecifiersStruct($1[1], $1[0], true) */
+        /*         } */
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
 	/* |       type_qualifier declaration_specifiers */
@@ -543,12 +549,12 @@ slice_literal_expression:
                 }
                 ;
 
-package_identifier:
-                IDENTIFIER PERIOD IDENTIFIER
-                {
-			$$ = []string{$1, $2}
-                }
-                ;
+/* package_identifier: */
+/*                 IDENTIFIER PERIOD IDENTIFIER */
+/*                 { */
+/* 			$$ = []string{$1, $2} */
+/*                 } */
+/*                 ; */
 
 
 primary_expression:
@@ -638,11 +644,15 @@ postfix_expression:
                 {
 			$$ = PostfixExpressionIncDec($1, false)
                 }
+
         |       postfix_expression PERIOD IDENTIFIER
                 {
 			PostfixExpressionField($1, $3)
                 }
-        /* |       postfix_expression LBRACE struct_literal_fields RBRACE */
+        // |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
+        //         {
+	// 		$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
+        //         }
                 ;
 
 argument_expression_list:
@@ -727,6 +737,7 @@ relational_expression:
                 }
         |       relational_expression GT_OP shift_expression
                 {
+			fmt.Println("am I entering")
 			$$ = ShorthandExpression($1, $3, OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
@@ -795,8 +806,17 @@ conditional_expression:
 	|       logical_or_expression '?' expression COLON conditional_expression
                 ;
 
-assignment_expression:
+struct_literal_expression:
                 conditional_expression
+        |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
+                {
+			$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
+                }
+                ;
+
+assignment_expression:
+                /* conditional_expression */
+                struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
 			if $3[0].IsArrayLiteral {
@@ -935,19 +955,19 @@ expression_statement:
                 ;
 
 selection_statement:
-                IF expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
+                IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
                 {
 			$$ = SelectionStatement($2, $4, $6, $7, SEL_ELSEIFELSE)
                 }
-        |       IF expression LBRACE block_item_list RBRACE else_statement SEMICOLON
+        |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
                 {
 			$$ = SelectionExpressions($2, $4, $6)
                 }
-        |       IF expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
+        |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
                 {
 			$$ = SelectionStatement($2, $4, $6, nil, SEL_ELSEIF)
                 }
-        |       IF expression compound_statement
+        |       IF conditional_expression compound_statement
                 {
 			$$ = SelectionExpressions($2, $3, nil)
                 }

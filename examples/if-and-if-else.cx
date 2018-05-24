@@ -26,4 +26,6 @@ func main () (out i32) {
 	} else {
 		out = 200
 	}
+
+	i32.print(out)
 }

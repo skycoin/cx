@@ -12,33 +12,95 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+
+func sameFields (flds1 []*CXArgument, flds2 []*CXArgument) bool {
+	allSame := true
+	
+	if len(flds1) != len(flds2) {
+		allSame = false
+	} else {
+		for i, fld := range flds1 {
+			if flds2[i].Name != fld.Name {
+				allSame = false
+			}
+		}
+	}
+
+	return allSame
+}
+
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.Outputs[outNameNumber].Name
+	flds := expr.Outputs[outNameNumber].Fields
+
+	// if len(expr.Outputs[outNameNumber].Fields) > 0 {
+		
+	// } else {
+		
+	// }
+
+	// for _, out := range expr.Outputs {
+	// 	fmt.Println("hoh", out.Name, out.Fields[0].Name)
+	// }
+
+	// fmt.Println("printing state from assignOutput")
+	// for _, arg := range call.State {
+	// 	fmt.Println("dbg", arg.Name, arg.Typ, arg.Value, arg.Fields)
+	// }
+
+	for _, def := range call.State {
+		if flds != nil && def.Name == outName {
+			// then it's a struct field
+			allSame := sameFields(def.Fields, flds)
+
+			if allSame {
+				def.Fields[len(def.Fields) - 1].Value = &output
+				return nil
+			} else {
+				arg := MakeArgument(outName)
+				arg.Fields = flds
+				arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
+				call.State = append(call.State, arg)
+				return nil
+			}
+		} else if def.Name == outName {
+			// then it's a simple var
+			def.Value = &output
+			return nil
+		}
+	}
+
+	
+	
+	// call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
+	// return nil
 
 	for _, char := range outName {
 		if char == '.' {
 			identParts := strings.Split(outName, ".")
 
-			if def, err := expr.Package.GetGlobal(identParts[0]); err == nil {
-				if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
-					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
-					firstChunk := make([]byte, offset)
-					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+			// if def, err := expr.Package.GetGlobal(identParts[0]); err == nil {
+			// 	if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
+			// 		_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
+			// 		firstChunk := make([]byte, offset)
+			// 		secondChunk := make([]byte, len(*def.Value) - int(offset + size))
 
-					copy(firstChunk, (*def.Value)[:offset])
-					copy(secondChunk, (*def.Value)[offset+size:])
+			// 		copy(firstChunk, (*def.Value)[:offset])
+			// 		copy(secondChunk, (*def.Value)[offset+size:])
 
-					final := append(firstChunk, output...)
-					final = append(final, secondChunk...)
+			// 		final := append(firstChunk, output...)
+			// 		final = append(final, secondChunk...)
 
-					if def.Typ[0] == '*' {
-						*def.Value = final
-					} else {
-						def.Value = &final
-					}
-					return nil
-				}
-			}
+			// 		if def.Typ[0] == '*' {
+			// 			*def.Value = final
+			// 		} else {
+			// 			def.Value = &final
+			// 		}
+			// 		return nil
+			// 	}
+			// }
+
+			
 
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
@@ -87,26 +149,26 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			break
 		}
 		
-		if char == '[' {
-			identParts := strings.Split(outName, "[")
+		// if char == '[' {
+		// 	identParts := strings.Split(outName, "[")
 
-			for _, def := range call.State {
-				if def.Name == identParts[0] {
-					idx, _ := strconv.ParseInt(identParts[1], 10, 64)
-					for c := 0; c < len(output); c++ {
-						if typ == "i64" || typ == "f64" {
-							(*def.Value)[(int(idx)*8) + 4 + c] = (output)[c]
-						} else if typ == "byte" {
-							(*def.Value)[int(idx) + c] = (output)[c]
-						} else {
-							(*def.Value)[(int(idx)*4) + 4 + c] = (output)[c]
-						}
-					}
-					return nil
-				}
-			}
-			break
-		}
+		// 	for _, def := range call.State {
+		// 		if def.Name == identParts[0] {
+		// 			idx, _ := strconv.ParseInt(identParts[1], 10, 64)
+		// 			for c := 0; c < len(output); c++ {
+		// 				if typ == "i64" || typ == "f64" {
+		// 					(*def.Value)[(int(idx)*8) + 4 + c] = (output)[c]
+		// 				} else if typ == "byte" {
+		// 					(*def.Value)[int(idx) + c] = (output)[c]
+		// 				} else {
+		// 					(*def.Value)[(int(idx)*4) + 4 + c] = (output)[c]
+		// 				}
+		// 			}
+		// 			return nil
+		// 		}
+		// 	}
+		// 	break
+		// }
 	}
 
 	if def, err := expr.Package.GetGlobal(outName); err == nil {
@@ -118,11 +180,8 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 		return nil
 	}
 
-	
-
 	for _, def := range call.State {
 		if def.Name == outName {
-			//fmt.Println(outName, typ, def.Typ)
 			if def.Typ[0] == '*' {
 				*def.Value = output
 			} else {
@@ -132,13 +191,132 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 		}
 	}
 
-	// if len(call.State) > 0 {
-	// 	fmt.Println(call.State[0].Name, outName)
-	// }
-
 	call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
 	return nil
 }
+
+// old version, in case the above doesn't work
+
+// func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
+// 	outName := expr.Outputs[outNameNumber].Name
+
+// 	for _, char := range outName {
+// 		if char == '.' {
+// 			identParts := strings.Split(outName, ".")
+
+// 			if def, err := expr.Package.GetGlobal(identParts[0]); err == nil {
+// 				if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
+// 					_, _, offset, size := resolveStructField(identParts[1], def.Value, strct)
+// 					firstChunk := make([]byte, offset)
+// 					secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+
+// 					copy(firstChunk, (*def.Value)[:offset])
+// 					copy(secondChunk, (*def.Value)[offset+size:])
+
+// 					final := append(firstChunk, output...)
+// 					final = append(final, secondChunk...)
+
+// 					if def.Typ[0] == '*' {
+// 						*def.Value = final
+// 					} else {
+// 						def.Value = &final
+// 					}
+// 					return nil
+// 				}
+// 			}
+
+// 			for _, def := range call.State {
+// 				if def.Name == identParts[0] {
+// 					if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
+// 						byts, typ, offset, size := resolveStructField(identParts[1], def.Value, strct)
+
+// 						isBasic := false
+// 						for _, basic := range BASIC_TYPES {
+// 							if basic == typ {
+// 								isBasic = true
+// 								break
+// 							}
+// 						}
+						
+// 						if true || typ == "str" || typ == "[]str" || typ == "[]bool" ||
+// 							typ == "[]byte" || typ == "[]i32" ||
+// 							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" || !isBasic {
+
+// 							firstChunk := make([]byte, offset)
+// 							secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+
+// 							copy(firstChunk, (*def.Value)[:offset])
+// 							copy(secondChunk, (*def.Value)[offset+size:])
+
+// 							final := append(firstChunk, output...)
+// 							final = append(final, secondChunk...)
+
+// 							if def.Typ[0] == '*' {
+// 								*def.Value = final
+// 							} else {
+// 								def.Value = &final
+// 							}
+// 							return nil
+// 						} else {
+							
+// 							for c := 0; c < len(byts); c++ {
+// 								byts[c] = (output)[c]
+// 							}
+// 						}
+// 					} else {
+// 						panic(err)
+// 					}
+// 					return nil
+// 				}
+// 			}
+// 			break
+// 		}
+		
+// 		if char == '[' {
+// 			identParts := strings.Split(outName, "[")
+
+// 			for _, def := range call.State {
+// 				if def.Name == identParts[0] {
+// 					idx, _ := strconv.ParseInt(identParts[1], 10, 64)
+// 					for c := 0; c < len(output); c++ {
+// 						if typ == "i64" || typ == "f64" {
+// 							(*def.Value)[(int(idx)*8) + 4 + c] = (output)[c]
+// 						} else if typ == "byte" {
+// 							(*def.Value)[int(idx) + c] = (output)[c]
+// 						} else {
+// 							(*def.Value)[(int(idx)*4) + 4 + c] = (output)[c]
+// 						}
+// 					}
+// 					return nil
+// 				}
+// 			}
+// 			break
+// 		}
+// 	}
+
+// 	if def, err := expr.Package.GetGlobal(outName); err == nil {
+// 		if def.Typ[0] == '*' {
+// 			*def.Value = output
+// 		} else {
+// 			def.Value = &output
+// 		}
+// 		return nil
+// 	}
+
+// 	for _, def := range call.State {
+// 		if def.Name == outName {
+// 			if def.Typ[0] == '*' {
+// 				*def.Value = output
+// 			} else {
+// 				def.Value = &output
+// 			}
+// 			return nil
+// 		}
+// 	}
+
+// 	call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
+// 	return nil
+// }
 
 func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument, mod *CXPackage, prgrm *CXProgram) ([]*CXArgument, error) {
 	if len(inputs) == len(args) {
@@ -161,7 +339,7 @@ func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument
 			}
 			if !isBasic {
 				var err error
-				if zeroValue, err = ResolveStruct(out.Typ, prgrm); err != nil {
+				if zeroValue, err = ResolveStruct(out.CustomType.Name, prgrm); err != nil {
 					return nil, err
 				}
 			}
@@ -899,7 +1077,25 @@ func getArrayIndex (arg *CXArgument, call *CXCall) int32 {
 	return int32(-1)
 }
 
+func getFQDN (arg *CXArgument) string {
+	var name string
+	// name = arg.Package.Name + "." + arg.Name
+	name = arg.Name
+	
+	if len(arg.Fields) > 0 {
+		for _, fld := range arg.Fields {
+			name += "." + fld.Name
+		}
+	}
+
+	return name
+}
+
 func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
+	// for _, arg := range call.State {
+	// 	fmt.Println("utili.val", arg.Name, arg.Typ, arg.Value, arg.Fields)
+	// }
+
 	if lookingFor == "" {
 		return nil, errors.New("a valid identifier was not provided")
 	}
@@ -947,14 +1143,17 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 
 				for _, stateDef := range call.State {
 					if stateDef.Name == identParts[0] {
-						if strct, err := mod.Program.GetStruct(stateDef.Typ, mod.Name); err == nil {
-							byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
-							arg := MakeArgument("").AddValue(&byts).AddType(typ)
-							return arg, nil
-							
-						} else {
-							return nil, err
+						if getFQDN(stateDef) == lookingFor {
+							return stateDef.Fields[len(stateDef.Fields) - 1], nil
 						}
+						// if strct, err := mod.Program.GetStruct(stateDef.Typ, mod.Name); err == nil {
+						// 	byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
+						// 	arg := MakeArgument("").AddValue(&byts).AddType(typ)
+						// 	return arg, nil
+							
+						// } else {
+						// 	return nil, err
+						// }
 					}
 				}
 			}
@@ -966,6 +1165,12 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		if len(arrayParts) > 1 {
 			lookingFor = arrayParts[0]
 		}
+
+		// fmt.Println("house", lookingFor)
+		// for _, stateDef := range call.State {
+		// 	fmt.Println("entering resolveIdent", stateDef.Name, stateDef.Fields)
+		// }
+		
 		for _, stateDef := range call.State {
 			if stateDef.Name == arrayParts[0] {
 				local = true
@@ -1026,23 +1231,27 @@ func ResolveStruct (typ string, prgrm *CXProgram) ([]byte, error) {
 				break
 			}
 		}
+
 		if !found {
 			typeParts := strings.Split(typ, ".")
-			if len(typeParts) > 1 {
-				for _, imp := range mod.Imports {
-					if typeParts[0] == imp.Name {
-						for _, strct := range imp.Structs {
-							if strct.Name == typeParts[1] {
-								found = true
-								foundStrct = strct
-								break
-							}
-						}
+			for _, imp := range mod.Imports {
+				for _, strct := range imp.Structs {
+					if strct.Name == typeParts[0] {
+						found = true
+						foundStrct = strct
+						break
 					}
 				}
+				
+				// if typeParts[0] == imp.Name {
+					
+				// }
 			}
+			// if len(typeParts) > 1 {
+				
+			// }
 		}
-		
+
 		if !found {
 			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
 		}

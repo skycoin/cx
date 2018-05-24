@@ -1,5 +1,10 @@
 package foo1
 
+type Point struct {
+	x i32
+	y i32
+}
+
 func double (n i32) (res i32) {
 	res = i32.add(n, n)
 }
@@ -15,6 +20,13 @@ import "foo1"
 import "foo2"
 
 func main () {
+	var p Point
+	p = foo1.Point{x: 10, y: 20}
+
+	i32.print(p.x)
+	i32.print(p.y)
+	
+
 	var double i32
 	var triple i32
 	

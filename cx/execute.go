@@ -802,6 +802,14 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 }
 
 func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
+	// for _, arg := range call.State {
+	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
+	// 	if len(arg.Fields) > 0 {
+	// 		fmt.Println("exec.flds", arg.Fields[0].Value)
+	// 	}
+	// }
+	// fmt.Println()
+	
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
 		return nil
@@ -828,19 +836,42 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 			for _, def := range call.State {
 				/////////// throw error if output was not defined, or handle outputs from last expression
 				if out.Name == def.Name {
+					flds := def.Fields
+					
 					if call.ReturnAddress != nil {
 						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].Outputs[i].Name
-						
 						found := false
 						for _, retDef := range call.ReturnAddress.State {
-							if retDef.Name == retName {
-								retDef.Value = def.Value
-								found = true
-								break
+							if len(flds) > 0 {
+								if sameFields(def.Fields, retDef.Fields) && retDef.Name == retName {
+									retDef.Fields[len(retDef.Fields) - 1].Value = def.Fields[len(def.Fields) - 1].Value
+									found = true
+									break
+								}
+								
+							} else {
+								if retDef.Name == retName {
+									retDef.Value = def.Value
+									found = true
+									break
+								}
 							}
 						}
 
 						if !found {
+							if len(flds) > 0 {
+								// arg := MakeArgument(outName)
+								// arg.Fields = flds
+								// arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
+								// call.State = append(call.State, arg)
+
+								def.Name = retName
+								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+							} else {
+								def.Name = retName
+								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+							}
+
 							def.Name = retName
 							call.ReturnAddress.State = append(call.ReturnAddress.State, def)
 						}
@@ -898,12 +929,20 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
-				if argsRefs[i].Typ == "ident" {
+				if argsRefs[i].Typ == "ident" || len(argsRefs[i].Fields) > 0 {
 					var lookingFor string
-					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
+					// encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
+
+					lookingFor = getFQDN(argsRefs[i])
+
+					// if len(argsRefs[i].Fields) > 0 {
+					// 	for _, fld := range argsRefs[i].Fields {
+					// 		fmt.Println("this one has it", fld.Name, fld.Value)
+					// 	}
+					// }
+					
 					if arg, err := resolveIdent(lookingFor, call); err == nil {
 						argsCopy[i] = arg
-
 						// Extracting array values
 						if len(argsRefs[i].Indexes) > 0 {
 							if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
@@ -1201,7 +1240,6 @@ func (call *CXCall) ccall (prgrm *CXProgram) error {
 				if inp.IsReference {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					// fmt.Println("here", inp.Name, inp.MemoryWrite)
 					switch inp.MemoryWrite {
 					case MEM_STACK:
 						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]

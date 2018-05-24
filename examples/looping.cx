@@ -8,12 +8,12 @@ func main () () {
 	var c i32
 	c = 0
 
-	for i32.lt(i32.add(i32.add(c, 2), 0), i32.sub(10, 1)) {
+	for i32.lt(i32.add(i32.add(c, 2), 0), i32.sub(5, 1)) {
 		i32.print(c)
 		c = i32.add(c, 1)
 	}
 
-	for c = i32.add(i32.add(10, 0), 1); i32.lt(c, 20); c = i32.add(c, 1) {
+	for c = i32.add(i32.add(10, 0), 1); i32.lt(c, 5); c = i32.add(c, 1) {
 		i32.print(c)
 		i32.print(i32.add(c, 1))
 	}
@@ -21,11 +21,11 @@ func main () () {
 	var d i32
 	d = 0
 
-	for d = 10; i32.lt(d, 20); d = i32.add(d, 1) {
+	for d = 10; i32.lt(d, 13); d = i32.add(d, 1) {
 		i32.print(d)
 	}
 
-	for c = 0; i32.lt(i32.add(c, 0), 20); c = i32.add(c, 1) {
+	for c = 0; i32.lt(i32.add(c, 0), 5); c = i32.add(c, 1) {
 		i32.print(c)
 	}
 }

@@ -46,14 +46,8 @@ plb-master.zip
 plb-master
 kenney*
 fib.pl
-testing.cx
-testing2.cx
+testing*.cx
 clean-test.cx
-testing-gc.cx
-testing-pointers.cx
-testing-pointers-to-structs.cx
-texture-animation4.cx
-testing-nested-calls.cx
 serial
 testing.byts
 overlap_check.cx
