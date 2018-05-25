@@ -3,5 +3,10 @@ package main
 func main () () {
 	test.start()
 	// test(20, 20, "")
-	test(i32.add(5, 7), 20, "")
+
+	var foo i32
+	foo = i32.add(10, 10)
+	
+	test(foo, 20, "")
+	test.stop()
 }

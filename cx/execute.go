@@ -701,7 +701,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 }
 
 func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program
@@ -1068,7 +1068,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 }
 
 func (prgrm *CXProgram) RunCompiled () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {

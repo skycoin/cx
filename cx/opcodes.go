@@ -980,6 +980,7 @@ var OpCodes map[string]int = map[string]int{
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
 
 	"test.start": OP_TEST_START,
+	"test.stop": OP_TEST_STOP,
 	"test": OP_TEST,
 
 	// opengl
@@ -1180,6 +1181,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
 
 	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
+	OP_TEST_STOP: MakeNative(OP_TEST_START, []int{}, []int{}),
 	OP_TEST: MakeNative(OP_TEST, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
 
 	// opengl
