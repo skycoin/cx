@@ -1,19 +1,20 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"math"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func addF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func addF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.add", "f32", "f32", arg1, arg2); err == nil {
-		
+
 	} else {
 		return err
 	}
-	
+
 	var num1 float32
 	var num2 float32
 	encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -25,7 +26,7 @@ func addF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	return nil
 }
 
-func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func subF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.sub", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -41,7 +42,7 @@ func subF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func mulF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.mul", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -57,7 +58,7 @@ func mulF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func divF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.div", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -74,10 +75,10 @@ func divF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func powF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func powF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.pow", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -93,7 +94,7 @@ func powF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func absF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func absF32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f32.abs", "f32", arg1); err == nil {
 		var num1 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -104,10 +105,11 @@ func absF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func cosF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+//CRH: Good example for implementing sqrt native function
+func cosF32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f32.cos", "f32", arg1); err == nil {
 		var num1 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -118,10 +120,10 @@ func cosF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func sinF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func sinF32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f32.sin", "f32", arg1); err == nil {
 		var num1 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -132,17 +134,17 @@ func sinF32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readF32A(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f32.read", "[]f32", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
-		
+
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]f32.read: negative index %d", index))
 		}
@@ -162,7 +164,7 @@ func readF32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeF32A(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]f32.write", "[]f32", "i32", "f32", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -178,12 +180,11 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 			return errors.New(fmt.Sprintf("[]f32.write: index %d exceeds array of length %d", index, size))
 		}
 
-		i := (int(index)+1)*4
+		i := (int(index) + 1) * 4
 		for c := 0; c < 4; c++ {
-			(*arr.Value)[i + c] = (*val.Value)[c]
+			(*arr.Value)[i+c] = (*val.Value)[c]
 		}
 
-		
 		// offset := int(index) * 4 + 4
 		// firstChunk := make([]byte, offset)
 		// secondChunk := make([]byte, len(*arr.Value) - (offset + 4))
@@ -196,15 +197,14 @@ func writeF32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 
 		assignOutput(0, *arr.Value, "[]f32", expr, call)
 		//assignOutput(0, final, "[]f32", expr, call)
-		
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenF32A(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]f32.len", "[]f32", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -214,7 +214,7 @@ func lenF32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.lt", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -236,7 +236,7 @@ func ltF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.gt", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -258,7 +258,7 @@ func gtF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.eq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -280,7 +280,7 @@ func eqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func uneqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.uneq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -302,7 +302,7 @@ func uneqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.lteq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -316,7 +316,7 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		} else {
 			val = encoder.Serialize(false)
 		}
-		
+
 		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
@@ -324,7 +324,7 @@ func lteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func gteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f32.gteq", "f32", "f32", arg1, arg2); err == nil {
 		var num1 float32
 		var num2 float32
@@ -346,7 +346,7 @@ func gteqF32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func concatF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatF32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f32.concat", "[]f32", "[]f32", arg1, arg2); err == nil {
 		var slice1 []float32
 		var slice2 []float32
@@ -363,7 +363,7 @@ func concatF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendF32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f32.append", "[]f32", "f32", arg1, arg2); err == nil {
 		var slice []float32
 		var literal float32
@@ -381,7 +381,7 @@ func appendF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func copyF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyF32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f32.copy", "[]f32", "[]f32", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil
@@ -389,3 +389,13 @@ func copyF32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 		return err
 	}
 }
+
+// len() func is not implemented probably utility
+// eval() func is not implemented probably utility
+// hex() func is not implemented
+// oct() func is not implemented
+// max() func is not implemented
+// min() func is not implemented
+// hash() func is not implemented
+// round() func is not implemented
+// sorted() func is not implemented

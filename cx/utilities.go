@@ -389,7 +389,7 @@ func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1
 func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, arg4 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
 		if arg1.Typ != typ1 {
-			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
+			return errors.New(fmt.Sprintf("%s: argumentnnn 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
 		} else if arg2.Typ != typ2 {
 			return errors.New(fmt.Sprintf("%s: argument 2 is type '%s'; expected type '%s'", fnName, arg2.Typ, typ2))
 		} else if arg3.Typ != typ3 {

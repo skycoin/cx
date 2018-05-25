@@ -432,3 +432,13 @@ func readI32 (expr *CXExpression, call *CXCall) error {
 	assignOutput(0, output, "i32", expr, call)
 	return nil
 }
+
+// len() func is not implemented probably utility
+// eval() func is not implemented probably utility
+// hex() func is not implemented
+// oct() func is not implemented
+// max() func is not implemented
+// min() func is not implemented
+// hash() func is not implemented
+// round() func is not implemented
+// sorted() func is not implemented 
