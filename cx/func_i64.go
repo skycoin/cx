@@ -1,14 +1,15 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func addI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.add", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -24,7 +25,7 @@ func addI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func subI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.sub", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -40,7 +41,7 @@ func subI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func mulI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64mul", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -56,7 +57,7 @@ func mulI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func divI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.div", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -66,7 +67,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		if num2 == int64(0) {
 			return errors.New("i64.div: Division by 0")
 		}
-		
+
 		output := encoder.SerializeAtomic(int64(num1 / num2))
 
 		assignOutput(0, output, "i64", expr, call)
@@ -76,7 +77,7 @@ func divI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func powI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func powI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.pow", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -92,7 +93,7 @@ func powI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func absI64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func absI64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i64.abs", "i64", arg1); err == nil {
 		var num1 int64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -103,10 +104,10 @@ func absI64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func modI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.mod", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -126,7 +127,7 @@ func modI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func andI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.and", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -142,7 +143,7 @@ func andI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func orI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.or", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -158,7 +159,7 @@ func orI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func xorI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.xor", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -174,7 +175,7 @@ func xorI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func andNotI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.bitclear", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -190,7 +191,7 @@ func andNotI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 	}
 }
 
-func shiftLeftI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func shiftLeftI64(arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.bitshl", "i64", "i64", arg1, arg2); err == nil {
 		var num1 uint64
 		var num2 uint64
@@ -206,7 +207,7 @@ func shiftLeftI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) err
 	}
 }
 
-func shiftRightI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func shiftRightI64(arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.bitshr", "i64", "i64", arg1, arg2); err == nil {
 		var num1 uint64
 		var num2 uint64
@@ -222,7 +223,7 @@ func shiftRightI64 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) er
 	}
 }
 
-func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
+func randI64(min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.rand", "i64", "i64", min, max); err == nil {
 		var minimum int64
 		encoder.DeserializeRaw(*min.Value, &minimum)
@@ -234,7 +235,7 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 			return errors.New(fmt.Sprintf("i64.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
 
-		output := encoder.Serialize(int64(rand.Intn(int(maximum - minimum)) + int(minimum)))
+		output := encoder.Serialize(int64(rand.Intn(int(maximum-minimum)) + int(minimum)))
 
 		assignOutput(0, output, "i64", expr, call)
 		return nil
@@ -243,7 +244,7 @@ func randI64 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readI64A(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.read", "[]i64", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -271,7 +272,7 @@ func readI64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeI64A(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]i64.write", "[]i64", "i32", "i64", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -292,25 +293,25 @@ func writeI64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		// 	(*arr.Value)[i + c] = (*val.Value)[c]
 		// }
 
-		offset := int(index) * 8 + 4
+		offset := int(index)*8 + 4
 		firstChunk := make([]byte, offset)
-		secondChunk := make([]byte, len(*arr.Value) - (offset + 8))
+		secondChunk := make([]byte, len(*arr.Value)-(offset+8))
 
 		copy(firstChunk, (*arr.Value)[:offset])
-		copy(secondChunk, (*arr.Value)[offset + 8:])
+		copy(secondChunk, (*arr.Value)[offset+8:])
 
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
 
 		assignOutput(0, final, "[]i64", expr, call)
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenI64A(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i64.len", "[]i64", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -320,7 +321,7 @@ func lenI64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.lt", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -342,7 +343,7 @@ func ltI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.gt", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -364,7 +365,7 @@ func gtI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.eq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -386,7 +387,7 @@ func eqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func uneqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.uneq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -408,7 +409,7 @@ func uneqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.lteq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -430,7 +431,7 @@ func lteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func gteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i64.gteq", "i64", "i64", arg1, arg2); err == nil {
 		var num1 int64
 		var num2 int64
@@ -452,7 +453,7 @@ func gteqI64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func concatI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatI64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.concat", "[]i64", "[]i64", arg1, arg2); err == nil {
 		var slice1 []int64
 		var slice2 []int64
@@ -469,7 +470,7 @@ func concatI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendI64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.append", "[]i64", "i64", arg1, arg2); err == nil {
 		var slice []int64
 		var literal int64
@@ -487,7 +488,7 @@ func appendI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func copyI64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyI64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i64.copy", "[]i64", "[]i64", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil

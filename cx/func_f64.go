@@ -1,13 +1,14 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"math"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func addF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func addF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.add", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -19,11 +20,11 @@ func addF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		assignOutput(0, output, "f64", expr, call)
 		return nil
 	} else {
-		return err
+		return err // get rid of the else statement
 	}
 }
 
-func subF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func subF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.sub", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -39,7 +40,7 @@ func subF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func mulF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func mulF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.mul", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -55,7 +56,7 @@ func mulF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func divF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func divF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.div", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -75,7 +76,7 @@ func divF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func powF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func powF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.pow", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -91,7 +92,7 @@ func powF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func absF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func absF64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f64.abs", "f64", arg1); err == nil {
 		var num1 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -102,10 +103,10 @@ func absF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func cosF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func cosF64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f64.cos", "f64", arg1); err == nil {
 		var num1 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -116,10 +117,10 @@ func cosF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func sinF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func sinF64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f64.sin", "f64", arg1); err == nil {
 		var num1 float64
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -130,10 +131,10 @@ func sinF64 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		return nil
 	} else {
 		return err
-	}	
+	}
 }
 
-func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readF64A(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f64.read", "[]f64", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -160,7 +161,7 @@ func readF64A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeF64A(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]f64.write", "[]f64", "i32", "f64", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -181,12 +182,12 @@ func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 		// 	(*arr.Value)[i + c] = (*val.Value)[c]
 		// }
 
-		offset := int(index) * 8 + 4
+		offset := int(index)*8 + 4
 		firstChunk := make([]byte, offset)
-		secondChunk := make([]byte, len(*arr.Value) - (offset + 8))
+		secondChunk := make([]byte, len(*arr.Value)-(offset+8))
 
 		copy(firstChunk, (*arr.Value)[:offset])
-		copy(secondChunk, (*arr.Value)[offset + 8:])
+		copy(secondChunk, (*arr.Value)[offset+8:])
 
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
@@ -199,7 +200,7 @@ func writeF64A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 	}
 }
 
-func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenF64A(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]f64.len", "[]f64", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -209,7 +210,7 @@ func lenF64A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func ltF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.lt", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -231,7 +232,7 @@ func ltF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.gt", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -245,7 +246,7 @@ func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		} else {
 			val = encoder.Serialize(int32(0))
 		}
-		
+
 		assignOutput(0, val, "bool", expr, call)
 		return nil
 	} else {
@@ -253,7 +254,7 @@ func gtF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func eqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.eq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -275,7 +276,7 @@ func eqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func uneqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.uneq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -297,7 +298,7 @@ func uneqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func lteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.lteq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -319,7 +320,7 @@ func lteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func gteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("f64.gteq", "f64", "f64", arg1, arg2); err == nil {
 		var num1 float64
 		var num2 float64
@@ -341,7 +342,7 @@ func gteqF64 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func concatF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatF64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f64.concat", "[]f64", "[]f64", arg1, arg2); err == nil {
 		var slice1 []float64
 		var slice2 []float64
@@ -358,7 +359,7 @@ func concatF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func appendF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendF64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f64.append", "[]f64", "f64", arg1, arg2); err == nil {
 		var slice []float64
 		var literal float64
@@ -376,7 +377,7 @@ func appendF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func copyF64A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyF64A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]f64.copy", "[]f64", "[]f64", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil
