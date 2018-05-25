@@ -181,3 +181,4 @@ fi
 
 echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests/test.cx'"
 
+cx -v
