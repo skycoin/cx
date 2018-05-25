@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -993,7 +993,6 @@ func TotalLength (lengths []int) int {
 }
 
 func IterationExpressions (init []*CXExpression, cond []*CXExpression, incr []*CXExpression, statements []*CXExpression) []*CXExpression {
-	fmt.Println("cond", cond)
 	jmpFn := Natives[OP_JMP]
 
 	pkg, err := prgrm.GetCurrentPackage()

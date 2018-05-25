@@ -734,11 +734,6 @@ relational_expression:
         |       relational_expression LT_OP shift_expression
                 {
 			exprs := ShorthandExpression($1, $3, OP_LT)
-			
-			for _, expr := range exprs {
-				fmt.Println("houhou", expr.Outputs[0].Name)
-			}
-			
 			$$ = exprs
                 }
         |       relational_expression GT_OP shift_expression
@@ -1019,9 +1014,6 @@ iteration_statement:
                 }
         |       FOR expression_statement expression_statement expression compound_statement
                 {
-			fmt.Println("init", $2)
-			fmt.Println("cond", $3)
-			fmt.Println("incr", $4)
 			$$ = IterationExpressions($2, $3, $4, $5)
                 }
                 ;

@@ -19,6 +19,8 @@ golang-empty-grammar.y
 golang-grammar.y
 cx.nn.go
 cx.go
+cxgo.go
+cxgo0.go
 y.output
 test.pl
 main
@@ -64,3 +66,4 @@ cx.sig
 tasks.org
 .leaps_cot.json
 old_interpreted/
+digital-root.cx

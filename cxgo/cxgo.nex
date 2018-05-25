@@ -388,6 +388,101 @@ func getWorkingDirectory (file string) string {
 
 var prgrm *CXProgram
 
+func repl () {
+	fmt.Println("CX REPL")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
+
+	inREPL = true
+
+	fi := bufio.NewReader(os.NewFile(0, "stdin"))
+	
+	for {
+		var inp string
+		var ok bool
+
+		fmt.Println()
+
+		if replTargetMod != "" {
+			fmt.Println(fmt.Sprintf(":package %s {...", replTargetMod))
+			fmt.Printf("\t* ")
+		} else if replTargetFn != "" {
+			fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
+			fmt.Printf("\t* ")
+		} else if replTargetStrct != "" {
+			fmt.Println(fmt.Sprintf(":struct %s {...", replTargetStrct))
+			fmt.Printf("\t* ")
+		} else {
+			fmt.Printf("* ")
+		}
+		
+		if inp, ok = readline(fi); ok {
+			if replTargetFn != "" {
+				inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
+			}
+			if replTargetMod != "" {
+				inp = fmt.Sprintf(":package %s {%s}", replTargetMod, inp)
+			}
+			if replTargetStrct != "" {
+				inp = fmt.Sprintf(":struct %s {%s}", replTargetStrct, inp)
+			}
+
+
+			var numExprs int
+			var currFn string
+			if fn, err := prgrm.GetCurrentFunction(); err == nil {
+				currFn = fn.Name
+				numExprs = len(fn.Expressions)
+			}
+			
+			b := bytes.NewBufferString(inp)
+			yyParse(NewLexer(b))
+
+			var numExprsAdded int
+			if fn, err := prgrm.GetCurrentFunction(); err == nil {
+				numExprsAdded = len(fn.Expressions) - numExprs
+			}
+
+			if numExprsAdded > 0 && currFn == MAIN_FUNC {
+				if fn, err := prgrm.GetCurrentFunction(); err == nil {
+					for true {
+						prgrm.RunInterpreted(dStack, 1)
+						
+						if len(prgrm.CallStack) == 1 && prgrm.CallStack[0].Line == len(fn.Expressions) {
+							break
+						}
+					}
+				}
+			}
+			
+			
+			
+		} else {
+			if replTargetFn != "" {
+				replTargetFn = ""
+				fmt.Println()
+				continue
+			}
+
+			if replTargetStrct != "" {
+				replTargetStrct = ""
+				fmt.Println()
+				continue
+			}
+
+			if replTargetMod != "" {
+				replTargetMod = ""
+				fmt.Println()
+				continue
+			}
+
+			fmt.Printf("\nBye!\n")
+			break
+		}
+	}
+}
+
+const VERSION = "0.5.0"
+
 func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
@@ -402,6 +497,10 @@ func main () {
 	flagMode := false
 	var compileOutput string = "o"
 	for i, arg := range args {
+		if arg == "--version" || arg == "-v" {
+			fmt.Println("CX version", VERSION)
+			return
+		}
 		if arg == "--web" || arg == "-w" {
 			webMode = true
 			flagMode = true
@@ -525,18 +624,17 @@ func main () {
 		mod.AddFunction(fn)
 
 		replTargetFn = "main"
-		//repl()
+		repl()
 	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
 		if interpretMode {
-			// prgrm.PrintProgram()
 			if err := prgrm.RunInterpreted(false, -1); err != nil {
 				fmt.Println(err)
-				//repl()
+				repl()
 			}
 		} else {
 			if err := prgrm.RunCompiled(); err != nil {
 				fmt.Println(err)
-				//repl()
+				// repl()
 			}
 		}
 	}
