@@ -1853,11 +1853,16 @@ yynewstate:
 		}
 	case 110:
 		{
-			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_LT)
+			exprs := ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_LT)
+
+			for _, expr := range exprs {
+				fmt.Println("houhou", expr.Outputs[0].Name)
+			}
+
+			yyVAL.expressions = exprs
 		}
 	case 111:
 		{
-			fmt.Println("am I entering")
 			yyVAL.expressions = ShorthandExpression(yyS[yypt-2].expressions, yyS[yypt-0].expressions, OP_GT)
 		}
 	case 112:
@@ -1974,10 +1979,12 @@ yynewstate:
 	case 169:
 		{
 			if yyS[yypt-1].expressions[len(yyS[yypt-1].expressions)-1].Operator == nil {
+				fmt.Println("oh... is it this")
 				yyVAL.expressions = nil
 			} else {
 				yyVAL.expressions = yyS[yypt-1].expressions
 			}
+			// $$ = $1
 		}
 	case 170:
 		{
@@ -2028,6 +2035,9 @@ yynewstate:
 		}
 	case 181:
 		{
+			fmt.Println("init", yyS[yypt-3].expressions)
+			fmt.Println("cond", yyS[yypt-2].expressions)
+			fmt.Println("incr", yyS[yypt-1].expressions)
 			yyVAL.expressions = IterationExpressions(yyS[yypt-3].expressions, yyS[yypt-2].expressions, yyS[yypt-1].expressions, yyS[yypt-0].expressions)
 		}
 	case 182:

@@ -32,6 +32,7 @@ func sameFields (flds1 []*CXArgument, flds2 []*CXArgument) bool {
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	outName := expr.Outputs[outNameNumber].Name
 	flds := expr.Outputs[outNameNumber].Fields
+	// idxs := expr.Outputs[outNameNumber].Indexes
 
 	// if len(expr.Outputs[outNameNumber].Fields) > 0 {
 		
@@ -2134,6 +2135,21 @@ func SetCorrectArithmeticOp (expr *CXExpression) {
 		}
 	}
 }
+
+// func GetArgTypSize (arg *CXArgument) int {
+// 	var typ string
+// 	typ = arg.Typ
+// 	switch typ {
+// 	case "bool":
+// 		return 1
+// 	case "i32", "f32":
+// 		return 4
+// 	case "i64", "f64":
+// 		return 8
+// 	default:
+// 		arg.Package.GetStruct()
+// 	}
+// }
 
 func GetArgSize (typ int) int {
 	switch typ {

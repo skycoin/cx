@@ -584,7 +584,8 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		//fmt.Println(isErrorPresent)
 		err = test_error((*argsCopy)[0], isErrorPresent, expr)
 		isErrorPresent = false
-		case "test.bool", "test.byte", "test.str", "test.i32", "test.i64", "test.f32", "test.f64", "test.[]bool", "test.[]byte", "test.[]str", "test.[]i32", "test.[]f32", "test.[]f64":
+		// case "test.bool", "test.byte", "test.str", "test.i32", "test.i64", "test.f32", "test.f64", "test.[]bool", "test.[]byte", "test.[]str", "test.[]i32", "test.[]f32", "test.[]f64":
+	case "test":
 		err = test_value((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2], expr)
 		// multi dimensional array functions
 	case "mdim.append": err = mdim_append((*argsCopy)[0], (*argsCopy)[1], expr, call)

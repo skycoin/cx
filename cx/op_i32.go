@@ -31,7 +31,6 @@ func op_i32_print(expr *CXExpression, stack *CXStack, fp int) {
 }
 
 func op_i32_add(expr *CXExpression, stack *CXStack, fp int) {
-	//
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI32(ReadI32(stack, fp, inp1) + ReadI32(stack, fp, inp2))
 	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)

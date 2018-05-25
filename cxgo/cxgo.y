@@ -733,11 +733,16 @@ relational_expression:
                 shift_expression
         |       relational_expression LT_OP shift_expression
                 {
-			$$ = ShorthandExpression($1, $3, OP_LT)
+			exprs := ShorthandExpression($1, $3, OP_LT)
+			
+			for _, expr := range exprs {
+				fmt.Println("houhou", expr.Outputs[0].Name)
+			}
+			
+			$$ = exprs
                 }
         |       relational_expression GT_OP shift_expression
                 {
-			fmt.Println("am I entering")
 			$$ = ShorthandExpression($1, $3, OP_GT)
                 }
         |       relational_expression LTEQ_OP shift_expression
@@ -947,10 +952,12 @@ expression_statement:
 	|       expression SEMICOLON
                 {
 			if $1[len($1) - 1].Operator == nil {
+				fmt.Println("oh... is it this")
 				$$ = nil
 			} else {
 				$$ = $1
 			}
+			// $$ = $1
                 }
                 ;
 
@@ -1012,6 +1019,9 @@ iteration_statement:
                 }
         |       FOR expression_statement expression_statement expression compound_statement
                 {
+			fmt.Println("init", $2)
+			fmt.Println("cond", $3)
+			fmt.Println("incr", $4)
 			$$ = IterationExpressions($2, $3, $4, $5)
                 }
                 ;

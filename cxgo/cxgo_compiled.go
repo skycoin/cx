@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -224,6 +224,10 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 		arg.IsArray = true
 		arg.Lengths = append([]int{arraySize}, arg.Lengths...)
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
+
+		byts := make([]byte, arg.TotalSize)
+		arg.Value = &byts
+		
 		return arg
 	case DECL_SLICE:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
@@ -231,6 +235,10 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 		arg.IsArray = true
 		arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
+		
+		byts := make([]byte, arg.TotalSize)
+		arg.Value = &byts
+		
 		return arg
 	case DECL_BASIC:
 		arg := declSpec
@@ -985,6 +993,7 @@ func TotalLength (lengths []int) int {
 }
 
 func IterationExpressions (init []*CXExpression, cond []*CXExpression, incr []*CXExpression, statements []*CXExpression) []*CXExpression {
+	fmt.Println("cond", cond)
 	jmpFn := Natives[OP_JMP]
 
 	pkg, err := prgrm.GetCurrentPackage()

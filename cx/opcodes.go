@@ -128,6 +128,7 @@ const (
 	OP_TEST_START
 	OP_TEST_STOP
 	OP_TEST_ERROR
+	
 	OP_TEST
 
 	OP_TIME_SLEEP
@@ -429,10 +430,13 @@ func execNative(prgrm *CXProgram) {
 	case OP_NAME:
 	case OP_EVOLVE:
 	case OP_TEST_START:
+		isTesting = true
 	case OP_TEST_STOP:
+		isTesting = false
 	case OP_TEST_ERROR:
+		isErrorPresent = false
 	case OP_TEST:
-
+		op_test_value(expr, stack, fp)
 	case OP_TIME_SLEEP:
 		op_time_Sleep(expr, stack, fp)
 	case OP_TIME_UNIX:
@@ -683,6 +687,12 @@ var OpNames map[int]string = map[int]string{
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
 
+	OP_TEST_START: "test.start",
+	OP_TEST_STOP: "test.stop",
+	OP_TEST_ERROR: "test.error",
+	
+	OP_TEST: "test",
+
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
@@ -858,6 +868,9 @@ var OpCodes map[string]int = map[string]int{
 
 	"time.Sleep":     OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
+
+	"test.start": OP_TEST_START,
+	"test": OP_TEST,
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
@@ -1035,6 +1048,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	OP_TIME_SLEEP:      MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
+
+	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
+	OP_TEST: MakeNative(OP_TEST, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
