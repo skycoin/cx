@@ -5,7 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
+// var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
 
 func glfw_Init () error {
 	if err := glfw.Init(); err == nil {

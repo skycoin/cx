@@ -241,6 +241,8 @@ func newCell (x i32, y i32) (cell Cell) {
 		var position f32
 		var size f32
 
+		position = 0.0
+
 		if i32.eq(i32.mod(i, 3), 0) {
 			size = f32.div(1.0, i32.f32(columns))
 			position = f32.mul(i32.f32(x), size)
@@ -248,6 +250,7 @@ func newCell (x i32, y i32) (cell Cell) {
 		if i32.eq(i32.mod(i, 3), 1) {
 			size = f32.div(1.0, i32.f32(rows))
 			position = f32.mul(i32.f32(y), size)
+			// f32.print(position)
 		}
 
 		if f32.lt(points[i], 0.0) {
@@ -345,7 +348,6 @@ func drawCell (cell Cell) {
 
 	if cell.alive {
 		// if i32.lt(i32.rand(0, 100), 15) {
-		// i32.print(cell.drawable)
 		gl.BindVertexArray(cell.drawable)
 		gl.DrawArrays(gl.TRIANGLES, 0, i32.div(18, 3))
 	}
@@ -391,8 +393,6 @@ func main () {
 	lastTime = glfw.GetTime()
 	nbFrames = 0
 	// End FPS
-
-	
 
 	for bool.not(glfw.ShouldClose("window")) {
 		// Start FPS

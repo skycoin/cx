@@ -199,7 +199,6 @@ func main () {
 				continue
 			}
 
-			
 			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);%s`, fn.Name, asmNL))
 
 			for _, inp := range fn.Inputs {
@@ -701,7 +700,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 }
 
 func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program
@@ -710,7 +709,8 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
-	if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
+	// if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
+	if prgrm.CallStack != nil && prgrm.CallCounter > 0 {
 		// we resume the program
 		var lastCall *CXCall
 		var err error
@@ -722,7 +722,8 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 		}
 
 		for !prgrm.Terminated && nCalls > 0 {
-			lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+			// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+			lastCall = &prgrm.CallStack[prgrm.CallCounter]
 			err = lastCall.icall(withDebug, 1, callCounter)
 			if err != nil {
 				return err
@@ -740,7 +741,9 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 
-				prgrm.CallStack = append(prgrm.CallStack, mainCall)
+				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
+				prgrm.CallStack[prgrm.CallCounter] = mainCall
+				// prgrm.CallCounter++
 
 				var err error
 
@@ -758,13 +761,15 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 			} else {
 				return err
 			}
-			
+
 			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 				// main function
 				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 				
-				prgrm.CallStack = append(prgrm.CallStack, mainCall)
+				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
+				prgrm.CallStack[prgrm.CallCounter] = mainCall
+				// prgrm.CallCounter++
 
 				var lastCall *CXCall
 				var err error
@@ -776,8 +781,10 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 				}
 				
 				for !prgrm.Terminated && nCalls > 0 {
-					lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+					// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+					lastCall = &prgrm.CallStack[prgrm.CallCounter]
 					err = lastCall.icall(withDebug, 1, callCounter)
+					
 					if err != nil {
 						return err
 					}
@@ -795,6 +802,14 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 }
 
 func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
+	// for _, arg := range call.State {
+	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
+	// 	if len(arg.Fields) > 0 {
+	// 		fmt.Println("exec.flds", arg.Fields[0].Value)
+	// 	}
+	// }
+	// fmt.Println()
+	
 	//  add a counter here to pause
 	if nCalls > 0 && callCounter >= nCalls {
 		return nil
@@ -812,26 +827,51 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 
 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
 		// popping the stack
-		call.Program.CallStack = call.Program.CallStack[:len(call.Program.CallStack) - 1]
+		// call.Program.CallStack = call.Program.CallStack[:len(call.Program.CallStack) - 1]
+		call.Program.CallCounter--
+
 		numOutputs := len(call.Operator.Outputs)
 		for i, out := range call.Operator.Outputs {
 			found := true
 			for _, def := range call.State {
 				/////////// throw error if output was not defined, or handle outputs from last expression
 				if out.Name == def.Name {
+					flds := def.Fields
+					
 					if call.ReturnAddress != nil {
 						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line - 1].Outputs[i].Name
-
 						found := false
 						for _, retDef := range call.ReturnAddress.State {
-							if retDef.Name == retName {
-								retDef.Value = def.Value
-								found = true
-								break
+							if len(flds) > 0 {
+								if sameFields(def.Fields, retDef.Fields) && retDef.Name == retName {
+									retDef.Fields[len(retDef.Fields) - 1].Value = def.Fields[len(def.Fields) - 1].Value
+									found = true
+									break
+								}
+								
+							} else {
+								if retDef.Name == retName {
+									retDef.Value = def.Value
+									found = true
+									break
+								}
 							}
 						}
 
 						if !found {
+							if len(flds) > 0 {
+								// arg := MakeArgument(outName)
+								// arg.Fields = flds
+								// arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
+								// call.State = append(call.State, arg)
+
+								def.Name = retName
+								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+							} else {
+								def.Name = retName
+								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+							}
+
 							def.Name = retName
 							call.ReturnAddress.State = append(call.ReturnAddress.State, def)
 						}
@@ -868,6 +908,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 		if expr, err := fn.GetExpression(call.Line); err == nil {
 			if expr.Operator == nil {
 				// then it's a declaration
+				call.State = append(call.State, expr.Outputs[0])
 				call.Line++
 				return call.icall(withDebug, nCalls, callCounter)
 			}
@@ -875,7 +916,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 			// getting arguments
 			argsRefs, _ := expr.GetInputs()
 			argsCopy := make([]*CXArgument, len(argsRefs))
-			
+
 			if len(argsRefs) != len(expr.Operator.Inputs) {
 				if len(argsRefs) == 1 {
 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
@@ -885,14 +926,31 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				}
 			}
-			
+
 			// we don't want to modify by reference, we need to make copies
 			for i := 0; i < len(argsRefs); i++ {
-				if argsRefs[i].Typ == "ident" {
+				if argsRefs[i].Typ == "ident" || len(argsRefs[i].Fields) > 0 {
 					var lookingFor string
-					encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
+					// encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
+
+					lookingFor = getFQDN(argsRefs[i])
+
+					// if len(argsRefs[i].Fields) > 0 {
+					// 	for _, fld := range argsRefs[i].Fields {
+					// 		fmt.Println("this one has it", fld.Name, fld.Value)
+					// 	}
+					// }
+					
 					if arg, err := resolveIdent(lookingFor, call); err == nil {
 						argsCopy[i] = arg
+						// Extracting array values
+						if len(argsRefs[i].Indexes) > 0 {
+							if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
+								arg.Value = &val
+							} else {
+								panic(err)
+							}
+						}
 					} else {
 						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
 					}
@@ -917,7 +975,6 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 					isNative = true
 					opName = OpNames[expr.Operator.OpCode]
 				} else {
-					// fmt.Println("hoehoe")
 					opName = expr.Operator.Name
 				}
 			} else {
@@ -987,11 +1044,16 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 					return excError
 				}
 				
-				call.Line++ // once the subcall finishes, call next line
+				// call.Line++ // once the subcall finishes, call next line
+				call.Program.CallStack[call.Program.CallCounter].Line++
 				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Package, call.Program); err == nil {
+					// fmt.Println("not a native function", expr.Operator.Name)
 					subcall := MakeCall(expr.Operator, argDefs, call, call.Package, call.Program)
 
-					call.Program.CallStack = append(call.Program.CallStack, subcall)
+					// call.Program.CallStack = append(call.Program.CallStack, subcall)
+					call.Program.CallCounter++
+					call.Program.CallStack[call.Program.CallCounter] = subcall
+					
 					return subcall.icall(withDebug, nCalls, callCounter)
 				} else {
 					fmt.Println(err)
@@ -1004,53 +1066,8 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 	return nil
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 func (prgrm *CXProgram) RunCompiled () error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -1223,7 +1240,6 @@ func (call *CXCall) ccall (prgrm *CXProgram) error {
 				if inp.IsReference {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					// fmt.Println("here", inp.Name, inp.MemoryWrite)
 					switch inp.MemoryWrite {
 					case MEM_STACK:
 						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset + inp.TotalSize]

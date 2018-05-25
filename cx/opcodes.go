@@ -45,10 +45,13 @@ const (
 	OP_I32_LOG
 	OP_I32_LOG2
 	OP_I32_LOG10
+<<<<<<< HEAD
 	OP_I32_MAX
 	OP_I32_MIN
 	OP_I32_SIN
 	OP_I32_COS
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_I64_PRINT
 	OP_I64_ADD
@@ -117,12 +120,15 @@ const (
 	OP_F64_UNEQ
 	OP_F64_COS
 	OP_F64_SIN
+<<<<<<< HEAD
 	OP_F64_SQRT
 	OP_F64_LOG
 	OP_F64_LOG2
 	OP_F64_LOG10
 	OP_F64_MAX
 	OP_F64_MIN
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_STR_PRINT
 	OP_MAKE
@@ -320,6 +326,7 @@ func execNative(prgrm *CXProgram) {
 		op_i32_log2(expr, stack, fp)
 	case OP_I32_LOG10:
 		op_i32_log10(expr, stack, fp)
+<<<<<<< HEAD
 	case OP_I32_MAX:
 		op_i32_max(expr, stack, fp)
 	case OP_I32_MIN:
@@ -328,6 +335,8 @@ func execNative(prgrm *CXProgram) {
 		op_i32_sin(expr, stack, fp)
 	case OP_I32_COS:
 		op_i32_cos(expr, stack, fp)
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	case OP_I64_PRINT:
 		op_i64_print(expr, stack, fp)
@@ -371,6 +380,7 @@ func execNative(prgrm *CXProgram) {
 		op_i64_bitshl(expr, stack, fp)
 	case OP_I64_BITSHR:
 		op_i64_bitshr(expr, stack, fp)
+<<<<<<< HEAD
 	case OP_I64_SQRT:
 		op_i64_sqrt(expr, stack, fp)
 	case OP_I64_LOG:
@@ -383,6 +393,8 @@ func execNative(prgrm *CXProgram) {
 		op_i64_max(expr, stack, fp)
 	case OP_I64_MIN:
 		op_i64_min(expr, stack, fp)
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	case OP_F32_PRINT:
 		op_f32_print(expr, stack, fp)
@@ -414,6 +426,7 @@ func execNative(prgrm *CXProgram) {
 		op_f32_cos(expr, stack, fp)
 	case OP_F32_SIN:
 		op_f32_sin(expr, stack, fp)
+<<<<<<< HEAD
 	case OP_F32_SQRT:
 		op_f32_sqrt(expr, stack, fp)
 	case OP_F32_LOG:
@@ -426,6 +439,8 @@ func execNative(prgrm *CXProgram) {
 		op_f32_max(expr, stack, fp)
 	case OP_F32_MIN:
 		op_f32_min(expr, stack, fp)
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	case OP_F64_PRINT:
 		op_f64_print(expr, stack, fp)
@@ -457,6 +472,7 @@ func execNative(prgrm *CXProgram) {
 		op_f64_cos(expr, stack, fp)
 	case OP_F64_SIN:
 		op_f64_sin(expr, stack, fp)
+<<<<<<< HEAD
 	case OP_F64_SQRT:
 		op_f64_sqrt(expr, stack, fp)
 	case OP_F64_LOG:
@@ -467,6 +483,8 @@ func execNative(prgrm *CXProgram) {
 		op_f64_log10(expr, stack, fp)
 	case OP_F64_MAX:
 		op_f64_max(expr, stack, fp)
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	case OP_STR_PRINT:
 		op_str_print(expr, stack, fp)
@@ -689,10 +707,13 @@ var OpNames map[int]string = map[int]string{
 	OP_I32_LOG:      "i32.log",
 	OP_I32_LOG2:     "i32.log2",
 	OP_I32_LOG10:    "i32.log10",
+<<<<<<< HEAD
 	OP_I32_MAX:      "i32.max",
 	OP_I32_MIN:      "i32.min",
 	OP_I32_SIN:      "i32.sin",
 	OP_I32_COS:      "i32.cos",
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_I64_PRINT:    "i64.print",
 	OP_I64_ADD:      "i64.add",
@@ -715,6 +736,7 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_BITCLEAR: "i64.bitclear",
 	OP_I64_BITSHL:   "i64.bitshl",
 	OP_I64_BITSHR:   "i64.bitshr",
+<<<<<<< HEAD
 	OP_I64_SQRT:     "i64.sqrt",
 	OP_I64_LOG:      "i64.log",
 	OP_I64_LOG2:     "i64.log2",
@@ -723,6 +745,8 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_MIN:      "i64.min",
 	OP_I64_COS:      "i64.cos",
 	OP_I64_SIN:      "i64.sin",
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_F32_PRINT: "f32.print",
 	OP_F32_ADD:   "f32.add",
@@ -739,12 +763,15 @@ var OpNames map[int]string = map[int]string{
 	OP_F32_UNEQ:  "f32.uneq",
 	OP_F32_COS:   "f32.cos",
 	OP_F32_SIN:   "f32.sin",
+<<<<<<< HEAD
 	OP_F32_SQRT:  "f32.sqrt",
 	OP_F32_LOG:   "f32.log",
 	OP_F32_LOG2:  "f32.log2",
 	OP_F32_LOG10: "f32.log10",
 	OP_F32_MAX:   "f32.max",
 	OP_F32_MIN:   "f32.min",
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_F64_PRINT: "f64.print",
 	OP_F64_ADD:   "f64.add",
@@ -761,12 +788,15 @@ var OpNames map[int]string = map[int]string{
 	OP_F64_UNEQ:  "f64.uneq",
 	OP_F64_COS:   "f64.cos",
 	OP_F64_SIN:   "f64.sin",
+<<<<<<< HEAD
 	OP_F64_SQRT:  "f64.sqrt",
 	OP_F64_LOG:   "f64.log",
 	OP_F64_LOG2:  "f64.log2",
 	OP_F64_LOG10: "f64.log10",
 	OP_F64_MAX:   "f64.max",
 	OP_F64_MIN:   "f64.min",
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_STR_PRINT: "str.print",
 
@@ -889,10 +919,13 @@ var OpCodes map[string]int = map[string]int{
 	"i32.log":      OP_I32_LOG,
 	"i32.log2":     OP_I32_LOG2,
 	"i32.log10":    OP_I32_LOG10,
+<<<<<<< HEAD
 	"i32.max":      OP_I32_MAX,
 	"i32.min":      OP_I32_MIN,
 	"i32.sin":      OP_I32_SIN,
 	"i32.cos":      OP_I32_COS,
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	"i64.print":    OP_I64_PRINT,
 	"i64.add":      OP_I64_ADD,
@@ -915,6 +948,7 @@ var OpCodes map[string]int = map[string]int{
 	"i64.bitclear": OP_I64_BITCLEAR,
 	"i64.bitshl":   OP_I64_BITSHL,
 	"i64.bitshr":   OP_I64_BITSHR,
+<<<<<<< HEAD
 	"i64.sqrt":     OP_I64_SQRT,
 	"i64.log":      OP_I64_LOG,
 	"i64.log2":     OP_I64_LOG2,
@@ -923,6 +957,8 @@ var OpCodes map[string]int = map[string]int{
 	"i64.min":      OP_I64_MIN,
 	"i64.cos":      OP_I64_COS,
 	"i64.sin":      OP_I64_SIN,
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	"f32.print": OP_F32_PRINT,
 	"f32.add":   OP_F32_ADD,
@@ -939,12 +975,15 @@ var OpCodes map[string]int = map[string]int{
 	"f32.uneq":  OP_F32_UNEQ,
 	"f32.cos":   OP_F32_COS,
 	"f32.sin":   OP_F32_SIN,
+<<<<<<< HEAD
 	"f32.sqrt":  OP_F32_SQRT,
 	"f32.log":   OP_F32_LOG,
 	"f32.log2":  OP_F32_LOG2,
 	"f32.log10": OP_F32_LOG10,
 	"f32.max":   OP_F32_MAX,
 	"f32.min":   OP_F32_MIN,
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	"f64.print": OP_F64_PRINT,
 	"f64.add":   OP_F64_ADD,
@@ -961,12 +1000,15 @@ var OpCodes map[string]int = map[string]int{
 	"f64.uneq":  OP_F64_UNEQ,
 	"f64.cos":   OP_F64_COS,
 	"f64.sin":   OP_F64_SIN,
+<<<<<<< HEAD
 	"f64.sqrt":  OP_F64_SQRT,
 	"f64.log":   OP_F64_LOG,
 	"f64.log2":  OP_F64_LOG2,
 	"f64.log10": OP_F64_LOG10,
 	"f64.max":   OP_F64_MAX,
 	"f64.min":   OP_F64_MIN,
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	"str.print": OP_STR_PRINT,
 
@@ -1090,10 +1132,13 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I32_LOG:      MakeNative(OP_I32_LOG, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_LOG2:     MakeNative(OP_I32_LOG2, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_LOG10:    MakeNative(OP_I32_LOG10, []int{TYPE_I32}, []int{TYPE_I32}),
+<<<<<<< HEAD
 	OP_I32_MAX:      MakeNative(OP_I32_MAX, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_MIN:      MakeNative(OP_I32_MIN, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_SIN:      MakeNative(OP_I32_SIN, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_COS:      MakeNative(OP_I32_COS, []int{TYPE_I32}, []int{TYPE_I32}),
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_I64_PRINT:    MakeNative(OP_I64_PRINT, []int{TYPE_I64}, []int{}),
 	OP_I64_ADD:      MakeNative(OP_I64_ADD, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
@@ -1116,6 +1161,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_BITCLEAR: MakeNative(OP_I64_BITCLEAR, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_BITSHL:   MakeNative(OP_I64_BITSHL, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_BITSHR:   MakeNative(OP_I64_BITSHR, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
+<<<<<<< HEAD
 	OP_I64_SQRT:     MakeNative(OP_I64_SQRT, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_LOG:      MakeNative(OP_I64_LOG, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_LOG2:     MakeNative(OP_I64_LOG2, []int{TYPE_I64}, []int{TYPE_I64}),
@@ -1124,6 +1170,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_MIN:      MakeNative(OP_I64_MIN, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_COS:      MakeNative(OP_I64_COS, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_SIN:      MakeNative(OP_I64_SIN, []int{TYPE_I64}, []int{TYPE_I64}),
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_F32_PRINT: MakeNative(OP_F32_PRINT, []int{TYPE_F32}, []int{}),
 	OP_F32_ADD:   MakeNative(OP_F32_ADD, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
@@ -1140,12 +1188,15 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F32_UNEQ:  MakeNative(OP_F32_UNEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
 	OP_F32_COS:   MakeNative(OP_F32_COS, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_SIN:   MakeNative(OP_F32_SIN, []int{TYPE_F32}, []int{TYPE_F32}),
+<<<<<<< HEAD
 	OP_F32_SQRT:  MakeNative(OP_F32_SQRT, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_LOG:   MakeNative(OP_F32_LOG, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_LOG2:  MakeNative(OP_F32_LOG2, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_LOG10: MakeNative(OP_F32_LOG10, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_MAX:   MakeNative(OP_F32_MAX, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_MIN:   MakeNative(OP_F32_MIN, []int{TYPE_F32}, []int{TYPE_F32}),
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_F64_PRINT: MakeNative(OP_F64_PRINT, []int{TYPE_F64}, []int{}),
 	OP_F64_ADD:   MakeNative(OP_F64_ADD, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
@@ -1162,12 +1213,15 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_UNEQ:  MakeNative(OP_F64_UNEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
 	OP_F64_COS:   MakeNative(OP_F64_COS, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_SIN:   MakeNative(OP_F64_SIN, []int{TYPE_F64}, []int{TYPE_F64}),
+<<<<<<< HEAD
 	OP_F64_SQRT:  MakeNative(OP_F64_SQRT, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG:   MakeNative(OP_F64_LOG, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG2:  MakeNative(OP_F64_LOG2, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG10: MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_MIN:   MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_MAX:   MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F32}),
+=======
+>>>>>>> d5f7983693e436ee3ae8b0739bff87a12e5415a3
 
 	OP_STR_PRINT: MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 

@@ -5,7 +5,7 @@ import (
 )
 
 // declared in func_glfw.go
-// var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
+var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
 
 func op_glfw_Init (expr *CXExpression, stack *CXStack, fp int) {
 	glfw.Init()

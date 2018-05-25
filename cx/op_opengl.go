@@ -8,8 +8,8 @@ import (
 )
 
 // declared in func_opengl.go
-// var freeFns map[string]*func() = make(map[string]*func(), 0)
-// var cSources map[string]**uint8 = make(map[string]**uint8, 0)
+var freeFns map[string]*func() = make(map[string]*func(), 0)
+var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
 func op_gl_Init () {
 	gl.Init()

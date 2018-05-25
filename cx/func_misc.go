@@ -78,19 +78,6 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
 
-	// inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
-
-	// switch inp1.MemoryRead {
-	// case MEM_STACK:
-	// 	predicateB := stack.Stack[inp1Offset: inp1Offset + inp1.Size]
-	// 	encoder.DeserializeAtomic(predicateB, &predicate)
-	// case MEM_DATA:
-	// 	predicateB := inp1.Program.Data[inp1Offset : inp1Offset + inp1.Size]
-	// 	encoder.DeserializeAtomic(predicateB, &predicate)
-	// default:
-	// 	panic("implement the other mem types in readI32")
-	// }
-
 	if arg, err := resolveIdent(inp1.Name, call); err == nil {
 		encoder.DeserializeRaw(*arg.Value, &predicate)
 	} else {
@@ -406,9 +393,6 @@ func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) 
 					final = append(final, secondChunk...)
 					
 					assignOutput(0, final, rArr.Typ, expr, call)
-					//*rArr.Value = final
-					
-					//fmt.Println("arrSize", arrSize, rStrctInst.Typ, len(output))
 				}
 			} else {
 				return err

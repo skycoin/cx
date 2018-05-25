@@ -1,17 +1,38 @@
 package main
 
-func factorial (num i32) (fact i32) {
-	if i32.eq(num, 1) {
-		fact = 1
+func factorial (num i64) (fact i64) {
+	fact = 0
+	if i64.eq(num, 1L) {
+		fact = 1L
 	} else {
-		fact = i32.mul(num, factorial(i32.sub(num, 1)))
+		// var tmp i64
+		// tmp = 0
+		// tmp = factorial(i64.sub(num, 1))
+		// fact = i64.mul(num, tmp)
+		// huehue = factorial(i64.sub(num, 1))
+		fact = i64.mul(num, factorial(i64.sub(num, 1L)))
 	}
 }
 
 func main () () {
-	// i32.print(factorial(6))
-	// i32.print(factorial(5))
-	// i32.print(factorial(6))
-	i32.print(factorial(7))
-	i32.print(factorial(5))
+	// var lcl_0 i64
+	// i64.print(factorial(6))
+	// i64.print(factorial(5))
+	// i64.print(factorial(6))
+	// i64.print(factorial(7))
+	i64.print(factorial(10L))
+
+	
+	
+	// i64.print(testing(5))
+	// i64.print(testing(5))
+	// i64.print(testing(5))
+	// i64.print(testing(5))
+
+	// var res i64
+	// res = 0
+	// res = factorial(10)
+
+
+	// i64.print(res)
 }

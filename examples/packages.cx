@@ -3,29 +3,40 @@ package foo
 type Point struct {
 	x i32
 	y i32
+	// alive bool
 }
 
-var num i32 = 10
+var num i32 = 15
 
-func bar () () {
+func bar () {
 	str.print("From foo package")
 }
-
-
 
 package bar
 import "foo"
 
-func returnPoint () (aPoint foo.Point) {
-	aPoint = new foo.Point{x: 10, y: 20}
+func returnPoint () (resPoint foo.Point) {
+	var resPoint foo.Point
+	resPoint = foo.Point{x: 10, y: 20}
+
+	// i32.print(resPoint.x)
+	// i32.print(resPoint.y)
 }
 
 package main
 import "foo"
 import "bar"
 
-func main () () {
-	aPoint := bar.returnPoint()
+func main () {
+	var aPoint foo.Point
+	aPoint.x = 30
+	aPoint.y = 70
+	aPoint = bar.returnPoint()
+
+	var check i32
+	check = 10
+	i32.print(check)
+	
 	i32.print(aPoint.x)
 	i32.print(aPoint.y)
 

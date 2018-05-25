@@ -453,11 +453,13 @@ func main () {
 		}
 	}
 
-	if interpretMode {
-		prgrm = MakeProgram(0, STACK_SIZE, INIT_HEAP_SIZE)
-	} else {
-		prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	}
+	// if interpretMode {
+	// 	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// } else {
+	// 	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// }
+
+	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 
 	if helpMode {
 		help()

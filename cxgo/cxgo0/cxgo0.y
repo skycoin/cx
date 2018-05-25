@@ -193,6 +193,8 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.Size))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
+				// fmt.Println("hou", $5[0].Outputs[0].Value)
+				// $3.Value = $5[0].Outputs[0].Value
 				$3.MemoryRead = MEM_DATA
 				$3.MemoryWrite = MEM_DATA
 				$3.Offset = exprOut.Offset
@@ -246,12 +248,26 @@ package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
 			pkg := MakePackage($2)
+			pkg.AddImport(pkg)
 			PRGRM.AddPackage(pkg)
                 }
                 ;
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
+                {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				if _, err := pkg.GetImport($2); err != nil {
+					if imp, err := PRGRM.GetPackage($2); err == nil {
+						pkg.AddImport(imp)
+					} else {
+						panic(err)
+					}
+				}
+			} else {
+				panic(err)
+			}
+                }
                 ;
 
 function_header:
@@ -553,10 +569,18 @@ array_literal_expression:
         |       LBRACK INT_LITERAL RBRACK array_literal_expression
         ;
 
+slice_literal_expression:
+                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK slice_literal_expression
+                ;
+
 primary_expression:
                 IDENTIFIER
-        |       STRING_LITERAL
         |       IDENTIFIER LBRACE struct_literal_fields RBRACE
+        |       STRING_LITERAL
         |       BOOLEAN_LITERAL
         |       BYTE_LITERAL
         |       INT_LITERAL
@@ -565,6 +589,7 @@ primary_expression:
         |       LONG_LITERAL
         |       LPAREN expression RPAREN
         |       array_literal_expression
+        |       slice_literal_expression
                 ;
 
 after_period:   type_specifier
@@ -580,6 +605,7 @@ postfix_expression:
 	|       postfix_expression INC_OP
         |       postfix_expression DEC_OP
         |       postfix_expression PERIOD IDENTIFIER
+        /* |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE */
                 ;
 
 argument_expression_list:
@@ -664,8 +690,14 @@ conditional_expression:
 	|       logical_or_expression '?' expression COLON conditional_expression
                 ;
 
-assignment_expression:
+struct_literal_expression:
                 conditional_expression
+        |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
+        ;
+
+assignment_expression:
+                /* conditional_expression */
+                struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 ;
 
@@ -764,11 +796,11 @@ expression_statement:
                 ;
 
 selection_statement:
-                IF expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
-        |       IF expression LBRACE block_item_list RBRACE else_statement SEMICOLON
-        |       IF expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
-        |       IF expression compound_statement
-	|       SWITCH LPAREN expression RPAREN statement
+                IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
+        |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
+        |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
+        |       IF conditional_expression compound_statement
+	|       SWITCH LPAREN conditional_expression RPAREN statement
                 ;
 
 elseif:         ELSE IF expression LBRACE block_item_list RBRACE

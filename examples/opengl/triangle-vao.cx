@@ -24,26 +24,28 @@ var fragmentShaderSource str = "
           }
 "
 
-var triangle []f32 = []f32{
-	0.0, 0.5, 0.0,
-	-0.5, -0.5, 0.0,
-	0.5, -0.5, 0.0
-}
+// var triangle []f32 = []f32{
+// 	0.0, 0.5, 0.0,
+// 	-0.5, -0.5, 0.0,
+// 	0.5, -0.5, 0.0
+// }
 
-func addNull (source str) (s str) {
-	bSource := str.[]byte(source)
-	bSource := []byte.append(bSource, i32.byte(0))
-	s = []byte.str(bSource)
-}
+var triangle [9]f32
 
-func compileShader(source str, shaderType i32) (shader i32) {
-	shader := gl.CreateShader(shaderType)
+// func addNull (source str) (s str) {
+// 	bSource := str.[]byte(source)
+// 	bSource := []byte.append(bSource, i32.byte(0))
+// 	s = []byte.str(bSource)
+// }
 
-	gl.Strs(source, "csources")
-	gl.ShaderSource(shader, 1, "csources")
-	gl.Free("csources")
-	gl.CompileShader(shader)
-}
+// func compileShader(source str, shaderType i32) (shader i32) {
+// 	shader := gl.CreateShader(shaderType)
+
+// 	gl.Strs(source, "csources")
+// 	gl.ShaderSource(shader, 1, "csources")
+// 	gl.Free("csources")
+// 	gl.CompileShader(shader)
+// }
 
 func initGlfw (window str) () {
 	glfw.Init()
@@ -55,20 +57,66 @@ func initGlfw (window str) () {
 	glfw.MakeContextCurrent("window")
 }
 
+// func initOpenGL () (program i32) {
+// 	gl.Init()
+
+// 	var vertexShader i32
+// 	var fragmentShader i32
+	
+// 	vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+// 	fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+
+// 	var program i32
+// 	program = gl.CreateProgram()
+	
+// 	gl.AttachShader(program, vertexShader)
+// 	gl.AttachShader(program, fragmentShader)
+// 	gl.LinkProgram(program)
+// }
+
 func initOpenGL () (program i32) {
 	gl.Init()
 
-	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
-	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+	// vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	// fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
-	program := gl.CreateProgram()
+	var vertexShader i32
+	var fragmentShader i32
+	
+	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
+	
+	gl.Strs("
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+          }
+", "csources")
+	gl.ShaderSource(vertexShader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(vertexShader)
+
+	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
+
+	gl.Strs("
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+", "csources")
+	gl.ShaderSource(fragmentShader, 1, "csources")
+	gl.Free("csources")
+	gl.CompileShader(fragmentShader)
+
+	
+
+	program = gl.CreateProgram()
 	
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
 	gl.LinkProgram(program)
 }
 
-func makeVao (points []f32) (vao i32) {
+func makeVao (points [9]f32) (vao i32) {
 	var vbo i32
 	gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -95,9 +143,19 @@ func draw (vao i32, window str, program i32) () {
 }
 
 func main () () {
+	triangle = [9]f32{
+		0.0, 0.5, 0.0,
+		-0.5, -0.5, 0.0,
+		0.5, -0.5, 0.0
+	}
+	
 	initGlfw("window")
-	program := initOpenGL()
-	vao := makeVao(triangle)
+
+	var program i32
+	var vao i32
+	
+	program = initOpenGL()
+	vao = makeVao(triangle)
 
 	var ratio f32
 

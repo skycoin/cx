@@ -243,20 +243,17 @@ func lenI32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 
 func ltI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.lt", "i32", "i32", arg1, arg2); err == nil {
-		lt := false
-		for i := 3; i >= 0; i-- {
-			if (*arg1.Value)[i] < (*arg2.Value)[i] {
-				lt = true
-				break
-			}
-		}
+		var num1 int32
+		var num2 int32
+		encoder.DeserializeAtomic(*arg1.Value, &num1)
+		encoder.DeserializeAtomic(*arg2.Value, &num2)
 		
-		val := make([]byte, 1)
+		var val []byte
 		
-		if lt {
-			val = []byte{1}
+		if num1 < num2 {
+			val = encoder.Serialize(true)
 		} else {
-			val = []byte{0}
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)

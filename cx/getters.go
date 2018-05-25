@@ -109,6 +109,15 @@ func (cxt *CXProgram) GetGlobal (name string) (*CXArgument, error) {
 				break
 			}
 		}
+
+		for _, imp := range mod.Imports {
+			for _, def := range imp.Globals {
+				if def.Name == name {
+					found = def
+					break
+				}
+			}
+		}
 		
 		if found == nil {
 			return nil, errors.New(fmt.Sprintf("GetDefinition: definition '%s' not found", name))
@@ -186,11 +195,11 @@ func (cxt *CXProgram) GetStruct (strctName string, modName string) (*CXStruct, e
 	if foundStrct == nil {
 		//looking in imports
 		typParts := strings.Split(strctName, ".")
-		
+
 		if mod, err := cxt.GetPackage(modName); err == nil {
 			for _, imp := range mod.Imports {
 				for _, strct := range imp.Structs {
-					if strct.Name == typParts[1] {
+					if strct.Name == typParts[0] {
 						foundStrct = strct
 						break
 					}
@@ -212,6 +221,15 @@ func (pkg *CXPackage) GetGlobal (defName string) (*CXArgument, error) {
 		if def.Name == defName {
 			foundDef = def
 			break
+		}
+	}
+
+	for _, imp := range pkg.Imports {
+		for _, def := range imp.Globals {
+			if def.Name == defName {
+				foundDef = def
+				break
+			}
 		}
 	}
 
@@ -297,7 +315,7 @@ func (fn *CXFunction) GetExpression (line int) (*CXExpression, error) {
 }
 
 func (expr *CXExpression) GetInputs () ([]*CXArgument, error) {
-	if expr.Inputs != nil {
+	if expr.Inputs != nil {		
 		return expr.Inputs, nil
 	} else {
 		return nil, errors.New("expression has no arguments")

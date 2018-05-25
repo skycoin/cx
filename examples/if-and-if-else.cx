@@ -15,15 +15,17 @@ func main () (out i32) {
 		str.print("5 is greater than 3")
 	}
 
-	if str.eq("password123", "password123") {
-		str.print("Access granted")
-	} else {
-		str.print("Access denied")
-	}
+	// if str.eq("password123", "password123") {
+	// 	str.print("Access granted")
+	// } else {
+	// 	str.print("Access denied")
+	// }
 
 	if i32.lteq(50, 5) {
 		out = 100
 	} else {
 		out = 200
 	}
+
+	i32.print(out)
 }
