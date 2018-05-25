@@ -1,27 +1,27 @@
 #! /bin/sh
 
-## Version checking grabbed from dex's script https://github.com/coreos/dex/blob/master/scripts/check-go-version
+# ## Version checking grabbed from dex's script https://github.com/coreos/dex/blob/master/scripts/check-go-version
 
-VERSION=$( go version )
+# VERSION=$( go version )
 
-UNSUPPORTED=( "go1.2" "go1.3" "go1.4" "go1.5" "go1.6" "go1.7" )
+# UNSUPPORTED=( "go1.2" "go1.3" "go1.4" "go1.5" "go1.6" "go1.7" )
 
-MAJOR_GOVERSION=$( echo -n "$VERSION" | grep -o 'go1\.[0-9]' || true )
-#FULL_GOVERSION=$( echo -n "$VERSION" | grep -o 'go1\.[0-9|\.]*' || true )
+# MAJOR_GOVERSION=$( echo -n "$VERSION" | grep -o 'go1\.[0-9]' || true )
+# #FULL_GOVERSION=$( echo -n "$VERSION" | grep -o 'go1\.[0-9|\.]*' || true )
 
-for V in "${UNSUPPORTED[@]}"; do
-    if [ "$V" = "$MAJOR_GOVERSION" ]; then
-        >&2 echo "FAIL: CX requires Go version 1.8+. Please update your Go installation: https://golang.org/dl/"
-        exit 2
-    fi
-done
+# for V in "${UNSUPPORTED[@]}"; do
+#     if [ "$V" = "$MAJOR_GOVERSION" ]; then
+#         >&2 echo "FAIL: CX requires Go version 1.8+. Please update your Go installation: https://golang.org/dl/"
+#         exit 2
+#     fi
+# done
 
-for V in "${KNOWN_INSECURE[@]}"; do
-    if [ "$V" = "$FULL_GOVERSION" ]; then
-        >&2 echo "Go version ${V} has known security vulnerabilities which impact CX. Please update your Go version."
-        exit 2
-    fi
-done
+# for V in "${KNOWN_INSECURE[@]}"; do
+#     if [ "$V" = "$FULL_GOVERSION" ]; then
+#         >&2 echo "Go version ${V} has known security vulnerabilities which impact CX. Please update your Go version."
+#         exit 2
+#     fi
+# done
 
 
 ## determining if $GOPATH is set
@@ -181,4 +181,6 @@ fi
 
 echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests/test.cx'"
 
+echo ""
 cx -v
+echo ""

@@ -1,6 +1,7 @@
 package main
 
 func main () () {
-    test.start()
-    test(i32.add(10, 10), 20, "")
+	test.start()
+	// test(20, 20, "")
+	test(i32.add(5, 7), 20, "")
 }
