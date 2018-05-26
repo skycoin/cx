@@ -296,6 +296,9 @@ func ReadF32A (stack *CXStack, fp int, inp *CXArgument) (out []float32) {
 
 func ReadBool (stack *CXStack, fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
+
+	fmt.Println("hoho", inp.Name, inp.TotalSize, ReadMemory(stack, offset, inp))
+	
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }

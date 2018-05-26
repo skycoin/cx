@@ -7,6 +7,6 @@ func main () () {
 	var foo i32
 	foo = i32.add(10, 10)
 	
-	test(foo, 20, "")
+	test(foo, 21, "")
 	test.stop()
 }

@@ -681,142 +681,43 @@ func UnaryExpression (op string, prevExprs []*CXExpression) []*CXExpression {
 }
 
 func ShorthandExpression (leftExprs []*CXExpression, rightExprs []*CXExpression, op int) []*CXExpression {
+	var operator *CXFunction
 	switch op {
 	case OP_EQUAL:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_EQ]
-		case TYPE_I64: op = Natives[OP_I64_EQ]
-		case TYPE_F32: op = Natives[OP_F32_EQ]
-		case TYPE_F64: op = Natives[OP_F64_EQ]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_EQUAL]
 	case OP_UNEQUAL:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_UNEQ]
-		case TYPE_I64: op = Natives[OP_I64_UNEQ]
-		case TYPE_F32: op = Natives[OP_F32_UNEQ]
-		case TYPE_F64: op = Natives[OP_F64_UNEQ]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_UNEQUAL]
 	case OP_BITAND:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_BITAND]
-		case TYPE_I64: op = Natives[OP_I64_BITAND]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_BITAND]
 	case OP_BITXOR:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_BITXOR]
-		case TYPE_I64: op = Natives[OP_I64_BITXOR]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_BITXOR]
 	case OP_BITOR:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_BITOR]
-		case TYPE_I64: op = Natives[OP_I64_BITOR]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_BITOR]
 	case OP_MUL:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_MUL]
-		case TYPE_I64: op = Natives[OP_I64_MUL]
-		case TYPE_F32: op = Natives[OP_F32_MUL]
-		case TYPE_F64: op = Natives[OP_F64_MUL]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_MUL]
 	case OP_DIV:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_DIV]
-		case TYPE_I64: op = Natives[OP_I64_DIV]
-		case TYPE_F32: op = Natives[OP_F32_DIV]
-		case TYPE_F64: op = Natives[OP_F64_DIV]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_DIV]
 	case OP_MOD:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_MOD]
-		case TYPE_I64: op = Natives[OP_I64_MOD]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_MOD]
 	case OP_ADD:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_ADD]
-		case TYPE_I64: op = Natives[OP_I64_ADD]
-		case TYPE_F32: op = Natives[OP_F32_ADD]
-		case TYPE_F64: op = Natives[OP_F64_ADD]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_ADD]
 	case OP_SUB:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_SUB]
-		case TYPE_I64: op = Natives[OP_I64_SUB]
-		case TYPE_F32: op = Natives[OP_F32_SUB]
-		case TYPE_F64: op = Natives[OP_F64_SUB]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_SUB]
 	case OP_BITSHL:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_BITSHL]
-		case TYPE_I64: op = Natives[OP_I64_BITSHL]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_BITSHL]
 	case OP_BITSHR:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_BITSHR]
-		case TYPE_I64: op = Natives[OP_I64_BITSHR]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_BITSHR]
 	case OP_LT:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_LT]
-		case TYPE_I64: op = Natives[OP_I64_LT]
-		case TYPE_F32: op = Natives[OP_F32_LT]
-		case TYPE_F64: op = Natives[OP_F64_LT]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_LT]
 	case OP_GT:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_GT]
-		case TYPE_I64: op = Natives[OP_I64_GT]
-		case TYPE_F32: op = Natives[OP_F32_GT]
-		case TYPE_F64: op = Natives[OP_F64_GT]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_GT]
 	case OP_LTEQ:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_LTEQ]
-		case TYPE_I64: op = Natives[OP_I64_LTEQ]
-		case TYPE_F32: op = Natives[OP_F32_LTEQ]
-		case TYPE_F64: op = Natives[OP_F64_LTEQ]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_LTEQ]
 	case OP_GTEQ:
-		var op *CXFunction
-		switch leftExprs[len(leftExprs) - 1].Outputs[0].Type {
-		case TYPE_I32: op = Natives[OP_I32_GTEQ]
-		case TYPE_I64: op = Natives[OP_I64_GTEQ]
-		case TYPE_F32: op = Natives[OP_F32_GTEQ]
-		case TYPE_F64: op = Natives[OP_F64_GTEQ]
-		}
-		return ArithmeticOperation(leftExprs, rightExprs, op)
+		operator = Natives[OP_UND_GTEQ]
 	}
 
-	panic("")
+	return ArithmeticOperation(leftExprs, rightExprs, operator)
 }
 
 func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) []*CXExpression {
@@ -1414,6 +1315,7 @@ func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, 
 
 			// sym.IsPointer = arg.IsPointer
 			// sym.Typ = arg.Typ
+
 			sym.Type = arg.Type
 			sym.CustomType = arg.CustomType
 			sym.Pointee = arg.Pointee

@@ -7,13 +7,31 @@ const (
 	OP_JMP
 	OP_DEBUG
 
+	OP_UND_EQUAL
+	OP_UND_UNEQUAL
+	OP_UND_BITAND
+	OP_UND_BITXOR
+	OP_UND_BITOR
+	OP_UND_MUL
+	OP_UND_DIV
+	OP_UND_MOD
+	OP_UND_ADD
+	OP_UND_SUB
+	OP_UND_BITSHL
+	OP_UND_BITSHR
+	OP_UND_LT
+	OP_UND_GT
+	OP_UND_LTEQ
+	OP_UND_GTEQ
+	OP_UND_LEN
+
 	OP_BOOL_PRINT
 	OP_BOOL_NOT
 	OP_BOOL_OR
 	OP_BOOL_AND
 
 	OP_BYTE_PRINT
-
+	
 	OP_I32_BYTE
 	OP_I32_STR
 	OP_I32_I32
@@ -249,6 +267,24 @@ func execNative(prgrm *CXProgram) {
 	case OP_DEBUG:
 		prgrm.PrintStack()
 
+	case OP_UND_EQUAL: op_equal(expr, stack, fp)
+	case OP_UND_UNEQUAL: op_unequal(expr, stack, fp)
+	case OP_UND_BITAND: op_bitand(expr, stack, fp)
+	case OP_UND_BITXOR: op_bitxor(expr, stack, fp)
+	case OP_UND_BITOR: op_bitor(expr, stack, fp)
+	case OP_UND_MUL: op_mul(expr, stack, fp)
+	case OP_UND_DIV: op_div(expr, stack, fp)
+	case OP_UND_MOD: op_mod(expr, stack, fp)
+	case OP_UND_ADD: op_add(expr, stack, fp)
+	case OP_UND_SUB: op_sub(expr, stack, fp)
+	case OP_UND_BITSHL: op_sub(expr, stack, fp)
+	case OP_UND_BITSHR: op_sub(expr, stack, fp)
+	case OP_UND_LT: op_lt(expr, stack, fp)
+	case OP_UND_GT: op_gt(expr, stack, fp)
+	case OP_UND_LTEQ: op_lteq(expr, stack, fp)
+	case OP_UND_GTEQ: op_gteq(expr, stack, fp)
+	case OP_UND_LEN: op_len(expr, stack, fp)
+		
 	case OP_BYTE_PRINT:
 		op_byte_print(expr, stack, fp)
 
@@ -656,6 +692,10 @@ var OpNames map[int]string = map[int]string{
 	OP_READ_ARRAY: "read",
 	OP_JMP:        "jmp",
 	OP_DEBUG:      "debug",
+	
+	OP_UND_GT: "gt",
+
+	OP_UND_LEN: "len",
 
 	OP_BYTE_PRINT: "byte.print",
 
@@ -860,6 +900,10 @@ var OpCodes map[string]int = map[string]int{
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
+	"gt": OP_UND_GT,
+
+	"len": OP_UND_LEN,
+
 	"byte.print": OP_BYTE_PRINT,
 
 	"bool.print": OP_BOOL_PRINT,
@@ -1060,6 +1104,26 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 	OP_JMP:   MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
 	OP_DEBUG: MakeNative(OP_DEBUG, []int{}, []int{}),
+
+	OP_UND_EQUAL: MakeNative(OP_UND_EQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_UNEQUAL: MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	
+	OP_UND_BITAND: MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITXOR: MakeNative(OP_UND_BITXOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITOR: MakeNative(OP_UND_BITOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+
+	OP_UND_MUL: MakeNative(OP_UND_MUL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_DIV: MakeNative(OP_UND_DIV, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_MOD: MakeNative(OP_UND_MOD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_ADD: MakeNative(OP_UND_ADD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_SUB: MakeNative(OP_UND_SUB, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+
+	OP_UND_LT: MakeNative(OP_UND_LT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_GT: MakeNative(OP_UND_GT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_LTEQ: MakeNative(OP_UND_LTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_GTEQ: MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+
+	OP_UND_LEN: MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
 
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 

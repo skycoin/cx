@@ -1,7 +1,7 @@
 %{
 	package main
 	import (
-		"fmt"
+		// "fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		// "github.com/skycoin/cx/src/interpreted"
@@ -947,7 +947,6 @@ expression_statement:
 	|       expression SEMICOLON
                 {
 			if $1[len($1) - 1].Operator == nil {
-				fmt.Println("oh... is it this")
 				$$ = nil
 			} else {
 				$$ = $1
