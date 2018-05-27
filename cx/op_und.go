@@ -35,7 +35,6 @@ func op_gt(expr *CXExpression, stack *CXStack, fp int) {
 	case TYPE_F64:
 		outB1 = FromBool(ReadF64(stack, fp, inp1) > ReadF64(stack, fp, inp2))
 	}
-	
 	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 

@@ -733,8 +733,7 @@ relational_expression:
                 shift_expression
         |       relational_expression LT_OP shift_expression
                 {
-			exprs := ShorthandExpression($1, $3, OP_LT)
-			$$ = exprs
+			$$ = ShorthandExpression($1, $3, OP_LT)
                 }
         |       relational_expression GT_OP shift_expression
                 {

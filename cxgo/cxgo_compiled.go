@@ -578,6 +578,7 @@ func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) 
 	}
 
 	prevExprs[0].Inputs = nil
+	
 	return FunctionCall(prevExprs, args)
 }
 
@@ -816,9 +817,6 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 		panic(err)
 	}
 	
-	var left *CXArgument
-	var right *CXArgument
-
 	if len(leftExprs[len(leftExprs) - 1].Outputs) < 1 {
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type])
 		name.Size = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
@@ -837,22 +835,55 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 		rightExprs[len(rightExprs) - 1].Outputs = append(rightExprs[len(rightExprs) - 1].Outputs, name)
 	}
 
-	left = leftExprs[len(leftExprs) - 1].Outputs[0]
-	right = rightExprs[len(rightExprs) - 1].Outputs[0]
+	// var leftNestedExprs []*CXExpression
+	// for _, inpExpr := range leftExprs {
+		
+	// }
 
 	expr := MakeExpression(operator)
-	expr.Inputs = append(expr.Inputs, left)
-	expr.Inputs = append(expr.Inputs, right)
-
-	outName := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[left.Type])
-	outName.Size = GetArgSize(left.Type)
-	outName.TotalSize = GetArgSize(left.Type)
-
-	outName.Package = pkg
-
-	expr.Outputs = append(expr.Outputs, outName)
+	expr.Package = pkg
 	
-	out = append(leftExprs, rightExprs...)
+	if leftExprs[len(leftExprs) - 1].Operator == nil {
+		// then it's a literal
+		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs) - 1].Outputs[0])
+	} else {
+		// then it's a function call
+		out = append(out, leftExprs...)
+	}
+
+	if rightExprs[len(rightExprs) - 1].Operator == nil {
+		// then it's a literal
+		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs) - 1].Outputs[0])
+	} else {
+		// then it's a function call
+		out = append(out, rightExprs...)
+	}
+
+	// out = append(out, expr)
+
+
+	// var left *CXArgument
+	// // var right *CXArgument
+	
+	// left = leftExprs[len(leftExprs) - 1].Outputs[0]
+	// right = rightExprs[len(rightExprs) - 1].Outputs[0]
+	
+	// expr.Inputs = append(expr.Inputs, left)
+	// expr.Inputs = append(expr.Inputs, right)
+
+
+	
+	// outName := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[left.Type])
+	// // outName.Size = GetArgSize(left.Type)
+	// // outName.TotalSize = GetArgSize(left.Type)
+	// outName.Size = operator.Outputs[0].TotalSize
+	// outName.TotalSize = operator.Outputs[0].TotalSize
+	
+	// outName.Package = pkg
+
+	// expr.Outputs = append(expr.Outputs, outName)
+
+	// out = append(leftExprs, rightExprs...)
 	out = append(out, expr)
 
 	return
@@ -1433,7 +1464,10 @@ func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArg
 			if out.IsLocalDeclaration {
 				symbolsScope[out.Package.Name + "." + out.Name] = true
 			}
-			out.IsLocalDeclaration = symbolsScope[out.Package.Name + "." + out.Name]
+			
+			out.IsLocalDeclaration = symbolsScope[
+				out.Package.Name + "." +
+				out.Name]
 			
 			GiveOffset(&symbols, out, &offset, false)
 			SetFinalSize(&symbols, out)
@@ -1474,7 +1508,7 @@ func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArg
 
 func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 	expr := exprs[len(exprs) - 1]
-	
+
 	if expr.Operator == nil {
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
@@ -1484,8 +1518,6 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
 			// we remove information about the "field" (method name)
 			expr.AddInput(expr.Outputs[0])
-
-			
 			
 			expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
 			// expr.Inputs = expr.Inputs[:len(expr.Inputs) - 1]
