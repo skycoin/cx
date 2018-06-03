@@ -20,9 +20,9 @@ func and (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) 
 		var val []byte
 		
 		if c1 == 1 && c2 == 1 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -42,9 +42,9 @@ func or (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) e
 		var val []byte
 		
 		if c1 == 1 || c2 == 1 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -62,9 +62,9 @@ func not (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 		var val []byte
 
 		if c1 == 0 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -78,7 +78,7 @@ func jmp (expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
 
-	if arg, err := resolveIdent(inp1.Name, call); err == nil {
+	if arg, err := resolveIdent(inp1.Name, inp1, call); err == nil {
 		encoder.DeserializeRaw(*arg.Value, &predicate)
 	} else {
 		encoder.DeserializeRaw(*inp1.Value, &predicate)
@@ -164,7 +164,7 @@ func identity (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	var name string
 	encoder.DeserializeRaw(*arg.Value, &name)
 
-	if arg, err := resolveIdent(name, call); err == nil {
+	if arg, err := resolveIdent(name, arg, call); err == nil {
 		assignOutput(0, *arg.Value, arg.Typ, expr, call)
 		return nil
 	} else {
@@ -196,7 +196,6 @@ func initDef (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-
 func serialize_program (expr *CXExpression, call *CXCall) error {
 	// val := Serialize(call.Program)
 	val := []byte{0}
@@ -207,7 +206,6 @@ func serialize_program (expr *CXExpression, call *CXCall) error {
 }
 
 // multi dimensional arrays functions
-
 func mdim_append (arr, elt *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("mdim.append", "str", "str", arr, elt); err == nil {
 		// we receive the identifiers of both variables
@@ -217,8 +215,8 @@ func mdim_append (arr, elt *CXArgument, expr *CXExpression, call *CXCall) error 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		encoder.DeserializeRaw(*elt.Value, &_elt)
 		
-		if rArr, err := resolveIdent(_arr, call); err == nil {
-			if rElt, err := resolveIdent(_elt, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
+			if rElt, err := resolveIdent(_elt, elt, call); err == nil {
 				// checking that the second argument's type is similar to the first argument's type
 				if rArr.Typ[2:] == rElt.Typ {
 					var arrSize int32
@@ -256,7 +254,7 @@ func mdim_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		encoder.DeserializeAtomic(*index.Value, &_index)
 
-		if rArr, err := resolveIdent(_arr, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
 			if array, err, _, _ := GetArrayFromArray(*rArr.Value, rArr.Typ, _index); err == nil {
 				assignOutput(0, array, rArr.Typ[2:], expr, call)
 			} else {
@@ -281,8 +279,8 @@ func mdim_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 		encoder.DeserializeAtomic(*index.Value, &_index)
 		encoder.DeserializeRaw(*instance.Value, &_instance)
 
-		if rArr, err := resolveIdent(_arr, call); err == nil {
-			if rInst, err := resolveIdent(_instance, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
+			if rInst, err := resolveIdent(_instance, instance, call); err == nil {
 				if _, err, offset, size := GetArrayFromArray(*rArr.Value, rArr.Typ, _index); err == nil {
 					firstChunk := make([]byte, offset)
 					secondChunk := make([]byte, len(*rArr.Value) - int((offset + size)))
@@ -316,7 +314,7 @@ func mdim_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		
-		if rArr, err := resolveIdent(_arr, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
 			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
 			output := encoder.Serialize(len)
 			assignOutput(0, output, "i32", expr, call)
@@ -373,8 +371,8 @@ func cstm_append (arr, strctInst *CXArgument, expr *CXExpression, call *CXCall) 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		encoder.DeserializeRaw(*strctInst.Value, &_strctInst)
 		
-		if rArr, err := resolveIdent(_arr, call); err == nil {
-			if rStrctInst, err := resolveIdent(_strctInst, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
+			if rStrctInst, err := resolveIdent(_strctInst, strctInst, call); err == nil {
 				// checking that the second argument's type is similar to the first argument's type
 				if rArr.Typ[2:] == rStrctInst.Typ {
 					var arrSize int32
@@ -414,7 +412,7 @@ func cstm_read (arr, index *CXArgument, expr *CXExpression, call *CXCall) error 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		encoder.DeserializeAtomic(*index.Value, &_index)
 
-		if rArr, err := resolveIdent(_arr, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
 			if instance, err, _, _ := getStrctFromArray(rArr, _index, expr, call); err == nil {
 				assignOutput(0, instance, rArr.Typ[2:], expr, call)
 			} else {
@@ -440,8 +438,8 @@ func cstm_write (arr, index, instance *CXArgument, expr *CXExpression, call *CXC
 		encoder.DeserializeAtomic(*index.Value, &_index)
 		encoder.DeserializeRaw(*instance.Value, &_instance)
 
-		if rArr, err := resolveIdent(_arr, call); err == nil {
-			if rInst, err := resolveIdent(_instance, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
+			if rInst, err := resolveIdent(_instance, instance, call); err == nil {
 				if _, err, offset, size := getStrctFromArray(rArr, _index, expr, call); err == nil {
 					// finalSize := int(offset) + (len(*rArr.Value) - int((offset + size))) + len(*rInst.Value)
 					// final := make([]byte, finalSize, finalSize)
@@ -502,7 +500,7 @@ func cstm_len (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 
 		encoder.DeserializeRaw(*arr.Value, &_arr)
 		
-		if rArr, err := resolveIdent(_arr, call); err == nil {
+		if rArr, err := resolveIdent(_arr, arr, call); err == nil {
 			encoder.DeserializeAtomic((*rArr.Value)[:4], &len)
 			output := encoder.Serialize(len)
 			assignOutput(0, output, "i32", expr, call)
@@ -553,7 +551,7 @@ func cstm_serialize (instance *CXArgument, expr *CXExpression, call *CXCall) err
 		var _instance string
 		encoder.DeserializeRaw(*instance.Value, &_instance)
 		
-		if rInst, err := resolveIdent(_instance, call); err == nil {
+		if rInst, err := resolveIdent(_instance, instance, call); err == nil {
 			sInst := encoder.Serialize(*rInst.Value)
 			assignOutput(0, sInst, "[]byte", expr, call)
 			return nil
@@ -572,7 +570,7 @@ func cstm_deserialize (byts, typ *CXArgument, expr *CXExpression, call *CXCall) 
 		encoder.DeserializeRaw(*byts.Value, &_byts)
 		encoder.DeserializeRaw(*typ.Value, &_typ)
 		
-		if rByts, err := resolveIdent(_byts, call); err == nil {
+		if rByts, err := resolveIdent(_byts, byts, call); err == nil {
 			var dsStrct []byte
 			encoder.DeserializeRaw(*rByts.Value, &dsStrct)
 

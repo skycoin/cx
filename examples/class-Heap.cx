@@ -1,0 +1,71 @@
+package main
+
+// Dynamic structures: Heap Example
+
+// Node Class
+type Node struct {
+    info i32
+    next Node
+}
+
+func (n Node) Constructor () () {
+    // n.Next = null?
+}
+
+// Heap Class (Struct + Methods)
+type Heap struct {
+    root Node
+    count i32
+}
+
+func (h Heap) Constructor () () {
+    //h.root.Constructor()
+    h.count = 0
+}
+
+func (h Heap) Insert (in i32) () {
+        var newNode Node
+        newNode.info = in
+        if i32.eq(h.count, 0) {
+            // newNode.next.Constructor()
+            h.root = newNode
+            h.count = i32.add(h.count, 1)
+        } else {
+            newNode.next = h.root
+            h.root = newNode
+            h.count = i32.add(h.count, 1)
+        }
+}
+
+func (h Heap) Extract () (out i32) {
+    if i32.uneq(h.count, 0){
+        var information i32 = h.root.info
+        h.root = h.root.next
+        out = information
+    } else {
+        out = 0
+    }
+}
+
+func (h Heap) Print () () {
+    var aux Node =  h.root
+    str.print("Heap elements here...")
+    for i32.uneq(h.count, 0) {
+        i32.print(aux.info)
+        aux = aux.next
+    }
+    str.print("")
+}
+
+func main  () () {
+    var myTest Heap
+    myTest.Constructor()
+    myTest.Insert(4)
+    myTest.Insert(6)
+    myTest.Insert(2)
+    myTest.Insert(0)
+    myTest.Print()
+
+    myTest.Extract()
+    myTest.Print()
+}

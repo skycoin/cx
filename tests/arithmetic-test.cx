@@ -2,11 +2,6 @@ package main
 
 func main () () {
 	test.start()
-	// test(20, 20, "")
-
-	var foo i32
-	foo = i32.add(10, 10)
-	
-	test(foo, 21, "")
+	test(i32.add(10, 10), 20, "")
 	test.stop()
 }

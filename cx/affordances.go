@@ -430,7 +430,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 			encoder.DeserializeRaw(*arg.Value, &argName)
 
 			if len(defsTypes[i]) > 2 && defsTypes[i][:2] == "[]" {
-				if arr, err := resolveIdent(argName, &expr.Program.CallStack[len(expr.Program.CallStack) - 1]); err == nil {
+				if arr, err := resolveIdent(argName, theArg, &expr.Program.CallStack[len(expr.Program.CallStack) - 1]); err == nil {
 					var size int32
 					encoder.DeserializeAtomic((*arr.Value)[:4], &size)
 					

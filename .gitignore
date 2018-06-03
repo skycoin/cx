@@ -68,3 +68,5 @@ tasks.org
 old_interpreted/
 digital-root.cx
 bubblesort.cx
+draw.cx
+arrays-test.cx

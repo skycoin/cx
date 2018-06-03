@@ -413,6 +413,12 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 		// relational operators
 	case "bool.eq": err = eqBool((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "bool.uneq": err = uneqBool((*argsCopy)[0], (*argsCopy)[1], expr, call)
+
+		// undefined type operators
+	case "gt": err = gtUnd((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "len": err = lenUnd((*argsCopy)[0], expr, call)
+		
+		
 	case "i32.lt": err = ltI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i32.gt": err = gtI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i32.eq": err = eqI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
@@ -701,7 +707,7 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 }
 
 func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program
@@ -936,13 +942,15 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 
 					lookingFor = getFQDN(argsRefs[i])
 
+					fmt.Println("checkingIdxs", argsRefs[i].Indexes)
+
 					// if len(argsRefs[i].Fields) > 0 {
 					// 	for _, fld := range argsRefs[i].Fields {
 					// 		fmt.Println("this one has it", fld.Name, fld.Value)
 					// 	}
 					// }
 					
-					if arg, err := resolveIdent(lookingFor, call); err == nil {
+					if arg, err := resolveIdent(lookingFor, argsRefs[i], call); err == nil {
 						argsCopy[i] = arg
 						// Extracting array values
 						if len(argsRefs[i].Indexes) > 0 {
@@ -1068,7 +1076,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 }
 
 func (prgrm *CXProgram) RunCompiled () error {
-	// prgrm.PrintProgram()
+	prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {

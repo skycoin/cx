@@ -33,7 +33,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 				toCompare = f
 			} else {
 				// then it's an identifier
-				if arg, err := resolveIdent(obj1[0], call); err == nil {
+				if arg, err := resolveIdent(obj1[0], nil, call); err == nil {
 					if len(obj1) > 1 {
 						// then it's a struct
 						if mod, err := call.Program.GetCurrentPackage(); err == nil {
@@ -68,7 +68,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			toCompare = f
 		} else {
 			// then it's an identifier
-			if arg, err := resolveIdent(obj2[0], call); err == nil {
+			if arg, err := resolveIdent(obj2[0], nil, call); err == nil {
 				if len(obj2) > 1 {
 					// then it's a struct
 					if mod, err := call.Program.GetCurrentPackage(); err == nil {
@@ -128,7 +128,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			}
 			if mod, err := call.Program.GetCurrentPackage(); err == nil {
 				if strct, err := call.Program.GetStruct(typ, mod.Name); err == nil {
-					if arg, err := resolveIdent(aff.Name, call); err == nil {
+					if arg, err := resolveIdent(aff.Name, nil, call); err == nil {
 						if aff.Index != "" {
 							if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
 								if expr, err := call.Program.GetCurrentExpression(); err == nil {
@@ -159,7 +159,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 				}
 			}
 		} else {
-			if arg, err := resolveIdent(aff.Name, call); err == nil {
+			if arg, err := resolveIdent(aff.Name, nil, call); err == nil {
 				if aff.Index != "" {
 					if i, err := strconv.ParseInt(aff.Index, 10, 64); err == nil {
 						if obj1IsX {
@@ -335,7 +335,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					pWeights = append(pWeights, f)
 				} else {
 					// then it's an identifier
-					if arg, err := resolveIdent(obj2[0], call); err == nil {
+					if arg, err := resolveIdent(obj2[0], nil, call); err == nil {
 						if len(obj2) > 1 {
 							// then it's a struct
 							if mod, err := call.Program.GetCurrentPackage(); err == nil {
@@ -492,7 +492,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					weights = append(weights, f)
 				} else {
 					// then it's an identifier
-					if arg, err := resolveIdent(obj2[0], call); err == nil {
+					if arg, err := resolveIdent(obj2[0], nil, call); err == nil {
 						if len(obj2) > 1 {
 							// then it's a struct
 							if mod, err := call.Program.GetCurrentPackage(); err == nil {
@@ -902,7 +902,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 				switch op {
 				case "AddInput":
 					if index != "" {
-						if arr, err := resolveIdent(name, call); err == nil {
+						if arr, err := resolveIdent(name, nil, call); err == nil {
 							if i, err := strconv.ParseInt(index, 10, 64); err == nil {
 
 								var val []byte

@@ -122,12 +122,10 @@
 	return f(STRING_LITERAL)
 }
 /true/ {
-	// lval.i32 = int32(1)
 	lval.bool = true
 	return f(BOOLEAN_LITERAL)
 }
 /false/ {
-	// lval.i32 = int32(0)
 	lval.bool = false
 	return f(BOOLEAN_LITERAL)
 }

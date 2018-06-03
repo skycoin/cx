@@ -178,7 +178,7 @@ func readI32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
-
+		
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]i32.read: negative index %d", index))
 		}
@@ -273,9 +273,9 @@ func gtI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 		var val []byte
 
 		if num1 > num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -319,9 +319,9 @@ func uneqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		var val []byte
 
 		if num1 != num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -341,9 +341,9 @@ func lteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		var val []byte
 
 		if num1 <= num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -363,9 +363,9 @@ func gteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 		var val []byte
 
 		if num1 >= num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)

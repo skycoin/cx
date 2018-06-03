@@ -110,9 +110,9 @@ func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) err
 
 		var output []byte
 		if windows[winName].ShouldClose() {
-			output = encoder.Serialize(int32(1))
+			output = encoder.Serialize(true)
 		} else {
-			output = encoder.Serialize(int32(0))
+			output = encoder.Serialize(false)
 		}
 		
 		assignOutput(0, output, "bool", expr, call)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -225,7 +225,8 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 		arg.Lengths = append([]int{arraySize}, arg.Lengths...)
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
-		byts := make([]byte, arg.TotalSize)
+		// byts := make([]byte, arg.TotalSize)
+		byts := MakeMultiDimArray(arg.Size, arg.Lengths)
 		arg.Value = &byts
 		
 		return arg
@@ -236,7 +237,8 @@ func DeclarationSpecifiers (declSpec *CXArgument, arraySize int, opTyp int) *CXA
 		arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 		
-		byts := make([]byte, arg.TotalSize)
+		// byts := make([]byte, arg.TotalSize)
+		byts := MakeMultiDimArray(arg.Size, arg.Lengths)
 		arg.Value = &byts
 		
 		return arg
@@ -1022,6 +1024,7 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 
 	if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
 		for _, expr := range from {
+			fmt.Println("expr", expr)
 			expr.Outputs[0].MemoryRead = glbl.MemoryRead
 			expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
 		}

@@ -88,9 +88,9 @@ func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		var val []byte
 
 		if byte1 < byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -108,9 +108,9 @@ func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		var val []byte
 
 		if byte1 > byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -128,9 +128,9 @@ func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		var val []byte
 
 		if byte1 == byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -148,9 +148,9 @@ func uneqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 		var val []byte
 
 		if byte1 != byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -168,9 +168,9 @@ func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 		var val []byte
 
 		if byte1 <= byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)
@@ -188,9 +188,9 @@ func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 		var val []byte
 
 		if byte1 >= byte2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)

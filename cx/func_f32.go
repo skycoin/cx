@@ -334,9 +334,9 @@ func gteqF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 		var val []byte
 
 		if num1 >= num2 {
-			val = encoder.Serialize(int32(1))
+			val = encoder.Serialize(true)
 		} else {
-			val = encoder.Serialize(int32(0))
+			val = encoder.Serialize(false)
 		}
 
 		assignOutput(0, val, "bool", expr, call)

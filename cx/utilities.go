@@ -30,9 +30,10 @@ func sameFields (flds1 []*CXArgument, flds2 []*CXArgument) bool {
 }
 
 func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
-	outName := expr.Outputs[outNameNumber].Name
-	flds := expr.Outputs[outNameNumber].Fields
-	// idxs := expr.Outputs[outNameNumber].Indexes
+	out := expr.Outputs[outNameNumber]
+	outName := out.Name
+	flds := out.Fields
+	idxs := out.Indexes
 
 	// if len(expr.Outputs[outNameNumber].Fields) > 0 {
 		
@@ -64,6 +65,30 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 				call.State = append(call.State, arg)
 				return nil
 			}
+		} else if idxs != nil && def.Name == outName {
+			fmt.Println("arrayinex", getArrayIndex(out, call))
+			val, _ := getValueFromArray(def, getArrayIndex(out, call))
+			fmt.Println("arrayValue", val)
+			fmt.Println("should explode tho", def.Value, idxs[0].Value)
+
+			idx := getArrayIndex(out, call)
+			offset := def.Size * int(idx)
+
+			fmt.Println("before", def.Value)
+
+			firstChunk := make([]byte, offset + 4)
+			secondChunk := make([]byte, len(*def.Value) - int(offset + def.Size))
+
+			copy(firstChunk, (*def.Value)[:offset])
+			copy(secondChunk, (*def.Value)[offset + def.Size:])
+
+			final := append(firstChunk, output...)
+			final = append(final, secondChunk...)
+
+			fmt.Println("final", final)
+
+			def.Value = &final
+			return nil
 		} else if def.Name == outName {
 			// then it's a simple var
 			def.Value = &output
@@ -194,6 +219,25 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 
 	call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
 	return nil
+}
+
+func getArrayChunkSizes (size int, lens []int) []int {
+	var result []int
+
+	for c := len(lens) - 1; c >= 0; c-- {
+		if len(result) > 0 {
+			result = append([]int{lens[c] * result[len(result) - 1]}, result...)
+		} else {
+			// first one to add
+			result = append(result, lens[c] * size)
+		}
+	}
+	
+	// for _, len := range lens {
+	// 	result = append(result, len * size)
+	// }
+	
+	return result
 }
 
 // old version, in case the above doesn't work
@@ -1063,7 +1107,7 @@ func getArrayIndex (arg *CXArgument, call *CXCall) int32 {
 		if arg.Indexes[0].Typ == "ident" {
 			var ident string
 			encoder.DeserializeRaw(*arg.Indexes[0].Value, &ident)
-			if sym, err := resolveIdent(ident, call); err == nil {
+			if sym, err := resolveIdent(ident, arg, call); err == nil {
 				encoder.DeserializeAtomic(*sym.Value, &index)
 			} else {
 				panic(err)
@@ -1092,15 +1136,14 @@ func getFQDN (arg *CXArgument) string {
 	return name
 }
 
-func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
+func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument, error) {
 	// for _, arg := range call.State {
 	// 	fmt.Println("utili.val", arg.Name, arg.Typ, arg.Value, arg.Fields)
 	// }
 
 	if lookingFor == "" {
 		return nil, errors.New("a valid identifier was not provided")
-	}
-	
+	}	
 	var resolvedIdent *CXArgument
 	
 	isStructFld := false
@@ -1160,6 +1203,7 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 			}
 		}
 	} else {
+		fmt.Println("pivot")
 		// then it's a local or global definition
 		local := false
 		arrayParts := strings.Split(lookingFor, "[")
@@ -1173,8 +1217,10 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 		// }
 		
 		for _, stateDef := range call.State {
+			
 			if stateDef.Name == arrayParts[0] {
 				local = true
+				fmt.Println("here", arrayParts, stateDef.Value, stateDef.Indexes)
 				resolvedIdent = stateDef
 				break
 			}
@@ -1207,7 +1253,9 @@ func resolveIdent (lookingFor string, call *CXCall) (*CXArgument, error) {
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
+		fmt.Println("adventure time", resolvedIdent.Value)
 		arg := MakeArgument("").AddValue(resolvedIdent.Value).AddType(resolvedIdent.Typ)
+		arg.Lengths = resolvedIdent.Lengths
 		return arg, nil
 	}
 	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
@@ -2162,4 +2210,32 @@ func GetArgSize (typ int) int {
 	default:
 		return 4
 	}
+}
+
+func MakeMultiDimArray (atomicSize int, lengths []int) []byte {
+	var result []byte
+
+	fstDLen := lengths[len(lengths) - 1]
+	
+	sLen := encoder.SerializeAtomic(int32(fstDLen))
+	
+	byts := append(sLen, make([]byte, fstDLen * atomicSize)...)
+	result = byts
+
+	if len(lengths) > 1 {
+		// -2 to ignore the first dimension
+		for c := len(lengths) - 2; c >= 0; c-- {
+			lenB := encoder.SerializeAtomic(int32(lengths[c]))
+			
+			var tmp []byte
+			
+			for i := 0; i < lengths[c]; i++ {
+				tmp = append(tmp, result...)
+			}
+
+			result = append(lenB, tmp...)
+		}
+	}
+
+	return result
 }
