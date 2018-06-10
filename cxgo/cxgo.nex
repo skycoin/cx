@@ -190,6 +190,8 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
+const VERSION = "0.5.2"
+
 var insert bool
 var prgrm *CXProgram
 
@@ -388,7 +390,7 @@ func getWorkingDirectory (file string) string {
 }
 
 func repl () {
-	fmt.Println("CX REPL")
+	fmt.Println("CX", VERSION)
 	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
 
 	inREPL = true
@@ -434,10 +436,10 @@ func repl () {
 			// }
 			
 			b := bytes.NewBufferString(inp)
-			
+
 			yyParse(NewLexer(b))
 
-			prgrm.PrintProgram()
+			// prgrm.PrintProgram()
 
 			// var numExprsAdded int
 			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
@@ -522,8 +524,6 @@ func repl () {
 		
 // 	}
 // }
-
-const VERSION = "0.5.2"
 
 func main () {
 	runtime.LockOSThread()
@@ -666,17 +666,28 @@ func main () {
 		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
-	allSC := strings.Join(sourceCodeCopy, "")
-	cxgo0.Parse(allSC)
+	if len(sourceCode) > 0 {
+		allSC := strings.Join(sourceCodeCopy, "")
+		cxgo0.Parse(allSC)
+	}
 
 	prgrm = cxgo0.PRGRM
 	dataOffset = cxgo0.DataOffset
-	
+
 	// parsing all source code files
 	for _, source := range sourceCodeCopy {
 		// fileName = args[i]
 		b := bytes.NewBufferString(source)
 		yyParse(NewLexer(b))
+	}
+
+	if len(sourceCode) == 0 {
+		mod := MakePackage(MAIN_PKG)
+		prgrm.AddPackage(mod)
+		fn := MakeFunction("main")
+		mod.AddFunction(fn)
+
+		replTargetFn = "main"
 	}
 
 	// adding *init function that initializes all the global variables
@@ -702,12 +713,6 @@ func main () {
 	lineNo = 0
 
 	if replMode || len(sourceCode) == 0 {
-		mod := MakePackage(MAIN_PKG)
-		prgrm.AddPackage(mod)
-		fn := MakeFunction("main")
-		mod.AddFunction(fn)
-
-		replTargetFn = "main"
 		repl()
 	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
 		if interpretMode {

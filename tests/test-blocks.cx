@@ -1,6 +1,5 @@
 package testing
 
-
 func testBlocks () () {
     str.print("Running IF Testing...")
     str.print("--------IF Block testing--------")

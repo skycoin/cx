@@ -719,7 +719,6 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 	// we are going to do this if the CallStack is empty
 	// if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
 	if prgrm.CallStack != nil && prgrm.CallCounter > 0 {
-		fmt.Println("hohoho")
 		// we resume the program
 		var lastCall *CXCall
 		var err error
@@ -750,8 +749,6 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 
-				fmt.Println("callStack", prgrm.CallCounter, len(prgrm.CallStack))
-				
 				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
 				prgrm.CallStack[prgrm.CallCounter] = mainCall
 				// prgrm.CallCounter++
@@ -813,7 +810,6 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 }
 
 func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
-	fmt.Println("callCounter", call.Program.CallCounter)
 	// for _, arg := range call.State {
 	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
 	// 	if len(arg.Fields) > 0 {
