@@ -1,0 +1,97 @@
+package testing
+
+
+func F64ArithmeticFunctions() () {
+    str.print("--------F64 Arithmetic Functions Testing--------")
+    test(f64.add(10.0D, 10.0D), 20.0D, "Add error")
+	test(f64.sub(10.0D, 10.0D), 0.0D, "Subtract error")
+	test(f64.mul(10.0D, 10.0D), 100.0D, "Multiply error")
+	test(f64.div(10.0D, 10.0D), 1.0D, "Divide error")
+	str.print("FAIL: f64.mod() crash!")
+    //test(f64.mod(10.0D, 3.0D), 1.0D, "Mod error")
+    str.print("FAIL: f64.bitshl() crash!")
+    //test(f64.bitshl(10.0D, 5.0D), 320.0D, "Bit Shift Left error")
+    str.print("FAIL: f64.bitshr() crash!")
+    //test(f64.bitshr(10.0D, 5.0D), 0.0D, "Bit Shift Right error")
+    str.print("FAIL: f64.bitand() crash!")
+    //test(f64.bitand(10.0D, 5.0D), 0.0D , "Bit AND error")
+    str.print("FAIL: f64.bitor() crash!")
+    //test(f64.bitor(10.0D, 5.0D), 15.0D, "Bit OR error")
+    str.print("FAIL: f64.bitxor() crash!")
+    //test(f64.bitxor(10.0D, 5.0D), 15.0D, "Bit XOR error")
+    str.print("FAIL: f64.bitclear() crash!")
+    //test(f64.bitclear(10.0D, 2.0D), 8.0D, "Bit CLEAR error")
+    test(f64.pow(10.0D, 5.0D), 100000.0D, "Pow error")
+	test(f64.abs(-10.0D), 10.0D, "Absolute Value error")
+    test(f64.sqrt(4.0D), 2.0D, "Square Root error")
+    test(f64.log(1.0D), 0.0D, "Log error")
+    test(f64.log2(2.0D), 1.0D, "Log2 error")
+    test(f64.log10(10.0D), 1.0D, "Log10 error")
+    test(f64.max(3.0D, 1.0D, 9.0D), 9.0D, "MAX error")
+    test(f64.min(3.0D, 1.0D, 9.0D, 0.0D), 0.0D, "MIN error")
+    test(f64.sin(0.0D), 0.0D, "Sin error")
+    test(f64.cos(0.0D), 1.0D, "Cos error")
+}
+
+func F64ArithmeticShorthand() () {
+    str.print("--------F64 Arithmetic Shorthand Testing--------")
+    test(10.0D + 10.0D, 20.0D, "Add error")
+    test(10.0D - 10.0D, 0.0D, "Subtract error")
+    test(10.0D * 10.0D, 100.0D, "Multiply error")
+    test(10.0D / 10.0D, 1.0D, "Divide error")
+    str.print("FAIL: Operator (%) crash!")
+    //test(10.0D % 3.0D, 1.0D, "Mod error")
+    str.print("FAIL: Operator (<<) crash!")
+    //test(10.0D << 5.0D, 320.0D, "Bit Shift Left error")
+    str.print("FAIL: Operator (>>) crash!")
+    //test(10.0D >> 5.0D, 0.0D, "Bit Shift Right error")
+    str.print("FAIL: Operator (&) crash!")
+    //test(10.0D & 5.0D, 0.0D,"Bit AND error")
+    str.print("FAIL: Operator (|) crash!")
+    //test(10.0D | 5.0D, 15.0D, "Bit OR error")
+    str.print("FAIL: Operator (^) crash!")
+    //test(10.0D ^ 5.0D, 15.0D, "Bit XOR error")
+    str.print("FAIL: Operator (&^) crash!")
+    //test(10.0D &^ 2.0D, 8.0D, "Bit CLEAR error")
+    test(10.0D ** 5.0D, 100000.0D, "Pow error")
+}
+
+func F64RelationalFunctions() () {
+    str.print("--------F64 Relational Functions--------")
+    test(f64.eq(5.0D, 5.0D), true, "F64 Equality error")
+    test(f64.uneq(5.0D, 5.0D), false, "F64 Inequality error")
+    test(f64.gt(5.0D, 10.0D), false, "F64 Greater error")
+    test(f64.gteq(15.0D, 10.0D), true, "F64 Greater And Equal error")
+    test(f64.lt(5.0D, 10.0D), true, "F64 Lesser error")
+    test(f64.lteq(10.0D, 6.0D), false, "F64 Lesser Or Equal error")
+}
+
+func F64RelationalShorthand() () {
+    str.print("--------F64 Relational Shorthand--------")
+    test(5.0D == 5.0D, true, "F64 Equality Shorthand error")
+    test(5.0D != 5.0D, false, "F64 Inequality Shorthand error")
+    test(5.0D > 10.0D, false, "F64 Greater Shorthand error")
+    test(15.0D >= 10.0D, true, "F64 Greater And Equal Shorthand error")
+    test(5.0D < 10.0D, true, "F64 Lesser Shorthand error")
+    test(10.0D <= 6.0D, false, "F64 Lesser Or Equal error")
+}
+
+func F64Extras() () {
+    str.print("--------F64 Extras--------")
+    str.print("PASS: f64.print()")
+    f64.print(10.0D)
+}
+
+func testF64() () {
+    str.print("Running F64 Testing...")
+    F64ArithmeticFunctions()
+    str.print("")
+    F64ArithmeticShorthand()
+    str.print("")
+    F64RelationalFunctions()
+    str.print("")
+    F64RelationalShorthand()
+    str.print("")
+    F64Extras()
+    str.print("")
+}

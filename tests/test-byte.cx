@@ -1,0 +1,75 @@
+package testing
+
+func testByteFuntions() () {
+    str.print("--------Byte Functions Testing--------")
+
+    str.print("PASS: byte.print()")
+    byte.print(i32.byte(20))
+
+    str.print("FAIL: byte.id() crash!")
+    //test(byte.id(i32.byte(20)), 20, "byte.id() error")
+
+    str.print("FAIL: byte.i32() crash!")
+    //test(byte.i32(20), 20, "byte.i32() error")
+
+    str.print("FAIL: byte.i64() crash!")
+    //test(byte.i64(20), 20L, "byte.i64() error")
+
+    str.print("FAIL: byte.f32() crash!")
+    //test(byte.f32(20), 20.0, "byte.f32() error")
+
+    str.print("FAIL: byte.f64() crash!")
+    //test(byte.f64(20), 20.0D, "byte.f64() error")
+
+    str.print("FAIL: byte.str() crash!")
+    //test(byte.str(20), "20", "byte.str() error")
+
+    str.print("FAIL: byte.lt() crash!")
+    //test(byte.lt(i32.byte(20), i32.byte(21)), true, "byte.lt() error")
+
+    str.print("FAIL: byte.gt() crash!")
+    //test(byte.gt(i32.byte(20), i32.byte(21)), false, "byte.gt() error")
+
+    str.print("FAIL: byte.eq() crash!")
+    //test(byte.eq(i32.byte(20), i32.byte(21)), false, "byte.eq() error")
+
+    str.print("FAIL: byte.uneq() crash!")
+    //test(byte.uneq(i32.byte(20), i32.byte(21)), true, "byte.uneq() error")
+
+    str.print("FAIL: byte.lteq() crash!")
+    //test(byte.lteq(i32.byte(20), i32.byte(21)), true, "byte.lteq() error")
+
+    str.print("FAIL: byte.gteq() crash!")
+    //test(byte.gteq(i32.byte(20), i32.byte(21)), false, "byte.gteq() error")
+
+}
+
+func testByteShorthand() () {
+    str.print("--------Byte Shorthand Testing--------")
+
+    str.print("FAIL: < Operator crash!")
+    //test((i32.byte(20) < i32.byte(21)), true, " < Operator error")
+
+    str.print("FAIL: > Operator crash!")
+    //test((i32.byte(20) > i32.byte(21)), false, " > Operator error")
+
+    str.print("FAIL: == Operator crash!")
+    //test((i32.byte(20) == i32.byte(21)), false, " == Operator error")
+
+    str.print("FAIL: != Operator crash!")
+    //test((i32.byte(20) != i32.byte(21)), true, " != Operator error")
+
+    str.print("FAIL: <= Operator crash!")
+    //test((i32.byte(20) <= i32.byte(21)), true, " <= Operator error")
+
+    str.print("FAIL: >= Operator crash!")
+    //test((i32.byte(20) >= i32.byte(21)), false, " >= Operator error")
+}
+
+func testBYTE () () {
+    str.print("Running BYTE Testing...")
+    testByteFuntions()
+    str.print("")
+    testByteShorthand()
+    str.print("")
+}

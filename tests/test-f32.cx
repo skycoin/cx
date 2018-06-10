@@ -1,0 +1,97 @@
+package testing
+
+
+func F32ArithmeticFunctions() () {
+    str.print("--------F32 Arithmetic Functions Testing--------")
+    test(f32.add(10.0, 10.0), 20.0, "Add error")
+	test(f32.sub(10.0, 10.0), 0.0, "Subtract error")
+	test(f32.mul(10.0, 10.0), 100.0, "Multiply error")
+	test(f32.div(10.0, 10.0), 1.0, "Divide error")
+	str.print("FAIL: f32.mod() crash!")
+    //test(f32.mod(10.0, 3.0), 1.0, "Mod error")
+    str.print("FAIL: f32.bitshl() crash!")
+    //test(f32.bitshl(10.0, 5.0), 320.0, "Bit Shift Left error")
+    str.print("FAIL: f32.bitshr() crash!")
+    //test(f32.bitshr(10.0, 5.0), 0.0, "Bit Shift Right error")
+    str.print("FAIL: f32.bitand() crash!")
+    //test(f32.bitand(10.0, 5.0), 0.0 , "Bit AND error")
+    str.print("FAIL: f32.bitor() crash!")
+    //test(f32.bitor(10.0, 5.0), 15.0, "Bit OR error")
+    str.print("FAIL: f32.bitxor() crash!")
+    //test(f32.bitxor(10.0, 5.0), 15.0, "Bit XOR error")
+    str.print("FAIL: f32.bitclear() crash!")
+    //test(f32.bitclear(10.0, 2.0), 8.0, "Bit CLEAR error")
+    test(f32.pow(10.0, 5.0), 100000.0, "Pow error")
+	test(f32.abs(-10.0), 10.0, "Absolute Value error")
+    test(f32.sqrt(4.0), 2.0, "Square Root error")
+    test(f32.log(1.0), 0.0, "Log error")
+    test(f32.log2(2.0), 1.0, "Log2 error")
+    test(f32.log10(10.0), 1.0, "Log10 error")
+    test(f32.max(3.0, 1.0, 9.0), 9.0, "MAX error")
+    test(f32.min(3.0, 1.0, 9.0, 0.0), 0.0, "MIN error")
+    test(f32.sin(0.0), 0.0, "Sin error")
+    test(f32.cos(0.0), 1.0, "Cos error")
+}
+
+func F32ArithmeticShorthand() () {
+    str.print("--------F32 Arithmetic Shorthand Testing--------")
+    test(10.0 + 10.0, 20.0, "Add error")
+    test(10.0 - 10.0, 0.0, "Subtract error")
+    test(10.0 * 10.0, 100.0, "Multiply error")
+    test(10.0 / 10.0, 1.0, "Divide error")
+    str.print("FAIL: Operator (%) crash!")
+    //test(10.0 % 3.0, 1.0, "Mod error")
+    str.print("FAIL: Operator (<<) crash!")
+    //test(10.0 << 5.0, 320.0, "Bit Shift Left error")
+    str.print("FAIL: Operator (>>) crash!")
+    //test(10.0 >> 5.0, 0.0, "Bit Shift Right error")
+    str.print("FAIL: Operator (&) crash!")
+    //test(10.0 & 5.0, 0.0,"Bit AND error")
+    str.print("FAIL: Operator (|) crash!")
+    //test(10.0 | 5.0, 15.0, "Bit OR error")
+    str.print("FAIL: Operator (^) crash!")
+    //test(10.0 ^ 5.0, 15.0, "Bit XOR error")
+    str.print("FAIL: Operator (&^) crash!")
+    //test(10.0 &^ 2.0, 8.0, "Bit CLEAR error")
+    test(10.0 ** 5.0, 100000.0, "Pow error")
+}
+
+func F32RelationalFunctions() () {
+    str.print("--------F32 Relational Functions--------")
+    test(f32.eq(5.0, 5.0), true, "F32 Equality error")
+    test(f32.uneq(5.0, 5.0), false, "F32 Inequality error")
+    test(f32.gt(5.0, 10.0), false, "F32 Greater error")
+    test(f32.gteq(15.0, 10.0), true, "F32 Greater And Equal error")
+    test(f32.lt(5.0, 10.0), true, "F32 Lesser error")
+    test(f32.lteq(10.0, 6.0), false, "F32 Lesser Or Equal error")
+}
+
+func F32RelationalShorthand() () {
+    str.print("--------F32 Relational Shorthand--------")
+    test(5.0 == 5.0, true, "F32 Equality Shorthand error")
+    test(5.0 != 5.0, false, "F32 Inequality Shorthand error")
+    test(5.0 > 10.0, false, "F32 Greater Shorthand error")
+    test(15.0 >= 10.0, true, "F32 Greater And Equal Shorthand error")
+    test(5.0 < 10.0, true, "F32 Lesser Shorthand error")
+    test(10.0 <= 6.0, false, "F32 Lesser Or Equal error")
+}
+
+func F32Extras() () {
+    str.print("--------F32 Extras--------")
+    str.print("PASS: f32.print()")
+    f32.print(10.0)
+}
+
+func testF32() () {
+    str.print("Running F32 Testing...")
+    F32ArithmeticFunctions()
+    str.print("")
+    F32ArithmeticShorthand()
+    str.print("")
+    F32RelationalFunctions()
+    str.print("")
+    F32RelationalShorthand()
+    str.print("")
+    F32Extras()
+    str.print("")
+}

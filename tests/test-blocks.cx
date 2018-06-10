@@ -1,0 +1,65 @@
+package testing
+
+
+func testBlocks () () {
+    str.print("Running IF Testing...")
+    str.print("--------IF Block testing--------")
+    if 2 < 3 {
+        str.print("Correct")
+    }
+
+    if  3 < 2 {
+        str.print("Incorrect")
+    }
+
+    str.print("--------IF/ELSE Block testing--------")
+    if 2 < 3 {
+        str.print("Correct")
+    } else {
+        str.print("Incorrect")
+    }
+
+    if  3 < 2 {
+        str.print("Incorrect")
+    } else {
+        str.print("Correct")
+    }
+
+    str.print("--------IF/ELSE Nested Block testing--------")
+    if 3 > 0 {
+        str.print("1st round")
+        if 25.0 > 29.0 {
+            str.print("Incorrect")
+        } else {
+            str.print("2nd round")
+            if 30L < 60L {
+                str.print("3rd round")
+            } else {
+                str.print("Incorrect")
+            }
+        }
+    } else {
+        str.print("Incorrect")
+    }
+    str.print("")
+
+    str.print("Running FOR Testing...")
+
+    str.print("--------FOR Block testing--------")
+    var i i32
+    for i = 0; i < 10; i = i32.add(i, 1){
+        i32.print(i)
+    }
+
+    str.print("--------FOR-IF/ELSE Block testing--------")
+    for i = 1; i32.lteq(i, 10); i = i32.add(i, 1){
+        if i32.eq(i32.mod(i, 2), 0) {
+            str.print("Even")
+            i32.print(i)
+        } else {
+            str.print("Odd")
+            i32.print(i)
+        }
+    }
+    str.print("")
+}

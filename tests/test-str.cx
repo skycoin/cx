@@ -1,0 +1,57 @@
+package testing
+
+func testSTRFunctions () () {
+    str.print("--------String (str) Funcitons Testing--------")
+    
+    str.print("FAIL: str.id() crash!")
+    //test(str.id("Foo"), "Foo", "str.id() error")
+    
+    str.print("FAIL: str.[]byte() crash!")
+    //test(str.[]byte("Foo"), []byte{70, 111, 111}, "str.[]byte() error")
+    
+    str.print("FAIL: str.lt() crash!")
+    //test(str.lt("foo", "bar"), false, "str.lt() error")
+    //test(str.lt("bar", "foo"), true, "str.lt() error")    
+    
+    str.print("FAIL: str.gt() crash!")
+    //test(str.gt("foo", "bar"), true, "str.gt() error")
+    //test(str.gt("bar", "foo"), false, "str.gt() error")
+    
+    str.print("FAIL: str.eq() crash!")
+    //test(str.eq("foo", "foo"), true, "str.eq() error")
+    //test(str.eq("foo", "bar"), false, "str.eq() error")
+    
+    str.print("FAIL: str.uneq() crash!")
+    //test(str.uneq("foo", "foo"), false, "str.uneq() error")
+    //test(str.uneq("foo", "bar"), true, "str.uneq() error")
+    
+    str.print("FAIL: str.lteq() crash!")
+    //test(str.lteq("foo", "bar"), false, "str.lteq() error")
+    //test(str.lteq("bar", "foo"), true, "str.lteq() error")
+    
+    str.print("FAIL: str.gteq() crash!")
+    //test(str.lteq("foo", "bar"), true, "str.gteq() error")
+    //test(str.lteq("bar", "foo"), false, "str.gteq() error")
+    
+    str.print("FAIL: str.read() crash!")
+    /*var i str
+    str.print("Write: Foo")
+    i = str.read()
+    test(str.read(), "Foo", "str.read() error")
+    str.print("Write: bar")
+    i = str.read()
+    test(str.read(), "bar", "str.read() error")
+    */
+
+    str.print("FAIL: len() crash!")
+    //test(len("Foo bar"), 7, "len() error")
+
+    str.print("FAIL: str.concat() crash!")
+    //test(str.concat("Hello ", "World"), "Hello World", "str.concat() error")
+}
+
+func testSTR () () {
+    str.print("Running STR Testing...")
+    testSTRFunctions()
+    str.print("")
+}

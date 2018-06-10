@@ -1,0 +1,88 @@
+package testing
+
+func I64ArithmeticFunctions() () {
+    str.print("--------I64 Arithmetic Functions Testing--------")
+    test(i64.add(10L, 10L), 20L, "Add error")
+	test(i64.sub(10L, 10L), 0L, "Subtract error")
+	test(i64.mul(10L, 10L), 100L, "Multiply error")
+	test(i64.div(10L, 10L), 1L, "Divide error")
+	test(i64.mod(10L, 3L), 1L, "Mod error")
+    test(i64.bitshl(10L, 5L), 320L, "Bit Shift Left error")
+    test(i64.bitshr(10L, 5L), 0L, "Bit Shift Right error")
+    test(i64.bitand(10L, 5L), 0L, "Bit AND error")
+    test(i64.bitor(10L, 5L), 15L, "Bit OR error")
+    test(i64.bitxor(10L, 5L), 15L, "Bit XOR error")
+    test(i64.bitclear(10L, 2L), 8L, "Bit CLEAR error")
+    test(i64.pow(10L, 5L), 100000L, "Pow error")
+	test(i64.abs(-10L), 10L, "Absolute Value error")
+    test(i64.sqrt(4L), 2L, "Square Root error")
+    test(i64.log(1L), 0L, "Log error")
+    test(i64.log2(2L), 1L, "Log2 error")
+    test(i64.log10(10L), 1L, "Log10 error")
+    test(i64.max(3L, 1L, 9L), 9L, "MAX error")
+    test(i64.min(3L, 1L, 9L, 0L), 0L, "MIN error")
+    test(i64.sin(0L), 0L, "Sin error")
+    test(i64.cos(0L), 1L, "Cos error")
+}
+
+func I64ArithmeticShorthand() () {
+    str.print("--------I64 Arithmetic Shorthand Testing--------")
+    test(10L + 10L, 20L, "Add error")
+    test(10L - 10L, 0L, "Subtract error")
+    test(10L * 10L, 100L, "Multiply error")
+    test(10L / 10L, 1L, "Divide error")
+    test(10L % 3L, 1L, "Mod error")
+    str.print("FAIL: Operator (<<) crash!")
+    //test(10L << 5L, 320L, "Bit Shift Left error")
+    str.print("FAIL: Operator (>>) crash!")
+    //test(10L >> 5L, 0L, "Bit Shift Right error")
+    test(10L & 5L, 0L,"Bit AND error")
+    test(10L | 5L, 15L, "Bit OR error")
+    test(10L ^ 5L, 15L, "Bit XOR error")
+    str.print("FAIL: Operator (&^) crash!")
+    //test(10L &^ 2L, 8L, "Bit CLEAR error")
+    test(10L ** 5L, 100000L, "Pow error")
+}
+
+func I64RelationalFunctions() () {
+    str.print("--------I64 Relational Functions--------")
+    test(i64.eq(5L, 5L), true, "I64 Equality error")
+    test(i64.uneq(5L, 5L), false, "I64 Inequality error")
+    test(i64.gt(5L, 10L), false, "I64 Greater error")
+    test(i64.gteq(15L, 10L), true, "I64 Greater And Equal error")
+    test(i64.lt(5L, 10L), true, "I64 Lesser error")
+    test(i64.lteq(10L, 6L), false, "I64 Lesser Or Equal error")
+}
+
+func I64RelationalShorthand() () {
+    str.print("--------I64 Relational Shorthand--------")
+    test(5L == 5L, true, "I64 Equality Shorthand error")
+    test(i64.uneq(5L, 5L), false, "I64 Inequality error")
+    test(5L != 5L, false, "I64 Inequality Shorthand error")
+    test(5L > 10L, false, "I64 Greater Shorthand error")
+    test(15L >= 10L, true, "I64 Greater And Equal Shorthand error")
+    test(5L < 10L, true, "I64 Lesser Shorthand error")
+    test(10L <= 6L, false, "I64 Lesser Or Equal error")
+}
+
+func I64Extras() () {
+    str.print("--------I64 Extras--------")
+    str.print("PASS: i64.print()")
+    i64.print(10L)
+    str.print("PASS: i64.rand()")
+    i64.print(i64.rand(1L, 99L))
+}
+
+func testI64() () {
+    str.print("Running I64 Testing...")
+    I64ArithmeticFunctions()
+    str.print("")
+    I64ArithmeticShorthand()
+    str.print("")
+    I64RelationalFunctions()
+    str.print("")
+    I64RelationalShorthand()
+    str.print("")
+    I64Extras()
+    str.print("")
+}

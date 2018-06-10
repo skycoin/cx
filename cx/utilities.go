@@ -1513,7 +1513,6 @@ func (prgrm *CXProgram) PrintStack () {
 
 	fp := 0
 
-	
 	for c := 0; c <= prgrm.CallCounter; c++ {
 		op := prgrm.CallStack[c].Operator
 

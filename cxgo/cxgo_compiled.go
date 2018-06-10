@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -1024,7 +1024,6 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 
 	if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
 		for _, expr := range from {
-			fmt.Println("expr", expr)
 			expr.Outputs[0].MemoryRead = glbl.MemoryRead
 			expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
 		}

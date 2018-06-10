@@ -1,0 +1,74 @@
+package testing
+
+type miniStruct struct {
+    int i32
+    long i64
+    float f32
+    decimal f64
+    boolean bool
+    byt byte
+    string str
+}
+
+type TestStruct struct {
+    int i32
+    long i64
+    float f32
+    decimal f64
+    boolean bool
+    byt byte
+    string str
+    anotherStruct miniStruct
+}
+
+func testStructures () () {
+    str.print("Running STRUCT Testing...")
+    var mytest TestStruct
+    mytest = TestStruct{
+        int: 32,
+        long: 64L,
+        float: 32.0,
+        decimal: 64.0D,
+        boolean: true,
+        byt: i32.byte(255),
+        string: "Foo bar",
+        anotherStruct: miniStruct{
+        int: 32,
+        long: 64L,
+        float: 32.0,
+        decimal: 64.0D,
+        boolean: true,
+        byt: i32.byte(255),
+        string: "Foo bar"}}
+
+    str.print("--------Struct Properties Types--------")
+
+    str.print("FAIL: I32 properties")
+    test((32 == mytest.int), true, "Struct i32 properties error")
+    //test((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
+
+    str.print("FAIL: I64 properties")
+    test((64L == mytest.long), true, "Struct i64 properties error")
+    //test((mytest.long == mytest.anotherStruct.long), true, "Struct in a Struct i64 properties error")
+
+    str.print("FAIL: F32 properties")
+    test((32.0 == mytest.float), true, "Struct f32 properties error")
+    //test((mytest.float == mytest.anotherStruct.float), true, "Struct in a Struct f32 properties error")
+
+    str.print("FAIL: F64 properties")
+    test((64.0D == mytest.decimal), true, "Struct f64 properties error")
+    //test((mytest.decimal == mytest.anotherStruct.decimal), true, "Struct in a Struct f64 properties error")
+
+    str.print("FAIL: BOOL properties")
+    test(mytest.boolean, true, "Struct bool properties error")
+    //test((mytest.boolean && mytest.anotherStruct.boolean), true, "Struct in a Struct bool properties error")
+
+    str.print("FAIL: BYTE properties")
+    //test(mytest.byt, i32.byte(255), "Struct byte properties error")
+    //test(mytest.byt, mytest.anotherStruct.byt, "Struct in a Struct byte properties error")
+
+    str.print("FAIL: STR properties")
+    //test(("Foo bar" == mytest.string), true, "Struct str properties error")
+    //test((mytest.anotherStruct.string == mytest.string), true, "Struct in a Struct str properties error")
+    str.print("")
+}

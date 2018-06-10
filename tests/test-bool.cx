@@ -1,0 +1,104 @@
+package testing
+
+func Equality() () {
+    str.print("--------Equality Testing--------")
+    str.print("FAIL: bool.eq() crash!")
+    //test(bool.eq(true, true), true, "Bool Equality(true) error")
+    //test(bool.eq(false, true), false, "Bool Equality(false) error")
+    //test(bool.eq(true, false), false, "Bool Equality(false) error")
+    //test(bool.eq(false, false), false, "Bool Equality(false) error")
+
+    str.print("FAIL: == Operator not return a correct value")
+    test((true == true), true, "Bool Equality(true) error")
+    test((true == false), false, "Bool Equality(false) error")
+    test((false == true), false, "Bool Equality(false) error")
+    test((false == false), true, "Bool Equality(true) error")
+}
+
+func Inequality() () {
+    str.print("--------Inequality Testing--------")
+    str.print("FAIL: bool.uneq() crash!")
+    //test(bool.uneq(true, true), false, "Bool Inequality(false) error")
+    //test(bool.uneq(false, true), true, "Bool Inequality(true) error")
+    //test(bool.uneq(true, false), true, "Bool Inequality(true) error")
+    //test(bool.uneq(false, false), false, "Bool Inequality(false) error")
+    str.print("")
+    str.print("FAIL: != Operator not return a correct value")
+    test((true != true), false, "Bool Inequality(false) error")
+    test((true != false), true, "Bool Inequality(true) error")
+    test((false != true), true, "Bool Inequality(true) error")
+    test((false != false), false, "Bool Inequality(false) error")
+    str.print("")
+}
+
+func And() () {
+    str.print("--------And Testing--------")
+    str.print("FAIL: and() crash!")
+    //test(and(true, true), true, "Bool And(true) error")
+    //test(and(true, false), false, "Bool And(false) error")
+    //test(and(false, true), false, "Bool And(false) error")
+    //test(and(false, false), false, "Bool And(false) error")
+    str.print("")
+    str.print("PASS: bool.and()")
+    test(bool.and(true, true), true, "Bool And(true) error")
+    test(bool.and(true, false), false, "Bool And(false) error")
+    test(bool.and(false, true), false, "Bool And(false) error")
+    test(bool.and(false, false), false, "Bool And(false) error")
+
+    str.print("PASS: && Operator")
+    test((true && true), true, "Bool And(true) error")
+    test((true && false), false, "Bool And(false) error")
+    test((false && false), false, "Bool And(false) error")
+    test((false && true), false, "Bool And(false) error")
+}
+
+func Or() () {
+    str.print("--------Or Testing--------")
+    str.print("FAIL: or() crash!")
+    //test(or(true, true), true, "Bool Or(true) error")
+    //test(or(true, false), true, "Bool Or(true) error")
+    //test(or(false, true), true, "Bool Or(true) error")
+    //test(or(false, false), false, "Bool Or(false) error")
+    str.print("")
+    str.print("PASS: bool.or()")
+    test(bool.or(true, true), true, "Bool Or(true) error")
+    test(bool.or(true, false), true, "Bool Or(true) error")
+    test(bool.or(false, true), true, "Bool Or(true) error")
+    test(bool.or(false, false), false, "Bool Or(false) error")
+
+    str.print("PASS: || Operator")
+    test((true || true), true, "Bool Or(true) error")
+    test((true || false), true, "Bool Or(true) error")
+    test((false || false), false, "Bool Or(false) error")
+    test((false || true), true, "Bool Or(true) error")
+}
+
+func Not() () {
+    str.print("--------Not Testing--------")
+    str.print("FAIL: not() crash!")
+    //test(not(true, true), true, "Bool not(true) error")
+    //test(not(true, false), false, "Bool not(false) error")
+
+    str.print("PASS: bool.not()")
+    test(bool.not(true), false, "Bool Not(false) error")
+    test(bool.not(false), true, "Bool Not(true) error")
+    str.print("")
+    str.print("FAIL: ! Operator not return a correct value")
+    test((!true), false, "Bool Not (false) error")
+    test((!false), true, "Bool Not (true) error")
+    str.print("")
+}
+
+func testBOOL () () {
+    str.print("Running BOOL Testing...")
+    Equality()
+    str.print("")
+    Inequality()
+    str.print("")
+    And()
+    str.print("")
+    Or()
+    str.print("")
+    Not()
+    str.print("")
+}
