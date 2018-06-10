@@ -4,16 +4,27 @@
 SET UNSUPPORTED=go1.0 go1.1 go1.2 go1.3 go1.4 go1.5 go1.6 go1.7
 FOR /F "tokens=* USEBACKQ" %%F IN (`go version`) DO (SET VERSION=%%F)
 FOR /F "tokens=* USEBACKQ" %%F IN (`go env GOPATH`) DO (SET GOPATH=%%F)
+SET VERSION=%VERSION:go version=%
+SET VERSION=%VERSION:windows/amd64=%
+SET VERSION=%VERSION: =%
+ECHO NOTE: go version is: %VERSION% 
 
 FOR %%v IN (%UNSUPPORTED%) DO (
-    set check="!VERSION:%%v=!"
-    IF "!VERSION!" NEQ !check! (
+    ::SET CHECK="!VERSION:%%v=!"
+    ECHO NOTE: %%v
+    IF %VERSION% EQU %%v (
        ECHO FAIL: CX requires Go version 1.8+. Please update your Go installation: https://golang.org/dl/
        EXIT /B 2
     )
 )
 
 rem echo %GOPATH%
+
+IF NOT EXIST %GOPATH% (
+    SET INSTALLATION_PATH=%USERPROFILE%\go
+) ELSE (
+    SET INSTALLATION_PATH=%GOPATH%
+)
 
 IF NOT EXIST %GOPATH%\src\github.com\skycoin\skycoin\ (
    echo NOTE:   Repository github.com\skycoin\skycoin is not present in %GOPATH%
@@ -102,8 +113,8 @@ IF NOT EXIST %GOPATH%\src\github.com\cznic\goyacc\ (
 IF NOT EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    echo NOTE:   Repository github.com\skycoin\cx is not present in %GOPATH%
    echo NOTE:   Downloading the repository and installing the package via 'go get github.com/skycoin/cx'
-
-   go get github.com/skycoin/cx/...
+   
+   git clone https://github.com/skycoin/cx.git %GOPATH%\src\github.com\skycoin\cx
 
    IF ERRORLEVEL 1 (
       echo FAIL:   Couldn't install github.com/skycoin/cx
@@ -115,40 +126,27 @@ IF NOT EXIST %GOPATH%\src\github.com\skycoin\cx\ (
 
 IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    echo NOTE:   Re-compiling CX
+   cd %GOPATH%\src\github.com\skycoin\cx && git pull 
+   %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex
+
+   %GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
+
+   %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex
+
+   %GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
+
+   go build -i -o %GOPATH%/bin/cx.exe github.com/skycoin/cx/cxgo/
 ) ELSE (
+   %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex
+
+   %GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
+
+   %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex
+
+   %GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
+
+   go build -i -o %GOPATH%/bin/cx.exe github.com/skycoin/cx/cxgo/
    echo NOTE:   Compiling CX
 )
 
-%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.nex
-IF ERRORLEVEL 1 (
-   echo FAIL:   There was a problem compiling CX's lexical analyzer (first pass)
-   EXIT /B 2
-)
-
-%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.go %GOPATH%\src\github.com\skycoin\cx\cx\cx0\cx0.y
-IF ERRORLEVEL 1 (
-   echo FAIL:   There was a problem compiling CX's parser (first pass)
-   EXIT /B 2
-)
-
-%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cx\cx.nex
-IF ERRORLEVEL 1 (
-   echo FAIL:   There was a problem compiling CX's lexical analyzer
-   EXIT /B 2
-)
-
-%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cx\cx.go %GOPATH%\src\github.com\skycoin\cx\cx\cx.y
-IF ERRORLEVEL 1 (
-   echo FAIL:   There was a problem compiling CX's parser
-   EXIT /B 2
-)
-
-go install github.com/skycoin/cx/cx/
-IF ERRORLEVEL 1 (
-   echo FAIL:   There was a problem compiling CX
-   EXIT /B 2
-) ELSE (
-   echo OK      CX was compiled successfully
-)
-
-echo NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests/test.cx'
+echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%/src/github.com/skycoin/cx/tests/test.cx'

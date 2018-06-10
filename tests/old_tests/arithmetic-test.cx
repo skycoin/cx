@@ -1,7 +1,0 @@
-package main
-
-func main () () {
-	test.start()
-	test(i32.add(10, 10), 20, "")
-	test.stop()
-}

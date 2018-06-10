@@ -1,5 +1,0 @@
-cx tests/test-conditions.cx
-cx tests/test-conditions.cx
-./cx.sh && cx tests/test-arithmetic.cx
-./cx.sh
-cx tests/test-conditions.cx
