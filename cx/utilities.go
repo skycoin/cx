@@ -36,9 +36,9 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	idxs := out.Indexes
 
 	// if len(expr.Outputs[outNameNumber].Fields) > 0 {
-		
+	
 	// } else {
-		
+	
 	// }
 
 	// for _, out := range expr.Outputs {
@@ -282,7 +282,7 @@ func getArrayChunkSizes (size int, lens []int) []int {
 // 								break
 // 							}
 // 						}
-						
+
 // 						if true || typ == "str" || typ == "[]str" || typ == "[]bool" ||
 // 							typ == "[]byte" || typ == "[]i32" ||
 // 							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" || !isBasic {
@@ -303,7 +303,7 @@ func getArrayChunkSizes (size int, lens []int) []int {
 // 							}
 // 							return nil
 // 						} else {
-							
+
 // 							for c := 0; c < len(byts); c++ {
 // 								byts[c] = (output)[c]
 // 							}
@@ -316,7 +316,7 @@ func getArrayChunkSizes (size int, lens []int) []int {
 // 			}
 // 			break
 // 		}
-		
+
 // 		if char == '[' {
 // 			identParts := strings.Split(outName, "[")
 
@@ -616,7 +616,7 @@ func rep (str string, n int) string {
 // 		tab = ""
 // 		nl = ""
 // 	}
-	
+
 // 	fmt.Println()
 // 	fmt.Printf("(Modules %s", nl)
 // 	for _, mod := range prgrm.Packages {
@@ -627,7 +627,7 @@ func rep (str string, n int) string {
 
 // 		fmt.Printf("%s(Imports %s", rep(tab, 2), nl)
 // 		fmt.Printf("%s)%s", rep(tab, 2), nl) // imports
-		
+
 // 		fmt.Printf("%s(Definitions %s", rep(tab, 2), nl)
 
 // 		for _, def := range mod.Globals {
@@ -638,7 +638,7 @@ func rep (str string, n int) string {
 // 				PrintValue(def.Value, def.Typ),
 // 				nl)
 // 		}
-		
+
 // 		fmt.Printf("%s)%s", rep(tab, 2), nl) // definitions
 
 // 		fmt.Printf("%s(Structs %s", rep(tab, 2), nl)
@@ -649,10 +649,10 @@ func rep (str string, n int) string {
 // 			for _, fld := range strct.Fields {
 // 				fmt.Printf("%s%s %s%s", rep(tab, 4), fld.Name, fld.Typ, nl)
 // 			}
-			
+
 // 			fmt.Printf("%s)%s", rep(tab, 3), nl) // structs
 // 		}
-		
+
 // 		fmt.Printf("%s)%s", rep(tab, 2), nl) // structs
 
 // 		fmt.Printf("%s(Functions %s", rep(tab, 2), nl)
@@ -678,28 +678,28 @@ func rep (str string, n int) string {
 // 				fmt.Printf("%s(Expression %s", rep(tab, 5), nl)
 
 // 				fmt.Printf("%s(Operator %s)%s", rep(tab, 6), expr.Operator.Name, nl)
-				
+
 // 				fmt.Printf("%s(OutputNames %s", rep(tab, 6), nl)
 // 				for _, outName := range expr.Outputs {
 // 					fmt.Printf("%s(OutputName %s)%s", rep(tab, 7), outName.Name, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
-				
+
 // 				fmt.Printf("%s(Arguments %s", rep(tab, 6), nl)
 // 				for _, arg := range expr.Inputs {
 // 					fmt.Printf("%s(Argument %s %s)%s", rep(tab, 7), PrintValue(arg.Value, arg.Typ), arg.Typ, nl)
 // 				}
 // 				fmt.Printf("%s)%s", rep(tab, 6), nl)
-				
+
 // 				fmt.Printf("%s)%s", rep(tab, 5), nl)
 // 			}
 // 			fmt.Printf("%s)%s", rep(tab, 4), nl) // expressions
-			
+
 // 			fmt.Printf("%s)%s", rep(tab, 3), nl) // function
 // 		}
-		
+
 // 		fmt.Printf("%s)%s", rep(tab, 2), nl) // functions
-		
+
 // 		fmt.Printf("%s)%s", rep(tab, 1), nl) // modules
 // 	}
 // 	fmt.Printf(")")
@@ -1203,7 +1203,6 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 			}
 		}
 	} else {
-		fmt.Println("pivot")
 		// then it's a local or global definition
 		local := false
 		arrayParts := strings.Split(lookingFor, "[")
@@ -1220,7 +1219,6 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 			
 			if stateDef.Name == arrayParts[0] {
 				local = true
-				fmt.Println("here", arrayParts, stateDef.Value, stateDef.Indexes)
 				resolvedIdent = stateDef
 				break
 			}
@@ -1253,7 +1251,6 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
-		fmt.Println("adventure time", resolvedIdent.Value)
 		arg := MakeArgument("").AddValue(resolvedIdent.Value).AddType(resolvedIdent.Typ)
 		arg.Lengths = resolvedIdent.Lengths
 		return arg, nil
@@ -1865,6 +1862,25 @@ func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgra
 
 func (prgrm *CXProgram) PrintProgram () {
 	fmt.Println("Program")
+
+	var currentFunction *CXFunction
+	var currentPackage *CXPackage
+
+	_ = currentFunction
+	_ = currentPackage
+
+	// saving current program state because PrintProgram uses SelectXXX
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+		currentPackage = pkg
+	} else {
+		panic(err)
+	}
+
+	if fn, err := prgrm.GetCurrentFunction(); err == nil {
+		currentFunction = fn
+	} else {
+		panic(err)
+	}
 	
 	i := 0
 	for _, mod := range prgrm.Packages {
@@ -1885,12 +1901,12 @@ func (prgrm *CXProgram) PrintProgram () {
 		}
 
 		if len(mod.Globals) > 0 {
-			fmt.Println("\tDefinitions")
+			fmt.Println("\tGlobals")
 		}
 
 		j = 0
 		for _, v := range mod.Globals {
-			fmt.Printf("\t\t%d.- Definition: %s %d\n", j, v.Name, v.Typ)
+			fmt.Printf("\t\t%d.- Global: %s %s\n", j, v.Name, v.Typ)
 			j++
 		}
 
@@ -1921,18 +1937,18 @@ func (prgrm *CXProgram) PrintProgram () {
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
 				if i == len(fn.Inputs) - 1 {
-					inps.WriteString(fmt.Sprintf("%s %d", inp.Name, inp.Typ))
+					inps.WriteString(fmt.Sprintf("%s %s", inp.Name, inp.Typ))
 				} else {
-					inps.WriteString(fmt.Sprintf("%s %d, ", inp.Name, inp.Typ))
+					inps.WriteString(fmt.Sprintf("%s %s, ", inp.Name, inp.Typ))
 				}
 			}
 
 			var outs bytes.Buffer
 			for i, out := range fn.Outputs {
 				if i == len(fn.Outputs) - 1 {
-					outs.WriteString(fmt.Sprintf("%s %d", out.Name, out.Typ))
+					outs.WriteString(fmt.Sprintf("%s %s", out.Name, out.Typ))
 				} else {
-					outs.WriteString(fmt.Sprintf("%s %d, ", out.Name, out.Typ))
+					outs.WriteString(fmt.Sprintf("%s %s, ", out.Name, out.Typ))
 				}
 			}
 
@@ -1949,17 +1965,58 @@ func (prgrm *CXProgram) PrintProgram () {
 
 				for i, arg := range expr.Inputs {
 					var name string
+					var dat []byte
+					
 					switch arg.MemoryRead {
 					case MEM_DATA:
-						name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
+						// name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
+						dat = prgrm.Data[arg.Offset : arg.Offset + arg.Size]
 					default:
+						name = arg.Name
+					}
+
+					if dat != nil {
+						switch TypeNames[arg.Type] {
+						case "str":
+							encoder.DeserializeRaw(dat, &name)
+							name = "\"" + name + "\""
+						case "i32":
+							var i32 int32
+							encoder.DeserializeAtomic(dat, &i32)
+							name = fmt.Sprintf("%v", i32)
+						case "i64":
+							var i64 int64
+							encoder.DeserializeRaw(dat, &i64)
+							name = fmt.Sprintf("%v", i64)
+						case "f32":
+							var f32 float32
+							encoder.DeserializeRaw(dat, &f32)
+							name = fmt.Sprintf("%v", f32)
+						case "f64":
+							var f64 float64
+							encoder.DeserializeRaw(dat, &f64)
+							name = fmt.Sprintf("%v", f64)
+						case "bool":
+							var b bool
+							encoder.DeserializeRaw(dat, &b)
+							name = fmt.Sprintf("%v", b)
+						case "byte":
+							var b bool
+							encoder.DeserializeRaw(dat, &b)
+							name = fmt.Sprintf("%v", b)
+						}
+					}
+
+					if arg.Name != "" {
 						name = arg.Name
 					}
 
 					if i == len(expr.Inputs) - 1 {
 						args.WriteString(name + " " + TypeNames[arg.Type])
+						// args.WriteString(TypeNames[arg.Type])
 					} else {
 						args.WriteString(name + " " + TypeNames[arg.Type] + ", ")
+						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}
 
@@ -2016,6 +2073,12 @@ func (prgrm *CXProgram) PrintProgram () {
 		}
 		i++
 	}
+
+	prgrm.SelectPackage(currentPackage.Name)
+	prgrm.SelectFunction(currentFunction.Name)
+
+	prgrm.CurrentPackage = currentPackage
+	currentPackage.CurrentFunction = currentFunction
 }
 
 // this function adds the roots (pointers) for some GC algorithms

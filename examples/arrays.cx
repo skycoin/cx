@@ -5,96 +5,111 @@ func test (foo []i32) () {
 }
 
 func main () () {
-	var foo []str
-	[]str.print(foo)
-	[]str.print([]str{})
-	[]str.print([]str{"str1", "str23131"})
-	strs := []str{"one", "two", "three", "four", "five"}
-	[]str.print(strs)
-	[]str.print([]str.make(10))
+	var foo []i32
+	foo[0] = 10
+	foo[1] = 20
+	foo[2] = 30
+	foo[3] = 40
+	foo[4] = 50
 
-	str.print("====")
-	str.print([]str.read(strs, 0))
-	str.print([]str.read(strs, 1))
-	str.print([]str.read(strs, 2))
-	str.print([]str.read(strs, 3))
-	str.print([]str.read(strs, 4))
+	var c i32
+	for c = 0; c < 5; c++ {
+		i32.print(foo[c])
+	}
 
-	[]str.write(strs, 0, "uno")
-	[]str.write(strs, 1, "dos")
-	[]str.write(strs, 2, "tres")
 
-	str.print([]str.read(strs, 0))
-	str.print([]str.read(strs, 1))
-	str.print([]str.read(strs, 2))
-	str.print([]str.read(strs, 3))
-	str.print([]str.read(strs, 4))
+	i32.print(len(foo))
+	
+	// var foo []str
+	// []str.print(foo)
+	// []str.print([]str{})
+	// []str.print([]str{"str1", "str23131"})
+	// strs := []str{"one", "two", "three", "four", "five"}
+	// []str.print(strs)
+	// []str.print([]str.make(10))
+
+	// str.print("====")
+	// str.print([]str.read(strs, 0))
+	// str.print([]str.read(strs, 1))
+	// str.print([]str.read(strs, 2))
+	// str.print([]str.read(strs, 3))
+	// str.print([]str.read(strs, 4))
+
+	// []str.write(strs, 0, "uno")
+	// []str.write(strs, 1, "dos")
+	// []str.write(strs, 2, "tres")
+
+	// str.print([]str.read(strs, 0))
+	// str.print([]str.read(strs, 1))
+	// str.print([]str.read(strs, 2))
+	// str.print([]str.read(strs, 3))
+	// str.print([]str.read(strs, 4))
 	
 
-	i32.print([]str.len(strs))
-	[]str.print([]str.concat([]str{"1", "2", "3"}, strs))
-	[]str.print([]str.append([]str{"1", "2", "3"}, "hello"))
+	// i32.print([]str.len(strs))
+	// []str.print([]str.concat([]str{"1", "2", "3"}, strs))
+	// []str.print([]str.append([]str{"1", "2", "3"}, "hello"))
 
-	bar := []str.make([]str.len(strs))
-	[]str.print(bar)
-	[]str.copy(bar, strs)
-	[]str.print(bar)
+	// bar := []str.make([]str.len(strs))
+	// []str.print(bar)
+	// []str.copy(bar, strs)
+	// []str.print(bar)
 
-	str.print("------------")
-	var foobar []str = []str{"uea", "ueuuu"}
-	[]str.print(foobar)
-	[]str.write(foobar, 1, "===")
-	[]str.print(foobar)
-	str.print([]str.read(foobar, 1))
+	// str.print("------------")
+	// var foobar []str = []str{"uea", "ueuuu"}
+	// []str.print(foobar)
+	// []str.write(foobar, 1, "===")
+	// []str.print(foobar)
+	// str.print([]str.read(foobar, 1))
 
-	// byts := []byte{11, 12, 13, 14}
-	// byte.print(byts[2])
+	// // byts := []byte{11, 12, 13, 14}
+	// // byte.print(byts[2])
 
-	// bools := []bool{true, true, false, true}
-	// bool.print(bools[2])
+	// // bools := []bool{true, true, false, true}
+	// // bool.print(bools[2])
 	
-	// i32s := []i32{10, 20, 30, 40, 50, 60, 70}
-	// i32.print(i32s[0])
+	// // i32s := []i32{10, 20, 30, 40, 50, 60, 70}
+	// // i32.print(i32s[0])
 
-	// i64s := []i64{10, 20, 30, 40, 50, 60, 70}
-	// i64.print(i64s[1])
+	// // i64s := []i64{10, 20, 30, 40, 50, 60, 70}
+	// // i64.print(i64s[1])
 
-	// f32s := []f32{15.0, 25.0, 35.0, 45.0, 55.0, 65.0, 75.0}
-	// f32.print(f32s[0])
+	// // f32s := []f32{15.0, 25.0, 35.0, 45.0, 55.0, 65.0, 75.0}
+	// // f32.print(f32s[0])
 
-	// f64s := []f64{13.3, 23.3, 33.3, 43.3, 53.3, 63.3, 73.3}
-	// f64.print(f64s[0])
-
-
-	// byts[0] = i32.byte(50)
-	// []byte.print(byts)
-
-	// i32s[0] = 50
-	// []i32.print(i32s)
-
-	// i64s[0] = i32.i64(50)
-	// []i64.print(i64s)
-
-	// f32s[0] = 50.31
-	// []f32.print(f32s)
-
-	// f64s[0] = f32.f64(50.44)
-	// []f64.print(f64s)
-
-	// test(i32s)
-	// []i32.print(i32s)
+	// // f64s := []f64{13.3, 23.3, 33.3, 43.3, 53.3, 63.3, 73.3}
+	// // f64.print(f64s[0])
 
 
+	// // byts[0] = i32.byte(50)
+	// // []byte.print(byts)
 
-	// // var ids []i32 = []i32{433, 561, 652, 984}
-	// // var ages []i32 = []i32{23, 21, 26, 31}
-	// // var grades []f32 = []f32{8.8, 9.4, 9.3, 8.3}
+	// // i32s[0] = 50
+	// // []i32.print(i32s)
 
-	// // str.print("Student's ID:")
-	// // i32.print([]i32.read(ids, 1))
-	// // str.print("Student's age:")
-	// // i32.print([]i32.read(ages, 1))
-	// // str.print("Student's age:")
-	// // f32.print([]f32.read(grades, 1))
-	// // str.print("done.")
+	// // i64s[0] = i32.i64(50)
+	// // []i64.print(i64s)
+
+	// // f32s[0] = 50.31
+	// // []f32.print(f32s)
+
+	// // f64s[0] = f32.f64(50.44)
+	// // []f64.print(f64s)
+
+	// // test(i32s)
+	// // []i32.print(i32s)
+
+
+
+	// // // var ids []i32 = []i32{433, 561, 652, 984}
+	// // // var ages []i32 = []i32{23, 21, 26, 31}
+	// // // var grades []f32 = []f32{8.8, 9.4, 9.3, 8.3}
+
+	// // // str.print("Student's ID:")
+	// // // i32.print([]i32.read(ids, 1))
+	// // // str.print("Student's age:")
+	// // // i32.print([]i32.read(ages, 1))
+	// // // str.print("Student's age:")
+	// // // f32.print([]f32.read(grades, 1))
+	// // // str.print("done.")
 }

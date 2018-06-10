@@ -47,6 +47,7 @@ func (cxt *CXProgram) SelectFunction (name string) (*CXFunction, error) {
 func (mod *CXPackage) SelectFunction (name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
+
 	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
 	// 			mod.SelectFunction(name)
 	// 		}

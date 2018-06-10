@@ -707,17 +707,19 @@ func checkNative (opName string, expr *CXExpression, call *CXCall, argsCopy *[]*
 }
 
 func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program
 		prgrm.Terminated = false
+		prgrm.CallCounter = 0
 	}
 
 	var callCounter int = 0
 	// we are going to do this if the CallStack is empty
 	// if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
 	if prgrm.CallStack != nil && prgrm.CallCounter > 0 {
+		fmt.Println("hohoho")
 		// we resume the program
 		var lastCall *CXCall
 		var err error
@@ -728,7 +730,7 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 			untilEnd = true
 		}
 
-		for !prgrm.Terminated && nCalls > 0 {
+		for !prgrm.Terminated && nCalls > 0 && prgrm.CallCounter > 0 {
 			// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
 			lastCall = &prgrm.CallStack[prgrm.CallCounter]
 			err = lastCall.icall(withDebug, 1, callCounter)
@@ -739,7 +741,7 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 				nCalls = nCalls - 1
 			}
 		}
-	} else {
+	} else if prgrm.CallCounter == 0 {
 		// initialization and checking
 		if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 
@@ -748,6 +750,8 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 				state := make([]*CXArgument, 0, 20)
 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 
+				fmt.Println("callStack", prgrm.CallCounter, len(prgrm.CallStack))
+				
 				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
 				prgrm.CallStack[prgrm.CallCounter] = mainCall
 				// prgrm.CallCounter++
@@ -809,6 +813,7 @@ func (prgrm *CXProgram) RunInterpreted (withDebug bool, nCalls int) error {
 }
 
 func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
+	fmt.Println("callCounter", call.Program.CallCounter)
 	// for _, arg := range call.State {
 	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
 	// 	if len(arg.Fields) > 0 {
@@ -942,8 +947,6 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 
 					lookingFor = getFQDN(argsRefs[i])
 
-					fmt.Println("checkingIdxs", argsRefs[i].Indexes)
-
 					// if len(argsRefs[i].Fields) > 0 {
 					// 	for _, fld := range argsRefs[i].Fields {
 					// 		fmt.Println("this one has it", fld.Name, fld.Value)
@@ -1076,7 +1079,7 @@ func (call *CXCall) icall (withDebug bool, nCalls, callCounter int) error {
 }
 
 func (prgrm *CXProgram) RunCompiled () error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {

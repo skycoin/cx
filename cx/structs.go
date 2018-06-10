@@ -242,7 +242,6 @@ const (
 
 const TYPE_POINTER_SIZE int = 4
 
-// types
 const (
 	TYPE_BOOL = iota
 	TYPE_BYTE

@@ -256,17 +256,17 @@ package_declaration:
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				if _, err := pkg.GetImport($2); err != nil {
-					if imp, err := PRGRM.GetPackage($2); err == nil {
-						pkg.AddImport(imp)
-					} else {
-						panic(err)
-					}
-				}
-			} else {
-				panic(err)
-			}
+			// if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			// 	if _, err := pkg.GetImport($2); err != nil {
+			// 		if imp, err := PRGRM.GetPackage($2); err == nil {
+			// 			pkg.AddImport(imp)
+			// 		} else {
+			// 			panic(err)
+			// 		}
+			// 	}
+			// } else {
+			// 	panic(err)
+			// }
                 }
                 ;
 

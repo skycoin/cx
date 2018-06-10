@@ -1,9 +1,9 @@
-package main;
-import "math";
+package main
+import "math"
 
 func main () {
-	str.print("hi");
-	var foo i32;
-	foo = math.double();
-	i32.print(foo);
+	str.print("hi")
+	var foo i32
+	foo = math.double()
+	i32.print(foo)
 }

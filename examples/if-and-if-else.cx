@@ -1,6 +1,8 @@
 package main
 
-func main () (out i32) {
+func main () {
+	var out i32
+	
      	if false {
 		var error i32
 		error = i32.div(50, 0)
@@ -14,12 +16,6 @@ func main () (out i32) {
 	if i32.gt(5, 3) {
 		str.print("5 is greater than 3")
 	}
-
-	// if str.eq("password123", "password123") {
-	// 	str.print("Access granted")
-	// } else {
-	// 	str.print("Access denied")
-	// }
 
 	if i32.lteq(50, 5) {
 		out = 100

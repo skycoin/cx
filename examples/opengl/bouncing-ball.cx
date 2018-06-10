@@ -1,8 +1,5 @@
 package main
 
-// import "gl"
-// import "glfw"
-
 var width i32 = 800
 var height i32 = 600
 
@@ -55,44 +52,15 @@ func main () () {
 		vy: 0.01,
 		gravity: 0.01}
 
-	// var ratio f32
-
-	// Start FPS
-	var lastTime f64
-	var currentTime f64
-	var nbFrames i32
-	lastTime = glfw.GetTime()
-	nbFrames = 0
-	// End FPS
-	
 	for bool.not(glfw.ShouldClose("window")) {
-		// var bufferWidth i32
-		// var bufferHeight i32
-		// bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
-		// ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
-
-		// Start FPS
-		currentTime = glfw.GetTime()
-		nbFrames = i32.add(nbFrames, 1)
-		if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
-			i32.print(nbFrames)
-			nbFrames = 0
-			lastTime = f64.add(lastTime, 1.0D)
-		}
-		// End FPS
-
-		
-
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(program)
 		
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
-		// gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 		gl.MatrixMode(gl.MODELVIEW)
 
-		//Bounce on window bottom
 		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
 			ball.vy = f32.abs(ball.vy)
 		} else {

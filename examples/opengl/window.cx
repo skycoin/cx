@@ -1,8 +1,5 @@
 package main
 
-// import "gl"
-// import "glfw"
-
 var width i32 = 800
 var height i32 = 600
 

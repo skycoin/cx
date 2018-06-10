@@ -189,6 +189,7 @@ import (
 )
 
 var insert bool
+var prgrm *CXProgram
 
 func f (token int) int {
 	if insert && token == NEWLINE {
@@ -384,8 +385,6 @@ func getWorkingDirectory (file string) string {
 	return file[:c]
 }
 
-var prgrm *CXProgram
-
 func repl () {
 	fmt.Println("CX REPL")
 	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
@@ -415,7 +414,7 @@ func repl () {
 		
 		if inp, ok = readline(fi); ok {
 			if replTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {%s}", replTargetFn, inp)
+				inp = fmt.Sprintf(":func %s {\n%s\n}\n", replTargetFn, inp)
 			}
 			if replTargetMod != "" {
 				inp = fmt.Sprintf(":package %s {%s}", replTargetMod, inp)
@@ -425,35 +424,35 @@ func repl () {
 			}
 
 
-			var numExprs int
-			var currFn string
-			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-				currFn = fn.Name
-				numExprs = len(fn.Expressions)
-			}
+			// var numExprs int
+			// var currFn string
+			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// 	currFn = fn.Name
+			// 	numExprs = len(fn.Expressions)
+			// }
 			
 			b := bytes.NewBufferString(inp)
+			
 			yyParse(NewLexer(b))
 
-			var numExprsAdded int
-			if fn, err := prgrm.GetCurrentFunction(); err == nil {
-				numExprsAdded = len(fn.Expressions) - numExprs
-			}
+			prgrm.PrintProgram()
 
-			if numExprsAdded > 0 && currFn == MAIN_FUNC {
-				if fn, err := prgrm.GetCurrentFunction(); err == nil {
-					for true {
-						prgrm.RunInterpreted(dStack, 1)
+			// var numExprsAdded int
+			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// 	numExprsAdded = len(fn.Expressions) - numExprs
+			// }
+
+			// if numExprsAdded > 0 && currFn == MAIN_FUNC {
+			// 	if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// 		for true {
+			// 			prgrm.RunInterpreted(dStack, 1)
 						
-						if len(prgrm.CallStack) == 1 && prgrm.CallStack[0].Line == len(fn.Expressions) {
-							break
-						}
-					}
-				}
-			}
-			
-			
-			
+			// 			if len(prgrm.CallStack) == 1 && prgrm.CallStack[0].Line == len(fn.Expressions) {
+			// 				break
+			// 			}
+			// 		}
+			// 	}
+			// }
 		} else {
 			if replTargetFn != "" {
 				replTargetFn = ""
@@ -479,7 +478,7 @@ func repl () {
 	}
 }
 
-const VERSION = "0.5.1"
+const VERSION = "0.5.2"
 
 func main () {
 	runtime.LockOSThread()
@@ -584,6 +583,7 @@ func main () {
 
 	allSC := strings.Join(sourceCodeCopy, "")
 	cxgo0.Parse(allSC)
+
 	prgrm = cxgo0.PRGRM
 	dataOffset = cxgo0.DataOffset
 	
@@ -609,6 +609,7 @@ func main () {
 		// }
 
 		FunctionDeclaration(initFn, nil, nil, sysInitExprs)
+		prgrm.SelectFunction(MAIN_FUNC)
 	} else {
 		panic(err)
 	}

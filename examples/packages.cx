@@ -3,7 +3,6 @@ package foo
 type Point struct {
 	x i32
 	y i32
-	// alive bool
 }
 
 var num i32 = 15
@@ -18,9 +17,6 @@ import "foo"
 func returnPoint () (resPoint foo.Point) {
 	var resPoint foo.Point
 	resPoint = foo.Point{x: 10, y: 20}
-
-	// i32.print(resPoint.x)
-	// i32.print(resPoint.y)
 }
 
 package main

@@ -1,9 +1,5 @@
-package math;
+package math
 
 func double () (out i32) {
-	out = i32.add(5, 2);
-}
-
-func triple () {
-	
+	out = i32.add(5, 2)
 }

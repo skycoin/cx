@@ -4,7 +4,6 @@
 		// "fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
-		// "github.com/skycoin/cx/src/interpreted"
 	)
 
 	
@@ -127,7 +126,7 @@
 %type   <arguments>     struct_fields
 
 /* %type   <stringA>       package_identifier */
-                                                    
+                                
 %type   <expressions>   assignment_expression
 %type   <expressions>   constant_expression
 %type   <expressions>   conditional_expression
@@ -153,6 +152,8 @@
 
 %type   <expressions>   slice_literal_expression_list
 %type   <expressions>   slice_literal_expression
+
+%type   <expressions>   selector
 
 %type   <expressions>   struct_literal_fields
 %type   <selectStatement>   elseif
@@ -188,6 +189,8 @@
 /* %start                  translation_unit */
 %%
 
+
+
 translation_unit:
                 external_declaration
         |       translation_unit external_declaration
@@ -199,6 +202,80 @@ external_declaration:
         |       function_declaration
         |       import_declaration
         |       struct_declaration
+                
+        |       stepping
+        |       selector
+        |       debugging
+        ;
+
+debugging:      DSTATE
+                {
+			DebugState()
+                }
+        |       DSTACK
+                {
+			DebugStack()
+                }
+        |       DPROGRAM
+                {
+			prgrm.PrintProgram()
+                }
+        ;
+
+stepping:       TSTEP INT_LITERAL INT_LITERAL
+                {
+			Stepping(int($2), int($3), true)
+                }
+        |       STEP INT_LITERAL
+                {
+			Stepping(int($2), 0, false)
+                }
+        ;
+
+selector:
+                SPACKAGE IDENTIFIER
+                {
+			$<string>$ = Selector($2, SELECT_TYP_PKG)
+                }
+        |       SFUNC IDENTIFIER
+                {
+			$<string>$ = Selector($2, SELECT_TYP_FUNC)
+                }
+                compound_statement
+                {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				if fn, err := prgrm.GetFunction($<string>3, pkg.Name); err == nil {
+					for _, expr := range $4 {
+						fn.AddExpression(expr)
+					}
+					FunctionDeclaration(fn, nil, nil, nil)
+				} else {
+					panic(err)
+				}
+			} else {
+				panic(err)
+			}
+			
+			
+			// fmt.Println("house", $4)
+			// if $<bool>4 {
+				
+			// 	if _, err := prgrm.SelectFunction($<string>3); err == nil {
+			// 	}
+			// }
+                }
+        /* |       SSTRUCT IDENT */
+        /*         { */
+	/* 		$<string>$ = Selector($2, SELECT_TYP_STRCT) */
+        /*         } */
+        /*         selectorFields */
+        /*         { */
+	/* 		if $<bool>4 { */
+	/* 			if _, err := cxt.SelectStruct($<string>3); err == nil { */
+	/* 				//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
+	/* 			} */
+	/* 		} */
+        /*         } */
         ;
 
 global_declaration:
@@ -907,6 +984,9 @@ statement:      /* labeled_statement */
 	|       expression_statement
 	|       selection_statement
 	|       iteration_statement
+        |       selector
+        |       debugging
+                { $$ = nil }
 	/* |       jump_statement */
                 ;
 
@@ -938,6 +1018,13 @@ block_item_list:
 
 block_item:     declaration
         |       statement
+                
+        |       stepping
+                { $$ = nil }
+        /* |       debugging */
+        /*         { $$ = nil } */
+        /* |       selector */
+        /*         { $$ = nil} */
                 ;
 
 expression_statement:
