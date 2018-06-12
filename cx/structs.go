@@ -281,6 +281,7 @@ var TypeCodes map[string]int = map[string]int{
 	"ui16": TYPE_UI16,
 	"ui32": TYPE_UI32,
 	"ui64": TYPE_UI64,
+	"und": TYPE_UNDEFINED,
 }
 
 var TypeNames map[int]string = map[int]string{
@@ -298,6 +299,7 @@ var TypeNames map[int]string = map[int]string{
 	TYPE_UI16: "ui16",
 	TYPE_UI32: "ui32",
 	TYPE_UI64: "ui64",
+	TYPE_UNDEFINED: "und",
 }
 
 // memory locations

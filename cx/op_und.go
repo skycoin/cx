@@ -252,6 +252,19 @@ func op_bitshr(expr *CXExpression, stack *CXStack, fp int) {
 	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 
+func op_bitclear(expr *CXExpression, stack *CXStack, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	var outB1 []byte
+	switch inp1.Type {
+	case TYPE_I32:
+		outB1 = FromI32(int32(uint32(ReadI32(stack, fp, inp1)) &^ uint32(ReadI32(stack, fp, inp2))))
+	case TYPE_I64:
+		outB1 = FromI64(int64(uint32(ReadI64(stack, fp, inp1)) &^ uint32(ReadI64(stack, fp, inp2))))
+	}
+	
+	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
+}
+
 func op_len(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(inp1.Lengths[len(inp1.Lengths) - 1]))

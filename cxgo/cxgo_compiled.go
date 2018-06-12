@@ -14,6 +14,7 @@ const (
 	OP_BITAND
 	OP_BITXOR
 	OP_BITOR
+	OP_BITCLEAR
 
 	OP_MUL
 	OP_DIV
@@ -129,7 +130,7 @@ func DeclareStruct (ident string, strctFlds []*CXArgument) {
 func DeclarePackage (ident string) {
 	if pkg, err := prgrm.GetPackage(ident); err != nil {
 		pkg := MakePackage(ident)
-		pkg.AddImport(pkg)
+		// pkg.AddImport(pkg)
 		prgrm.AddPackage(pkg)
 	} else {
 		prgrm.SelectPackage(pkg.Name)
@@ -710,6 +711,8 @@ func ShorthandExpression (leftExprs []*CXExpression, rightExprs []*CXExpression,
 		operator = Natives[OP_UND_BITSHL]
 	case OP_BITSHR:
 		operator = Natives[OP_UND_BITSHR]
+	case OP_BITCLEAR:
+		operator = Natives[OP_UND_BITCLEAR]
 	case OP_LT:
 		operator = Natives[OP_UND_LT]
 	case OP_GT:
@@ -719,7 +722,7 @@ func ShorthandExpression (leftExprs []*CXExpression, rightExprs []*CXExpression,
 	case OP_GTEQ:
 		operator = Natives[OP_UND_GTEQ]
 	}
-
+	
 	return ArithmeticOperation(leftExprs, rightExprs, operator)
 }
 
@@ -767,7 +770,6 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 			expr.Package = pkg
 
 			declaration_specifiers.Name = declarator.Name
-			// fmt.Println("house", declaration_specifiers.Typ)
 			// declaration_specifiers.Typ = "ident"
 			declaration_specifiers.Package = pkg
 			expr.AddOutput(declaration_specifiers)
@@ -821,6 +823,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 	
 	if len(leftExprs[len(leftExprs) - 1].Outputs) < 1 {
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type])
+
 		name.Size = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Size
 		name.Package = pkg
@@ -830,6 +833,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 
 	if len(rightExprs[len(rightExprs) - 1].Outputs) < 1 {
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Type])
+
 		name.Size = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
 		name.TotalSize = rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Size
 		name.Package = pkg
@@ -1543,10 +1547,22 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 		} else {
 			// then it's a function call
 			if len(inpExpr.Outputs) < 1 {
-				out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
+				var out *CXArgument
+				
+				if inpExpr.Operator.Outputs[0].Type == TYPE_UNDEFINED {
+					// if undefined type, then adopt argument's type
+					out = MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Inputs[0].Type])
+					out.Size = inpExpr.Inputs[0].Size
+					out.TotalSize = inpExpr.Inputs[0].Size
+				} else {
+					out = MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
+					out.Size = inpExpr.Operator.Outputs[0].Size
+					out.TotalSize = inpExpr.Operator.Outputs[0].Size
+				}
+				
+				
 				out.Typ = "ident"
-				out.Size = inpExpr.Operator.Outputs[0].Size
-				out.TotalSize = inpExpr.Operator.Outputs[0].Size
+				
 				out.Package = inpExpr.Package
 				inpExpr.AddOutput(out)
 				expr.AddInput(out)

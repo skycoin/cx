@@ -645,6 +645,7 @@ shift_expression:
                 additive_expression
 	|       shift_expression LEFT_OP additive_expression
 	|       shift_expression RIGHT_OP additive_expression
+        |       shift_expression BITCLEAR_OP additive_expression
                 ;
 
 relational_expression:

@@ -804,6 +804,10 @@ shift_expression:
                 {
 			$$ = ShorthandExpression($1, $3, OP_BITSHR)
                 }
+        |       shift_expression BITCLEAR_OP additive_expression
+                {
+			$$ = ShorthandExpression($1, $3, OP_BITCLEAR)
+                }
                 ;
 
 relational_expression:

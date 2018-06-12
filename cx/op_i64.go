@@ -59,6 +59,7 @@ func op_i64_abs(expr *CXExpression, stack *CXStack, fp int) {
 func op_i64_pow(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Pow(float64(ReadI64(stack, fp, inp1)), float64(ReadI64(stack, fp, inp2)))))
+	
 	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
 }
 

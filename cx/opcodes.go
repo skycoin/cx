@@ -12,6 +12,7 @@ const (
 	OP_UND_BITAND
 	OP_UND_BITXOR
 	OP_UND_BITOR
+	OP_UND_BITCLEAR
 	OP_UND_MUL
 	OP_UND_DIV
 	OP_UND_MOD
@@ -26,6 +27,9 @@ const (
 	OP_UND_LEN
 
 	OP_BOOL_PRINT
+
+	OP_BOOL_EQUAL
+	
 	OP_BOOL_NOT
 	OP_BOOL_OR
 	OP_BOOL_AND
@@ -272,13 +276,14 @@ func execNative(prgrm *CXProgram) {
 	case OP_UND_BITAND: op_bitand(expr, stack, fp)
 	case OP_UND_BITXOR: op_bitxor(expr, stack, fp)
 	case OP_UND_BITOR: op_bitor(expr, stack, fp)
+	case OP_UND_BITCLEAR: op_bitclear(expr, stack, fp)
 	case OP_UND_MUL: op_mul(expr, stack, fp)
 	case OP_UND_DIV: op_div(expr, stack, fp)
 	case OP_UND_MOD: op_mod(expr, stack, fp)
 	case OP_UND_ADD: op_add(expr, stack, fp)
 	case OP_UND_SUB: op_sub(expr, stack, fp)
-	case OP_UND_BITSHL: op_sub(expr, stack, fp)
-	case OP_UND_BITSHR: op_sub(expr, stack, fp)
+	case OP_UND_BITSHL: op_bitshl(expr, stack, fp)
+	case OP_UND_BITSHR: op_bitshr(expr, stack, fp)
 	case OP_UND_LT: op_lt(expr, stack, fp)
 	case OP_UND_GT: op_gt(expr, stack, fp)
 	case OP_UND_LTEQ: op_lteq(expr, stack, fp)
@@ -290,6 +295,8 @@ func execNative(prgrm *CXProgram) {
 
 	case OP_BOOL_PRINT:
 		op_bool_print(expr, stack, fp)
+	case OP_BOOL_EQUAL:
+		op_bool_equal(expr, stack, fp)
 	case OP_BOOL_NOT:
 		op_bool_not(expr, stack, fp)
 	case OP_BOOL_OR:
@@ -423,6 +430,10 @@ func execNative(prgrm *CXProgram) {
 		op_i64_max(expr, stack, fp)
 	case OP_I64_MIN:
 		op_i64_min(expr, stack, fp)
+	case OP_I64_SIN:
+		op_i64_sin(expr, stack, fp)
+	case OP_I64_COS:
+		op_i64_cos(expr, stack, fp)
 
 	case OP_F32_PRINT:
 		op_f32_print(expr, stack, fp)
@@ -507,6 +518,8 @@ func execNative(prgrm *CXProgram) {
 		op_f64_log10(expr, stack, fp)
 	case OP_F64_MAX:
 		op_f64_max(expr, stack, fp)
+	case OP_F64_MIN:
+		op_f64_min(expr, stack, fp)
 	case OP_STR_PRINT:
 		op_str_print(expr, stack, fp)
 	case OP_MAKE:
@@ -547,6 +560,7 @@ func execNative(prgrm *CXProgram) {
 	case OP_TIME_UNIX_MILLI:
 		op_time_UnixMilli(expr, stack, fp)
 	case OP_TIME_UNIX_NANO:
+		op_time_UnixNano(expr, stack, fp)
 
 		// opengl
 	case OP_GL_INIT:
@@ -692,14 +706,29 @@ var OpNames map[int]string = map[int]string{
 	OP_READ_ARRAY: "read",
 	OP_JMP:        "jmp",
 	OP_DEBUG:      "debug",
-	
-	OP_UND_GT: "gt",
 
+	OP_UND_EQUAL: "equal",
+	OP_UND_UNEQUAL: "unequal",
+	OP_UND_BITAND: "bitand",
+	OP_UND_BITXOR: "bitxor",
+	OP_UND_BITOR: "bitor",
+	OP_UND_BITCLEAR: "bitclear",
+	OP_UND_MUL: "mul",
+	OP_UND_DIV: "div",
+	OP_UND_MOD: "mod",
+	OP_UND_ADD: "add",
+	OP_UND_SUB: "sub",
+	OP_UND_BITSHL: "bitshl",
+	OP_UND_LT: "lt",
+	OP_UND_GT: "gt",
+	OP_UND_LTEQ: "lteq",
+	OP_UND_GTEQ: "gteq",
 	OP_UND_LEN: "len",
 
 	OP_BYTE_PRINT: "byte.print",
 
 	OP_BOOL_PRINT: "bool.print",
+	OP_BOOL_EQUAL: "bool.eq",
 	OP_BOOL_NOT:   "bool.not",
 	OP_BOOL_OR:    "bool.or",
 	OP_BOOL_AND:   "bool.and",
@@ -815,6 +844,7 @@ var OpNames map[int]string = map[int]string{
 
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
+	OP_TIME_UNIX_NANO: "time.UnixNano",
 
 	OP_TEST_START: "test.start",
 	OP_TEST_STOP: "test.stop",
@@ -900,13 +930,28 @@ var OpCodes map[string]int = map[string]int{
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
+	"equal": OP_UND_EQUAL,
+	"unequal": OP_UND_UNEQUAL,
+	"bitand": OP_UND_BITAND,
+	"bitxor": OP_UND_BITXOR,
+	"bitor": OP_UND_BITOR,
+	"bitclear": OP_UND_BITCLEAR,
+	"mul": OP_UND_MUL,
+	"div": OP_UND_DIV,
+	"mod": OP_UND_MOD,
+	"add": OP_UND_ADD,
+	"sub": OP_UND_SUB,
+	"bitshl": OP_UND_BITSHL,
+	"lt": OP_UND_LT,
 	"gt": OP_UND_GT,
-
+	"lteq": OP_UND_LTEQ,
+	"gteq": OP_UND_GTEQ,
 	"len": OP_UND_LEN,
-
+	
 	"byte.print": OP_BYTE_PRINT,
 
 	"bool.print": OP_BOOL_PRINT,
+	"bool.eq":    OP_BOOL_EQUAL,
 	"bool.not":   OP_BOOL_NOT,
 	"bool.or":    OP_BOOL_OR,
 	"bool.and":   OP_BOOL_AND,
@@ -1022,6 +1067,7 @@ var OpCodes map[string]int = map[string]int{
 
 	"time.Sleep":     OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
+	"time.UnixNano": OP_TIME_UNIX_NANO,
 
 	"test.start": OP_TEST_START,
 	"test.stop": OP_TEST_STOP,
@@ -1107,27 +1153,27 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	OP_UND_EQUAL: MakeNative(OP_UND_EQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_UNEQUAL: MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	
-	OP_UND_BITAND: MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITAND: MakeNative(OP_UND_BITAND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_BITXOR: MakeNative(OP_UND_BITXOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_BITOR: MakeNative(OP_UND_BITOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-
+	OP_UND_BITCLEAR: MakeNative(OP_UND_BITCLEAR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_MUL: MakeNative(OP_UND_MUL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_DIV: MakeNative(OP_UND_DIV, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_MOD: MakeNative(OP_UND_MOD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_ADD: MakeNative(OP_UND_ADD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_SUB: MakeNative(OP_UND_SUB, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-
+	OP_UND_BITSHL: MakeNative(OP_UND_BITSHL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITSHR: MakeNative(OP_UND_BITSHR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_LT: MakeNative(OP_UND_LT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_GT: MakeNative(OP_UND_GT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_LTEQ: MakeNative(OP_UND_LTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_GTEQ: MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-
 	OP_UND_LEN: MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
 
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
 	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
+	OP_BOOL_EQUAL: MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_NOT:   MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_OR:    MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_AND:   MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
@@ -1237,12 +1283,13 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_LOG:   MakeNative(OP_F64_LOG, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG2:  MakeNative(OP_F64_LOG2, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG10: MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MIN:   MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MAX:   MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F32}),
+	OP_F64_MIN:   MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MAX:   MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_STR_PRINT: MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 
 	OP_TIME_SLEEP:      MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
+	OP_TIME_UNIX_NANO:  MakeNative(OP_TIME_UNIX_NANO, []int{}, []int{TYPE_I64}),
 
 	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
 	OP_TEST_STOP: MakeNative(OP_TEST_START, []int{}, []int{}),

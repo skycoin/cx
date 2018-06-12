@@ -13,7 +13,7 @@ func op_test_value (expr *CXExpression, stack *CXStack, fp int) {
 
 	var same bool
 	same = true
-	
+
 	for i, byt := range byts1 {
 		if byt != byts2[i] {
 			same = false
@@ -25,7 +25,7 @@ func op_test_value (expr *CXExpression, stack *CXStack, fp int) {
 	
 	if !same {
 		if message != "" {
-			fmt.Printf("%s: %d: result was not equal to the expected value\n; %s", expr.FileName, expr.FileLine, message)
+			fmt.Printf("%s: %d: result was not equal to the expected value; %s\n", expr.FileName, expr.FileLine, message)
 		} else {
 			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 		}

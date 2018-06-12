@@ -2,11 +2,11 @@ package main
 import "testing"
 
 func main () () {
-	testing.testI32()
+	// testing.testI32()
 	// testing.testI64()
 	// testing.testF32()
 	// testing.testF64()
-	// testing.testBOOL()
+	testing.testBOOL()
 	// testing.testBYTE()
 	// testing.testSTR()
 	// testing.testArray()

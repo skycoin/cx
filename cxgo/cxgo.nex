@@ -71,6 +71,7 @@
 />=/                      { return f(GE_OP)}
 /==/                      { return f(EQ_OP)}
 /\|/                      { return f(BITOR_OP)}
+/&\^/                     { return f(BITCLEAR_OP)}
 /\^/                      { return f(BITXOR_OP)}
 /!=/                      { return f(NE_OP)}
 /;/                       { return f(SEMICOLON) }
@@ -190,7 +191,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.2"
+const VERSION = "0.5.3"
 
 var insert bool
 var prgrm *CXProgram

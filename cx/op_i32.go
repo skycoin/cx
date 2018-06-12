@@ -13,7 +13,7 @@ func op_i32_i32(expr *CXExpression, stack *CXStack, fp int) {
 	switch out1.Type {
 	case TYPE_BYTE:
 		WriteMemory(stack, out1Offset, out1, FromByte(byte(ReadI32(stack, fp, inp1))))
-	// case TYPE_STR: WriteMemory(stack, out1Offset, out1, FromStr(strconv.Itoa(ReadI32(stack, fp, inp1))))
+		// case TYPE_STR: WriteMemory(stack, out1Offset, out1, FromStr(strconv.Itoa(ReadI32(stack, fp, inp1))))
 	case TYPE_I32:
 		WriteMemory(stack, out1Offset, out1, FromI32(ReadI32(stack, fp, inp1)))
 	case TYPE_I64:
