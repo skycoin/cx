@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -677,9 +677,19 @@ func UnaryExpression (op string, prevExprs []*CXExpression) []*CXExpression {
 
 		exprOut.IsReference = false
 	case "&":
-		prevExprs[0].Outputs[0].IsReference = true
-		prevExprs[0].Outputs[0].MemoryRead = MEM_STACK
-		prevExprs[0].Outputs[0].MemoryWrite = MEM_HEAP
+		prevExprs[len(prevExprs) - 1].Outputs[0].IsReference = true
+		prevExprs[len(prevExprs) - 1].Outputs[0].MemoryRead = MEM_STACK
+		prevExprs[len(prevExprs) - 1].Outputs[0].MemoryWrite = MEM_HEAP
+	case "!":
+		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			fmt.Println("scooby doo papa", prevExprs[0].Operator)
+			expr := MakeExpression(Natives[OP_BOOL_NOT])
+			expr.Package = pkg
+
+			// expr.AddInput
+		} else {
+			panic(err)
+		}
 	}
 	return prevExprs
 }

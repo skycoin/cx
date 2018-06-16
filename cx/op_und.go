@@ -76,6 +76,8 @@ func op_equal(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BOOL:
+		outB1 = FromBool(ReadBool(stack, fp, inp1) == ReadBool(stack, fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(stack, fp, inp1) == ReadI32(stack, fp, inp2))
 	case TYPE_I64:
@@ -93,6 +95,8 @@ func op_unequal(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BOOL:
+		outB1 = FromBool(ReadBool(stack, fp, inp1) != ReadBool(stack, fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(stack, fp, inp1) != ReadI32(stack, fp, inp2))
 	case TYPE_I64:

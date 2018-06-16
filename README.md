@@ -437,9 +437,9 @@ used with identifiers (variables).
 
 |   Shorthand   	| Native Function 	|
 |:-------------:	|:---------------:	|
-|     !true     	|    not(true)    	|
-|  true && true 	| and(true, true) 	|
-| true \|\| false 	| or(true, false) 	|
+|     !true     	|    bool.not(true)    	|
+|  true && true 	| bool.and(true, true) 	|
+| true \|\| false 	| bool.or(true, false) 	|
 
 ## Arithmetic Operators
 

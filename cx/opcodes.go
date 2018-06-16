@@ -29,7 +29,7 @@ const (
 	OP_BOOL_PRINT
 
 	OP_BOOL_EQUAL
-	
+	OP_BOOL_UNEQUAL
 	OP_BOOL_NOT
 	OP_BOOL_OR
 	OP_BOOL_AND
@@ -297,6 +297,8 @@ func execNative(prgrm *CXProgram) {
 		op_bool_print(expr, stack, fp)
 	case OP_BOOL_EQUAL:
 		op_bool_equal(expr, stack, fp)
+	case OP_BOOL_UNEQUAL:
+		op_bool_unequal(expr, stack, fp)
 	case OP_BOOL_NOT:
 		op_bool_not(expr, stack, fp)
 	case OP_BOOL_OR:
@@ -707,8 +709,8 @@ var OpNames map[int]string = map[int]string{
 	OP_JMP:        "jmp",
 	OP_DEBUG:      "debug",
 
-	OP_UND_EQUAL: "equal",
-	OP_UND_UNEQUAL: "unequal",
+	OP_UND_EQUAL: "eq",
+	OP_UND_UNEQUAL: "uneq",
 	OP_UND_BITAND: "bitand",
 	OP_UND_BITXOR: "bitxor",
 	OP_UND_BITOR: "bitor",
@@ -729,6 +731,7 @@ var OpNames map[int]string = map[int]string{
 
 	OP_BOOL_PRINT: "bool.print",
 	OP_BOOL_EQUAL: "bool.eq",
+	OP_BOOL_UNEQUAL: "bool.uneq",
 	OP_BOOL_NOT:   "bool.not",
 	OP_BOOL_OR:    "bool.or",
 	OP_BOOL_AND:   "bool.and",
@@ -952,6 +955,7 @@ var OpCodes map[string]int = map[string]int{
 
 	"bool.print": OP_BOOL_PRINT,
 	"bool.eq":    OP_BOOL_EQUAL,
+	"bool.uneq":  OP_BOOL_UNEQUAL,
 	"bool.not":   OP_BOOL_NOT,
 	"bool.or":    OP_BOOL_OR,
 	"bool.and":   OP_BOOL_AND,
@@ -1173,7 +1177,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
 	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
-	OP_BOOL_EQUAL: MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_EQUAL: MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_UNEQUAL: MakeNative(OP_BOOL_UNEQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_NOT:   MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_OR:    MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_AND:   MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
