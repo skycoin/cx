@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 )
@@ -682,11 +682,16 @@ func UnaryExpression (op string, prevExprs []*CXExpression) []*CXExpression {
 		prevExprs[len(prevExprs) - 1].Outputs[0].MemoryWrite = MEM_HEAP
 	case "!":
 		if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-			fmt.Println("scooby doo papa", prevExprs[0].Operator)
 			expr := MakeExpression(Natives[OP_BOOL_NOT])
 			expr.Package = pkg
 
-			// expr.AddInput
+			expr.AddInput(prevExprs[len(prevExprs) - 1].Outputs[0])
+
+			// out := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[TYPE_BOOL])
+			// out.Package = pkg
+			// expr.AddOutput(out)
+
+			prevExprs[len(prevExprs) - 1] = expr
 		} else {
 			panic(err)
 		}
@@ -864,6 +869,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs) - 1].Outputs[0])
 	} else {
 		// then it's a function call
+		expr.AddInput(leftExprs[len(leftExprs) - 1].Outputs[0])
 		out = append(out, leftExprs...)
 	}
 
@@ -872,6 +878,7 @@ func ArithmeticOperation (leftExprs []*CXExpression, rightExprs []*CXExpression,
 		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs) - 1].Outputs[0])
 	} else {
 		// then it's a function call
+		expr.AddInput(rightExprs[len(rightExprs) - 1].Outputs[0])
 		out = append(out, rightExprs...)
 	}
 
@@ -1580,6 +1587,6 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			nestedExprs = append(nestedExprs, inpExpr)
 		}
 	}
-	
+
 	return append(nestedExprs, exprs...)
 }

@@ -1,0 +1,2051 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt,fleqn,openany]{book} % Default font size and left-justified equations
+
+\usepackage[top=3cm,bottom=3cm,left=3.2cm,right=3.2cm,headsep=10pt,letterpaper]{geometry} % Page margins
+
+\usepackage[toc,page]{appendix}
+
+\usepackage{listings}
+\usepackage{listings-golang}
+\lstset{ % add your own preferences
+    % frame=single,
+    basicstyle=\footnotesize,
+    keywordstyle=\color{blue},
+    numbers=left,
+    numbersep=15pt,
+    showstringspaces=false, 
+    stringstyle=\color{red},
+    tabsize=4,
+    % framesep=5pt,
+    % xleftmargin=5pt,
+    % xrightmargin=5pt,
+    aboveskip=20pt,
+    belowskip=20pt,
+    language=Golang % this is it !
+}
+
+\usepackage{xcolor} % Required for specifying colors by name
+\definecolor{ocre}{RGB}{52,177,201} % Define the orange color used for highlighting throughout the book
+
+% Font Settings
+\usepackage{avant} % Use the Avantgarde font for headings
+%\usepackage{times} % Use the Times font for headings
+\usepackage{mathptmx} % Use the Adobe Times Roman as the default text font together with math symbols from the Sym­bol, Chancery and Com­puter Modern fonts
+
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+% Bibliography
+\usepackage[style=alphabetic,sorting=nyt,sortcites=true,autopunct=true,babel=hyphen,hyperref=true,abbreviate=false,backref=true,backend=biber]{biblatex}
+\addbibresource{bibliography.bib} % BibTeX bibliography file
+\defbibheading{bibempty}{}
+
+\input{structure} % Insert the commands.tex file which contains the majority of the structure behind the template
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begingroup
+\thispagestyle{empty}
+% \AddToShipoutPicture*{\put(0,0){\includegraphics[scale=1.25]{esahubble}}} % Image background
+\centering
+\vspace*{5cm}
+\par\normalfont\fontsize{35}{35}\sffamily\selectfont
+\textbf{CX Programming Language}\\
+{\LARGE A Gentle Introduction through Video Game Programming}\par % Book title
+\vspace*{1cm}
+{\Huge Amaury Hernandez-Aguila}\par % Author name
+% {\Huge John Doe}\par % Author name
+\endgroup
+
+%----------------------------------------------------------------------------------------
+%	COPYRIGHT PAGE
+%----------------------------------------------------------------------------------------
+
+\newpage
+~\vfill
+\thispagestyle{empty}
+
+%\noindent Copyright \copyright\ 2014 Andrea Hidalgo\\ % Copyright notice
+
+\noindent \textsc{Summer Research Internship, University of Western Ontario}\\
+
+\noindent \textsc{github.com/LaurethTeX/Clustering}\\ % URL
+
+\noindent This research was done under the supervision of Dr. Pauline Barmby with the financial support of the MITACS Globalink Research Internship Award within a total of 12 weeks, from June 16th to September 5th of 2014.\\ % License information
+
+\noindent \textit{First release, August 2014} % Printing/edition date
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png} % Table of contents heading image
+
+\pagestyle{empty} % No headers
+
+\tableofcontents % Print the table of contents itself
+
+%\cleardoublepage % Forces the first chapter to start on an odd page so it's on the right
+
+\pagestyle{fancy} % Print headers again
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 1
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png} % Chapter heading image
+
+\chapter{Getting Started with CX}
+\label{chapter:getting-started-with-cx}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item Write a short paragraph introducing the reader to this Book Part
+    \item \textbf{DONE DRAFT} What you'll find in this chapter, how the book will progress
+    \end{itemize}
+\end{remark}
+
+This Chapter works as an introduction to Skycoin's programming language: CX. In the following Sections you will learn about the objectives and philosophy of the language and about the features that make CX unique.
+
+In this first Chapter you can find instructions on how to install CX, and how to write and run your first program using the language. We will then start with some basic programming concepts in Chapter \ref{chapter:data-structures}, like what is a variable and the types of data these variables can represent, how you can group different values in arrays and slices, how you can group different types of values in structures, and how you can change the scope of a variable in a program. In Chapter \ref{chapter:functions} you will learn how to use functions and methods, and we'll talk a bit about side effects. The different control flow mechanisms that CX currently offers are covered in Chapter \ref{chapter:control-flow}, such as \textit{if} and the \textit{for loop}. The last fundamental piece is packages, which help us modularize our programs, and they are covered in Chapter \ref{chapter:packages}.
+
+After Chapter \ref{chapter:packages}, we'll start covering more complex subjects, such as how to use CX with OpenGL and GLFW in Chapter \ref{chapter:opengl-and-glfw-with-cx}. Chapter \ref{chapter:interpreted-and-compiled} covers how CX can work both as an interpreted and as a compiled language, and what advantages bring each mode. Chapters \ref{chapter:garbage-collector} and \ref{chapter:affordances} describe CX's garbage collector and affordances, respectively, which allow us to create an interesting tool: the object explorer, which is described in Chapter \ref{chapter:object-explorer}. Chapter \ref{chapter:serialization} will describe CX's serialization capabilities, and we'll learn how we can serialize a full, running program, store it in a file, and later deserialize it to continue its execution.
+
+CX uses its affordance system to create a genetic programming algorithm that can be used to create programs that create programs, and this feature is explained in Chapter \ref{chapter:genetic-programming}. Talking about creating programs that create programs, are you interested on creating your very own CX? If you are, we'll cover that subject in Chapter \ref{chapter:creating-your-own-cx}. Lastly, we'll cover some advanced techniques you can use while using the REPL to create a program in Chapter \ref{chapter:mastering-the-repl}, and Chapter \ref{chapter:unit-testing-in-cx} teaches us how to create unit tests to make sure everything works as intended while your programs grow larger.
+
+As a final note, we'll be creating video games to strengthen the knowledge you acquired after reading each of the Chapters!
+
+\section{What is CX?}\index{What is CX?}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item \textbf{DONE DRAFT} What is CX, what it can be used for, what we'll see of it in this book
+    \item \textbf{DONE DRAFT} Why CX, CX's objectives, how to achieve these objectives
+    \end{itemize}
+\end{remark}
+
+CX is an interpreted and compiled, garbage collected, general purpose programming language, which means that it can be used to create any type of program, such as web, desktop and command line applications. However, at the time of writing this book, the current version of CX is best suited to create command line applications and, surprisingly, video games! In a not so distant future, CX will be capable of handling all sorts of platforms, for the development of many kind of applications. But do not despair, as the current capabilities of the language are enough to try the fundamentals of programming, video game programming and other very powerful and interesting features, such as affordances, which are unique to CX.
+
+You may be wondering about the objectives of CX -- why create another language anyway? One of the main objectives of the language is to lower the software development costs by increasing the programmer's productivity. CX achieves this by providing well-known programming tools, such as a Read-Eval-Print Loop (REPL) for interactive programming and interactive debugging mechanisms. But CX goes further by extending the common REPL's capabilities. Those extensions will be reviewed in Chapter \ref{chapter:mastering-the-repl}.
+
+Another objective of CX is to provide the developer with many high-level tools that are part of the core language, i.e., the programmer won't need to install any external packages and the language will interact seamlessly with these features. Clear examples are CX's interactivity with the Skycoin ecosystem for creating decentralized applications and CX's affordance system and genetic programming functions that help the programmer create applications in a more interactive manner.
+
+\section{Installing CX}\index{Installing CX}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Explain there is a script for installation, which is in beta
+        \item Explain the steps (each of the steps in the script)
+        \item Explain special case in Windows
+        \item Explain you need OpenGL libraries in Ubuntu
+        \item Run tests, run examples (show command line, running the examples)
+    \end{itemize}
+\end{remark}
+
+Eventually, we'll have a bootstrapped version of CX, and you'll be able to compile CX using CX, but in the meantime, you need to have a working Go installation to compile CX, as CX is implemented in this language. Although providing instructions on how to install Go is out of the scope of this book, we can give you some guidelines:
+
+\begin{itemize}
+\item At the time of writing, you can find instructions on how to install Go here: \url{https://golang.org/doc/install}
+\item Make sure you get a version of Go superior to 1.8
+\item Correctly setting a Go environment -- particularly the GOPATH variable -- usually decreases the chances of getting errors with the installation of CX
+\end{itemize}
+
+After getting your Go installation ready, you will need to install some libraries or programs, depending on your operating system.
+
+In the case of Linux distributions, you might need to install some OpenGL libraries, if you haven't done already. CX has been tested in Ubuntu, and the commands to get the required libraries for this distribution are shown in Listing \ref{listing:installing-opengl}.
+
+\begin{lstlisting}[caption={Installing Required OpenGL Libraries in Ubuntu},captionpos=b,label={listing:installing-opengl}]
+sudo apt-get install libxi-dev
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install libxrandr-dev
+sudo apt-get install libxcursor-dev
+sudo apt-get install libxinerama-dev
+\end{lstlisting}
+
+As there are dozens of Linux distributions, it'd be hard to give instructions on how to get the correct libraries for each of them. Nevertheless, using your favorite search engine to find out the names of those libraries for your distribution, and how to install them should be easy.
+
+If you are using Windows, you might only need to install \emph{GCC}. If you already installed GCC through Cygwin, you might run into trouble, as Go apparently doesn't get along with Cygwin. If you haven't installed GCC, you should install it either through \emph{tdm-gcc} (\url{http://tdm-gcc.tdragon.net/}) or Mingw (\url{http://www.mingw.org/}).
+
+At the moment, most users of CX have installed it on MacOS systems, and in all of the cases the installation of the language has been straightforward.
+
+And finally, you'll need \emph{Git} installed, regardless of your operating system. If you find any problems with the installation, we'll be grateful if you can open an issue at CX's GitHub repository (\url{https://github.com/skycoin/cx}), so we can improve the installation process!
+
+After going through the hassles of installing Go and the required libraries, you should be able to install CX by running either the \emph{cx.sh} (for *nix users) or the \emph{cx.bat} (for Windows users) installation scripts, which can be found in CX's GitHub repository (\url{https://github.com/skycoin/cx}). If you are running a *nix operating system, you can also try the command shown in Listing \ref{listing:cx-installation-one-liner}.
+
+\begin{lstlisting}[caption={One-liner CX Installation Script for *nix Systems},captionpos=b,label={listing:cx-installation-one-liner}]
+sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
+\end{lstlisting}
+
+If everything went well, you should be able to see CX's version printed in your terminal after running \textbf{cx -v}.
+
+\section{Hello, world!}\index{Hello, world!}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item "It is time to write your first program, and here it is:"
+        \item Explain the essential parts of a CX program
+        \item Explain that there are interpreted and compiled CX
+        \item Explain how to run it using iCX and cCX
+        \item Explain there is also a REPL, which is explained in next section
+        \item Briefly tell to notice how you had to write "str" in front of print
+    \end{itemize}
+\end{remark}
+
+Now it is time to write your first program in CX! And as the tradition dictates, this first program has to be printing \emph{Hello, world!} to the terminal. You can find this program in Listing \ref{listing:hello-world-example}.
+
+\begin{lstlisting}[caption={"Hello, world!" Example},captionpos=b,label={listing:hello-world-example}]
+package main
+
+func main () {
+ 	str.print("Hello, world!")
+}
+\end{lstlisting}
+
+We can see the essential parts of a CX program in the aforementioned program. Every CX program has to be organized in packages (you can learn more about them in Chapter \ref{chapter:packages}), and, specifically, every CX program must declare a \emph{main} package. Additionally, in this \emph{main} package, you must declare a \emph{main} function, which will work as your program's \emph{entry point}. The entry point of any program is the function, subroutine or instruction that will be run first, and which will tell the operating system how to continue with the program's execution.
+
+After writing the program using your favorite text editor, save it to your computer using the name \emph{hello-world.cx}. You can then run it by using either \textbf{cx hello-world.cx} or \textbf{cx hello-world.cx -i}. After executing either instruction, you should see the text \textit{Hello, world!} printed to your terminal.
+
+In case you're curious about the \emph{-i} flag, it instructs CX to interpret the program, instead of compiling and then running it. You can learn more about this in Chapter \ref{chapter:interpreted-and-compiled}. Also, there's actually a third way of running your program: \textbf{cx hello-world.cx -r}, but we'll learn more about it in Chapter \ref{chapter:mastering-the-repl}, and it's related to the next Section.
+
+\section{Introduction to the REPL}\index{Introduction to the REPL}
+\label{Introduction to the REPL}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item What REPL means, and how it can be run
+        \item "Here is an example of a REPL session"
+        \item Code run in REPL is interpreted, but the idea is to mix both codes like in Common Lisp, for example
+        \item In interpreted code you can do X, in compiled you can do Y. Further explained in Chapter Z
+        \item REPLs are very useful to test some quick ideas
+        \item But, we want to achieve something like Common Lisp's SLIME (cite)
+        \item We want to go even further: edit already defined functions, use affordances, convert from AST to code (from different languages), use the object explorer, provide an API for different text editors to connect to
+    \end{itemize}
+\end{remark}
+
+A Read-Eval-Print Loop (REPL) is a terminal tool for interactive programming. The programmer can enter an expression, statement or declaration, and they will be evaluated instantaneously. REPLs are usually found in dynamically typed languages and interpreted languages, but this is not a rule. For example, Go is a statically typed language and there's a REPL for it called \emph{gore}. As another exception, Common Lisp has a REPL, and Common Lisp is both an interpreted and compiled language. You can have a look at a REPL session in Listing \ref{listing:repl-example-1}.
+
+
+\begin{lstlisting}[caption={REPL Session Example},captionpos=b,label={listing:repl-example-1}]
+CX 0.5.2
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
+
+:func main {...
+	* str.print("Hello, world!")
+
+:func main {...
+	* :step 1
+Hello, world!
+
+:func main {...
+	* 
+\end{lstlisting}
+
+We can see that this REPL session example is another way of creating a \textit{Hello, world!} program in CX. The first thing to explain in a REPL session is that the asterisk or multiplication sign (\textit{*}) is telling the programmer that CX is awaiting for an instruction to be entered. This is called a \textit{REPL prompt} At \textbf{line 5}, we decide to enter an expression: \textbf{str.print("Hello, world!")}. But where does this expression go? How does CX know what is the entry point in a REPL session? To answer this question, we need to look at \textbf{line 4}. This line is telling us that we're currently inside function \emph{main}, and that any expression that we write is going to be added to that function. This means that the entry point of a program written using the REPL is still the \textit{main} function.
+
+Now, if we want to run the program, we need to use the \textbf{:step} meta-command, which is explained further in Chapter \ref{chapter:mastering-the-repl}. At \textbf{line 8} we are telling CX to advance the program by 1 instruction, which results in executing the \textbf{str.print("Hello, world!")} expression and prints the message to the terminal.
+
+Something that you might have noted is that we writing \textit{str} in front of \textit{print}. This is explained in the next Section.
+
+\section{Strict Typing System}\index{Strict Typing System}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item One last note. CX provides a very strict typing system
+        \item Every native function has a version for each type (i32.print, f32.print)
+        \item The objective behind this is safety: Any attempt to misinterpret data is caught at compile time or generates a well-specified error at runtime
+        \item 
+        \item However, for convenience CX also provides some generalized functions, like shorthands for i32.add (+)
+    \end{itemize}
+\end{remark}
+
+One of the features of CX is its strict typing system. Although the language provides some type-generalized functions, such as $len()$, there is usually a type-specific function for achieving the task. For example, in Listing \ref{listing:type-specific-functions}, we can see that we can print a string either by using \textbf{str.print} or \textbf{print}.
+
+\begin{lstlisting}[caption={Type-Specific Functions},captionpos=b,label={listing:type-specific-functions}]
+package main
+
+func main () {
+ 	str.print("type-specific function")
+    print("type-generalized function")
+    i32.print(i32.add(10, 10))
+    i32.print(10 + 10)
+}
+\end{lstlisting}
+
+Another kind of type-generalized functions are the infix arithmetic symbols, e.g., \textbf{+}, \textbf{*}, etc. The parser will infer the type of its arguments and translate the arithmetic statement to an expression that uses a type-specific function.
+
+The objective of having a strict typing system like this is to promote \emph{safety}. If the programmer misinterprets data in a program and, for example, tries to send an \textbf{i32} value to \textbf{str.print()}, this error can be caught early at compile-time instead of being caught at run-time.
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 2 
+%----------------------------------------------------------------------------------------
+\chapterimage{blank-header.png}
+
+\chapter{CX Programs Representation}
+\label{chapter:cx-programs-representation}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item CX code gets transcompiled to Golang
+        \item This golang code generates a structure that represents the program
+        \item This structure can be run by the interpreted version or the compiled version
+        \item The programmer can have certain parts to be compiled and other parts to be interpreted
+        \item Mention how the parser creates the structure
+        \item \textbf{TODO} This structure represents an AST, which can be seen in listing X
+        \item \textbf{TODO} Below listing, mention what code generates that AST
+        \item \textbf{TODO} Explain each of the AST parts: program, packages, imports, globals, functions, expressions
+        \item \textbf{TODO} Expressions are special, and this will be seen in next section
+    \end{itemize}
+\end{remark}
+
+When you create a CX program and run it with the \textbf{cx} command, the first thing that happens is that the code gets parsed. Every statement, declaration and expression in your code is translated to a series of \textit{adders}, \textit{removers}, \textit{selectors}, \textit{getters} and \textit{makers} (these are covered in Chapter \ref{chapter:creating-your-own-cx}). The trans-compiled version of a CX program is a series of these instructions that generate a structure that holds all the necessary information for the CX runtime to execute the program. It is worth to note that both interpreted and compiled versions of CX can read the same structure, so CX can have some parts of its programs compiled while other parts run in an interpreted way. The programmer can decide to compile certain functions that need to be fast, while having other functions to be interpreted, so they can be modified interactively by the user or the affordance system, for example.
+
+The structure that represents a CX program is generated by a parser, which reads the code that you, the programmer, has written using your favorite text editor. This structure can be considered as the program's Abstract Syntax Tree (AST). CX's REPL (introduced in Subsection \ref{Introduction to the REPL}) has a meta-command that prints the AST of a program. This meta-command can be called by writing \textbf{:dp} or \textbf{:debugProgram} in the REPL, and will print something similar to Listing \ref{listing:ast-example}.
+
+If you want to try it out, you can save the program in Listing \ref{listing:ast-example-code} to a file called \textbf{ast-example.cx}, and load it to a REPL by executing the command \textbf{cx ast-example.cx -r}. Then in the REPL prompt, just enter the meta-command \textbf{:dp}, and it should print the AST shown in Listing \ref{listing:ast-example}.
+        
+\begin{lstlisting}[caption={Abstract Syntax Tree Example - Code},captionpos=b,label={listing:ast-example-code}]
+package main
+
+var glblVariable i32
+
+func main () {
+	var foo i32
+	foo = 5
+	
+ 	str.print("Hello World!")
+	i32.print(55)
+	i32.print(i32.add(global, 10))
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Abstract Syntax Tree Example},captionpos=b,label={listing:ast-example}]
+Program
+0.- Package: main
+	Globals
+		0.- Global: glblVariable i32
+	Functions
+		0.- Function: main () ()
+			0.- Expression: foo = identity(5 i32)
+			1.- Expression: str.print("Hello World!" str)
+			2.- Expression: i32.print(55 i32)
+			3.- Expression: lcl_0 = i32.add(global i32, 10 i32)
+			4.- Expression: i32.print(lcl_0 i32)
+		1.- Function: *init () ()
+\end{lstlisting}
+
+Let's go line by line of Listing \ref{listing:ast-example}. \textbf{Line 1} is first telling us that we are showing the AST of a program. \textbf{Line 2} then tells us that what follows are the contents of a package, which is named \textit{main}. We can then see that all the global variables declared in the package are going to be printed after \textbf{Line 3}, which in this case is only one. Then we are presented with the last part of the package: the functions. The first function is our \textit{main} function, which is declared to not have any input parameters nor output parameters, as seen at \textbf{Line 6}.
+
+Before continuing with the analysis of the \textit{main} function, let's briefly discuss that \textit{*init} function at \textbf{Line 12}. This function is actually the first function to be called in a CX program. Yeah, we lied to you, \textit{main} is not the one called first. This function initializes all the global variables in your program, and in future versions of CX you'll be able to put other expressions you wish to run first, before your program starts (this behavior is present in languages like Go).
+
+Now, we can see something strange happening on \textit{main}'s list of expressions: there is a function call that we never wrote in our original CX source code (\textit{identity}), and we can see a variable that we never declared (\textit{lcl\_0}). The \textit{identity} operator is used when we want to "make a copy" of a value to a variable, and the variables called \textit{lcl\_N}, where \textit{N} is an integer, are used as temporary variables that hold intermediary calculations in nested function calls. There are other weird things that happen when parsing a CX program, which we will see in later Chapters when dealing with programs' ASTs, but for now it's enough for you to understand that there is not necessarily a one-to-one relationship between your CX source code elements and the resulting AST. Actually, in more complex programs the compiler will heavily modify the resulting AST in order to optimize your code. Nevertheless, there is an important point that should be understood before continuing with the rest of the book, and this is discussed in the next Section.
+
+\section{Everything in a Function is an Expression}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Explain what is an expression in this case (mathematical sense)
+        \item Clarification: Everything \textit{inside a function} is an expression
+        \item The reason behind this is convenience: it's easier to parse, easier to modify program structure, easier for afordances
+        \item In contrast, in other languages some statements are represented internally in other ways
+        \item Usually, these statements are statements that affect the program's flow or structure, they don't return something, and they can't be used as arguments for expressions
+    \end{itemize}
+\end{remark}
+
+Everything in a function is an expression! This is an approach adopted from functional languages. For example, your \textit{if/else} is transformed to a series of expressions, something that doesn't happen in imperative languages like C. Why is this important to notice? Well, you could have an \textit{if/else} statement returning a value. In the CXGO implementation this doesn't happen, as we try to mimic as much as possible the behavior of Go. Nevertheless, it is important to take into account if you decide to create your own CX implementation. You could, for example, implement a CX-based language where the code in Listing \ref{listing:statement-as-expression} is valid, and it is allowed by the CX specification.
+
+\begin{lstlisting}[caption={Example of if/else Statement as an Expression},captionpos=b,label={listing:statement-as-expression}]
+val = if 5 > 4 then 10 else 20
+print val       // This will print 10!
+\end{lstlisting}
+
+In some Chapters \ref{chapter:control-flow} we will see how CX transforms all the control flow mechanisms to a series of \textit{jmp}s, where \textit{jmp} (from the word "jump") is just an operator that takes a number of lines of code (expressions, actually) to skip.
+
+The reason behind this design choice is convenience: it's easier to build a program structure using this approach, and implementing some of the CX features, such as affordances, is a breeze if you only have to deal with expressions. Another example is using a genetic programming algorithm (see Chapter \ref{chapter:genetic-programming} to change a CX program's structure: you only have to add, remove, change and move around the same type of component: expressions.
+
+\section{Elements Redefinition}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Unlike some other programming languages, you can declare CX elements several times
+        \item In other programming languages, this would raise a compile error
+        \item In CX, the last declaration is the one that is going to take effect
+        \item This behavior allows the existence of several CX features, like affordances, program stepping and the REPL
+    \end{itemize}
+\end{remark}
+
+Unlike some other programming languages, CX will always allow a declaration to be re-declared. In future versions of CX, an option to print warnings if this happens will be included, but in the meantime the language will not complain about this. If you want to see it by yourself, save the code in Listing \ref{listing:example-redefinition} to a file and execute it using \textbf{cx}.
+
+\begin{lstlisting}[caption={Example Function Redefinition},captionpos=b,label={listing:example-redefinition}]
+package main
+
+func main () {
+	str.print("Hello!")
+}
+
+func main () {
+	str.print("Bye!")
+}
+\end{lstlisting}
+
+Re-declarations allow CX to be an interactive programming language. If you notice an error in one of your functions, you can simply change that function in your source code, re-evaluate the function, and the program structure will be changed accordingly. If you have thousands of objects of certain struct type, and you'd like to change that object's definition to include another field, you can stop your CX program, redeclare the type, and every object of that type will be updated to include that field.
+
+%\section{Abstract Syntax Tree}
+
+%\begin{remark}
+%Section Outline
+%    \begin{itemize}
+%    	\item 
+%    \end{itemize}
+%\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 3
+%----------------------------------------------------------------------------------------
+\chapterimage{blank-header.png}
+
+\chapter{Data Structures}
+\label{chapter:data-structures}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Although using CX to print arithmetic operations is fun already, perhaps you want to use it for more complicated stuff
+        \item Mention primitive types
+        \item Let's review the different data structures that CX can handle at the moment
+        \item List the data structures without explaining them        
+    \end{itemize}
+\end{remark}
+
+Although you could use CX as a calculator and work with literal numbers all the time, it would be a waste of power. In order to create more robust applications, you need to work with more complex types of data, such as arrays and structures. Nevertheless, before learning about these complex data structures, we need to review the different primitive types of data that CX offers at the moment.
+
+\section{Primitive Types}\index{Primitive Types}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item At the time of writing, these are the primitive types: i32, etc.
+        \item With these types you can construct
+    \end{itemize}
+\end{remark}
+
+All data handled by a computer is stored as 0s and 1s\footnote{There are actually computers that use ternary logic instead of binary logic, and instead of bits you have trits, but the vast majority of the computers use binary logic.}, which are called bits. Eight of these bits comprise a byte, and a byte can represent up to 256 or $2^8$ different values. Although 256 values are enough to solve a wide variety of problems already, you can always use more bytes to hold more values. For example, the traditional approach to represent an integer is to use 4 bytes, and this is why they are sometimes called 32-bit integers. For many applications, using 32-bit integers are more than enough, as these integers can hold up to 4,294,967,296 or $2^{32}$ different values. But if you happen to need more than that, another common type of integer is the one that uses 8 bytes to represent its value, which can hold up to $2^{64}$ different values (the actual number is so big that it's not even going to make sense to you if you see it printed in here).
+
+You may or may not be wondering -- depending on your curiosity and your professional background -- how many bytes do you need to represent real numbers, e.g., 3.14159 or 2.41? In computer science parlance, real numbers are called floating-point numbers, and similarly to integers, floating-point numbers also require either 4 bytes or 8 bytes\footnote{This is the common convention. There's nothing stopping you from using an arbitrary number of bytes to represent a floating-point number.}, depending on the precision you want to work with (the number of digits after the decimal point). We could discuss how we can make a computer interpret these bytes as either an integer or a floating-point number, but that's out of the scope of this book. The true objective behind this explanation is to make you realize how a \emph{type} in a computer program is just a bunch of bytes being interpreted in a particular way.
+
+CX at the moment provides the following primitive types: \textit{byte}, \textit{bool}, \textit{str}, \textit{i32}, \textit{i64}, \textit{f32}, \textit{f64}. All of the integer and floating-point number types are signed, which means that half of the possible values that they can represent are used to represent negative numbers. For example, a \textit{byte} type in CX is able to represent any integer number from -128 to 127, for a total of 256 different values. In the future other primitive types will be incorporated, such as i16 (16-bit integer) and ui64 (unsigned 64-bit integer).
+
+But this doesn't mean that you are limited to only those types. They are called primitive types because other more complex types are derived from them. These complex types are reviewed in the following Sections of this Chapter.
+
+\section{Variables}\index{Variables}
+
+Variables have been used in code examples in previous Chapters already, but they have not been formally introduced. As was mentioned at the beginning of this Chapter, you could create programs where you only use literal numbers, but you'd be extremely limited on what you can create. Variables are one of those features that are very easy to understand and use, and yet, they greatly expand your development capabilities. You can see how you can declare variables of the different primitive types in CX in Listing \ref{listing:variable-declaration}.
+
+\begin{lstlisting}[caption={Variable Declaration},captionpos=b,label={listing:variable-declaration}]
+package main
+
+func main () {
+	var optionCode byte
+	var isAlive bool
+	var name str
+	var number i32
+	var bigNumber i64
+	var area f32
+	var epsilon f64
+    
+    name = "John Cole"
+    number = 14
+}
+\end{lstlisting}
+
+As you can see, you can tell CX that you're going to declare a variable by using the keyword \textbf{var}, followed by the name of the variable, and finally the type that you desire that variable to have. If you want to assign a value to that variable, you just write the name of the variable, then the equal symbol (\textbf{=}) followed by the desired value.
+
+It is interesting to note that variables are not actually needed in order to create a program, but most -- if not all -- of the enterprise-level programming languages provide something similar to the concept of variable. If you are curious about this, you can check some purely functional programming languages like Haskell, and also learn about lambda calculus.
+
+\section{Arrays}\index{Arrays}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item In CX you can have arrays and slices
+        \item Difference between an array and a slice
+        \item Slices in CX are always sent to the heap, which is worth noting for performance reasons
+        \item If you'd like to handle arrays in the heap, you should create a pointer to it
+        \item Look at examples with arrays and examples with slices
+    \end{itemize}
+\end{remark}
+
+If you have to create a program where you have to store three telephone numbers, you could just create three different variables to hold each of them. But what if you had to store thousands of telephone numbers? Using variables to accomplish that task would be inefficient. The answer to this problem is to use arrays.
+
+Arrays are fixed length collections of elements of the same type. To store or access an element in an array, you just need the name of the array and an index where you want to store the value to. To declare an array you have to put square brackets before the type in a variable declaration, and the number of elements that you want the array to hold must be inside the brackets. You can see an example of an array of 3 \textbf{i32}s shown in Listing \ref{listing:array-example}.
+
+\begin{lstlisting}[caption={Array Example},captionpos=b,label={listing:array-example}]
+package main
+
+func main () () {
+	var foo [3]i32
+	foo[0] = 10
+	foo[1] = 20
+	foo[2] = 30
+
+	i32.print(foo[2])
+}
+\end{lstlisting}
+
+At \textbf{Line 4} we can see the array declaration, at \textbf{Lines 5}, \textbf{6} and \textbf{7} the array gets initialized, and finally at \textit{Line} 9 we print the last element of the array, as arrays are zero-indexed in CX.
+
+If you are curious enough (if you're already a programmer, it doesn't count), you could be asking yourself: can you have arrays of arrays? The answer is: yes! You only need to put the extra pair of brackets you need until you achieve the number of dimensions you want. An example of multi-dimensional arrays is shown in Listing \ref{listing:multi-dim-arrays}.
+
+\begin{lstlisting}[caption={Multi-dimensional Arrays},captionpos=b,label={listing:multi-dim-arrays}]
+package main
+
+func main () {
+	var foo [3][3]i32
+    
+    foo[1][2] = 40
+    
+    i32.print(foo[1][2])
+}
+\end{lstlisting}
+
+Before continuing to slices, it's worth mentioning the existence of \textbf{len}. \textbf{len} is a type-generalized function that accepts an array as its first and only input argument, and returns a 32-bit integer that represents the number of elements that that array is capable of holding. This function is especially useful when using arrays in combination with the \textbf{for} loop, which will be covered in Chapter \ref{chapter:control-flow}. An example of \textbf{len}'s usage can be seen in Listing \ref{listing:array-len-example}. Please note that there are type-specific versions of \textbf{len} for each of the primitive types.
+
+\begin{lstlisting}[caption={Printing Array Length},captionpos=b,label={listing:array-len-example}]
+package main
+
+func main () {
+	var foo [10]i32
+    
+    i32.print(len(foo))
+}
+\end{lstlisting}
+
+Please be careful with the sizes you choose for your arrays. If you create an array larger than $2^{32}$, you'll get an error because $2^{32}$ is the maximum array size or because you could exceed the maximum memory allocated to CX by your operating system. Also, if you are working with very large arrays, you'll most likely want to create a pointer to it to send the array to the heap memory. CX passes its arrays by value to other functions, which means that if you send a very big array to a function as its argument, you'll be creating a copy of it to be sent, which will be a very slow and memory consuming operation. You'll learn more about functions in Chapter \ref{chapter:functions} and about pointers in Chapter \ref{chapter:pointers}.
+
+\section{Slices}\index{Slices}
+
+Under the hood, slices are just arrays. This means that a slice has the same performance in read/write operations as an array. The advantage of using slices over arrays is that slices are incremented in capacity automatically if it ever exceeds it. However, this can also be considered a disadvantage. A slice in CX starts with a capacity of 32 elements. If this limit is reached, CX creates a copy of that slice, but with an increased capacity of $2x$ its previous limit, which is 64 in its second iteration. As you can see, most of the time a slice will be wasting memory, and time whenever CX creates a copy of it in order to increase its limit.
+
+It must be noted that capacity is not the same as size or length. Capacity represents the reserved memory space for a slice, while size represents the actual number of slots in a slice that are being used. You can understand better the difference if you run the code in Listing \ref{listing:capacity-size-difference}. Although any slice will start with 32 slots reserved in memory, e.g., $32*4$ bytes for a \textbf{[]i32} slice, this doesn't mean that all of those slots have an actual value in there. Capacity is a concept related to performance rather than to practicality.
+
+\begin{lstlisting}[caption={Difference Between Capacity and Size},captionpos=b,label={listing:capacity-size-difference}]
+package main
+
+func main () {
+	var slice []i32
+    slice = append(slice, 1)
+    slice = append(slice, 2)
+    
+    i32.print(len(slice)) // prints 2, not 32
+}
+\end{lstlisting}
+
+There are three native functions that are specifically designed to work with slices: \textbf{make} creates a slice of a type and size that you specify, initializing the elements to the specified type's \emph{nil} representation, e.g., \emph{0} for an i32 and \emph{""} or an empty string for an \emph{str}; \textbf{append} takes a slice and an element of the type of that slice, and puts it at the end of the slice; and lastly, \textbf{copy} creates a copy of each of the elements of a slice, and puts each of the elements, in order, to the second slice until every element has been copied to it or until the capacity of the second slice runs out.
+
+\begin{lstlisting}[caption={Slice-specific Native Functions},captionpos=b,label={listing:slice-natives}]
+package main
+
+func main () {
+	var slice1 []i32
+    var slice2 []i32
+    
+    slice1 = make("[]i32", 32)
+    slice1 = append(slice1, 1)
+    
+    slice2 = make("[]i32", 32)
+    
+    copy(slice2, slice1)
+}
+\end{lstlisting}
+
+Listing \ref{listing:slice-natives} shows the declaration of two slices of type \textbf{i32} at \textbf{Lines 4} and \textbf{5}. The first slice then gets initialized using the \textbf{make} function, which creates a slice of size 32 in this case. This means that \textbf{slice1} now has a size of 32 elements and a capacity of 32 elements too. At \textbf{Line 8}, we append a 1 to \textbf{slice1}, which makes the slice have now a size of 33 and a capacity of 64. After initializing \textbf{slice2} at \textbf{Line 10}, we \textbf{copy} the contents of \textbf{slice1} to \textbf{slice2}. What do you think that are the elements of \textbf{slice2} now?
+
+As a final note, slices are always allocated in the heap in CX due to their scalability nature. It would be disastrous to have a slice grow in the stack, as it would make programs run very slow -- CX would need to juggle with the objects in the stack, making copies and moving them to different positions. If slices are allocated in the heap, we can delegate all of these operations to CX's garbage collector, and keep the stack clean. This behavior will slightly change in the future, though. If CX's compiler can detect that a slice is never going to grow during a function call, we can then flag that slice to be put in the stack for better performance. For more information about CX's heap and stack, you can read Chapters \ref{chapter:pointers} and \ref{chapter:garbage-collector}.
+
+\section{Structures}\index{Structures}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item What about holding different types of data together
+    \item For this you can use structs
+    \item What kind of stuff you can hold in structs
+    \end{itemize}
+\end{remark}
+
+Structures allow the programmer to create more complex types. For example, you may want to create a type \emph{Person} where you can store a name and an age. This means that we want a mix of an \textbf{i32} and a \textbf{str}. A structure that solves this problem is presented in Listing \ref{listing:struct-example}
+
+\begin{lstlisting}[caption={Type $Person$ using Structures},captionpos=b,label={listing:struct-example}]
+package main
+
+type Person struct {
+	name str
+    age i32
+}
+
+func main () {
+    var p1 Person
+    var p2 Person
+    
+    p1.name = "John"
+    p1.age = 22
+    
+    p2 = Person{
+        name: "Gabrielle",
+        age: 21
+    }
+    
+    str.print(p1.name)
+    i32.print(p1.age)
+    
+    str.print(p2.name)
+    i32.print(p2.age)
+}
+\end{lstlisting}
+
+The syntax for declaring a new structure or type is shown at \textbf{Line 3}, and \textbf{Lines 4} and \textbf{5} show the structure's \emph{fields}. The fields of a structure are the components that shape the type being defined by a structure. In order to use your new \textbf{Person} type, we first need to declare and initialize variables that use this type. This can be seen at \textbf{Lines 9-13}. \textbf{Lines 12} and \textbf{13} show that we can initialize the struct's fields one by one, by using a \emph{dot notation}, while \textbf{Lines 15-18} show a different way of initialization: the struct literal. A struct literal is created by writing the name of the type we want to initialize, followed by the name of the struct fields' names and their values separated by a colon. Each of these field-value pairs need to be separated by a comma.
+
+Both of these initialization approaches has its advantages. The \emph{dot notation} has the advantage of versatility: you can initialize different fields at different points in a program. For example, you can initialize one field before a loop, and another field after that loop. On the other hand, the \emph{struct literal} approach has the advantages of readability and that it can be used as a function call's argument directly. For example, you can send a \textbf{Person} struct instance to a function call this way: \lstinline|PrintName(Person {name: "John"})|.
+
+\section{Scope of a Variable}\index{Scope of a Variable}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item All of the data structures above can either be local or global
+        \item Explain what is scope
+        \item See examples of local variables
+        \item "On the other hand, we have global variables" and go to the next section
+    \end{itemize}
+\end{remark}
+
+The type and name are two of the properties of a variable. There is one property that we haven't mentioned so far: \emph{scope}. The scope of a variable dictates where a variable can be seen. A \emph{local} variable is only accessible in the function where it was declared, while a \emph{global} variable can be accessed by any function of a package.
+
+\begin{lstlisting}[caption={Usage of Local and Global Variables},captionpos=b,label={listing:local-global-variables}]
+package main
+
+var global i32
+
+func foo () {
+    i32.print(global)
+    // i32.print(local) // this will raise an error if uncommented
+}
+
+func main () {
+    var local i32
+    
+    local = 10
+    global = 15
+    
+    i32.print(global)
+    i32.print(local)
+}
+\end{lstlisting}
+
+If you want to create a global variable, you only have to declare it outside any function declaration. If you want a local variable, declare it inside the function you want it to have access to. Listing \ref{listing:local-global-variables} shows an example that declares a global variable that is accessed to by two functions: \textbf{main} and \textbf{foo}, and a local variable that is only accessible by the \textbf{main} function.
+
+As a last note, global variables can also be accessed by other packages that import the package containing said variable. You'll learn more about packages in Chapter \ref{chapter:packages}.
+
+%\begin{figure}[h]
+%    \centering
+%    \includegraphics[width=0.77\textwidth]{ha-gray-conv-crp.jpg}
+%    \caption{Picuture of the M83 galaxy, image taken from the WFC3 ERS M83 Data Products, http://archive.stsci.edu/prepds/wfc3ers/m83datalist.html}
+%    \label{fig:awesome_image}
+%\end{figure}
+
+%\begin{description}
+%	\item[DS9:] It is a program that visualizes astronomy images in
+%    \begin{description}
+%    \item[Download: ]\url{http://ds9.si.edu/site/Download.html}
+%    \item[Documentation: ]\url{http://ds9.si.edu/site/Documentation.html}
+%    \begin{verbatim}
+%   pip install pyfits
+%   \end{verbatim}
+%   \end{description}
+%\end{description}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 4
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Functions}
+\label{chapter:functions}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Almost every modern programming language (perhaps, the exception to this are esoteric languages) is going to have some sort of subroutine mechanism
+        \item In the case of CX, they are called functions
+        \item Show a barebones example of a function
+        \item Functions can receive arguments - inputs (show example)
+        \item Functions can return arguments - outputs
+        \item Mention that outputs need to be named in the current version. This will likely change in the near future
+        \item CX is not purely functional, unlike, for example, Haskell. Functions can have side effects (next Section)
+    \end{itemize}
+\end{remark}
+
+Unless you are learning an esoteric programming language, chances are that that language is going to have some sort of subroutine mechanism. A subroutine is a named group of expressions and statements that can be executed by using only its name. This allows a programmer to avoid writing that group of expressions and statements again and again, every time they are needed. In CX, subroutines are called functions, because they behave similarly to how mathematical functions behave.
+
+In CX, a function can receive a fixed number of input parameters, and like in Go, it can return a fixed number of output parameters. These parameters must be of a specific type, either a primitive type or a complex type. At the moment, both input and output parameters must have a name associated to them, but this will change in the future and anonymous output parameters will be possible. Parameters are a very powerful feature, because they allow us to have a function behave differently depending on what data we send to it. Listing \ref{listing:functions-example1} shows how we can create a function that calculates the area of a circle, and another function that calculates the perimeter of a circle.
+
+\begin{lstlisting}[caption={Determining Area and Perimeter of a Circle using Functions},captionpos=b,label={listing:functions-example1}]
+package main
+
+var PI f32 = 3.14159
+
+func circleArea (radius f32) (area f32) {
+	area = f32.mul(f32.mul(radius, radius), PI)
+}
+
+func circlePerimeter (radius f32) (perimeter f32) {
+	perimeter = f32.mul(f32.mul(2.0, radius), PI)
+}
+
+func main () () {
+	var area f32
+	area = circleArea(2.0)
+	f32.print(area)
+	f32.print(circlePerimeter(5.0))
+}
+\end{lstlisting}
+
+If you needed to calculate the area of 20 circles, you'd only need to call \textbf{circleArea} 20 times, instead of having to write \lstinline{f32.mul(f32.mul(radius, radius), PI)} 20 times (although you'd probably be using a \textbf{for} loop instead; see Chapter \ref{chapter:control-flow}).
+
+\section{Lexical Scoping}\index{Lexical Scoping}
+
+Variables in CX are lexically scoped, which means that they are only accessible in the function where they were declared. This was reviewed in Chapter \ref{chapter:data-structures}, but there's a situation that was not covered, and that is more appropriated to be covered in this Chapter.
+
+\begin{lstlisting}[caption={Lexical Scoping},captionpos=b,label={listing:lexical-scoping}]
+package main
+
+func foo () {
+	i32.print(x)
+}
+
+func main () {
+	var x i32
+    x = 15
+    foo()
+}
+\end{lstlisting}
+
+If CX was dynamically scoped, the code shown in Listing \ref{listing:lexical-scoping} would print 15, because the call to \textbf{foo} at \textbf{Line 10} would capture the value of the variable \textbf{x} declared in \textbf{main}. Instead, it will raise an error because \textbf{Line 4} is trying to access a variable that has not been previously declared.
+
+\section{Side Effects}\index{Side Effects}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item There are some programming languages that follow a purely functional paradigm, such as Haskell
+        \item In these languages, functions can't have side effects
+        \item But what are side effects? Explain what are
+        \item This approach has some advantages, like easier debugging
+        \item This is not the case of CX. CX follows a more \textit{mainstream} approach, and functions can have side effects
+        \item The reason behind this design choice is that most programmers are used to this approach
+    \end{itemize}
+\end{remark}
+
+CX is an imperative language and not purely functional, unlike, for example, Haskell. This means that functions can have side effects, i.e., they can change the state of objects outside of the function's scope. Side effects include actions like modifying the value of a global variable or, if you are a purist, even printing text to a terminal. Functional programming has some advantages, like easier debugging, but CX alleviates this by providing debugging tools like its REPL (see Chapter \ref{chapter:mastering-the-repl}) or its object explorer (see Chapter \ref{chapter:object-explorer}).
+
+%\section{Multiple Return Values}\index{Multiple Return Values}
+
+%\begin{remark}
+%Section Outline
+%    \begin{itemize}
+%    	\item 
+%    \end{itemize}
+%\end{remark}
+
+\section{Methods}\index{Methods}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item We can have functions that are associated to structures
+        \item This particular type of functions are called methods
+        \item The advantages to using methods is that we can use a same name for different custom types
+        \item Another advantage is that it encourages safeness, as you can't call a particular method on a variable that it's not of that type
+        \item Review some examples of structures
+    \end{itemize}
+\end{remark}
+
+Methods are a special type of functions that can be associated to user-defined types. Although methods are not strictly necessary, as their functionality can be replaced by normal functions, they provide some useful advantages. The first advantage is that different methods can have the same name as long as they are associated to different types. This can help the programmer start thinking only about the action that needs to be performed, instead of thinking about a name for that specific structure. For example, instead of having to call functions named \textbf{printPlayerName()} and \textbf{printRefereeName()}, you can simply call the structure instance's method name \textbf{printName()}. This situation is shown in Listing \ref{listing:methods-example}.
+
+% Explain that CX's base language uses methods associated to different CX elements.
+
+\begin{lstlisting}[caption={Methods Example},captionpos=b,label={listing:methods-example}]
+package main
+
+type Player struct {
+	name str
+}
+
+type Referee struct {
+	name str
+}
+
+func (p Player) printName () {
+	str.print("Player information")
+	str.print(p.name)
+}
+
+func (r Referee) printName () {
+	str.print("Referee information")
+	str.print(r.name)
+}
+
+func main () {
+	var p Player
+	p.name = "Michael"
+    
+    var r Referee
+    r.name = "Edward"
+
+	p.printName()
+    r.printName()
+}
+\end{lstlisting}
+
+Another advantage of methods is that they promote safety, as they are associated to a particular user-defined type. If a method is not defined for a type, this error will be caught at compile-time.
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 5
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png} % Chapter heading image
+
+\chapter{Control Flow}
+\label{chapter:control-flow}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Having some sort of mechanisms to control your program's flow is essential
+        \item In CX we have N control flow mechanisms: if, for, etc
+        \item All of these mechanisms are based on go-to
+        \item The parser translates all of these constructs to go-tos
+        \item Show two listings: code and AST to compare
+    \end{itemize}
+\end{remark}
+
+A program in CX is executed from top to bottom, one expression at a time. If you want a group of expressions to not be executed, or executed only if certain condition is true, or executed a number of times, you'll need control flow statements. In CX, you have access to these control flow statements: \textbf{if} and \textbf{if/else}, \textbf{for} loop, \textbf{goto}, and \textbf{return}.
+
+In the following Section you'll review the \emph{goto} statement, and you'll see that in CX, every control flow statement is transformed to a series of \emph{goto}s.
+
+\section{Go-to}\index{Go-to}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Mention again that go-to is the base expression for the other control flow constructs
+        \item As you probably know, in other languages its use is highly discouraged. The same can be said here
+        \item Although there are definitely some cases where its use is the way to go
+        \item Show examples: how to do an if, if/else, for, using gotos, and the one in the \textit{examples} directory
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Using Go to for Control Flow},captionpos=b,label={listing:go-to-example1}]
+package main
+
+func main () (out i32) {
+	goTo("label2") // function form
+label1:
+	str.print("this should never be reached")
+label2:
+	str.print("this should be printed")
+
+	goto label4 // keyword form
+label3:
+	str.print("this should never be reached")
+label4:
+	str.print("this should be printed")
+}
+\end{lstlisting}
+
+\section{If and If/Else}\index{If and If/Else}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item If you want a number of expressions to be executed only if a predicate is true, you can use the \textit{if}
+        \item Show example of \textit{if} statement
+        \item If you want to a number of expressions to execute only if a predicate is true, but also have a number of expressions to be executed if that predicate is false, you can use the \textit{if/else} statement
+        \item Show example of \textit{if/else} statement
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Using If for Control Flow},captionpos=b,label={listing:if-example1}]
+package main
+
+func main () {
+	var out i32
+	
+    if false {
+		var error i32
+		error = i32.div(50, 0)
+		str.print("This will never be printed")
+	}
+
+	if true {
+		str.print("This will always print")
+	}
+
+	if i32.gt(5, 3) {
+		str.print("5 is greater than 3")
+	}
+    
+	i32.print(out)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Using If/Else for Control Flow},captionpos=b,label={listing:if-else-example1}]
+package main
+
+func main () {
+	var out i32
+
+	if i32.lteq(50, 5) {
+		out = 100
+	} else {
+		out = 200
+	}
+
+	i32.print(out)
+}
+\end{lstlisting}
+
+\section{For Loop}\index{For Loop}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item CX follows the same philosophy that Golang follows: you only need \textit{for} loop to achieve any kind of loop
+    \item This means that we don't have \textit{while} or \textit{do-while}
+    \item Or if you come from a functional programming language: we don't have \textit{map} or any list comprehension functions
+    \item Show some examples: printing a string several times, printing the counter variable, printing, array values, calling a function with the counter (not all of them, maybe)
+    \end{itemize}
+\end{remark}
+
+% choose this one or the next one
+\begin{lstlisting}[caption={Array Example},captionpos=b,label={listing:array-example}]
+package main
+
+func main () () {
+	var foo [5]i32
+	foo[0] = 10
+	foo[1] = 20
+	foo[2] = 30
+	foo[3] = 40
+	foo[4] = 50
+
+	var c i32
+	for c = 0; c < 5; c++ {
+		i32.print(foo[c])
+	}
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Using For Loop for Control Flow},captionpos=b,label={listing:for-loop-example1}]
+package main
+
+func main () () {
+	for false {
+		str.print("not today")
+	}
+	
+	var c i32
+	c = 0
+
+	for i32.lt(i32.add(i32.add(c, 2), 0), i32.sub(5, 1)) {
+		i32.print(c)
+		c = i32.add(c, 1)
+	}
+
+	for c = i32.add(i32.add(10, 0), 1); i32.lt(c, 5); c = i32.add(c, 1) {
+		i32.print(c)
+		i32.print(i32.add(c, 1))
+	}
+
+	var d i32
+	d = 0
+
+	for d = 10; i32.lt(d, 13); d = i32.add(d, 1) {
+		i32.print(d)
+	}
+
+	for c = 0; i32.lt(i32.add(c, 0), 5); c = i32.add(c, 1) {
+		i32.print(c)
+	}
+}
+\end{lstlisting}
+
+\section{Return}\index{Return}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item The last control flow statement is \textit{return}
+        \item This statement, like in other C-like languages, makes a function to stop its execution immediately
+        \item At the time of writing, return does not work with arguments (show in-line example), but will work in the future
+        \item Show only one example maybe
+    \end{itemize}
+\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 6
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Packages}
+\label{chapter:packages}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item If your project grows too big, you'll need a better way to organize your code
+        \item A solution to this would be separating your functions into different files (which is seen in the next Section of this Chapter)
+        \item But you could still encounter problems if you end up naming another function with the same name (see Section blah, the one in CX Program Representation). Because you'll be redefining the declarations
+        \item The solution to this problem is modularization
+        \item With modularization, we can isolate declarations and give them a unique name across all the application
+        \item Each programming language designer decides how to call these isolated units. In the case of CX, they are called packages
+        \item Let's see an example
+        \item As you can see, in order to call an element from another package, you need to use this notation (foo.bar), where foo is the package, etc.
+        \item If you were curious enough to thoroughly check the code, you might have notice the import lines
+        \item Import is used to tell CX that you want to use the declarations in that package
+        \item If you check the AST of a CX program with imported packages, you'll see this: (show listing)
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Importing Packages Example},captionpos=b,label={listing:packages-example}]
+package foo
+
+type Point struct {
+	x i32
+	y i32
+}
+
+var num i32 = 15
+
+func bar () {
+	str.print("From foo package")
+}
+
+package bar
+import "foo"
+
+func returnPoint () (resPoint foo.Point) {
+	var resPoint foo.Point
+	resPoint = foo.Point{x: 10, y: 20}
+}
+
+package main
+import "foo"
+import "bar"
+
+func main () {
+	var aPoint foo.Point
+	aPoint.x = 30
+	aPoint.y = 70
+	aPoint = bar.returnPoint()
+
+	var check i32
+	check = 10
+	i32.print(check)
+	
+	i32.print(aPoint.x)
+	i32.print(aPoint.y)
+
+	var foo1 foo.Point
+	foo1.x = 20
+	foo1.y = 30
+	i32.print(foo1.x)
+	i32.print(foo1.y)
+	
+	i32.print(foo.num)
+	foo.bar()
+	i32.print(foo.num)
+}
+\end{lstlisting}
+
+\section{Working with Different Files}\index{Working with Different Files}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item As mentioned at the beginning of this Chapter, a modularization solution is to separate your code into different files
+        \item Although this solution will work only to certain extent by its own, it works best if it's combined with packages
+        \item You should place code of the same package in the same file, or in the same directory
+        \item If you want to compile or interpret code from different CX source files, you can do it in the following way (show listing with something like "cx file1.cx file2.cx")
+        \item The order in which you give the files does not matter, because CX's parser works in two stages
+        \item In the first stage, all the declarations are first read in a shallow manner
+        \item In the second stage the declarations are re-read but in a deeper way: adding fields to structs, expressions to functions, etc.
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Package to be Imported},captionpos=b,label={listing:import-example}]
+package math
+
+func double () (out i32) {
+	out = i32.add(5, 2)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Main Package},captionpos=b,label={listing:main-package-example}]
+package main
+import "math"
+
+func main () {
+	str.print("hi")
+	var foo i32
+	foo = math.double()
+	i32.print(foo)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Resulting Abstract Syntax Tree},captionpos=b,label={listing:resulting-ast}]
+Program
+0.- Package: math
+	Imports
+		0.- Import: math
+	Functions
+		0.- Function: double () (out i32)
+			0.- Expression: out = i32.add(5 i32, 2 i32)
+1.- Package: main
+	Imports
+		0.- Import: main
+		1.- Import: math
+	Functions
+		0.- Function: main () ()
+			0.- Expression: str.print("hi" str)
+			1.- Expression: foo = double()
+			2.- Expression: i32.print(foo i32)
+		1.- Function: *init () ()
+\end{lstlisting}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 7
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Pointers}
+\label{chapter:pointers}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 8
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{OpenGL and GLFW with CX}
+\label{chapter:opengl-and-glfw-with-cx}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item \emph{CONSIDER} It might be a good idea to move this section to the first Chapters. This consideration gains more weight if we manage to include video games in all of the chapters
+    	\item We all love video games in the CX team. That's why we decided to implement bindings to OpenGL and GLFW to test the language capabilities
+        \item In order to start using functions from these libraries, you only need to import "gl" and "glfw"
+        \item Let's review this first example, where we only open a window where we'll be able to draw to later on
+        \item Review the listing's code, almost line by line
+        \item Review the other listings in the same way
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Creating a Window using OpenGL},captionpos=b,label={listing:window-opengl}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+func main () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
+	glfw.CreateWindow("window", width, height, "Window Example")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	var program i32
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+	
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+
+		gl.UseProgram(program)
+
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Drawing a Triangle to a Window},captionpos=b,label={listing:triangle}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+func main () () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Triangle")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	
+	var program i32
+	program = gl.CreateProgram()
+	
+	gl.LinkProgram(program)
+
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+
+		gl.Begin(gl.TRIANGLES)
+		gl.Color3f(1.0, 0.0, 0.0)
+		gl.Vertex3f(-0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 1.0, 0.0)
+		gl.Vertex3f(0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 0.0, 1.0);
+		gl.Vertex3f(0.0, 0.6, 0.0);
+		gl.End();
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Bouncing Ball Example},captionpos=b,label={listing:window-opengl}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+type Ball struct {
+	x f32
+	y f32
+	vx f32
+	vy f32
+	gravity f32
+	radius f32
+}
+
+func drawBall (ball Ball) () {
+	var full_angle f32
+	full_angle = f32.mul(2.0, 3.141592654)
+	var x f32
+	var y f32
+
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 1.0)
+
+	var i f32
+	for i = 0.0; f32.lt(i, 20.0); i = f32.add(i, 1.0) {
+		x = f32.add(ball.x, f32.mul(ball.radius, f32.cos(f32.div(f32.mul(i, full_angle), 20.0))))
+		y = f32.add(ball.y, f32.mul(ball.radius, f32.sin(f32.div(f32.mul(i, full_angle), 20.0))))
+
+		gl.Vertex2f(x, y)
+	}
+
+	gl.End()
+}
+
+func main () () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Bouncing Ball")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	var program i32
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	var ball Ball
+	ball = Ball{
+		radius: 0.05,
+		x: 0.0,
+		y: 0.0,
+		vx: 0.01,
+		vy: 0.01,
+		gravity: 0.01}
+
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+
+		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
+			ball.vy = f32.abs(ball.vy)
+		} else {
+			ball.vy = f32.sub(ball.vy, ball.gravity)
+		}
+
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
+
+		drawBall(ball)
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+\end{lstlisting}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 9
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Interpreted and Compiled}
+\label{chapter:interpreted-and-compiled}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item CX programs can either be interpreted or compiled.
+    \item The reason behind this design decision is that it maximizes the number of features of the language
+    \item If the programmer correctly adopts the CX workflow, we're pretty sure that their productivity will increase considerably
+    \item In its interpreted mode, CX's declarations can be redefined at an expression level
+    \item This behavior allows the affordance system to programmatically or interactively change a CX's program structure (see Chapter \ref{chapter:affordances}), for example
+    \item On the other hand, a compiled CX program has a more rigid structure, and as a consequence it'd be harder to work with many features
+    \item Nevertheless, the programmer can interpret some pieces of code, leverage all these features, and then compile the code to increase the program's performance
+    \item Show how you can run a program in an interpreted way and how to run it in a compiled way
+    \end{itemize}
+\end{remark}
+
+% Maybe only theory in here
+
+\begin{lstlisting}[caption={Interpreting and Compiling the same Program},captionpos=b,label={listing:interpreted-compiled}]
+$ cx hello-world.cx
+Hello, world!
+$ cx hello-world.cx -i
+Hello, world!
+\end{lstlisting}
+
+\section{Interpreted CX Features}\index{Interpreted CX Features}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item The first and most notorious feature is the REPL
+    \item In the REPL, the programmer can run a program N steps at a time, executing one expression from the AST each time
+    \item To use the stepping feature, you can do the following in the REPL (show listing)
+    \item The step meta-command (called like this because it's giving instructions to the interpreted itself) can work with a second argument
+    \item This argument tells the interpreted to run an expression each N milliseconds.
+    \item This is useful if you want to carefully examine how a particular set of expressions behave
+    \item You can also use selectors to move around the program's elements
+    \item Show a listing where you use a :func selector, for example
+    \item Then you could use a remover to remove certain expression from a function
+    \item These and other features will be reviewed in other Chapters, such as Chapters \ref{chapter:serialization}, \ref{chapter:affordances} and \ref{chapter:mastering-the-repl}
+    \end{itemize}
+\end{remark}
+
+\section{Compiled CX Features}\index{Compiled CX Features}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item Performance. This is basically the idea behind a compiled version of CX
+    \item The current speed of CXGO, Skycoin's implementation, is around the speed of Python in some benchmarks
+    \item As a disclaimer, far more benchmarks need to be done, and it would be too naive to claim a similar speed at this point
+    \item Nevertheless, we can have a rough idea of the kind of performance you can get from the compiled version of CX
+    \item This speed can either be seen as a victory, or as a failure
+    \item The reason behind this is that Python is an interpreted language, which means that compiled CX is as fast (or slow) as an interpreted language
+    \item But at this point, it is more of a victory, because we need to take into consideration that Python is almost 30 years old, while the compiled version of CX is not even 1 year old
+    \item Plus, the compiled version is lacking many optimizations, some of which are simple and are going to be implemented in the near future
+    \end{itemize}
+\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 10
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Garbage Collector}
+\label{chapter:garbage-collector}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item CX is a garbage collected (GC) language, unlike other languages like C, where you have to manually manage memory allocation and de-allocation, or languages like Rust that is based around the concept of \textit{ownership}
+    \item The garbage collector follows the mark-compact algorithm, with sliding compaction
+    \item Although CX's GC will most likely evolve in the future towards hybrid solutions, like Go's or Java's GC, we'll have a glance at the current state of the GC
+    \item CX's GC is \textit{precise}, as CX's program structure has complete knowledge of what object is actually a pointer
+    \item If you're curious about the subject, in contrast to precise garbage collectors, we have \textit{conservative} GCs, which treat whatever object that looks as a pointer as one. These GCs are usually used in languages like C, where there is no real distinction between, for example, an integer and a pointer
+    \item In the case of CX, the parser marks every pointer as being a pointer, and the runtime is aware of it
+    \item CX uses the mark-compact algorithm. Like the mark and sweep algorithm, iterates through every pointer in the stack, and marks their pointees as being alive (being used)
+    \item After marking all the alive objects, the dead objects are "squashed out" (that's why it's called sliding compaction
+    \item Two advantages of this algorithm is that it's memory efficient, as fragmentation does not occur
+    \item The other advantage is that sequential allocation can be used in this case
+    \item Sequential allocation is actually faster than, for example, \textit{malloc} in C. This is because malloc needs to look for a place in memory where the object wanted to be allocated can fit
+    \item In the case of sequential allocation, you only have a pointer that tells you where you can allocate an object, no matter the size
+    \item The current behavior of the GC is to be called when the heap's limit is reached. However, in the near future you'll be able to decide if you want to be manually calling the GC.
+    \end{itemize}
+\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 11
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Affordances}
+\label{chapter:affordances}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Affordances (in programming) are a unique feature to CX
+        \item The concept of affordance was developed by \cite{gibson1966senses}, and was initially studied in the field of psychology
+        \item Mention quote
+        \item We need to focus on the part \text{what it offers the animal, what it provides or furnishes}
+        \item By extending this concept, we can ask questions like "what does this expression offer", and what objects can offer actions to this expression
+        \item Affordances are particularly handy to interactively create a program
+        \item For example, we could ask what are the affordances for a program object (the initial object), and we'll get that the only option is to create a \textit{main} package
+        \item Then we ask what are the affordances for that main package, and the only option will be that we can add a main function
+        \item Asking what are the affordances of that main function will look bigger. Here are some options: (create a list of the options)
+        \item Let's have a look at an example of affordances in CX (show example)
+        \item Explain each of the parts (target, rule set, objects)
+        \item Explain that you can print the affordances, execute them, etc.
+        \item Explain that the affordance system can (and should) be used when using the REPL. Explain the methodology of just selecting an affordance from a list of options
+        \item Explain that we can only handle expressions at the moment (which give us a lot of power already), but every CX element is going to be added in the future
+    \end{itemize}
+\end{remark}
+
+\begin{quote}
+The affordances of the environment are what it offers the animal, what it provides or furnishes, either for good or ill. The verb to afford is found in the dictionary, the noun affordance is not. I have made it up. I mean by it something that refers to both the environment and the animal in a way that no existing term does. It implies the complementarity of the animal and the environment.
+\end{quote}
+
+
+
+\begin{lstlisting}[caption={Using Affordances on an Expression},captionpos=b,label={listing:affordances-example1}]
+package main
+
+func main () {
+  	foo1 := 1
+  	foo2 := 2
+  	foo3 := 3
+	
+	target := ->{
+  		pkg(main) fn(main) exp(message)
+  	}
+  	
+  	objs := ->{ obj1 $0.5 }
+	
+  	rules := ->{
+  		if obj1 $0.3 {
+  			allow(* > 1.0D)
+  		}
+  	}
+	
+  	affs := aff.query(target, objs, rules)
+  	aff.print(affs)
+	
+message:
+  	i32.print(0)
+}
+\end{lstlisting}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 12
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Object Explorer}
+\label{chapter:object-explorer}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Now that I explained affordances and the garbage collector, we can move on to a very interesting tool that CX will provide: the object explorer
+        \item The object explorer is an API that can be queried to obtain a list of objects present and alive in the heap
+        \item You can use this API to make any application you want (that uses the API), but...
+        \item CX also provides a web application that connects to this API, where you can see all the objects graphically
+        \item In this web app, you'll be able to use affordances on the objects
+        \item The object explorer will usually be used in combination with stepping and the REPL
+        \item Stepping will help us to stop a running application, query the object explorer, perform any affordances on the objects, and then continue with the program execution
+    \end{itemize}
+\end{remark}
+
+
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 13
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Serialization}
+\label{chapter:serialization}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item CX comes with object serialization included
+        \item In this case, any object in the program structure is capable of being serialized
+        \item For example, we can serialize functions, packages or a whole program
+        \item Although perhaps the most frequent operation would be to serialize struct instances to be saved to files
+        \item However, something interesting is that we could serialize a full program, send it to another server, deseralize it there, and continue its execution there
+        \item Another interesting use is that we could have a distributed application that evolves functions (see Chapter \ref{chapter:genetic-programming}), and sends these evolved functions to a central server
+        \item At the moment, one can only serialize full programs or struct instances in CX
+        \item Show serialization examples (program and struct instances)
+        \item \textbf{NOTE} I need to clean up the struct serialization example
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Serialization Example},captionpos=b,label={listing:serialization-example}]
+package main
+
+func main () () {
+	sPrgrm := serialize()
+	deserialize(sPrgrm)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Serialization Example},captionpos=b,label={listing:serialization-example}]
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+type Arrays struct {
+	ints []i32
+	floats []f32
+}
+
+type Structs struct {
+	points []Point
+	arrays []Arrays
+}
+
+func main () () {
+	wd := os.GetWorkingDirectory()
+	fileName := str.concat(wd, "serial")
+
+	/*
+          Point
+        */
+
+	testPoint := new Point{
+		x: 10,
+		y: 20
+	}
+
+	/*
+          Arrays
+        */
+
+	ints := []i32.make(200000)
+	floats := []f32.make(200000)
+	
+	var testArrays Arrays
+	testArrays = new Arrays{
+		ints: []i32{1, 2, 3},
+		floats: []f32{1.0, 2.0, 3.0}
+	}
+	// testArrays = new Arrays{
+	// 	ints: ints,
+	// 	floats: floats
+	// }
+
+	/*
+          Structs
+        */
+	
+	point1 := new Point{
+		x: 10,
+		y: 20
+	}
+
+	point2 := new Point{
+		x: 20,
+		y: 30
+	}
+
+	arrays1 := new Arrays{
+		ints: []i32{1, 2, 3},
+		floats: []f32{1.0, 2.0, 3.0}
+	}
+
+	var points []Point
+	points = []Point.append(points, point1)
+	points = []Point.append(points, point2)
+	
+	var arrays []Arrays
+	arrays = []Arrays.append(arrays, arrays1)
+	
+	var testStructs Structs
+	testStructs.points = points
+	testStructs.arrays = arrays
+
+
+
+
+
+
+
+	// /*
+        //     Point
+        // */
+	
+	// // serialization only
+	// start := time.now()
+	// for c := 0; c < 100000; c++ {
+	// 	byts := Point.serialize(testPoint)
+	// 	//os.WriteFile(fileName, byts)
+	// }
+	// duration := time.now() - start
+	// f64.print(duration)
+
+	// // serialize + write
+	// start = time.now()
+	// for c := 0; c < 100000; c++ {
+	// 	byts := Point.serialize(testPoint)
+	// 	os.WriteFile(fileName, byts)
+	// }
+
+	// duration = time.now() - start
+	// f64.print(duration)
+
+	// // write only
+	// byts := Point.serialize(testPoint)
+	// start = time.now()
+	// d := 0
+	// for c := 0; c < 100000; c++ {
+	// 	os.WriteFile(fileName, byts)
+	// }
+
+	// duration = time.now() - start
+	// f64.print(duration)
+
+
+
+
+	/*
+            Arrays
+        */
+	
+	// serialization only
+	start := time.now()
+	for c := 0; c < 100000; c++ {
+		byts := Arrays.serialize(testArrays)
+	}
+	duration := time.now() - start
+	f64.print(duration)
+
+	// serialize + write
+	start = time.now()
+	for c := 0; c < 100; c++ {
+		byts := Arrays.serialize(testArrays)
+		os.WriteFile(fileName, byts)
+	}
+
+	duration = time.now() - start
+	f64.print(duration)
+
+	// write only
+	byts := Arrays.serialize(testArrays)
+	start = time.now()
+	d := 0
+	for c := 0; c < 100; c++ {
+		os.WriteFile(fileName, byts)
+	}
+
+	duration = time.now() - start
+	f64.print(duration)
+
+	
+
+
+
+	// /*
+        //     Structs
+        // */
+
+	// // serialization only
+	// start := time.now()
+	// for c := 0; c < 100000; c++ {
+	// 	byts := Structs.serialize(testStructs)
+	// 	//os.WriteFile(fileName, byts)
+	// }
+	// duration := time.now() - start
+	// f64.print(duration)
+
+	// // serialize + write
+	// start = time.now()
+	// for c := 0; c < 100000; c++ {
+	// 	byts := Structs.serialize(testStructs)
+	// 	os.WriteFile(fileName, byts)
+	// }
+
+	// duration = time.now() - start
+	// f64.print(duration)
+
+	// // write only
+	// byts := Structs.serialize(testStructs)
+	// start = time.now()
+	// d := 0
+	// for c := 0; c < 100000; c++ {
+	// 	os.WriteFile(fileName, byts)
+	// }
+
+	// duration = time.now() - start
+	// f64.print(duration)
+
+
+
+
+
+
+
+	
+
+	// read only
+	// read + deserialization
+	// deserialization
+
+
+	// // read only
+	// start = time.now()
+	// for c := 0; c < 1000000; c++ {
+	// 	byts := os.ReadFile(fileName)
+	// }
+
+	// duration = time.now() - start
+	// i64.print(duration)
+
+	// // read + deserialization
+	// start = time.now()
+	// for c := 0; c < 1000000; c++ {
+	// 	byts := os.ReadFile(fileName)
+	// 	dsPoint := Point.deserialize(byts)
+	// }
+
+	// duration = time.now() - start
+	// i64.print(duration)
+	
+	
+	// extByts := os.ReadFile(fileName)
+	// dsPoint := Point.deserialize(extByts)
+	// i32.print(dsPoint.x)
+	// i32.print(dsPoint.y)
+}
+
+\end{lstlisting}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 14
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Genetic Programming}
+\label{chapter:genetic-programming}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item CX has a native function for calling a genetic programming algorithm
+        \item Explain what genetic programming is
+        \item Under the hood, the genetic programming algorithm works by using affordances
+        \item We select the to-be-evolved function, and we ask the affordance system what we can do with it
+        \item We select an expression to be added, etc. Explain better
+        \item We can combine the affordance system (rule set) to evolve a function that meets the criteria set by the rule set (in the future)
+        \item For example, we can keep evolving a function until the affordance system shows it (it means that the evolution was successful)
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Using Genetic Programming to Evolve a Function},captionpos=b,label={listing:genetic-programming-example}]
+package main
+
+func realFn (n f64) (out f64) {
+	out = f64.add(f64.mul(n, n), n)
+}
+
+func simFn (n f64) (out f64) {}
+
+func main () (out f64) {
+	numPoints := 21
+	inps := []f64.make(numPoints)
+	outs := []f64.make(numPoints)
+	
+	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
+		inps = []f64.write(inps, c, f64.sub(i32.f64(c), i32.f64(10)))
+	}
+
+	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
+		outs = []f64.write(outs, c, realFn([]f64.read(inps, c)))
+	}
+	
+	evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1))
+
+	str.print("Testing evolved solution")
+	for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
+		f64.print(simFn([]f64.read(inps, c)))
+	}
+}
+\end{lstlisting}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 15
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Creating your own CX}
+\label{chapter:creating-your-own-cx}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item We need to recall from Chapter \ref{chapter:getting-started-with-cx} that CX is first a programming language specification and that the language that we have been using throughout the book is an implementation of that specification: CXGO
+    \item Skycoin provides a set of functions (describe it better) that you can use to construct a program structure, and a runtime that you can use to run it
+    \item CXGO Uses Bison to parse its programs, but in this Chapter we'll see how we can create a visual programming language that generates a CX program structure that can be run by the runtime
+    \item Describe the process
+    \end{itemize}
+\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 16
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Mastering the REPL}
+\label{chapter:mastering-the-repl}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item There have been some REPL features that have been discussed in previous Chapters that were not explained in detail, and this Chapter is for that (explain this idea better, obviously)
+        \item Most of these features, if not all, are related to the concept of meta-commands in CX
+        \item Meta-commands are instructions that you can give to the CX interpreted to start behaving differently
+        \item For example, you can tell it to slow down its execution or to add expressions to a particular function
+        \item In the next Sections we will discover more about these meta-commands
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={REPL Session Example},captionpos=b,label={listing:repl-session}]
+CX 0.5.2
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
+
+:func main {...
+	* str.print("Hello, world!")
+
+:func main {...
+	* 
+
+* func foo () {}
+
+* :func foo {}
+
+:func foo {...
+	* str.print("Hello from foo!")
+
+:func foo {...
+	* 
+
+* :func main {}
+
+:func main {...
+	* foo()
+
+:func main {...
+	* :dp
+Program
+0.- Package: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: str.print("Hello, world!" str)
+			1.- Expression: foo()
+		1.- Function: *init () ()
+		2.- Function: foo () ()
+			0.- Expression: str.print("Hello from foo!" str)
+
+:func main {...
+	* :step 3
+Hello, world!
+Hello from foo!
+
+:func main {...
+	* 
+\end{lstlisting}
+
+\section{Fine-tuning your Programs}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Selectors, removers, adders (these are used by giving expressions as input)
+        \item In a REPL session, you will see something similar to the listing
+        \item You can start giving expressions as input next to the *, but what about that ":func main \-\{..."?
+        \item That is actually a \textit{selector}
+        \item Selectors are used to dynamically change the parsing scope of a program
+        \item For example, you can use a selector to change from the \textit{main} function to another, and whatever expression you give as input to the REPL, it'll be now added to this other function
+        \item Most, if not all, REPLs don't have a mechanism to do this
+        \item You will always need to completely redefine a function
+        \item Show more examples of selectors (select struct, function, package)
+        \item Although it is not so bad to be redefining a full function (you can do this in CX too), it is good to have the possibility of redefining only some parts of a CX element
+        \item Also, you could for example, create a package for your favorite text editor that leverages these constructs in order to fine tune your programs more easily
+        \item In addition to selectors, you also have removers, which will help you interactively remove different CX elements from a program
+        \item Show an example of removers
+        \item Internally, there are also \textit{adders}, but these are called whenever you give an expression or something else as input (you are adding stuff by doing that, after all)
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Using Genetic Programming to Evolve a Function},captionpos=b,label={listing:genetic-programming-example}]
+CX REPL
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
+
+:func main {...
+	* 
+\end{lstlisting}
+
+\section{Affordances}\index{Affordances}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item You can use affordances through expressions (as seen in Chapter \ref{chapter:affordances} or through meta-commands
+        \item Show example and explain it (the theory behind affordances has already been explained after all)
+    \end{itemize}
+\end{remark}
+
+\section{Stepping}\index{Stepping}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item Step is useful for debugging
+        \item Explain what a step is internally (moving one line, etc. check execute.go)
+        \item You can use it for advancing the program a fixed number of expressions
+        \item Or you can give it a second argument to keep advancing one step every N milliseconds (or seconds, check that)
+    \end{itemize}
+\end{remark}
+
+\section{Genetic Programming}\index{Genetic Programming}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    \item In later versions, CX will add another meta-command: \textit{:evolve}
+    	\item Talk about the possibility of frequently using GP interactively to find functions that fit a set of inputs/outputs
+        \item You can also be tweaking the rule set of the affordance system to look for a function that behaves in a particular way
+    \end{itemize}
+\end{remark}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 17
+%----------------------------------------------------------------------------------------
+
+\chapterimage{blank-header.png}
+\chapter{Unit Testing in CX}
+\label{chapter:unit-testing-in-cx}
+
+\begin{remark}
+Section Outline
+    \begin{itemize}
+    	\item As the project grew, a mechanism to test all the features of the language was needed
+        \item A basic unit testing library was created, along with some test files that should be run every time CX is recompiled
+        \item Explain how unit testing works (checking that the result is the same to X)
+        \item Explain example (listing)
+    \end{itemize}
+\end{remark}
+
+\begin{lstlisting}[caption={Using Genetic Programming to Evolve a Function},captionpos=b,label={listing:genetic-programming-example}]
+package main
+
+func main () () {
+	test.start()
+	test.i32(i32.add(10, 10), 20, "")
+	test.i32(i32.sub(10, 10), 0, "")
+	test.i32(i32.mul(10, 10), 100, "")
+	test.i32(i32.div(10, 10), 1, "")
+	test.i32(i32.abs(-10), 10, "")
+
+	i32.div(10, 0)
+	test.error("i32.div did not raise a division by 0 error")
+    
+    test.stop()
+}
+\end{lstlisting}
+
+\begin{appendices}
+\chapter{Native CX Functions}
+
+\begin{table}[h]
+  \centering
+    \begin{tabular}{ c c c }
+    \hline\hline
+    
+    Filter / Config. & Central $\lambda$ & FWHM (arcsec)\\
+    \hline
+    
+    F225W & 235.9 nm & $\sim$0.083\\
+    
+    F336W & 335.5 nm & $\sim$0.075\\
+    
+    F373N & 373.0 nm & $\sim$0.070\\
+    
+    F438W & 432.5 nm & $\sim$0.070\\
+    
+    F487N & 487.1 nm & $\sim$0.067\\
+    
+    F502N & 501.0 nm & $\sim$0.067\\
+    
+    F657N & 656.7 nm & $\sim$0.070\\
+    
+    F673N & 676.6 nm & $\sim$0.070\\
+    
+    F814W & 802.4 nm & $\sim$0.074\\
+    
+    \hline
+  \end{tabular}
+  \caption{WFC3/UVIS PSF FWHM informations for the selected dataset, as you can see the largest number here is 0.083 wich means the poorest spatial resolution, this is the number used to calculate the convolution kernel, in order to precess them all images must have the same spatial resolution.}
+  \label{tab:dos}
+\end{table}
+
+\end{appendices}
+
+\newpage
+
+\printbibliography[heading=subbibliography,notkeyword=this]
+
+\end{document}
