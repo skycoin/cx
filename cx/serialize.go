@@ -63,7 +63,7 @@ package base
 // 	StructsSize int32
 // 	DefinitionsOffset int32
 // 	DefinitionsSize int32
-	
+
 // 	CurrentFunctionOffset int32
 // 	CurrentStructOffset int32
 // }
@@ -194,15 +194,15 @@ package base
 // func Serialize (cxt *CXProgram) *[]byte {
 // 	// we will be appending the bytes here
 // 	serialized := make([]byte, 0)
-	
+
 // 	sNames := make([]byte, 0)
 // 	sNamesCounter := 0
 // 	sNamesMap := make(map[string]int, 0)
-	
+
 // 	sValues := make([]byte, 0)
 // 	sValuesCounter := 0
 // 	// we don't use a map for values, as these can change, can be huge
-	
+
 // 	sMods := make([]byte, 0)
 // 	sModsCounter := 0
 // 	sModsMap := make(map[string]int, 0)
@@ -241,7 +241,7 @@ package base
 
 // 	sOutNames := make([]byte, 0)
 // 	sOutNamesCounter := 0
-	
+
 // 	// context
 // 	sPrgrm := &sProgram{}
 
@@ -270,7 +270,6 @@ package base
 // 	// resetting counters used above
 // 	sModsCounter = 0
 
-
 // 	// Modules
 // 	for i, mod := range cxtModules {
 // 		sMod := sModule{}
@@ -296,7 +295,7 @@ package base
 // 				if fn.Inputs != nil && len(fn.Inputs) > 0 {
 // 					sFn.InputsOffset = int32(sParamsCounter)
 // 					sFn.InputsSize = int32(len(fn.Inputs))
-					
+
 // 					for _, inp := range fn.Inputs {
 // 						sParam := sParameter{}
 
@@ -319,7 +318,7 @@ package base
 // 				if fn.Outputs != nil && len(fn.Outputs) > 0 {
 // 					sFn.OutputsOffset = int32(sParamsCounter)
 // 					sFn.OutputsSize = int32(len(fn.Outputs))
-					
+
 // 					for _, out := range fn.Outputs {
 // 						sParam := sParameter{}
 
@@ -342,7 +341,7 @@ package base
 // 				if fn.Expressions != nil && len(fn.Expressions) > 0 {
 // 					sFn.ExpressionsOffset = int32(sExprsCounter)
 // 					sFn.ExpressionsSize = int32(len(fn.Expressions))
-					
+
 // 					for _, expr := range fn.Expressions {
 // 						sExpr := sExpression{}
 // 						opName := fmt.Sprintf("%s.%s", expr.Operator.Module.Name, expr.Operator.Name)
@@ -385,13 +384,12 @@ package base
 // 								sOutName.ModuleOffset =
 // 									int32(sModsMap[outName.Module.Name])
 
-
 // 								// saving the output name
 // 								sOutNames = append(sOutNames, encoder.Serialize(sOutName)...)
 // 								sOutNamesCounter++
 // 							}
 // 						}
-						
+
 // 						// arguments
 // 						if expr.Arguments != nil && len(expr.Arguments) > 0 {
 // 							sExpr.ArgumentsOffset = int32(sArgsCounter)
@@ -421,7 +419,6 @@ package base
 // 						// tag
 // 						sExpr.TagOffset, sExpr.TagSize = serializeName(expr.Tag, &sNamesMap, &sNames, &sNamesCounter)
 
-
 // 						// function
 // 						fnOffset := 0
 // 						for i, fnName := range sFnsMap {
@@ -431,13 +428,13 @@ package base
 // 								break
 // 							}
 // 						}
-						
+
 // 						if fnOffset >= 0 {
 // 							sExpr.FunctionOffset = int32(fnOffset)
 // 						} else {
 // 							panic(fmt.Sprintf("Function '%s' not found in sFnsMap", fn.Name))
 // 						}
-						
+
 // 						// module
 // 						sExpr.ModuleOffset = int32(sModsMap[expr.Module.Name])
 
@@ -479,7 +476,7 @@ package base
 // 				if strct.Fields != nil && len(strct.Fields) > 0 {
 // 					sStrct.FieldsOffset = int32(sFldsCounter)
 // 					sStrct.FieldsSize = int32(len(strct.Fields))
-					
+
 // 					for _, fld := range strct.Fields {
 // 						sFld := sField{}
 
@@ -549,7 +546,7 @@ package base
 // 	} else {
 // 		sPrgrm.Terminated = int32(0)
 // 	}
-	
+
 // 	// Call stack
 // 	sPrgrm.CallStackOffset = int32(sCallsCounter)
 // 	sPrgrm.CallStackSize = int32(len(cxt.CallStack.Calls))
@@ -631,9 +628,9 @@ package base
 // 	sIdx.FunctionsOffset = sIdx.ImportsOffset + int32(encoder.Size(sImps))
 // 	sIdx.StructsOffset = sIdx.FunctionsOffset + int32(encoder.Size(sFns))
 // 	sIdx.FieldsOffset = sIdx.StructsOffset + int32(encoder.Size(sStrcts))
-	
+
 // 	sIdx.ParametersOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
-	
+
 // 	sIdx.ExpressionsOffset = sIdx.ParametersOffset + int32(encoder.Size(sParams))
 // 	sIdx.ArgumentsOffset = sIdx.ExpressionsOffset + int32(encoder.Size(sExprs))
 // 	sIdx.CallsOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
@@ -655,7 +652,7 @@ package base
 // 	serialized = append(serialized, encoder.Serialize(sArgs)...)
 // 	serialized = append(serialized, encoder.Serialize(sCalls)...)
 // 	serialized = append(serialized, encoder.Serialize(sOutNames)...)
-	
+
 // 	return &serialized
 // }
 
@@ -671,7 +668,7 @@ package base
 // 	var dsPrgrm sProgram
 // 	sPrgrm := (*prgrm)[dsIdx.ContextOffset:dsIdx.NamesOffset]
 // 	encoder.DeserializeRaw(sPrgrm, &dsPrgrm)
-	
+
 // 	// Names
 // 	var dsNames []byte
 // 	sNames := (*prgrm)[dsIdx.NamesOffset:dsIdx.ValuesOffset]
@@ -748,7 +745,7 @@ package base
 // 	modSize := encoder.Size(sModule{})
 // 	for i := 0; i < int(dsPrgrm.ModulesSize); i++ {
 // 		mod := CXModule{}
-		
+
 // 		var dsMod sModule
 // 		sMod := dsMods[i*modSize:(i+1)*modSize]
 // 		encoder.DeserializeRaw(sMod, &dsMod)
@@ -773,7 +770,7 @@ package base
 // 			var dsFn sFunction
 // 			sFn := dsFns[fnsOffset + i*fnSize : fnsOffset + (i+1)*fnSize]
 // 			encoder.DeserializeRaw(sFn, &dsFn)
-			
+
 // 			// Function Name
 // 			var dsName []byte
 // 			sName := dsNames[dsFn.NameOffset : dsFn.NameOffset + dsFn.NameSize]
@@ -787,12 +784,12 @@ package base
 // 			fns = append(fns, &fn)
 // 		}
 // 	}
-	
+
 // 	// Modules
 // 	modsOffset := int(dsPrgrm.ModulesOffset) * modSize
 // 	for i := 0; i < int(dsPrgrm.ModulesSize); i++ {
 // 		//mod := CXModule{}
-		
+
 // 		var dsMod sModule
 // 		sMod := dsMods[i*modSize:(i+1)*modSize]
 // 		encoder.DeserializeRaw(sMod, &dsMod)
@@ -851,7 +848,7 @@ package base
 // 				}
 // 			}
 // 		}
-		
+
 // 		//Functions
 // 		fnSize := encoder.Size(sFunction{})
 // 		fnsOffset := int(dsMod.FunctionsOffset) * fnSize
@@ -859,7 +856,7 @@ package base
 // 		modFns := make([]*CXFunction, 0)
 // 		for i := 0; i < int(dsMod.FunctionsSize); i++ {
 // 			fn := &CXFunction{}
-			
+
 // 			var dsFn sFunction
 // 			sFn := dsFns[fnsOffset + i*fnSize : fnsOffset + (i+1)*fnSize]
 // 			encoder.DeserializeRaw(sFn, &dsFn)
@@ -903,7 +900,7 @@ package base
 // 				var dsTypName []byte
 // 				sTypName := dsNames[dsParam.TypeOffset : dsParam.TypeOffset + dsParam.TypeSize]
 // 				encoder.DeserializeRaw(sTypName, &dsTypName)
-				
+
 // 				inp.Name = string(dsName)
 // 				inp.Typ = string(dsTypName)
 
@@ -926,12 +923,11 @@ package base
 // 				sName := dsNames[dsParam.NameOffset : dsParam.NameOffset + dsParam.NameSize]
 // 				encoder.DeserializeRaw(sName, &dsName)
 
-
 // 				// Type
 // 				var dsTypName []byte
 // 				sTypName := dsNames[dsParam.TypeOffset : dsParam.TypeOffset + dsParam.TypeSize]
 // 				encoder.DeserializeRaw(sTypName, &dsTypName)
-				
+
 // 				out.Name = string(dsName)
 // 				out.Typ = string(dsTypName)
 
@@ -948,10 +944,10 @@ package base
 // 			var dsCurrExpr sExpression
 // 			sCurrExpr := dsExprs[int(dsFn.CurrentExpressionOffset)*exprSize : int(dsFn.CurrentExpressionOffset)*exprSize + exprSize]
 // 			encoder.DeserializeRaw(sCurrExpr, &dsCurrExpr)
-			
+
 // 			for i := 0; i < int(dsFn.ExpressionsSize); i++ {
 // 				expr := CXExpression{}
-				
+
 // 				var dsExpr sExpression
 // 				sExpr := dsExprs[exprsOffset + i*exprSize : exprsOffset + (i+1)*exprSize]
 // 				encoder.DeserializeRaw(sExpr, &dsExpr)
@@ -972,7 +968,7 @@ package base
 // 				var dsOpName []byte
 // 				sOpName := dsNames[dsOp.NameOffset : dsOp.NameOffset + dsOp.NameSize]
 // 				encoder.DeserializeRaw(sOpName, &dsOpName)
-				
+
 // 				// Arguments
 // 				var args []*CXArgument
 // 				argSize := encoder.Size(sArgument{})
@@ -984,12 +980,11 @@ package base
 // 					sArg := dsArgs[argsOffset + i*argSize : argsOffset + (i+1)*argSize]
 // 					encoder.DeserializeRaw(sArg, &dsArg)
 
-
 // 					// Argument type
 // 					var dsTypName []byte
 // 					sTypName := dsNames[dsArg.TypeOffset : dsArg.TypeOffset + dsArg.TypeSize]
 // 					encoder.DeserializeRaw(sTypName, &dsTypName)
-					
+
 // 					// Argument value
 // 					var dsValue []byte
 // 					sVal := dsValues[dsArg.ValueOffset : dsArg.ValueOffset + dsArg.ValueSize]
@@ -1042,7 +1037,7 @@ package base
 // 					outName.Context = &cxt
 // 					// outName.Offset = -1
 // 					// outName.Size = -1
-					
+
 // 					// Appending final outName
 // 					outNames = append(outNames, &outName)
 // 				}
@@ -1058,7 +1053,7 @@ package base
 // 						break
 // 					}
 // 				}
-				
+
 // 				//expr.Operator = fns[fmt.Sprintf("%s.%s", dsModName, dsOpName)]
 // 				expr.Arguments = args
 // 				expr.OutputNames = outNames
@@ -1068,7 +1063,7 @@ package base
 // 				expr.Function = fn
 // 				expr.Context = &cxt
 // 				expr.Module = mod
-				
+
 // 				// Appending final expression
 // 				exprs = append(exprs, &expr)
 // 			}
@@ -1095,10 +1090,10 @@ package base
 // 		// var dsCurrStrct sStruct
 // 		// sCurrStrct := dsStrcts[int(dsMod.CurrentStructOffset)*strctSize : int(dsMod.CurrentStructOffset)*strctSize + strctSize]
 // 		// encoder.DeserializeRaw(sCurrStrct, &dsCurrStrct)
-		
+
 // 		for i := 0; i < int(dsMod.StructsSize); i++ {
 // 			strct := CXStruct{}
-			
+
 // 			var dsStrct sStruct
 // 			sStrct := dsStrcts[strctsOffset + i*strctSize : strctsOffset + (i+1)*strctSize]
 // 			encoder.DeserializeRaw(sStrct, &dsStrct)
@@ -1107,7 +1102,6 @@ package base
 // 			if int(dsMod.CurrentStructOffset) * strctSize == strctsOffset + i*strctSize {
 // 				mod.CurrentStruct = &strct
 // 			}
-
 
 // 			// Struct name
 // 			var dsName []byte
@@ -1142,8 +1136,6 @@ package base
 // 				flds = append(flds, &fld)
 // 			}
 
-
-			
 // 			strct.Name = string(dsName)
 // 			strct.Fields = flds
 // 			strct.Module = mod
@@ -1160,7 +1152,7 @@ package base
 // 		defsOffset := int(dsMod.DefinitionsOffset) * defSize
 // 		for i := 0; i < int(dsMod.DefinitionsSize); i++ {
 // 			def := CXDefinition{}
-			
+
 // 			var dsDef sDefinition
 // 			sDef := dsDefs[defsOffset + i*defSize : defsOffset + (i+1)*defSize]
 // 			encoder.DeserializeRaw(sDef, &dsDef)
@@ -1204,7 +1196,7 @@ package base
 // 	// Call stack
 // 	calls := make([]*CXCall, 0)
 // 	callSize := encoder.Size(sCall{})
-	
+
 // 	// this will always be 0. I'll leave it in the struct for consistency (like modulesoffset)
 // 	//callsOffset := int(dsPrgrm.CallStackOffset) * callSize
 
@@ -1272,7 +1264,7 @@ package base
 // 		defsOffset := int(dsCall.StateOffset) * defSize
 // 		for i := 0; i < int(dsCall.StateSize); i++ {
 // 			def := CXDefinition{}
-			
+
 // 			var dsDef sDefinition
 // 			sDef := dsDefs[defsOffset + i*defSize : defsOffset + (i+1)*defSize]
 // 			encoder.DeserializeRaw(sDef, &dsDef)
@@ -1324,7 +1316,7 @@ package base
 // 	} else {
 // 		cxt.Terminated = false
 // 	}
-	
+
 // 	cxt.Modules = mods
 // 	cxt.CallStack = &callStack
 // 	cxt.Steps = make([]*CXCallStack, 0)

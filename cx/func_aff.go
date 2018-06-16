@@ -1,17 +1,17 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
 	"strings"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func condOperation (operator string, stack []string, affs []*CXAffordance, exec *[]bool, call *CXCall) error {
-	obj1 := strings.Split(stack[len(stack) - 2], ".")
-	obj2 := strings.Split(stack[len(stack) - 1], ".")
-	
+func condOperation(operator string, stack []string, affs []*CXAffordance, exec *[]bool, call *CXCall) error {
+	obj1 := strings.Split(stack[len(stack)-2], ".")
+	obj2 := strings.Split(stack[len(stack)-1], ".")
+
 	oneIsX := false
 	obj1IsX := false
 	obj2IsX := false
@@ -20,8 +20,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 	if obj1[0] == "?" && obj2[0] == "?" && len(obj1) == 1 && len(obj2) == 1 {
 		bothX = true
 	}
-	
-	
+
 	if obj1[0] == "?" {
 		oneIsX = true
 		obj1IsX = true
@@ -75,11 +74,11 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 						if strct, err := call.Program.GetStruct(arg.Typ, mod.Name); err == nil {
 							id2Val, id2Typ, _, _ := resolveStructField(obj2[1], arg.Value, strct)
 							switch id2Typ {
-								case "i32":
-									var val int32
-									encoder.DeserializeAtomic(id2Val, &val)
-									toCompare = float64(val)
-								}
+							case "i32":
+								var val int32
+								encoder.DeserializeAtomic(id2Val, &val)
+								toCompare = float64(val)
+							}
 						}
 					}
 				} else {
@@ -93,7 +92,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 			}
 		}
 	}
-	
+
 	if !oneIsX {
 		return errors.New("aff.query: malformed 'then' block")
 	}
@@ -146,7 +145,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 							} else {
 								return err
 							}
-							
+
 						} else {
 							if obj1IsX {
 								obj1Val, obj1Typ, _, _ = resolveStructField(obj1[1], arg.Value, strct)
@@ -199,7 +198,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 		//fmt.Println(obj1Typ)
 		if obj1IsX && obj1Typ == "str" {
 			sObj2 := encoder.Serialize(obj2[0])
-			
+
 			isEqual := true
 			if len(obj1Val) != len(sObj2) {
 				isEqual = false
@@ -211,7 +210,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 					}
 				}
 			}
-			
+
 			if isEqual {
 				*exec = append(*exec, true)
 				continue
@@ -222,7 +221,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 		}
 		if obj2IsX && obj2Typ == "str" {
 			sObj1 := encoder.Serialize(obj1[0])
-			
+
 			isEqual := true
 			if len(obj2Val) != len(sObj1) {
 				isEqual = false
@@ -245,14 +244,14 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 
 		var pv float64
 		var pv2 float64
-		
+
 		if !obj1IsX {
 			switch obj2Typ {
 			case "i32", "bool":
 				var v int32
 				encoder.DeserializeRaw(obj2Val, &v)
 				pv = float64(v)
-				
+
 			}
 		}
 		if !obj2IsX {
@@ -278,23 +277,32 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 		isTrue := false
 		if !obj1IsX {
 			switch operator {
-			case ">": isTrue = toCompare > pv && !bothX
-			case "<": isTrue = toCompare < pv && !bothX
-			case "==": isTrue = toCompare == pv || bothX
+			case ">":
+				isTrue = toCompare > pv && !bothX
+			case "<":
+				isTrue = toCompare < pv && !bothX
+			case "==":
+				isTrue = toCompare == pv || bothX
 			}
 		}
 		if !obj2IsX {
 			switch operator {
-			case ">": isTrue = pv > toCompare && !bothX
-			case "<": isTrue = pv < toCompare && !bothX
-			case "==": isTrue = pv == toCompare || bothX
+			case ">":
+				isTrue = pv > toCompare && !bothX
+			case "<":
+				isTrue = pv < toCompare && !bothX
+			case "==":
+				isTrue = pv == toCompare || bothX
 			}
 		}
 		if obj1IsX && obj2IsX {
 			switch operator {
-			case ">": isTrue = pv > pv2 && !bothX
-			case "<": isTrue = pv < pv2 && !bothX
-			case "==": isTrue = pv == pv2 || bothX
+			case ">":
+				isTrue = pv > pv2 && !bothX
+			case "<":
+				isTrue = pv < pv2 && !bothX
+			case "==":
+				isTrue = pv == pv2 || bothX
 			}
 		}
 
@@ -307,7 +315,7 @@ func condOperation (operator string, stack []string, affs []*CXAffordance, exec 
 	return nil
 }
 
-func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CXCall) error {
+func aff_query(target, objects, rules *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("aff.query", "[]str", "[]str", "[]str", target, objects, rules); err == nil {
 		var _target []string
 		var _objects []string
@@ -327,8 +335,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		// parsing _objects
 		for i, obj := range _objects {
 			if obj == "weight" {
-				w := _objects[i - 1]
-				obj1 := _objects[i - 2]
+				w := _objects[i-1]
+				obj1 := _objects[i-2]
 				obj2 := strings.Split(w, ".")
 				if f, err := strconv.ParseFloat(w, 64); err == nil {
 					pObjs = append(pObjs, obj1)
@@ -382,7 +390,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		var prevMod string
 		var prevFn string
 		var prevStrct string
-		
+
 		if mod, err := call.Program.GetCurrentPackage(); err == nil {
 			prevMod = mod.Name
 			if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -398,23 +406,23 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		for _, t := range _target {
 			switch t {
 			case "pkg":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectPackage(obj)
 				targetTyp = "pkg"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "fn":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectFunction(obj)
 				targetTyp = "fn"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "strct":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "exp":
-				obj := stack[len(stack) - 1]
-				
+				obj := stack[len(stack)-1]
+
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
@@ -430,7 +438,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 						return errors.New(fmt.Sprintf("aff.query: no expression with tag '%s' was found", obj))
 					}
 				}
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			default:
 				stack = append(stack, t)
 			}
@@ -444,7 +452,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		for i, rule := range _rules {
 			switch rule {
 			case "search":
-				settings = append(settings, _rules[i - 1])
+				settings = append(settings, _rules[i-1])
 			}
 		}
 
@@ -464,7 +472,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 			}
 		case "exp":
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
-				lastArg := expr.Inputs[len(expr.Inputs) - 1]
+				lastArg := expr.Inputs[len(expr.Inputs)-1]
 				expr.RemoveInput()
 				affs = expr.GetAffordances(settings)
 				expr.AddInput(lastArg)
@@ -476,15 +484,14 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 		falseRule := false
 		var exec []bool // result of >, <, ==, etc
 
-
 		for _, rule := range _rules {
 			switch rule {
 			case "weight":
 				if falseRule {
 					continue
 				}
-				w := stack[len(stack) - 1]
-				obj1 := stack[len(stack) - 2]
+				w := stack[len(stack)-1]
+				obj1 := stack[len(stack)-2]
 				obj2 := strings.Split(w, ".")
 
 				if f, err := strconv.ParseFloat(w, 64); err == nil {
@@ -526,24 +533,24 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					continue
 				}
 				found := false
-				obj2 := objs[len(objs) - 1]
+				obj2 := objs[len(objs)-1]
 
-				w2 := weights[len(weights) - 1]
+				w2 := weights[len(weights)-1]
 
 				if obj2 == "true" {
 					found = true
 				} else {
 					for i, pObj := range pObjs {
-						if (obj2 == pObj && pWeights[i] >= w2) {
+						if obj2 == pObj && pWeights[i] >= w2 {
 							found = true
 							break
 						}
 					}
 				}
 
-				objs = objs[:len(objs) - 1]
-				weights = weights[:len(weights) - 1]
-				
+				objs = objs[:len(objs)-1]
+				weights = weights[:len(weights)-1]
+
 				if found {
 					objs = append(objs, "true")
 				} else {
@@ -554,8 +561,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				if falseRule {
 					continue
 				}
-				obj1 := objs[len(objs) - 1]
-				w1 := weights[len(weights) - 1]
+				obj1 := objs[len(objs)-1]
+				w1 := weights[len(weights)-1]
 
 				found := false
 				for i, obj := range pObjs {
@@ -574,11 +581,11 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					continue
 				}
 				found := false
-				obj1 := objs[len(objs) - 2]
-				obj2 := objs[len(objs) - 1]
+				obj1 := objs[len(objs)-2]
+				obj2 := objs[len(objs)-1]
 
-				w1 := weights[len(weights) - 2]
-				w2 := weights[len(weights) - 1]
+				w1 := weights[len(weights)-2]
+				w2 := weights[len(weights)-1]
 
 				if obj1 == "true" || obj2 == "true" {
 					found = true
@@ -591,8 +598,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					}
 				}
 
-				objs = objs[:len(objs) - 2]
-				weights = weights[:len(weights) - 2]
+				objs = objs[:len(objs)-2]
+				weights = weights[:len(weights)-2]
 
 				var orWeight float64
 				if w1 > w2 {
@@ -600,7 +607,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				} else {
 					orWeight = w2
 				}
-				
+
 				if found {
 					objs = append(objs, "true")
 				} else {
@@ -611,15 +618,15 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				if falseRule {
 					continue
 				}
-				
+
 				found1 := false
 				found2 := false
-				
-				obj1 := objs[len(objs) - 2]
-				obj2 := objs[len(objs) - 1]
 
-				w1 := weights[len(weights) - 2]
-				w2 := weights[len(weights) - 1]
+				obj1 := objs[len(objs)-2]
+				obj2 := objs[len(objs)-1]
+
+				w1 := weights[len(weights)-2]
+				w2 := weights[len(weights)-1]
 
 				// I need to check if either obj1 or obj2 are present in
 				if obj1 == "true" && obj2 == "true" {
@@ -639,9 +646,9 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 						}
 					}
 				}
-				
-				objs = objs[:len(objs) - 2]
-				weights = weights[:len(weights) - 2]
+
+				objs = objs[:len(objs)-2]
+				weights = weights[:len(weights)-2]
 
 				var andWeight float64
 				if w1 < w2 {
@@ -649,7 +656,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				} else {
 					andWeight = w2
 				}
-				
+
 				if found1 && found2 {
 					objs = append(objs, "true")
 				} else {
@@ -710,8 +717,8 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 					if exec[i] {
 						for i, fAff := range filteredAffs {
 							if fAff == aff {
-								
-								if i != len(filteredAffs) - 1 {
+
+								if i != len(filteredAffs)-1 {
 									filteredAffs = append(filteredAffs[:i], filteredAffs[i+1:]...)
 								} else {
 									filteredAffs = filteredAffs[:i]
@@ -729,7 +736,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 				if len(objs) > 2 {
 					return errors.New("aff.query: malformed predicate")
 				}
-				pred := objs[len(objs) - 1]
+				pred := objs[len(objs)-1]
 
 				if pred != "true" {
 					falseRule = true
@@ -782,7 +789,7 @@ func aff_query (target, objects, rules *CXArgument, expr *CXExpression, call *CX
 	}
 }
 
-func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
+func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("aff.execute", "[]str", "[]str", "i32", target, commands, index); err == nil {
 		var _target []string
 		var _commands []string
@@ -791,7 +798,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		encoder.DeserializeRaw(*target.Value, &_target)
 		encoder.DeserializeRaw(*commands.Value, &_commands)
 		encoder.DeserializeAtomic(*index.Value, &_index)
-		
+
 		var op string
 		var name string
 		var index string
@@ -809,18 +816,18 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 				counter++
 			case "op":
 				if !isSkip {
-					op = _commands[i - 1]
+					op = _commands[i-1]
 				}
 			case "name":
 				if !isSkip {
-					name = _commands[i - 1]
+					name = _commands[i-1]
 				}
 			case "index":
 				if !isSkip {
-					index = _commands[i - 1]
+					index = _commands[i-1]
 				}
 			default:
-				
+
 			}
 		}
 
@@ -828,7 +835,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		var prevMod string
 		var prevFn string
 		var prevStrct string
-		
+
 		if mod, err := call.Program.GetCurrentPackage(); err == nil {
 			prevMod = mod.Name
 			if fn, err := mod.GetCurrentFunction(); err == nil {
@@ -844,23 +851,23 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		for _, t := range _target {
 			switch t {
 			case "pkg":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectPackage(obj)
 				targetTyp = "pkg"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "fn":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectFunction(obj)
 				targetTyp = "fn"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "strct":
-				obj := stack[len(stack) - 1]
+				obj := stack[len(stack)-1]
 				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			case "exp":
-				obj := stack[len(stack) - 1]
-				
+				obj := stack[len(stack)-1]
+
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
 					found := false
 					for _, expr := range fn.Expressions {
@@ -876,7 +883,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 						return errors.New(fmt.Sprintf("aff.query: no expression with tag '%s' was found", obj))
 					}
 				}
-				stack = stack[:len(stack) - 1]
+				stack = stack[:len(stack)-1]
 			default:
 				stack = append(stack, t)
 			}
@@ -886,15 +893,15 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 		switch targetTyp {
 		case "pkg":
 			// if mod, err := call.Program.GetCurrentPackage(); err == nil {
-			
+
 			// }
 		case "fn":
 			// if fn, err := call.Program.GetCurrentFunction(); err == nil {
-			
+
 			// }
 		case "strct":
 			// if strct, err := call.Program.GetCurrentStruct(); err == nil {
-			
+
 			// }
 		case "exp":
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
@@ -912,7 +919,7 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 								} else {
 									val, err, _, _ = getStrctFromArray(arr, int32(i), expr, call)
 								}
-								
+
 								if err == nil {
 									expr.RemoveInput()
 									expr.AddInput(MakeArgument("").AddValue(&val).AddType(arr.Typ[2:]))
@@ -936,7 +943,6 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 			return errors.New("aff.execute: no target was specified")
 		}
 
-
 		if prevMod != "" {
 			call.Program.SelectPackage(prevMod)
 		}
@@ -953,18 +959,18 @@ func aff_execute (target, commands, index *CXArgument, expr *CXExpression, call 
 	}
 }
 
-func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
+func aff_index(commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("aff.index", "[]str", "i32", commands, index); err == nil {
 		var _commands []string
 		var _index int32
-		
+
 		encoder.DeserializeRaw(*commands.Value, &_commands)
 		encoder.DeserializeRaw(*index.Value, &_index)
 
 		var index string
 		var counter int
 		var isSkip bool = true
-		
+
 		for i, cmd := range _commands {
 			switch cmd {
 			case "startcmd":
@@ -976,10 +982,10 @@ func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) e
 				counter++
 			case "index":
 				if !isSkip {
-					index = _commands[i - 1]
+					index = _commands[i-1]
 				}
 			default:
-				
+
 			}
 		}
 
@@ -990,7 +996,7 @@ func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) e
 			assignOutput(0, output, "i32", expr, call)
 			return nil
 		}
-		
+
 		output := encoder.Serialize(int32(idx))
 		assignOutput(0, output, "i32", expr, call)
 		return nil
@@ -999,18 +1005,18 @@ func aff_index (commands, index *CXArgument, expr *CXExpression, call *CXCall) e
 	}
 }
 
-func aff_name (commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
+func aff_name(commands, index *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("aff.name", "[]str", "i32", commands, index); err == nil {
 		var _commands []string
 		var _index int32
-		
+
 		encoder.DeserializeRaw(*commands.Value, &_commands)
 		encoder.DeserializeRaw(*index.Value, &_index)
 
 		var name string
 		var counter int
 		var isSkip bool = true
-		
+
 		for i, cmd := range _commands {
 			switch cmd {
 			case "startcmd":
@@ -1022,10 +1028,10 @@ func aff_name (commands, index *CXArgument, expr *CXExpression, call *CXCall) er
 				counter++
 			case "name":
 				if !isSkip {
-					name = _commands[i - 1]
+					name = _commands[i-1]
 				}
 			default:
-				
+
 			}
 		}
 
@@ -1038,7 +1044,7 @@ func aff_name (commands, index *CXArgument, expr *CXExpression, call *CXCall) er
 }
 
 // prints affordances in a human readable format
-func aff_print (commands *CXArgument, call *CXCall) error {
+func aff_print(commands *CXArgument, call *CXCall) error {
 	if err := checkType("aff.print", "[]str", commands); err == nil {
 		var _commands []string
 		encoder.DeserializeRaw(*commands.Value, &_commands)
@@ -1047,27 +1053,27 @@ func aff_print (commands *CXArgument, call *CXCall) error {
 		for i, cmd := range _commands {
 			switch cmd {
 			case "op":
-				fmt.Printf("(%d)\tOperator: %s\t", counter, _commands[i - 1])
+				fmt.Printf("(%d)\tOperator: %s\t", counter, _commands[i-1])
 				counter++
 			case "name":
-				fmt.Printf("Name: %s\t",  _commands[i - 1])
+				fmt.Printf("Name: %s\t", _commands[i-1])
 			case "index":
-				if _commands[i - 1] != "" {
-					fmt.Printf("Index: %s\t",  _commands[i - 1])
+				if _commands[i-1] != "" {
+					fmt.Printf("Index: %s\t", _commands[i-1])
 				}
 			case "endcmd":
 				fmt.Println()
 			default:
 			}
 		}
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func aff_len (commands *CXArgument, expr *CXExpression, call *CXCall) error {
+func aff_len(commands *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("aff.len", "[]str", commands); err == nil {
 		var _commands []string
 		encoder.DeserializeRaw(*commands.Value, &_commands)
@@ -1078,7 +1084,7 @@ func aff_len (commands *CXArgument, expr *CXExpression, call *CXCall) error {
 				counter++
 			}
 		}
-		
+
 		output := encoder.Serialize(int32(counter))
 		assignOutput(0, output, "i32", expr, call)
 		return nil

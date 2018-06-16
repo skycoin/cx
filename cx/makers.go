@@ -8,66 +8,70 @@ import (
 
 var HeapOffset int
 var genSymCounter int = 0
-func MakeGenSym (name string) string {
+
+func MakeGenSym(name string) string {
 	gensym := fmt.Sprintf("%s_%d", name, genSymCounter)
 	genSymCounter++
-	
+
 	return gensym
 }
 
-func MakeProgram (callStackSize int, stackSize int, initialHeapSize int) *CXProgram {
+func MakeProgram(callStackSize int, stackSize int, initialHeapSize int) *CXProgram {
 	newPrgrm := &CXProgram{
-		Packages: make([]*CXPackage, 0),
+		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, callStackSize, callStackSize),
-		Stacks: make([]CXStack, 1, 1),
-		Heap: MakeHeap(initialHeapSize),
+		Stacks:    make([]CXStack, 1, 1),
+		Heap:      MakeHeap(initialHeapSize),
 	}
-	
+
 	newPrgrm.Stacks[0] = MakeStack(stackSize)
 	newPrgrm.Stacks[0].Program = newPrgrm
-	
+
 	return newPrgrm
 }
 
-func MakePackage (name string) *CXPackage {
+func MakePackage(name string) *CXPackage {
 	return &CXPackage{
-		Name: name,
-		Globals: make([]*CXArgument, 0, 10),
-		Imports: make([]*CXPackage, 0),
+		Name:      name,
+		Globals:   make([]*CXArgument, 0, 10),
+		Imports:   make([]*CXPackage, 0),
 		Functions: make([]*CXFunction, 0, 10),
-		Structs: make([]*CXStruct, 0),
+		Structs:   make([]*CXStruct, 0),
 	}
 }
 
-func MakeGlobal (name string, typ int) *CXArgument {
+func MakeGlobal(name string, typ int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
-		Name: name,
-		Type: typ,
-		Size: size,
+		Name:       name,
+		Type:       typ,
+		Size:       size,
 		MemoryRead: MEM_DATA,
-		Offset: HeapOffset,
+		Offset:     HeapOffset,
 	}
 	HeapOffset += size
 	return global
 }
 
-func MakeField (name string, typ int) *CXArgument {
+func MakeField(name string, typ int) *CXArgument {
 	return &CXArgument{Name: name, Type: typ}
 }
 
 // Used only for native types
-func MakeDefaultValue (typName string) *[]byte {
+func MakeDefaultValue(typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
-	case "byte": zeroVal = make([]byte, 1, 1)
-	case "i64", "f64": zeroVal = make([]byte, 8, 8)
-	default: zeroVal = make([]byte, 4, 4)
+	case "byte":
+		zeroVal = make([]byte, 1, 1)
+	case "i64", "f64":
+		zeroVal = make([]byte, 8, 8)
+	default:
+		zeroVal = make([]byte, 4, 4)
 	}
 	return &zeroVal
 }
 
-func MakeStruct (name string) *CXStruct {
+func MakeStruct(name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
 
@@ -84,22 +88,22 @@ func MakeStruct (name string) *CXStruct {
 // 	}
 // }
 
-func MakeExpression (op *CXFunction) *CXExpression {
+func MakeExpression(op *CXFunction) *CXExpression {
 	return &CXExpression{Operator: op}
 }
 
-func MakeArgument (name string) *CXArgument {
+func MakeArgument(name string) *CXArgument {
 	sName := encoder.Serialize(name)
 	return &CXArgument{Name: name, Typ: "ident", Value: &sName}
 }
 
-func MakeFunction (name string) *CXFunction {
+func MakeFunction(name string) *CXFunction {
 	return &CXFunction{Name: name}
 }
 
-func MakeNative (opCode int, inputs []int, outputs []int) *CXFunction {
+func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	fn := &CXFunction{
-		OpCode: opCode,
+		OpCode:   opCode,
 		IsNative: true,
 	}
 
@@ -120,19 +124,19 @@ func MakeNative (opCode int, inputs []int, outputs []int) *CXFunction {
 	return fn
 }
 
-func MakeValue (value string) *[]byte {
+func MakeValue(value string) *[]byte {
 	byts := encoder.Serialize(value)
 	return &byts
 }
 
-func MakeStack (size int) CXStack {
+func MakeStack(size int) CXStack {
 	return CXStack{
-		Stack: make([]byte, size, size),
+		Stack:        make([]byte, size, size),
 		StackPointer: 0,
 	}
 }
 
-func MakeHeap (size int) CXHeap {
+func MakeHeap(size int) CXHeap {
 	return CXHeap{
 		Heap: make([]byte, size, size),
 		// HeapPointer: 0,
@@ -140,26 +144,26 @@ func MakeHeap (size int) CXHeap {
 	}
 }
 
-func MakeCall (op *CXFunction, stat []*CXArgument, ret *CXCall, pkg *CXPackage, prgrm *CXProgram) CXCall {
+func MakeCall(op *CXFunction, stat []*CXArgument, ret *CXCall, pkg *CXPackage, prgrm *CXProgram) CXCall {
 	return CXCall{
-		Operator: op,
-		Line: 0,
-		FramePointer: 0,
-		State: stat,
+		Operator:      op,
+		Line:          0,
+		FramePointer:  0,
+		State:         stat,
 		ReturnAddress: ret,
-		Package: pkg,
-		Program: prgrm,
+		Package:       pkg,
+		Program:       prgrm,
 	}
 }
 
-func MakeAffordance (desc string, action func()) *CXAffordance {
+func MakeAffordance(desc string, action func()) *CXAffordance {
 	return &CXAffordance{
 		Description: desc,
-		Action: action,
+		Action:      action,
 	}
 }
 
-func MakeIdentityOpName (typeName string) string {
+func MakeIdentityOpName(typeName string) string {
 	switch typeName {
 	case "str":
 		return "str.id"
@@ -194,55 +198,38 @@ func MakeIdentityOpName (typeName string) string {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func MakeParameterCopy (param *CXArgument) *CXArgument {
+func MakeParameterCopy(param *CXArgument) *CXArgument {
 	return &CXArgument{
 		Name: param.Name,
-		Typ: param.Typ,
+		Typ:  param.Typ,
 	}
 }
 
-func MakeArgumentCopy (arg *CXArgument) *CXArgument {
+func MakeArgumentCopy(arg *CXArgument) *CXArgument {
 	value := *arg.Value
 	return &CXArgument{
-		Typ: arg.Typ,
+		Typ:   arg.Typ,
 		Value: &value,
 	}
 }
 
-func MakeExpressionCopy (expr *CXExpression, fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXExpression {
+func MakeExpressionCopy(expr *CXExpression, fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXExpression {
 	argsCopy := make([]*CXArgument, len(expr.Inputs))
 	for i, arg := range expr.Inputs {
 		argsCopy[i] = MakeArgumentCopy(arg)
 	}
 	return &CXExpression{
 		Operator: expr.Operator,
-		Inputs: argsCopy,
-		Outputs: expr.Outputs,
-		Line: expr.Line,
+		Inputs:   argsCopy,
+		Outputs:  expr.Outputs,
+		Line:     expr.Line,
 		Function: fn,
-		Package: mod,
-		Program: cxt,
+		Package:  mod,
+		Program:  cxt,
 	}
 }
 
-func MakeFunctionCopy (fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFunction {
+func MakeFunctionCopy(fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFunction {
 	newFn := &CXFunction{}
 	inputsCopy := make([]*CXArgument, len(fn.Inputs))
 	outputsCopy := make([]*CXArgument, len(fn.Outputs))
@@ -253,21 +240,21 @@ func MakeFunctionCopy (fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFuncti
 	for i, out := range fn.Outputs {
 		outputsCopy[i] = MakeParameterCopy(out)
 	}
-	
+
 	for i, expr := range fn.Expressions {
 		exprsCopy[i] = MakeExpressionCopy(expr, newFn, mod, cxt)
 	}
-	
+
 	newFn.Name = fn.Name
 	newFn.Inputs = inputsCopy
 	newFn.Outputs = outputsCopy
-	
+
 	// if fn.Output != nil {
 	// 	newFn.Output = MakeParameterCopy(fn.Output)
 	// }
 	newFn.Expressions = exprsCopy
 	if len(exprsCopy) > 0 {
-		newFn.CurrentExpression = exprsCopy[len(exprsCopy) - 1]
+		newFn.CurrentExpression = exprsCopy[len(exprsCopy)-1]
 	}
 	newFn.Package = mod
 	newFn.Program = cxt
@@ -275,43 +262,43 @@ func MakeFunctionCopy (fn *CXFunction, mod *CXPackage, cxt *CXProgram) *CXFuncti
 	return newFn
 }
 
-func MakeFieldCopy (fld *CXArgument) *CXArgument {
+func MakeFieldCopy(fld *CXArgument) *CXArgument {
 	return &CXArgument{
 		Name: fld.Name,
-		Typ: fld.Typ,
+		Typ:  fld.Typ,
 	}
 }
 
-func MakeStructCopy (strct *CXStruct, mod *CXPackage, cxt *CXProgram) *CXStruct {
+func MakeStructCopy(strct *CXStruct, mod *CXPackage, cxt *CXProgram) *CXStruct {
 	fldsCopy := make([]*CXArgument, len(strct.Fields))
 	for i, fld := range strct.Fields {
 		fldsCopy[i] = MakeFieldCopy(fld)
 	}
 	return &CXStruct{
-		Name: strct.Name,
-		Fields: fldsCopy,
+		Name:    strct.Name,
+		Fields:  fldsCopy,
 		Package: mod,
 		Program: cxt,
 	}
 }
 
-func MakeDefinitionCopy (def *CXArgument, mod *CXPackage, cxt *CXProgram) *CXArgument {
+func MakeDefinitionCopy(def *CXArgument, mod *CXPackage, cxt *CXProgram) *CXArgument {
 	valCopy := *def.Value
 	return &CXArgument{
-		Name: def.Name,
-		Typ: def.Typ,
-		Value: &valCopy,
+		Name:    def.Name,
+		Typ:     def.Typ,
+		Value:   &valCopy,
 		Package: mod,
 		Program: cxt,
 	}
 }
 
-func MakeModuleCopy (mod *CXPackage, cxt *CXProgram) *CXPackage {
+func MakeModuleCopy(mod *CXPackage, cxt *CXProgram) *CXPackage {
 	newMod := &CXPackage{Program: cxt}
 	fnsCopy := make([]*CXFunction, len(mod.Functions))
 	strctsCopy := make([]*CXStruct, len(mod.Structs))
 	defsCopy := make([]*CXArgument, len(mod.Globals))
-	
+
 	for k, fn := range mod.Functions {
 		fnsCopy[k] = MakeFunctionCopy(fn, newMod, cxt)
 	}
@@ -335,40 +322,40 @@ func MakeModuleCopy (mod *CXPackage, cxt *CXProgram) *CXPackage {
 	newMod.Structs = strctsCopy
 	newMod.Globals = defsCopy
 	newMod.Program = cxt
-	
+
 	return newMod
 }
 
-func MakeCallCopy (call *CXCall, mod *CXPackage, cxt *CXProgram) *CXCall {
+func MakeCallCopy(call *CXCall, mod *CXPackage, cxt *CXProgram) *CXCall {
 	stateCopy := make([]*CXArgument, len(call.State))
 	for k, v := range call.State {
 		stateCopy[k] = MakeDefinitionCopy(v, mod, cxt)
 	}
 	return &CXCall{
-		Operator: call.Operator,
-		Line: call.Line,
-		State: stateCopy,
+		Operator:      call.Operator,
+		Line:          call.Line,
+		State:         stateCopy,
 		ReturnAddress: call.ReturnAddress,
-		Package: mod,
-		Program: cxt,
+		Package:       mod,
+		Program:       cxt,
 	}
 }
 
-func MakeCallStack (size int) []CXCall {
+func MakeCallStack(size int) []CXCall {
 	return make([]CXCall, 0)
 	// return &CXCallStack{
 	// 	Calls: make([]*CXCall, size),
 	// }
 }
 
-func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
+func MakeContextCopy(cxt *CXProgram, stepNumber int) *CXProgram {
 	newContext := &CXProgram{}
 
 	modsCopy := make([]*CXPackage, len(cxt.Packages))
 	if stepNumber >= len(cxt.Steps) || stepNumber < 0 {
 		stepNumber = len(cxt.Steps) - 1
 	}
-	
+
 	for k, mod := range cxt.Packages {
 		modsCopy[k] = MakeModuleCopy(mod, newContext)
 	}
@@ -385,7 +372,7 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	// Making imports copies
 	for _, mod := range modsCopy {
 		for impKey, _ := range mod.Imports {
-			mod.Imports[impKey] =  modsCopy[impKey]
+			mod.Imports[impKey] = modsCopy[impKey]
 		}
 	}
 
@@ -403,7 +390,7 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 	if len(cxt.Steps) > 0 {
 		reqStep := cxt.Steps[stepNumber]
 		newStep := MakeCallStack(len(reqStep))
-		
+
 		var lastCall *CXCall
 		for j, call := range reqStep {
 			var callModule *CXPackage
@@ -412,7 +399,7 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 					callModule = mod
 				}
 			}
-			
+
 			newCall := *MakeCallCopy(&call, callModule, newContext)
 			if callOp, err := newContext.GetFunction(call.Operator.Name, call.Operator.Package.Name); err == nil {
 				newCall.Operator = callOp
@@ -421,10 +408,10 @@ func MakeContextCopy (cxt *CXProgram, stepNumber int) *CXProgram {
 			lastCall = &newCall
 			newStep[j] = newCall
 		}
-		
+
 		newContext.CallStack = newStep
 		newContext.Steps = nil
 	}
-	
+
 	return newContext
 }

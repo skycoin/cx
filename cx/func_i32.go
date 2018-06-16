@@ -1,42 +1,42 @@
 package base
 
 import (
-	"fmt"
+	"bufio"
 	"errors"
+	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
 	"math/rand"
 	"os"
 	"strconv"
-	"bufio"
 	"strings"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func addI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func addI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.add", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 + n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 + n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func subI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func subI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.sub", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 - n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 - n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func mulI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func mulI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.mul", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 * n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 * n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func divI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.div", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -56,7 +56,7 @@ func divI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func powI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func powI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.pow", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -72,15 +72,15 @@ func powI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func absI32 (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+func absI32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i32.abs", "i32", arg1); err == nil {
-		return assignOutput(0, oneI32oneI32(func(n1 int32) int32 {return int32(math.Abs(float64(n1)))}, arg1), "i32", expr, call)
+		return assignOutput(0, oneI32oneI32(func(n1 int32) int32 { return int32(math.Abs(float64(n1))) }, arg1), "i32", expr, call)
 	} else {
 		return err
-	}	
+	}
 }
 
-func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func modI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.mod", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -91,46 +91,46 @@ func modI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 			return errors.New("i32.mod: Division by 0")
 		}
 
-		assignOutput(0, encoder.Serialize(int32(num1 % num2)), "i32", expr, call)
+		assignOutput(0, encoder.Serialize(int32(num1%num2)), "i32", expr, call)
 		return nil
 	} else {
 		return err
 	}
 }
 
-func andI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func andI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.and", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 & n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 & n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func orI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func orI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.or", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 | n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 | n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func xorI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func xorI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.xor", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 ^ n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 ^ n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func andNotI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func andNotI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitclear", "i32", "i32", arg1, arg2); err == nil {
-		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {return n1 &^ n2}, arg1, arg2), "i32", expr, call)
+		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 { return n1 &^ n2 }, arg1, arg2), "i32", expr, call)
 	} else {
 		return err
 	}
 }
 
-func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func shiftLeftI32(arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitshl", "i32", "i32", arg1, arg2); err == nil {
 		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {
 			return int32(uint32(n1) << uint32(n2))
@@ -140,7 +140,7 @@ func shiftLeftI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) err
 	}
 }
 
-func shiftRightI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func shiftRightI32(arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.bitshr", "i32", "i32", arg1, arg2); err == nil {
 		return assignOutput(0, twoI32oneI32(func(n1 int32, n2 int32) int32 {
 			return int32(uint32(n1) >> uint32(n2))
@@ -150,7 +150,7 @@ func shiftRightI32 (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) er
 	}
 }
 
-func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
+func randI32(min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.rand", "i32", "i32", min, max); err == nil {
 		var minimum int32
 		encoder.DeserializeRaw(*min.Value, &minimum)
@@ -161,8 +161,8 @@ func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 		if minimum > maximum {
 			return errors.New(fmt.Sprintf("i32.rand: min must be less than max (%d !< %d)", minimum, maximum))
 		}
-		
-		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum - minimum)) + int(minimum)))
+
+		output := encoder.SerializeAtomic(int32(rand.Intn(int(maximum-minimum)) + int(minimum)))
 
 		assignOutput(0, output, "i32", expr, call)
 		return nil
@@ -171,18 +171,18 @@ func randI32 (min *CXArgument, max *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func readI32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readI32A(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i32.read", "[]i32", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
-		
+
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]i32.read: negative index %d", index))
 		}
-		
+
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]i32.read: index %d exceeds array of length %d", index, size))
 		}
@@ -198,7 +198,7 @@ func readI32A (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeI32A(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]i32.write", "[]i32", "i32", "i32", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -214,12 +214,12 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 			return errors.New(fmt.Sprintf("[]i32.write: index %d exceeds array of length %d", index, size))
 		}
 
-		offset := int(index) * 4 + 4
+		offset := int(index)*4 + 4
 		firstChunk := make([]byte, offset)
-		secondChunk := make([]byte, len(*arr.Value) - (offset + 4))
+		secondChunk := make([]byte, len(*arr.Value)-(offset+4))
 
 		copy(firstChunk, (*arr.Value)[:offset])
-		copy(secondChunk, (*arr.Value)[offset + 4:])
+		copy(secondChunk, (*arr.Value)[offset+4:])
 
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
@@ -231,7 +231,7 @@ func writeI32A (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 	}
 }
 
-func lenI32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenI32A(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]i32.len", "[]i32", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -241,15 +241,15 @@ func lenI32A (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func ltI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.lt", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
 		encoder.DeserializeAtomic(*arg1.Value, &num1)
 		encoder.DeserializeAtomic(*arg2.Value, &num2)
-		
+
 		var val []byte
-		
+
 		if num1 < num2 {
 			val = encoder.Serialize(true)
 		} else {
@@ -263,7 +263,7 @@ func ltI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func gtI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.gt", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -285,7 +285,7 @@ func gtI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func eqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.eq", "i32", "i32", arg1, arg2); err == nil {
 		equal := true
 		for i, b := range *arg1.Value {
@@ -295,7 +295,7 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 			}
 		}
 		val := make([]byte, 4)
-		
+
 		if equal {
 			val = []byte{1, 0, 0, 0}
 		} else {
@@ -309,7 +309,7 @@ func eqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func uneqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.uneq", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -331,7 +331,7 @@ func uneqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func lteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.lteq", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -353,7 +353,7 @@ func lteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func gteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("i32.gteq", "i32", "i32", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -375,7 +375,7 @@ func gteqI32 (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func concatI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatI32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i32.concat", "[]i32", "[]i32", arg1, arg2); err == nil {
 		var slice1 []int32
 		var slice2 []int32
@@ -392,7 +392,7 @@ func concatI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func appendI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendI32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i32.append", "[]i32", "i32", arg1, arg2); err == nil {
 		var slice []int32
 		var literal int32
@@ -410,7 +410,7 @@ func appendI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func copyI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyI32A(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]i32.copy", "[]i32", "[]i32", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil
@@ -419,7 +419,7 @@ func copyI32A (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	}
 }
 
-func readI32 (expr *CXExpression, call *CXCall) error {
+func readI32(expr *CXExpression, call *CXCall) error {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	text = strings.Replace(text, "\n", "", -1)
@@ -441,4 +441,4 @@ func readI32 (expr *CXExpression, call *CXCall) error {
 // min() func is not implemented
 // hash() func is not implemented
 // round() func is not implemented
-// sorted() func is not implemented 
+// sorted() func is not implemented

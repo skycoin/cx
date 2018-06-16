@@ -1,11 +1,11 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"time"
-	"io/ioutil"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
 type Point struct {
@@ -14,7 +14,7 @@ type Point struct {
 }
 
 type Arrays struct {
-	ints []int32
+	ints   []int32
 	floats []float32
 }
 
@@ -23,14 +23,14 @@ type Structs struct {
 	arrays []Arrays
 }
 
-func main () {
+func main() {
 
 	fileName := "serial"
-	
+
 	/*
-          Point
-        */
-	
+	   Point
+	*/
+
 	testPoint := Point{
 		x: 10,
 		y: 20,
@@ -38,13 +38,13 @@ func main () {
 	_ = testPoint
 
 	/*
-          Arrays
-        */
+	   Arrays
+	*/
 
 	// ints := make([]int32, 200000, 200000)
 	// floats := make([]float32, 200000, 200000)
 	testArrays := Arrays{
-		ints: []int32{1, 2, 3},
+		ints:   []int32{1, 2, 3},
 		floats: []float32{1.0, 2.0, 3.0},
 	}
 	// testArrays := Arrays{
@@ -53,9 +53,9 @@ func main () {
 	// }
 
 	/*
-          Structs
-        */
-	
+	   Structs
+	*/
+
 	point1 := Point{
 		x: 10,
 		y: 20,
@@ -67,30 +67,24 @@ func main () {
 	}
 
 	arrays1 := Arrays{
-		ints: []int32{1, 2, 3},
+		ints:   []int32{1, 2, 3},
 		floats: []float32{1.0, 2.0, 3.0},
 	}
 
 	var points []Point
 	points = append(points, point1)
 	points = append(points, point2)
-	
+
 	var arrays []Arrays
 	arrays = append(arrays, arrays1)
-	
+
 	var testStructs Structs
 	testStructs.points = points
 	testStructs.arrays = arrays
 
-
-
-
-
-
-	
 	// /*
-        //     Point
-        // */
+	//     Point
+	// */
 
 	// // serialization only
 	// start := time.Now()
@@ -118,18 +112,9 @@ func main () {
 	// duration = time.Since(start)
 	// fmt.Println("w\t", duration)
 
-
-
-
-
-
-
-
-
-
 	/*
-            Arrays
-        */
+	   Arrays
+	*/
 
 	// serialization only
 	start := time.Now()
@@ -157,15 +142,9 @@ func main () {
 	duration = time.Since(start)
 	fmt.Println("w\t", duration)
 
-
-
-
-
-
-
 	// /*
-        //     Structs
-        // */
+	//     Structs
+	// */
 
 	// // serialization only
 	// start = time.Now()
@@ -193,15 +172,6 @@ func main () {
 	// duration = time.Since(start)
 	// fmt.Println("w\t", duration)
 
-
-
-
-
-
-
-
-	
-	
 	// // read only
 	// start := time.Now()
 	// for c := 0; c < 1000; c++ {
@@ -209,10 +179,5 @@ func main () {
 	// }
 	// duration := time.Since(start)
 	// fmt.Println("read\t\t", duration)
-	
-	
-	
-	
 
-	
 }

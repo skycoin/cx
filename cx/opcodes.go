@@ -35,7 +35,7 @@ const (
 	OP_BOOL_AND
 
 	OP_BYTE_PRINT
-	
+
 	OP_I32_BYTE
 	OP_I32_STR
 	OP_I32_I32
@@ -176,7 +176,7 @@ const (
 	OP_TEST_START
 	OP_TEST_STOP
 	OP_TEST_ERROR
-	
+
 	OP_TEST
 
 	OP_TIME_SLEEP
@@ -271,25 +271,43 @@ func execNative(prgrm *CXProgram) {
 	case OP_DEBUG:
 		prgrm.PrintStack()
 
-	case OP_UND_EQUAL: op_equal(expr, stack, fp)
-	case OP_UND_UNEQUAL: op_unequal(expr, stack, fp)
-	case OP_UND_BITAND: op_bitand(expr, stack, fp)
-	case OP_UND_BITXOR: op_bitxor(expr, stack, fp)
-	case OP_UND_BITOR: op_bitor(expr, stack, fp)
-	case OP_UND_BITCLEAR: op_bitclear(expr, stack, fp)
-	case OP_UND_MUL: op_mul(expr, stack, fp)
-	case OP_UND_DIV: op_div(expr, stack, fp)
-	case OP_UND_MOD: op_mod(expr, stack, fp)
-	case OP_UND_ADD: op_add(expr, stack, fp)
-	case OP_UND_SUB: op_sub(expr, stack, fp)
-	case OP_UND_BITSHL: op_bitshl(expr, stack, fp)
-	case OP_UND_BITSHR: op_bitshr(expr, stack, fp)
-	case OP_UND_LT: op_lt(expr, stack, fp)
-	case OP_UND_GT: op_gt(expr, stack, fp)
-	case OP_UND_LTEQ: op_lteq(expr, stack, fp)
-	case OP_UND_GTEQ: op_gteq(expr, stack, fp)
-	case OP_UND_LEN: op_len(expr, stack, fp)
-		
+	case OP_UND_EQUAL:
+		op_equal(expr, stack, fp)
+	case OP_UND_UNEQUAL:
+		op_unequal(expr, stack, fp)
+	case OP_UND_BITAND:
+		op_bitand(expr, stack, fp)
+	case OP_UND_BITXOR:
+		op_bitxor(expr, stack, fp)
+	case OP_UND_BITOR:
+		op_bitor(expr, stack, fp)
+	case OP_UND_BITCLEAR:
+		op_bitclear(expr, stack, fp)
+	case OP_UND_MUL:
+		op_mul(expr, stack, fp)
+	case OP_UND_DIV:
+		op_div(expr, stack, fp)
+	case OP_UND_MOD:
+		op_mod(expr, stack, fp)
+	case OP_UND_ADD:
+		op_add(expr, stack, fp)
+	case OP_UND_SUB:
+		op_sub(expr, stack, fp)
+	case OP_UND_BITSHL:
+		op_bitshl(expr, stack, fp)
+	case OP_UND_BITSHR:
+		op_bitshr(expr, stack, fp)
+	case OP_UND_LT:
+		op_lt(expr, stack, fp)
+	case OP_UND_GT:
+		op_gt(expr, stack, fp)
+	case OP_UND_LTEQ:
+		op_lteq(expr, stack, fp)
+	case OP_UND_GTEQ:
+		op_gteq(expr, stack, fp)
+	case OP_UND_LEN:
+		op_len(expr, stack, fp)
+
 	case OP_BYTE_PRINT:
 		op_byte_print(expr, stack, fp)
 
@@ -709,32 +727,32 @@ var OpNames map[int]string = map[int]string{
 	OP_JMP:        "jmp",
 	OP_DEBUG:      "debug",
 
-	OP_UND_EQUAL: "eq",
-	OP_UND_UNEQUAL: "uneq",
-	OP_UND_BITAND: "bitand",
-	OP_UND_BITXOR: "bitxor",
-	OP_UND_BITOR: "bitor",
+	OP_UND_EQUAL:    "eq",
+	OP_UND_UNEQUAL:  "uneq",
+	OP_UND_BITAND:   "bitand",
+	OP_UND_BITXOR:   "bitxor",
+	OP_UND_BITOR:    "bitor",
 	OP_UND_BITCLEAR: "bitclear",
-	OP_UND_MUL: "mul",
-	OP_UND_DIV: "div",
-	OP_UND_MOD: "mod",
-	OP_UND_ADD: "add",
-	OP_UND_SUB: "sub",
-	OP_UND_BITSHL: "bitshl",
-	OP_UND_LT: "lt",
-	OP_UND_GT: "gt",
-	OP_UND_LTEQ: "lteq",
-	OP_UND_GTEQ: "gteq",
-	OP_UND_LEN: "len",
+	OP_UND_MUL:      "mul",
+	OP_UND_DIV:      "div",
+	OP_UND_MOD:      "mod",
+	OP_UND_ADD:      "add",
+	OP_UND_SUB:      "sub",
+	OP_UND_BITSHL:   "bitshl",
+	OP_UND_LT:       "lt",
+	OP_UND_GT:       "gt",
+	OP_UND_LTEQ:     "lteq",
+	OP_UND_GTEQ:     "gteq",
+	OP_UND_LEN:      "len",
 
 	OP_BYTE_PRINT: "byte.print",
 
-	OP_BOOL_PRINT: "bool.print",
-	OP_BOOL_EQUAL: "bool.eq",
+	OP_BOOL_PRINT:   "bool.print",
+	OP_BOOL_EQUAL:   "bool.eq",
 	OP_BOOL_UNEQUAL: "bool.uneq",
-	OP_BOOL_NOT:   "bool.not",
-	OP_BOOL_OR:    "bool.or",
-	OP_BOOL_AND:   "bool.and",
+	OP_BOOL_NOT:     "bool.not",
+	OP_BOOL_OR:      "bool.or",
+	OP_BOOL_AND:     "bool.and",
 
 	OP_I32_BYTE:     "i32.byte",
 	OP_I32_STR:      "i32.str",
@@ -800,59 +818,59 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_MIN:      "i64.min",
 	OP_I64_COS:      "i64.cos",
 	OP_I64_SIN:      "i64.sin",
-	OP_F32_PRINT: "f32.print",
-	OP_F32_ADD:   "f32.add",
-	OP_F32_SUB:   "f32.sub",
-	OP_F32_MUL:   "f32.mul",
-	OP_F32_DIV:   "f32.div",
-	OP_F32_ABS:   "f32.abs",
-	OP_F32_POW:   "f32.pow",
-	OP_F32_GT:    "f32.gt",
-	OP_F32_GTEQ:  "f32.gteq",
-	OP_F32_LT:    "f32.lt",
-	OP_F32_LTEQ:  "f32.lteq",
-	OP_F32_EQ:    "f32.eq",
-	OP_F32_UNEQ:  "f32.uneq",
-	OP_F32_COS:   "f32.cos",
-	OP_F32_SIN:   "f32.sin",
-	OP_F32_SQRT:  "f32.sqrt",
-	OP_F32_LOG:   "f32.log",
-	OP_F32_LOG2:  "f32.log2",
-	OP_F32_LOG10: "f32.log10",
-	OP_F32_MAX:   "f32.max",
-	OP_F32_MIN:   "f32.min",
-	OP_F64_PRINT: "f64.print",
-	OP_F64_ADD:   "f64.add",
-	OP_F64_SUB:   "f64.sub",
-	OP_F64_MUL:   "f64.mul",
-	OP_F64_DIV:   "f64.div",
-	OP_F64_ABS:   "f64.abs",
-	OP_F64_POW:   "f64.pow",
-	OP_F64_GT:    "f64.gt",
-	OP_F64_GTEQ:  "f64.gteq",
-	OP_F64_LT:    "f64.lt",
-	OP_F64_LTEQ:  "f64.lteq",
-	OP_F64_EQ:    "f64.eq",
-	OP_F64_UNEQ:  "f64.uneq",
-	OP_F64_COS:   "f64.cos",
-	OP_F64_SIN:   "f64.sin",
-	OP_F64_SQRT:  "f64.sqrt",
-	OP_F64_LOG:   "f64.log",
-	OP_F64_LOG2:  "f64.log2",
-	OP_F64_LOG10: "f64.log10",
-	OP_F64_MAX:   "f64.max",
-	OP_F64_MIN:   "f64.min",
+	OP_F32_PRINT:    "f32.print",
+	OP_F32_ADD:      "f32.add",
+	OP_F32_SUB:      "f32.sub",
+	OP_F32_MUL:      "f32.mul",
+	OP_F32_DIV:      "f32.div",
+	OP_F32_ABS:      "f32.abs",
+	OP_F32_POW:      "f32.pow",
+	OP_F32_GT:       "f32.gt",
+	OP_F32_GTEQ:     "f32.gteq",
+	OP_F32_LT:       "f32.lt",
+	OP_F32_LTEQ:     "f32.lteq",
+	OP_F32_EQ:       "f32.eq",
+	OP_F32_UNEQ:     "f32.uneq",
+	OP_F32_COS:      "f32.cos",
+	OP_F32_SIN:      "f32.sin",
+	OP_F32_SQRT:     "f32.sqrt",
+	OP_F32_LOG:      "f32.log",
+	OP_F32_LOG2:     "f32.log2",
+	OP_F32_LOG10:    "f32.log10",
+	OP_F32_MAX:      "f32.max",
+	OP_F32_MIN:      "f32.min",
+	OP_F64_PRINT:    "f64.print",
+	OP_F64_ADD:      "f64.add",
+	OP_F64_SUB:      "f64.sub",
+	OP_F64_MUL:      "f64.mul",
+	OP_F64_DIV:      "f64.div",
+	OP_F64_ABS:      "f64.abs",
+	OP_F64_POW:      "f64.pow",
+	OP_F64_GT:       "f64.gt",
+	OP_F64_GTEQ:     "f64.gteq",
+	OP_F64_LT:       "f64.lt",
+	OP_F64_LTEQ:     "f64.lteq",
+	OP_F64_EQ:       "f64.eq",
+	OP_F64_UNEQ:     "f64.uneq",
+	OP_F64_COS:      "f64.cos",
+	OP_F64_SIN:      "f64.sin",
+	OP_F64_SQRT:     "f64.sqrt",
+	OP_F64_LOG:      "f64.log",
+	OP_F64_LOG2:     "f64.log2",
+	OP_F64_LOG10:    "f64.log10",
+	OP_F64_MAX:      "f64.max",
+	OP_F64_MIN:      "f64.min",
 
 	OP_STR_PRINT: "str.print",
 
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
-	OP_TIME_UNIX_NANO: "time.UnixNano",
+	OP_TIME_UNIX_NANO:  "time.UnixNano",
 
 	OP_TEST_START: "test.start",
-	OP_TEST_STOP: "test.stop",
+	OP_TEST_STOP:  "test.stop",
 	OP_TEST_ERROR: "test.error",
-	
+
 	OP_TEST: "test",
 
 	// opengl
@@ -933,24 +951,24 @@ var OpCodes map[string]int = map[string]int{
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
-	"equal": OP_UND_EQUAL,
-	"unequal": OP_UND_UNEQUAL,
-	"bitand": OP_UND_BITAND,
-	"bitxor": OP_UND_BITXOR,
-	"bitor": OP_UND_BITOR,
+	"equal":    OP_UND_EQUAL,
+	"unequal":  OP_UND_UNEQUAL,
+	"bitand":   OP_UND_BITAND,
+	"bitxor":   OP_UND_BITXOR,
+	"bitor":    OP_UND_BITOR,
 	"bitclear": OP_UND_BITCLEAR,
-	"mul": OP_UND_MUL,
-	"div": OP_UND_DIV,
-	"mod": OP_UND_MOD,
-	"add": OP_UND_ADD,
-	"sub": OP_UND_SUB,
-	"bitshl": OP_UND_BITSHL,
-	"lt": OP_UND_LT,
-	"gt": OP_UND_GT,
-	"lteq": OP_UND_LTEQ,
-	"gteq": OP_UND_GTEQ,
-	"len": OP_UND_LEN,
-	
+	"mul":      OP_UND_MUL,
+	"div":      OP_UND_DIV,
+	"mod":      OP_UND_MOD,
+	"add":      OP_UND_ADD,
+	"sub":      OP_UND_SUB,
+	"bitshl":   OP_UND_BITSHL,
+	"lt":       OP_UND_LT,
+	"gt":       OP_UND_GT,
+	"lteq":     OP_UND_LTEQ,
+	"gteq":     OP_UND_GTEQ,
+	"len":      OP_UND_LEN,
+
 	"byte.print": OP_BYTE_PRINT,
 
 	"bool.print": OP_BOOL_PRINT,
@@ -1024,58 +1042,58 @@ var OpCodes map[string]int = map[string]int{
 	"i64.min":      OP_I64_MIN,
 	"i64.cos":      OP_I64_COS,
 	"i64.sin":      OP_I64_SIN,
-	"f32.print": OP_F32_PRINT,
-	"f32.add":   OP_F32_ADD,
-	"f32.sub":   OP_F32_SUB,
-	"f32.mul":   OP_F32_MUL,
-	"f32.div":   OP_F32_DIV,
-	"f32.abs":   OP_F32_ABS,
-	"f32.pow":   OP_F32_POW,
-	"f32.gt":    OP_F32_GT,
-	"f32.gteq":  OP_F32_GTEQ,
-	"f32.lt":    OP_F32_LT,
-	"f32.lteq":  OP_F32_LTEQ,
-	"f32.eq":    OP_F32_EQ,
-	"f32.uneq":  OP_F32_UNEQ,
-	"f32.cos":   OP_F32_COS,
-	"f32.sin":   OP_F32_SIN,
-	"f32.sqrt":  OP_F32_SQRT,
-	"f32.log":   OP_F32_LOG,
-	"f32.log2":  OP_F32_LOG2,
-	"f32.log10": OP_F32_LOG10,
-	"f32.max":   OP_F32_MAX,
-	"f32.min":   OP_F32_MIN,
-	"f64.print": OP_F64_PRINT,
-	"f64.add":   OP_F64_ADD,
-	"f64.sub":   OP_F64_SUB,
-	"f64.mul":   OP_F64_MUL,
-	"f64.div":   OP_F64_DIV,
-	"f64.abs":   OP_F64_ABS,
-	"f64.pow":   OP_F64_POW,
-	"f64.gt":    OP_F64_GT,
-	"f64.gteq":  OP_F64_GTEQ,
-	"f64.lt":    OP_F64_LT,
-	"f64.lteq":  OP_F64_LTEQ,
-	"f64.eq":    OP_F64_EQ,
-	"f64.uneq":  OP_F64_UNEQ,
-	"f64.cos":   OP_F64_COS,
-	"f64.sin":   OP_F64_SIN,
-	"f64.sqrt":  OP_F64_SQRT,
-	"f64.log":   OP_F64_LOG,
-	"f64.log2":  OP_F64_LOG2,
-	"f64.log10": OP_F64_LOG10,
-	"f64.max":   OP_F64_MAX,
-	"f64.min":   OP_F64_MIN,
+	"f32.print":    OP_F32_PRINT,
+	"f32.add":      OP_F32_ADD,
+	"f32.sub":      OP_F32_SUB,
+	"f32.mul":      OP_F32_MUL,
+	"f32.div":      OP_F32_DIV,
+	"f32.abs":      OP_F32_ABS,
+	"f32.pow":      OP_F32_POW,
+	"f32.gt":       OP_F32_GT,
+	"f32.gteq":     OP_F32_GTEQ,
+	"f32.lt":       OP_F32_LT,
+	"f32.lteq":     OP_F32_LTEQ,
+	"f32.eq":       OP_F32_EQ,
+	"f32.uneq":     OP_F32_UNEQ,
+	"f32.cos":      OP_F32_COS,
+	"f32.sin":      OP_F32_SIN,
+	"f32.sqrt":     OP_F32_SQRT,
+	"f32.log":      OP_F32_LOG,
+	"f32.log2":     OP_F32_LOG2,
+	"f32.log10":    OP_F32_LOG10,
+	"f32.max":      OP_F32_MAX,
+	"f32.min":      OP_F32_MIN,
+	"f64.print":    OP_F64_PRINT,
+	"f64.add":      OP_F64_ADD,
+	"f64.sub":      OP_F64_SUB,
+	"f64.mul":      OP_F64_MUL,
+	"f64.div":      OP_F64_DIV,
+	"f64.abs":      OP_F64_ABS,
+	"f64.pow":      OP_F64_POW,
+	"f64.gt":       OP_F64_GT,
+	"f64.gteq":     OP_F64_GTEQ,
+	"f64.lt":       OP_F64_LT,
+	"f64.lteq":     OP_F64_LTEQ,
+	"f64.eq":       OP_F64_EQ,
+	"f64.uneq":     OP_F64_UNEQ,
+	"f64.cos":      OP_F64_COS,
+	"f64.sin":      OP_F64_SIN,
+	"f64.sqrt":     OP_F64_SQRT,
+	"f64.log":      OP_F64_LOG,
+	"f64.log2":     OP_F64_LOG2,
+	"f64.log10":    OP_F64_LOG10,
+	"f64.max":      OP_F64_MAX,
+	"f64.min":      OP_F64_MIN,
 
 	"str.print": OP_STR_PRINT,
 
 	"time.Sleep":     OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
-	"time.UnixNano": OP_TIME_UNIX_NANO,
+	"time.UnixNano":  OP_TIME_UNIX_NANO,
 
 	"test.start": OP_TEST_START,
-	"test.stop": OP_TEST_STOP,
-	"test": OP_TEST,
+	"test.stop":  OP_TEST_STOP,
+	"test":       OP_TEST,
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
@@ -1155,33 +1173,33 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_JMP:   MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
 	OP_DEBUG: MakeNative(OP_DEBUG, []int{}, []int{}),
 
-	OP_UND_EQUAL: MakeNative(OP_UND_EQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_UNEQUAL: MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_BITAND: MakeNative(OP_UND_BITAND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_BITXOR: MakeNative(OP_UND_BITXOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_BITOR: MakeNative(OP_UND_BITOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_EQUAL:    MakeNative(OP_UND_EQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_UNEQUAL:  MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_BITAND:   MakeNative(OP_UND_BITAND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITXOR:   MakeNative(OP_UND_BITXOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITOR:    MakeNative(OP_UND_BITOR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_UND_BITCLEAR: MakeNative(OP_UND_BITCLEAR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_MUL: MakeNative(OP_UND_MUL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_DIV: MakeNative(OP_UND_DIV, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_MOD: MakeNative(OP_UND_MOD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_ADD: MakeNative(OP_UND_ADD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_SUB: MakeNative(OP_UND_SUB, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_BITSHL: MakeNative(OP_UND_BITSHL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_BITSHR: MakeNative(OP_UND_BITSHR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_UND_LT: MakeNative(OP_UND_LT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_GT: MakeNative(OP_UND_GT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_LTEQ: MakeNative(OP_UND_LTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_GTEQ: MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
-	OP_UND_LEN: MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
+	OP_UND_MUL:      MakeNative(OP_UND_MUL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_DIV:      MakeNative(OP_UND_DIV, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_MOD:      MakeNative(OP_UND_MOD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_ADD:      MakeNative(OP_UND_ADD, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_SUB:      MakeNative(OP_UND_SUB, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITSHL:   MakeNative(OP_UND_BITSHL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_BITSHR:   MakeNative(OP_UND_BITSHR, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_UND_LT:       MakeNative(OP_UND_LT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_GT:       MakeNative(OP_UND_GT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_LTEQ:     MakeNative(OP_UND_LTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_GTEQ:     MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
+	OP_UND_LEN:      MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
 
 	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
-	OP_BOOL_PRINT: MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
-	OP_BOOL_EQUAL: MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_PRINT:   MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
+	OP_BOOL_EQUAL:   MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_UNEQUAL: MakeNative(OP_BOOL_UNEQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
-	OP_BOOL_NOT:   MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
-	OP_BOOL_OR:    MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
-	OP_BOOL_AND:   MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_NOT:     MakeNative(OP_BOOL_NOT, []int{TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_OR:      MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_BOOL_AND:     MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 
 	OP_I32_BYTE: MakeNative(OP_I32_BYTE, []int{TYPE_I32}, []int{TYPE_BYTE}),
 	OP_I32_STR:  MakeNative(OP_I32_STR, []int{TYPE_I32}, []int{TYPE_STR}),
@@ -1248,57 +1266,57 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_MIN:      MakeNative(OP_I64_MIN, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_COS:      MakeNative(OP_I64_COS, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_SIN:      MakeNative(OP_I64_SIN, []int{TYPE_I64}, []int{TYPE_I64}),
-	OP_F32_PRINT: MakeNative(OP_F32_PRINT, []int{TYPE_F32}, []int{}),
-	OP_F32_ADD:   MakeNative(OP_F32_ADD, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_SUB:   MakeNative(OP_F32_SUB, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_MUL:   MakeNative(OP_F32_MUL, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_DIV:   MakeNative(OP_F32_DIV, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_ABS:   MakeNative(OP_F32_ABS, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_POW:   MakeNative(OP_F32_POW, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_GT:    MakeNative(OP_F32_GT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_GTEQ:  MakeNative(OP_F32_GTEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_LT:    MakeNative(OP_F32_LT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_LTEQ:  MakeNative(OP_F32_LTEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_EQ:    MakeNative(OP_F32_EQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_UNEQ:  MakeNative(OP_F32_UNEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
-	OP_F32_COS:   MakeNative(OP_F32_COS, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_SIN:   MakeNative(OP_F32_SIN, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_SQRT:  MakeNative(OP_F32_SQRT, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_LOG:   MakeNative(OP_F32_LOG, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_LOG2:  MakeNative(OP_F32_LOG2, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_LOG10: MakeNative(OP_F32_LOG10, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_MAX:   MakeNative(OP_F32_MAX, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_MIN:   MakeNative(OP_F32_MIN, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F64_PRINT: MakeNative(OP_F64_PRINT, []int{TYPE_F64}, []int{}),
-	OP_F64_ADD:   MakeNative(OP_F64_ADD, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_SUB:   MakeNative(OP_F64_SUB, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MUL:   MakeNative(OP_F64_MUL, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_DIV:   MakeNative(OP_F64_DIV, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_ABS:   MakeNative(OP_F64_ABS, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_POW:   MakeNative(OP_F64_POW, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_GT:    MakeNative(OP_F64_GT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_GTEQ:  MakeNative(OP_F64_GTEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_LT:    MakeNative(OP_F64_LT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_LTEQ:  MakeNative(OP_F64_LTEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_EQ:    MakeNative(OP_F64_EQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_UNEQ:  MakeNative(OP_F64_UNEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
-	OP_F64_COS:   MakeNative(OP_F64_COS, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_SIN:   MakeNative(OP_F64_SIN, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_SQRT:  MakeNative(OP_F64_SQRT, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_LOG:   MakeNative(OP_F64_LOG, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_LOG2:  MakeNative(OP_F64_LOG2, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_LOG10: MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MIN:   MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MAX:   MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_STR_PRINT: MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
+	OP_F32_PRINT:    MakeNative(OP_F32_PRINT, []int{TYPE_F32}, []int{}),
+	OP_F32_ADD:      MakeNative(OP_F32_ADD, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_SUB:      MakeNative(OP_F32_SUB, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_MUL:      MakeNative(OP_F32_MUL, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_DIV:      MakeNative(OP_F32_DIV, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_ABS:      MakeNative(OP_F32_ABS, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_POW:      MakeNative(OP_F32_POW, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_GT:       MakeNative(OP_F32_GT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_GTEQ:     MakeNative(OP_F32_GTEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_LT:       MakeNative(OP_F32_LT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_LTEQ:     MakeNative(OP_F32_LTEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_EQ:       MakeNative(OP_F32_EQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_UNEQ:     MakeNative(OP_F32_UNEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
+	OP_F32_COS:      MakeNative(OP_F32_COS, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_SIN:      MakeNative(OP_F32_SIN, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_SQRT:     MakeNative(OP_F32_SQRT, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_LOG:      MakeNative(OP_F32_LOG, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_LOG2:     MakeNative(OP_F32_LOG2, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_LOG10:    MakeNative(OP_F32_LOG10, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_MAX:      MakeNative(OP_F32_MAX, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_MIN:      MakeNative(OP_F32_MIN, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F64_PRINT:    MakeNative(OP_F64_PRINT, []int{TYPE_F64}, []int{}),
+	OP_F64_ADD:      MakeNative(OP_F64_ADD, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_SUB:      MakeNative(OP_F64_SUB, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MUL:      MakeNative(OP_F64_MUL, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_DIV:      MakeNative(OP_F64_DIV, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_ABS:      MakeNative(OP_F64_ABS, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_POW:      MakeNative(OP_F64_POW, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_GT:       MakeNative(OP_F64_GT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_GTEQ:     MakeNative(OP_F64_GTEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_LT:       MakeNative(OP_F64_LT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_LTEQ:     MakeNative(OP_F64_LTEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_EQ:       MakeNative(OP_F64_EQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_UNEQ:     MakeNative(OP_F64_UNEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
+	OP_F64_COS:      MakeNative(OP_F64_COS, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_SIN:      MakeNative(OP_F64_SIN, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_SQRT:     MakeNative(OP_F64_SQRT, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_LOG:      MakeNative(OP_F64_LOG, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_LOG2:     MakeNative(OP_F64_LOG2, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_LOG10:    MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MIN:      MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MAX:      MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_STR_PRINT:    MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 
 	OP_TIME_SLEEP:      MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
 	OP_TIME_UNIX_NANO:  MakeNative(OP_TIME_UNIX_NANO, []int{}, []int{TYPE_I64}),
 
 	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
-	OP_TEST_STOP: MakeNative(OP_TEST_START, []int{}, []int{}),
-	OP_TEST: MakeNative(OP_TEST, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
+	OP_TEST_STOP:  MakeNative(OP_TEST_START, []int{}, []int{}),
+	OP_TEST:       MakeNative(OP_TEST, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),

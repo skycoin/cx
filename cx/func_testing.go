@@ -1,12 +1,12 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) error {
+func test_error(message *CXArgument, isErrorPresent bool, expr *CXExpression) error {
 	if !isErrorPresent {
 		var _message string
 		encoder.DeserializeRaw(*message.Value, &_message)
@@ -15,19 +15,19 @@ func test_error (message *CXArgument, isErrorPresent bool, expr *CXExpression) e
 		} else {
 			fmt.Println(fmt.Sprintf("%s: %d: %s", expr.FileName, expr.FileLine, _message))
 		}
-		
+
 		return nil
 	} else {
 		return nil
 	}
 }
 
-func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
+func test_value(result *CXArgument, expected *CXArgument, message *CXArgument, expr *CXExpression) error {
 	if result.Typ != expected.Typ {
 		fmt.Println(fmt.Sprintf("%s: %d: result and expected value are not of the same type", expr.FileName, expr.FileLine))
 		return nil
 	}
-	
+
 	equal := true
 	var _message string
 	encoder.DeserializeRaw(*message.Value, &_message)
@@ -54,6 +54,6 @@ func test_value (result *CXArgument, expected *CXArgument, message *CXArgument, 
 			return errors.New("")
 		}
 	}
-	
+
 	return nil
 }

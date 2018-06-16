@@ -3,12 +3,12 @@ package base
 import (
 	"fmt"
 	"github.com/go-gl/gl/v2.1/gl"
-	"runtime"
-	"strings"
-	"os"
 	"image"
 	"image/draw"
 	_ "image/png"
+	"os"
+	"runtime"
+	"strings"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -16,7 +16,7 @@ import (
 // var freeFns map[string]*func() = make(map[string]*func(), 0)
 // var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 
-func gl_Init () error {
+func gl_Init() error {
 	if err := gl.Init(); err == nil {
 		return nil
 	} else {
@@ -24,7 +24,7 @@ func gl_Init () error {
 	}
 }
 
-func gl_CreateProgram (expr *CXExpression, call *CXCall) error {
+func gl_CreateProgram(expr *CXExpression, call *CXCall) error {
 	prog := gl.CreateProgram()
 	output := encoder.Serialize(int32(prog))
 
@@ -32,26 +32,26 @@ func gl_CreateProgram (expr *CXExpression, call *CXCall) error {
 	return nil
 }
 
-func gl_LinkProgram (progId *CXArgument) error {
+func gl_LinkProgram(progId *CXArgument) error {
 	if err := checkType("gl.LinkProgram", "i32", progId); err == nil {
 		var id int32
 
 		encoder.DeserializeAtomic(*progId.Value, &id)
-		
+
 		gl.LinkProgram(uint32(id))
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func gl_Clear (mask *CXArgument) error {
+func gl_Clear(mask *CXArgument) error {
 	if err := checkType("gl.Clear", "i32", mask); err == nil {
 		var m int32
 
 		encoder.DeserializeAtomic(*mask.Value, &m)
-		
+
 		gl.Clear(uint32(m))
 		return nil
 	} else {
@@ -59,12 +59,12 @@ func gl_Clear (mask *CXArgument) error {
 	}
 }
 
-func gl_UseProgram (progId *CXArgument) error {
+func gl_UseProgram(progId *CXArgument) error {
 	if err := checkType("gl.Clear", "i32", progId); err == nil {
 		var id int32
 
 		encoder.DeserializeAtomic(*progId.Value, &id)
-		
+
 		gl.UseProgram(uint32(id))
 		return nil
 	} else {
@@ -72,14 +72,14 @@ func gl_UseProgram (progId *CXArgument) error {
 	}
 }
 
-func gl_BindBuffer (target, buffer *CXArgument) error {
+func gl_BindBuffer(target, buffer *CXArgument) error {
 	if err := checkTwoTypes("gl.BindBuffer", "i32", "i32", target, buffer); err == nil {
 		var tgt int32
 		var buf int32
 
 		encoder.DeserializeAtomic(*target.Value, &tgt)
 		encoder.DeserializeAtomic(*buffer.Value, &buf)
-		
+
 		gl.BindBuffer(uint32(tgt), uint32(buf))
 		return nil
 	} else {
@@ -87,7 +87,7 @@ func gl_BindBuffer (target, buffer *CXArgument) error {
 	}
 }
 
-func gl_Viewport (x, y, width, height *CXArgument) error {
+func gl_Viewport(x, y, width, height *CXArgument) error {
 	if err := checkFourTypes("gl.Viewport", "i32", "i32", "i32", "i32", x, y, width, height); err == nil {
 		var _x int32
 		var _y int32
@@ -98,7 +98,7 @@ func gl_Viewport (x, y, width, height *CXArgument) error {
 		encoder.DeserializeAtomic(*y.Value, &_y)
 		encoder.DeserializeAtomic(*width.Value, &_width)
 		encoder.DeserializeAtomic(*height.Value, &_height)
-		
+
 		gl.Viewport(_x, _y, _width, _height)
 		return nil
 	} else {
@@ -106,7 +106,7 @@ func gl_Viewport (x, y, width, height *CXArgument) error {
 	}
 }
 
-func gl_BindVertexArray (array *CXArgument) error {
+func gl_BindVertexArray(array *CXArgument) error {
 	if err := checkType("gl.BindVertexArray", "i32", array); err == nil {
 		var arr int32
 
@@ -117,15 +117,14 @@ func gl_BindVertexArray (array *CXArgument) error {
 		} else {
 			gl.BindVertexArray(uint32(arr))
 		}
-		
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func gl_EnableVertexAttribArray (index *CXArgument) error {
+func gl_EnableVertexAttribArray(index *CXArgument) error {
 	if err := checkType("gl.EnableVertexAttribArray", "i32", index); err == nil {
 		var idx int32
 
@@ -138,7 +137,7 @@ func gl_EnableVertexAttribArray (index *CXArgument) error {
 	}
 }
 
-func gl_VertexAttribPointer (index, size, xtype, normalized, stride *CXArgument) error {
+func gl_VertexAttribPointer(index, size, xtype, normalized, stride *CXArgument) error {
 	if err := checkFiveTypes("gl.VertexAttribPointer", "i32", "i32", "i32", "bool", "i32", index, size, xtype, normalized, stride); err == nil {
 		var idx int32
 		var siz int32
@@ -166,7 +165,7 @@ func gl_VertexAttribPointer (index, size, xtype, normalized, stride *CXArgument)
 	}
 }
 
-func gl_DrawArrays (mode, first, count *CXArgument) error {
+func gl_DrawArrays(mode, first, count *CXArgument) error {
 	if err := checkThreeTypes("gl.DrawArrays", "i32", "i32", "i32", mode, first, count); err == nil {
 		var mod int32
 		var fst int32
@@ -184,7 +183,7 @@ func gl_DrawArrays (mode, first, count *CXArgument) error {
 }
 
 // uses pointers. change after implementing cx pointers
-func gl_GenBuffers (n, buffers *CXArgument) error {
+func gl_GenBuffers(n, buffers *CXArgument) error {
 	if err := checkTwoTypes("gl.GenBuffers", "i32", "i32", n, buffers); err == nil {
 		var _n int32
 		var bufs int32
@@ -193,7 +192,7 @@ func gl_GenBuffers (n, buffers *CXArgument) error {
 		encoder.DeserializeAtomic(*buffers.Value, &bufs)
 
 		tmp := uint32(bufs)
-		
+
 		gl.GenBuffers(_n, &tmp)
 
 		*buffers.Value = encoder.Serialize(tmp)
@@ -203,7 +202,7 @@ func gl_GenBuffers (n, buffers *CXArgument) error {
 	}
 }
 
-func gl_BufferData (target, size, data, usage *CXArgument) error {
+func gl_BufferData(target, size, data, usage *CXArgument) error {
 	if err := checkFourTypes("gl.BufferData", "i32", "i32", "[]f32", "i32", target, size, data, usage); err == nil {
 		var tgt int32
 		var siz int32
@@ -223,7 +222,7 @@ func gl_BufferData (target, size, data, usage *CXArgument) error {
 }
 
 // uses pointers. change after implementing cx pointers
-func gl_GenVertexArrays (n, arrays *CXArgument) error {
+func gl_GenVertexArrays(n, arrays *CXArgument) error {
 	if err := checkTwoTypes("gl.GenVertexArrays", "i32", "i32", n, arrays); err == nil {
 		var _n int32
 		var arrs int32
@@ -246,7 +245,7 @@ func gl_GenVertexArrays (n, arrays *CXArgument) error {
 	}
 }
 
-func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error {
+func gl_CreateShader(xtype *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("gl.CreateShader", "i32", xtype); err == nil {
 		var xtyp int32
 
@@ -263,25 +262,25 @@ func gl_CreateShader (xtype *CXArgument, expr *CXExpression, call *CXCall) error
 	}
 }
 
-func gl_Strs (source, freeFn *CXArgument) error {
+func gl_Strs(source, freeFn *CXArgument) error {
 	if err := checkTwoTypes("gl.Strs", "str", "str", source, freeFn); err == nil {
 		var fnName string
 		var dsSource string
 		encoder.DeserializeRaw(*freeFn.Value, &fnName)
 		encoder.DeserializeRaw(*source.Value, &dsSource)
-		
+
 		csources, free := gl.Strs(dsSource)
 
 		freeFns[fnName] = &free
 		cSources[fnName] = csources
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func gl_Free (sFnName *CXArgument) error {
+func gl_Free(sFnName *CXArgument) error {
 	if err := checkType("gl.Free", "str", sFnName); err == nil {
 		var fnName string
 		encoder.DeserializeRaw(*sFnName.Value, &fnName)
@@ -296,7 +295,7 @@ func gl_Free (sFnName *CXArgument) error {
 	}
 }
 
-func gl_ShaderSource (shader, count, xstring *CXArgument) error {
+func gl_ShaderSource(shader, count, xstring *CXArgument) error {
 	if err := checkThreeTypes("gl.ShaderSource", "i32", "i32", "str", shader, count, xstring); err == nil {
 		var shad int32
 		var cnt int32
@@ -306,7 +305,7 @@ func gl_ShaderSource (shader, count, xstring *CXArgument) error {
 
 		var xstrin string
 		encoder.DeserializeRaw(*xstring.Value, &xstrin)
-		
+
 		xstr := cSources[xstrin]
 
 		gl.ShaderSource(uint32(shad), cnt, xstr, nil)
@@ -316,7 +315,7 @@ func gl_ShaderSource (shader, count, xstring *CXArgument) error {
 	}
 }
 
-func gl_CompileShader (shader *CXArgument) error {
+func gl_CompileShader(shader *CXArgument) error {
 	if err := checkType("gl.CompileShader", "i32", shader); err == nil {
 		var shad int32
 
@@ -335,7 +334,7 @@ func gl_CompileShader (shader *CXArgument) error {
 
 			fmt.Printf("failed to compile: %v", log)
 		}
-		
+
 		return nil
 	} else {
 		return err
@@ -343,7 +342,7 @@ func gl_CompileShader (shader *CXArgument) error {
 }
 
 // uses pointers. change after implementing cx pointers
-func gl_GetShaderiv (shader, pname, params *CXArgument) error {
+func gl_GetShaderiv(shader, pname, params *CXArgument) error {
 	if err := checkThreeTypes("gl.GetShaderiv", "i32", "i32", "i32", shader, pname, params); err == nil {
 		var shad int32
 		var pnam int32
@@ -362,7 +361,7 @@ func gl_GetShaderiv (shader, pname, params *CXArgument) error {
 	}
 }
 
-func gl_AttachShader (program, shader *CXArgument) error {
+func gl_AttachShader(program, shader *CXArgument) error {
 	if err := checkTwoTypes("gl.AttachShader", "i32", "i32", program, shader); err == nil {
 		var prog int32
 		var shad int32
@@ -377,22 +376,22 @@ func gl_AttachShader (program, shader *CXArgument) error {
 	}
 }
 
-func gl_LoadIdentity () error {
+func gl_LoadIdentity() error {
 	gl.LoadIdentity()
 	return nil
 }
 
-func gl_PushMatrix () error {
+func gl_PushMatrix() error {
 	gl.PushMatrix()
 	return nil
 }
 
-func gl_PopMatrix () error {
+func gl_PopMatrix() error {
 	gl.PopMatrix()
 	return nil
 }
 
-func gl_Rotatef (angle, x, y, z *CXArgument) error {
+func gl_Rotatef(angle, x, y, z *CXArgument) error {
 	if err := checkFourTypes("gl.Rotatef", "f32", "f32", "f32", "f32", angle, x, y, z); err == nil {
 		var dsA float32
 		var dsX float32
@@ -411,7 +410,7 @@ func gl_Rotatef (angle, x, y, z *CXArgument) error {
 	}
 }
 
-func gl_Translatef (x, y, z *CXArgument) error {
+func gl_Translatef(x, y, z *CXArgument) error {
 	if err := checkThreeTypes("gl.Translatef", "f32", "f32", "f32", x, y, z); err == nil {
 		var dsX float32
 		var dsY float32
@@ -428,7 +427,7 @@ func gl_Translatef (x, y, z *CXArgument) error {
 	}
 }
 
-func gl_MatrixMode (mode *CXArgument) error {
+func gl_MatrixMode(mode *CXArgument) error {
 	if err := checkType("gl.MatrixMode", "i32", mode); err == nil {
 		var mod int32
 
@@ -441,7 +440,7 @@ func gl_MatrixMode (mode *CXArgument) error {
 	}
 }
 
-func gl_EnableClientState (array *CXArgument) error {
+func gl_EnableClientState(array *CXArgument) error {
 	if err := checkType("gl.EnableClientState", "i32", array); err == nil {
 		var arr int32
 
@@ -454,7 +453,7 @@ func gl_EnableClientState (array *CXArgument) error {
 	}
 }
 
-func gl_BindTexture (target, texture *CXArgument) error {
+func gl_BindTexture(target, texture *CXArgument) error {
 	if err := checkTwoTypes("gl.BindTexture", "i32", "i32", target, texture); err == nil {
 		var tgt int32
 		var tex int32
@@ -469,31 +468,31 @@ func gl_BindTexture (target, texture *CXArgument) error {
 	}
 }
 
-func gl_Ortho (left, right, bottom, top, zNear, zFar *CXArgument) error {
+func gl_Ortho(left, right, bottom, top, zNear, zFar *CXArgument) error {
 	if err := checkSixTypes("gl.Ortho", "f32", "f32", "f32", "f32", "f32", "f32",
 		left, right, bottom, top, zNear, zFar); err == nil {
-			var _left float32
-			var _right float32
-			var _bottom float32
-			var _top float32
-			var _zNear float32
-			var _zFar float32
+		var _left float32
+		var _right float32
+		var _bottom float32
+		var _top float32
+		var _zNear float32
+		var _zFar float32
 
-			encoder.DeserializeRaw(*left.Value, &_left)
-			encoder.DeserializeRaw(*right.Value, &_right)
-			encoder.DeserializeRaw(*bottom.Value, &_bottom)
-			encoder.DeserializeRaw(*top.Value, &_top)
-			encoder.DeserializeRaw(*zNear.Value, &_zNear)
-			encoder.DeserializeRaw(*zFar.Value, &_zFar)
+		encoder.DeserializeRaw(*left.Value, &_left)
+		encoder.DeserializeRaw(*right.Value, &_right)
+		encoder.DeserializeRaw(*bottom.Value, &_bottom)
+		encoder.DeserializeRaw(*top.Value, &_top)
+		encoder.DeserializeRaw(*zNear.Value, &_zNear)
+		encoder.DeserializeRaw(*zFar.Value, &_zFar)
 
-			gl.Ortho(float64(_left), float64(_right), float64(_bottom), float64(_top), float64(_zNear), float64(_zFar))
-			return nil
-		} else {
-			return err
-		}
+		gl.Ortho(float64(_left), float64(_right), float64(_bottom), float64(_top), float64(_zNear), float64(_zFar))
+		return nil
+	} else {
+		return err
+	}
 }
 
-func gl_Color3f (red, green, blue *CXArgument) error {
+func gl_Color3f(red, green, blue *CXArgument) error {
 	if err := checkThreeTypes("gl.Color3f", "f32", "f32", "f32", red, green, blue); err == nil {
 		var r float32
 		var g float32
@@ -510,7 +509,7 @@ func gl_Color3f (red, green, blue *CXArgument) error {
 	}
 }
 
-func gl_Color4f (red, green, blue, alpha *CXArgument) error {
+func gl_Color4f(red, green, blue, alpha *CXArgument) error {
 	if err := checkFourTypes("gl.Color4f", "f32", "f32", "f32", "f32", red, green, blue, alpha); err == nil {
 		var r float32
 		var g float32
@@ -529,7 +528,7 @@ func gl_Color4f (red, green, blue, alpha *CXArgument) error {
 	}
 }
 
-func gl_Begin (mode *CXArgument) error {
+func gl_Begin(mode *CXArgument) error {
 	if err := checkType("gl.Begin", "i32", mode); err == nil {
 		var mod int32
 
@@ -542,12 +541,12 @@ func gl_Begin (mode *CXArgument) error {
 	}
 }
 
-func gl_End () error {
+func gl_End() error {
 	gl.End()
 	return nil
 }
 
-func gl_Normal3f (nx, ny, nz *CXArgument) error {
+func gl_Normal3f(nx, ny, nz *CXArgument) error {
 	if err := checkThreeTypes("gl.Normal3f", "f32", "f32", "f32", nx, ny, nz); err == nil {
 		var x float32
 		var y float32
@@ -564,7 +563,7 @@ func gl_Normal3f (nx, ny, nz *CXArgument) error {
 	}
 }
 
-func gl_TexCoord2f (s, t *CXArgument) error {
+func gl_TexCoord2f(s, t *CXArgument) error {
 	if err := checkTwoTypes("gl.TexCoord2f", "f32", "f32", s, t); err == nil {
 		var _s float32
 		var _t float32
@@ -579,7 +578,7 @@ func gl_TexCoord2f (s, t *CXArgument) error {
 	}
 }
 
-func gl_Vertex2f (nx, ny *CXArgument) error {
+func gl_Vertex2f(nx, ny *CXArgument) error {
 	if err := checkTwoTypes("gl.Vertex2f", "f32", "f32", nx, ny); err == nil {
 		var x float32
 		var y float32
@@ -594,7 +593,7 @@ func gl_Vertex2f (nx, ny *CXArgument) error {
 	}
 }
 
-func gl_Vertex3f (nx, ny, nz *CXArgument) error {
+func gl_Vertex3f(nx, ny, nz *CXArgument) error {
 	if err := checkThreeTypes("gl.Vertex3f", "f32", "f32", "f32", nx, ny, nz); err == nil {
 		var x float32
 		var y float32
@@ -611,7 +610,7 @@ func gl_Vertex3f (nx, ny, nz *CXArgument) error {
 	}
 }
 
-func gl_Enable (cap *CXArgument) error {
+func gl_Enable(cap *CXArgument) error {
 	if err := checkType("gl.Enable", "i32", cap); err == nil {
 		var c int32
 
@@ -624,7 +623,7 @@ func gl_Enable (cap *CXArgument) error {
 	}
 }
 
-func gl_Disable (cap *CXArgument) error {
+func gl_Disable(cap *CXArgument) error {
 	if err := checkType("gl.Disable", "i32", cap); err == nil {
 		var c int32
 
@@ -637,7 +636,7 @@ func gl_Disable (cap *CXArgument) error {
 	}
 }
 
-func gl_ClearColor (red, green, blue, alpha *CXArgument) error {
+func gl_ClearColor(red, green, blue, alpha *CXArgument) error {
 	if err := checkFourTypes("gl.Color4f", "f32", "f32", "f32", "f32", red, green, blue, alpha); err == nil {
 		var r float32
 		var g float32
@@ -656,7 +655,7 @@ func gl_ClearColor (red, green, blue, alpha *CXArgument) error {
 	}
 }
 
-func gl_ClearDepth (depth *CXArgument) error {
+func gl_ClearDepth(depth *CXArgument) error {
 	if err := checkType("gl.ClearDepth", "f64", depth); err == nil {
 		var d float64
 
@@ -669,7 +668,7 @@ func gl_ClearDepth (depth *CXArgument) error {
 	}
 }
 
-func gl_DepthFunc (xfunc *CXArgument) error {
+func gl_DepthFunc(xfunc *CXArgument) error {
 	if err := checkType("gl.DepthFunc", "i32", xfunc); err == nil {
 		var xfn int32
 
@@ -683,7 +682,7 @@ func gl_DepthFunc (xfunc *CXArgument) error {
 }
 
 // uses pointers. change after implementing cx pointers
-func gl_Lightfv (light, pname, params *CXArgument) error {
+func gl_Lightfv(light, pname, params *CXArgument) error {
 	if err := checkThreeTypes("gl.Lightfv", "i32", "i32", "f32", light, pname, params); err == nil {
 		var ligh int32
 		var pnam int32
@@ -702,7 +701,7 @@ func gl_Lightfv (light, pname, params *CXArgument) error {
 	}
 }
 
-func gl_Frustum (left, right, bottom, top, zNear, zFar *CXArgument) error {
+func gl_Frustum(left, right, bottom, top, zNear, zFar *CXArgument) error {
 	if err := checkSixTypes("gl.Frustum", "f64", "f64", "f64", "f64", "f64", "f64", left, right, bottom, top, zNear, zFar); err == nil {
 		var l float64
 		var r float64
@@ -739,7 +738,7 @@ func newTexture(file string) uint32 {
 	if rgba.Stride != rgba.Rect.Size().X*4 {
 		panic("unsupported stride")
 	}
-	
+
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
 	var texture uint32
@@ -768,14 +767,14 @@ func newTexture(file string) uint32 {
 	return texture
 }
 
-func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
+func gl_NewTexture(file *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("gl.NewTexture", "str", file); err == nil {
 		var name string
 		encoder.DeserializeRaw(*file.Value, &name)
 
 		texture := newTexture(name)
 		output := encoder.Serialize(int32(texture))
-		
+
 		assignOutput(0, output, "i32", expr, call)
 		return nil
 	} else {
@@ -783,7 +782,7 @@ func gl_NewTexture (file *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func gl_DepthMask (flag *CXArgument) error {
+func gl_DepthMask(flag *CXArgument) error {
 	if err := checkType("gl.DepthMask", "bool", flag); err == nil {
 		var f bool = false
 		if (*flag.Value)[0] == 1 {
@@ -797,7 +796,7 @@ func gl_DepthMask (flag *CXArgument) error {
 	}
 }
 
-func gl_Scalef (x, y, z *CXArgument) error {
+func gl_Scalef(x, y, z *CXArgument) error {
 	if err := checkThreeTypes("gl.Scalef", "f32", "f32", "f32", x, y, z); err == nil {
 		var _x float32
 		var _y float32
@@ -814,7 +813,7 @@ func gl_Scalef (x, y, z *CXArgument) error {
 	}
 }
 
-func gl_TexCoord2d (s, t *CXArgument) error {
+func gl_TexCoord2d(s, t *CXArgument) error {
 	if err := checkTwoTypes("gl.TexCoord2d", "f32", "f32", s, t); err == nil {
 		var _s float32
 		var _t float32
@@ -829,7 +828,7 @@ func gl_TexCoord2d (s, t *CXArgument) error {
 	}
 }
 
-func gl_TexEnvi (target, pname, param *CXArgument) error {
+func gl_TexEnvi(target, pname, param *CXArgument) error {
 	if err := checkThreeTypes("gl.TexEnvi", "i32", "i32", "i32", target, pname, param); err == nil {
 		var _target int32
 		var _pname int32
@@ -846,7 +845,7 @@ func gl_TexEnvi (target, pname, param *CXArgument) error {
 	}
 }
 
-func gl_BlendFunc (sfactor, dfactor *CXArgument) error {
+func gl_BlendFunc(sfactor, dfactor *CXArgument) error {
 	if err := checkTwoTypes("gl.BlendFunc", "i32", "i32", sfactor, dfactor); err == nil {
 		var _sfactor int32
 		var _dfactor int32
@@ -861,7 +860,7 @@ func gl_BlendFunc (sfactor, dfactor *CXArgument) error {
 	}
 }
 
-func gl_Hint (target, mode *CXArgument) error {
+func gl_Hint(target, mode *CXArgument) error {
 	if err := checkTwoTypes("gl.Hint", "i32", "i32", target, mode); err == nil {
 		var _target int32
 		var _mode int32
@@ -876,6 +875,6 @@ func gl_Hint (target, mode *CXArgument) error {
 	}
 }
 
-func Foo () {
+func Foo() {
 	fmt.Println("gl.LESS", gl.LESS)
 }

@@ -1,21 +1,21 @@
 package base
 
 import (
-	"os"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	//"path/filepath"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
-func os_ReadFile (fileName *CXArgument, expr *CXExpression, call *CXCall) error {
+func os_ReadFile(fileName *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("os.ReadFile", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
-		
+
 		if byts, err := ioutil.ReadFile(name); err == nil {
 			sByts := encoder.Serialize(byts)
 			assignOutput(0, sByts, "[]byte", expr, call)
@@ -28,11 +28,11 @@ func os_ReadFile (fileName *CXArgument, expr *CXExpression, call *CXCall) error 
 	}
 }
 
-func os_Create (fileName *CXArgument) error {
+func os_Create(fileName *CXArgument) error {
 	if err := checkType("os.Create", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
-		
+
 		if file, err := os.Create(name); err == nil {
 			openFiles[name] = file
 		} else {
@@ -45,7 +45,7 @@ func os_Create (fileName *CXArgument) error {
 	}
 }
 
-func os_Write (fileName, byts *CXArgument) error {
+func os_Write(fileName, byts *CXArgument) error {
 	if err := checkTwoTypes("os.Write", "str", "[]byte", fileName, byts); err == nil {
 		var _fileName string
 		var _byts []byte
@@ -66,7 +66,7 @@ func os_Write (fileName, byts *CXArgument) error {
 	}
 }
 
-func os_WriteFile (fileName, byts *CXArgument) error {
+func os_WriteFile(fileName, byts *CXArgument) error {
 	if err := checkTwoTypes("os.WriteFile", "str", "[]byte", fileName, byts); err == nil {
 		var _fileName string
 		var _byts []byte
@@ -83,11 +83,11 @@ func os_WriteFile (fileName, byts *CXArgument) error {
 	}
 }
 
-func os_Open (fileName *CXArgument) error {
+func os_Open(fileName *CXArgument) error {
 	if err := checkType("os.Open", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
-		
+
 		if file, err := os.Open(name); err == nil {
 			openFiles[name] = file
 		} else {
@@ -100,11 +100,11 @@ func os_Open (fileName *CXArgument) error {
 	}
 }
 
-func os_Close (fileName *CXArgument) error {
+func os_Close(fileName *CXArgument) error {
 	if err := checkType("os.Close", "str", fileName); err == nil {
 		var name string
 		encoder.DeserializeRaw(*fileName.Value, &name)
-		
+
 		if file, ok := openFiles[name]; ok {
 			if err := file.Close(); err != nil {
 				return err
@@ -116,7 +116,7 @@ func os_Close (fileName *CXArgument) error {
 	}
 }
 
-func os_GetWorkingDirectory (expr *CXExpression, call *CXCall) error {
+func os_GetWorkingDirectory(expr *CXExpression, call *CXCall) error {
 	path := encoder.Serialize(call.Program.Path)
 	assignOutput(0, path, "str", expr, call)
 	return nil
