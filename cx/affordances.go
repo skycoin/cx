@@ -1,11 +1,11 @@
 package base
 
 import (
-	"fmt"
-	"strconv"
-	"regexp"
 	"bytes"
+	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -23,25 +23,25 @@ type byParamName []*CXArgument
 */
 
 func (s byFnName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byTypName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byModName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byDefName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byStrctName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byFldName) Len() int {
-    return len(s)
+	return len(s)
 }
 func (s byParamName) Len() int {
-    return len(s)
+	return len(s)
 }
 
 /*
@@ -49,25 +49,25 @@ func (s byParamName) Len() int {
 */
 
 func (s byFnName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byTypName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byModName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byDefName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byStrctName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byFldName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 func (s byParamName) Swap(i, j int) {
-    s[i], s[j] = s[j], s[i]
+	s[i], s[j] = s[j], s[i]
 }
 
 /*
@@ -75,34 +75,34 @@ func (s byParamName) Swap(i, j int) {
 */
 
 func (s byFnName) Less(i, j int) bool {
-    return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
+	return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
 }
 func (s byTypName) Less(i, j int) bool {
-    return s[i] < s[j]
+	return s[i] < s[j]
 }
 func (s byModName) Less(i, j int) bool {
-    return s[i].Name < s[j].Name
+	return s[i].Name < s[j].Name
 }
 func (s byDefName) Less(i, j int) bool {
-    return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
+	return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
 }
 func (s byStrctName) Less(i, j int) bool {
-    return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
+	return concat(s[i].Package.Name, ".", s[i].Name) < concat(s[j].Package.Name, ".", s[j].Name)
 }
 func (s byFldName) Less(i, j int) bool {
-    return s[i].Name < s[j].Name
+	return s[i].Name < s[j].Name
 }
 func (s byParamName) Less(i, j int) bool {
-    return s[i].Name < s[j].Name
+	return s[i].Name < s[j].Name
 }
 
-func PrintAffordances (affs []*CXAffordance) {
+func PrintAffordances(affs []*CXAffordance) {
 	for i, aff := range affs {
 		fmt.Printf("%d.-%s\n", i, aff.Description)
 	}
 }
 
-func (aff *CXAffordance) ApplyAffordance () {
+func (aff *CXAffordance) ApplyAffordance() {
 	aff.Action()
 }
 
@@ -128,7 +128,7 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 
 	types := make([]string, len(BASIC_TYPES))
 	copy(types, BASIC_TYPES)
-	
+
 	for _, s := range mod.Structs {
 		types = append(types, s.Name)
 	}
@@ -137,14 +137,14 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 	for _, imp := range mod.Imports {
 		for _, strct := range imp.Structs {
 			types = append(types, concat(imp.Name, ".", strct.Name))
-	       	}
+		}
 	}
 
 	// definitions for each available type
 	for _, typ := range types {
 		fldGensym := MakeGenSym("fld")
 		fldType := typ
-		
+
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddField ", fldGensym, " ", typ),
 			Action: func() {
@@ -163,7 +163,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 	// by scope
 	var focusLocals bool
 	var focusGlobals bool
-	
+
 	var focusAllTypes bool
 	var focusAllScopes bool
 	var focusAll bool
@@ -171,13 +171,27 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 	//extracting settings
 	if len(settings) > 0 {
 		for _, setting := range settings {
-			if setting == "nonArrays" {focusNonArrays = true}
-			if setting == "arrays" {focusArrays = true}
-			if setting == "structs" {focusStructs = true}
-			if setting == "locals" {focusLocals = true}
-			if setting == "globals" {focusGlobals = true}
-			if setting == "allScopes" {focusAllScopes = true}
-			if setting == "allTypes" {focusAllTypes = true}
+			if setting == "nonArrays" {
+				focusNonArrays = true
+			}
+			if setting == "arrays" {
+				focusArrays = true
+			}
+			if setting == "structs" {
+				focusStructs = true
+			}
+			if setting == "locals" {
+				focusLocals = true
+			}
+			if setting == "globals" {
+				focusGlobals = true
+			}
+			if setting == "allScopes" {
+				focusAllScopes = true
+			}
+			if setting == "allTypes" {
+				focusAllTypes = true
+			}
 		}
 	} else {
 		focusAll = true
@@ -190,7 +204,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		(!focusGlobals && !focusLocals) {
 		focusAllScopes = true
 	}
-	
+
 	op := expr.Operator
 	affs := make([]*CXAffordance, 0)
 
@@ -203,8 +217,8 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		args := make([]*CXArgument, 0)
 		identType := "ident"
 
-		inOutNames := make([]string, len(fn.Inputs) + 1)
-		
+		inOutNames := make([]string, len(fn.Inputs)+1)
+
 		// Adding inputs and outputs as definitions
 		if focusAll || focusAllScopes || focusLocals {
 			for i, param := range fn.Inputs {
@@ -212,19 +226,19 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 					if focusAll || focusAllTypes ||
 						(focusArrays && IsArray(param.Typ)) ||
 						(focusNonArrays && !IsArray(param.Typ)) {
-						
+
 						inOutNames[i] = param.Name
 						defsTypes = append(defsTypes, param.Typ)
 						identName := encoder.Serialize(param.Name)
 						args = append(args, &CXArgument{
-							Typ: identType,
+							Typ:   identType,
 							Value: &identName,
 						})
 					}
 				}
 			}
 		}
-		
+
 		// Adding definitions (global vars)
 		if focusAll || focusAllScopes || focusGlobals {
 			for _, def := range mod.Globals {
@@ -241,12 +255,12 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 								break
 							}
 						}
-						
+
 						if notDuplicated {
 							defsTypes = append(defsTypes, def.Typ)
 							identName := encoder.Serialize(def.Name)
 							args = append(args, &CXArgument{
-								Typ: identType,
+								Typ:   identType,
 								Value: &identName,
 							})
 						}
@@ -264,7 +278,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 									identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
 
 									args = append(args, &CXArgument{
-										Typ: identType,
+										Typ:   identType,
 										Value: &identName,
 									})
 								}
@@ -272,14 +286,14 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 						}
 					}
 				}
-					
+
 				// if !isBasicType(def.Typ) {
 				// 	if strct, err := expr.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
 				// 		for _, fld := range strct.Fields {
 				// 			if fld.Typ == reqType || fld.Typ[2:] == reqType {
 				// 				defsTypes = append(defsTypes, fld.Typ)
 				// 				identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
-								
+
 				// 				args = append(args, &CXArgument{
 				// 					Typ: identType,
 				// 					Value: &identName,
@@ -290,7 +304,6 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				// }
 			}
 		}
-		
 
 		// Adding possible struct instances
 		var customTypes []string
@@ -299,7 +312,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				customTypes = append(customTypes, inp.Typ)
 			}
 		}
-		
+
 		// Adding local definitions
 		for _, ex := range expr.Function.Expressions {
 			if ex == expr {
@@ -331,13 +344,13 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				if reqType != typ && typ[2:] != reqType {
 					continue
 				}
-				
+
 				val := encoder.Serialize(ex.Outputs[0].Name)
 
 				defsTypes = append(defsTypes, typ)
-				
+
 				args = append(args, &CXArgument{
-					Typ: identType,
+					Typ:   identType,
 					Value: &val,
 				})
 				continue
@@ -365,7 +378,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							defsTypes = append(defsTypes, typ)
 							identName := encoder.Serialize(outName.Name)
 							args = append(args, &CXArgument{
-								Typ: identType,
+								Typ:   identType,
 								Value: &identName,
 							})
 						}
@@ -382,7 +395,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 										identName := encoder.Serialize(fmt.Sprintf("%s.%s", outName.Name, fld.Name))
 
 										args = append(args, &CXArgument{
-											Typ: identType,
+											Typ:   identType,
 											Value: &identName,
 										})
 									}
@@ -390,7 +403,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							}
 						}
 					}
-					
+
 					// if !isBasicType(typ) {
 					// 	if strct, err := expr.Program.GetStruct(typ, expr.Package.Name); err == nil {
 					// 		for _, fld := range strct.Fields {
@@ -406,7 +419,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 					// 		}
 					// 	}
 					// }
-					
+
 					if reqType == typ {
 						if focusAll || focusAllTypes ||
 							(focusArrays && IsArray(typ)) ||
@@ -414,7 +427,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 							defsTypes = append(defsTypes, typ)
 							identName := encoder.Serialize(outName.Name)
 							args = append(args, &CXArgument{
-								Typ: identType,
+								Typ:   identType,
 								Value: &identName,
 							})
 						}
@@ -430,17 +443,17 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 			encoder.DeserializeRaw(*arg.Value, &argName)
 
 			if len(defsTypes[i]) > 2 && defsTypes[i][:2] == "[]" {
-				if arr, err := resolveIdent(argName, theArg, &expr.Program.CallStack[len(expr.Program.CallStack) - 1]); err == nil {
+				if arr, err := resolveIdent(argName, theArg, &expr.Program.CallStack[len(expr.Program.CallStack)-1]); err == nil {
 					var size int32
 					encoder.DeserializeAtomic((*arr.Value)[:4], &size)
-					
+
 					for c := int32(0); c < size; c++ {
 						affs = append(affs, &CXAffordance{
 							Description: concat("AddInput ", argName, " ", defsTypes[i]),
-							Operator: "AddInput",
-							Name: argName,
-							Index: fmt.Sprintf("%d", c),
-							Typ: defsTypes[i],
+							Operator:    "AddInput",
+							Name:        argName,
+							Index:       fmt.Sprintf("%d", c),
+							Typ:         defsTypes[i],
 							Action: func() {
 								expr.AddInput(theArg)
 							}})
@@ -448,12 +461,12 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 				}
 				continue
 			}
-			
+
 			affs = append(affs, &CXAffordance{
 				Description: concat("AddInput ", argName, " ", defsTypes[i]),
-				Operator: "AddInput",
-				Name: argName,
-				Typ: defsTypes[i],
+				Operator:    "AddInput",
+				Name:        argName,
+				Typ:         defsTypes[i],
 				Action: func() {
 					expr.AddInput(theArg)
 				}})
@@ -465,9 +478,9 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 		outName := MakeGenSym("var")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutput ", outName),
-			
+
 			Operator: "AddOutput",
-			Name: outName,
+			Name:     outName,
 			Action: func() {
 				expr.AddOutput(MakeArgument(outName))
 			}})
@@ -482,7 +495,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	if _, ok := NATIVE_FUNCTIONS[fn.Name]; ok {
 		return affs
 	}
-	
+
 	mod := fn.Package
 	opsNames := make([]string, 0)
 	ops := make([]*CXFunction, 0)
@@ -515,7 +528,6 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			opsNames = append(opsNames, concat(core.Name, ".", op.Name))
 		}
 	}
-	
 
 	// Getting operators from imported modules
 	for _, imp := range mod.Imports {
@@ -533,23 +545,23 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		theName := MakeGenSym("in")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddInput ", theTyp),
-			Operator: "AddInput",
-			Name: theName,
-			Typ: theTyp,
+			Operator:    "AddInput",
+			Name:        theName,
+			Typ:         theTyp,
 			Action: func() {
 				fn.AddInput(MakeArgument(theName).AddType(theTyp))
 			}})
 	}
-	
+
 	// Outputs
 	for _, typ := range types {
 		theTyp := typ
 		theName := MakeGenSym("out")
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddOutput ", theTyp),
-			Operator: "AddOutput",
-			Name: theName,
-			Typ: theTyp,
+			Operator:    "AddOutput",
+			Name:        theName,
+			Typ:         theTyp,
 			Action: func() {
 				fn.AddOutput(MakeArgument(theName).AddType(theTyp))
 			}})
@@ -561,10 +573,10 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 	// Expressions
 	for i, op := range ops {
 		theOp := op
-		
+
 		var inps bytes.Buffer
 		for j, inp := range ops[i].Inputs {
-			if j == len(ops[i].Inputs) - 1 {
+			if j == len(ops[i].Inputs)-1 {
 				inps.WriteString(concat(inp.Typ))
 			} else {
 				inps.WriteString(concat(inp.Typ, ", "))
@@ -573,7 +585,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 		var outs bytes.Buffer
 		for j, out := range ops[i].Outputs {
-			if j == len(ops[i].Outputs) - 1 {
+			if j == len(ops[i].Outputs)-1 {
 				outs.WriteString(concat(out.Typ))
 			} else {
 				outs.WriteString(concat(out.Typ, ", "))
@@ -581,9 +593,9 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 		}
 
 		affs = append(affs, &CXAffordance{
-			
+
 			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
-			Operator: "AddExpression",
+			Operator:    "AddExpression",
 			Action: func() {
 				fn.AddExpression(MakeExpression(theOp))
 			}})
@@ -598,7 +610,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // if _, ok := NATIVE_FUNCTIONS[fn.Name]; ok {
 // 		return affs
 // 	}
-	
+
 // 	mod := fn.Package
 // 	opsNames := make([]string, 0)
 // 	ops := make([]*CXFunction, 0)
@@ -673,8 +685,6 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 
 // 	// Getting local definitions
 // 	for _, expr := range fn.Expressions {
-		
-
 
 // 		for i, outName := range expr.Outputs {
 // 			cont := true
@@ -769,18 +779,17 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 					local != fn.Output.Name {
 // 					continue
 // 				}
-				
+
 // 				for _, out := range theOp.Outputs {
 // 					if onlyLocalsTypes
 // 				}
-
 
 // 				// skip affordances where the operator's output type doesn't match function's output type
 // 				// and we're assigning this to the function's output var
 // 				if local == fn.Output.Name && theOp.Output.Typ != fn.Output.Typ {
 // 					continue
 // 				}
-				
+
 // 				varExpr := local
 
 // 				identNames := ""
@@ -791,7 +800,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 					} else {
 // 						identNames = concat(identNames, string(*arg.Value), ", ")
 // 					}
-					
+
 // 				}
 
 // 				argsCopy := make([]*CXArgument, len(args))
@@ -812,7 +821,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 // 			}
 // 		}
 // 	}
-	
+
 // 	return affs
 // }
 
@@ -839,7 +848,7 @@ func (mod *CXPackage) GetAffordances() []*CXAffordance {
 		defGensym := MakeGenSym("def")
 		defType := typ
 		value := MakeDefaultValue(typ)
-		
+
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddGlobal ", defGensym, " ", typ),
 			Action: func() {
@@ -857,7 +866,7 @@ func (mod *CXPackage) GetAffordances() []*CXAffordance {
 				}})
 		}
 	}
-	
+
 	// add function
 	fnGensym := MakeGenSym("fn")
 	affs = append(affs, &CXAffordance{
@@ -873,15 +882,15 @@ func (mod *CXPackage) GetAffordances() []*CXAffordance {
 		Action: func() {
 			mod.AddStruct(MakeStruct(strctGensym))
 		}})
-	
+
 	return affs
 }
 
 func (prgrm *CXProgram) GetAffordances() []*CXAffordance {
 	affs := make([]*CXAffordance, 0)
 	modGensym := MakeGenSym("mod")
-	
-	affs = append(affs, &CXAffordance {
+
+	affs = append(affs, &CXAffordance{
 		Description: concat("AddPackage ", modGensym),
 		Action: func() {
 			prgrm.AddPackage(MakePackage(modGensym))
@@ -890,7 +899,7 @@ func (prgrm *CXProgram) GetAffordances() []*CXAffordance {
 	// Select module
 	for _, mod := range prgrm.Packages {
 		modName := mod.Name
-		affs = append(affs, &CXAffordance {
+		affs = append(affs, &CXAffordance{
 			Description: concat("SelectPackage ", modName),
 			Action: func() {
 				prgrm.SelectPackage(modName)
@@ -901,7 +910,7 @@ func (prgrm *CXProgram) GetAffordances() []*CXAffordance {
 	if prgrm.CurrentPackage != nil {
 		for _, fn := range prgrm.CurrentPackage.Functions {
 			fnName := fn.Name
-			affs = append(affs, &CXAffordance {
+			affs = append(affs, &CXAffordance{
 				Description: concat("SelectFunction ", fnName),
 				Action: func() {
 					prgrm.SelectFunction(fnName)
@@ -913,7 +922,7 @@ func (prgrm *CXProgram) GetAffordances() []*CXAffordance {
 	if prgrm.CurrentPackage != nil {
 		for _, strct := range prgrm.CurrentPackage.Structs {
 			strctName := strct.Name
-			affs = append(affs, &CXAffordance {
+			affs = append(affs, &CXAffordance{
 				Description: concat("SelectStruct ", strctName),
 				Action: func() {
 					prgrm.SelectStruct(strctName)
@@ -926,14 +935,14 @@ func (prgrm *CXProgram) GetAffordances() []*CXAffordance {
 		for _, expr := range prgrm.CurrentPackage.CurrentFunction.Expressions {
 			lineNumber := expr.Line
 			line := strconv.Itoa(lineNumber)
-			
-			affs = append(affs, &CXAffordance {
+
+			affs = append(affs, &CXAffordance{
 				Description: fmt.Sprintf("SelectExpression (%s.%s) Line # %s", expr.Package.Name, expr.Function.Name, line),
 				Action: func() {
 					prgrm.SelectExpression(lineNumber)
 				}})
 		}
 	}
-	
+
 	return affs
 }

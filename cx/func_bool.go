@@ -1,12 +1,12 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func eqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqBool(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("bool.eq", "bool", "bool", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -28,7 +28,7 @@ func eqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func uneqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqBool(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("bool.uneq", "bool", "bool", arg1, arg2); err == nil {
 		var num1 int32
 		var num2 int32
@@ -50,7 +50,7 @@ func uneqBool (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	}
 }
 
-func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readBoolA(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("readBoolA", "[]bool", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -61,7 +61,7 @@ func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]bool.read: negative index %d", index))
 		}
-		
+
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]bool.read: index %d exceeds array of length %d", index, size))
 		}
@@ -77,7 +77,7 @@ func readBoolA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeBoolA(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("writeBoolA", "[]bool", "i32", "bool", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -88,7 +88,7 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]bool.write: negative index %d", index))
 		}
-		
+
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]bool.write: index %d exceeds array of length %d", index, size))
 		}
@@ -98,12 +98,12 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		// 	(*arr.Value)[i + c] = (*val.Value)[c]
 		// }
 
-		offset := int(index) * 4 + 4
+		offset := int(index)*4 + 4
 		firstChunk := make([]byte, offset)
-		secondChunk := make([]byte, len(*arr.Value) - offset)
+		secondChunk := make([]byte, len(*arr.Value)-offset)
 
 		copy(firstChunk, (*arr.Value)[:offset])
-		copy(secondChunk, (*arr.Value)[offset + 4:])
+		copy(secondChunk, (*arr.Value)[offset+4:])
 
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
@@ -115,7 +115,7 @@ func writeBoolA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 	}
 }
 
-func lenBoolA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenBoolA(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("lenBoolA", "[]bool", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -125,7 +125,7 @@ func lenBoolA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func concatBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatBoolA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]bool.concat", "[]bool", "[]bool", arg1, arg2); err == nil {
 		var slice1 []int32
 		var slice2 []int32
@@ -142,7 +142,7 @@ func concatBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	}
 }
 
-func appendBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendBoolA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]bool.append", "[]bool", "bool", arg1, arg2); err == nil {
 		var slice []int32
 		var literal int32
@@ -159,7 +159,7 @@ func appendBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	}
 }
 
-func copyBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyBoolA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]bool.copy", "[]bool", "[]bool", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil
@@ -167,4 +167,3 @@ func copyBoolA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 		return err
 	}
 }
-

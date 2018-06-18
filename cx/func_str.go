@@ -1,16 +1,16 @@
 package base
 
 import (
-	"fmt"
 	"bufio"
+	"errors"
+	"fmt"
 	"os"
 	"strings"
-	"errors"
-	
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func ltStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.lt", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -32,7 +32,7 @@ func ltStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func gtStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.gt", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -54,7 +54,7 @@ func gtStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func eqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.eq", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -76,7 +76,7 @@ func eqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
-func uneqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.uneq", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -98,7 +98,7 @@ func uneqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func lteqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.lteq", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -120,7 +120,7 @@ func lteqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func gteqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.gteq", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -142,7 +142,7 @@ func gteqStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func concatStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("str.concat", "str", "str", arg1, arg2); err == nil {
 		var str1 string
 		var str2 string
@@ -168,7 +168,7 @@ func concatStr (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CX
 
 // string arrays
 
-func readStrA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readStrA(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]str.read", "[]str", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -179,7 +179,7 @@ func readStrA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]str.read: negative index %d", index))
 		}
-		
+
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]str.read: index %d exceeds array of length %d", index, size))
 		}
@@ -193,10 +193,10 @@ func readStrA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 			offset += strSize + 4
 		}
 
-		sStrSize := noSize[offset:offset + 4]
+		sStrSize := noSize[offset : offset+4]
 		var strSize int32
 		encoder.DeserializeRaw(sStrSize, &strSize)
-		
+
 		var value string
 		encoder.DeserializeRaw(noSize[offset:offset+strSize+4], &value)
 		output := encoder.Serialize(value)
@@ -208,14 +208,14 @@ func readStrA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeStrA(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]str.write", "[]str", "i32", "str", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
 
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[0:4], &size)
-		
+
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]i32.write: negative index %d", index))
 		}
@@ -240,7 +240,7 @@ func writeStrA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpre
 	}
 }
 
-func lenStr (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenStr(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("str.len", "str", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -250,7 +250,7 @@ func lenStr (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func lenStrA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenStrA(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]str.len", "[]str", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -260,7 +260,7 @@ func lenStrA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func concatStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatStrA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]str.concat", "[]str", "[]str", arg1, arg2); err == nil {
 		var slice1 []string
 		var slice2 []string
@@ -277,7 +277,7 @@ func concatStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func appendStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendStrA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]str.append", "[]str", "str", arg1, arg2); err == nil {
 		var slice []string
 		var literal string
@@ -295,7 +295,7 @@ func appendStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *C
 	}
 }
 
-func copyStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyStrA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]str.copy", "[]str", "[]str", arg1, arg2); err == nil {
 		var slice1 []string
 		var slice2 []string
@@ -314,7 +314,7 @@ func copyStrA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 
 // read string from standard input
 
-func readStr (expr *CXExpression, call *CXCall) error {
+func readStr(expr *CXExpression, call *CXCall) error {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	text = strings.Replace(text, "\n", "", -1)

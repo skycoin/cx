@@ -19,7 +19,7 @@ package base
 // 		r := random(0, len(affs))
 // 		affs[r].ApplyAffordance()
 // 	}
-	
+
 // 	if len(outNames) == 0 {
 // 		for i := 0; i < numOuts; i++ {
 // 			affs := FilterAffordances(expr.GetAffordances(nil), "OutputName")
@@ -29,7 +29,7 @@ package base
 // 	} else {
 // 		expr.OutputNames = outNames
 // 	}
-	
+
 // 	return expr
 // }
 
@@ -41,7 +41,7 @@ package base
 // 		removedVars := fn.Expressions[removeIndex].OutputNames
 
 // 		indexesToRemove := make([]int, 0)
-		
+
 // 		for i, expr := range fn.Expressions {
 // 			for _, arg := range expr.Arguments {
 // 				if i == removeIndex {
@@ -61,7 +61,7 @@ package base
 // 				if argIdentRemoved {
 // 					break
 // 				}
-				
+
 // 				for _, arg := range fn.Expressions[i].Arguments {
 // 					broke := false
 // 					for _, j := range indexesToRemove {
@@ -111,7 +111,7 @@ package base
 // 			}
 
 // 			sameOutputs := true
-			
+
 // 			for i, out := range fnOutputs {
 // 				if out.Name != exprOutNames[i].Name {
 // 					sameOutputs = false
@@ -142,7 +142,7 @@ package base
 // 			} else {
 // 				affs = FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
 // 			}
-			
+
 // 			r := random(0, len(affs))
 // 			affs[r].ApplyAffordance()
 
@@ -187,7 +187,7 @@ package base
 // 					fn.AddOutput(MakeParameter("out", "f64"))
 // 					if sol, err := cxt.GetFunction(solutionName, solMod.Name); err == nil {
 // 						fn.AddExpression(MakeExpression(sol))
-						
+
 // 						if expr, err := cxt.GetCurrentExpression(); err == nil {
 // 							expr.AddOutputName("out")
 // 							tmpVal := encoder.Serialize(float64(0))
@@ -204,7 +204,7 @@ package base
 // 	if fn, err := cxt.GetFunction("main", "main"); err == nil {
 // 		val := encoder.Serialize(testValue)
 // 		arg := MakeArgument(&val, "f64")
-		
+
 // 		fn.Expressions[0].Arguments[0] = arg
 // 	}
 // }
@@ -235,7 +235,7 @@ package base
 
 // 			if i != numberExprs - preExistingExpressions - 1 {
 // 				affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
-				
+
 // 				r := random(0, len(affs))
 // 				affs[r].ApplyAffordance()
 
@@ -243,7 +243,7 @@ package base
 // 					expr.BuildExpression(nil)
 // 				}
 // 			} else {
-				
+
 // 				fnOutTypNames := make([]string, 0)
 // 				for _, out := range fn.Outputs {
 // 					fnOutTypNames = append(fnOutTypNames, out.Typ)
@@ -259,7 +259,7 @@ package base
 // 							break
 // 						}
 // 					}
-					
+
 // 					if possibleOp {
 // 						possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
 // 					}
@@ -272,7 +272,7 @@ package base
 // 							break
 // 						}
 // 					}
-					
+
 // 					if possibleOp {
 // 						possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
 // 					}
@@ -284,7 +284,7 @@ package base
 
 // 				r := random(0, len(affs))
 // 				affs[r].ApplyAffordance()
-				
+
 // 				//making sure last expression assigns to output
 // 				outNames := make([]*CXDefinition, len(fn.Outputs))
 // 				for i, out := range fn.Outputs {
@@ -305,14 +305,14 @@ package base
 // 	}
 
 // 	cxtCopy := MakeContextCopy(cxt, -1)
-	
+
 // 	best := cxtCopy
 // 	best.adaptPreEvolution(solutionName)
 
 // 	//best.PrintProgram(false)
 
 // 	var finalError float64
-	
+
 // 	if mod, err := cxt.GetCurrentModule(); err == nil {
 // 		if fn, err := cxt.GetFunction(solutionName, mod.Name); err == nil {
 // 			if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
@@ -363,7 +363,7 @@ package base
 // 							//fmt.Println(program.Outputs[0].Value)
 // 							// fmt.Println(outputs[i])
 // 							// fmt.Println()
-							
+
 // 							if diff >= 0 {
 // 								error += diff
 // 							} else {
@@ -372,14 +372,14 @@ package base
 // 							//fmt.Println(error)
 
 // 						}
-						
+
 // 						//fmt.Println(len(program.CallStack[len(program.CallStack) - 1].State))
 // 						//fmt.Println(error / float64(len(inputs)))
 // 						errors[i] = error / float64(len(inputs))
 // 					}
 
 // 					//fmt.Println(errors)
-					
+
 // 					// the program with the lowest error becomes the best
 // 					bestIndex := 0
 // 					for i, _ := range programs {
@@ -393,7 +393,7 @@ package base
 // 					// print error each iteration
 // 					//fmt.Println(errors[bestIndex])
 // 					//fmt.Println(errors)
-					
+
 // 					//best.PrintProgram(false)
 // 					best = programs[bestIndex]
 // 					//best.PrintProgram(false)
@@ -411,15 +411,14 @@ package base
 // 	best.transferSolution(solutionName, cxt)
 
 // 	sFinalError := encoder.Serialize(finalError)
-	
+
 // 	for _, def := range call.State {
 // 		if def.Name == expr.OutputNames[0].Name {
 // 			def.Value = &sFinalError
 // 			return nil
 // 		}
 // 	}
-	
+
 // 	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sFinalError, "f64"))
 // 	return nil
 // }
-

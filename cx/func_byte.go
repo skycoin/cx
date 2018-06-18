@@ -1,12 +1,12 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
+func readByteA(arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.read", "[]byte", "i32", arr, idx); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -17,11 +17,11 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 		if index < 0 {
 			return errors.New(fmt.Sprintf("[]byte.read: negative index %d", index))
 		}
-		
+
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]byte.read: index %d exceeds array of length %d", index, size))
 		}
-		
+
 		var value byte
 		encoder.DeserializeRaw((*arr.Value)[index+4:(index+1)+4], &value)
 
@@ -35,7 +35,7 @@ func readByteA (arr *CXArgument, idx *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
+func writeByteA(arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkThreeTypes("[]byte.write", "[]byte", "i32", "byte", arr, idx, val); err == nil {
 		var index int32
 		encoder.DeserializeRaw(*idx.Value, &index)
@@ -50,15 +50,15 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 		if index >= size {
 			return errors.New(fmt.Sprintf("[]byte.write: index %d exceeds array of length %d", index, size))
 		}
-		
+
 		// (*arr.Value)[index + 4] = (*val.Value)[0]
 
-		offset := int(index) * 1 + 4
+		offset := int(index)*1 + 4
 		firstChunk := make([]byte, offset)
-		secondChunk := make([]byte, len(*arr.Value) - (offset + 1))
+		secondChunk := make([]byte, len(*arr.Value)-(offset+1))
 
 		copy(firstChunk, (*arr.Value)[:offset])
-		copy(secondChunk, (*arr.Value)[offset + 1:])
+		copy(secondChunk, (*arr.Value)[offset+1:])
 
 		final := append(firstChunk, *val.Value...)
 		final = append(final, secondChunk...)
@@ -70,7 +70,7 @@ func writeByteA (arr *CXArgument, idx *CXArgument, val *CXArgument, expr *CXExpr
 	}
 }
 
-func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
+func lenByteA(arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("[]byte.len", "[]byte", arr); err == nil {
 		size := (*arr.Value)[:4]
 		assignOutput(0, size, "i32", expr, call)
@@ -80,7 +80,7 @@ func lenByteA (arr *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func ltByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.lt", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -100,7 +100,7 @@ func ltByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.gt", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -120,7 +120,7 @@ func gtByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func eqByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.eq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -140,7 +140,7 @@ func eqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCal
 	}
 }
 
-func uneqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func uneqByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.uneq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -160,7 +160,7 @@ func uneqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	}
 }
 
-func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func lteqByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.lteq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -180,7 +180,7 @@ func lteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	}
 }
 
-func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gteqByte(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("byte.gteq", "byte", "byte", arg1, arg2); err == nil {
 		byte1 := (*arg1.Value)[0]
 		byte2 := (*arg2.Value)[0]
@@ -200,7 +200,7 @@ func gteqByte (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 	}
 }
 
-func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func concatByteA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.concat", "[]byte", "[]byte", arg1, arg2); err == nil {
 		var slice1 []byte
 		var slice2 []byte
@@ -217,7 +217,7 @@ func concatByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	}
 }
 
-func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func appendByteA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.append", "[]byte", "byte", arg1, arg2); err == nil {
 		var slice []byte
 		encoder.DeserializeRaw(*arg1.Value, &slice)
@@ -232,7 +232,7 @@ func appendByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *
 	}
 }
 
-func copyByteA (arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func copyByteA(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("[]byte.copy", "[]byte", "[]byte", arg1, arg2); err == nil {
 		copy(*arg1.Value, *arg2.Value)
 		return nil

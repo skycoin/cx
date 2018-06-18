@@ -5,7 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func gtUnd (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
+func gtUnd(arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 	var val []byte
 
 	switch arg1.Type {
@@ -31,7 +31,7 @@ func gtUnd (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 		} else {
 			val = encoder.Serialize(false)
 		}
-	case TYPE_F32: 
+	case TYPE_F32:
 		var num1 float32
 		var num2 float32
 		encoder.DeserializeRaw(*arg1.Value, &num1)
@@ -54,16 +54,13 @@ func gtUnd (arg1, arg2 *CXArgument, expr *CXExpression, call *CXCall) error {
 			val = encoder.Serialize(false)
 		}
 	}
-	
-	
 
 	assignOutput(0, val, "bool", expr, call)
 	return nil
 }
 
-func lenUnd (arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
-	val := encoder.Serialize(int32(arg1.Lengths[len(arg1.Lengths) - 1]))
+func lenUnd(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	val := encoder.Serialize(int32(arg1.Lengths[len(arg1.Lengths)-1]))
 	assignOutput(0, val, "i32", expr, call)
 	return nil
 }
-

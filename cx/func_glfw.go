@@ -7,7 +7,7 @@ import (
 
 // var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
 
-func glfw_Init () error {
+func glfw_Init() error {
 	if err := glfw.Init(); err == nil {
 		return nil
 	} else {
@@ -15,7 +15,7 @@ func glfw_Init () error {
 	}
 }
 
-func glfw_WindowHint (target *CXArgument, hint *CXArgument) error {
+func glfw_WindowHint(target *CXArgument, hint *CXArgument) error {
 	if err := checkTwoTypes("glfw.WindowHint", "i32", "i32", target, hint); err == nil {
 		var tgt int32
 		var h int32
@@ -30,7 +30,7 @@ func glfw_WindowHint (target *CXArgument, hint *CXArgument) error {
 	}
 }
 
-func glfw_SetInputMode (window, mode, value *CXArgument) error {
+func glfw_SetInputMode(window, mode, value *CXArgument) error {
 	if err := checkThreeTypes("glfw.SetInputMode", "str", "i32", "i32", window, mode, value); err == nil {
 		var winName string
 		var _mode int32
@@ -47,11 +47,11 @@ func glfw_SetInputMode (window, mode, value *CXArgument) error {
 	}
 }
 
-func glfw_GetCursorPos (window *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_GetCursorPos(window *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("glfw.GetCursorPos", "str", window); err == nil {
 		var winName string
 		encoder.DeserializeRaw(*window.Value, &winName)
-		
+
 		x, y := windows[winName].GetCursorPos()
 
 		sX := encoder.Serialize(x)
@@ -59,14 +59,14 @@ func glfw_GetCursorPos (window *CXArgument, expr *CXExpression, call *CXCall) er
 
 		assignOutput(0, sX, "f64", expr, call)
 		assignOutput(1, sY, "f64", expr, call)
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func glfw_CreateWindow (window, width, height, title *CXArgument) error {
+func glfw_CreateWindow(window, width, height, title *CXArgument) error {
 	if err := checkThreeTypes("glfw.CreateWindow", "i32", "i32", "str", width, height, title); err == nil {
 		var w int32
 		var h int32
@@ -89,7 +89,7 @@ func glfw_CreateWindow (window, width, height, title *CXArgument) error {
 	}
 }
 
-func glfw_MakeContextCurrent (window *CXArgument) error {
+func glfw_MakeContextCurrent(window *CXArgument) error {
 	if err := checkType("glfw.MakeContextCurrent", "str", window); err == nil {
 		var winName string
 		encoder.DeserializeRaw(*window.Value, &winName)
@@ -101,9 +101,7 @@ func glfw_MakeContextCurrent (window *CXArgument) error {
 	}
 }
 
-
-
-func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_ShouldClose(window *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("glfw.ShouldClose", "str", window); err == nil {
 		var winName string
 		encoder.DeserializeRaw(*window.Value, &winName)
@@ -114,7 +112,7 @@ func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) err
 		} else {
 			output = encoder.Serialize(false)
 		}
-		
+
 		assignOutput(0, output, "bool", expr, call)
 		return nil
 	} else {
@@ -122,7 +120,7 @@ func glfw_ShouldClose (window *CXArgument, expr *CXExpression, call *CXCall) err
 	}
 }
 
-func glfw_GetFramebufferSize (window *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_GetFramebufferSize(window *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("glfw.GetFramebufferSize", "str", window); err == nil {
 		var winName string
 		encoder.DeserializeRaw(*window.Value, &winName)
@@ -130,7 +128,7 @@ func glfw_GetFramebufferSize (window *CXArgument, expr *CXExpression, call *CXCa
 		width, height := windows[winName].GetFramebufferSize()
 		sWidth := encoder.Serialize(int32(width))
 		sHeight := encoder.Serialize(int32(height))
-		
+
 		assignOutput(0, sWidth, "i32", expr, call)
 		assignOutput(1, sHeight, "i32", expr, call)
 		return nil
@@ -139,12 +137,12 @@ func glfw_GetFramebufferSize (window *CXArgument, expr *CXExpression, call *CXCa
 	}
 }
 
-func glfw_PollEvents () error {
+func glfw_PollEvents() error {
 	glfw.PollEvents()
 	return nil
 }
 
-func glfw_SwapBuffers (window *CXArgument) error {
+func glfw_SwapBuffers(window *CXArgument) error {
 	if err := checkType("glfw.SwapBuffers", "str", window); err == nil {
 		var winName string
 		encoder.DeserializeRaw(*window.Value, &winName)
@@ -156,19 +154,19 @@ func glfw_SwapBuffers (window *CXArgument) error {
 	}
 }
 
-func glfw_GetTime (expr *CXExpression, call *CXCall) error {
+func glfw_GetTime(expr *CXExpression, call *CXCall) error {
 	time := glfw.GetTime()
 	sTime := encoder.Serialize(time)
 	assignOutput(0, sTime, "f64", expr, call)
 	return nil
 }
 
-func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_SetKeyCallback(window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
 	var wName string
 	var name string
 	encoder.DeserializeRaw(*window.Value, &wName)
 	encoder.DeserializeRaw(*fnName.Value, &name)
-	
+
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
 
@@ -191,7 +189,7 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sScancode).AddType(fn.Inputs[2].Typ)
 			state[3] = MakeArgument(fn.Inputs[3].Name).AddValue(&sAction).AddType(fn.Inputs[3].Typ)
 			state[4] = MakeArgument(fn.Inputs[4].Name).AddValue(&sModifierKey).AddType(fn.Inputs[4].Typ)
-			
+
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)
 		}
@@ -201,15 +199,15 @@ func glfw_SetKeyCallback (window, fnName *CXArgument, expr *CXExpression, call *
 	return nil
 }
 
-func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_SetCursorPosCallback(window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
 	var wName string
 	var name string
 	encoder.DeserializeRaw(*window.Value, &wName)
 	encoder.DeserializeRaw(*fnName.Value, &name)
-	
+
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
 		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
-			
+
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -226,7 +224,7 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 			state[0] = MakeArgument(fn.Inputs[0].Name).AddValue(&winName).AddType(fn.Inputs[0].Typ)
 			state[1] = MakeArgument(fn.Inputs[1].Name).AddValue(&sXpos).AddType(fn.Inputs[1].Typ)
 			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sYpos).AddType(fn.Inputs[2].Typ)
-			
+
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)
 		}
@@ -236,7 +234,7 @@ func glfw_SetCursorPosCallback (window, fnName *CXArgument, expr *CXExpression, 
 	return nil
 }
 
-func glfw_SetShouldClose (window, value *CXArgument) error {
+func glfw_SetShouldClose(window, value *CXArgument) error {
 	if err := checkTwoTypes("glfw.SetShouldClose", "str", "bool", window, value); err == nil {
 		var _window string
 		var _value int32
@@ -255,12 +253,12 @@ func glfw_SetShouldClose (window, value *CXArgument) error {
 	}
 }
 
-func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_SetMouseButtonCallback(window, fnName *CXArgument, expr *CXExpression, call *CXCall) error {
 	var wName string
 	var name string
 	encoder.DeserializeRaw(*window.Value, &wName)
 	encoder.DeserializeRaw(*fnName.Value, &name)
-	
+
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 		if fn, err := call.Program.GetFunction(name, expr.Package.Name); err == nil {
 
@@ -282,7 +280,7 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 			state[1] = MakeArgument(fn.Inputs[1].Name).AddValue(&sKey).AddType(fn.Inputs[1].Typ)
 			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sAction).AddType(fn.Inputs[2].Typ)
 			state[3] = MakeArgument(fn.Inputs[3].Name).AddValue(&sModifierKey).AddType(fn.Inputs[3].Typ)
-			
+
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)
 		}
@@ -292,11 +290,11 @@ func glfw_SetMouseButtonCallback (window, fnName *CXArgument, expr *CXExpression
 	return nil
 }
 
-func glfw_GetKey (window, key *CXArgument, expr *CXExpression, call *CXCall) error {
+func glfw_GetKey(window, key *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkTwoTypes("glfw.GetKey", "str", "i32", window, key); err == nil {
 		var wName string
 		var _key int32
-		
+
 		encoder.DeserializeRaw(*window.Value, &wName)
 		encoder.DeserializeAtomic(*key.Value, &_key)
 
@@ -309,6 +307,6 @@ func glfw_GetKey (window, key *CXArgument, expr *CXExpression, call *CXCall) err
 	}
 }
 
-func Bar () {
+func Bar() {
 	//fmt.Println("glfw.CURSOR", glfw.CursorMode)
 }

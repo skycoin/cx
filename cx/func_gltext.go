@@ -7,7 +7,7 @@ import (
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
-func gltext_LoadTrueType (font, file, scale, low, high, dir *CXArgument) error {
+func gltext_LoadTrueType(font, file, scale, low, high, dir *CXArgument) error {
 	if err := checkSixTypes("gltext.LoadTrueType", "str", "str", "i32", "i32", "i32", "i32", font, file, scale, low, high, dir); err == nil {
 		var _font string
 		var _file string
@@ -28,14 +28,14 @@ func gltext_LoadTrueType (font, file, scale, low, high, dir *CXArgument) error {
 		} else {
 			return err
 		}
-		
+
 		return nil
 	} else {
 		return err
 	}
 }
 
-func gltext_Printf (font, x, y, fs *CXArgument) error {
+func gltext_Printf(font, x, y, fs *CXArgument) error {
 	if err := checkFourTypes("gltext.Printf", "str", "f32", "f32", "str", font, x, y, fs); err == nil {
 		var _font string
 		var _x float32

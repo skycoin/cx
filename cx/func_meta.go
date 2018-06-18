@@ -1,12 +1,12 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func rem_arg (tag *CXArgument, caller *CXFunction) error {
+func rem_arg(tag *CXArgument, caller *CXFunction) error {
 	if err := checkType("rem.arg", "str", tag); err == nil {
 		var tg string
 		encoder.DeserializeRaw(*tag.Value, &tg)
@@ -23,11 +23,11 @@ func rem_arg (tag *CXArgument, caller *CXFunction) error {
 	}
 }
 
-func add_arg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
+func add_arg(tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
 	if err := checkTwoTypes("add.arg", "str", "str", tag, ident); err == nil {
 		var tg string
 		encoder.DeserializeRaw(*tag.Value, &tg)
-		
+
 		for _, expr := range caller.Expressions {
 			if expr.Label == tg {
 				expr.AddInput(MakeArgument("").AddValue(ident.Value).AddType("ident"))
@@ -40,7 +40,7 @@ func add_arg (tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
 	}
 }
 
-func add_expr (tag *CXArgument, fnName *CXArgument, call *CXCall) error {
+func add_expr(tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 	if err := checkType("add.expr", "str", fnName); err == nil {
 		mod := call.Package
 
@@ -48,11 +48,11 @@ func add_expr (tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 		var tg string
 		encoder.DeserializeRaw(*fnName.Value, &opName)
 		encoder.DeserializeRaw(*tag.Value, &tg)
-		
+
 		if fn, err := mod.Program.GetFunction(opName, mod.Name); err == nil {
 			expr := MakeExpression(fn)
 			expr.AddLabel(tg)
-			
+
 			call.Operator.AddExpression(expr)
 			return nil
 		} else {
@@ -63,7 +63,7 @@ func add_expr (tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 	}
 }
 
-func rem_expr (tag *CXArgument, caller *CXFunction) error {
+func rem_expr(tag *CXArgument, caller *CXFunction) error {
 	var tg string
 	encoder.DeserializeRaw(*tag.Value, &tg)
 	if err := checkType("remExpr", "str", tag); err == nil {

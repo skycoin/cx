@@ -1,12 +1,12 @@
 package base
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func castToStr (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToStr(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	strTyp := "str"
 	switch arg.Typ {
 	case "[]byte":
@@ -52,7 +52,7 @@ func castToStr (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	return nil
 }
 
-func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToByteA(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	byteATyp := "[]byte"
 	switch arg.Typ {
 	case "str":
@@ -65,7 +65,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		var val []int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 
-		output := make([]byte, len(val) + 4)
+		output := make([]byte, len(val)+4)
 		copy(output, (*arg.Value)[:4])
 		for i, n := range val {
 			output[i+4] = byte(n)
@@ -77,7 +77,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		var val []int64
 		encoder.DeserializeRaw(*arg.Value, &val)
 
-		output := make([]byte, len(val) + 4)
+		output := make([]byte, len(val)+4)
 		copy(output, (*arg.Value)[:4])
 		for i, n := range val {
 			output[i+4] = byte(n)
@@ -89,24 +89,24 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		var val []float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 
-		output := make([]byte, len(val) + 4)
+		output := make([]byte, len(val)+4)
 		copy(output, (*arg.Value)[:4])
 		for i, n := range val {
 			output[i+4] = byte(n)
 		}
-		
+
 		assignOutput(0, output, byteATyp, expr, call)
 		return nil
 	case "[]f64":
 		var val []float64
 		encoder.DeserializeRaw(*arg.Value, &val)
 
-		output := make([]byte, len(val) + 4)
+		output := make([]byte, len(val)+4)
 		copy(output, (*arg.Value)[:4])
 		for i, n := range val {
 			output[i+4] = byte(n)
 		}
-		
+
 		assignOutput(0, output, byteATyp, expr, call)
 		return nil
 	default:
@@ -114,7 +114,7 @@ func castToByteA (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToByte (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToByte(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	byteTyp := "byte"
 	switch arg.Typ {
 	case "byte":
@@ -153,7 +153,7 @@ func castToByte (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToI32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToI32(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	i32Typ := "i32"
 	switch arg.Typ {
 	case "byte":
@@ -191,7 +191,7 @@ func castToI32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToI64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToI64(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	i64Typ := "i64"
 	switch arg.Typ {
 	case "byte":
@@ -229,7 +229,7 @@ func castToI64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToF32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToF32(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	f32Typ := "f32"
 	switch arg.Typ {
 	case "byte":
@@ -267,7 +267,7 @@ func castToF32 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToF64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToF64(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	f64Typ := "f64"
 	switch arg.Typ {
 	case "byte":
@@ -305,7 +305,7 @@ func castToF64 (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToI32A(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	i32ATyp := "[]i32"
 	switch arg.Typ {
 	case "[]byte":
@@ -330,7 +330,7 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		output := make([]int32, len(val))
 		for i, n := range val {
 			output[i] = int32(n)
-		}		
+		}
 		newVal := encoder.Serialize(output)
 
 		assignOutput(0, newVal, i32ATyp, expr, call)
@@ -364,7 +364,7 @@ func castToI32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToI64A(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	i64ATyp := "[]i64"
 	switch arg.Typ {
 	case "[]byte":
@@ -423,7 +423,7 @@ func castToI64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToF32A(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	f32ATyp := "[]f32"
 	switch arg.Typ {
 	case "[]byte":
@@ -473,7 +473,7 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 		for i, n := range val {
 			output[i] = float32(n)
 		}
-		
+
 		newVal := encoder.Serialize(output)
 
 		assignOutput(0, newVal, f32ATyp, expr, call)
@@ -483,7 +483,7 @@ func castToF32A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func castToF64A (arg *CXArgument, expr *CXExpression, call *CXCall) error {
+func castToF64A(arg *CXArgument, expr *CXExpression, call *CXCall) error {
 	f64ATyp := "[]f64"
 	switch arg.Typ {
 	case "[]byte":

@@ -1,21 +1,20 @@
 package base
 
 import (
-	"fmt"
-	"math/rand"
-	"time"
 	"bytes"
-	"regexp"
-	"strings"
-	"strconv"
 	"errors"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"math/rand"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
-
-func sameFields (flds1 []*CXArgument, flds2 []*CXArgument) bool {
+func sameFields(flds1 []*CXArgument, flds2 []*CXArgument) bool {
 	allSame := true
-	
+
 	if len(flds1) != len(flds2) {
 		allSame = false
 	} else {
@@ -29,16 +28,16 @@ func sameFields (flds1 []*CXArgument, flds2 []*CXArgument) bool {
 	return allSame
 }
 
-func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
+func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpression, call *CXCall) error {
 	out := expr.Outputs[outNameNumber]
 	outName := out.Name
 	flds := out.Fields
 	idxs := out.Indexes
 
 	// if len(expr.Outputs[outNameNumber].Fields) > 0 {
-	
+
 	// } else {
-	
+
 	// }
 
 	// for _, out := range expr.Outputs {
@@ -56,12 +55,12 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			allSame := sameFields(def.Fields, flds)
 
 			if allSame {
-				def.Fields[len(def.Fields) - 1].Value = &output
+				def.Fields[len(def.Fields)-1].Value = &output
 				return nil
 			} else {
 				arg := MakeArgument(outName)
 				arg.Fields = flds
-				arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
+				arg.Fields[len(flds)-1].AddValue(&output).AddType(typ)
 				call.State = append(call.State, arg)
 				return nil
 			}
@@ -76,11 +75,11 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 
 			fmt.Println("before", def.Value)
 
-			firstChunk := make([]byte, offset + 4)
-			secondChunk := make([]byte, len(*def.Value) - int(offset + def.Size))
+			firstChunk := make([]byte, offset+4)
+			secondChunk := make([]byte, len(*def.Value)-int(offset+def.Size))
 
 			copy(firstChunk, (*def.Value)[:offset])
-			copy(secondChunk, (*def.Value)[offset + def.Size:])
+			copy(secondChunk, (*def.Value)[offset+def.Size:])
 
 			final := append(firstChunk, output...)
 			final = append(final, secondChunk...)
@@ -96,8 +95,6 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 		}
 	}
 
-	
-	
 	// call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
 	// return nil
 
@@ -126,8 +123,6 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			// 	}
 			// }
 
-			
-
 			for _, def := range call.State {
 				if def.Name == identParts[0] {
 					if strct, err := call.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
@@ -140,13 +135,13 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 								break
 							}
 						}
-						
+
 						if true || typ == "str" || typ == "[]str" || typ == "[]bool" ||
 							typ == "[]byte" || typ == "[]i32" ||
 							typ == "[]i64" || typ == "[]f32" || typ == "[]f64" || !isBasic {
 
 							firstChunk := make([]byte, offset)
-							secondChunk := make([]byte, len(*def.Value) - int(offset + size))
+							secondChunk := make([]byte, len(*def.Value)-int(offset+size))
 
 							copy(firstChunk, (*def.Value)[:offset])
 							copy(secondChunk, (*def.Value)[offset+size:])
@@ -161,7 +156,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 							}
 							return nil
 						} else {
-							
+
 							for c := 0; c < len(byts); c++ {
 								byts[c] = (output)[c]
 							}
@@ -174,7 +169,7 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 			}
 			break
 		}
-		
+
 		// if char == '[' {
 		// 	identParts := strings.Split(outName, "[")
 
@@ -221,22 +216,22 @@ func assignOutput (outNameNumber int, output []byte, typ string, expr *CXExpress
 	return nil
 }
 
-func getArrayChunkSizes (size int, lens []int) []int {
+func getArrayChunkSizes(size int, lens []int) []int {
 	var result []int
 
 	for c := len(lens) - 1; c >= 0; c-- {
 		if len(result) > 0 {
-			result = append([]int{lens[c] * result[len(result) - 1]}, result...)
+			result = append([]int{lens[c] * result[len(result)-1]}, result...)
 		} else {
 			// first one to add
-			result = append(result, lens[c] * size)
+			result = append(result, lens[c]*size)
 		}
 	}
-	
+
 	// for _, len := range lens {
 	// 	result = append(result, len * size)
 	// }
-	
+
 	return result
 }
 
@@ -363,14 +358,14 @@ func getArrayChunkSizes (size int, lens []int) []int {
 // 	return nil
 // }
 
-func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument, mod *CXPackage, prgrm *CXProgram) ([]*CXArgument, error) {
+func argsToDefs(args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument, mod *CXPackage, prgrm *CXProgram) ([]*CXArgument, error) {
 	if len(inputs) == len(args) {
-		defs := make([]*CXArgument, len(args) + len(outputs), len(args) + len(outputs) + 10)
+		defs := make([]*CXArgument, len(args)+len(outputs), len(args)+len(outputs)+10)
 		for i, arg := range args {
 			defs[i] = &CXArgument{
-				Name: inputs[i].Name,
-				Typ: arg.Typ,
-				Value: arg.Value,
+				Name:    inputs[i].Name,
+				Typ:     arg.Typ,
+				Value:   arg.Value,
 				Package: mod,
 				Program: prgrm,
 			}
@@ -389,9 +384,9 @@ func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument
 				}
 			}
 			defs[i+len(args)] = &CXArgument{
-				Name: out.Name,
-				Typ: out.Typ,
-				Value: &zeroValue,
+				Name:    out.Name,
+				Typ:     out.Typ,
+				Value:   &zeroValue,
 				Package: mod,
 				Program: prgrm,
 			}
@@ -402,14 +397,14 @@ func argsToDefs (args []*CXArgument, inputs []*CXArgument, outputs []*CXArgument
 	}
 }
 
-func checkType (fnName string, typ string, arg *CXArgument) error {
+func checkType(fnName string, typ string, arg *CXArgument) error {
 	if arg.Typ != typ {
 		return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg.Typ, typ))
 	}
 	return nil
 }
 
-func checkTwoTypes (fnName string, typ1 string, typ2 string, arg1 *CXArgument, arg2 *CXArgument) error {
+func checkTwoTypes(fnName string, typ1 string, typ2 string, arg1 *CXArgument, arg2 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
@@ -419,7 +414,7 @@ func checkTwoTypes (fnName string, typ1 string, typ2 string, arg1 *CXArgument, a
 	return nil
 }
 
-func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1 *CXArgument, arg2 *CXArgument, arg3 *CXArgument) error {
+func checkThreeTypes(fnName string, typ1 string, typ2 string, typ3 string, arg1 *CXArgument, arg2 *CXArgument, arg3 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
@@ -431,7 +426,7 @@ func checkThreeTypes (fnName string, typ1 string, typ2 string, typ3 string, arg1
 	return nil
 }
 
-func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, arg4 *CXArgument) error {
+func checkFourTypes(fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, arg4 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argumentnnn 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
@@ -445,7 +440,7 @@ func checkFourTypes (fnName, typ1, typ2, typ3, typ4 string, arg1, arg2, arg3, ar
 	return nil
 }
 
-func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, arg3, arg4, arg5 *CXArgument) error {
+func checkFiveTypes(fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, arg3, arg4, arg5 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
@@ -461,7 +456,7 @@ func checkFiveTypes (fnName, typ1, typ2, typ3, typ4, typ5 string, arg1, arg2, ar
 	return nil
 }
 
-func checkSixTypes (fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg2, arg3, arg4, arg5, arg6 *CXArgument) error {
+func checkSixTypes(fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg2, arg3, arg4, arg5, arg6 *CXArgument) error {
 	if arg1.Typ != typ1 || arg2.Typ != typ2 || arg3.Typ != typ3 || arg4.Typ != typ4 || arg5.Typ != typ5 || arg6.Typ != typ6 {
 		if arg1.Typ != typ1 {
 			return errors.New(fmt.Sprintf("%s: argument 1 is type '%s'; expected type '%s'", fnName, arg1.Typ, typ1))
@@ -479,12 +474,12 @@ func checkSixTypes (fnName, typ1, typ2, typ3, typ4, typ5, typ6 string, arg1, arg
 	return nil
 }
 
-func random (min, max int) int {
+func random(min, max int) int {
 	rand.Seed(time.Now().UTC().UnixNano())
-	return rand.Intn(max - min) + min
+	return rand.Intn(max-min) + min
 }
 
-func removeDuplicatesInt (elements []int) []int {
+func removeDuplicatesInt(elements []int) []int {
 	// Use map to record duplicates as we find them.
 	encountered := map[int]bool{}
 	result := []int{}
@@ -503,7 +498,7 @@ func removeDuplicatesInt (elements []int) []int {
 	return result
 }
 
-func removeDuplicates (s []string) []string {
+func removeDuplicates(s []string) []string {
 	seen := make(map[string]struct{}, len(s))
 	j := 0
 	for _, v := range s {
@@ -517,17 +512,17 @@ func removeDuplicates (s []string) []string {
 	return s[:j]
 }
 
-func concat (strs ...string) string {
+func concat(strs ...string) string {
 	var buffer bytes.Buffer
-	
+
 	for i := 0; i < len(strs); i++ {
 		buffer.WriteString(strs[i])
 	}
-	
+
 	return buffer.String()
 }
 
-func PrintValue (identName string, value *[]byte, typName string, prgrm *CXProgram) string {
+func PrintValue(identName string, value *[]byte, typName string, prgrm *CXProgram) string {
 	var argName string
 	switch typName {
 	case "str":
@@ -598,14 +593,13 @@ func PrintValue (identName string, value *[]byte, typName string, prgrm *CXProgr
 			}
 		}
 
-
 		return ""
 	}
 
 	return argName
 }
 
-func rep (str string, n int) string {
+func rep(str string, n int) string {
 	return strings.Repeat(str, n)
 }
 
@@ -706,7 +700,7 @@ func rep (str string, n int) string {
 // 	fmt.Println()
 // }
 
-func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
+func CastArgumentForArray(typ string, arg *CXArgument) *CXArgument {
 	switch typ {
 	case "[]bool":
 		return MakeArgument("").AddValue(arg.Value).AddType("bool")
@@ -736,7 +730,7 @@ func CastArgumentForArray (typ string, arg *CXArgument) *CXArgument {
 	}
 }
 
-func ArgToString (arg *CXArgument) string {
+func ArgToString(arg *CXArgument) string {
 	switch arg.Typ {
 	case "ident", "string":
 		var identName string
@@ -762,7 +756,7 @@ func ArgToString (arg *CXArgument) string {
 	return ""
 }
 
-func IsMultiDim (typ string) bool {
+func IsMultiDim(typ string) bool {
 	if len(typ) > 4 && typ[:4] == "[][]" {
 		return true
 	} else {
@@ -770,7 +764,7 @@ func IsMultiDim (typ string) bool {
 	}
 }
 
-func IsBasicType (typ string) bool {
+func IsBasicType(typ string) bool {
 	re := regexp.MustCompile("\\**(\\[\\])*(bool|str|i32|i64|f32|f64|byte)")
 	if re.FindString(typ) != "" {
 		return true
@@ -793,7 +787,7 @@ func IsBasicType (typ string) bool {
 // 	}
 // }
 
-func IsNative (fnName string) bool {
+func IsNative(fnName string) bool {
 	if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
 		return true
 	}
@@ -802,20 +796,20 @@ func IsNative (fnName string) bool {
 	}
 	return false
 }
-func IsArray (typ string) bool {
+func IsArray(typ string) bool {
 	if len(typ) > 2 && typ[:2] == "[]" {
 		return true
 	}
 	return false
 }
-func IsStructInstance (typ string, mod *CXPackage) bool {
+func IsStructInstance(typ string, mod *CXPackage) bool {
 	if _, err := mod.Program.GetStruct(typ, mod.Name); err == nil {
 		return true
 	} else {
 		return false
 	}
 }
-func IsLocal (identName string, call *CXCall) bool {
+func IsLocal(identName string, call *CXCall) bool {
 	for _, def := range call.State {
 		if def.Name == identName {
 			return true
@@ -823,7 +817,7 @@ func IsLocal (identName string, call *CXCall) bool {
 	}
 	return false
 }
-func IsGlobal (identName string, mod *CXPackage) bool {
+func IsGlobal(identName string, mod *CXPackage) bool {
 	for _, def := range mod.Globals {
 		if def.Name == identName {
 			return true
@@ -839,7 +833,7 @@ func IsGlobal (identName string, mod *CXPackage) bool {
 	return false
 }
 
-func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) error {
+func makeArray(typ string, size *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("makeArray", "i32", size); err == nil {
 		var _len int32
 		encoder.DeserializeRaw(*size.Value, &_len)
@@ -866,7 +860,7 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 		case "[]i32":
 			arr := make([]int32, _len)
 			val := encoder.Serialize(arr)
-			
+
 			assignOutput(0, val, typ, expr, call)
 			return nil
 		case "[]i64":
@@ -896,12 +890,12 @@ func makeArray (typ string, size *CXArgument, expr *CXExpression, call *CXCall) 
 	}
 }
 
-func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
+func resolveStructField(fld string, val *[]byte, strct *CXStruct) ([]byte, string, int32, int32) {
 	var offset int32 = 0
 	for _, f := range strct.Fields {
 
 		var fldType string
-		
+
 		isArray := false
 		isBasic := false
 		if f.Typ[:2] == "[]" {
@@ -930,10 +924,10 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				fldType = "struct"
 			}
 		}
-		
+
 		if f.Name == fld {
 			var size int32
-			
+
 			switch fldType {
 			case "byte":
 				size = 1
@@ -946,7 +940,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &noElms)
 
 				noSize := (*val)[offset+4:]
-				
+
 				var subOffset int32
 				for c := 0; c < int(noElms); c++ {
 					var strSize int32
@@ -955,60 +949,60 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				}
 				size = subOffset
 
-				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+				return (*val)[offset : offset+size+4], f.Typ, offset, size + 4
 			case "str", "[]byte":
 				var arrOffset int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
 
-				return (*val)[offset:offset+size + 4], f.Typ, offset, size + 4
+				return (*val)[offset : offset+size+4], f.Typ, offset, size + 4
 			case "[]bool", "[]i32", "[]f32":
 				var arrOffset int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
-				
-				return (*val)[offset:offset+(size * 4) + 4], f.Typ, offset, (size * 4) + 4
+
+				return (*val)[offset : offset+(size*4)+4], f.Typ, offset, (size * 4) + 4
 			case "[]i64", "[]f64":
 				var arrOffset int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
 				size = arrOffset
-				
-				return (*val)[offset:offset+(size * 8) + 4], f.Typ, offset, (size * 8) + 4
+
+				return (*val)[offset : offset+(size*8)+4], f.Typ, offset, (size * 8) + 4
 			case "[]":
 				if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Package.Name); err == nil {
-					lastFld := strct.Fields[len(strct.Fields) - 1]
+					lastFld := strct.Fields[len(strct.Fields)-1]
 					instances := (*val)[offset+4:]
 
 					var upperBound int32
 					var size int32
-					encoder.DeserializeAtomic((*val)[offset:offset + 4], &size)
-					
+					encoder.DeserializeAtomic((*val)[offset:offset+4], &size)
+
 					if size == 0 {
-						return (*val)[offset:offset+4], f.Typ, offset, 4
+						return (*val)[offset : offset+4], f.Typ, offset, 4
 					}
 
 					for c := int32(0); c < size; c++ {
 						subArray := instances[upperBound:]
 						_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
-						
+
 						upperBound = upperBound + off + size
 					}
 
-					return (*val)[offset:offset + upperBound + 4], f.Typ, offset, upperBound + 4
+					return (*val)[offset : offset+upperBound+4], f.Typ, offset, upperBound + 4
 				}
 			case "struct":
 				if strct, err := strct.Program.GetStruct(f.Typ, strct.Package.Name); err == nil {
-					lastFld := strct.Fields[len(strct.Fields) - 1]
+					lastFld := strct.Fields[len(strct.Fields)-1]
 
 					instances := (*val)[offset:]
 					_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
-					
-					return (*val)[offset:offset + off + size], f.Typ, offset, off + size
+
+					return (*val)[offset : offset+off+size], f.Typ, offset, off + size
 				}
 			}
-			return (*val)[offset:offset+size], f.Typ, offset, size
+			return (*val)[offset : offset+size], f.Typ, offset, size
 		}
-		
+
 		switch fldType {
 		case "byte":
 			offset += 1
@@ -1036,7 +1030,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 		case "[]bool", "[]i32", "[]f32":
 			var arrOffset int32
 			encoder.DeserializeAtomic((*val)[offset:offset+4], &arrOffset)
-			
+
 			offset += (arrOffset * 4) + 4
 		case "[]i64", "[]f64":
 			var arrOffset int32
@@ -1046,10 +1040,10 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 		case "[]":
 			if strct, err := strct.Program.GetStruct(f.Typ[2:], strct.Package.Name); err == nil {
 				instances := (*val)[offset+4:]
-				lastFld := strct.Fields[len(strct.Fields) - 1]
-				
+				lastFld := strct.Fields[len(strct.Fields)-1]
+
 				var upperBound int32
-				
+
 				var size int32
 				encoder.DeserializeAtomic((*val)[offset:offset+4], &size)
 
@@ -1058,7 +1052,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 				// if size == 0 {
 				// 	offset += 4
 				// }
-				
+
 				for c := int32(0); c < size; c++ {
 					subArray := instances[upperBound:]
 					_, _, off, size := resolveStructField(lastFld.Name, &subArray, strct)
@@ -1069,7 +1063,7 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 			}
 		case "struct":
 			if strct, err := strct.Program.GetStruct(f.Typ, strct.Package.Name); err == nil {
-				lastFld := strct.Fields[len(strct.Fields) - 1]
+				lastFld := strct.Fields[len(strct.Fields)-1]
 
 				instances := (*val)[offset:]
 				_, _, off, size := resolveStructField(lastFld.Name, &instances, strct)
@@ -1078,30 +1072,30 @@ func resolveStructField (fld string, val *[]byte, strct *CXStruct) ([]byte, stri
 			}
 		}
 	}
-	
+
 	return nil, "", 0, 0
 }
 
-func resolveArrayIndex (index int, val *[]byte, typ string) ([]byte, string) {
+func resolveArrayIndex(index int, val *[]byte, typ string) ([]byte, string) {
 	switch typ {
 	case "[]byte":
-		return (*val)[index+4:(index+1)+4], "byte"
+		return (*val)[index+4 : (index+1)+4], "byte"
 	case "[]bool":
-		return (*val)[(index+1)*4:(index+2)*4], "bool"
+		return (*val)[(index+1)*4 : (index+2)*4], "bool"
 	case "[]i32":
-		return (*val)[(index+1)*4:(index+2)*4], "i32"
+		return (*val)[(index+1)*4 : (index+2)*4], "i32"
 	case "[]i64":
-		return (*val)[((index)*8)+4:((index+1)*8)+4], "i64"
+		return (*val)[((index)*8)+4 : ((index+1)*8)+4], "i64"
 	case "[]f32":
-		return (*val)[(index+1)*4:(index+2)*4], "f32"
+		return (*val)[(index+1)*4 : (index+2)*4], "f32"
 	case "[]f64":
-		return (*val)[((index)*8)+4:((index+1)*8)+4], "f64"
+		return (*val)[((index)*8)+4 : ((index+1)*8)+4], "f64"
 	}
-	
+
 	return nil, ""
 }
 
-func getArrayIndex (arg *CXArgument, call *CXCall) int32 {
+func getArrayIndex(arg *CXArgument, call *CXCall) int32 {
 	if len(arg.Indexes) > 0 {
 		var index int32
 		if arg.Indexes[0].Typ == "ident" {
@@ -1122,11 +1116,11 @@ func getArrayIndex (arg *CXArgument, call *CXCall) int32 {
 	return int32(-1)
 }
 
-func getFQDN (arg *CXArgument) string {
+func getFQDN(arg *CXArgument) string {
 	var name string
 	// name = arg.Package.Name + "." + arg.Name
 	name = arg.Name
-	
+
 	if len(arg.Fields) > 0 {
 		for _, fld := range arg.Fields {
 			name += "." + fld.Name
@@ -1136,16 +1130,16 @@ func getFQDN (arg *CXArgument) string {
 	return name
 }
 
-func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument, error) {
+func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument, error) {
 	// for _, arg := range call.State {
 	// 	fmt.Println("utili.val", arg.Name, arg.Typ, arg.Value, arg.Fields)
 	// }
 
 	if lookingFor == "" {
 		return nil, errors.New("a valid identifier was not provided")
-	}	
+	}
 	var resolvedIdent *CXArgument
-	
+
 	isStructFld := false
 	isArray := false
 
@@ -1188,13 +1182,13 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 				for _, stateDef := range call.State {
 					if stateDef.Name == identParts[0] {
 						if getFQDN(stateDef) == lookingFor {
-							return stateDef.Fields[len(stateDef.Fields) - 1], nil
+							return stateDef.Fields[len(stateDef.Fields)-1], nil
 						}
 						// if strct, err := mod.Program.GetStruct(stateDef.Typ, mod.Name); err == nil {
 						// 	byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
 						// 	arg := MakeArgument("").AddValue(&byts).AddType(typ)
 						// 	return arg, nil
-							
+
 						// } else {
 						// 	return nil, err
 						// }
@@ -1214,9 +1208,9 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 		// for _, stateDef := range call.State {
 		// 	fmt.Println("entering resolveIdent", stateDef.Name, stateDef.Fields)
 		// }
-		
+
 		for _, stateDef := range call.State {
-			
+
 			if stateDef.Name == arrayParts[0] {
 				local = true
 				resolvedIdent = stateDef
@@ -1247,7 +1241,7 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 	if resolvedIdent == nil && !isStructFld && !isArray {
 		return nil, errors.New(fmt.Sprintf("'%s' is undefined", lookingFor))
 	}
-	
+
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
@@ -1258,7 +1252,7 @@ func resolveIdent (lookingFor string, arg *CXArgument, call *CXCall) (*CXArgumen
 	return nil, errors.New(fmt.Sprintf("identifier '%s' could not be resolved", lookingFor))
 }
 
-func ResolveStruct (typ string, prgrm *CXProgram) ([]byte, error) {
+func ResolveStruct(typ string, prgrm *CXProgram) ([]byte, error) {
 	var bs []byte
 
 	found := false
@@ -1269,7 +1263,7 @@ func ResolveStruct (typ string, prgrm *CXProgram) ([]byte, error) {
 			// empty serialized struct array
 			return []byte{0, 0, 0, 0}, nil
 		}
-		
+
 		for _, strct := range mod.Structs {
 			if strct.Name == typ {
 				found = true
@@ -1288,20 +1282,20 @@ func ResolveStruct (typ string, prgrm *CXProgram) ([]byte, error) {
 						break
 					}
 				}
-				
+
 				// if typeParts[0] == imp.Name {
-					
+
 				// }
 			}
 			// if len(typeParts) > 1 {
-				
+
 			// }
 		}
 
 		if !found {
 			return nil, errors.New(fmt.Sprintf("type '%s' not defined\n", typ))
 		}
-		
+
 		for _, fld := range foundStrct.Fields {
 			isBasic := false
 			for _, basic := range BASIC_TYPES {
@@ -1336,7 +1330,7 @@ func ResolveStruct (typ string, prgrm *CXProgram) ([]byte, error) {
 	return bs, nil
 }
 
-func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, int32, int32) {
+func GetArrayFromArray(value []byte, typ string, index int32) ([]byte, error, int32, int32) {
 	var arrSize int32
 	encoder.DeserializeAtomic(value[:4], &arrSize)
 
@@ -1349,7 +1343,7 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 	}
 
 	var typSize int
-	switch typ[len(typ) - 4:] {
+	switch typ[len(typ)-4:] {
 	case "]i64", "]f64":
 		typSize = 8
 	case "bool", "]i32", "]f32":
@@ -1358,25 +1352,25 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 		typSize = 1
 	}
 
-	if typ[len(typ) - 3:] == "str" {
+	if typ[len(typ)-3:] == "str" {
 		typ = "[]" + typ
 	}
-	
+
 	var sizes []int32
 	var counters []int32
-	
+
 	var finalOffset int = -1
 	var finalSize int = -1
-	
+
 	var i int
 	for i = 0; i < len(value); {
 		if typ[:4] == "[][]" {
 			var size int32
 			encoder.DeserializeAtomic(value[i:i+4], &size)
-			
+
 			sizes = append(sizes, size)
 			counters = append(counters, size)
-			
+
 			typ = typ[2:]
 			i += 4
 		}
@@ -1384,8 +1378,8 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 		if typ[2] != '[' {
 			var size int32
 			encoder.DeserializeAtomic(value[i:i+4], &size)
-			
-			i += int(size) * typSize + 4
+
+			i += int(size)*typSize + 4
 			counters[len(counters)-1]--
 		}
 
@@ -1405,15 +1399,15 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 		if finalOffset < 0 {
 			if index == 0 {
 				finalOffset = 4
-			} else if sizes[0] - counters[0] == index {
+			} else if sizes[0]-counters[0] == index {
 				finalOffset = i
 			}
 		}
 
 		if finalSize < 0 {
-			if finalOffset > 0 && (len(sizes) == 0 || index == sizes[0] - 1) {
+			if finalOffset > 0 && (len(sizes) == 0 || index == sizes[0]-1) {
 				finalSize = len(value)
-			} else if sizes[0] - counters[0] == index + 1 {
+			} else if sizes[0]-counters[0] == index+1 {
 				finalSize = i
 			}
 		}
@@ -1426,7 +1420,7 @@ func GetArrayFromArray (value []byte, typ string, index int32) ([]byte, error, i
 	return value[finalOffset:finalSize], nil, int32(finalOffset), int32(finalSize - finalOffset)
 }
 
-func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
+func getStrctFromArray(arr *CXArgument, index int32, expr *CXExpression, call *CXCall) ([]byte, error, int32, int32) {
 	var arrSize int32
 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
 
@@ -1440,11 +1434,11 @@ func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *
 
 	if strct, err := call.Program.GetStruct(arr.Typ[2:], expr.Package.Name); err == nil {
 		instances := (*arr.Value)[4:]
-		lastFld := strct.Fields[len(strct.Fields) - 1]
-		
+		lastFld := strct.Fields[len(strct.Fields)-1]
+
 		var lowerBound int32
 		var upperBound int32
-		
+
 		var size int32
 		encoder.DeserializeAtomic((*arr.Value)[:4], &size)
 
@@ -1464,11 +1458,11 @@ func getStrctFromArray (arr *CXArgument, index int32, expr *CXExpression, call *
 	}
 }
 
-func printStruct (strct interface{}) {
+func printStruct(strct interface{}) {
 	fmt.Printf("%+v\n", strct)
 }
 
-func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
+func getValueFromArray(arr *CXArgument, index int32) ([]byte, error) {
 	var arrSize int32
 	encoder.DeserializeAtomic((*arr.Value)[:4], &arrSize)
 
@@ -1482,9 +1476,9 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 
 	switch arr.Typ {
 	case "byte":
-		return (*arr.Value)[index + 4:index + 1 + 4], nil
+		return (*arr.Value)[index+4 : index+1+4], nil
 	case "bool", "i32", "f32":
-		return (*arr.Value)[index * 4 + 4:(index + 1) * 4 + 4], nil
+		return (*arr.Value)[index*4+4 : (index+1)*4+4], nil
 	case "str":
 		noSize := (*arr.Value)[4:]
 
@@ -1495,19 +1489,19 @@ func getValueFromArray (arr *CXArgument, index int32) ([]byte, error) {
 			offset += strSize + 4
 		}
 
-		sStrSize := noSize[offset:offset + 4]
+		sStrSize := noSize[offset : offset+4]
 		var strSize int32
 		encoder.DeserializeRaw(sStrSize, &strSize)
 
-		return noSize[offset:offset+strSize+4], nil
+		return noSize[offset : offset+strSize+4], nil
 	case "i64", "f64":
-		return (*arr.Value)[index * 8 + 4:(index + 1) * 8 + 4], nil
+		return (*arr.Value)[index*8+4 : (index+1)*8+4], nil
 	}
-	
+
 	return nil, nil
 }
 
-func (prgrm *CXProgram) PrintStack () {
+func (prgrm *CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Stack===")
 
@@ -1522,20 +1516,20 @@ func (prgrm *CXProgram) PrintStack () {
 
 		for _, inp := range op.Inputs {
 			fmt.Println("Inputs")
-			fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset : inp.Offset + inp.TotalSize])
+			fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset:inp.Offset+inp.TotalSize])
 
-			dupNames = append(dupNames, inp.Package.Name + inp.Name)
+			dupNames = append(dupNames, inp.Package.Name+inp.Name)
 		}
-		
+
 		for _, out := range op.Outputs {
 			fmt.Println("Outputs")
-			fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset : out.Offset + out.TotalSize])
+			fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset:out.Offset+out.TotalSize])
 
-			dupNames = append(dupNames, out.Package.Name + out.Name)
+			dupNames = append(dupNames, out.Package.Name+out.Name)
 		}
 
 		fmt.Println("Expressions")
-		
+
 		for _, expr := range op.Expressions {
 			for _, inp := range expr.Inputs {
 				if inp.Name == "" || expr.Operator == nil {
@@ -1543,7 +1537,7 @@ func (prgrm *CXProgram) PrintStack () {
 				}
 				var dup bool
 				for _, name := range dupNames {
-					if name == inp.Package.Name + inp.Name {
+					if name == inp.Package.Name+inp.Name {
 						dup = true
 						break
 					}
@@ -1551,19 +1545,19 @@ func (prgrm *CXProgram) PrintStack () {
 				if dup {
 					continue
 				}
-				
-				fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset : inp.Offset + inp.TotalSize])
 
-				dupNames = append(dupNames, inp.Package.Name + inp.Name)
+				fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset:inp.Offset+inp.TotalSize])
+
+				dupNames = append(dupNames, inp.Package.Name+inp.Name)
 			}
-			
+
 			for _, out := range expr.Outputs {
 				if out.Name == "" || expr.Operator == nil {
 					continue
 				}
 				var dup bool
 				for _, name := range dupNames {
-					if name == out.Package.Name + out.Name {
+					if name == out.Package.Name+out.Name {
 						dup = true
 						break
 					}
@@ -1571,10 +1565,10 @@ func (prgrm *CXProgram) PrintStack () {
 				if dup {
 					continue
 				}
-				
-				fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset : out.Offset + out.TotalSize])
 
-				dupNames = append(dupNames, out.Package.Name + out.Name)
+				fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset:out.Offset+out.TotalSize])
+
+				dupNames = append(dupNames, out.Package.Name+out.Name)
 			}
 		}
 
@@ -1583,7 +1577,7 @@ func (prgrm *CXProgram) PrintStack () {
 	fmt.Println()
 }
 
-func PrintCallStack (callStack []CXCall) {
+func PrintCallStack(callStack []CXCall) {
 	for i, call := range callStack {
 		tabs := strings.Repeat("___", i)
 		if tabs == "" {
@@ -1680,20 +1674,20 @@ func PrintCallStack (callStack []CXCall) {
 		// 			fmt.Printf("%s: %v, ", def.Name, val)
 		// 		}
 		// 	}
-			
+
 		// 	idx++
 		// }
 		fmt.Println()
 	}
 }
 
-func oneI32oneI32 (fn func(int32)int32, arg1 *CXArgument) []byte {
+func oneI32oneI32(fn func(int32) int32, arg1 *CXArgument) []byte {
 	var num1 int32
 	encoder.DeserializeAtomic(*arg1.Value, &num1)
 	return encoder.SerializeAtomic(int32(fn(num1)))
 }
 
-func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
+func twoI32oneI32(fn func(int32, int32) int32, arg1, arg2 *CXArgument) []byte {
 	var num1 int32
 	var num2 int32
 	encoder.DeserializeAtomic(*arg1.Value, &num1)
@@ -1701,14 +1695,14 @@ func twoI32oneI32 (fn func(int32, int32)int32, arg1, arg2 *CXArgument) []byte {
 	return encoder.SerializeAtomic(int32(fn(num1, num2)))
 }
 
-func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgram) (string, error) {
+func GetIdentType(lookingFor string, line int, fileName string, prgrm *CXProgram) (string, error) {
 	identParts := strings.Split(lookingFor, ".")
 
-	mod, err := prgrm.GetCurrentPackage();
+	mod, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		return "", err
 	}
-	
+
 	if len(identParts) > 1 {
 		if extMod, err := prgrm.GetPackage(identParts[0]); err == nil {
 			// then it's an external definition or struct
@@ -1755,7 +1749,7 @@ func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgra
 					if expr.Operator.Name == "initDef" && expr.Outputs[0].Name == identParts[0] {
 						var typ string
 						encoder.DeserializeRaw(*expr.Inputs[0].Value, &typ)
-						
+
 						if strct, err := prgrm.GetStruct(typ, mod.Name); err == nil {
 							for _, fld := range strct.Fields {
 								if fld.Name == identParts[1] {
@@ -1794,7 +1788,7 @@ func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgra
 				}
 			} else {
 				// then it's a local struct
-				
+
 			}
 		}
 	} else {
@@ -1837,7 +1831,7 @@ func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgra
 						// if expr.Operator.Name == "identity" {
 						// 	return fn.Expressions[i-1].Outputs[0].Typ, nil
 						// }
-						
+
 						if len(arrayParts) > 1 {
 							return out.Typ[2:], nil
 						} else {
@@ -1855,11 +1849,11 @@ func GetIdentType (lookingFor string, line int, fileName string, prgrm *CXProgra
 			return def.Typ, nil
 		}
 	}
-	
+
 	return "", errors.New(fmt.Sprintf("%s: %d: identifier '%s' could not be resolved", fileName, line, lookingFor))
 }
 
-func (prgrm *CXProgram) PrintProgram () {
+func (prgrm *CXProgram) PrintProgram() {
 	fmt.Println("Program")
 
 	var currentFunction *CXFunction
@@ -1880,7 +1874,7 @@ func (prgrm *CXProgram) PrintProgram () {
 	} else {
 		panic(err)
 	}
-	
+
 	i := 0
 	for _, mod := range prgrm.Packages {
 		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
@@ -1888,7 +1882,7 @@ func (prgrm *CXProgram) PrintProgram () {
 		}
 
 		fmt.Printf("%d.- Package: %s\n", i, mod.Name)
-		
+
 		if len(mod.Imports) > 0 {
 			fmt.Println("\tImports")
 		}
@@ -1921,7 +1915,7 @@ func (prgrm *CXProgram) PrintProgram () {
 				fmt.Printf("\t\t\t%d.- Field: %s %d\n",
 					k, fld.Name, fld.Typ)
 			}
-			
+
 			j++
 		}
 
@@ -1932,10 +1926,10 @@ func (prgrm *CXProgram) PrintProgram () {
 		j = 0
 		for _, fn := range mod.Functions {
 			mod.SelectFunction(fn.Name)
-			
+
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
-				if i == len(fn.Inputs) - 1 {
+				if i == len(fn.Inputs)-1 {
 					inps.WriteString(fmt.Sprintf("%s %s", inp.Name, inp.Typ))
 				} else {
 					inps.WriteString(fmt.Sprintf("%s %s, ", inp.Name, inp.Typ))
@@ -1944,7 +1938,7 @@ func (prgrm *CXProgram) PrintProgram () {
 
 			var outs bytes.Buffer
 			for i, out := range fn.Outputs {
-				if i == len(fn.Outputs) - 1 {
+				if i == len(fn.Outputs)-1 {
 					outs.WriteString(fmt.Sprintf("%s %s", out.Name, out.Typ))
 				} else {
 					outs.WriteString(fmt.Sprintf("%s %s, ", out.Name, out.Typ))
@@ -1965,11 +1959,11 @@ func (prgrm *CXProgram) PrintProgram () {
 				for i, arg := range expr.Inputs {
 					var name string
 					var dat []byte
-					
+
 					switch arg.MemoryRead {
 					case MEM_DATA:
 						// name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
-						dat = prgrm.Data[arg.Offset : arg.Offset + arg.Size]
+						dat = prgrm.Data[arg.Offset : arg.Offset+arg.Size]
 					default:
 						name = arg.Name
 					}
@@ -2010,7 +2004,7 @@ func (prgrm *CXProgram) PrintProgram () {
 						name = arg.Name
 					}
 
-					if i == len(expr.Inputs) - 1 {
+					if i == len(expr.Inputs)-1 {
 						args.WriteString(name + " " + TypeNames[arg.Type])
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
@@ -2033,7 +2027,7 @@ func (prgrm *CXProgram) PrintProgram () {
 						// for _, idx := range outName.Indexes {
 						// 	indexes += fmt.Sprintf("[%d]", idx)
 						// }
-						if i == len(expr.Outputs) - 1 {
+						if i == len(expr.Outputs)-1 {
 							outNames.WriteString(outName.Name)
 						} else {
 							outNames.WriteString(outName.Name + ", ")
@@ -2053,13 +2047,13 @@ func (prgrm *CXProgram) PrintProgram () {
 							args.String(),
 							exprTag)
 					}
-					
+
 				} else {
 					var exprTag string
 					// if expr.Tag != "" {
 					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
 					// }
-					
+
 					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
 						k,
 						opName,
@@ -2081,7 +2075,7 @@ func (prgrm *CXProgram) PrintProgram () {
 }
 
 // this function adds the roots (pointers) for some GC algorithms
-func AddPointer (fn *CXFunction, sym *CXArgument) {
+func AddPointer(fn *CXFunction, sym *CXArgument) {
 	if sym.IsPointer {
 		var found bool
 		for _, ptr := range fn.ListOfPointers {
@@ -2096,10 +2090,10 @@ func AddPointer (fn *CXFunction, sym *CXArgument) {
 	}
 }
 
-func CheckArithmeticOp (expr *CXExpression) bool {
+func CheckArithmeticOp(expr *CXExpression) bool {
 	if expr.Operator.IsNative {
 		switch expr.Operator.OpCode {
-			case OP_I32_MUL, OP_I32_DIV, OP_I32_MOD, OP_I32_ADD,
+		case OP_I32_MUL, OP_I32_DIV, OP_I32_MOD, OP_I32_ADD,
 			OP_I32_SUB, OP_I32_BITSHL, OP_I32_BITSHR, OP_I32_LT,
 			OP_I32_GT, OP_I32_LTEQ, OP_I32_GTEQ, OP_I32_EQ, OP_I32_UNEQ,
 			OP_I32_BITAND, OP_I32_BITXOR, OP_I32_BITOR:
@@ -2109,7 +2103,7 @@ func CheckArithmeticOp (expr *CXExpression) bool {
 	return false
 }
 
-func CheckSameNativeType (expr *CXExpression) bool {
+func CheckSameNativeType(expr *CXExpression) bool {
 	areSame := true
 	tmpType := expr.Inputs[0].Typ
 
@@ -2123,7 +2117,7 @@ func CheckSameNativeType (expr *CXExpression) bool {
 	return areSame
 }
 
-func SetCorrectArithmeticOp (expr *CXExpression) {
+func SetCorrectArithmeticOp(expr *CXExpression) {
 	if expr.Operator == nil || len(expr.Outputs) < 1 {
 		return
 	}
@@ -2138,109 +2132,145 @@ func SetCorrectArithmeticOp (expr *CXExpression) {
 		case OP_I32_MUL:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_MUL]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_MUL]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_MUL]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_MUL]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_MUL]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_MUL]
 			}
 		case OP_I32_DIV:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_DIV]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_DIV]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_DIV]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_DIV]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_DIV]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_DIV]
 			}
 		case OP_I32_MOD:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_MOD]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_MOD]
 			}
-			
+
 		case OP_I32_ADD:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_ADD]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_ADD]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_ADD]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_ADD]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_ADD]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_ADD]
 			}
 		case OP_I32_SUB:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_ADD]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_ADD]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_ADD]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_ADD]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_ADD]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_ADD]
 			}
 
 		case OP_I32_BITSHL:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_BITSHL]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_BITSHL]
 			}
 		case OP_I32_BITSHR:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_BITSHR]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_BITSHR]
 			}
 
 		case OP_I32_LT:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_LT]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_LT]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_LT]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_LT]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_LT]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_LT]
 			}
 		case OP_I32_GT:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_GT]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_GT]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_GT]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_GT]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_GT]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_GT]
 			}
 		case OP_I32_LTEQ:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_LTEQ]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_LTEQ]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_LTEQ]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_LTEQ]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_LTEQ]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_LTEQ]
 			}
 		case OP_I32_GTEQ:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_GTEQ]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_GTEQ]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_GTEQ]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_GTEQ]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_GTEQ]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_GTEQ]
 			}
-			
+
 		case OP_I32_EQ:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_EQ]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_EQ]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_EQ]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_EQ]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_EQ]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_EQ]
 			}
 		case OP_I32_UNEQ:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_UNEQ]
-			case TYPE_F32: expr.Operator = Natives[OP_F32_UNEQ]
-			case TYPE_F64: expr.Operator = Natives[OP_F64_UNEQ]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_UNEQ]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_UNEQ]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_UNEQ]
 			}
 
 		case OP_I32_BITAND:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_BITAND]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_BITAND]
 			}
 
 		case OP_I32_BITXOR:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_BITXOR]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_BITXOR]
 			}
 
 		case OP_I32_BITOR:
 			switch typ {
 			case TYPE_I32:
-			case TYPE_I64: expr.Operator = Natives[OP_I64_BITOR]
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_BITOR]
 			}
 		}
 	}
@@ -2261,7 +2291,7 @@ func SetCorrectArithmeticOp (expr *CXExpression) {
 // 	}
 // }
 
-func GetArgSize (typ int) int {
+func GetArgSize(typ int) int {
 	switch typ {
 	case TYPE_BOOL, TYPE_BYTE:
 		return 1
@@ -2274,23 +2304,23 @@ func GetArgSize (typ int) int {
 	}
 }
 
-func MakeMultiDimArray (atomicSize int, lengths []int) []byte {
+func MakeMultiDimArray(atomicSize int, lengths []int) []byte {
 	var result []byte
 
-	fstDLen := lengths[len(lengths) - 1]
-	
+	fstDLen := lengths[len(lengths)-1]
+
 	sLen := encoder.SerializeAtomic(int32(fstDLen))
-	
-	byts := append(sLen, make([]byte, fstDLen * atomicSize)...)
+
+	byts := append(sLen, make([]byte, fstDLen*atomicSize)...)
 	result = byts
 
 	if len(lengths) > 1 {
 		// -2 to ignore the first dimension
 		for c := len(lengths) - 2; c >= 0; c-- {
 			lenB := encoder.SerializeAtomic(int32(lengths[c]))
-			
+
 			var tmp []byte
-			
+
 			for i := 0; i < lengths[c]; i++ {
 				tmp = append(tmp, result...)
 			}
