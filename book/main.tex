@@ -847,9 +847,9 @@ Section Outline
 
 A program in CX is executed from top to bottom, one expression at a time. If you want a group of expressions to not be executed, or executed only if certain condition is true, or executed a number of times, you'll need control flow statements. In CX, you have access to these control flow statements: \textbf{if} and \textbf{if/else}, \textbf{for} loop, \textbf{goto}, and \textbf{return}.
 
-In the following Section you'll review the \emph{goto} statement, and you'll see that in CX, every control flow statement is transformed to a series of \emph{goto}s.
+In the following Section you'll review the \textbf{jmp} function, and you'll see that in CX, every control flow statement is transformed to a series of \textbf{jmp}s.
 
-\section{Go-to}\index{Go-to}
+\section{jmp and goto}\index{jmp and goto}
 
 \begin{remark}
 Section Outline
@@ -861,25 +861,27 @@ Section Outline
     \end{itemize}
 \end{remark}
 
-\begin{lstlisting}[caption={Using Go to for Control Flow},captionpos=b,label={listing:go-to-example1}]
+Although \textbf{jmp} exists in the CX native function repertoire, it can't really be used. If you want to write a function call to \textbf{jmp}, you'll need to send it a boolean argument that represents a predicate. In case of the predicate evaluating to \emph{true}, \textbf{jmp} will make the program skip or go back a certain number of instructions. If the predicate evaluates to \emph{false}, nothing will happen. The tricky part here is: how do we specify how many instructions the program will move? You can't. \textbf{jmp} is designed to be used exclusively by the parser, or any program that is in charge of constructing a CX program structure. As the default number of expressions to be moved by \textbf{jmp} in any case is 0, \textbf{jmp} will do nothing if used directly by a programmer. In future versions of CX, the compiler will raise an error if you try to use \textbf{jmp} directly, so, aside from being totally useless for a programmer, it's a pretty bad idea to include it in your programs at the moment, as it will make your programs incompatible with later versions of CX.
+
+You could now be arguing that it was bad idea that you learned about \textbf{jmp}, as you now will be tempted to include meaningless function calls to it all around your code -- we hope you don't do this. We want to accomplish two things by introducing \textbf{jmp} to you: 1) you'll understand CX ASTs better, and 2) in case you want to build your own CX (see Chapter \ref{chapter:creating-your-own-cx}), you need to know that \textbf{jmp} can be used to create control-flow statements. In the following Sections, each of the examples that depict the use of the different control-flow statements will be accompanied by their corresponding AST in a different Listing, where it can be seen that all of them are translated to a series of \textbf{jmp}s.
+
+Nevertheless, if you want to have access to some simple instruction jumping mechanism, you can use \textbf{goto}. \textbf{goto} will always perform an instruction jumping if encountered, and the number of instructions that the program will be jumped to will be determined by a \emph{label}. Listing \ref{listing:goto-example} shows an example where \emph{goto} is used to jump directly to a \textbf{print} expression, and Listing \ref{listing:goto-example-ast} shows its AST.
+
+\begin{lstlisting}[caption={Using $goto$ for Control Flow},captionpos=b,label={listing:goto-example}]
 package main
 
-func main () (out i32) {
-	goTo("label2") // function form
+func main () {
+	goto label
 label1:
 	str.print("this should never be reached")
 label2:
 	str.print("this should be printed")
-
-	goto label4 // keyword form
-label3:
-	str.print("this should never be reached")
-label4:
-	str.print("this should be printed")
 }
 \end{lstlisting}
 
-\section{If and If/Else}\index{If and If/Else}
+It is important to note that \emph{labels} are only used by \emph{goto} statements and affordances (see Chapter \ref{chapter:affordances}). If a label is encountered by the CX runtime, it will be ignored. Actually, if you check the AST of the program in Listing \ref{listing:goto-example} you will see that labels don't appear: the parser read the labels and transformed them to the number of expressions required by a \textbf{jmp} to make the CX program arrive at that expression. In the case of the code shown in Listing \ref{listing:goto-example}, the number of instructions to be skipped by \textbf{goto label1} is $+1$ (it could be a negative number if it had to make a jump to an early instruction).
+
+\section{if and if/else}\index{if and if/else}
 
 \begin{remark}
 Section Outline
@@ -891,15 +893,17 @@ Section Outline
     \end{itemize}
 \end{remark}
 
-\begin{lstlisting}[caption={Using If for Control Flow},captionpos=b,label={listing:if-example1}]
+There will be plenty of situations where you will need to execute a number of expressions or statements only if certain condition is true. For example, you only want to allow a website user to login using a username if the password that they provide is the one that matches the given username. In order to handle this kind of situations, you can use the \textbf{if} statement.
+
+Listing \ref{listing:if-example} shows some examples of how the \textbf{if} statement can be used. The first case, starting at \textbf{Line 6} takes \textbf{false} as a predicate. As \textbf{false} is not variable--it will always evaluate to the boolean false value--the lines of code between the curly braces will never execute. Similarly, in the second case, starting at \textbf{Line 12}, as the predicate is \textbf{true} the \textbf{str.print} expression will always be executed. In the last case, we use the \textit{greater than} relational operator \textbf{i32.gt} to decide if the enclosed expression will be executed or not. In this case, as 5 is greater than 3, the \textbf{str.print} expression is executed. Listing \ref{listing:if-example-ast} shows its AST.
+
+\begin{lstlisting}[caption={Using If for Control Flow},captionpos=b,label={listing:if-example}]
 package main
 
 func main () {
-	var out i32
-	
     if false {
-		var error i32
-		error = i32.div(50, 0)
+		var err i32
+		err = i32.div(50, 0)
 		str.print("This will never be printed")
 	}
 
@@ -910,12 +914,33 @@ func main () {
 	if i32.gt(5, 3) {
 		str.print("5 is greater than 3")
 	}
-    
-	i32.print(out)
 }
 \end{lstlisting}
 
-\begin{lstlisting}[caption={Using If/Else for Control Flow},captionpos=b,label={listing:if-else-example1}]
+\begin{lstlisting}[caption={Listing \ref{listing:if-example}'s Abstract Syntax Tree},captionpos=b,label={listing:if-example-ast}]
+Program
+0.- Package: main
+	Imports
+		0.- Import: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: jmp(false bool)
+			1.- Expression: err = i32.div(50 i32, 0 i32)
+			2.- Expression: str.print("This will never be printed" str)
+			3.- Expression: jmp(true bool)
+			4.- Expression: jmp(true bool)
+			5.- Expression: str.print("This will always print" str)
+			6.- Expression: jmp(true bool)
+			7.- Expression: lcl_0 = i32.gt(5 i32, 3 i32)
+			8.- Expression: jmp(lcl_0 bool)
+			9.- Expression: str.print("5 is greater than 3" str)
+			10.- Expression: jmp(true bool)
+		1.- Function: *init () ()
+\end{lstlisting}
+
+If you want to execute certain block of code if the predicate is true, and a different block of code if the predicate is false, you can extend the \textbf{if} statement to its \textbf{if/else} form. Listing \ref{listing:if-else-example} shows an example of how to use \textbf{if/else}, and the AST for this example is shown in Listing \ref{listing:if-else-example-ast}.
+
+\begin{lstlisting}[caption={Using If/Else for Control Flow},captionpos=b,label={listing:if-else-example}]
 package main
 
 func main () {
@@ -931,7 +956,30 @@ func main () {
 }
 \end{lstlisting}
 
-\section{For Loop}\index{For Loop}
+\begin{lstlisting}[caption={Listing \ref{listing:if-else-example}'s Abstract Syntax Tree},captionpos=b,label={listing:if-else-example-ast}]
+Program
+0.- Package: main
+	Imports
+		0.- Import: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: jmp(false bool)
+			1.- Expression: err = i32.div(50 i32, 0 i32)
+			2.- Expression: str.print("This will never be printed" str)
+			3.- Expression: jmp(true bool)
+			4.- Expression: jmp(true bool)
+			5.- Expression: str.print("This will always print" str)
+			6.- Expression: jmp(true bool)
+			7.- Expression: lcl_0 = i32.gt(5 i32, 3 i32)
+			8.- Expression: jmp(lcl_0 bool)
+			9.- Expression: str.print("5 is greater than 3" str)
+			10.- Expression: jmp(true bool)
+		1.- Function: *init () ()
+\end{lstlisting}
+
+The syntax of \textbf{if} and \textbf{if/else} is similar to Go's syntax: you don't need to enclose the predicate in parentheses, unlike other languages like C, and the curly braces need to start after the condition, or the parser will complain. The reason behind this is that in order to not be required to write a semicolon after each expression, some tweaks needed to be implemented (just like in Go). As a consequence of these tweaks, you are required to start your curly braces after the predicate. This has the disadvantage of losing a bit of flexibility in how you are allowed to write your code, but it's also an advantage because the code now looks cleaner and more standardized.
+
+\section{for Loop}\index{for Loop}
 
 \begin{remark}
 Section Outline
@@ -943,8 +991,36 @@ Section Outline
     \end{itemize}
 \end{remark}
 
-% choose this one or the next one
-\begin{lstlisting}[caption={Array Example},captionpos=b,label={listing:array-example}]
+Another very useful control-flow statement is the \textbf{for} loop. This statement allows us to repeat the execution of a block of code until a predicate is false. In some languages the \textbf{for} loop is strict on its syntax, and only allows the traditional
+
+Most C-like languages only allow the traditional \emph{initialization}, \emph{condition} and \emph{increment} syntax for the \textbf{for} loop, but in CX you can use it similarly to how you would use a \textbf{while} loop in other languages. Listing \ref{listing:infinite-loop-example} reviews this syntax, and Listing \ref{listing:infinite-loop-example-ast} shows its AST.
+
+\begin{lstlisting}[caption={Infinite Loop Example},captionpos=b,label={listing:infinite-loop-example}]
+package main
+
+func main () () {
+	for true {
+		str.print("Infinite loop!")
+	}
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Listing \ref{listing:infinite-loop-example}'s Abstract Syntax Tree},captionpos=b,label={listing:infinite-loop-example-ast}]
+Program
+0.- Package: main
+	Imports
+		0.- Import: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: jmp(true bool)
+			1.- Expression: str.print("Infinite loop!" str)
+			2.- Expression: jmp(true bool)
+		1.- Function: *init () ()
+\end{lstlisting}
+
+First of all, don't run the code above, as it's an infinite loop. Although it's essential to know how to create an infinite loop, this infinite loop is particularly useless--it only prints "Infinite loop!" to the terminal. This example illustrates how you can use a single argument as the predicate of a \textbf{for} loop, as long as it evaluates to a boolean value.
+
+\begin{lstlisting}[caption={Traditional Syntax of For Loop},captionpos=b,label={listing:array-example}]
 package main
 
 func main () () {
@@ -962,41 +1038,22 @@ func main () () {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[caption={Using For Loop for Control Flow},captionpos=b,label={listing:for-loop-example1}]
-package main
-
-func main () () {
-	for false {
-		str.print("not today")
-	}
-	
-	var c i32
-	c = 0
-
-	for i32.lt(i32.add(i32.add(c, 2), 0), i32.sub(5, 1)) {
-		i32.print(c)
-		c = i32.add(c, 1)
-	}
-
-	for c = i32.add(i32.add(10, 0), 1); i32.lt(c, 5); c = i32.add(c, 1) {
-		i32.print(c)
-		i32.print(i32.add(c, 1))
-	}
-
-	var d i32
-	d = 0
-
-	for d = 10; i32.lt(d, 13); d = i32.add(d, 1) {
-		i32.print(d)
-	}
-
-	for c = 0; i32.lt(i32.add(c, 0), 5); c = i32.add(c, 1) {
-		i32.print(c)
-	}
-}
+\begin{lstlisting}[caption={Listing \ref{listing:array-example}'s Abstract Syntax Tree},captionpos=b,label={listing:array-example-ast}]
+Program
+0.- Package: main
+	Imports
+		0.- Import: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: jmp(true bool)
+			1.- Expression: str.print("Infinite loop!" str)
+			2.- Expression: jmp(true bool)
+		1.- Function: *init () ()
 \end{lstlisting}
 
-\section{Return}\index{Return}
+The second example in Listing \ref{listing:array-example} shows the traditional syntax of a \textbf{for} loop, i.e., at \textbf{Line 12} we first initialize a variable, which is usually used as the counter, then we provide a predicate expression, and finally an expression that is usually used to increment the counter. Listing \ref{listing:array-example-ast} shows its AST.
+
+\section{return}\index{return}
 
 \begin{remark}
 Section Outline
@@ -1007,6 +1064,31 @@ Section Outline
         \item Show only one example maybe
     \end{itemize}
 \end{remark}
+
+The last control-flow statement is \textbf{return}. The only purpose of \textbf{return} is to make a function stop its execution as soon as it is encountered. As it was mentioned in Chapter \ref{chapter:functions}, \textbf{return} can't be used to return anonymous outputs, as they are not implemented yet. This means that you can't use \textbf{return} like this: \lstinline{return 5, "five";} in a function that returns an \textbf{i32} and a \textbf{str}, in that order. The correct way is to first assign the desired values to the named outputs, and then call \textbf{return} whenever you want a function to end prematurely.
+
+\begin{lstlisting}[caption={Usage of return},captionpos=b,label={listing:usage-of-return}]
+package main
+
+func foo () (out1 i32, out2 str) {
+	out1 = 5
+    out2 = "five"
+    
+    return
+    
+    out1 = 10
+    out2 = "ten"
+}
+
+func main () {
+	var num i32
+    var text str
+    
+    num, text = foo()
+}
+\end{lstlisting}
+
+The code shown in Listing \ref{listing:usage-of-return} demonstrates how \textbf{return} prevents the function \textbf{foo} from reassigning values to the output parameters. The AST shown in Listing \ref{listing:usage-of-return-ast} demonstrates how a \textbf{jmp} is used to skip all the remaining expressions. The parser calculates the number of expressions that follow the \textbf{return} statement, and then makes the \textbf{jmp} expression always skip all of them.
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 6
@@ -1032,6 +1114,14 @@ Section Outline
         \item If you check the AST of a CX program with imported packages, you'll see this: (show listing)
     \end{itemize}
 \end{remark}
+
+If your project grows too big, you'll need a better way to organize your code. A solution to this would be to separate your functions into different files, but this is not a good solution as you could still encounter problems if you end up naming another function with the same name. To make things worse, as it was mentioned in Chapter \ref{chapter:cx-programs-representation}, CX won't complain if you redefine a function or a global variable somewhere else in your code. The solution to this problem is modularization.
+
+Modularization is a technique where you isolate groups of declarations in your source code under a common module name. This module name works as a "last name" for all the declarations grouped in that module, and gives every declaration a unique "full name" across all the source code files.
+
+Each programming language has its own way of calling these isolated units of declarations. For example, in C\# they are called \emph{namespaces} and in Python they are called \emph{modules}. In  CX, we call these modules \emph{packages}.
+
+In Listing \ref{listing:packages-example} we can see a program that got organized into three different packages: \textbf{foo}, \textbf{bar} and \textbf{main}. Package \textbf{foo} declares 3 definitions: a structure named \textbf{Point}, a global variable named \textbf{num}, and a function named \textbf{bar}. Package \textbf{bar} imports package \textbf{foo} and declares a single definition: a function named \textbf{returnPoint}. Something interesting in this function is that it is using definitions defined in package \textbf{foo}. As we can see, in order to access something from an imported package, you first need to write that package's name, then a period followed by the name of the definition of interest.
 
 \begin{lstlisting}[caption={Importing Packages Example},captionpos=b,label={listing:packages-example}]
 package foo

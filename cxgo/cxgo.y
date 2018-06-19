@@ -38,7 +38,7 @@
 	var fileName string
 %}
 
-%union {
+%union{
 	i int
 	byt byte
 	i32 int32
@@ -991,7 +991,7 @@ statement:      /* labeled_statement */
         |       selector
         |       debugging
                 { $$ = nil }
-	/* |       jump_statement */
+	|       jump_statement
                 ;
 
 labeled_statement:
@@ -1114,7 +1114,16 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 	|       BREAK SEMICOLON
                 { $$ = nil }
 	|       RETURN SEMICOLON
-                { $$ = nil }
+                {
+			expr := MakeExpression(Natives[OP_JMP])
+			expr.ElseLines = ^int(0)
+
+			arg := MakeArgument("").AddType("bool")
+
+			expr.AddInput(arg)
+
+			$$ = []*CXExpression{expr}
+                }
 	|       RETURN expression SEMICOLON
                 { $$ = nil }
                 ;

@@ -769,6 +769,7 @@ statement:      compound_statement
 	|       expression_statement
 	|       selection_statement
 	|       iteration_statement
+        |       jump_statement
                 ;
 
 /* labeled_statement: */
@@ -824,11 +825,11 @@ iteration_statement:
         |       FOR declaration expression_statement expression compound_statement
                 ;
 
-/* jump_statement: GOTO IDENTIFIER SEMICOLON */
-/* 	|       CONTINUE SEMICOLON */
-/* 	|       BREAK SEMICOLON */
-/* 	|       RETURN SEMICOLON */
-/* 	|       RETURN expression SEMICOLON */
-/*                 ; */
+jump_statement: GOTO IDENTIFIER SEMICOLON
+	|       CONTINUE SEMICOLON
+	|       BREAK SEMICOLON
+	|       RETURN SEMICOLON
+	|       RETURN expression SEMICOLON
+                ;
 
 %%
