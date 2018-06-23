@@ -528,6 +528,8 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 		err = divI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i32.pow":
 		err = powI32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i32.sqrt":
+		err = sqrtI32((*argsCopy)[0], expr, call)
 	case "i64.add":
 		err = addI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.mul":
@@ -538,6 +540,8 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 		err = divI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "i64.pow":
 		err = powI64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "i64.sqrt":
+		err = sqrtI64((*argsCopy)[0], expr, call)
 	case "f32.add":
 		err = addF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f32.mul":
@@ -548,6 +552,8 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 		err = divF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f32.pow":
 		err = powF32((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f32.sqrt":
+		err = sqrtF32((*argsCopy)[0], expr, call)
 	case "f32.cos":
 		err = cosF32((*argsCopy)[0], expr, call)
 	case "f32.sin":
@@ -562,6 +568,8 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 		err = divF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
 	case "f64.pow":
 		err = powF64((*argsCopy)[0], (*argsCopy)[1], expr, call)
+	case "f64.sqrt":
+		err = sqrtF64((*argsCopy)[0], expr, call)
 	case "f64.cos":
 		err = cosF64((*argsCopy)[0], expr, call)
 	case "f64.sin":
@@ -964,7 +972,7 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 }
 
 func (prgrm *CXProgram) RunInterpreted(withDebug bool, nCalls int) error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program
@@ -1187,8 +1195,9 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				} else {
+					fmt.Println("rrrrrrra")
 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d were provided",
-						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+						expr.FileName, expr.FileLine, OpNames[expr.Operator.OpCode], len(expr.Operator.Inputs), len(argsRefs)))
 				}
 			}
 
@@ -1209,13 +1218,13 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 					if arg, err := resolveIdent(lookingFor, argsRefs[i], call); err == nil {
 						argsCopy[i] = arg
 						// Extracting array values
-						if len(argsRefs[i].Indexes) > 0 {
-							if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
-								arg.Value = &val
-							} else {
-								panic(err)
-							}
-						}
+						// if len(argsRefs[i].Indexes) > 0 {
+						// 	if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
+						// 		arg.Value = &val
+						// 	} else {
+						// 		panic(err)
+						// 	}
+						// }
 					} else {
 						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
 					}
@@ -1227,7 +1236,9 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 				if len(expr.Operator.Inputs) > 0 &&
 					expr.Operator.Inputs[i].Typ !=
 						argsCopy[i].Typ &&
-					expr.Operator.Inputs[i].Typ != "" {
+					expr.Operator.Inputs[i].Typ != "" &&
+					expr.Operator.Inputs[i].Type != TYPE_UNDEFINED {
+					fmt.Println("here")
 					return errors.New(fmt.Sprintf("%s: %d: %s: input %d is type '%s'; expected type '%s'\n",
 						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}
@@ -1332,7 +1343,7 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 }
 
 func (prgrm *CXProgram) RunCompiled() error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
@@ -1382,6 +1393,7 @@ func (prgrm *CXProgram) RunCompiled() error {
 					return err
 				}
 			}
+			// debugging memory
 			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
 			// fmt.Println("prgrm.Heap", prgrm.Heap)
 			// fmt.Println("prgrm.Data", prgrm.Data)

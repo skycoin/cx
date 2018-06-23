@@ -73,13 +73,8 @@ func I64Extras() () {
 func testI64() () {
 	str.print("Running I64 Testing...")
 	I64ArithmeticFunctions()
-	str.print("")
 	I64ArithmeticShorthand()
-	str.print("")
 	I64RelationalFunctions()
-	str.print("")
 	I64RelationalShorthand()
-	str.print("")
-	I64Extras()
-	str.print("")
+	// I64Extras()
 }

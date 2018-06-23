@@ -19,6 +19,11 @@ const INIT_HEAP_SIZE = 500000
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 
+const MAX_UINT32 = ^uint32(0)
+const MIN_UINT32 = 0
+const MAX_INT32 = int(MAX_UINT32 >> 1)
+const MIN_INT32 = -MAX_INT32 - 1
+
 var BASIC_TYPES []string = []string{
 	"bool", "str", "byte", "i32", "i64", "f32", "f64",
 	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",

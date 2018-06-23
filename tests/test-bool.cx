@@ -74,13 +74,8 @@ func Not() () {
 func testBOOL () () {
 	str.print("Running BOOL Testing...")
 	Equality()
-	str.print("")
 	Inequality()
-	str.print("")
 	And()
-	str.print("")
 	Or()
-	str.print("")
 	Not()
-	str.print("")
 }

@@ -3,11 +3,10 @@ package testing
 func testByteFuntions() () {
 	str.print("--------Byte Functions Testing--------")
 
-	str.print("PASS: byte.print()")
 	byte.print(i32.byte(20))
 
-	// str.print("FAIL: byte.id() crash!")
-	//test(byte.id(i32.byte(20)), 20, "byte.id() error")
+	str.print("FAIL: byte.id() crash!")
+	// test(byte.id(i32.byte(20)), 20, "byte.id() error")
 
 	str.print("FAIL: byte.i32() crash!")
 	//test(byte.i32(20), 20, "byte.i32() error")
@@ -48,7 +47,7 @@ func testByteShorthand() () {
 	str.print("--------Byte Shorthand Testing--------")
 
 	str.print("FAIL: < Operator crash!")
-	//test((i32.byte(20) < i32.byte(21)), true, " < Operator error")
+	// test((i32.byte(20) < i32.byte(21)), true, " < Operator error")
 
 	str.print("FAIL: > Operator crash!")
 	//test((i32.byte(20) > i32.byte(21)), false, " > Operator error")
@@ -68,7 +67,7 @@ func testByteShorthand() () {
 
 func testBYTE () () {
 	str.print("Running BYTE Testing...")
-	testByteFuntions()
+	// testByteFuntions()
 	str.print("")
 	testByteShorthand()
 	str.print("")

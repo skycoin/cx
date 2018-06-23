@@ -193,7 +193,6 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.Size))
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				// fmt.Println("hou", $5[0].Outputs[0].Value)
 				// $3.Value = $5[0].Outputs[0].Value
 				$3.MemoryRead = MEM_DATA
 				$3.MemoryWrite = MEM_DATA
@@ -256,17 +255,17 @@ package_declaration:
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			// if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			// 	if _, err := pkg.GetImport($2); err != nil {
-			// 		if imp, err := PRGRM.GetPackage($2); err == nil {
-			// 			pkg.AddImport(imp)
-			// 		} else {
-			// 			panic(err)
-			// 		}
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				if _, err := pkg.GetImport($2); err != nil {
+					if imp, err := PRGRM.GetPackage($2); err == nil {
+						pkg.AddImport(imp)
+					} else {
+						panic(err)
+					}
+				}
+			} else {
+				panic(err)
+			}
                 }
                 ;
 
@@ -479,6 +478,9 @@ declaration_specifiers:
 						arg.CustomType = strct
 						arg.Size = strct.Size
 						arg.TotalSize = strct.Size
+
+						arg.Package = pkg
+
 						arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 
 						$$ = arg
@@ -765,18 +767,19 @@ designator:
 
 
 // statements
-statement:      compound_statement
+statement:      labeled_statement
+        |       compound_statement
 	|       expression_statement
 	|       selection_statement
 	|       iteration_statement
         |       jump_statement
                 ;
 
-/* labeled_statement: */
-/*                 IDENTIFIER COLON statement */
-/* 	|       CASE constant_expression COLON statement */
-/* 	|       DEFAULT COLON statement */
-/*                 ; */
+labeled_statement:
+                IDENTIFIER COLON statement
+	|       CASE constant_expression COLON statement
+	|       DEFAULT COLON statement
+                ;
 
 compound_statement:
                 LBRACE RBRACE SEMICOLON

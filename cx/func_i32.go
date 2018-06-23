@@ -72,6 +72,20 @@ func powI32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
+func sqrtI32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("i32.sqrt", "i32", arg1); err == nil {
+		var num1 int32
+		encoder.DeserializeAtomic(*arg1.Value, &num1)
+
+		output := encoder.SerializeAtomic(int32(math.Sqrt(float64(num1))))
+
+		assignOutput(0, output, "i32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absI32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i32.abs", "i32", arg1); err == nil {
 		return assignOutput(0, oneI32oneI32(func(n1 int32) int32 { return int32(math.Abs(float64(n1))) }, arg1), "i32", expr, call)

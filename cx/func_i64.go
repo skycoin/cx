@@ -93,6 +93,20 @@ func powI64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
+func sqrtI64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("i64.sqrt", "i64", arg1); err == nil {
+		var num1 int64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+
+		output := encoder.Serialize(int64(math.Sqrt(float64(num1))))
+
+		assignOutput(0, output, "i64", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absI64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("i64.abs", "i64", arg1); err == nil {
 		var num1 int64

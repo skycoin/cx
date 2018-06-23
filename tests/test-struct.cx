@@ -7,7 +7,7 @@ type miniStruct struct {
 	decimal f64
 	boolean bool
 	byt byte
-	string str
+	// string str
 }
 
 type TestStruct struct {
@@ -17,7 +17,7 @@ type TestStruct struct {
 	decimal f64
 	boolean bool
 	byt byte
-	string str
+	// string str
 	anotherStruct miniStruct
 }
 
@@ -31,21 +31,23 @@ func testStructures () () {
 		decimal: 64.0D,
 		boolean: true,
 		byt: i32.byte(255),
-		string: "Foo bar",
+		// string: "Foo bar",
 		anotherStruct: miniStruct{
 			int: 32,
 			long: 64L,
 			float: 32.0,
 			decimal: 64.0D,
 			boolean: true,
-			byt: i32.byte(255),
-			string: "Foo bar"}}
+			byt: i32.byte(255)}}
+			// string: "Foo bar"}}
 
 	str.print("--------Struct Properties Types--------")
 
 	str.print("FAIL: I32 properties")
 	test((32 == mytest.int), true, "Struct i32 properties error")
-	//test((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
+	i32.print(mytest.int)
+	i32.print(mytest.anotherStruct.int)
+	test((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
 
 	str.print("FAIL: I64 properties")
 	test((64L == mytest.long), true, "Struct i64 properties error")

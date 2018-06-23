@@ -46,7 +46,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 				if arg.CustomType != nil {
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.CustomType.Size
 				} else {
-					// fmt.Println("huehue", elt.Size, ReadI32(stack, fp, idxArg), subSize)
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
 					// fmt.Println("finalOffset", finalOffset)
 				}
@@ -111,9 +110,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
 	switch arg.MemoryRead {
 	case MEM_STACK:
-		// if offset + arg.TotalSize > len(stack.Stack) {
-		// 	fmt.Println("huehue", arg.Name, arg.Size, arg.TotalSize, arg.Offset, arg.DereferenceOperations, arg.DeclarationSpecifiers)
-		// }
 		out = stack.Stack[offset : offset+arg.TotalSize]
 	case MEM_DATA:
 		out = stack.Program.Data[offset : offset+arg.TotalSize]
@@ -287,7 +283,6 @@ func ReadArray(stack *CXStack, fp int, inp *CXArgument, indexes []int32) (int, i
 func ReadF32A(stack *CXStack, fp int, inp *CXArgument) (out []float32) {
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	byts := ReadMemory(stack, offset, inp)
-	// fmt.Println("here", byts)
 	byts = append(encoder.SerializeAtomic(int32(len(byts)/4)), byts...)
 	encoder.DeserializeRaw(byts, &out)
 	return

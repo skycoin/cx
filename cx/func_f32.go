@@ -94,6 +94,20 @@ func powF32(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
+func sqrtF32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("f32.sqrt", "f32", arg1); err == nil {
+		var num1 float32
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+
+		output := encoder.Serialize(float32(math.Sqrt(float64(num1))))
+
+		assignOutput(0, output, "f32", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absF32(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f32.abs", "f32", arg1); err == nil {
 		var num1 float32

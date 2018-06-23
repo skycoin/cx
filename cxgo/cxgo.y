@@ -983,8 +983,8 @@ designator:
 
 
 // statements
-statement:      /* labeled_statement */
-	/* |        */compound_statement
+statement:      labeled_statement
+	|       compound_statement
 	|       expression_statement
 	|       selection_statement
 	|       iteration_statement
@@ -996,7 +996,13 @@ statement:      /* labeled_statement */
 
 labeled_statement:
                 IDENTIFIER COLON statement
-                { $$ = nil }
+                {
+			// it has to be the first expression so all the nested expressions are executed
+			// instead of only executing the last one
+			$3[0].Label = $1
+
+			$$ = $3
+                }
 	|       CASE constant_expression COLON statement
                 { $$ = nil }
 	|       DEFAULT COLON statement
@@ -1108,21 +1114,45 @@ iteration_statement:
                 ;
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
-                { $$ = nil }
+                {
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := MakeExpression(Natives[OP_JMP])
+				expr.Package = pkg
+				expr.Label = $2
+
+				arg := MakeArgument("").AddType("bool")
+				arg.Package = pkg
+
+				expr.AddInput(arg)
+					
+				$$ = []*CXExpression{expr}
+			} else {
+				panic(err)
+			}
+                }
 	|       CONTINUE SEMICOLON
                 { $$ = nil }
 	|       BREAK SEMICOLON
                 { $$ = nil }
 	|       RETURN SEMICOLON
                 {
-			expr := MakeExpression(Natives[OP_JMP])
-			expr.ElseLines = ^int(0)
+			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+				expr := MakeExpression(Natives[OP_JMP])
 
-			arg := MakeArgument("").AddType("bool")
+				// simulating a label so it gets executed without evaluating a predicate
+				expr.Label = " "
+				expr.ThenLines = MAX_INT32
+				expr.Package = pkg
 
-			expr.AddInput(arg)
+				arg := MakeArgument("").AddType("bool")
+				arg.Package = pkg
 
-			$$ = []*CXExpression{expr}
+				expr.AddInput(arg)
+
+				$$ = []*CXExpression{expr}
+			} else {
+				panic(err)
+			}
                 }
 	|       RETURN expression SEMICOLON
                 { $$ = nil }

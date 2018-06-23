@@ -7,7 +7,6 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -65,28 +64,44 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 				return nil
 			}
 		} else if idxs != nil && def.Name == outName {
-			fmt.Println("arrayinex", getArrayIndex(out, call))
-			val, _ := getValueFromArray(def, getArrayIndex(out, call))
-			fmt.Println("arrayValue", val)
-			fmt.Println("should explode tho", def.Value, idxs[0].Value)
+			var rIdxs []int32
 
-			idx := getArrayIndex(out, call)
-			offset := def.Size * int(idx)
+			for _, idx := range idxs {
+				var i int32
 
-			fmt.Println("before", def.Value)
+				if idx.Typ == "ident" {
+					var ident string
+					encoder.DeserializeRaw(*idx.Value, &ident)
+					if sym, err := resolveIdent(ident, idx, call); err == nil {
+						encoder.DeserializeAtomic(*sym.Value, &i)
+					} else {
+						panic(err)
+					}
+				} else {
+					encoder.DeserializeAtomic(*idx.Value, &i)
+				}
 
-			firstChunk := make([]byte, offset+4)
-			secondChunk := make([]byte, len(*def.Value)-int(offset+def.Size))
+				rIdxs = append(rIdxs, i)
+			}
 
-			copy(firstChunk, (*def.Value)[:offset])
-			copy(secondChunk, (*def.Value)[offset+def.Size:])
+			var off int
+			var sizes []int
 
-			final := append(firstChunk, output...)
-			final = append(final, secondChunk...)
+			sizes = make([]int, len(def.Lengths))
+			sizes[len(sizes)-1] = def.Size
 
-			fmt.Println("final", final)
+			for c := len(def.Lengths) - 1; c > 0; c-- {
+				sizes[c-1] = def.Lengths[c] * sizes[c]
+			}
 
-			def.Value = &final
+			for i, len := range rIdxs {
+				off += sizes[i] * int(len)
+			}
+
+			for i, byt := range output {
+				(*def.Value)[off+i] = byt
+			}
+
 			return nil
 		} else if def.Name == outName {
 			// then it's a simple var
@@ -1210,7 +1225,6 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 		// }
 
 		for _, stateDef := range call.State {
-
 			if stateDef.Name == arrayParts[0] {
 				local = true
 				resolvedIdent = stateDef
@@ -1218,17 +1232,66 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 			}
 		}
 
-		if len(arrayParts) > 1 && local {
-			if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
-				isArray = true
-				byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
-				arg := MakeArgument("").AddValue(&byts).AddType(typ)
-				return arg, nil
-			} else {
-				//excError = err
-				return nil, err
+		if len(arg.Indexes) > 0 && local {
+			var rIdxs []int32
+
+			for _, idx := range arg.Indexes {
+				var i int32
+
+				if idx.Typ == "ident" {
+					var ident string
+					encoder.DeserializeRaw(*idx.Value, &ident)
+					if sym, err := resolveIdent(ident, idx, call); err == nil {
+						encoder.DeserializeAtomic(*sym.Value, &i)
+					} else {
+						panic(err)
+					}
+				} else {
+					encoder.DeserializeAtomic(*idx.Value, &i)
+				}
+
+				rIdxs = append(rIdxs, i)
 			}
+
+			var off int
+			var sizes []int
+
+			sizes = make([]int, len(arg.Lengths))
+			sizes[len(sizes)-1] = arg.Size
+
+			for c := len(arg.Lengths) - 1; c > 0; c-- {
+				sizes[c-1] = arg.Lengths[c] * sizes[c]
+			}
+
+			for i, len := range rIdxs {
+				off += sizes[i] * int(len)
+			}
+
+			var subSize int = 1
+			for _, len := range arg.Lengths[:len(arg.Indexes)] {
+				subSize *= len
+			}
+
+			byts := (*resolvedIdent.Value)[off : off+resolvedIdent.TotalSize/subSize]
+
+			resArg := MakeArgument("").AddValue(&byts).AddType(resolvedIdent.Typ)
+			resArg.Lengths = arg.Lengths[len(arg.Indexes):]
+
+			return resArg, nil
 		}
+
+		// if len(arrayParts) > 1 && local {
+		// 	if idx, err := strconv.ParseInt(arrayParts[1], 10, 64); err == nil {
+		// 		isArray = true
+		// 		byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
+
+		// 		arg := MakeArgument("").AddValue(&byts).AddType(typ)
+		// 		return arg, nil
+		// 	} else {
+		// 		//excError = err
+		// 		return nil, err
+		// 	}
+		// }
 
 		if !local {
 			mod := call.Operator.Package
@@ -2034,31 +2097,38 @@ func (prgrm *CXProgram) PrintProgram() {
 						}
 					}
 
-					var exprTag string
-					// if expr.Tag != "" {
-					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
-					// }
+					var lbl string
+					if expr.Label != "" {
+						lbl = " <<" + expr.Label + ">>"
+					} else {
+						lbl = ""
+					}
 
 					if expr.Operator != nil {
-						fmt.Printf("\t\t\t%d.- Expression: %s = %s(%s)%s\n",
+						fmt.Printf("\t\t\t%d.- Expression%s: %s = %s(%s)\n",
 							k,
+							lbl,
 							outNames.String(),
 							opName,
 							args.String(),
-							exprTag)
+						)
 					}
 
 				} else {
-					var exprTag string
-					// if expr.Tag != "" {
-					// 	exprTag = fmt.Sprintf(" :tag %s", expr.Tag)
-					// }
+					var lbl string
 
-					fmt.Printf("\t\t\t%d.- Expression: %s(%s)%s\n",
+					if expr.Label != "" {
+						lbl = " <<" + expr.Label + ">>"
+					} else {
+						lbl = ""
+					}
+
+					fmt.Printf("\t\t\t%d.- Expression%s: %s(%s)\n",
 						k,
+						lbl,
 						opName,
 						args.String(),
-						exprTag)
+					)
 				}
 				k++
 			}

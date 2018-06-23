@@ -78,22 +78,28 @@ func op_jmp(expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
 	// var thenLines int32
 	// var elseLines int32
 
-	inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
-
-	switch inp1.MemoryRead {
-	case MEM_STACK:
-		predicateB := stack.Stack[inp1Offset : inp1Offset+inp1.Size]
-		encoder.DeserializeAtomic(predicateB, &predicate)
-	case MEM_DATA:
-		predicateB := inp1.Program.Data[inp1Offset : inp1Offset+inp1.Size]
-		encoder.DeserializeAtomic(predicateB, &predicate)
-	default:
-		panic("implement the other mem types in readI32")
-	}
-
-	if predicate {
+	if expr.Label != "" {
+		// then it's a goto
 		call.Line = call.Line + expr.ThenLines
 	} else {
-		call.Line = call.Line + expr.ElseLines
+		inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
+
+		switch inp1.MemoryRead {
+		case MEM_STACK:
+			predicateB := stack.Stack[inp1Offset : inp1Offset+inp1.Size]
+			encoder.DeserializeAtomic(predicateB, &predicate)
+		case MEM_DATA:
+			predicateB := inp1.Program.Data[inp1Offset : inp1Offset+inp1.Size]
+			encoder.DeserializeAtomic(predicateB, &predicate)
+		default:
+			panic("implement the other mem types in readI32")
+		}
+
+		if predicate {
+			call.Line = call.Line + expr.ThenLines
+		} else {
+			call.Line = call.Line + expr.ElseLines
+		}
 	}
+
 }

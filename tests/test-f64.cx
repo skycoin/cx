@@ -56,13 +56,8 @@ func F64Extras() () {
 func testF64() () {
 	str.print("Running F64 Testing...")
 	F64ArithmeticFunctions()
-	str.print("")
 	F64ArithmeticShorthand()
-	str.print("")
 	F64RelationalFunctions()
-	str.print("")
 	F64RelationalShorthand()
-	str.print("")
-	F64Extras()
-	str.print("")
+	// F64Extras()
 }

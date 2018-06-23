@@ -92,6 +92,20 @@ func powF64(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXCall
 	}
 }
 
+func sqrtF64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
+	if err := checkType("f64.sqrt", "f64", arg1); err == nil {
+		var num1 float64
+		encoder.DeserializeRaw(*arg1.Value, &num1)
+
+		output := encoder.Serialize(math.Sqrt(float64(num1)))
+
+		assignOutput(0, output, "f64", expr, call)
+		return nil
+	} else {
+		return err
+	}
+}
+
 func absF64(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	if err := checkType("f64.abs", "f64", arg1); err == nil {
 		var num1 float64

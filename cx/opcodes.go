@@ -558,7 +558,6 @@ func execNative(prgrm *CXProgram) {
 	case OP_SLEEP:
 	case OP_HALT:
 	case OP_GOTO:
-		op_goTo(expr, call)
 	case OP_REMCX:
 	case OP_ADDCX:
 	case OP_QUERY:
@@ -1214,7 +1213,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I32_MUL:      MakeNative(OP_I32_MUL, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_DIV:      MakeNative(OP_I32_DIV, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_ABS:      MakeNative(OP_I32_ABS, []int{TYPE_I32}, []int{TYPE_I32}),
-	OP_I32_POW:      MakeNative(OP_I32_POW, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_POW:      MakeNative(OP_I32_POW, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_GT:       MakeNative(OP_I32_GT, []int{TYPE_I32, TYPE_I32}, []int{TYPE_BOOL}),
 	OP_I32_GTEQ:     MakeNative(OP_I32_GTEQ, []int{TYPE_I32, TYPE_I32}, []int{TYPE_BOOL}),
 	OP_I32_LT:       MakeNative(OP_I32_LT, []int{TYPE_I32, TYPE_I32}, []int{TYPE_BOOL}),
@@ -1243,7 +1242,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_MUL:      MakeNative(OP_I64_MUL, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_DIV:      MakeNative(OP_I64_DIV, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_ABS:      MakeNative(OP_I64_ABS, []int{TYPE_I64}, []int{TYPE_I64}),
-	OP_I64_POW:      MakeNative(OP_I64_POW, []int{TYPE_I64}, []int{TYPE_I64}),
+	OP_I64_POW:      MakeNative(OP_I64_POW, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_GT:       MakeNative(OP_I64_GT, []int{TYPE_I64, TYPE_I64}, []int{TYPE_BOOL}),
 	OP_I64_GTEQ:     MakeNative(OP_I64_GTEQ, []int{TYPE_I64, TYPE_I64}, []int{TYPE_BOOL}),
 	OP_I64_LT:       MakeNative(OP_I64_LT, []int{TYPE_I64, TYPE_I64}, []int{TYPE_BOOL}),
@@ -1272,7 +1271,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F32_MUL:      MakeNative(OP_F32_MUL, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_DIV:      MakeNative(OP_F32_DIV, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_ABS:      MakeNative(OP_F32_ABS, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_POW:      MakeNative(OP_F32_POW, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_POW:      MakeNative(OP_F32_POW, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_GT:       MakeNative(OP_F32_GT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
 	OP_F32_GTEQ:     MakeNative(OP_F32_GTEQ, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
 	OP_F32_LT:       MakeNative(OP_F32_LT, []int{TYPE_F32, TYPE_F32}, []int{TYPE_BOOL}),
@@ -1293,7 +1292,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_MUL:      MakeNative(OP_F64_MUL, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_DIV:      MakeNative(OP_F64_DIV, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_ABS:      MakeNative(OP_F64_ABS, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_POW:      MakeNative(OP_F64_POW, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_POW:      MakeNative(OP_F64_POW, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_GT:       MakeNative(OP_F64_GT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
 	OP_F64_GTEQ:     MakeNative(OP_F64_GTEQ, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),
 	OP_F64_LT:       MakeNative(OP_F64_LT, []int{TYPE_F64, TYPE_F64}, []int{TYPE_BOOL}),

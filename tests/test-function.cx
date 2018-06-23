@@ -62,51 +62,23 @@ func testStringin(a str, b str) (out str) {
 
 func testAllIns() () {
     str.print("--------Functions In Testings--------")
-
-    str.print("PASS: I32 in")
     test(testI32in(1, 2, 3), 6, "function in i32 error")
-
-    str.print("PASS: I64 in")
     test(testI64in(1L, 2L, 3L), 0L, "function in i64 error")
-
-    str.print("PASS: F32 in")
     test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
-
-    str.print("PASS: F64 in")
     test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
-
-    str.print("PASS: BOOL in")
     test(testBoolin(true, false, true), false, "function in bool error")
-
-    str.print("PASS: BYTE in")
     test(testBytein(i32.byte(2), i32.byte(80), i32.byte(26)), 80, "function in byte error")
-
-    str.print("PASS: STR in")
     test(testStringin("Not working", "Its working!"), "Its working!", "function in str error")
 }
 
 func testAllOuts() () {
     str.print("--------Functions Out Testings--------")
-
-    str.print("PASS: I32 outs")
     test(testI32out(), 1, "function out i32 error")
-
-    str.print("PASS: I64 outs")
     test(testI64out(), 1L, "function out i64 error")
-
-    str.print("PASS: F32 outs")
     test(testF32out(), 1.0, "function out f32 error")
-
-    str.print("PASS: F64 outs")
     test(testF64out(), 1.0D, "function out f64 error")
-
-    str.print("PASS: BOOL outs")
     test(testBoolout(), false, "function out bool error")
-
-    str.print("PASS: BYTE outs")
     test(testByteout(), i32.byte(255), "function out byte error")
-
-    str.print("PASS: STR outs")
     test(testStringout(), "Foo bar", "function out str error")
 }
 
@@ -115,7 +87,5 @@ func testAllOuts() () {
 func testFunctions () () {
     str.print("Running FUNCTION Block Testing...")
     testAllIns()
-    str.print("")
     testAllOuts()
-    str.print("")
 }

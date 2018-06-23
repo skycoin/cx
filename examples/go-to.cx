@@ -1,13 +1,7 @@
 package main
 
 func main () (out i32) {
-	goTo("label2") // function form
-label1:
-	str.print("this should never be reached")
-label2:
-	str.print("this should be printed")
-
-	goto label4 // keyword form
+	goto label4
 label3:
 	str.print("this should never be reached")
 label4:

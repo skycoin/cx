@@ -38,7 +38,6 @@ func I32ArithmeticShorthand() () {
 	test(10 | 5, 15, "Bit OR error")
 	test(10 ^ 5, 15, "Bit XOR error")
 	test(10 &^ 2, 8, "Bit CLEAR error")
-	// test(10 ** 5, 100000, "Pow error") // doesn't exist anymore due to syntax conflicts with pointer notation
 }
 
 func I32ConversionTo() () {
@@ -47,7 +46,7 @@ func I32ConversionTo() () {
 	test(i32.f32(10), 10.0, "Convert to F32 error")
 	test(i32.f64(10), 10.0D, "Convert to F64 error")
 	test(i32.byte(379), 123, "Conver to BYTE error")
-	str.print("FAIL: i32.str() crash!")
+	// str.print("FAIL: i32.str() crash!")
 	//test(i32.str(10), "10", "Convert to STR error") // oh ok, I need to implement strings going to the heap
 }
 
@@ -84,15 +83,11 @@ func I32Extras() () {
 func testI32() () {
 	str.print("Running I32 Testing...")
 	I32ArithmeticFunctions()
-	str.print("")
 	I32ArithmeticShorthand()
-	str.print("")
 	I32RelationalFunctions()
-	str.print("")
 	I32RelationalShorthand()
-	str.print("")
 	I32ConversionTo()
-	str.print("")
-	I32Extras()
-	str.print("")
+
+	
+	// I32Extras()
 }

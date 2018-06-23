@@ -7,13 +7,14 @@ func main () () {
 	testing.testF32()
 	testing.testF64()
 	testing.testBOOL()
+	testing.testArray()
+	testing.testFunctions()
 
-	
-	testing.testBYTE()
-	
-	// testing.testSTR()
-	// testing.testArray()
 	// testing.testBlocks()
 	// testing.testStructures()
-	// testing.testFunctions()
+
+	// str itself needs a lot of love before being tested
+	// testing.testSTR()
+	// implement parse byte functions and other stuff
+	//testing.testBYTE()
 }

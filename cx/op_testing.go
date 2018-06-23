@@ -13,6 +13,9 @@ func op_test_value(expr *CXExpression, stack *CXStack, fp int) {
 	var same bool
 	same = true
 
+	// fmt.Println("byts1", byts1)
+	// fmt.Println("byts2", byts2)
+
 	for i, byt := range byts1 {
 		if byt != byts2[i] {
 			same = false

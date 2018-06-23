@@ -56,13 +56,8 @@ func F32Extras() () {
 func testF32() () {
 	str.print("Running F32 Testing...")
 	F32ArithmeticFunctions()
-	str.print("")
 	F32ArithmeticShorthand()
-	str.print("")
 	F32RelationalFunctions()
-	str.print("")
 	F32RelationalShorthand()
-	str.print("")
-	F32Extras()
-	str.print("")
+	// F32Extras()
 }
