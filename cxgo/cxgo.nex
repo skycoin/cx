@@ -171,7 +171,7 @@ import (
 	"strconv"
 	"encoding/json"
 
-	// "regexp"
+	"regexp"
 	
 	// "flag"
 
@@ -191,7 +191,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.4"
+const VERSION = "0.5.5"
 
 var insert bool
 var prgrm *CXProgram
@@ -670,6 +670,15 @@ func main () {
 
 	if len(sourceCode) > 0 {
 		allSC := strings.Join(sourceCodeCopy, "")
+
+		re := regexp.MustCompile("(package)\\s([.\\[\\]a-zA-Z0-9_]+)")
+
+		// the actual pass 0, but so small I'm not going to count it as another pass
+		for _, match := range re.FindAllStringSubmatch(allSC, -1) {
+			pkg := MakePackage(match[len(match)-1])
+			cxgo0.PRGRM.AddPackage(pkg)
+		}
+		
 		cxgo0.Parse(allSC)
 	}
 
