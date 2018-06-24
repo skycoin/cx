@@ -247,6 +247,10 @@ func FromByte(in byte) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+func FromI8 (in int8) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
 func FromI32(in int32) []byte {
 	return encoder.SerializeAtomic(in)
 }
@@ -303,6 +307,12 @@ func ReadByte(stack *CXStack, fp int, inp *CXArgument) (out byte) {
 func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
+	return
+}
+
+func ReadI8 (stack *CXStack, fp int, inp *CXArgument) (out int8) {
+	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
+	encoder.DeserializeAtomic(ReadMemory(stack, offset, inp), &out)
 	return
 }
 
