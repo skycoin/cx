@@ -1,0 +1,196 @@
+package main
+
+//Structs
+
+type Window struct {
+	Height i32
+	Width i32
+}
+
+type Item struct {
+	x f32
+	y f32
+	z f32
+}
+
+type Wall struct {
+	y f32
+	z f32
+}
+
+func drawItem(box Item) () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 0.0)
+	gl.Vertex3f(f32.add(box.x, 0.05), f32.add(box.y, 0.05), box.z)
+	gl.Vertex3f(f32.add(box.x, 0.05), box.y, box.z)
+	gl.Vertex3f(box.x, box.y, box.z)
+	gl.Vertex3f(box.x, f32.add(box.y, 0.05), box.z)
+	gl.End()
+}
+
+func drawBG () () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(0.5, 0.7, 1.0)
+	gl.Vertex3f(-1.0, -1.0, 0.5)
+	gl.Vertex3f(-1.0, 1.0, 0.5)
+	gl.Vertex3f(1.0, 1.0, 0.5)
+	gl.Vertex3f(1.0, -1.0, 0.5)
+	gl.End()
+}
+
+func drawWalls (w Wall, color f32) () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(color, color, 1.0)
+	gl.Vertex3f(-1.0, f32.add(-1.0, w.y), w.z)
+	gl.Vertex3f(-1.0, -1.0, w.z)
+	gl.Vertex3f(1.0, -1.0, w.z)
+	gl.Vertex3f(1.0, f32.add(-1.0, w.y), w.z)
+	gl.End()
+}
+
+//Main Functions
+
+func settingsWindow (mw Window) () {
+	glfw.Init()
+
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+
+	glfw.CreateWindow("window", mw.Width, mw.Height, "My Game")
+	glfw.MakeContextCurrent("window")
+}
+
+func startGame(mw Window) () {
+	settingsWindow(mw)
+	
+	gl.Init()
+	var program i32 
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	var obj1 Item
+	var obj2 Item
+	var obj3 Item
+	var obj4 Item
+
+	var w1 Wall
+	var w2 Wall
+	var w3 Wall
+	var w4 Wall
+	
+	obj1 = Item{
+		x:0.75,
+		y:1.0,
+		z: -0.4}
+
+	obj2 = Item{
+		x:0.25,
+		y:1.0,
+		z: -0.3}
+	
+	obj3 = Item{
+		x:-0.25,
+		y:1.0,
+		z: -0.2}
+	
+	obj4 = Item{
+		x:-0.75,
+		y:1.0,
+		z: -0.1}
+
+	w1 = Wall{
+		y: 0.1,
+		z: -0.35}
+
+	w2 = Wall{
+		y: 0.2,
+		z: -0.25}
+	
+	w3 = Wall{
+		y: 0.3,
+		z: -0.15}
+	
+	w4 = Wall{
+		y: 0.4,
+		z: -0.05}
+
+	//Main Loop
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.UseProgram(program)
+
+		//Background Drawing
+		gl.MatrixMode(gl.PROJECTION)
+		
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawBG()
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		if f32.lteq(obj4.y, f32.add(-1.0, w4.y)) {
+			obj4.y = 1.0
+		} else {
+			obj4.y = f32.sub(obj4.y, 0.001)
+		}
+
+		drawItem(obj4)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWalls(w4, 0.2)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		if f32.lteq(obj3.y, f32.add(-1.0, w3.y)) {
+			obj3.y = 1.0
+		} else {
+			obj3.y = f32.sub(obj3.y, 0.001)
+		}
+
+		drawItem(obj3)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWalls(w3, 0.3)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		if f32.lteq(obj2.y, f32.add(-1.0, w2.y)) {
+			obj2.y = 1.0
+		} else {
+			obj2.y = f32.sub(obj2.y, 0.001)
+		}
+
+		drawItem(obj2)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWalls(w2, 0.4)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		if f32.lteq(obj1.y, f32.add(-1.0, w1.y)) {
+			obj1.y = 1.0
+		} else {
+			obj1.y = f32.sub(obj1.y, 0.001)
+		}
+
+		drawItem(obj1)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWalls(w1, 0.5)
+
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+
+func main () () {
+	var myWindow Window
+	myWindow = Window{
+		Height: 350,
+		Width: 500}
+
+	startGame(myWindow)
+}

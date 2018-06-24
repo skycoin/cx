@@ -27,7 +27,6 @@ func main () (out i32) {
 	var strs Strings
 	i64.print(strs.lBound)
 	str.print(strs.string)
-	[]str.print(strs.stringA)
 	i64.print(strs.rBound)
 
 	str.print("=====")
@@ -35,10 +34,8 @@ func main () (out i32) {
 	//strs.stringA = []str{"str1", "str23", "012345678901"}
 	strs.stringA = []str{"str1", "str2", "0123456789", "31313131313131"}
 	str.print("huouhotu")
-	str.print([]str.read(strs.stringA, 2))
 
 	i64.print(strs.lBound)
 	str.print(strs.string)
-	[]str.print(strs.stringA)
 	i64.print(strs.rBound)
 }

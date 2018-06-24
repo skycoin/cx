@@ -1,0 +1,243 @@
+package main
+
+type Window struct {
+	Height i32
+	Width i32
+}
+
+
+
+type Player struct {
+	x f32
+	y f32
+	z f32
+	Id i32
+}
+
+type Block struct {
+	x f32
+	y f32
+}
+
+type Wall struct {
+	x f32
+	y f32
+	z f32
+}
+
+type Coin struct {
+	x f32
+	y f32
+}
+
+type Enemie struct {
+	x f32
+	y f32
+	z f32
+}
+
+
+
+
+
+func drawPlayer(p Player) () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 0.0, 0.0)
+	gl.Vertex3f(f32.add(p.x, 0.05), f32.add(p.y, 0.075), p.z)
+	gl.Vertex3f(f32.add(p.x, 0.05), p.y, p.z)
+	gl.Vertex3f(p.x, p.y, p.z)
+	gl.Vertex3f(p.x, f32.add(p.y, 0.075), p.z)
+	gl.End()
+}
+
+func drawBlock(b Block) () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 0.0)
+	gl.Vertex3f(b.x, b.y, 0.0)
+	gl.Vertex3f(f32.add(b.x, 0.5), b.y, 0.0)
+	gl.Vertex3f(f32.add(b.x, 0.5), f32.add(b.y, 0.015), 0.0)
+	gl.Vertex3f(b.x, f32.add(b.y, 0.015), 0.0)
+	gl.End()
+}
+
+func drawCoin(c Coin) () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 0.0)
+	gl.Vertex3f(f32.add(c.x, 0.025), f32.add(c.y, 0.025), 0.0)
+	gl.Vertex3f(f32.add(c.x, 0.025), c.y, 0.0)
+	gl.Vertex3f(c.x, c.y, 0.0)
+	gl.Vertex3f(c.x, f32.add(c.y, 0.025), 0.0)
+	gl.End()
+}
+
+func drawWall(w Wall) (){
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(0.0, 1.0, 0.0)
+	gl.Vertex3f(w.x, w.y, w.z)
+	gl.Vertex3f(f32.add(w.x, 0.5), w.y, w.z)
+	gl.Vertex3f(f32.add(w.x, 0.5), f32.add(w.y, 0.1), w.z)
+	gl.Vertex3f(w.x, f32.add(w.y, 0.1), w.z)
+	gl.End()
+}
+
+func drawWall2(w Wall) (){
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(0.0, 0.5, 0.0)
+	gl.Vertex3f(w.x, w.y, w.z)
+	gl.Vertex3f(f32.add(w.x, 0.5), w.y, w.z)
+	gl.Vertex3f(f32.add(w.x, 0.5), f32.add(w.y, 0.4), w.z)
+	gl.Vertex3f(w.x, f32.add(w.y, 0.4), w.z)
+	gl.End()
+}
+
+func drawGround() () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(0.5, 0.35, 0.05)
+	gl.Vertex3f(1.0, -0.95, 0.0)
+	gl.Vertex3f(1.0, -1.0, 0.0)
+	gl.Vertex3f(-1.0, -1.0, 0.0)
+	gl.Vertex3f(-1.0, -0.95, 0.0)
+	gl.End()
+}
+
+func drawBG () () {
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(0.5, 0.7, 1.0)
+	gl.Vertex3f(-1.0, -1.0, 0.5)
+	gl.Vertex3f(-1.0, 1.0, 0.5)
+	gl.Vertex3f(1.0, 1.0, 0.5)
+	gl.Vertex3f(1.0, -1.0, 0.5)
+	gl.End()
+}
+
+func drawCoins(c1 Coin, c2 Coin, c3 Coin, c4 Coin) () {
+	gl.LoadIdentity()
+	gl.MatrixMode(gl.MODELVIEW)
+	drawCoin(c1)
+
+	gl.LoadIdentity()
+	gl.MatrixMode(gl.MODELVIEW)
+	drawCoin(c2)
+
+	gl.LoadIdentity()
+	gl.MatrixMode(gl.MODELVIEW)
+	drawCoin(c3)
+
+	gl.LoadIdentity()
+	gl.MatrixMode(gl.MODELVIEW)
+	drawCoin(c4)
+}
+
+func drawBlocks(b1 Block) () {
+	gl.LoadIdentity()
+	gl.MatrixMode(gl.MODELVIEW)
+	drawBlock(b1)
+}
+
+
+func settingsWindow (mw Window) () {
+	glfw.Init()
+
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+
+	glfw.CreateWindow("window", mw.Width, mw.Height, "My Game")
+	glfw.MakeContextCurrent("window")
+}
+
+func startGame (mw Window) () {
+
+	settingsWindow(mw)
+
+	gl.Init()
+	var program i32 
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	var p Player 
+	p = Player{
+		x: -0.90,
+		y: -0.95,
+		z: 0.0,
+		Id: 1}
+
+	var c1 Coin
+	var c2 Coin 
+	var c3 Coin
+	var c4 Coin 
+
+	c1 = Coin{
+		x: f32.add(p.x, 0.20),
+		y: f32.add(p.y, 0.15)}
+	c2 = Coin{
+		x: f32.add(c1.x, 0.10),
+		y: c1.y}
+	c3 = Coin{
+		x: f32.add(c2.x, 0.10),
+		y: c1.y}
+	c4 = Coin{
+		x: f32.add(c3.x, 0.10),
+		y: c1.y}
+
+	var b1 Block
+	var b2 Block
+	var b3 Block
+	var b4 Block
+
+	b1 = Block{
+		x: f32.sub(0.05, 0.1),
+		y: f32.sub(-0.7, 0.05)}
+	
+	var w1 Wall
+	var w2 Wall
+
+	w1 = Wall{
+		x: 0.3,
+		y: p.y,
+		z: 0.0}
+	w2 = Wall{
+		x: 0.5,
+		y: p.y,
+		z: 0.1}
+	
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.UseProgram(program)
+
+		gl.MatrixMode(gl.PROJECTION)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawBG()
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawGround()
+
+		drawCoins(c1, c2, c3, c4)
+		drawBlocks(b1)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWall2(w2)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawWall(w1)
+
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+		drawPlayer(p)
+
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+
+func main () () {
+	var myWindow Window
+	myWindow = Window{
+		Height: 350,
+		Width: 500}
+
+	startGame(myWindow)
+}

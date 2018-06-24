@@ -9,281 +9,281 @@ var height i32 = 600
 var rows i32 = 15
 var columns i32 = 15
 
-var vertexShaderSource str = "
-          #version 120
-          void main() {
-            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
-          }
-"
-var fragmentShaderSource str = "
-          #version 120
-          void main() {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-          }
-"
+// var vertexShaderSource str = "
+//           #version 120
+//           void main() {
+//             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+//           }
+// "
+// var fragmentShaderSource str = "
+//           #version 120
+//           void main() {
+//             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+//           }
+// "
 
 type Cell struct {
 	drawable i32
 
 	alive bool
 	aliveNext bool
-	
+
 	x i32
 	y i32
 }
 
 var square [18]f32
 
-func map2Dto1D (r i32, c i32, w i32) (i i32) {
-	i = i32.add(i32.mul(w, r), c)
-}
+// func map2Dto1D (r i32, c i32, w i32) (i i32) {
+// 	i = i32.add(i32.mul(w, r), c)
+// }
 
-func map1Dto2D (i i32, w i32) (c i32, r i32) {
-	r = i32.sub(i32.sub(w, 1), i32.div(i, w))
-	c = i32.mod(i, w)
-}
+// func map1Dto2D (i i32, w i32) (c i32, r i32) {
+// 	r = i32.sub(i32.sub(w, 1), i32.div(i, w))
+// 	c = i32.mod(i, w)
+// }
 
-func wrapX (x i32) (newX i32) {
-	newX = x
-	if i32.gteq(x, columns) {
-		newX = 0
-		// return 0
-	}
-	if i32.lteq(x, -1) {
-		newX = i32.sub(columns, 1)
-		// return newX
-	}
-}
+// func wrapX (x i32) (newX i32) {
+// 	newX = x
+// 	if i32.gteq(x, columns) {
+// 		newX = 0
+// 		// return 0
+// 	}
+// 	if i32.lteq(x, -1) {
+// 		newX = i32.sub(columns, 1)
+// 		// return newX
+// 	}
+// }
 
-func wrapY (y i32) (newY i32) {
-	newY = y
-	if i32.gteq(y, rows) {
-		newY = 0
-		// return 0
-	}
-	if i32.lteq(y, -1) {
-		newY = i32.sub(rows, 1)
-		// return i32.sub(rows, 1)
-	}
-}
+// func wrapY (y i32) (newY i32) {
+// 	newY = y
+// 	if i32.gteq(y, rows) {
+// 		newY = 0
+// 		// return 0
+// 	}
+// 	if i32.lteq(y, -1) {
+// 		newY = i32.sub(rows, 1)
+// 		// return i32.sub(rows, 1)
+// 	}
+// }
 
-func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
-	aliveCount = 0
+// func aliveNeighbours (cell Cell, cells [225]Cell) (aliveCount i32) {
+// 	aliveCount = 0
 	
-	var upCellX i32
-	var upCellY i32
-	var upRightCellX i32
-	var upRightCellY i32
-	var rightCellX i32
-	var rightCellY i32
-	var downRightCellX i32
-	var downRightCellY i32
-	var downCellX i32
-	var downCellY i32
-	var downLeftCellX i32
-	var downLeftCellY i32
-	var leftCellX i32
-	var leftCellY i32
-	var upLeftCellX i32
-	var upLeftCellY i32
+// 	var upCellX i32
+// 	var upCellY i32
+// 	var upRightCellX i32
+// 	var upRightCellY i32
+// 	var rightCellX i32
+// 	var rightCellY i32
+// 	var downRightCellX i32
+// 	var downRightCellY i32
+// 	var downCellX i32
+// 	var downCellY i32
+// 	var downLeftCellX i32
+// 	var downLeftCellY i32
+// 	var leftCellX i32
+// 	var leftCellY i32
+// 	var upLeftCellX i32
+// 	var upLeftCellY i32
 
-	upCellX = cell.x
-	upCellY = wrapY(i32.add(cell.y, 1))
-	upRightCellX = wrapX(i32.add(cell.x, 1))
-	upRightCellY = wrapY(i32.add(cell.y, 1))
-	rightCellX = wrapX(i32.add(cell.x, 1))
-	rightCellY = cell.y
-	downRightCellX = wrapX(i32.add(cell.x, 1))
-	downRightCellY = wrapY(i32.add(cell.y, -1))
-	downCellX = cell.x
-	downCellY = wrapY(i32.add(cell.y, -1))
-	downLeftCellX = wrapX(i32.add(cell.x, -1))
-	downLeftCellY = wrapY(i32.add(cell.y, -1))
-	leftCellX = wrapX(i32.add(cell.x, -1))
-	leftCellY = cell.y
-	upLeftCellX = wrapX(i32.add(cell.x, -1))
-	upLeftCellY = wrapY(i32.add(cell.y, 1))
+// 	upCellX = cell.x
+// 	upCellY = wrapY(i32.add(cell.y, 1))
+// 	upRightCellX = wrapX(i32.add(cell.x, 1))
+// 	upRightCellY = wrapY(i32.add(cell.y, 1))
+// 	rightCellX = wrapX(i32.add(cell.x, 1))
+// 	rightCellY = cell.y
+// 	downRightCellX = wrapX(i32.add(cell.x, 1))
+// 	downRightCellY = wrapY(i32.add(cell.y, -1))
+// 	downCellX = cell.x
+// 	downCellY = wrapY(i32.add(cell.y, -1))
+// 	downLeftCellX = wrapX(i32.add(cell.x, -1))
+// 	downLeftCellY = wrapY(i32.add(cell.y, -1))
+// 	leftCellX = wrapX(i32.add(cell.x, -1))
+// 	leftCellY = cell.y
+// 	upLeftCellX = wrapX(i32.add(cell.x, -1))
+// 	upLeftCellY = wrapY(i32.add(cell.y, 1))
 
-	var upCell Cell
-	var upRightCell Cell
-	var rightCell Cell
-	var downRightCell Cell
-	var downCell Cell
-	var downLeftCell Cell
-	var leftCell Cell
-	var upLeftCell Cell
+// 	var upCell Cell
+// 	var upRightCell Cell
+// 	var rightCell Cell
+// 	var downRightCell Cell
+// 	var downCell Cell
+// 	var downLeftCell Cell
+// 	var leftCell Cell
+// 	var upLeftCell Cell
 
-	// i32.print(wrapX(cell.x))
-	// i32.print(wrapY(cell.y))
+// 	// i32.print(wrapX(cell.x))
+// 	// i32.print(wrapY(cell.y))
 
-	// i32.print(upLeftCellX)
-	// i32.print(upLeftCellY)
-	// i32.print(columns)
+// 	// i32.print(upLeftCellX)
+// 	// i32.print(upLeftCellY)
+// 	// i32.print(columns)
 	
-	// i32.print(map2Dto1D(upCellX, upCellY, columns))
-	// i32.print(map2Dto1D(downCellX, downCellY, columns))
-	// i32.print(map2Dto1D(upLeftCellX, upLeftCellY, columns))
+// 	// i32.print(map2Dto1D(upCellX, upCellY, columns))
+// 	// i32.print(map2Dto1D(downCellX, downCellY, columns))
+// 	// i32.print(map2Dto1D(upLeftCellX, upLeftCellY, columns))
 
-	// str.print("exit")
+// 	// str.print("exit")
 
 
 	
 
-	upCell = cells[map2Dto1D(upCellX, upCellY, columns)]
-	upRightCell = cells[map2Dto1D(upRightCellX, upRightCellY, columns)]
-	rightCell = cells[map2Dto1D(rightCellX, rightCellY, columns)]
-	downRightCell = cells[map2Dto1D(downRightCellX, downRightCellY, columns)]
-	downCell = cells[map2Dto1D(downCellX, downCellY, columns)]
-	downLeftCell = cells[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
-	leftCell = cells[map2Dto1D(leftCellX, leftCellY, columns)]
-	upLeftCell = cells[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
+// 	upCell = cells[map2Dto1D(upCellX, upCellY, columns)]
+// 	upRightCell = cells[map2Dto1D(upRightCellX, upRightCellY, columns)]
+// 	rightCell = cells[map2Dto1D(rightCellX, rightCellY, columns)]
+// 	downRightCell = cells[map2Dto1D(downRightCellX, downRightCellY, columns)]
+// 	downCell = cells[map2Dto1D(downCellX, downCellY, columns)]
+// 	downLeftCell = cells[map2Dto1D(downLeftCellX, downLeftCellY, columns)]
+// 	leftCell = cells[map2Dto1D(leftCellX, leftCellY, columns)]
+// 	upLeftCell = cells[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
 
-	// str.print("entering")
+// 	// str.print("entering")
 
-	if upCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if upRightCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if rightCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if downRightCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if downCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if downLeftCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if leftCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
-	if upLeftCell.alive {
-		aliveCount = i32.add(aliveCount, 1)
-	}
+// 	if upCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if upRightCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if rightCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if downRightCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if downCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if downLeftCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if leftCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
+// 	if upLeftCell.alive {
+// 		aliveCount = i32.add(aliveCount, 1)
+// 	}
 
-	// i32.print(aliveCount)
-}
+// 	// i32.print(aliveCount)
+// }
 
-func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
-	cell.alive = cell.aliveNext
-	cell.aliveNext = cell.alive
+// func changeState (cell Cell, cells [225]Cell) (newCell Cell) {
+// 	cell.alive = cell.aliveNext
+// 	cell.aliveNext = cell.alive
 
-	var aliveCount i32
-	// aliveCount = 2
-	aliveCount = aliveNeighbours(cell, cells)
+// 	var aliveCount i32
+// 	// aliveCount = 2
+// 	aliveCount = aliveNeighbours(cell, cells)
 
-	// i32.print(aliveCount)
+// 	// i32.print(aliveCount)
 
-	if cell.alive {
-		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-		if i32.lt(aliveCount, 2) {
-			cell.aliveNext = false
-		}
-		// 2. Any live cell with two or three live neighbours lives on to the next generation.
-		if bool.or(i32.eq(aliveCount, 2), i32.eq(aliveCount, 3)) {
-			cell.aliveNext = true
-		}
-		// 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
-		if i32.gt(aliveCount, 3) {
-			cell.aliveNext = false
-		}
-	} else {
-		// 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-		if i32.eq(aliveCount, 3) {
-			cell.aliveNext = true
-		}
-	}
+// 	if cell.alive {
+// 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
+// 		if i32.lt(aliveCount, 2) {
+// 			cell.aliveNext = false
+// 		}
+// 		// 2. Any live cell with two or three live neighbours lives on to the next generation.
+// 		if bool.or(i32.eq(aliveCount, 2), i32.eq(aliveCount, 3)) {
+// 			cell.aliveNext = true
+// 		}
+// 		// 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+// 		if i32.gt(aliveCount, 3) {
+// 			cell.aliveNext = false
+// 		}
+// 	} else {
+// 		// 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+// 		if i32.eq(aliveCount, 3) {
+// 			cell.aliveNext = true
+// 		}
+// 	}
 
-	newCell = cell
+// 	newCell = cell
 
-	// var counter i32
-	// for counter = 0; counter < 225; counter++ {
-	// 	i32.print(cells[counter].x)
-	// }
-}
+// 	// var counter i32
+// 	// for counter = 0; counter < 225; counter++ {
+// 	// 	i32.print(cells[counter].x)
+// 	// }
+// }
 
-func compileShader(source str, shaderType i32) (shader i32) {
-	shader = gl.CreateShader(shaderType)
+// func compileShader(source str, shaderType i32) (shader i32) {
+// 	shader = gl.CreateShader(shaderType)
 	
-	gl.Strs(source, "csources")
-	gl.ShaderSource(shader, 1, "csources")
-	gl.Free("csources")
-	gl.CompileShader(shader)
-}
+// 	gl.Strs(source, "csources")
+// 	gl.ShaderSource(shader, 1, "csources")
+// 	gl.Free("csources")
+// 	gl.CompileShader(shader)
+// }
 
-func makeVao (points [18]f32) (vao i32) {
-	var vbo i32
-	vbo = gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, 18), points, gl.STATIC_DRAW)
+// func makeVao (points [18]f32) (vao i32) {
+// 	var vbo i32
+// 	vbo = gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
+// 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+// 	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, 18), points, gl.STATIC_DRAW)
 
-	var vao i32
+// 	var vao i32
 	
-	vao = gl.GenVertexArrays(1, vao)
-	gl.BindVertexArray(vao)
-	gl.EnableVertexAttribArray(0)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
-}
+// 	vao = gl.GenVertexArrays(1, vao)
+// 	gl.BindVertexArray(vao)
+// 	gl.EnableVertexAttribArray(0)
+// 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+// 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
+// }
 
-func newCell (x i32, y i32) (cell Cell) {
-	// points = []f32.make([]f32.len(square))
-	// []f32.copy(points, square)
-	var points [18]f32
-	points = square
+// func newCell (x i32, y i32) (cell Cell) {
+// 	// points = []f32.make([]f32.len(square))
+// 	// []f32.copy(points, square)
+// 	var points [18]f32
+// 	points = square
 
-	var i i32
-	for i = 0; i32.lt(i, 18); i = i32.add(i, 1) {
-		var position f32
-		var size f32
+// 	var i i32
+// 	for i = 0; i32.lt(i, 18); i = i32.add(i, 1) {
+// 		var position f32
+// 		var size f32
 
-		position = 0.0
+// 		position = 0.0
 
-		if i32.eq(i32.mod(i, 3), 0) {
-			size = f32.div(1.0, i32.f32(columns))
-			position = f32.mul(i32.f32(x), size)
-		}
-		if i32.eq(i32.mod(i, 3), 1) {
-			size = f32.div(1.0, i32.f32(rows))
-			position = f32.mul(i32.f32(y), size)
-			// f32.print(position)
-		}
+// 		if i32.eq(i32.mod(i, 3), 0) {
+// 			size = f32.div(1.0, i32.f32(columns))
+// 			position = f32.mul(i32.f32(x), size)
+// 		}
+// 		if i32.eq(i32.mod(i, 3), 1) {
+// 			size = f32.div(1.0, i32.f32(rows))
+// 			position = f32.mul(i32.f32(y), size)
+// 			// f32.print(position)
+// 		}
 
-		if f32.lt(points[i], 0.0) {
-			// points = []f32.write(points, i, f32.sub(f32.mul(position, 2.0), 1.0))
-			points[i] = f32.sub(f32.mul(position, 2.0), 1.0)
-		} else {
-			// points = []f32.write(points, i, f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0))
-			points[i] = f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0)
-		}
-	}
+// 		if f32.lt(points[i], 0.0) {
+// 			// points = []f32.write(points, i, f32.sub(f32.mul(position, 2.0), 1.0))
+// 			points[i] = f32.sub(f32.mul(position, 2.0), 1.0)
+// 		} else {
+// 			// points = []f32.write(points, i, f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0))
+// 			points[i] = f32.sub(f32.mul(f32.add(position, size), 2.0), 1.0)
+// 		}
+// 	}
 
-	cell = Cell{
-		drawable: makeVao(points),
-		x: x,
-		y: y}
-}
+// 	cell = Cell{
+// 		drawable: makeVao(points),
+// 		x: x,
+// 		y: y}
+// }
 
-func makeCells () (cells [225]Cell) {
-	// var cells [225]Cell
-	var x i32
-	var y i32
-	var counter i32
-	for x = 0; i32.lt(x, rows); x = i32.add(x, 1) {
-		for y = 0; i32.lt(y, columns); y = i32.add(y, 1) {
-			var cell Cell
-			cell = newCell(x, y)
-			cell.alive = i32.lt(i32.rand(0, 100), 80)
-			cell.aliveNext = cell.alive
-			cells[counter] = cell
-			counter = i32.add(counter, 1)
-		}
-	}
-}
+// func makeCells () (cells [225]Cell) {
+// 	// var cells [225]Cell
+// 	var x i32
+// 	var y i32
+// 	var counter i32
+// 	for x = 0; i32.lt(x, rows); x = i32.add(x, 1) {
+// 		for y = 0; i32.lt(y, columns); y = i32.add(y, 1) {
+// 			var cell Cell
+// 			cell = newCell(x, y)
+// 			cell.alive = i32.lt(i32.rand(0, 100), 80)
+// 			cell.aliveNext = cell.alive
+// 			cells[counter] = cell
+// 			counter = i32.add(counter, 1)
+// 		}
+// 	}
+// }
 
 func initGlfw (window str) () {
 	glfw.Init()
@@ -295,95 +295,95 @@ func initGlfw (window str) () {
 	glfw.MakeContextCurrent("window")
 }
 
-func initOpenGL () (program i32) {
-	gl.Init()
+// func initOpenGL () (program i32) {
+// 	gl.Init()
 
-	// vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
-	// fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+// 	// vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+// 	// fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
-	var vertexShader i32
-	var fragmentShader i32
+// 	var vertexShader i32
+// 	var fragmentShader i32
 	
-	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
+// 	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
 	
-	gl.Strs("
-          #version 120
-          void main() {
-            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
-          }
-", "csources")
-	gl.ShaderSource(vertexShader, 1, "csources")
-	gl.Free("csources")
-	gl.CompileShader(vertexShader)
+// 	gl.Strs("
+//           #version 120
+//           void main() {
+//             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+//           }
+// ", "csources")
+// 	gl.ShaderSource(vertexShader, 1, "csources")
+// 	gl.Free("csources")
+// 	gl.CompileShader(vertexShader)
 
-	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
+// 	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
 
-	gl.Strs("
-          #version 120
-          void main() {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-          }
-", "csources")
-	gl.ShaderSource(fragmentShader, 1, "csources")
-	gl.Free("csources")
-	gl.CompileShader(fragmentShader)
+// 	gl.Strs("
+//           #version 120
+//           void main() {
+//             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+//           }
+// ", "csources")
+// 	gl.ShaderSource(fragmentShader, 1, "csources")
+// 	gl.Free("csources")
+// 	gl.CompileShader(fragmentShader)
 
 	
 
-	program = gl.CreateProgram()
+// 	program = gl.CreateProgram()
 	
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-}
+// 	gl.AttachShader(program, vertexShader)
+// 	gl.AttachShader(program, fragmentShader)
+// 	gl.LinkProgram(program)
+// }
 
-func drawCell (cell Cell) {
-	// if bool.not(cell.alive) {
-	// 	return;
-	// }
+// func drawCell (cell Cell) {
+// 	// if bool.not(cell.alive) {
+// 	// 	return;
+// 	// }
 
-	// bool.print(cell.alive)
-	// var boo bool
-	// boo = cell.alive
+// 	// bool.print(cell.alive)
+// 	// var boo bool
+// 	// boo = cell.alive
 
-	if cell.alive {
-		// if i32.lt(i32.rand(0, 100), 15) {
-		gl.BindVertexArray(cell.drawable)
-		gl.DrawArrays(gl.TRIANGLES, 0, i32.div(18, 3))
-	}
-}
+// 	if cell.alive {
+// 		// if i32.lt(i32.rand(0, 100), 15) {
+// 		gl.BindVertexArray(cell.drawable)
+// 		gl.DrawArrays(gl.TRIANGLES, 0, i32.div(18, 3))
+// 	}
+// }
 
-func draw (cells [225]Cell, window str, program i32) () {
-	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-	gl.UseProgram(program)
+// func draw (cells [225]Cell, window str, program i32) () {
+// 	gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+// 	gl.UseProgram(program)
 
-	var i i32
-	for i = 0; i32.lt(i, 225); i = i32.add(i, 1) {
-		drawCell(cells[i])
-	}
+// 	var i i32
+// 	for i = 0; i32.lt(i, 225); i = i32.add(i, 1) {
+// 		drawCell(cells[i])
+// 	}
 
-	glfw.PollEvents()
-	glfw.SwapBuffers("window")
-}
+// 	glfw.PollEvents()
+// 	glfw.SwapBuffers("window")
+// }
 
 func main () {
-	square = [18]f32{
-		-0.5, 0.5, 0.0,
-		-0.5, -0.5, 0.0,
-		0.5, -0.5, 0.0,
+	// square = [18]f32{
+	// 	-0.5, 0.5, 0.0,
+	// 	-0.5, -0.5, 0.0,
+	// 	0.5, -0.5, 0.0,
 
-		-0.5, 0.5, 0.0,
-		0.5, 0.5, 0.0,
-		0.5, -0.5, 0.0}
+	// 	-0.5, 0.5, 0.0,
+	// 	0.5, 0.5, 0.0,
+	// 	0.5, -0.5, 0.0}
 
 
 	initGlfw("window")
 	
 	var program i32
-	program = initOpenGL()
+	// program = initOpenGL()
 
-	var cells [225]Cell
-	cells = makeCells()
+	// var cells [225]Cell
+	// cells = makeCells()
 
 
 	// Start FPS
@@ -395,28 +395,28 @@ func main () {
 	// End FPS
 
 	for bool.not(glfw.ShouldClose("window")) {
-		// Start FPS
-		currentTime = glfw.GetTime()
-		nbFrames = i32.add(nbFrames, 1)
-		if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
-			i32.print(nbFrames)
-			nbFrames = 0
-			lastTime = f64.add(lastTime, 1.0D)
-		}
-		// End FPS
+		// // Start FPS
+		// currentTime = glfw.GetTime()
+		// nbFrames = i32.add(nbFrames, 1)
+		// if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
+		// 	i32.print(nbFrames)
+		// 	nbFrames = 0
+		// 	lastTime = f64.add(lastTime, 1.0D)
+		// }
+		// // End FPS
 
-		// var coco Cell
+		// // var coco Cell
 
-		var d i32
-		for d = 0; i32.lt(d, 225); d = i32.add(d, 1) {
-			// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
-			// i32.print(d)
-			cells[d] = changeState(cells[d], cells)
-			// cells[10] = cells[11]
-			// coco = changeState(cells[c], cells)
-			// changeState(cells[d], cells)
-		}
+		// var d i32
+		// for d = 0; i32.lt(d, 225); d = i32.add(d, 1) {
+		// 	// cells = []Cell.write(cells, c, changeState([]Cell.read(cells, c), cells))
+		// 	// i32.print(d)
+		// 	cells[d] = changeState(cells[d], cells)
+		// 	// cells[10] = cells[11]
+		// 	// coco = changeState(cells[c], cells)
+		// 	// changeState(cells[d], cells)
+		// }
 		
-		draw(cells, "window", program)
+		// draw(cells, "window", program)
 	}
 }

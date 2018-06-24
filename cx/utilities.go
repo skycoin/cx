@@ -87,11 +87,14 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 			var off int
 			var sizes []int
 
-			sizes = make([]int, len(def.Lengths))
+			sizes = make([]int, len(out.Lengths))
+
+			fmt.Println("sizes", out.Indexes, out.Lengths, def.Value)
+			
 			sizes[len(sizes)-1] = def.Size
 
 			for c := len(def.Lengths) - 1; c > 0; c-- {
-				sizes[c-1] = def.Lengths[c] * sizes[c]
+				sizes[c-1] = out.Lengths[c] * sizes[c]
 			}
 
 			for i, len := range rIdxs {
