@@ -486,12 +486,6 @@ used with identifiers (variables).
 
 # Comments
 
-Before continuing with more complex subjects,
-
-Some of the code snippets that follow have blocks of text that are
-prefixed by double slashes (//). Double slashes inform the CX parser
-that what
-
 Some of the code snippets that follow have comments in them, i.e.,
 blocks of text that are not actually "run" by the CX compiler or
 interpreter. Just like in C, Golang and many other programming
