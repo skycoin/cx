@@ -10,8 +10,8 @@ func main () () {
 	testing.testArray()
 	testing.testFunctions()
 
-	// testing.testBlocks()
-	// testing.testStructures()
+	testing.testControlFlow()
+	testing.testStructures()
 
 	// str itself needs a lot of love before being tested
 	// testing.testSTR()

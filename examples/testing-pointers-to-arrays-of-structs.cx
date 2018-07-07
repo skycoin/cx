@@ -80,28 +80,28 @@ func test3 (points *[3]Point) (newPoints *[3]Point) {
 // }
 
 func main () {
-	// var cho *[3]Point
-	// var gall [3]Point
-	// gall[0] = Point{x: 10, y: 20}
-	// gall[1] = Point{x: 30, y: 40}
-	// gall[2] = Point{x: 50, y: 60}
-	// cho = &gall
+	var cho *[3]Point
+	var gall [3]Point
+	gall[0] = Point{x: 10, y: 20}
+	gall[1] = Point{x: 30, y: 40}
+	gall[2] = Point{x: 50, y: 60}
+	cho = &gall
 
 	// gall[2].y = 99
 
 	// i32.print(gall[2].y)
 	// i32.print((*cho)[0].x)
 	
-	var check1 i32
-	var foo *[3]Point
-	var check2 i32
-
+	// var check1 i32
+	// var foo *[3]Point
+	// var check2 i32
+	
 	// var foo2 *[3]Point
 	// foo2 = makePoints2()
 
-	check1 = 111
-	foo = makePoints()
-	check2 = 113
+	// check1 = 111
+	// foo = makePoints()
+	// check2 = 113
 
 
 	
@@ -120,8 +120,8 @@ func main () {
 	// var checky i32
 	// checky = 113
 	
-	var newPoints *[3]Point
-	newPoints = test3(foo)
+	// var newPoints *[3]Point
+	// newPoints = test3(foo)
 
 
 
@@ -138,9 +138,10 @@ func main () {
 	// // newPoints = makePoints()
 	// newPoints = test3(foo)
 	
+
 	
-	i32.print((*newPoints)[1].x)
-	i32.print((*newPoints)[2].y)
+	// i32.print((*newPoints)[1].x)
+	// i32.print((*newPoints)[2].y)
 
 
 

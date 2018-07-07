@@ -4,38 +4,11 @@
 		// "fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
+		. "github.com/skycoin/cx/cxgo/actions"
 	)
 
+	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	
-	// var prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	var dataOffset int
-
-	var lineNo int = 0
-	var webMode bool
-	var baseOutput bool
-	var replMode bool
-	var helpMode bool
-	var interpretMode bool
-	var compileMode bool
-	var replTargetFn string = ""
-	var replTargetStrct string = ""
-	var replTargetMod string = ""
-
-	var inREPL bool = false
-
-	var sysInitExprs []*CXExpression
-
-
-
-	// var cxt = interpreted.MakeProgram()
-	//var cxt = cx0.CXT
-
-	var dStack bool = false
-	var inFn bool = false
-	//var dProgram bool = false
-	var tag string = ""
-	var asmNL = "\n"
-	var fileName string
 %}
 
 %union{
@@ -58,8 +31,8 @@
 	expression *CXExpression
 	expressions []*CXExpression
 
-	selectStatement selectStatement
-	selectStatements []selectStatement
+	SelectStatement SelectStatement
+	SelectStatements []SelectStatement
 
 	arrayArguments [][]*CXExpression
 
@@ -156,8 +129,8 @@
 %type   <expressions>   selector
 
 %type   <expressions>   struct_literal_fields
-%type   <selectStatement>   elseif
-%type   <selectStatements>   elseif_list
+%type   <SelectStatement>   elseif
+%type   <SelectStatements>   elseif_list
 
 %type   <expressions>   declaration
 //                      %type   <expressions>   init_declarator_list
@@ -218,7 +191,7 @@ debugging:      DSTATE
                 }
         |       DPROGRAM
                 {
-			prgrm.PrintProgram()
+			PRGRM.PrintProgram()
                 }
         ;
 
@@ -243,8 +216,8 @@ selector:
                 }
                 compound_statement
                 {
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-				if fn, err := prgrm.GetFunction($<string>3, pkg.Name); err == nil {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				if fn, err := PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
 					for _, expr := range $4 {
 						fn.AddExpression(expr)
 					}
@@ -260,7 +233,7 @@ selector:
 			// fmt.Println("house", $4)
 			// if $<bool>4 {
 				
-			// 	if _, err := prgrm.SelectFunction($<string>3); err == nil {
+			// 	if _, err := PRGRM.SelectFunction($<string>3); err == nil {
 			// 	}
 			// }
                 }
@@ -331,12 +304,12 @@ function_header:
                 FUNC IDENTIFIER
                 {
 			$$ = FunctionHeader($2, nil, false)
-			inFn = true
+			InFn = true
                 }
         |       FUNC LPAREN parameter_type_list RPAREN IDENTIFIER
                 {
 			$$ = FunctionHeader($5, $3, true)
-			inFn = true
+			InFn = true
                 }
         ;
 
@@ -351,12 +324,12 @@ function_declaration:
                 function_header function_parameters compound_statement
                 {
 			FunctionDeclaration($1, $2, nil, $3)
-			inFn = false
+			InFn = false
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
 			FunctionDeclaration($1, $2, $3, $4)
-			inFn = false
+			InFn = false
                 }
         ;
 
@@ -390,7 +363,7 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				arg := MakeArgument("")
                                 arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
@@ -597,7 +570,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
                 {
-			if interpretMode {
+			if InterpretMode {
 				$$ = BasicArrayLiteralDeclaration(TypeNames[$3], $5, yyS[yypt-0].line + 1, false)
 			} else {
 				$$ = ArrayLiteralExpression(int(SLICE_SIZE), $3, $5)
@@ -609,7 +582,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK slice_literal_expression
                 {
-			if interpretMode {
+			if InterpretMode {
 				
 			} else {
 				
@@ -649,32 +622,32 @@ primary_expression:
         //         }
         |       STRING_LITERAL
                 {
-			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1), false)
                 }
         |       BOOLEAN_LITERAL
                 {
-			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1))
+			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
         |       BYTE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_F32, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_F32, encoder.Serialize($1), false)
                 }
         |       DOUBLE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1), false)
                 }
         |       LONG_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1))
+			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }
@@ -1074,7 +1047,7 @@ selection_statement:
 
 elseif:         ELSE IF expression LBRACE block_item_list RBRACE
                 {
-			$$ = selectStatement{
+			$$ = SelectStatement{
 				Condition: $3,
 				Then: $5,
 			}
@@ -1083,7 +1056,7 @@ elseif:         ELSE IF expression LBRACE block_item_list RBRACE
 
 elseif_list:    elseif
                 {
-			$$ = []selectStatement{$1}
+			$$ = []SelectStatement{$1}
                 }
         |       elseif_list elseif
                 {
@@ -1115,7 +1088,7 @@ iteration_statement:
 
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				expr := MakeExpression(Natives[OP_JMP])
 				expr.Package = pkg
 				expr.Label = $2
@@ -1136,7 +1109,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
                 { $$ = nil }
 	|       RETURN SEMICOLON
                 {
-			if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				expr := MakeExpression(Natives[OP_JMP])
 
 				// simulating a label so it gets executed without evaluating a predicate

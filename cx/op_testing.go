@@ -7,8 +7,16 @@ import (
 
 func op_test_value(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	byts1 := ReadMemory(stack, GetFinalOffset(stack, fp, inp1, MEM_READ), inp1)
-	byts2 := ReadMemory(stack, GetFinalOffset(stack, fp, inp2, MEM_READ), inp2)                       
+
+	var byts1, byts2 []byte
+	
+	if inp1.Type == TYPE_STR {
+		byts1 = []byte(ReadStr(stack, fp, inp1))
+		byts2 = []byte(ReadStr(stack, fp, inp2))
+	} else {
+		byts1 = ReadMemory(stack, GetFinalOffset(stack, fp, inp1, MEM_READ), inp1)
+		byts2 = ReadMemory(stack, GetFinalOffset(stack, fp, inp2, MEM_READ), inp2)
+	}
 
 	var same bool
 	same = true

@@ -187,6 +187,7 @@ import (
 	
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
+	. "github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	// "github.com/skycoin/cx/src/interpreted"
 )
@@ -194,7 +195,7 @@ import (
 const VERSION = "0.5.5"
 
 var insert bool
-var prgrm *CXProgram
+// var PRGRM *CXProgram
 
 func f (token int) int {
 	if insert && token == NEWLINE {
@@ -255,14 +256,14 @@ func unsafeEval (code string) (out string) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 	
-	lineNo = 0
+	LineNo = 0
 	
 	b := bytes.NewBufferString(code)
 	lexer = NewLexer(b)
 	yyParse(lexer)
 
-	if err := prgrm.RunCompiled(); err != nil {
-		prgrm = MakeProgram(1024, 1024, 1024)
+	if err := PRGRM.RunCompiled(); err != nil {
+		PRGRM = MakeProgram(1024, 1024, 1024)
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -277,7 +278,7 @@ func unsafeEval (code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	prgrm = MakeProgram(1024, 1024, 1024)
+	PRGRM = MakeProgram(1024, 1024, 1024)
 	return out
 }
 
@@ -299,7 +300,7 @@ func Eval (code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		prgrm = MakeProgram(1024, 1024, 1024)
+		PRGRM = MakeProgram(1024, 1024, 1024)
 		return "Timed out."
 	}
 }
@@ -308,7 +309,40 @@ type SourceCode struct {
 	Code string
 }
 
-func WebMode () {
+func ObjectExplorer () {
+	host := ":5337"
+
+	mux := http.NewServeMux()
+	
+	mux.Handle("/", http.FileServer(http.Dir("./object-explorer")))
+	
+	// mux.HandleFunc("/get-objects", func(w http.ResponseWriter, r *http.Request) {
+	// 	defer r.Body.Close()
+	// 	var b []byte
+	// 	var err error
+	// 	if b, err = ioutil.ReadAll(r.Body); err != nil {
+	// 		http.Error(w, err.Error(), 500)
+	// 		return
+	// 	}
+		
+	// 	var source SourceCode
+	// 	if err := json.Unmarshal(b, &source); err != nil {
+	// 		http.Error(w, err.Error(), 500)
+	// 		return
+	// 	}
+
+	// 	if err := r.ParseForm(); err == nil {
+	// 		fmt.Fprintf(w, "%s", Eval(source.Code))
+	// 	}
+	// })
+
+	if listener, err := net.Listen("tcp", host); err == nil {
+		fmt.Println("Starting CX web service on http://127.0.0.1:5337/")
+		http.Serve(listener, mux)
+	}
+}
+
+func ServiceMode () {
 	host := ":5336"
 
 	mux := http.NewServeMux()
@@ -372,7 +406,7 @@ Notes:
 }
 
 func (yylex Lexer) Error (e string) {
-	if inREPL {
+	if InREPL {
 		fmt.Printf("syntax error: %s\n", e)
 	} else {
 		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
@@ -395,7 +429,7 @@ func repl () {
 	fmt.Println("CX", VERSION)
 	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
 
-	inREPL = true
+	InREPL = true
 
 	fi := bufio.NewReader(os.NewFile(0, "stdin"))
 	
@@ -405,34 +439,34 @@ func repl () {
 
 		fmt.Println()
 
-		if replTargetMod != "" {
-			fmt.Println(fmt.Sprintf(":package %s {...", replTargetMod))
+		if ReplTargetMod != "" {
+			fmt.Println(fmt.Sprintf(":package %s {...", ReplTargetMod))
 			fmt.Printf("\t* ")
-		} else if replTargetFn != "" {
-			fmt.Println(fmt.Sprintf(":func %s {...", replTargetFn))
+		} else if ReplTargetFn != "" {
+			fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
 			fmt.Printf("\t* ")
-		} else if replTargetStrct != "" {
-			fmt.Println(fmt.Sprintf(":struct %s {...", replTargetStrct))
+		} else if ReplTargetStrct != "" {
+			fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
 			fmt.Printf("\t* ")
 		} else {
 			fmt.Printf("* ")
 		}
 		
 		if inp, ok = readline(fi); ok {
-			if replTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {\n%s\n}\n", replTargetFn, inp)
+			if ReplTargetFn != "" {
+				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
 			}
-			if replTargetMod != "" {
-				inp = fmt.Sprintf(":package %s {%s}", replTargetMod, inp)
+			if ReplTargetMod != "" {
+				inp = fmt.Sprintf(":package %s {%s}", ReplTargetMod, inp)
 			}
-			if replTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {%s}", replTargetStrct, inp)
+			if ReplTargetStrct != "" {
+				inp = fmt.Sprintf(":struct %s {%s}", ReplTargetStrct, inp)
 			}
 
 
 			// var numExprs int
 			// var currFn string
-			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			// 	currFn = fn.Name
 			// 	numExprs = len(fn.Expressions)
 			// }
@@ -441,39 +475,39 @@ func repl () {
 
 			yyParse(NewLexer(b))
 
-			// prgrm.PrintProgram()
+			// PRGRM.PrintProgram()
 
 			// var numExprsAdded int
-			// if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			// 	numExprsAdded = len(fn.Expressions) - numExprs
 			// }
 
 			// if numExprsAdded > 0 && currFn == MAIN_FUNC {
-			// 	if fn, err := prgrm.GetCurrentFunction(); err == nil {
+			// 	if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			// 		for true {
-			// 			prgrm.RunInterpreted(dStack, 1)
+			// 			PRGRM.RunInterpreted(dStack, 1)
 						
-			// 			if len(prgrm.CallStack) == 1 && prgrm.CallStack[0].Line == len(fn.Expressions) {
+			// 			if len(PRGRM.CallStack) == 1 && PRGRM.CallStack[0].Line == len(fn.Expressions) {
 			// 				break
 			// 			}
 			// 		}
 			// 	}
 			// }
 		} else {
-			if replTargetFn != "" {
-				replTargetFn = ""
+			if ReplTargetFn != "" {
+				ReplTargetFn = ""
 				fmt.Println()
 				continue
 			}
 
-			if replTargetStrct != "" {
-				replTargetStrct = ""
+			if ReplTargetStrct != "" {
+				ReplTargetStrct = ""
 				fmt.Println()
 				continue
 			}
 
-			if replTargetMod != "" {
-				replTargetMod = ""
+			if ReplTargetMod != "" {
+				ReplTargetMod = ""
 				fmt.Println()
 				continue
 			}
@@ -535,7 +569,7 @@ func main () {
 	var sourceCode []*os.File
 
 	if len(args) == 0 {
-		replMode = true
+		ReplMode = true
 	}
 
 	flagMode := false
@@ -546,28 +580,28 @@ func main () {
 			return
 		}
 		if arg == "--web" || arg == "-w" {
-			webMode = true
+			WebMode = true
 			flagMode = true
 			continue
 		}
 		if arg == "--repl" || arg == "-r" {
-			replMode = true
+			ReplMode = true
 			flagMode = true
 			continue
 		}
 		if arg == "--base" || arg == "-b" {
-			baseOutput = true
+			BaseOutput = true
 			flagMode = true
 			continue
 		}
 		if arg == "--interpret" || arg == "-i" {
-			interpretMode = true
+			InterpretMode = true
 			flagMode = true
 			continue
 		}
 		if arg == "--compile" || arg == "-c" {
-			compileMode = true
-			baseOutput = true
+			CompileMode = true
+			BaseOutput = true
 			flagMode = true
 			continue
 		}
@@ -576,7 +610,7 @@ func main () {
 			continue
 		}
 		if arg == "--help" || arg == "-h" {
-			helpMode = true
+			HelpMode = true
 			flagMode = true
 			continue
 		}
@@ -636,30 +670,31 @@ func main () {
 		}
 	}
 
-	// if interpretMode {
-	// 	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// if InterpretMode {
+	// 	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	// } else {
-	// 	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	// 	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	// }
 
-	prgrm = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 
-	if helpMode {
+	if HelpMode {
 		help()
 		return
 	}
 
-	if webMode {
-		WebMode()
+	if WebMode {
+		// ServiceMode()
+		ObjectExplorer()
 		return
 	}
 
-	if compileMode && replMode {
+	if CompileMode && ReplMode {
 		fmt.Println("Error: Options --compile and --repl are mutually exclusive.")
 		return
 	}
 
-	cxgo0.PRGRM = prgrm
+	cxgo0.PRGRM0 = PRGRM
 
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
@@ -676,14 +711,14 @@ func main () {
 		// the actual pass 0, but so small I'm not going to count it as another pass
 		for _, match := range re.FindAllStringSubmatch(allSC, -1) {
 			pkg := MakePackage(match[len(match)-1])
-			cxgo0.PRGRM.AddPackage(pkg)
+			cxgo0.PRGRM0.AddPackage(pkg)
 		}
 		
 		cxgo0.Parse(allSC)
 	}
 
-	prgrm = cxgo0.PRGRM
-	dataOffset = cxgo0.DataOffset
+	PRGRM = cxgo0.PRGRM0
+	// DataOffset = cxgo0.dataOffset
 
 	// parsing all source code files
 	for _, source := range sourceCodeCopy {
@@ -694,19 +729,19 @@ func main () {
 
 	if len(sourceCode) == 0 {
 		mod := MakePackage(MAIN_PKG)
-		prgrm.AddPackage(mod)
+		PRGRM.AddPackage(mod)
 		fn := MakeFunction("main")
 		mod.AddFunction(fn)
 
-		replTargetFn = "main"
+		ReplTargetFn = "main"
 	}
 
 	// adding *init function that initializes all the global variables
-	if main, err := prgrm.GetPackage(MAIN_PKG); err == nil {
+	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
 		initFn := MakeFunction(SYS_INIT_FUNC)
 		main.AddFunction(initFn)
 
-		// if mainFn, err := prgrm.GetFunction(MAIN_FUNC, MAIN_PKG); err == nil {
+		// if mainFn, err := PRGRM.GetFunction(MAIN_FUNC, MAIN_PKG); err == nil {
 		// 	// expr := MakeExpression(mainFn)
 		// 	// expr.Package = main
 		// 	// if we receive arguments from the OS, we'll add them here
@@ -715,34 +750,34 @@ func main () {
 		// 	panic(err)
 		// }
 
-		FunctionDeclaration(initFn, nil, nil, sysInitExprs)
-		prgrm.SelectFunction(MAIN_FUNC)
+		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
+		PRGRM.SelectFunction(MAIN_FUNC)
 	} else {
 		panic(err)
 	}
 	
-	lineNo = 0
+	LineNo = 0
 
-	if replMode || len(sourceCode) == 0 {
+	if ReplMode || len(sourceCode) == 0 {
 		repl()
-	} else if !compileMode && !baseOutput && len(sourceCode) > 0 {
-		if interpretMode {
-			if err := prgrm.RunInterpreted(false, -1); err != nil {
+	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
+		if InterpretMode {
+			if err := PRGRM.RunInterpreted(false, -1); err != nil {
 				fmt.Println(err)
 				repl()
 			}
 		} else {
-			if err := prgrm.RunCompiled(); err != nil {
+			if err := PRGRM.RunCompiled(); err != nil {
 				fmt.Println(err)
 				// repl()
 			}
 		}
 	}
 	
-	if baseOutput {
-		//prgrm.Compile(true)
+	if BaseOutput {
+		//PRGRM.Compile(true)
 	}
-	if compileMode {
+	if CompileMode {
 		baseFilename := fmt.Sprintf("%s.go", compileOutput)
 		build := exec.Command("go", "build", baseFilename)
 		build.Run()

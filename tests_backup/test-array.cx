@@ -1,0 +1,203 @@
+package testing
+
+var intArray [5]i32
+var longArray [5]i64
+var floatArray [5]f32
+var doubleArray [5]f64
+var boolArray [5]bool
+var byteArray [5]byte
+var stringArray [5]str
+
+func testGetElement() () {
+	str.print("--------Get One Array Element--------")
+	test(intArray[4], 5, "I32 Get element error")
+	test(longArray[2], 90L, "I64 Get element error")
+	test(floatArray[0], 3.9, "F32 Get element error")
+	test(doubleArray[1], 70.0D, "F64 Get element error")
+	test(boolArray[4], false, "BOOL Get element error")
+	test(byteArray[2], 123, "BYTE Get element error")
+	// test(stringArray[4], "Hello there!", "STR Get element error")
+}
+
+func testGetArray() () {
+	str.print("--------Get Array--------")
+	test(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
+	test(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
+	test(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
+	test(doubleArray, []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}, "[]F64 Get error")
+	test(boolArray, []bool{ true, false, true, true, false}, "[]BOOL Get error")
+	test(byteArray, []byte{ 70, 256, 379, 0, 255}, "[]BYTE Get error")
+	// test(stringArray, []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}, "[]STR Get error")
+}
+
+// func testPrintElement() () {
+// 	str.print("--------Print One Array Element--------")
+// 	str.print("PASS: I32 Print element")
+// 	i32.print(intArray[2])
+
+// 	str.print("PASS: I64 Print element")
+// 	i64.print(longArray[2])
+
+// 	str.print("PASS: F32 Print element")
+// 	f32.print(floatArray[2])
+
+// 	str.print("PASS: F64 Print element")
+// 	f64.print(doubleArray[2])
+
+// 	str.print("PASS: BOOL Print element")
+// 	bool.print(boolArray[2])
+
+// 	str.print("PASS: BYTE Print element")
+// 	byte.print(byteArray[2])
+
+// 	str.print("FAIL: STR Print element doesn't work")
+// 	//str.print(stringArray[2])
+// }
+
+// func testPrintArray() () {
+// 	str.print("--------Print Array--------")
+
+// 	str.print("FAIL: []I32 Print Array")
+// 	//[]i32.print(intArray)
+
+// 	str.print("FAIL: []I64 Print Array")
+// 	//[]i64.print(longArray)
+
+// 	str.print("FAIL: []F32 Print Array")
+// 	//[]f32.print(floatArray)
+
+// 	str.print("FAIL: []F64 Print Array")
+// 	//[]f64.print(doubleArray)
+
+// 	str.print("FAIL: []BOOL Print Array")
+// 	//[]bool.print(boolArray)
+
+// 	str.print("FAIL: []BYTE Print Array")
+// 	//[]byte.print(byteArray)
+
+// 	str.print("FAIL: []STR Print Array")
+// 	//[]str.print(stringArray)
+// }
+
+// func testMakeArray() () {
+// 	var tempI32 []i32
+// 	var tempI64 []i64
+// 	var tempF32 []f32
+// 	var tempF64 []f64
+// 	var tempBool []bool
+// 	var tempByte []byte
+// 	var tempString []str
+
+// 	str.print("--------Make Array Test--------")
+// 	str.print("FAIL: Make []I32")
+// 	//tempI32 = []i32.make(5)
+
+// 	str.print("FAIL: Make []I64")
+// 	//tempI64 = []i64.make(5)
+
+// 	str.print("FAIL: Make []F32")
+// 	//tempF32 = []f32.make(5)
+
+// 	str.print("FAIL: Make []F64")
+// 	//tempF64 = []f64.make(5)
+
+// 	str.print("FAIL: Make []BOOL")
+// 	//tempBool = []bool.make(5)
+
+// 	str.print("FAIL: Make []BYTE")
+// 	//tempByte = []byte.make(5)
+
+// 	str.print("FAIL: Make []STR")
+// 	//tempString = []str.make(5)
+// }
+
+// func testRead() () {
+// 	str.print("--------Array Read Test--------")
+// 	str.print("FAIL: []I32 Read")
+// 	//test([]i32.read(intArray, 1), 2, "[]I32 Read error")
+
+// 	str.print("FAIL: []I64 Read")
+// 	//test([]i64.read(longArray, 1), 30L, "[]I64 Read error")
+
+// 	str.print("FAIL: []F32 Read")
+// 	//test([]f32.read(floatArray, 1), 6.7, "[]F32 Read error")
+
+// 	str.print("FAIL: []F64 Read")
+// 	//test([]f64.read(doubleArray, 1), 70.0D, "[]F64 Read error")
+
+// 	str.print("FAIL: []BOOL Read")
+// 	//test([]bool.read(boolArray, 1), false, "[]BOOL Read error")
+
+// 	str.print("FAIL: []BYTE Read")
+// 	//test([]byte.read(byteArray, 1), 0, "[]BYTE Read error")
+
+// 	str.print("FAIL: []STR Read")
+// 	//test([]str.read(stringArray, 1), "Foo!", "[]STR Read error")
+// }
+
+func testLength() () {
+	str.print("--------Lenght Array Test--------")
+	test(len(intArray), 5, "[]I32 len() error")
+	test(len(longArray), 5, "[]I64 len() error")
+	test(len(floatArray), 5, "[]F32 len() error")
+	test(len(doubleArray), 5, "[]F64 len() error")
+	test(len(boolArray), 5, "[]BOOL len() error")
+	test(len(byteArray), 5, "[]BYTE len() error")
+	test(len(stringArray), 5, "[]STR len() error")
+}
+
+func testWriteElement() () {
+	var tempI32 i32 = intArray[2]
+	var tempI64 i64 = longArray[2]
+	var tempF32 f32 = floatArray[2]
+	var tempF64 f64 = doubleArray[2]
+	var tempBool bool = boolArray[2]
+	var tempByte byte = byteArray[2]
+	var tempString str = stringArray[2]
+
+	str.print("--------Write Array Element--------")
+
+	intArray[2] = 374
+	longArray[2] = 9386489L
+	floatArray[2] = 294.873
+	doubleArray[2] = 2048.2345D
+	boolArray[2] = false
+	byteArray[2] = 8964
+	stringArray[2] = "Oops!"
+
+	test(intArray[2], 374, "I32 Write element error")
+	test(longArray[2], 9386489L, "I64 Write element error")
+	test(floatArray[2], 294.873, "F32 Write element error")
+	test(doubleArray[2], 2048.2345D, "F64 Write element error")
+	test(boolArray[2], false, "BOOL Write element error")
+	test(byteArray[2], 4, "BYTE Write element error")
+	test(stringArray[2], "Oops!", "STR Write element error")
+
+	intArray[2] = tempI32
+	longArray[2] = tempI64
+	floatArray[2] = tempF32
+	doubleArray[2] = tempF64
+	boolArray[2] = tempBool
+	byteArray[2] = tempByte
+	stringArray[2] = tempString
+}
+
+func testArray () () {
+	intArray = []i32{ 1, 2, 3, 4, 5}
+	longArray = []i64{ 20L, 30L, 90L, 1L, 5L}
+	floatArray = []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}
+	doubleArray = []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
+	boolArray = []bool{ true, false, true, true, false}
+	byteArray = []byte{ 70, 256, 379, 0, 255}
+	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}
+
+	str.print("Running ARRAY Testing...")
+	testGetElement()
+	testGetArray()
+	// testPrintElement()
+	// testPrintArray()
+	// testMakeArray()
+	// testRead()
+	// testLength()
+	// testWriteElement()
+}

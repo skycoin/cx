@@ -4,10 +4,11 @@
 		// "fmt"
 		"bytes"
 		. "github.com/skycoin/cx/cx"
+		. "github.com/skycoin/cx/cxgo/actions"
 	)
 
-	var PRGRM *CXProgram
-	var DataOffset int
+	var PRGRM0 *CXProgram
+	// var DataOffset int
 
 	var lineNo int = 0
 	var replMode bool = false
@@ -15,40 +16,40 @@
 	var inFn bool = false
 	var fileName string
 
-	func WritePrimary (typ int, byts []byte) []*CXExpression {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			arg := MakeArgument("")
-			arg.AddType(TypeNames[typ])
-                        arg.AddValue(&byts)
-			arg.MemoryRead = MEM_DATA
-			arg.MemoryWrite = MEM_DATA
-			arg.Offset = DataOffset
-			arg.Package = pkg
-			arg.Program = PRGRM
-			size := len(byts)
-			arg.Size = size
-			arg.TotalSize = size
-			arg.PointeeSize = size
-			DataOffset += size
-			PRGRM.Data = append(PRGRM.Data, Data(byts)...)
-			expr := MakeExpression(nil)
-			expr.Package = pkg
-			expr.Outputs = append(expr.Outputs, arg)
-			return []*CXExpression{expr}
-		} else {
-			panic(err)
-		}
-	}
+	// func WritePrimary (typ int, byts []byte) []*CXExpression {
+	// 	if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+	// 		arg := MakeArgument("")
+	// 		arg.AddType(TypeNames[typ])
+        //                 arg.AddValue(&byts)
+	// 		arg.MemoryRead = MEM_DATA
+	// 		arg.MemoryWrite = MEM_DATA
+	// 		arg.Offset = dataOffset
+	// 		arg.Package = pkg
+	// 		arg.Program = PRGRM0
+	// 		size := len(byts)
+	// 		arg.Size = size
+	// 		arg.TotalSize = size
+	// 		arg.PointeeSize = size
+	// 		dataOffset += size
+	// 		PRGRM0.Data = append(PRGRM0.Data, Data(byts)...)
+	// 		expr := MakeExpression(nil)
+	// 		expr.Package = pkg
+	// 		expr.Outputs = append(expr.Outputs, arg)
+	// 		return []*CXExpression{expr}
+	// 	} else {
+	// 		panic(err)
+	// 	}
+	// }
 
-	func TotalLength (lengths []int) int {
-		var total int = 1
-		for _, i := range lengths {
-			total *= i
-		}
-		return total
-	}
+	// func TotalLength (lengths []int) int {
+	// 	var total int = 1
+	// 	for _, i := range lengths {
+	// 		total *= i
+	// 	}
+	// 	return total
+	// }
 
-	func FunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
+	func PreFunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
 		// adding inputs, outputs
 		for _, inp := range inputs {
 			fn.AddInput(inp)
@@ -174,28 +175,32 @@ external_declaration:
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize))
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize), true)
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryRead = MEM_DATA
-				$3.MemoryWrite = MEM_DATA
+				$3.MemoryRead = exprOut.MemoryRead
+				$3.MemoryWrite = exprOut.MemoryWrite
 				$3.Offset = exprOut.Offset
+
+				$3.Size = exprOut.Size
+				$3.TotalSize = exprOut.TotalSize
 				$3.Package = exprOut.Package
 				pkg.AddGlobal($3)
 			} else {
 				panic(err)
 			}
+			// DeclareGlobal($2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := WritePrimary($3.Type, make([]byte, $3.Size))
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+				expr := WritePrimary($3.Type, make([]byte, $3.Size), true)
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
 				// $3.Value = $5[0].Outputs[0].Value
-				$3.MemoryRead = MEM_DATA
-				$3.MemoryWrite = MEM_DATA
+				$3.MemoryRead = exprOut.MemoryRead
+				$3.MemoryWrite = exprOut.MemoryWrite
 				$3.Offset = exprOut.Offset
 				$3.Size = exprOut.Size
 				$3.TotalSize = exprOut.TotalSize
@@ -204,13 +209,14 @@ global_declaration:
 			} else {
 				panic(err)
 			}
+			// DeclareGlobal($2, $2, $5, true)
                 }
                 ;
 
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				strct := MakeStruct($2)
 				pkg.AddStruct(strct)
 
@@ -248,16 +254,16 @@ package_declaration:
                 {
 			pkg := MakePackage($2)
 			pkg.AddImport(pkg)
-			PRGRM.AddPackage(pkg)
+			PRGRM0.AddPackage(pkg)
                 }
                 ;
 
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				if _, err := pkg.GetImport($2); err != nil {
-					if imp, err := PRGRM.GetPackage($2); err == nil {
+					if imp, err := PRGRM0.GetPackage($2); err == nil {
 						pkg.AddImport(imp)
 					} else {
 						panic(err)
@@ -272,7 +278,7 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				fn := MakeFunction($2)
 				pkg.AddFunction(fn)
 
@@ -286,7 +292,7 @@ function_header:
 			if len($3) > 1 {
 				panic("method has multiple receivers")
 			}
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				fn := MakeFunction($5)
 				pkg.AddFunction(fn)
 
@@ -309,11 +315,11 @@ function_parameters:
 function_declaration:
                 function_header function_parameters compound_statement
                 {
-			FunctionDeclaration($1, $2, nil, nil)
+			PreFunctionDeclaration($1, $2, nil, nil)
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
-			FunctionDeclaration($1, $2, $3, nil)
+			PreFunctionDeclaration($1, $2, $3, nil)
                 }
         ;
 
@@ -367,7 +373,7 @@ declarator:     direct_declarator
 direct_declarator:
                 IDENTIFIER
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				arg := MakeArgument("")
 				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
@@ -436,22 +442,33 @@ declaration_specifiers:
 			arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 			// arg.Size = GetArgSize($4.Type)
 			$$ = arg
+			// arg := DeclarationSpecifiers($4, int($2), DECL_ARRAY)
+			// fmt.Println("arg", arg.Lengths)
+			// // $$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
+			// $$ = arg
                 }
         |       type_specifier
                 {
 			arg := MakeArgument("")
 			arg.AddType(TypeNames[$1])
 			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
+
 			arg.Type = $1
 			arg.Size = GetArgSize($1)
 			arg.TotalSize = arg.Size
-			$$ = arg
+
+			if $1 == TYPE_STR {
+				fld := DeclarationSpecifiers(arg, 0, DECL_POINTER)
+				$$ = fld
+			} else {
+				$$ = arg
+			}
                 }
         |       IDENTIFIER
                 {
 			// custom type in the current package
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				if strct, err := PRGRM.GetStruct($1, pkg.Name); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+				if strct, err := PRGRM0.GetStruct($1, pkg.Name); err == nil {
 					arg := MakeArgument("")
 					arg.AddType(TypeNames[TYPE_CUSTOM])
 					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
@@ -470,9 +487,9 @@ declaration_specifiers:
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
 			// custom type in an imported package
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				if imp, err := pkg.GetImport($1); err == nil {
-					if strct, err := PRGRM.GetStruct($3, imp.Name); err == nil {
+					if strct, err := PRGRM0.GetStruct($3, imp.Name); err == nil {
 						arg := MakeArgument("")
 						arg.AddType(TypeNames[TYPE_CUSTOM])
 						arg.CustomType = strct
@@ -494,8 +511,8 @@ declaration_specifiers:
 				panic(err)
 			}
 			
-			// if pkg, err := PRGRM.GetPackage($1); err == nil {
-			// 	if strct, err := PRGRM.GetStruct($3, pkg.Name); err == nil {
+			// if pkg, err := PRGRM0.GetPackage($1); err == nil {
+			// 	if strct, err := PRGRM0.GetStruct($3, pkg.Name); err == nil {
 			// 		arg := MakeArgument(TYPE_CUSTOM)
 			// 		arg.CustomType = strct
 			// 		arg.Size = strct.Size

@@ -253,7 +253,6 @@ func main () {
 		for _, strct := range mod.Structs {
 			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);%s`, strct.Name, asmNL))
 			for _, fld := range strct.Fields {
-				// here here
 				program.WriteString(fmt.Sprintf(`fld = MakeField("%s", "%s");strct.AddField(fld);%s`, fld.Name, fld.Typ, asmNL))
 			}
 		}
@@ -1238,7 +1237,6 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 						argsCopy[i].Typ &&
 					expr.Operator.Inputs[i].Typ != "" &&
 					expr.Operator.Inputs[i].Type != TYPE_UNDEFINED {
-					fmt.Println("here")
 					return errors.New(fmt.Sprintf("%s: %d: %s: input %d is type '%s'; expected type '%s'\n",
 						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
 				}
@@ -1393,10 +1391,11 @@ func (prgrm *CXProgram) RunCompiled() error {
 					return err
 				}
 			}
+			
 			// debugging memory
-			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			// fmt.Println("prgrm.Heap", prgrm.Heap)
-			// fmt.Println("prgrm.Data", prgrm.Data)
+			fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
+			fmt.Println("prgrm.Heap", prgrm.Heap)
+			fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
 			return err
@@ -1407,6 +1406,7 @@ func (prgrm *CXProgram) RunCompiled() error {
 }
 
 func (call *CXCall) ccall(prgrm *CXProgram) error {
+	// GetAllObjects(prgrm)
 	// fmt.Println(prgrm.Stacks[0].Stack)
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {

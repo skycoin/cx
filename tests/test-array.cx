@@ -4,31 +4,42 @@ var intArray [5]i32
 var longArray [5]i64
 var floatArray [5]f32
 var doubleArray [5]f64
-var boolArray [5]bool
 var byteArray [5]byte
-var stringArray [5]str
+var boolArray [5]bool
+// var stringArray [5]str
 
 func testGetElement() () {
 	str.print("--------Get One Array Element--------")
 	test(intArray[4], 5, "I32 Get element error")
-	test(longArray[2], 90L, "I64 Get element error")
-	test(floatArray[0], 3.9, "F32 Get element error")
-	test(doubleArray[1], 70.0D, "F64 Get element error")
-	test(boolArray[4], false, "BOOL Get element error")
-	test(byteArray[2], 123, "BYTE Get element error")
+	// test(longArray[2], 90L, "I64 Get element error")
+	// test(floatArray[0], 3.9, "F32 Get element error")
+	// test(doubleArray[1], 70.0D, "F64 Get element error")
+	// test(boolArray[4], false, "BOOL Get element error")
+	// test(byteArray[2], 123, "BYTE Get element error")
 	// test(stringArray[4], "Hello there!", "STR Get element error")
 }
 
-func testGetArray() () {
-	str.print("--------Get Array--------")
-	test(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
-	test(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
-	test(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
-	test(doubleArray, []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}, "[]F64 Get error")
-	test(boolArray, []bool{ true, false, true, true, false}, "[]BOOL Get error")
-	test(byteArray, []byte{ 70, 256, 379, 0, 255}, "[]BYTE Get error")
-	// test(stringArray, []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}, "[]STR Get error")
-}
+// func testGetArray() () {
+// 	str.print("--------Get Array--------")
+// 	test(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
+// 	test(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
+// 	test(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
+// 	test(doubleArray, []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}, "[]F64 Get error")
+// 	test(boolArray, []bool{ true, false, true, true, false}, "[]BOOL Get error")
+// 	test(byteArray, []byte{ 70, 256, 379, 0, 255}, "[]BYTE Get error")
+// 	// test(stringArray, []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}, "[]STR Get error")
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 // func testPrintElement() () {
 // 	str.print("--------Print One Array Element--------")
@@ -135,65 +146,67 @@ func testGetArray() () {
 // 	//test([]str.read(stringArray, 1), "Foo!", "[]STR Read error")
 // }
 
-func testLength() () {
-	str.print("--------Lenght Array Test--------")
-	test(len(intArray), 5, "[]I32 len() error")
-	test(len(longArray), 5, "[]I64 len() error")
-	test(len(floatArray), 5, "[]F32 len() error")
-	test(len(doubleArray), 5, "[]F64 len() error")
-	test(len(boolArray), 5, "[]BOOL len() error")
-	test(len(byteArray), 5, "[]BYTE len() error")
-	test(len(stringArray), 5, "[]STR len() error")
-}
+// func testLength() () {
+// 	str.print("--------Lenght Array Test--------")
+// 	test(len(intArray), 5, "[]I32 len() error")
+// 	test(len(longArray), 5, "[]I64 len() error")
+// 	test(len(floatArray), 5, "[]F32 len() error")
+// 	test(len(doubleArray), 5, "[]F64 len() error")
+// 	test(len(boolArray), 5, "[]BOOL len() error")
+// 	test(len(byteArray), 5, "[]BYTE len() error")
+// 	// test(len(stringArray), 5, "[]STR len() error")
+// }
 
-func testWriteElement() () {
-	var tempI32 i32 = intArray[2]
-	var tempI64 i64 = longArray[2]
-	var tempF32 f32 = floatArray[2]
-	var tempF64 f64 = doubleArray[2]
-	var tempBool bool = boolArray[2]
-	var tempByte byte = byteArray[2]
-	var tempString str = stringArray[2]
+// func testWriteElement() () {
+// 	var tempI32 i32 = intArray[2]
+// 	var tempI64 i64 = longArray[2]
+// 	var tempF32 f32 = floatArray[2]
+// 	var tempF64 f64 = doubleArray[2]
+// 	var tempBool bool = boolArray[2]
+// 	var tempByte byte = byteArray[2]
+// 	// var tempString str = stringArray[2]
 
-	str.print("--------Write Array Element--------")
+// 	str.print("--------Write Array Element--------")
 
-	intArray[2] = 374
-	longArray[2] = 9386489L
-	floatArray[2] = 294.873
-	doubleArray[2] = 2048.2345D
-	boolArray[2] = false
-	byteArray[2] = 8964
-	stringArray[2] = "Oops!"
+// 	intArray[2] = 374
+// 	longArray[2] = 9386489L
+// 	floatArray[2] = 294.873
+// 	doubleArray[2] = 2048.2345D
+// 	boolArray[2] = false
+// 	byteArray[2] = 8964
+// 	// stringArray[2] = "Oops!"
 
-	test(intArray[2], 374, "I32 Write element error")
-	test(longArray[2], 9386489L, "I64 Write element error")
-	test(floatArray[2], 294.873, "F32 Write element error")
-	test(doubleArray[2], 2048.2345D, "F64 Write element error")
-	test(boolArray[2], false, "BOOL Write element error")
-	test(byteArray[2], 4, "BYTE Write element error")
-	test(stringArray[2], "Oops!", "STR Write element error")
+// 	test(intArray[2], 374, "I32 Write element error")
+// 	test(longArray[2], 9386489L, "I64 Write element error")
+// 	test(floatArray[2], 294.873, "F32 Write element error")
+// 	test(doubleArray[2], 2048.2345D, "F64 Write element error")
+// 	test(boolArray[2], false, "BOOL Write element error")
+// 	test(byteArray[2], 4, "BYTE Write element error")
+// 	// test(stringArray[2], "Oops!", "STR Write element error")
 
-	intArray[2] = tempI32
-	longArray[2] = tempI64
-	floatArray[2] = tempF32
-	doubleArray[2] = tempF64
-	boolArray[2] = tempBool
-	byteArray[2] = tempByte
-	stringArray[2] = tempString
-}
+// 	intArray[2] = tempI32
+// 	longArray[2] = tempI64
+// 	floatArray[2] = tempF32
+// 	doubleArray[2] = tempF64
+// 	boolArray[2] = tempBool
+// 	byteArray[2] = tempByte
+// 	// stringArray[2] = tempString
+// }
 
 func testArray () () {
-	intArray = []i32{ 1, 2, 3, 4, 5}
-	longArray = []i64{ 20L, 30L, 90L, 1L, 5L}
-	floatArray = []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}
-	doubleArray = []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
-	boolArray = []bool{ true, false, true, true, false}
-	byteArray = []byte{ 70, 256, 379, 0, 255}
+	intArray = [5]i32{ 1, 2, 3, 4, 5}
+	longArray = [5]i64{20L, 30L, 90L, 1L, 5L}
+	floatArray = [5]f32{3.9, 6.7, 1.2, 5.3, 9.102}
+	doubleArray = [5]f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
+	byteArray = [5]byte{70B, 256B, 379B, 0B, 255B}
+	boolArray = [5]bool{ true, false, true, true, false}
+	
+	
 	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}
 
 	str.print("Running ARRAY Testing...")
 	testGetElement()
-	testGetArray()
+	// testGetArray()
 	// testPrintElement()
 	// testPrintArray()
 	// testMakeArray()

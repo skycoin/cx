@@ -21,7 +21,7 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 
 	var dbg bool
 	if arg.Name != "" {
-		dbg = false
+		dbg = true
 	}
 	if dbg {
 		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations, opType, arg.MemoryRead, arg.MemoryWrite)
@@ -37,6 +37,7 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 			// 	finalOffset += OBJECT_HEADER_SIZE
 			// 	addObjectHeader = false
 			// }
+			
 			for i, idxArg := range elt.Indexes {
 				var subSize int = 1
 				for _, len := range elt.Lengths[i+1:] {
@@ -51,11 +52,8 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 				}
 			}
 		case DEREF_FIELD:
-			// if addObjectHeader {
-			// 	finalOffset += OBJECT_HEADER_SIZE
-			// 	addObjectHeader = false
-			// }
 			elt = arg.Fields[fldIdx]
+			// fmt.Println("offset", elt.Name, elt.Offset)
 			finalOffset += elt.Offset
 			fldIdx++
 		case DEREF_POINTER:
@@ -85,10 +83,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 	// 	fmt.Println("finalOffset", finalOffset)
 	// }
 
-	// if isDerefPointer || arg.IsReference || arg.MemoryRead == MEM_DATA {
-	// if arg.Name != "buntas" && (!arg.IsReference && (arg.IsPointer || arg.MemoryRead == MEM_DATA)) {
-	// if !arg.IsReference && (arg.IsPointer || arg.MemoryRead == MEM_DATA) {
-	// if arg.MemoryWrite == MEM_HEAP || arg.MemoryWrite == MEM_DATA {
 	if memType == MEM_HEAP || memType == MEM_DATA {
 		// not sure if arg.MemoryRead or arg.MemoryWrite
 		if dbg {
@@ -108,6 +102,41 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 }
 
 func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
+	// if arg.Type == TYPE_STR {
+	// 	if arg.Name == "" {
+	// 		offset = arg.HeapOffset+OBJECT_HEADER_SIZE
+
+	// 		var size int32
+	// 		sizeB := stack.Program.Heap.Heap[offset : offset + STR_HEADER_SIZE]
+
+	// 		encoder.DeserializeAtomic(sizeB, &size)
+	// 		out = stack.Program.Heap.Heap[offset : offset+STR_HEADER_SIZE+int(size)]
+	// 	} else {
+	// 		var off int32
+	// 		var size int32
+
+	// 		byts := stack.Stack[offset : offset+TYPE_POINTER_SIZE]
+	// 		encoder.DeserializeAtomic(byts, &off)
+
+	// 		sizeB := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
+	// 		encoder.DeserializeAtomic(sizeB, &size)
+
+			
+			
+	// 		out = stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size]
+	// 	}
+	// } else {
+	// 	switch arg.MemoryRead {
+	// 	case MEM_STACK:
+	// 		out = stack.Stack[offset : offset+arg.TotalSize]
+	// 	case MEM_DATA:
+	// 		out = stack.Program.Data[offset : offset+arg.TotalSize]
+	// 	case MEM_HEAP:
+	// 		out = stack.Program.Heap.Heap[offset : offset+arg.TotalSize]
+	// 	default:
+	// 		panic("implement the other mem types")
+	// 	}
+	// }
 	switch arg.MemoryRead {
 	case MEM_STACK:
 		out = stack.Stack[offset : offset+arg.TotalSize]
@@ -118,6 +147,7 @@ func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
 	default:
 		panic("implement the other mem types")
 	}
+	
 	return
 }
 
@@ -247,6 +277,10 @@ func FromByte(in byte) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+func FromStr (in string) []byte {
+	return encoder.Serialize(in)
+}
+
 func FromI8 (in int8) []byte {
 	return encoder.SerializeAtomic(in)
 }
@@ -306,7 +340,35 @@ func ReadByte(stack *CXStack, fp int, inp *CXArgument) (out byte) {
 
 func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
-	encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
+	
+	if inp.Name == "" {
+		offset = inp.HeapOffset+OBJECT_HEADER_SIZE
+
+		var size int32
+		sizeB := stack.Program.Heap.Heap[offset : offset + STR_HEADER_SIZE]
+
+		encoder.DeserializeAtomic(sizeB, &size)
+		encoder.DeserializeRaw(stack.Program.Heap.Heap[offset : offset+STR_HEADER_SIZE+int(size)], &out)
+	} else {
+		var off int32
+		var size int32
+		var byts []byte
+
+		if inp.MemoryRead == MEM_STACK {
+			byts = stack.Stack[offset : offset+TYPE_POINTER_SIZE]
+			encoder.DeserializeAtomic(byts, &off)
+		} else {
+			byts = stack.Program.Data[offset : offset+TYPE_POINTER_SIZE]
+			encoder.DeserializeAtomic(byts, &off)
+		}
+		
+		sizeB := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
+		encoder.DeserializeAtomic(sizeB, &size)
+		
+		encoder.DeserializeRaw(stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
+	}
+	
+	// encoder.DeserializeRaw(ReadMemory(stack, offset, inp), &out)
 	return
 }
 

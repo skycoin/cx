@@ -3,89 +3,89 @@ package testing
 // Test helpers
 
 func testI32out() (out i32) {
-    out = 1
+	out = 1
 }
 
 func testI64out() (out i64) {
-    out = 1L
+	out = 1L
 }
 
 func testF32out() (out f32) {
-    out = 1.0
+	out = 1.0
 }
 
 func testF64out() (out f64) {
-    out = 1.0D
+	out = 1.0D
 }
 
 func testBoolout() (out bool) {
-    out = false
+	out = false
 }
 
 func testByteout() (out byte) {
-    out = i32.byte(255)
+	out = i32.byte(255)
 }
 
 func testStringout() (out str) {
-    out = "Foo bar"
+	out = "Foo bar"
 }
 
 func testI32in(n i32, m i32, o i32) (out i32) {
-    out = i32.add(i32.add(n, m), o)
+	out = i32.add(i32.add(n, m), o)
 }
 
 func testI64in(n i64, m i64, o i64) (out i64) {
-    out = i64.sub(i64.add(m,n), o)
+	out = i64.sub(i64.add(m,n), o)
 }
 
 func testF32in(n f32, m f32, o f32) (out f32) {
-    out = f32.add(f32.div(n, o), m)
+	out = f32.add(f32.div(n, o), m)
 }
 
 func testF64in(n f64, m f64, o f64) (out f64) {
-    out = f64.add(f64.mul(n, m), o) 
+	out = f64.add(f64.mul(n, m), o) 
 }
 
 func testBoolin(n bool, m bool, o bool) (out bool) {
-    out = bool.not(bool.or(bool.and(m, n), o))
+	out = bool.not(bool.or(bool.and(m, n), o))
 }
 
 func testBytein(n byte, m byte, o byte) (out byte) {
-    out = m 
+	out = m 
 } 
 
 func testStringin(a str, b str) (out str) {
-    out = b
+	out = b
 }
 
 // Testers Functions 
 
 func testAllIns() () {
-    str.print("--------Functions In Testings--------")
-    test(testI32in(1, 2, 3), 6, "function in i32 error")
-    test(testI64in(1L, 2L, 3L), 0L, "function in i64 error")
-    test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
-    test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
-    test(testBoolin(true, false, true), false, "function in bool error")
-    test(testBytein(i32.byte(2), i32.byte(80), i32.byte(26)), 80, "function in byte error")
-    test(testStringin("Not working", "Its working!"), "Its working!", "function in str error")
+	str.print("--------Functions In Testings--------")
+	test(testI32in(1, 2, 3), 6, "function in i32 error")
+	test(testI64in(1L, 2L, 3L), 0L, "function in i64 error")
+	test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
+	test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
+	test(testBoolin(true, false, true), false, "function in bool error")
+	test(testBytein(i32.byte(2), i32.byte(80), i32.byte(26)), 80, "function in byte error")
+	test(testStringin("Not working", "It's working!"), "It's working!", "function in str error")
 }
 
 func testAllOuts() () {
-    str.print("--------Functions Out Testings--------")
-    test(testI32out(), 1, "function out i32 error")
-    test(testI64out(), 1L, "function out i64 error")
-    test(testF32out(), 1.0, "function out f32 error")
-    test(testF64out(), 1.0D, "function out f64 error")
-    test(testBoolout(), false, "function out bool error")
-    test(testByteout(), i32.byte(255), "function out byte error")
-    test(testStringout(), "Foo bar", "function out str error")
+	str.print("--------Functions Out Testings--------")
+	test(testI32out(), 1, "function out i32 error")
+	test(testI64out(), 1L, "function out i64 error")
+	test(testF32out(), 1.0, "function out f32 error")
+	test(testF64out(), 1.0D, "function out f64 error")
+	test(testBoolout(), false, "function out bool error")
+	test(testByteout(), i32.byte(255), "function out byte error")
+	test(testStringout(), "Foo bar", "function out str error")
 }
 
 // Main Tester
 
 func testFunctions () () {
-    str.print("Running FUNCTION Block Testing...")
-    testAllIns()
-    testAllOuts()
+	str.print("Running FUNCTION Block Testing...")
+	testAllIns()
+	testAllOuts()
 }

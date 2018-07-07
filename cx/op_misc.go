@@ -11,47 +11,60 @@ func op_identity(expr *CXExpression, stack *CXStack, fp int) {
 	inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
 	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
 
-	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer {
+	// fmt.Println("huh", out1.Name, out1.Fields, out1.)
+	// fmt.Println("isStruct", inp1.IsStruct)
+
+	// fmt.Println("stats", inp1.MemoryRead, inp1.MemoryWrite, out1.MemoryRead, out1.MemoryWrite)
+
+	if out1.IsPointer && out1.DereferenceLevels != out1.IndirectionLevels && !inp1.IsPointer || (inp1.MemoryRead == MEM_HEAP && inp1.MemoryWrite == MEM_HEAP) {
 		switch inp1.MemoryWrite {
 		case MEM_STACK:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToStack(stack, out1Offset, byts)
 		case MEM_HEAP:
 			// if heapoffset > 0 look in here and don't allocate
-			var heapOffset int
-			if inp1.HeapOffset > 0 {
-				// then it's a reference to the symbol
-				var off int32
-				encoder.DeserializeAtomic(stack.Stack[fp+inp1.HeapOffset:fp+inp1.HeapOffset+TYPE_POINTER_SIZE], &off)
 
-				if off > 0 {
-					// non-nil, i.e. object is already allocated
-					heapOffset = int(off)
-				} else {
-					// nil, needs to be allocated
-					heapOffset = AllocateSeq(stack.Program, inp1.TotalSize+OBJECT_HEADER_SIZE)
-					WriteToStack(stack, fp+inp1.HeapOffset, encoder.SerializeAtomic(int32(heapOffset)))
+			if inp1.MemoryRead == MEM_HEAP {
+				WriteToStack(stack, out1Offset, encoder.SerializeAtomic(int32(inp1.Offset)))
+			} else if inp1.MemoryRead == MEM_DATA {
+				WriteToData(&stack.Program.Data, out1Offset, encoder.SerializeAtomic(int32(inp1.Offset)))
+			} else {
+				
+				var heapOffset int
+				if inp1.HeapOffset > 0 {
+					// then it's a reference to the symbol
+					var off int32
+					encoder.DeserializeAtomic(stack.Stack[fp+inp1.HeapOffset:fp+inp1.HeapOffset+TYPE_POINTER_SIZE], &off)
+
+					if off > 0 {
+						// non-nil, i.e. object is already allocated
+						heapOffset = int(off)
+					} else {
+						// nil, needs to be allocated
+						heapOffset = AllocateSeq(stack.Program, inp1.TotalSize+OBJECT_HEADER_SIZE)
+						WriteToStack(stack, fp+inp1.HeapOffset, encoder.SerializeAtomic(int32(heapOffset)))
+					}
 				}
+
+				byts := ReadMemory(stack, inp1Offset, inp1)
+				// creating a header for this object
+				size := encoder.Serialize(int32(len(byts)))
+
+				var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+				for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+					header[c] = size[c-5]
+				}
+
+				obj := append(header, byts...)
+
+				// WriteToHeap(&stack.Program.Heap, heapOffset, byts)
+				WriteToHeap(&stack.Program.Heap, heapOffset, obj)
+
+				offset := encoder.SerializeAtomic(int32(heapOffset))
+
+				// WriteToStack(stack, fp + out1Offset, offset)
+				WriteToStack(stack, out1Offset, offset)
 			}
-
-			byts := ReadMemory(stack, inp1Offset, inp1)
-			// creating a header for this object
-			size := encoder.Serialize(int32(len(byts)))
-
-			var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-				header[c] = size[c-5]
-			}
-
-			obj := append(header, byts...)
-
-			// WriteToHeap(&stack.Program.Heap, heapOffset, byts)
-			WriteToHeap(&stack.Program.Heap, heapOffset, obj)
-
-			offset := encoder.SerializeAtomic(int32(heapOffset))
-
-			// WriteToStack(stack, fp + out1Offset, offset)
-			WriteToStack(stack, out1Offset, offset)
 		case MEM_DATA:
 			byts := encoder.SerializeAtomic(int32(inp1Offset))
 			WriteToData(&stack.Program.Data, out1Offset, byts)
@@ -59,7 +72,12 @@ func op_identity(expr *CXExpression, stack *CXStack, fp int) {
 			panic("implement the other mem types")
 		}
 	} else if (inp1.IsReference && out1.IsPointer) || (inp1.IsPointer && out1.IsPointer) {
-		// WriteMemory(stack, out1Offset, out1, FromI32(int32(inp1Offset)))
+		// if inp1.Type == TYPE_STR {
+		// 	fmt.Println("count", inp1.Name, ReadMemory(stack, inp1Offset, inp1), inp1.Type, inp1.TotalSize)
+		// 	WriteToStack(stack, out1Offset, ReadMemory(stack, inp1Offset, inp1))
+		// } else {
+		// 	WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
+		// }
 		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))
 	} else {
 		WriteMemory(stack, out1Offset, out1, ReadMemory(stack, inp1Offset, inp1))

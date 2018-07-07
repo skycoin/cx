@@ -253,6 +253,9 @@ const (
 	OP_GLFW_SET_CURSOR_POS_CALLBACK
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
+
+	// http
+	OP_HTTP_GET
 )
 
 func execNative(prgrm *CXProgram) {
@@ -716,6 +719,8 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_GetCursorPos(expr, stack, fp)
 	case OP_GLFW_SET_INPUT_MODE:
 		op_glfw_SetInputMode(expr, stack, fp)
+	case OP_HTTP_GET:
+		op_http_get(expr, stack, fp)
 	}
 }
 
@@ -941,6 +946,8 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_SET_CURSOR_POS_CALLBACK:   "glfw.SetCursorPosCallback",
 	OP_GLFW_GET_CURSOR_POS:            "glfw.GetCursorPos",
 	OP_GLFW_SET_INPUT_MODE:            "glfw.SetInputMode",
+	// http
+	OP_HTTP_GET:                       "http.Get",
 }
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -1163,14 +1170,15 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.SetCursorPosCallback":   OP_GLFW_SET_CURSOR_POS_CALLBACK,
 	"glfw.GetCursorPos":           OP_GLFW_GET_CURSOR_POS,
 	"glfw.SetInputMode":           OP_GLFW_SET_INPUT_MODE,
+	// http
+	"http.Get":                    OP_HTTP_GET,
 }
 
 var Natives map[int]*CXFunction = map[int]*CXFunction{
-	OP_IDENTITY:   MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_READ_ARRAY: MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	// OP_JMP: MakeNative(OP_JMP, []int{TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
-	OP_JMP:   MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
-	OP_DEBUG: MakeNative(OP_DEBUG, []int{}, []int{}),
+	OP_IDENTITY:     MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_READ_ARRAY:   MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+	OP_JMP:          MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
+	OP_DEBUG:        MakeNative(OP_DEBUG, []int{}, []int{}),
 
 	OP_UND_EQUAL:    MakeNative(OP_UND_EQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_UNEQUAL:  MakeNative(OP_UND_UNEQUAL, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
@@ -1191,7 +1199,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_UND_GTEQ:     MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_LEN:      MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
 
-	OP_BYTE_PRINT: MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
+	OP_BYTE_PRINT:   MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
 	OP_BOOL_PRINT:   MakeNative(OP_BOOL_PRINT, []int{TYPE_BOOL}, []int{}),
 	OP_BOOL_EQUAL:   MakeNative(OP_BOOL_EQUAL, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
@@ -1200,12 +1208,12 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_BOOL_OR:      MakeNative(OP_BOOL_OR, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 	OP_BOOL_AND:     MakeNative(OP_BOOL_AND, []int{TYPE_BOOL, TYPE_BOOL}, []int{TYPE_BOOL}),
 
-	OP_I32_BYTE: MakeNative(OP_I32_BYTE, []int{TYPE_I32}, []int{TYPE_BYTE}),
-	OP_I32_STR:  MakeNative(OP_I32_STR, []int{TYPE_I32}, []int{TYPE_STR}),
-	OP_I32_I32:  MakeNative(OP_I32_I32, []int{TYPE_I32}, []int{TYPE_I32}),
-	OP_I32_I64:  MakeNative(OP_I32_I64, []int{TYPE_I32}, []int{TYPE_I64}),
-	OP_I32_F32:  MakeNative(OP_I32_F32, []int{TYPE_I32}, []int{TYPE_F32}),
-	OP_I32_F64:  MakeNative(OP_I32_F64, []int{TYPE_I32}, []int{TYPE_F64}),
+	OP_I32_BYTE:     MakeNative(OP_I32_BYTE, []int{TYPE_I32}, []int{TYPE_BYTE}),
+	OP_I32_STR:      MakeNative(OP_I32_STR, []int{TYPE_I32}, []int{TYPE_STR}),
+	OP_I32_I32:      MakeNative(OP_I32_I32, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_I64:      MakeNative(OP_I32_I64, []int{TYPE_I32}, []int{TYPE_I64}),
+	OP_I32_F32:      MakeNative(OP_I32_F32, []int{TYPE_I32}, []int{TYPE_F32}),
+	OP_I32_F64:      MakeNative(OP_I32_F64, []int{TYPE_I32}, []int{TYPE_F64}),
 
 	OP_I32_PRINT:    MakeNative(OP_I32_PRINT, []int{TYPE_I32}, []int{}),
 	OP_I32_ADD:      MakeNative(OP_I32_ADD, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
@@ -1388,4 +1396,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_SET_CURSOR_POS_CALLBACK:   MakeNative(OP_GLFW_SET_CURSOR_POS_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
+
+	// http
+	OP_HTTP_GET:           MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_CUSTOM}),
 }

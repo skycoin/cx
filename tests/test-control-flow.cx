@@ -1,0 +1,79 @@
+package testing
+
+func testControlFlow () () {
+	str.print("Running IF Testing...")
+	str.print("--------IF Block testing--------")
+
+	var check i32
+	check = 999
+	
+	if 2 < 3 {
+		check = 333
+	}
+
+	test(check, 333, "not entering IF error")
+
+	if  3 < 2 {
+		check = 555
+	}
+
+	test(check, 333, "entering IF error")
+
+	str.print("--------IF/ELSE Block testing--------")
+	if 2 < 3 {
+		check = 888
+	} else {
+		check = 444
+	}
+
+	test(check, 888, "entering else in IF/ELSE error")
+
+	if  3 < 2 {
+		check = 111
+	} else {
+		check = 777
+	}
+
+	test(check, 777, "entering if in IF/ELSE error")
+
+	str.print("--------IF/ELSE Nested Block testing--------")
+	if 3 > 0 {
+		if 25.0 > 29.0 {
+			check = 0
+			test(check, 10, "entering nested IF/ELSE 2nd level error")
+		} else {
+			if 30L < 60L {
+				check = 999
+			} else {
+				check = 0
+				test(check, 10, "entering nested IF/ELSE 3rd level error")
+			}
+		}
+	} else {
+		check = 0
+		test(check, 10, "entering nested IF/ELSE 1st level error")
+	}
+
+	test(check, 999, "entering nested IF/ELSE error")
+
+	str.print("Running FOR Testing...")
+
+	str.print("--------FOR Block testing--------")
+	var i i32
+	for i = 0; i < 10; i = i32.add(i, 1) {
+		check = i
+	}
+
+	test(check, 9, "FOR loop error")
+
+	str.print("--------FOR-IF/ELSE Block testing--------")
+	for i = 1; i32.lteq(i, 10); i = i32.add(i, 1){
+		if i32.eq(i32.mod(i, 2), 0) {
+			check = i
+		} else {
+			check = i
+		}
+	}
+	
+	test(check, 10, "FOR-IF/ELSE loop error")
+}

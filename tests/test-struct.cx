@@ -39,7 +39,7 @@ func testStructures () () {
 			decimal: 64.0D,
 			boolean: true,
 			byt: i32.byte(255)}}
-			// string: "Foo bar"}}
+	// string: "Foo bar"}}
 
 	str.print("--------Struct Properties Types--------")
 
