@@ -126,6 +126,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		}
 	}
 	if !found {
+		fld.CustomType = strct
 		strct.Fields = append(strct.Fields, fld)
 	}
 	return strct

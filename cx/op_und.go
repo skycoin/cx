@@ -78,6 +78,8 @@ func op_equal(expr *CXExpression, stack *CXStack, fp int) {
 	switch inp1.Type {
 	case TYPE_BOOL:
 		outB1 = FromBool(ReadBool(stack, fp, inp1) == ReadBool(stack, fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(stack, fp, inp1) == ReadStr(stack, fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(stack, fp, inp1) == ReadI32(stack, fp, inp2))
 	case TYPE_I64:

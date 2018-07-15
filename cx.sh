@@ -35,7 +35,7 @@ else
 fi
 
 
-if [ ! -d "$GOPATH/src/github.com/skycoin/skycoin/" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/skycoin/skycoin/" ]; then
     echo "NOTE:\tRepository github.com/skycoin/skycoin is not present in $GOPATH"
     echo "NOTE:\tDownloading the repository and installing the package via 'go get github.com/skycoin/skycoin/...'"
 
@@ -49,7 +49,7 @@ if [ ! -d "$GOPATH/src/github.com/skycoin/skycoin/" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/go-gl/gl/v2.1/gl" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/go-gl/gl/v2.1/gl" ]; then
     echo "NOTE:\tRepository github.com/go-gl/gl/v2.1/gl is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/go-gl/gl/v2.1/gl'"
     
@@ -63,7 +63,7 @@ if [ ! -d "$GOPATH/src/github.com/go-gl/gl/v2.1/gl" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/go-gl/glfw/v3.2/glfw" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/go-gl/glfw/v3.2/glfw" ]; then
     echo "NOTE:\tRepository github.com/go-gl/glfw/v3.2/glfw is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/go-gl/glfw/v3.2/glfw'"
     
@@ -77,7 +77,7 @@ if [ ! -d "$GOPATH/src/github.com/go-gl/glfw/v3.2/glfw" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/go-gl/gltext" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/go-gl/gltext" ]; then
     echo "NOTE:\tRepository src/github.com/go-gl/gltext is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/go-gl/gltext'"
     
@@ -91,7 +91,7 @@ if [ ! -d "$GOPATH/src/github.com/go-gl/gltext" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/blynn/nex" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/blynn/nex" ]; then
     echo "NOTE:\tRepository github.com/blynn/nex is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/blynn/nex'"
     
@@ -105,7 +105,7 @@ if [ ! -d "$GOPATH/src/github.com/blynn/nex" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/cznic/goyacc" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/cznic/goyacc" ]; then
     echo "NOTE:\tRepository github.com/cznic/goyacc is not present in $GOPATH"
     echo "NOTE:\tInstalling it via 'go get github.com/cznic/goyacc'"
     
@@ -119,7 +119,7 @@ if [ ! -d "$GOPATH/src/github.com/cznic/goyacc" ]; then
     fi
 fi
 
-if [ ! -d "$GOPATH/src/github.com/skycoin/cx/" ]; then
+if [ ! -d "$INSTALLATION_PATH/src/github.com/skycoin/cx/" ]; then
     echo "NOTE:\tRepository github.com/skycoin/cx is not present in $GOPATH"
     echo "NOTE:\tDownloading the repository and installing the package via 'go get github.com/skycoin/cx/...'"
 
@@ -135,32 +135,32 @@ fi
 
 git pull origin master
 
-if [ -f "$GOPATH/bin/cx" ]
+if [ -f "$INSTALLATION_PATH/bin/cx" ]
 then
     echo "NOTE:\tRe-compiling CX"
 else
     echo "NOTE:\tCompiling CX"
 fi
 
-$GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
+$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer (first pass)"
     exit 0
 fi
 
-$GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
+$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser (first pass)"
     exit 0
 fi
 
-$GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
+$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-$GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
+$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
@@ -168,9 +168,9 @@ fi
 
 # go build -o build/wiki wiki.go 
 
-# go build -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo github.com/skycoin/cx/cxgo/
-go build -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
-chmod +x $GOPATH/bin/cx
+# go build -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo github.com/skycoin/cx/cxgo/
+go build -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+chmod +x $INSTALLATION_PATH/bin/cx
 # go install github.com/skycoin/cx/cxgo/
 if [ $? -eq 0 ]; then
     echo "OK:\tCX was compiled successfully"

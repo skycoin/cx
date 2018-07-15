@@ -252,6 +252,7 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
+			yyS[yypt-0].line = 0
 			pkg := MakePackage($2)
 			pkg.AddImport(pkg)
 			PRGRM0.AddPackage(pkg)

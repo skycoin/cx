@@ -10,6 +10,7 @@ import (
 func op_i32_i32(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
+
 	switch out1.Type {
 	case TYPE_BYTE:
 		WriteMemory(stack, out1Offset, out1, FromByte(byte(ReadI32(stack, fp, inp1))))

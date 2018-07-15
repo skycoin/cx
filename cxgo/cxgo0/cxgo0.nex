@@ -1,3 +1,5 @@
+<      {
+}
 /(\r\n|\r|\n)/ {
 	lval.line++
 	token := f(NEWLINE)
@@ -89,7 +91,11 @@
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
-/:package/                { return f(SPACKAGE)   }
+/:package/                {
+	lval.line = 0
+	yylex.stack[len(yylex.stack) - 1].line = 0
+	return f(SPACKAGE)
+}
 /:struct/                 { return f(SSTRUCT)    }
 /:func/                   { return f(SFUNC)      }
 /:rem/                    { return f(REM)        }
@@ -143,7 +149,7 @@
 }
 /-?[0-9]+\.[0-9]*D/ {
 	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
-	lval.f64 = float64(result)
+	lval.f64 = float64 (result)
 	return f(DOUBLE_LITERAL)
 }
 /-?[0-9]+/ {
@@ -160,6 +166,8 @@
 	lval.tok = yylex.Text()
 	return f(IDENTIFIER)
 }
+>      {
+}
 //
 package cxgo0
 import (
@@ -167,6 +175,7 @@ import (
 	"strconv"
 )
 
+var CurrentFileName string
 var insert bool
 
 func f (token int) int {
@@ -209,7 +218,7 @@ func (yylex Lexer) Error (e string) {
 	if inREPL {
 		fmt.Printf("syntax error: %s\n", e)
 	} else {
-		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
+		fmt.Printf("%s:%d: syntax error: %s\n", CurrentFileName, yylex.Line() + 1, e)
 	}
 	
 	yylex.Stop()

@@ -21,7 +21,7 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 
 	var dbg bool
 	if arg.Name != "" {
-		dbg = true
+		dbg = false
 	}
 	if dbg {
 		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations, opType, arg.MemoryRead, arg.MemoryWrite)
@@ -102,41 +102,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 }
 
 func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
-	// if arg.Type == TYPE_STR {
-	// 	if arg.Name == "" {
-	// 		offset = arg.HeapOffset+OBJECT_HEADER_SIZE
-
-	// 		var size int32
-	// 		sizeB := stack.Program.Heap.Heap[offset : offset + STR_HEADER_SIZE]
-
-	// 		encoder.DeserializeAtomic(sizeB, &size)
-	// 		out = stack.Program.Heap.Heap[offset : offset+STR_HEADER_SIZE+int(size)]
-	// 	} else {
-	// 		var off int32
-	// 		var size int32
-
-	// 		byts := stack.Stack[offset : offset+TYPE_POINTER_SIZE]
-	// 		encoder.DeserializeAtomic(byts, &off)
-
-	// 		sizeB := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
-	// 		encoder.DeserializeAtomic(sizeB, &size)
-
-			
-			
-	// 		out = stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size]
-	// 	}
-	// } else {
-	// 	switch arg.MemoryRead {
-	// 	case MEM_STACK:
-	// 		out = stack.Stack[offset : offset+arg.TotalSize]
-	// 	case MEM_DATA:
-	// 		out = stack.Program.Data[offset : offset+arg.TotalSize]
-	// 	case MEM_HEAP:
-	// 		out = stack.Program.Heap.Heap[offset : offset+arg.TotalSize]
-	// 	default:
-	// 		panic("implement the other mem types")
-	// 	}
-	// }
 	switch arg.MemoryRead {
 	case MEM_STACK:
 		out = stack.Stack[offset : offset+arg.TotalSize]
@@ -418,7 +383,8 @@ func WriteToHeap(heap *CXHeap, offset int, out []byte) {
 	// size := encoder.Serialize(int32(len(out)))
 
 	// var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-	// for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+	
+// for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 	// 	header[c] = size[c - 5]
 	// }
 

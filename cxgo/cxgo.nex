@@ -1,3 +1,5 @@
+<      {
+}
 /(\r\n|\r|\n)/ {
 	lval.line++
 	token := f(NEWLINE)
@@ -90,7 +92,14 @@
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
-/:package/                { return f(SPACKAGE)   }
+/:package/                {
+	lval.line = 0
+	// yylex.line = 0
+	yylex.stack[len(yylex.stack) - 1].line = 0
+	// fmt.Printf("%+v\n", )
+	// fmt.Printf("%+v\n", yylex)
+	return f(SPACKAGE)
+}
 /:struct/                 { return f(SSTRUCT)    }
 /:func/                   { return f(SFUNC)      }
 /:rem/                    { return f(REM)        }
@@ -159,6 +168,8 @@
 	lval.tok = yylex.Text()
 	return f(IDENTIFIER)
 }
+>      {
+}
 //
 package main
 import (
@@ -194,6 +205,7 @@ import (
 
 const VERSION = "0.5.5"
 
+var currentFileName string
 var insert bool
 // var PRGRM *CXProgram
 
@@ -409,7 +421,7 @@ func (yylex Lexer) Error (e string) {
 	if InREPL {
 		fmt.Printf("syntax error: %s\n", e)
 	} else {
-		fmt.Printf("%d: syntax error: %s\n", yylex.Line() + 1, e)
+		fmt.Printf("%s:%d: syntax error: %s\n", currentFileName, yylex.Line() + 1, e)
 	}
 	
 	yylex.Stop()
@@ -518,55 +530,13 @@ func repl () {
 	}
 }
 
-// func readDir (name string) (files []*os.File) {
-// 	fi, err := os.Stat(arg)
-// 	_ = err
-
-// 	if err != nil {
-// 		panic(err)
-// 	}
-	
-// 	switch mode := fi.Mode(); {
-// 	case mode.IsDir():
-// 		files, err := ioutil.ReadDir(arg)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-
-// 		for _, f := range files {
-// 			fi, err := os.Stat(f.Name)
-
-// 			if err != nil {
-// 				panic(err)
-// 			}
-
-// 			switch mode := fi.Mode(); {
-// 			case mode.IsDir():
-// 				files = append(files, readDir(f.Name))
-// 			}
-			
-// 			files = append(files, f)
-// 		}
-// 	case mode.IsRegular():
-// 		file, err := os.Open(arg)
-		
-// 		if err != nil {
-// 			// panic(fmt.Sprintf("Couldn't read file."))
-// 			panic(err)
-// 		}
-
-// 		files = append(files, file)
-		
-		
-// 	}
-// }
-
 func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
 	args := os.Args[1:]
 	var sourceCode []*os.File
+	var fileNames []string
 
 	if len(args) == 0 {
 		ReplMode = true
@@ -656,6 +626,7 @@ func main () {
 					if fiNameLen > 2 && fiName[fiNameLen - 2:] == "cx" {
 						// only loading .cx files
 						sourceCode = append(sourceCode, file)
+						fileNames = append(fileNames, fiName)
 					}
 				}
 			case mode.IsRegular():
@@ -714,7 +685,13 @@ func main () {
 			cxgo0.PRGRM0.AddPackage(pkg)
 		}
 		
-		cxgo0.Parse(allSC)
+		// cxgo0.Parse(allSC)
+		for i, source := range sourceCodeCopy {
+			if len(fileNames) > 0 {
+				cxgo0.CurrentFileName = fileNames[i]
+			}
+			cxgo0.Parse(source)
+		}
 	}
 
 	PRGRM = cxgo0.PRGRM0
@@ -722,8 +699,8 @@ func main () {
 
 	// parsing all source code files
 	for _, source := range sourceCodeCopy {
-		// fileName = args[i]
 		b := bytes.NewBufferString(source)
+		// fmt.Printf("%+v\n", lex)
 		yyParse(NewLexer(b))
 	}
 

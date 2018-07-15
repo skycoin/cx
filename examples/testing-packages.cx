@@ -26,7 +26,7 @@ func main () {
 	i32.print(p.x)
 	i32.print(p.y)
 	
-
+          
 	var double i32
 	var triple i32
 	

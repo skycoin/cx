@@ -145,7 +145,7 @@ func aliveNeighbours (cell Cell, cells *[900]Cell) (aliveCount i32) {
 	leftCell = (*cells)[map2Dto1D(leftCellX, leftCellY, columns)]
 	upLeftCell = (*cells)[map2Dto1D(upLeftCellX, upLeftCellY, columns)]
 
-	// i32.print(upCell.x)
+	// i32.print(upCell.drawable)
 	// bool.print(upCell.alive)
 
 	// str.print("exit")
@@ -188,6 +188,8 @@ func changeState (cell Cell, cells *[900]Cell) (newCell Cell) {
 	var aliveCount i32
 	aliveCount = aliveNeighbours(cell, cells)
 
+	// i32.print(aliveCount)
+	
 	if cell.alive {
 	// if i32.lt(i32.rand(0, 100), 15) {
 		// 1. Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
@@ -448,6 +450,7 @@ func main () {
 
 			(*cells)[c] = changeState((*cells)[c], cells)
 			// i32.print((*cells)[c])
+			// bool.print((*cells)[c].alive)
 			
 			// changeState((*cells)[c], cells)
 		}

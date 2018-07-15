@@ -5,6 +5,7 @@
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
+		// "reflect"
 	)
 
 	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
@@ -289,6 +290,8 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
+			// fmt.Printf("%+v\n", yylval)
+			// yyS[yypt-0].line = 0
 			DeclarePackage($2)
                 }
                 ;
@@ -303,6 +306,13 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
+			// yylex.stack[len(yylex.stack) - 1].line = 0
+			// fmt.Printf("%+v\n", yylex)
+			// fmt.Println(reflect.TypeOf(*yylex))
+			// fmt.Printf("%+v\n", yyS[yypt-0])
+			// fmt.Println(yyS[yypt-0])
+			yylval.line = 0
+			// fmt.Printf("%+v\n", yylval.line)
 			$$ = FunctionHeader($2, nil, false)
 			InFn = true
                 }
@@ -488,11 +498,19 @@ struct_literal_fields:
                 { $$ = nil }
         |       IDENTIFIER COLON constant_expression
                 {
-			$$ = Assignment([]*CXExpression{StructLiteralFields($1)}, $3)
+			if $3[0].IsStructLiteral {
+				$$ = StructLiteralAssignment([]*CXExpression{StructLiteralFields($1)}, $3)
+			} else {
+				$$ = Assignment([]*CXExpression{StructLiteralFields($1)}, $3)
+			}
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 {
-			$$ = append($1, Assignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
+			if $5[0].IsStructLiteral {
+				$$ = append($1, StructLiteralAssignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
+			} else {
+				$$ = append($1, Assignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
+			}
                 }
                 ;
 
@@ -874,7 +892,7 @@ assignment_expression:
                 {
 			if $3[0].IsArrayLiteral {
 				$$ = ArrayLiteralAssignment($1, $3)
-			} else if $3[0].IsStructLiteral {
+			} else if $3[len($3) - 1].IsStructLiteral {
 				$$ = StructLiteralAssignment($1, $3)
 			} else {
 				$$ = Assignment($1, $3)

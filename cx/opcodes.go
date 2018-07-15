@@ -149,6 +149,9 @@ const (
 	OP_F64_MIN
 
 	OP_STR_PRINT
+	OP_STR_EQ
+
+	
 	OP_MAKE
 	OP_READ
 	OP_WRITE
@@ -545,6 +548,8 @@ func execNative(prgrm *CXProgram) {
 		op_f64_min(expr, stack, fp)
 	case OP_STR_PRINT:
 		op_str_print(expr, stack, fp)
+	case OP_STR_EQ:
+		op_str_eq(expr, stack, fp)
 	case OP_MAKE:
 	case OP_READ:
 	case OP_WRITE:
@@ -866,6 +871,7 @@ var OpNames map[int]string = map[int]string{
 	OP_F64_MIN:      "f64.min",
 
 	OP_STR_PRINT: "str.print",
+	OP_STR_EQ: "str.eq",
 
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
@@ -1092,6 +1098,7 @@ var OpCodes map[string]int = map[string]int{
 	"f64.min":      OP_F64_MIN,
 
 	"str.print": OP_STR_PRINT,
+	"str.eq": OP_STR_EQ,
 
 	"time.Sleep":     OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
@@ -1315,7 +1322,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_LOG10:    MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_MIN:      MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_MAX:      MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
+	
 	OP_STR_PRINT:    MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
+	OP_STR_EQ:       MakeNative(OP_STR_EQ, []int{TYPE_STR, TYPE_STR}, []int{TYPE_BOOL}),
 
 	OP_TIME_SLEEP:      MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),

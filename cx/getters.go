@@ -120,7 +120,7 @@ func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 		}
 
 		if found == nil {
-			return nil, errors.New(fmt.Sprintf("GetDefinition: definition '%s' not found", name))
+			return nil, errors.New(fmt.Sprintf("global '%s' not found", name))
 		} else {
 			return found, nil
 		}
@@ -135,6 +135,15 @@ func (strct *CXStruct) GetFields() ([]*CXArgument, error) {
 	} else {
 		return nil, errors.New("structure has no fields")
 	}
+}
+
+func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
+	for _, fld := range strct.Fields {
+		if fld.Name == name {
+			return fld, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("field '%s' not found in struct '%s'", name, strct.Name))
 }
 
 func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {

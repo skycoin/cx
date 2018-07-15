@@ -4,7 +4,7 @@ const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
-const LOCAL_PREFIX = "lcl"
+const LOCAL_PREFIX = "*lcl"
 const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
@@ -13,9 +13,9 @@ const MARK_SIZE = 1
 const OBJECT_HEADER_SIZE = 9
 const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
-const CALLSTACK_SIZE = 500
-const STACK_SIZE = 500
-const INIT_HEAP_SIZE = 500
+const CALLSTACK_SIZE = 500000
+const STACK_SIZE = 500000
+const INIT_HEAP_SIZE = 500000
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
@@ -208,6 +208,12 @@ const (
 const (
 	MEM_READ = iota
 	MEM_WRITE
+)
+
+// what to write
+const (
+	PASSBY_VALUE = iota
+	PASSBY_REFERENCE
 )
 
 const (
@@ -410,6 +416,7 @@ type CXExpression struct {
 
 	IsStructLiteral bool
 	IsArrayLiteral  bool
+	IsFlattened bool // used for nested struct literals
 
 	Function *CXFunction
 	Package  *CXPackage
@@ -454,6 +461,9 @@ type CXArgument struct {
 	IsField            bool
 	IsRest             bool // pkg.var <- var is rest
 	IsLocalDeclaration bool
+
+	PassBy int  // pass by value or reference
+	DoesEscape bool
 
 	// Sizes []int // used to access struct fields
 	Lengths []int // declared lengths at compile time

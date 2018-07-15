@@ -40,14 +40,14 @@ func I32ArithmeticShorthand() () {
 	test(10 &^ 2, 8, "Bit CLEAR error")
 }
 
-func I32ConversionTo() () {
-	str.print("--------I32 Conversion Methods--------")
-	test(i32.i64(10), 10L, "Convert to I64 error")
-	test(i32.f32(10), 10.0, "Convert to F32 error")
-	test(i32.f64(10), 10.0D, "Convert to F64 error")
-	test(i32.byte(379), 123, "Conver to BYTE error")
+func I32ParseTo() () {
+	str.print("--------I32 Parse Methods--------")
+	test(i32.i64(10), 10L, "Parse to I64 error")
+	test(i32.f32(10), 10.0, "Parse to F32 error")
+	test(i32.f64(10), 10.0D, "Parse to F64 error")
+	test(i32.byte(379), 123, "Parse to BYTE error")
 	// str.print("FAIL: i32.str() crash!")
-	//test(i32.str(10), "10", "Convert to STR error") // oh ok, I need to implement strings going to the heap
+	//test(i32.str(10), "10", "Parse to STR error") // oh ok, I need to implement strings going to the heap
 }
 
 func I32RelationalFunctions() () {
@@ -86,7 +86,7 @@ func testI32() () {
 	I32ArithmeticShorthand()
 	I32RelationalFunctions()
 	I32RelationalShorthand()
-	I32ConversionTo()
+	I32ParseTo()
 
 	
 	// I32Extras()

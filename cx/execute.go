@@ -745,7 +745,7 @@ func checkNative(opName string, expr *CXExpression, call *CXCall, argsCopy *[]*C
 		err = rem_arg((*argsCopy)[0], call.Operator)
 	case "add.expr":
 		err = add_expr((*argsCopy)[0], (*argsCopy)[1], call)
-		// debugging functions
+		// testing functions
 	case "halt":
 		var msg string
 		encoder.DeserializeRaw(*(*argsCopy)[0].Value, &msg)
@@ -1393,9 +1393,9 @@ func (prgrm *CXProgram) RunCompiled() error {
 			}
 			
 			// debugging memory
-			fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			fmt.Println("prgrm.Heap", prgrm.Heap)
-			fmt.Println("prgrm.Data", prgrm.Data)
+			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
+			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
 			return err

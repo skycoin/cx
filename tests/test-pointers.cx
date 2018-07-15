@@ -1,0 +1,135 @@
+package main
+
+type miniStruct struct {
+	mInt i32
+	mLong i64
+	mFloat f32
+	mDecimal f64
+	mBoolean bool
+	mByt byte
+	mString str
+}
+
+type TestStruct struct {
+	int i32
+	long i64
+	float f32
+	decimal f64
+	boolean bool
+	byt byte
+	string str
+	anotherStruct miniStruct
+}
+
+var gi32Ptr *i32
+var gi32Ptr2 *i32
+
+func main () {
+	// var check1 i32
+	// check1 = 123
+	
+	// var li32Ptr *i32
+	// var li32Ptr2 *i32
+
+	// var num1 i32
+	// var num2 i32
+
+	// num1 = 15
+	// num2 = 30
+
+	// var check2 i32
+	// check2 = 123
+
+	// li32Ptr = &num1
+	// li32Ptr2 = &num2
+
+	// test(*li32Ptr, 15, "*gi32Ptr error")
+	// test(*li32Ptr2, 30, "*gi32Ptr2 error")
+	
+	// // // gi32Ptr = &num1
+	// // // gi32Ptr2 = &num2
+
+	// // // i32.print(*gi32Ptr)
+	// // // i32.print(*gi32Ptr2)
+
+	// // // test(*gi32Ptr, 15, "*gi32Ptr error")
+	// // // test(*gi32Ptr2, 30, "*gi32Ptr2 error")
+
+
+
+
+	
+
+	var pStrct1 *TestStruct
+	var pStrct2 *TestStruct
+
+	var strct1 TestStruct
+	var strct2 TestStruct
+
+	strct1 = TestStruct{
+		int: 32,
+		long: 64L,
+		float: 32.0,
+		decimal: 64.0D,
+		boolean: true,
+		byt: 255B,
+		string: "Foo bar"}
+
+	strct2 = TestStruct{
+		int: 33,
+		long: 63L,
+		float: 33.0,
+		decimal: 63.0D,
+		boolean: true,
+		byt: 41B,
+		string: "Bar foo"}
+
+	pStrct1 = &strct1
+	pStrct2 = &strct2
+
+	// (*pStrct1).int = &num1
+	// (*pStrct2).int = &num2
+
+	i32.print((*pStrct1).int)
+	i32.print((*pStrct2).int)
+
+	f64.print((*pStrct1).decimal)
+	f64.print((*pStrct2).decimal)
+
+
+
+
+
+
+
+	var pStrcts *[2]TestStruct
+	// var pStrcts *[2]TestStruct
+
+	var strcts [2]TestStruct
+	// var strcts [2]TestStruct
+
+	strcts[0] = strct1
+	strcts[1] = strct2
+
+	pStrcts = &strcts
+
+	test((*pStrcts)[i32.add(0, 0)].int, 32, "")
+	test((*pStrcts)[i32.add(0, 0)].long, 64L, "")
+	test((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
+	//
+	// To Do
+	//
+	
+	var recStruct TestStruct
+	recStruct = (*pStrcts)[0]
+
+	test(recStruct.int, 32, "")
+	test(recStruct.long, 64L, "")
+	//
+	// To Do
+	//
+	
+	recStruct = (*pStrcts)[1]
+	test(recStruct.int, 33, "")
+	test(recStruct.long, 63L, "")
+}

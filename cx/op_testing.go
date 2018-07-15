@@ -21,14 +21,22 @@ func op_test_value(expr *CXExpression, stack *CXStack, fp int) {
 	var same bool
 	same = true
 
-	// fmt.Println("byts1", byts1)
-	// fmt.Println("byts2", byts2)
+	// fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
+	// fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
 
-	for i, byt := range byts1 {
-		if byt != byts2[i] {
-			same = false
+	if len(byts1) != len(byts2) {
+		fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
+		fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
+	} else {
+		for i, byt := range byts1 {
+			if byt != byts2[i] {
+				same = false
+				fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
+				fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
+			}
 		}
 	}
+	
 
 	var message string
 	message = ReadStr(stack, fp, inp3)
