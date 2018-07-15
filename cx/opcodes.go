@@ -1407,5 +1407,5 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 
 	// http
-	OP_HTTP_GET:           MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_CUSTOM}),
+	OP_HTTP_GET:           MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
 }

@@ -24,6 +24,9 @@
 # done
 
 
+## checking if 
+
+
 ## determining if $GOPATH is set
 ## if not, use $HOME/go, as `go get` uses this instead
 if [ -z ${GOPATH+x} ];

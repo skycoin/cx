@@ -1,9 +1,10 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	"net/http"
 	"io/ioutil"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 const (
@@ -15,11 +16,12 @@ const (
 
 func op_http_get(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
 
 	var err error
 	var resp *http.Response
 	var contents []byte
-	
+
 	resp, err = http.Get(ReadStr(stack, fp, inp1))
 
 	if err != nil {
@@ -31,34 +33,24 @@ func op_http_get(expr *CXExpression, stack *CXStack, fp int) {
         if err != nil {
 		panic(err)
         }
-        fmt.Printf("%s\n", string(contents))
 
-	
+	byts := encoder.Serialize(string(contents))
+	length := len(byts)
+	heapOffset := AllocateSeq(stack.Program, length+OBJECT_HEADER_SIZE)
+	size := encoder.Serialize(int32(len(byts)))
 
-	var outB1 []byte
-	outB1 = make([]byte, RESPONSE_SIZE)
-	
-	if out1.CustomType != nil && len(out1.CustomType.Fields) > 0 {
-		for _, fld := range out1.CustomType.Fields {
-			fmt.Println("huehue", fld.Name)
-		}
-	} else {
-		panic("")
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+		header[c] = size[c-5]
 	}
 
-	fmt.Println("flds", out1.CustomType.Fields)
+	obj := append(header, byts...)
 
-	fmt.Println("meow", resp.Status, out1.Size)
-	
+	WriteToHeap(&stack.Program.Heap, heapOffset, obj)
 
-	outB1 = FromStr(resp.Status)
+	off := encoder.SerializeAtomic(int32(heapOffset))
 
-	out1.Size = len(outB1)
-	out1.TotalSize = len(outB1)
-
-	fmt.Println("woof", outB1)
-	
-	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
+	WriteToStack(stack, out1Offset, off)
 }
 
 

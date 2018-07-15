@@ -329,7 +329,7 @@ func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 		
 		sizeB := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
 		encoder.DeserializeAtomic(sizeB, &size)
-		
+
 		encoder.DeserializeRaw(stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
 	}
 	
