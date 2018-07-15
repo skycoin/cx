@@ -67,7 +67,7 @@ func testAllIns() () {
 	test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
 	test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
 	test(testBoolin(true, false, true), false, "function in bool error")
-	test(testBytein(i32.byte(2), i32.byte(80), i32.byte(26)), 80, "function in byte error")
+	test(testBytein(2B, 80B, 26B), 80B, "function in byte error")
 	test(testStringin("Not working", "It's working!"), "It's working!", "function in str error")
 }
 

@@ -11,9 +11,10 @@ func main () () {
 	testing.testFunctions()
 
 	testing.testControlFlow()
-	// testing.testStructures()
+	testing.testStructures()
 
 	testing.testSTR()
+	testing.testPointers()
 	// implement parse byte functions and other stuff
 	//testing.testBYTE()
 }

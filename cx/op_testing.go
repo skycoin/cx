@@ -25,6 +25,7 @@ func op_test_value(expr *CXExpression, stack *CXStack, fp int) {
 	// fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
 
 	if len(byts1) != len(byts2) {
+		same = false
 		fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
 		fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
 	} else {

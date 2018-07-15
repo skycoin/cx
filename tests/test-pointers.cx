@@ -1,4 +1,4 @@
-package main
+package testing
 
 type miniStruct struct {
 	mInt i32
@@ -24,7 +24,7 @@ type TestStruct struct {
 var gi32Ptr *i32
 var gi32Ptr2 *i32
 
-func main () {
+func testPointers () {
 	// var check1 i32
 	// check1 = 123
 	
@@ -90,11 +90,11 @@ func main () {
 	// (*pStrct1).int = &num1
 	// (*pStrct2).int = &num2
 
-	i32.print((*pStrct1).int)
-	i32.print((*pStrct2).int)
+	// i32.print((*pStrct1).int)
+	// i32.print((*pStrct2).int)
 
-	f64.print((*pStrct1).decimal)
-	f64.print((*pStrct2).decimal)
+	// f64.print((*pStrct1).decimal)
+	// f64.print((*pStrct2).decimal)
 
 
 

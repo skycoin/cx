@@ -2048,7 +2048,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 					out.TotalSize = inpExpr.Inputs[0].Size
 					out.Type = inpExpr.Inputs[0].Type
 				} else {
-
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
 					out.Size = inpExpr.Operator.Outputs[0].Size
 					out.TotalSize = inpExpr.Operator.Outputs[0].Size

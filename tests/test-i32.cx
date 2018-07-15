@@ -45,7 +45,7 @@ func I32ParseTo() () {
 	test(i32.i64(10), 10L, "Parse to I64 error")
 	test(i32.f32(10), 10.0, "Parse to F32 error")
 	test(i32.f64(10), 10.0D, "Parse to F64 error")
-	test(i32.byte(379), 123, "Parse to BYTE error")
+	test(i32.byte(379), 123B, "Parse to BYTE error")
 	// str.print("FAIL: i32.str() crash!")
 	//test(i32.str(10), "10", "Parse to STR error") // oh ok, I need to implement strings going to the heap
 }
