@@ -2,6 +2,7 @@ package base
 
 import (
 	// "fmt"
+	"time"
 	"net/http"
 	"io/ioutil"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -22,7 +23,12 @@ func op_http_get(expr *CXExpression, stack *CXStack, fp int) {
 	var resp *http.Response
 	var contents []byte
 
-	resp, err = http.Get(ReadStr(stack, fp, inp1))
+	var netClient = &http.Client{
+		Timeout: time.Second * 10,
+	}
+	resp, err = netClient.Get(ReadStr(stack, fp, inp1))
+	
+	// resp, err = http.Get(ReadStr(stack, fp, inp1))
 
 	if err != nil {
 		panic(err)

@@ -23,10 +23,6 @@
 #     fi
 # done
 
-
-## checking if 
-
-
 ## determining if $GOPATH is set
 ## if not, use $HOME/go, as `go get` uses this instead
 if [ -z ${GOPATH+x} ];
@@ -182,7 +178,33 @@ else
     exit 0
 fi
 
-echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests/test.cx'"
+## checking if $CXPATH is set
+if [ -z ${CXPATH+x} ];
+then
+    CX_PATH=$HOME/cx
+    echo "NOTE:\t\$CXPATH not set; using: $CX_PATH"
+else
+    CX_PATH=$CXPATH
+fi
+
+if [ ! -d "$CX_PATH" ]; then
+    echo "NOTE:\tCX's workspace (\$CXPATH or $CX_PATH) does not exist"
+    echo "NOTE:\tCreating CX's workspace at $CX_PATH"
+
+    mkdir $CX_PATH
+    mkdir $CX_PATH/src
+    mkdir $CX_PATH/bin
+    mkdir $CX_PATH/pkg
+    
+    if [ $? -eq 0 ]; then
+        echo "OK:\tCX's workspace was successfully created"
+    else
+        echo "FAIL:\tCouldn't create CX's workspace at $CX_PATH"
+        exit 0
+    fi
+fi
+
+echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests'"
 
 echo ""
 cx -v

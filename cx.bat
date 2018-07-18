@@ -22,6 +22,7 @@ rem echo %GOPATH%
 
 IF NOT EXIST %GOPATH% (
     SET INSTALLATION_PATH=%USERPROFILE%\go
+    echo NOTE:   \%GOPATH\% not set; using: %INSTALLATION_PATH%
 ) ELSE (
     SET INSTALLATION_PATH=%GOPATH%
 )
@@ -149,4 +150,26 @@ IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    echo NOTE:   Compiling CX
 )
 
-echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%/src/github.com/skycoin/cx/tests/test.cx'
+
+
+IF NOT EXIST %CXPATH% (
+   SET CX_PATH=%USERPROFILE%\go
+   echo NOTE:   CX's workspace (\%CXPATH\% or %CX_PATH%) does not exist
+   echo NOTE:   Creating CX's workspace at %CX_PATH%
+
+   mkdir %CX_PATH%
+   mkdir %CX_PATH%\src
+   mkdir %CX_PATH%\bin
+   mkdir %CX_PATH%\pkg
+
+   IF ERRORLEVEL 1 (
+      echo FAIL:   Couldn't create CX's workspace at %CX_PATH%
+      EXIT /B 2
+   ) ELSE (
+      echo OK:     CX's workspace was successfully created
+   )
+)
+
+
+
+echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%/src/github.com/skycoin/cx/tests'
