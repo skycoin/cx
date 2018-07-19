@@ -1,6 +1,8 @@
 package base
 
 import (
+	// "os"
+	// "path/filepath"
 	"bytes"
 	"errors"
 	"fmt"
@@ -2404,3 +2406,51 @@ func MakeMultiDimArray(atomicSize int, lengths []int) []byte {
 
 	return result
 }
+
+// func LoadDirectory (path string) {
+// 	fi, err := os.Stat(path)
+// 	_ = err
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+	
+// 	switch mode := fi.Mode(); {
+// 	case mode.IsDir():
+// 		var fileList []string
+
+// 		err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+// 			fileList = append(fileList, path)
+// 			return nil
+// 		})
+
+// 		if err != nil {
+// 			panic(err)
+// 		}
+
+// 		for _, path := range fileList {
+// 			file, err := os.Open(path)
+			
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			fiName := file.Name()
+// 			fiNameLen := len(fiName)
+			
+// 			if fiNameLen > 2 && fiName[fiNameLen - 2:] == "cx" {
+// 				// only loading .cx files
+// 				sourceCode = append(sourceCode, file)
+// 				fileNames = append(fileNames, fiName)
+// 			}
+// 		}
+// 	case mode.IsRegular():
+// 		file, err := os.Open(arg)
+		
+// 		if err != nil {
+// 			panic(err)
+// 		}
+		
+// 		sourceCode = append(sourceCode, file)
+// 	}
+// }

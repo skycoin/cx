@@ -85,7 +85,7 @@ Check out the latest additions and bug fixes in the [changelog](https://github.c
 # Installation
 
 CX has been successfully installed and tested in recent versions of
-Linux (Ubuntu) and MacOS X. Nevertheless, if you run into any
+Linux (Ubuntu), MacOS X and Windows. Nevertheless, if you run into any
 problems, please create an issue and we'll try to solve the problem as
 soon as possible.
 
@@ -98,7 +98,7 @@ version`. It should output something similar to:
 go version go1.8.3 darwin/amd64
 ```
 
-**You need a version greater than 1.8**
+**You need a version greater than 1.8, and >1.10 is recommended**
 
 Some linux distros' package managers install very old versions of
 Go. You can try first with a binary from your favorite package
@@ -113,7 +113,8 @@ instructions by clicking [here](https://golang.org/doc/install). Particularly:
     likely already in your `$PATH` variable.
   * If you already installed Go, but running "go" in a terminal throws
     a "command not found" error, this is most likely the problem.
-* Make sure that you have configured your `$GOPATH` environment variable.
+* Make sure that you have configured your `$GOPATH` environment
+variable.
 * Make sure that you have added `$GOPATH/bin` to you `$PATH`.
   * If you have binaries installed in `$GOPATH/bin` but you can't use
     them by just typing their name wherever you are in the file system
@@ -153,14 +154,18 @@ and you should be ready to go.
 
 ## Windows: Installing GCC
 
-You might need to install GCC (MinGW). Try installing everything first
+You might need to install GCC. Try installing everything first
 without installing GCC, and if an error similar to "gcc: command not
 found" is shown, you can fix this by installing MinGW.
 
 Don't get GCC through Cygwin; apparently, [Cygwin has compatibility
 issues with Go](https://github.com/golang/go/issues/7265#issuecomment-66091041).
 
-## Installing CX - Method 1: The "so easy it might not work" Solution
+Users have reported that using either [MingW](http://www.mingw.org/)
+or [tdm-gcc](tdm-gcc.tdragon.net(), where tdm-gcc seems to be the
+easiest way.
+
+## Installing CX
 
 Make sure that you have `curl` and `git` installed. Run this command in a terminal:
 
@@ -176,54 +181,34 @@ you. This means that you can run `cx` after running the script and see
 the REPL right away (if the script worked). To exit the REPL, you can press `Ctrl-D`.
 
 You should test your installation by running `cx
-$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+$GOPATH/src/github.com/skycoin/cx/tests`.
 
 As an alternative, you could clone into this repository and run cx.sh
 in a terminal.
 
 ### Windows
 
-Windows is still a nuisance when trying to provide an easy solution to
-install CX. The Windows version of this solution would be to manually
+An installation script is also provided for Windows named cx.bat.
+The Windows version of this method would be to manually
 download the provided [batch script](https://github.com/skycoin/cx/blob/master/cx.bat) (which is similar to the bash
 script for *nix systems described above), and run it in a terminal.
 
-## Installing CX - Method 2: The "not so easy, but still easy" Solution
-
-Run these commands in a terminal:
-
-```
-go get github.com/skycoin/skycoin/...
-go get github.com/go-gl/gl/v2.1/gl
-go get github.com/go-gl/glfw/v3.2/glfw
-go get github.com/go-gl/gltext
-go get github.com/blynn/nex
-go get github.com/cznic/goyacc
-go get github.com/skycoin/cx/...
-nex -e $GOPATH/src/github.com/skycoin/cx/cx/cx.nex
-goyacc -o $GOPATH/src/github.com/skycoin/cx/cx/cx.go $GOPATH/src/github.com/skycoin/cx/cx/cx.y
-go install github.com/skycoin/cx/cx/
-```
-
-To test if the installation worked, run the `cx` command and you
-should see the REPL start. To exit the REPL, you can press `Ctrl-D`.
-
 You should test your installation by running `cx
-$GOPATH/src/github.com/skycoin/cx/tests/test.cx`.
+%GOPATH%\src\github.com\skycoin\cx\tests`.
 
 ## Updating CX
 
-Go to your CX repository and run a `git pull`. For example:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx/
-git pull
-```
-
-The you should recompile CX:
+Now you can update CX by simply running the installation script
+again:
 
 ```
 ./cx.sh
+```
+
+or, in Windows:
+
+```
+cx.bat
 ```
 
 # Running CX
@@ -233,11 +218,11 @@ Once CX has been successfully installed, running `cx` should print
 this in your terminal:
 
 ```
-CX REPL
-More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx
+CX 0.5.6
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
 
 :func main {...
-	* 
+	*
 ```
 
 This is the CX REPL
@@ -394,10 +379,11 @@ anymore. In other words, the two examples above can now be written as:
 
 Also, now you don't need to use the cast functions `i32.i64`,
 `f32.f64`, etc. If you want to tell the compiler that you want a
-number to be interpreted as an *i64* or as an *f64*, you can use the
-suffixes `L` and `D`:
+number to be interpreted as a *byte*, an *i64* or as an *f64*, you can use the
+suffixes `B`, `L` and `D`, respectively:
 
 ```
+byte.print(55B)
 i64.add(31L, 62L)
 f64.mul(25D, 25D)
 ```
@@ -458,7 +444,6 @@ used with identifiers (variables).
 |   5 % 5   	|    i32.mod(5, 5)   	|
 |   5 << 5  	|  i32.bitshl(5, 5)  	|
 |   5 >> 5  	|  i32.bitshr(5, 5)  	|
-|   5 ** 5  	|    i32.pow(5, 5)   	|
 |   5 & 5   	|  i32.bitand(5, 5)  	|
 |   5 \| 5   	|   i32.bitor(5, 5)  	|
 |   5 ^ 5   	|  i32.bitxor(5, 5)  	|
@@ -479,7 +464,6 @@ used with identifiers (variables).
 |  foo %= 5 	|   foo = i32.mod(foo, 5)  	|
 | foo <<= 5 	| foo = i32.bitshl(foo, 5) 	|
 | foo >>= 5 	| foo = i32.bitshr(foo, 5) 	|
-| foo **= 5 	|   foo = i32.pow(foo, 5)  	|
 |  foo &= 5 	| foo = i32.bitand(foo, 5) 	|
 |  foo \|= 5 	|  foo = i32.bitor(foo, 5) 	|
 |  foo ^= 5 	| foo = i32.bitxor(foo, 5) 	|
@@ -559,10 +543,12 @@ i64.add(i32.i64(30.0), i32.i64(20.0))
 ### Bytes
 
 Bytes can hold any number from 0 to 255. The programmer can create a
-byte number by casting an *i32* to *byte*:
+byte number by casting an *i32* to *byte*, or by appending the suffix
+B to an integer:
 
 ```
-i32.byte(255)
+i32.byte(100)
+byte.print(55B)
 ```
 
 ### Strings
@@ -590,67 +576,42 @@ as a single unit of information too).
 An array is a collection of atomics, where every element
 contained in an array must be of the same type.
 
-CX arrays behave more like vectors in other programming languages,
-where they can be resized by adding new elements.
-
 A programmer can create arrays of each of the atomic types by writing
-"[]" followed by the desired type and a list of elements that
-initialize the array, enclosed in curly braces. For example:
+"[N]", where N is the number of elements for that array, followed by
+the desired type and a list of elements that initialize the array,
+enclosed in curly braces. For example:
+
 
 ```
-[]bool{true, false, true}
-[]byte{3, 2}
-[]i32{0, 1, 2}
-[]i64{7, 7, 7}
-[]f32{3.5, 1.2, 8.9}
-[]f64{0.3}
-[]str{"hello", "world"}
+[3]bool{true, false, true}
+[2]byte{3, 2}
+[3]i32{0, 1, 2}
+[3]i64{7, 7, 7}
+[3]f32{3.5, 1.2, 8.9}
+[1]f64{0.3}
+[2]str{"hello", "world"}
 ```
 
-As can be noted, numbers in *[]i64* and *[]f64* do not need to be
+As can be noted, numbers in *[N]i64* and *[N]f64* do not need to be
 cast explicitly. The reason behind this is that they are already being
-explicitly cast: *[]i64* and *[]f64* are telling CX that every element
+explicitly cast: *[N]i64* and *[N]f64* are telling CX that every element
 is of that type.
 
 There are a number of native functions associated to array types. For
 example, to obtain the number of elements in an *[]i32*, we can use
-*[]i32.len*:
+*len*:
 
 ```
-i32.print([]i32.len([]i32{0, 1, 2})
+i32.print(len([3]i32{0, 1, 2})
 ```
 
-We can read specific elements from arrays by using *[]xxx.read*, write
-new elements to arrays at a particular index by using *[]xxx.write*, concatenate two arrays of
-the same type by using *[]xxx.concat*, append new values to an array
-by using *[]xxx.append*, and we can create copies of arrays by using
-*[]xxx.copy*.
+We can read and write specific elements from arrays by using the
+bracket notation:
 
 ```
-[]i32.read([]i32{10, 20, 30}, 0) // returns 10
-[]f32.write([]f32{3.3, 4.4, 5.5}, 1, 10.10)  // returns []f32{3.3, 10.10, 5.5}
-[]str.concat([]str{"hi"}, []str{"bye"}) // returns []str{"hi", "bye"}
-[]f64.append([]f64{1.1}, i32.i64(2.2)) // returns []f64{1.1, 2.2}
-[]bool.copy(toArray, []bool{true, false})
+foo[2] = 33
+i32.print(foo[2])
 ```
-
-The set of array *copy* functions are meant to receive a variable
-(first argument) to copy to the array (second argument). These *copy*
-functions won't raise an error if literals are sent as their first
-argument, but it won't be of any use for the programmer, as the new
-copy of the array will be lost. You can create new and empty arrays by
-using the *make* array functions:
-
-```
-empty := []i32.make(3)
-[]i32.copy(empty, []i32{1, 2, 3})
-```
-
-In the example above, *empty* is a variable that holds an empty array
-of length 3. We'll learn more about variables in the next section.
-
-As a final note, CX also provides us with functions to cast arrays of one type to
-another, for example: *[]f32.[]i32*, *[]i64.[]f64*, etc.
 
 ### Multidimensional Arrays
 
@@ -672,13 +633,13 @@ contains the index of the sprite that needs to be drawn in that tile:
 We can create this map using the following code:
 
 ```
-tilemap := [][]i32.make(6)
-tilemap = [][]i32.write(tilemap, 0, []i32{1, 1, 1, 0, 1, 1, 1})
-tilemap = [][]i32.write(tilemap, 1, []i32{1, 0, 0, 0, 0, 0, 1})
-tilemap = [][]i32.write(tilemap, 2, []i32{1, 2, 0, 0, 2, 0, 1})
-tilemap = [][]i32.write(tilemap, 3, []i32{1, 0, 2, 0, 0, 0, 1})
-tilemap = [][]i32.write(tilemap, 4, []i32{1, 0, 0, 0, 0, 0, 1})
-tilemap = [][]i32.write(tilemap, 5, []i32{1, 1, 1, 1, 1, 1, 1})
+var tilemap [6][7]
+tilemap[0] = [7]i32{1, 1, 1, 0, 1, 1, 1}
+tilemap[0] = [7]i32{1, 0, 0, 0, 0, 0, 1}
+tilemap[0] = [7]i32{1, 2, 0, 0, 2, 0, 1}
+tilemap[0] = [7]i32{1, 0, 2, 0, 0, 0, 1}
+tilemap[0] = [7]i32{1, 0, 0, 0, 0, 0, 1}
+tilemap[0] = [7]i32{1, 1, 1, 1, 1, 1, 1}
 ```
 
 ## Variables
@@ -690,33 +651,13 @@ can make a variable hold the value for us, and then pass the variable
 to the three different functions:
 
 ```
-var names []str = []str{"Edward", "Daniel", "Melissa", "Roger", "Ron"}
+var names [5]str = [5]str{"Edward", "Daniel", "Melissa", "Roger", "Ron"}
 
-[]str.print(names)
 notify(names)
 saveToDatabase(names)
 ```
 
-In the example above, the variable *names* is declared and immediately
-initialized with the string array literal, but the variable could have
-been declared and not explicitly initialized. Another option is to use a short form where the
-*var* keyword is skipped:
-
-```
-var notInitilazed i32
-short := 1.1
-```
-
-Internally, variables declared using either the long or the short forms
-are represented the same. The additional syntax is there only to provide
-the programmer a way to inform the reader that that variable is going
-to be used later on.
-
-Just like in Golang, a variable that is being declared and initialized
-without the *var* keyboard must be assigned using a colon and an equal
-symbol (:=).
-
-Finally, as mentioned above, a variable can be declared and not
+Finally, a variable can be declared and not
 *explicitly* initialized. Unlike in languages like C, where a variable
 can end up pointing to garbage in memory, every variable in CX is
 implicitly initialized to its zero value (unless explicitly
@@ -832,7 +773,6 @@ type Student struct {
   name str
   age i32
   height f32
-  grades []f32
 }
 ```
 
@@ -860,67 +800,67 @@ type Shape struct {
 If we had declared *Shape* before *Color* or *Point*, CX would raise
 an error telling us that type "Color" or type "Point" is not defined.
 
-As can be noted, as soon as we declare a new type using a *struct*, we
-automatically have access to another type: arrays of that type of
-*struct*s. CX not only creates this additional type for us, but a set
-of functions to manipulate this new array type. Remember, CX is very
-strict regarding its type system, so if we want to know what's the
-length of an array of *Point*s, we'd need to call *[]Point.len* to
-find out:
+<!-- As can be noted, as soon as we declare a new type using a *struct*, we -->
+<!-- automatically have access to another type: arrays of that type of -->
+<!-- *struct*s. CX not only creates this additional type for us, but a set -->
+<!-- of functions to manipulate this new array type. Remember, CX is very -->
+<!-- strict regarding its type system, so if we want to know what's the -->
+<!-- length of an array of *Point*s, we'd need to call *[]Point.len* to -->
+<!-- find out: -->
 
-```
-var color Color
-color.r = 31
-color.g = 23
-color.b = 131
+<!-- ``` -->
+<!-- var color Color -->
+<!-- color.r = 31 -->
+<!-- color.g = 23 -->
+<!-- color.b = 131 -->
 
-points := []Point.make(3)
+<!-- points := []Point.make(3) -->
 
-myShape := new Shape{
-  color: color,
-  vertices: points
-}
+<!-- myShape := new Shape{ -->
+<!--   color: color, -->
+<!--   vertices: points -->
+<!-- } -->
 
-[]Point.write(myShape.vertices, 0, new Point{x: 1, y: 2})
-[]Point.write(myShape.vertices, 1, new Point{x: 3, y: 5})
-[]Point.write(myShape.vertices, 2, new Point{x: 2, y: 7})
-```
+<!-- []Point.write(myShape.vertices, 0, new Point{x: 1, y: 2}) -->
+<!-- []Point.write(myShape.vertices, 1, new Point{x: 3, y: 5}) -->
+<!-- []Point.write(myShape.vertices, 2, new Point{x: 2, y: 7}) -->
+<!-- ``` -->
 
-Woa woa! A lot is happening in the example above. Let's analyze this
-step by step. First, we can notice that we can now declare variables
-of custom types (*struct*s): we create a *Color* variable named
-*color*. Similarly to many other programming languages that are
-capable of declaring C structs, we can access the *struct* fields by
-using a dot following the variable name, and we tell CX to assign
-different values to the r, g, b fields of the *Color* type.
+<!-- Woa woa! A lot is happening in the example above. Let's analyze this -->
+<!-- step by step. First, we can notice that we can now declare variables -->
+<!-- of custom types (*struct*s): we create a *Color* variable named -->
+<!-- *color*. Similarly to many other programming languages that are -->
+<!-- capable of declaring C structs, we can access the *struct* fields by -->
+<!-- using a dot following the variable name, and we tell CX to assign -->
+<!-- different values to the r, g, b fields of the *Color* type. -->
 
-Then we can see how we declare and initialize the *points* variable
-by assigning the result of the function call *[]Point.make(3)*. CX
-also created a *make* function to initialize arrays of the *Point*
-type. Each of the *Point*s in this newly created array are initialized
-to its 0 form, i.e., they are *Point* *struct* instances with *x = 0*
-and *y = 0*.
+<!-- Then we can see how we declare and initialize the *points* variable -->
+<!-- by assigning the result of the function call *[]Point.make(3)*. CX -->
+<!-- also created a *make* function to initialize arrays of the *Point* -->
+<!-- type. Each of the *Point*s in this newly created array are initialized -->
+<!-- to its 0 form, i.e., they are *Point* *struct* instances with *x = 0* -->
+<!-- and *y = 0*. -->
 
-Now, in order to create a *Shape* instance, we use the keyword "new"
-followed by the name of the *struct* we want to create. This is an
-alternative to using the "var name type" form. The advantage to this
-new form (pun intended) is that we can use the created literal as an
-argument to a function call. Anyway, by using the *new Struct* form,
-we can also directly specify what are going to be the values for the
-*struct* instance fields. In this case, the instance's field color is
-set to the color variable defined above, and the vertices field is set
-to the points array, also defined above.
+<!-- Now, in order to create a *Shape* instance, we use the keyword "new" -->
+<!-- followed by the name of the *struct* we want to create. This is an -->
+<!-- alternative to using the "var name type" form. The advantage to this -->
+<!-- new form (pun intended) is that we can use the created literal as an -->
+<!-- argument to a function call. Anyway, by using the *new Struct* form, -->
+<!-- we can also directly specify what are going to be the values for the -->
+<!-- *struct* instance fields. In this case, the instance's field color is -->
+<!-- set to the color variable defined above, and the vertices field is set -->
+<!-- to the points array, also defined above. -->
 
-We can see how the empty points are re-assigned by using the
-*[]Point.write* function. *myShape.vertices* is sent to *[]Point.write* as the
-first argument, which means that we want to write a new value of type
-*Point* in the *vertices* array. Each of the three calls writes a new
-*Point* literal to each of the available indexes (0, 1 and 3).
+<!-- We can see how the empty points are re-assigned by using the -->
+<!-- *[]Point.write* function. *myShape.vertices* is sent to *[]Point.write* as the -->
+<!-- first argument, which means that we want to write a new value of type -->
+<!-- *Point* in the *vertices* array. Each of the three calls writes a new -->
+<!-- *Point* literal to each of the available indexes (0, 1 and 3). -->
 
-As a final note, you can create functions associated to structs, which
-are called `methods` (following Go's convention). You can learn more
-about CX methods by reading their
-[own section here, in this document](#methods).
+<!-- As a final note, you can create functions associated to structs, which -->
+<!-- are called `methods` (following Go's convention). You can learn more -->
+<!-- about CX methods by reading their -->
+<!-- [own section here, in this document](#methods). -->
 
 # Expressions
 
@@ -934,31 +874,31 @@ expressions.
 foo := i32.mul(3, 5)
 ```
 
-In the example above, we are telling CX to do 3 times 5 and to store
-the result in *foo*. *i32.mul* is the function to be called, 3 and 5
-are its arguments, and *foo* is the variable that will store the
-output. As in Golang, functions in CX can return more than one value:
+<!-- In the example above, we are telling CX to do 3 times 5 and to store -->
+<!-- the result in *foo*. *i32.mul* is the function to be called, 3 and 5 -->
+<!-- are its arguments, and *foo* is the variable that will store the -->
+<!-- output. As in Golang, functions in CX can return more than one value: -->
 
-```
-seconds, minutes, hours := getTime()
-```
+<!-- ``` -->
+<!-- seconds, minutes, hours := getTime() -->
+<!-- ``` -->
 
-Arguments to function calls can be other expressions:
+<!-- Arguments to function calls can be other expressions: -->
 
-```
-result := i32.mul(i32.add(5, 2), i32.sub(3, 1))
-```
+<!-- ``` -->
+<!-- result := i32.mul(i32.add(5, 2), i32.sub(3, 1)) -->
+<!-- ``` -->
 
-When stating multiple receiving variables, you can provide different
-expressions to be assigned to each variable, for example:
+<!-- When stating multiple receiving variables, you can provide different -->
+<!-- expressions to be assigned to each variable, for example: -->
 
-```
-res1, res2 := i32.add(5, 3), i32.sub(10, 7)
-i32.print(res1)
-i32.print(res2)
-```
+<!-- ``` -->
+<!-- res1, res2 := i32.add(5, 3), i32.sub(10, 7) -->
+<!-- i32.print(res1) -->
+<!-- i32.print(res2) -->
+<!-- ``` -->
 
-After executing the example above, 8 will be printed followed by 3.
+<!-- After executing the example above, 8 will be printed followed by 3. -->
 
 # Flow Control
 

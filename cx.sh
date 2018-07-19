@@ -33,6 +33,7 @@ else
     INSTALLATION_PATH=$GOPATH
 fi
 
+echo "NOTE:\tMake sure to add CX executable's directory at $INSTALLATION_PATH/go/bin/ to your \$PATH environment variable"
 
 if [ ! -d "$INSTALLATION_PATH/src/github.com/skycoin/skycoin/" ]; then
     echo "NOTE:\tRepository github.com/skycoin/skycoin is not present in $GOPATH"
@@ -209,3 +210,8 @@ echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPA
 echo ""
 cx -v
 echo ""
+
+if [ ! $? -eq 0 ]; then
+    echo "FAIL:\tIs CX executable's directory ($INSTALLATION_PATH/bin) in your \$PATH environment variable?"
+    exit 0
+fi

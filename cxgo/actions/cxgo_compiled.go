@@ -170,11 +170,12 @@ func DeclarePackage(ident string) {
 
 func DeclareImport(ident string) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-
 		if _, err := pkg.GetImport(ident); err != nil {
 			if imp, err := PRGRM.GetPackage(ident); err == nil {
 				pkg.AddImport(imp)
 			} else {
+				// look in the workspace
+				
 				panic(err)
 			}
 		}
@@ -961,31 +962,51 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
 	}
 
-	// var leftNestedExprs []*CXExpression
-	// for _, inpExpr := range leftExprs {
-
-	// }
-
 	expr := MakeExpression(operator)
 	expr.Package = pkg
 
-	if leftExprs[len(leftExprs)-1].Operator == nil {
-		// then it's a literal
-		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
-	} else {
-		// then it's a function call
+	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
+		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
 		out = append(out, leftExprs...)
-	}
-
-	if rightExprs[len(rightExprs)-1].Operator == nil {
-		// then it's a literal
-		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs)-1].Outputs[0])
 	} else {
-		// then it's a function call
+		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
+	}
+	
+	// if leftExprs[len(leftExprs)-1].Operator == nil {
+	// 	// then it's a literal
+	// 	expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
+	// } else {
+	// 	// then it's a function call
+	// 	expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
+	// 	out = append(out, leftExprs...)
+	// }
+
+
+	if len(rightExprs[len(rightExprs)-1].Outputs[0].Indexes) > 0 || rightExprs[len(rightExprs)-1].Operator != nil {
+		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
 		out = append(out, rightExprs...)
+	} else {
+		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs)-1].Outputs[0])
 	}
+
+
+	
+	// if rightExprs[len(rightExprs)-1].Operator == nil {
+	// 	// then it's a literal
+	// 	expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs)-1].Outputs[0])
+	// } else  {
+	// 	// then it's an array
+		
+	// } else {
+	// 	// then it's a function call
+	// 	expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
+	// 	out = append(out, rightExprs...)
+	// }
+
+
+	
 
 	// out = append(out, expr)
 
@@ -1643,7 +1664,6 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 					if sym.Fields[c].CustomType != nil {
 						strct = sym.Fields[c].CustomType
 					}
-					// fmt.Println("huh", sym.Fields[c].Name, strct.Name)
 					if inFld, err := strct.GetField(sym.Fields[c].Name); err == nil {
 						
 						sym.Fields[c].CustomType = strct

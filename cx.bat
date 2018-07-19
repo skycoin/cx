@@ -27,6 +27,8 @@ IF NOT EXIST %GOPATH% (
     SET INSTALLATION_PATH=%GOPATH%
 )
 
+echo NOTE:   Make sure to add CX executable's directory at %INSTALLATION_PATH%\go\bin to your \%PATH\% environment variable
+
 IF NOT EXIST %GOPATH%\src\github.com\skycoin\skycoin\ (
    echo NOTE:   Repository github.com\skycoin\skycoin is not present in %GOPATH%
    echo NOTE:   Downloading the repository and installing the package via 'go get github.com/skycoin/skycoin/...'
@@ -170,6 +172,14 @@ IF NOT EXIST %CXPATH% (
    )
 )
 
+echo 
+cx -v
+echo 
+
+IF ERRORLEVEL 1 (
+   echo FAIL:   Is CX executable's directory (%INSTALLATION_PATH%\bin) in your \%PATH\% environment variable?
+EXIT /B 2
+)
 
 
-echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%/src/github.com/skycoin/cx/tests'
+echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%\src\github.com\skycoin\cx\tests'

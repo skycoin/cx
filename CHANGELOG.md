@@ -6,10 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Additions
-- Multidimensional arrays for custom types (structs)
-- Print functions for multidimensional arrays (both basic and struct types)
 - Functions as first-class objects
 - Build tool (instead of feeding several files to the interpreter, feed it a `main.cx` that pulls every required file in a project)
+- Skycoin API
+- Object Explorer
+- CX Workspaces
+
+## [0.5.6] - 2018-07-18
+### Fixed
+- Unit tests
+- Pointer dereferencing
 
 ## [0.2.0] - 2017-12-23
 ### Added

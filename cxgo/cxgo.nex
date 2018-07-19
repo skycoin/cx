@@ -530,6 +530,13 @@ func repl () {
 	}
 }
 
+func initNewProject () {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Name of the project: ")
+	text, _ := reader.ReadString('\n')
+	fmt.Println(text)
+}
+
 func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
@@ -543,11 +550,16 @@ func main () {
 	}
 
 	flagMode := false
+	newProject := false
 	var compileOutput string = "o"
 	for i, arg := range args {
 		if arg == "--version" || arg == "-v" {
 			fmt.Println("CX version", VERSION)
 			return
+		}
+		if arg == "--new" || arg == "-n" {
+			flagMode = false
+			newProject = true
 		}
 		if arg == "--web" || arg == "-w" {
 			WebMode = true
@@ -590,6 +602,10 @@ func main () {
 		}
 		if i > 0 && (args[i-1] == "-signal-client-id" || args[i-1] == "-signal-server-address") {
 			continue
+		}
+		if newProject {
+			initNewProject()
+			return
 		}
 		if !flagMode {
 
