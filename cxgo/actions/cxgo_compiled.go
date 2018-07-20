@@ -1372,9 +1372,12 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 	if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
 		for _, expr := range from {
 			if len(expr.Outputs) > 0 {
-				expr.Outputs[0].MemoryRead = glbl.MemoryRead
+				if !glbl.IsPointer {
+					expr.Outputs[0].MemoryRead = glbl.MemoryRead
+				}
+				
 				expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
-				expr.Outputs[0].DoesEscape = glbl.DoesEscape
+				// expr.Outputs[0].DoesEscape = glbl.DoesEscape
 				expr.Outputs[0].PassBy = glbl.PassBy
 			}
 		}
@@ -1867,6 +1870,7 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 			sym.Package = arg.Package
 			sym.Program = arg.Program
 			sym.HeapOffset = arg.HeapOffset
+			// sym.PassBy = arg.PassBy
 
 			if !sym.IsReference {
 				sym.MemoryRead = arg.MemoryRead

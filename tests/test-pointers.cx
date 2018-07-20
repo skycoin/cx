@@ -26,31 +26,23 @@ var gi32Ptr *i32
 var gi32Ptr2 *i32
 
 func testPointers () {
-	// func main () {
+// func main () {
 	str.print("Running Pointer Testing...")
-	
-	var li32Ptr *i32
-	var li32Ptr2 *i32
 
+	// var li32Ptr *i32
+	// var li32Ptr2 *i32
+	
 	var num1 i32
 	var num2 i32
 
 	num1 = 15
 	num2 = 30
 
-	li32Ptr = &num1
-	li32Ptr2 = &num2
-
-	assert(*li32Ptr, 15, "")
-	assert(*li32Ptr2, 30, "")
-
-
-	
 	gi32Ptr = &num1
 	gi32Ptr2 = &num2
-
-	i32.print(*gi32Ptr)
-	i32.print(*gi32Ptr2)
+	
+	// i32.print(*gi32Ptr)
+	// i32.print(*gi32Ptr2)
 
 	assert(*gi32Ptr, 15, "")
 	assert(*gi32Ptr2, 30, "")
@@ -58,76 +50,109 @@ func testPointers () {
 
 
 
+
+
+	// str.print("Running Pointer Testing...")
+	
+	// var li32Ptr *i32
+	// var li32Ptr2 *i32
+
+	// var num1 i32
+	// var num2 i32
+
+	// num1 = 15
+	// num2 = 30
+
+	// // li32Ptr = &num1
+	// // li32Ptr2 = &num2
+
+	// // assert(*li32Ptr, 15, "")
+	// // assert(*li32Ptr2, 30, "")
+
+
+	
+	// gi32Ptr = &num1
+	// // gi32Ptr2 = &num2
+
+	// i32.print(*gi32Ptr)
+	// // i32.print(*gi32Ptr2)
+
+	// assert(*gi32Ptr, 15, "")
+	// // assert(*gi32Ptr2, 30, "")
+
+
+
+
 	
 
-	var pStrct1 *TestStruct
-	var pStrct2 *TestStruct
+	// var pStrct1 *TestStruct
+	// var pStrct2 *TestStruct
 
-	var strct1 TestStruct
-	var strct2 TestStruct
+	// var strct1 TestStruct
+	// var strct2 TestStruct
 
-	strct1 = TestStruct{
-		int: 32,
-		long: 64L,
-		float: 32.0,
-		decimal: 64.0D,
-		boolean: true,
-		byt: 255B,
-		string: "Foo bar"}
+	// strct1 = TestStruct{
+	// 	int: 32,
+	// 	long: 64L,
+	// 	float: 32.0,
+	// 	decimal: 64.0D,
+	// 	boolean: true,
+	// 	byt: 255B,
+	// 	string: "Foo bar"}
 
-	strct2 = TestStruct{
-		int: 33,
-		long: 63L,
-		float: 33.0,
-		decimal: 63.0D,
-		boolean: true,
-		byt: 41B,
-		string: "Bar foo"}
+	// strct2 = TestStruct{
+	// 	int: 33,
+	// 	long: 63L,
+	// 	float: 33.0,
+	// 	decimal: 63.0D,
+	// 	boolean: true,
+	// 	byt: 41B,
+	// 	string: "Bar foo"}
 
-	pStrct1 = &strct1
-	pStrct2 = &strct2
+	// pStrct1 = &strct1
+	// pStrct2 = &strct2
 
-	// (*pStrct1).int = &num1
-	// (*pStrct2).int = &num2
+	// // (*pStrct1).int = &num1
+	// // (*pStrct2).int = &num2
 
-	// i32.print((*pStrct1).int)
-	// i32.print((*pStrct2).int)
+	// // i32.print((*pStrct1).int)
+	// // i32.print((*pStrct2).int)
 
-	// f64.print((*pStrct1).decimal)
-	// f64.print((*pStrct2).decimal)
-
-
+	// // f64.print((*pStrct1).decimal)
+	// // f64.print((*pStrct2).decimal)
 
 
 
-	var pStrcts *[2]TestStruct
+
+
 	// var pStrcts *[2]TestStruct
+	// // var pStrcts *[2]TestStruct
 
-	var strcts [2]TestStruct
 	// var strcts [2]TestStruct
+	// // var strcts [2]TestStruct
 
-	strcts[0] = strct1
-	strcts[1] = strct2
+	// strcts[0] = strct1
+	// strcts[1] = strct2
 
-	pStrcts = &strcts
+	// pStrcts = &strcts
 
-	assert((*pStrcts)[i32.add(0, 0)].int, 32, "")
-	assert((*pStrcts)[i32.add(0, 0)].long, 64L, "")
-	assert((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
-	//
-	// To Do
-	//
+	// assert((*pStrcts)[i32.add(0, 0)].int, 32, "")
+	// assert((*pStrcts)[i32.add(0, 0)].long, 64L, "")
+	// assert((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
+	// //
+	// // To Do
+	// //
 	
-	var recStruct TestStruct
-	recStruct = (*pStrcts)[0]
+	// var recStruct TestStruct
+	// recStruct = (*pStrcts)[0]
 
-	assert(recStruct.int, 32, "")
-	assert(recStruct.long, 64L, "")
-	//
-	// To Do
-	//
+	// assert(recStruct.int, 32, "")
+	// assert(recStruct.long, 64L, "")
+	// //
+	// // To Do
+	// //
 	
-	recStruct = (*pStrcts)[1]
-	assert(recStruct.int, 33, "")
-	assert(recStruct.long, 63L, "")
+	// recStruct = (*pStrcts)[1]
+	// assert(recStruct.int, 33, "")
+	// assert(recStruct.long, 63L, "")
 }

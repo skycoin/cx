@@ -61,8 +61,22 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 			for c := 0; c < elt.DereferenceLevels; c++ {
 				var offset int32
 
-				byts := stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
+				// o := GetFinalOffset(stack, fp, elt, MEM_READ)
 
+				var byts []byte
+
+				// switch elt.MemoryRead {
+				// case MEM_STACK:
+				// 	byts = stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
+				// case MEM_HEAP:
+				// 	byts = stack.Program.Heap.Heap[finalOffset + OBJECT_HEADER_SIZE : finalOffset+elt.Size + OBJECT_HEADER_SIZE]
+				// case MEM_DATA:
+				// 	byts = stack.Program.Data[finalOffset : finalOffset+elt.Size]
+					
+				// }
+				
+				byts = stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
+				
 				encoder.DeserializeAtomic(byts, &offset)
 
 				if offset != 0 {
