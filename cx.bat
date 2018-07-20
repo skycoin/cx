@@ -155,7 +155,7 @@ IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
 
 
 IF NOT EXIST %CXPATH% (
-   SET CX_PATH=%USERPROFILE%\go
+   SET CX_PATH=%USERPROFILE%\cx
    echo NOTE:   CX's workspace (\%CXPATH\% or %CX_PATH%) does not exist
    echo NOTE:   Creating CX's workspace at %CX_PATH%
 

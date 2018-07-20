@@ -404,6 +404,7 @@ CX options:
 -c, --compile                     Generate a "out" executable file of the program.
 -co, --compile-output FILENAME    Specifies the filename for the generated executable.
 -h, --help                        Prints this message.
+-n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
 
