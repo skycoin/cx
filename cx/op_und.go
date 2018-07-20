@@ -1,8 +1,9 @@
 package base
 
 import (
-// "fmt"
-// "github.com/skycoin/skycoin/src/cipher/encoder"
+	"strconv"
+	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func op_lt(expr *CXExpression, stack *CXStack, fp int) {
@@ -275,4 +276,92 @@ func op_len(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(inp1.Lengths[len(inp1.Lengths)-1]))
 	WriteMemory(stack, GetFinalOffset(stack, fp, out1, MEM_WRITE), out1, outB1)
+}
+
+func buildString(expr *CXExpression, stack *CXStack, fp int) []byte {
+	inp1 := expr.Inputs[0]
+
+	fmtStr := ReadStr(stack, fp, inp1)
+
+	var res []byte
+	var specifiersCounter int
+	var lenStr int = len(fmtStr)
+	
+	for c := 0; c < len(fmtStr); c++ {
+		var nextCh byte
+		ch := fmtStr[c]
+		if c < lenStr - 1{
+			nextCh = fmtStr[c+1]
+		}
+		if ch == '\\' {
+			switch nextCh {
+			case '%':
+				c++
+				res = append(res, nextCh)
+				continue
+			case 'n':
+				c++
+				res = append(res, '\n')
+				continue
+			default:
+				res = append(res, ch)
+				continue
+			}
+
+		}
+		if ch == '%' {
+			inp := expr.Inputs[specifiersCounter+1]
+			switch nextCh {
+			case 's':
+				res = append(res, []byte(checkForEscapedChars(ReadStr(stack, fp, inp)))...)
+			case 'd':
+				switch inp.Type {
+				case TYPE_I32:
+					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(stack, fp, inp)), 10))...)
+				case TYPE_I64:
+					res = append(res, []byte(strconv.FormatInt(ReadI64(stack, fp, inp), 10))...)
+				}
+			case 'f':
+				switch inp.Type {
+				case TYPE_F32:
+					res = append(res, []byte(strconv.FormatFloat(float64(ReadF32(stack, fp, inp)), 'f', 7, 32))...)
+				case TYPE_F64:
+					res = append(res, []byte(strconv.FormatFloat(ReadF64(stack, fp, inp), 'f', 16, 64))...)
+				}
+			}
+			c++
+			specifiersCounter++
+		} else {
+			res = append(res, ch)
+		}
+	}
+
+	return res
+}
+
+func op_sprintf(expr *CXExpression, stack *CXStack, fp int) {
+	out1 := expr.Outputs[0]
+	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
+	
+	// out1 := expr.Outputs[0]
+	byts := encoder.Serialize(string(buildString(expr, stack, fp)))
+	size := encoder.Serialize(int32(len(byts)))
+	heapOffset := AllocateSeq(stack.Program, len(byts)+OBJECT_HEADER_SIZE)
+	
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+		header[c] = size[c-5]
+	}
+
+	obj := append(header, byts...)
+
+	WriteToHeap(&stack.Program.Heap, heapOffset, obj)
+
+	off := encoder.SerializeAtomic(int32(heapOffset))
+
+	WriteToStack(stack, out1Offset, off)
+}
+
+func op_printf(expr *CXExpression, stack *CXStack, fp int) {
+	fmt.Print(string(buildString(expr, stack, fp)))
 }

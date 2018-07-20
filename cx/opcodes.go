@@ -25,6 +25,8 @@ const (
 	OP_UND_LTEQ
 	OP_UND_GTEQ
 	OP_UND_LEN
+	OP_UND_PRINTF
+	OP_UND_SPRINTF
 
 	OP_BOOL_PRINT
 
@@ -313,6 +315,10 @@ func execNative(prgrm *CXProgram) {
 		op_gteq(expr, stack, fp)
 	case OP_UND_LEN:
 		op_len(expr, stack, fp)
+	case OP_UND_PRINTF:
+		op_printf(expr, stack, fp)
+	case OP_UND_SPRINTF:
+		op_sprintf(expr, stack, fp)
 
 	case OP_BYTE_PRINT:
 		op_byte_print(expr, stack, fp)
@@ -753,6 +759,8 @@ var OpNames map[int]string = map[int]string{
 	OP_UND_LTEQ:     "lteq",
 	OP_UND_GTEQ:     "gteq",
 	OP_UND_LEN:      "len",
+	OP_UND_PRINTF:   "printf",
+	OP_UND_SPRINTF:  "sprintf",
 
 	OP_BYTE_PRINT: "byte.print",
 
@@ -980,6 +988,8 @@ var OpCodes map[string]int = map[string]int{
 	"lteq":     OP_UND_LTEQ,
 	"gteq":     OP_UND_GTEQ,
 	"len":      OP_UND_LEN,
+	"printf":   OP_UND_PRINTF,
+	"sprintf":  OP_UND_SPRINTF,
 
 	"byte.print": OP_BYTE_PRINT,
 
@@ -1205,6 +1215,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_UND_LTEQ:     MakeNative(OP_UND_LTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_GTEQ:     MakeNative(OP_UND_GTEQ, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL}),
 	OP_UND_LEN:      MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
+	OP_UND_PRINTF:   MakeNative(OP_UND_PRINTF, []int{TYPE_UNDEFINED}, []int{}),
+	OP_UND_SPRINTF:  MakeNative(OP_UND_SPRINTF, []int{TYPE_UNDEFINED}, []int{TYPE_STR}),
 
 	OP_BYTE_PRINT:   MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
