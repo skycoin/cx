@@ -1371,10 +1371,12 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 
 	if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
 		for _, expr := range from {
-			expr.Outputs[0].MemoryRead = glbl.MemoryRead
-			expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
-			expr.Outputs[0].DoesEscape = glbl.DoesEscape
-			expr.Outputs[0].PassBy = glbl.PassBy
+			if len(expr.Outputs) > 0 {
+				expr.Outputs[0].MemoryRead = glbl.MemoryRead
+				expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
+				expr.Outputs[0].DoesEscape = glbl.DoesEscape
+				expr.Outputs[0].PassBy = glbl.PassBy
+			}
 		}
 	}
 	

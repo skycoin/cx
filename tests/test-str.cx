@@ -3,7 +3,7 @@ package testing
 // var gStr str
 
 func receivingStr (s str) {
-	test(s, "foo bar bar foo", "")
+	assert(s, "foo bar bar foo", "")
 }
 
 func returningStr () (s str) {
@@ -17,39 +17,39 @@ func testSTRFunctions () () {
 	receivingStr("foo bar bar foo")
 	receivingStr(testStr)
 
-	test(testStr, "foo bar bar foo", "")
+	assert(testStr, "foo bar bar foo", "")
 
-	test(returningStr(), "bar bar foo foo", "")
+	assert(returningStr(), "bar bar foo foo", "")
 	
 	// str.print("--------String (str) Funcitons Testing--------")
 	// var lStr str
 	// str = "Local"
 	// gStr = "Global"
 	
-	// test(gStr, "Global", "global strings error")
-	// test(local, "Local", "local strings error")
+	// assert(gStr, "Global", "global strings error")
+	// assert(local, "Local", "local strings error")
 
-	//test(str.lt("foo", "bar"), false, "str.lt() error")
-	//test(str.lt("bar", "foo"), true, "str.lt() error")
+	//assert(str.lt("foo", "bar"), false, "str.lt() error")
+	//assert(str.lt("bar", "foo"), true, "str.lt() error")
 
-	//test(str.gt("foo", "bar"), true, "str.gt() error")
-	//test(str.gt("bar", "foo"), false, "str.gt() error")
+	//assert(str.gt("foo", "bar"), true, "str.gt() error")
+	//assert(str.gt("bar", "foo"), false, "str.gt() error")
 	
-	//test(str.eq("foo", "foo"), true, "str.eq() error")
-	//test(str.eq("foo", "bar"), false, "str.eq() error")
+	//assert(str.eq("foo", "foo"), true, "str.eq() error")
+	//assert(str.eq("foo", "bar"), false, "str.eq() error")
 	
-	//test(str.uneq("foo", "foo"), false, "str.uneq() error")
-	//test(str.uneq("foo", "bar"), true, "str.uneq() error")
+	//assert(str.uneq("foo", "foo"), false, "str.uneq() error")
+	//assert(str.uneq("foo", "bar"), true, "str.uneq() error")
 	
-	//test(str.lteq("foo", "bar"), false, "str.lteq() error")
-	//test(str.lteq("bar", "foo"), true, "str.lteq() error")
+	//assert(str.lteq("foo", "bar"), false, "str.lteq() error")
+	//assert(str.lteq("bar", "foo"), true, "str.lteq() error")
 	
-	//test(str.lteq("foo", "bar"), true, "str.gteq() error")
-	//test(str.lteq("bar", "foo"), false, "str.gteq() error")
+	//assert(str.lteq("foo", "bar"), true, "str.gteq() error")
+	//assert(str.lteq("bar", "foo"), false, "str.gteq() error")
 
-	//test(len("Foo bar"), 7, "len() error")
+	//assert(len("Foo bar"), 7, "len() error")
 
-	//test(str.concat("Hello ", "World"), "Hello World", "str.concat() error")
+	//assert(str.concat("Hello ", "World"), "Hello World", "str.concat() error")
 }
 
 func testSTR () () {

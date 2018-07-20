@@ -1,4 +1,5 @@
 package testing
+// package main
 
 type miniStruct struct {
 	mInt i32
@@ -25,35 +26,34 @@ var gi32Ptr *i32
 var gi32Ptr2 *i32
 
 func testPointers () {
-	// var check1 i32
-	// check1 = 123
+	// func main () {
+	str.print("Running Pointer Testing...")
 	
-	// var li32Ptr *i32
-	// var li32Ptr2 *i32
+	var li32Ptr *i32
+	var li32Ptr2 *i32
 
-	// var num1 i32
-	// var num2 i32
+	var num1 i32
+	var num2 i32
 
-	// num1 = 15
-	// num2 = 30
+	num1 = 15
+	num2 = 30
 
-	// var check2 i32
-	// check2 = 123
+	li32Ptr = &num1
+	li32Ptr2 = &num2
 
-	// li32Ptr = &num1
-	// li32Ptr2 = &num2
+	assert(*li32Ptr, 15, "")
+	assert(*li32Ptr2, 30, "")
 
-	// test(*li32Ptr, 15, "*gi32Ptr error")
-	// test(*li32Ptr2, 30, "*gi32Ptr2 error")
+
 	
-	// // // gi32Ptr = &num1
-	// // // gi32Ptr2 = &num2
+	gi32Ptr = &num1
+	gi32Ptr2 = &num2
 
-	// // // i32.print(*gi32Ptr)
-	// // // i32.print(*gi32Ptr2)
+	i32.print(*gi32Ptr)
+	i32.print(*gi32Ptr2)
 
-	// // // test(*gi32Ptr, 15, "*gi32Ptr error")
-	// // // test(*gi32Ptr2, 30, "*gi32Ptr2 error")
+	assert(*gi32Ptr, 15, "")
+	assert(*gi32Ptr2, 30, "")
 
 
 
@@ -100,8 +100,6 @@ func testPointers () {
 
 
 
-
-
 	var pStrcts *[2]TestStruct
 	// var pStrcts *[2]TestStruct
 
@@ -113,9 +111,9 @@ func testPointers () {
 
 	pStrcts = &strcts
 
-	test((*pStrcts)[i32.add(0, 0)].int, 32, "")
-	test((*pStrcts)[i32.add(0, 0)].long, 64L, "")
-	test((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
+	assert((*pStrcts)[i32.add(0, 0)].int, 32, "")
+	assert((*pStrcts)[i32.add(0, 0)].long, 64L, "")
+	assert((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
 	//
 	// To Do
 	//
@@ -123,13 +121,13 @@ func testPointers () {
 	var recStruct TestStruct
 	recStruct = (*pStrcts)[0]
 
-	test(recStruct.int, 32, "")
-	test(recStruct.long, 64L, "")
+	assert(recStruct.int, 32, "")
+	assert(recStruct.long, 64L, "")
 	//
 	// To Do
 	//
 	
 	recStruct = (*pStrcts)[1]
-	test(recStruct.int, 33, "")
-	test(recStruct.long, 63L, "")
+	assert(recStruct.int, 33, "")
+	assert(recStruct.long, 63L, "")
 }
