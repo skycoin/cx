@@ -1436,21 +1436,6 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 						&prgrm.Stacks[0],
 						GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i], MEM_READ),
 						call.Operator.Outputs[i]))
-
-				// writing outputs back to previous stack frame
-				// fmt.Println("output", out.Name, prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize], GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE))
-
-				// // >
-				// WriteToStack(
-				// 	&prgrm.Stacks[0],
-				// 	GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE),
-				// 	prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset : fp + call.Operator.Outputs[i].Offset + out.TotalSize])
-
-				// // copy byte by byte to the previous stack frame
-				// for c := 0; c < out.TotalSize; c++ {
-				// 	prgrm.Stacks[0].Stack[returnFP + out.Offset + c] =
-				// 		prgrm.Stacks[0].Stack[fp + call.Operator.Outputs[i].Offset + c]
-				// }
 			}
 
 			// return the stack pointer to its previous state
@@ -1522,30 +1507,10 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 				}
 
 				// writing inputs to new stack frame
-				// fmt.Println("input", expr.Operator.Name, byts, GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE))
 				WriteToStack(
 					&prgrm.Stacks[0],
 					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE),
 					byts)
-
-				// if inp.MemoryType == MEM_HEAP {
-				// 	// we send a frame pointer 1= 0
-				// 	WriteToStack(
-				// 		&prgrm.Stacks[0],
-				// 		GetFinalOffset(&prgrm.Stacks[0], 0, newCall.Operator.Inputs[i]),
-				// 		byts)
-				// } else {
-				// 	WriteToStack(
-				// 		&prgrm.Stacks[0],
-				// 		GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i]),
-				// 		byts)
-				// }
-
-				// // we copy the inputs for the next call
-				// for c := 0; c < inp.TotalSize; c++ {
-				// 	prgrm.Stacks[0].Stack[newFP + newCall.Operator.Inputs[i].Offset + c] =
-				// 	byts[c]
-				// }
 			}
 		}
 	}

@@ -342,8 +342,7 @@ func buildString(expr *CXExpression, stack *CXStack, fp int) []byte {
 func op_sprintf(expr *CXExpression, stack *CXStack, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
-	
-	// out1 := expr.Outputs[0]
+
 	byts := encoder.Serialize(string(buildString(expr, stack, fp)))
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(stack.Program, len(byts)+OBJECT_HEADER_SIZE)

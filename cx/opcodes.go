@@ -105,6 +105,13 @@ const (
 	OP_I64_SIN
 	OP_I64_COS
 
+	OP_F32_BYTE
+	OP_F32_STR
+	OP_F32_I32
+	OP_F32_I64
+	OP_F32_F32
+	OP_F32_F64
+	
 	OP_F32_PRINT
 	OP_F32_ADD
 	OP_F32_SUB
@@ -241,6 +248,7 @@ const (
 	OP_GL_VIEWPORT
 	OP_GL_SCALEF
 	OP_GL_TEX_COORD_2D
+	OP_GL_TEX_COORD_2F
 
 	// glfw
 	OP_GLFW_INIT
@@ -259,6 +267,9 @@ const (
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 
+	// os
+	OP_OS_GET_WORKING_DIRECTORY
+	
 	// http
 	OP_HTTP_GET
 )
@@ -348,6 +359,7 @@ func execNative(prgrm *CXProgram) {
 		op_i32_i32(expr, stack, fp)
 	case OP_I32_F64:
 		op_i32_i32(expr, stack, fp)
+		
 	case OP_I32_PRINT:
 		op_i32_print(expr, stack, fp)
 	case OP_I32_ADD:
@@ -467,6 +479,19 @@ func execNative(prgrm *CXProgram) {
 	case OP_I64_COS:
 		op_i64_cos(expr, stack, fp)
 
+	case OP_F32_BYTE:
+		op_f32_f32(expr, stack, fp)
+	case OP_F32_STR:
+		op_f32_f32(expr, stack, fp)
+	case OP_F32_I32:
+		op_f32_f32(expr, stack, fp)
+	case OP_F32_I64:
+		op_f32_f32(expr, stack, fp)
+	case OP_F32_F32:
+		op_f32_f32(expr, stack, fp)
+	case OP_F32_F64:
+		op_f32_f32(expr, stack, fp)
+		
 	case OP_F32_PRINT:
 		op_f32_print(expr, stack, fp)
 	case OP_F32_ADD:
@@ -698,6 +723,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_Scalef(expr, stack, fp)
 	case OP_GL_TEX_COORD_2D:
 		op_gl_TexCoord2d(expr, stack, fp)
+	case OP_GL_TEX_COORD_2F:
+		op_gl_TexCoord2f(expr, stack, fp)
 
 		// glfw
 	case OP_GLFW_INIT:
@@ -732,6 +759,10 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_SetInputMode(expr, stack, fp)
 	case OP_HTTP_GET:
 		op_http_get(expr, stack, fp)
+
+		// os
+	case OP_OS_GET_WORKING_DIRECTORY:
+		op_os_GetWorkingDirectory(expr, stack, fp)
 	}
 }
 
@@ -770,7 +801,7 @@ var OpNames map[int]string = map[int]string{
 	OP_BOOL_NOT:     "bool.not",
 	OP_BOOL_OR:      "bool.or",
 	OP_BOOL_AND:     "bool.and",
-
+	
 	OP_I32_BYTE:     "i32.byte",
 	OP_I32_STR:      "i32.str",
 	OP_I32_I32:      "i32.i32",
@@ -835,6 +866,12 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_MIN:      "i64.min",
 	OP_I64_COS:      "i64.cos",
 	OP_I64_SIN:      "i64.sin",
+	OP_F32_BYTE:     "f32.byte",
+	OP_F32_STR:      "f32.str",
+	OP_F32_I32:      "f32.i32",
+	OP_F32_I64:      "f32.i64",
+	OP_F32_F32:      "f32.f32",
+	OP_F32_F64:      "f32.f64",
 	OP_F32_PRINT:    "f32.print",
 	OP_F32_ADD:      "f32.add",
 	OP_F32_SUB:      "f32.sub",
@@ -943,6 +980,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_VIEWPORT:                   "gl.Viewport",
 	OP_GL_SCALEF:                     "gl.Scalef",
 	OP_GL_TEX_COORD_2D:               "gl.TexCoord2d",
+	OP_GL_TEX_COORD_2F:               "gl.TexCoord2f",
 
 	// glfw
 	OP_GLFW_INIT:                      "glfw.Init",
@@ -962,6 +1000,9 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_SET_INPUT_MODE:            "glfw.SetInputMode",
 	// http
 	OP_HTTP_GET:                       "http.Get",
+
+	// os
+	OP_OS_GET_WORKING_DIRECTORY:       "os.GetWorkingDirectory",
 }
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -1064,6 +1105,12 @@ var OpCodes map[string]int = map[string]int{
 	"i64.min":      OP_I64_MIN,
 	"i64.cos":      OP_I64_COS,
 	"i64.sin":      OP_I64_SIN,
+	"f32.byte":     OP_F32_BYTE,
+	"f32.str":      OP_F32_STR,
+	"f32.i32":      OP_F32_I32,
+	"f32.i64":      OP_F32_I64,
+	"f32.f32":      OP_F32_F32,
+	"f32.f64":      OP_F32_F64,
 	"f32.print":    OP_F32_PRINT,
 	"f32.add":      OP_F32_ADD,
 	"f32.sub":      OP_F32_SUB,
@@ -1170,6 +1217,7 @@ var OpCodes map[string]int = map[string]int{
 	"gl.Viewport":                OP_GL_VIEWPORT,
 	"gl.Scalef":                  OP_GL_SCALEF,
 	"gl.TexCoord2d":              OP_GL_TEX_COORD_2D,
+	"gl.TexCoord2f":              OP_GL_TEX_COORD_2F,
 
 	// glfw
 	"glfw.Init":                   OP_GLFW_INIT,
@@ -1189,6 +1237,8 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.SetInputMode":           OP_GLFW_SET_INPUT_MODE,
 	// http
 	"http.Get":                    OP_HTTP_GET,
+	// os
+	"os.GetWorkingDirectory":      OP_OS_GET_WORKING_DIRECTORY,
 }
 
 var Natives map[int]*CXFunction = map[int]*CXFunction{
@@ -1292,6 +1342,14 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_MIN:      MakeNative(OP_I64_MIN, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_COS:      MakeNative(OP_I64_COS, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_SIN:      MakeNative(OP_I64_SIN, []int{TYPE_I64}, []int{TYPE_I64}),
+
+	OP_F32_BYTE:     MakeNative(OP_F32_BYTE, []int{TYPE_F32}, []int{TYPE_BYTE}),
+	OP_F32_STR:      MakeNative(OP_F32_STR,  []int{TYPE_F32}, []int{TYPE_STR}),
+	OP_F32_I32:      MakeNative(OP_F32_I32,  []int{TYPE_F32}, []int{TYPE_I32}),
+	OP_F32_I64:      MakeNative(OP_F32_I64,  []int{TYPE_F32}, []int{TYPE_I64}),
+	OP_F32_F32:      MakeNative(OP_F32_F32,  []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_F64:      MakeNative(OP_F32_F64,  []int{TYPE_F32}, []int{TYPE_F64}),
+	
 	OP_F32_PRINT:    MakeNative(OP_F32_PRINT, []int{TYPE_F32}, []int{}),
 	OP_F32_ADD:      MakeNative(OP_F32_ADD, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_SUB:      MakeNative(OP_F32_SUB, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
@@ -1400,6 +1458,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_VIEWPORT:     MakeNative(OP_GL_VIEWPORT, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_SCALEF:       MakeNative(OP_GL_SCALEF, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
 	OP_GL_TEX_COORD_2D: MakeNative(OP_GL_TEX_COORD_2D, []int{TYPE_F32, TYPE_F32}, []int{}),
+	OP_GL_TEX_COORD_2F: MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{}),
 
 	// glfw
 	OP_GLFW_INIT:                      MakeNative(OP_GLFW_INIT, []int{}, []int{}),
@@ -1419,5 +1478,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 
 	// http
-	OP_HTTP_GET:           MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
+	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
+
+	// os
+	OP_OS_GET_WORKING_DIRECTORY:       MakeNative(OP_OS_GET_WORKING_DIRECTORY, []int{}, []int{TYPE_STR}),
 }

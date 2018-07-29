@@ -1,6 +1,7 @@
 package base
 
 import (
+	// "fmt"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -74,23 +75,52 @@ func op_glfw_GetTime(expr *CXExpression, stack *CXStack, fp int) {
 
 func op_glfw_SetKeyCallback(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	prgrm := expr.Program
 
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 		if fn, err := expr.Program.GetFunction(ReadStr(stack, fp, inp2), expr.Package.Name); err == nil {
-			_ = fn
-			// var winName []byte
-			// for key, win := range windows {
-			// 	if w == win {
-			// 		winName = []byte(key)
-			// 		break
-			// 	}
-			// }
+			var winName []byte
+			for key, win := range windows {
+				if w == win {
+					winName = []byte(key)
+					break
+				}
+			}
 
-			// sKey := FromI32(int32(key))
-			// sScancode := FromI32(int32(scancode))
-			// sAction := FromI32(int32(action))
-			// sModifierKey := FromI32(int32(mods))
+			if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
+				return
+			}
 
+			var inps [][]byte = make([][]byte, 5)
+
+			inps[0] = winName
+			inps[1] = FromI32(int32(key)) // sKey
+			inps[2] = FromI32(int32(scancode)) // sScancode
+			inps[3] = FromI32(int32(action)) // sAction
+			inps[4] = FromI32(int32(mods)) // sModifierKey
+
+			prgrm.CallCounter++
+			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			newCall.Operator = fn
+			newCall.Line = 0
+			newCall.FramePointer = prgrm.Stacks[0].StackPointer
+			prgrm.Stacks[0].StackPointer += newCall.Operator.Size
+
+			newFP := newCall.FramePointer
+
+			// wiping next stack frame (removing garbage)
+			for c := 0; c < expr.Operator.Size; c++ {
+				prgrm.Stacks[0].Stack[newFP+c] = 0
+			}
+
+
+			for i, inp := range inps {
+				WriteToStack(
+					&prgrm.Stacks[0],
+					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+					inp)
+			}
+			
 			// MakeCall(fn, nil)
 
 			// state := make([]*CXDefinition, len(fn.Inputs))

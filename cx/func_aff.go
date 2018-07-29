@@ -922,7 +922,7 @@ func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *
 
 								if err == nil {
 									expr.RemoveInput()
-									expr.AddInput(MakeArgument("").AddValue(&val).AddType(arr.Typ[2:]))
+									expr.AddInput(MakeArgument("", "", -1).AddValue(&val).AddType(arr.Typ[2:]))
 								} else {
 									return err
 								}
@@ -935,7 +935,7 @@ func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *
 					} else {
 						sName := encoder.Serialize(name)
 						expr.RemoveInput()
-						expr.AddInput(MakeArgument("").AddValue(&sName).AddType("ident"))
+						expr.AddInput(MakeArgument("", "", -1).AddValue(&sName).AddType("ident"))
 					}
 				}
 			}

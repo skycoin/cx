@@ -23,62 +23,32 @@ type TestStruct struct {
 }
 
 var gi32Ptr *i32
-var gi32Ptr2 *i32
+var gi64Ptr *i64
+
 
 func testPointers () {
 // func main () {
 	str.print("Running Pointer Testing...")
-
-	// var li32Ptr *i32
-	// var li32Ptr2 *i32
 	
+	var li32Ptr *i32
+	var li64Ptr *i64
 	var num1 i32
-	var num2 i32
+	var num2 i64
 
 	num1 = 15
-	num2 = 30
+	num2 = 55L
 
-	gi32Ptr = &num1
-	gi32Ptr2 = &num2
+	li32Ptr = &num1
+	li64Ptr = &num2
+
+	assert(*li32Ptr, 15, "")
+	assert(*li64Ptr, 55L, "")
 	
-	// i32.print(*gi32Ptr)
-	// i32.print(*gi32Ptr2)
+	gi32Ptr = &num1
+	gi64Ptr = &num2
 
 	assert(*gi32Ptr, 15, "")
-	assert(*gi32Ptr2, 30, "")
-
-
-
-
-
-
-	// str.print("Running Pointer Testing...")
-	
-	// var li32Ptr *i32
-	// var li32Ptr2 *i32
-
-	// var num1 i32
-	// var num2 i32
-
-	// num1 = 15
-	// num2 = 30
-
-	// // li32Ptr = &num1
-	// // li32Ptr2 = &num2
-
-	// // assert(*li32Ptr, 15, "")
-	// // assert(*li32Ptr2, 30, "")
-
-
-	
-	// gi32Ptr = &num1
-	// // gi32Ptr2 = &num2
-
-	// i32.print(*gi32Ptr)
-	// // i32.print(*gi32Ptr2)
-
-	// assert(*gi32Ptr, 15, "")
-	// // assert(*gi32Ptr2, 30, "")
+	assert(*gi64Ptr, 55L, "")
 
 
 

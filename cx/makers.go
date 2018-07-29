@@ -40,7 +40,7 @@ func MakePackage(name string) *CXPackage {
 	}
 }
 
-func MakeGlobal(name string, typ int) *CXArgument {
+func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
 		Name:       name,
@@ -48,13 +48,20 @@ func MakeGlobal(name string, typ int) *CXArgument {
 		Size:       size,
 		MemoryRead: MEM_DATA,
 		Offset:     HeapOffset,
+		FileName:   fileName,
+		FileLine:   fileLine,
 	}
 	HeapOffset += size
 	return global
 }
 
-func MakeField(name string, typ int) *CXArgument {
-	return &CXArgument{Name: name, Type: typ}
+func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
+	return &CXArgument{
+		Name: name,
+		Type: typ,
+		FileName: fileName,
+		FileLine: fileLine,
+	}
 }
 
 // Used only for native types
@@ -88,13 +95,18 @@ func MakeStruct(name string) *CXStruct {
 // 	}
 // }
 
-func MakeExpression(op *CXFunction) *CXExpression {
-	return &CXExpression{Operator: op}
+func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
+	return &CXExpression{Operator: op, FileLine: fileLine, FileName: fileName}
 }
 
-func MakeArgument(name string) *CXArgument {
+func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	sName := encoder.Serialize(name)
-	return &CXArgument{Name: name, Typ: "ident", Value: &sName}
+	return &CXArgument{
+		Name: name,
+		Typ: "ident",
+		Value: &sName,
+		FileName: fileName,
+		FileLine: fileLine,}
 }
 
 func MakeFunction(name string) *CXFunction {
@@ -109,14 +121,14 @@ func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 
 	offset := 0
 	for _, typCode := range inputs {
-		inp := MakeArgument("").AddType(TypeNames[typCode])
+		inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		inp.Offset = offset
 		offset += inp.Size
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, typCode := range outputs {
-		fn.Outputs = append(fn.Outputs, MakeArgument("").AddType(TypeNames[typCode]))
-		out := MakeArgument("").AddType(TypeNames[typCode])
+		fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
+		out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		out.Offset = offset
 		offset += out.Size
 	}

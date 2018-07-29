@@ -2,6 +2,7 @@
 }
 /(\r\n|\r|\n)/ {
 	lval.line++
+	LineNo++
 	token := f(NEWLINE)
 	if token != NEWLINE {
 		return token
@@ -12,7 +13,9 @@
 }
 /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
 	/* skip comments */
-	lval.line = lval.line + countNewLines([]byte(yylex.Text()))
+	noLines := countNewLines([]byte(yylex.Text()))
+	lval.line += noLines
+        LineNo += noLines
 }
 /bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
 /byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
@@ -43,6 +46,7 @@
 /ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
 /ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
 /union/                   { return f(UNION) }
+/->/                      { return f(INFER)      }
 /&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
 /\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
 /-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
@@ -93,11 +97,6 @@
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
 /:package/                {
-	lval.line = 0
-	// yylex.line = 0
-	yylex.stack[len(yylex.stack) - 1].line = 0
-	// fmt.Printf("%+v\n", )
-	// fmt.Printf("%+v\n", yylex)
 	return f(SPACKAGE)
 }
 /:struct/                 { return f(SSTRUCT)    }
@@ -128,7 +127,11 @@
 	tokVal = strings.TrimPrefix(tokVal, "\"")
 	tokVal = strings.TrimSuffix(tokVal, "\"")
 	lval.tok = tokVal
-	lval.line = lval.line + countNewLines([]byte(lval.tok))
+
+	noLines := countNewLines([]byte(lval.tok))
+	lval.line += noLines
+	LineNo += noLines
+	
 	return f(STRING_LITERAL)
 }
 /true/ {
@@ -674,7 +677,8 @@ func main () {
 				if err != nil {
 					panic(err)
 				}
-				
+
+				fileNames = append(fileNames, file.Name())
 				sourceCode = append(sourceCode, file)
 			}
 		}
@@ -705,6 +709,11 @@ func main () {
 	}
 
 	cxgo0.PRGRM0 = PRGRM
+
+	// setting project's working directory
+	if !ReplMode {
+		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
+	}
 
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
@@ -737,9 +746,11 @@ func main () {
 	// DataOffset = cxgo0.dataOffset
 
 	// parsing all source code files
-	for _, source := range sourceCodeCopy {
+	for i, source := range sourceCodeCopy {
 		b := bytes.NewBufferString(source)
-		// fmt.Printf("%+v\n", lex)
+		if len(fileNames) > 0 {
+			CurrentFile = fileNames[i]
+		}
 		yyParse(NewLexer(b))
 	}
 

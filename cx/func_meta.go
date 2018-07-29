@@ -30,7 +30,7 @@ func add_arg(tag *CXArgument, ident *CXArgument, caller *CXFunction) error {
 
 		for _, expr := range caller.Expressions {
 			if expr.Label == tg {
-				expr.AddInput(MakeArgument("").AddValue(ident.Value).AddType("ident"))
+				expr.AddInput(MakeArgument("", "", -1).AddValue(ident.Value).AddType("ident"))
 				return nil
 			}
 		}
@@ -50,7 +50,7 @@ func add_expr(tag *CXArgument, fnName *CXArgument, call *CXCall) error {
 		encoder.DeserializeRaw(*tag.Value, &tg)
 
 		if fn, err := mod.Program.GetFunction(opName, mod.Name); err == nil {
-			expr := MakeExpression(fn)
+			expr := MakeExpression(fn, "", -1)
 			expr.AddLabel(tg)
 
 			call.Operator.AddExpression(expr)

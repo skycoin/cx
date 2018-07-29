@@ -158,7 +158,7 @@ func concatStr(arg1 *CXArgument, arg2 *CXArgument, expr *CXExpression, call *CXC
 				return nil
 			}
 		}
-		call.State = append(call.State, MakeArgument(expr.Outputs[0].Name).AddValue(&sOutput).AddType("str"))
+		call.State = append(call.State, MakeArgument(expr.Outputs[0].Name, "", -1).AddValue(&sOutput).AddType("str"))
 		assignOutput(0, sOutput, "str", expr, call)
 		return nil
 	} else {

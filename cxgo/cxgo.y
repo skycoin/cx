@@ -156,6 +156,9 @@
 
 %type   <function>      function_header
 
+%type   <stringA>       infer_action_arg, infer_action, infer_actions, infer_target, infer_targets
+%type   <expressions>   infer_clauses
+                        
                         // for struct literals
 %right                   IDENTIFIER LBRACE
 // %right                  IDENTIFIER
@@ -374,7 +377,7 @@ direct_declarator:
                 IDENTIFIER
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				arg := MakeArgument("")
+				arg := MakeArgument("", CurrentFile, LineNo)
                                 arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
@@ -625,6 +628,78 @@ slice_literal_expression:
 /*                 ; */
 
 
+
+
+infer_action_arg:
+                MUL_OP GT_OP assignment_expression
+                {
+			$$ = []string{$1, "", $2}
+                }
+        |       MUL_OP GT_OP MUL_OP
+                {
+			$$ = []string{$1, $1, $2}
+                }
+        ;
+
+infer_action:
+		IDENTIFIER LPAREN infer_action_arg RPAREN
+                {
+			$$ = append($3, $1)
+                }
+        ;
+
+infer_actions:
+                infer_action
+                {
+			$$ = $1
+                }
+        |       infer_actions infer_action
+                {
+			$1 = append($1, $2...)
+			$$ = $1
+                }
+                ;
+
+infer_target:
+                IDENTIFIER LPAREN IDENTIFIER RPAREN
+                {
+			$$ = []string{$3, $1}
+                }
+        ;
+
+infer_targets:
+                infer_target
+                {
+			$$ = $1
+                }
+        |       infer_targets infer_target
+                {
+			$1 = append($1, $2...)
+			$$ = $1
+                }
+        ;
+
+infer_clauses:
+                infer_actions
+                {
+			$$ = nil
+                }
+        |       infer_targets
+                {
+			var exprs []*CXExpression
+			for _, str := range $1 {
+				expr := WritePrimary(TYPE_STR, encoder.Serialize(str), false)
+				expr[len(expr) - 1].IsArrayLiteral = true
+				exprs = append(exprs, expr...)
+			}
+			
+			$$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
+                }
+                ;
+
+
+
+
 primary_expression:
                 IDENTIFIER
                 {
@@ -634,10 +709,10 @@ primary_expression:
                 {
 			$$ = PrimaryStructLiteral($1, $3)
                 }
-        // |       package_identifier LBRACE struct_literal_fields RBRACE
-        //         {
-	// 		$$ = PrimaryStructLiteralExternal($1[0], $1[1], $3)
-        //         }
+        |       INFER LBRACE infer_clauses RBRACE
+                {
+			$$ = $3
+                }
         |       STRING_LITERAL
                 {
 			$$ = WritePrimary(TYPE_STR, encoder.Serialize($1), false)
@@ -1107,11 +1182,11 @@ iteration_statement:
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := MakeExpression(Natives[OP_JMP])
+				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 				expr.Package = pkg
 				expr.Label = $2
 
-				arg := MakeArgument("").AddType("bool")
+				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
 				arg.Package = pkg
 
 				expr.AddInput(arg)
@@ -1128,14 +1203,14 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 	|       RETURN SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := MakeExpression(Natives[OP_JMP])
+				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 
 				// simulating a label so it gets executed without evaluating a predicate
 				expr.Label = " "
 				expr.ThenLines = MAX_INT32
 				expr.Package = pkg
 
-				arg := MakeArgument("").AddType("bool")
+				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
 				arg.Package = pkg
 
 				expr.AddInput(arg)
@@ -1148,5 +1223,4 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 	|       RETURN expression SEMICOLON
                 { $$ = nil }
                 ;
-
 %%

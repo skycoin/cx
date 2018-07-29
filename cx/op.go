@@ -337,6 +337,7 @@ func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 			byts = stack.Stack[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		} else {
+			fmt.Println("dbg", byts, offset, inp.MemoryRead)
 			byts = stack.Program.Data[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		}

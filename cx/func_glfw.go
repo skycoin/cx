@@ -184,11 +184,11 @@ func glfw_SetKeyCallback(window, fnName *CXArgument, expr *CXExpression, call *C
 			sModifierKey := encoder.Serialize(int32(mods))
 
 			state := make([]*CXArgument, len(fn.Inputs))
-			state[0] = MakeArgument(fn.Inputs[0].Name).AddValue(&winName).AddType(fn.Inputs[0].Typ)
-			state[1] = MakeArgument(fn.Inputs[1].Name).AddValue(&sKey).AddType(fn.Inputs[1].Typ)
-			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sScancode).AddType(fn.Inputs[2].Typ)
-			state[3] = MakeArgument(fn.Inputs[3].Name).AddValue(&sAction).AddType(fn.Inputs[3].Typ)
-			state[4] = MakeArgument(fn.Inputs[4].Name).AddValue(&sModifierKey).AddType(fn.Inputs[4].Typ)
+			state[0] = MakeArgument(fn.Inputs[0].Name, "", -1).AddValue(&winName).AddType(fn.Inputs[0].Typ)
+			state[1] = MakeArgument(fn.Inputs[1].Name, "", -1).AddValue(&sKey).AddType(fn.Inputs[1].Typ)
+			state[2] = MakeArgument(fn.Inputs[2].Name, "", -1).AddValue(&sScancode).AddType(fn.Inputs[2].Typ)
+			state[3] = MakeArgument(fn.Inputs[3].Name, "", -1).AddValue(&sAction).AddType(fn.Inputs[3].Typ)
+			state[4] = MakeArgument(fn.Inputs[4].Name, "", -1).AddValue(&sModifierKey).AddType(fn.Inputs[4].Typ)
 
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)
@@ -221,9 +221,9 @@ func glfw_SetCursorPosCallback(window, fnName *CXArgument, expr *CXExpression, c
 
 			state := make([]*CXArgument, len(fn.Inputs))
 
-			state[0] = MakeArgument(fn.Inputs[0].Name).AddValue(&winName).AddType(fn.Inputs[0].Typ)
-			state[1] = MakeArgument(fn.Inputs[1].Name).AddValue(&sXpos).AddType(fn.Inputs[1].Typ)
-			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sYpos).AddType(fn.Inputs[2].Typ)
+			state[0] = MakeArgument(fn.Inputs[0].Name, "", -1).AddValue(&winName).AddType(fn.Inputs[0].Typ)
+			state[1] = MakeArgument(fn.Inputs[1].Name, "", -1).AddValue(&sXpos).AddType(fn.Inputs[1].Typ)
+			state[2] = MakeArgument(fn.Inputs[2].Name, "", -1).AddValue(&sYpos).AddType(fn.Inputs[2].Typ)
 
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)
@@ -276,10 +276,10 @@ func glfw_SetMouseButtonCallback(window, fnName *CXArgument, expr *CXExpression,
 
 			state := make([]*CXArgument, len(fn.Inputs))
 
-			state[0] = MakeArgument(fn.Inputs[0].Name).AddValue(&winName).AddType(fn.Inputs[0].Typ)
-			state[1] = MakeArgument(fn.Inputs[1].Name).AddValue(&sKey).AddType(fn.Inputs[1].Typ)
-			state[2] = MakeArgument(fn.Inputs[2].Name).AddValue(&sAction).AddType(fn.Inputs[2].Typ)
-			state[3] = MakeArgument(fn.Inputs[3].Name).AddValue(&sModifierKey).AddType(fn.Inputs[3].Typ)
+			state[0] = MakeArgument(fn.Inputs[0].Name, "", -1).AddValue(&winName).AddType(fn.Inputs[0].Typ)
+			state[1] = MakeArgument(fn.Inputs[1].Name, "", -1).AddValue(&sKey).AddType(fn.Inputs[1].Typ)
+			state[2] = MakeArgument(fn.Inputs[2].Name, "", -1).AddValue(&sAction).AddType(fn.Inputs[2].Typ)
+			state[3] = MakeArgument(fn.Inputs[3].Name, "", -1).AddValue(&sModifierKey).AddType(fn.Inputs[3].Typ)
 
 			subcall := MakeCall(fn, state, call, call.Package, call.Program)
 			call.Program.CallStack = append(call.Program.CallStack, subcall)

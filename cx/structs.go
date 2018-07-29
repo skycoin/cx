@@ -183,6 +183,9 @@ type CXArgument struct {
 
 	SynonymousTo string // when the symbol is just a temporary holder for another symbol
 
+	FileLine int
+	FileName string
+	
 	Package *CXPackage
 	Program *CXProgram
 

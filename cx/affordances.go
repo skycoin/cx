@@ -148,7 +148,7 @@ func (strct *CXStruct) GetAffordances() []*CXAffordance {
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddField ", fldGensym, " ", typ),
 			Action: func() {
-				strct.AddField(MakeArgument(fldGensym).AddType(fldType))
+				strct.AddField(MakeArgument(fldGensym, "", -1).AddType(fldType))
 			}})
 	}
 
@@ -482,7 +482,7 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 			Operator: "AddOutput",
 			Name:     outName,
 			Action: func() {
-				expr.AddOutput(MakeArgument(outName))
+				expr.AddOutput(MakeArgument(outName, "", -1))
 			}})
 	}
 
@@ -549,7 +549,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			Name:        theName,
 			Typ:         theTyp,
 			Action: func() {
-				fn.AddInput(MakeArgument(theName).AddType(theTyp))
+				fn.AddInput(MakeArgument(theName, "", -1).AddType(theTyp))
 			}})
 	}
 
@@ -563,7 +563,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			Name:        theName,
 			Typ:         theTyp,
 			Action: func() {
-				fn.AddOutput(MakeArgument(theName).AddType(theTyp))
+				fn.AddOutput(MakeArgument(theName, "", -1).AddType(theTyp))
 			}})
 	}
 
@@ -597,7 +597,7 @@ func (fn *CXFunction) GetAffordances() []*CXAffordance {
 			Description: fmt.Sprintf("AddExpression %s (%s) (%s)", opsNames[i], inps.String(), outs.String()),
 			Operator:    "AddExpression",
 			Action: func() {
-				fn.AddExpression(MakeExpression(theOp))
+				fn.AddExpression(MakeExpression(theOp, "", -1))
 			}})
 	}
 
@@ -852,7 +852,7 @@ func (mod *CXPackage) GetAffordances() []*CXAffordance {
 		affs = append(affs, &CXAffordance{
 			Description: concat("AddGlobal ", defGensym, " ", typ),
 			Action: func() {
-				mod.AddGlobal(MakeArgument(defGensym).AddValue(value).AddType(defType))
+				mod.AddGlobal(MakeArgument(defGensym, "", -1).AddValue(value).AddType(defType))
 			}})
 	}
 

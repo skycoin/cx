@@ -1,7 +1,7 @@
 package main
 
-import "gl"
-import "glfw"
+// import "gl"
+// import "glfw"
 
 type Sprite struct {
 	x1 f32
@@ -13,7 +13,7 @@ type Sprite struct {
 	name str
 }
 
-var background []i32 = []i32{
+var background [196]i32 = [196]i32{
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -27,10 +27,9 @@ var background []i32 = []i32{
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
 	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
-}
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}
 
-var foreground []i32 = []i32{
+var foreground [196]i32 = [196]i32{
 	10, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  7,
 	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
 	2,  0,  0,  0,  0,  41,  0,  0,  0,  0,  0,  0,  0,  2,
@@ -44,22 +43,11 @@ var foreground []i32 = []i32{
 	2,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
 	2,  0,  9,  7,  0,  0,  0,  0,  0,  42,  0,  0,  0,  2,
 	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8
-}
+	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8}
 
-var vertexShaderSource str = "
-          #version 120
-          void main() {
-            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex * 200;
-          }
-"
+var vertexShaderSource str
 
-var fragmentShaderSource str = "
-          #version 120
-          void main() {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-          }
-"
+var fragmentShaderSource str
 
 var width i32 = 600
 var height i32 = 600
@@ -140,7 +128,8 @@ var sp_act_right Sprite
 var sp_act_water Sprite
 
 func compileShader(source str, shaderType i32) (shader i32) {
-	shader := gl.CreateShader(shaderType)
+	var shader i32
+	shader = gl.CreateShader(shaderType)
 
 	gl.Strs(source, "csources")
 	gl.ShaderSource(shader, 1, "csources")
@@ -148,21 +137,27 @@ func compileShader(source str, shaderType i32) (shader i32) {
 	gl.CompileShader(shader)
 }
 
-func addNull (source str) (sourceWithNull str) {
-	bSource := str.[]byte(source)
+// func addNull (source str) (sourceWithNull str) {
+// 	bSource := str.[]byte(source)
 
-	//withNull := []byte.append(bSource, i32.byte(0))
-	bSource := []byte.append(bSource, i32.byte(0))
-	sourceWithNull = []byte.str(bSource)
-}
+// 	//withNull := []byte.append(bSource, i32.byte(0))
+// 	bSource := []byte.append(bSource, i32.byte(0))
+// 	sourceWithNull = []byte.str(bSource)
+// }
 
 func initOpenGL () (program i32) {
 	gl.Init()
-	
-	vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
-	fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
-	program := gl.CreateProgram()
+	var vertexShader i32
+	var fragmentShader i32
+	
+	// vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER)
+	// fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
+	fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
+
+	var program i32
+	program = gl.CreateProgram()
 	
 	gl.AttachShader(program, vertexShader)
 	gl.AttachShader(program, fragmentShader)
@@ -189,7 +184,10 @@ func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-	bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+	var bufferWidth i32
+	var bufferHeight i32
+	
+	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
 	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
 	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 	
@@ -224,7 +222,10 @@ func drawTile (x i32, y i32, sprite Sprite) () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-	bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+	var bufferWidth i32
+	var bufferHeight i32
+	
+	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
 	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
 	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 
@@ -299,19 +300,20 @@ func setupScene () () {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 
-	wd := os.GetWorkingDirectory()
-	
-	tex_characters = gl.NewTexture(str.concat(wd, "textures/roguelike_characters.png"))
-	tex_city = gl.NewTexture(str.concat(wd, "textures/roguelike_city.png"))
-	tex_dungeon = gl.NewTexture(str.concat(wd, "textures/roguelike_dungeon.png"))
-	tex_indoor = gl.NewTexture(str.concat(wd, "textures/roguelike_indoor.png"))
-	tex_pack = gl.NewTexture(str.concat(wd, "textures/roguelike_pack.png"))
+	var wd str
+	wd = os.GetWorkingDirectory()
+
+	tex_characters = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_characters.png"))
+	tex_city = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_city.png"))
+	tex_dungeon = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_dungeon.png"))
+	tex_indoor = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_indoor.png"))
+	tex_pack = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_pack.png"))
 	// action symbols
-	tex_act_up = gl.NewTexture(str.concat(wd, "textures/up.png"))
-	tex_act_down = gl.NewTexture(str.concat(wd, "textures/down.png"))
-	tex_act_right = gl.NewTexture(str.concat(wd, "textures/right.png"))
-	tex_act_left = gl.NewTexture(str.concat(wd, "textures/left.png"))
-	tex_act_water = gl.NewTexture(str.concat(wd, "textures/water.png"))
+	tex_act_up = gl.NewTexture(sprintf("%s%s", wd, "textures/up.png"))
+	tex_act_down = gl.NewTexture(sprintf("%s%s", wd, "textures/down.png"))
+	tex_act_right = gl.NewTexture(sprintf("%s%s", wd, "textures/right.png"))
+	tex_act_left = gl.NewTexture(sprintf("%s%s", wd, "textures/left.png"))
+	tex_act_water = gl.NewTexture(sprintf("%s%s", wd, "textures/water.png"))
 	
 	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
 	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
@@ -379,80 +381,168 @@ func map1Dto2D (i i32, w i32) (c i32, r i32) {
 func getSprite (index i32) (sprite Sprite) {
 	var s Sprite
 	// brown wall
-	if i32.eq(index, 0) { s = sp_empty }
-	if i32.eq(index, 1) { s = sp_brown_wall_tb }
-	if i32.eq(index, 2) { s = sp_brown_wall_lr }
-	if i32.eq(index, 3) { s = sp_brown_wall_ts }
-	if i32.eq(index, 4) { s = sp_brown_wall_rs }
-	if i32.eq(index, 5) { s = sp_brown_wall_bs }
-	if i32.eq(index, 6) { s = sp_brown_wall_ls }
-	if i32.eq(index, 7) { s = sp_brown_wall_tr }
-	if i32.eq(index, 8) { s = sp_brown_wall_br }
-	if i32.eq(index, 9) { s = sp_brown_wall_bl }
-	if i32.eq(index, 10) { s = sp_brown_wall_tl }
-	if i32.eq(index, 11) { s = sp_brown_wall_to }
-	if i32.eq(index, 12) { s = sp_brown_wall_ro }
-	if i32.eq(index, 13) { s = sp_brown_wall_bo }
-	if i32.eq(index, 14) { s = sp_brown_wall_lo }
-	if i32.eq(index, 15) { s = sp_brown_wall_xx }
+	if i32.eq(index, 0) {
+		s = sp_empty
+	}
+	if i32.eq(index, 1) {
+		s = sp_brown_wall_tb
+	}
+	if i32.eq(index, 2) {
+		s = sp_brown_wall_lr
+	}
+	if i32.eq(index, 3) {
+		s = sp_brown_wall_ts
+	}
+	if i32.eq(index, 4) {
+		s = sp_brown_wall_rs
+	}
+	if i32.eq(index, 5) {
+		s = sp_brown_wall_bs
+	}
+	if i32.eq(index, 6) {
+		s = sp_brown_wall_ls
+	}
+	if i32.eq(index, 7) {
+		s = sp_brown_wall_tr
+	}
+	if i32.eq(index, 8) {
+		s = sp_brown_wall_br
+	}
+	if i32.eq(index, 9) {
+		s = sp_brown_wall_bl
+	}
+	if i32.eq(index, 10) {
+		s = sp_brown_wall_tl
+	}
+	if i32.eq(index, 11) {
+		s = sp_brown_wall_to
+	}
+	if i32.eq(index, 12) {
+		s = sp_brown_wall_ro
+	}
+	if i32.eq(index, 13) {
+		s = sp_brown_wall_bo
+	}
+	if i32.eq(index, 14) {
+		s = sp_brown_wall_lo
+	}
+	if i32.eq(index, 15) {
+		s = sp_brown_wall_xx
+	}
 	// water
-	if i32.eq(index, 20) { s = sp_water_t }
-	if i32.eq(index, 21) { s = sp_water_tr }
-	if i32.eq(index, 22) { s = sp_water_r }
-	if i32.eq(index, 23) { s = sp_water_br }
-	if i32.eq(index, 24) { s = sp_water_b }
-	if i32.eq(index, 25) { s = sp_water_bl }
-	if i32.eq(index, 26) { s = sp_water_l }
-	if i32.eq(index, 27) { s = sp_water_tl }
-	if i32.eq(index, 28) { s = sp_water_xx }
+	if i32.eq(index, 20) {
+		s = sp_water_t
+	}
+	if i32.eq(index, 21) {
+		s = sp_water_tr
+	}
+	if i32.eq(index, 22) {
+		s = sp_water_r
+	}
+	if i32.eq(index, 23) {
+		s = sp_water_br
+	}
+	if i32.eq(index, 24) {
+		s = sp_water_b
+	}
+	if i32.eq(index, 25) {
+		s = sp_water_bl
+	}
+	if i32.eq(index, 26) {
+		s = sp_water_l
+	}
+	if i32.eq(index, 27) {
+		s = sp_water_tl
+	}
+	if i32.eq(index, 28) {
+		s = sp_water_xx
+	}
 	// grass
-	if i32.eq(index, 30) { s = sp_grass_1 }
-	if i32.eq(index, 31) { s = sp_grass_2 }
+	if i32.eq(index, 30) {
+		s = sp_grass_1
+	}
+	if i32.eq(index, 31) {
+		s = sp_grass_2
+	}
 	//rocks
-	if i32.eq(index, 40) { s = sp_rock1 }
-	if i32.eq(index, 41) { s = sp_rock2 }
-	if i32.eq(index, 42) { s = sp_rock3 }
+	if i32.eq(index, 40) {
+		s = sp_rock1
+	}
+	if i32.eq(index, 41) {
+		s = sp_rock2
+	}
+	if i32.eq(index, 42) {
+		s = sp_rock3
+	}
 
-	if i32.eq(index, 50) { s = sp_floor_brick_xx }
+	if i32.eq(index, 50) {
+		s = sp_floor_brick_xx
+	}
 	
-	if i32.eq(index, 60) { s = sp_blue_carpet }
+	if i32.eq(index, 60) {
+		s = sp_blue_carpet
+	}
 
 	//actions
-	if i32.eq(index, 1000) { s = sp_act_up }
-	if i32.eq(index, 1001) { s = sp_act_down }
-	if i32.eq(index, 1002) { s = sp_act_left }
-	if i32.eq(index, 1003) { s = sp_act_right }
-	if i32.eq(index, 1004) { s = sp_act_water }
+	if i32.eq(index, 1000) {
+		s = sp_act_up
+	}
+	if i32.eq(index, 1001) {
+		s = sp_act_down
+	}
+	if i32.eq(index, 1002) {
+		s = sp_act_left
+	}
+	if i32.eq(index, 1003) {
+		s = sp_act_right
+	}
+	if i32.eq(index, 1004) {
+		s = sp_act_water
+	}
 	
 	sprite = s
 }
 
 func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
-	northI := map2Dto1D(p1x, i32.add(p1y, 1), size)
-	southI := map2Dto1D(p1x, i32.add(p1y, -1), size)
-	westI := map2Dto1D(i32.add(p1x, -1), p1y, size)
-	eastI := map2Dto1D(i32.add(p1x, 1), p1y, size)
+	var northI i32
+	var southI i32
+	var westI i32
+	var eastI i32
+	var northIdx i32
+	var southIdx i32
+	var westIdx i32
+	var eastIdx i32
 	
-	northIdx := []i32.read(foreground, northI)
-	southIdx := []i32.read(foreground, southI)
-	westIdx := []i32.read(foreground, westI)
-	eastIdx := []i32.read(foreground, eastI)
+	northI = map2Dto1D(p1x, i32.add(p1y, 1), size)
+	southI = map2Dto1D(p1x, i32.add(p1y, -1), size)
+	westI = map2Dto1D(i32.add(p1x, -1), p1y, size)
+	eastI = map2Dto1D(i32.add(p1x, 1), p1y, size)
+	
+	northIdx = foreground[northI]
+	southIdx = foreground[southI]
+	westIdx = foreground[westI]
+	eastIdx = foreground[eastI]
 
-	northObj := getSprite(northIdx)
-	southObj := getSprite(southIdx)
-	westObj := getSprite(westIdx)
-	eastObj := getSprite(eastIdx)
+	var northObj Sprite
+	var southObj Sprite
+	var westObj Sprite
+	var eastObj Sprite
 
-	if not(northObj.isObstacle) {
+	northObj = getSprite(northIdx)
+	southObj = getSprite(southIdx)
+	westObj = getSprite(westIdx)
+	eastObj = getSprite(eastIdx)
+
+	if bool.not(northObj.isObstacle) {
 		drawTile(p1x, i32.add(p1y, 1), getSprite(1000))
 	}
-	if not(southObj.isObstacle) {
+	if bool.not(southObj.isObstacle) {
 		drawTile(p1x, i32.add(p1y, -1), getSprite(1001))
 	}
-	if not(westObj.isObstacle) {
+	if bool.not(westObj.isObstacle) {
 		drawTile(i32.add(p1x, -1), p1y, getSprite(1002))
 	}
-	if not(eastObj.isObstacle) {
+	if bool.not(eastObj.isObstacle) {
 		drawTile(i32.add(p1x, 1), p1y, getSprite(1003))
 	}
 
@@ -468,14 +558,18 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 	if str.eq(eastObj.name, "water") {
 		drawTile(i32.add(p1x, 1), p1y, getSprite(1004))
 	}
+
+	var i i32
+	var idx i32
+	var obj Sprite
 	
-	if and(i32.eq(key, 265), i32.eq(action, 1)) {
-		i := map2Dto1D(p1x, i32.add(p1y, 1), size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
+	if bool.and(i32.eq(key, 265), i32.eq(action, 1)) {
+		i = map2Dto1D(p1x, i32.add(p1y, 1), size)
+		idx = foreground[i]
+		obj = getSprite(idx)
 
 		if obj.isObstacle {
-			return;
+			return
 		}
 
 		if i32.gteq(p1y, i32.sub(size, 1)) {
@@ -486,10 +580,10 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 			return;
 		}
 	}
-	if and(i32.eq(key, 264), i32.eq(action, 1)) {
-		i := map2Dto1D(p1x, i32.add(p1y, -1), size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
+	if bool.and(i32.eq(key, 264), i32.eq(action, 1)) {
+		i = map2Dto1D(p1x, i32.add(p1y, -1), size)
+		idx = foreground[i]
+		obj = getSprite(idx)
 		
 		if obj.isObstacle {
 			return;
@@ -503,10 +597,10 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 			return;
 		}
 	}
-	if and(i32.eq(key, 263), i32.eq(action, 1)) {
-		i := map2Dto1D(i32.add(p1x, -1), p1y, size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
+	if bool.and(i32.eq(key, 263), i32.eq(action, 1)) {
+		i = map2Dto1D(i32.add(p1x, -1), p1y, size)
+		idx = foreground[i]
+		obj = getSprite(idx)
 		if obj.isObstacle {
 			return;
 		}
@@ -519,10 +613,10 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 			return;
 		}
 	}
-	if and(i32.eq(key, 262), i32.eq(action, 1)) {
-		i := map2Dto1D(i32.add(p1x, 1), p1y, size)
-		idx := []i32.read(foreground, i)
-		obj := getSprite(idx)
+	if bool.and(i32.eq(key, 262), i32.eq(action, 1)) {
+		i = map2Dto1D(i32.add(p1x, 1), p1y, size)
+		idx = foreground[i]
+		obj = getSprite(idx)
 		if obj.isObstacle {
 			return;
 		}
@@ -535,37 +629,60 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 			return;
 		}
 	}
-	// str.print(window)
-	// i32.print(key)
-	// i32.print(scancode)
-	// i32.print(action)
-	// i32.print(mods)
-	// str.print("")
 }
 
 var p1x i32 = 1
 var p1y i32 = 1
 
 func main () () {
+	vertexShaderSource = "
+          #version 120
+          void main() {
+            gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex * 200;
+          }
+"
+
+	fragmentShaderSource = "
+          #version 120
+          void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+"
+	
+	str.print(vertexShaderSource)
+
+	
 	initGlfw("window")
-	program := initOpenGL()
+	var program i32
+	program = initOpenGL()
 
 	glfw.SetKeyCallback("window", "charActions")
 
-	stop := not(glfw.ShouldClose("window"))
+	// var stop bool
+	// stop = bool.not(glfw.ShouldClose("window"))
 
-	lSize := i32.mul(size, size)
+	var lSize i32
+	lSize = i32.mul(size, size)
 
 	setupScene()
 	
-	for stop {
-		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	for bool.not(glfw.ShouldClose("window")) {
+		// gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+		// gl.Clear(i32.bitor(16384, 256))
+		// gl.Clear(3131)
+		// gl.Clear(3131)
+
+		var c i32
+		var x i32
+		var y i32
+		var idxB i32
+		var idxF i32
 		
-		for c := 0; i32.lt(c, lSize); c = i32.add(c, 1) {
-			x, y := map1Dto2D(c, size)
+		for c = 0; i32.lt(c, lSize); c = i32.add(c, 1) {
+			x, y = map1Dto2D(c, size)
 			
-			idxB := []i32.read(background, c)
-			idxF := []i32.read(foreground, c)
+			idxB = background[c]
+			idxF = foreground[c]
 			drawTile(x, y, getSprite(idxB))
 			drawTile(x, y, getSprite(idxF))
 		}
@@ -579,6 +696,6 @@ func main () () {
 		glfw.SwapBuffers("window")
 		
 
-		stop = not(glfw.ShouldClose("window"))
+		// stop = bool.not(glfw.ShouldClose("window"))
 	}
 }

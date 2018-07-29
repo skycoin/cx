@@ -2,9 +2,13 @@ package base
 
 import (
 	"fmt"
+	"os"
 	"github.com/go-gl/gl/v2.1/gl"
+	"image"
+	"image/draw"
 	"runtime"
 	"strings"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // declared in func_opengl.go
@@ -272,8 +276,50 @@ func op_gl_Frustum(expr *CXExpression, stack *CXStack, fp int) {
 }
 
 func op_gl_NewTexture(expr *CXExpression, stack *CXStack, fp int) {
-	// custom function. not part of opengl standard. implement if needed later on
-	panic("gl.NewTexture")
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
+
+	file := ReadStr(stack, fp, inp1)
+
+	imgFile, err := os.Open(file)
+	if err != nil {
+		panic(fmt.Sprintf("texture %q not found on disk: %v\n", file, err))
+	}
+
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		panic(err)
+	}
+	rgba := image.NewRGBA(img.Bounds())
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		panic("unsupported stride")
+	}
+
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	
+	var texture uint32
+	gl.Enable(gl.TEXTURE_2D)
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+
+	outB1 := encoder.Serialize(int32(texture))
+
+	WriteMemory(stack, out1Offset, out1, outB1)
 }
 
 func op_gl_DepthMask(expr *CXExpression, stack *CXStack, fp int) {
@@ -305,3 +351,4 @@ func op_gl_Hint(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.Hint(uint32(ReadI32(stack, fp, inp1)), uint32(ReadI32(stack, fp, inp2)))
 }
+            

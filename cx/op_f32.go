@@ -5,8 +5,23 @@ import (
 	"math"
 )
 
-// op_f32_print. The print built-in function formats its arguments in an
-// implementation-specific
+func op_f32_f32(expr *CXExpression, stack *CXStack, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
+
+	switch out1.Type {
+	case TYPE_BYTE:
+		WriteMemory(stack, out1Offset, out1, FromByte(byte(ReadF32(stack, fp, inp1))))
+	case TYPE_I32:
+		WriteMemory(stack, out1Offset, out1, FromI32(int32(ReadF32(stack, fp, inp1))))
+	case TYPE_I64:
+		WriteMemory(stack, out1Offset, out1, FromI64(int64(ReadF32(stack, fp, inp1))))
+	case TYPE_F32:
+		WriteMemory(stack, out1Offset, out1, FromF32(float32(ReadF32(stack, fp, inp1))))
+	case TYPE_F64:
+		WriteMemory(stack, out1Offset, out1, FromF64(float64(ReadF32(stack, fp, inp1))))
+	}
+}
 
 func op_f32_print(expr *CXExpression, stack *CXStack, fp int) {
 	inp1 := expr.Inputs[0]

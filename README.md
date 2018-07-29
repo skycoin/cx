@@ -689,7 +689,8 @@ in different calls to the same function. For example:
 
 ```
 func recur (num i32) () {
-  state := i32.add(num, 1)
+  var state i32
+  state = i32.add(num, 1)
   if i32.eq(state, 3) {
     return
   } else {
@@ -871,7 +872,8 @@ called. Everything inside a CX function is an expression or is converted to
 expressions.
 
 ```
-foo := i32.mul(3, 5)
+var foo i32
+foo = i32.mul(3, 5)
 ```
 
 <!-- In the example above, we are telling CX to do 3 times 5 and to store -->
@@ -929,13 +931,12 @@ or variables or expressions that evaluate to booleans:
 
 
 ```
-foo := true
-if foo {
-  str.print("This will print")
+if true {
+	str.print("This will print")
 }
 
-if or(true, and(false, false) {
-  str.print("This will also print")
+if true || false && false {
+	str.print("This will also print")
 }
 ```
 
@@ -998,8 +999,8 @@ can receive a single predicate, which can be either a boolean, or a
 variable or expression that evaluates to a boolean. For example:
 
 ```
-for or(true, and(false, false) {
-  str.print("This will also print forever")
+for true || false && false {
+		str.print("This will also print forever")
 }
 ```
 
@@ -1007,27 +1008,12 @@ Using this *for* form, we can create a loop that prints the numbers
 from 0 to 10 like this:
 
 ```
-continue := true
-c := 0
-for continue {
-  if i32.gt(c, 10) {
-    continue = false
-  }
-  i32.print(c)
-  c = i32.add(c, 1)
-}
-```
-
-It doesn't look nice, right? To make it look a bit better, we can use
-the second *for* form:
-
-```
 for c := 0; i32.lteq(c, 10); c = i32.add(c, 1) {
   i32.print(c)
 }
 ```
 
-Much better. This form is the same as the form provided by many other
+This form is the same as the form provided by many other
 programming languages like C. The first part declares and initializes
 a variable that will usually serve as a counter, the second part has a
 predicate, and the last part is usually used as a counter updater. As
@@ -1055,19 +1041,6 @@ to create complex programs. The downside with *go-to*s is usually that
 programs become harder to read, but they can become very powerful in the
 correct hands.
 
-As mentioned before, everything in a CX function is actually an
-expression. *go-to* statements are not an expression. Labels are
-actually part of expressions, and the "goto label" statements are
-actually calls to a function called *goTo*.
-
-```
-	goTo("label2")
-label1:
-	str.print("this should never be reached")
-label2:
-	str.print("this should be printed")
-```
-
 ## Return
 
 If you want to make a function stop its execution and return to its
@@ -1076,10 +1049,10 @@ you want to return as outputs, separated by commas if more than one.
 
 ```
 func safeDiv (num i32, den i32) (res i32) {
-    if den == 0 {
-        return 0
-    }
-    res := num / den    
+	if den == 0 {
+		return
+	}
+	res = num / den
 }
 ```
 
@@ -1090,9 +1063,9 @@ to be the function's output:
 
 ```
 func foo () (num i32) {
-    num := 5
-    return
-    i32.add(5, 5)
+	num = 5
+	return
+	num = i32.add(5, 5)
 }
 ```
 
@@ -1122,8 +1095,9 @@ given its radius. Once defined, it can be called in other functions
 that are defined below it, such as the *main* function:
 
 ```
-func main () () {
-  area := circleArea(i32.f32(2))
+func main () {
+  var area f32
+  area = circleArea(i32.f32(2))
   f32.print(area)
 }
 ```

@@ -81,7 +81,7 @@ func binaryOp(op string, arg1, arg2 *CXArgument, line int) *CXArgument {
 
 	if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 		if op, err := PRGRM.GetFunction(opName, CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
@@ -96,7 +96,7 @@ func binaryOp(op string, arg1, arg2 *CXArgument, line int) *CXArgument {
 			byteName := encoder.Serialize(outName)
 
 			expr.AddOutputName(outName)
-			return MakeArgument("").AddValue(&byteName).AddType("ident")
+			return MakeArgument("", CurrentFile, LineNo).AddValue(&byteName).AddType("ident")
 		}
 	}
 	return nil
@@ -128,7 +128,7 @@ func unaryOp(op string, arg1 *CXArgument, line int) *CXArgument {
 
 	if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 		if op, err := PRGRM.GetFunction(opName, CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
@@ -144,16 +144,16 @@ func unaryOp(op string, arg1 *CXArgument, line int) *CXArgument {
 			switch typArg1 {
 			case "i32":
 				sOne := encoder.Serialize(int32(1))
-				expr.AddInput(MakeArgument("").AddValue(&sOne).AddType("i32"))
+				expr.AddInput(MakeArgument("", CurrentFile, LineNo).AddValue(&sOne).AddType("i32"))
 			case "i64":
 				sOne := encoder.Serialize(int64(1))
-				expr.AddInput(MakeArgument("").AddValue(&sOne).AddType("i64"))
+				expr.AddInput(MakeArgument("", CurrentFile, LineNo).AddValue(&sOne).AddType("i64"))
 			case "f32":
 				sOne := encoder.Serialize(float32(1))
-				expr.AddInput(MakeArgument("").AddValue(&sOne).AddType("f32"))
+				expr.AddInput(MakeArgument("", CurrentFile, LineNo).AddValue(&sOne).AddType("f32"))
 			case "f64":
 				sOne := encoder.Serialize(float64(1))
-				expr.AddInput(MakeArgument("").AddValue(&sOne).AddType("f64"))
+				expr.AddInput(MakeArgument("", CurrentFile, LineNo).AddValue(&sOne).AddType("f64"))
 			}
 
 			var outName string
@@ -166,7 +166,7 @@ func unaryOp(op string, arg1 *CXArgument, line int) *CXArgument {
 			byteName := encoder.Serialize(outName)
 
 			expr.AddOutputName(outName)
-			return MakeArgument("").AddValue(&byteName).AddType("ident")
+			return MakeArgument("", CurrentFile, LineNo).AddValue(&byteName).AddType("ident")
 		}
 	}
 	return nil
@@ -526,7 +526,7 @@ const (
 func SelectorFields(flds []*CXArgument) bool {
 	if strct, err := PRGRM.GetCurrentStruct(); err == nil {
 		for _, fld := range flds {
-			fldFromParam := MakeArgument(fld.Name).AddType(fld.Typ)
+			fldFromParam := MakeArgument(fld.Name, CurrentFile, LineNo).AddType(fld.Typ)
 			strct.AddField(fldFromParam)
 		}
 	}
@@ -606,7 +606,7 @@ func Selector(ident string, selTyp int) string {
 // 		if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 			var val *CXArgument;
 // 			if assignment == nil {
-// 				val = MakeArgument("").AddValue(MakeDefaultValue(typ)).AddType(typ)
+// 				val = MakeArgument("", CurrentFile, LineNo).AddValue(MakeDefaultValue(typ)).AddType(typ)
 // 			} else {
 // 				switch typ {
 // 				case "byte":
@@ -657,21 +657,21 @@ func StructDeclaration(ident string, line int) {
 		// creating manipulation functions for this type a la common lisp
 		// append
 		fn := MakeFunction(fmt.Sprintf("[]%s.append", ident))
-		fn.AddInput(MakeArgument("arr").AddType(fmt.Sprintf("[]%s", ident)))
-		fn.AddInput(MakeArgument("strctInst").AddType(ident))
-		fn.AddOutput(MakeArgument("_arr").AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("strctInst", CurrentFile, LineNo).AddType(ident))
+		fn.AddOutput(MakeArgument("_arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.append", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 			sArr := encoder.Serialize("arr")
-			arrArg := MakeArgument("").AddValue(&sArr).AddType("str")
+			arrArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sArr).AddType("str")
 			sStrctInst := encoder.Serialize("strctInst")
-			strctInstArg := MakeArgument("").AddValue(&sStrctInst).AddType("str")
+			strctInstArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sStrctInst).AddType("str")
 			expr.AddInput(arrArg)
 			expr.AddInput(strctInstArg)
 			expr.AddOutputName("_arr")
@@ -683,19 +683,19 @@ func StructDeclaration(ident string, line int) {
 
 		// serialize
 		fn = MakeFunction(fmt.Sprintf("%s.serialize", ident))
-		fn.AddInput(MakeArgument("strctInst").AddType(ident))
-		fn.AddOutput(MakeArgument("byts").AddType("[]byte"))
+		fn.AddInput(MakeArgument("strctInst", CurrentFile, LineNo).AddType(ident))
+		fn.AddOutput(MakeArgument("byts", CurrentFile, LineNo).AddType("[]byte"))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.serialize", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 
 			sStrctInst := encoder.Serialize("strctInst")
-			strctInstArg := MakeArgument("").AddValue(&sStrctInst).AddType("str")
+			strctInstArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sStrctInst).AddType("str")
 			expr.AddInput(strctInstArg)
 			expr.AddOutputName("byts")
 			fn.AddExpression(expr)
@@ -705,22 +705,22 @@ func StructDeclaration(ident string, line int) {
 
 		// deserialize
 		fn = MakeFunction(fmt.Sprintf("%s.deserialize", ident))
-		fn.AddInput(MakeArgument("byts").AddType("[]byte"))
-		fn.AddOutput(MakeArgument("strctInst").AddType(ident))
+		fn.AddInput(MakeArgument("byts", CurrentFile, LineNo).AddType("[]byte"))
+		fn.AddOutput(MakeArgument("strctInst", CurrentFile, LineNo).AddType(ident))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.deserialize", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 
 			sByts := encoder.Serialize("byts")
-			sBytsArg := MakeArgument("").AddValue(&sByts).AddType("str")
+			sBytsArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sByts).AddType("str")
 
 			sTyp := encoder.Serialize(ident)
-			sTypArg := MakeArgument("").AddValue(&sTyp).AddType("str")
+			sTypArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sTyp).AddType("str")
 
 			expr.AddInput(sBytsArg)
 			expr.AddInput(sTypArg)
@@ -733,21 +733,21 @@ func StructDeclaration(ident string, line int) {
 
 		// read
 		fn = MakeFunction(fmt.Sprintf("[]%s.read", ident))
-		fn.AddInput(MakeArgument("arr").AddType(fmt.Sprintf("[]%s", ident)))
-		fn.AddInput(MakeArgument("index").AddType("i32"))
-		fn.AddOutput(MakeArgument("strctInst").AddType(ident))
+		fn.AddInput(MakeArgument("arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("index", CurrentFile, LineNo).AddType("i32"))
+		fn.AddOutput(MakeArgument("strctInst", CurrentFile, LineNo).AddType(ident))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.read", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 			sArr := encoder.Serialize("arr")
-			arrArg := MakeArgument("").AddValue(&sArr).AddType("str")
+			arrArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sArr).AddType("str")
 			sIndex := encoder.Serialize("index")
-			indexArg := MakeArgument("").AddValue(&sIndex).AddType("ident")
+			indexArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sIndex).AddType("ident")
 			expr.AddInput(arrArg)
 			expr.AddInput(indexArg)
 			expr.AddOutputName("strctInst")
@@ -757,24 +757,24 @@ func StructDeclaration(ident string, line int) {
 		}
 		// write
 		fn = MakeFunction(fmt.Sprintf("[]%s.write", ident))
-		fn.AddInput(MakeArgument("arr").AddType(fmt.Sprintf("[]%s", ident)))
-		fn.AddInput(MakeArgument("index").AddType("i32"))
-		fn.AddInput(MakeArgument("inst").AddType(ident))
-		fn.AddOutput(MakeArgument("_arr").AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("index", CurrentFile, LineNo).AddType("i32"))
+		fn.AddInput(MakeArgument("inst", CurrentFile, LineNo).AddType(ident))
+		fn.AddOutput(MakeArgument("_arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.write", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 			sArr := encoder.Serialize("arr")
-			arrArg := MakeArgument("").AddValue(&sArr).AddType("str")
+			arrArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sArr).AddType("str")
 			sIndex := encoder.Serialize("index")
-			indexArg := MakeArgument("").AddValue(&sIndex).AddType("ident")
+			indexArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sIndex).AddType("ident")
 			sInst := encoder.Serialize("inst")
-			instArg := MakeArgument("").AddValue(&sInst).AddType("str")
+			instArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sInst).AddType("str")
 			expr.AddInput(arrArg)
 			expr.AddInput(indexArg)
 			expr.AddInput(instArg)
@@ -785,18 +785,18 @@ func StructDeclaration(ident string, line int) {
 		}
 		// len
 		fn = MakeFunction(fmt.Sprintf("[]%s.len", ident))
-		fn.AddInput(MakeArgument("arr").AddType(fmt.Sprintf("[]%s", ident)))
-		fn.AddOutput(MakeArgument("len").AddType("i32"))
+		fn.AddInput(MakeArgument("arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddOutput(MakeArgument("len", CurrentFile, LineNo).AddType("i32"))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.len", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 			sArr := encoder.Serialize("arr")
-			arrArg := MakeArgument("").AddValue(&sArr).AddType("str")
+			arrArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sArr).AddType("str")
 			expr.AddInput(arrArg)
 			expr.AddOutputName("len")
 			fn.AddExpression(expr)
@@ -806,20 +806,20 @@ func StructDeclaration(ident string, line int) {
 
 		// make
 		fn = MakeFunction(fmt.Sprintf("[]%s.make", ident))
-		fn.AddInput(MakeArgument("len").AddType("i32"))
-		fn.AddOutput(MakeArgument("arr").AddType(fmt.Sprintf("[]%s", ident)))
+		fn.AddInput(MakeArgument("len", CurrentFile, LineNo).AddType("i32"))
+		fn.AddOutput(MakeArgument("arr", CurrentFile, LineNo).AddType(fmt.Sprintf("[]%s", ident)))
 		mod.AddFunction(fn)
 
 		if op, err := PRGRM.GetFunction("cstm.make", CORE_MODULE); err == nil {
-			expr := MakeExpression(op)
+			expr := MakeExpression(op, CurrentFile, LineNo)
 			if !ReplMode {
 				expr.FileLine = line
 				expr.FileName = fileName
 			}
 			sLen := encoder.Serialize("len")
 			sTyp := encoder.Serialize(fmt.Sprintf("[]%s", ident))
-			lenArg := MakeArgument("").AddValue(&sLen).AddType("ident")
-			typArg := MakeArgument("").AddValue(&sTyp).AddType("str")
+			lenArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sLen).AddType("ident")
+			typArg := MakeArgument("", CurrentFile, LineNo).AddValue(&sTyp).AddType("str")
 			expr.AddInput(lenArg)
 			expr.AddInput(typArg)
 			expr.AddOutputName("arr")
@@ -833,7 +833,7 @@ func StructDeclaration(ident string, line int) {
 func StructDeclarationFields(flds []*CXArgument) {
 	if strct, err := PRGRM.GetCurrentStruct(); err == nil {
 		for _, fld := range flds {
-			fldFromParam := MakeArgument(fld.Name).AddType(fld.Typ)
+			fldFromParam := MakeArgument(fld.Name, CurrentFile, LineNo).AddType(fld.Typ)
 			strct.AddField(fldFromParam)
 		}
 	}
@@ -962,7 +962,7 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			if initializer == nil {
 				if op, err := PRGRM.GetFunction("initDef", mod.Name); err == nil {
-					expr := MakeExpression(op)
+					expr := MakeExpression(op, CurrentFile, LineNo)
 					if !ReplMode {
 						expr.FileLine = line
 						expr.FileName = fileName
@@ -971,7 +971,7 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					fn.AddExpression(expr)
 
 					typ := encoder.Serialize(typ)
-					arg := MakeArgument("").AddValue(&typ).AddType("str")
+					arg := MakeArgument("", CurrentFile, LineNo).AddValue(&typ).AddType("str")
 					expr.AddInput(arg)
 					expr.AddOutputName(ident)
 				}
@@ -981,10 +981,10 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					var ds int32
 					encoder.DeserializeRaw(*initializer.Value, &ds)
 					new := encoder.SerializeAtomic(ds)
-					val := MakeArgument("").AddValue(&new).AddType("bool")
+					val := MakeArgument("", CurrentFile, LineNo).AddValue(&new).AddType("bool")
 
 					if op, err := PRGRM.GetFunction("bool.id", mod.Name); err == nil {
-						expr := MakeExpression(op)
+						expr := MakeExpression(op, CurrentFile, LineNo)
 						if !ReplMode {
 							expr.FileLine = line
 							expr.FileName = fileName
@@ -997,10 +997,10 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					var ds int32
 					encoder.DeserializeRaw(*initializer.Value, &ds)
 					new := []byte{byte(ds)}
-					val := MakeArgument("").AddValue(&new).AddType("byte")
+					val := MakeArgument("", CurrentFile, LineNo).AddValue(&new).AddType("byte")
 
 					if op, err := PRGRM.GetFunction("byte.id", mod.Name); err == nil {
-						expr := MakeExpression(op)
+						expr := MakeExpression(op, CurrentFile, LineNo)
 						if !ReplMode {
 							expr.FileLine = line
 							expr.FileName = fileName
@@ -1013,10 +1013,10 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					var ds int32
 					encoder.DeserializeRaw(*initializer.Value, &ds)
 					new := encoder.Serialize(int64(ds))
-					val := MakeArgument("").AddValue(&new).AddType("i64")
+					val := MakeArgument("", CurrentFile, LineNo).AddValue(&new).AddType("i64")
 
 					if op, err := PRGRM.GetFunction("i64.id", mod.Name); err == nil {
-						expr := MakeExpression(op)
+						expr := MakeExpression(op, CurrentFile, LineNo)
 						if !ReplMode {
 							expr.FileLine = line
 							expr.FileName = fileName
@@ -1029,10 +1029,10 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					var ds float32
 					encoder.DeserializeRaw(*initializer.Value, &ds)
 					new := encoder.Serialize(float64(ds))
-					val := MakeArgument("").AddValue(&new).AddType("f64")
+					val := MakeArgument("", CurrentFile, LineNo).AddValue(&new).AddType("f64")
 
 					if op, err := PRGRM.GetFunction("f64.id", mod.Name); err == nil {
-						expr := MakeExpression(op)
+						expr := MakeExpression(op, CurrentFile, LineNo)
 						if !ReplMode {
 							expr.FileLine = line
 							expr.FileName = fileName
@@ -1066,7 +1066,7 @@ func AssignBasicVar(ident string, typ string, initializer *CXArgument, line int)
 					}
 
 					if op, err := PRGRM.GetFunction(getFn, mod.Name); err == nil {
-						expr := MakeExpression(op)
+						expr := MakeExpression(op, CurrentFile, LineNo)
 						if !ReplMode {
 							expr.FileLine = line
 							expr.FileName = fileName
@@ -1085,7 +1085,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 	if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			if op, err := PRGRM.GetFunction("initDef", mod.Name); err == nil {
-				expr := MakeExpression(op)
+				expr := MakeExpression(op, CurrentFile, LineNo)
 
 				if !ReplMode {
 					expr.FileLine = line
@@ -1093,7 +1093,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 				}
 				fn.AddExpression(expr)
 				typ := encoder.Serialize(fmt.Sprintf("[]%s", typ))
-				arg := MakeArgument("").AddValue(&typ).AddType("str")
+				arg := MakeArgument("", CurrentFile, LineNo).AddValue(&typ).AddType("str")
 				expr.AddInput(arg)
 				expr.AddOutputName(ident)
 			}
@@ -1149,7 +1149,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 				}
 
 // 				if op, err := PRGRM.GetFunction(idFn, CORE_MODULE); err == nil {
-// 					expr := MakeExpression(op)
+// 					expr := MakeExpression(op, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						expr.FileLine = line
 // 						expr.FileName = fileName
@@ -1246,7 +1246,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 				}
 
 // 				if op, err := PRGRM.GetFunction(fmt.Sprintf("%s.%s", typName, opName), CORE_MODULE); err == nil {
-// 					expr := MakeExpression(op)
+// 					expr := MakeExpression(op, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						expr.FileLine = line
 // 						expr.FileName = fileName
@@ -1348,7 +1348,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 		if err == nil {
 // 			if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 // 				if op, err := PRGRM.GetFunction(fnName, modName); err == nil {
-// 					expr := MakeExpression(op)
+// 					expr := MakeExpression(op, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						expr.FileLine = line
 // 						expr.FileName = fileName
@@ -1421,7 +1421,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 					}
 
 // 					if op, err := PRGRM.GetFunction(idFn, CORE_MODULE); err == nil {
-// 						expr := MakeExpression(op)
+// 						expr := MakeExpression(op, CurrentFile, LineNo)
 // 						if !ReplMode {
 // 							expr.FileLine = line
 // 							expr.FileName = fileName
@@ -1453,7 +1453,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 				}
 // 			}
 // 			if goToFn, err := PRGRM.GetFunction("baseGoTo", CORE_MODULE); err == nil {
-// 				expr := MakeExpression(goToFn)
+// 				expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1474,7 +1474,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 		if fn, err := mod.GetCurrentFunction(); err == nil {
 // 			// this one is goTo, not baseGoTo
 // 			if goToFn, err := PRGRM.GetFunction("goTo", mod.Name); err == nil {
-// 				expr := MakeExpression(goToFn)
+// 				expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1493,7 +1493,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 	if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 		if fn, err := mod.GetCurrentFunction(); err == nil {
 // 			if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 				expr := MakeExpression(goToFn)
+// 				expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1537,7 +1537,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 	if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 		if fn, err := mod.GetCurrentFunction(); err == nil {
 // 			if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 				expr := MakeExpression(goToFn)
+// 				expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1567,7 +1567,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 			goToExpr.AddInput(MakeArgument("").AddValue(&elseLines).AddType("i32"))
 
 // 			if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 				goToExpr := MakeExpression(goToFn)
+// 				goToExpr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					goToExpr.FileLine = line
 // 					goToExpr.FileName = fileName
@@ -1593,7 +1593,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 		if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 			if fn, err := mod.GetCurrentFunction(); err == nil {
 // 				if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 					expr := MakeExpression(goToFn)
+// 					expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						expr.FileLine = line
 // 						expr.FileName = fileName
@@ -1617,7 +1617,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 			if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 				if fn, err := mod.GetCurrentFunction(); err == nil {
 // 					if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 						expr := MakeExpression(goToFn)
+// 						expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 						if !ReplMode {
 // 							expr.FileLine = line
 // 							expr.FileName = fileName
@@ -1656,7 +1656,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 				goToExpr.AddInput(MakeArgument("").AddValue(&elseLines).AddType("i32"))
 
 // 				if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 					goToExpr := MakeExpression(goToFn)
+// 					goToExpr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						goToExpr.FileLine = line
 // 						goToExpr.FileName = fileName
@@ -1689,7 +1689,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 				goToExpr.AddInput(MakeArgument("").AddValue(&elseLines).AddType("i32"))
 
 // 				if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 					goToExpr := MakeExpression(goToFn)
+// 					goToExpr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 					if !ReplMode {
 // 						goToExpr.FileLine = line
 // 						goToExpr.FileName = fileName
@@ -1714,7 +1714,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 	if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 // 			if op, err := PRGRM.GetFunction("initDef", mod.Name); err == nil {
-// 				expr := MakeExpression(op)
+// 				expr := MakeExpression(op, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1735,7 +1735,7 @@ func AssignCustomVar(ident string, typ string, line int) {
 // 	if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 // 		if fn, err := mod.GetCurrentFunction(); err == nil {
 // 			if goToFn, err := PRGRM.GetFunction("baseGoTo", mod.Name); err == nil {
-// 				expr := MakeExpression(goToFn)
+// 				expr := MakeExpression(goToFn, CurrentFile, LineNo)
 // 				if !ReplMode {
 // 					expr.FileLine = line
 // 					expr.FileName = fileName
@@ -1770,7 +1770,7 @@ func UnaryPrefixOp(arg *CXArgument, nonAssignExpr []*CXArgument, isArgument bool
 	if isArgument {
 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			if op, err := PRGRM.GetFunction("not", CORE_MODULE); err == nil {
-				expr := MakeExpression(op)
+				expr := MakeExpression(op, CurrentFile, LineNo)
 				if !ReplMode {
 					expr.FileLine = line
 					expr.FileName = fileName
@@ -1784,13 +1784,13 @@ func UnaryPrefixOp(arg *CXArgument, nonAssignExpr []*CXArgument, isArgument bool
 				byteName := encoder.Serialize(outName)
 
 				expr.AddOutputName(outName)
-				return MakeArgument("").AddValue(&byteName).AddType("ident")
+				return MakeArgument("", CurrentFile, LineNo).AddValue(&byteName).AddType("ident")
 			}
 		}
 	} else {
 		if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 			if op, err := PRGRM.GetFunction("not", CORE_MODULE); err == nil {
-				expr := MakeExpression(op)
+				expr := MakeExpression(op, CurrentFile, LineNo)
 				if !ReplMode {
 					expr.FileLine = line
 					expr.FileName = fileName
@@ -1809,7 +1809,7 @@ func UnaryPrefixOp(arg *CXArgument, nonAssignExpr []*CXArgument, isArgument bool
 				byteName := encoder.Serialize(outName)
 
 				expr.AddOutputName(outName)
-				return MakeArgument("").AddValue(&byteName).AddType("ident")
+				return MakeArgument("", CurrentFile, LineNo).AddValue(&byteName).AddType("ident")
 			}
 		}
 	}
@@ -1822,13 +1822,13 @@ func StructLiteralDeclaration(ident string, structFlds []*CXArgument, line int) 
 	val := encoder.Serialize(ident)
 
 	if len(structFlds) < 1 {
-		result = MakeArgument("").AddValue(&val).AddType("ident")
+		result = MakeArgument("", CurrentFile, LineNo).AddValue(&val).AddType("ident")
 	} else {
 		// then it's a struct literal
 		if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 			if fn, err := PRGRM.GetCurrentFunction(); err == nil {
 				if op, err := PRGRM.GetFunction("initDef", mod.Name); err == nil {
-					expr := MakeExpression(op)
+					expr := MakeExpression(op, CurrentFile, LineNo)
 					if !ReplMode {
 						expr.FileLine = line
 						expr.FileName = fileName
@@ -1839,10 +1839,10 @@ func StructLiteralDeclaration(ident string, structFlds []*CXArgument, line int) 
 					sOutName := encoder.Serialize(outName)
 
 					typ := encoder.Serialize(ident)
-					expr.AddInput(MakeArgument("").AddValue(&typ).AddType("str"))
+					expr.AddInput(MakeArgument("", CurrentFile, LineNo).AddValue(&typ).AddType("str"))
 					expr.AddOutputName(outName)
 
-					result = MakeArgument("").AddValue(&sOutName).AddType(fmt.Sprintf("ident.%s", ident))
+					result = MakeArgument("", CurrentFile, LineNo).AddValue(&sOutName).AddType(fmt.Sprintf("ident.%s", ident))
 					for _, def := range structFlds {
 						typeParts := strings.Split(def.Typ, ".")
 
@@ -1867,7 +1867,7 @@ func StructLiteralDeclaration(ident string, structFlds []*CXArgument, line int) 
 						}
 
 						if op, err := PRGRM.GetFunction(idFn, CORE_MODULE); err == nil {
-							expr := MakeExpression(op)
+							expr := MakeExpression(op, CurrentFile, LineNo)
 							if !ReplMode {
 								expr.FileLine = line
 								expr.FileName = fileName
@@ -1877,7 +1877,7 @@ func StructLiteralDeclaration(ident string, structFlds []*CXArgument, line int) 
 							tag = ""
 
 							outName := fmt.Sprintf("%s.%s", outName, def.Name)
-							arg := MakeArgument("").AddValue(def.Value).AddType(typ)
+							arg := MakeArgument("", CurrentFile, LineNo).AddValue(def.Value).AddType(typ)
 							expr.AddInput(arg)
 							expr.AddOutputName(outName)
 						}
@@ -1945,8 +1945,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]str")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]str")
 
 			expr.Package = elts[0].Package
 			arg.Package = elts[0].Package
@@ -1966,8 +1966,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]bool")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]bool")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -1986,8 +1986,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]byte")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]byte")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -2006,8 +2006,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]i32")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]i32")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -2026,8 +2026,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]i64")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]i64")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -2046,8 +2046,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]f32")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]f32")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -2066,8 +2066,8 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 			}
 			sVal := encoder.Serialize(vals)
 
-			expr := MakeExpression(nil)
-			arg := MakeArgument("").AddValue(&sVal).AddType("[]f64")
+			expr := MakeExpression(nil, CurrentFile, LineNo)
+			arg := MakeArgument("", CurrentFile, LineNo).AddValue(&sVal).AddType("[]f64")
 			arg.Lengths = append(arg.Lengths, SLICE_SIZE)
 			arg.IsArray = true
 
@@ -2082,7 +2082,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 		// 	if fn, err := PRGRM.GetCurrentFunction(); err == nil && inFn {
 		// 		if op, err := PRGRM.GetFunction(INIT_FN, mod.Name); err == nil {
-		// 			expr := MakeExpression(op)
+		// 			expr := MakeExpression(op, CurrentFile, LineNo)
 		// 			if !ReplMode {
 		// 				expr.FileLine = line
 		// 				expr.FileName = fileName
@@ -2117,7 +2117,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 				for _, expr := range elts {
 		// 					// typeParts := strings.Split(expr.Outputs[0].Typ, ".")
 		// 					// expr.Outputs[0].Typ = typeParts[0]
-		// 					// expr := MakeExpression(op)
+		// 					// expr := MakeExpression(op, CurrentFile, LineNo)
 		// 					fn.AddExpression(expr)
 		// 					expr.AddInput(MakeArgument("").AddValue(&sOutName).AddType("ident"))
 		// 					expr.AddOutputName(outName)
@@ -2125,7 +2125,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 				}
 		// 			}
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sOutName).AddType(ptrs + "ident")
 
 		// 			expr.AddOutput(arg)
@@ -2141,7 +2141,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]str")
 
 		// 			expr.AddOutput(arg)
@@ -2156,7 +2156,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]bool")
 
 		// 			expr.AddOutput(arg)
@@ -2171,7 +2171,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]byte")
 
 		// 			expr.AddOutput(arg)
@@ -2186,7 +2186,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]i32")
 
 		// 			expr.AddOutput(arg)
@@ -2201,7 +2201,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]i64")
 
 		// 			expr.AddOutput(arg)
@@ -2216,7 +2216,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]f32")
 
 		// 			expr.AddOutput(arg)
@@ -2231,7 +2231,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]f64")
 
 		// 			expr.AddOutput(arg)
@@ -2251,7 +2251,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]str")
 
 		// 			expr.AddOutput(arg)
@@ -2266,7 +2266,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]bool")
 
 		// 			expr.AddOutput(arg)
@@ -2281,7 +2281,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]byte")
 
 		// 			expr.AddOutput(arg)
@@ -2296,7 +2296,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]i32")
 
 		// 			expr.AddOutput(arg)
@@ -2311,7 +2311,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]i64")
 
 		// 			expr.AddOutput(arg)
@@ -2326,7 +2326,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]f32")
 
 		// 			expr.AddOutput(arg)
@@ -2341,7 +2341,7 @@ func BasicArrayLiteralDeclaration(basicTyp string, elts []*CXExpression, line in
 		// 			}
 		// 			sVal := encoder.Serialize(vals)
 
-		// 			expr := MakeExpression(nil)
+		// 			expr := MakeExpression(nil, CurrentFile, LineNo)
 		// 			arg := MakeArgument("").AddValue(&sVal).AddType("[]f64")
 
 		// 			expr.AddOutput(arg)

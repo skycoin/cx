@@ -1,9 +1,13 @@
 package main
 
 func main () {
-  	foo1 := 1
-  	foo2 := 2
-  	foo3 := 3
+	var foo1 i32
+	var foo2 i32
+	var foo3 i32
+	
+  	foo1 = 1
+  	foo2 = 2
+  	foo3 = 3
 	
 	target := ->{
   		pkg(main) fn(main) exp(message)
@@ -12,9 +16,7 @@ func main () {
   	objs := ->{ obj1 $0.5 }
 	
   	rules := ->{
-  		if obj1 $0.3 {
-  			allow(* > 1.0D)
-  		}
+		allow(* > 1.0D)
   	}
 	
   	affs := aff.query(target, objs, rules)

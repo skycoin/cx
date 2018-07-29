@@ -212,8 +212,7 @@ func (expr *CXExpression) AddOutputName(outName string) *CXExpression {
 			typ = expr.Operator.Outputs[nextOutIdx].Typ
 		}
 
-		//print(typ + " " + outName + "\n")
-		outDef := MakeArgument(outName).AddValue(MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ)).AddType(typ)
+		outDef := MakeArgument(outName, "", -1).AddValue(MakeDefaultValue(expr.Operator.Outputs[nextOutIdx].Typ)).AddType(typ)
 
 		outDef.Package = expr.Package
 		outDef.Program = expr.Program

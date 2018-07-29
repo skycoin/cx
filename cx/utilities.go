@@ -59,7 +59,7 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 				def.Fields[len(def.Fields)-1].Value = &output
 				return nil
 			} else {
-				arg := MakeArgument(outName)
+				arg := MakeArgument(outName, "", -1)
 				arg.Fields = flds
 				arg.Fields[len(flds)-1].AddValue(&output).AddType(typ)
 				call.State = append(call.State, arg)
@@ -91,8 +91,6 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 
 			sizes = make([]int, len(out.Lengths))
 
-			fmt.Println("sizes", out.Indexes, out.Lengths, def.Value)
-			
 			sizes[len(sizes)-1] = def.Size
 
 			for c := len(def.Lengths) - 1; c > 0; c-- {
@@ -115,7 +113,7 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 		}
 	}
 
-	// call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
+	// call.State = append(call.State, MakeArgument(outName, "", -1).AddValue(&output).AddType(typ))
 	// return nil
 
 	for _, char := range outName {
@@ -232,7 +230,7 @@ func assignOutput(outNameNumber int, output []byte, typ string, expr *CXExpressi
 		}
 	}
 
-	call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
+	call.State = append(call.State, MakeArgument(outName, "", -1).AddValue(&output).AddType(typ))
 	return nil
 }
 
@@ -374,7 +372,7 @@ func getArrayChunkSizes(size int, lens []int) []int {
 // 		}
 // 	}
 
-// 	call.State = append(call.State, MakeArgument(outName).AddValue(&output).AddType(typ))
+// 	call.State = append(call.State, MakeArgument(outName, "", -1).AddValue(&output).AddType(typ))
 // 	return nil
 // }
 
@@ -723,12 +721,12 @@ func rep(str string, n int) string {
 func CastArgumentForArray(typ string, arg *CXArgument) *CXArgument {
 	switch typ {
 	case "[]bool":
-		return MakeArgument("").AddValue(arg.Value).AddType("bool")
+		return MakeArgument("", "", -1).AddValue(arg.Value).AddType("bool")
 	case "[]byte":
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		sVal := encoder.Serialize(byte(val))
-		return MakeArgument("").AddValue(&sVal).AddType("byte")
+		return MakeArgument("", "", -1).AddValue(&sVal).AddType("byte")
 	case "[]str":
 		return arg
 	case "[]i32":
@@ -737,14 +735,14 @@ func CastArgumentForArray(typ string, arg *CXArgument) *CXArgument {
 		var val int32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		sVal := encoder.Serialize(int64(val))
-		return MakeArgument("").AddValue(&sVal).AddType("i64")
+		return MakeArgument("", "", -1).AddValue(&sVal).AddType("i64")
 	case "[]f32":
 		return arg
 	case "[]f64":
 		var val float32
 		encoder.DeserializeRaw(*arg.Value, &val)
 		sVal := encoder.Serialize(float64(val))
-		return MakeArgument("").AddValue(&sVal).AddType("f64")
+		return MakeArgument("", "", -1).AddValue(&sVal).AddType("f64")
 	default:
 		return arg
 	}
@@ -1190,7 +1188,7 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 				//resolvedIdent = def
 				if strct, err := mod.Program.GetStruct(def.Typ, mod.Name); err == nil {
 					byts, typ, _, _ := resolveStructField(identParts[1], def.Value, strct)
-					arg := MakeArgument("").AddValue(&byts).AddType(typ)
+					arg := MakeArgument("", "", -1).AddValue(&byts).AddType(typ)
 					return arg, nil
 				} else {
 					return nil, err
@@ -1206,7 +1204,7 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 						}
 						// if strct, err := mod.Program.GetStruct(stateDef.Typ, mod.Name); err == nil {
 						// 	byts, typ, _, _ := resolveStructField(identParts[1], stateDef.Value, strct)
-						// 	arg := MakeArgument("").AddValue(&byts).AddType(typ)
+						// 	arg := MakeArgument("", "", -1).AddValue(&byts).AddType(typ)
 						// 	return arg, nil
 
 						// } else {
@@ -1279,7 +1277,7 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 
 			byts := (*resolvedIdent.Value)[off : off+resolvedIdent.TotalSize/subSize]
 
-			resArg := MakeArgument("").AddValue(&byts).AddType(resolvedIdent.Typ)
+			resArg := MakeArgument("", "", -1).AddValue(&byts).AddType(resolvedIdent.Typ)
 			resArg.Lengths = arg.Lengths[len(arg.Indexes):]
 
 			return resArg, nil
@@ -1290,7 +1288,7 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 		// 		isArray = true
 		// 		byts, typ := resolveArrayIndex(int(idx), resolvedIdent.Value, resolvedIdent.Typ)
 
-		// 		arg := MakeArgument("").AddValue(&byts).AddType(typ)
+		// 		arg := MakeArgument("", "", -1).AddValue(&byts).AddType(typ)
 		// 		return arg, nil
 		// 	} else {
 		// 		//excError = err
@@ -1313,7 +1311,7 @@ func resolveIdent(lookingFor string, arg *CXArgument, call *CXCall) (*CXArgument
 	if resolvedIdent != nil && !isStructFld && !isArray {
 		// if it was a struct field, we already created the argument above for efficiency reasons
 		// the same goes to arrays in the form ident[index]
-		arg := MakeArgument("").AddValue(resolvedIdent.Value).AddType(resolvedIdent.Typ)
+		arg := MakeArgument("", "", -1).AddValue(resolvedIdent.Value).AddType(resolvedIdent.Typ)
 		arg.Lengths = resolvedIdent.Lengths
 		return arg, nil
 	}

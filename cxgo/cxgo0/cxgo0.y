@@ -375,7 +375,7 @@ direct_declarator:
                 IDENTIFIER
                 {
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				arg := MakeArgument("")
+				arg := MakeArgument("", CurrentFile, LineNo)
 				arg.AddType(TypeNames[TYPE_UNDEFINED])
 				arg.Name = $1
 				arg.Package = pkg
@@ -409,7 +409,7 @@ declaration_specifiers:
 					pointer.IsPointer = true
 				}
 
-				pointee := MakeArgument("")
+				pointee := MakeArgument("", CurrentFile, LineNo)
 				pointee.AddType(TypeNames[pointer.Type])
 				// pointee.Size = pointer.Size
 				// pointee.TotalSize = pointer.TotalSize
@@ -450,7 +450,7 @@ declaration_specifiers:
                 }
         |       type_specifier
                 {
-			arg := MakeArgument("")
+			arg := MakeArgument("", CurrentFile, LineNo)
 			arg.AddType(TypeNames[$1])
 			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 
@@ -470,7 +470,7 @@ declaration_specifiers:
 			// custom type in the current package
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				if strct, err := PRGRM0.GetStruct($1, pkg.Name); err == nil {
-					arg := MakeArgument("")
+					arg := MakeArgument("", CurrentFile, LineNo)
 					arg.AddType(TypeNames[TYPE_CUSTOM])
 					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 					arg.CustomType = strct
@@ -491,7 +491,7 @@ declaration_specifiers:
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 				if imp, err := pkg.GetImport($1); err == nil {
 					if strct, err := PRGRM0.GetStruct($3, imp.Name); err == nil {
-						arg := MakeArgument("")
+						arg := MakeArgument("", CurrentFile, LineNo)
 						arg.AddType(TypeNames[TYPE_CUSTOM])
 						arg.CustomType = strct
 						arg.Size = strct.Size
@@ -514,7 +514,7 @@ declaration_specifiers:
 			
 			// if pkg, err := PRGRM0.GetPackage($1); err == nil {
 			// 	if strct, err := PRGRM0.GetStruct($3, pkg.Name); err == nil {
-			// 		arg := MakeArgument(TYPE_CUSTOM)
+			// 		arg := MakeArgument(TYPE_CUSTOM, CurrentFile, LineNo)
 			// 		arg.CustomType = strct
 			// 		arg.Size = strct.Size
 			// 		arg.TotalSize = strct.Size
@@ -597,9 +597,42 @@ slice_literal_expression:
         |       LBRACK RBRACK slice_literal_expression
                 ;
 
+
+
+infer_action_arg:
+                MUL_OP GT_OP assignment_expression
+        |       MUL_OP GT_OP MUL_OP
+        ;
+
+infer_action:
+		IDENTIFIER LPAREN infer_action_arg RPAREN
+        ;
+
+infer_actions:
+                infer_action
+        |       infer_actions infer_action
+                ;
+
+infer_target:
+                IDENTIFIER LPAREN IDENTIFIER RPAREN
+        ;
+
+infer_targets:
+                infer_target
+        |       infer_targets infer_target
+        ;
+
+infer_clauses:
+                infer_actions
+        |       infer_targets
+                ;
+
+
+
 primary_expression:
                 IDENTIFIER
         |       IDENTIFIER LBRACE struct_literal_fields RBRACE
+        |       INFER LBRACE infer_clauses RBRACE
         |       STRING_LITERAL
         |       BOOLEAN_LITERAL
         |       BYTE_LITERAL
