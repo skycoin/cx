@@ -88,6 +88,7 @@
 
 %type   <tok>           after_period
 %type   <tok>           unary_operator
+%type   <tok>           assignment_operator
 %type   <i>             type_specifier
 %type   <argument>      declaration_specifiers
 %type   <argument>      declarator
@@ -504,7 +505,7 @@ struct_literal_fields:
 			if $3[0].IsStructLiteral {
 				$$ = StructLiteralAssignment([]*CXExpression{StructLiteralFields($1)}, $3)
 			} else {
-				$$ = Assignment([]*CXExpression{StructLiteralFields($1)}, $3)
+				$$ = Assignment([]*CXExpression{StructLiteralFields($1)}, "=", $3)
 			}
                 }
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
@@ -512,7 +513,7 @@ struct_literal_fields:
 			if $5[0].IsStructLiteral {
 				$$ = append($1, StructLiteralAssignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
 			} else {
-				$$ = append($1, Assignment([]*CXExpression{StructLiteralFields($3)}, $5)...)
+				$$ = append($1, Assignment([]*CXExpression{StructLiteralFields($3)}, "=", $5)...)
 			}
                 }
                 ;
@@ -966,17 +967,24 @@ assignment_expression:
 	|       unary_expression assignment_operator assignment_expression
                 {
 			if $3[0].IsArrayLiteral {
+				if $2 != "=" {
+					panic("")
+				}
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[len($3) - 1].IsStructLiteral {
+				if $2 != "=" {
+					panic("")
+				}
 				$$ = StructLiteralAssignment($1, $3)
 			} else {
-				$$ = Assignment($1, $3)
+				$$ = Assignment($1, $2, $3)
 			}
                 }
                 ;
 
 assignment_operator:
                 ASSIGN
+        |       CASSIGN
 	|       MUL_ASSIGN
 	|       DIV_ASSIGN
 	|       MOD_ASSIGN

@@ -1,7 +1,7 @@
 package actions
 
 import (
-	// "fmt"
+	"fmt"
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -1378,7 +1378,25 @@ func ArrayLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpre
 	return from
 }
 
-func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+func ShortAssign (expr *CXExpression, to []*CXExpression, from []*CXExpression, pkg *CXPackage, idx int) []*CXExpression {
+	expr.AddInput(to[0].Outputs[0])
+	expr.AddOutput(to[0].Outputs[0])
+	expr.Package = pkg
+
+	if from[idx].Operator == nil {
+		expr.AddInput(from[idx].Outputs[0])
+	} else {
+		symName := MakeGenSym(LOCAL_PREFIX)
+		sym := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+		sym.Package = pkg
+		from[idx].AddOutput(sym)
+		expr.AddInput(sym)
+	}
+
+	return append(from, expr)
+}
+
+func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
 	if from[idx].IsArrayLiteral {
@@ -1396,6 +1414,46 @@ func Assignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 				// expr.Outputs[0].DoesEscape = glbl.DoesEscape
 				expr.Outputs[0].PassBy = glbl.PassBy
 			}
+		}
+	}
+
+	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+
+		var expr *CXExpression
+		
+		switch assignOp {
+		case ":=":
+			fmt.Println("hihihi")
+		case ">>=":
+			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "<<=":
+			expr = MakeExpression(Natives[OP_UND_BITSHL], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "+=":
+			expr = MakeExpression(Natives[OP_UND_ADD], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "-=":
+			expr = MakeExpression(Natives[OP_UND_SUB], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "*=":
+			expr = MakeExpression(Natives[OP_UND_MUL], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "/=":
+			expr = MakeExpression(Natives[OP_UND_DIV], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "%=":
+			expr = MakeExpression(Natives[OP_UND_MOD], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "&=":
+			expr = MakeExpression(Natives[OP_UND_BITAND], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "^=":
+			expr = MakeExpression(Natives[OP_UND_BITXOR], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
+		case "|=":
+			expr = MakeExpression(Natives[OP_UND_BITOR], CurrentFile, LineNo)
+			return ShortAssign(expr, to, from, pkg, idx)
 		}
 	}
 	
@@ -1924,11 +1982,15 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 }
 
 func ProcessTempVariable(expr *CXExpression) {
-	if expr.Operator == Natives[OP_IDENTITY] && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	// if expr.Operator != nil && expr.Operator == Natives[OP_IDENTITY] && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	// if expr.Operator != nil && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
 			// then it's a temporary variable and it needs to adopt its input's type
 			expr.Outputs[0].Type = expr.Inputs[0].Type
+			expr.Outputs[0].Size = expr.Inputs[0].Size
+			expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 		}
 	}
 }
@@ -1989,7 +2051,6 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 	}
 
 	for _, expr := range fn.Expressions {
-		
 		for _, inp := range expr.Inputs {
 			if inp.IsLocalDeclaration {
 				symbolsScope[inp.Package.Name+"."+inp.Name] = true

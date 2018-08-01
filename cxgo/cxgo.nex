@@ -57,16 +57,16 @@
 /</                       { return f(LT_OP) }
 />=/                      { return f(GTEQ_OP) }
 /<=/                      { return f(LTEQ_OP) }
-/>>=/                     { return f(RIGHT_ASSIGN)}
-/<<=/                     { return f(LEFT_ASSIGN)}
-/\+=/                     { return f(ADD_ASSIGN)}
-/-=/                      { return f(SUB_ASSIGN)}
-/\*=/                     { return f(MUL_ASSIGN)}
-/\/=/                     { return f(DIV_ASSIGN)}
-/%=/                      { return f(MOD_ASSIGN)}
-/&=/                      { return f(AND_ASSIGN)}
-/\^=/                     { return f(XOR_ASSIGN)}
-/\|=/                     { return f(OR_ASSIGN)}
+/>>=/                     { lval.tok = yylex.Text(); return f(RIGHT_ASSIGN)}
+/<<=/                     { lval.tok = yylex.Text(); return f(LEFT_ASSIGN)}
+/\+=/                     { lval.tok = yylex.Text(); return f(ADD_ASSIGN)}
+/-=/                      { lval.tok = yylex.Text(); return f(SUB_ASSIGN)}
+/\*=/                     { lval.tok = yylex.Text(); return f(MUL_ASSIGN)}
+/\/=/                     { lval.tok = yylex.Text(); return f(DIV_ASSIGN)}
+/%=/                      { lval.tok = yylex.Text(); return f(MOD_ASSIGN)}
+/&=/                      { lval.tok = yylex.Text(); return f(AND_ASSIGN)}
+/\^=/                     { lval.tok = yylex.Text(); return f(XOR_ASSIGN)}
+/\|=/                     { lval.tok = yylex.Text(); return f(OR_ASSIGN)}
 />>/                      { return f(RIGHT_OP)}
 /<</                      { return f(LEFT_OP)}
 /\+\+/                    { return f(INC_OP)}
@@ -91,8 +91,8 @@
 /\}/                      { return f(RBRACE) }
 /\./                      { return f(PERIOD) }
 /,/                       { return f(COMMA) }
-/=/                       { return f(ASSIGN) }
-/:=/                      { return f(CASSIGN) }
+/=/                       { lval.tok = yylex.Text(); return f(ASSIGN) }
+/:=/                      { lval.tok = yylex.Text(); return f(CASSIGN) }
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
@@ -207,7 +207,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.6"
+const VERSION = "0.5.7"
 
 var currentFileName string
 var insert bool
@@ -747,6 +747,7 @@ func main () {
 
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
+		LineNo = 1
 		b := bytes.NewBufferString(source)
 		if len(fileNames) > 0 {
 			CurrentFile = fileNames[i]
