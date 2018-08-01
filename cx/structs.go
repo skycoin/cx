@@ -124,6 +124,7 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
+	IsShortDeclaration bool
 	IsStructLiteral bool
 	IsArrayLiteral  bool
 	IsFlattened bool // used for nested struct literals

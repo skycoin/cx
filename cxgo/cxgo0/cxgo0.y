@@ -757,6 +757,7 @@ assignment_expression:
 
 assignment_operator:
                 ASSIGN
+        |       CASSIGN
 	|       MUL_ASSIGN
 	|       DIV_ASSIGN
 	|       MOD_ASSIGN

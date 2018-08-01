@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -1386,8 +1386,7 @@ func ShortAssign (expr *CXExpression, to []*CXExpression, from []*CXExpression, 
 	if from[idx].Operator == nil {
 		expr.AddInput(from[idx].Outputs[0])
 	} else {
-		symName := MakeGenSym(LOCAL_PREFIX)
-		sym := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+		sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
 		sym.Package = pkg
 		from[idx].AddOutput(sym)
 		expr.AddInput(sym)
@@ -1423,7 +1422,22 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		
 		switch assignOp {
 		case ":=":
-			fmt.Println("hihihi")
+			expr = MakeExpression(nil, CurrentFile, LineNo)
+			expr.IsShortDeclaration = true
+			expr.Package = pkg
+
+			var sym *CXArgument
+
+			if from[idx].Operator == nil {
+				// then it's a literal
+				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
+			} else {
+				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+			}
+			sym.Package = pkg
+
+			expr.AddOutput(sym)
+			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
 			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
 			return ShortAssign(expr, to, from, pkg, idx)
@@ -1982,9 +1996,7 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 }
 
 func ProcessTempVariable(expr *CXExpression) {
-	// if expr.Operator != nil && expr.Operator == Natives[OP_IDENTITY] && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
-	// if expr.Operator != nil && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
 			// then it's a temporary variable and it needs to adopt its input's type
@@ -1992,6 +2004,17 @@ func ProcessTempVariable(expr *CXExpression) {
 			expr.Outputs[0].Size = expr.Inputs[0].Size
 			expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 		}
+	}
+}
+
+func ProcessShortDeclaration(expr *CXExpression) {
+	if expr.IsShortDeclaration {
+		expr.Outputs[0].Type = expr.Inputs[0].Type
+		expr.Outputs[0].Size = expr.Inputs[0].Size
+		expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+
+		expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+		expr.Outputs[0].Fields = expr.Inputs[0].Fields
 	}
 }
 
