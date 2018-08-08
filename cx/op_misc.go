@@ -18,7 +18,6 @@ func EscapeAnalysis (stack *CXStack, fp int, inpOffset, outOffset int, arg *CXAr
 		} else {
 			// nil, needs to be allocated
 			heapOffset = AllocateSeq(stack.Program, arg.TotalSize+OBJECT_HEADER_SIZE)
-			// WriteToStack(stack, fp+arg.HeapOffset, encoder.SerializeAtomic(int32(heapOffset)))
 			o := GetFinalOffset(stack, fp, arg, MEM_WRITE)
 			WriteMemory(stack, o, arg, encoder.SerializeAtomic(int32(heapOffset)))
 		}
@@ -26,7 +25,7 @@ func EscapeAnalysis (stack *CXStack, fp int, inpOffset, outOffset int, arg *CXAr
 
 	byts := ReadMemory(stack, inpOffset, arg)
 	// creating a header for this object
-	size := encoder.Serialize(int32(len(byts)))
+	size := encoder.SerializeAtomic(int32(len(byts)))
 
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {

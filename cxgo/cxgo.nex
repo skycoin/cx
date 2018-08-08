@@ -143,7 +143,7 @@
 	return f(BOOLEAN_LITERAL)
 }
 /-?[0-9]+B/ {
-	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 32)
 	lval.byt = byte(result)
 	return f(BYTE_LITERAL)
 }
@@ -279,7 +279,7 @@ func unsafeEval (code string) (out string) {
 	yyParse(lexer)
 
 	if err := PRGRM.RunCompiled(); err != nil {
-		PRGRM = MakeProgram(1024, 1024, 1024)
+		PRGRM = MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -294,7 +294,7 @@ func unsafeEval (code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	PRGRM = MakeProgram(1024, 1024, 1024)
+	PRGRM = MakeProgram()
 	return out
 }
 
@@ -316,7 +316,7 @@ func Eval (code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		PRGRM = MakeProgram(1024, 1024, 1024)
+		PRGRM = MakeProgram()
 		return "Timed out."
 	}
 }
@@ -684,13 +684,7 @@ func main () {
 		}
 	}
 
-	// if InterpretMode {
-	// 	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	// } else {
-	// 	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	// }
-
-	PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
+	PRGRM = MakeProgram()
 
 	if HelpMode {
 		help()

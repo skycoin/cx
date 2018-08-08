@@ -5,72 +5,79 @@ var goSouth i32 = 2
 var goWest i32 = 3
 var goEast i32 = 4
 
-func robot (row i32, col i32, action i32) (r i32, c i32) {
-	if i32.eq(action, 1) {
-		r = i32.add(row, -1)
-		c = col
-	}
-	if i32.eq(action, 2) {
-		r = i32.add(row, 1)
-		c = col
-	}
-	if i32.eq(action, 3) {
-		c = i32.add(col, -1)
-		r = row
-	}
-	if i32.eq(action, 4) {
-		c = i32.add(col, 1)
-		r = row
-	}
-}
-
 func map2Dto1D (r i32, c i32, w i32) (i i32) {
-	i = i32.add(i32.mul(w, r), c)
+	i = w * r + c
 }
 
 func map1Dto2D (i i32, w i32) (r i32, c i32) {
-	r = i32.div(i, W)
-	c = i32.mod(i, W)
+	r = i / W
+	c = i % W
 }
 
-func robotObjects (row i32, col i32, width i32, wallMap []bool, wormholeMap []bool) (objs []str) {
-	var objs []str
-	if []bool.read(wallMap, map2Dto1D(i32.add(row, -1), col, width)) {
-		objs = []str.concat(objs, ->{northWall $1.0})
+func robot (row i32, col i32, action i32) (r i32, c i32) {
+	if action == 1 {
+		r = row - 1
+		c = col
 	}
-	if []bool.read(wallMap, map2Dto1D(i32.add(row, 1), col, width)) {
-		objs = []str.concat(objs, ->{southWall $1.0})
+	if action == 2 {
+		r = row + 1
+		c = col
 	}
-	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, 1), width)) {
-		objs = []str.concat(objs, ->{eastWall $1.0})
+	if action == 3 {
+		c = col - 1
+		r = row
 	}
-	if []bool.read(wallMap, map2Dto1D(row, i32.add(col, -1), width)) {
-		objs = []str.concat(objs, ->{westWall $1.0})
+	if action == 4 {
+		c = col + 1
+		r = row
+	}
+}
+
+func getRules (row i32, col i32, width i32, wallMap [25]bool, wormholeMap [25]bool) (rules aff) {
+	rules ->= allow(* == *)
+	
+	if wallMap[map2Dto1D(row - 1, col, width)] {
+		rules ->= ->{reject(* == 1)}
 	}
 
-	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, -1), col, width)) {
-		objs = []str.concat(objs, ->{northWormhole $1.0})
+	if wallMap[map2Dto1D(row + 1, col, width)] {
+		rules ->= ->{reject(* == 2)}
 	}
-	if []bool.read(wormholeMap, map2Dto1D(i32.add(row, 1), col, width)) {
-		objs = []str.concat(objs, ->{southWormhole $1.0})
+
+	if wallMap[map2Dto1D(row, col + 1, width)] {
+		rules ->= ->{reject(* == 3)}
 	}
-	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, 1), width)) {
-		objs = []str.concat(objs, ->{eastWormhole $1.0})
+
+	if wallMap[map2Dto1D(row, col - 1, width)] {
+		rules ->= ->{reject(* == 3)}
 	}
-	if []bool.read(wormholeMap, map2Dto1D(row, i32.add(col, -1), width)) {
-		objs = []str.concat(objs, ->{westWormhole $1.0})
+
+	if wormholeMap[map2Dto1D(row - 1, col, width)] {
+		rules ->= ->{allow(* == 1)}
+	}
+
+	if wormholeMap[map2Dto1D(row + 1, col, width)] {
+		rules ->= ->{allow(* == 2)}
+	}
+
+	if wormholeMap[map2Dto1D(row, col + 1, width)] {
+		rules ->= ->{allow(* == 3)}
+	}
+
+	if wormholeMap[map2Dto1D(row, col - 1, width)] {
+		rules ->= ->{allow(* == 3)}
 	}
 }
 
 func main () (out str) {
-	var wallMap []bool = []bool{
+	var wallMap [25]bool = [25]bool{
 		true, true,  true,  true,  true,
 		true, false, true, false, true,
 		true, false, true, false, true,
 		true, false, false, false, true,
 		true, true,  true,  true,  true}
 
-	var wormholeMap []bool = []bool{
+	var wormholeMap [25]bool = [25]bool{
 		false, false, false, false, false,
 		false, false, false, false, false,
 		false, false, false, false, false,
@@ -81,33 +88,20 @@ func main () (out str) {
 	var row i32 = 1
 	var col i32 = 1
 
-	rules := ->{
-		if true {allow(? == ?)}
-		
-		if northWall $1.0 {reject(? == 1)}
-		if southWall $1.0 {reject(? == 2)}
-		if westWall  $1.0 {reject(? == 3)}
-		if eastWall  $1.0 {reject(? == 4)}
+	var target aff
+	var rules aff
 
-		if northWormhole $1.0 {allow(? == 1)}
-		if southWormhole $1.0 {allow(? == 2)}
-		if westWormhole  $1.0 {allow(? == 3)}
-		if eastWormhole  $1.0 {allow(? == 4)}
-	}
-	target := ->{pkg(main) fn(main) exp(robot)}
+	target = ->{pkg(main) fn(main) exp(robot)}	
 
-	var counter i32
-	for i32.lt(counter, 6) {
-		[]bool.write(wallMap, map2Dto1D(row, col, width), true)
-		[]bool.write(wormholeMap, map2Dto1D(row, col, width), false)
-		objs := robotObjects(row, col, width, wallMap, wormholeMap)
+	for c := 0; c < 6; c++ {
+		wallMap[map2Dto1D(row, col, width)] = true
+		wormholeMap[map2Dto1D(row, col, width)] = false
+		rules = getRules(row, col, width, wallMap, wormholeMap)
 
-		affs := aff.query(target, objs, rules)
-		str.print([]str.read(affs, 3))
+		affs := aff.query(target, rules)
 		aff.execute(target, affs, 0)
 	robot:
-		row, col := robot(row, col, 1)
-		counter = i32.add(counter, 1)
+		row, col = robot(row, col, 1)
 	}
 	
 	str.print("done.")

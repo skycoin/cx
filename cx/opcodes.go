@@ -587,6 +587,7 @@ func execNative(prgrm *CXProgram) {
 	case OP_LEN:
 	case OP_CONCAT:
 	case OP_APPEND:
+		op_append(expr, stack, fp)
 	case OP_COPY:
 	case OP_CAST:
 	case OP_EQ:
@@ -928,6 +929,8 @@ var OpNames map[int]string = map[int]string{
 
 	OP_ASSERT: "assert",
 
+	OP_APPEND: "append",
+
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
@@ -1164,6 +1167,9 @@ var OpCodes map[string]int = map[string]int{
 	"test.start": OP_TEST_START,
 	"test.stop":  OP_TEST_STOP,
 	"assert":       OP_ASSERT,
+
+	// slices
+	"append": OP_APPEND,
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
@@ -1403,6 +1409,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
 	OP_TEST_STOP:  MakeNative(OP_TEST_START, []int{}, []int{}),
 	OP_ASSERT:     MakeNative(OP_ASSERT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
+
+	// slices
+	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),

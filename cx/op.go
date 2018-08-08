@@ -33,11 +33,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
-			// if addObjectHeader {
-			// 	finalOffset += OBJECT_HEADER_SIZE
-			// 	addObjectHeader = false
-			// }
-			
 			for i, idxArg := range elt.Indexes {
 				var subSize int = 1
 				for _, len := range elt.Lengths[i+1:] {
@@ -48,40 +43,29 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.CustomType.Size
 				} else {
 					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
-					// fmt.Println("finalOffset", finalOffset)
 				}
 			}
 		case DEREF_FIELD:
 			elt = arg.Fields[fldIdx]
-			// fmt.Println("offset", elt.Name, elt.Offset)
 			finalOffset += elt.Offset
 			fldIdx++
 		case DEREF_POINTER:
 			addObjectHeader = true
 			for c := 0; c < elt.DereferenceLevels; c++ {
 				var offset int32
-
-				// o := GetFinalOffset(stack, fp, elt, MEM_READ)
-
 				var byts []byte
 
-				// switch elt.MemoryRead {
-				// case MEM_STACK:
-				// 	byts = stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
-				// case MEM_HEAP:
-				// 	byts = stack.Program.Heap.Heap[finalOffset + OBJECT_HEADER_SIZE : finalOffset+elt.Size + OBJECT_HEADER_SIZE]
-				// case MEM_DATA:
-				// 	byts = stack.Program.Data[finalOffset : finalOffset+elt.Size]
-					
-				// }
-				
 				byts = stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
-				
+
 				encoder.DeserializeAtomic(byts, &offset)
 
 				if offset != 0 {
-					finalOffset = int(offset) + OBJECT_HEADER_SIZE
-					// finalOffset = int(offset)
+					if arg.IsSlice {
+						finalOffset = int(offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
+					} else {
+						finalOffset = int(offset) + OBJECT_HEADER_SIZE
+					}
+					// finalOffset = int(offset) + OBJECT_HEADER_SIZE
 				} else {
 					finalOffset = 0
 				}
@@ -91,11 +75,6 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 			fmt.Println("update", arg.Name, finalOffset)
 		}
 	}
-
-	// if addObjectHeader {
-	// 	finalOffset += OBJECT_HEADER_SIZE
-	// 	fmt.Println("finalOffset", finalOffset)
-	// }
 
 	if memType == MEM_HEAP || memType == MEM_DATA {
 		// not sure if arg.MemoryRead or arg.MemoryWrite
@@ -317,6 +296,11 @@ func ReadByte(stack *CXStack, fp int, inp *CXArgument) (out byte) {
 	return
 }
 
+// maybe delete it
+func ReadSlice(stack *CXStack, fp int, inp *CXArgument) (int, int) {
+	return 0, 0
+}
+
 func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	
@@ -337,7 +321,6 @@ func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 			byts = stack.Stack[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		} else {
-			fmt.Println("dbg", byts, offset, inp.MemoryRead)
 			byts = stack.Program.Data[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		}
@@ -396,20 +379,7 @@ func WriteToStack(stack *CXStack, offset int, out []byte) {
 }
 
 func WriteToHeap(heap *CXHeap, offset int, out []byte) {
-	// size := encoder.Serialize(int32(len(out)))
-
-	// var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-	
-// for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-	// 	header[c] = size[c - 5]
-	// }
-
-	// for c := 0; c < OBJECT_HEADER_SIZE; c++ {
-	// 	(*heap).Heap[offset + c] = header[c]
-	// }
-
 	for c := 0; c < len(out); c++ {
-		// (*heap).Heap[offset + OBJECT_HEADER_SIZE + c] = out[c]
 		(*heap).Heap[offset+c] = out[c]
 	}
 }

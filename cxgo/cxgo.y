@@ -294,8 +294,6 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			// fmt.Printf("%+v\n", yylval)
-			// yyS[yypt-0].line = 0
 			DeclarePackage($2)
                 }
                 ;
@@ -310,13 +308,7 @@ import_declaration:
 function_header:
                 FUNC IDENTIFIER
                 {
-			// yylex.stack[len(yylex.stack) - 1].line = 0
-			// fmt.Printf("%+v\n", yylex)
-			// fmt.Println(reflect.TypeOf(*yylex))
-			// fmt.Printf("%+v\n", yyS[yypt-0])
-			// fmt.Println(yyS[yypt-0])
 			yylval.line = 0
-			// fmt.Printf("%+v\n", yylval.line)
 			$$ = FunctionHeader($2, nil, false)
 			InFn = true
                 }
@@ -1116,7 +1108,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {
-			if $1[len($1) - 1].Operator == nil {
+			if $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
 				$$ = nil
 			} else {
 				$$ = $1

@@ -124,6 +124,7 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
+	IsMethodCall bool
 	IsShortDeclaration bool
 	IsStructLiteral bool
 	IsArrayLiteral  bool
@@ -162,6 +163,7 @@ type CXArgument struct {
 	DereferenceOperations []int // offset by array index, struct field, pointer
 	DeclarationSpecifiers []int // used to determine finalSize
 
+	IsSlice      bool
 	IsArray      bool
 	IsArrayFirst bool // and then dereference
 	IsPointer    bool

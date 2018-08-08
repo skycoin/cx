@@ -16,15 +16,15 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-func MakeProgram(callStackSize int, stackSize int, initialHeapSize int) *CXProgram {
+func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
 		Packages:  make([]*CXPackage, 0),
-		CallStack: make([]CXCall, callStackSize, callStackSize),
+		CallStack: make([]CXCall, CALLSTACK_SIZE, CALLSTACK_SIZE),
 		Stacks:    make([]CXStack, 1, 1),
-		Heap:      MakeHeap(initialHeapSize),
+		Heap:      MakeHeap(INIT_HEAP_SIZE),
 	}
 
-	newPrgrm.Stacks[0] = MakeStack(stackSize)
+	newPrgrm.Stacks[0] = MakeStack(STACK_SIZE)
 	newPrgrm.Stacks[0].Program = newPrgrm
 
 	return newPrgrm

@@ -293,8 +293,11 @@ function_header:
 			if len($3) > 1 {
 				panic("method has multiple receivers")
 			}
+
+			fnName := $3[0].CustomType.Name + "." + $5
+
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				fn := MakeFunction($5)
+				fn := MakeFunction(fnName)
 				pkg.AddFunction(fn)
 
                                 fn.AddInput($3[0])

@@ -1194,7 +1194,6 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
 				} else {
-					fmt.Println("rrrrrrra")
 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d were provided",
 						expr.FileName, expr.FileLine, OpNames[expr.Operator.OpCode], len(expr.Operator.Inputs), len(argsRefs)))
 				}
@@ -1343,11 +1342,10 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 func (prgrm *CXProgram) RunCompiled() error {
 	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
-
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 		// initializing program resources
 		prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-
+		
 		if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
 			// *init function
 			mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
@@ -1505,7 +1503,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 						panic("implement the other mem types")
 					}
 				}
-
+				
 				// writing inputs to new stack frame
 				WriteToStack(
 					&prgrm.Stacks[0],

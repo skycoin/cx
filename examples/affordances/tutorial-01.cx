@@ -10,11 +10,9 @@ func main () {
   	foo3 = 3
 	
 	target := ->{
-  		pkg(main) fn(main) exp(message)
-  	}
+		pkg(main) fn(main) exp(message)
+	}
   	
-  	objs := ->{ obj1 $0.5 }
-	
   	rules := ->{
 		allow(* > 1.0D)
   	}
