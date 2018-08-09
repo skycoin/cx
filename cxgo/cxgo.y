@@ -211,7 +211,7 @@ stepping:       TSTEP INT_LITERAL INT_LITERAL
         ;
 
 selector:
-                SPACKAGE IDENTIFIER
+                SPACKAGE IDENTIFIER SEMICOLON
                 {
 			$<string>$ = Selector($2, SELECT_TYP_PKG)
                 }
@@ -243,18 +243,36 @@ selector:
 			// 	}
 			// }
                 }
-        /* |       SSTRUCT IDENT */
-        /*         { */
-	/* 		$<string>$ = Selector($2, SELECT_TYP_STRCT) */
-        /*         } */
-        /*         selectorFields */
-        /*         { */
-	/* 		if $<bool>4 { */
-	/* 			if _, err := cxt.SelectStruct($<string>3); err == nil { */
-	/* 				//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
-	/* 			} */
-	/* 		} */
-        /*         } */
+        |       SSTRUCT IDENTIFIER SEMICOLON
+                {
+			$<string>$ = Selector($2, SELECT_TYP_STRCT)
+                }
+        |       SSTRUCT IDENTIFIER
+                {
+			$<string>$ = Selector($2, SELECT_TYP_STRCT)
+                }
+                struct_fields
+                {
+			if len($4) > 0 {
+				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+					if strct, err := PRGRM.GetStruct($<string>3, pkg.Name); err == nil {
+						for _, fld := range $4 {
+							strct.AddField(fld)
+						}
+						// FunctionDeclaration(fn, nil, nil, nil)
+					} else {
+						panic(err)
+					}
+				} else {
+					panic(err)
+				}
+			}
+			/* if $<bool>4 { */
+			/* 	if _, err := PRGRM.SelectStruct($<string>3); err == nil { */
+			/* 		//fmt.Println(fmt.Sprintf("== Changed to struct '%s' ==", strct.Name)) */
+			/* 	} */
+			/* } */
+                }
         ;
 
 global_declaration:
@@ -359,7 +377,7 @@ parameter_declaration:
                 declarator declaration_specifiers
                 {
 			$2.Name = $1.Name
-			// $2.Package = $1.Package
+			$2.Package = $1.Package
 			$$ = $2
                 }
                 ;

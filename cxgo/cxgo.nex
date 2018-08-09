@@ -458,8 +458,8 @@ func repl () {
 		// fmt.Println()
 
 		if ReplTargetMod != "" {
-			fmt.Println(fmt.Sprintf(":package %s {...", ReplTargetMod))
-			fmt.Printf("\t* ")
+			fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
+			fmt.Printf("* ")
 		} else if ReplTargetFn != "" {
 			fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
 			fmt.Printf("\t* ")
@@ -475,10 +475,10 @@ func repl () {
 				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
 			}
 			if ReplTargetMod != "" {
-				inp = fmt.Sprintf(":package %s {%s}", ReplTargetMod, inp)
+				inp = fmt.Sprintf("%s", inp)
 			}
 			if ReplTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {%s}", ReplTargetStrct, inp)
+				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", ReplTargetStrct, inp)
 			}
 
 			// var numExprs int

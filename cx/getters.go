@@ -10,7 +10,7 @@ func (prgrm *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	if prgrm.CurrentPackage != nil {
 		return prgrm.CurrentPackage, nil
 	} else {
-		return nil, errors.New("current module is nil")
+		return nil, errors.New("current package is nil")
 	}
 }
 
@@ -24,11 +24,14 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 }
 
 func (prgrm *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	if prgrm.CurrentPackage != nil &&
-		prgrm.CurrentPackage.CurrentStruct != nil {
-		return prgrm.CurrentPackage.CurrentStruct, nil
+	if prgrm.CurrentPackage != nil {
+		if prgrm.CurrentPackage.CurrentStruct != nil {
+			return prgrm.CurrentPackage.CurrentStruct, nil
+		} else {
+			return nil, errors.New("current struct is nil")
+		}
 	} else {
-		return nil, errors.New("current module or struct is nil")
+		return nil, errors.New("current package is nil")
 	}
 }
 
@@ -42,11 +45,14 @@ func (mod *CXPackage) GetCurrentStruct() (*CXStruct, error) {
 }
 
 func (prgrm *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	if prgrm.CurrentPackage != nil &&
-		prgrm.CurrentPackage.CurrentFunction != nil {
-		return prgrm.CurrentPackage.CurrentFunction, nil
+	if prgrm.CurrentPackage != nil {
+		 if prgrm.CurrentPackage.CurrentFunction != nil {
+			 return prgrm.CurrentPackage.CurrentFunction, nil
+		 } else {
+			 return nil, errors.New("current function is nil")
+		 }
 	} else {
-		return nil, errors.New("current module or function is nil")
+		return nil, errors.New("current package is nil")
 	}
 }
 

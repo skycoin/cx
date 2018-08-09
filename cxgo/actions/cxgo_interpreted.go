@@ -538,7 +538,7 @@ func Selector(ident string, selTyp int) string {
 		if mod, err := PRGRM.GetCurrentPackage(); err == nil {
 			previousModule = mod
 		} else {
-			fmt.Println("A current module does not exist")
+			fmt.Println("a current package does not exist")
 		}
 		if _, err := PRGRM.SelectPackage(ident); err == nil {
 			//fmt.Println(fmt.Sprintf("== Changed to package '%s' ==", mod.Name))

@@ -1952,14 +1952,10 @@ func (prgrm *CXProgram) PrintProgram() {
 	// saving current program state because PrintProgram uses SelectXXX
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
-	} else {
-		panic(err)
 	}
 
 	if fn, err := prgrm.GetCurrentFunction(); err == nil {
 		currentFunction = fn
-	} else {
-		panic(err)
 	}
 
 	i := 0
@@ -1999,7 +1995,7 @@ func (prgrm *CXProgram) PrintProgram() {
 			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
 
 			for k, fld := range strct.Fields {
-				fmt.Printf("\t\t\t%d.- Field: %s %d\n",
+				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
 					k, fld.Name, fld.Typ)
 			}
 
@@ -2161,8 +2157,12 @@ func (prgrm *CXProgram) PrintProgram() {
 		i++
 	}
 
-	prgrm.SelectPackage(currentPackage.Name)
-	prgrm.SelectFunction(currentFunction.Name)
+	if currentPackage != nil {
+		prgrm.SelectPackage(currentPackage.Name)
+	}
+	if currentFunction != nil {
+		prgrm.SelectFunction(currentFunction.Name)
+	}
 
 	prgrm.CurrentPackage = currentPackage
 	currentPackage.CurrentFunction = currentFunction

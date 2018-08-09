@@ -6,8 +6,8 @@ type Point struct {
 }
 
 type Arrays struct {
-	ints []i32
-	floats []f32
+	ints [200000]i32
+	floats [200000]f32
 }
 
 type Structs struct {
@@ -32,9 +32,9 @@ func main () () {
           Arrays
         */
 
-	ints := []i32.make(200000)
-	floats := []f32.make(200000)
-	
+	var ints [200000]i32
+	var floats [200000]f32
+
 	var testArrays Arrays
 	testArrays = new Arrays{
 		ints: []i32{1, 2, 3},
@@ -81,39 +81,39 @@ func main () () {
 
 
 
-	// /*
-        //     Point
-        // */
+	/*
+            Point
+        */
 	
-	// // serialization only
-	// start := time.now()
-	// for c := 0; c < 100000; c++ {
-	// 	byts := Point.serialize(testPoint)
-	// 	//os.WriteFile(fileName, byts)
-	// }
-	// duration := time.now() - start
-	// f64.print(duration)
+	// serialization only
+	start := time.now()
+	for c := 0; c < 100000; c++ {
+		byts := Point.serialize(testPoint)
+		//os.WriteFile(fileName, byts)
+	}
+	duration := time.now() - start
+	f64.print(duration)
 
-	// // serialize + write
-	// start = time.now()
-	// for c := 0; c < 100000; c++ {
-	// 	byts := Point.serialize(testPoint)
-	// 	os.WriteFile(fileName, byts)
-	// }
+	// serialize + write
+	start = time.now()
+	for c := 0; c < 100000; c++ {
+		byts := Point.serialize(testPoint)
+		os.WriteFile(fileName, byts)
+	}
 
-	// duration = time.now() - start
-	// f64.print(duration)
+	duration = time.now() - start
+	f64.print(duration)
 
-	// // write only
-	// byts := Point.serialize(testPoint)
-	// start = time.now()
-	// d := 0
-	// for c := 0; c < 100000; c++ {
-	// 	os.WriteFile(fileName, byts)
-	// }
+	// write only
+	byts := Point.serialize(testPoint)
+	start = time.now()
+	d := 0
+	for c := 0; c < 100000; c++ {
+		os.WriteFile(fileName, byts)
+	}
 
-	// duration = time.now() - start
-	// f64.print(duration)
+	duration = time.now() - start
+	f64.print(duration)
 
 
 
