@@ -21,7 +21,7 @@ type TestStruct struct {
 	anotherStruct miniStruct
 }
 
-func testStructures () () {
+func testStructures () {
 	str.print("Running STRUCT Testing...")
 	
 	var mytest TestStruct

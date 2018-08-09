@@ -104,6 +104,7 @@
 /:rem/                    { return f(REM)        }
 /:step/                   { return f(STEP)       }
 /:tStep/                  { return f(TSTEP)      }
+/:tstep/                  { return f(TSTEP)      }
 /:pStep/                  { return f(PSTEP)      }
 /:aff/                    { return f(AFF)        }
 /package/                 { return f(PACKAGE)    }
@@ -207,7 +208,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.7"
+const VERSION = "0.5.8"
 
 var currentFileName string
 var insert bool
@@ -278,7 +279,7 @@ func unsafeEval (code string) (out string) {
 	lexer = NewLexer(b)
 	yyParse(lexer)
 
-	if err := PRGRM.RunCompiled(); err != nil {
+	if err := PRGRM.RunCompiled(0); err != nil {
 		PRGRM = MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
@@ -454,7 +455,7 @@ func repl () {
 		var inp string
 		var ok bool
 
-		fmt.Println()
+		// fmt.Println()
 
 		if ReplTargetMod != "" {
 			fmt.Println(fmt.Sprintf(":package %s {...", ReplTargetMod))
@@ -479,7 +480,6 @@ func repl () {
 			if ReplTargetStrct != "" {
 				inp = fmt.Sprintf(":struct %s {%s}", ReplTargetStrct, inp)
 			}
-
 
 			// var numExprs int
 			// var currFn string
@@ -755,22 +755,19 @@ func main () {
 		fn := MakeFunction("main")
 		mod.AddFunction(fn)
 
-		ReplTargetFn = "main"
+		ReplTargetFn = MAIN_FUNC
+	} else {
+		if _, err := PRGRM.GetFunction(MAIN_FUNC, MAIN_PKG); err == nil {
+			ReplTargetFn = MAIN_FUNC
+		} else {
+			// then it's a library, not an app
+		}
 	}
 
 	// adding *init function that initializes all the global variables
 	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
 		initFn := MakeFunction(SYS_INIT_FUNC)
 		main.AddFunction(initFn)
-
-		// if mainFn, err := PRGRM.GetFunction(MAIN_FUNC, MAIN_PKG); err == nil {
-		// 	// expr := MakeExpression(mainFn)
-		// 	// expr.Package = main
-		// 	// if we receive arguments from the OS, we'll add them here
-		// 	// sysInitExprs = append(sysInitExprs, expr)
-		// } else {
-		// 	panic(err)
-		// }
 
 		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
 		PRGRM.SelectFunction(MAIN_FUNC)
@@ -789,7 +786,7 @@ func main () {
 				repl()
 			}
 		} else {
-			if err := PRGRM.RunCompiled(); err != nil {
+			if err := PRGRM.RunCompiled(0); err != nil {
 				fmt.Println(err)
 				// repl()
 			}

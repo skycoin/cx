@@ -102,6 +102,7 @@
 /:rem/                    { return f(REM)        }
 /:step/                   { return f(STEP)       }
 /:tStep/                  { return f(TSTEP)      }
+/:tstep/                  { return f(TSTEP)      }
 /:pStep/                  { return f(PSTEP)      }
 /:aff/                    { return f(AFF)        }
 /package/                 { return f(PACKAGE)    }

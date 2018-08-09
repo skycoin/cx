@@ -221,19 +221,20 @@ selector:
                 }
                 compound_statement
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				if fn, err := PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
-					for _, expr := range $4 {
-						fn.AddExpression(expr)
+			if len($4) > 0 {
+				if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+					if fn, err := PRGRM.GetFunction($<string>3, pkg.Name); err == nil {
+						for _, expr := range $4 {
+							fn.AddExpression(expr)
+						}
+						FunctionDeclaration(fn, nil, nil, nil)
+					} else {
+						panic(err)
 					}
-					FunctionDeclaration(fn, nil, nil, nil)
 				} else {
 					panic(err)
 				}
-			} else {
-				panic(err)
 			}
-			
 			
 			// fmt.Println("house", $4)
 			// if $<bool>4 {

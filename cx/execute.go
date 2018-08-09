@@ -107,26 +107,52 @@ func (prgrm *CXProgram) ResetTo(stepNumber int) {
 	}
 }
 
+// func (prgrm *CXProgram) UnRun(nCalls int) {
+// 	if len(prgrm.Steps) > 0 && nCalls > 0 {
+// 		if nCalls > len(prgrm.Steps) {
+// 			nCalls = len(prgrm.Steps) - 1
+// 		}
+
+// 		reqStep := prgrm.Steps[len(prgrm.Steps)-nCalls]
+
+// 		newStep := MakeCallStack(len(reqStep))
+
+// 		var lastCall *CXCall
+// 		for j, call := range reqStep {
+// 			newCall := *MakeCallCopy(&call, call.Package, call.Program)
+// 			newCall.ReturnAddress = lastCall
+// 			lastCall = &newCall
+// 			newStep[j] = newCall
+// 		}
+
+// 		prgrm.CallStack = newStep
+// 		prgrm.Steps = prgrm.Steps[:len(prgrm.Steps)-nCalls]
+// 	}
+// }
+
 func (prgrm *CXProgram) UnRun(nCalls int) {
-	if len(prgrm.Steps) > 0 && nCalls > 0 {
-		if nCalls > len(prgrm.Steps) {
-			nCalls = len(prgrm.Steps) - 1
+	if nCalls >= 0 || prgrm.CallCounter < 0 {
+		return
+	}
+
+	call := &prgrm.CallStack[prgrm.CallCounter]
+	
+	for c := nCalls; c < 0; c++ {
+		if call.Line >= c {
+			// then we stay in this call counter
+			call.Line += c
+			c -= c
+		} else {
+			
+			if prgrm.CallCounter == 0 {
+				call.Line = 0
+				return
+			}
+			c += call.Line
+			call.Line = 0
+			prgrm.CallCounter--
+			call = &prgrm.CallStack[prgrm.CallCounter]
 		}
-
-		reqStep := prgrm.Steps[len(prgrm.Steps)-nCalls]
-
-		newStep := MakeCallStack(len(reqStep))
-
-		var lastCall *CXCall
-		for j, call := range reqStep {
-			newCall := *MakeCallCopy(&call, call.Package, call.Program)
-			newCall.ReturnAddress = lastCall
-			lastCall = &newCall
-			newStep[j] = newCall
-		}
-
-		prgrm.CallStack = newStep
-		prgrm.Steps = prgrm.Steps[:len(prgrm.Steps)-nCalls]
 	}
 }
 
@@ -1339,57 +1365,137 @@ func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
 	return nil
 }
 
-func (prgrm *CXProgram) RunCompiled() error {
+func (prgrm *CXProgram) ToCall () *CXExpression {
+	for c := prgrm.CallCounter - 1; c >= 0; c-- {
+		if prgrm.CallStack[c].Line + 1 >= len(prgrm.CallStack[c].Operator.Expressions) {
+			// then it'll also return from this function call; continue
+			continue
+		}
+		return prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[c].Line + 1]
+		// prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
+	}
+	// error
+	return &CXExpression{Operator: MakeFunction("")}
+	// panic("")
+}
+
+func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	var untilEnd bool
+	if nCalls == 0 {
+		untilEnd = true
+	}
+	
 	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 		// initializing program resources
-		prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-		
-		if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
-			// *init function
-			mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
-			prgrm.CallStack[0] = mainCall
-			prgrm.Stacks[0].StackPointer = fn.Size
+		// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 
-			var err error
+		if prgrm.CallStack[0].Operator == nil {
+			// then the program is just starting and we need to run the SYS_INIT_FUNC
+			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
+				// *init function
+				mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
+				prgrm.CallStack[0] = mainCall
+				prgrm.Stacks[0].StackPointer = fn.Size
 
-			for !prgrm.Terminated {
-				call := &prgrm.CallStack[prgrm.CallCounter]
-				err = call.ccall(prgrm)
-				if err != nil {
-					return err
+				var err error
+
+				for !prgrm.Terminated {
+					call := &prgrm.CallStack[prgrm.CallCounter]
+					err = call.ccall(prgrm)
+					if err != nil {
+						return err
+					}
 				}
+				// we reset call state
+				prgrm.Terminated = false
+				prgrm.CallCounter = 0
+				prgrm.CallStack[0].Operator = nil
+			} else {
+				return err
 			}
-			// we reset call state
-			prgrm.Terminated = false
-			prgrm.CallCounter = 0
-		} else {
-			return err
 		}
 
 		if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
 			if len(fn.Expressions) < 1 {
 				return nil
 			}
-			// main function
-			mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
 
-			// initializing program resources
-			prgrm.CallStack[0] = mainCall
-			// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-			prgrm.Stacks[0].StackPointer = fn.Size
+			if prgrm.CallStack[0].Operator == nil {
+				// main function
+				mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
+				// initializing program resources
+				prgrm.CallStack[0] = mainCall
+				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
+				prgrm.Stacks[0].StackPointer = fn.Size
+
+				prgrm.Terminated = false
+			}
 
 			var err error
 
-			for !prgrm.Terminated {
+			for !prgrm.Terminated && (untilEnd || nCalls != 0) {
 				call := &prgrm.CallStack[prgrm.CallCounter]
+
+				if !untilEnd {
+					var inName string
+					var toCallName string
+					var toCall *CXExpression
+
+					if call.Line >= call.Operator.Length && prgrm.CallCounter == 0 {
+						prgrm.Terminated = true
+						prgrm.CallStack[0].Operator = nil
+						prgrm.CallCounter = 0
+						fmt.Println("in:terminated")
+						return err
+					}
+
+					if call.Line >= call.Operator.Length && prgrm.CallCounter != 0 {
+						toCall = prgrm.ToCall()
+						// toCall = prgrm.CallStack[prgrm.CallCounter-1].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
+						inName = prgrm.CallStack[prgrm.CallCounter-1].Operator.Name
+					} else {
+						toCall = call.Operator.Expressions[call.Line]
+						inName = call.Operator.Name
+					}
+
+					if toCall.Operator == nil {
+						// then it's a declaration
+						toCallName = "declaration"
+					} else if toCall.Operator.IsNative {
+						toCallName = OpNames[toCall.Operator.OpCode]
+					} else {
+						if toCall.Operator.Name != "" {
+							toCallName = toCall.Operator.Package.Name + "." + toCall.Operator.Name
+						} else {
+							// then it's the end of the program got from nested function calls
+							prgrm.Terminated = true
+							prgrm.CallStack[0].Operator = nil
+							prgrm.CallCounter = 0
+							fmt.Println("in:terminated")
+							return err
+						}
+					}
+					
+					fmt.Printf("in:%s, expr#:%d, calling:%s()\n", inName, call.Line + 1, toCallName)
+					
+					nCalls--
+				}
+				
 				err = call.ccall(prgrm)
 				if err != nil {
 					return err
 				}
 			}
-			
+
+			if prgrm.Terminated {
+				prgrm.Terminated = false
+				prgrm.CallCounter = 0
+				prgrm.CallStack[0].Operator = nil
+			}
+
 			// debugging memory
 			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
 			// fmt.Println("prgrm.Heap", prgrm.Heap)
@@ -1404,8 +1510,6 @@ func (prgrm *CXProgram) RunCompiled() error {
 }
 
 func (call *CXCall) ccall(prgrm *CXProgram) error {
-	// GetAllObjects(prgrm)
-	// fmt.Println(prgrm.Stacks[0].Stack)
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*

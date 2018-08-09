@@ -170,6 +170,12 @@ external_declaration:
         |       function_declaration
         |       import_declaration
         |       struct_declaration
+
+        |       stepping
+        ;
+
+stepping:       TSTEP INT_LITERAL INT_LITERAL
+        |       STEP INT_LITERAL
         ;
 
 global_declaration:

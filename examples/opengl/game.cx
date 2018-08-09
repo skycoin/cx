@@ -45,9 +45,9 @@ var foreground [196]i32 = [196]i32{
 	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
 	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8}
 
-var vertexShaderSource str
+// var vertexShaderSource str
 
-var fragmentShaderSource str
+// var fragmentShaderSource str
 
 var width i32 = 600
 var height i32 = 600
@@ -634,7 +634,10 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 var p1x i32 = 1
 var p1y i32 = 1
 
-func main () () {
+func main () {
+	var vertexShaderSource str
+	var fragmentShaderSource str
+	
 	vertexShaderSource = "
           #version 120
           void main() {
@@ -652,50 +655,50 @@ func main () () {
 	str.print(vertexShaderSource)
 
 	
-	initGlfw("window")
-	var program i32
-	program = initOpenGL()
+	// initGlfw("window")
+	// var program i32
+	// program = initOpenGL()
 
-	glfw.SetKeyCallback("window", "charActions")
+	// glfw.SetKeyCallback("window", "charActions")
 
-	// var stop bool
-	// stop = bool.not(glfw.ShouldClose("window"))
+	// // var stop bool
+	// // stop = bool.not(glfw.ShouldClose("window"))
 
-	var lSize i32
-	lSize = i32.mul(size, size)
+	// var lSize i32
+	// lSize = i32.mul(size, size)
 
-	setupScene()
+	// setupScene()
 	
-	for bool.not(glfw.ShouldClose("window")) {
-		// gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-		// gl.Clear(i32.bitor(16384, 256))
-		// gl.Clear(3131)
-		// gl.Clear(3131)
+	// for bool.not(glfw.ShouldClose("window")) {
+	// 	// gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	// 	// gl.Clear(i32.bitor(16384, 256))
+	// 	// gl.Clear(3131)
+	// 	// gl.Clear(3131)
 
-		var c i32
-		var x i32
-		var y i32
-		var idxB i32
-		var idxF i32
+	// 	var c i32
+	// 	var x i32
+	// 	var y i32
+	// 	var idxB i32
+	// 	var idxF i32
 		
-		for c = 0; i32.lt(c, lSize); c = i32.add(c, 1) {
-			x, y = map1Dto2D(c, size)
+	// 	for c = 0; i32.lt(c, lSize); c = i32.add(c, 1) {
+	// 		x, y = map1Dto2D(c, size)
 			
-			idxB = background[c]
-			idxF = foreground[c]
-			drawTile(x, y, getSprite(idxB))
-			drawTile(x, y, getSprite(idxF))
-		}
+	// 		idxB = background[c]
+	// 		idxF = foreground[c]
+	// 		drawTile(x, y, getSprite(idxB))
+	// 		drawTile(x, y, getSprite(idxF))
+	// 	}
 
-		//drawTile(3, 0, tex_pack, sp_brown_wall_lr)
-		drawChar(p1x, p1y, tex_characters, sp_knight1)
-		//drawTile(3, 3, getSprite(40))
+	// 	//drawTile(3, 0, tex_pack, sp_brown_wall_lr)
+	// 	drawChar(p1x, p1y, tex_characters, sp_knight1)
+	// 	//drawTile(3, 3, getSprite(40))
 		
 
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
+	// 	glfw.PollEvents()
+	// 	glfw.SwapBuffers("window")
 		
 
-		// stop = bool.not(glfw.ShouldClose("window"))
-	}
+	// 	// stop = bool.not(glfw.ShouldClose("window"))
+	// }
 }
