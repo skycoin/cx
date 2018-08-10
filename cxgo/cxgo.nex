@@ -729,6 +729,7 @@ func main () {
 		
 		// cxgo0.Parse(allSC)
 		for i, source := range sourceCodeCopy {
+			source = source + "\n"
 			if len(fileNames) > 0 {
 				cxgo0.CurrentFileName = fileNames[i]
 			}
@@ -741,6 +742,7 @@ func main () {
 
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
+		source = source + "\n"
 		LineNo = 1
 		b := bytes.NewBufferString(source)
 		if len(fileNames) > 0 {
