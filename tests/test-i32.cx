@@ -56,7 +56,7 @@ func I32RelationalFunctions() () {
 	assert(i32.uneq(5, 5), false, "I32 Inequality error")
 	assert(i32.gt(5, 10), false, "I32 Greater error")
 	assert(i32.gteq(15, 10), true, "I32 Greater And Equal error")
-	assert(i32.lt(5, 10), true, "I32 Lesser error")
+	assert(i32.lt(5, 10), true, "I32 Lesser than error")
 	assert(i32.lteq(10, 6), false, "I32 Lesser Or Equal error")
 }
 

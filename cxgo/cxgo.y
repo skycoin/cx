@@ -606,7 +606,7 @@ slice_literal_expression:
 			if InterpretMode {
 				$$ = BasicArrayLiteralDeclaration(TypeNames[$3], $5, yyS[yypt-0].line + 1, false)
 			} else {
-				$$ = ArrayLiteralExpression(int(SLICE_SIZE), $3, $5)
+				$$ = SliceLiteralExpression($3, $5)
 			}
                 }
         |       LBRACK RBRACK type_specifier LBRACE RBRACE
@@ -654,7 +654,7 @@ infer_action_arg:
         ;
 
 infer_action:
-		IDENTIFIER LPAREN infer_action_arg RPAREN
+		IDENTIFIER LPAREN infer_action_arg RPAREN SEMICOLON
                 {
 			$$ = append($3, $1)
                 }
@@ -673,7 +673,7 @@ infer_actions:
                 ;
 
 infer_target:
-                IDENTIFIER LPAREN IDENTIFIER RPAREN
+                IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
                 {
 			$$ = []string{$3, $1}
                 }
@@ -694,7 +694,14 @@ infer_targets:
 infer_clauses:
                 infer_actions
                 {
-			$$ = nil
+			var exprs []*CXExpression
+			for _, str := range $1 {
+				expr := WritePrimary(TYPE_STR, encoder.Serialize(str), false)
+				expr[len(expr) - 1].IsArrayLiteral = true
+				exprs = append(exprs, expr...)
+			}
+			
+			$$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
                 }
         |       infer_targets
                 {

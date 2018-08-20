@@ -6,10 +6,6 @@ import (
 	// "encoding/json"
 )
 
-func GetStructObj() {
-	
-}
-
 func GetAllObjects(prgrm *CXProgram) {
 	fp := 0
 	

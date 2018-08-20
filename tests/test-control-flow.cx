@@ -1,6 +1,6 @@
 package testing
 
-func testControlFlow () () {
+func testControlFlow () {
 	str.print("Running IF Testing...")
 	str.print("--------IF Block testing--------")
 

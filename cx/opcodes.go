@@ -196,6 +196,13 @@ const (
 	OP_TIME_UNIX_MILLI
 	OP_TIME_UNIX_NANO
 
+	// affordances
+	OP_AFF_PRINT
+	OP_AFF_QUERY
+
+	// serialize
+	OP_S_PROGRAM
+
 	// opengl
 	OP_GL_INIT
 	OP_GL_CREATE_PROGRAM
@@ -272,6 +279,9 @@ const (
 	
 	// http
 	OP_HTTP_GET
+
+	// object explorer
+	OP_OBJ_QUERY
 )
 
 func execNative(prgrm *CXProgram) {
@@ -621,6 +631,11 @@ func execNative(prgrm *CXProgram) {
 	case OP_TIME_UNIX_NANO:
 		op_time_UnixNano(expr, stack, fp)
 
+	case OP_AFF_PRINT:
+		op_aff_print(expr, stack, fp)
+	case OP_AFF_QUERY:
+		op_aff_query(expr, stack, fp)
+		
 		// opengl
 	case OP_GL_INIT:
 		op_gl_Init()
@@ -931,6 +946,9 @@ var OpNames map[int]string = map[int]string{
 
 	OP_APPEND: "append",
 
+	OP_AFF_PRINT: "aff.print",
+	OP_AFF_QUERY: "aff.query",
+
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
@@ -1170,6 +1188,9 @@ var OpCodes map[string]int = map[string]int{
 
 	// slices
 	"append": OP_APPEND,
+
+	"aff.print": OP_AFF_PRINT,
+	"aff.query": OP_AFF_QUERY,
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
@@ -1412,6 +1433,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	// slices
 	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
+
+	OP_AFF_PRINT:  MakeNative(OP_AFF_PRINT, []int{TYPE_STR, TYPE_STR}, []int{}),
+	OP_AFF_QUERY:  MakeNative(OP_AFF_QUERY, []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),

@@ -280,8 +280,6 @@ func op_len(expr *CXExpression, stack *CXStack, fp int) {
 
 func op_append(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-
-	
 	
 	inp1Offset := GetFinalOffset(stack, fp, inp1, MEM_READ)
 	inp2Offset := GetFinalOffset(stack, fp, inp2, MEM_READ)
@@ -323,8 +321,18 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 		var obj2 []byte
 		
 		obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
+
+		// obj2 = ReadMemory(stack, inp2Offset, inp2)
 		
-		obj2 = ReadMemory(stack, inp2Offset, inp2)
+		if inp2.Type == TYPE_STR {
+			// obj2 = []byte(ReadStr(stack, inp2Offset, inp2))
+			obj2 = encoder.SerializeAtomic(int32(inp2Offset))
+		} else {
+			obj2 = ReadMemory(stack, inp2Offset, inp2)
+		}
+		
+
+		// fmt.Println("obj2", ReadStr(stack, inp2Offset, inp2))
 
 		var size []byte
 		if inp1Offset != 0 {

@@ -138,6 +138,7 @@ func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	expr.Function = fn
 	fn.Expressions = append(fn.Expressions, expr)
 	fn.CurrentExpression = expr
+	fn.Length++
 	return fn
 }
 
@@ -168,18 +169,22 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 		fn.Outputs = append(fn.Outputs, param)
 	}
 
+	param.Package = fn.Package
+
 	return fn
 }
 
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)
+	param.Package = expr.Package
 	return expr
 }
 
 func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Outputs = append(expr.Outputs, param)
+	param.Package = expr.Package
 	return expr
 }
 

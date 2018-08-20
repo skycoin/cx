@@ -166,10 +166,7 @@ if [ ! $? -eq 0 ]; then
     exit 0
 fi
 
-# go build -o build/wiki wiki.go 
-
-# go build -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo github.com/skycoin/cx/cxgo/
-go build -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+go build -tags opengl -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
 if [ $? -eq 0 ]; then
     echo "OK:\tCX was compiled successfully"
 else

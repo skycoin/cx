@@ -1,29 +1,36 @@
 package main
 
 func realFn (n f64) (out f64) {
-	out = f64.add(f64.mul(n, n), n)
+	out = n * n + n
 }
 
 func simFn (n f64) (out f64) {}
 
 func main () (out f64) {
-	numPoints := 21
-	inps := []f64.make(numPoints)
-	outs := []f64.make(numPoints)
+	var numPoints i32
+	var inps []f64
+	var outs []f64
 	
-	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
-		inps = []f64.write(inps, c, f64.sub(i32.f64(c), i32.f64(10)))
+	var c i32
+	
+	for c = 0; c < numPoints; c++ {
+		inps = append(inps, i32.f64(c) - 10.0D)
 	}
 
-	for c := 0; i32.lt(c, numPoints); c = i32.add(c, 1) {
-		outs = []f64.write(outs, c, realFn([]f64.read(inps, c)))
+	for c = 0; c < numPoints; c++ {
+		outs = append(outs, realFn(inps[c]))
 	}
 	
-	evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1))
+	var target aff
+	target = ->{pkg(main) fn(realFn)}
+	
+	var fnBag aff
+	fnBag = ->{fn(f64.add) fn(f64.mul) fn(f64.sub)}
+	
+	evolve(target, fnBag, inps, outs, 5, 100, 0.1D)
 
 	str.print("Testing evolved solution")
-	for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
-		f64.print(simFn([]f64.read(inps, c)))
+	for c = 0; c < numPoints; c++ {
+		printf("%f\n", simFn(inps[c]))
 	}
 }
-

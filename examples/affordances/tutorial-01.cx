@@ -1,24 +1,45 @@
 package main
 
 func main () {
-	var foo1 i32
-	var foo2 i32
-	var foo3 i32
+	// var foo1 i32
+	// var foo2 i32
+	// var foo3 i32
 	
-  	foo1 = 1
-  	foo2 = 2
-  	foo3 = 3
+  	// foo1 = 1
+  	// foo2 = 2
+  	// foo3 = 3
+
+	var target []str
+	var rules []str
+
+	target = append(target, "hellooooo")
+	target = append(target, "hi")
+
+	// var foo []i32
+	// foo = append(foo, 5)
+	// foo = []i32{1, 2, 3, 4}
+	// i32.print(foo[0])
+
+	// target = append(target, "hello")
+
+
 	
-	target := ->{
-		pkg(main) fn(main) exp(message)
-	}
+	// target = [0]str{"hi", "hello"}
+	
+	// target = ->{
+	// 	pkg(main)
+	// 	fn(main)
+	// 	expr(message)
+	// }
   	
-  	rules := ->{
-		allow(* > 1.0D)
-  	}
+  	// rules = ->{
+	// 	allow(* > 1.0D)
+  	// }
+
+	// str.print(target[0])
 	
-  	affs := aff.query(target, objs, rules)
-  	aff.print(affs)
+  	// affs := aff.query(target, rules)
+  	// aff.print(affs)
 	
 message:
   	i32.print(0)

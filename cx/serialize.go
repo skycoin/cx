@@ -211,7 +211,7 @@ package base
 // 	NameOffset 			int32
 // 	NameSize 			int32
 // 	TypeOffset 			int32
-// 	CustomTypeOffset 	int32
+// 	CustomTypeOffset         	int32
 // 	Size 				int32
 // 	TotalSize 			int32
 // 	PointeeSize 		int32
@@ -1336,8 +1336,6 @@ package base
 // 	return &serialized
 // }
 
-
-// //Incomplete
 // func Deserialize (prgrm *[]byte) *CXProgram {
 // 	cxt := CXProgram{}
 

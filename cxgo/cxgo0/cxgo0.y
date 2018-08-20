@@ -431,7 +431,7 @@ declaration_specifiers:
 				pointer.TotalSize = TYPE_POINTER_SIZE
 				pointer.Pointee = pointee
 			}
-			
+
 			$$ = $2
                 }
         |       LBRACK RBRACK declaration_specifiers
@@ -614,7 +614,7 @@ infer_action_arg:
         ;
 
 infer_action:
-		IDENTIFIER LPAREN infer_action_arg RPAREN
+		IDENTIFIER LPAREN infer_action_arg RPAREN SEMICOLON
         ;
 
 infer_actions:
@@ -623,7 +623,7 @@ infer_actions:
                 ;
 
 infer_target:
-                IDENTIFIER LPAREN IDENTIFIER RPAREN
+                IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
         ;
 
 infer_targets:

@@ -400,7 +400,7 @@ func aff_query(target, objects, rules *CXArgument, expr *CXExpression, call *CXC
 				prevStrct = strct.Name
 			}
 		}
-
+		
 		stack = nil
 		var targetTyp string // strct, expr, etc
 		for _, t := range _target {
@@ -420,7 +420,7 @@ func aff_query(target, objects, rules *CXArgument, expr *CXExpression, call *CXC
 				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
 				stack = stack[:len(stack)-1]
-			case "exp":
+			case "expr":
 				obj := stack[len(stack)-1]
 
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
@@ -429,7 +429,7 @@ func aff_query(target, objects, rules *CXArgument, expr *CXExpression, call *CXC
 						if expr.Label == obj {
 							fn.SelectExpression(expr.Line)
 							found = true
-							targetTyp = "exp"
+							targetTyp = "expr"
 							break
 						}
 					}
@@ -470,7 +470,7 @@ func aff_query(target, objects, rules *CXArgument, expr *CXExpression, call *CXC
 			if strct, err := call.Program.GetCurrentStruct(); err == nil {
 				affs = strct.GetAffordances()
 			}
-		case "exp":
+		case "expr":
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
 				lastArg := expr.Inputs[len(expr.Inputs)-1]
 				expr.RemoveInput()
@@ -865,7 +865,7 @@ func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *
 				call.Program.SelectStruct(obj)
 				targetTyp = "strct"
 				stack = stack[:len(stack)-1]
-			case "exp":
+			case "expr":
 				obj := stack[len(stack)-1]
 
 				if fn, err := call.Program.GetCurrentFunction(); err == nil {
@@ -874,7 +874,7 @@ func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *
 						if expr.Label == obj {
 							fn.SelectExpression(expr.Line)
 							found = true
-							targetTyp = "exp"
+							targetTyp = "expr"
 							break
 						}
 					}
@@ -903,7 +903,7 @@ func aff_execute(target, commands, index *CXArgument, expr *CXExpression, call *
 			// if strct, err := call.Program.GetCurrentStruct(); err == nil {
 
 			// }
-		case "exp":
+		case "expr":
 			if expr, err := call.Program.GetCurrentExpression(); err == nil {
 				// one CX object can have different types of affordances
 				switch op {

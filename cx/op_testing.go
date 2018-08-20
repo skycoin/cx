@@ -7,6 +7,7 @@ import (
 
 func op_assert_value(expr *CXExpression, stack *CXStack, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	
 
 	var byts1, byts2 []byte
 	
