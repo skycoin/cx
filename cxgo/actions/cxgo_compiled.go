@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -289,16 +289,20 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		// arg.MemoryWrite = MEM_HEAP
 		arg.PassBy = PASSBY_REFERENCE
 		// arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
+
 		arg.Lengths = append([]int{0}, arg.Lengths...)
+		// arg.TotalSize = TYPE_POINTER_SIZE
+		arg.TotalSize = arg.Size
 		arg.Size = TYPE_POINTER_SIZE
-		arg.TotalSize = TYPE_POINTER_SIZE
+		
+		
 
 		// // we simulate we're writing a str
 		// slc := make([]byte, arg.TotalSize + SLICE_HEADER_SIZE)
 		// WritePrimary(TYPE_STR, slc, false)
 
-		byts := make([]byte, arg.TotalSize)
-		arg.Value = &byts
+		// byts := make([]byte, arg.TotalSize)
+		// arg.Value = &byts
 
 		return arg
 	case DECL_BASIC:
@@ -889,11 +893,11 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 
 	val := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(1)), false)
 
+	expr.Package = pkg
+
 	expr.AddInput(prevExprs[len(prevExprs)-1].Outputs[0])
 	expr.AddInput(val[len(val)-1].Outputs[0])
 	expr.AddOutput(prevExprs[len(prevExprs)-1].Outputs[0])
-
-	expr.Package = pkg
 
 	exprs := append(prevExprs, expr)
 	return exprs
@@ -2096,7 +2100,6 @@ func ProcessSliceAssignment(expr *CXExpression) {
 		expr.Inputs[0].DereferenceOperations = expr.Inputs[0].DereferenceOperations[1:]
 		expr.Inputs[0].MemoryRead = MEM_STACK
 		expr.Outputs[0].MemoryRead = MEM_STACK
-		fmt.Println("houhou", expr.Inputs[0].DereferenceOperations, expr.Outputs[0].DereferenceOperations)
 	}
 }
 

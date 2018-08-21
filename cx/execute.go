@@ -1380,7 +1380,7 @@ func (prgrm *CXProgram) ToCall () *CXExpression {
 }
 
 func (prgrm *CXProgram) RunCompiled(nCalls int) error {
-	prgrm.PrintProgram()
+	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var untilEnd bool
@@ -1497,9 +1497,9 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			}
 
 			// debugging memory
-			fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			fmt.Println("prgrm.Heap", prgrm.Heap)
-			fmt.Println("prgrm.Data", prgrm.Data)
+			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
+			// fmt.Println("prgrm.Heap", prgrm.Heap)
+			// fmt.Println("prgrm.Data", prgrm.Data)
 			return err
 		} else {
 			return err

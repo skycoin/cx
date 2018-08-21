@@ -1,5 +1,4 @@
 package testing
-// package main
 
 type miniStruct struct {
 	mInt i32
@@ -27,7 +26,6 @@ var gi64Ptr *i64
 
 
 func testPointers () {
-// func main () {
 	str.print("Running Pointer Testing...")
 	
 	var li32Ptr *i32
@@ -50,10 +48,6 @@ func testPointers () {
 	assert(*gi32Ptr, 15, "")
 	assert(*gi64Ptr, 55L, "")
 
-
-
-
-	
 
 	// var pStrct1 *TestStruct
 	// var pStrct2 *TestStruct

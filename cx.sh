@@ -133,7 +133,7 @@ if [ ! -d "$INSTALLATION_PATH/src/github.com/skycoin/cx/" ]; then
     fi
 fi
 
-git pull origin master
+#git pull origin master
 
 if [ -f "$INSTALLATION_PATH/bin/cx" ]
 then

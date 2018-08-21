@@ -39,11 +39,23 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 					subSize *= len
 				}
 
+				var sizeToUse int
 				if arg.CustomType != nil {
-					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.CustomType.Size
+					sizeToUse = arg.CustomType.Size
+				} else if elt.IsSlice {
+					sizeToUse = elt.TotalSize
 				} else {
-					finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+					sizeToUse = elt.Size
 				}
+				
+				// if arg.CustomType != nil {
+				// 	// finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * arg.CustomType.Size
+				// 	finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * sizeToUse
+				// } else {
+				// 	// finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * elt.Size
+				// 	finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * sizeToUse
+				// }
+				finalOffset += int(ReadI32(stack, fp, idxArg)) * subSize * sizeToUse
 			}
 		case DEREF_FIELD:
 			elt = arg.Fields[fldIdx]

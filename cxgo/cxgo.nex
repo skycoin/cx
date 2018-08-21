@@ -665,7 +665,7 @@ func main () {
 					fiName := file.Name()
 					fiNameLen := len(fiName)
 					
-					if fiNameLen > 2 && fiName[fiNameLen - 2:] == "cx" {
+					if fiNameLen > 2 && fiName[fiNameLen - 3:] == ".cx" {
 						// only loading .cx files
 						sourceCode = append(sourceCode, file)
 						fileNames = append(fileNames, fiName)

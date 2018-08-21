@@ -15,6 +15,7 @@ func main () {
 
 	testing.testSTR()
 	testing.testPointers()
+	testing.testSlices()
 	// implement parse byte functions and other stuff
 	//testing.testBYTE()
 }
