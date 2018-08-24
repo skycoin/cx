@@ -1,7 +1,7 @@
 package actions
 
 import (
-	// "fmt"
+	"fmt"
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -497,7 +497,16 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	slcVarExpr.Package = pkg
 	slcVar := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 	slcVar = DeclarationSpecifiers(slcVar, 0, DECL_SLICE)
-	slcVarExpr.AddOutput(slcVar)
+	// slcVarExpr.AddOutput(slcVar)
+
+	slcVar.TotalSize = slcVar.Size
+	slcVar.Size = TYPE_POINTER_SIZE
+	
+	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
+	slcVar.Package = pkg
+	
+	// slcVar.TotalSize = slcVar.Size
+	// slcVar.Size = TYPE_POINTER_SIZE
 
 	result = append(result, slcVarExpr)
 
@@ -550,8 +559,16 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 			result = append(result, symExpr)
 
 			// sym.Lengths = append(sym.Lengths, int($2))
-			symInp.TotalSize = symInp.Size * TotalLength(symInp.Lengths)
-			symOut.TotalSize = symOut.Size * TotalLength(symOut.Lengths)
+			// symInp.TotalSize = symInp.Size * TotalLength(symInp.Lengths)
+			// symOut.TotalSize = symOut.Size * TotalLength(symOut.Lengths)
+
+			symInp.TotalSize = symInp.Size
+			symInp.Size = TYPE_POINTER_SIZE
+
+			symOut.TotalSize = symOut.Size
+			symOut.Size = TYPE_POINTER_SIZE
+
+			fmt.Println("wut", symExpr.Inputs[1].TotalSize, symExpr.Inputs[1].Size, len(symExpr.Inputs))
 		} else {
 			result = append(result, expr)
 		}
@@ -563,7 +580,7 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	symOutput.PassBy = PASSBY_REFERENCE
 	// symOutput.IsSlice = true
 	symOutput.Package = pkg
-	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
+	// symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	// symOutput.DeclarationSpecifiers = append(symOutput.DeclarationSpecifiers, DECL_ARRAY)
 
@@ -571,7 +588,15 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	// symInput.IsSlice = true
 	symInput.Package = pkg
 	symInput.PassBy = PASSBY_REFERENCE
-	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
+	// symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
+
+	symInput.TotalSize = symInput.Size
+	symInput.Size = TYPE_POINTER_SIZE
+
+	symOutput.TotalSize = symOutput.Size
+	symOutput.Size = TYPE_POINTER_SIZE
+
+	// fmt.Println("house", symInput.Name, symInput.TotalSize, symOutput.TotalSize, symInput.Size, symInput.Size)
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
@@ -2037,6 +2062,9 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 		GetGlobalSymbol(symbols, sym.Package, sym.Name)
 
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
+			if sym.Name == "*lcl_251" {
+				fmt.Println("bye", sym.TotalSize, sym.Size)
+			}
 			if shouldExist {
 				// it should exist. error
 				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
@@ -2161,6 +2189,10 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 	}
 
 	for _, expr := range fn.Expressions {
+		if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
+			fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
+		}
+		
 		// ProcessShortDeclaration(expr)
 		for _, inp := range expr.Inputs {
 			if inp.IsLocalDeclaration {
@@ -2170,10 +2202,16 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 
 			UpdateSymbolsTable(&symbols, inp, &offset, false)
 			ProcessMethodCall(expr, &symbols, inp, &offset, true)
+			// if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
+			// 	fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
+			// }
 			GiveOffset(&symbols, inp, &offset, true)
+
+			
 			
 			// we only need the input to be processed by GiveOffset to call ProcessMethodCall
 			// ProcessMethodCall(expr)
+			
 			SetFinalSize(&symbols, inp)
 			ProcessInputSlice(inp)
 
@@ -2213,6 +2251,11 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 
 	// checking if assigning pointer to pointer
 	for _, expr := range fn.Expressions {
+
+		// if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
+		// 	fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
+		// }
+		
 		if expr.Operator == Natives[OP_IDENTITY] {
 			for i, out := range expr.Outputs {
 				if out.IsPointer && expr.Inputs[i].IsPointer {
