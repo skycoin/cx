@@ -1,9 +1,11 @@
 package testing
 
 func testSlices () {
-	// str.print("Running Slices Testing...")
+	str.print("Running Slices Testing...")
 
-	// str.print("--------Append testing--------")
+	str.print("--------Append testing--------")
+
+	
 	var slc []i32
 	slc = append(slc, 11)
 	slc = append(slc, 12)
@@ -55,7 +57,7 @@ func testSlices () {
 	assert(num, 26, "")
 	assert(num, slc4[5], "")
 
-	// str.print("--------Different native types testing--------")
+	str.print("--------Different native types testing--------")
 
 	var slc5 []f32
 	slc5 = append(slc5, 1.1)
@@ -114,10 +116,48 @@ func testSlices () {
 	assert(slc8[1], false, "")
 	assert(slc8[2], true, "")
 
-	slc8 = []bool{false, true, true, true}
+	slc8 = []bool{false, true, true, true, false, true}
 	
-	// assert(slc8[0], false, "")
-	// assert(slc8[1], true, "")
-	// assert(slc8[2], true, "")
-	// assert(slc8[3], true, "")
+	assert(slc8[0], false, "")
+	assert(slc8[1], true, "")
+	assert(slc8[2], true, "")
+	assert(slc8[3], true, "")
+	assert(slc8[4], false, "")
+	assert(slc8[5], true, "")
+
+	var slc10 []bool
+	slc10 = append(slc10, true)
+	slc10 = append(slc10, false)
+	slc10 = append(slc10, true)
+
+	assert(slc10[0], true, "")
+	assert(slc10[1], false, "")
+	assert(slc10[2], true, "")
+
+	slc10 = []bool{false, true, true, true, false, true}
+	
+	assert(slc10[0], false, "")
+	assert(slc10[1], true, "")
+	assert(slc10[2], true, "")
+	assert(slc10[3], true, "")
+	assert(slc10[4], false, "")
+	assert(slc10[5], true, "")
+	
+	// var slc9 []byte
+	// slc9 = append(slc9, 15B)
+	// slc9 = append(slc9, 20B)
+	// slc9 = append(slc9, 35B)
+
+	// assert(slc9[0], 15B, "")
+	// assert(slc9[1], 20B, "")
+	// assert(slc9[2], 35B, "")
+
+	// slc9 = []byte{90B, 95B, 100B, 105B, 110B, 115B}
+	
+	// assert(slc9[0], 90B, "")
+	// assert(slc9[1], 95B, "")
+	// assert(slc9[2], 100B, "")
+	// assert(slc9[3], 105B, "")
+	// assert(slc9[4], 110B, "")
+	// assert(slc9[5], 115B, "")
 }

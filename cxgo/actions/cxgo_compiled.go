@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	// "fmt"                                                                                                                                                                               
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -495,18 +495,16 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	// adding the declaration
 	slcVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	slcVarExpr.Package = pkg
-	slcVar := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
+	slcVar := MakeArgument(symName, CurrentFile, LineNo)
 	slcVar = DeclarationSpecifiers(slcVar, 0, DECL_SLICE)
+	slcVar.AddType(TypeNames[typSpec])
 	// slcVarExpr.AddOutput(slcVar)
 
 	slcVar.TotalSize = slcVar.Size
 	slcVar.Size = TYPE_POINTER_SIZE
-	
+
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
 	slcVar.Package = pkg
-	
-	// slcVar.TotalSize = slcVar.Size
-	// slcVar.Size = TYPE_POINTER_SIZE
 
 	result = append(result, slcVarExpr)
 
@@ -567,8 +565,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 
 			symOut.TotalSize = symOut.Size
 			symOut.Size = TYPE_POINTER_SIZE
-
-			fmt.Println("wut", symExpr.Inputs[1].TotalSize, symExpr.Inputs[1].Size, len(symExpr.Inputs))
 		} else {
 			result = append(result, expr)
 		}
@@ -595,8 +591,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 
 	symOutput.TotalSize = symOutput.Size
 	symOutput.Size = TYPE_POINTER_SIZE
-
-	// fmt.Println("house", symInput.Name, symInput.TotalSize, symOutput.TotalSize, symInput.Size, symInput.Size)
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
@@ -1264,6 +1258,18 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	return
 }
 
+func IsStrNil (byts []byte) bool {
+	if len(byts) != 4 {
+		return false
+	}
+	for _, byt := range byts {
+		if byt != byte(0) {
+			return false
+		}
+	}
+	return true
+}
+
 // Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
@@ -1291,10 +1297,18 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 
 			obj := append(header, byts...)
 
-			
-			heapOffset := AllocateSeq(PRGRM, len(byts)+OBJECT_HEADER_SIZE)
-			arg.HeapOffset = heapOffset
+			var heapOffset int
+			// isStrNil := IsStrNil(byts)
+			// if !isStrNil {
+			// 	heapOffset = AllocateSeq(PRGRM, len(byts)+OBJECT_HEADER_SIZE)
+			// 	arg.HeapOffset = heapOffset
+			// } else {
+			// 	arg.HeapOffset = 0
+			// }
 
+			heapOffset = AllocateSeq(PRGRM, len(byts)+OBJECT_HEADER_SIZE)
+			arg.HeapOffset = heapOffset
+			
 			if isGlobal {
 				arg.MemoryRead = MEM_DATA
 				arg.Offset = DataOffset
@@ -1308,6 +1322,9 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 			arg.MemoryWrite = MEM_HEAP
 
 			WriteToHeap(&PRGRM.Heap, heapOffset, obj)
+			// if !isStrNil {
+			// 	WriteToHeap(&PRGRM.Heap, heapOffset, obj)
+			// }
 		} else {
 			arg.MemoryRead = MEM_DATA
 			arg.MemoryWrite = MEM_DATA
@@ -2062,9 +2079,6 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 		GetGlobalSymbol(symbols, sym.Package, sym.Name)
 
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
-			if sym.Name == "*lcl_251" {
-				fmt.Println("bye", sym.TotalSize, sym.Size)
-			}
 			if shouldExist {
 				// it should exist. error
 				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
@@ -2081,7 +2095,11 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 				sym.Offset = *offset
 				(*symbols)[sym.Package.Name+"."+sym.Name] = sym
 
-				*offset += sym.TotalSize
+				if sym.IsSlice {
+					*offset += sym.Size
+				} else {
+					*offset += sym.TotalSize
+				}
 
 				if sym.IsPointer {
 					pointer := sym
@@ -2189,10 +2207,6 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 	}
 
 	for _, expr := range fn.Expressions {
-		if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
-			fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
-		}
-		
 		// ProcessShortDeclaration(expr)
 		for _, inp := range expr.Inputs {
 			if inp.IsLocalDeclaration {
@@ -2202,13 +2216,8 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 
 			UpdateSymbolsTable(&symbols, inp, &offset, false)
 			ProcessMethodCall(expr, &symbols, inp, &offset, true)
-			// if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
-			// 	fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
-			// }
 			GiveOffset(&symbols, inp, &offset, true)
 
-			
-			
 			// we only need the input to be processed by GiveOffset to call ProcessMethodCall
 			// ProcessMethodCall(expr)
 			
@@ -2251,11 +2260,6 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 
 	// checking if assigning pointer to pointer
 	for _, expr := range fn.Expressions {
-
-		// if len(expr.Inputs) > 0 && expr.Inputs[0].Name == "*lcl_251" {
-		// 	fmt.Println("hello", expr.Inputs[0].TotalSize, expr.Inputs[0].Size)
-		// }
-		
 		if expr.Operator == Natives[OP_IDENTITY] {
 			for i, out := range expr.Outputs {
 				if out.IsPointer && expr.Inputs[i].IsPointer {

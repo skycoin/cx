@@ -5,7 +5,7 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_assert_value(expr *CXExpression, stack *CXStack, fp int) {
+func op_assert_value(expr *CXExpression, stack *CXStack, fp int) {	
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	
 
@@ -22,12 +22,6 @@ func op_assert_value(expr *CXExpression, stack *CXStack, fp int) {
 	var same bool
 	same = true
 
-	// fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
-	// fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
-
-	// fmt.Println("byts1", inp1.Type, byts1, inp1.Name, inp1.MemoryRead, inp1.MemoryWrite)
-	// 	fmt.Println("byts2", inp2.Type, byts2, inp2.Name, inp2.MemoryRead, inp2.MemoryWrite)
-	
 	if len(byts1) != len(byts2) {
 		same = false
 		fmt.Println("byts1", inp1.Type, byts1, inp1.Name, inp1.MemoryRead, inp1.MemoryWrite)

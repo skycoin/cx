@@ -208,7 +208,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.8"
+const VERSION = "0.5.9"
 
 var currentFileName string
 var insert bool

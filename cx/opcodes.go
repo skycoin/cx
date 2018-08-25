@@ -1,5 +1,9 @@
 package base
 
+import(
+	// "fmt"
+)
+
 // op codes
 const (
 	OP_IDENTITY = iota
@@ -250,6 +254,7 @@ const (
 	OP_GL_NEW_TEXTURE
 	OP_GL_DEPTH_MASK
 	OP_GL_TEX_ENVI
+
 	OP_GL_BLEND_FUNC
 	OP_GL_ORTHO
 	OP_GL_VIEWPORT

@@ -380,8 +380,6 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 			var obj2 []byte
 			
 			// obj1 = stack.Program.Heap.Heap[inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : int32(inp1Offset)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
-
-			fmt.Println("huehue", inp1Offset, l, inp1.Name, inp1.Size, inp1.TotalSize)
 			
 			obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
 			

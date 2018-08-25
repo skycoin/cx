@@ -113,6 +113,8 @@ func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
 	case MEM_DATA:
 		out = stack.Program.Data[offset : offset+arg.TotalSize]
 	case MEM_HEAP:
+		// fmt.Println("stack", stack.Stack)
+		// fmt.Println("heap", stack.Program.Heap.Heap)
 		out = stack.Program.Heap.Heap[offset : offset+arg.TotalSize]
 	default:
 		panic("implement the other mem types")
@@ -314,6 +316,9 @@ func ReadSlice(stack *CXStack, fp int, inp *CXArgument) (int, int) {
 }
 
 func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
+	// if inp.HeapOffset == 0 {
+	// 	return ""
+	// }
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
 	
 	if inp.Name == "" {
