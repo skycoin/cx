@@ -114,7 +114,6 @@
 /for/                     { return f(FOR)        }
 /func/                    { return f(FUNC)       }
 /clauses/                 { return f(CLAUSES)    }
-/expr/                    { return f(EXPR)       }
 /def/                     { return f(DEF)        }
 /field/                   { return f(FIELD)      }
 /input/                   { return f(INPUT)      }

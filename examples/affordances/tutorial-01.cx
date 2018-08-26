@@ -10,10 +10,10 @@ func main () {
   	// foo3 = 3
 
 	var target []str
-	var rules []str
+	// var rules []str
 
-	target = append(target, "hellooooo")
-	target = append(target, "hi")
+	// target = append(target, "hellooooo")
+	// target = append(target, "hi")
 
 	// var foo []i32
 	// foo = append(foo, 5)
@@ -26,11 +26,14 @@ func main () {
 	
 	// target = [0]str{"hi", "hello"}
 	
-	// target = ->{
-	// 	pkg(main)
-	// 	fn(main)
-	// 	expr(message)
-	// }
+	target = ->{
+		pkg(main)
+		// fn(main)
+		// expr(message)
+	}
+
+	// str.print(target[0])
+	// str.print(target[1])
   	
   	// rules = ->{
 	// 	allow(* > 1.0D)

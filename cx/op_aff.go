@@ -1,7 +1,7 @@
 package base
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -32,8 +32,6 @@ func op_aff_query(expr *CXExpression, stack *CXStack, fp int) {
 	sliceHeader = stack.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
 	encoder.DeserializeAtomic(sliceHeader[:4], &len1)
 
-	var obj1 []byte
-	obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
-
-	fmt.Println("hoho", inp1Offset, obj1)
+	// var obj1 []byte
+	// obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 }

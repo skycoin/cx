@@ -288,14 +288,26 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 	var off int32
 	// var size int32
 	var byts []byte
-	
-	if out1.MemoryRead == MEM_STACK {
-		byts = stack.Stack[out1Offset : out1Offset+TYPE_POINTER_SIZE]
-		encoder.DeserializeAtomic(byts, &off)
-	} else {
+
+	switch out1.MemoryRead {
+	// case MEM_HEAP:
+	// 	byts = stack.Program.Heap.Heap[out1Offset : out1Offset+TYPE_POINTER_SIZE]
+	// 	encoder.DeserializeAtomic(byts, &off)
+		// case MEM_DATA:
+	case MEM_DATA:
 		byts = stack.Program.Data[out1Offset : out1Offset+TYPE_POINTER_SIZE]
 		encoder.DeserializeAtomic(byts, &off)
+		// case MEM_STACK:
+	default:
+		byts = stack.Stack[out1Offset : out1Offset+TYPE_POINTER_SIZE]
+		encoder.DeserializeAtomic(byts, &off)
 	}
+	
+	// if out1.MemoryRead == MEM_STACK {
+		
+	// } else {
+		
+	// }
 
 	var heapOffset int
 
@@ -307,6 +319,7 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 		if inp1Offset != 0 {
 			// then we need to reserve for obj1 too
 			sliceHeader = stack.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+
 			encoder.DeserializeAtomic(sliceHeader[:4], &len1)
 			heapOffset = AllocateSeq(stack.Program, (int(len1)*inp2.TotalSize) + inp2.TotalSize + OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE)
 		} else {
@@ -315,7 +328,9 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 		}
 		
 		// writing address to stack
-		WriteMemory(stack, out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+		// WriteMemory(stack, out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+		// WriteMemory(stack, out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+		WriteToStack(stack, out1Offset, encoder.SerializeAtomic(int32(heapOffset)))
 
 		var obj1 []byte
 		var obj2 []byte
@@ -364,7 +379,16 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 	} else {
 		// then we have access to a size and capacity
 		// sliceHeader := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-		sliceHeader := stack.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		var sliceHeader []byte
+		if inp1.Type == TYPE_STR {
+			sliceHeader = stack.Program.Heap.Heap[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+		} else {
+			sliceHeader = stack.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		}
+		// sliceHeader = stack.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		// fmt.Println("houhou", off, inp1Offset-SLICE_HEADER_SIZE, inp1Offset)
+		
+		// sliceHeader = stack.Program.Heap.Heap[off-SLICE_HEADER_SIZE : off]
 		
 		var l int32
 		var c int32
@@ -380,17 +404,27 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 			var obj2 []byte
 			
 			// obj1 = stack.Program.Heap.Heap[inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : int32(inp1Offset)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
-			
-			obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
-			
-			obj2 = ReadMemory(stack, inp2Offset, inp2)
+
+			if inp1.Type == TYPE_STR {
+				obj1 = stack.Program.Heap.Heap[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
+			} else {
+				obj1 = stack.Program.Heap.Heap[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
+			}
+
+			if inp2.Type == TYPE_STR {
+				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
+			} else {
+				obj2 = ReadMemory(stack, inp2Offset, inp2)
+			}
+			// obj2 = ReadMemory(stack, inp2Offset, inp2)
 
 			l++
 			c = c * 2
 
 			heapOffset = AllocateSeq(stack.Program, int(c)*inp2.TotalSize + OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE)
 			
-			WriteMemory(stack, out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+			// WriteMemory(stack, out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+			WriteToStack(stack, out1Offset, encoder.SerializeAtomic(int32(heapOffset)))
 
 			size := encoder.SerializeAtomic(int32(int(c)*inp2.TotalSize + SLICE_HEADER_SIZE))
 
@@ -424,7 +458,6 @@ func op_append(expr *CXExpression, stack *CXStack, fp int) {
 			for i, byt := range obj {
 				stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+int32(int(l)*inp2.TotalSize+i)] = byt
 			}
-			
 
 			// WriteToHeap(&stack.Program.Heap, heapOffset, finalObj)
 		}

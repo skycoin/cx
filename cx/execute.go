@@ -997,7 +997,6 @@ var isErrorPresent bool
 // }
 
 func (prgrm *CXProgram) RunInterpreted(withDebug bool, nCalls int) error {
-	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if prgrm.Terminated {
 		// user wants to re-run the program

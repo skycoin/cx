@@ -1,11 +1,10 @@
 %{
 	package main
 	import (
-		// "fmt"
+		"fmt"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
-		// "reflect"
 	)
 
 	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
@@ -705,6 +704,7 @@ infer_clauses:
                 }
         |       infer_targets
                 {
+			fmt.Println("targetSlc", $1)
 			var exprs []*CXExpression
 			for _, str := range $1 {
 				expr := WritePrimary(TYPE_STR, encoder.Serialize(str), false)
@@ -712,7 +712,8 @@ infer_clauses:
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
+			// $$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
+			$$ = SliceLiteralExpression(TYPE_STR, exprs)
                 }
                 ;
 

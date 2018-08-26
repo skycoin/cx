@@ -1,7 +1,7 @@
 package actions
 
 import (
-	// "fmt"                                                                                                                                                                               
+	// "fmt"
 	"os"
 	"strconv"
 	. "github.com/skycoin/cx/cx"
@@ -294,8 +294,6 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		// arg.TotalSize = TYPE_POINTER_SIZE
 		arg.TotalSize = arg.Size
 		arg.Size = TYPE_POINTER_SIZE
-		
-		
 
 		// // we simulate we're writing a str
 		// slc := make([]byte, arg.TotalSize + SLICE_HEADER_SIZE)
@@ -1974,12 +1972,13 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 				sym.Type = arg.Type
 			}
 
-			// if arg.IsSlice && len(sym.DereferenceOperations) > 0 {
-			// 	sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
-			// 	sym.DereferenceLevels++
-			// 	sym.MemoryRead = MEM_HEAP
-			// 	sym.MemoryWrite = MEM_HEAP
-			// }
+			if arg.IsSlice && arg.Type == TYPE_STR {
+				// sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+				sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_POINTER)
+				// sym.DereferenceLevels++
+				// sym.MemoryRead = MEM_HEAP
+				// sym.MemoryWrite = MEM_HEAP
+			}
 
 			sym.IsSlice = arg.IsSlice
 			sym.CustomType = arg.CustomType

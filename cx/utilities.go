@@ -2087,11 +2087,32 @@ func (prgrm *CXProgram) PrintProgram() {
 						name = arg.Name
 					}
 
+					offRead := GetFinalOffset(&prgrm.Stacks[0], 0, arg, MEM_READ)
+					offWrite := GetFinalOffset(&prgrm.Stacks[0], 0, arg, MEM_WRITE)
+					var memRead string
+					var memWrite string
+					switch arg.MemoryRead {
+					case MEM_STACK:
+						memRead = "R|S|"
+					case MEM_HEAP:
+						memRead = "R|H|"
+					case MEM_DATA:
+						memRead = "R|D|"
+					}
+					switch arg.MemoryWrite {
+					case MEM_STACK:
+						memWrite = "W|S|"
+					case MEM_HEAP:
+						memWrite = "W|H|"
+					case MEM_DATA:
+						memWrite = "W|D|"
+					}
 					if i == len(expr.Inputs)-1 {
-						args.WriteString(name + " " + TypeNames[arg.Type])
+						
+						args.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", name, memRead, offRead, memWrite, offWrite, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
-						args.WriteString(name + " " + TypeNames[arg.Type] + ", ")
+						args.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s,", name, memRead, offRead, memWrite, offWrite, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}
@@ -2110,10 +2131,31 @@ func (prgrm *CXProgram) PrintProgram() {
 						// for _, idx := range outName.Indexes {
 						// 	indexes += fmt.Sprintf("[%d]", idx)
 						// }
+						offRead := GetFinalOffset(&prgrm.Stacks[0], 0, outName, MEM_READ)
+						offWrite := GetFinalOffset(&prgrm.Stacks[0], 0, outName, MEM_WRITE)
+						var memRead string
+						var memWrite string
+						switch outName.MemoryRead {
+						case MEM_STACK:
+							memRead = "R|S|"
+						case MEM_HEAP:
+							memRead = "R|H|"
+						case MEM_DATA:
+							memRead = "R|D|"
+						}
+						switch outName.MemoryWrite {
+						case MEM_STACK:
+							memWrite = "W|S|"
+						case MEM_HEAP:
+							memWrite = "W|H|"
+						case MEM_DATA:
+							memWrite = "W|D|"
+						}
 						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(outName.Name + " " + TypeNames[outName.Type])
+							outNames.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", outName.Name, memRead, offRead, memWrite, offWrite, TypeNames[outName.Type]))
+							// outNames.WriteString(outName.Name + fmt.Sprintf("%d", off) + " " + TypeNames[outName.Type])
 						} else {
-							outNames.WriteString(outName.Name + " " + TypeNames[outName.Type] + ", ")
+							outNames.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", outName.Name, memRead, offRead, memWrite, offWrite, TypeNames[outName.Type]))
 						}
 					}
 

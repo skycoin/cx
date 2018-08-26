@@ -70,15 +70,24 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 				byts = stack.Stack[fp+finalOffset : fp+finalOffset+elt.Size]
 
 				encoder.DeserializeAtomic(byts, &offset)
-
+				
 				if offset != 0 {
 					if arg.IsSlice {
-						finalOffset = int(offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
+						if elt.Type == TYPE_STR {
+							finalOffset = int(offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + STR_HEADER_SIZE
+						} else {
+							finalOffset = int(offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
+						}
 					} else {
 						finalOffset = int(offset) + OBJECT_HEADER_SIZE
 					}
 					// finalOffset = int(offset) + OBJECT_HEADER_SIZE
 				} else {
+					// if elt.Type == TYPE_STR {
+						
+					// } else {
+					// 	finalOffset = 0
+					// }
 					finalOffset = 0
 				}
 			}
@@ -91,15 +100,13 @@ func GetFinalOffset(stack *CXStack, fp int, arg *CXArgument, opType int) int {
 	if memType == MEM_HEAP || memType == MEM_DATA {
 		// not sure if arg.MemoryRead or arg.MemoryWrite
 		if dbg {
-			fmt.Println("result1", finalOffset)
-			fmt.Println(")")
+			fmt.Println("result1", finalOffset, ")")
 		}
 
 		return finalOffset
 	} else {
 		if dbg {
-			fmt.Println("result2", fp+finalOffset)
-			fmt.Println(")")
+			fmt.Println("result2", fp+finalOffset, ")")
 		}
 
 		return fp + finalOffset
@@ -113,8 +120,6 @@ func ReadMemory(stack *CXStack, offset int, arg *CXArgument) (out []byte) {
 	case MEM_DATA:
 		out = stack.Program.Data[offset : offset+arg.TotalSize]
 	case MEM_HEAP:
-		// fmt.Println("stack", stack.Stack)
-		// fmt.Println("heap", stack.Program.Heap.Heap)
 		out = stack.Program.Heap.Heap[offset : offset+arg.TotalSize]
 	default:
 		panic("implement the other mem types")
@@ -320,7 +325,7 @@ func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 	// 	return ""
 	// }
 	offset := GetFinalOffset(stack, fp, inp, MEM_READ)
-	
+
 	if inp.Name == "" {
 		offset = inp.HeapOffset+OBJECT_HEADER_SIZE
 
@@ -334,15 +339,21 @@ func ReadStr(stack *CXStack, fp int, inp *CXArgument) (out string) {
 		var size int32
 		var byts []byte
 
-		if inp.MemoryRead == MEM_STACK {
+		if inp.MemoryRead == MEM_STACK || inp.IsSlice {
 			byts = stack.Stack[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		} else {
 			byts = stack.Program.Data[offset : offset+TYPE_POINTER_SIZE]
 			encoder.DeserializeAtomic(byts, &off)
 		}
-		
-		sizeB := stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
+
+		var sizeB []byte
+		if inp.IsSlice {
+			sizeB = stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+SLICE_HEADER_SIZE]
+		} else {
+			sizeB = stack.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+STR_HEADER_SIZE]
+		}
+
 		// sizeB := stack.Program.Heap.Heap[off : off+STR_HEADER_SIZE]
 		encoder.DeserializeAtomic(sizeB, &size)
 
