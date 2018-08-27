@@ -1397,7 +1397,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 				// *init function
 				mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
 				prgrm.CallStack[0] = mainCall
-				prgrm.Stacks[0].StackPointer = fn.Size
+				prgrm.StackPointer = fn.Size
 
 				var err error
 
@@ -1428,7 +1428,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 				// initializing program resources
 				prgrm.CallStack[0] = mainCall
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-				prgrm.Stacks[0].StackPointer = fn.Size
+				prgrm.StackPointer = fn.Size
 
 				prgrm.Terminated = false
 			}
@@ -1496,9 +1496,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			}
 
 			// debugging memory
-			// fmt.Println("prgrm.Stack", prgrm.Stacks[0].Stack)
-			// fmt.Println("prgrm.Heap", prgrm.Heap)
-			// fmt.Println("prgrm.Data", prgrm.Data)
+			fmt.Println("prgrm.Memory", prgrm.Memory)
 			return err
 		} else {
 			return err
@@ -1530,17 +1528,16 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			expr := returnOp.Expressions[returnLine]
 			for i, out := range expr.Outputs {
 				WriteMemory(
-					&prgrm.Stacks[0],
-					GetFinalOffset(&prgrm.Stacks[0], returnFP, out, MEM_WRITE),
-					out,
+					prgrm.Memory,
+					GetFinalOffset(prgrm.Memory, returnFP, out, MEM_WRITE),
 					ReadMemory(
-						&prgrm.Stacks[0],
-						GetFinalOffset(&prgrm.Stacks[0], fp, call.Operator.Outputs[i], MEM_READ),
+						prgrm.Memory,
+						GetFinalOffset(prgrm.Memory, fp, call.Operator.Outputs[i], MEM_READ),
 						call.Operator.Outputs[i]))
 			}
 
 			// return the stack pointer to its previous state
-			prgrm.Stacks[0].StackPointer = call.FramePointer
+			prgrm.StackPointer = call.FramePointer
 			// we'll now execute the next command
 			prgrm.CallStack[prgrm.CallCounter].Line++
 			// calling the actual command
@@ -1570,23 +1567,23 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// setting the new call
 			newCall.Operator = expr.Operator
 			newCall.Line = 0
-			newCall.FramePointer = prgrm.Stacks[0].StackPointer
+			newCall.FramePointer = prgrm.StackPointer
 			// the stack pointer is moved to create room for the next call
-			// prgrm.Stacks[0].StackPointer += fn.Size
-			prgrm.Stacks[0].StackPointer += newCall.Operator.Size
+			// prgrm.MemoryPointer += fn.Size
+			prgrm.StackPointer += newCall.Operator.Size
 
 			fp := call.FramePointer
 			newFP := newCall.FramePointer
 
 			// wiping next stack frame (removing garbage)
 			for c := 0; c < expr.Operator.Size; c++ {
-				prgrm.Stacks[0].Stack[newFP+c] = 0
+				prgrm.Memory[newFP+c] = 0
 			}
 
 			for i, inp := range expr.Inputs {
 				var byts []byte
 				// finalOffset := inp.Offset
-				finalOffset := GetFinalOffset(&prgrm.Stacks[0], fp, inp, MEM_READ)
+				finalOffset := GetFinalOffset(prgrm.Memory, fp, inp, MEM_READ)
 				// finalOffset := fp + inp.Offset
 
 				// if inp.Indexes != nil {
@@ -1597,20 +1594,20 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 				} else {
 					switch inp.MemoryWrite {
 					case MEM_STACK:
-						byts = prgrm.Stacks[0].Stack[finalOffset : finalOffset+inp.TotalSize]
+						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
 					case MEM_DATA:
-						byts = prgrm.Data[finalOffset : finalOffset+inp.TotalSize]
+						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
 					case MEM_HEAP:
-						byts = prgrm.Heap.Heap[finalOffset : finalOffset+inp.TotalSize]
+						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
 					default:
 						panic("implement the other mem types")
 					}
 				}
 				
 				// writing inputs to new stack frame
-				WriteToStack(
-					&prgrm.Stacks[0],
-					GetFinalOffset(&prgrm.Stacks[0], newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+				WriteMemory(
+					prgrm.Memory,
+					GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
 					byts)
 			}
 		}

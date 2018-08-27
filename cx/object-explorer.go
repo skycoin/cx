@@ -14,7 +14,7 @@ func GetAllObjects(prgrm *CXProgram) {
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			encoder.DeserializeAtomic(prgrm.Stacks[0].Stack[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			encoder.DeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
 
 			var byts []byte
 			
@@ -25,7 +25,7 @@ func GetAllObjects(prgrm *CXProgram) {
 					
 				// }
 
-				byts = prgrm.Heap.Heap[int(heapOffset)+OBJECT_HEADER_SIZE:int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
+				byts = prgrm.Memory[int(heapOffset)+OBJECT_HEADER_SIZE:int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
 			}
 
 			if len(ptr.Lengths) > 0 {
@@ -64,7 +64,7 @@ func GetAllObjects(prgrm *CXProgram) {
 
 
 
-			fmt.Println("obj", ptr.Name, ptr.CustomType, prgrm.Heap.Heap[heapOffset:int(heapOffset)+op.Size], byts)
+			fmt.Println("obj", ptr.Name, ptr.CustomType, prgrm.Memory[heapOffset:int(heapOffset)+op.Size], byts)
 		}
 
 		fp += op.Size

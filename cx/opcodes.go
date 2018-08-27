@@ -291,318 +291,318 @@ const (
 
 func execNative(prgrm *CXProgram) {
 	call := &prgrm.CallStack[prgrm.CallCounter]
-	stack := &prgrm.Stacks[0]
+	mem := prgrm.Memory
 	expr := call.Operator.Expressions[call.Line]
 	opCode := expr.Operator.OpCode
 	fp := call.FramePointer
 
 	switch opCode {
 	case OP_IDENTITY:
-		op_identity(expr, stack, fp)
-		// case OP_READ_ARRAY: op_read_array(expr, stack, fp)
+		op_identity(expr, mem, fp)
+		// case OP_READ_ARRAY: op_read_array(expr, mem, fp)
 	case OP_JMP:
-		op_jmp(expr, stack, fp, call)
+		op_jmp(expr, mem, fp, call)
 	case OP_DEBUG:
 		prgrm.PrintStack()
 
 	case OP_UND_EQUAL:
-		op_equal(expr, stack, fp)
+		op_equal(expr, mem, fp)
 	case OP_UND_UNEQUAL:
-		op_unequal(expr, stack, fp)
+		op_unequal(expr, mem, fp)
 	case OP_UND_BITAND:
-		op_bitand(expr, stack, fp)
+		op_bitand(expr, mem, fp)
 	case OP_UND_BITXOR:
-		op_bitxor(expr, stack, fp)
+		op_bitxor(expr, mem, fp)
 	case OP_UND_BITOR:
-		op_bitor(expr, stack, fp)
+		op_bitor(expr, mem, fp)
 	case OP_UND_BITCLEAR:
-		op_bitclear(expr, stack, fp)
+		op_bitclear(expr, mem, fp)
 	case OP_UND_MUL:
-		op_mul(expr, stack, fp)
+		op_mul(expr, mem, fp)
 	case OP_UND_DIV:
-		op_div(expr, stack, fp)
+		op_div(expr, mem, fp)
 	case OP_UND_MOD:
-		op_mod(expr, stack, fp)
+		op_mod(expr, mem, fp)
 	case OP_UND_ADD:
-		op_add(expr, stack, fp)
+		op_add(expr, mem, fp)
 	case OP_UND_SUB:
-		op_sub(expr, stack, fp)
+		op_sub(expr, mem, fp)
 	case OP_UND_BITSHL:
-		op_bitshl(expr, stack, fp)
+		op_bitshl(expr, mem, fp)
 	case OP_UND_BITSHR:
-		op_bitshr(expr, stack, fp)
+		op_bitshr(expr, mem, fp)
 	case OP_UND_LT:
-		op_lt(expr, stack, fp)
+		op_lt(expr, mem, fp)
 	case OP_UND_GT:
-		op_gt(expr, stack, fp)
+		op_gt(expr, mem, fp)
 	case OP_UND_LTEQ:
-		op_lteq(expr, stack, fp)
+		op_lteq(expr, mem, fp)
 	case OP_UND_GTEQ:
-		op_gteq(expr, stack, fp)
+		op_gteq(expr, mem, fp)
 	case OP_UND_LEN:
-		op_len(expr, stack, fp)
+		op_len(expr, mem, fp)
 	case OP_UND_PRINTF:
-		op_printf(expr, stack, fp)
+		op_printf(expr, mem, fp)
 	case OP_UND_SPRINTF:
-		op_sprintf(expr, stack, fp)
+		op_sprintf(expr, mem, fp)
 
 	case OP_BYTE_PRINT:
-		op_byte_print(expr, stack, fp)
+		op_byte_print(expr, mem, fp)
 
 	case OP_BOOL_PRINT:
-		op_bool_print(expr, stack, fp)
+		op_bool_print(expr, mem, fp)
 	case OP_BOOL_EQUAL:
-		op_bool_equal(expr, stack, fp)
+		op_bool_equal(expr, mem, fp)
 	case OP_BOOL_UNEQUAL:
-		op_bool_unequal(expr, stack, fp)
+		op_bool_unequal(expr, mem, fp)
 	case OP_BOOL_NOT:
-		op_bool_not(expr, stack, fp)
+		op_bool_not(expr, mem, fp)
 	case OP_BOOL_OR:
-		op_bool_or(expr, stack, fp)
+		op_bool_or(expr, mem, fp)
 	case OP_BOOL_AND:
-		op_bool_and(expr, stack, fp)
+		op_bool_and(expr, mem, fp)
 
 	case OP_I32_BYTE:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 	case OP_I32_STR:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 	case OP_I32_I32:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 	case OP_I32_I64:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 	case OP_I32_F32:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 	case OP_I32_F64:
-		op_i32_i32(expr, stack, fp)
+		op_i32_i32(expr, mem, fp)
 		
 	case OP_I32_PRINT:
-		op_i32_print(expr, stack, fp)
+		op_i32_print(expr, mem, fp)
 	case OP_I32_ADD:
-		op_i32_add(expr, stack, fp)
+		op_i32_add(expr, mem, fp)
 	case OP_I32_SUB:
-		op_i32_sub(expr, stack, fp)
+		op_i32_sub(expr, mem, fp)
 	case OP_I32_MUL:
-		op_i32_mul(expr, stack, fp)
+		op_i32_mul(expr, mem, fp)
 	case OP_I32_DIV:
-		op_i32_div(expr, stack, fp)
+		op_i32_div(expr, mem, fp)
 	case OP_I32_ABS:
-		op_i32_abs(expr, stack, fp)
+		op_i32_abs(expr, mem, fp)
 	case OP_I32_POW:
-		op_i32_pow(expr, stack, fp)
+		op_i32_pow(expr, mem, fp)
 	case OP_I32_GT:
-		op_i32_gt(expr, stack, fp)
+		op_i32_gt(expr, mem, fp)
 	case OP_I32_GTEQ:
-		op_i32_gteq(expr, stack, fp)
+		op_i32_gteq(expr, mem, fp)
 	case OP_I32_LT:
-		op_i32_lt(expr, stack, fp)
+		op_i32_lt(expr, mem, fp)
 	case OP_I32_LTEQ:
-		op_i32_lteq(expr, stack, fp)
+		op_i32_lteq(expr, mem, fp)
 	case OP_I32_EQ:
-		op_i32_eq(expr, stack, fp)
+		op_i32_eq(expr, mem, fp)
 	case OP_I32_UNEQ:
-		op_i32_uneq(expr, stack, fp)
+		op_i32_uneq(expr, mem, fp)
 	case OP_I32_MOD:
-		op_i32_mod(expr, stack, fp)
+		op_i32_mod(expr, mem, fp)
 	case OP_I32_RAND:
-		op_i32_rand(expr, stack, fp)
+		op_i32_rand(expr, mem, fp)
 	case OP_I32_BITAND:
-		op_i32_bitand(expr, stack, fp)
+		op_i32_bitand(expr, mem, fp)
 	case OP_I32_BITOR:
-		op_i32_bitor(expr, stack, fp)
+		op_i32_bitor(expr, mem, fp)
 	case OP_I32_BITXOR:
-		op_i32_bitxor(expr, stack, fp)
+		op_i32_bitxor(expr, mem, fp)
 	case OP_I32_BITCLEAR:
-		op_i32_bitclear(expr, stack, fp)
+		op_i32_bitclear(expr, mem, fp)
 	case OP_I32_BITSHL:
-		op_i32_bitshl(expr, stack, fp)
+		op_i32_bitshl(expr, mem, fp)
 	case OP_I32_BITSHR:
-		op_i32_bitshr(expr, stack, fp)
+		op_i32_bitshr(expr, mem, fp)
 	case OP_I32_SQRT:
-		op_i32_sqrt(expr, stack, fp)
+		op_i32_sqrt(expr, mem, fp)
 	case OP_I32_LOG:
-		op_i32_log(expr, stack, fp)
+		op_i32_log(expr, mem, fp)
 	case OP_I32_LOG2:
-		op_i32_log2(expr, stack, fp)
+		op_i32_log2(expr, mem, fp)
 	case OP_I32_LOG10:
-		op_i32_log10(expr, stack, fp)
+		op_i32_log10(expr, mem, fp)
 
 	case OP_I32_MAX:
-		op_i32_max(expr, stack, fp)
+		op_i32_max(expr, mem, fp)
 	case OP_I32_MIN:
-		op_i32_min(expr, stack, fp)
+		op_i32_min(expr, mem, fp)
 	case OP_I32_SIN:
-		op_i32_sin(expr, stack, fp)
+		op_i32_sin(expr, mem, fp)
 	case OP_I32_COS:
-		op_i32_cos(expr, stack, fp)
+		op_i32_cos(expr, mem, fp)
 
 	case OP_I64_PRINT:
-		op_i64_print(expr, stack, fp)
+		op_i64_print(expr, mem, fp)
 	case OP_I64_ADD:
-		op_i64_add(expr, stack, fp)
+		op_i64_add(expr, mem, fp)
 	case OP_I64_SUB:
-		op_i64_sub(expr, stack, fp)
+		op_i64_sub(expr, mem, fp)
 	case OP_I64_MUL:
-		op_i64_mul(expr, stack, fp)
+		op_i64_mul(expr, mem, fp)
 	case OP_I64_DIV:
-		op_i64_div(expr, stack, fp)
+		op_i64_div(expr, mem, fp)
 	case OP_I64_ABS:
-		op_i64_abs(expr, stack, fp)
+		op_i64_abs(expr, mem, fp)
 	case OP_I64_POW:
-		op_i64_pow(expr, stack, fp)
+		op_i64_pow(expr, mem, fp)
 	case OP_I64_GT:
-		op_i64_gt(expr, stack, fp)
+		op_i64_gt(expr, mem, fp)
 	case OP_I64_GTEQ:
-		op_i64_gteq(expr, stack, fp)
+		op_i64_gteq(expr, mem, fp)
 	case OP_I64_LT:
-		op_i64_lt(expr, stack, fp)
+		op_i64_lt(expr, mem, fp)
 	case OP_I64_LTEQ:
-		op_i64_lteq(expr, stack, fp)
+		op_i64_lteq(expr, mem, fp)
 	case OP_I64_EQ:
-		op_i64_eq(expr, stack, fp)
+		op_i64_eq(expr, mem, fp)
 	case OP_I64_UNEQ:
-		op_i64_uneq(expr, stack, fp)
+		op_i64_uneq(expr, mem, fp)
 	case OP_I64_MOD:
-		op_i64_mod(expr, stack, fp)
+		op_i64_mod(expr, mem, fp)
 	case OP_I64_RAND:
-		op_i64_rand(expr, stack, fp)
+		op_i64_rand(expr, mem, fp)
 	case OP_I64_BITAND:
-		op_i64_bitand(expr, stack, fp)
+		op_i64_bitand(expr, mem, fp)
 	case OP_I64_BITOR:
-		op_i64_bitor(expr, stack, fp)
+		op_i64_bitor(expr, mem, fp)
 	case OP_I64_BITXOR:
-		op_i64_bitxor(expr, stack, fp)
+		op_i64_bitxor(expr, mem, fp)
 	case OP_I64_BITCLEAR:
-		op_i64_bitclear(expr, stack, fp)
+		op_i64_bitclear(expr, mem, fp)
 	case OP_I64_BITSHL:
-		op_i64_bitshl(expr, stack, fp)
+		op_i64_bitshl(expr, mem, fp)
 	case OP_I64_BITSHR:
-		op_i64_bitshr(expr, stack, fp)
+		op_i64_bitshr(expr, mem, fp)
 	case OP_I64_SQRT:
-		op_i64_sqrt(expr, stack, fp)
+		op_i64_sqrt(expr, mem, fp)
 	case OP_I64_LOG:
-		op_i64_log(expr, stack, fp)
+		op_i64_log(expr, mem, fp)
 	case OP_I64_LOG2:
-		op_i64_log2(expr, stack, fp)
+		op_i64_log2(expr, mem, fp)
 	case OP_I64_LOG10:
-		op_i64_log10(expr, stack, fp)
+		op_i64_log10(expr, mem, fp)
 	case OP_I64_MAX:
-		op_i64_max(expr, stack, fp)
+		op_i64_max(expr, mem, fp)
 	case OP_I64_MIN:
-		op_i64_min(expr, stack, fp)
+		op_i64_min(expr, mem, fp)
 	case OP_I64_SIN:
-		op_i64_sin(expr, stack, fp)
+		op_i64_sin(expr, mem, fp)
 	case OP_I64_COS:
-		op_i64_cos(expr, stack, fp)
+		op_i64_cos(expr, mem, fp)
 
 	case OP_F32_BYTE:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 	case OP_F32_STR:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 	case OP_F32_I32:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 	case OP_F32_I64:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 	case OP_F32_F32:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 	case OP_F32_F64:
-		op_f32_f32(expr, stack, fp)
+		op_f32_f32(expr, mem, fp)
 		
 	case OP_F32_PRINT:
-		op_f32_print(expr, stack, fp)
+		op_f32_print(expr, mem, fp)
 	case OP_F32_ADD:
-		op_f32_add(expr, stack, fp)
+		op_f32_add(expr, mem, fp)
 	case OP_F32_SUB:
-		op_f32_sub(expr, stack, fp)
+		op_f32_sub(expr, mem, fp)
 	case OP_F32_MUL:
-		op_f32_mul(expr, stack, fp)
+		op_f32_mul(expr, mem, fp)
 	case OP_F32_DIV:
-		op_f32_div(expr, stack, fp)
+		op_f32_div(expr, mem, fp)
 	case OP_F32_ABS:
-		op_f32_abs(expr, stack, fp)
+		op_f32_abs(expr, mem, fp)
 	case OP_F32_POW:
-		op_f32_pow(expr, stack, fp)
+		op_f32_pow(expr, mem, fp)
 	case OP_F32_GT:
-		op_f32_gt(expr, stack, fp)
+		op_f32_gt(expr, mem, fp)
 	case OP_F32_GTEQ:
-		op_f32_gteq(expr, stack, fp)
+		op_f32_gteq(expr, mem, fp)
 	case OP_F32_LT:
-		op_f32_lt(expr, stack, fp)
+		op_f32_lt(expr, mem, fp)
 	case OP_F32_LTEQ:
-		op_f32_lteq(expr, stack, fp)
+		op_f32_lteq(expr, mem, fp)
 	case OP_F32_EQ:
-		op_f32_eq(expr, stack, fp)
+		op_f32_eq(expr, mem, fp)
 	case OP_F32_UNEQ:
-		op_f32_uneq(expr, stack, fp)
+		op_f32_uneq(expr, mem, fp)
 	case OP_F32_COS:
-		op_f32_cos(expr, stack, fp)
+		op_f32_cos(expr, mem, fp)
 	case OP_F32_SIN:
-		op_f32_sin(expr, stack, fp)
+		op_f32_sin(expr, mem, fp)
 	case OP_F32_SQRT:
-		op_f32_sqrt(expr, stack, fp)
+		op_f32_sqrt(expr, mem, fp)
 	case OP_F32_LOG:
-		op_f32_log(expr, stack, fp)
+		op_f32_log(expr, mem, fp)
 	case OP_F32_LOG2:
-		op_f32_log2(expr, stack, fp)
+		op_f32_log2(expr, mem, fp)
 	case OP_F32_LOG10:
-		op_f32_log10(expr, stack, fp)
+		op_f32_log10(expr, mem, fp)
 	case OP_F32_MAX:
-		op_f32_max(expr, stack, fp)
+		op_f32_max(expr, mem, fp)
 	case OP_F32_MIN:
-		op_f32_min(expr, stack, fp)
+		op_f32_min(expr, mem, fp)
 
 	case OP_F64_PRINT:
-		op_f64_print(expr, stack, fp)
+		op_f64_print(expr, mem, fp)
 	case OP_F64_ADD:
-		op_f64_add(expr, stack, fp)
+		op_f64_add(expr, mem, fp)
 	case OP_F64_SUB:
-		op_f64_sub(expr, stack, fp)
+		op_f64_sub(expr, mem, fp)
 	case OP_F64_MUL:
-		op_f64_mul(expr, stack, fp)
+		op_f64_mul(expr, mem, fp)
 	case OP_F64_DIV:
-		op_f64_div(expr, stack, fp)
+		op_f64_div(expr, mem, fp)
 	case OP_F64_ABS:
-		op_f64_abs(expr, stack, fp)
+		op_f64_abs(expr, mem, fp)
 	case OP_F64_POW:
-		op_f64_pow(expr, stack, fp)
+		op_f64_pow(expr, mem, fp)
 	case OP_F64_GT:
-		op_f64_gt(expr, stack, fp)
+		op_f64_gt(expr, mem, fp)
 	case OP_F64_GTEQ:
-		op_f64_gteq(expr, stack, fp)
+		op_f64_gteq(expr, mem, fp)
 	case OP_F64_LT:
-		op_f64_lt(expr, stack, fp)
+		op_f64_lt(expr, mem, fp)
 	case OP_F64_LTEQ:
-		op_f64_lteq(expr, stack, fp)
+		op_f64_lteq(expr, mem, fp)
 	case OP_F64_EQ:
-		op_f64_eq(expr, stack, fp)
+		op_f64_eq(expr, mem, fp)
 	case OP_F64_UNEQ:
-		op_f64_uneq(expr, stack, fp)
+		op_f64_uneq(expr, mem, fp)
 	case OP_F64_COS:
-		op_f64_cos(expr, stack, fp)
+		op_f64_cos(expr, mem, fp)
 	case OP_F64_SIN:
-		op_f64_sin(expr, stack, fp)
+		op_f64_sin(expr, mem, fp)
 	case OP_F64_SQRT:
-		op_f64_sqrt(expr, stack, fp)
+		op_f64_sqrt(expr, mem, fp)
 	case OP_F64_LOG:
-		op_f64_log(expr, stack, fp)
+		op_f64_log(expr, mem, fp)
 	case OP_F64_LOG2:
-		op_f64_log2(expr, stack, fp)
+		op_f64_log2(expr, mem, fp)
 	case OP_F64_LOG10:
-		op_f64_log10(expr, stack, fp)
+		op_f64_log10(expr, mem, fp)
 	case OP_F64_MAX:
-		op_f64_max(expr, stack, fp)
+		op_f64_max(expr, mem, fp)
 	case OP_F64_MIN:
-		op_f64_min(expr, stack, fp)
+		op_f64_min(expr, mem, fp)
 	case OP_STR_PRINT:
-		op_str_print(expr, stack, fp)
+		op_str_print(expr, mem, fp)
 	case OP_STR_EQ:
-		op_str_eq(expr, stack, fp)
+		op_str_eq(expr, mem, fp)
 	case OP_MAKE:
 	case OP_READ:
 	case OP_WRITE:
 	case OP_LEN:
 	case OP_CONCAT:
 	case OP_APPEND:
-		op_append(expr, stack, fp)
+		op_append(expr, mem, fp)
 	case OP_COPY:
 	case OP_CAST:
 	case OP_EQ:
@@ -627,67 +627,67 @@ func execNative(prgrm *CXProgram) {
 	case OP_TEST_ERROR:
 		isErrorPresent = false
 	case OP_ASSERT:
-		op_assert_value(expr, stack, fp)
+		op_assert_value(expr, mem, fp)
 	case OP_TIME_SLEEP:
-		op_time_Sleep(expr, stack, fp)
+		op_time_Sleep(expr, mem, fp)
 	case OP_TIME_UNIX:
 	case OP_TIME_UNIX_MILLI:
-		op_time_UnixMilli(expr, stack, fp)
+		op_time_UnixMilli(expr, mem, fp)
 	case OP_TIME_UNIX_NANO:
-		op_time_UnixNano(expr, stack, fp)
+		op_time_UnixNano(expr, mem, fp)
 
 	case OP_AFF_PRINT:
-		op_aff_print(expr, stack, fp)
+		op_aff_print(expr, mem, fp)
 	case OP_AFF_QUERY:
-		op_aff_query(expr, stack, fp)
+		op_aff_query(expr, mem, fp)
 		
 		// opengl
 	case OP_GL_INIT:
 		op_gl_Init()
 	case OP_GL_CREATE_PROGRAM:
-		op_gl_CreateProgram(expr, stack, fp)
+		op_gl_CreateProgram(expr, mem, fp)
 	case OP_GL_LINK_PROGRAM:
-		op_gl_LinkProgram(expr, stack, fp)
+		op_gl_LinkProgram(expr, mem, fp)
 	case OP_GL_CLEAR:
-		op_gl_Clear(expr, stack, fp)
+		op_gl_Clear(expr, mem, fp)
 	case OP_GL_USE_PROGRAM:
-		op_gl_UseProgram(expr, stack, fp)
+		op_gl_UseProgram(expr, mem, fp)
 	case OP_GL_BIND_BUFFER:
-		op_gl_BindBuffer(expr, stack, fp)
+		op_gl_BindBuffer(expr, mem, fp)
 	case OP_GL_BIND_VERTEX_ARRAY:
-		op_gl_BindVertexArray(expr, stack, fp)
+		op_gl_BindVertexArray(expr, mem, fp)
 	case OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY:
-		op_gl_EnableVertexAttribArray(expr, stack, fp)
+		op_gl_EnableVertexAttribArray(expr, mem, fp)
 	case OP_GL_VERTEX_ATTRIB_POINTER:
-		op_gl_VertexAttribPointer(expr, stack, fp)
+		op_gl_VertexAttribPointer(expr, mem, fp)
 	case OP_GL_DRAW_ARRAYS:
-		op_gl_DrawArrays(expr, stack, fp)
+		op_gl_DrawArrays(expr, mem, fp)
 	case OP_GL_GEN_BUFFERS:
-		op_gl_GenBuffers(expr, stack, fp)
+		op_gl_GenBuffers(expr, mem, fp)
 	case OP_GL_BUFFER_DATA:
-		op_gl_BufferData(expr, stack, fp)
+		op_gl_BufferData(expr, mem, fp)
 	case OP_GL_GEN_VERTEX_ARRAYS:
-		op_gl_GenVertexArrays(expr, stack, fp)
+		op_gl_GenVertexArrays(expr, mem, fp)
 	case OP_GL_CREATE_SHADER:
-		op_gl_CreateShader(expr, stack, fp)
+		op_gl_CreateShader(expr, mem, fp)
 	case OP_GL_STRS:
-		op_gl_Strs(expr, stack, fp)
+		op_gl_Strs(expr, mem, fp)
 	case OP_GL_FREE:
-		op_gl_Free(expr, stack, fp)
+		op_gl_Free(expr, mem, fp)
 	case OP_GL_SHADER_SOURCE:
-		op_gl_ShaderSource(expr, stack, fp)
+		op_gl_ShaderSource(expr, mem, fp)
 	case OP_GL_COMPILE_SHADER:
-		op_gl_CompileShader(expr, stack, fp)
+		op_gl_CompileShader(expr, mem, fp)
 	case OP_GL_GET_SHADERIV:
-		op_gl_GetShaderiv(expr, stack, fp)
+		op_gl_GetShaderiv(expr, mem, fp)
 	case OP_GL_ATTACH_SHADER:
-		op_gl_AttachShader(expr, stack, fp)
+		op_gl_AttachShader(expr, mem, fp)
 	case OP_GL_MATRIX_MODE:
-		op_gl_MatrixMode(expr, stack, fp)
+		op_gl_MatrixMode(expr, mem, fp)
 	case OP_GL_ROTATEF:
-		op_gl_Rotatef(expr, stack, fp)
+		op_gl_Rotatef(expr, mem, fp)
 	case OP_GL_TRANSLATEF:
-		op_gl_Translatef(expr, stack, fp)
+		op_gl_Translatef(expr, mem, fp)
 	case OP_GL_LOAD_IDENTITY:
 		op_gl_LoadIdentity()
 	case OP_GL_PUSH_MATRIX:
@@ -695,95 +695,95 @@ func execNative(prgrm *CXProgram) {
 	case OP_GL_POP_MATRIX:
 		op_gl_PopMatrix()
 	case OP_GL_ENABLE_CLIENT_STATE:
-		op_gl_EnableClientState(expr, stack, fp)
+		op_gl_EnableClientState(expr, mem, fp)
 	case OP_GL_BIND_TEXTURE:
-		op_gl_BindTexture(expr, stack, fp)
+		op_gl_BindTexture(expr, mem, fp)
 	case OP_GL_COLOR3F:
-		op_gl_Color3f(expr, stack, fp)
+		op_gl_Color3f(expr, mem, fp)
 	case OP_GL_COLOR4F:
-		op_gl_Color4f(expr, stack, fp)
+		op_gl_Color4f(expr, mem, fp)
 	case OP_GL_BEGIN:
-		op_gl_Begin(expr, stack, fp)
+		op_gl_Begin(expr, mem, fp)
 	case OP_GL_END:
 		op_gl_End()
 	case OP_GL_NORMAL3F:
-		op_gl_Normal3f(expr, stack, fp)
+		op_gl_Normal3f(expr, mem, fp)
 	case OP_GL_VERTEX_2F:
-		op_gl_Vertex2f(expr, stack, fp)
+		op_gl_Vertex2f(expr, mem, fp)
 	case OP_GL_VERTEX_3F:
-		op_gl_Vertex3f(expr, stack, fp)
+		op_gl_Vertex3f(expr, mem, fp)
 	case OP_GL_ENABLE:
-		op_gl_Enable(expr, stack, fp)
+		op_gl_Enable(expr, mem, fp)
 	case OP_GL_CLEAR_COLOR:
-		op_gl_ClearColor(expr, stack, fp)
+		op_gl_ClearColor(expr, mem, fp)
 	case OP_GL_CLEAR_DEPTH:
-		op_gl_ClearDepth(expr, stack, fp)
+		op_gl_ClearDepth(expr, mem, fp)
 	case OP_GL_DEPTH_FUNC:
-		op_gl_DepthFunc(expr, stack, fp)
+		op_gl_DepthFunc(expr, mem, fp)
 	case OP_GL_LIGHTFV:
-		op_gl_Lightfv(expr, stack, fp)
+		op_gl_Lightfv(expr, mem, fp)
 	case OP_GL_FRUSTUM:
-		op_gl_Frustum(expr, stack, fp)
+		op_gl_Frustum(expr, mem, fp)
 	case OP_GL_DISABLE:
-		op_gl_Disable(expr, stack, fp)
+		op_gl_Disable(expr, mem, fp)
 	case OP_GL_HINT:
-		op_gl_Hint(expr, stack, fp)
+		op_gl_Hint(expr, mem, fp)
 	case OP_GL_NEW_TEXTURE:
-		op_gl_NewTexture(expr, stack, fp)
+		op_gl_NewTexture(expr, mem, fp)
 	case OP_GL_DEPTH_MASK:
-		op_gl_DepthMask(expr, stack, fp)
+		op_gl_DepthMask(expr, mem, fp)
 	case OP_GL_TEX_ENVI:
-		op_gl_TexEnvi(expr, stack, fp)
+		op_gl_TexEnvi(expr, mem, fp)
 	case OP_GL_BLEND_FUNC:
-		op_gl_BlendFunc(expr, stack, fp)
+		op_gl_BlendFunc(expr, mem, fp)
 	case OP_GL_ORTHO:
-		op_gl_Ortho(expr, stack, fp)
+		op_gl_Ortho(expr, mem, fp)
 	case OP_GL_VIEWPORT:
-		op_gl_Viewport(expr, stack, fp)
+		op_gl_Viewport(expr, mem, fp)
 	case OP_GL_SCALEF:
-		op_gl_Scalef(expr, stack, fp)
+		op_gl_Scalef(expr, mem, fp)
 	case OP_GL_TEX_COORD_2D:
-		op_gl_TexCoord2d(expr, stack, fp)
+		op_gl_TexCoord2d(expr, mem, fp)
 	case OP_GL_TEX_COORD_2F:
-		op_gl_TexCoord2f(expr, stack, fp)
+		op_gl_TexCoord2f(expr, mem, fp)
 
 		// glfw
 	case OP_GLFW_INIT:
-		op_glfw_Init(expr, stack, fp)
+		op_glfw_Init(expr, mem, fp)
 	case OP_GLFW_WINDOW_HINT:
-		op_glfw_WindowHint(expr, stack, fp)
+		op_glfw_WindowHint(expr, mem, fp)
 	case OP_GLFW_CREATE_WINDOW:
-		op_glfw_CreateWindow(expr, stack, fp)
+		op_glfw_CreateWindow(expr, mem, fp)
 	case OP_GLFW_MAKE_CONTEXT_CURRENT:
-		op_glfw_MakeContextCurrent(expr, stack, fp)
+		op_glfw_MakeContextCurrent(expr, mem, fp)
 	case OP_GLFW_SHOULD_CLOSE:
-		op_glfw_ShouldClose(expr, stack, fp)
+		op_glfw_ShouldClose(expr, mem, fp)
 	case OP_GLFW_SET_SHOULD_CLOSE:
-		op_glfw_SetShouldClose(expr, stack, fp)
+		op_glfw_SetShouldClose(expr, mem, fp)
 	case OP_GLFW_POLL_EVENTS:
 		op_glfw_PollEvents()
 	case OP_GLFW_SWAP_BUFFERS:
-		op_glfw_SwapBuffers(expr, stack, fp)
+		op_glfw_SwapBuffers(expr, mem, fp)
 	case OP_GLFW_GET_FRAMEBUFFER_SIZE:
-		op_glfw_GetFramebufferSize(expr, stack, fp)
+		op_glfw_GetFramebufferSize(expr, mem, fp)
 	case OP_GLFW_SET_KEY_CALLBACK:
-		op_glfw_SetKeyCallback(expr, stack, fp)
+		op_glfw_SetKeyCallback(expr, mem, fp)
 	case OP_GLFW_GET_TIME:
-		op_glfw_GetTime(expr, stack, fp)
+		op_glfw_GetTime(expr, mem, fp)
 	case OP_GLFW_SET_MOUSE_BUTTON_CALLBACK:
-		op_glfw_SetMouseButtonCallback(expr, stack, fp)
+		op_glfw_SetMouseButtonCallback(expr, mem, fp)
 	case OP_GLFW_SET_CURSOR_POS_CALLBACK:
-		op_glfw_SetCursorPosCallback(expr, stack, fp)
+		op_glfw_SetCursorPosCallback(expr, mem, fp)
 	case OP_GLFW_GET_CURSOR_POS:
-		op_glfw_GetCursorPos(expr, stack, fp)
+		op_glfw_GetCursorPos(expr, mem, fp)
 	case OP_GLFW_SET_INPUT_MODE:
-		op_glfw_SetInputMode(expr, stack, fp)
+		op_glfw_SetInputMode(expr, mem, fp)
 	case OP_HTTP_GET:
-		op_http_get(expr, stack, fp)
+		op_http_get(expr, mem, fp)
 
 		// os
 	case OP_OS_GET_WORKING_DIRECTORY:
-		op_os_GetWorkingDirectory(expr, stack, fp)
+		op_os_GetWorkingDirectory(expr, mem, fp)
 	}
 }
 

@@ -74,7 +74,7 @@ func not(arg1 *CXArgument, expr *CXExpression, call *CXCall) error {
 	}
 }
 
-func jmp(expr *CXExpression, stack *CXStack, fp int, call *CXCall) {
+func jmp(expr *CXExpression, mem []byte, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
 

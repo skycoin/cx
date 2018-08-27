@@ -4,9 +4,9 @@ package base
   Root Program
 */
 
-type Data []byte
-type Heap []byte
-type Stack []byte
+// type Data []byte
+// type Heap []byte
+// type Stack []byte
 
 type CXProgram struct {
 	Packages       []*CXPackage
@@ -18,9 +18,13 @@ type CXProgram struct {
 	CallStack   []CXCall
 	CallCounter int
 
-	Stacks []CXStack
-	Heap   CXHeap
-	Data   Data
+	// Stacks []CXStack
+	// Heap   CXHeap
+	// Data   Data
+
+	Memory []byte
+	HeapPointer int
+	StackPointer int
 
 	Terminated bool
 
@@ -28,19 +32,19 @@ type CXProgram struct {
 	Steps [][]CXCall
 }
 
-type CXHeap struct {
-	Heap        Heap
-	HeapPointer int
+// type CXHeap struct {
+// 	Heap        Heap
+// 	HeapPointer int
 
-	Program *CXProgram
-}
+// 	Program *CXProgram
+// }
 
-type CXStack struct {
-	Stack        Stack
-	StackPointer int
+// type CXStack struct {
+// 	Stack        Stack
+// 	StackPointer int
 
-	Program *CXProgram
-}
+// 	Program *CXProgram
+// }
 
 type CXCall struct {
 	Operator     *CXFunction

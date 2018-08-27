@@ -20,12 +20,8 @@ func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE, CALLSTACK_SIZE),
-		Stacks:    make([]CXStack, 1, 1),
-		Heap:      MakeHeap(INIT_HEAP_SIZE),
+		Memory:    make([]byte, INIT_HEAP_SIZE),
 	}
-
-	newPrgrm.Stacks[0] = MakeStack(STACK_SIZE)
-	newPrgrm.Stacks[0].Program = newPrgrm
 
 	return newPrgrm
 }
@@ -141,20 +137,20 @@ func MakeValue(value string) *[]byte {
 	return &byts
 }
 
-func MakeStack(size int) CXStack {
-	return CXStack{
-		Stack:        make([]byte, size, size),
-		StackPointer: 0,
-	}
-}
+// func MakeStack(size int) CXStack {
+// 	return CXStack{
+// 		Stack:        make([]byte, size, size),
+// 		StackPointer: 0,
+// 	}
+// }
 
-func MakeHeap(size int) CXHeap {
-	return CXHeap{
-		Heap: make([]byte, size, size),
-		// HeapPointer: 0,
-		HeapPointer: NULL_HEAP_ADDRESS_OFFSET,
-	}
-}
+// func MakeHeap(size int) CXHeap {
+// 	return CXHeap{
+// 		Heap: make([]byte, size, size),
+// 		// HeapPointer: 0,
+// 		HeapPointer: NULL_HEAP_ADDRESS_OFFSET,
+// 	}
+// }
 
 func MakeCall(op *CXFunction, stat []*CXArgument, ret *CXCall, pkg *CXPackage, prgrm *CXProgram) CXCall {
 	return CXCall{

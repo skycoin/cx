@@ -1603,14 +1603,14 @@ func (prgrm *CXProgram) PrintStack() {
 
 		for _, inp := range op.Inputs {
 			fmt.Println("Inputs")
-			fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset:inp.Offset+inp.TotalSize])
+			fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Memory[inp.Offset:inp.Offset+inp.TotalSize])
 
 			dupNames = append(dupNames, inp.Package.Name+inp.Name)
 		}
 
 		for _, out := range op.Outputs {
 			fmt.Println("Outputs")
-			fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset:out.Offset+out.TotalSize])
+			fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Memory[out.Offset:out.Offset+out.TotalSize])
 
 			dupNames = append(dupNames, out.Package.Name+out.Name)
 		}
@@ -1633,7 +1633,7 @@ func (prgrm *CXProgram) PrintStack() {
 					continue
 				}
 
-				fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[inp.Offset:inp.Offset+inp.TotalSize])
+				fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Memory[inp.Offset:inp.Offset+inp.TotalSize])
 
 				dupNames = append(dupNames, inp.Package.Name+inp.Name)
 			}
@@ -1653,7 +1653,7 @@ func (prgrm *CXProgram) PrintStack() {
 					continue
 				}
 
-				fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Stacks[0].Stack[out.Offset:out.Offset+out.TotalSize])
+				fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Memory[out.Offset:out.Offset+out.TotalSize])
 
 				dupNames = append(dupNames, out.Package.Name+out.Name)
 			}
@@ -2045,8 +2045,8 @@ func (prgrm *CXProgram) PrintProgram() {
 
 					switch arg.MemoryRead {
 					case MEM_DATA:
-						// name = fmt.Sprintf("%v", prgrm.Data[arg.Offset : arg.Offset + arg.Size])
-						dat = prgrm.Data[arg.Offset : arg.Offset+arg.Size]
+						// name = fmt.Sprintf("%v", prgrm.Memory[arg.Offset : arg.Offset + arg.Size])
+						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
 					default:
 						name = arg.Name
 					}
@@ -2087,8 +2087,8 @@ func (prgrm *CXProgram) PrintProgram() {
 						name = arg.Name
 					}
 
-					offRead := GetFinalOffset(&prgrm.Stacks[0], 0, arg, MEM_READ)
-					offWrite := GetFinalOffset(&prgrm.Stacks[0], 0, arg, MEM_WRITE)
+					offRead := GetFinalOffset(prgrm.Memory, 0, arg, MEM_READ)
+					offWrite := GetFinalOffset(prgrm.Memory, 0, arg, MEM_WRITE)
 					var memRead string
 					var memWrite string
 					switch arg.MemoryRead {
@@ -2131,8 +2131,8 @@ func (prgrm *CXProgram) PrintProgram() {
 						// for _, idx := range outName.Indexes {
 						// 	indexes += fmt.Sprintf("[%d]", idx)
 						// }
-						offRead := GetFinalOffset(&prgrm.Stacks[0], 0, outName, MEM_READ)
-						offWrite := GetFinalOffset(&prgrm.Stacks[0], 0, outName, MEM_WRITE)
+						offRead := GetFinalOffset(prgrm.Memory, 0, outName, MEM_READ)
+						offWrite := GetFinalOffset(prgrm.Memory, 0, outName, MEM_WRITE)
 						var memRead string
 						var memWrite string
 						switch outName.MemoryRead {

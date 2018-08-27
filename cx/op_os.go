@@ -5,14 +5,14 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_os_GetWorkingDirectory(expr *CXExpression, stack *CXStack, fp int) {
+func op_os_GetWorkingDirectory(expr *CXExpression, mem []byte, fp int) {
 	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(stack, fp, out1, MEM_WRITE)
+	out1Offset := GetFinalOffset(mem, fp, out1, MEM_WRITE)
 	
 	byts := encoder.Serialize(expr.Program.Path)
 
 	size := encoder.Serialize(int32(len(byts)))
-	heapOffset := AllocateSeq(stack.Program, len(byts)+OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(expr.Program, len(byts)+OBJECT_HEADER_SIZE)
 	
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
@@ -21,9 +21,9 @@ func op_os_GetWorkingDirectory(expr *CXExpression, stack *CXStack, fp int) {
 
 	obj := append(header, byts...)
 
-	WriteToHeap(&stack.Program.Heap, heapOffset, obj)
+	WriteMemory(mem, heapOffset, obj)
 
 	off := encoder.SerializeAtomic(int32(heapOffset))
 
-	WriteToStack(stack, out1Offset, off)
+	WriteMemory(mem, out1Offset, off)
 }
