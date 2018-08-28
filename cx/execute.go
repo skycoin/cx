@@ -1529,10 +1529,14 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			returnFP := returnAddr.FramePointer
 			fp := call.FramePointer
 
+			
 			expr := returnOp.Expressions[returnLine]
 			for i, out := range expr.Outputs {
+				// fmt.Println("hoho", returnFP + out.Offset, out.Type, out.Offset)
 				WriteMemory(
 					GetFinalOffset(returnFP, out),
+					// returnFP + call.Operator.Outputs[i].Offset,
+					// returnFP + out.Offset,
 					ReadMemory(
 						GetFinalOffset(fp, call.Operator.Outputs[i]),
 						call.Operator.Outputs[i]))
@@ -1599,7 +1603,8 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 				// writing inputs to new stack frame
 				WriteMemory(
-					newFP + newCall.Operator.Inputs[i].Offset,
+					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
+					// newFP + newCall.Operator.Inputs[i].Offset,
 					// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
 					byts)
 			}

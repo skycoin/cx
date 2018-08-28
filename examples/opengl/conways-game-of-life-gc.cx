@@ -448,8 +448,10 @@ func main () {
 			// i32.print((*cells)[c].drawable)
 			// i32.print((*cells)[c].x)
 
+			time.Sleep(1000)
+			
 			(*cells)[c] = changeState((*cells)[c], cells)
-			// i32.print((*cells)[c])
+			i32.print((*cells)[c].drawable)
 			// bool.print((*cells)[c].alive)
 			
 			// changeState((*cells)[c], cells)

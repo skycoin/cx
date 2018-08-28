@@ -90,10 +90,9 @@ func testPointers () {
 	assert(strcts1[1].decimal, 63.0D, "")
 
 	pStrcts1 = &strcts1
-	
 
-	// // f64.print((*pStrct1).decimal)
-	// // f64.print((*pStrct2).decimal)
+	f64.print((*pStrct1).decimal)
+	f64.print((*pStrct2).decimal)
 
 
 

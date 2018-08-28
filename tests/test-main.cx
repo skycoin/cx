@@ -2,18 +2,18 @@ package main
 import "testing"
 
 func main () {
-	// testing.testI32()
-	// testing.testI64()
-	// testing.testF32()
-	// testing.testF64()
-	// testing.testBOOL()
-	// testing.testArray()
-	// testing.testFunctions()
+	testing.testI32()
+	testing.testI64()
+	testing.testF32()
+	testing.testF64()
+	testing.testBOOL()
+	testing.testArray()
+	testing.testFunctions()
 
-	// testing.testControlFlow()
-	// testing.testStructures()
+	testing.testControlFlow()
+	testing.testStructures()
 
-	// testing.testSTR()
+	testing.testSTR()
 	testing.testPointers()
 	// testing.testSlices()
 	// implement parse byte functions and other stuff
