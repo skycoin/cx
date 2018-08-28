@@ -5,25 +5,25 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func EscapeAnalysis (mem []byte, fp int, inpOffset, outOffset int, arg *CXArgument) {
+func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
 	var heapOffset int
 	if arg.HeapOffset > 0 {
 		// then it's a reference to the symbol
 		var off int32
-		encoder.DeserializeAtomic(mem[fp+arg.HeapOffset:fp+arg.HeapOffset+TYPE_POINTER_SIZE], &off)
+		encoder.DeserializeAtomic(PROGRAM.Memory[fp+arg.HeapOffset:fp+arg.HeapOffset+TYPE_POINTER_SIZE], &off)
 
 		if off > 0 {
 			// non-nil, i.e. object is already allocated
 			heapOffset = int(off)
 		} else {
 			// nil, needs to be allocated
-			heapOffset = AllocateSeq(arg.Program, arg.TotalSize+OBJECT_HEADER_SIZE)
-			o := GetFinalOffset(mem, fp, arg, MEM_WRITE)
-			WriteMemory(mem, o, encoder.SerializeAtomic(int32(heapOffset)))
+			heapOffset = AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+			o := GetFinalOffset(fp, arg)
+			WriteMemory(o, encoder.SerializeAtomic(int32(heapOffset)))
 		}
 	}
 
-	byts := ReadMemory(mem, inpOffset, arg)
+	byts := ReadMemory(inpOffset, arg)
 	// creating a header for this object
 	size := encoder.SerializeAtomic(int32(len(byts)))
 
@@ -34,27 +34,27 @@ func EscapeAnalysis (mem []byte, fp int, inpOffset, outOffset int, arg *CXArgume
 
 	obj := append(header, byts...)
 
-	WriteMemory(mem, heapOffset, obj)
+	WriteMemory(heapOffset, obj)
 
 	off := encoder.SerializeAtomic(int32(heapOffset))
 
-	WriteMemory(mem, outOffset, off)
-	// WriteMemory(mem, outOffset, arg, off)
+	WriteMemory(outOffset, off)
+	// WriteMemory(outOffset, arg, off)
 }
 
-func op_identity(expr *CXExpression, mem []byte, fp int) {
+func op_identity(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	inp1Offset := GetFinalOffset(mem, fp, inp1, MEM_READ)
-	out1Offset := GetFinalOffset(mem, fp, out1, MEM_WRITE)
+	inp1Offset := GetFinalOffset(fp, inp1)
+	out1Offset := GetFinalOffset(fp, out1)
 
 	if out1.DoesEscape {
-		EscapeAnalysis(mem, fp, inp1Offset, out1Offset, inp1)
+		EscapeAnalysis(fp, inp1Offset, out1Offset, inp1)
 	} else {
 		switch out1.PassBy {
 		case PASSBY_VALUE:
-			WriteMemory(mem, out1Offset, ReadMemory(mem, inp1Offset, inp1))
+			WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
 		case PASSBY_REFERENCE:
-			WriteMemory(mem, out1Offset, encoder.SerializeAtomic(int32(inp1Offset)))
+			WriteMemory(out1Offset, encoder.SerializeAtomic(int32(inp1Offset)))
 		}
 	}
 }
@@ -64,7 +64,7 @@ func op_goTo(expr *CXExpression, call *CXCall) {
 	// call.Line = ReadI32(inp1)
 }
 
-func op_jmp(expr *CXExpression, mem []byte, fp int, call *CXCall) {
+func op_jmp(expr *CXExpression, fp int, call *CXCall) {
 	// inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	inp1 := expr.Inputs[0]
 	var predicate bool
@@ -75,9 +75,9 @@ func op_jmp(expr *CXExpression, mem []byte, fp int, call *CXCall) {
 		// then it's a goto
 		call.Line = call.Line + expr.ThenLines
 	} else {
-		inp1Offset := GetFinalOffset(mem, fp, inp1, MEM_READ)
+		inp1Offset := GetFinalOffset(fp, inp1)
 
-		predicateB := mem[inp1Offset : inp1Offset+inp1.Size]
+		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+inp1.Size]
 		encoder.DeserializeAtomic(predicateB, &predicate)
 
 		if predicate {

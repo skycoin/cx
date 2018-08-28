@@ -26,6 +26,8 @@ type CXProgram struct {
 	HeapPointer int
 	StackPointer int
 
+	HeapStartsAt int
+
 	Terminated bool
 
 	Path  string

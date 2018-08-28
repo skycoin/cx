@@ -4,6 +4,9 @@ import (
 	"os"
 )
 
+// global reference to our program
+var PROGRAM *CXProgram
+
 var CXPATH string = os.Getenv("CXPATH") + "/"
 var BINPATH string = CXPATH + "bin/"
 var PKGPATH string = CXPATH + "pkg/"
@@ -22,9 +25,10 @@ const MARK_SIZE = 1
 const OBJECT_HEADER_SIZE = 9
 const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
-const CALLSTACK_SIZE = 500
-const STACK_SIZE = 500
-const INIT_HEAP_SIZE = 500
+const CALLSTACK_SIZE = 100
+const STACK_SIZE = 500000
+const INIT_HEAP_SIZE = 500000
+const NULL_ADDRESS = STACK_SIZE
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
@@ -213,11 +217,6 @@ const (
 	DECL_SLICE          // 2
 	DECL_STRUCT         // 3
 	DECL_BASIC          // 4
-)
-
-const (
-	MEM_READ = iota
-	MEM_WRITE
 )
 
 // what to write

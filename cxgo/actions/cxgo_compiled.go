@@ -9,7 +9,7 @@ import (
 )
 
 var PRGRM *CXProgram
-var DataOffset int
+var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil pointers
 
 var CurrentFile string
 var LineNo int = 0
@@ -132,8 +132,6 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				expr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
 				exprOut := expr[0].Outputs[0]
 				declaration_specifiers.Name = declarator.Name
-				// declaration_specifiers.MemoryRead = MEM_DATA
-				// declaration_specifiers.MemoryWrite = MEM_DATA
 				declaration_specifiers.Offset = exprOut.Offset
 				declaration_specifiers.Lengths = exprOut.Lengths
 				declaration_specifiers.Size = exprOut.Size
@@ -321,9 +319,9 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	// arg.Typ = "ident"
 	arg.Size = GetArgSize(typ)
 
-	if typ == TYPE_STR {
-		return DeclarationSpecifiers(arg, 0, DECL_POINTER)
-	}
+	// if typ == TYPE_STR {
+	// 	return DeclarationSpecifiers(arg, 0, DECL_POINTER)
+	// }
 	
 	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
 }
@@ -998,11 +996,9 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		
 		exprOut.IsReference = false
 	case "&":
-		exprOut.IsReference = true
-		exprOut.MemoryRead = MEM_STACK
-		exprOut.MemoryWrite = MEM_HEAP
-		exprOut.DoesEscape = true
-		// exprOut.PassBy = PASSBY_REFERENCE
+		// exprOut.IsReference = true
+		// exprOut.DoesEscape = true
+		exprOut.PassBy = PASSBY_REFERENCE
 	case "!":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			expr := MakeExpression(Natives[OP_BOOL_NOT], CurrentFile, LineNo)
@@ -1279,67 +1275,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg.Program = PRGRM
 		
 		var size int
-		
-		// if typ == TYPE_STR {
-		// 	arg.IsReference = true
-		// 	size = GetArgSize(typ)
-		// 	arg.Size = size
-		// 	arg.TotalSize = size
-
-		// 	headSize := encoder.Serialize(int32(len(byts)))
-			
-		// 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-		// 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		// 		header[c] = headSize[c-5]
-		// 	}
-
-		// 	obj := append(header, byts...)
-
-		// 	var heapOffset int
-		// 	// isStrNil := IsStrNil(byts)
-		// 	// if !isStrNil {
-		// 	// 	heapOffset = AllocateSeq(PRGRM, len(byts)+OBJECT_HEADER_SIZE)
-		// 	// 	arg.HeapOffset = heapOffset
-		// 	// } else {
-		// 	// 	arg.HeapOffset = 0
-		// 	// }
-
-		// 	heapOffset = AllocateSeq(PRGRM, len(byts)+OBJECT_HEADER_SIZE)
-		// 	arg.HeapOffset = heapOffset
-			
-		// 	if isGlobal {
-		// 		arg.MemoryRead = MEM_DATA
-		// 		arg.Offset = DataOffset
-		// 		DataOffset += size
-		// 		PRGRM.Memory = append(PRGRM.Memory, make([]byte, size)...)
-		// 	} else {
-		// 		arg.MemoryRead = MEM_HEAP
-		// 		arg.Offset = heapOffset
-		// 		arg.PassBy = PASSBY_REFERENCE
-		// 	}
-		// 	arg.MemoryWrite = MEM_HEAP
-
-		// 	WriteMemory(PRGRM.Memory, heapOffset, obj)
-		// 	// if !isStrNil {
-		// 	// 	WriteToHeap(&PRGRM.Heap, heapOffset, obj)
-		// 	// }
-		// } else {
-		// 	arg.MemoryRead = MEM_DATA
-		// 	arg.MemoryWrite = MEM_DATA
-			
-		// 	size = len(byts)
-			
-		// 	arg.Size = GetArgSize(typ)
-		// 	arg.TotalSize = size
-		// 	arg.Offset = DataOffset
-			
-			
-		// 	for i, byt := range byts {
-		// 		PRGRM.Memory[DataOffset + i] = byt
-		// 	}
-		// 	DataOffset += size
-		// 	// PRGRM.Memory = append(PRGRM.Memory, byts...)
-		// }
 
 		arg.MemoryRead = MEM_DATA
 		arg.MemoryWrite = MEM_DATA
@@ -1349,8 +1284,16 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg.Size = GetArgSize(typ)
 		arg.TotalSize = size
 		arg.Offset = DataOffset
+
+		// arg.PassBy = PASSBY_REFERENCE
 		
-		
+		if arg.Type == TYPE_STR {
+			arg.PassBy = PASSBY_REFERENCE
+			// arg.IsPointer = true
+			// arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
+			// arg.DereferenceLevels++
+		}
+
 		for i, byt := range byts {
 			PRGRM.Memory[DataOffset + i] = byt
 		}
@@ -1602,7 +1545,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				
 				expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
 				// expr.Outputs[0].DoesEscape = glbl.DoesEscape
-				expr.Outputs[0].PassBy = glbl.PassBy
+				// expr.Outputs[0].PassBy = glbl.PassBy
 			}
 		}
 	}
@@ -1991,13 +1934,13 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 				sym.Type = arg.Type
 			}
 
-			if arg.IsSlice && arg.Type == TYPE_STR {
-				// sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
-				sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_POINTER)
-				// sym.DereferenceLevels++
-				// sym.MemoryRead = MEM_HEAP
-				// sym.MemoryWrite = MEM_HEAP
-			}
+			// if arg.Type == TYPE_STR {
+			// 	// sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+			// 	sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_POINTER)
+			// 	// sym.DereferenceLevels++
+			// 	// sym.MemoryRead = MEM_HEAP
+			// 	// sym.MemoryWrite = MEM_HEAP
+			// }
 
 			sym.IsSlice = arg.IsSlice
 			sym.CustomType = arg.CustomType
@@ -2178,7 +2121,8 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 	}
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
-	var offset int = DataOffset
+	var offset int
+	PRGRM.HeapStartsAt = DataOffset
 
 	for i, expr := range exprs {
 		if expr.Label != "" && expr.Operator == Natives[OP_JMP] {

@@ -20,7 +20,7 @@ func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE, CALLSTACK_SIZE),
-		Memory:    make([]byte, INIT_HEAP_SIZE),
+		Memory:    make([]byte, STACK_SIZE + TYPE_POINTER_SIZE + INIT_HEAP_SIZE),
 	}
 
 	return newPrgrm

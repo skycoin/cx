@@ -1379,6 +1379,7 @@ func (prgrm *CXProgram) ToCall () *CXExpression {
 }
 
 func (prgrm *CXProgram) RunCompiled(nCalls int) error {
+	PROGRAM = prgrm
 	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -1496,7 +1497,10 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			}
 
 			// debugging memory
-			fmt.Println("prgrm.Memory", prgrm.Memory)
+			if len(prgrm.Memory) < 2000 {
+				fmt.Println("prgrm.Memory", prgrm.Memory)
+			}
+
 			return err
 		} else {
 			return err
@@ -1528,11 +1532,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			expr := returnOp.Expressions[returnLine]
 			for i, out := range expr.Outputs {
 				WriteMemory(
-					prgrm.Memory,
-					GetFinalOffset(prgrm.Memory, returnFP, out, MEM_WRITE),
+					GetFinalOffset(returnFP, out),
 					ReadMemory(
-						prgrm.Memory,
-						GetFinalOffset(prgrm.Memory, fp, call.Operator.Outputs[i], MEM_READ),
+						GetFinalOffset(fp, call.Operator.Outputs[i]),
 						call.Operator.Outputs[i]))
 			}
 
@@ -1583,31 +1585,22 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			for i, inp := range expr.Inputs {
 				var byts []byte
 				// finalOffset := inp.Offset
-				finalOffset := GetFinalOffset(prgrm.Memory, fp, inp, MEM_READ)
+				finalOffset := GetFinalOffset(fp, inp)
 				// finalOffset := fp + inp.Offset
 
 				// if inp.Indexes != nil {
 				// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 				// }
-				if inp.IsReference {
+				if inp.PassBy == PASSBY_REFERENCE {
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					switch inp.MemoryWrite {
-					case MEM_STACK:
-						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
-					case MEM_DATA:
-						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
-					case MEM_HEAP:
-						byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
-					default:
-						panic("implement the other mem types")
-					}
+					byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
 				}
-				
+
 				// writing inputs to new stack frame
 				WriteMemory(
-					prgrm.Memory,
-					GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+					newFP + newCall.Operator.Inputs[i].Offset,
+					// GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
 					byts)
 			}
 		}

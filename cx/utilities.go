@@ -2087,8 +2087,8 @@ func (prgrm *CXProgram) PrintProgram() {
 						name = arg.Name
 					}
 
-					offRead := GetFinalOffset(prgrm.Memory, 0, arg, MEM_READ)
-					offWrite := GetFinalOffset(prgrm.Memory, 0, arg, MEM_WRITE)
+					offRead := GetFinalOffset(0, arg)
+					offWrite := GetFinalOffset(0, arg)
 					var memRead string
 					var memWrite string
 					switch arg.MemoryRead {
@@ -2131,8 +2131,8 @@ func (prgrm *CXProgram) PrintProgram() {
 						// for _, idx := range outName.Indexes {
 						// 	indexes += fmt.Sprintf("[%d]", idx)
 						// }
-						offRead := GetFinalOffset(prgrm.Memory, 0, outName, MEM_READ)
-						offWrite := GetFinalOffset(prgrm.Memory, 0, outName, MEM_WRITE)
+						offRead := GetFinalOffset(0, outName)
+						offWrite := GetFinalOffset(0, outName)
 						var memRead string
 						var memWrite string
 						switch outName.MemoryRead {

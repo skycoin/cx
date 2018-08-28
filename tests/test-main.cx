@@ -2,7 +2,7 @@ package main
 import "testing"
 
 func main () {
-	testing.testI32()
+	// testing.testI32()
 	// testing.testI64()
 	// testing.testF32()
 	// testing.testF64()
@@ -11,11 +11,11 @@ func main () {
 	// testing.testFunctions()
 
 	// testing.testControlFlow()
-	// // testing.testStructures()
+	// testing.testStructures()
 
 	// testing.testSTR()
-	// testing.testPointers()
+	testing.testPointers()
 	// testing.testSlices()
-	// // implement parse byte functions and other stuff
-	// //testing.testBYTE()
+	// implement parse byte functions and other stuff
+	//testing.testBYTE()
 }

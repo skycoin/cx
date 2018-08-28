@@ -8,77 +8,77 @@ import (
 // declared in func_glfw.go
 var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
 
-func op_glfw_Init(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_Init(expr *CXExpression, fp int) {
 	glfw.Init()
 }
 
-func op_glfw_WindowHint(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_WindowHint(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	glfw.WindowHint(glfw.Hint(ReadI32(mem, fp, inp1)), int(ReadI32(mem, fp, inp2)))
+	glfw.WindowHint(glfw.Hint(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)))
 }
 
-func op_glfw_SetInputMode(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SetInputMode(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	windows[ReadStr(mem, fp, inp1)].SetInputMode(glfw.InputMode(ReadI32(mem, fp, inp2)), int(ReadI32(mem, fp, inp3)))
+	windows[ReadStr(fp, inp1)].SetInputMode(glfw.InputMode(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
 }
 
-func op_glfw_GetCursorPos(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_GetCursorPos(expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
-	x, y := windows[ReadStr(mem, fp, inp1)].GetCursorPos()
-	WriteMemory(mem, GetFinalOffset(mem, fp, out1, MEM_WRITE), FromF64(x))
-	WriteMemory(mem, GetFinalOffset(mem, fp, out2, MEM_WRITE), FromF64(y))
+	x, y := windows[ReadStr(fp, inp1)].GetCursorPos()
+	WriteMemory(GetFinalOffset(fp, out1), FromF64(x))
+	WriteMemory(GetFinalOffset(fp, out2), FromF64(y))
 }
 
-func op_glfw_CreateWindow(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_CreateWindow(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	if win, err := glfw.CreateWindow(int(ReadI32(mem, fp, inp2)), int(ReadI32(mem, fp, inp3)), ReadStr(mem, fp, inp4), nil, nil); err == nil {
-		windows[ReadStr(mem, fp, inp1)] = win
+	if win, err := glfw.CreateWindow(int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), ReadStr(fp, inp4), nil, nil); err == nil {
+		windows[ReadStr(fp, inp1)] = win
 	} else {
 		panic(err)
 	}
 }
 
-func op_glfw_MakeContextCurrent(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_MakeContextCurrent(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
-	windows[ReadStr(mem, fp, inp1)].MakeContextCurrent()
+	windows[ReadStr(fp, inp1)].MakeContextCurrent()
 }
 
-func op_glfw_ShouldClose(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_ShouldClose(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	if windows[ReadStr(mem, fp, inp1)].ShouldClose() {
-		WriteMemory(mem, GetFinalOffset(mem, fp, out1, MEM_WRITE), FromBool(true))
+	if windows[ReadStr(fp, inp1)].ShouldClose() {
+		WriteMemory(GetFinalOffset(fp, out1), FromBool(true))
 	} else {
-		WriteMemory(mem, GetFinalOffset(mem, fp, out1, MEM_WRITE), FromBool(false))
+		WriteMemory(GetFinalOffset(fp, out1), FromBool(false))
 	}
 }
 
-func op_glfw_GetFramebufferSize(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_GetFramebufferSize(expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
-	width, height := windows[ReadStr(mem, fp, inp1)].GetFramebufferSize()
-	WriteMemory(mem, GetFinalOffset(mem, fp, out1, MEM_WRITE), FromI32(int32(width)))
-	WriteMemory(mem, GetFinalOffset(mem, fp, out2, MEM_WRITE), FromI32(int32(height)))
+	width, height := windows[ReadStr(fp, inp1)].GetFramebufferSize()
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(width)))
+	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
 }
 
 func op_glfw_PollEvents() {
 	glfw.PollEvents()
 }
 
-func op_glfw_SwapBuffers(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SwapBuffers(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
-	windows[ReadStr(mem, fp, inp1)].SwapBuffers()
+	windows[ReadStr(fp, inp1)].SwapBuffers()
 }
 
-func op_glfw_GetTime(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_GetTime(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
-	WriteMemory(mem, GetFinalOffset(mem, fp, out1, MEM_WRITE), FromF64(glfw.GetTime()))
+	WriteMemory(GetFinalOffset(fp, out1), FromF64(glfw.GetTime()))
 }
 
-func op_glfw_SetKeyCallback(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	prgrm := expr.Program
 
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := expr.Program.GetFunction(ReadStr(mem, fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -116,8 +116,7 @@ func op_glfw_SetKeyCallback(expr *CXExpression, mem []byte, fp int) {
 
 			for i, inp := range inps {
 				WriteMemory(
-					prgrm.Memory,
-					GetFinalOffset(prgrm.Memory, newFP, newCall.Operator.Inputs[i], MEM_WRITE),
+					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
 					inp)
 			}
 			
@@ -135,40 +134,40 @@ func op_glfw_SetKeyCallback(expr *CXExpression, mem []byte, fp int) {
 		}
 	}
 
-	windows[ReadStr(mem, fp, inp1)].SetKeyCallback(callback)
+	windows[ReadStr(fp, inp1)].SetKeyCallback(callback)
 }
 
-func op_glfw_SetCursorPosCallback(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
-		if fn, err := expr.Program.GetFunction(ReadStr(mem, fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			// TODO
 			_ = fn
 		}
 	}
 
-	windows[ReadStr(mem, fp, inp1)].SetCursorPosCallback(callback)
+	windows[ReadStr(fp, inp1)].SetCursorPosCallback(callback)
 }
 
-func op_glfw_SetShouldClose(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	if ReadBool(mem, fp, inp2) {
-		windows[ReadStr(mem, fp, inp1)].SetShouldClose(true)
+	if ReadBool(fp, inp2) {
+		windows[ReadStr(fp, inp1)].SetShouldClose(true)
 	} else {
-		windows[ReadStr(mem, fp, inp1)].SetShouldClose(false)
+		windows[ReadStr(fp, inp1)].SetShouldClose(false)
 	}
 }
 
-func op_glfw_SetMouseButtonCallback(expr *CXExpression, mem []byte, fp int) {
+func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := expr.Program.GetFunction(ReadStr(mem, fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			// TODO
 			_ = fn
 		}
 	}
 
-	windows[ReadStr(mem, fp, inp1)].SetMouseButtonCallback(callback)
+	windows[ReadStr(fp, inp1)].SetMouseButtonCallback(callback)
 }

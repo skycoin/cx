@@ -15,9 +15,9 @@ const (
 		
 )
 
-func op_http_get(expr *CXExpression, mem []byte, fp int) {
+func op_http_get(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(mem, fp, out1, MEM_WRITE)
+	out1Offset := GetFinalOffset(fp, out1)
 
 	var err error
 	var resp *http.Response
@@ -26,7 +26,7 @@ func op_http_get(expr *CXExpression, mem []byte, fp int) {
 	var netClient = &http.Client{
 		Timeout: time.Second * 10,
 	}
-	resp, err = netClient.Get(ReadStr(mem, fp, inp1))
+	resp, err = netClient.Get(ReadStr(fp, inp1))
 	
 	// resp, err = http.Get(ReadStr(mem, fp, inp1))
 
@@ -42,7 +42,7 @@ func op_http_get(expr *CXExpression, mem []byte, fp int) {
 
 	byts := encoder.Serialize(string(contents))
 	length := len(byts)
-	heapOffset := AllocateSeq(expr.Program, length+OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(length+OBJECT_HEADER_SIZE)
 	size := encoder.Serialize(int32(len(byts)))
 
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
@@ -52,11 +52,11 @@ func op_http_get(expr *CXExpression, mem []byte, fp int) {
 
 	obj := append(header, byts...)
 
-	WriteMemory(mem, heapOffset, obj)
+	WriteMemory(heapOffset, obj)
 
 	off := encoder.SerializeAtomic(int32(heapOffset))
 
-	WriteMemory(mem, out1Offset, off)
+	WriteMemory(out1Offset, off)
 }
 
 

@@ -5,18 +5,18 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_assert_value(expr *CXExpression, mem []byte, fp int) {
+func op_assert_value(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	
 
 	var byts1, byts2 []byte
 	
 	if inp1.Type == TYPE_STR {
-		byts1 = []byte(ReadStr(mem, fp, inp1))
-		byts2 = []byte(ReadStr(mem, fp, inp2))
+		byts1 = []byte(ReadStr(fp, inp1))
+		byts2 = []byte(ReadStr(fp, inp2))
 	} else {
-		byts1 = ReadMemory(mem, GetFinalOffset(mem, fp, inp1, MEM_READ), inp1)
-		byts2 = ReadMemory(mem, GetFinalOffset(mem, fp, inp2, MEM_READ), inp2)
+		byts1 = ReadMemory(GetFinalOffset(fp, inp1), inp1)
+		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
 	var same bool
@@ -38,7 +38,7 @@ func op_assert_value(expr *CXExpression, mem []byte, fp int) {
 	
 
 	var message string
-	message = ReadStr(mem, fp, inp3)
+	message = ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
