@@ -19,8 +19,7 @@ func main () {
 	testing.testSTR()
 	testing.testPointers()
 	testing.testSlices()
-	// implement parse byte functions and other stuff
-	//testing.testBYTE()
+	// testing.testBYTE()
 
 	var end i64
 	end = time.UnixNano()

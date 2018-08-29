@@ -27,19 +27,22 @@ func main () {
 	// target = [0]str{"hi", "hello"}
 	
 	target = ->{
-		pkg(main)
-		// fn(main)
-		// expr(message)
+		a(a)
+		a(a)
+		a(a)
 	}
 
-	// str.print(target[0])
-	// str.print(target[1])
+	str.print(target[0])
+	str.print(target[1])
+	str.print(target[2])
+	str.print(target[3])
+	str.print(target[4])
+	str.print(target[5])
   	
   	// rules = ->{
 	// 	allow(* > 1.0D)
   	// }
 
-	// str.print(target[0])
 	
   	// affs := aff.query(target, rules)
   	// aff.print(affs)
