@@ -7,23 +7,28 @@ import (
 
 func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
 	var heapOffset int
-	if arg.HeapOffset > 0 {
-		// then it's a reference to the symbol
-		var off int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[fp+arg.HeapOffset:fp+arg.HeapOffset+TYPE_POINTER_SIZE], &off)
+	// if arg.HeapOffset > 0 {
+	// 	// then it's a reference to the symbol
+	// 	var off int32
+	// 	encoder.DeserializeAtomic(PROGRAM.Memory[fp+arg.HeapOffset:fp+arg.HeapOffset+TYPE_POINTER_SIZE], &off)
 
-		if off > 0 {
-			// non-nil, i.e. object is already allocated
-			heapOffset = int(off)
-		} else {
-			// nil, needs to be allocated
-			heapOffset = AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
-			o := GetFinalOffset(fp, arg)
-			WriteMemory(o, encoder.SerializeAtomic(int32(heapOffset)))
-		}
-	}
+	// 	if off > 0 {
+	// 		// non-nil, i.e. object is already allocated
+	// 		heapOffset = int(off)
+	// 	} else {
+	// 		// nil, needs to be allocated
+	// 		heapOffset = AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+	// 		o := GetFinalOffset(fp, arg)
+	// 		WriteMemory(o, encoder.SerializeAtomic(int32(heapOffset)))
+	// 	}
+	// }
+
+	heapOffset = AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+	// o := GetFinalOffset(fp, arg)
+	// WriteMemory(o, encoder.SerializeAtomic(int32(heapOffset)))
 
 	byts := ReadMemory(inpOffset, arg)
+
 	// creating a header for this object
 	size := encoder.SerializeAtomic(int32(len(byts)))
 
@@ -39,7 +44,6 @@ func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
 	off := encoder.SerializeAtomic(int32(heapOffset))
 
 	WriteMemory(outOffset, off)
-	// WriteMemory(outOffset, arg, off)
 }
 
 func op_identity(expr *CXExpression, fp int) {

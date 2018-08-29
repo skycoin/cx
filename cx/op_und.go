@@ -286,7 +286,6 @@ func op_append(expr *CXExpression, fp int) {
 	out1Offset := GetFinalOffset(fp, out1)
 
 	var off int32
-	// var size int32
 	var byts []byte
 
 	byts = PROGRAM.Memory[out1Offset : out1Offset+TYPE_POINTER_SIZE]
@@ -304,15 +303,12 @@ func op_append(expr *CXExpression, fp int) {
 			sliceHeader = PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
 
 			encoder.DeserializeAtomic(sliceHeader[:4], &len1)
-			heapOffset = AllocateSeq((int(len1)*inp2.TotalSize) + inp2.TotalSize + OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE)
+			heapOffset = AllocateSeq((int(len1)*inp2.TotalSize) + inp2.TotalSize + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
 		} else {
 			// then obj1 is nil and zero-sized
-			heapOffset = AllocateSeq(inp2.TotalSize+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE)
+			heapOffset = AllocateSeq(inp2.TotalSize + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
 		}
-		
-		// writing address to PROGRAM.Memory
-		// WriteMemory(out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
-		// WriteMemory(out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+
 		WriteMemory(out1Offset, encoder.SerializeAtomic(int32(heapOffset)))
 
 		var obj1 []byte
@@ -320,17 +316,11 @@ func op_append(expr *CXExpression, fp int) {
 		
 		obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 
-		// obj2 = ReadMemory(inp2Offset, inp2)
-		
 		if inp2.Type == TYPE_STR {
-			// obj2 = []byte(ReadStr(inp2Offset, inp2))
 			obj2 = encoder.SerializeAtomic(int32(inp2Offset))
 		} else {
 			obj2 = ReadMemory(inp2Offset, inp2)
 		}
-		
-
-		// fmt.Println("obj2", ReadStr(inp2Offset, inp2))
 
 		var size []byte
 		if inp1Offset != 0 {
@@ -361,17 +351,13 @@ func op_append(expr *CXExpression, fp int) {
 		WriteMemory(heapOffset, finalObj)
 	} else {
 		// then we have access to a size and capacity
-		// sliceHeader := PROGRAM.Memory.Program.Heap.Heap[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 		var sliceHeader []byte
-		if inp1.Type == TYPE_STR {
-			sliceHeader = PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
-		} else {
-			sliceHeader = PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
-		}
-		// sliceHeader = PROGRAM.Memory.Program.Heap.Heap[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
-		// fmt.Println("houhou", off, inp1Offset-SLICE_HEADER_SIZE, inp1Offset)
-		
-		// sliceHeader = PROGRAM.Memory.Program.Heap.Heap[off-SLICE_HEADER_SIZE : off]
+		// if inp1.Type == TYPE_STR {
+		// 	sliceHeader = PROGRAM.Memory[off - SLICE_HEADER_SIZE : off]
+		// } else {
+		// 	sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
+		// }
+		sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
 		
 		var l int32
 		var c int32
@@ -381,32 +367,27 @@ func op_append(expr *CXExpression, fp int) {
 
 		if l >= c {
 			// then we need to increase cap and relocate slice
-			// prevObj := PROGRAM.Memory.Program.Heap.Heap[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l*int32(inp2.TotalSize)]
-
 			var obj1 []byte
 			var obj2 []byte
-			
-			// obj1 = PROGRAM.Memory.Program.Heap.Heap[inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : int32(inp1Offset)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
 
-			if inp1.Type == TYPE_STR {
-				obj1 = PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
-			} else {
-				obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
-			}
+			// if inp1.Type == TYPE_STR {
+			// 	obj1 = PROGRAM.Memory[off : off + l*int32(inp2.TotalSize)]
+			// } else {
+			// 	obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
+			// }
+			obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
 
 			if inp2.Type == TYPE_STR {
 				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
 			}
-			// obj2 = ReadMemory(inp2Offset, inp2)
 
 			l++
 			c = c * 2
 
-			heapOffset = AllocateSeq(int(c)*inp2.TotalSize + OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE)
-			
-			// WriteMemory(out1Offset, out1, encoder.SerializeAtomic(int32(heapOffset)))
+			heapOffset = AllocateSeq(int(c)*inp2.TotalSize + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
+
 			WriteMemory(out1Offset, encoder.SerializeAtomic(int32(heapOffset)))
 
 			size := encoder.SerializeAtomic(int32(int(c)*inp2.TotalSize + SLICE_HEADER_SIZE))

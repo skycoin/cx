@@ -21,8 +21,6 @@
 	// 		arg := MakeArgument("")
 	// 		arg.AddType(TypeNames[typ])
         //                 arg.AddValue(&byts)
-	// 		arg.MemoryRead = MEM_DATA
-	// 		arg.MemoryWrite = MEM_DATA
 	// 		arg.Offset = dataOffset
 	// 		arg.Package = pkg
 	// 		arg.Program = PRGRM0
@@ -185,8 +183,6 @@ global_declaration:
 				expr := WritePrimary($3.Type, make([]byte, $3.TotalSize), true)
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
-				$3.MemoryRead = exprOut.MemoryRead
-				$3.MemoryWrite = exprOut.MemoryWrite
 				$3.Offset = exprOut.Offset
 
 				$3.Size = exprOut.Size
@@ -205,8 +201,6 @@ global_declaration:
 				exprOut := expr[0].Outputs[0]
 				$3.Name = $2.Name
 				// $3.Value = $5[0].Outputs[0].Value
-				$3.MemoryRead = exprOut.MemoryRead
-				$3.MemoryWrite = exprOut.MemoryWrite
 				$3.Offset = exprOut.Offset
 				$3.Size = exprOut.Size
 				$3.TotalSize = exprOut.TotalSize
@@ -404,7 +398,6 @@ declaration_specifiers:
 			$2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
 			if !$2.IsPointer {
 				$2.IsPointer = true
-				// $2.MemoryRead = MEM_HEAP
 				$2.PointeeSize = $2.Size
 				$2.Size = TYPE_POINTER_SIZE
 				$2.TotalSize = TYPE_POINTER_SIZE

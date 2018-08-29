@@ -2043,11 +2043,9 @@ func (prgrm *CXProgram) PrintProgram() {
 					var name string
 					var dat []byte
 
-					switch arg.MemoryRead {
-					case MEM_DATA:
-						// name = fmt.Sprintf("%v", prgrm.Memory[arg.Offset : arg.Offset + arg.Size])
+					if arg.Offset > STACK_SIZE {
 						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
-					default:
+					} else {
 						name = arg.Name
 					}
 
@@ -2086,33 +2084,13 @@ func (prgrm *CXProgram) PrintProgram() {
 					if arg.Name != "" {
 						name = arg.Name
 					}
-
-					offRead := GetFinalOffset(0, arg)
-					offWrite := GetFinalOffset(0, arg)
-					var memRead string
-					var memWrite string
-					switch arg.MemoryRead {
-					case MEM_STACK:
-						memRead = "R|S|"
-					case MEM_HEAP:
-						memRead = "R|H|"
-					case MEM_DATA:
-						memRead = "R|D|"
-					}
-					switch arg.MemoryWrite {
-					case MEM_STACK:
-						memWrite = "W|S|"
-					case MEM_HEAP:
-						memWrite = "W|H|"
-					case MEM_DATA:
-						memWrite = "W|D|"
-					}
+					
 					if i == len(expr.Inputs)-1 {
 						
-						args.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", name, memRead, offRead, memWrite, offWrite, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s", name, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
-						args.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s,", name, memRead, offRead, memWrite, offWrite, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s,", name, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}
@@ -2127,35 +2105,10 @@ func (prgrm *CXProgram) PrintProgram() {
 				if len(expr.Outputs) > 0 {
 					var outNames bytes.Buffer
 					for i, outName := range expr.Outputs {
-						// var indexes string
-						// for _, idx := range outName.Indexes {
-						// 	indexes += fmt.Sprintf("[%d]", idx)
-						// }
-						offRead := GetFinalOffset(0, outName)
-						offWrite := GetFinalOffset(0, outName)
-						var memRead string
-						var memWrite string
-						switch outName.MemoryRead {
-						case MEM_STACK:
-							memRead = "R|S|"
-						case MEM_HEAP:
-							memRead = "R|H|"
-						case MEM_DATA:
-							memRead = "R|D|"
-						}
-						switch outName.MemoryWrite {
-						case MEM_STACK:
-							memWrite = "W|S|"
-						case MEM_HEAP:
-							memWrite = "W|H|"
-						case MEM_DATA:
-							memWrite = "W|D|"
-						}
 						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", outName.Name, memRead, offRead, memWrite, offWrite, TypeNames[outName.Type]))
-							// outNames.WriteString(outName.Name + fmt.Sprintf("%d", off) + " " + TypeNames[outName.Type])
+							outNames.WriteString(fmt.Sprintf("%s %s", outName.Name, TypeNames[outName.Type]))
 						} else {
-							outNames.WriteString(fmt.Sprintf("%s {%s%d} {%s%d} %s", outName.Name, memRead, offRead, memWrite, offWrite, TypeNames[outName.Type]))
+							outNames.WriteString(fmt.Sprintf("%s %s", outName.Name, TypeNames[outName.Type]))
 						}
 					}
 

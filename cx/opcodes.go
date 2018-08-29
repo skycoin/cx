@@ -48,6 +48,7 @@ const (
 	OP_I32_I64
 	OP_I32_F32
 	OP_I32_F64
+	
 	OP_I32_PRINT
 	OP_I32_ADD
 	OP_I32_SUB
@@ -78,6 +79,13 @@ const (
 	OP_I32_MIN
 	OP_I32_SIN
 	OP_I32_COS
+
+	OP_I64_BYTE
+	OP_I64_STR
+	OP_I64_I32
+	OP_I64_I64
+	OP_I64_F32
+	OP_I64_F64
 
 	OP_I64_PRINT
 	OP_I64_ADD
@@ -433,6 +441,19 @@ func execNative(prgrm *CXProgram) {
 		op_i32_sin(expr, fp)
 	case OP_I32_COS:
 		op_i32_cos(expr, fp)
+
+	case OP_I64_BYTE:
+		op_i64_i64(expr, fp)
+	case OP_I64_STR:
+		op_i64_i64(expr, fp)
+	case OP_I64_I32:
+		op_i64_i64(expr, fp)
+	case OP_I64_I64:
+		op_i64_i64(expr, fp)
+	case OP_I64_F32:
+		op_i64_i64(expr, fp)
+	case OP_I64_F64:
+		op_i64_i64(expr, fp)
 
 	case OP_I64_PRINT:
 		op_i64_print(expr, fp)
@@ -828,6 +849,7 @@ var OpNames map[int]string = map[int]string{
 	OP_I32_I64:      "i32.i64",
 	OP_I32_F32:      "i32.f32",
 	OP_I32_F64:      "i32.f64",
+
 	OP_I32_PRINT:    "i32.print",
 	OP_I32_ADD:      "i32.add",
 	OP_I32_SUB:      "i32.sub",
@@ -857,6 +879,14 @@ var OpNames map[int]string = map[int]string{
 	OP_I32_MIN:      "i32.min",
 	OP_I32_SIN:      "i32.sin",
 	OP_I32_COS:      "i32.cos",
+
+	OP_I64_BYTE:     "i64.byte",
+	OP_I64_STR:      "i64.str",
+	OP_I64_I32:      "i64.i32",
+	OP_I64_I64:      "i64.i64",
+	OP_I64_F32:      "i64.f32",
+	OP_I64_F64:      "i64.f64",
+	
 	OP_I64_PRINT:    "i64.print",
 	OP_I64_ADD:      "i64.add",
 	OP_I64_SUB:      "i64.sub",
@@ -1072,6 +1102,7 @@ var OpCodes map[string]int = map[string]int{
 	"i32.i64":      OP_I32_I64,
 	"i32.f32":      OP_I32_F32,
 	"i32.f64":      OP_I32_F64,
+	
 	"i32.print":    OP_I32_PRINT,
 	"i32.add":      OP_I32_ADD,
 	"i32.sub":      OP_I32_SUB,
@@ -1101,6 +1132,14 @@ var OpCodes map[string]int = map[string]int{
 	"i32.min":      OP_I32_MIN,
 	"i32.sin":      OP_I32_SIN,
 	"i32.cos":      OP_I32_COS,
+
+	"i64.byte":     OP_I64_BYTE,
+	"i64.str":      OP_I64_STR,
+	"i64.i32":      OP_I64_I32,
+	"i64.i64":      OP_I64_I64,
+	"i64.f32":      OP_I64_F32,
+	"i64.f64":      OP_I64_F64,
+	
 	"i64.print":    OP_I64_PRINT,
 	"i64.add":      OP_I64_ADD,
 	"i64.sub":      OP_I64_SUB,
@@ -1344,6 +1383,14 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I32_MIN:      MakeNative(OP_I32_MIN, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_SIN:      MakeNative(OP_I32_SIN, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_COS:      MakeNative(OP_I32_COS, []int{TYPE_I32}, []int{TYPE_I32}),
+
+	OP_I64_BYTE:     MakeNative(OP_I64_BYTE, []int{TYPE_I64}, []int{TYPE_BYTE}),
+	OP_I64_STR:      MakeNative(OP_I64_STR, []int{TYPE_I64}, []int{TYPE_STR}),
+	OP_I64_I32:      MakeNative(OP_I64_I32, []int{TYPE_I64}, []int{TYPE_I32}),
+	OP_I64_I64:      MakeNative(OP_I64_I64, []int{TYPE_I64}, []int{TYPE_I64}),
+	OP_I64_F32:      MakeNative(OP_I64_F32, []int{TYPE_I64}, []int{TYPE_F32}),
+	OP_I64_F64:      MakeNative(OP_I64_F64, []int{TYPE_I64}, []int{TYPE_F64}),
+	
 	OP_I64_PRINT:    MakeNative(OP_I64_PRINT, []int{TYPE_I64}, []int{}),
 	OP_I64_ADD:      MakeNative(OP_I64_ADD, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_SUB:      MakeNative(OP_I64_SUB, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),

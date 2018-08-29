@@ -80,8 +80,6 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				expr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
 				exprOut := expr[0].Outputs[0]
 				declaration_specifiers.Name = declarator.Name
-				// declaration_specifiers.MemoryRead = MEM_DATA
-				// declaration_specifiers.MemoryWrite = MEM_DATA
 				declaration_specifiers.Offset = exprOut.Offset
 				// declaration_specifiers.Lengths = exprOut.Lengths
 				declaration_specifiers.Size = exprOut.Size
@@ -94,8 +92,6 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 					expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 					expr.Package = pkg
 					declaration_specifiers.Name = declarator.Name
-					declaration_specifiers.MemoryRead = MEM_DATA
-					declaration_specifiers.MemoryWrite = MEM_DATA
 					declaration_specifiers.Offset = glbl.Offset
 					// declaration_specifiers.Lengths = glbl.Lengths
 					declaration_specifiers.Size = glbl.Size
@@ -109,8 +105,6 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 					SysInitExprs = append(SysInitExprs, expr)
 				} else {
 					declaration_specifiers.Name = declarator.Name
-					declaration_specifiers.MemoryRead = MEM_DATA
-					declaration_specifiers.MemoryWrite = MEM_DATA
 					declaration_specifiers.Offset = glbl.Offset
 					declaration_specifiers.Size = glbl.Size
 					// declaration_specifiers.Lengths = glbl.Lengths
@@ -283,8 +277,6 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true
-		// arg.MemoryRead = MEM_HEAP
-		// arg.MemoryWrite = MEM_HEAP
 		arg.PassBy = PASSBY_REFERENCE
 		// arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
 
@@ -496,8 +488,10 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	slcVar.AddType(TypeNames[typSpec])
 	// slcVarExpr.AddOutput(slcVar)
 
-	slcVar.TotalSize = slcVar.Size
-	slcVar.Size = TYPE_POINTER_SIZE
+	// slcVar.TotalSize = slcVar.Size
+	// slcVar.Size = TYPE_POINTER_SIZE
+	slcVar.TotalSize = TYPE_POINTER_SIZE
+	
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
 	slcVar.Package = pkg
@@ -516,10 +510,10 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 
 			// sym = DeclarationSpecifiers(sym, 0, DECL_SLICE)
 
-			if symInp.Type == TYPE_STR {
-				symInp.PassBy = PASSBY_REFERENCE
-				symOut.PassBy = PASSBY_REFERENCE
-			}
+			// if symInp.Type == TYPE_STR {
+			// 	symInp.PassBy = PASSBY_REFERENCE
+			// 	symOut.PassBy = PASSBY_REFERENCE
+			// }
 
 			endPointsCounter++
 
@@ -552,15 +546,13 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 			// result = append(result, expr)
 			result = append(result, symExpr)
 
-			// sym.Lengths = append(sym.Lengths, int($2))
-			// symInp.TotalSize = symInp.Size * TotalLength(symInp.Lengths)
-			// symOut.TotalSize = symOut.Size * TotalLength(symOut.Lengths)
+			// symInp.TotalSize = symInp.Size
+			// symInp.Size = TYPE_POINTER_SIZE
+			symInp.TotalSize = TYPE_POINTER_SIZE
 
-			symInp.TotalSize = symInp.Size
-			symInp.Size = TYPE_POINTER_SIZE
-
-			symOut.TotalSize = symOut.Size
-			symOut.Size = TYPE_POINTER_SIZE
+			// symOut.TotalSize = symOut.Size
+			// symOut.Size = TYPE_POINTER_SIZE
+			symOut.TotalSize = TYPE_POINTER_SIZE
 		} else {
 			result = append(result, expr)
 		}
@@ -572,7 +564,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	symOutput.PassBy = PASSBY_REFERENCE
 	// symOutput.IsSlice = true
 	symOutput.Package = pkg
-	// symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	// symOutput.DeclarationSpecifiers = append(symOutput.DeclarationSpecifiers, DECL_ARRAY)
 
@@ -580,13 +571,14 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	// symInput.IsSlice = true
 	symInput.Package = pkg
 	symInput.PassBy = PASSBY_REFERENCE
-	// symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 
-	symInput.TotalSize = symInput.Size
-	symInput.Size = TYPE_POINTER_SIZE
+	// symInput.TotalSize = symInput.Size
+	// symInput.Size = TYPE_POINTER_SIZE
+	symInput.TotalSize = TYPE_POINTER_SIZE
 
-	symOutput.TotalSize = symOutput.Size
-	symOutput.Size = TYPE_POINTER_SIZE
+	// symOutput.TotalSize = symOutput.Size
+	// symOutput.Size = TYPE_POINTER_SIZE
+	symOutput.TotalSize = TYPE_POINTER_SIZE
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
@@ -1264,7 +1256,6 @@ func IsStrNil (byts []byte) bool {
 	return true
 }
 
-// Primary expressions (literals) are saved in the MEM_DATA segment at compile-time
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1276,9 +1267,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		
 		var size int
 
-		arg.MemoryRead = MEM_DATA
-		arg.MemoryWrite = MEM_DATA
-		
 		size = len(byts)
 		
 		arg.Size = GetArgSize(typ)
@@ -1289,6 +1277,8 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		
 		if arg.Type == TYPE_STR {
 			arg.PassBy = PASSBY_REFERENCE
+			arg.Size = TYPE_POINTER_SIZE
+			arg.TotalSize = TYPE_POINTER_SIZE
 			// arg.IsPointer = true
 			// arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
 			// arg.DereferenceLevels++
@@ -1536,20 +1526,6 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		from[0].Outputs[0].SynonymousTo = to[0].Outputs[0].Name
 	}
 
-	if glbl, err := to[0].Outputs[0].Package.GetGlobal(to[0].Outputs[0].Name); err == nil {
-		for _, expr := range from {
-			if len(expr.Outputs) > 0 {
-				if !glbl.IsPointer {
-					expr.Outputs[0].MemoryRead = glbl.MemoryRead
-				}
-				
-				expr.Outputs[0].MemoryWrite = glbl.MemoryWrite
-				// expr.Outputs[0].DoesEscape = glbl.DoesEscape
-				// expr.Outputs[0].PassBy = glbl.PassBy
-			}
-		}
-	}
-
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 
 		var expr *CXExpression
@@ -1613,13 +1589,6 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
 		to[0].Outputs[0].Program = PRGRM
 
-		// // assigning .Value to field if present
-		// if len(to[0].Outputs[0].Fields) > 0 {
-		// 	to[0].Outputs[0].Fields[len(to[0].Outputs[0].Fields) - 1].Value = from[idx].Outputs[0].Value
-		// } else {
-		// 	to[0].Outputs[0].Value = from[idx].Outputs[0].Value
-		// }
-
 		from[idx].Inputs = from[idx].Outputs
 		from[idx].Outputs = to[len(to)-1].Outputs
 		from[idx].Program = PRGRM
@@ -1643,20 +1612,9 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			to[0].Outputs[0].Program = PRGRM
 		}
 
-		// // assigning .Value to field if present
-		// if len(to[0].Outputs[0].Fields) > 0 {
-		// 	to[0].Outputs[0].Fields[len(to[0].Outputs[0].Fields) - 1].Value = from[idx].Outputs[0].Value
-		// } else {
-		// 	to[0].Outputs[0].Value = from[idx].Outputs[0].Value
-		// }
-
 		from[idx].Outputs = to[0].Outputs
 		from[idx].Program = to[0].Program
 
-		if from[0].IsStructLiteral {
-			from[idx].Outputs[0].MemoryRead = MEM_HEAP
-		}
-		
 		return append(to[:len(to)-1], from...)
 	}
 }
@@ -1813,20 +1771,20 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 		if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
 			panic("")
 		} else {
-			if sym.IsReference {
-				if arg.HeapOffset < 1 && !arg.IsSlice {
-					// then it hasn't been assigned
-					// an offset of 0 is impossible because the symbol was declared before
+			// if sym.IsReference {
+			// 	if arg.HeapOffset < 1 && !arg.IsSlice {
+			// 		// then it hasn't been assigned
+			// 		// an offset of 0 is impossible because the symbol was declared before
 
-					arg.HeapOffset = *offset
-					// sym.HeapOffset = *offset
-					*offset += TYPE_POINTER_SIZE
-				}
+			// 		arg.HeapOffset = *offset
+			// 		// sym.HeapOffset = *offset
+			// 		*offset += TYPE_POINTER_SIZE
+			// 	}
 
-				// if not, then it has been assigned before
-				// and we just reassign it to this symbol
-				// we'll do this below, where we're assigning everything to sym
-			}
+			// 	// if not, then it has been assigned before
+			// 	// and we just reassign it to this symbol
+			// 	// we'll do this below, where we're assigning everything to sym
+			// }
 
 			// identifying customtypes of fields if they are nil
 			if len(sym.Fields) > 0 {
@@ -1934,14 +1892,6 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 				sym.Type = arg.Type
 			}
 
-			// if arg.Type == TYPE_STR {
-			// 	// sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
-			// 	sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_POINTER)
-			// 	// sym.DereferenceLevels++
-			// 	// sym.MemoryRead = MEM_HEAP
-			// 	// sym.MemoryWrite = MEM_HEAP
-			// }
-
 			sym.IsSlice = arg.IsSlice
 			sym.CustomType = arg.CustomType
 			sym.Pointee = arg.Pointee
@@ -1949,30 +1899,14 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 			sym.PointeeSize = arg.PointeeSize
 			sym.Package = arg.Package
 			sym.Program = arg.Program
-			sym.HeapOffset = arg.HeapOffset
-			// sym.PassBy = arg.PassBy
-
-			if !sym.IsReference {
-				sym.MemoryRead = arg.MemoryRead
-				sym.MemoryWrite = arg.MemoryWrite
-			}
-
-			if sym.DereferenceLevels > 0 {
-				sym.MemoryRead = MEM_HEAP
-				sym.MemoryWrite = MEM_HEAP
-			}
+			sym.DoesEscape = arg.DoesEscape
 
 			if sym.IsReference && !arg.IsStruct {
-				// sym.Size = TYPE_POINTER_SIZE
-				// sym.TotalSize = TYPE_POINTER_SIZE
 				sym.TotalSize = arg.TotalSize
-
 				sym.Size = arg.Size
-				// sym.TotalSize = arg.TotalSize
 			} else {
 				// we need to implement a more robust system, like the one in op.go
 				if len(sym.Fields) > 0 {
-					// sym.Size = sym.Fields[len(sym.Fields) - 1].Size
 					sym.Size = arg.Size
 					sym.TotalSize = sym.Fields[len(sym.Fields)-1].TotalSize
 				} else {
@@ -2085,8 +2019,6 @@ func ProcessInputSlice(inp *CXArgument) {
 	if inp.IsSlice {
 		inp.DereferenceOperations = append([]int{DEREF_POINTER}, inp.DereferenceOperations...)
 		inp.DereferenceLevels++
-		inp.MemoryRead = MEM_HEAP
-		inp.MemoryWrite = MEM_HEAP
 	}
 }
 
@@ -2097,16 +2029,12 @@ func ProcessOutputSlice(out *CXArgument) {
 	if out.IsSlice && len(out.DereferenceOperations) > 0 {
 		out.DereferenceOperations = append([]int{DEREF_POINTER}, out.DereferenceOperations...)
 		out.DereferenceLevels++
-		out.MemoryRead = MEM_HEAP
-		out.MemoryWrite = MEM_HEAP
 	}
 }
 
 func ProcessSliceAssignment(expr *CXExpression) {
 	if expr.Operator == Natives[OP_IDENTITY] && expr.Outputs[0].IsSlice && expr.Inputs[0].IsSlice {
 		expr.Inputs[0].DereferenceOperations = expr.Inputs[0].DereferenceOperations[1:]
-		expr.Inputs[0].MemoryRead = MEM_STACK
-		expr.Outputs[0].MemoryRead = MEM_STACK
 	}
 }
 
@@ -2118,6 +2046,12 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 	
 	for _, out := range outputs {
 		fn.AddOutput(out)
+	}
+
+	for _, out := range fn.Outputs {
+		if out.IsPointer && out.Type != TYPE_STR {
+			out.DoesEscape = true
+		}
 	}
 
 	// getting offset to use by statements (excluding inputs, outputs and receiver)
@@ -2218,21 +2152,6 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
-	}
-
-	// checking if assigning pointer to pointer
-	for _, expr := range fn.Expressions {
-		if expr.Operator == Natives[OP_IDENTITY] {
-			for i, out := range expr.Outputs {
-				if out.IsPointer && expr.Inputs[i].IsPointer {
-					// we're modifying the actual pointer
-					expr.Inputs[i].MemoryRead = MEM_STACK
-					expr.Inputs[i].MemoryWrite = MEM_STACK
-					out.MemoryRead = MEM_STACK
-					out.MemoryWrite = MEM_STACK
-				}
-			}
-		}
 	}
 
 	fn.Size = offset

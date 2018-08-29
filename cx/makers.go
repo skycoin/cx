@@ -42,7 +42,6 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 		Name:       name,
 		Type:       typ,
 		Size:       size,
-		MemoryRead: MEM_DATA,
 		Offset:     HeapOffset,
 		FileName:   fileName,
 		FileLine:   fileLine,

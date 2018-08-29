@@ -156,10 +156,8 @@ type CXArgument struct {
 	TotalSize   int // total size of an array, performance reasons
 	PointeeSize int
 
-	MemoryRead  int // these will later be removed and a single memory pointer will be used
-	MemoryWrite int
 	Offset      int
-	HeapOffset  int
+	// HeapOffset  int
 	// OffsetOffset int // for struct fields
 
 	IndirectionLevels     int

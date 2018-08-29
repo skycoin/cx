@@ -419,26 +419,26 @@ func main () {
 	// 	bool.print((*cells)[c].alive)
 	// }
 
-	// // Start FPS
-	// var lastTime f64
-	// var currentTime f64
-	// var nbFrames i32
-	// lastTime = glfw.GetTime()
-	// nbFrames = 0
-	// // End FPS
+	// Start FPS
+	var lastTime f64
+	var currentTime f64
+	var nbFrames i32
+	lastTime = glfw.GetTime()
+	nbFrames = 0
+	// End FPS
 
 	for bool.not(glfw.ShouldClose("window")) {
-		// // Start FPS
-		// currentTime = glfw.GetTime()
-		// nbFrames = i32.add(nbFrames, 1)
+		// Start FPS
+		currentTime = glfw.GetTime()
+		nbFrames = i32.add(nbFrames, 1)
 
 		
-		// if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
-		// 	i32.print(nbFrames)
-		// 	nbFrames = 0
-		// 	lastTime = f64.add(lastTime, 1.0D)
-		// }
-		// // End FPS
+		if f64.gteq(f64.sub(currentTime, lastTime), 1.0D) {
+			i32.print(nbFrames)
+			nbFrames = 0
+			lastTime = f64.add(lastTime, 1.0D)
+		}
+		// End FPS
 
 		var c i32
 		for c = 0; i32.lt(c, 900); c = i32.add(c, 1) {
@@ -448,10 +448,7 @@ func main () {
 			// i32.print((*cells)[c].drawable)
 			// i32.print((*cells)[c].x)
 
-			time.Sleep(1000)
-			
 			(*cells)[c] = changeState((*cells)[c], cells)
-			i32.print((*cells)[c].drawable)
 			// bool.print((*cells)[c].alive)
 			
 			// changeState((*cells)[c], cells)

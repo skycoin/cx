@@ -24,6 +24,14 @@ type TestStruct struct {
 var gi32Ptr *i32
 var gi64Ptr *i64
 
+func returnPtrArrayStruct () (ptr *[2]miniStruct) {
+	var c [2]miniStruct
+	c[0] = miniStruct{mInt: 11, mString: "Foobar"}
+	c[1] = miniStruct{mInt: 13, mString: "Barfoo"}
+
+	ptr = &c
+}
+
 func testPointers () {
 	str.print("Running Pointer Testing...")
 
@@ -67,7 +75,7 @@ func testPointers () {
 		long: 63L,
 		float: 33.0,
 		decimal: 63.0D,
-		boolean: true,
+		boolean: false,
 		byt: 41B,
 		string: "Bar foo"}
 
@@ -91,12 +99,29 @@ func testPointers () {
 
 	pStrcts1 = &strcts1
 
-	f64.print((*pStrct1).decimal)
-	f64.print((*pStrct2).decimal)
+	assert((*pStrct1).int, 15, "")
+	assert((*pStrct1).long, 64L, "")
+	assert((*pStrct1).float, 32.0, "")
+	assert((*pStrct1).decimal, 64.0D, "")
+	assert((*pStrct1).boolean, true, "")
+	assert((*pStrct1).byt, 255B, "")
+	assert((*pStrct1).string, "Foo bar", "")
 
+	assert((*pStrct2).int, 33, "")
+	assert((*pStrct2).long, 55L, "")
+	assert((*pStrct2).float, 33.0, "")
+	assert((*pStrct2).decimal, 63.0D, "")
+	assert((*pStrct2).boolean, false, "")
+	assert((*pStrct2).byt, 41B, "")
+	assert((*pStrct2).string, "Bar foo", "")
 
+	var ptrStrcts *[2]miniStruct
+	ptrStrcts = returnPtrArrayStruct()
 
-
+	assert((*ptrStrcts)[0].mInt, 11, "")
+	assert((*ptrStrcts)[0].mString, "Foobar", "")
+	assert((*ptrStrcts)[1].mInt, 13, "")
+	assert((*ptrStrcts)[1].mString, "Barfoo", "")
 
 	// var pStrcts *[2]TestStruct
 	// // var pStrcts *[2]TestStruct

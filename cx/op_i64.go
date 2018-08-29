@@ -6,6 +6,25 @@ import (
 	"math/rand"
 )
 
+func op_i64_i64(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(fp, out1)
+
+	switch out1.Type {
+	case TYPE_BYTE:
+		WriteMemory(out1Offset, FromByte(byte(ReadI64(fp, inp1))))
+		// case TYPE_STR: WriteMemory(out1Offset, FromStr(strconv.Itoa(ReadI32(fp, inp1))))
+	case TYPE_I32:
+		WriteMemory(out1Offset, FromI32(int32(ReadI64(fp, inp1))))
+	case TYPE_I64:
+		WriteMemory(out1Offset, FromI64(ReadI64(fp, inp1)))
+	case TYPE_F32:
+		WriteMemory(out1Offset, FromF32(float32(ReadI64(fp, inp1))))
+	case TYPE_F64:
+		WriteMemory(out1Offset, FromF64(float64(ReadI64(fp, inp1))))
+	}
+}
+
 // op_i64_print. The print built-in function formats its arguments in an
 // implementation-specific
 

@@ -64,8 +64,17 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		}
 	}
 
+	if finalOffset >= PROGRAM.HeapStartsAt {
+		// then it's an object
+		finalOffset += OBJECT_HEADER_SIZE
+		if arg.IsSlice {
+			finalOffset += SLICE_HEADER_SIZE
+		}
+	}
+	
+
 	if dbg {
-		fmt.Println("result", finalOffset, ")")
+		fmt.Println("result", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
 	}
 
 	return finalOffset
@@ -155,15 +164,15 @@ func MarkAndCompact() {
 // allocates memory in the heap
 func AllocateSeq(size int) (offset int) {
 	result := PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
-	newFree := result + size
+	newFree := PROGRAM.HeapPointer + size
 
-	if newFree > INIT_HEAP_SIZE {
+	if newFree > MEMORY_SIZE {
 		// call GC
 		MarkAndCompact()
-		result = PROGRAM.HeapPointer
+		result = PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 		newFree = PROGRAM.HeapPointer + size
 
-		if newFree > INIT_HEAP_SIZE {
+		if newFree > MEMORY_SIZE {
 			// heap exhausted
 			panic("heap exhausted")
 		}

@@ -4,7 +4,6 @@ func testSlices () {
 	str.print("Running Slices Testing...")
 
 	str.print("--------Append testing--------")
-
 	
 	var slc []i32
 	slc = append(slc, 11)
@@ -58,7 +57,7 @@ func testSlices () {
 	assert(num, slc4[5], "")
 
 	str.print("--------Different native types testing--------")
-
+	
 	var slc5 []f32
 	slc5 = append(slc5, 1.1)
 	slc5 = append(slc5, 1.2)
@@ -143,21 +142,37 @@ func testSlices () {
 	assert(slc10[4], false, "")
 	assert(slc10[5], true, "")
 	
-	// var slc9 []byte
-	// slc9 = append(slc9, 15B)
-	// slc9 = append(slc9, 20B)
-	// slc9 = append(slc9, 35B)
+	var slc9 []byte
+	slc9 = append(slc9, 15B)
+	slc9 = append(slc9, 20B)
+	slc9 = append(slc9, 35B)
 
-	// assert(slc9[0], 15B, "")
-	// assert(slc9[1], 20B, "")
-	// assert(slc9[2], 35B, "")
+	assert(slc9[0], 15B, "")
+	assert(slc9[1], 20B, "")
+	assert(slc9[2], 35B, "")
 
-	// slc9 = []byte{90B, 95B, 100B, 105B, 110B, 115B}
+	slc9 = []byte{90B, 95B, 100B, 105B, 110B, 115B}
 	
-	// assert(slc9[0], 90B, "")
-	// assert(slc9[1], 95B, "")
-	// assert(slc9[2], 100B, "")
-	// assert(slc9[3], 105B, "")
-	// assert(slc9[4], 110B, "")
-	// assert(slc9[5], 115B, "")
+	assert(slc9[0], 90B, "")
+	assert(slc9[1], 95B, "")
+	assert(slc9[2], 100B, "")
+	assert(slc9[3], 105B, "")
+	assert(slc9[4], 110B, "")
+	assert(slc9[5], 115B, "")
+
+	var slc11 []str
+	slc11 = append(slc11, "hello world", "")
+	slc11 = append(slc11, "bye oh cruel world", "")
+
+	assert(slc11[0], "hello world", "")
+	assert(slc11[1], "bye oh cruel world", "")
+
+	var slc12 []str
+	slc12 = append(slc11, "1", "")
+	slc12 = append(slc12, "22", "")
+
+	assert(slc12[0], "hello world", "")
+	assert(slc12[1], "bye oh cruel world", "")
+	assert(slc12[2], "1", "")
+	assert(slc12[3], "22", "")
 }
