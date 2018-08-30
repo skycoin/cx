@@ -154,7 +154,7 @@ func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 	var bufferHeight i32
 	
 	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
-	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+	ratio := f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
 	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 	
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
@@ -192,7 +192,7 @@ func drawTile (x i32, y i32, sprite Sprite) () {
 	var bufferHeight i32
 	
 	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
-	ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+	ratio := f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
 	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
 
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)

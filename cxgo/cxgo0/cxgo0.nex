@@ -2,6 +2,7 @@
 }
 /(\r\n|\r|\n)/ {
 	lval.line++
+	lineNo++
 	token := f(NEWLINE)
 	if token != NEWLINE {
 		return token
@@ -12,6 +13,9 @@
 }
 /(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
 	/* skip comments */
+	noLines := countNewLines([]byte(yylex.Text()))
+	lval.line += noLines
+        lineNo += noLines
 }
 /aff/                     { lval.tok = yylex.Text(); return f(AFF)  }
 /bool/                    { lval.tok = yylex.Text(); return f(BOOL) }

@@ -131,7 +131,6 @@ type CXExpression struct {
 	ElseLines int
 
 	IsMethodCall bool
-	IsShortDeclaration bool
 	IsStructLiteral bool
 	IsArrayLiteral  bool
 	IsFlattened bool // used for nested struct literals
@@ -178,6 +177,7 @@ type CXArgument struct {
 	IsField            bool
 	IsRest             bool // pkg.var <- var is rest
 	IsLocalDeclaration bool
+	IsShortDeclaration bool
 
 	PassBy int  // pass by value or reference
 	DoesEscape bool

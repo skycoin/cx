@@ -981,10 +981,20 @@ assignment_expression:
 				if $2 != "=" && $2 != ":=" {
 					panic("")
 				}
+				if $2 == ":=" {
+					for _, from := range $3 {
+						from.Outputs[0].IsShortDeclaration = true
+					}
+				}
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[len($3) - 1].IsStructLiteral {
 				if $2 != "=" && $2 != ":=" {
 					panic("")
+				}
+				if $2 == ":=" {
+					for _, from := range $3 {
+						from.Outputs[0].IsShortDeclaration = true
+					}
 				}
 				$$ = StructLiteralAssignment($1, $3)
 			} else {

@@ -3,6 +3,7 @@
 	import (
 		// "fmt"
 		"bytes"
+		"os"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
 	)
@@ -10,7 +11,7 @@
 	var PRGRM0 *CXProgram
 	// var DataOffset int
 
-	var lineNo int = 0
+	var lineNo int = -1
 	var replMode bool = false
 	var inREPL bool = false
 	var inFn bool = false
@@ -487,7 +488,10 @@ declaration_specifiers:
 
 					$$ = arg
 				} else {
-					panic("type '" + $1 + "' does not exist")
+					println(ErrorHeader(CurrentFileName, lineNo), err.Error())
+					os.Exit(3)
+					// return nil
+					// panic("type '" + $1 + "' does not exist")
 				}
 			} else {
 				panic(err)

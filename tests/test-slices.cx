@@ -29,6 +29,9 @@ func testSlices () {
 	var slc3 []i32
 	slc3 = []i32{21, 22, 23, 24, 25}
 
+
+
+	
 	assert(slc3[0], 21, "")
 	assert(slc3[1], 22, "")
 	assert(slc3[2], 23, "")

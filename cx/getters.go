@@ -70,7 +70,7 @@ func (prgrm *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 		prgrm.CurrentPackage.CurrentFunction.CurrentExpression != nil {
 		return prgrm.CurrentPackage.CurrentFunction.CurrentExpression, nil
 	} else {
-		return nil, errors.New("current module, function or expression is nil")
+		return nil, errors.New("current package, function or expression is nil")
 	}
 }
 
@@ -139,7 +139,7 @@ func (strct *CXStruct) GetFields() ([]*CXArgument, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
-		return nil, errors.New("structure has no fields")
+		return nil, errors.New(fmt.Sprintf("structure '%s' has no fields", strct.Name))
 	}
 }
 
@@ -157,7 +157,7 @@ func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	if mod.Functions != nil {
 		return mod.Functions, nil
 	} else {
-		return nil, errors.New("module has no functions")
+		return nil, errors.New(fmt.Sprintf("package '%s' has no functions", mod.Name))
 	}
 }
 
@@ -176,7 +176,7 @@ func (prgrm *CXProgram) GetPackage(modName string) (*CXPackage, error) {
 			return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
+		return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
 	}
 }
 
@@ -226,13 +226,9 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 	if foundMod != nil && foundStrct != nil {
 		return foundStrct, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("struct '%s' not found in module '%s'", strctName, modName))
+		return nil, errors.New(fmt.Sprintf("struct '%s' not found in package '%s'", strctName, modName))
 	}
 }
-
-// func (pkg *CXPackage) GetStruct (strctName string) (*CXStruct, error) {
-
-// }
 
 func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	var foundDef *CXArgument
@@ -255,7 +251,7 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	if foundDef != nil {
 		return foundDef, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("definition '%s' not found in module '%s'", defName, pkg.Name))
+		return nil, errors.New(fmt.Sprintf("global '%s' not found in package '%s'", defName, pkg.Name))
 	}
 }
 
@@ -295,19 +291,19 @@ func (prgrm *CXProgram) GetFunction(fnName string, modName string) (*CXFunction,
 			}
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("module '%s' not found", modName))
+		return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
 	}
 
 	if foundMod != nil && foundFn != nil {
 		return foundFn, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' not found in module '%s'", fnName, modName))
+		return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s'", fnName, modName))
 	}
 
 	// if prgrm.Packages != nil && prgrm.Packages[modName] != nil && prgrm.Packages[modName].Functions != nil && prgrm.Packages[modName].Functions[fnName] != nil {
 	// 	return prgrm.Packages[modName].Functions[fnName], nil
 	// } else {
-	// 	return nil, errors.New(fmt.Sprintf("Function '%s' not found in module '%s'", fnName, modName))
+	// 	return nil, errors.New(fmt.Sprintf("Function '%s' not found in package '%s'", fnName, modName))
 	// }
 }
 
@@ -315,7 +311,7 @@ func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
 	} else {
-		return nil, errors.New("function has no expressions")
+		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
 	}
 }
 
@@ -324,11 +320,11 @@ func (fn *CXFunction) GetExpression(line int) (*CXExpression, error) {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
 		} else {
-			return nil, errors.New("expression line number exceeds number of expressions in function")
+			return nil, errors.New(fmt.Sprintf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name))
 		}
 
 	} else {
-		return nil, errors.New("function has no expressions")
+		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
 	}
 }
 
