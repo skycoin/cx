@@ -306,24 +306,24 @@ func initOpenGL () (program i32) {
 	
 	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
 	
-	gl.Strs("
+	gl.Strs(`
           #version 120
           void main() {
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
           }
-", "csources")
+`, "csources")
 	gl.ShaderSource(vertexShader, 1, "csources")
 	gl.Free("csources")
 	gl.CompileShader(vertexShader)
 
 	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
 
-	gl.Strs("
+	gl.Strs(`
           #version 120
           void main() {
             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
           }
-", "csources")
+`, "csources")
 	gl.ShaderSource(fragmentShader, 1, "csources")
 	gl.Free("csources")
 	gl.CompileShader(fragmentShader)
