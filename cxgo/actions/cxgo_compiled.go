@@ -311,6 +311,11 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	// arg.Typ = "ident"
 	arg.Size = GetArgSize(typ)
 
+	if typ == TYPE_AFF {
+		// equivalent to slice of strings
+		return DeclarationSpecifiers(arg, 0, DECL_SLICE)
+	}
+
 	// if typ == TYPE_STR {
 	// 	return DeclarationSpecifiers(arg, 0, DECL_POINTER)
 	// }
@@ -2152,6 +2157,12 @@ func FunctionDeclaration(fn *CXFunction, inputs []*CXArgument, outputs []*CXArgu
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
+
+		// var affs []*CXAffordance
+		// affs = expr.GetAffordances([]string{})
+		// for _, aff := range affs {
+		// 	fmt.Println("aff", aff.Description)
+		// }
 	}
 
 	fn.Size = offset

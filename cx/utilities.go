@@ -2384,7 +2384,7 @@ func GetArgSize(typ int) int {
 	switch typ {
 	case TYPE_BOOL, TYPE_BYTE:
 		return 1
-	case TYPE_STR, TYPE_I32, TYPE_F32:
+	case TYPE_STR, TYPE_I32, TYPE_F32, TYPE_AFF:
 		return 4
 	case TYPE_I64, TYPE_F64:
 		return 8

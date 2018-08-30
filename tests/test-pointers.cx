@@ -154,3 +154,4 @@ func testPointers () {
 	// assert(recStruct.int, 33, "")
 	// assert(recStruct.long, 63L, "")
 }
+

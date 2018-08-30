@@ -1,19 +1,35 @@
 package base
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func op_aff_print(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-
-	_ = inp1
-	_ = out1
+	inp1 := expr.Inputs[0]
 
 	inp1Offset := GetFinalOffset(fp, inp1)
 
-	_ = inp1Offset
+	var l int32
+	_l := PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset - SLICE_HEADER_SIZE + TYPE_POINTER_SIZE]
+	encoder.DeserializeAtomic(_l, &l)
+
+	result := make([]string, l)
+
+	for c := int(l); c > 0; c-- {
+		var off int32
+		encoder.DeserializeAtomic(PROGRAM.Memory[inp1Offset + (c - 1) * TYPE_POINTER_SIZE : inp1Offset + c * TYPE_POINTER_SIZE], &off)
+
+		var size int32
+		encoder.DeserializeRaw(PROGRAM.Memory[off : off + STR_HEADER_SIZE], &size)
+
+		var res string
+		encoder.DeserializeRaw(PROGRAM.Memory[off : off + STR_HEADER_SIZE + size], &res)
+
+		result[int(l) - c] = res
+	}
+	
+	fmt.Println(result)
 }
 
 func op_aff_query(expr *CXExpression, fp int) {

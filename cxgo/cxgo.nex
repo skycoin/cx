@@ -17,6 +17,7 @@
 	lval.line += noLines
         LineNo += noLines
 }
+/aff/                     { lval.tok = yylex.Text(); return f(AFF) }
 /bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
 /byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
 /break/                   { return f(BREAK) }
@@ -106,7 +107,7 @@
 /:tStep/                  { return f(TSTEP)      }
 /:tstep/                  { return f(TSTEP)      }
 /:pStep/                  { return f(PSTEP)      }
-/:aff/                    { return f(AFF)        }
+/:aff/                    { return f(CAFF)       }
 /package/                 { return f(PACKAGE)    }
 /type/                    { return f(TYPSTRUCT)  }
 /struct/                  { return f(STRUCT)     }
@@ -207,7 +208,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.9"
+const VERSION = "0.5.10"
 
 var currentFileName string
 var insert bool
@@ -224,7 +225,7 @@ func f (token int) int {
 			BOOL, BYTE, STR,
 			I8, I16, I32, I64,
 			UI8, UI16, UI32, UI64,
-			F32, F64,
+			F32, F64, AFF,
 			
 			BOOLEAN_LITERAL, BYTE_LITERAL, STRING_LITERAL,
 			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
@@ -423,11 +424,11 @@ Notes:
 }
 
 func (yylex Lexer) Error (e string) {
-	if InREPL {
-		fmt.Printf("syntax error: %s\n", e)
-	} else {
-		fmt.Printf("%s:%d: syntax error: %s\n", currentFileName, yylex.Line() + 1, e)
-	}
+	// if InREPL {
+	// 	fmt.Printf("syntax error: %s\n", e)
+	// } else {
+	// 	fmt.Printf("%s:%d: syntax error: %s\n", currentFileName, yylex.Line() + 1, e)
+	// }
 	
 	yylex.Stop()
 }

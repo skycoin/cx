@@ -81,7 +81,7 @@
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
-                        AFF TAG INFER VALUE
+                        AFF CAFF TAG INFER VALUE
                         /* Pointers */
                         ADDR
 
@@ -469,7 +469,9 @@ declaration_specifiers:
                 ;
 
 type_specifier:
-                BOOL
+                AFF
+                { $$ = TYPE_AFF }
+        |       BOOL
                 { $$ = TYPE_BOOL }
         |       BYTE
                 { $$ = TYPE_BYTE }
@@ -495,15 +497,6 @@ type_specifier:
                 { $$ = TYPE_UI32 }
         |       UI64
                 { $$ = TYPE_UI64 }
-	/* |       struct_or_union_specifier */
-        /*         { */
-        /*             $$ = "struct" */
-        /*         } */
-	/* |       enum_specifier */
-        /*         { */
-        /*             $$ = "enum" */
-        /*         } */
-	/* |       TYPEDEF_NAME // check */
                 ;
 
 
@@ -700,7 +693,7 @@ infer_clauses:
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
+			$$ = SliceLiteralExpression(TYPE_STR, exprs)
                 }
         |       infer_targets
                 {

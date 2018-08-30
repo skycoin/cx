@@ -208,6 +208,10 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 	op := expr.Operator
 	affs := make([]*CXAffordance, 0)
 
+	if op == nil {
+		return nil
+	}
+
 	// The operator for this function doesn't require arguments
 	if len(op.Inputs) > 0 && len(expr.Inputs) < len(op.Inputs) {
 		fn := expr.Function
@@ -286,22 +290,6 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 						}
 					}
 				}
-
-				// if !isBasicType(def.Typ) {
-				// 	if strct, err := expr.Program.GetStruct(def.Typ, expr.Package.Name); err == nil {
-				// 		for _, fld := range strct.Fields {
-				// 			if fld.Typ == reqType || fld.Typ[2:] == reqType {
-				// 				defsTypes = append(defsTypes, fld.Typ)
-				// 				identName := encoder.Serialize(fmt.Sprintf("%s.%s", def.Name, fld.Name))
-
-				// 				args = append(args, &CXArgument{
-				// 					Typ: identType,
-				// 					Value: &identName,
-				// 				})
-				// 			}
-				// 		}
-				// 	}
-				// }
 			}
 		}
 
@@ -474,17 +462,18 @@ func (expr *CXExpression) GetAffordances(settings []string) []*CXAffordance {
 	}
 
 	// Output names affordances
-	if len(expr.Outputs) < len(expr.Operator.Outputs) {
-		outName := MakeGenSym("var")
-		affs = append(affs, &CXAffordance{
-			Description: concat("AddOutput ", outName),
+	// if len(expr.Outputs) < len(expr.Operator.Outputs) {
+		
+	// }
+	outName := MakeGenSym(LOCAL_PREFIX)
+	affs = append(affs, &CXAffordance{
+		Description: concat("AddOutput ", outName),
 
-			Operator: "AddOutput",
-			Name:     outName,
-			Action: func() {
-				expr.AddOutput(MakeArgument(outName, "", -1))
-			}})
-	}
+		Operator: "AddOutput",
+		Name:     outName,
+		Action: func() {
+			expr.AddOutput(MakeArgument(outName, "", -1))
+		}})
 
 	return affs
 }

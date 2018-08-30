@@ -132,7 +132,7 @@
                         /* Debugging */
                         DSTACK DPROGRAM DSTATE
                         /* Affordances */
-                        AFF TAG INFER VALUE
+                        AFF CAFF TAG INFER VALUE
                         /* Pointers */
                         ADDR
 
@@ -536,7 +536,9 @@ declaration_specifiers:
                 ;
 
 type_specifier:
-                BOOL
+                AFF
+                { $$ = TYPE_AFF }
+        |       BOOL
                 { $$ = TYPE_BOOL }
         |       BYTE
                 { $$ = TYPE_BYTE }

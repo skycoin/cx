@@ -234,7 +234,8 @@ const (
 )
 
 const (
-	TYPE_BOOL = iota
+	TYPE_AFF = iota
+	TYPE_BOOL
 	TYPE_BYTE
 	TYPE_STR
 	TYPE_F32
@@ -259,6 +260,7 @@ const (
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
 	"identifier": TYPE_IDENTIFIER,
+	"aff":        TYPE_AFF,
 	"bool":       TYPE_BOOL,
 	"byte":       TYPE_BYTE,
 	"str":        TYPE_STR,
@@ -277,6 +279,7 @@ var TypeCodes map[string]int = map[string]int{
 
 var TypeNames map[int]string = map[int]string{
 	TYPE_IDENTIFIER: "ident",
+	TYPE_AFF:        "aff",
 	TYPE_BOOL:       "bool",
 	TYPE_BYTE:       "byte",
 	TYPE_STR:        "str",

@@ -1485,8 +1485,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// slices
 	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 
-	OP_AFF_PRINT:  MakeNative(OP_AFF_PRINT, []int{TYPE_STR, TYPE_STR}, []int{}),
-	OP_AFF_QUERY:  MakeNative(OP_AFF_QUERY, []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR}),
+	OP_AFF_PRINT:  MakeNative(OP_AFF_PRINT, []int{TYPE_STR}, []int{}),
+	OP_AFF_QUERY:  MakeNative(OP_AFF_QUERY, []int{TYPE_STR}, []int{TYPE_STR}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),

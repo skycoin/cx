@@ -9,10 +9,10 @@ func main () {
   	// foo2 = 2
   	// foo3 = 3
 
-	var target []str
-	// var rules []str
+	var target aff
+	var rules aff
 
-	// target = append(target, "hellooooo")
+	
 	// target = append(target, "hi")
 
 	// var foo []i32
@@ -25,23 +25,20 @@ func main () {
 
 	
 	// target = [0]str{"hi", "hello"}
-	
+
 	target = ->{
-		a(a)
-		a(a)
-		a(a)
+		pkg(main)
+		fn(main)
+		expr(message)
 	}
 
-	str.print(target[0])
-	str.print(target[1])
-	str.print(target[2])
-	str.print(target[3])
-	str.print(target[4])
-	str.print(target[5])
+	aff.print(target)
   	
-  	// rules = ->{
-	// 	allow(* > 1.0D)
-  	// }
+  	rules = ->{
+		allow(* > 1.0D)
+  	}
+
+	aff.print(rules)
 
 	
   	// affs := aff.query(target, rules)

@@ -502,7 +502,7 @@ func op_sprintf(expr *CXExpression, fp int) {
 
 	byts := encoder.Serialize(string(buildString(expr, fp)))
 	size := encoder.Serialize(int32(len(byts)))
-	heapOffset := AllocateSeq(len(byts)+OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 	
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
@@ -513,7 +513,7 @@ func op_sprintf(expr *CXExpression, fp int) {
 
 	WriteMemory(heapOffset, obj)
 
-	off := encoder.SerializeAtomic(int32(heapOffset))
+	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
 
 	WriteMemory(out1Offset, off)
 }
