@@ -3,6 +3,10 @@ package base
 import (
 	"strconv"
 	"fmt"
+	"bufio"
+	"os"
+	"strings"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -501,6 +505,25 @@ func op_sprintf(expr *CXExpression, fp int) {
 	out1Offset := GetFinalOffset(fp, out1)
 
 	byts := encoder.Serialize(string(buildString(expr, fp)))
+	WriteObject(out1Offset, byts)
+}
+
+func op_printf(expr *CXExpression, fp int) {
+	fmt.Print(string(buildString(expr, fp)))
+}
+
+func op_read(expr *CXExpression, fp int) {
+	out1 := expr.Outputs[0]
+	out1Offset := GetFinalOffset(fp, out1)
+
+	reader := bufio.NewReader(os.Stdin)
+	text, err := reader.ReadString('\n')
+	text = strings.Trim(text, " \n")
+
+	if err != nil {
+		panic("")
+	}
+	byts := encoder.Serialize(text)
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 	
@@ -516,8 +539,4 @@ func op_sprintf(expr *CXExpression, fp int) {
 	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
 
 	WriteMemory(out1Offset, off)
-}
-
-func op_printf(expr *CXExpression, fp int) {
-	fmt.Print(string(buildString(expr, fp)))
 }

@@ -2,9 +2,8 @@ package base
 
 import (
 	"fmt"
-	// "strconv"
-	// "math"
-	// "math/rand"
+	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func op_byte_byte(expr *CXExpression, fp int) {
@@ -12,16 +11,17 @@ func op_byte_byte(expr *CXExpression, fp int) {
 	out1Offset := GetFinalOffset(fp, out1)
 	switch out1.Type {
 	case TYPE_BYTE:
-		WriteMemory(out1Offset, FromByte(byte(ReadI32(fp, inp1))))
-	// case TYPE_STR: WriteMemory(out1Offset, FromStr(strconv.Itoa(ReadI32(fp, inp1))))
+		WriteMemory(out1Offset, FromByte(ReadByte(fp, inp1)))
+	case TYPE_STR:
+		WriteObject(out1Offset, encoder.Serialize(strconv.Itoa(int(ReadByte(fp, inp1)))))
 	case TYPE_I32:
-		WriteMemory(out1Offset, FromI32(ReadI32(fp, inp1)))
+		WriteMemory(out1Offset, FromI32(int32(ReadByte(fp, inp1))))
 	case TYPE_I64:
-		WriteMemory(out1Offset, FromI64(int64(ReadI32(fp, inp1))))
+		WriteMemory(out1Offset, FromI64(int64(ReadByte(fp, inp1))))
 	case TYPE_F32:
-		WriteMemory(out1Offset, FromF32(float32(ReadI32(fp, inp1))))
+		WriteMemory(out1Offset, FromF32(float32(ReadByte(fp, inp1))))
 	case TYPE_F64:
-		WriteMemory(out1Offset, FromF64(float64(ReadI32(fp, inp1))))
+		WriteMemory(out1Offset, FromF64(float64(ReadByte(fp, inp1))))
 	}
 }
 

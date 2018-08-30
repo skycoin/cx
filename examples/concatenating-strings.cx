@@ -1,0 +1,10 @@
+package main
+
+func main () {
+	var part1 str
+	var part2 str
+	part1 = "Hello"
+	part2 = "Bye"
+
+	str.print(str.concat(part1, part2))
+}

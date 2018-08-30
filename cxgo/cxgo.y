@@ -978,12 +978,12 @@ assignment_expression:
 	|       unary_expression assignment_operator assignment_expression
                 {
 			if $3[0].IsArrayLiteral {
-				if $2 != "=" {
+				if $2 != "=" && $2 != ":=" {
 					panic("")
 				}
 				$$ = ArrayLiteralAssignment($1, $3)
 			} else if $3[len($3) - 1].IsStructLiteral {
-				if $2 != "=" {
+				if $2 != "=" && $2 != ":=" {
 					panic("")
 				}
 				$$ = StructLiteralAssignment($1, $3)

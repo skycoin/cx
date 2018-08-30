@@ -1,0 +1,61 @@
+package testing
+
+type Point struct {
+	name str
+	isTrue bool
+	x i32
+	y i32
+}
+
+func testShortDeclarations () {
+	byt1 := 44B
+	byt2 := 47B
+	assert(byt1, 44B, "")
+	assert(byt2, 47B, "")
+
+	bool1 := true
+	bool2 := false
+	assert(bool1, true, "")
+	assert(bool2, false, "")
+	
+	num1 := 5
+	num2 := 10
+	assert(num1, 5, "")
+	assert(num2, 10, "")
+
+	num3 := 33L
+	num4 := 55L
+	assert(num3, 33L, "")
+	assert(num4, 55L, "")
+
+	dec1 := 5.0
+	dec2 := 10.0
+	assert(dec1, 5.0, "")
+	assert(dec2, 10.0, "")
+
+	dec3 := 33.0D
+	dec4 := 55.0D
+	assert(dec3, 33.0D, "")
+	assert(dec4, 55.0D, "")
+
+	p1 := Point{
+		x: 10,
+		y: 11,
+		isTrue: true,
+		name: "Pointy"}
+	p2 := Point{
+		x: 20,
+		y: 21,
+		isTrue: false,
+		name: "Punto"}
+
+	assert(p1.name, "Pointy", "")
+	assert(p1.x, 10, "")
+	assert(p1.y, 11, "")
+	assert(p1.isTrue, true, "")
+
+	assert(p2.name, "Punto", "")
+	assert(p2.x, 20, "")
+	assert(p2.y, 21, "")
+	assert(p2.isTrue, false, "")
+}

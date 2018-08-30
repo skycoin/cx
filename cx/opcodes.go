@@ -7,7 +7,6 @@ import(
 // op codes
 const (
 	OP_IDENTITY = iota
-	OP_READ_ARRAY
 	OP_JMP
 	OP_DEBUG
 
@@ -31,6 +30,7 @@ const (
 	OP_UND_LEN
 	OP_UND_PRINTF
 	OP_UND_SPRINTF
+	OP_UND_READ
 
 	OP_BOOL_PRINT
 
@@ -40,6 +40,13 @@ const (
 	OP_BOOL_OR
 	OP_BOOL_AND
 
+	OP_BYTE_BYTE
+	OP_BYTE_STR
+	OP_BYTE_I32
+	OP_BYTE_I64
+	OP_BYTE_F32
+	OP_BYTE_F64
+	
 	OP_BYTE_PRINT
 
 	OP_I32_BYTE
@@ -146,6 +153,13 @@ const (
 	OP_F32_MAX
 	OP_F32_MIN
 
+	OP_F64_BYTE
+	OP_F64_STR
+	OP_F64_I32
+	OP_F64_I64
+	OP_F64_F32
+	OP_F64_F64
+
 	OP_F64_PRINT
 	OP_F64_ADD
 	OP_F64_SUB
@@ -170,8 +184,15 @@ const (
 	OP_F64_MIN
 
 	OP_STR_PRINT
+	OP_STR_CONCAT
 	OP_STR_EQ
 
+	OP_STR_BYTE
+	OP_STR_STR
+	OP_STR_I32
+	OP_STR_I64
+	OP_STR_F32
+	OP_STR_F64
 	
 	OP_MAKE
 	OP_READ
@@ -306,7 +327,6 @@ func execNative(prgrm *CXProgram) {
 	switch opCode {
 	case OP_IDENTITY:
 		op_identity(expr, fp)
-		// case OP_READ_ARRAY: op_read_array(expr, fp)
 	case OP_JMP:
 		op_jmp(expr, fp, call)
 	case OP_DEBUG:
@@ -352,6 +372,21 @@ func execNative(prgrm *CXProgram) {
 		op_printf(expr, fp)
 	case OP_UND_SPRINTF:
 		op_sprintf(expr, fp)
+	case OP_UND_READ:
+		op_read(expr, fp)
+
+	case OP_BYTE_BYTE:
+		op_byte_byte(expr, fp)
+	case OP_BYTE_STR:
+		op_byte_byte(expr, fp)
+	case OP_BYTE_I32:
+		op_byte_byte(expr, fp)
+	case OP_BYTE_I64:
+		op_byte_byte(expr, fp)
+	case OP_BYTE_F32:
+		op_byte_byte(expr, fp)
+	case OP_BYTE_F64:
+		op_byte_byte(expr, fp)
 
 	case OP_BYTE_PRINT:
 		op_byte_print(expr, fp)
@@ -570,6 +605,19 @@ func execNative(prgrm *CXProgram) {
 	case OP_F32_MIN:
 		op_f32_min(expr, fp)
 
+	case OP_F64_BYTE:
+		op_f64_f64(expr, fp)
+	case OP_F64_STR:
+		op_f64_f64(expr, fp)
+	case OP_F64_I32:
+		op_f64_f64(expr, fp)
+	case OP_F64_I64:
+		op_f64_f64(expr, fp)
+	case OP_F64_F32:
+		op_f64_f64(expr, fp)
+	case OP_F64_F64:
+		op_f64_f64(expr, fp)
+
 	case OP_F64_PRINT:
 		op_f64_print(expr, fp)
 	case OP_F64_ADD:
@@ -614,8 +662,24 @@ func execNative(prgrm *CXProgram) {
 		op_f64_min(expr, fp)
 	case OP_STR_PRINT:
 		op_str_print(expr, fp)
+	case OP_STR_CONCAT:
+		op_str_concat(expr, fp)
 	case OP_STR_EQ:
 		op_str_eq(expr, fp)
+		
+	case OP_STR_BYTE:
+		op_str_str(expr, fp)
+	case OP_STR_STR:
+		op_str_str(expr, fp)
+	case OP_STR_I32:
+		op_str_str(expr, fp)
+	case OP_STR_I64:
+		op_str_str(expr, fp)
+	case OP_STR_F32:
+		op_str_str(expr, fp)
+	case OP_STR_F64:
+		op_str_str(expr, fp)
+
 	case OP_MAKE:
 	case OP_READ:
 	case OP_WRITE:
@@ -810,7 +874,6 @@ func execNative(prgrm *CXProgram) {
 // For the parser. These shouldn't be used in the runtime for performance reasons
 var OpNames map[int]string = map[int]string{
 	OP_IDENTITY:   "identity",
-	OP_READ_ARRAY: "read",
 	OP_JMP:        "jmp",
 	OP_DEBUG:      "debug",
 
@@ -833,7 +896,15 @@ var OpNames map[int]string = map[int]string{
 	OP_UND_LEN:      "len",
 	OP_UND_PRINTF:   "printf",
 	OP_UND_SPRINTF:  "sprintf",
+	OP_UND_READ:     "read",
 
+	OP_BYTE_BYTE: "byte.byte",
+	OP_BYTE_STR: "byte.str",
+	OP_BYTE_I32: "byte.i32",
+	OP_BYTE_I64: "byte.i64",
+	OP_BYTE_F32: "byte.f32",
+	OP_BYTE_F64: "byte.f64",
+	
 	OP_BYTE_PRINT: "byte.print",
 
 	OP_BOOL_PRINT:   "bool.print",
@@ -943,6 +1014,14 @@ var OpNames map[int]string = map[int]string{
 	OP_F32_LOG10:    "f32.log10",
 	OP_F32_MAX:      "f32.max",
 	OP_F32_MIN:      "f32.min",
+
+	OP_F64_BYTE:    "f64.byte",
+	OP_F64_STR:    "f64.str",
+	OP_F64_I32:    "f64.i32",
+	OP_F64_I64:    "f64.i64",
+	OP_F64_F32:    "f64.f32",
+	OP_F64_F64:    "f64.f64",
+	
 	OP_F64_PRINT:    "f64.print",
 	OP_F64_ADD:      "f64.add",
 	OP_F64_SUB:      "f64.sub",
@@ -966,7 +1045,15 @@ var OpNames map[int]string = map[int]string{
 	OP_F64_MIN:      "f64.min",
 
 	OP_STR_PRINT: "str.print",
+	OP_STR_CONCAT: "str.concat",
 	OP_STR_EQ: "str.eq",
+
+	OP_STR_BYTE: "str.byte",
+	OP_STR_STR: "str.str",
+	OP_STR_I32: "str.i32",
+	OP_STR_I64: "str.i64",
+	OP_STR_F32: "str.f32",
+	OP_STR_F64: "str.f64",
 
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
@@ -1063,7 +1150,6 @@ var OpNames map[int]string = map[int]string{
 // For the parser. These shouldn't be used in the runtime for performance reasons
 var OpCodes map[string]int = map[string]int{
 	"identity": OP_IDENTITY,
-	"read":     OP_READ_ARRAY,
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
@@ -1086,7 +1172,15 @@ var OpCodes map[string]int = map[string]int{
 	"len":      OP_UND_LEN,
 	"printf":   OP_UND_PRINTF,
 	"sprintf":  OP_UND_SPRINTF,
+	"read":     OP_UND_READ,
 
+	"byte.byte":  OP_BYTE_BYTE,
+	"byte.str":   OP_BYTE_STR,
+	"byte.i32":   OP_BYTE_I32,
+	"byte.i64":   OP_BYTE_I64,
+	"byte.f32":   OP_BYTE_F32,
+	"byte.f64":   OP_BYTE_F64,
+	
 	"byte.print": OP_BYTE_PRINT,
 
 	"bool.print": OP_BOOL_PRINT,
@@ -1169,12 +1263,14 @@ var OpCodes map[string]int = map[string]int{
 	"i64.min":      OP_I64_MIN,
 	"i64.cos":      OP_I64_COS,
 	"i64.sin":      OP_I64_SIN,
+	
 	"f32.byte":     OP_F32_BYTE,
 	"f32.str":      OP_F32_STR,
 	"f32.i32":      OP_F32_I32,
 	"f32.i64":      OP_F32_I64,
 	"f32.f32":      OP_F32_F32,
 	"f32.f64":      OP_F32_F64,
+	
 	"f32.print":    OP_F32_PRINT,
 	"f32.add":      OP_F32_ADD,
 	"f32.sub":      OP_F32_SUB,
@@ -1196,6 +1292,14 @@ var OpCodes map[string]int = map[string]int{
 	"f32.log10":    OP_F32_LOG10,
 	"f32.max":      OP_F32_MAX,
 	"f32.min":      OP_F32_MIN,
+
+	"f64.byte":     OP_F64_BYTE,
+	"f64.str":      OP_F64_STR,
+	"f64.i32":      OP_F64_I32,
+	"f64.i64":      OP_F64_I64,
+	"f64.f32":      OP_F64_F32,
+	"f64.f64":      OP_F64_F64,
+
 	"f64.print":    OP_F64_PRINT,
 	"f64.add":      OP_F64_ADD,
 	"f64.sub":      OP_F64_SUB,
@@ -1219,7 +1323,15 @@ var OpCodes map[string]int = map[string]int{
 	"f64.min":      OP_F64_MIN,
 
 	"str.print": OP_STR_PRINT,
+	"str.concat": OP_STR_CONCAT,
 	"str.eq": OP_STR_EQ,
+
+	"str.byte": OP_STR_BYTE,
+	"str.str": OP_STR_STR,
+	"str.i32": OP_STR_I32,
+	"str.i64": OP_STR_I64,
+	"str.f32": OP_STR_F32,
+	"str.f64": OP_STR_F64,
 
 	"time.Sleep":     OP_TIME_SLEEP,
 	"time.UnixMilli": OP_TIME_UNIX_MILLI,
@@ -1313,7 +1425,6 @@ var OpCodes map[string]int = map[string]int{
 
 var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_IDENTITY:     MakeNative(OP_IDENTITY, []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
-	OP_READ_ARRAY:   MakeNative(OP_READ_ARRAY, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 	OP_JMP:          MakeNative(OP_JMP, []int{TYPE_BOOL}, []int{}),
 	OP_DEBUG:        MakeNative(OP_DEBUG, []int{}, []int{}),
 
@@ -1337,6 +1448,14 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_UND_LEN:      MakeNative(OP_UND_LEN, []int{TYPE_UNDEFINED}, []int{TYPE_I32}),
 	OP_UND_PRINTF:   MakeNative(OP_UND_PRINTF, []int{TYPE_UNDEFINED}, []int{}),
 	OP_UND_SPRINTF:  MakeNative(OP_UND_SPRINTF, []int{TYPE_UNDEFINED}, []int{TYPE_STR}),
+	OP_UND_READ:     MakeNative(OP_UND_READ, []int{}, []int{TYPE_STR}),
+
+	OP_BYTE_BYTE:   MakeNative(OP_BYTE_BYTE, []int{TYPE_BYTE}, []int{TYPE_BYTE}),
+	OP_BYTE_STR:    MakeNative(OP_BYTE_STR, []int{TYPE_BYTE}, []int{TYPE_STR}),
+	OP_BYTE_I32:    MakeNative(OP_BYTE_I32, []int{TYPE_BYTE}, []int{TYPE_I32}),
+	OP_BYTE_I64:    MakeNative(OP_BYTE_I64, []int{TYPE_BYTE}, []int{TYPE_I64}),
+	OP_BYTE_F32:    MakeNative(OP_BYTE_F32, []int{TYPE_BYTE}, []int{TYPE_F32}),
+	OP_BYTE_F64:    MakeNative(OP_BYTE_F64, []int{TYPE_BYTE}, []int{TYPE_F64}),
 
 	OP_BYTE_PRINT:   MakeNative(OP_BYTE_PRINT, []int{TYPE_BYTE}, []int{}),
 
@@ -1449,6 +1568,14 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F32_LOG10:    MakeNative(OP_F32_LOG10, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_MAX:      MakeNative(OP_F32_MAX, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_MIN:      MakeNative(OP_F32_MIN, []int{TYPE_F32}, []int{TYPE_F32}),
+
+	OP_F64_BYTE:   MakeNative(OP_F64_BYTE, []int{TYPE_F64}, []int{TYPE_BYTE}),
+	OP_F64_STR:    MakeNative(OP_F64_STR, []int{TYPE_F64}, []int{TYPE_STR}),
+	OP_F64_I32:    MakeNative(OP_F64_I32, []int{TYPE_F64}, []int{TYPE_I32}),
+	OP_F64_I64:    MakeNative(OP_F64_I64, []int{TYPE_F64}, []int{TYPE_I64}),
+	OP_F64_F32:    MakeNative(OP_F64_F32, []int{TYPE_F64}, []int{TYPE_F32}),
+	OP_F64_F64:    MakeNative(OP_F64_F64, []int{TYPE_F64}, []int{TYPE_F64}),
+
 	OP_F64_PRINT:    MakeNative(OP_F64_PRINT, []int{TYPE_F64}, []int{}),
 	OP_F64_ADD:      MakeNative(OP_F64_ADD, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_SUB:      MakeNative(OP_F64_SUB, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
@@ -1472,7 +1599,15 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_MAX:      MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
 	
 	OP_STR_PRINT:    MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
+	OP_STR_CONCAT:   MakeNative(OP_STR_CONCAT, []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR}),
 	OP_STR_EQ:       MakeNative(OP_STR_EQ, []int{TYPE_STR, TYPE_STR}, []int{TYPE_BOOL}),
+
+	OP_STR_BYTE:      MakeNative(OP_STR_BYTE,[]int{TYPE_STR}, []int{TYPE_BYTE}),
+	OP_STR_STR:       MakeNative(OP_STR_STR, []int{TYPE_STR}, []int{TYPE_STR}),
+	OP_STR_I32:       MakeNative(OP_STR_I32, []int{TYPE_STR}, []int{TYPE_I32}),
+	OP_STR_I64:       MakeNative(OP_STR_I64, []int{TYPE_STR}, []int{TYPE_I64}),
+	OP_STR_F32:       MakeNative(OP_STR_F32, []int{TYPE_STR}, []int{TYPE_F32}),
+	OP_STR_F64:       MakeNative(OP_STR_F64, []int{TYPE_STR}, []int{TYPE_F64}),
 
 	OP_TIME_SLEEP:      MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{}),
 	OP_TIME_UNIX_MILLI: MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64}),
@@ -1541,7 +1676,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_ORTHO:        MakeNative(OP_GL_ORTHO, []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{}),
 	OP_GL_VIEWPORT:     MakeNative(OP_GL_VIEWPORT, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_SCALEF:       MakeNative(OP_GL_SCALEF, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
-	OP_GL_TEX_COORD_2D: MakeNative(OP_GL_TEX_COORD_2D, []int{TYPE_F32, TYPE_F32}, []int{}),
+	OP_GL_TEX_COORD_2D: MakeNative(OP_GL_TEX_COORD_2D, []int{TYPE_F64, TYPE_F64}, []int{}),
 	OP_GL_TEX_COORD_2F: MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{}),
 
 	// glfw

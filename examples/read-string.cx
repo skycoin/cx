@@ -1,0 +1,8 @@
+package main
+
+func main () {
+	var name str
+	str.print("What's your name?")
+	name = read()
+	printf("Hello, %s!\n", name)
+}

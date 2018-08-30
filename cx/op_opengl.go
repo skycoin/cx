@@ -317,7 +317,7 @@ func op_gl_NewTexture(expr *CXExpression, fp int) {
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(rgba.Pix))
 
-	outB1 := encoder.Serialize(int32(texture))
+	outB1 := encoder.SerializeAtomic(int32(texture))
 
 	WriteMemory(out1Offset, outB1)
 }

@@ -33,8 +33,6 @@ func returnPtrArrayStruct () (ptr *[2]miniStruct) {
 }
 
 func testPointers () {
-	str.print("Running Pointer Testing...")
-
 	var li32Ptr *i32
 	var li64Ptr *i64
 	var num1 i32

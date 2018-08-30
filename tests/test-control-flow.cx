@@ -1,9 +1,6 @@
 package testing
 
 func testControlFlow () {
-	str.print("Running IF Testing...")
-	str.print("--------IF Block testing--------")
-
 	var check i32
 	check = 999
 	
@@ -19,7 +16,6 @@ func testControlFlow () {
 
 	assert(check, 333, "entering IF error")
 
-	str.print("--------IF/ELSE Block testing--------")
 	if 2 < 3 {
 		check = 888
 	} else {
@@ -36,7 +32,6 @@ func testControlFlow () {
 
 	assert(check, 777, "entering if in IF/ELSE error")
 
-	str.print("--------IF/ELSE Nested Block testing--------")
 	if 3 > 0 {
 		if 25.0 > 29.0 {
 			check = 0
@@ -56,9 +51,6 @@ func testControlFlow () {
 
 	assert(check, 999, "entering nested IF/ELSE error")
 
-	str.print("Running FOR Testing...")
-
-	str.print("--------FOR Block testing--------")
 	var i i32
 	for i = 0; i < 10; i = i32.add(i, 1) {
 		check = i
@@ -66,7 +58,6 @@ func testControlFlow () {
 
 	assert(check, 9, "FOR loop error")
 
-	str.print("--------FOR-IF/ELSE Block testing--------")
 	for i = 1; i32.lteq(i, 10); i = i32.add(i, 1){
 		if i32.eq(i32.mod(i, 2), 0) {
 			check = i

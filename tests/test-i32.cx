@@ -1,7 +1,6 @@
 package testing
 
 func I32ArithmeticFunctions() () {
-	str.print("--------I32 Arithmetic Functions Testing--------")
 	assert(i32.add(10, 10), 20, "Add error")
 	assert(i32.sub(10, 10), 0, "Subtract error")
 	assert(i32.mul(10, 10), 100, "Multiply error")
@@ -26,7 +25,6 @@ func I32ArithmeticFunctions() () {
 }
 
 func I32ArithmeticShorthand() () {
-	str.print("--------I32 Arithmetic Shorthand Testing--------")
 	assert(10 + 10, 20, "Add error")
 	assert(10 - 10, 0, "Subtract error")
 	assert(10 * 10, 100, "Multiply error")
@@ -40,18 +38,7 @@ func I32ArithmeticShorthand() () {
 	assert(10 &^ 2, 8, "Bit CLEAR error")
 }
 
-func I32ParseTo() () {
-	str.print("--------I32 Parse Methods--------")
-	assert(i32.i64(10), 10L, "Parse to I64 error")
-	assert(i32.f32(10), 10.0, "Parse to F32 error")
-	assert(i32.f64(10), 10.0D, "Parse to F64 error")
-	assert(i32.byte(379), 123B, "Parse to BYTE error")
-	// str.print("FAIL: i32.str() crash!")
-	//assert(i32.str(10), "10", "Parse to STR error") // oh ok, I need to implement strings going to the heap
-}
-
 func I32RelationalFunctions() () {
-	str.print("--------I32 Relational Functions--------")
 	assert(i32.eq(5, 5), true, "I32 Equality error")
 	assert(i32.uneq(5, 5), false, "I32 Inequality error")
 	assert(i32.gt(5, 10), false, "I32 Greater error")
@@ -61,8 +48,6 @@ func I32RelationalFunctions() () {
 }
 
 func I32RelationalShorthand() (){
-	
-	str.print("--------I32 Relational Shorthand--------")
 	assert(5 == 5, true, "I32 Equality Shorthand error")
 	assert(5 != 5, false, "I32 Inequality Shorthand error")
 	
@@ -72,22 +57,9 @@ func I32RelationalShorthand() (){
 	assert(10 <= 6, false, "I32 Lesser Or Equal error")
 }
 
-func I32Extras() () {
-	str.print("--------I32 Extras--------")
-	str.print("PASS: i32.print()")
-	i32.print(1)
-	str.print("PASS: i32.rand()")
-	i32.print(i32.rand(1, 99))
-}
-
 func testI32() () {
-	str.print("Running I32 Testing...")
 	I32ArithmeticFunctions()
 	I32ArithmeticShorthand()
 	I32RelationalFunctions()
 	I32RelationalShorthand()
-	I32ParseTo()
-
-	
-	// I32Extras()
 }

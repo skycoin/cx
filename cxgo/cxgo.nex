@@ -124,7 +124,11 @@
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
-	tokVal := yylex.Text()
+	str, err := strconv.Unquote(yylex.Text())
+	if err != nil {
+		panic(err)
+	}
+	tokVal := str
 	tokVal = strings.TrimPrefix(tokVal, "\"")
 	tokVal = strings.TrimSuffix(tokVal, "\"")
 	lval.tok = tokVal
@@ -133,6 +137,14 @@
 	lval.line += noLines
 	LineNo += noLines
 	
+	return f(STRING_LITERAL)
+}
+/\`([^\`]*)\`/ { /* ` */
+	tokVal := yylex.Text()
+	tokVal = strings.TrimPrefix(tokVal, "`")
+	tokVal = strings.TrimSuffix(tokVal, "`")
+	lval.tok = tokVal
+	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return f(STRING_LITERAL)
 }
 /true/ {

@@ -3,7 +3,29 @@ package base
 import (
 	"fmt"
 	"math"
+	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
+
+func op_f64_f64(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(fp, out1)
+
+	switch out1.Type {
+	case TYPE_STR:
+		WriteObject(out1Offset, encoder.Serialize(strconv.FormatFloat(ReadF64(fp, inp1), 'f', -1, 64)))
+	case TYPE_BYTE:
+		WriteMemory(out1Offset, FromByte(byte(ReadF64(fp, inp1))))
+	case TYPE_I32:
+		WriteMemory(out1Offset, FromI32(int32(ReadF64(fp, inp1))))
+	case TYPE_I64:
+		WriteMemory(out1Offset, FromI64(int64(ReadF64(fp, inp1))))
+	case TYPE_F32:
+		WriteMemory(out1Offset, FromF32(float32(ReadF64(fp, inp1))))
+	case TYPE_F64:
+		WriteMemory(out1Offset, FromF64(ReadF64(fp, inp1)))
+	}
+}
 
 // op_f64_print. The print built-in function formats its arguments in an
 // implementation-specific

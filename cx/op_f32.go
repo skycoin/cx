@@ -3,6 +3,8 @@ package base
 import (
 	"fmt"
 	"math"
+	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func op_f32_f32(expr *CXExpression, fp int) {
@@ -10,6 +12,8 @@ func op_f32_f32(expr *CXExpression, fp int) {
 	out1Offset := GetFinalOffset(fp, out1)
 
 	switch out1.Type {
+	case TYPE_STR:
+		WriteObject(out1Offset, encoder.Serialize(strconv.FormatFloat(float64(ReadF32(fp, inp1)), 'f', -1, 32)))
 	case TYPE_BYTE:
 		WriteMemory(out1Offset, FromByte(byte(ReadF32(fp, inp1))))
 	case TYPE_I32:

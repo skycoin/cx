@@ -2,7 +2,6 @@ package testing
 
 
 func F32ArithmeticFunctions() () {
-	str.print("--------F32 Arithmetic Functions Testing--------")
 	assert(f32.add(10.0, 10.0), 20.0, "Add error")
 	assert(f32.sub(10.0, 10.0), 0.0, "Subtract error")
 	assert(f32.mul(10.0, 10.0), 100.0, "Multiply error")
@@ -20,7 +19,6 @@ func F32ArithmeticFunctions() () {
 }
 
 func F32ArithmeticShorthand() () {
-	str.print("--------F32 Arithmetic Shorthand Testing--------")
 	assert(10.0 + 10.0, 20.0, "Add error")
 	assert(10.0 - 10.0, 0.0, "Subtract error")
 	assert(10.0 * 10.0, 100.0, "Multiply error")
@@ -28,7 +26,6 @@ func F32ArithmeticShorthand() () {
 }
 
 func F32RelationalFunctions() () {
-	str.print("--------F32 Relational Functions--------")
 	assert(f32.eq(5.0, 5.0), true, "F32 Equality error")
 	assert(f32.uneq(5.0, 5.0), false, "F32 Inequality error")
 	assert(f32.gt(5.0, 10.0), false, "F32 Greater error")
@@ -38,7 +35,6 @@ func F32RelationalFunctions() () {
 }
 
 func F32RelationalShorthand() () {
-	str.print("--------F32 Relational Shorthand--------")
 	assert(5.0 == 5.0, true, "F32 Equality Shorthand error")
 	assert(5.0 != 5.0, false, "F32 Inequality Shorthand error")
 	assert(5.0 > 10.0, false, "F32 Greater Shorthand error")
@@ -47,17 +43,9 @@ func F32RelationalShorthand() () {
 	assert(10.0 <= 6.0, false, "F32 Lesser Or Equal error")
 }
 
-func F32Extras() () {
-	str.print("--------F32 Extras--------")
-	str.print("PASS: f32.print()")
-	f32.print(10.0)
-}
-
 func testF32() () {
-	str.print("Running F32 Testing...")
 	F32ArithmeticFunctions()
 	F32ArithmeticShorthand()
 	F32RelationalFunctions()
 	F32RelationalShorthand()
-	// F32Extras()
 }

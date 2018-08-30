@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func op_i64_i64(expr *CXExpression, fp int) {
@@ -11,9 +13,10 @@ func op_i64_i64(expr *CXExpression, fp int) {
 	out1Offset := GetFinalOffset(fp, out1)
 
 	switch out1.Type {
+	case TYPE_STR:
+		WriteObject(out1Offset, encoder.Serialize(strconv.Itoa(int(ReadI64(fp, inp1)))))
 	case TYPE_BYTE:
 		WriteMemory(out1Offset, FromByte(byte(ReadI64(fp, inp1))))
-		// case TYPE_STR: WriteMemory(out1Offset, FromStr(strconv.Itoa(ReadI32(fp, inp1))))
 	case TYPE_I32:
 		WriteMemory(out1Offset, FromI32(int32(ReadI64(fp, inp1))))
 	case TYPE_I64:

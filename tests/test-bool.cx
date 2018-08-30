@@ -1,7 +1,6 @@
 package testing
 
 func Equality() () {
-	str.print("--------Equality Testing--------")
 	assert(bool.eq(true, true), true, "Bool Equality(true) error")
 	assert(bool.eq(false, true), false, "Bool Equality(false) error")
 	assert(bool.eq(true, false), false, "Bool Equality(false) error")
@@ -14,7 +13,6 @@ func Equality() () {
 }
 
 func Inequality() () {
-	str.print("--------Inequality Testing--------")
 	assert(bool.uneq(true, true), false, "Bool Inequality(false) error")
 	assert(bool.uneq(false, true), true, "Bool Inequality(true) error")
 	assert(bool.uneq(true, false), true, "Bool Inequality(true) error")
@@ -27,7 +25,6 @@ func Inequality() () {
 }
 
 func And() () {
-	str.print("--------And Testing--------")
 	assert(bool.and(true, true), true, "Bool And(true) error")
 	assert(bool.and(true, false), false, "Bool And(false) error")
 	assert(bool.and(false, true), false, "Bool And(false) error")
@@ -45,7 +42,6 @@ func And() () {
 }
 
 func Or() () {
-	str.print("--------Or Testing--------")
 	assert(bool.or(true, true), true, "Bool Or(true) error")
 	assert(bool.or(true, false), true, "Bool Or(true) error")
 	assert(bool.or(false, true), true, "Bool Or(true) error")
@@ -63,7 +59,6 @@ func Or() () {
 }
 
 func Not() () {
-	str.print("--------Not Testing--------")
 	assert(bool.not(false), true, "Bool not(true) error")
 	assert(bool.not(true), false, "Bool not(false) error")
 	
@@ -72,7 +67,6 @@ func Not() () {
 }
 
 func testBOOL () () {
-	str.print("Running BOOL Testing...")
 	Equality()
 	Inequality()
 	And()

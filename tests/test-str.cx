@@ -20,6 +20,22 @@ func testSTRFunctions () () {
 	assert(testStr, "foo bar bar foo", "")
 
 	assert(returningStr(), "bar bar foo foo", "")
+
+	// that newline in the second argument is actually needed! sprintf1s format string includes a \n at the end
+	assert(sprintf("%s%d%d%f%f\n", "hello", 11, 13L, 17.0, 19.0D), `hello111317.000000019.0000000000000000
+`, "")
+
+	var part1 str
+	var part2 str
+	var result str
+	part1 = "Hello"
+	part2 = "Bye"
+
+	result = str.concat(part1, part2)
+
+	assert(str.concat(part1, part2), "HelloBye", "")
+	assert(str.concat("One", "Two"), "OneTwo", "")
+	assert(result, "HelloBye", "")
 	
 	// str.print("--------String (str) Funcitons Testing--------")
 	// var lStr str
@@ -53,6 +69,5 @@ func testSTRFunctions () () {
 }
 
 func testSTR () () {
-	str.print("Running STR Testing...")
 	testSTRFunctions()
 }

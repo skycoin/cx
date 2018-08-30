@@ -2,7 +2,6 @@ package testing
 
 
 func F64ArithmeticFunctions() () {
-	str.print("--------F64 Arithmetic Functions Testing--------")
 	assert(f64.add(10.0D, 10.0D), 20.0D, "Add error")
 	assert(f64.sub(10.0D, 10.0D), 0.0D, "Subtract error")
 	assert(f64.mul(10.0D, 10.0D), 100.0D, "Multiply error")
@@ -20,7 +19,6 @@ func F64ArithmeticFunctions() () {
 }
 
 func F64ArithmeticShorthand() () {
-	str.print("--------F64 Arithmetic Shorthand Testing--------")
 	assert(10.0D + 10.0D, 20.0D, "Add error")
 	assert(10.0D - 10.0D, 0.0D, "Subtract error")
 	assert(10.0D * 10.0D, 100.0D, "Multiply error")
@@ -28,7 +26,6 @@ func F64ArithmeticShorthand() () {
 }
 
 func F64RelationalFunctions() () {
-	str.print("--------F64 Relational Functions--------")
 	assert(f64.eq(5.0D, 5.0D), true, "F64 Equality error")
 	assert(f64.uneq(5.0D, 5.0D), false, "F64 Inequality error")
 	assert(f64.gt(5.0D, 10.0D), false, "F64 Greater error")
@@ -38,7 +35,6 @@ func F64RelationalFunctions() () {
 }
 
 func F64RelationalShorthand() () {
-	str.print("--------F64 Relational Shorthand--------")
 	assert(5.0D == 5.0D, true, "F64 Equality Shorthand error")
 	assert(5.0D != 5.0D, false, "F64 Inequality Shorthand error")
 	assert(5.0D > 10.0D, false, "F64 Greater Shorthand error")
@@ -47,17 +43,9 @@ func F64RelationalShorthand() () {
 	assert(10.0D <= 6.0D, false, "F64 Lesser Or Equal error")
 }
 
-func F64Extras() () {
-	str.print("--------F64 Extras--------")
-	str.print("PASS: f64.print()")
-	f64.print(10.0D)
-}
-
 func testF64() () {
-	str.print("Running F64 Testing...")
 	F64ArithmeticFunctions()
 	F64ArithmeticShorthand()
 	F64RelationalFunctions()
 	F64RelationalShorthand()
-	// F64Extras()
 }

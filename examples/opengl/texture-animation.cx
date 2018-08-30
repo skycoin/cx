@@ -1,49 +1,50 @@
 package main
 
-import "gl"
-import "glfw"
+// import "gl"
+// import "glfw"
 
-var width i32 = 800
-var height i32 = 600
+var width i32 = 400
+var height i32 = 300
 
 var frame f64
 var texture []i32
 
-func cube () () {
-	gl.BindTexture(gl.TEXTURE_2D, []i32.read(texture, f64.i32(frame)))
-	gl.Scalef(0.1, 0.2, 0.0)
+func cube () {
+	gl.BindTexture(gl.TEXTURE_2D, texture[f64.i32(frame)])
+	gl.Scalef(0.25, 0.5, 0.0)
 	gl.Begin(gl.QUADS)
-	gl.TexCoord2d(0.0, 0.0); 
+	gl.TexCoord2d(0.0D, 0.0D); 
 	gl.Vertex3f(-1.0, 1.0, 0.0);
-	gl.TexCoord2d(1.0, 0.0); 
+	gl.TexCoord2d(1.0D, 0.0D); 
 	gl.Vertex3f(1.0, 1.0, 0.0);
-	gl.TexCoord2d(1.0, 1.0); 
+	gl.TexCoord2d(1.0D, 1.0D); 
 	gl.Vertex3f(1.0, -1.0, 0.0);
-	gl.TexCoord2d(0.0, 1.0);
+	gl.TexCoord2d(0.0D, 1.0D);
 	gl.Vertex3f(-1.0, -1.0, 0.0);
 	gl.End();
 }
 
-func display () () {
+func display () {
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
-	
+
 	gl.LoadIdentity()
 	gl.Enable(gl.TEXTURE_2D)
 	gl.Translatef(0.0, 0.0, 0.0)
 	cube()
 	glfw.PollEvents()
 	glfw.SwapBuffers("window")
-	frame = f64.add(frame, f32.f64(0.1))
-	if f64.gt(frame, i32.f64(2)) {
-		frame = i32.f64(0)
+	frame = f64.add(frame, 0.1D)
+	if f64.gt(frame, 2.0D) {
+		frame = 0.0D
 	}
 }
 
 func init () () {
-	wd := os.GetWorkingDirectory()
-	texture = []i32.append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk1.png")))
-	texture = []i32.append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk2.png")))
+	var wd str
+	wd = os.GetWorkingDirectory()
+	texture = append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk1.png")))
+	texture = append(texture, gl.NewTexture(str.concat(wd, "textures/adventurer_walk2.png")))
 }
 
 func main () () {
@@ -56,19 +57,19 @@ func main () () {
 	glfw.MakeContextCurrent("window")
 	
 	gl.Init()
-	program := gl.CreateProgram()
+	var program i32
+	program = gl.CreateProgram()
 	gl.LinkProgram(program)
 
 	init()
 	
-	stop := not(glfw.ShouldClose("window"))
-	for not(glfw.ShouldClose("window")) {
-		//gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+	for bool.not(glfw.ShouldClose("window")) {
+		// gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 		gl.UseProgram(program)
 
 		display()
-
-		//glfw.PollEvents()
-		//glfw.SwapBuffers("window")
+		
+		// glfw.PollEvents()
+		// glfw.SwapBuffers("window")
 	}
 }

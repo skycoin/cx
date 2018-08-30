@@ -432,8 +432,14 @@ declaration_specifiers:
 			$3.DeclarationSpecifiers = append($3.DeclarationSpecifiers, DECL_SLICE)
 			arg := $3
                         arg.IsArray = true
-			arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
-			arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
+			arg.IsSlice = true
+			arg.IsReference = true
+			arg.PassBy = PASSBY_REFERENCE
+			// arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
+			arg.Lengths = append([]int{0}, arg.Lengths...)
+			// arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
+			arg.TotalSize = arg.Size
+			arg.Size = TYPE_POINTER_SIZE
 			$$ = arg
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers

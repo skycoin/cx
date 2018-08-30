@@ -13,41 +13,13 @@ type Sprite struct {
 	name str
 }
 
-var background [196]i32 = [196]i32{
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
-	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}
+var background [196]i32
 
-var foreground [196]i32 = [196]i32{
-	10, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  7,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  0,  0,  0,  41,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  27, 20, 21, 0,  2,
-	2,  0,  0,  0,  0,  0,  0,  0,  0,  26, 28, 22, 0,  2,
-	12, 1,  1,  1,  1,  7,  0, 40,  0,  25, 24, 23, 0,  2,
-	2,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  3,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  2,  0,  0,  9,  1,  1,  1,  1,  1,  4,  0,  2,
-	2,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	2,  0,  9,  7,  0,  0,  0,  0,  0,  42,  0,  0,  0,  2,
-	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
-	9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8}
+var foreground [196]i32
 
-// var vertexShaderSource str
+var vertexShaderSource str
 
-// var fragmentShaderSource str
+var fragmentShaderSource str
 
 var width i32 = 600
 var height i32 = 600
@@ -137,24 +109,18 @@ func compileShader(source str, shaderType i32) (shader i32) {
 	gl.CompileShader(shader)
 }
 
-// func addNull (source str) (sourceWithNull str) {
-// 	bSource := str.[]byte(source)
-
-// 	//withNull := []byte.append(bSource, i32.byte(0))
-// 	bSource := []byte.append(bSource, i32.byte(0))
-// 	sourceWithNull = []byte.str(bSource)
-// }
+func addNull (source str) (sourceWithNull str) {
+	sourceWithNull = str.concat(source, "\000")
+}
 
 func initOpenGL () (program i32) {
 	gl.Init()
 
 	var vertexShader i32
 	var fragmentShader i32
-	
-	// vertexShader := compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
-	vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER)
-	// fragmentShader := compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
-	fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
+
+	vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
+	fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
 	var program i32
 	program = gl.CreateProgram()
@@ -254,7 +220,7 @@ func drawTile (x i32, y i32, sprite Sprite) () {
 	gl.End()
 }
 
-func setSprite (s Sprite, isObstacle bool, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) () {
+func setSprite (s Sprite, isObstacle bool, x1 i32, x2 i32, y1 i32, y2 i32, W i32, H i32, textureSheet i32) (res Sprite) {
 	s.isObstacle = isObstacle
 	// s.x1 = scale(i32.add(x1, 1), W)
 	// s.x2 = scale(i32.sub(x2, 1), W)
@@ -267,6 +233,8 @@ func setSprite (s Sprite, isObstacle bool, x1 i32, x2 i32, y1 i32, y2 i32, W i32
 	s.y2 = scale(y2, H)
 	
 	s.textureSheet = textureSheet
+
+	res = s
 }
 
 func setupScene () () {
@@ -283,7 +251,7 @@ func setupScene () () {
 	gl.Disable(gl.DEPTH_TEST)
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
-	gl.ClearDepth(f32.f64(1.0))
+	gl.ClearDepth(1.0D)
 	gl.DepthFunc(gl.LEQUAL)
 	
 	gl.Enable(gl.BLEND)
@@ -294,8 +262,8 @@ func setupScene () () {
 	gl.LoadIdentity()
 	
 	gl.Frustum(
-		f32.f64(-1.0), f32.f64(1.0), f32.f64(-1.0),
-		f32.f64(1.0), f32.f64(1.0), i32.f64(i32.add(size, 1)))
+		-1.0D, 1.0D, -1.0D,
+		1.0D, 1.0D, i32.f64(i32.add(size, 1)))
 
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
@@ -309,63 +277,69 @@ func setupScene () () {
 	tex_indoor = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_indoor.png"))
 	tex_pack = gl.NewTexture(sprintf("%s%s", wd, "textures/roguelike_pack.png"))
 	// action symbols
+	var tex_act_up i32
+	var tex_act_down i32
+	var tex_act_right i32
+	var tex_act_left i32
+	var tex_act_water i32
+	
 	tex_act_up = gl.NewTexture(sprintf("%s%s", wd, "textures/up.png"))
 	tex_act_down = gl.NewTexture(sprintf("%s%s", wd, "textures/down.png"))
 	tex_act_right = gl.NewTexture(sprintf("%s%s", wd, "textures/right.png"))
 	tex_act_left = gl.NewTexture(sprintf("%s%s", wd, "textures/left.png"))
 	tex_act_water = gl.NewTexture(sprintf("%s%s", wd, "textures/water.png"))
-	
-	setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
-	setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
-	setSprite(sp_knight1, true, 0, 16, 187, 203, w_characters, h_characters, tex_characters)
+
+	sp_blue_carpet = setSprite(sp_blue_carpet, false, 187, 203, 136, 152, w_pack, h_pack, tex_pack)
+	sp_floor_brick_xx = setSprite(sp_floor_brick_xx, false, 102, 118, 34, 50, w_pack, h_pack, tex_pack)
+	sp_knight1 = setSprite(sp_knight1, true, 0, 16, 187, 203, w_characters, h_characters, tex_characters)
 
 	// brown wall
-	setSprite(sp_brown_wall_tb, true, 238, 254, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_tl, true, 272, 288, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_ts, true, 221, 237, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_rs, true, 255, 271, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_bs, true, 221, 237, 238, 254, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_ls, true, 221, 237, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_tr, true, 289, 305, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_br, true, 289, 305, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_bl, true, 272, 288, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_lr, true, 255, 271, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_to, true, 323, 339, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_ro, true, 306, 322, 204, 220, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_bo, true, 323, 339, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_lo, true, 306, 322, 221, 237, w_pack, h_pack, tex_pack)
-	setSprite(sp_brown_wall_xx, true, 238, 254, 221, 237, w_pack, h_pack, tex_pack)
-
+	sp_brown_wall_tb = setSprite(sp_brown_wall_tb, true, 238, 254, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_tl = setSprite(sp_brown_wall_tl, true, 272, 288, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_ts = setSprite(sp_brown_wall_ts, true, 221, 237, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_rs = setSprite(sp_brown_wall_rs, true, 255, 271, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_bs = setSprite(sp_brown_wall_bs, true, 221, 237, 238, 254, w_pack, h_pack, tex_pack)
+	sp_brown_wall_ls = setSprite(sp_brown_wall_ls, true, 221, 237, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_tr = setSprite(sp_brown_wall_tr, true, 289, 305, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_br = setSprite(sp_brown_wall_br, true, 289, 305, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_bl = setSprite(sp_brown_wall_bl, true, 272, 288, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_lr = setSprite(sp_brown_wall_lr, true, 255, 271, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_to = setSprite(sp_brown_wall_to, true, 323, 339, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_ro = setSprite(sp_brown_wall_ro, true, 306, 322, 204, 220, w_pack, h_pack, tex_pack)
+	sp_brown_wall_bo = setSprite(sp_brown_wall_bo, true, 323, 339, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_lo = setSprite(sp_brown_wall_lo, true, 306, 322, 221, 237, w_pack, h_pack, tex_pack)
+	sp_brown_wall_xx = setSprite(sp_brown_wall_xx, true, 238, 254, 221, 237, w_pack, h_pack, tex_pack)
+	
 	// water
-	setSprite(sp_water_t, true, 51, 67, 0, 16, w_pack, h_pack, tex_pack)
+	sp_water_t = setSprite(sp_water_t, true, 51, 67, 0, 16, w_pack, h_pack, tex_pack)
 	
-	setSprite(sp_water_tr, true, 68, 84, 0, 16, w_pack, h_pack, tex_pack)
-	setSprite(sp_water_r, true, 68, 84, 17, 33, w_pack, h_pack, tex_pack)
+	sp_water_tr = setSprite(sp_water_tr, true, 68, 84, 0, 16, w_pack, h_pack, tex_pack)
+	sp_water_r = setSprite(sp_water_r, true, 68, 84, 17, 33, w_pack, h_pack, tex_pack)
 	
-	setSprite(sp_water_br, true, 68, 84, 34, 50, w_pack, h_pack, tex_pack)
-	setSprite(sp_water_b, true, 51, 67, 34, 50, w_pack, h_pack, tex_pack)
+	sp_water_br = setSprite(sp_water_br, true, 68, 84, 34, 50, w_pack, h_pack, tex_pack)
+	sp_water_b = setSprite(sp_water_b, true, 51, 67, 34, 50, w_pack, h_pack, tex_pack)
 	
-	setSprite(sp_water_bl, true, 34, 50, 34, 50, w_pack, h_pack, tex_pack)
-	setSprite(sp_water_l, true, 34, 50, 17, 33, w_pack, h_pack, tex_pack)
-	setSprite(sp_water_tl, true, 34, 50, 0, 16, w_pack, h_pack, tex_pack)
+	sp_water_bl = setSprite(sp_water_bl, true, 34, 50, 34, 50, w_pack, h_pack, tex_pack)
+	sp_water_l = setSprite(sp_water_l, true, 34, 50, 17, 33, w_pack, h_pack, tex_pack)
+	sp_water_tl = setSprite(sp_water_tl, true, 34, 50, 0, 16, w_pack, h_pack, tex_pack)
 	
-	setSprite(sp_water_xx, true, 51, 67, 17, 33, w_pack, h_pack, tex_pack)
+	sp_water_xx = setSprite(sp_water_xx, true, 51, 67, 17, 33, w_pack, h_pack, tex_pack)
 	// grass
-	setSprite(sp_grass_1, false, 85, 101, 0, 16, w_pack, h_pack, tex_pack)
-	setSprite(sp_grass_2, false, 85, 101, 17, 33, w_pack, h_pack, tex_pack)
-
-	setSprite(sp_rock1, true, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
-	setSprite(sp_rock2, true, 936, 951, 326, 342, w_pack, h_pack, tex_pack)
-	setSprite(sp_rock3, true, 952, 968, 325, 341, w_pack, h_pack, tex_pack)
-	setSprite(sp_empty, false, 918, 934, 306, 322, w_pack, h_pack, tex_pack)
+	sp_grass_1 = setSprite(sp_grass_1, false, 85, 101, 0, 16, w_pack, h_pack, tex_pack)
+	sp_grass_2 = setSprite(sp_grass_2, false, 85, 101, 17, 33, w_pack, h_pack, tex_pack)
+	
+	sp_rock1 = setSprite(sp_rock1, true, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
+	sp_rock2 = setSprite(sp_rock2, true, 936, 951, 326, 342, w_pack, h_pack, tex_pack)
+	sp_rock3 = setSprite(sp_rock3, true, 952, 968, 325, 341, w_pack, h_pack, tex_pack)
+	sp_empty = setSprite(sp_empty, false, 918, 934, 306, 322, w_pack, h_pack, tex_pack)
 	//setSprite(sp_rock2, 918, 934, 322, 338, w_pack, h_pack, tex_pack)
 
 	// actions
-	setSprite(sp_act_up, false, 0, 32, 0, 32, 32, 32, tex_act_up)
-	setSprite(sp_act_down, false, 0, 32, 0, 32, 32, 32, tex_act_down)
-	setSprite(sp_act_left, false, 0, 32, 0, 32, 32, 32, tex_act_left)
-	setSprite(sp_act_right, false, 0, 32, 0, 32, 32, 32, tex_act_right)
-	setSprite(sp_act_water, false, 0, 32, 0, 32, 32, 32, tex_act_water)
+	sp_act_up = setSprite(sp_act_up, false, 0, 32, 0, 32, 32, 32, tex_act_up)
+	sp_act_down = setSprite(sp_act_down, false, 0, 32, 0, 32, 32, 32, tex_act_down)
+	sp_act_left = setSprite(sp_act_left, false, 0, 32, 0, 32, 32, 32, tex_act_left)
+	sp_act_right = setSprite(sp_act_right, false, 0, 32, 0, 32, 32, 32, tex_act_right)
+	sp_act_water = setSprite(sp_act_water, false, 0, 32, 0, 32, 32, 32, tex_act_water)
 }
 
 func map2Dto1D (c i32, r i32, w i32) (i i32) {
@@ -499,9 +473,12 @@ func getSprite (index i32) (sprite Sprite) {
 	if i32.eq(index, 1004) {
 		s = sp_act_water
 	}
-	
+
 	sprite = s
 }
+
+var p1x i32 = 1
+var p1y i32 = 1
 
 func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 	var northI i32
@@ -562,22 +539,18 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 	var i i32
 	var idx i32
 	var obj Sprite
-	
+
 	if bool.and(i32.eq(key, 265), i32.eq(action, 1)) {
 		i = map2Dto1D(p1x, i32.add(p1y, 1), size)
 		idx = foreground[i]
 		obj = getSprite(idx)
 
-		if obj.isObstacle {
-			return
-		}
-
-		if i32.gteq(p1y, i32.sub(size, 1)) {
-			p1y = i32.sub(size, 1)
-			return;
-		} else {
-			p1y = i32.add(p1y, 1)
-			return;
+		if bool.not(obj.isObstacle) {
+			if i32.gteq(p1y, i32.sub(size, 1)) {
+				p1y = i32.sub(size, 1)
+			} else {
+				p1y = i32.add(p1y, 1)
+			}
 		}
 	}
 	if bool.and(i32.eq(key, 264), i32.eq(action, 1)) {
@@ -585,120 +558,132 @@ func charActions (window str, key i32, scancode i32, action i32, mods i32) () {
 		idx = foreground[i]
 		obj = getSprite(idx)
 		
-		if obj.isObstacle {
-			return;
-		}
-		
-		if i32.lteq(p1y, 0) {
-			p1y = 0
-			return;
-		} else {
-			p1y = i32.add(p1y, -1)
-			return;
+		if bool.not(obj.isObstacle) {
+			if i32.lteq(p1y, 0) {
+				p1y = 0
+			} else {
+				p1y = i32.add(p1y, -1)
+			}
 		}
 	}
 	if bool.and(i32.eq(key, 263), i32.eq(action, 1)) {
 		i = map2Dto1D(i32.add(p1x, -1), p1y, size)
 		idx = foreground[i]
 		obj = getSprite(idx)
-		if obj.isObstacle {
-			return;
-		}
-		
-		if i32.lteq(p1x, 0) {
-			p1x = 0
-			return;
-		} else {
-			p1x = i32.add(p1x, -1)
-			return;
+		if bool.not(obj.isObstacle) {
+			if i32.lteq(p1x, 0) {
+				p1x = 0
+			} else {
+				p1x = i32.add(p1x, -1)
+			}
 		}
 	}
 	if bool.and(i32.eq(key, 262), i32.eq(action, 1)) {
 		i = map2Dto1D(i32.add(p1x, 1), p1y, size)
 		idx = foreground[i]
 		obj = getSprite(idx)
-		if obj.isObstacle {
-			return;
-		}
-		
-		if i32.gteq(p1x, i32.sub(size, 1)) {
-			p1x = i32.sub(size, 1)
-			return;
-		} else {
-			p1x = i32.add(p1x, 1)
-			return;
+		if bool.not(obj.isObstacle) {
+			if i32.gteq(p1x, i32.sub(size, 1)) {
+				p1x = i32.sub(size, 1)
+			} else {
+				p1x = i32.add(p1x, 1)
+			}
 		}
 	}
 }
 
-var p1x i32 = 1
-var p1y i32 = 1
-
 func main () {
-	var vertexShaderSource str
-	var fragmentShaderSource str
-	
-	vertexShaderSource = "
+	// var vertexShaderSource str
+	// var fragmentShaderSource str
+
+	background = [196]i32{
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+		30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}
+
+	foreground = [196]i32{
+	10, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  7,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  41,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  27, 20, 21, 0,  2,
+	2,  0,  0,  0,  0,  0,  0,  0,  0,  26, 28, 22, 0,  2,
+	12, 1,  1,  1,  1,  7,  0, 40,  0,  25, 24, 23, 0,  2,
+	2,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  3,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  2,  0,  0,  9,  1,  1,  1,  1,  1,  4,  0,  2,
+	2,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+	2,  0,  9,  7,  0,  0,  0,  0,  0,  42,  0,  0,  0,  2,
+	2,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,
+		9,  1,  1, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8}
+
+	vertexShaderSource = `
           #version 120
           void main() {
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex * 200;
-          }
-"
+          }`
 
-	fragmentShaderSource = "
+	fragmentShaderSource = `
           #version 120
           void main() {
             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-          }
-"
+          }`
 	
-	str.print(vertexShaderSource)
+	initGlfw("window")
+	var program i32
+	program = initOpenGL()
 
+	glfw.SetKeyCallback("window", "charActions")
+
+	// var stop bool
+	// stop = bool.not(glfw.ShouldClose("window"))
+
+	var lSize i32
+	lSize = i32.mul(size, size)
+
+	setupScene()
 	
-	// initGlfw("window")
-	// var program i32
-	// program = initOpenGL()
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+		// gl.Clear(i32.bitor(16384, 256))
+		// gl.Clear(3131)
+		// gl.Clear(3131)
 
-	// glfw.SetKeyCallback("window", "charActions")
-
-	// // var stop bool
-	// // stop = bool.not(glfw.ShouldClose("window"))
-
-	// var lSize i32
-	// lSize = i32.mul(size, size)
-
-	// setupScene()
-	
-	// for bool.not(glfw.ShouldClose("window")) {
-	// 	// gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-	// 	// gl.Clear(i32.bitor(16384, 256))
-	// 	// gl.Clear(3131)
-	// 	// gl.Clear(3131)
-
-	// 	var c i32
-	// 	var x i32
-	// 	var y i32
-	// 	var idxB i32
-	// 	var idxF i32
+		var c i32
+		var x i32
+		var y i32
+		var idxB i32
+		var idxF i32
 		
-	// 	for c = 0; i32.lt(c, lSize); c = i32.add(c, 1) {
-	// 		x, y = map1Dto2D(c, size)
+		for c = 0; i32.lt(c, lSize); c = i32.add(c, 1) {
+			x, y = map1Dto2D(c, size)
 			
-	// 		idxB = background[c]
-	// 		idxF = foreground[c]
-	// 		drawTile(x, y, getSprite(idxB))
-	// 		drawTile(x, y, getSprite(idxF))
-	// 	}
+			idxB = background[c]
+			idxF = foreground[c]
+			drawTile(x, y, getSprite(idxB))
+			drawTile(x, y, getSprite(idxF))
+		}
 
-	// 	//drawTile(3, 0, tex_pack, sp_brown_wall_lr)
-	// 	drawChar(p1x, p1y, tex_characters, sp_knight1)
-	// 	//drawTile(3, 3, getSprite(40))
+		// drawTile(3, 0, tex_pack, sp_brown_wall_lr)
+		drawChar(p1x, p1y, tex_characters, sp_knight1)
+		// drawTile(3, 3, getSprite(40))
 		
 
-	// 	glfw.PollEvents()
-	// 	glfw.SwapBuffers("window")
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
 		
 
-	// 	// stop = bool.not(glfw.ShouldClose("window"))
-	// }
+		// stop = bool.not(glfw.ShouldClose("window"))
+	}
 }

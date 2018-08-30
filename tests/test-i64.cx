@@ -1,7 +1,6 @@
 package testing
 
 func I64ArithmeticFunctions() () {
-	str.print("--------I64 Arithmetic Functions Testing--------")
 	assert(i64.add(10L, 10L), 20L, "Add error")
 	assert(i64.sub(10L, 10L), 0L, "Subtract error")
 	assert(i64.mul(10L, 10L), 100L, "Multiply error")
@@ -26,7 +25,6 @@ func I64ArithmeticFunctions() () {
 }
 
 func I64ArithmeticShorthand() () {
-	str.print("--------I64 Arithmetic Shorthand Testing--------")
 	assert(10L + 10L, 20L, "Add error")
 	assert(10L - 10L, 0L, "Subtract error")
 	assert(10L * 10L, 100L, "Multiply error")
@@ -42,7 +40,6 @@ func I64ArithmeticShorthand() () {
 }
 
 func I64RelationalFunctions() () {
-	str.print("--------I64 Relational Functions--------")
 	assert(i64.eq(5L, 5L), true, "I64 Equality error")
 	assert(i64.uneq(5L, 5L), false, "I64 Inequality error")
 	assert(i64.gt(5L, 10L), false, "I64 Greater error")
@@ -52,7 +49,6 @@ func I64RelationalFunctions() () {
 }
 
 func I64RelationalShorthand() () {
-	str.print("--------I64 Relational Shorthand--------")
 	assert(5L == 5L, true, "I64 Equality Shorthand error")
 	assert(i64.uneq(5L, 5L), false, "I64 Inequality error")
 	assert(5L != 5L, false, "I64 Inequality Shorthand error")
@@ -62,19 +58,9 @@ func I64RelationalShorthand() () {
 	assert(10L <= 6L, false, "I64 Lesser Or Equal error")
 }
 
-func I64Extras() () {
-	str.print("--------I64 Extras--------")
-	str.print("PASS: i64.print()")
-	i64.print(10L)
-	str.print("PASS: i64.rand()")
-	i64.print(i64.rand(1L, 99L))
-}
-
 func testI64() () {
-	str.print("Running I64 Testing...")
 	I64ArithmeticFunctions()
 	I64ArithmeticShorthand()
 	I64RelationalFunctions()
 	I64RelationalShorthand()
-	// I64Extras()
 }

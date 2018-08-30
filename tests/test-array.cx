@@ -9,7 +9,6 @@ var boolArray [5]bool
 // var stringArray [5]str
 
 func testGetElement() () {
-	str.print("--------Get One Array Element--------")
 	assert(intArray[4], 5, "I32 Get element error")
 	assert(longArray[2], 90L, "I64 Get element error")
 	assert(floatArray[0], 3.9, "F32 Get element error")
@@ -20,7 +19,6 @@ func testGetElement() () {
 }
 
 // func testGetArray() () {
-// 	str.print("--------Get Array--------")
 // 	assert(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
 // 	assert(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
 // 	assert(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
@@ -42,7 +40,6 @@ func testGetElement() () {
 
 
 // func testPrintElement() () {
-// 	str.print("--------Print One Array Element--------")
 // 	str.print("PASS: I32 Print element")
 // 	i32.print(intArray[2])
 
@@ -204,7 +201,6 @@ func testArray () () {
 	
 	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}
 
-	str.print("Running ARRAY Testing...")
 	testGetElement()
 	// testGetArray()
 	// testPrintElement()

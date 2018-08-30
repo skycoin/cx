@@ -2453,6 +2453,24 @@ func checkForEscapedChars (str string) []byte {
 	return res
 }
 
+func WriteObject (out1Offset int, byts []byte) {
+	size := encoder.Serialize(int32(len(byts)))
+	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
+	
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+		header[c] = size[c-5]
+	}
+
+	obj := append(header, byts...)
+
+	WriteMemory(heapOffset, obj)
+
+	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
+
+	WriteMemory(out1Offset, off)
+}
+
 // func LoadDirectory (path string) {
 // 	fi, err := os.Stat(path)
 // 	_ = err

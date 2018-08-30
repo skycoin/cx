@@ -2,6 +2,8 @@ package main
 import "testing"
 
 func main () {
+	printf("\nRunning CX tests\n")
+	
 	var start i64
 	start = time.UnixNano()
 	
@@ -19,10 +21,12 @@ func main () {
 	testing.testSTR()
 	testing.testPointers()
 	testing.testSlices()
+	testing.testShortDeclarations()
+	testing.testParse()
 	// testing.testBYTE()
 
 	var end i64
 	end = time.UnixNano()
 
-	printf("\nTests finished after %d nanoseconds (%f milliseconds)\n\n", i64.sub(end, start), f64.div(i64.f64(end-start), 1000000.0D))
+	printf("Tests finished after %d nanoseconds (%f milliseconds)\n\n", i64.sub(end, start), f64.div(i64.f64(end-start), 1000000.0D))
 }

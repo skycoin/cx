@@ -22,8 +22,6 @@ type TestStruct struct {
 }
 
 func testStructures () {
-	str.print("Running STRUCT Testing...")
-	
 	var mytest TestStruct
 	mytest = TestStruct{
 		int: 32,
@@ -41,8 +39,6 @@ func testStructures () {
 			mBoolean: true,
 			mByt: 255B,
 			mString: "Foo bar"}}
-
-	str.print("--------Struct Properties Types--------")
 
 	assert((32 == mytest.int), true, "Struct i32 properties error")
 	assert((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
