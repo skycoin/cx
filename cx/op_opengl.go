@@ -28,6 +28,11 @@ func op_gl_GetError(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+func op_gl_CullFace(expr *CXExpression, fp int) {
+    inp1 := expr.Inputs[0]
+    gl.CullFace(uint32(ReadI32(fp, inp1)))
+}
+
 func op_gl_CreateProgram(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateProgram()))

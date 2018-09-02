@@ -836,6 +836,8 @@ var isErrorPresent bool
 // 		err = gl_Init()
 //	case "gl.GetError":
 //		err = gl_GetError()
+// case "gl.CullFace":
+//      err = gl_CullFace()
 // 	case "gl.CreateProgram":
 // 		err = gl_CreateProgram(expr, call)
 // 	case "gl.LinkProgram":

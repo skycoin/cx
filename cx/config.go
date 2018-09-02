@@ -166,7 +166,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	/*
 	   OpenGL
 	*/
-	"gl.Init": true, "gl.GetError": true, "gl.CreateProgram": true, "gl.LinkProgram": true,
+	"gl.Init": true, "gl.GetError": true, "gl.CullFace": true, "gl.CreateProgram": true, "gl.LinkProgram": true,
 	"gl.Clear": true, "gl.UseProgram": true,
 
 	"gl.BindBuffer": true, "gl.BindVertexArray": true, "gl.EnableVertexAttribArray": true,
