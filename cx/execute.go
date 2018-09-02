@@ -1,11 +1,11 @@
 package base
 
 import (
-	"bytes"
-	"errors"
+	// "bytes"
+	// "errors"
 	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"io/ioutil"
+	// "io/ioutil"
 	"math/rand"
 	// "runtime"
 	"time"
@@ -29,52 +29,52 @@ func callsEqual(call1, call2 *CXCall) bool {
 	return true
 }
 
-func saveStep(call *CXCall) {
-	lenCallStack := len(call.Program.CallStack)
-	newStep := MakeCallStack(lenCallStack)
-	// newStep := make([][]CXCall, 0)
+// func saveStep(call *CXCall) {
+// 	lenCallStack := len(call.Program.CallStack)
+// 	newStep := MakeCallStack(lenCallStack)
+// 	// newStep := make([][]CXCall, 0)
 
-	if len(call.Program.Steps) < 1 {
-		// First call, copy everything
-		for i, call := range call.Program.CallStack {
-			newStep[i] = *MakeCallCopy(&call, call.Package, call.Program)
-		}
+// 	if len(call.Program.Steps) < 1 {
+// 		// First call, copy everything
+// 		for i, call := range call.Program.CallStack {
+// 			newStep[i] = *MakeCallCopy(&call, call.Package, call.Program)
+// 		}
 
-		call.Program.Steps = append(call.Program.Steps, newStep)
-		return
-	}
+// 		call.Program.Steps = append(call.Program.Steps, newStep)
+// 		return
+// 	}
 
-	lastStep := call.Program.Steps[len(call.Program.Steps)-1]
-	lenLastStep := len(lastStep)
+// 	lastStep := call.Program.Steps[len(call.Program.Steps)-1]
+// 	lenLastStep := len(lastStep)
 
-	smallerLen := 0
-	if lenLastStep < lenCallStack {
-		smallerLen = lenLastStep
-	} else {
-		smallerLen = lenCallStack
-	}
+// 	smallerLen := 0
+// 	if lenLastStep < lenCallStack {
+// 		smallerLen = lenLastStep
+// 	} else {
+// 		smallerLen = lenCallStack
+// 	}
 
-	// Everytime a call changes, we need to make a hard copy of it
-	// If the call doesn't change, we keep saving a pointer to it
+// 	// Everytime a call changes, we need to make a hard copy of it
+// 	// If the call doesn't change, we keep saving a pointer to it
 
-	for i, call := range call.Program.CallStack[:smallerLen] {
-		if callsEqual(&call, &lastStep[i]) {
-			// if they are equal
-			// append reference
-			newStep[i] = lastStep[i]
-		} else {
-			newStep[i] = *MakeCallCopy(&call, call.Package, call.Program)
-		}
-	}
+// 	for i, call := range call.Program.CallStack[:smallerLen] {
+// 		if callsEqual(&call, &lastStep[i]) {
+// 			// if they are equal
+// 			// append reference
+// 			newStep[i] = lastStep[i]
+// 		} else {
+// 			newStep[i] = *MakeCallCopy(&call, call.Package, call.Program)
+// 		}
+// 	}
 
-	// sizes can be different. if this is the case, we hard copy the rest
-	for i, call := range call.Program.CallStack[smallerLen:] {
-		newStep[i+smallerLen] = *MakeCallCopy(&call, call.Package, call.Program)
-	}
+// 	// sizes can be different. if this is the case, we hard copy the rest
+// 	for i, call := range call.Program.CallStack[smallerLen:] {
+// 		newStep[i+smallerLen] = *MakeCallCopy(&call, call.Package, call.Program)
+// 	}
 
-	call.Program.Steps = append(call.Program.Steps, newStep)
-	return
-}
+// 	call.Program.Steps = append(call.Program.Steps, newStep)
+// 	return
+// }
 
 // It "un-runs" a program
 func (prgrm *CXProgram) Reset() {
@@ -84,28 +84,28 @@ func (prgrm *CXProgram) Reset() {
 	//prgrm.ProgramSteps = nil
 }
 
-func (prgrm *CXProgram) ResetTo(stepNumber int) {
-	// if no steps, we do nothing. the program will run from step 0
-	if len(prgrm.Steps) > 0 {
-		if stepNumber > len(prgrm.Steps) {
-			stepNumber = len(prgrm.Steps) - 1
-		}
-		reqStep := prgrm.Steps[stepNumber]
+// func (prgrm *CXProgram) ResetTo(stepNumber int) {
+// 	// if no steps, we do nothing. the program will run from step 0
+// 	if len(prgrm.Steps) > 0 {
+// 		if stepNumber > len(prgrm.Steps) {
+// 			stepNumber = len(prgrm.Steps) - 1
+// 		}
+// 		reqStep := prgrm.Steps[stepNumber]
 
-		newStep := MakeCallStack(len(reqStep))
+// 		newStep := MakeCallStack(len(reqStep))
 
-		var lastCall *CXCall
-		for j, call := range reqStep {
-			newCall := *MakeCallCopy(&call, call.Package, call.Program)
-			newCall.ReturnAddress = lastCall
-			lastCall = &newCall
-			newStep[j] = newCall
-		}
+// 		var lastCall *CXCall
+// 		for j, call := range reqStep {
+// 			newCall := *MakeCallCopy(&call, call.Package, call.Program)
+// 			newCall.ReturnAddress = lastCall
+// 			lastCall = &newCall
+// 			newStep[j] = newCall
+// 		}
 
-		prgrm.CallStack = newStep
-		prgrm.Steps = prgrm.Steps[:stepNumber]
-	}
-}
+// 		prgrm.CallStack = newStep
+// 		prgrm.Steps = prgrm.Steps[:stepNumber]
+// 	}
+// }
 
 // func (prgrm *CXProgram) UnRun(nCalls int) {
 // 	if len(prgrm.Steps) > 0 && nCalls > 0 {
@@ -157,154 +157,154 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 }
 
 // Compiling from CXGO to CX Base
-func (prgrm *CXProgram) Compile(withProfiling bool) {
-	var asmNL string = "\n"
-	var program bytes.Buffer
+// func (prgrm *CXProgram) Compile(withProfiling bool) {
+// 	var asmNL string = "\n"
+// 	var program bytes.Buffer
 
-	if withProfiling {
-		program.WriteString(`package main;
+// 	if withProfiling {
+// 		program.WriteString(`package main;
 
-import (
-. "github.com/skycoin/cx/src/base"
-"os"
-	"log"
-	"flag"
-        "runtime"
-	"runtime/pprof"
-);
+// import (
+// . "github.com/skycoin/cx/src/base"
+// "os"
+// 	"log"
+// 	"flag"
+//         "runtime"
+// 	"runtime/pprof"
+// );
 
-var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var fld *CXField;var arg *CXArgument;var tag string = "";
+// var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var fld *CXField;var arg *CXArgument;var tag string = "";
 
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile 'file'")
-var memprofile = flag.String("memprofile", "", "write memory profile to 'file'")
+// var cpuprofile = flag.String("cpuprofile", "", "write cpu profile 'file'")
+// var memprofile = flag.String("memprofile", "", "write memory profile to 'file'")
 
-func main () {
-	runtime.LockOSThread()
+// func main () {
+// 	runtime.LockOSThread()
 
-	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
-`)
-	} else {
-		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
-	}
+// 	flag.Parse()
+// 	if *cpuprofile != "" {
+// 		f, err := os.Create(*cpuprofile)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		pprof.StartCPUProfile(f)
+// 		defer pprof.StopCPUProfile()
+// 	}
+// `)
+// 	} else {
+// 		program.WriteString(`package main;import (. github.com/skycoin/cx/src/base"; "runtime";);var prgrm = MakeContext();var mod *CXModule;var imp *CXModule;var fn *CXFunction;var op *CXFunction;var expr *CXExpression;var strct *CXStruct;var arg *CXArgument;var tag string = "";func main () {runtime.LockOSThread();`)
+// 	}
 
-	for _, mod := range prgrm.Packages {
-		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");prgrm.AddModule(mod);%s`, mod.Name, asmNL))
-		for _, imp := range mod.Imports {
-			program.WriteString(fmt.Sprintf(`imp, _ = prgrm.GetModule("%s");mod.AddImport(imp);%s`, imp.Name, asmNL))
-		}
+// 	for _, mod := range prgrm.Packages {
+// 		program.WriteString(fmt.Sprintf(`mod = MakeModule("%s");prgrm.AddModule(mod);%s`, mod.Name, asmNL))
+// 		for _, imp := range mod.Imports {
+// 			program.WriteString(fmt.Sprintf(`imp, _ = prgrm.GetModule("%s");mod.AddImport(imp);%s`, imp.Name, asmNL))
+// 		}
 
-		for _, fn := range mod.Functions {
-			isUsed := false
-			if fn.Name != MAIN_FUNC {
-				for _, mod := range prgrm.Packages {
-					for _, chkFn := range mod.Functions {
-						for _, expr := range chkFn.Expressions {
-							if expr.Operator.Name == fn.Name {
-								isUsed = true
-								break
-							}
-						}
-						if isUsed {
-							break
-						}
-					}
-				}
-			} else {
-				isUsed = true
-			}
+// 		for _, fn := range mod.Functions {
+// 			isUsed := false
+// 			if fn.Name != MAIN_FUNC {
+// 				for _, mod := range prgrm.Packages {
+// 					for _, chkFn := range mod.Functions {
+// 						for _, expr := range chkFn.Expressions {
+// 							if expr.Operator.Name == fn.Name {
+// 								isUsed = true
+// 								break
+// 							}
+// 						}
+// 						if isUsed {
+// 							break
+// 						}
+// 					}
+// 				}
+// 			} else {
+// 				isUsed = true
+// 			}
 
-			if !isUsed {
-				continue
-			}
+// 			if !isUsed {
+// 				continue
+// 			}
 
-			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);%s`, fn.Name, asmNL))
+// 			program.WriteString(fmt.Sprintf(`fn = MakeFunction(%#v);mod.AddFunction(fn);%s`, fn.Name, asmNL))
 
-			for _, inp := range fn.Inputs {
-				program.WriteString(fmt.Sprintf(`fn.AddInput(MakeParameter("%s", "%s"));%s`, inp.Name, inp.Typ, asmNL))
-			}
+// 			for _, inp := range fn.Inputs {
+// 				program.WriteString(fmt.Sprintf(`fn.AddInput(MakeParameter("%s", "%s"));%s`, inp.Name, inp.Typ, asmNL))
+// 			}
 
-			for _, out := range fn.Outputs {
-				program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", "%s"));%s`, out.Name, out.Typ, asmNL))
-			}
+// 			for _, out := range fn.Outputs {
+// 				program.WriteString(fmt.Sprintf(`fn.AddOutput(MakeParameter("%s", "%s"));%s`, out.Name, out.Typ, asmNL))
+// 			}
 
-			// var optExpressions []*CXExpression
-			// for _, expr := range fn.Expressions {
-			// 	if expr.Operator.Name == "identity" {
-			// 		var nonAssignIdent string
-			// 		encoder.DeserializeRaw(*expr.Inputs[0].Value, &nonAssignIdent)
+// 			// var optExpressions []*CXExpression
+// 			// for _, expr := range fn.Expressions {
+// 			// 	if expr.Operator.Name == "identity" {
+// 			// 		var nonAssignIdent string
+// 			// 		encoder.DeserializeRaw(*expr.Inputs[0].Value, &nonAssignIdent)
 
-			// 		for _, idExpr := range fn.Expressions {
-			// 			for i, out := range idExpr.Outputs {
-			// 				if out.Name == nonAssignIdent {
-			// 					idExpr.Outputs[i] = expr.Outputs[0]
-			// 					break
-			// 				}
-			// 			}
-			// 		}
-			// 		continue
-			// 	}
-			// 	optExpressions = append(optExpressions, expr)
-			// }
+// 			// 		for _, idExpr := range fn.Expressions {
+// 			// 			for i, out := range idExpr.Outputs {
+// 			// 				if out.Name == nonAssignIdent {
+// 			// 					idExpr.Outputs[i] = expr.Outputs[0]
+// 			// 					break
+// 			// 				}
+// 			// 			}
+// 			// 		}
+// 			// 		continue
+// 			// 	}
+// 			// 	optExpressions = append(optExpressions, expr)
+// 			// }
 
-			// fn.Expressions = optExpressions
+// 			// fn.Expressions = optExpressions
 
-			//for _, expr := range optExpressions {
-			for _, expr := range fn.Expressions {
-				var tagStr string
-				if expr.Label != "" {
-					tagStr = fmt.Sprintf(`expr.Label = "%s";`, expr.Label)
-				}
-				program.WriteString(fmt.Sprintf(`op, _ = prgrm.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
-					expr.Operator.Name, expr.Operator.Package.Name, expr.FileLine, tagStr, asmNL))
+// 			//for _, expr := range optExpressions {
+// 			for _, expr := range fn.Expressions {
+// 				var tagStr string
+// 				if expr.Label != "" {
+// 					tagStr = fmt.Sprintf(`expr.Label = "%s";`, expr.Label)
+// 				}
+// 				program.WriteString(fmt.Sprintf(`op, _ = prgrm.GetFunction("%s", "%s");expr = MakeExpression(op);expr.FileLine = %d;fn.AddExpression(expr);%s%s`,
+// 					expr.Operator.Name, expr.Operator.Package.Name, expr.FileLine, tagStr, asmNL))
 
-				for _, arg := range expr.Inputs {
-					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, *arg.Value, arg.Typ, asmNL))
-				}
+// 				for _, arg := range expr.Inputs {
+// 					program.WriteString(fmt.Sprintf(`expr.AddArgument(MakeArgument(&%#v, "%s"));%s`, *arg.Value, arg.Typ, asmNL))
+// 				}
 
-				for _, outName := range expr.Outputs {
-					program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");%s`, outName.Name, asmNL))
-				}
-			}
+// 				for _, outName := range expr.Outputs {
+// 					program.WriteString(fmt.Sprintf(`expr.AddOutputName("%s");%s`, outName.Name, asmNL))
+// 				}
+// 			}
 
-		}
+// 		}
 
-		for _, strct := range mod.Structs {
-			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);%s`, strct.Name, asmNL))
-			for _, fld := range strct.Fields {
-				program.WriteString(fmt.Sprintf(`fld = MakeField("%s", "%s");strct.AddField(fld);%s`, fld.Name, fld.Typ, asmNL))
-			}
-		}
+// 		for _, strct := range mod.Structs {
+// 			program.WriteString(fmt.Sprintf(`strct = MakeStruct("%s");mod.AddStruct(strct);%s`, strct.Name, asmNL))
+// 			for _, fld := range strct.Fields {
+// 				program.WriteString(fmt.Sprintf(`fld = MakeField("%s", "%s");strct.AddField(fld);%s`, fld.Name, fld.Typ, asmNL))
+// 			}
+// 		}
 
-		for _, def := range mod.Globals {
-			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, *def.Value, def.Typ, asmNL))
-		}
-	}
+// 		for _, def := range mod.Globals {
+// 			program.WriteString(fmt.Sprintf(`mod.AddDefinition(MakeDefinition("%s", &%#v, "%s"));%s`, def.Name, *def.Value, def.Typ, asmNL))
+// 		}
+// 	}
 
-	program.WriteString(`
-if *memprofile != "" {
-        f, err := os.Create(*memprofile)
-        if err != nil {
-            log.Fatal("could not create memory profile: ", err)
-        }
-        runtime.GC() // get up-to-date statistics
-        if err := pprof.WriteHeapProfile(f); err != nil {
-            log.Fatal("could not write memory profile: ", err)
-        }
-        f.Close()
-    }
-`)
+// 	program.WriteString(`
+// if *memprofile != "" {
+//         f, err := os.Create(*memprofile)
+//         if err != nil {
+//             log.Fatal("could not create memory profile: ", err)
+//         }
+//         runtime.GC() // get up-to-date statistics
+//         if err := pprof.WriteHeapProfile(f); err != nil {
+//             log.Fatal("could not write memory profile: ", err)
+//         }
+//         f.Close()
+//     }
+// `)
 
-	program.WriteString(`prgrm.Run(false, -1);}`)
-	ioutil.WriteFile(fmt.Sprintf("o.go"), []byte(program.String()), 0644)
-}
+// 	program.WriteString(`prgrm.Run(false, -1);}`)
+// 	ioutil.WriteFile(fmt.Sprintf("o.go"), []byte(program.String()), 0644)
+// }
 
 var isTesting bool
 var isErrorPresent bool
@@ -996,373 +996,373 @@ var isErrorPresent bool
 // 	}
 // }
 
-func (prgrm *CXProgram) RunInterpreted(withDebug bool, nCalls int) error {
-	rand.Seed(time.Now().UTC().UnixNano())
-	if prgrm.Terminated {
-		// user wants to re-run the program
-		prgrm.Terminated = false
-		prgrm.CallCounter = 0
-	}
+// func (prgrm *CXProgram) RunInterpreted(withDebug bool, nCalls int) error {
+// 	rand.Seed(time.Now().UTC().UnixNano())
+// 	if prgrm.Terminated {
+// 		// user wants to re-run the program
+// 		prgrm.Terminated = false
+// 		prgrm.CallCounter = 0
+// 	}
 
-	var callCounter int = 0
-	// we are going to do this if the CallStack is empty
-	// if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
-	if prgrm.CallStack != nil && prgrm.CallCounter > 0 {
-		// we resume the program
-		var lastCall *CXCall
-		var err error
+// 	var callCounter int = 0
+// 	// we are going to do this if the CallStack is empty
+// 	// if prgrm.CallStack != nil && len(prgrm.CallStack) > 0 {
+// 	if prgrm.CallStack != nil && prgrm.CallCounter > 0 {
+// 		// we resume the program
+// 		var lastCall *CXCall
+// 		var err error
 
-		var untilEnd = false
-		if nCalls < 1 {
-			nCalls = 1 // so the for loop executes
-			untilEnd = true
-		}
+// 		var untilEnd = false
+// 		if nCalls < 1 {
+// 			nCalls = 1 // so the for loop executes
+// 			untilEnd = true
+// 		}
 
-		for !prgrm.Terminated && nCalls > 0 && prgrm.CallCounter > 0 {
-			// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
-			lastCall = &prgrm.CallStack[prgrm.CallCounter]
-			err = lastCall.icall(withDebug, 1, callCounter)
-			if err != nil {
-				return err
-			}
-			if !untilEnd {
-				nCalls = nCalls - 1
-			}
-		}
-	} else if prgrm.CallCounter == 0 {
-		// initialization and checking
-		if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
+// 		for !prgrm.Terminated && nCalls > 0 && prgrm.CallCounter > 0 {
+// 			// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+// 			lastCall = &prgrm.CallStack[prgrm.CallCounter]
+// 			err = lastCall.icall(withDebug, 1, callCounter)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			if !untilEnd {
+// 				nCalls = nCalls - 1
+// 			}
+// 		}
+// 	} else if prgrm.CallCounter == 0 {
+// 		// initialization and checking
+// 		if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
 
-			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
-				// *init function
-				state := make([]*CXArgument, 0, 20)
-				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
+// 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
+// 				// *init function
+// 				state := make([]*CXArgument, 0, 20)
+// 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 
-				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
-				prgrm.CallStack[prgrm.CallCounter] = mainCall
-				// prgrm.CallCounter++
+// 				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
+// 				prgrm.CallStack[prgrm.CallCounter] = mainCall
+// 				// prgrm.CallCounter++
 
-				var err error
+// 				var err error
 
-				for !prgrm.Terminated {
-					call := &prgrm.CallStack[prgrm.CallCounter]
-					err = call.icall(withDebug, 1, callCounter)
-					if err != nil {
-						return err
-					}
-				}
+// 				for !prgrm.Terminated {
+// 					call := &prgrm.CallStack[prgrm.CallCounter]
+// 					err = call.icall(withDebug, 1, callCounter)
+// 					if err != nil {
+// 						return err
+// 					}
+// 				}
 
-				// we reset call state
-				prgrm.Terminated = false
-				prgrm.CallCounter = 0
-			} else {
-				return err
-			}
+// 				// we reset call state
+// 				prgrm.Terminated = false
+// 				prgrm.CallCounter = 0
+// 			} else {
+// 				return err
+// 			}
 
-			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
-				// main function
-				state := make([]*CXArgument, 0, 20)
-				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
+// 			if fn, err := mod.SelectFunction(MAIN_FUNC); err == nil {
+// 				// main function
+// 				state := make([]*CXArgument, 0, 20)
+// 				mainCall := MakeCall(fn, state, nil, mod, mod.Program)
 
-				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
-				prgrm.CallStack[prgrm.CallCounter] = mainCall
-				// prgrm.CallCounter++
+// 				// prgrm.CallStack = append(prgrm.CallStack, mainCall)
+// 				prgrm.CallStack[prgrm.CallCounter] = mainCall
+// 				// prgrm.CallCounter++
 
-				var lastCall *CXCall
-				var err error
+// 				var lastCall *CXCall
+// 				var err error
 
-				var untilEnd = false
-				if nCalls < 1 {
-					nCalls = 1 // so the for loop executes
-					untilEnd = true
-				}
+// 				var untilEnd = false
+// 				if nCalls < 1 {
+// 					nCalls = 1 // so the for loop executes
+// 					untilEnd = true
+// 				}
 
-				for !prgrm.Terminated && nCalls > 0 {
-					// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
-					lastCall = &prgrm.CallStack[prgrm.CallCounter]
-					err = lastCall.icall(withDebug, 1, callCounter)
+// 				for !prgrm.Terminated && nCalls > 0 {
+// 					// lastCall = &prgrm.CallStack[len(prgrm.CallStack) - 1]
+// 					lastCall = &prgrm.CallStack[prgrm.CallCounter]
+// 					err = lastCall.icall(withDebug, 1, callCounter)
 
-					if err != nil {
-						return err
-					}
-					if !untilEnd {
-						nCalls = nCalls - 1
-					}
-				}
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	return nil
-}
+// 					if err != nil {
+// 						return err
+// 					}
+// 					if !untilEnd {
+// 						nCalls = nCalls - 1
+// 					}
+// 				}
+// 				return err
+// 			}
+// 		} else {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
-	// for _, arg := range call.State {
-	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
-	// 	if len(arg.Fields) > 0 {
-	// 		fmt.Println("exec.flds", arg.Fields[0].Value)
-	// 	}
-	// }
-	// fmt.Println()
+// func (call *CXCall) icall(withDebug bool, nCalls, callCounter int) error {
+// 	// for _, arg := range call.State {
+// 	// 	fmt.Println("exec.arg", arg.Name, arg.Value, arg.Fields)
+// 	// 	if len(arg.Fields) > 0 {
+// 	// 		fmt.Println("exec.flds", arg.Fields[0].Value)
+// 	// 	}
+// 	// }
+// 	// fmt.Println()
 
-	//  add a counter here to pause
-	if nCalls > 0 && callCounter >= nCalls {
-		return nil
-	}
-	callCounter++
+// 	//  add a counter here to pause
+// 	if nCalls > 0 && callCounter >= nCalls {
+// 		return nil
+// 	}
+// 	callCounter++
 
-	//saveStep(call)
-	if withDebug {
-		PrintCallStack(call.Program.CallStack)
-	}
+// 	//saveStep(call)
+// 	if withDebug {
+// 		PrintCallStack(call.Program.CallStack)
+// 	}
 
-	// exceptions
-	var exc bool
-	var excError error
+// 	// exceptions
+// 	var exc bool
+// 	var excError error
 
-	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
-		// popping the stack
-		// call.Program.CallStack = call.Program.CallStack[:len(call.Program.CallStack) - 1]
-		call.Program.CallCounter--
+// 	if call.Line >= len(call.Operator.Expressions) || call.Line < 0 {
+// 		// popping the stack
+// 		// call.Program.CallStack = call.Program.CallStack[:len(call.Program.CallStack) - 1]
+// 		call.Program.CallCounter--
 
-		numOutputs := len(call.Operator.Outputs)
-		for i, out := range call.Operator.Outputs {
-			found := true
-			for _, def := range call.State {
-				/////////// throw error if output was not defined, or handle outputs from last expression
-				if out.Name == def.Name {
-					flds := def.Fields
+// 		numOutputs := len(call.Operator.Outputs)
+// 		for i, out := range call.Operator.Outputs {
+// 			found := true
+// 			for _, def := range call.State {
+// 				/////////// throw error if output was not defined, or handle outputs from last expression
+// 				if out.Name == def.Name {
+// 					flds := def.Fields
 
-					if call.ReturnAddress != nil {
-						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line-1].Outputs[i].Name
-						found := false
-						for _, retDef := range call.ReturnAddress.State {
-							if len(flds) > 0 {
-								if sameFields(def.Fields, retDef.Fields) && retDef.Name == retName {
-									retDef.Fields[len(retDef.Fields)-1].Value = def.Fields[len(def.Fields)-1].Value
-									found = true
-									break
-								}
+// 					if call.ReturnAddress != nil {
+// 						retName := call.ReturnAddress.Operator.Expressions[call.ReturnAddress.Line-1].Outputs[i].Name
+// 						found := false
+// 						for _, retDef := range call.ReturnAddress.State {
+// 							if len(flds) > 0 {
+// 								if sameFields(def.Fields, retDef.Fields) && retDef.Name == retName {
+// 									retDef.Fields[len(retDef.Fields)-1].Value = def.Fields[len(def.Fields)-1].Value
+// 									found = true
+// 									break
+// 								}
 
-							} else {
-								if retDef.Name == retName {
-									retDef.Value = def.Value
-									found = true
-									break
-								}
-							}
-						}
+// 							} else {
+// 								if retDef.Name == retName {
+// 									retDef.Value = def.Value
+// 									found = true
+// 									break
+// 								}
+// 							}
+// 						}
 
-						if !found {
-							if len(flds) > 0 {
-								// arg := MakeArgument(outName)
-								// arg.Fields = flds
-								// arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
-								// call.State = append(call.State, arg)
+// 						if !found {
+// 							if len(flds) > 0 {
+// 								// arg := MakeArgument(outName)
+// 								// arg.Fields = flds
+// 								// arg.Fields[len(flds) - 1].AddValue(&output).AddType(typ)
+// 								// call.State = append(call.State, arg)
 
-								def.Name = retName
-								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
-							} else {
-								def.Name = retName
-								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
-							}
+// 								def.Name = retName
+// 								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+// 							} else {
+// 								def.Name = retName
+// 								call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+// 							}
 
-							def.Name = retName
-							call.ReturnAddress.State = append(call.ReturnAddress.State, def)
-						}
+// 							def.Name = retName
+// 							call.ReturnAddress.State = append(call.ReturnAddress.State, def)
+// 						}
 
-						found = true
-						// break
-						if i == numOutputs {
-							return call.ReturnAddress.icall(withDebug, nCalls, callCounter)
-						}
-					} else {
-						// no return address. should only be for main
-						call.Program.Terminated = true
-						call.Program.Outputs = append(call.Program.Outputs, def)
-					}
-				}
-			}
+// 						found = true
+// 						// break
+// 						if i == numOutputs {
+// 							return call.ReturnAddress.icall(withDebug, nCalls, callCounter)
+// 						}
+// 					} else {
+// 						// no return address. should only be for main
+// 						call.Program.Terminated = true
+// 						call.Program.Outputs = append(call.Program.Outputs, def)
+// 					}
+// 				}
+// 			}
 
-			// this isn't complete yet
-			if !found {
-				return errors.New(fmt.Sprintf("'%s' output(s) not specified", call.Operator.Name))
-			}
-		}
+// 			// this isn't complete yet
+// 			if !found {
+// 				return errors.New(fmt.Sprintf("'%s' output(s) not specified", call.Operator.Name))
+// 			}
+// 		}
 
-		if call.ReturnAddress != nil {
-			return call.ReturnAddress.icall(withDebug, nCalls, callCounter)
-		} else {
-			// no return address. should only be for main
-			call.Program.Terminated = true
-			//call.Program.Outputs = append(call.Program.Outputs, def)
-		}
-	} else {
-		fn := call.Operator
+// 		if call.ReturnAddress != nil {
+// 			return call.ReturnAddress.icall(withDebug, nCalls, callCounter)
+// 		} else {
+// 			// no return address. should only be for main
+// 			call.Program.Terminated = true
+// 			//call.Program.Outputs = append(call.Program.Outputs, def)
+// 		}
+// 	} else {
+// 		fn := call.Operator
 
-		if expr, err := fn.GetExpression(call.Line); err == nil {
-			if expr.Operator == nil {
-				// then it's a declaration
-				call.State = append(call.State, expr.Outputs[0])
-				call.Line++
-				return call.icall(withDebug, nCalls, callCounter)
-			}
+// 		if expr, err := fn.GetExpression(call.Line); err == nil {
+// 			if expr.Operator == nil {
+// 				// then it's a declaration
+// 				call.State = append(call.State, expr.Outputs[0])
+// 				call.Line++
+// 				return call.icall(withDebug, nCalls, callCounter)
+// 			}
 
-			// getting arguments
-			argsRefs, _ := expr.GetInputs()
-			argsCopy := make([]*CXArgument, len(argsRefs))
+// 			// getting arguments
+// 			argsRefs, _ := expr.GetInputs()
+// 			argsCopy := make([]*CXArgument, len(argsRefs))
 
-			if len(argsRefs) != len(expr.Operator.Inputs) {
-				if len(argsRefs) == 1 {
-					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
-						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
-				} else {
-					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d were provided",
-						expr.FileName, expr.FileLine, OpNames[expr.Operator.OpCode], len(expr.Operator.Inputs), len(argsRefs)))
-				}
-			}
+// 			if len(argsRefs) != len(expr.Operator.Inputs) {
+// 				if len(argsRefs) == 1 {
+// 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d was provided",
+// 						expr.FileName, expr.FileLine, expr.Operator.Name, len(expr.Operator.Inputs), len(argsRefs)))
+// 				} else {
+// 					return errors.New(fmt.Sprintf("%s: %d: %s: expected %d inputs; %d were provided",
+// 						expr.FileName, expr.FileLine, OpNames[expr.Operator.OpCode], len(expr.Operator.Inputs), len(argsRefs)))
+// 				}
+// 			}
 
-			// we don't want to modify by reference, we need to make copies
-			for i := 0; i < len(argsRefs); i++ {
-				if argsRefs[i].Typ == "ident" || len(argsRefs[i].Fields) > 0 {
-					var lookingFor string
-					// encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
+// 			// we don't want to modify by reference, we need to make copies
+// 			for i := 0; i < len(argsRefs); i++ {
+// 				if argsRefs[i].Typ == "ident" || len(argsRefs[i].Fields) > 0 {
+// 					var lookingFor string
+// 					// encoder.DeserializeRaw(*argsRefs[i].Value, &lookingFor)
 
-					lookingFor = getFQDN(argsRefs[i])
+// 					lookingFor = getFQDN(argsRefs[i])
 
-					// if len(argsRefs[i].Fields) > 0 {
-					// 	for _, fld := range argsRefs[i].Fields {
-					// 		fmt.Println("this one has it", fld.Name, fld.Value)
-					// 	}
-					// }
+// 					// if len(argsRefs[i].Fields) > 0 {
+// 					// 	for _, fld := range argsRefs[i].Fields {
+// 					// 		fmt.Println("this one has it", fld.Name, fld.Value)
+// 					// 	}
+// 					// }
 
-					if arg, err := resolveIdent(lookingFor, argsRefs[i], call); err == nil {
-						argsCopy[i] = arg
-						// Extracting array values
-						// if len(argsRefs[i].Indexes) > 0 {
-						// 	if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
-						// 		arg.Value = &val
-						// 	} else {
-						// 		panic(err)
-						// 	}
-						// }
-					} else {
-						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
-					}
-				} else {
-					argsCopy[i] = argsRefs[i]
-				}
+// 					if arg, err := resolveIdent(lookingFor, argsRefs[i], call); err == nil {
+// 						argsCopy[i] = arg
+// 						// Extracting array values
+// 						// if len(argsRefs[i].Indexes) > 0 {
+// 						// 	if val, err := getValueFromArray(arg, getArrayIndex(argsRefs[i], call)); err == nil {
+// 						// 		arg.Value = &val
+// 						// 	} else {
+// 						// 		panic(err)
+// 						// 	}
+// 						// }
+// 					} else {
+// 						return errors.New(fmt.Sprintf("%d: %s", expr.FileLine, err.Error()))
+// 					}
+// 				} else {
+// 					argsCopy[i] = argsRefs[i]
+// 				}
 
-				// checking if arguments types match with expressions required types
-				if len(expr.Operator.Inputs) > 0 &&
-					expr.Operator.Inputs[i].Typ !=
-						argsCopy[i].Typ &&
-					expr.Operator.Inputs[i].Typ != "" &&
-					expr.Operator.Inputs[i].Type != TYPE_UNDEFINED {
-					return errors.New(fmt.Sprintf("%s: %d: %s: input %d is type '%s'; expected type '%s'\n",
-						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
-				}
-			}
+// 				// checking if arguments types match with expressions required types
+// 				if len(expr.Operator.Inputs) > 0 &&
+// 					expr.Operator.Inputs[i].Typ !=
+// 						argsCopy[i].Typ &&
+// 					expr.Operator.Inputs[i].Typ != "" &&
+// 					expr.Operator.Inputs[i].Type != TYPE_UNDEFINED {
+// 					return errors.New(fmt.Sprintf("%s: %d: %s: input %d is type '%s'; expected type '%s'\n",
+// 						expr.FileName, expr.FileLine, expr.Operator.Name, i+1, argsCopy[i].Typ, expr.Operator.Inputs[i].Typ))
+// 				}
+// 			}
 
-			var opName string
-			var isNative bool
-			if expr.Operator != nil {
-				if expr.Operator.IsNative {
-					isNative = true
-					opName = OpNames[expr.Operator.OpCode]
-				} else {
-					opName = expr.Operator.Name
-				}
-			} else {
-				opName = "id" // return the same
-			}
+// 			var opName string
+// 			var isNative bool
+// 			if expr.Operator != nil {
+// 				if expr.Operator.IsNative {
+// 					isNative = true
+// 					opName = OpNames[expr.Operator.OpCode]
+// 				} else {
+// 					opName = expr.Operator.Name
+// 				}
+// 			} else {
+// 				opName = "id" // return the same
+// 			}
 
-			if _, ok := NATIVE_FUNCTIONS[opName]; ok {
-				isNative = true
-			}
+// 			if _, ok := NATIVE_FUNCTIONS[opName]; ok {
+// 				isNative = true
+// 			}
 
-			// check if struct array function
-			if isNative {
-				// checkNative(opName, expr, call, &argsCopy, &exc, &excError)
-				if exc && isTesting {
-					isErrorPresent = true
-				}
-				if exc && !isTesting {
-					fmt.Println()
-					fmt.Println("Call's State:")
-					for _, def := range call.State {
-						isBasic := false
-						for _, basic := range BASIC_TYPES {
-							if basic == def.Typ {
-								isBasic = true
-								break
-							}
-						}
+// 			// check if struct array function
+// 			if isNative {
+// 				// checkNative(opName, expr, call, &argsCopy, &exc, &excError)
+// 				if exc && isTesting {
+// 					isErrorPresent = true
+// 				}
+// 				if exc && !isTesting {
+// 					fmt.Println()
+// 					fmt.Println("Call's State:")
+// 					for _, def := range call.State {
+// 						isBasic := false
+// 						for _, basic := range BASIC_TYPES {
+// 							if basic == def.Typ {
+// 								isBasic = true
+// 								break
+// 							}
+// 						}
 
-						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX {
-							if isBasic {
-								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
-							} else {
-								fmt.Println(def.Name)
-								PrintValue(def.Name, def.Value, def.Typ, call.Program)
-							}
-						}
-					}
-					fmt.Println()
-					fmt.Printf("%s() Inputs:\n", expr.Operator.Name)
-					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
-					}
-					fmt.Println()
-					return excError
-				}
+// 						if len(def.Name) > len(NON_ASSIGN_PREFIX) && def.Name[:len(NON_ASSIGN_PREFIX)] != NON_ASSIGN_PREFIX {
+// 							if isBasic {
+// 								fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
+// 							} else {
+// 								fmt.Println(def.Name)
+// 								PrintValue(def.Name, def.Value, def.Typ, call.Program)
+// 							}
+// 						}
+// 					}
+// 					fmt.Println()
+// 					fmt.Printf("%s() Inputs:\n", expr.Operator.Name)
+// 					for i, arg := range argsCopy {
+// 						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
+// 					}
+// 					fmt.Println()
+// 					return excError
+// 				}
 
-				call.Line++
-				return call.icall(withDebug, nCalls, callCounter)
-			} else {
-				// operator was not a native function
-				if exc && isTesting {
-					isErrorPresent = true
-					//fmt.Println(excError)
-				}
-				if exc && !isTesting {
-					fmt.Println()
-					fmt.Println("Call's State:")
-					for _, def := range call.State {
-						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
-					}
-					fmt.Println()
-					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
-					for i, arg := range argsCopy {
-						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
-					}
-					fmt.Println()
-					return excError
-				}
+// 				call.Line++
+// 				return call.icall(withDebug, nCalls, callCounter)
+// 			} else {
+// 				// operator was not a native function
+// 				if exc && isTesting {
+// 					isErrorPresent = true
+// 					//fmt.Println(excError)
+// 				}
+// 				if exc && !isTesting {
+// 					fmt.Println()
+// 					fmt.Println("Call's State:")
+// 					for _, def := range call.State {
+// 						fmt.Printf("%s:\t\t%s\n", def.Name, PrintValue(def.Name, def.Value, def.Typ, call.Program))
+// 					}
+// 					fmt.Println()
+// 					fmt.Printf("%s() Arguments:\n", expr.Operator.Name)
+// 					for i, arg := range argsCopy {
+// 						fmt.Printf("%d: %s\n", i, PrintValue("", arg.Value, arg.Typ, call.Program))
+// 					}
+// 					fmt.Println()
+// 					return excError
+// 				}
 
-				// call.Line++ // once the subcall finishes, call next line
-				call.Program.CallStack[call.Program.CallCounter].Line++
-				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Package, call.Program); err == nil {
-					// fmt.Println("not a native function", expr.Operator.Name)
-					subcall := MakeCall(expr.Operator, argDefs, call, call.Package, call.Program)
+// 				// call.Line++ // once the subcall finishes, call next line
+// 				call.Program.CallStack[call.Program.CallCounter].Line++
+// 				if argDefs, err := argsToDefs(argsCopy, expr.Operator.Inputs, expr.Operator.Outputs, call.Package, call.Program); err == nil {
+// 					// fmt.Println("not a native function", expr.Operator.Name)
+// 					subcall := MakeCall(expr.Operator, argDefs, call, call.Package, call.Program)
 
-					// call.Program.CallStack = append(call.Program.CallStack, subcall)
-					call.Program.CallCounter++
-					call.Program.CallStack[call.Program.CallCounter] = subcall
+// 					// call.Program.CallStack = append(call.Program.CallStack, subcall)
+// 					call.Program.CallCounter++
+// 					call.Program.CallStack[call.Program.CallCounter] = subcall
 
-					return subcall.icall(withDebug, nCalls, callCounter)
-				} else {
-					fmt.Println(err)
-				}
-			}
-		} else {
-			fmt.Println(err)
-		}
-	}
-	return nil
-}
+// 					return subcall.icall(withDebug, nCalls, callCounter)
+// 				} else {
+// 					fmt.Println(err)
+// 				}
+// 			}
+// 		} else {
+// 			fmt.Println(err)
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (prgrm *CXProgram) ToCall () *CXExpression {
 	for c := prgrm.CallCounter - 1; c >= 0; c-- {

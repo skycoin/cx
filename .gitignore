@@ -73,5 +73,6 @@ old_tests/
 class-Heap.cx
 old_cx.y
 pacman-cx/
-crappyBall/
+crappyBall-cx/
 cx.sh
+cx-func-backup/

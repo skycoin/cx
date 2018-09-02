@@ -189,6 +189,7 @@ global_declaration:
 				$3.Size = exprOut.Size
 				$3.TotalSize = exprOut.TotalSize
 				$3.Package = exprOut.Package
+
 				pkg.AddGlobal($3)
 			} else {
 				panic(err)

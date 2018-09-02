@@ -15,6 +15,7 @@ func testGetElement() () {
 	assert(doubleArray[1], 70.0D, "F64 Get element error")
 	assert(boolArray[4], false, "BOOL Get element error")
 	assert(byteArray[2], 379B, "BYTE Get element error")
+	
 	// assert(stringArray[4], "Hello there!", "STR Get element error")
 }
 
@@ -189,6 +190,8 @@ func testGetElement() () {
 // 	byteArray[2] = tempByte
 // 	// stringArray[2] = tempString
 // }
+
+
 
 func testArray () () {
 	intArray = [5]i32{ 1, 2, 3, 4, 5}

@@ -196,8 +196,8 @@ type CXArgument struct {
 	Package *CXPackage
 	Program *CXProgram
 
-	Value *[]byte
-	Typ   string
+	// Value *[]byte
+	// Typ   string
 }
 
 /*

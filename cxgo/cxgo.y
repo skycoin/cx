@@ -185,15 +185,8 @@ external_declaration:
         |       debugging
         ;
 
-debugging:      DSTATE
-                {
-			DebugState()
-                }
-        |       DSTACK
-                {
-			DebugStack()
-                }
-        |       DPROGRAM
+debugging:      
+                DPROGRAM
                 {
 			PRGRM.PrintProgram()
                 }
@@ -275,7 +268,7 @@ selector:
         ;
 
 global_declaration:
-                VAR declarator declaration_specifiers SEMICOLON
+VAR declarator declaration_specifiers SEMICOLON
                 {
 			DeclareGlobal($2, $3, nil, false)
                 }
@@ -595,11 +588,7 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
                 {
-			if InterpretMode {
-				$$ = BasicArrayLiteralDeclaration(TypeNames[$3], $5, yyS[yypt-0].line + 1, false)
-			} else {
-				$$ = SliceLiteralExpression($3, $5)
-			}
+			$$ = SliceLiteralExpression($3, $5)
                 }
         |       LBRACK RBRACK type_specifier LBRACE RBRACE
                 {
@@ -607,12 +596,6 @@ slice_literal_expression:
                 }
         |       LBRACK RBRACK slice_literal_expression
                 {
-			if InterpretMode {
-				
-			} else {
-				
-			}
-
 			for _, expr := range $3 {
 				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
 					expr.Outputs[0].Lengths = append([]int{int(SLICE_SIZE)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
