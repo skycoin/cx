@@ -1,5 +1,6 @@
 package main
 import "testing"
+import "time"
 
 func main () {
 	printf("\nRunning CX tests\n")

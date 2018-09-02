@@ -72,6 +72,7 @@ type SelectStatement struct {
 }
 
 func ErrorHeader (currentFile string, lineNo int) string {
+	FoundCompileErrors = true
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
@@ -168,15 +169,20 @@ func DeclarePackage(ident string) {
 	}
 }
 
-func DeclareImport(ident string) {
+func DeclareImport(ident string, currentFile string, lineNo int) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(ident); err != nil {
+			
 			if imp, err := PRGRM.GetPackage(ident); err == nil {
 				pkg.AddImport(imp)
 			} else {
-				// look in the workspace
-				
-				panic(err)
+				// TODO look in the workspace
+				if IsCorePackage(ident) {
+					imp := MakePackage(ident)
+					pkg.AddImport(imp)
+				} else {
+					println(ErrorHeader(currentFile, lineNo), err.Error())
+				}
 			}
 		}
 	} else {
@@ -328,7 +334,6 @@ func DeclarationSpecifiersStruct(ident string, pkgName string, isExternal bool) 
 					return arg
 				} else {
 					println(ErrorHeader(CurrentFile, LineNo), err.Error())
-					os.Exit(3)
 					return nil
 					// panic("type '" + ident + "' does not exist")
 				}
@@ -744,7 +749,6 @@ func PostfixExpressionNative(typCode int, opStrCode string) []*CXExpression {
 		return []*CXExpression{expr}
 	} else {
 		println(ErrorHeader(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
-		os.Exit(3)
 		return nil
 		// panic(ok)
 	}
@@ -903,6 +907,21 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 			if imp, err := pkg.GetImport(left.Name); err == nil {
 				// the external property will be propagated to the following arguments
 				// this way we avoid considering these arguments as module names
+
+				if IsCorePackage(left.Name) {
+					if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+						constant := Constants[code]
+						val := WritePrimary(constant.Type, constant.Value, false)
+						prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
+					} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
+						// then it's a native
+						// TODO: we'd be referring to the function itself, not a function call
+						// (functions as first-class objects)
+						left.Name = left.Name + "." + ident
+					}
+					return
+				}
+				
 				left.Package = imp
 
 				if glbl, err := imp.GetGlobal(ident); err == nil {
@@ -920,25 +939,38 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 				}
 			} else {
 				// then left is not a package name
-				if code, ok := ConstCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name+"."+ident]; ok {
-					constant := Constants[code]
-					val := WritePrimary(constant.Type, constant.Value, false)
-					prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
-				} else if _, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name+"."+ident]; ok {
-					// then it's a native
-					// TODO: we'd be referring to the function itself, not a function call
-					// (functions as first-class objects)
-					prevExprs[len(prevExprs)-1].Outputs[0].Name = prevExprs[len(prevExprs)-1].Outputs[0].Name + "." + ident
-				} else {
-					// then it's a struct
-					left.IsStruct = true
-					left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
-					fld := MakeArgument(ident, CurrentFile, LineNo)
-					fld.AddType(TypeNames[TYPE_IDENTIFIER])
-					left.Fields = append(left.Fields, fld)
-					
-					
+				if IsCorePackage(left.Name) {
+					println(ErrorHeader(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
+					os.Exit(3)
+					return
 				}
+
+				// then it's a struct
+				left.IsStruct = true
+				left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
+				fld := MakeArgument(ident, CurrentFile, LineNo)
+				fld.AddType(TypeNames[TYPE_IDENTIFIER])
+				left.Fields = append(left.Fields, fld)
+				
+				// if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+				// 	constant := Constants[code]
+				// 	val := WritePrimary(constant.Type, constant.Value, false)
+				// 	prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
+				// } else if _, ok := OpCodes[left.Name+"."+ident]; ok {
+				// 	// then it's a native
+				// 	// TODO: we'd be referring to the function itself, not a function call
+				// 	// (functions as first-class objects)
+				// 	left.Name = left.Name + "." + ident
+				// } else {
+				// 	// then it's a struct
+				// 	left.IsStruct = true
+				// 	left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
+				// 	fld := MakeArgument(ident, CurrentFile, LineNo)
+				// 	fld.AddType(TypeNames[TYPE_IDENTIFIER])
+				// 	left.Fields = append(left.Fields, fld)
+					
+					
+				// }
 			}
 		} else {
 			panic(err)
@@ -1884,7 +1916,6 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 			if shouldExist {
 				// it should exist. error
 				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
-				os.Exit(3)
 			}
 
 			if sym.SynonymousTo != "" {
@@ -1976,8 +2007,6 @@ func CheckTypes(expr *CXExpression) {
 					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expr.Outputs[i].Name, expectedType))
 				}
 				// os.Exit(3)
-
-				FoundCompileErrors = true
 			}
 		}
 	}
@@ -2193,13 +2222,13 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 
 				if inpExpr.Operator.Outputs[0].Type == TYPE_UNDEFINED {
 					// if undefined type, then adopt argument's type
-					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[inpExpr.Inputs[0].Type])
+					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Inputs[0].Type])
 					out.Size = inpExpr.Inputs[0].Size
 					out.TotalSize = inpExpr.Inputs[0].Size
 					out.Type = inpExpr.Inputs[0].Type
 					out.IsShortDeclaration = true
 				} else {
-					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
+					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
 					out.Size = inpExpr.Operator.Outputs[0].Size
 					out.TotalSize = inpExpr.Operator.Outputs[0].Size
 					out.Type = inpExpr.Operator.Outputs[0].Type

@@ -2206,6 +2206,15 @@ func CheckArithmeticOp(expr *CXExpression) bool {
 // 	return areSame
 // }
 
+func IsCorePackage (ident string) bool {
+	for _, core := range CorePackages {
+		if core == ident {
+			return true
+		}
+	}
+	return false
+}
+
 func SetCorrectArithmeticOp(expr *CXExpression) {
 	if expr.Operator == nil || len(expr.Outputs) < 1 {
 		return

@@ -1,7 +1,8 @@
 package main
 
-// import "gl"
-// import "glfw"
+import "gl"
+import "glfw"
+import "os"
 
 var width i32 = 400
 var height i32 = 300

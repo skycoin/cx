@@ -1,7 +1,8 @@
 package main
 
-// import "gl"
-// import "glfw"
+import "gl"
+import "glfw"
+import "os"
 
 type Sprite struct {
 	x1 f32
@@ -155,7 +156,7 @@ func drawChar (x i32, y i32, texture i32, sprite Sprite) () {
 	
 	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
 	ratio := f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
-	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
+	gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
 	
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
 	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)
@@ -193,7 +194,7 @@ func drawTile (x i32, y i32, sprite Sprite) () {
 	
 	bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
 	ratio := f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
-	gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
+	gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
 
 	x = i32.sub(i32.add(i32.mul(i32.mod(x, size), 2), 1), size)
 	y = i32.sub(i32.add(i32.mul(i32.mod(y, size), 2), 1), size)

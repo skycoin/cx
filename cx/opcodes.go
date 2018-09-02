@@ -4,6 +4,11 @@ import(
 	// "fmt"
 )
 
+var CorePackages = []string{
+	// temporary solution until we can implement these packages in pure CX I guess
+	"gl", "glfw", "time", "http", "os", "explorer", "aff",
+}
+
 // op codes
 const (
 	OP_IDENTITY = iota

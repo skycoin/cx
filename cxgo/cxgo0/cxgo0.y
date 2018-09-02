@@ -264,17 +264,29 @@ package_declaration:
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				if _, err := pkg.GetImport($2); err != nil {
-					if imp, err := PRGRM0.GetPackage($2); err == nil {
-						pkg.AddImport(imp)
-					} else {
-						panic(err)
-					}
-				}
-			} else {
-				panic(err)
-			}
+			DeclareImport($2, CurrentFileName, lineNo)
+			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
+			// 	if _, err := pkg.GetImport($2); err != nil {
+			// 		if imp, err := PRGRM0.GetPackage($2); err == nil {
+			// 			pkg.AddImport(imp)
+			// 		} else {
+			// 			// checking if core package
+			// 			isCore = false
+			// 			for _, core := range CorePackages {
+			// 				if core == $2 {
+			// 					isCore = true
+			// 				}
+			// 			}
+			// 			// TODO look in the workspace
+			// 			if !isCore {
+			// 				panic(err)
+			// 			}
+						
+			// 		}
+			// 	}
+			// } else {
+			// 	panic(err)
+			// }
                 }
                 ;
 

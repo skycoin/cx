@@ -4,6 +4,9 @@
 
 package main
 
+import "gl"
+import "glfw"
+
 var width i32 = 600
 var height i32 = 600
 var rows i32 = 15

@@ -312,7 +312,7 @@ package_declaration:
 import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
-			DeclareImport($2)
+			// DeclareImport($2)
                 }
         ;
 
