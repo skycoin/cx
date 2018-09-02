@@ -137,7 +137,7 @@ IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex
 
    %GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
-
+   
    go build -i -o %GOPATH%/bin/cx.exe github.com/skycoin/cx/cxgo/
 ) ELSE (
    %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex
@@ -152,11 +152,10 @@ IF EXIST %GOPATH%\src\github.com\skycoin\cx\ (
    echo NOTE:   Compiling CX
 )
 
+IF NOT DEFINED CX_PATH (SET CX_PATH=%USERPROFILE%\cx)
 
-
-IF NOT EXIST %CXPATH% (
-   SET CX_PATH=%USERPROFILE%\cx
-   echo NOTE:   CX's workspace (\%CXPATH\% or %CX_PATH%) does not exist
+IF NOT EXIST %CX_PATH% (
+   echo NOTE:   CX's workspace %CX_PATH% does not exist
    echo NOTE:   Creating CX's workspace at %CX_PATH%
 
    mkdir %CX_PATH%
@@ -173,13 +172,12 @@ IF NOT EXIST %CXPATH% (
 )
 
 echo 
-cx -v
+cx.exe -v
 echo 
 
 IF ERRORLEVEL 1 (
-   echo FAIL:   Is CX executable's directory (%INSTALLATION_PATH%\bin) in your \%PATH\% environment variable?
+   echo FAIL:   Is CX executable's directory %INSTALLATION_PATH%\bin in your \%PATH\% environment variable?
 EXIT /B 2
 )
 
-
-echo NOTE: We recommend you to test your CX installation by running 'cx %GOPATH%\src\github.com\skycoin\cx\tests'
+echo NOTE: We recommend you to test your CX installation by running 'cx.exe %GOPATH%\src\github.com\skycoin\cx\tests'
