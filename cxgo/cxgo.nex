@@ -763,6 +763,10 @@ func main () {
 		yyParse(NewLexer(b))
 	}
 
+	if FoundCompileErrors {
+		os.Exit(3)
+	}
+
 	if len(sourceCode) == 0 {
 		mod := MakePackage(MAIN_PKG)
 		PRGRM.AddPackage(mod)

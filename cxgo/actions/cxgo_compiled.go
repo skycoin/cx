@@ -1948,7 +1948,8 @@ func ProcessSliceAssignment(expr *CXExpression) {
 func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
 		for i, inp := range expr.Inputs {
-			if expr.Outputs[i].Type != inp.Type || expr.Outputs[i].TotalSize != inp.TotalSize {
+			// if expr.Outputs[i].Type != inp.Type || expr.Outputs[i].TotalSize != inp.TotalSize {
+			if expr.Outputs[i].Type != inp.Type {
 
 				var expectedType string
 				var receivedType string
