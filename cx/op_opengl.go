@@ -22,6 +22,12 @@ func op_gl_Init() {
 	gl.Init()
 }
 
+func op_gl_GetError(expr *CXExpression, fp int) {
+	out1 := expr.Outputs[0]
+	outB1 := FromI32(int32(gl.GetError()))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
 func op_gl_CreateProgram(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateProgram()))

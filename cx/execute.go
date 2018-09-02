@@ -834,6 +834,8 @@ var isErrorPresent bool
 // 		// OpenGL
 // 	case "gl.Init":
 // 		err = gl_Init()
+//	case "gl.GetError":
+//		err = gl_GetError()
 // 	case "gl.CreateProgram":
 // 		err = gl_CreateProgram(expr, call)
 // 	case "gl.LinkProgram":

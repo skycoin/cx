@@ -243,6 +243,7 @@ const (
 
 	// opengl
 	OP_GL_INIT
+	OP_GL_GET_ERROR
 	OP_GL_CREATE_PROGRAM
 	OP_GL_LINK_PROGRAM
 	OP_GL_CLEAR
@@ -733,6 +734,8 @@ func execNative(prgrm *CXProgram) {
 		// opengl
 	case OP_GL_INIT:
 		op_gl_Init()
+	case OP_GL_GET_ERROR:
+		op_gl_GetError(expr, fp)
 	case OP_GL_CREATE_PROGRAM:
 		op_gl_CreateProgram(expr, fp)
 	case OP_GL_LINK_PROGRAM:
@@ -1077,6 +1080,7 @@ var OpNames map[int]string = map[int]string{
 
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
+	OP_GL_GET_ERROR:                  "gl.GetError",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
 	OP_GL_LINK_PROGRAM:               "gl.LinkProgram",
 	OP_GL_CLEAR:                      "gl.Clear",
@@ -1354,6 +1358,7 @@ var OpCodes map[string]int = map[string]int{
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
+	"gl.GetError":                OP_GL_GET_ERROR,
 	"gl.CreateProgram":           OP_GL_CREATE_PROGRAM,
 	"gl.LinkProgram":             OP_GL_LINK_PROGRAM,
 	"gl.Clear":                   OP_GL_CLEAR,
@@ -1630,6 +1635,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
+	OP_GL_GET_ERROR:                  MakeNative(OP_GL_GET_ERROR, []int{}, []int{TYPE_I32}),
 	OP_GL_CREATE_PROGRAM:             MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32}),
 	OP_GL_LINK_PROGRAM:               MakeNative(OP_GL_LINK_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_CLEAR:                      MakeNative(OP_GL_CLEAR, []int{TYPE_I32}, []int{}),
