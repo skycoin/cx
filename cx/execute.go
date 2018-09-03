@@ -975,6 +975,8 @@ var isErrorPresent bool
 // 		err = glfw_GetTime(expr, call)
 // 	case "glfw.GetFramebufferSize":
 // 		err = glfw_GetFramebufferSize((*argsCopy)[0], expr, call)
+//	case "glfw.SwapInterval":
+//		err = glfw_SwapInterval((*argsCopy)[0])
 // 	case "glfw.SetKeyCallback":
 // 		err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
 // 	case "glfw.SetMouseButtonCallback":

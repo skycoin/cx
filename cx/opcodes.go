@@ -36,6 +36,7 @@ const (
 	OP_UND_PRINTF
 	OP_UND_SPRINTF
 	OP_UND_READ
+	OP_UND_SLEEP
 
 	OP_BOOL_PRINT
 
@@ -313,6 +314,7 @@ const (
 	OP_GLFW_POLL_EVENTS
 	OP_GLFW_SWAP_BUFFERS
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
+	OP_GLFW_SWAP_INTERVAL
 	OP_GLFW_SET_KEY_CALLBACK
 	OP_GLFW_GET_TIME
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
@@ -393,6 +395,8 @@ func execNative(prgrm *CXProgram) {
 		op_sprintf(expr, fp)
 	case OP_UND_READ:
 		op_read(expr, fp)
+	case OP_UND_SLEEP:
+		op_sleep(expr, fp)
 
 	case OP_BYTE_BYTE:
 		op_byte_byte(expr, fp)
@@ -883,6 +887,8 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_SwapBuffers(expr, fp)
 	case OP_GLFW_GET_FRAMEBUFFER_SIZE:
 		op_glfw_GetFramebufferSize(expr, fp)
+	case OP_GLFW_SWAP_INTERVAL:
+		op_glfw_SwapInterval(expr, fp)
 	case OP_GLFW_SET_KEY_CALLBACK:
 		op_glfw_SetKeyCallback(expr, fp)
 	case OP_GLFW_GET_TIME:
@@ -943,6 +949,7 @@ var OpNames map[int]string = map[int]string{
 	OP_UND_PRINTF:   "printf",
 	OP_UND_SPRINTF:  "sprintf",
 	OP_UND_READ:     "read",
+	OP_UND_SLEEP:    "sleep",
 
 	OP_BYTE_BYTE: "byte.byte",
 	OP_BYTE_STR: "byte.str",
@@ -1187,6 +1194,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_POLL_EVENTS:               "glfw.PollEvents",
 	OP_GLFW_SWAP_BUFFERS:              "glfw.SwapBuffers",
 	OP_GLFW_GET_FRAMEBUFFER_SIZE:      "glfw.GetFramebufferSize",
+	OP_GLFW_SWAP_INTERVAL:             "glfw.SwapInterval",
 	OP_GLFW_SET_KEY_CALLBACK:          "glfw.SetKeyCallback",
 	OP_GLFW_GET_TIME:                  "glfw.GetTime",
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK: "glfw.SetMouseButtonCallback",
@@ -1234,6 +1242,7 @@ var OpCodes map[string]int = map[string]int{
 	"printf":   OP_UND_PRINTF,
 	"sprintf":  OP_UND_SPRINTF,
 	"read":     OP_UND_READ,
+	"sleep":    OP_UND_SLEEP,
 
 	"byte.byte":  OP_BYTE_BYTE,
 	"byte.str":   OP_BYTE_STR,
@@ -1479,6 +1488,7 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.PollEvents":             OP_GLFW_POLL_EVENTS,
 	"glfw.SwapBuffers":            OP_GLFW_SWAP_BUFFERS,
 	"glfw.GetFramebufferSize":     OP_GLFW_GET_FRAMEBUFFER_SIZE,
+	"glfw.SwapInterval":           OP_GLFW_SWAP_INTERVAL,
 	"glfw.SetKeyCallback":         OP_GLFW_SET_KEY_CALLBACK,
 	"glfw.GetTime":                OP_GLFW_GET_TIME,
 	"glfw.SetMouseButtonCallback": OP_GLFW_SET_MOUSE_BUTTON_CALLBACK,
@@ -1525,6 +1535,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_UND_PRINTF:   MakeNative(OP_UND_PRINTF, []int{TYPE_UNDEFINED}, []int{}),
 	OP_UND_SPRINTF:  MakeNative(OP_UND_SPRINTF, []int{TYPE_UNDEFINED}, []int{TYPE_STR}),
 	OP_UND_READ:     MakeNative(OP_UND_READ, []int{}, []int{TYPE_STR}),
+	OP_UND_SLEEP:    MakeNative(OP_UND_SLEEP, []int{TYPE_I64}, []int{}),
 
 	OP_BYTE_BYTE:   MakeNative(OP_BYTE_BYTE, []int{TYPE_BYTE}, []int{TYPE_BYTE}),
 	OP_BYTE_STR:    MakeNative(OP_BYTE_STR, []int{TYPE_BYTE}, []int{TYPE_STR}),
@@ -1772,6 +1783,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_POLL_EVENTS:               MakeNative(OP_GLFW_POLL_EVENTS, []int{}, []int{}),
 	OP_GLFW_SWAP_BUFFERS:              MakeNative(OP_GLFW_SWAP_BUFFERS, []int{TYPE_STR}, []int{}),
 	OP_GLFW_GET_FRAMEBUFFER_SIZE:      MakeNative(OP_GLFW_GET_FRAMEBUFFER_SIZE, []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
+	OP_GLFW_SWAP_INTERVAL:             MakeNative(OP_GLFW_SWAP_INTERVAL, []int{TYPE_I32}, []int{}),
 	OP_GLFW_SET_KEY_CALLBACK:          MakeNative(OP_GLFW_SET_KEY_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GLFW_GET_TIME:                  MakeNative(OP_GLFW_GET_TIME, []int{}, []int{TYPE_F64}),
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK: MakeNative(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),

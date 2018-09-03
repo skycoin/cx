@@ -201,6 +201,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"glfw.Init": true, "glfw.WindowHint": true, "glfw.CreateWindow": true,
 	"glfw.MakeContextCurrent": true, "glfw.ShouldClose": true, "glfw.SetShouldClose": true,
 	"glfw.PollEvents": true, "glfw.SwapBuffers": true, "glfw.GetFramebufferSize": true,
+	"glfw.SwapInterval": true,
 
 	"glfw.SetKeyCallback": true, "glfw.GetTime": true, "glfw.SetMouseButtonCallback": true,
 	"glfw.SetCursorPosCallback": true, "glfw.GetCursorPos": true, "glfw.SetInputMode": true,
