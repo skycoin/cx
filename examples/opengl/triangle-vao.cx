@@ -128,7 +128,7 @@ func makeVao (points [9]f32) (vao i32) {
 	gl.BindVertexArray(vao)
 	gl.EnableVertexAttribArray(0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0)
 }
 
 func draw (vao i32, window str, program i32) () {
