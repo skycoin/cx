@@ -6,7 +6,7 @@ import(
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext",
 }
 
 // op codes
@@ -313,8 +313,14 @@ const (
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 
+	// gltext
+	OP_GLTEXT_LOAD_TRUE_TYPE
+	OP_GLTEXT_PRINTF
+
 	// os
 	OP_OS_GET_WORKING_DIRECTORY
+	OP_OS_OPEN
+	OP_OS_CLOSE
 	
 	// http
 	OP_HTTP_GET
@@ -867,12 +873,23 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_GetCursorPos(expr, fp)
 	case OP_GLFW_SET_INPUT_MODE:
 		op_glfw_SetInputMode(expr, fp)
+
+		// gltext
+	case OP_GLTEXT_LOAD_TRUE_TYPE:
+		op_gltext_LoadTrueType(expr, fp)
+	case OP_GLTEXT_PRINTF:
+		op_gltext_Printf(expr, fp)
+		
 	case OP_HTTP_GET:
 		op_http_get(expr, fp)
 
 		// os
 	case OP_OS_GET_WORKING_DIRECTORY:
 		op_os_GetWorkingDirectory(expr, fp)
+	case OP_OS_OPEN:
+		op_os_Open(expr, fp)
+	case OP_OS_CLOSE:
+		op_os_Close(expr, fp)
 	}
 }
 
@@ -1145,11 +1162,18 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_SET_CURSOR_POS_CALLBACK:   "glfw.SetCursorPosCallback",
 	OP_GLFW_GET_CURSOR_POS:            "glfw.GetCursorPos",
 	OP_GLFW_SET_INPUT_MODE:            "glfw.SetInputMode",
+
+	// gltext
+	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
+	OP_GLTEXT_PRINTF:                  "gltext.Printf",
+	
 	// http
 	OP_HTTP_GET:                       "http.Get",
 
 	// os
 	OP_OS_GET_WORKING_DIRECTORY:       "os.GetWorkingDirectory",
+	OP_OS_OPEN:                        "os.Open",
+	OP_OS_CLOSE:                       "os.Close",
 }
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -1422,10 +1446,17 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.SetCursorPosCallback":   OP_GLFW_SET_CURSOR_POS_CALLBACK,
 	"glfw.GetCursorPos":           OP_GLFW_GET_CURSOR_POS,
 	"glfw.SetInputMode":           OP_GLFW_SET_INPUT_MODE,
+
+	// gltext
+	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
+	"gltext.Printf":               OP_GLTEXT_PRINTF,
+	
 	// http
 	"http.Get":                    OP_HTTP_GET,
 	// os
 	"os.GetWorkingDirectory":      OP_OS_GET_WORKING_DIRECTORY,
+	"os.Open":                     OP_OS_OPEN,
+	"os.Close":                    OP_OS_CLOSE,
 }
 
 var Natives map[int]*CXFunction = map[int]*CXFunction{
@@ -1701,9 +1732,15 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 
+	// gltext
+	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),
+	
 	// http
 	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
 
 	// os
 	OP_OS_GET_WORKING_DIRECTORY:       MakeNative(OP_OS_GET_WORKING_DIRECTORY, []int{}, []int{TYPE_STR}),
+	OP_OS_OPEN:                        MakeNative(OP_OS_OPEN, []int{TYPE_STR}, []int{}),
+	OP_OS_CLOSE:                       MakeNative(OP_OS_CLOSE, []int{TYPE_STR}, []int{}),
 }

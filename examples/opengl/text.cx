@@ -3,21 +3,24 @@ package main
 import "gl"
 import "glfw"
 import "gltext"
+import "os"
 
 var width i32 = 800
 var height i32 = 600
 
-func main () () {
+func main () {
 	glfw.Init()
 
 	glfw.CreateWindow("window", width, height, "Displaying Text")
 	glfw.MakeContextCurrent("window")
 	
 	gl.Init()
-	program := gl.CreateProgram()
+	var program i32
+	program = gl.CreateProgram()
 	gl.LinkProgram(program)
-	
-	wd := os.GetWorkingDirectory()
+
+	var wd str
+	wd = os.GetWorkingDirectory()
 	fontFile := str.concat(wd, "fonts/roboto-light.ttf")
 
 	os.Open(fontFile)
@@ -33,14 +36,14 @@ func main () () {
 	
 	gl.ClearColor(0.1, 0.1, 0.1, 0.0)
 
-	for not(glfw.ShouldClose("window")) {
+	for bool.not(glfw.ShouldClose("window")) {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		gl.Color4f(0.5, 0.3, 0.8, 1.0)
 		gltext.Printf("Roboto100", 0.0, 0.0, "Hello World")
 		gl.Color4f(0.5, 0.7, 0.5, 1.0)
 
-		gltext.Printf("Roboto50", 600.0, 400.0, "I'm some text")
+		gltext.Printf("Roboto50", 200.0, 400.0, "I'm some text")
 
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")

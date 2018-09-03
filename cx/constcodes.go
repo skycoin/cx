@@ -77,6 +77,11 @@ const (
 	CONST_GLFW_MOUSE_BUTTON_LEFT
 	CONST_GLFW_MOUSE_BUTTON_RIGHT
 	CONST_GLFW_MOUSE_BUTTON_MIDDLE
+
+	// gltext
+	CONST_GLTEXT_LEFT_TO_RIGHT
+	CONST_GLTEXT_RIGHT_TO_LEFT
+	CONST_GLTEXT_TOP_TO_BOTTOM
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -156,6 +161,11 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GLFW_MOUSE_BUTTON_LEFT:         "glfw.MouseButtonLeft",
 	CONST_GLFW_MOUSE_BUTTON_RIGHT:        "glfw.MouseButtonRight",
 	CONST_GLFW_MOUSE_BUTTON_MIDDLE:       "glfw.MouseButtonMiddle",
+
+	// gltext
+	CONST_GLTEXT_LEFT_TO_RIGHT:           "gltext.LeftToRight",
+	CONST_GLTEXT_RIGHT_TO_LEFT:           "gltext.RightToLeft",
+	CONST_GLTEXT_TOP_TO_BOTTOM:           "gltext.TopToBottom",
 }
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -235,6 +245,11 @@ var ConstCodes map[string]int = map[string]int{
 	"glfw.MouseButtonLeft":          CONST_GLFW_MOUSE_BUTTON_LEFT,
 	"glfw.MouseButtonRight":         CONST_GLFW_MOUSE_BUTTON_RIGHT,
 	"glfw.MouseButtonMiddle":        CONST_GLFW_MOUSE_BUTTON_MIDDLE,
+
+	// gltext
+	"gltext.LeftToRight":           CONST_GLTEXT_LEFT_TO_RIGHT,
+	"gltext.RightToLeft":           CONST_GLTEXT_RIGHT_TO_LEFT,
+	"gltext.TopToBottom":           CONST_GLTEXT_TOP_TO_BOTTOM,
 }
 
 var Constants map[int]CXConstant = map[int]CXConstant{
@@ -314,4 +329,9 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GLFW_MOUSE_BUTTON_LEFT:         CXConstant{Type: TYPE_I32, Value: FromI32(0)},
 	CONST_GLFW_MOUSE_BUTTON_RIGHT:        CXConstant{Type: TYPE_I32, Value: FromI32(1)},
 	CONST_GLFW_MOUSE_BUTTON_MIDDLE:       CXConstant{Type: TYPE_I32, Value: FromI32(2)},
+
+	// gltext
+	CONST_GLTEXT_LEFT_TO_RIGHT:           CXConstant{Type: TYPE_I32, Value: FromI32(0)},
+	CONST_GLTEXT_RIGHT_TO_LEFT:           CXConstant{Type: TYPE_I32, Value: FromI32(1)},
+	CONST_GLTEXT_TOP_TO_BOTTOM:           CXConstant{Type: TYPE_I32, Value: FromI32(2)},
 }
