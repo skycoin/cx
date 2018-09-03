@@ -36,6 +36,17 @@ func main () {
 	
 	gl.ClearColor(0.1, 0.1, 0.1, 0.0)
 
+	var width1 i32
+	var height1 i32
+	var width2 i32
+	var height2 i32
+	
+	width1, height1 = gltext.Metrics("Roboto100", "Hello World")
+	printf("`Hello World` metrics\nWidth: %d\nHeight: %d\n", width1, height1)
+
+	width2, height2 = gltext.Metrics("Roboto50", "I'm some text")
+	printf("`I'm some text` metrics\nWidth: %d\nHeight: %d\n", width2, height2)
+
 	for bool.not(glfw.ShouldClose("window")) {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 

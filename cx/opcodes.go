@@ -316,6 +316,7 @@ const (
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
 	OP_GLTEXT_PRINTF
+	OP_GLTEXT_METRICS
 
 	// os
 	OP_OS_GET_WORKING_DIRECTORY
@@ -879,6 +880,8 @@ func execNative(prgrm *CXProgram) {
 		op_gltext_LoadTrueType(expr, fp)
 	case OP_GLTEXT_PRINTF:
 		op_gltext_Printf(expr, fp)
+	case OP_GLTEXT_METRICS:
+		op_gltext_Metrics(expr, fp)
 		
 	case OP_HTTP_GET:
 		op_http_get(expr, fp)
@@ -1166,6 +1169,7 @@ var OpNames map[int]string = map[int]string{
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
 	OP_GLTEXT_PRINTF:                  "gltext.Printf",
+	OP_GLTEXT_METRICS:                 "gltext.Metrics",
 	
 	// http
 	OP_HTTP_GET:                       "http.Get",
@@ -1450,6 +1454,7 @@ var OpCodes map[string]int = map[string]int{
 	// gltext
 	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
 	"gltext.Printf":               OP_GLTEXT_PRINTF,
+	"gltext.Metrics":              OP_GLTEXT_METRICS,
 	
 	// http
 	"http.Get":                    OP_HTTP_GET,
@@ -1735,6 +1740,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),
+	OP_GLTEXT_METRICS:                 MakeNative(OP_GLTEXT_METRICS, []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
 	
 	// http
 	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),

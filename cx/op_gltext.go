@@ -23,3 +23,12 @@ func op_gltext_Printf(expr *CXExpression, fp int) {
 		panic(err)
 	}
 }
+
+func op_gltext_Metrics(expr *CXExpression, fp int) {
+	inp1, inp2, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1]
+
+	width, height := fonts[ReadStr(fp, inp1)].Metrics(ReadStr(fp, inp2))
+
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(width)))
+	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
+}
