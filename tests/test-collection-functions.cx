@@ -1,0 +1,22 @@
+package testing
+
+func collectionFunctions () {
+	var col1 [2]i32
+	assert(len(col1), 2, "")
+
+	var col2 [2][3]i32
+	assert(len(col2), 2, "")
+
+	var col3 [1][2][2]i32
+	assert(len(col3), 1, "")
+
+	var col4 []i32
+	col4 = append(col4, 1)
+	col4 = append(col4, 2)
+	col4 = append(col4, 3)
+	assert(len(col4), 3, "")
+
+	var col5 str
+	col5 = "Hello"
+	assert(len(col5), 5, "")
+}

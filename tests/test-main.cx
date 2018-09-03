@@ -25,6 +25,7 @@ func main () {
 	testing.testSlices()
 	testing.testShortDeclarations()
 	testing.testParse()
+	testing.collectionFunctions()
 	// testing.testBYTE()
 
 	var end i64
