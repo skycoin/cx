@@ -836,6 +836,10 @@ var isErrorPresent bool
 // 		err = gl_Init()
 //	case "gl.GetError":
 //		err = gl_GetError()
+//	case "gl.BindAttribLocation":
+//		err = gl.BindAttribLocation((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
+//	case "gl.GetAttribLocation":
+//		err = gl.GetAttribLocation((*argsCopy)[0], (*argsCopy)[1])
 //	case "gl.CullFace":
 //		err = gl_CullFace()
 // 	case "gl.CreateProgram":

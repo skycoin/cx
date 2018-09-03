@@ -244,6 +244,8 @@ const (
 	// opengl
 	OP_GL_INIT
 	OP_GL_GET_ERROR
+	OP_GL_BIND_ATTRIB_LOCATION
+	OP_GL_GET_ATTRIB_LOCATION
 	OP_GL_CULL_FACE
 	OP_GL_CREATE_PROGRAM
 	OP_GL_LINK_PROGRAM
@@ -744,6 +746,10 @@ func execNative(prgrm *CXProgram) {
 		op_gl_Init()
 	case OP_GL_GET_ERROR:
 		op_gl_GetError(expr, fp)
+	case OP_GL_BIND_ATTRIB_LOCATION:
+		op_gl_BindAttribLocation(expr, fp)
+	case OP_GL_GET_ATTRIB_LOCATION:
+		op_gl_GetAttribLocation(expr, fp)
 	case OP_GL_CULL_FACE:
 		op_gl_CullFace(expr, fp)
 	case OP_GL_CREATE_PROGRAM:
@@ -1104,6 +1110,8 @@ var OpNames map[int]string = map[int]string{
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
 	OP_GL_GET_ERROR:                  "gl.GetError",
+	OP_GL_BIND_ATTRIB_LOCATION:       "gl.BindAttribLocation",
+	OP_GL_GET_ATTRIB_LOCATION:        "gl.GetAttribLocation",
 	OP_GL_CULL_FACE:                  "gl.CullFace",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
 	OP_GL_LINK_PROGRAM:               "gl.LinkProgram",
@@ -1391,6 +1399,8 @@ var OpCodes map[string]int = map[string]int{
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
 	"gl.GetError":                OP_GL_GET_ERROR,
+	"gl.BindAttribLocation":      OP_GL_BIND_ATTRIB_LOCATION,
+	"gl.GetAttribLocation":       OP_GL_GET_ATTRIB_LOCATION,
 	"gl.CullFace":                OP_GL_CULL_FACE,
 	"gl.CreateProgram":           OP_GL_CREATE_PROGRAM,
 	"gl.LinkProgram":             OP_GL_LINK_PROGRAM,
@@ -1677,6 +1687,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
 	OP_GL_GET_ERROR:                  MakeNative(OP_GL_GET_ERROR, []int{}, []int{TYPE_I32}),
+	OP_GL_BIND_ATTRIB_LOCATION:       MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
+	OP_GL_GET_ATTRIB_LOCATION:        MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
 	OP_GL_CULL_FACE:                  MakeNative(OP_GL_CULL_FACE, []int{TYPE_I32}, []int{}),
 	OP_GL_CREATE_PROGRAM:             MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32}),
 	OP_GL_LINK_PROGRAM:               MakeNative(OP_GL_LINK_PROGRAM, []int{TYPE_I32}, []int{}),
@@ -1685,7 +1697,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_BIND_BUFFER:                MakeNative(OP_GL_BIND_BUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_BIND_VERTEX_ARRAY:          MakeNative(OP_GL_BIND_VERTEX_ARRAY, []int{TYPE_I32}, []int{}),
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY: MakeNative(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, []int{TYPE_I32}, []int{}),
-	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{}),
+	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DRAW_ARRAYS:                MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_BUFFERS:                MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_BUFFER_DATA:                MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{}),
