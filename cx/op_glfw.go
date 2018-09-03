@@ -59,11 +59,6 @@ func op_glfw_GetFramebufferSize(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
 }
 
-func op_glfw_SwapInterval(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	glfw.SwapInterval(int(ReadI32(fp, inp1)))
-}
-
 func op_glfw_PollEvents() {
 	glfw.PollEvents()
 }

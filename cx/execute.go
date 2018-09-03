@@ -834,18 +834,8 @@ var isErrorPresent bool
 // 		// OpenGL
 // 	case "gl.Init":
 // 		err = gl_Init()
-//	case "gl.GetError":
-//		err = gl_GetError()
-//	case "gl.BindAttribLocation":
-//		err = gl.BindAttribLocation((*argsCopy)[0], (*argsCopy)[1], (*argsCopy)[2])
-//	case "gl.GetAttribLocation":
-//		err = gl.GetAttribLocation((*argsCopy)[0], (*argsCopy)[1])
-//	case "gl.CullFace":
-//		err = gl_CullFace()
 // 	case "gl.CreateProgram":
 // 		err = gl_CreateProgram(expr, call)
-//	case "gl.DeleteProgram":
-//		err = gl_DeleteProgram((*argsCopy)[0])
 // 	case "gl.LinkProgram":
 // 		err = gl_LinkProgram((*argsCopy)[0])
 // 	case "gl.Clear":
@@ -870,10 +860,6 @@ var isErrorPresent bool
 // 		err = gl_GenVertexArrays((*argsCopy)[0], (*argsCopy)[1])
 // 	case "gl.CreateShader":
 // 		err = gl_CreateShader((*argsCopy)[0], expr, call)
-//	case "gl.DetachShader":
-//		err = gl_DetachShader((*argsCopy)[0], (*argsCopy)[1])
-//	case "gl.DeleteShader":
-//		err = gl_DetachShader((*argsCopy)[0])
 // 	case "gl.Strs":
 // 		err = gl_Strs((*argsCopy)[0], (*argsCopy)[1])
 // 	case "gl.Free":
@@ -975,8 +961,6 @@ var isErrorPresent bool
 // 		err = glfw_GetTime(expr, call)
 // 	case "glfw.GetFramebufferSize":
 // 		err = glfw_GetFramebufferSize((*argsCopy)[0], expr, call)
-//	case "glfw.SwapInterval":
-//		err = glfw_SwapInterval((*argsCopy)[0])
 // 	case "glfw.SetKeyCallback":
 // 		err = glfw_SetKeyCallback((*argsCopy)[0], (*argsCopy)[1], expr, call)
 // 	case "glfw.SetMouseButtonCallback":

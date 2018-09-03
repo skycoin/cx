@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"os"
 	"strings"
-	"time"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -557,9 +557,4 @@ func op_read(expr *CXExpression, fp int) {
 	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
 
 	WriteMemory(out1Offset, off)
-}
-
-func op_sleep(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	time.Sleep(time.Duration(ReadI64(fp, inp1)))
 }

@@ -4,25 +4,25 @@
 
 package main
 
- import "gl"
- import "glfw"
+// import "gl"
+// import "glfw"
 
 var width i32 = 600
 var height i32 = 600
 
-var vertexShaderSource str = `
+var vertexShaderSource str = "
           #version 120
           void main() {
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
           }
-`
+"
 
-var fragmentShaderSource str = `
+var fragmentShaderSource str = "
           #version 120
           void main() {
             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
           }
-`
+"
 
 // var triangle []f32 = []f32{
 // 	0.0, 0.5, 0.0,
@@ -85,24 +85,24 @@ func initOpenGL () (program i32) {
 	
 	vertexShader = gl.CreateShader(gl.VERTEX_SHADER)
 	
-	gl.Strs(`
+	gl.Strs("
           #version 120
           void main() {
             gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
           }
-`, "csources")
+", "csources")
 	gl.ShaderSource(vertexShader, 1, "csources")
 	gl.Free("csources")
 	gl.CompileShader(vertexShader)
 
 	fragmentShader = gl.CreateShader(gl.FRAGMENT_SHADER)
 
-	gl.Strs(`
+	gl.Strs("
           #version 120
           void main() {
             gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
           }
-`, "csources")
+", "csources")
 	gl.ShaderSource(fragmentShader, 1, "csources")
 	gl.Free("csources")
 	gl.CompileShader(fragmentShader)
@@ -118,17 +118,17 @@ func initOpenGL () (program i32) {
 
 func makeVao (points [9]f32) (vao i32) {
 	var vbo i32
-	vbo = gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
+	gl.GenBuffers(1, vbo) // should be &vbo. to be fixed, but should work as it is
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, 9/*[]f32.len(points)*/), points, gl.DYNAMIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, i32.mul(4, []f32.len(points)), points, gl.DYNAMIC_DRAW)
 
 	var vao i32
-	vao = gl.GenVertexArrays(1, vao)
+	gl.GenVertexArrays(1, vao)
 	
 	gl.BindVertexArray(vao)
 	gl.EnableVertexAttribArray(0)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0)
 }
 
 func draw (vao i32, window str, program i32) () {
@@ -136,14 +136,18 @@ func draw (vao i32, window str, program i32) () {
 	gl.UseProgram(program)
 
 	gl.BindVertexArray(vao)
-	gl.DrawArrays(gl.TRIANGLES, 0, i32.div(9/*[]f32.len(triangle)*/, 3))
+	gl.DrawArrays(gl.TRIANGLES, 0, i32.div([]f32.len(triangle), 3))
 
 	glfw.PollEvents()
 	glfw.SwapBuffers("window")
 }
 
 func main () () {
-	triangle = [9]f32{0.0, 0.5, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0}
+	triangle = [9]f32{
+		0.0, 0.5, 0.0,
+		-0.5, -0.5, 0.0,
+		0.5, -0.5, 0.0
+	}
 	
 	initGlfw("window")
 
@@ -153,11 +157,11 @@ func main () () {
 	program = initOpenGL()
 	vao = makeVao(triangle)
 
-//	var ratio f32
+	var ratio f32
 
-	for glfw.ShouldClose("window") == false {
-		//bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
-//		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+	for not(glfw.ShouldClose("window")) {
+		bufferWidth, bufferHeight := glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
 
 		draw(vao, "window", program)
 	}
