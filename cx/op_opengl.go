@@ -53,6 +53,11 @@ func op_gl_CreateProgram(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+func op_gl_DeleteProgram(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.DeleteShader(uint32(ReadI32(fp, inp1)))
+}
+
 func op_gl_LinkProgram(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.LinkProgram(uint32(ReadI32(fp, inp1)))
@@ -131,6 +136,16 @@ func op_gl_CreateShader(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateShader(uint32(ReadI32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DetachShader(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.DetachShader(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_DeleteShader(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.DeleteShader(uint32(ReadI32(fp, inp1)))
 }
 
 func op_gl_Strs(expr *CXExpression, fp int) {

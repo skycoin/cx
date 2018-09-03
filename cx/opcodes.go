@@ -248,6 +248,7 @@ const (
 	OP_GL_GET_ATTRIB_LOCATION
 	OP_GL_CULL_FACE
 	OP_GL_CREATE_PROGRAM
+	OP_GL_DELETE_PROGRAM
 	OP_GL_LINK_PROGRAM
 	OP_GL_CLEAR
 	OP_GL_USE_PROGRAM
@@ -260,6 +261,8 @@ const (
 	OP_GL_BUFFER_DATA
 	OP_GL_GEN_VERTEX_ARRAYS
 	OP_GL_CREATE_SHADER
+	OP_GL_DETACH_SHADER
+	OP_GL_DELETE_SHADER
 	OP_GL_STRS
 	OP_GL_FREE
 	OP_GL_SHADER_SOURCE
@@ -754,6 +757,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_CullFace(expr, fp)
 	case OP_GL_CREATE_PROGRAM:
 		op_gl_CreateProgram(expr, fp)
+	case OP_GL_DELETE_PROGRAM:
+		op_gl_DeleteProgram(expr, fp)
 	case OP_GL_LINK_PROGRAM:
 		op_gl_LinkProgram(expr, fp)
 	case OP_GL_CLEAR:
@@ -778,6 +783,10 @@ func execNative(prgrm *CXProgram) {
 		op_gl_GenVertexArrays(expr, fp)
 	case OP_GL_CREATE_SHADER:
 		op_gl_CreateShader(expr, fp)
+	case OP_GL_DETACH_SHADER:
+		op_gl_DetachShader(expr, fp)
+	case OP_GL_DELETE_SHADER:
+		op_gl_DeleteShader(expr, fp)
 	case OP_GL_STRS:
 		op_gl_Strs(expr, fp)
 	case OP_GL_FREE:
@@ -1114,6 +1123,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_GET_ATTRIB_LOCATION:        "gl.GetAttribLocation",
 	OP_GL_CULL_FACE:                  "gl.CullFace",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
+	OP_GL_DELETE_PROGRAM:             "gl.DeleteProgram",
 	OP_GL_LINK_PROGRAM:               "gl.LinkProgram",
 	OP_GL_CLEAR:                      "gl.Clear",
 	OP_GL_USE_PROGRAM:                "gl.UseProgram",
@@ -1126,6 +1136,8 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_BUFFER_DATA:                "gl.BufferData",
 	OP_GL_GEN_VERTEX_ARRAYS:          "gl.GenVertexArrays",
 	OP_GL_CREATE_SHADER:              "gl.CreateShader",
+	OP_GL_DETACH_SHADER:              "gl.DetachShader",
+	OP_GL_DELETE_SHADER:              "gl.DeleteShader",
 	OP_GL_STRS:                       "gl.Strs",
 	OP_GL_FREE:                       "gl.Free",
 	OP_GL_SHADER_SOURCE:              "gl.ShaderSource",
@@ -1403,6 +1415,7 @@ var OpCodes map[string]int = map[string]int{
 	"gl.GetAttribLocation":       OP_GL_GET_ATTRIB_LOCATION,
 	"gl.CullFace":                OP_GL_CULL_FACE,
 	"gl.CreateProgram":           OP_GL_CREATE_PROGRAM,
+	"gl.DeleteProgram":           OP_GL_DELETE_PROGRAM,
 	"gl.LinkProgram":             OP_GL_LINK_PROGRAM,
 	"gl.Clear":                   OP_GL_CLEAR,
 	"gl.UseProgram":              OP_GL_USE_PROGRAM,
@@ -1415,6 +1428,8 @@ var OpCodes map[string]int = map[string]int{
 	"gl.BufferData":              OP_GL_BUFFER_DATA,
 	"gl.GenVertexArrays":         OP_GL_GEN_VERTEX_ARRAYS,
 	"gl.CreateShader":            OP_GL_CREATE_SHADER,
+	"gl.DetachShader":            OP_GL_DETACH_SHADER,
+	"gl.DeleteShader":            OP_GL_DELETE_SHADER,
 	"gl.Strs":                    OP_GL_STRS,
 	"gl.Free":                    OP_GL_FREE,
 	"gl.ShaderSource":            OP_GL_SHADER_SOURCE,
@@ -1691,6 +1706,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_GET_ATTRIB_LOCATION:        MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
 	OP_GL_CULL_FACE:                  MakeNative(OP_GL_CULL_FACE, []int{TYPE_I32}, []int{}),
 	OP_GL_CREATE_PROGRAM:             MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32}),
+	OP_GL_DELETE_PROGRAM:             MakeNative(OP_GL_DELETE_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_LINK_PROGRAM:               MakeNative(OP_GL_LINK_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_CLEAR:                      MakeNative(OP_GL_CLEAR, []int{TYPE_I32}, []int{}),
 	OP_GL_USE_PROGRAM:                MakeNative(OP_GL_USE_PROGRAM, []int{TYPE_I32}, []int{}),
@@ -1703,6 +1719,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_BUFFER_DATA:                MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{}),
 	OP_GL_GEN_VERTEX_ARRAYS:          MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CREATE_SHADER:              MakeNative(OP_GL_CREATE_SHADER, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DETACH_SHADER:              MakeNative(OP_GL_DETACH_SHADER, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_DELETE_SHADER:              MakeNative(OP_GL_DELETE_SHADER, []int{TYPE_I32}, []int{}),
 	OP_GL_STRS:                       MakeNative(OP_GL_STRS, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GL_FREE:                       MakeNative(OP_GL_FREE, []int{TYPE_STR}, []int{}),
 	OP_GL_SHADER_SOURCE:              MakeNative(OP_GL_SHADER_SOURCE, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
