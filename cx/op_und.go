@@ -278,8 +278,26 @@ func op_bitclear(expr *CXExpression, fp int) {
 
 func op_len(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(inp1.Lengths[len(inp1.Lengths)-1]))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+
+	if inp1.IsSlice {
+		inp1Offset := GetFinalOffset(fp, inp1)
+		sliceHeader := PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		WriteMemory(GetFinalOffset(fp, out1), sliceHeader[:4])
+	} else if inp1.Type == TYPE_STR {
+		inp1Offset := GetFinalOffset(fp, inp1)
+		var offset int32
+		if inp1.Name == "" {
+			// then it's a literal
+			offset = int32(inp1Offset)
+		} else {
+			encoder.DeserializeAtomic(PROGRAM.Memory[inp1Offset:inp1Offset+TYPE_POINTER_SIZE], &offset)
+		}
+
+		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[offset : offset + STR_HEADER_SIZE])
+	} else {
+		outB1 := FromI32(int32(inp1.Lengths[0]))
+		WriteMemory(GetFinalOffset(fp, out1), outB1)
+	}
 }
 
 func op_append(expr *CXExpression, fp int) {
