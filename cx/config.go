@@ -166,14 +166,12 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	/*
 	   OpenGL
 	*/
-	"gl.Init": true, "gl.GetError": true, "gl.BindAttribLocation": true, "gl.GetAttribLocation": true,
-	"gl.CullFace": true, "gl.CreateProgram": true, "gl.DeleteProgram": true, "gl.LinkProgram": true,
+	"gl.Init": true, "gl.CreateProgram": true, "gl.LinkProgram": true,
 	"gl.Clear": true, "gl.UseProgram": true,
 
 	"gl.BindBuffer": true, "gl.BindVertexArray": true, "gl.EnableVertexAttribArray": true,
 	"gl.VertexAttribPointer": true, "gl.DrawArrays": true, "gl.GenBuffers": true,
-	"gl.BufferData": true, "gl.GenVertexArrays": true,
-	"gl.CreateShader": true, "gl.DetachShader": true, "gl.DeleteShader": true,
+	"gl.BufferData": true, "gl.GenVertexArrays": true, "gl.CreateShader": true,
 
 	"gl.Strs": true, "gl.Free": true, "gl.ShaderSource": true,
 	"gl.CompileShader": true, "gl.GetShaderiv": true, "gl.AttachShader": true,
@@ -201,7 +199,6 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"glfw.Init": true, "glfw.WindowHint": true, "glfw.CreateWindow": true,
 	"glfw.MakeContextCurrent": true, "glfw.ShouldClose": true, "glfw.SetShouldClose": true,
 	"glfw.PollEvents": true, "glfw.SwapBuffers": true, "glfw.GetFramebufferSize": true,
-	"glfw.SwapInterval": true,
 
 	"glfw.SetKeyCallback": true, "glfw.GetTime": true, "glfw.SetMouseButtonCallback": true,
 	"glfw.SetCursorPosCallback": true, "glfw.GetCursorPos": true, "glfw.SetInputMode": true,

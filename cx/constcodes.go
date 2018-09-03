@@ -5,16 +5,6 @@ const (
 	// opengl
 	CONST_GL_FALSE = iota
 	CONST_GL_TRUE
-	CONST_GL_INVALID_ENUM
-	CONST_GL_INVALID_VALUE
-	CONST_GL_INVALID_OPERATION
-	CONST_GL_STACK_OVERFLOW
-	CONST_GL_STACK_UNDERFLOW
-	CONST_GL_OUT_OF_MEMORY
-	CONST_GL_CULL_FACE
-	CONST_GL_FRONT
-	CONST_GL_BACK
-	CONST_GL_FRONT_AND_BACK
 	CONST_GL_QUADS
 	CONST_GL_COLOR_BUFFER_BIT
 	CONST_GL_DEPTH_BUFFER_BIT
@@ -99,16 +89,6 @@ var ConstNames map[int]string = map[int]string{
 	// opengl
 	CONST_GL_FALSE:               "gl.FALSE",
 	CONST_GL_TRUE:                "gl.TRUE",
-	CONST_GL_INVALID_ENUM:        "gl.INVALID_ENUM",
-	CONST_GL_INVALID_VALUE:       "gl.INVALID_VALUE",
-	CONST_GL_INVALID_OPERATION:   "gl.INVALID_OPERATION",
-	CONST_GL_STACK_OVERFLOW:      "gl.STACK_OVERFLOW",
-	CONST_GL_STACK_UNDERFLOW:     "gl.STACK_UNDERFLOW",
-	CONST_GL_OUT_OF_MEMORY:       "gl.OUT_OF_MEMORY",
-	CONST_GL_CULL_FACE:           "gl.CULL_FACE",
-	CONST_GL_FRONT:               "gl.FRONT",
-	CONST_GL_BACK:                "gl.BACK",
-	CONST_GL_FRONT_AND_BACK:      "gl.FRONT_AND_BACK",
 	CONST_GL_QUADS:               "gl.QUADS",
 	CONST_GL_COLOR_BUFFER_BIT:    "gl.COLOR_BUFFER_BIT",
 	CONST_GL_DEPTH_BUFFER_BIT:    "gl.DEPTH_BUFFER_BIT",
@@ -193,16 +173,6 @@ var ConstCodes map[string]int = map[string]int{
 	// opengl
 	"gl.FALSE":               CONST_GL_FALSE,
 	"gl.TRUE":                CONST_GL_TRUE,
-	"gl.INVALID_ENUM":        CONST_GL_INVALID_ENUM,
-	"gl.INVALID_VALUE":       CONST_GL_INVALID_VALUE,
-	"gl.INVALID_OPERATION":   CONST_GL_INVALID_OPERATION,
-	"gl.STACK_OVERFLOW":      CONST_GL_STACK_OVERFLOW,
-	"gl.STACK_UNDERFLOW":     CONST_GL_STACK_UNDERFLOW,
-	"gl.OUT_OF_MEMORY":       CONST_GL_OUT_OF_MEMORY,
-	"gl.CULL_FACE":           CONST_GL_CULL_FACE,
-	"gl.FRONT":               CONST_GL_FRONT,
-	"gl.BACK":                CONST_GL_BACK,
-	"gl.FRONT_AND_BACK":      CONST_GL_FRONT_AND_BACK,
 	"gl.QUADS":               CONST_GL_QUADS,
 	"gl.COLOR_BUFFER_BIT":    CONST_GL_COLOR_BUFFER_BIT,
 	"gl.DEPTH_BUFFER_BIT":    CONST_GL_DEPTH_BUFFER_BIT,
@@ -287,16 +257,6 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_FALSE: CXConstant{Type: TYPE_I32, Value: FromI32(0)},
 
 	CONST_GL_TRUE:                CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GL_INVALID_ENUM:        CXConstant{Type: TYPE_I32, Value: FromI32(1280)},
-	CONST_GL_INVALID_VALUE:       CXConstant{Type: TYPE_I32, Value: FromI32(1281)},
-	CONST_GL_INVALID_OPERATION:   CXConstant{Type: TYPE_I32, Value: FromI32(1282)},
-	CONST_GL_STACK_OVERFLOW:      CXConstant{Type: TYPE_I32, Value: FromI32(1283)},
-	CONST_GL_STACK_UNDERFLOW:     CXConstant{Type: TYPE_I32, Value: FromI32(1284)},
-	CONST_GL_OUT_OF_MEMORY:       CXConstant{Type: TYPE_I32, Value: FromI32(1285)},
-	CONST_GL_CULL_FACE:           CXConstant{Type: TYPE_I32, Value: FromI32(2884)},
-	CONST_GL_FRONT:               CXConstant{Type: TYPE_I32, Value: FromI32(1028)},
-	CONST_GL_BACK:                CXConstant{Type: TYPE_I32, Value: FromI32(1029)},
-	CONST_GL_FRONT_AND_BACK:      CXConstant{Type: TYPE_I32, Value: FromI32(1032)},
 	CONST_GL_QUADS:               CXConstant{Type: TYPE_I32, Value: FromI32(7)},
 	CONST_GL_COLOR_BUFFER_BIT:    CXConstant{Type: TYPE_I32, Value: FromI32(16384)},
 	CONST_GL_DEPTH_BUFFER_BIT:    CXConstant{Type: TYPE_I32, Value: FromI32(256)},
