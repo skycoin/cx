@@ -12,10 +12,10 @@ const (
 	CONST_GL_STACK_UNDERFLOW
 	CONST_GL_OUT_OF_MEMORY
 	CONST_GL_CULL_FACE
-    CONST_GL_FRONT
-    CONST_GL_BACK
-    CONST_GL_FRONT_AND_BACK
-    CONST_GL_QUADS
+	CONST_GL_FRONT
+	CONST_GL_BACK
+	CONST_GL_FRONT_AND_BACK
+	CONST_GL_QUADS
 	CONST_GL_COLOR_BUFFER_BIT
 	CONST_GL_DEPTH_BUFFER_BIT
 	CONST_GL_ARRAY_BUFFER
@@ -106,10 +106,10 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_STACK_UNDERFLOW:     "gl.STACK_UNDERFLOW",
 	CONST_GL_OUT_OF_MEMORY:       "gl.OUT_OF_MEMORY",
 	CONST_GL_CULL_FACE:           "gl.CULL_FACE",
-    CONST_GL_FRONT:               "gl.FRONT",
-    CONST_GL_BACK:                "gl.BACK",
-    CONST_GL_FRONT_AND_BACK:      "gl.FRONT_AND_BACK",
-    CONST_GL_QUADS:               "gl.QUADS",
+	CONST_GL_FRONT:               "gl.FRONT",
+	CONST_GL_BACK:                "gl.BACK",
+	CONST_GL_FRONT_AND_BACK:      "gl.FRONT_AND_BACK",
+	CONST_GL_QUADS:               "gl.QUADS",
 	CONST_GL_COLOR_BUFFER_BIT:    "gl.COLOR_BUFFER_BIT",
 	CONST_GL_DEPTH_BUFFER_BIT:    "gl.DEPTH_BUFFER_BIT",
 	CONST_GL_ARRAY_BUFFER:        "gl.ARRAY_BUFFER",
@@ -199,10 +199,10 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.STACK_OVERFLOW":      CONST_GL_STACK_OVERFLOW,
 	"gl.STACK_UNDERFLOW":     CONST_GL_STACK_UNDERFLOW,
 	"gl.OUT_OF_MEMORY":       CONST_GL_OUT_OF_MEMORY,
-    "gl.CULL_FACE":           CONST_GL_CULL_FACE,
-    "gl.FRONT":               CONST_GL_FRONT,
-    "gl.BACK":                CONST_GL_BACK,
-    "gl.FRONT_AND_BACK":      CONST_GL_FRONT_AND_BACK,
+	"gl.CULL_FACE":           CONST_GL_CULL_FACE,
+	"gl.FRONT":               CONST_GL_FRONT,
+	"gl.BACK":                CONST_GL_BACK,
+	"gl.FRONT_AND_BACK":      CONST_GL_FRONT_AND_BACK,
 	"gl.QUADS":               CONST_GL_QUADS,
 	"gl.COLOR_BUFFER_BIT":    CONST_GL_COLOR_BUFFER_BIT,
 	"gl.DEPTH_BUFFER_BIT":    CONST_GL_DEPTH_BUFFER_BIT,
@@ -294,10 +294,10 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_STACK_UNDERFLOW:     CXConstant{Type: TYPE_I32, Value: FromI32(1284)},
 	CONST_GL_OUT_OF_MEMORY:       CXConstant{Type: TYPE_I32, Value: FromI32(1285)},
 	CONST_GL_CULL_FACE:           CXConstant{Type: TYPE_I32, Value: FromI32(2884)},
-    CONST_GL_FRONT:               CXConstant{Type: TYPE_I32, Value: FromI32(1028)},
-    CONST_GL_BACK:                CXConstant{Type: TYPE_I32, Value: FromI32(1029)},
-    CONST_GL_FRONT_AND_BACK:      CXConstant{Type: TYPE_I32, Value: FromI32(1032)},
-    CONST_GL_QUADS:               CXConstant{Type: TYPE_I32, Value: FromI32(7)},
+	CONST_GL_FRONT:               CXConstant{Type: TYPE_I32, Value: FromI32(1028)},
+	CONST_GL_BACK:                CXConstant{Type: TYPE_I32, Value: FromI32(1029)},
+	CONST_GL_FRONT_AND_BACK:      CXConstant{Type: TYPE_I32, Value: FromI32(1032)},
+	CONST_GL_QUADS:               CXConstant{Type: TYPE_I32, Value: FromI32(7)},
 	CONST_GL_COLOR_BUFFER_BIT:    CXConstant{Type: TYPE_I32, Value: FromI32(16384)},
 	CONST_GL_DEPTH_BUFFER_BIT:    CXConstant{Type: TYPE_I32, Value: FromI32(256)},
 	CONST_GL_ARRAY_BUFFER:        CXConstant{Type: TYPE_I32, Value: FromI32(34962)},
