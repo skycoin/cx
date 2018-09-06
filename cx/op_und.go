@@ -280,8 +280,13 @@ func op_len(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	if inp1.IsSlice {
-		inp1Offset := GetFinalOffset(fp, inp1)
-		sliceHeader := PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		preInp1Offset := GetFinalOffset(fp, inp1)
+		var inp1Offset int32
+		encoder.DeserializeAtomic(PROGRAM.Memory[preInp1Offset : preInp1Offset + TYPE_POINTER_SIZE], &inp1Offset)
+		
+		// sliceHeader := PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+		
+		sliceHeader := PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 		WriteMemory(GetFinalOffset(fp, out1), sliceHeader[:4])
 	} else if inp1.Type == TYPE_STR {
 		inp1Offset := GetFinalOffset(fp, inp1)
@@ -303,14 +308,17 @@ func op_len(expr *CXExpression, fp int) {
 func op_append(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	
-	inp1Offset := GetFinalOffset(fp, inp1)
+	preInp1Offset := GetFinalOffset(fp, inp1)
 	inp2Offset := GetFinalOffset(fp, inp2)
 	out1Offset := GetFinalOffset(fp, out1)
 
+	var inp1Offset int32
+	encoder.DeserializeAtomic(PROGRAM.Memory[preInp1Offset : preInp1Offset + TYPE_POINTER_SIZE], &inp1Offset)
+	
 	var off int32
 	var byts []byte
 
-	byts = PROGRAM.Memory[out1Offset : out1Offset+TYPE_POINTER_SIZE]
+	byts = PROGRAM.Memory[out1Offset : out1Offset + TYPE_POINTER_SIZE]
 	encoder.DeserializeAtomic(byts, &off)
 
 	var heapOffset int
@@ -322,7 +330,8 @@ func op_append(expr *CXExpression, fp int) {
 
 		if inp1Offset != 0 {
 			// then we need to reserve for obj1 too
-			sliceHeader = PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+			// sliceHeader = PROGRAM.Memory[inp1Offset-SLICE_HEADER_SIZE : inp1Offset]
+			sliceHeader = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 
 			encoder.DeserializeAtomic(sliceHeader[:4], &len1)
 			heapOffset = AllocateSeq((int(len1)*inp2.TotalSize) + inp2.TotalSize + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
@@ -335,8 +344,9 @@ func op_append(expr *CXExpression, fp int) {
 
 		var obj1 []byte
 		var obj2 []byte
-		
-		obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
+
+		// obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
+		obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 
 		if inp2.Type == TYPE_STR {
 			obj2 = encoder.SerializeAtomic(int32(inp2Offset))
@@ -374,12 +384,9 @@ func op_append(expr *CXExpression, fp int) {
 	} else {
 		// then we have access to a size and capacity
 		var sliceHeader []byte
-		// if inp1.Type == TYPE_STR {
-		// 	sliceHeader = PROGRAM.Memory[off - SLICE_HEADER_SIZE : off]
-		// } else {
-		// 	sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
-		// }
-		sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
+
+		// sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
+		sliceHeader = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 
 		var l int32
 		var c int32
@@ -392,12 +399,7 @@ func op_append(expr *CXExpression, fp int) {
 			var obj1 []byte
 			var obj2 []byte
 
-			// if inp1.Type == TYPE_STR {
-			// 	obj1 = PROGRAM.Memory[off : off + l*int32(inp2.TotalSize)]
-			// } else {
-			// 	obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
-			// }
-			obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + l*int32(inp2.TotalSize)]
+			obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(inp1Offset) + l*int32(inp2.TotalSize)]
 
 			if inp2.Type == TYPE_STR {
 				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
@@ -451,8 +453,6 @@ func op_append(expr *CXExpression, fp int) {
 			for i, byt := range obj2 {
 				PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(int(l) * inp2.TotalSize + i)] = byt
 			}
-
-			// WriteMemory(&PROGRAM.Memory.Program.Heap, heapOffset, finalObj)
 		}
 	}
 }

@@ -449,9 +449,7 @@ declaration_specifiers:
 			arg.IsSlice = true
 			arg.IsReference = true
 			arg.PassBy = PASSBY_REFERENCE
-			// arg.Lengths = append([]int{SLICE_SIZE}, arg.Lengths...)
 			arg.Lengths = append([]int{0}, arg.Lengths...)
-			// arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 			arg.TotalSize = arg.Size
 			arg.Size = TYPE_POINTER_SIZE
 			$$ = arg
@@ -463,12 +461,7 @@ declaration_specifiers:
                         arg.IsArray = true
 			arg.Lengths = append([]int{int($2)}, arg.Lengths...)
 			arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
-			// arg.Size = GetArgSize($4.Type)
 			$$ = arg
-			// arg := DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-			// fmt.Println("arg", arg.Lengths)
-			// // $$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-			// $$ = arg
                 }
         |       type_specifier
                 {

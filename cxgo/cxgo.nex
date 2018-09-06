@@ -220,7 +220,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.11"
+const VERSION = "0.5.12"
 
 var currentFileName string
 var insert bool
@@ -731,12 +731,19 @@ func main () {
 	if len(sourceCode) > 0 {
 		allSC := strings.Join(sourceCodeCopy, "")
 
-		re := regexp.MustCompile("(package)\\s([.\\[\\]a-zA-Z0-9_]+)")
+		rePkg := regexp.MustCompile("(package)\\s([.\\[\\]a-zA-Z0-9_]+)")
 
 		// the actual pass 0, but so small I'm not going to count it as another pass
-		for _, match := range re.FindAllStringSubmatch(allSC, -1) {
-			pkg := MakePackage(match[len(match)-1])
+		for _, match := range rePkg.FindAllStringSubmatch(allSC, -1) {
+			pkg := MakePackage(match[len(match) - 1])
 			cxgo0.PRGRM0.AddPackage(pkg)
+
+			// reStrct := regexp.MustCompile("(type)\\s([.\\[\\]a-zA-Z0-9_]+)")
+
+			// for _, match := range reStrct.FindAllStringSubmatch(allSC, -1) {
+			// 	strct := MakeStruct(match[len(match) - 1])
+			// 	pkg.AddStruct(strct)
+			// }
 		}
 		
 		// cxgo0.Parse(allSC)
@@ -794,6 +801,10 @@ func main () {
 	}
 	
 	LineNo = 0
+
+	if FoundCompileErrors {
+		os.Exit(3)
+	}
 
 	if ReplMode || len(sourceCode) == 0 {
 		repl()

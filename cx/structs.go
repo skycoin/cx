@@ -65,7 +65,6 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-	// Index int
 	Name      string
 	Imports   []*CXPackage
 	Functions []*CXFunction
@@ -82,7 +81,6 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
-	// Index int
 	Name   string
 	Fields []*CXArgument
 	Size   int
@@ -96,7 +94,6 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
-	// Index int
 	Name        string
 	Inputs      []*CXArgument
 	Outputs     []*CXArgument
@@ -116,7 +113,6 @@ type CXFunction struct {
 }
 
 type CXExpression struct {
-	// Index int
 	Operator *CXFunction
 	Inputs   []*CXArgument
 	Outputs  []*CXArgument

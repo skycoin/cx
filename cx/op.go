@@ -5,12 +5,52 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool) {
+	for _, op := range arg.DereferenceOperations {
+		switch op {
+		case DEREF_ARRAY:
+			for i, idxArg := range arg.Indexes {
+				var subSize int = 1
+				for _, len := range arg.Lengths[i+1:] {
+					subSize *= len
+				}
+
+				var sizeToUse int
+				if arg.CustomType != nil {
+					sizeToUse = arg.CustomType.Size
+				} else if arg.IsSlice {
+					sizeToUse = arg.TotalSize
+				} else {
+					sizeToUse = arg.Size
+				}
+
+				*finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
+			}
+		// case DEREF_FIELD:
+		// 	elt = arg.Fields[fldIdx]
+		// 	finalOffset += elt.Offset
+		// 	fldIdx++
+		case DEREF_POINTER:
+			var offset int32
+			var byts []byte
+
+			byts = PROGRAM.Memory[*finalOffset : *finalOffset + TYPE_POINTER_SIZE]
+
+			encoder.DeserializeAtomic(byts, &offset)
+			*finalOffset = int(offset)
+		}
+		if dbg {
+			fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset)
+		}
+	}
+}
+
 func GetFinalOffset(fp int, arg *CXArgument) int {
 	var elt *CXArgument
 	var finalOffset int = arg.Offset
-	var fldIdx int
+	// var fldIdx int
 
-	elt = arg
+	// elt = arg
 	
 	var dbg bool
 	if arg.Name != "" {
@@ -25,53 +65,60 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	if dbg {
 		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations)
 	}
-	
-	for _, op := range arg.DereferenceOperations {
-		switch op {
-		case DEREF_ARRAY:
-			for i, idxArg := range elt.Indexes {
-				var subSize int = 1
-				for _, len := range elt.Lengths[i+1:] {
-					subSize *= len
-				}
 
-				var sizeToUse int
-				if arg.CustomType != nil {
-					sizeToUse = arg.CustomType.Size
-				} else if elt.IsSlice {
-					sizeToUse = elt.TotalSize
-				} else {
-					sizeToUse = elt.Size
-				}
-
-				finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
-			}
-		case DEREF_FIELD:
-			elt = arg.Fields[fldIdx]
-			finalOffset += elt.Offset
-			fldIdx++
-		case DEREF_POINTER:
-			var offset int32
-			var byts []byte
-
-			byts = PROGRAM.Memory[finalOffset : finalOffset + TYPE_POINTER_SIZE]
-
-			encoder.DeserializeAtomic(byts, &offset)
-			finalOffset = int(offset)
-		}
-		if dbg {
-			fmt.Println("update", arg.Name, finalOffset)
-		}
+	elt = arg
+	CalculateDereferences(arg, &finalOffset, fp, dbg)
+	for _, fld := range arg.Fields {
+		elt = fld
+		finalOffset += fld.Offset
+		CalculateDereferences(fld, &finalOffset, fp, dbg)
 	}
 
-	if finalOffset >= PROGRAM.HeapStartsAt {
+	// for _, op := range arg.DereferenceOperations {
+	// 	switch op {
+	// 	case DEREF_ARRAY:
+	// 		for i, idxArg := range elt.Indexes {
+	// 			var subSize int = 1
+	// 			for _, len := range elt.Lengths[i+1:] {
+	// 				subSize *= len
+	// 			}
+
+	// 			var sizeToUse int
+	// 			if arg.CustomType != nil {
+	// 				sizeToUse = arg.CustomType.Size
+	// 			} else if elt.IsSlice {
+	// 				sizeToUse = elt.TotalSize
+	// 			} else {
+	// 				sizeToUse = elt.Size
+	// 			}
+
+	// 			finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
+	// 		}
+	// 	case DEREF_FIELD:
+	// 		elt = arg.Fields[fldIdx]
+	// 		finalOffset += elt.Offset
+	// 		fldIdx++
+	// 	case DEREF_POINTER:
+	// 		var offset int32
+	// 		var byts []byte
+
+	// 		byts = PROGRAM.Memory[finalOffset : finalOffset + TYPE_POINTER_SIZE]
+
+	// 		encoder.DeserializeAtomic(byts, &offset)
+	// 		finalOffset = int(offset)
+	// 	}
+	// 	if dbg {
+	// 		fmt.Println("update", arg.Name, finalOffset)
+	// 	}
+	// }
+
+	if finalOffset >= PROGRAM.HeapStartsAt && !(len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER) {
 		// then it's an object
 		finalOffset += OBJECT_HEADER_SIZE
 		if arg.IsSlice {
 			finalOffset += SLICE_HEADER_SIZE
 		}
 	}
-	
 
 	if dbg {
 		fmt.Println("result", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")

@@ -24,13 +24,13 @@ func op_assert_value(expr *CXExpression, fp int) {
 
 	if len(byts1) != len(byts2) {
 		same = false
-		fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
+		fmt.Println("byts1", inp1.Type, byts1, inp1.Name, inp1.Size, inp1.TotalSize)
 		fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
 	} else {
 		for i, byt := range byts1 {
 			if byt != byts2[i] {
 				same = false
-				fmt.Println("byts1", inp1.Type, byts1, inp1.Name)
+				fmt.Println("byts1", inp1.Type, byts1, inp1.Name, inp1.Size, inp1.TotalSize)
 				fmt.Println("byts2", inp2.Type, byts2, inp2.Name)
 			}
 		}

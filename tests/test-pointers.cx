@@ -27,6 +27,9 @@ var gi64Ptr *i64
 func returnPtrArrayStruct () (ptr *[2]miniStruct) {
 	var c [2]miniStruct
 	c[0] = miniStruct{mInt: 11, mString: "Foobar"}
+
+
+	
 	c[1] = miniStruct{mInt: 13, mString: "Barfoo"}
 
 	ptr = &c

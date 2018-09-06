@@ -83,23 +83,26 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
 	return arg
 }
 
-func (mod *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
-	prgrm := mod.Program
-	strct.Program = prgrm
-	strct.Package = mod
-	mod.CurrentStruct = strct
+func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 	found := false
-	for i, s := range mod.Structs {
+	for i, s := range pkg.Structs {
 		if s.Name == strct.Name {
-			mod.Structs[i] = strct
+			pkg.Structs[i] = strct
+			// *strct = *pkg.Structs[i]
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Structs = append(mod.Structs, strct)
+		pkg.Structs = append(pkg.Structs, strct)
 	}
-	return mod
+
+	prgrm := pkg.Program
+	strct.Program = prgrm
+	strct.Package = pkg
+	pkg.CurrentStruct = strct
+	
+	return pkg
 }
 
 func (mod *CXPackage) AddImport(imp *CXPackage) *CXPackage {
