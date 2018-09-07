@@ -323,7 +323,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		// then it's a literal
 		offset = int32(off)
 	} else {
-		encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
+		encoder.DeserializeAtomic(PROGRAM.Memory[off : off + TYPE_POINTER_SIZE], &offset)
 	}
 
 	var size int32

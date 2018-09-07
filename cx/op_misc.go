@@ -41,7 +41,7 @@ func op_identity(expr *CXExpression, fp int) {
 		elt = out1
 	}
 
-	// fmt.Println("out1", out1.Name, elt.Name, elt.DereferenceOperations, elt.PassBy, elt.DoesEscape, inp1Offset, ReadMemory(inp1Offset, inp1))
+	// fmt.Println("out1", out1.Name, elt.Name, elt.Offset, elt.DereferenceOperations, elt.PassBy, elt.DoesEscape, inp1Offset, ReadMemory(inp1Offset, inp1))
 
 	if elt.DoesEscape {
 		EscapeAnalysis(fp, inp1Offset, out1Offset, inp1)

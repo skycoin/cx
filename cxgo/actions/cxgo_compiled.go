@@ -135,7 +135,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 	}
 }
 
-func DeclareStruct(ident string, strctFlds []*CXArgument) {
+func DeclareStruct (ident string, strctFlds []*CXArgument) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if _, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 			strct := MakeStruct(ident)
@@ -297,7 +297,7 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
 }
 
-func DeclarationSpecifiersStruct(ident string, pkgName string, isExternal bool) *CXArgument {
+func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool) *CXArgument {
 	if isExternal {
 		// custom type in an imported package
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1521,21 +1521,33 @@ func ProcessDereferenceLevels () {
 
 func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
-		strct := arg.CustomType
-
-		// first checking if fields do exist in their CustomType
+		// checking if fields do exist in their CustomType
 		// and assigning that CustomType to the sym.Field
-		for c := len(sym.Fields) - 1; c >= 0; c-- {
-			if sym.Fields[c].CustomType != nil {
-				strct = sym.Fields[c].CustomType
-			}
-			if inFld, err := strct.GetField(sym.Fields[c].Name); err == nil {
-				// sym.Fields[c].CustomType = strct
-				strct = inFld.CustomType
+		strct := arg.CustomType
+		for _, fld := range sym.Fields {
+			if inFld, err := strct.GetField(fld.Name); err == nil {
+				if inFld.CustomType != nil {
+					fld.CustomType = strct
+					strct = inFld.CustomType
+				}
 			} else {
-				println(ErrorHeader(sym.Fields[c].FileName, sym.Fields[c].FileLine), err.Error())
+				println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
 			}
+			// if sym.Fields[c - 1].CustomType != nil {
+			// 	strct = sym.Fields[c - 1].CustomType
+			// }
 		}
+		// for c := len(sym.Fields) - 1; c > 0; c-- {
+		// 	if sym.Fields[c - 1].CustomType != nil {
+		// 		strct = sym.Fields[c - 1].CustomType
+		// 	}
+		// 	if inFld, err := strct.GetField(sym.Fields[c].Name); err == nil {
+		// 		// sym.Fields[c].CustomType = strct
+		// 		strct = inFld.CustomType
+		// 	} else {
+		// 		println(ErrorHeader(sym.Fields[c].FileName, sym.Fields[c].FileLine), err.Error())
+		// 	}
+		// }
 
 		strct = arg.CustomType
 		// then we copy all the type struct fields
@@ -1553,7 +1565,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 					nameFld.TotalSize = fld.TotalSize
 					nameFld.DereferenceLevels = sym.DereferenceLevels
 					nameFld.IsPointer = fld.IsPointer
-					// nameFld.CustomType = fld.CustomType
+					nameFld.CustomType = fld.CustomType
 					
 					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 					
@@ -1561,12 +1573,14 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 						nameFld.DereferenceOperations = append([]int{DEREF_POINTER}, nameFld.DereferenceOperations...)
 						nameFld.DereferenceLevels++
 					}
-					
+
 					nameFld.PassBy = fld.PassBy
 					nameFld.IsSlice = fld.IsSlice
-
+					
 					if fld.Type == TYPE_STR {
 						nameFld.PassBy = PASSBY_REFERENCE
+						// nameFld.Size = TYPE_POINTER_SIZE
+						// nameFld.TotalSize = TYPE_POINTER_SIZE
 					}
 					
 					if fld.CustomType != nil {
@@ -1742,7 +1756,7 @@ func ProcessSlice (inp *CXArgument) {
 	}
 }
 
-func ProcessSliceAssignment(expr *CXExpression) {
+func ProcessSliceAssignment (expr *CXExpression) {
 	if expr.Operator == Natives[OP_IDENTITY] {
 		var inp *CXArgument
 		var out *CXArgument
@@ -1764,6 +1778,20 @@ func ProcessSliceAssignment(expr *CXExpression) {
 	}
 }
 
+func ProcessStringAssignment (expr *CXExpression) {
+	if expr.Operator == Natives[OP_IDENTITY] {
+		for i, out := range expr.Outputs {
+			out = GetAssignmentElement(out)
+			inp := GetAssignmentElement(expr.Inputs[i])
+
+			if out.Type == TYPE_STR && out.Name != "" &&
+				inp.Type == TYPE_STR && inp.Name != "" {
+				out.PassBy = PASSBY_VALUE
+			}
+		}
+	}
+}
+
 func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
 		for i, inp := range expr.Inputs {
@@ -1772,27 +1800,28 @@ func CheckTypes(expr *CXExpression) {
 
 				var expectedType string
 				var receivedType string
-				if expr.Operator.Inputs[i].CustomType != nil {
+				if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
 					// then it's custom type
-					expectedType = expr.Outputs[i].CustomType.Name
+					expectedType = GetAssignmentElement(expr.Outputs[i]).CustomType.Name
 				} else {
 					// then it's native type
-					expectedType = TypeNames[expr.Outputs[i].Type]
+					expectedType = TypeNames[GetAssignmentElement(expr.Outputs[i]).Type]
 				}
+				
 
-				if expr.Inputs[i].CustomType != nil {
+				if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
 					// then it's custom type
-					receivedType = inp.CustomType.Name
+					receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
 				} else {
 					// then it's native type
-					receivedType = TypeNames[inp.Type]
+					receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
 				}
 
 				
 				if expr.IsStructLiteral {
 					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
-					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, expr.Outputs[i].Name, expectedType))
+					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
 				}
 			}
 		}
@@ -1820,12 +1849,12 @@ func CheckTypes(expr *CXExpression) {
 					expectedType = TypeNames[expr.Operator.Inputs[i].Type]
 				}
 
-				if expr.Inputs[i].CustomType != nil {
+				if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
 					// then it's custom type
-					receivedType = expr.Inputs[i].CustomType.Name
+					receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
 				} else {
 					// then it's native type
-					receivedType = TypeNames[expr.Inputs[i].Type]
+					receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
 				}
 
 				println(ErrorHeader(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
@@ -1959,6 +1988,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
+		ProcessStringAssignment(expr)
 		CheckTypes(expr)
 	}
 

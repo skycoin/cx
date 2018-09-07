@@ -31,7 +31,7 @@ func testStructures () {
 		boolean: true,
 		byt: 255B,
 		string: "Foo bar"}
-	// anotherStruct: miniStruct{
+		// anotherStruct: miniStruct{
 	// 		mInt: 32,
 	// 		mLong: 64L,
 	// 		mFloat: 32.0,

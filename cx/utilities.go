@@ -2462,6 +2462,14 @@ func checkForEscapedChars (str string) []byte {
 	return res
 }
 
+func GetAssignmentElement (arg *CXArgument) *CXArgument {
+	if len(arg.Fields) > 0 {
+		return arg.Fields[len(arg.Fields) - 1]
+	} else {
+		return arg
+	}
+}
+
 func WriteObject (out1Offset int, byts []byte) {
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)

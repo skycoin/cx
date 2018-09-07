@@ -88,6 +88,7 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 	for i, s := range pkg.Structs {
 		if s.Name == strct.Name {
 			pkg.Structs[i] = strct
+			// pkg.Structs[i].Fields = strct.Fields
 			// *strct = *pkg.Structs[i]
 			found = true
 			break
@@ -129,7 +130,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 		}
 	}
 	if !found {
-		fld.CustomType = strct
+		// fld.CustomType = strct
 		strct.Fields = append(strct.Fields, fld)
 	}
 	return strct

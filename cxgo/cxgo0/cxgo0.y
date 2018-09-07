@@ -223,11 +223,22 @@ struct_declaration:
 				pkg.AddStruct(strct)
 
 				var size int
-                                for _, fld := range $4 {
-                                        strct.AddField(fld)
+				for _, fld := range $4 {
+					strct.AddField(fld)
 					size += fld.TotalSize
 				}
 				strct.Size = size
+				// if _, err := PRGRM0.GetStruct($2, pkg.Name); err == nil {
+				// 	strct := MakeStruct($2)
+				// 	pkg.AddStruct(strct)
+
+				// 	var size int
+				// 	for _, fld := range $4 {
+				// 		strct.AddField(fld)
+				// 		size += fld.TotalSize
+				// 	}
+				// 	strct.Size = size
+				// }
 			} else {
 				panic(err)
 			}
