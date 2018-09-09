@@ -166,12 +166,17 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	/*
 	   OpenGL
 	*/
-	"gl.Init": true, "gl.CreateProgram": true, "gl.LinkProgram": true,
+	"gl.Init": true, "gl.GetError": true, "gl.BindAttribLocation": true, "gl.GetAttribLocation": true,
+	"gl.GetUniformLocation": true,
+	"gl.CullFace": true, "gl.CreateProgram": true, "gl.DeleteProgram": true, "gl.LinkProgram": true,
 	"gl.Clear": true, "gl.UseProgram": true,
 
 	"gl.BindBuffer": true, "gl.BindVertexArray": true, "gl.EnableVertexAttribArray": true,
-	"gl.VertexAttribPointer": true, "gl.DrawArrays": true, "gl.GenBuffers": true,
-	"gl.BufferData": true, "gl.GenVertexArrays": true, "gl.CreateShader": true,
+	"gl.VertexAttribPointer": true, "gl.DrawArrays": true,
+	"gl.GenBuffers": true, "gl.DeleteBuffers": true,
+	"gl.BufferData": true, "gl.BufferSubData": true,
+	"gl.GenVertexArrays": true, "gl.DeleteVertexArrays": true,
+	"gl.CreateShader": true, "gl.DetachShader": true, "gl.DeleteShader": true,
 
 	"gl.Strs": true, "gl.Free": true, "gl.ShaderSource": true,
 	"gl.CompileShader": true, "gl.GetShaderiv": true, "gl.AttachShader": true,
@@ -180,7 +185,8 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.Rotatef":    true, "gl.Translatef": true, "gl.LoadIdentity": true,
 	"gl.PushMatrix": true, "gl.PopMatrix": true, "gl.EnableClientState": true,
 
-	"gl.BindTexture": true, "gl.Color3f": true, "gl.Color4f": true, "gl.Begin": true,
+	"gl.BindTexture": true, "gl.ActiveTexture": true,
+	"gl.Color3f": true, "gl.Color4f": true, "gl.Begin": true,
 	"gl.End": true, "gl.Normal3f": true, "gl.TexCoord2f": true,
 	"gl.Vertex2f": true, "gl.Vertex3f": true,
 

@@ -243,7 +243,14 @@ const (
 
 	// opengl
 	OP_GL_INIT
+	OP_GL_GET_ERROR
+	OP_GL_BIND_ATTRIB_LOCATION
+	OP_GL_GET_ATTRIB_LOCATION
+	OP_GL_GET_UNIFORM_LOCATION
+	OP_GL_UNIFORM_1I
+	OP_GL_CULL_FACE
 	OP_GL_CREATE_PROGRAM
+	OP_GL_DELETE_PROGRAM
 	OP_GL_LINK_PROGRAM
 	OP_GL_CLEAR
 	OP_GL_USE_PROGRAM
@@ -253,9 +260,14 @@ const (
 	OP_GL_VERTEX_ATTRIB_POINTER
 	OP_GL_DRAW_ARRAYS
 	OP_GL_GEN_BUFFERS
+	OP_GL_DELETE_BUFFERS
 	OP_GL_BUFFER_DATA
+	OP_GL_BUFFER_SUB_DATA
 	OP_GL_GEN_VERTEX_ARRAYS
+	OP_GL_DELETE_VERTEX_ARRAYS
 	OP_GL_CREATE_SHADER
+	OP_GL_DETACH_SHADER
+	OP_GL_DELETE_SHADER
 	OP_GL_STRS
 	OP_GL_FREE
 	OP_GL_SHADER_SOURCE
@@ -270,6 +282,7 @@ const (
 	OP_GL_POP_MATRIX
 	OP_GL_ENABLE_CLIENT_STATE
 	OP_GL_BIND_TEXTURE
+	OP_GL_ACTIVE_TEXTURE
 	OP_GL_COLOR3F
 	OP_GL_COLOR4F
 	OP_GL_BEGIN
@@ -306,6 +319,7 @@ const (
 	OP_GLFW_POLL_EVENTS
 	OP_GLFW_SWAP_BUFFERS
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
+	OP_GLFW_SWAP_INTERVAL
 	OP_GLFW_SET_KEY_CALLBACK
 	OP_GLFW_GET_TIME
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
@@ -740,8 +754,22 @@ func execNative(prgrm *CXProgram) {
 		// opengl
 	case OP_GL_INIT:
 		op_gl_Init()
+	case OP_GL_GET_ERROR:
+		op_gl_GetError(expr, fp)
+	case OP_GL_BIND_ATTRIB_LOCATION:
+		op_gl_BindAttribLocation(expr, fp)
+	case OP_GL_GET_ATTRIB_LOCATION:
+		op_gl_GetAttribLocation(expr, fp)
+	case OP_GL_GET_UNIFORM_LOCATION:
+		op_gl_GetUniformLocation(expr, fp)
+	case OP_GL_UNIFORM_1I:
+		op_gl_Uniform1i(expr, fp)
+	case OP_GL_CULL_FACE:
+		op_gl_CullFace(expr, fp)
 	case OP_GL_CREATE_PROGRAM:
 		op_gl_CreateProgram(expr, fp)
+	case OP_GL_DELETE_PROGRAM:
+		op_gl_DeleteProgram(expr, fp)
 	case OP_GL_LINK_PROGRAM:
 		op_gl_LinkProgram(expr, fp)
 	case OP_GL_CLEAR:
@@ -760,12 +788,22 @@ func execNative(prgrm *CXProgram) {
 		op_gl_DrawArrays(expr, fp)
 	case OP_GL_GEN_BUFFERS:
 		op_gl_GenBuffers(expr, fp)
+	case OP_GL_DELETE_BUFFERS:
+		op_gl_DeleteBuffers(expr, fp)
 	case OP_GL_BUFFER_DATA:
 		op_gl_BufferData(expr, fp)
+	case OP_GL_BUFFER_SUB_DATA:
+		op_gl_BufferSubData(expr, fp)
 	case OP_GL_GEN_VERTEX_ARRAYS:
 		op_gl_GenVertexArrays(expr, fp)
+	case OP_GL_DELETE_VERTEX_ARRAYS:
+		op_gl_DeleteVertexArrays(expr, fp)
 	case OP_GL_CREATE_SHADER:
 		op_gl_CreateShader(expr, fp)
+	case OP_GL_DETACH_SHADER:
+		op_gl_DetachShader(expr, fp)
+	case OP_GL_DELETE_SHADER:
+		op_gl_DeleteShader(expr, fp)
 	case OP_GL_STRS:
 		op_gl_Strs(expr, fp)
 	case OP_GL_FREE:
@@ -794,6 +832,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_EnableClientState(expr, fp)
 	case OP_GL_BIND_TEXTURE:
 		op_gl_BindTexture(expr, fp)
+	case OP_GL_ACTIVE_TEXTURE:
+		op_gl_ActiveTexture(expr, fp)
 	case OP_GL_COLOR3F:
 		op_gl_Color3f(expr, fp)
 	case OP_GL_COLOR4F:
@@ -862,6 +902,8 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_SwapBuffers(expr, fp)
 	case OP_GLFW_GET_FRAMEBUFFER_SIZE:
 		op_glfw_GetFramebufferSize(expr, fp)
+	case OP_GLFW_SWAP_INTERVAL:
+		op_glfw_SwapInterval(expr, fp)
 	case OP_GLFW_SET_KEY_CALLBACK:
 		op_glfw_SetKeyCallback(expr, fp)
 	case OP_GLFW_GET_TIME:
@@ -1097,7 +1139,14 @@ var OpNames map[int]string = map[int]string{
 
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
+	OP_GL_GET_ERROR:                  "gl.GetError",
+	OP_GL_BIND_ATTRIB_LOCATION:       "gl.BindAttribLocation",
+	OP_GL_GET_ATTRIB_LOCATION:        "gl.GetAttribLocation",
+	OP_GL_GET_UNIFORM_LOCATION:       "gl.GetUniformLocation",
+	OP_GL_UNIFORM_1I:                 "gl.Uniform1i",
+	OP_GL_CULL_FACE:                  "gl.CullFace",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
+	OP_GL_DELETE_PROGRAM:             "gl.DeleteProgram",
 	OP_GL_LINK_PROGRAM:               "gl.LinkProgram",
 	OP_GL_CLEAR:                      "gl.Clear",
 	OP_GL_USE_PROGRAM:                "gl.UseProgram",
@@ -1107,9 +1156,14 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_VERTEX_ATTRIB_POINTER:      "gl.VertexAttribPointer",
 	OP_GL_DRAW_ARRAYS:                "gl.DrawArrays",
 	OP_GL_GEN_BUFFERS:                "gl.GenBuffers",
+	OP_GL_DELETE_BUFFERS:             "gl.DeleteBuffers",
 	OP_GL_BUFFER_DATA:                "gl.BufferData",
+	OP_GL_BUFFER_SUB_DATA:            "gl.BufferSubData",
 	OP_GL_GEN_VERTEX_ARRAYS:          "gl.GenVertexArrays",
+	OP_GL_DELETE_VERTEX_ARRAYS:       "gl.DeleteVertexArrays",
 	OP_GL_CREATE_SHADER:              "gl.CreateShader",
+	OP_GL_DETACH_SHADER:              "gl.DetachShader",
+	OP_GL_DELETE_SHADER:              "gl.DeleteShader",
 	OP_GL_STRS:                       "gl.Strs",
 	OP_GL_FREE:                       "gl.Free",
 	OP_GL_SHADER_SOURCE:              "gl.ShaderSource",
@@ -1124,6 +1178,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_POP_MATRIX:                 "gl.PopMatrix",
 	OP_GL_ENABLE_CLIENT_STATE:        "gl.EnableClientState",
 	OP_GL_BIND_TEXTURE:               "gl.BindTexture",
+	OP_GL_ACTIVE_TEXTURE:             "gl.ActiveTexture",
 	OP_GL_COLOR3F:                    "gl.Color3f",
 	OP_GL_COLOR4F:                    "gl.Color4f",
 	OP_GL_BEGIN:                      "gl.Begin",
@@ -1159,6 +1214,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_POLL_EVENTS:               "glfw.PollEvents",
 	OP_GLFW_SWAP_BUFFERS:              "glfw.SwapBuffers",
 	OP_GLFW_GET_FRAMEBUFFER_SIZE:      "glfw.GetFramebufferSize",
+	OP_GLFW_SWAP_INTERVAL:             "glfw.SwapInterval",
 	OP_GLFW_SET_KEY_CALLBACK:          "glfw.SetKeyCallback",
 	OP_GLFW_GET_TIME:                  "glfw.GetTime",
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK: "glfw.SetMouseButtonCallback",
@@ -1382,7 +1438,14 @@ var OpCodes map[string]int = map[string]int{
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
+	"gl.GetError":                OP_GL_GET_ERROR,
+	"gl.BindAttribLocation":      OP_GL_BIND_ATTRIB_LOCATION,
+	"gl.GetAttribLocation":       OP_GL_GET_ATTRIB_LOCATION,
+	"gl.GetUniformLocation":      OP_GL_GET_UNIFORM_LOCATION,
+	"gl.Uniform1i":               OP_GL_UNIFORM_1I,
+	"gl.CullFace":                OP_GL_CULL_FACE,
 	"gl.CreateProgram":           OP_GL_CREATE_PROGRAM,
+	"gl.DeleteProgram":           OP_GL_DELETE_PROGRAM,
 	"gl.LinkProgram":             OP_GL_LINK_PROGRAM,
 	"gl.Clear":                   OP_GL_CLEAR,
 	"gl.UseProgram":              OP_GL_USE_PROGRAM,
@@ -1392,9 +1455,14 @@ var OpCodes map[string]int = map[string]int{
 	"gl.VertexAttribPointer":     OP_GL_VERTEX_ATTRIB_POINTER,
 	"gl.DrawArrays":              OP_GL_DRAW_ARRAYS,
 	"gl.GenBuffers":              OP_GL_GEN_BUFFERS,
+	"gl.DeleteBuffers":           OP_GL_DELETE_BUFFERS,
 	"gl.BufferData":              OP_GL_BUFFER_DATA,
+	"gl.BufferSubData":           OP_GL_BUFFER_SUB_DATA,
 	"gl.GenVertexArrays":         OP_GL_GEN_VERTEX_ARRAYS,
+	"gl.DeleteVertexArrays":      OP_GL_DELETE_VERTEX_ARRAYS,
 	"gl.CreateShader":            OP_GL_CREATE_SHADER,
+	"gl.DetachShader":            OP_GL_DETACH_SHADER,
+	"gl.DeleteShader":            OP_GL_DELETE_SHADER,
 	"gl.Strs":                    OP_GL_STRS,
 	"gl.Free":                    OP_GL_FREE,
 	"gl.ShaderSource":            OP_GL_SHADER_SOURCE,
@@ -1409,6 +1477,7 @@ var OpCodes map[string]int = map[string]int{
 	"gl.PopMatrix":               OP_GL_POP_MATRIX,
 	"gl.EnableClientState":       OP_GL_ENABLE_CLIENT_STATE,
 	"gl.BindTexture":             OP_GL_BIND_TEXTURE,
+	"gl.ActiveTexture":           OP_GL_ACTIVE_TEXTURE,
 	"gl.Color3f":                 OP_GL_COLOR3F,
 	"gl.Color4f":                 OP_GL_COLOR4F,
 	"gl.Begin":                   OP_GL_BEGIN,
@@ -1444,6 +1513,7 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.PollEvents":             OP_GLFW_POLL_EVENTS,
 	"glfw.SwapBuffers":            OP_GLFW_SWAP_BUFFERS,
 	"glfw.GetFramebufferSize":     OP_GLFW_GET_FRAMEBUFFER_SIZE,
+	"glfw.SwapInterval":           OP_GLFW_SWAP_INTERVAL,
 	"glfw.SetKeyCallback":         OP_GLFW_SET_KEY_CALLBACK,
 	"glfw.GetTime":                OP_GLFW_GET_TIME,
 	"glfw.SetMouseButtonCallback": OP_GLFW_SET_MOUSE_BUTTON_CALLBACK,
@@ -1666,19 +1736,31 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
+	OP_GL_GET_ERROR:                  MakeNative(OP_GL_GET_ERROR, []int{}, []int{TYPE_I32}),
+	OP_GL_BIND_ATTRIB_LOCATION:       MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
+	OP_GL_GET_ATTRIB_LOCATION:        MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
+	OP_GL_GET_UNIFORM_LOCATION:       MakeNative(OP_GL_GET_UNIFORM_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
+	OP_GL_UNIFORM_1I:                 MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_CULL_FACE:                  MakeNative(OP_GL_CULL_FACE, []int{TYPE_I32}, []int{}),
 	OP_GL_CREATE_PROGRAM:             MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32}),
+	OP_GL_DELETE_PROGRAM:             MakeNative(OP_GL_DELETE_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_LINK_PROGRAM:               MakeNative(OP_GL_LINK_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_CLEAR:                      MakeNative(OP_GL_CLEAR, []int{TYPE_I32}, []int{}),
 	OP_GL_USE_PROGRAM:                MakeNative(OP_GL_USE_PROGRAM, []int{TYPE_I32}, []int{}),
 	OP_GL_BIND_BUFFER:                MakeNative(OP_GL_BIND_BUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_BIND_VERTEX_ARRAY:          MakeNative(OP_GL_BIND_VERTEX_ARRAY, []int{TYPE_I32}, []int{}),
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY: MakeNative(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, []int{TYPE_I32}, []int{}),
-	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{}),
+	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DRAW_ARRAYS:                MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_BUFFERS:                MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_BUFFERS:             MakeNative(OP_GL_DELETE_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_BUFFER_DATA:                MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{}),
+	OP_GL_BUFFER_SUB_DATA:            MakeNative(OP_GL_BUFFER_SUB_DATA, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{}),
 	OP_GL_GEN_VERTEX_ARRAYS:          MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_VERTEX_ARRAYS:       MakeNative(OP_GL_DELETE_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CREATE_SHADER:              MakeNative(OP_GL_CREATE_SHADER, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DETACH_SHADER:              MakeNative(OP_GL_DETACH_SHADER, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_DELETE_SHADER:              MakeNative(OP_GL_DELETE_SHADER, []int{TYPE_I32}, []int{}),
 	OP_GL_STRS:                       MakeNative(OP_GL_STRS, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GL_FREE:                       MakeNative(OP_GL_FREE, []int{TYPE_STR}, []int{}),
 	OP_GL_SHADER_SOURCE:              MakeNative(OP_GL_SHADER_SOURCE, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
@@ -1693,6 +1775,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_POP_MATRIX:                 MakeNative(OP_GL_POP_MATRIX, []int{}, []int{}),
 	OP_GL_ENABLE_CLIENT_STATE:        MakeNative(OP_GL_ENABLE_CLIENT_STATE, []int{TYPE_I32}, []int{}),
 	OP_GL_BIND_TEXTURE:               MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_ACTIVE_TEXTURE:             MakeNative(OP_GL_ACTIVE_TEXTURE, []int{TYPE_I32}, []int{}),
 	OP_GL_COLOR3F:                    MakeNative(OP_GL_COLOR3F, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
 	OP_GL_COLOR4F:                    MakeNative(OP_GL_COLOR4F, []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
 	OP_GL_BEGIN:                      MakeNative(OP_GL_BEGIN, []int{TYPE_I32}, []int{}),
@@ -1730,6 +1813,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_POLL_EVENTS:               MakeNative(OP_GLFW_POLL_EVENTS, []int{}, []int{}),
 	OP_GLFW_SWAP_BUFFERS:              MakeNative(OP_GLFW_SWAP_BUFFERS, []int{TYPE_STR}, []int{}),
 	OP_GLFW_GET_FRAMEBUFFER_SIZE:      MakeNative(OP_GLFW_GET_FRAMEBUFFER_SIZE, []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
+	OP_GLFW_SWAP_INTERVAL:             MakeNative(OP_GLFW_SWAP_INTERVAL, []int{TYPE_I32}, []int{}),
 	OP_GLFW_SET_KEY_CALLBACK:          MakeNative(OP_GLFW_SET_KEY_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GLFW_GET_TIME:                  MakeNative(OP_GLFW_GET_TIME, []int{}, []int{TYPE_F64}),
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK: MakeNative(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),

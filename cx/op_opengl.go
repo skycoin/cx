@@ -11,6 +11,7 @@ import (
 	_ "image/gif"
 	"runtime"
 	"strings"
+	"unsafe"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -22,10 +23,51 @@ func op_gl_Init() {
 	gl.Init()
 }
 
+func op_gl_GetError(expr *CXExpression, fp int) {
+	out1 := expr.Outputs[0]
+	outB1 := FromI32(int32(gl.GetError()))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_BindAttribLocation(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	xstr := cSources[ReadStr(fp, inp3)]
+	gl.BindAttribLocation(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), *xstr)
+}
+
+func op_gl_GetAttribLocation(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	xstr := cSources[ReadStr(fp, inp2)]
+	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, inp1)), *xstr))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_GetUniformLocation(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	xstr := cSources[ReadStr(fp, inp2)]
+	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, inp1)), *xstr))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_Uniform1i(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.Uniform1i(ReadI32(fp, inp1), ReadI32(fp, inp2))
+}
+
+func op_gl_CullFace(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.CullFace(uint32(ReadI32(fp, inp1)))
+}
+
 func op_gl_CreateProgram(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateProgram()))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DeleteProgram(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.DeleteShader(uint32(ReadI32(fp, inp1)))
 }
 
 func op_gl_LinkProgram(expr *CXExpression, fp int) {
@@ -68,8 +110,8 @@ func op_gl_EnableVertexAttribArray(expr *CXExpression, fp int) {
 }
 
 func op_gl_VertexAttribPointer(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4, inp5 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4]
-	gl.VertexAttribPointer(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), ReadBool(fp, inp4), ReadI32(fp, inp5), nil)
+	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
+	gl.VertexAttribPointer(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), ReadBool(fp, inp4), ReadI32(fp, inp5), unsafe.Pointer(uintptr(ReadI32(fp, inp6))))
 }
 
 func op_gl_DrawArrays(expr *CXExpression, fp int) {
@@ -80,9 +122,15 @@ func op_gl_DrawArrays(expr *CXExpression, fp int) {
 func op_gl_GenBuffers(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
-	gl.GenBuffers(ReadI32(fp, inp1), &tmp)
+	gl.GenBuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	outB1 := FromI32(int32(tmp))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DeleteBuffers(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.DeleteBuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 }
 
 func op_gl_BufferData(expr *CXExpression, fp int) {
@@ -90,22 +138,47 @@ func op_gl_BufferData(expr *CXExpression, fp int) {
 	gl.BufferData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), gl.Ptr(ReadF32A(fp, inp3)), uint32(ReadI32(fp, inp4)))
 }
 
+func op_gl_BufferSubData(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadF32A(fp,  inp4)))
+}
+
 func op_gl_GenVertexArrays(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
 	if runtime.GOOS == "darwin" {
-		gl.GenVertexArraysAPPLE(ReadI32(fp, inp1), &tmp)
+		gl.GenVertexArraysAPPLE(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	} else {
-		gl.GenVertexArrays(ReadI32(fp, inp1), &tmp)
+		gl.GenVertexArrays(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	}
 	outB1 := FromI32(int32(tmp))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DeleteVertexArrays(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	tmp := uint32(ReadI32(fp, inp2))
+	if runtime.GOOS == "darwin" {
+		gl.DeleteVertexArraysAPPLE(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+	} else {
+		gl.DeleteVertexArrays(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+	}
 }
 
 func op_gl_CreateShader(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(gl.CreateShader(uint32(ReadI32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DetachShader(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.DetachShader(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_DeleteShader(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.DeleteShader(uint32(ReadI32(fp, inp1)))
 }
 
 func op_gl_Strs(expr *CXExpression, fp int) {
@@ -201,6 +274,11 @@ func op_gl_EnableClientState(expr *CXExpression, fp int) {
 func op_gl_BindTexture(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.BindTexture(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_ActiveTexture(expr *CXExpression, fp int) {
+	inp1 := expr.Inputs[0]
+	gl.ActiveTexture(uint32(ReadI32(fp, inp1)))
 }
 
 func op_gl_Ortho(expr *CXExpression, fp int) {
