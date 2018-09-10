@@ -5,6 +5,7 @@ Table of Contents
 
    * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language)
+   * [CX Roadmap](#cx-roadmap)
    * [CX Playground](#cx-playground)
    * [Changelog](#changelog)
    * [Installation](#installation)
@@ -72,6 +73,10 @@ the concept of affordances, where the user can ask the programming
 language at runtime what can be done with a CX object (functions,
 expressions, packages, etc.), and interactively or automatically choose
 one of the affordances to be applied.
+
+# CX Roadmap
+
+![CX Roadmap](http://url/to/img.png)
 
 # CX Playground
 
