@@ -76,7 +76,7 @@ one of the affordances to be applied.
 
 # CX Roadmap
 
-![CX Roadmap](http://url/to/img.png)
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/cx-roadmap.png)
 
 # CX Playground
 
