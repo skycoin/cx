@@ -185,7 +185,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.Rotatef":    true, "gl.Translatef": true, "gl.LoadIdentity": true,
 	"gl.PushMatrix": true, "gl.PopMatrix": true, "gl.EnableClientState": true,
 
-	"gl.BindTexture": true, "gl.ActiveTexture": true,
+	"gl.ActiveTexture": true,
 	"gl.Color3f": true, "gl.Color4f": true, "gl.Begin": true,
 	"gl.End": true, "gl.Normal3f": true, "gl.TexCoord2f": true,
 	"gl.Vertex2f": true, "gl.Vertex3f": true,
@@ -198,6 +198,21 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.BlendFunc": true, "gl.Ortho": true, "gl.Viewport": true,
 	"gl.Scalef": true, "gl.TexCoord2d": true,
 
+	/* gl_1_0 */
+	"gl.TexImage2D": true,
+	"gl.TexParameteri": true,
+
+	/* gl_1_1 */
+	"gl.BindTexture": true,
+	"gl.GenTextures": true,
+	"gl.DeleteTextures": true,
+
+	/* gl_3_0 */
+	"gl.BindFramebuffer": true,
+	"gl.DeleteFramebuffer": true,
+	"gl.GenFramebuffers": true,
+	"gl.CheckFramebufferStatus": true,
+	"gl.FramebufferTexture2D": true,
 	/*
 	   GLFW
 	*/

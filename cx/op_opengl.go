@@ -271,11 +271,6 @@ func op_gl_EnableClientState(expr *CXExpression, fp int) {
 	gl.EnableClientState(uint32(ReadI32(fp, inp1)))
 }
 
-func op_gl_BindTexture(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.BindTexture(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
-}
-
 func op_gl_ActiveTexture(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.ActiveTexture(uint32(ReadI32(fp, inp1)))
@@ -432,4 +427,66 @@ func op_gl_Hint(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.Hint(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
 }
-            
+
+/* gl_1_0 */
+func op_gl_TexImage2D(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7], expr.Inputs[8]
+	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)),  unsafe.Pointer(uintptr(ReadI32(fp, inp9))))
+}
+
+func op_gl_TexParameteri(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	gl.TexParameteri(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), ReadI32(fp, inp3))
+}
+
+/* gl_1_1 */
+func op_gl_BindTexture(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.BindTexture(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_GenTextures(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.GenTextures(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+	outB1 := FromI32(int32(tmp))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_DeleteTextures(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.DeleteTextures(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+}
+
+/* gl_3_0 */
+func op_gl_BindFramebuffer(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.BindFramebuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_DeleteFramebuffers(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.DeleteFramebuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+}
+
+func op_gl_GenFramebuffers(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.GenFramebuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+	outB1 := FromI32(int32(tmp))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_CheckFramebufferStatus(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromI32(int32(gl.CheckFramebufferStatus(uint32(ReadI32(fp, inp1)))))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_FramebufferTexture2D(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4, inp5 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4]
+	gl.FramebufferTexture2D(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)), uint32(ReadI32(fp, inp4)), ReadI32(fp, inp5))
+}
+

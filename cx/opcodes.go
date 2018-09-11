@@ -281,7 +281,6 @@ const (
 	OP_GL_PUSH_MATRIX
 	OP_GL_POP_MATRIX
 	OP_GL_ENABLE_CLIENT_STATE
-	OP_GL_BIND_TEXTURE
 	OP_GL_ACTIVE_TEXTURE
 	OP_GL_COLOR3F
 	OP_GL_COLOR4F
@@ -308,6 +307,22 @@ const (
 	OP_GL_SCALEF
 	OP_GL_TEX_COORD_2D
 	OP_GL_TEX_COORD_2F
+
+	/* gl_1_0 */
+	OP_GL_TEX_IMAGE_2D
+	OP_GL_TEX_PARAMETERI
+
+	/* gl_1_1 */
+	OP_GL_BIND_TEXTURE
+	OP_GL_GEN_TEXTURES
+	OP_GL_DELETE_TEXTURES
+
+	/* gl_3_0 */
+	OP_GL_BIND_FRAMEBUFFER
+	OP_GL_DELETE_FRAMEBUFFERS
+	OP_GL_GEN_FRAMEBUFFERS
+	OP_GL_CHECK_FRAMEBUFFER_STATUS
+	OP_GL_FRAMEBUFFER_TEXTURE_2D
 
 	// glfw
 	OP_GLFW_INIT
@@ -830,8 +845,6 @@ func execNative(prgrm *CXProgram) {
 		op_gl_PopMatrix()
 	case OP_GL_ENABLE_CLIENT_STATE:
 		op_gl_EnableClientState(expr, fp)
-	case OP_GL_BIND_TEXTURE:
-		op_gl_BindTexture(expr, fp)
 	case OP_GL_ACTIVE_TEXTURE:
 		op_gl_ActiveTexture(expr, fp)
 	case OP_GL_COLOR3F:
@@ -882,6 +895,32 @@ func execNative(prgrm *CXProgram) {
 		op_gl_TexCoord2d(expr, fp)
 	case OP_GL_TEX_COORD_2F:
 		op_gl_TexCoord2f(expr, fp)
+
+	/* gl_1_0 */
+	case OP_GL_TEX_IMAGE_2D:
+		op_gl_TexImage2D(expr, fp)
+	case OP_GL_TEX_PARAMETERI:
+		op_gl_TexParameteri(expr, fp)
+
+	/* gl_1_1 */
+	case OP_GL_BIND_TEXTURE:
+		op_gl_BindTexture(expr, fp)
+	case OP_GL_GEN_TEXTURES:
+		op_gl_GenTextures(expr, fp)
+	case OP_GL_DELETE_TEXTURES:
+		op_gl_DeleteTextures(expr, fp)
+
+	/* gl_3_0 */
+	case OP_GL_BIND_FRAMEBUFFER:
+		op_gl_BindFramebuffer(expr, fp)
+	case OP_GL_DELETE_FRAMEBUFFERS:
+		op_gl_DeleteFramebuffers(expr, fp)
+	case OP_GL_GEN_FRAMEBUFFERS:
+		op_gl_GenFramebuffers(expr, fp)
+	case OP_GL_CHECK_FRAMEBUFFER_STATUS:
+		op_gl_CheckFramebufferStatus(expr, fp)
+	case OP_GL_FRAMEBUFFER_TEXTURE_2D:
+		op_gl_FramebufferTexture2D(expr, fp)
 
 		// glfw
 	case OP_GLFW_INIT:
@@ -1177,7 +1216,6 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_PUSH_MATRIX:                "gl.PushMatrix",
 	OP_GL_POP_MATRIX:                 "gl.PopMatrix",
 	OP_GL_ENABLE_CLIENT_STATE:        "gl.EnableClientState",
-	OP_GL_BIND_TEXTURE:               "gl.BindTexture",
 	OP_GL_ACTIVE_TEXTURE:             "gl.ActiveTexture",
 	OP_GL_COLOR3F:                    "gl.Color3f",
 	OP_GL_COLOR4F:                    "gl.Color4f",
@@ -1203,6 +1241,22 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_SCALEF:                     "gl.Scalef",
 	OP_GL_TEX_COORD_2D:               "gl.TexCoord2d",
 	OP_GL_TEX_COORD_2F:               "gl.TexCoord2f",
+
+	/* gl_1_0 */
+	OP_GL_TEX_IMAGE_2D:               "gl.TexImage2D",
+	OP_GL_TEX_PARAMETERI:             "gl.TexParameteri",
+
+	/* gl_1_1 */
+	OP_GL_BIND_TEXTURE:               "gl.BindTexture",
+	OP_GL_GEN_TEXTURES:               "gl.GenTextures",
+	OP_GL_DELETE_TEXTURES:            "gl.DeleteTextures",
+
+	/* gl_3_0 */
+	OP_GL_BIND_FRAMEBUFFER:           "gl.BindFramebuffer",
+	OP_GL_DELETE_FRAMEBUFFERS:        "gl.DeleteFramebuffers",
+	OP_GL_GEN_FRAMEBUFFERS:           "gl.GenFramebuffers",
+	OP_GL_CHECK_FRAMEBUFFER_STATUS:   "gl.CheckFramebufferStatus",
+	OP_GL_FRAMEBUFFER_TEXTURE_2D:     "gl.FramebufferTexture2D",
 
 	// glfw
 	OP_GLFW_INIT:                      "glfw.Init",
@@ -1476,7 +1530,6 @@ var OpCodes map[string]int = map[string]int{
 	"gl.PushMatrix":              OP_GL_PUSH_MATRIX,
 	"gl.PopMatrix":               OP_GL_POP_MATRIX,
 	"gl.EnableClientState":       OP_GL_ENABLE_CLIENT_STATE,
-	"gl.BindTexture":             OP_GL_BIND_TEXTURE,
 	"gl.ActiveTexture":           OP_GL_ACTIVE_TEXTURE,
 	"gl.Color3f":                 OP_GL_COLOR3F,
 	"gl.Color4f":                 OP_GL_COLOR4F,
@@ -1502,6 +1555,22 @@ var OpCodes map[string]int = map[string]int{
 	"gl.Scalef":                  OP_GL_SCALEF,
 	"gl.TexCoord2d":              OP_GL_TEX_COORD_2D,
 	"gl.TexCoord2f":              OP_GL_TEX_COORD_2F,
+
+	/* gl_1_0 */
+	"gl.TexImage2D":              OP_GL_TEX_IMAGE_2D,
+	"gl.TexParameteri":           OP_GL_TEX_PARAMETERI,
+
+	/* gl_1_1 */
+	"gl.BindTexture":             OP_GL_BIND_TEXTURE,
+	"gl.GenTextures":             OP_GL_GEN_TEXTURES,
+	"gl.DeleteTextures":          OP_GL_DELETE_TEXTURES,
+
+	/* gl_3_0 */
+	"gl.BindFramebuffer":         OP_GL_BIND_FRAMEBUFFER,
+	"gl.DeleteFramebuffers":      OP_GL_DELETE_FRAMEBUFFERS,
+	"gl.GenFramebuffers":         OP_GL_GEN_FRAMEBUFFERS,
+	"gl.CheckFramebufferStatus":  OP_GL_CHECK_FRAMEBUFFER_STATUS,
+	"gl.FramebufferTexture2D":    OP_GL_FRAMEBUFFER_TEXTURE_2D,
 
 	// glfw
 	"glfw.Init":                   OP_GLFW_INIT,
@@ -1774,7 +1843,6 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_PUSH_MATRIX:                MakeNative(OP_GL_PUSH_MATRIX, []int{}, []int{}),
 	OP_GL_POP_MATRIX:                 MakeNative(OP_GL_POP_MATRIX, []int{}, []int{}),
 	OP_GL_ENABLE_CLIENT_STATE:        MakeNative(OP_GL_ENABLE_CLIENT_STATE, []int{TYPE_I32}, []int{}),
-	OP_GL_BIND_TEXTURE:               MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_ACTIVE_TEXTURE:             MakeNative(OP_GL_ACTIVE_TEXTURE, []int{TYPE_I32}, []int{}),
 	OP_GL_COLOR3F:                    MakeNative(OP_GL_COLOR3F, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
 	OP_GL_COLOR4F:                    MakeNative(OP_GL_COLOR4F, []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
@@ -1802,6 +1870,22 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_SCALEF:       MakeNative(OP_GL_SCALEF, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{}),
 	OP_GL_TEX_COORD_2D: MakeNative(OP_GL_TEX_COORD_2D, []int{TYPE_F64, TYPE_F64}, []int{}),
 	OP_GL_TEX_COORD_2F: MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{}),
+
+	/* gl_1_0 */
+	OP_GL_TEX_IMAGE_2D:   MakeNative(OP_GL_TEX_IMAGE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_TEX_PARAMETERI: MakeNative(OP_GL_TEX_PARAMETERI, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+
+	/* gl_1_1 */
+	OP_GL_BIND_TEXTURE:     MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_GEN_TEXTURES:     MakeNative(OP_GL_GEN_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_TEXTURES:  MakeNative(OP_GL_DELETE_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+
+	/* gl_3_0 */
+	OP_GL_BIND_FRAMEBUFFER:         MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_FRAMEBUFFERS:      MakeNative(OP_GL_DELETE_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_GEN_FRAMEBUFFERS:         MakeNative(OP_GL_GEN_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_CHECK_FRAMEBUFFER_STATUS: MakeNative(OP_GL_CHECK_FRAMEBUFFER_STATUS, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_FRAMEBUFFER_TEXTURE_2D:   MakeNative(OP_GL_FRAMEBUFFER_TEXTURE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 
 	// glfw
 	OP_GLFW_INIT:                      MakeNative(OP_GLFW_INIT, []int{}, []int{}),
