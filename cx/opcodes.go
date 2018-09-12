@@ -244,10 +244,6 @@ const (
 	// opengl
 	OP_GL_INIT
 	OP_GL_GET_ERROR
-	OP_GL_BIND_ATTRIB_LOCATION
-	OP_GL_GET_ATTRIB_LOCATION
-	OP_GL_GET_UNIFORM_LOCATION
-	OP_GL_UNIFORM_1I
 	OP_GL_CULL_FACE
 	OP_GL_CREATE_PROGRAM
 	OP_GL_DELETE_PROGRAM
@@ -317,6 +313,13 @@ const (
 	OP_GL_GEN_TEXTURES
 	OP_GL_DELETE_TEXTURES
 
+	/* gl_2_0 */
+	OP_GL_BIND_ATTRIB_LOCATION
+	OP_GL_GET_ATTRIB_LOCATION
+	OP_GL_GET_UNIFORM_LOCATION
+	OP_GL_UNIFORM_1F
+	OP_GL_UNIFORM_1I
+
 	/* gl_3_0 */
 	OP_GL_BIND_FRAMEBUFFER
 	OP_GL_DELETE_FRAMEBUFFERS
@@ -341,6 +344,7 @@ const (
 	OP_GLFW_SET_CURSOR_POS_CALLBACK
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
+	OP_GLFW_SET_WINDOW_POS
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
@@ -765,20 +769,12 @@ func execNative(prgrm *CXProgram) {
 		op_aff_print(expr, fp)
 	case OP_AFF_QUERY:
 		op_aff_query(expr, fp)
-		
-		// opengl
+
+	// opengl
 	case OP_GL_INIT:
 		op_gl_Init()
 	case OP_GL_GET_ERROR:
 		op_gl_GetError(expr, fp)
-	case OP_GL_BIND_ATTRIB_LOCATION:
-		op_gl_BindAttribLocation(expr, fp)
-	case OP_GL_GET_ATTRIB_LOCATION:
-		op_gl_GetAttribLocation(expr, fp)
-	case OP_GL_GET_UNIFORM_LOCATION:
-		op_gl_GetUniformLocation(expr, fp)
-	case OP_GL_UNIFORM_1I:
-		op_gl_Uniform1i(expr, fp)
 	case OP_GL_CULL_FACE:
 		op_gl_CullFace(expr, fp)
 	case OP_GL_CREATE_PROGRAM:
@@ -910,6 +906,18 @@ func execNative(prgrm *CXProgram) {
 	case OP_GL_DELETE_TEXTURES:
 		op_gl_DeleteTextures(expr, fp)
 
+	/* gl_2_0 */
+	case OP_GL_BIND_ATTRIB_LOCATION:
+		op_gl_BindAttribLocation(expr, fp)
+	case OP_GL_GET_ATTRIB_LOCATION:
+		op_gl_GetAttribLocation(expr, fp)
+	case OP_GL_GET_UNIFORM_LOCATION:
+		op_gl_GetUniformLocation(expr, fp)
+	case OP_GL_UNIFORM_1F:
+		op_gl_Uniform1f(expr, fp)
+	case OP_GL_UNIFORM_1I:
+		op_gl_Uniform1i(expr, fp)
+
 	/* gl_3_0 */
 	case OP_GL_BIND_FRAMEBUFFER:
 		op_gl_BindFramebuffer(expr, fp)
@@ -955,7 +963,9 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_GetCursorPos(expr, fp)
 	case OP_GLFW_SET_INPUT_MODE:
 		op_glfw_SetInputMode(expr, fp)
-
+	case OP_GLFW_SET_WINDOW_POS:
+		op_glfw_SetWindowPos(expr, fp)
+	
 		// gltext
 	case OP_GLTEXT_LOAD_TRUE_TYPE:
 		op_gltext_LoadTrueType(expr, fp)
@@ -1179,10 +1189,6 @@ var OpNames map[int]string = map[int]string{
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
 	OP_GL_GET_ERROR:                  "gl.GetError",
-	OP_GL_BIND_ATTRIB_LOCATION:       "gl.BindAttribLocation",
-	OP_GL_GET_ATTRIB_LOCATION:        "gl.GetAttribLocation",
-	OP_GL_GET_UNIFORM_LOCATION:       "gl.GetUniformLocation",
-	OP_GL_UNIFORM_1I:                 "gl.Uniform1i",
 	OP_GL_CULL_FACE:                  "gl.CullFace",
 	OP_GL_CREATE_PROGRAM:             "gl.CreateProgram",
 	OP_GL_DELETE_PROGRAM:             "gl.DeleteProgram",
@@ -1251,6 +1257,13 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_GEN_TEXTURES:               "gl.GenTextures",
 	OP_GL_DELETE_TEXTURES:            "gl.DeleteTextures",
 
+	/* gl_2_0 */
+	OP_GL_BIND_ATTRIB_LOCATION:       "gl.BindAttribLocation",
+	OP_GL_GET_ATTRIB_LOCATION:        "gl.GetAttribLocation",
+	OP_GL_GET_UNIFORM_LOCATION:       "gl.GetUniformLocation",
+	OP_GL_UNIFORM_1F:                 "gl.Uniform1f",
+	OP_GL_UNIFORM_1I:                 "gl.Uniform1i",
+
 	/* gl_3_0 */
 	OP_GL_BIND_FRAMEBUFFER:           "gl.BindFramebuffer",
 	OP_GL_DELETE_FRAMEBUFFERS:        "gl.DeleteFramebuffers",
@@ -1275,6 +1288,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_SET_CURSOR_POS_CALLBACK:   "glfw.SetCursorPosCallback",
 	OP_GLFW_GET_CURSOR_POS:            "glfw.GetCursorPos",
 	OP_GLFW_SET_INPUT_MODE:            "glfw.SetInputMode",
+	OP_GLFW_SET_WINDOW_POS:            "glfw.SetWindowPos",
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
@@ -1493,10 +1507,6 @@ var OpCodes map[string]int = map[string]int{
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
 	"gl.GetError":                OP_GL_GET_ERROR,
-	"gl.BindAttribLocation":      OP_GL_BIND_ATTRIB_LOCATION,
-	"gl.GetAttribLocation":       OP_GL_GET_ATTRIB_LOCATION,
-	"gl.GetUniformLocation":      OP_GL_GET_UNIFORM_LOCATION,
-	"gl.Uniform1i":               OP_GL_UNIFORM_1I,
 	"gl.CullFace":                OP_GL_CULL_FACE,
 	"gl.CreateProgram":           OP_GL_CREATE_PROGRAM,
 	"gl.DeleteProgram":           OP_GL_DELETE_PROGRAM,
@@ -1565,6 +1575,13 @@ var OpCodes map[string]int = map[string]int{
 	"gl.GenTextures":             OP_GL_GEN_TEXTURES,
 	"gl.DeleteTextures":          OP_GL_DELETE_TEXTURES,
 
+	/* gl_2_0 */
+	"gl.BindAttribLocation":      OP_GL_BIND_ATTRIB_LOCATION,
+	"gl.GetAttribLocation":       OP_GL_GET_ATTRIB_LOCATION,
+	"gl.GetUniformLocation":      OP_GL_GET_UNIFORM_LOCATION,
+	"gl.Uniform1f":               OP_GL_UNIFORM_1F,
+	"gl.Uniform1i":               OP_GL_UNIFORM_1I,
+
 	/* gl_3_0 */
 	"gl.BindFramebuffer":         OP_GL_BIND_FRAMEBUFFER,
 	"gl.DeleteFramebuffers":      OP_GL_DELETE_FRAMEBUFFERS,
@@ -1589,6 +1606,7 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.SetCursorPosCallback":   OP_GLFW_SET_CURSOR_POS_CALLBACK,
 	"glfw.GetCursorPos":           OP_GLFW_GET_CURSOR_POS,
 	"glfw.SetInputMode":           OP_GLFW_SET_INPUT_MODE,
+	"glfw.SetWindowPos":           OP_GLFW_SET_WINDOW_POS,
 
 	// gltext
 	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
@@ -1806,10 +1824,6 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
 	OP_GL_GET_ERROR:                  MakeNative(OP_GL_GET_ERROR, []int{}, []int{TYPE_I32}),
-	OP_GL_BIND_ATTRIB_LOCATION:       MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
-	OP_GL_GET_ATTRIB_LOCATION:        MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
-	OP_GL_GET_UNIFORM_LOCATION:       MakeNative(OP_GL_GET_UNIFORM_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
-	OP_GL_UNIFORM_1I:                 MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CULL_FACE:                  MakeNative(OP_GL_CULL_FACE, []int{TYPE_I32}, []int{}),
 	OP_GL_CREATE_PROGRAM:             MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32}),
 	OP_GL_DELETE_PROGRAM:             MakeNative(OP_GL_DELETE_PROGRAM, []int{TYPE_I32}, []int{}),
@@ -1880,6 +1894,13 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_GEN_TEXTURES:     MakeNative(OP_GL_GEN_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_DELETE_TEXTURES:  MakeNative(OP_GL_DELETE_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 
+	/* gl_2_0 */
+	OP_GL_BIND_ATTRIB_LOCATION:       MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
+	OP_GL_GET_ATTRIB_LOCATION:        MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
+	OP_GL_GET_UNIFORM_LOCATION:       MakeNative(OP_GL_GET_UNIFORM_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32}),
+	OP_GL_UNIFORM_1F:                 MakeNative(OP_GL_UNIFORM_1F, []int{TYPE_I32, TYPE_F32}, []int{}),
+	OP_GL_UNIFORM_1I:                 MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{}),
+
 	/* gl_3_0 */
 	OP_GL_BIND_FRAMEBUFFER:         MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_DELETE_FRAMEBUFFERS:      MakeNative(OP_GL_DELETE_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
@@ -1904,7 +1925,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_SET_CURSOR_POS_CALLBACK:   MakeNative(OP_GLFW_SET_CURSOR_POS_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{}),
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
-
+	OP_GLFW_SET_WINDOW_POS:            MakeNative(OP_GLFW_SET_WINDOW_POS, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),

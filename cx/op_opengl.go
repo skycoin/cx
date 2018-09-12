@@ -29,31 +29,6 @@ func op_gl_GetError(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_gl_BindAttribLocation(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	xstr := cSources[ReadStr(fp, inp3)]
-	gl.BindAttribLocation(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), *xstr)
-}
-
-func op_gl_GetAttribLocation(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-func op_gl_GetUniformLocation(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-func op_gl_Uniform1i(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Uniform1i(ReadI32(fp, inp1), ReadI32(fp, inp2))
-}
-
 func op_gl_CullFace(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.CullFace(uint32(ReadI32(fp, inp1)))
@@ -458,6 +433,38 @@ func op_gl_DeleteTextures(expr *CXExpression, fp int) {
 	tmp := uint32(ReadI32(fp, inp2))
 	gl.DeleteTextures(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 }
+
+/* gl_2_0 */
+func op_gl_BindAttribLocation(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	xstr := cSources[ReadStr(fp, inp3)]
+	gl.BindAttribLocation(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), *xstr)
+}
+
+func op_gl_GetAttribLocation(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	xstr := cSources[ReadStr(fp, inp2)]
+	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, inp1)), *xstr))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_GetUniformLocation(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	xstr := cSources[ReadStr(fp, inp2)]
+	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, inp1)), *xstr))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_Uniform1f(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.Uniform1f(ReadI32(fp, inp1), ReadF32(fp, inp2))
+}
+
+func op_gl_Uniform1i(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.Uniform1i(ReadI32(fp, inp1), ReadI32(fp, inp2))
+}
+
 
 /* gl_3_0 */
 func op_gl_BindFramebuffer(expr *CXExpression, fp int) {

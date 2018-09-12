@@ -38,6 +38,11 @@ func op_glfw_CreateWindow(expr *CXExpression, fp int) {
 	}
 }
 
+func op_glfw_SetWindowPos(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	windows[ReadStr(fp, inp1)].SetPos(int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
+}
+
 func op_glfw_MakeContextCurrent(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	windows[ReadStr(fp, inp1)].MakeContextCurrent()

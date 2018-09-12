@@ -166,8 +166,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	/*
 	   OpenGL
 	*/
-	"gl.Init": true, "gl.GetError": true, "gl.BindAttribLocation": true, "gl.GetAttribLocation": true,
-	"gl.GetUniformLocation": true,
+	"gl.Init": true, "gl.GetError": true,
 	"gl.CullFace": true, "gl.CreateProgram": true, "gl.DeleteProgram": true, "gl.LinkProgram": true,
 	"gl.Clear": true, "gl.UseProgram": true,
 
@@ -207,6 +206,13 @@ var NATIVE_FUNCTIONS = map[string]bool{
 	"gl.GenTextures": true,
 	"gl.DeleteTextures": true,
 
+	/* gl_2_0 */
+	"gl.BindAttribLocation": true,
+	"gl.GetAttribLocation": true,
+	"gl.GetUniformLocation": true,
+	"gl.UNiform1f": true,
+	"gl.Uniform1i": true,
+
 	/* gl_3_0 */
 	"gl.BindFramebuffer": true,
 	"gl.DeleteFramebuffer": true,
@@ -223,7 +229,7 @@ var NATIVE_FUNCTIONS = map[string]bool{
 
 	"glfw.SetKeyCallback": true, "glfw.GetTime": true, "glfw.SetMouseButtonCallback": true,
 	"glfw.SetCursorPosCallback": true, "glfw.GetCursorPos": true, "glfw.SetInputMode": true,
-	"glfw.GetKey": true,
+	"glfw.GetKey": true, "glfw.SetWindowPos": true,
 
 	/*
 	   Operating System
