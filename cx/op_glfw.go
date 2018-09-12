@@ -161,11 +161,49 @@ func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
 
 func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	prgrm := expr.Program
 
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
-			// TODO
-			_ = fn
+			var winName []byte
+			for key, win := range windows {
+				if w == win {
+					winName = []byte(key)
+					break
+				}
+			}
+
+			if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
+				return
+			}
+
+			var inps [][]byte = make([][]byte, 5)
+
+			inps[0] = winName
+			inps[1] = FromI32(int32(key))
+			inps[2] = FromI32(int32(action))
+			inps[3] = FromI32(int32(mods))
+
+			prgrm.CallCounter++
+			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			newCall.Operator = fn
+			newCall.Line = 0
+			newCall.FramePointer = prgrm.StackPointer
+			prgrm.StackPointer += newCall.Operator.Size
+
+			newFP := newCall.FramePointer
+
+			// wiping next mem frame (removing garbage)
+			for c := 0; c < expr.Operator.Size; c++ {
+				prgrm.Memory[newFP+c] = 0
+			}
+
+
+			for i, inp := range inps {
+				WriteMemory(
+					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
+					inp)
+			}
 		}
 	}
 
