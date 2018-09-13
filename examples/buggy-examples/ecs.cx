@@ -33,20 +33,21 @@ type World struct {
 }
 
 func createEntity (world World) (entity i32) {
-	entityCount := []i32.len(world.mask)
+	entityCount := len(world.mask)
 
 	var entity i32
 	for entity = 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
-		mask := []i32.read(world.mask, entity)
+		var mask i32
+		mask = world.mask[entity]
 		if i32.eq(mask, COMPONENT_NONE) {
 			return entity
 		}
 	}
-	halt("No more entities left")
+	//halt("No more entities left")
 }
 
 func destroyEntity (world World, entity i32) () {
-	[]i32.write(world, entity, COMPONENT_NONE)
+	world[entity] = COMPONENT_NONE
 }
 
 // Entities
@@ -61,9 +62,11 @@ func createTree (world World, x i32, y i32) (entity i32, newWorld World) {
 	var app Appearance
 	app.name = "Tree"
 
-	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE))
-	world.displacement = []Displacement.write(world.displacement, entity, disp)
-	world.appearance = []Appearance.write(world.appearance, entity, app)
+
+	world.mask[entity] = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE)
+	
+	world.displacement[entity] = disp
+	world.appearance[entity] = app
 	
 	newWorld = world
 }
@@ -82,17 +85,17 @@ func createBox (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWorld
 	var app Appearance
 	app.name = "Box"
 
-	[]i32.write(world.mask, entity, i32.bitor(i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE), COMPONENT_VELOCITY))
-	world.displacement = []Displacement.write(world.displacement, entity, disp)
-	world.velocity = []Velocity.write(world.velocity, entity, vel)
-	world.appearance = []Appearance.write(world.appearance, entity, app)
-
+	world.mask[entity] = i32.bitor(i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE), COMPONENT_VELOCITY)
+	world.displacement[entity] = disp
+	world.velocity[entity] = vel
+	world.appearance[entity] = app
 	newWorld = world
 }
 
 func createGhost (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWorld World) {
 	entity := createEntity(world)
-	[]i32.write(world.mask, entity, i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY))
+
+	world.mask[entity] = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY)
 
 	var disp Displacement
 	displacement.x = x
@@ -102,8 +105,8 @@ func createGhost (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWor
 	velocity.x = vx
 	velocity.y = vy
 
-	world.displacement = []Displacement.write(world.displacement, entity, disp)
-	world.velocity = []Velocity.write(world.velocity, entity, vel)
+	world.displacement[entity] = disp 
+	world.velocity[entity] = vel
 
 	newWorld = world
 }
@@ -112,18 +115,18 @@ func createGhost (world World, x i32, y i32, vx i32, vy i32) (entity i32, newWor
 
 func movementFunction (world World) (newWorld World) {
 	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
-		mask := []i32.read(world.mask, entity)
+		mask := world.mask[entity]
 		if i32.eq(i32.bitand(mask, MOVEMENT_MASK), MOVEMENT_MASK) {			
-			displacement := []Displacement.read(world.displacement, entity)
-			velocity := []Velocity.read(world.velocity, entity)
+			displacement := world.displacement[entity]
+			velocity := world.velocity[entity]
 
 			velocity.y = i32.sub(velocity.y, 1)
 
 			displacement.x = i32.add(displacement.x, velocity.x)
 			displacement.y = i32.add(displacement.y, velocity.y)
 
-			world.displacement = []Displacement.write(world.displacement, entity, displacement)
-			world.velocity = []Velocity.write(world.velocity, entity, velocity)
+			world.displacement[entity] = displacement
+			world.velocity[entity] = velocity
 		}
 	}
 	newWorld = world
@@ -131,13 +134,12 @@ func movementFunction (world World) (newWorld World) {
 
 func renderFunction (world World) () {
 	for entity := 0; i32.lt(entity, entityCount); entity = i32.add(entity, 1) {
-		mask := []i32.read(world.mask, entity)
+		mask := world.mask[entity]
 		if i32.eq(i32.bitand(mask, RENDER_MASK), RENDER_MASK) {
 			
-			displacement := []Displacement.read(world.displacement, entity)
+			displacement := world.displacement[entity]
 			
-			appearance := []Appearance.read(world.appearance, entity)
-
+			appearance := world.appearance[entity]
 			coords := str.concat(str.concat(str.concat(str.concat("(", i32.str(displacement.x)), ", "), i32.str(displacement.y)), ")")
 			
 			str.print(str.concat(str.concat(appearance.name, " is at "), coords))
@@ -159,10 +161,10 @@ func init () (world World) {
 	MOVEMENT_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_VELOCITY)
 	RENDER_MASK = i32.bitor(COMPONENT_DISPLACEMENT, COMPONENT_APPEARANCE)
 
-	world.mask = []i32.make(entityCount)
-	world.displacement = []Displacement.make(entityCount)
-	world.velocity = []Velocity.make(entityCount)
-	world.appearance = []Appearance.make(entityCount)
+//	world.mask = []i32.make(entityCount)
+//	world.displacement = []Displacement.make(entityCount)
+//	world.velocity = []Velocity.make(entityCount)
+//	world.appearance = []Appearance.make(entityCount)
 }
 
 func main () () {

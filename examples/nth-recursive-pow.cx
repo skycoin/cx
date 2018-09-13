@@ -1,0 +1,15 @@
+package main 
+
+func NthPow(in f32, pows i32) (out f32) {
+    if i32.eq(pows, 0) {
+        out = 1.0
+    } else {
+        out = f32.mul(in , NthPow(in, i32.sub(pows, 1)))
+    }
+}
+
+func main () () {
+    str.print("Nth Pow Recursive")
+    str.print("Test with 4^4: ")
+    f32.print(NthPow(4.0, 4))
+}

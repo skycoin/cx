@@ -22,7 +22,7 @@ func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
 	return prgrm
 }
 
-func (mod *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
+func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
 	def.Program = mod.Program
 	def.Package = mod
 	found := false
@@ -89,7 +89,7 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 		if s.Name == strct.Name {
 			pkg.Structs[i] = strct
 			// pkg.Structs[i].Fields = strct.Fields
-			// *strct = *pkg.Structs[i]
+			// strct = pkg.Structs[i]
 			found = true
 			break
 		}

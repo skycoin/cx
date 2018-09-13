@@ -1,0 +1,16 @@
+package main 
+
+func MinToSeconds(in f32) (out f32){
+    out = in * 60.0
+}
+
+func MinToHours(in f32) (out f32){
+    out  = in / 60.0
+}
+
+func main () () {
+    str.print("Convert Min to Seconds and Hours")
+    str.print("Test with 8368 Min to Hours (first) and Seconds (second): ")
+    f32.print(MinToHours(8368.0))
+    f32.print(MinToSeconds(8368.0))
+}

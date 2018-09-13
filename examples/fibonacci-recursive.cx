@@ -1,0 +1,15 @@
+package main 
+
+func fib (n i32) (out i32) {
+    if i32.lt(n, 2) {
+        out = i32.add(0, n)
+    } else {
+        out = i32.add(fib(i32.sub(n, 1)), fib(i32.sub(n, 2)))
+    }
+}
+
+func main () () {
+    str.print("Fibonacci")
+    i32.print(fib(6))
+    
+}

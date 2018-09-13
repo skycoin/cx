@@ -1656,7 +1656,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 
 	OP_TEST_START: MakeNative(OP_TEST_START, []int{}, []int{}),
 	OP_TEST_STOP:  MakeNative(OP_TEST_START, []int{}, []int{}),
-	OP_ASSERT:     MakeNative(OP_ASSERT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{}),
+	OP_ASSERT:     MakeNative(OP_ASSERT, []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL}),
 
 	// slices
 	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),

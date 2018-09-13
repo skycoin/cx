@@ -40,13 +40,13 @@ func (coin Coin) Draw () {
 	gl.BindTexture(gl.TEXTURE_2D, COIN_TEXTURE)
 	gl.Scalef(0.05, 0.05, 0.0)
 	gl.Begin(gl.QUADS)
-	gl.TexCoord2d(0.0, 0.0)
+	gl.TexCoord2d(0.0D, 0.0D)
 	gl.Vertex3f(-1.0, 1.0, 0.0)
-	gl.TexCoord2d(1.0, 0.0)
+	gl.TexCoord2d(1.0D, 0.0D)
 	gl.Vertex3f(1.0, 1.0, 0.0)
-	gl.TexCoord2d(1.0, 1.0)
+	gl.TexCoord2d(1.0D, 1.0D)
 	gl.Vertex3f(1.0, -1.0, 0.0)
-	gl.TexCoord2d(0.0, 1.0)
+	gl.TexCoord2d(0.0D, 1.0D)
 	gl.Vertex3f(-1.0, -1.0, 0.0)
 	gl.End()
 }
@@ -58,13 +58,13 @@ func (star Star) Draw () {
 	gl.BindTexture(gl.TEXTURE_2D, STAR_TEXTURE)
 	gl.Scalef(0.05, 0.05, 0.0)
 	gl.Begin(gl.QUADS)
-	gl.TexCoord2d(0.0, 0.0)
+	gl.TexCoord2d(0.0D, 0.0D)
 	gl.Vertex3f(-1.0, 1.0, 0.0)
-	gl.TexCoord2d(1.0, 0.0)
+	gl.TexCoord2d(1.0D, 0.0D)
 	gl.Vertex3f(1.0, 1.0, 0.0)
-	gl.TexCoord2d(1.0, 1.0)
+	gl.TexCoord2d(1.0D, 1.0D)
 	gl.Vertex3f(1.0, -1.0, 0.0)
-	gl.TexCoord2d(0.0, 1.0)
+	gl.TexCoord2d(0.0D, 1.0D)
 	gl.Vertex3f(-1.0, -1.0, 0.0)
 	gl.End()
 }
@@ -72,8 +72,8 @@ func (star Star) Draw () {
 func keyPress (window str, key i32, scancode i32, action i32, mods i32) {
 	// 77 is the keycode corresponding to keyboard key "m"
 	if key == 77 && action == 1 {
-		for c := 0; c < []Coin.len(coins); c++ {
-			coin := []Coin.read(coins, c)
+		for c := 0; c < len(coins); c++ {
+			coin := coins[c]
 			coin.Move()
 		}
 	}

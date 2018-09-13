@@ -220,7 +220,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.12"
+const VERSION = "0.5.13"
 
 var currentFileName string
 var insert bool
@@ -467,8 +467,6 @@ func repl () {
 		var inp string
 		var ok bool
 
-		// fmt.Println()
-
 		if ReplTargetMod != "" {
 			fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
 			fmt.Printf("* ")
@@ -493,35 +491,9 @@ func repl () {
 				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", ReplTargetStrct, inp)
 			}
 
-			// var numExprs int
-			// var currFn string
-			// if fn, err := PRGRM.GetCurrentFunction(); err == nil {
-			// 	currFn = fn.Name
-			// 	numExprs = len(fn.Expressions)
-			// }
-			
 			b := bytes.NewBufferString(inp)
 
 			yyParse(NewLexer(b))
-
-			// PRGRM.PrintProgram()
-
-			// var numExprsAdded int
-			// if fn, err := PRGRM.GetCurrentFunction(); err == nil {
-			// 	numExprsAdded = len(fn.Expressions) - numExprs
-			// }
-
-			// if numExprsAdded > 0 && currFn == MAIN_FUNC {
-			// 	if fn, err := PRGRM.GetCurrentFunction(); err == nil {
-			// 		for true {
-			// 			PRGRM.RunInterpreted(dStack, 1)
-						
-			// 			if len(PRGRM.CallStack) == 1 && PRGRM.CallStack[0].Line == len(fn.Expressions) {
-			// 				break
-			// 			}
-			// 		}
-			// 	}
-			// }
 		} else {
 			if ReplTargetFn != "" {
 				ReplTargetFn = ""
@@ -728,24 +700,214 @@ func main () {
 		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
+	var prePkg *CXPackage
+	
 	if len(sourceCode) > 0 {
-		allSC := strings.Join(sourceCodeCopy, "")
-
-		rePkg := regexp.MustCompile("(package)\\s([.\\[\\]a-zA-Z0-9_]+)")
-
-		// the actual pass 0, but so small I'm not going to count it as another pass
-		for _, match := range rePkg.FindAllStringSubmatch(allSC, -1) {
-			pkg := MakePackage(match[len(match) - 1])
-			cxgo0.PRGRM0.AddPackage(pkg)
-
-			// reStrct := regexp.MustCompile("(type)\\s([.\\[\\]a-zA-Z0-9_]+)")
-
-			// for _, match := range reStrct.FindAllStringSubmatch(allSC, -1) {
-			// 	strct := MakeStruct(match[len(match) - 1])
-			// 	pkg.AddStruct(strct)
-			// }
-		}
+		// we need to traverse the elements by hierarchy
+		// first add all the packages and structs at the same time
+		// then add globals, as these can be of a custom type (and it could be imported)
+		// the signatures of functions and methods are added in the cxgo0.y pass
 		
+		// identifying all the packages and structs first
+
+		reMultiCommentOpen := regexp.MustCompile(`/\*`)
+		reMultiCommentClose := regexp.MustCompile(`\*/`)
+		
+		for _, source := range sourceCodeCopy {
+			reader := strings.NewReader(source)
+			scanner := bufio.NewScanner(reader)
+			var commentedCode bool
+			for scanner.Scan() {
+				line := scanner.Bytes()
+				
+				rePkg := regexp.MustCompile("package")
+				reStrct := regexp.MustCompile("type")
+				
+				reComment := regexp.MustCompile("//")
+				commentLoc := reComment.FindIndex(line)
+				
+				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+				multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+				if commentedCode && multiCommentCloseLoc != nil {
+					commentedCode = false
+				}
+
+				if commentedCode {
+					continue
+				}
+
+				if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+					commentedCode = true
+					continue
+				}
+
+				if loc := rePkg.FindIndex(line); loc != nil {
+					if commentLoc != nil && commentLoc[0] < loc[0] {
+						// then it's commented out
+						continue
+					}
+
+					
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+
+					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+							// then it hasn't been added
+							newPkg := MakePackage(match[len(match) - 1])
+							cxgo0.PRGRM0.AddPackage(newPkg)
+							prePkg = newPkg
+						} else {
+							prePkg = pkg
+						}
+					}
+				}
+				if loc := reStrct.FindIndex(line); loc != nil {
+					if commentLoc != nil && commentLoc[0] < loc[0] {
+						// then it's commented out
+						continue
+					}
+
+					reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]+)?\\s")
+
+					if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
+						if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
+							// then it hasn't been added
+							strct := MakeStruct(match[len(match) - 1])
+							prePkg.AddStruct(strct)
+						}
+					}
+				}
+			}
+		}
+
+		// then we add globals. we also identify packages again,
+		// so we know to what package we're going to add the struct declaration to
+		for _, source := range sourceCodeCopy {
+			scanner := bufio.NewScanner(strings.NewReader(source))
+			// inBlock needs to be 0 to guarantee that we're in the global scope
+			var inBlock int
+
+			var commentedCode bool
+			
+			for scanner.Scan() {
+				line := scanner.Bytes()
+				
+				rePkg := regexp.MustCompile("package")
+				reGlbl := regexp.MustCompile("var")
+
+				// we need to ignore function bodies
+				// it'll also ignore struct declaration's bodies, but this doesn't matter
+				reBodyOpen := regexp.MustCompile("{")
+				reBodyClose := regexp.MustCompile("}")
+				
+				reComment := regexp.MustCompile("//")
+				commentLoc := reComment.FindIndex(line)
+				
+				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+				multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+				if commentedCode && multiCommentCloseLoc != nil {
+					commentedCode = false
+				}
+
+				if commentedCode {
+					continue
+				}
+
+				if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+					commentedCode = true
+					continue
+				}
+
+				// we search for packages at the same time, so we can know to what package to add the global
+				if loc := rePkg.FindIndex(line); loc != nil {
+					if commentLoc != nil && commentLoc[0] < loc[0] {
+						// then it's commented out
+						continue
+					}
+					
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+
+					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+							// then it hasn't been added
+							prePkg = MakePackage(match[len(match) - 1])
+							cxgo0.PRGRM0.AddPackage(prePkg)
+						} else {
+							prePkg = pkg
+						}
+					}
+				}
+				
+				if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+					for _, loc := range locs {
+						if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+							// then it's outside of a */, e.g. `*/ }`
+							if ((commentLoc == nil) || commentLoc != nil && commentLoc[0] > loc[0]) {
+								// then we have an uncommented opening bracket
+								inBlock++
+							}
+						}
+					}
+				}
+
+				if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+					for _, loc := range locs {
+						if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+							if ((commentLoc == nil) || commentLoc != nil && commentLoc[0] > loc[0]) {
+								// then we have an uncommented closing bracket
+								inBlock--
+							}
+						}
+					}
+				}
+
+				// we could have this situation: {var local i32}
+				// but we don't care about this, as the later passes will throw an error as it's invalid syntax
+				
+				if loc := rePkg.FindIndex(line); loc != nil {
+					if commentLoc != nil && commentLoc[0] < loc[0] {
+						// then it's commented out
+						continue
+					}
+					
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+
+
+					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+							// it should be already present
+							panic(err)
+						} else {
+							prePkg = pkg
+						}
+					}
+				}
+
+				// finally, if we read a "var" and we're in global scope, we add the global without any type
+				// the type will be determined later on
+				if loc := reGlbl.FindIndex(line); loc != nil {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) || inBlock != 0 {
+						// then it's commented out or inside a block
+						continue
+					}
+
+					reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]+)")
+
+					if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
+						if _, err := prePkg.GetGlobal(match[len(match) - 1]); err != nil {
+							// then it hasn't been added
+							arg := MakeArgument(match[len(match) - 1], "", 0)
+							arg.Offset = -1
+							arg.Package = prePkg
+							prePkg.AddGlobal(arg)
+						}
+					}
+				}
+			}
+		}
+
 		// cxgo0.Parse(allSC)
 		for i, source := range sourceCodeCopy {
 			source = source + "\n"
@@ -757,7 +919,7 @@ func main () {
 	}
 
 	PRGRM = cxgo0.PRGRM0
-	// DataOffset = cxgo0.dataOffset
+	// DataOffset = cxgo0.DataOffset0
 
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {

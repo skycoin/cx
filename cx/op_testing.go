@@ -7,8 +7,7 @@ import (
 
 func op_assert_value(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	
-
+	out1 := expr.Outputs[0]
 	var byts1, byts2 []byte
 	
 	if inp1.Type == TYPE_STR {
@@ -49,4 +48,6 @@ func op_assert_value(expr *CXExpression, fp int) {
 	} else {
 
 	}
+
+	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }

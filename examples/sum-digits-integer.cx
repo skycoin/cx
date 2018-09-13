@@ -1,0 +1,12 @@
+package main
+
+func Sum(i i32, base i32) (out i32){
+    out = 0 
+    for ; i32.gt(i, 0); i = i32.div(i, base) {
+        out = i32.add(out, (i32.mod(i, base)))
+    }
+}
+
+func main () () {
+    i32.print(Sum(1234, 10))
+}

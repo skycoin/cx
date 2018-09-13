@@ -1,7 +1,8 @@
 package main
+import "time"
 
 func factorial (num i64) (fact i64) {
-	fact = 0
+	fact = 0L
 	if i64.eq(num, 1L) {
 		fact = 1L
 	} else {
