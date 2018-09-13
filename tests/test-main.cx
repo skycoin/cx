@@ -29,5 +29,16 @@ func main () {
 	var end i64
 	end = time.UnixNano()
 
+	// counting successful tests
+	var successfulTests i32
+	for c := 0; c < len(res); c++ {
+		if res[c] {
+			successfulTests = successfulTests + 1
+		}
+	}
+	
 	printf("Tests finished after %d nanoseconds (%f milliseconds)\n\n", i64.sub(end, start), f64.div(i64.f64(end-start), 1000000.0D))
+	printf("A total of %d tests were performed\n", len(res))
+	printf("%d were successful\n", successfulTests)
+	printf("%d failed\n", len(res) - successfulTests)
 }

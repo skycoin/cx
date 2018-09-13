@@ -1,0 +1,14 @@
+package main
+
+func main () () {
+    var i i32
+    for i = 1; i32.lteq(i, 6); i = i32.add(i, 1){
+        if i32.eq(i32.mod(i, 2), 0) {
+            str.print("Even")
+            i32.print(i)
+        } else {
+            str.print("Odd")
+            i32.print(i)
+        }
+    }
+}

@@ -1,5 +1,5 @@
 %{
-	package cxgo0
+	package main
 	import (
 		// "fmt"
 		"bytes"
@@ -119,7 +119,8 @@
 
                         DEC_OP INC_OP PTR_OP LEFT_OP RIGHT_OP
                         GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
-                        ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
+                        ADD_ASSIGN
+                        AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
                         MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
                         SUB_ASSIGN XOR_ASSIGN
                         BOOL BYTE F32 F64
@@ -142,7 +143,7 @@
                         /* Affordances */
                         AFF CAFF TAG INFER VALUE
                         /* Pointers */
-                        ADDR
+                        // ADDR
 
 %type   <tok>           unary_operator
 %type   <i>             type_specifier
@@ -187,47 +188,11 @@ stepping:       TSTEP INT_LITERAL INT_LITERAL
 global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
-			DeclareGlobal($2, $3, nil, false)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	var expr []*CXExpression
-			// 	if $3.IsSlice {
-			// 		expr = WritePrimary($3.Type, make([]byte, $3.Size), true)
-			// 	} else {
-			// 		expr = WritePrimary($3.Type, make([]byte, $3.TotalSize), true)
-			// 	}
-
-			// 	exprOut := expr[0].Outputs[0]
-			// 	$3.Name = $2.Name
-			// 	$3.Offset = exprOut.Offset
-
-			// 	$3.Size = exprOut.Size
-			// 	$3.TotalSize = exprOut.TotalSize
-			// 	$3.Package = exprOut.Package
-
-			// 	pkg.AddGlobal($3)
-			// } else {
-			// 	panic(err)
-			// }
-			// DeclareGlobal($2, $3, nil, false)
+                
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			// DeclareGlobal($2, $2, $5, true)
-			DeclareGlobal($2, $3, nil, false)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	expr := WritePrimary($3.Type, make([]byte, $3.Size), true)
-			// 	exprOut := expr[0].Outputs[0]
-			// 	$3.Name = $2.Name
-			// 	// $3.Value = $5[0].Outputs[0].Value
-			// 	$3.Offset = exprOut.Offset
-			// 	$3.Size = exprOut.Size
-			// 	$3.TotalSize = exprOut.TotalSize
-			// 	$3.Package = exprOut.Package
-			// 	pkg.AddGlobal($3)
-			// } else {
-			// 	panic(err)
-			// }
-			// DeclareGlobal($2, $2, $5, true)
+                
                 }
                 ;
 
@@ -235,35 +200,6 @@ struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
 			DeclareStruct($2, $4)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	if strct, err := PRGRM0.GetStruct($2, pkg.Name); err == nil {
-			// 		// strct := MakeStruct($2)
-
-			// 		var size int
-			// 		for _, fld := range $4 {
-			// 			strct.AddField(fld)
-			// 			size += fld.TotalSize
-			// 		}
-			// 		strct.Size = size
-			// 		pkg.AddStruct(strct)
-			// 	} else {
-			// 		panic(err)
-			// 	}
-				
-			// 	// if _, err := PRGRM0.GetStruct($2, pkg.Name); err == nil {
-			// 	// 	strct := MakeStruct($2)
-			// 	// 	pkg.AddStruct(strct)
-
-			// 	// 	var size int
-			// 	// 	for _, fld := range $4 {
-			// 	// 		strct.AddField(fld)
-			// 	// 		size += fld.TotalSize
-			// 	// 	}
-			// 	// 	strct.Size = size
-			// 	// }
-			// } else {
-			// 	panic(err)
-			// }
                 }
                 ;
 

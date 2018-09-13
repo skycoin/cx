@@ -3,9 +3,10 @@ package main
 func main () (out i32) {
 	for true {
 		str.print("Enter a number greater than 0: ")
-		value := i32.read()
+		var value str
+		value = read()
 
-		if i32.gt(value, 0) {
+		if i32.gt(str.i32(value), 0) {
 			str.print("Good, good.")
 		} else {
 			halt("The number was not greater than 0.")

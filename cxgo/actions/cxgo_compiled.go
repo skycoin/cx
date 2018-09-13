@@ -71,75 +71,130 @@ func ErrorHeader (currentFile string, lineNo int) string {
 }
 
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
-	if doesInitialize {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if glbl, err := PRGRM.GetGlobal(declarator.Name); err != nil {
-				expr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-				exprOut := expr[0].Outputs[0]
-				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.Offset = exprOut.Offset
-				// declaration_specifiers.Lengths = exprOut.Lengths
-				declaration_specifiers.Size = exprOut.Size
-				declaration_specifiers.TotalSize = exprOut.TotalSize
-				declaration_specifiers.Package = exprOut.Package
+	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+		declaration_specifiers.Package = pkg
+		
+		if glbl, err := PRGRM.GetGlobal(declarator.Name); err == nil {
+			// then it is already defined
 
-				pkg.AddGlobal(declaration_specifiers)
-			} else {
-				if initializer[len(initializer)-1].Operator == nil {
-					expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
-					expr.Package = pkg
-					declaration_specifiers.Name = declarator.Name
-					declaration_specifiers.Offset = glbl.Offset
-					// declaration_specifiers.Lengths = glbl.Lengths
-					declaration_specifiers.Size = glbl.Size
-					declaration_specifiers.TotalSize = glbl.TotalSize
-					declaration_specifiers.Package = glbl.Package
-
-					expr.AddOutput(declaration_specifiers)
-					expr.AddInput(initializer[len(initializer)-1].Outputs[0])
-
-					SysInitExprs = append(SysInitExprs, expr)
+			if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
+				// then it was only added a reference to the symbol
+				var offExpr []*CXExpression
+				if declaration_specifiers.IsSlice {
+					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
 				} else {
-					declaration_specifiers.Name = declarator.Name
+					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+				}
+				glbl.Offset = offExpr[0].Outputs[0].Offset
+			}
+			
+			if doesInitialize {
+				// then we just re-assign offsets
+				if initializer[len(initializer)-1].Operator == nil {
+					// then it's a literal
+					declaration_specifiers.Name = glbl.Name
 					declaration_specifiers.Offset = glbl.Offset
-					declaration_specifiers.Size = glbl.Size
-					// declaration_specifiers.Lengths = glbl.Lengths
-					declaration_specifiers.TotalSize = glbl.TotalSize
-					declaration_specifiers.Package = glbl.Package
 
-					expr := initializer[len(initializer)-1]
-					expr.AddOutput(declaration_specifiers)
+					*glbl = *declaration_specifiers
+
+					initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
+					initializer[len(initializer) - 1].Outputs = nil
+					initializer[len(initializer) - 1].AddOutput(glbl)
+					initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
 
 					SysInitExprs = append(SysInitExprs, initializer...)
+				} else {
+					// then it's an expression
+					declaration_specifiers.Name = glbl.Name
+					declaration_specifiers.Offset = glbl.Offset
+
+					*glbl = *declaration_specifiers
+					
+					if initializer[len(initializer) - 1].IsStructLiteral {
+						initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{glbl}}}, initializer)
+					} else {
+						initializer[len(initializer) - 1].Outputs = nil
+						initializer[len(initializer) - 1].AddOutput(glbl)
+					}
+					
+					SysInitExprs = append(SysInitExprs, initializer...)
 				}
+			} else {
+				// we keep the last value for now
+				declaration_specifiers.Name = glbl.Name
+				declaration_specifiers.Offset = glbl.Offset
+				*glbl = *declaration_specifiers
 			}
 		} else {
-			panic(err)
-		}
-	} else {
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if _, err := PRGRM.GetGlobal(declarator.Name); err != nil {
-				expr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-				exprOut := expr[0].Outputs[0]
+			// then it hasn't been defined
+			var offExpr []*CXExpression
+			if declaration_specifiers.IsSlice {
+				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+			} else {
+				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+			}
+			if doesInitialize {
+				if initializer[len(initializer)-1].Operator == nil {
+					// then it's a literal
+
+					declaration_specifiers.Name = declarator.Name
+					declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
+					declaration_specifiers.Size = offExpr[0].Outputs[0].Size
+					declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+					declaration_specifiers.Package = pkg
+
+					initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
+					initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
+					initializer[len(initializer) - 1].Outputs = nil
+					initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
+					
+					pkg.AddGlobal(declaration_specifiers)
+
+					SysInitExprs = append(SysInitExprs, initializer...)
+				} else {
+					// then it's an expression
+					declaration_specifiers.Name = declarator.Name
+					declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
+					declaration_specifiers.Size = offExpr[0].Outputs[0].Size
+					declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+					declaration_specifiers.Package = pkg
+
+					if initializer[len(initializer) - 1].IsStructLiteral {
+						initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
+					} else {
+						initializer[len(initializer) - 1].Outputs = nil
+						initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
+					}
+
+					pkg.AddGlobal(declaration_specifiers)
+					SysInitExprs = append(SysInitExprs, initializer...)
+				}
+			} else {
+				// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+				// exprOut := expr[0].Outputs[0]
+
 				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.Offset = exprOut.Offset
-				declaration_specifiers.Lengths = exprOut.Lengths
-				declaration_specifiers.Size = exprOut.Size
-				declaration_specifiers.TotalSize = exprOut.TotalSize
-				declaration_specifiers.Package = exprOut.Package
+				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
+				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
+				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+				declaration_specifiers.Package = pkg
+				
 				pkg.AddGlobal(declaration_specifiers)
 			}
-		} else {
-			panic(err)
 		}
+	} else {
+		panic(err)
 	}
 }
 
 func DeclareStruct (ident string, strctFlds []*CXArgument) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		if _, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
-			strct := MakeStruct(ident)
-			pkg.AddStruct(strct)
+		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
+			// strct := MakeStruct(ident)
+			// pkg.AddStruct(strct)
+
+			strct.Fields = nil
+			strct.Size = 0
 
 			var size int
 			for _, fld := range strctFlds {
@@ -147,6 +202,8 @@ func DeclareStruct (ident string, strctFlds []*CXArgument) {
 				size += fld.TotalSize
 			}
 			strct.Size = size
+		} else {
+			panic(err)
 		}
 	} else {
 		panic(err)
@@ -158,6 +215,7 @@ func DeclarePackage(ident string) {
 		pkg := MakePackage(ident)
 		// pkg.AddImport(pkg)
 		PRGRM.AddPackage(pkg)
+		PRGRM.SelectPackage(pkg.Name)
 	} else {
 		PRGRM.SelectPackage(pkg.Name)
 	}
@@ -304,7 +362,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 			if imp, err := pkg.GetImport(pkgName); err == nil {
 				if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
 					arg := MakeArgument("", CurrentFile, LineNo)
-					arg.AddType(ident)
+					arg.Type = TYPE_CUSTOM
 					arg.CustomType = strct
 					arg.Size = strct.Size
 					arg.TotalSize = strct.Size
@@ -328,7 +386,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 				arg := MakeArgument("", CurrentFile, LineNo)
-				arg.AddType(ident)
+				arg.Type = TYPE_CUSTOM
 				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 				arg.CustomType = strct
 				arg.Size = strct.Size
@@ -934,7 +992,7 @@ func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	return ArithmeticOperation(leftExprs, rightExprs, operator)
 }
 
-func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) []*CXExpression {
+func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) []*CXExpression {
 	if doesInitialize {
 		declaration_specifiers.IsLocalDeclaration = true
 
@@ -975,11 +1033,10 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 
 		// this will tell the runtime that it's just a declaration
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			expr := MakeExpression(nil, CurrentFile, LineNo)
+			expr := MakeExpression(nil, declarator.FileName, declarator.FileLine)
 			expr.Package = pkg
 
 			declaration_specifiers.Name = declarator.Name
-			// declaration_specifiers.Typ = "ident"
 			declaration_specifiers.Package = pkg
 			declaration_specifiers.IsShortDeclaration = true
 			expr.AddOutput(declaration_specifiers)
@@ -1105,10 +1162,11 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		var size int
 
 		size = len(byts)
-		
+
 		arg.Size = GetArgSize(typ)
 		arg.TotalSize = size
 		arg.Offset = DataOffset
+
 
 		if arg.Type == TYPE_STR {
 			arg.PassBy = PASSBY_REFERENCE
@@ -1473,7 +1531,6 @@ func SetFinalSize (symbols *map[string]*CXArgument, sym *CXArgument) {
 
 	// var fldIdx int
 	// elt = sym
-
 	if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
 		PreFinalSize(&finalSize, sym, arg)
 		for _, fld := range sym.Fields {
@@ -1491,8 +1548,6 @@ func GetGlobalSymbol(symbols *map[string]*CXArgument, symPackage *CXPackage, sym
 		}
 	}
 }
-
-// func 
 
 func ProcessDereferenceLevels () {
 	// handles the levels of dereferencing
@@ -1604,6 +1659,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
+	
 	sym.Pointee = arg.Pointee
 	sym.Lengths = arg.Lengths
 	sym.PointeeSize = arg.PointeeSize
@@ -1632,10 +1688,11 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 
 func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
-		GetGlobalSymbol(symbols, sym.Package, sym.Name)
+		if !sym.IsLocalDeclaration {
+			GetGlobalSymbol(symbols, sym.Package, sym.Name)
+		}
 
 		if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
-
 			// ProcessDereferenceLevels()
 			ProcessSymbolFields(sym, arg)
 			CopyArgFields(sym, arg)
@@ -1646,12 +1703,13 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 func ProcessTempVariable(expr *CXExpression) {
 	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
+		arg := expr.Outputs[0]
 		if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
 			// then it's a temporary variable and it needs to adopt its input's type
-			expr.Outputs[0].Type = expr.Inputs[0].Type
-			expr.Outputs[0].Size = expr.Inputs[0].Size
-			expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
-			expr.Outputs[0].IsShortDeclaration = true
+			arg.Type = expr.Inputs[0].Type
+			arg.Size = expr.Inputs[0].Size
+			arg.TotalSize = expr.Inputs[0].TotalSize
+			arg.IsShortDeclaration = true
 		}
 	}
 }
@@ -1697,8 +1755,11 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 
 func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
-		GetGlobalSymbol(symbols, sym.Package, sym.Name)
 
+		if !sym.IsLocalDeclaration {
+			GetGlobalSymbol(symbols, sym.Package, sym.Name)
+		}
+		
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
 			if shouldExist {
 				// it should exist. error
@@ -1781,43 +1842,69 @@ func ProcessSliceAssignment (expr *CXExpression) {
 func ProcessStringAssignment (expr *CXExpression) {
 	if expr.Operator == Natives[OP_IDENTITY] {
 		for i, out := range expr.Outputs {
-			out = GetAssignmentElement(out)
-			inp := GetAssignmentElement(expr.Inputs[i])
+			if len(expr.Inputs) > i {
+				out = GetAssignmentElement(out)
+				inp := GetAssignmentElement(expr.Inputs[i])
 
-			if out.Type == TYPE_STR && out.Name != "" &&
-				inp.Type == TYPE_STR && inp.Name != "" {
-				out.PassBy = PASSBY_VALUE
+				if out.Type == TYPE_STR && out.Name != "" &&
+					inp.Type == TYPE_STR && inp.Name != "" {
+					out.PassBy = PASSBY_VALUE
+				}
 			}
 		}
 	}
 }
 
 func CheckTypes(expr *CXExpression) {
+	if expr.Operator != nil {
+		var opName string
+		if expr.Operator.IsNative {
+			opName = OpNames[expr.Operator.OpCode]
+		} else {
+			opName = expr.Operator.Name
+		}
+
+		// checking if number of expr.Outputs match number of Operator.Outputs
+		if len(expr.Outputs) != len(expr.Operator.Outputs) {
+			var plural1 string
+			var plural2 string = "s"
+			var plural3 string = "were"
+			if len(expr.Operator.Outputs) > 1 {
+				plural1 = "s"
+			}
+			if len(expr.Outputs) == 1 {
+				plural2 = ""
+				plural3 = "was"
+			}
+			println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
+		}
+	}
+	
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
-		for i, inp := range expr.Inputs {
+		for i, _ := range expr.Inputs {
 			// if expr.Outputs[i].Type != inp.Type || expr.Outputs[i].TotalSize != inp.TotalSize {
-			if expr.Outputs[i].Type != inp.Type {
 
-				var expectedType string
-				var receivedType string
-				if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
-					// then it's custom type
-					expectedType = GetAssignmentElement(expr.Outputs[i]).CustomType.Name
-				} else {
-					// then it's native type
-					expectedType = TypeNames[GetAssignmentElement(expr.Outputs[i]).Type]
-				}
-				
+			var expectedType string
+			var receivedType string
+			if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
+				// then it's custom type
+				expectedType = GetAssignmentElement(expr.Outputs[i]).CustomType.Name
+			} else {
+				// then it's native type
+				expectedType = TypeNames[GetAssignmentElement(expr.Outputs[i]).Type]
+			}
+			
 
-				if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
-					// then it's custom type
-					receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
-				} else {
-					// then it's native type
-					receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
-				}
+			if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
+				// then it's custom type
+				receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
+			} else {
+				// then it's native type
+				receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
+			}
 
-				
+			// if GetAssignmentElement(expr.Outputs[i]).Type != GetAssignmentElement(inp).Type {
+			if receivedType != expectedType {
 				if expr.IsStructLiteral {
 					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
@@ -1831,30 +1918,32 @@ func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil {
 		// then it's a function call and not a declaration
 		for i, inp := range expr.Operator.Inputs {
-			if inp.Type != expr.Inputs[i].Type && inp.Type != TYPE_UNDEFINED {
+
+			var expectedType string
+			var receivedType string
+			if expr.Operator.Inputs[i].CustomType != nil {
+				// then it's custom type
+				expectedType = expr.Operator.Inputs[i].CustomType.Name
+			} else {
+				// then it's native type
+				expectedType = TypeNames[expr.Operator.Inputs[i].Type]
+			}
+
+			if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
+				// then it's custom type
+				receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
+			} else {
+				// then it's native type
+				receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
+			}
+			
+			// if inp.Type != expr.Inputs[i].Type && inp.Type != TYPE_UNDEFINED {
+			if expectedType != receivedType && inp.Type != TYPE_UNDEFINED {
 				var opName string
 				if expr.Operator.IsNative {
 					opName = OpNames[expr.Operator.OpCode]
 				} else {
 					opName = expr.Operator.Name
-				}
-
-				var expectedType string
-				var receivedType string
-				if expr.Operator.Inputs[i].CustomType != nil {
-					// then it's custom type
-					expectedType = expr.Operator.Inputs[i].CustomType.Name
-				} else {
-					// then it's native type
-					expectedType = TypeNames[expr.Operator.Inputs[i].Type]
-				}
-
-				if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
-					// then it's custom type
-					receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
-				} else {
-					// then it's native type
-					receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
 				}
 
 				println(ErrorHeader(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
@@ -1864,7 +1953,45 @@ func CheckTypes(expr *CXExpression) {
 }
 
 func FunctionAddParameters (fn *CXFunction, inputs, outputs []*CXArgument) {
-	// adding inputs, outputs
+	if len(fn.Inputs) != len(inputs) {
+		// it must be a method declaration
+		// so we save the first input
+		fn.Inputs = fn.Inputs[:1]
+
+		// it's a method declaration so we preserve the receiver
+		// for i, inp := range inputs {
+		// 	// we're going to update the inputs with the second pass inputs
+		// 	fn.Inputs[i+1].TotalSize = inp.TotalSize
+		// 	fn.Inputs[i+1].Size = inp.Size
+		// 	fn.Inputs[i+1].CustomType = inp.CustomType
+		// 	fn.Inputs[i+1].Type = inp.Type
+		// 	// *(fn.Inputs[i+1]) = *inp
+		// }
+	} else {
+		fn.Inputs = nil
+		// for i, inp := range inputs {
+		// 	// we're going to update the inputs with the second pass inputs
+		// 	fn.Inputs[i].TotalSize = inp.TotalSize
+		// 	fn.Inputs[i].Size = inp.Size
+		// 	fn.Inputs[i].CustomType = inp.CustomType
+		// 	fn.Inputs[i].Type = inp.Type
+		// 	// *(fn.Inputs[i]) = *inp
+		// }
+	}
+
+	// for i, out := range outputs {
+	// 	// *(fn.Outputs[i]) = *out
+	// 	fn.Outputs[i].TotalSize = out.TotalSize
+	// 	fn.Outputs[i].Size = out.Size
+	// 	fn.Outputs[i].CustomType = out.CustomType
+	// 	fn.Outputs[i].Type = out.Type
+	// }
+	
+
+	// we need to wipe the inputs recognized in the first pass
+	// as these don't have all the fields correctly
+	fn.Outputs = nil
+	
 	for _, inp := range inputs {
 		fn.AddInput(inp)
 	}
@@ -1931,8 +2058,6 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 		} else {
 			GiveOffset(symbols, arg, offset, false)
 		}
-		
-		
 		
 		// if isInput {
 		// 	ProcessInputSlice(arg)
@@ -2025,14 +2150,43 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 				if inpExpr.Operator.Outputs[0].Type == TYPE_UNDEFINED {
 					// if undefined type, then adopt argument's type
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Inputs[0].Type])
+					out.CustomType = inpExpr.Inputs[0].CustomType
+
+					// if inpExpr.Inputs[0].CustomType != nil {
+					// 	if strct, err := inpExpr.Package.GetStruct(inpExpr.Inputs[0].CustomType.Name); err == nil {
+					// 		out.Size = strct.Size
+					// 		out.TotalSize = strct.Size
+					// 	}
+					// } else {
+					// 	out.Size = inpExpr.Inputs[0].Size
+					// 	out.TotalSize = inpExpr.Inputs[0].Size
+					// }
+
 					out.Size = inpExpr.Inputs[0].Size
 					out.TotalSize = inpExpr.Inputs[0].Size
+					
 					out.Type = inpExpr.Inputs[0].Type
 					out.IsShortDeclaration = true
 				} else {
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
-					out.Size = inpExpr.Operator.Outputs[0].Size
-					out.TotalSize = inpExpr.Operator.Outputs[0].Size
+					
+
+					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
+					
+
+					if inpExpr.Operator.Outputs[0].CustomType != nil {
+						if strct, err := inpExpr.Package.GetStruct(inpExpr.Operator.Outputs[0].CustomType.Name); err == nil {
+							out.Size = strct.Size
+							out.TotalSize = strct.Size
+						}
+					} else {
+						out.Size = inpExpr.Operator.Outputs[0].Size
+						out.TotalSize = inpExpr.Operator.Outputs[0].Size
+					}
+
+					// out.Size = inpExpr.Operator.Outputs[0].Size
+					// out.TotalSize = inpExpr.Operator.Outputs[0].Size
+
 					out.Type = inpExpr.Operator.Outputs[0].Type
 					out.IsShortDeclaration = true
 				}

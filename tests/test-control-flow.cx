@@ -8,13 +8,13 @@ func testControlFlow () {
 		check = 333
 	}
 
-	assert(check, 333, "not entering IF error")
+	res = append(res, assert(check, 333, "not entering IF error"))
 
 	if  3 < 2 {
 		check = 555
 	}
 
-	assert(check, 333, "entering IF error")
+	res = append(res, assert(check, 333, "entering IF error"))
 
 	if 2 < 3 {
 		check = 888
@@ -22,7 +22,7 @@ func testControlFlow () {
 		check = 444
 	}
 
-	assert(check, 888, "entering else in IF/ELSE error")
+	res = append(res, assert(check, 888, "entering else in IF/ELSE error"))
 
 	if  3 < 2 {
 		check = 111
@@ -30,33 +30,33 @@ func testControlFlow () {
 		check = 777
 	}
 
-	assert(check, 777, "entering if in IF/ELSE error")
+	res = append(res, assert(check, 777, "entering if in IF/ELSE error"))
 
 	if 3 > 0 {
 		if 25.0 > 29.0 {
 			check = 0
-			assert(check, 10, "entering nested IF/ELSE 2nd level error")
+			res = append(res, assert(check, 10, "entering nested IF/ELSE 2nd level error"))
 		} else {
 			if 30L < 60L {
 				check = 999
 			} else {
 				check = 0
-				assert(check, 10, "entering nested IF/ELSE 3rd level error")
+				res = append(res, assert(check, 10, "entering nested IF/ELSE 3rd level error"))
 			}
 		}
 	} else {
 		check = 0
-		assert(check, 10, "entering nested IF/ELSE 1st level error")
+		res = append(res, assert(check, 10, "entering nested IF/ELSE 1st level error"))
 	}
 
-	assert(check, 999, "entering nested IF/ELSE error")
+	res = append(res, assert(check, 999, "entering nested IF/ELSE error"))
 
 	var i i32
 	for i = 0; i < 10; i = i32.add(i, 1) {
 		check = i
 	}
 
-	assert(check, 9, "FOR loop error")
+	res = append(res, assert(check, 9, "FOR loop error"))
 
 	for i = 1; i32.lteq(i, 10); i = i32.add(i, 1){
 		if i32.eq(i32.mod(i, 2), 0) {
@@ -66,5 +66,5 @@ func testControlFlow () {
 		}
 	}
 	
-	assert(check, 10, "FOR-IF/ELSE loop error")
+	res = append(res, assert(check, 10, "FOR-IF/ELSE loop error"))
 }

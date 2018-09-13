@@ -180,18 +180,35 @@ func (prgrm *CXProgram) GetPackage(modName string) (*CXPackage, error) {
 	}
 }
 
-func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
-	// checking if pointer to struct
-	if strctName[0] == '*' {
-		for i, char := range strctName {
-			if char != '*' {
-				// removing '*', we only need the struct name
-				strctName = strctName[i:]
-				break
-			}
+func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
+	var foundStrct *CXStruct
+	for _, strct := range pkg.Structs {
+		if strct.Name == strctName {
+			foundStrct = strct
+			break
 		}
 	}
 
+	if foundStrct == nil {
+		//looking in imports
+		for _, imp := range pkg.Imports {
+			for _, strct := range imp.Structs {
+				if strct.Name == strctName {
+					foundStrct = strct
+					break
+				}
+			}
+		}
+	}
+	
+	if foundStrct != nil {
+		return foundStrct, nil
+	} else {
+		return nil, errors.New(fmt.Sprintf("struct '%s' not found in package '%s'", strctName, pkg.Name))
+	}
+}
+
+func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
 	var foundMod *CXPackage
 	for _, mod := range prgrm.Packages {
 		if modName == mod.Name {

@@ -64,9 +64,6 @@ func op_str_concat(expr *CXExpression, fp int) {
 	inp1Str := ReadStr(fp, inp1)
 	inp2Str := ReadStr(fp, inp2)
 
-	// fmt.Println("inp1", inp1Str)
-	// fmt.Println("inp2", []byte(inp2Str))
-
 	byts := encoder.Serialize(inp1Str + inp2Str)
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)

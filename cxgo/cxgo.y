@@ -228,7 +228,6 @@ selector:
 				}
 			}
 			
-			// fmt.Println("house", $4)
 			// if $<bool>4 {
 				
 			// 	if _, err := PRGRM.SelectFunction($<string>3); err == nil {
@@ -268,13 +267,13 @@ selector:
         ;
 
 global_declaration:
-VAR declarator declaration_specifiers SEMICOLON
+                VAR declarator declaration_specifiers SEMICOLON
                 {
 			DeclareGlobal($2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			DeclareGlobal($2, $2, $5, true)
+			DeclareGlobal($2, $3, $5, true)
                 }
                 ;
 

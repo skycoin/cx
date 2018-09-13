@@ -1,5 +1,8 @@
 package main
 
+import "gl"
+import "glfw"
+
 //Structs
 
 type Window struct {

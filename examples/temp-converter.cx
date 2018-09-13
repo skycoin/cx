@@ -1,0 +1,27 @@
+package main 
+
+func CelsiusFahrenheit(in i32) (out f32) {
+    out = f32.add(f32.mul(i32.f32(in), 1.8), 32.0)
+}
+
+func FahrenheitCelsius(in i32) (out f32) {
+    out = f32.div(f32.sub(i32.f32(in), 32.0), 1.8)
+}
+
+func CelsiusKelvin(in f32) (out f32) {
+    out = 273 + in
+}
+
+func main () () {
+    str.print("----Convert Celsius to Fahrenheit (example: 30C)----")
+    f32.print(CelsiusFahrenheit(30))
+
+    str.print("----Convert Fahrenheit to Celsius (example: 75F)----")
+    f32.print(FahrenheitCelsius(75))
+
+    str.print("----Convert Celsius to Kelvin (example: 45C)----")
+    f32.print(CelsiusKelvin(45.0))
+
+    str.print("----Convert Fahrenheit to Kelvin (example: 84F)----")
+    f32.print(CelsiusKelvin(FahrenheitCelsius(84)))
+}

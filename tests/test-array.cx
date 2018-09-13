@@ -8,13 +8,13 @@ var byteArray [5]byte
 var boolArray [5]bool
 // var stringArray [5]str
 
-func testGetElement() () {
-	assert(intArray[4], 5, "I32 Get element error")
-	assert(longArray[2], 90L, "I64 Get element error")
-	assert(floatArray[0], 3.9, "F32 Get element error")
-	assert(doubleArray[1], 70.0D, "F64 Get element error")
-	assert(boolArray[4], false, "BOOL Get element error")
-	assert(byteArray[2], 379B, "BYTE Get element error")
+func testGetElement () {
+	res = append(res, assert(intArray[4], 5, "I32 Get element error"))
+	res = append(res, assert(longArray[2], 90L, "I64 Get element error"))
+	res = append(res, assert(floatArray[0], 3.9, "F32 Get element error"))
+	res = append(res, assert(doubleArray[1], 70.0D, "F64 Get element error"))
+	res = append(res, assert(boolArray[4], false, "BOOL Get element error"))
+	res = append(res, assert(byteArray[2], 379B, "BYTE Get element error"))
 	
 	// assert(stringArray[4], "Hello there!", "STR Get element error")
 }
@@ -200,7 +200,6 @@ func testArray () () {
 	doubleArray = [5]f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
 	byteArray = [5]byte{70B, 256B, 379B, 0B, 255B}
 	boolArray = [5]bool{ true, false, true, true, false}
-	
 	
 	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}
 

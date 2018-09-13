@@ -20,8 +20,18 @@ func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
 }
 
 func main () (out i32) {
+
+	var a i32
+	var s i32
+	var m i32
+	var d i32
+
 	sayHi()
 	sayMyName("Homer")
 	str.print(returnName())
-	a, s, out, d = multiReturn(20, 20)
+	a , s, m, d = multiReturn(20, 20)
+	i32.print(a)
+	i32.print(s)
+	i32.print(m)
+	i32.print(d)
 }

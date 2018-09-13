@@ -1,7 +1,7 @@
 package main
 
-// import "gl"
-// import "glfw"
+import "gl"
+import "glfw"
 
 var width i32 = 800
 var height i32 = 600
@@ -70,6 +70,8 @@ func main () {
 
 	var ratio f32
 
+	str.print("\nMove the ball to the right or the left using the arrow keys.")
+
 	for bool.not(glfw.ShouldClose("window")) {
 		var bufferWidth i32
 		var bufferHeight i32
@@ -82,7 +84,7 @@ func main () {
 		
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
-		gl.Ortho(f32.mul(ratio, -1.0), ratio, -1.0, 1.0, 1.0, -1.0)
+		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
 		gl.MatrixMode(gl.MODELVIEW)
 
 		//Bounce on window bottom

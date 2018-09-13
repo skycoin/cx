@@ -1,0 +1,39 @@
+package main
+
+func KMtoMT(in f32) (out f32) {
+    out = in * 1000.0
+}
+
+func MTtoKM(in f32) (out f32) {
+    out = in / 1000.0
+}
+
+func MTtoFT(in f32) (out f32) {
+    out = in * 3.28
+}
+
+func FTtoMT(in f32) (out f32) {
+    out = in / 3.28
+}
+
+func YDtoFT(in f32) (out f32) {
+    out = in * 3.0
+}
+
+func FTtoYD(in f32) (out f32) {
+    out = in / 3.0
+}
+
+func YDtoM(in f32) (out f32) {
+    out = in / 1760.0
+}
+
+func MtoYD(in f32)(out f32) {
+    out = in * 1760.0
+}
+
+func main () () {
+    str.print("Mill to KM example")
+    str.print("Example 7.89 Mills is (in KM): ")
+    f32.print( MTtoKM(FTtoMT(YDtoFT(MtoYD(7.89)))) )
+}

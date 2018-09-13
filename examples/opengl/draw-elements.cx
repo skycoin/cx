@@ -1,5 +1,8 @@
 package main
 
+import "gl"
+import "glfw"
+
 type Window struct {
 	Height i32
 	Width i32

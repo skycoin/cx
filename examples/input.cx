@@ -1,9 +1,0 @@
-package main
-
-func main () () {
-	for true {
-		msg := str.read()
-		str.print(msg)
-	}
-	
-}
