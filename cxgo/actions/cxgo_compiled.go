@@ -85,15 +85,18 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				} else {
 					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
 				}
+
 				glbl.Offset = offExpr[0].Outputs[0].Offset
+				glbl.PassBy = offExpr[0].Outputs[0].PassBy
 			}
-			
+
 			if doesInitialize {
 				// then we just re-assign offsets
 				if initializer[len(initializer)-1].Operator == nil {
 					// then it's a literal
 					declaration_specifiers.Name = glbl.Name
 					declaration_specifiers.Offset = glbl.Offset
+					declaration_specifiers.PassBy = glbl.PassBy
 
 					*glbl = *declaration_specifiers
 
@@ -107,6 +110,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 					// then it's an expression
 					declaration_specifiers.Name = glbl.Name
 					declaration_specifiers.Offset = glbl.Offset
+					declaration_specifiers.PassBy = glbl.PassBy
 
 					*glbl = *declaration_specifiers
 					
@@ -123,6 +127,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				// we keep the last value for now
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
+				declaration_specifiers.PassBy = glbl.PassBy
 				*glbl = *declaration_specifiers
 			}
 		} else {
@@ -1166,7 +1171,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg.Size = GetArgSize(typ)
 		arg.TotalSize = size
 		arg.Offset = DataOffset
-
 
 		if arg.Type == TYPE_STR {
 			arg.PassBy = PASSBY_REFERENCE

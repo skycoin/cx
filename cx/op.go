@@ -311,11 +311,6 @@ func ReadByte(fp int, inp *CXArgument) (out byte) {
 	return
 }
 
-// maybe delete it
-// func ReadSlice(mem []byte, fp int, inp *CXArgument) (int, int) {
-// 	return 0, 0
-// }
-
 func ReadStr(fp int, inp *CXArgument) (out string) {
 	var offset int32
 	off := GetFinalOffset(fp, inp)

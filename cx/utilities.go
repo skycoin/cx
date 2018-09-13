@@ -13,6 +13,10 @@ import (
 	// "time"
 )
 
+func Debug (args ...interface{}) {
+	fmt.Println(args...)
+}
+
 func sameFields(flds1 []*CXArgument, flds2 []*CXArgument) bool {
 	allSame := true
 
