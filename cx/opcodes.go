@@ -1836,11 +1836,11 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DRAW_ARRAYS:                MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_BUFFERS:                MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
-	OP_GL_DELETE_BUFFERS:             MakeNative(OP_GL_DELETE_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_BUFFERS:             MakeNative(OP_GL_DELETE_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_BUFFER_DATA:                MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{}),
 	OP_GL_BUFFER_SUB_DATA:            MakeNative(OP_GL_BUFFER_SUB_DATA, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{}),
 	OP_GL_GEN_VERTEX_ARRAYS:          MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
-	OP_GL_DELETE_VERTEX_ARRAYS:       MakeNative(OP_GL_DELETE_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_VERTEX_ARRAYS:       MakeNative(OP_GL_DELETE_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_CREATE_SHADER:              MakeNative(OP_GL_CREATE_SHADER, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_DETACH_SHADER:              MakeNative(OP_GL_DETACH_SHADER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DELETE_SHADER:              MakeNative(OP_GL_DELETE_SHADER, []int{TYPE_I32}, []int{}),
@@ -1892,7 +1892,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	/* gl_1_1 */
 	OP_GL_BIND_TEXTURE:     MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_TEXTURES:     MakeNative(OP_GL_GEN_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
-	OP_GL_DELETE_TEXTURES:  MakeNative(OP_GL_DELETE_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_DELETE_TEXTURES:  MakeNative(OP_GL_DELETE_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{}),
 
 	/* gl_2_0 */
 	OP_GL_BIND_ATTRIB_LOCATION:       MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
@@ -1902,7 +1902,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_UNIFORM_1I:                 MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{}),
 
 	/* gl_3_0 */
-	OP_GL_BIND_FRAMEBUFFER:         MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_BIND_FRAMEBUFFER:         MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DELETE_FRAMEBUFFERS:      MakeNative(OP_GL_DELETE_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_FRAMEBUFFERS:         MakeNative(OP_GL_GEN_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CHECK_FRAMEBUFFER_STATUS: MakeNative(OP_GL_CHECK_FRAMEBUFFER_STATUS, []int{TYPE_I32}, []int{TYPE_I32}),
