@@ -1868,6 +1868,27 @@ func CheckTypes(expr *CXExpression) {
 			opName = expr.Operator.Name
 		}
 
+		// checking if number of inputs is less than the required number of inputs
+		if len(expr.Inputs) != len(expr.Operator.Inputs) {
+			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs) - 1].Type != TYPE_UNDEFINED) {
+				// if the last input is of type TYPE_UNDEFINED then it might be a variadic function, such as printf
+			} else {
+				// then we need to be strict in the number of inputs
+				var plural1 string
+				var plural2 string = "s"
+				var plural3 string = "were"
+				if len(expr.Operator.Inputs) > 1 {
+					plural1 = "s"
+				}
+				if len(expr.Inputs) == 1 {
+					plural2 = ""
+					plural3 = "was"
+				}
+				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
+				os.Exit(3)
+			}
+		}
+
 		// checking if number of expr.Outputs match number of Operator.Outputs
 		if len(expr.Outputs) != len(expr.Operator.Outputs) {
 			var plural1 string
