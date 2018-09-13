@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "+U1IB5N4LDS74y4fXjARb4/S4IE=",
+			"path": "golang.org/x/image/font",
+			"revision": "c73c2afc3b812cdd6385de5a50616511c4a3d458",
+			"revisionTime": "2018-07-06T05:06:37Z"
+		},
+		{
+			"checksumSHA1": "euzvwlMLxyD0hwc+raoVsDLv6j4=",
+			"path": "golang.org/x/image/math/fixed",
+			"revision": "c73c2afc3b812cdd6385de5a50616511c4a3d458",
+			"revisionTime": "2018-07-06T05:06:37Z"
+		}
+	],
+	"rootPath": "github.com/skycoin/cx"
+}
