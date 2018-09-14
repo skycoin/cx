@@ -360,7 +360,7 @@ func (prgrm *CXProgram) PrintProgram() {
 						args.WriteString(fmt.Sprintf("%s %s%s", name, arrayStr, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
-						args.WriteString(fmt.Sprintf("%s %s%s,", name, arrayStr, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s%s, ", name, arrayStr, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}

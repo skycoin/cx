@@ -718,20 +718,6 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	if !elt.IsDereferenceFirst {
 		elt.IsArrayFirst = true
 	}
-
-	// prevExprs[len(prevExprs)-1].Outputs[0].IsArray = false
-	// pastOps := prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations
-	// if len(pastOps) < 1 || pastOps[len(pastOps)-1] != DEREF_ARRAY {
-	// 	// this way we avoid calling deref_array multiple times (one for each index)
-	// 	prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations = append(prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations, DEREF_ARRAY)
-	// }
-
-	// if !prevExprs[len(prevExprs)-1].Outputs[0].IsDereferenceFirst {
-	// 	prevExprs[len(prevExprs)-1].Outputs[0].IsArrayFirst = true
-	// }
-
-
-
 	
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
@@ -1395,10 +1381,11 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			to[0].Outputs[0].Program = PRGRM
 		}
 
-		from[idx].Outputs = to[0].Outputs
-		from[idx].Program = to[0].Program
+		from[idx].Outputs = to[len(to) - 1].Outputs
+		from[idx].Program = to[len(to) - 1].Program
 
 		return append(to[:len(to)-1], from...)
+		// return append(to, from...)
 	}
 }
 
