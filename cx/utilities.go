@@ -13,6 +13,10 @@ import (
 	// "time"
 )
 
+func Debug (args ...interface{}) {
+	fmt.Println(args...)
+}
+
 func sameFields(flds1 []*CXArgument, flds2 []*CXArgument) bool {
 	allSame := true
 
@@ -356,7 +360,7 @@ func (prgrm *CXProgram) PrintProgram() {
 						args.WriteString(fmt.Sprintf("%s %s%s", name, arrayStr, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
-						args.WriteString(fmt.Sprintf("%s %s%s,", name, arrayStr, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s%s, ", name, arrayStr, TypeNames[arg.Type]))
 						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}

@@ -85,15 +85,18 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				} else {
 					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
 				}
+
 				glbl.Offset = offExpr[0].Outputs[0].Offset
+				glbl.PassBy = offExpr[0].Outputs[0].PassBy
 			}
-			
+
 			if doesInitialize {
 				// then we just re-assign offsets
 				if initializer[len(initializer)-1].Operator == nil {
 					// then it's a literal
 					declaration_specifiers.Name = glbl.Name
 					declaration_specifiers.Offset = glbl.Offset
+					declaration_specifiers.PassBy = glbl.PassBy
 
 					*glbl = *declaration_specifiers
 
@@ -107,6 +110,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 					// then it's an expression
 					declaration_specifiers.Name = glbl.Name
 					declaration_specifiers.Offset = glbl.Offset
+					declaration_specifiers.PassBy = glbl.PassBy
 
 					*glbl = *declaration_specifiers
 					
@@ -123,6 +127,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 				// we keep the last value for now
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
+				declaration_specifiers.PassBy = glbl.PassBy
 				*glbl = *declaration_specifiers
 			}
 		} else {
@@ -713,20 +718,6 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	if !elt.IsDereferenceFirst {
 		elt.IsArrayFirst = true
 	}
-
-	// prevExprs[len(prevExprs)-1].Outputs[0].IsArray = false
-	// pastOps := prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations
-	// if len(pastOps) < 1 || pastOps[len(pastOps)-1] != DEREF_ARRAY {
-	// 	// this way we avoid calling deref_array multiple times (one for each index)
-	// 	prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations = append(prevExprs[len(prevExprs)-1].Outputs[0].DereferenceOperations, DEREF_ARRAY)
-	// }
-
-	// if !prevExprs[len(prevExprs)-1].Outputs[0].IsDereferenceFirst {
-	// 	prevExprs[len(prevExprs)-1].Outputs[0].IsArrayFirst = true
-	// }
-
-
-
 	
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
@@ -1167,7 +1158,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg.TotalSize = size
 		arg.Offset = DataOffset
 
-
 		if arg.Type == TYPE_STR {
 			arg.PassBy = PASSBY_REFERENCE
 			arg.Size = TYPE_POINTER_SIZE
@@ -1391,10 +1381,11 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			to[0].Outputs[0].Program = PRGRM
 		}
 
-		from[idx].Outputs = to[0].Outputs
-		from[idx].Program = to[0].Program
+		from[idx].Outputs = to[len(to) - 1].Outputs
+		from[idx].Program = to[len(to) - 1].Program
 
 		return append(to[:len(to)-1], from...)
+		// return append(to, from...)
 	}
 }
 
@@ -1862,6 +1853,27 @@ func CheckTypes(expr *CXExpression) {
 			opName = OpNames[expr.Operator.OpCode]
 		} else {
 			opName = expr.Operator.Name
+		}
+
+		// checking if number of inputs is less than the required number of inputs
+		if len(expr.Inputs) != len(expr.Operator.Inputs) {
+			if !(len(expr.Operator.Inputs) > 0 && expr.Operator.Inputs[len(expr.Operator.Inputs) - 1].Type != TYPE_UNDEFINED) {
+				// if the last input is of type TYPE_UNDEFINED then it might be a variadic function, such as printf
+			} else {
+				// then we need to be strict in the number of inputs
+				var plural1 string
+				var plural2 string = "s"
+				var plural3 string = "were"
+				if len(expr.Operator.Inputs) > 1 {
+					plural1 = "s"
+				}
+				if len(expr.Inputs) == 1 {
+					plural2 = ""
+					plural3 = "was"
+				}
+				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
+				os.Exit(3)
+			}
 		}
 
 		// checking if number of expr.Outputs match number of Operator.Outputs

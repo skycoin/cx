@@ -1696,8 +1696,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I32_LOG:      MakeNative(OP_I32_LOG, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_LOG2:     MakeNative(OP_I32_LOG2, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_LOG10:    MakeNative(OP_I32_LOG10, []int{TYPE_I32}, []int{TYPE_I32}),
-	OP_I32_MAX:      MakeNative(OP_I32_MAX, []int{TYPE_I32}, []int{TYPE_I32}),
-	OP_I32_MIN:      MakeNative(OP_I32_MIN, []int{TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_MAX:      MakeNative(OP_I32_MAX, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_I32_MIN:      MakeNative(OP_I32_MIN, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_SIN:      MakeNative(OP_I32_SIN, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_I32_COS:      MakeNative(OP_I32_COS, []int{TYPE_I32}, []int{TYPE_I32}),
 
@@ -1733,8 +1733,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_I64_LOG:      MakeNative(OP_I64_LOG, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_LOG2:     MakeNative(OP_I64_LOG2, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_LOG10:    MakeNative(OP_I64_LOG10, []int{TYPE_I64}, []int{TYPE_I64}),
-	OP_I64_MAX:      MakeNative(OP_I64_MAX, []int{TYPE_I64}, []int{TYPE_I64}),
-	OP_I64_MIN:      MakeNative(OP_I64_MIN, []int{TYPE_I64}, []int{TYPE_I64}),
+	OP_I64_MAX:      MakeNative(OP_I64_MAX, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
+	OP_I64_MIN:      MakeNative(OP_I64_MIN, []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_COS:      MakeNative(OP_I64_COS, []int{TYPE_I64}, []int{TYPE_I64}),
 	OP_I64_SIN:      MakeNative(OP_I64_SIN, []int{TYPE_I64}, []int{TYPE_I64}),
 
@@ -1764,8 +1764,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F32_LOG:      MakeNative(OP_F32_LOG, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_LOG2:     MakeNative(OP_F32_LOG2, []int{TYPE_F32}, []int{TYPE_F32}),
 	OP_F32_LOG10:    MakeNative(OP_F32_LOG10, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_MAX:      MakeNative(OP_F32_MAX, []int{TYPE_F32}, []int{TYPE_F32}),
-	OP_F32_MIN:      MakeNative(OP_F32_MIN, []int{TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_MAX:      MakeNative(OP_F32_MAX, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
+	OP_F32_MIN:      MakeNative(OP_F32_MIN, []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32}),
 
 	OP_F64_BYTE:   MakeNative(OP_F64_BYTE, []int{TYPE_F64}, []int{TYPE_BYTE}),
 	OP_F64_STR:    MakeNative(OP_F64_STR, []int{TYPE_F64}, []int{TYPE_STR}),
@@ -1793,8 +1793,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_F64_LOG:      MakeNative(OP_F64_LOG, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG2:     MakeNative(OP_F64_LOG2, []int{TYPE_F64}, []int{TYPE_F64}),
 	OP_F64_LOG10:    MakeNative(OP_F64_LOG10, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MIN:      MakeNative(OP_F64_MIN, []int{TYPE_F64}, []int{TYPE_F64}),
-	OP_F64_MAX:      MakeNative(OP_F64_MAX, []int{TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MIN:      MakeNative(OP_F64_MIN, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
+	OP_F64_MAX:      MakeNative(OP_F64_MAX, []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64}),
 	
 	OP_STR_PRINT:    MakeNative(OP_STR_PRINT, []int{TYPE_STR}, []int{}),
 	OP_STR_CONCAT:   MakeNative(OP_STR_CONCAT, []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR}),
