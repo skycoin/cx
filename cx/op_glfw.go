@@ -161,9 +161,9 @@ func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 				}
 			}
 
-			if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
-				return
-			}
+			// if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
+			// 	return
+			// }
 
 			var inps [][]byte = make([][]byte, 5)
 
