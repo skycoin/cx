@@ -209,15 +209,15 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 }
 
 func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
-	var foundMod *CXPackage
+	var foundPkg *CXPackage
 	for _, mod := range prgrm.Packages {
 		if modName == mod.Name {
-			foundMod = mod
+			foundPkg = mod
 			break
 		}
 	}
 	var foundStrct *CXStruct
-	for _, strct := range foundMod.Structs {
+	for _, strct := range foundPkg.Structs {
 		if strct.Name == strctName {
 			foundStrct = strct
 			break
@@ -240,7 +240,7 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 		}
 	}
 
-	if foundMod != nil && foundStrct != nil {
+	if foundPkg != nil && foundStrct != nil {
 		return foundStrct, nil
 	} else {
 		return nil, errors.New(fmt.Sprintf("struct '%s' not found in package '%s'", strctName, modName))
@@ -272,56 +272,85 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	}
 }
 
-func (prgrm *CXProgram) GetFunction(fnName string, modName string) (*CXFunction, error) {
-	// if _, ok := NATIVE_FUNCTIONS[fnName]; ok {
-	// 	modName = CORE_MODULE
-	// } else if _, ok := NATIVE_FUNCTIONS[fmt.Sprintf("%s.%s", modName, fnName)]; ok {
-	// 	fnName = fmt.Sprintf("%s.%s", modName, fnName)
-	// 	modName = CORE_MODULE
-	// }
+func (pkg *CXPackage) GetFunction (fnName string) (*CXFunction, error) {
+	var found bool
+	for _, fn := range pkg.Functions {
+		if fn.Name == fnName {
+			return fn, nil
+		}
+	}
 
-	// I need to first look for the function in the current module
-	// if we find modName + fnName as it is in the current module, we give that one priority
-	dotFn := fmt.Sprintf("%s.%s", modName, fnName)
-	if mod, err := prgrm.GetCurrentPackage(); err == nil {
-		for _, fn := range mod.Functions {
-			if fn.Name == dotFn {
+	// now checking in imported packages
+	if !found {
+		for _, imp := range pkg.Imports {
+			for _, fn := range imp.Functions {
+				if fn.Name == fnName {
+					return fn, nil
+				}
+			}
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name))
+}
+
+func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunction, error) {
+	var found bool
+	for _, fn := range pkg.Functions {
+		if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
+			return fn, nil
+		}
+	}
+
+	// now checking in imported packages
+	if !found {
+		for _, imp := range pkg.Imports {
+			for _, fn := range imp.Functions {
+				if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
+					return fn, nil
+				}
+			}
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name))
+}
+
+func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {
+	// I need to first look for the function in the current package
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+		for _, fn := range pkg.Functions {
+			if fn.Name == fnName {
 				return fn, nil
 			}
 		}
 	}
 
-	var foundMod *CXPackage
-	for _, mod := range prgrm.Packages {
-		if modName == mod.Name {
-			foundMod = mod
+	var foundPkg *CXPackage
+	for _, pkg := range prgrm.Packages {
+		if pkgName == pkg.Name {
+			foundPkg = pkg
 			break
 		}
 	}
 
 	var foundFn *CXFunction
-	if foundMod != nil {
-		for _, fn := range foundMod.Functions {
+	if foundPkg != nil {
+		for _, fn := range foundPkg.Functions {
 			if fn.Name == fnName {
 				foundFn = fn
 				break
 			}
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
+		return nil, errors.New(fmt.Sprintf("package '%s' not found", pkgName))
 	}
 
-	if foundMod != nil && foundFn != nil {
+	if foundPkg != nil && foundFn != nil {
 		return foundFn, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s'", fnName, modName))
+		return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s'", fnName, pkgName))
 	}
-
-	// if prgrm.Packages != nil && prgrm.Packages[modName] != nil && prgrm.Packages[modName].Functions != nil && prgrm.Packages[modName].Functions[fnName] != nil {
-	// 	return prgrm.Packages[modName].Functions[fnName], nil
-	// } else {
-	// 	return nil, errors.New(fmt.Sprintf("Function '%s' not found in package '%s'", fnName, modName))
-	// }
 }
 
 func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {

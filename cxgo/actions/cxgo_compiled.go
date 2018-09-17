@@ -900,7 +900,6 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 
 				// then it's a struct
 				left.IsStruct = true
-				// left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 				
 				fld := MakeArgument(ident, CurrentFile, LineNo)
 				fld.AddType(TypeNames[TYPE_IDENTIFIER])
@@ -2141,7 +2140,8 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 		
 		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
 			expr.Operator = op
-		} else {
+		} else if expr.Outputs[0].Fields == nil {
+			// then it's not a possible method call
 			println(ErrorHeader(CurrentFile, LineNo), err.Error())
 			os.Exit(3)
 			return nil
@@ -2163,16 +2163,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 					// if undefined type, then adopt argument's type
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Inputs[0].Type])
 					out.CustomType = inpExpr.Inputs[0].CustomType
-
-					// if inpExpr.Inputs[0].CustomType != nil {
-					// 	if strct, err := inpExpr.Package.GetStruct(inpExpr.Inputs[0].CustomType.Name); err == nil {
-					// 		out.Size = strct.Size
-					// 		out.TotalSize = strct.Size
-					// 	}
-					// } else {
-					// 	out.Size = inpExpr.Inputs[0].Size
-					// 	out.TotalSize = inpExpr.Inputs[0].Size
-					// }
 
 					out.Size = inpExpr.Inputs[0].Size
 					out.TotalSize = inpExpr.Inputs[0].Size
