@@ -22,8 +22,7 @@ func testSTRFunctions () () {
 	res = append(res, assert(returningStr(), "bar bar foo foo", ""))
 
 	// that newline in the second argument is actually needed! sprintf1s format string includes a \n at the end
-	res = append(res, assert(sprintf("%s%d%d%f%f\n", "hello", 11, 13L, 17.0, 19.0D), `hello111317.000000019.0000000000000000
-`, ""))
+	res = append(res, assert(sprintf("%s%d%d%f%f", "hello", 11, 13L, 17.0, 19.0D), `hello111317.000000019.0000000000000000`, ""))
 
 	var part1 str
 	var part2 str
