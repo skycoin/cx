@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	//"github.com/satori/go.uuid"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -77,29 +76,13 @@ func MakeStruct(name string) *CXStruct {
 	return &CXStruct{Name: name}
 }
 
-// func MakeParameter (name string, typ int) *CXArgument {
-// 	size := GetArgSize(typ)
-// 	return &CXArgument{
-// 		Name: name,
-// 		Type: typ,
-// 		Size: size,
-// 		TotalSize: size,
-// 		MemoryRead: MEM_STACK,
-// 		// MemoryWrite can change depending on being a pointer or not for example
-// 		// that is determined at compile time
-// 	}
-// }
-
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
 	return &CXExpression{Operator: op, FileLine: fileLine, FileName: fileName}
 }
 
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
-	// sName := encoder.Serialize(name)
 	return &CXArgument{
 		Name: name,
-		// Typ: "ident",
-		// Value: &sName,
 		FileName: fileName,
 		FileLine: fileLine,}
 }
@@ -136,28 +119,11 @@ func MakeValue(value string) *[]byte {
 	return &byts
 }
 
-// func MakeStack(size int) CXStack {
-// 	return CXStack{
-// 		Stack:        make([]byte, size, size),
-// 		StackPointer: 0,
-// 	}
-// }
-
-// func MakeHeap(size int) CXHeap {
-// 	return CXHeap{
-// 		Heap: make([]byte, size, size),
-// 		// HeapPointer: 0,
-// 		HeapPointer: NULL_HEAP_ADDRESS_OFFSET,
-// 	}
-// }
-
-func MakeCall(op *CXFunction, stat []*CXArgument, ret *CXCall, pkg *CXPackage, prgrm *CXProgram) CXCall {
+func MakeCall(op *CXFunction, pkg *CXPackage, prgrm *CXProgram) CXCall {
 	return CXCall{
 		Operator:      op,
 		Line:          0,
 		FramePointer:  0,
-		State:         stat,
-		ReturnAddress: ret,
 		Package:       pkg,
 		Program:       prgrm,
 	}

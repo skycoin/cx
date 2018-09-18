@@ -700,7 +700,6 @@ func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CX
 }
 
 func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
-
 	var elt *CXArgument
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) - 1]
@@ -774,17 +773,15 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
 		// then it's a method call or function in field
-		expr := prevExprs[len(prevExprs) - 1]
-		// opName := expr.Outputs[0].Fields[0].CustomType.Name + "." +
-		// 	expr.Outputs[0].Fields[0].Name
-		expr.IsMethodCall = true
-		// method name
-		expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
-		inp := MakeArgument(expr.Outputs[0].Name, CurrentFile, LineNo)
-		inp.Package = expr.Package
-		inp.Type = expr.Outputs[0].Type
-		inp.CustomType = expr.Outputs[0].CustomType
-		expr.Inputs = append(expr.Inputs, inp)
+		// expr := prevExprs[len(prevExprs) - 1]
+		// expr.IsMethodCall = true
+		// // method name
+		// expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
+		// inp := MakeArgument(expr.Outputs[0].Name, CurrentFile, LineNo)
+		// inp.Package = expr.Package
+		// inp.Type = expr.Outputs[0].Type
+		// inp.CustomType = expr.Outputs[0].CustomType
+		// expr.Inputs = append(expr.Inputs, inp)
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -900,7 +897,6 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 
 				// then it's a struct
 				left.IsStruct = true
-				// left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 				
 				fld := MakeArgument(ident, CurrentFile, LineNo)
 				fld.AddType(TypeNames[TYPE_IDENTIFIER])
@@ -1727,15 +1723,17 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 
 					strct := arg.CustomType
 
-					if fn, err := PRGRM.GetFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, sym.Package.Name); err == nil {
+					if fn, err := sym.Package.GetMethod(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, strct.Name); err == nil {
 						expr.Operator = fn
 					} else {
 						panic("")
 					}
 
+					expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
+					
 					// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
 					sym.Fields = sym.Fields[:len(sym.Fields) - 1]
-					sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
+					// sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
 
 					expr.Outputs = nil
 				}
@@ -2119,6 +2117,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 
 	for _, expr := range fn.Expressions {
 		// ProcessShortDeclaration(expr)
+		
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 		
@@ -2138,15 +2137,21 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 	if expr.Operator == nil {
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
-		
+
 		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
 			expr.Operator = op
-		} else {
+		} else if expr.Outputs[0].Fields == nil {
+			// then it's not a possible method call
 			println(ErrorHeader(CurrentFile, LineNo), err.Error())
 			os.Exit(3)
 			return nil
+		} else {
+			expr.IsMethodCall = true
 		}
-		expr.Outputs = nil
+
+		if expr.Outputs[0].Fields == nil {
+			expr.Outputs = nil
+		}
 	}
 
 	var nestedExprs []*CXExpression
@@ -2163,16 +2168,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 					// if undefined type, then adopt argument's type
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Inputs[0].Type])
 					out.CustomType = inpExpr.Inputs[0].CustomType
-
-					// if inpExpr.Inputs[0].CustomType != nil {
-					// 	if strct, err := inpExpr.Package.GetStruct(inpExpr.Inputs[0].CustomType.Name); err == nil {
-					// 		out.Size = strct.Size
-					// 		out.TotalSize = strct.Size
-					// 	}
-					// } else {
-					// 	out.Size = inpExpr.Inputs[0].Size
-					// 	out.TotalSize = inpExpr.Inputs[0].Size
-					// }
 
 					out.Size = inpExpr.Inputs[0].Size
 					out.TotalSize = inpExpr.Inputs[0].Size

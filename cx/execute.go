@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
-func callsEqual(call1, call2 *CXCall) bool {
-	if call1.Line != call2.Line ||
-		len(call1.State) != len(call2.State) ||
-		call1.Operator != call2.Operator ||
-		call1.ReturnAddress != call2.ReturnAddress ||
-		call1.Package != call2.Package {
-		return false
-	}
+// func callsEqual(call1, call2 *CXCall) bool {
+// 	if call1.Line != call2.Line ||
+// 		len(call1.State) != len(call2.State) ||
+// 		call1.Operator != call2.Operator ||
+// 		call1.ReturnAddress != call2.ReturnAddress ||
+// 		call1.Package != call2.Package {
+// 		return false
+// 	}
 
-	for k, v := range call1.State {
-		if call2.State[k] != v {
-			return false
-		}
-	}
+// 	for k, v := range call1.State {
+// 		if call2.State[k] != v {
+// 			return false
+// 		}
+// 	}
 
-	return true
-}
+// 	return true
+// }
 
 // It "un-runs" a program
 func (prgrm *CXProgram) Reset() {
@@ -98,7 +98,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
 				// *init function
-				mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
+				mainCall := MakeCall(fn, mod, mod.Program)
 				prgrm.CallStack[0] = mainCall
 				prgrm.StackPointer = fn.Size
 
@@ -127,7 +127,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 
 			if prgrm.CallStack[0].Operator == nil {
 				// main function
-				mainCall := MakeCall(fn, nil, nil, mod, mod.Program)
+				mainCall := MakeCall(fn, mod, mod.Program)
 				// initializing program resources
 				prgrm.CallStack[0] = mainCall
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
@@ -233,12 +233,20 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 			
 			expr := returnOp.Expressions[returnLine]
-			for i, out := range expr.Outputs {
+			// for i, out := range expr.Outputs {
+			// 	WriteMemory(
+			// 		GetFinalOffset(returnFP, out),
+			// 		ReadMemory(
+			// 			GetFinalOffset(fp, call.Operator.Outputs[i]),
+			// 			call.Operator.Outputs[i]))
+			// }
+
+			for i, out := range call.Operator.Outputs {
 				WriteMemory(
-					GetFinalOffset(returnFP, out),
+					GetFinalOffset(returnFP, expr.Outputs[i]),
 					ReadMemory(
-						GetFinalOffset(fp, call.Operator.Outputs[i]),
-						call.Operator.Outputs[i]))
+						GetFinalOffset(fp, out),
+						out))
 			}
 
 			// return the stack pointer to its previous state

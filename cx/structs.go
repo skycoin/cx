@@ -53,9 +53,6 @@ type CXCall struct {
 	Line         int
 	FramePointer int
 
-	State         []*CXArgument
-	ReturnAddress *CXCall
-
 	Package *CXPackage
 	Program *CXProgram
 }

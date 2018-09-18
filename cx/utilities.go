@@ -61,14 +61,14 @@ func IsStructInstance(typ string, mod *CXPackage) bool {
 		return false
 	}
 }
-func IsLocal(identName string, call *CXCall) bool {
-	for _, def := range call.State {
-		if def.Name == identName {
-			return true
-		}
-	}
-	return false
-}
+// func IsLocal(identName string, call *CXCall) bool {
+// 	for _, def := range call.State {
+// 		if def.Name == identName {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
 func IsGlobal(identName string, mod *CXPackage) bool {
 	for _, def := range mod.Globals {
 		if def.Name == identName {

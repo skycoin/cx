@@ -923,7 +923,9 @@ expression_statement:
 selection_statement:
                 IF conditional_expression LBRACE block_item_list RBRACE elseif_list else_statement SEMICOLON
         |       IF conditional_expression LBRACE block_item_list RBRACE else_statement SEMICOLON
+        |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON //
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
+        |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
         |       IF conditional_expression compound_statement
 	|       SWITCH LPAREN conditional_expression RPAREN statement
                 ;

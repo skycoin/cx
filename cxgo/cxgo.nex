@@ -546,6 +546,11 @@ func checkCXPathSet () {
 }
 
 func main () {
+
+	if true == true {
+		
+	}
+	
 	checkCXPathSet()
 	
 	runtime.LockOSThread()
