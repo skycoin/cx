@@ -296,9 +296,9 @@ func (prgrm *CXProgram) PrintProgram() {
 
 			k := 0
 			for _, expr := range fn.Expressions {
-				if expr.Operator == nil {
-					continue
-				}
+				// if expr.Operator == nil {
+				// 	continue
+				// }
 				//Arguments
 				var args bytes.Buffer
 
@@ -366,10 +366,12 @@ func (prgrm *CXProgram) PrintProgram() {
 				}
 
 				var opName string
-				if expr.Operator.IsNative {
-					opName = OpNames[expr.Operator.OpCode]
-				} else {
-					opName = expr.Operator.Name
+				if expr.Operator != nil {
+					if expr.Operator.IsNative {
+						opName = OpNames[expr.Operator.OpCode]
+					} else {
+						opName = expr.Operator.Name
+					}
 				}
 
 				if len(expr.Outputs) > 0 {
@@ -397,6 +399,23 @@ func (prgrm *CXProgram) PrintProgram() {
 							opName,
 							args.String(),
 						)
+					} else {
+						if len(expr.Outputs) > 0 {
+							var typ string
+							if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
+								// then it's custom type
+								typ = GetAssignmentElement(expr.Outputs[i]).CustomType.Name
+							} else {
+								// then it's native type
+								typ = TypeNames[GetAssignmentElement(expr.Outputs[i]).Type]
+							}
+							
+							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
+								k,
+								lbl,
+								expr.Outputs[0].Name,
+								typ)
+						}
 					}
 
 				} else {

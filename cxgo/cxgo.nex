@@ -748,7 +748,9 @@ func main () {
 				}
 
 				if loc := rePkg.FindIndex(line); loc != nil {
-					if commentLoc != nil && commentLoc[0] < loc[0] {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
 						// then it's commented out
 						continue
 					}
@@ -768,7 +770,9 @@ func main () {
 					}
 				}
 				if loc := reStrct.FindIndex(line); loc != nil {
-					if commentLoc != nil && commentLoc[0] < loc[0] {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
 						// then it's commented out
 						continue
 					}
@@ -794,7 +798,7 @@ func main () {
 			var inBlock int
 
 			var commentedCode bool
-			
+
 			for scanner.Scan() {
 				line := scanner.Bytes()
 				
@@ -822,12 +826,14 @@ func main () {
 
 				if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
 					commentedCode = true
-					continue
+					// continue
 				}
 
 				// we search for packages at the same time, so we can know to what package to add the global
 				if loc := rePkg.FindIndex(line); loc != nil {
-					if commentLoc != nil && commentLoc[0] < loc[0] {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
 						// then it's commented out
 						continue
 					}
@@ -849,7 +855,10 @@ func main () {
 					for _, loc := range locs {
 						if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
 							// then it's outside of a */, e.g. `*/ }`
-							if ((commentLoc == nil) || commentLoc != nil && commentLoc[0] > loc[0]) {
+							if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+								(commentLoc != nil && commentLoc[0] > loc[0]) ||
+								(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+								(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
 								// then we have an uncommented opening bracket
 								inBlock++
 							}
@@ -860,7 +869,10 @@ func main () {
 				if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
 					for _, loc := range locs {
 						if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-							if ((commentLoc == nil) || commentLoc != nil && commentLoc[0] > loc[0]) {
+							if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+								(commentLoc != nil && commentLoc[0] > loc[0]) ||
+								(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+								(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
 								// then we have an uncommented closing bracket
 								inBlock--
 							}
@@ -872,7 +884,9 @@ func main () {
 				// but we don't care about this, as the later passes will throw an error as it's invalid syntax
 				
 				if loc := rePkg.FindIndex(line); loc != nil {
-					if commentLoc != nil && commentLoc[0] < loc[0] {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
 						// then it's commented out
 						continue
 					}
@@ -893,7 +907,9 @@ func main () {
 				// finally, if we read a "var" and we're in global scope, we add the global without any type
 				// the type will be determined later on
 				if loc := reGlbl.FindIndex(line); loc != nil {
-					if (commentLoc != nil && commentLoc[0] < loc[0]) || inBlock != 0 {
+					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+						(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
 						// then it's commented out or inside a block
 						continue
 					}

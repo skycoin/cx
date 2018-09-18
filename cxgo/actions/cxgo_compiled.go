@@ -435,6 +435,9 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 	symName := MakeGenSym(LOCAL_PREFIX)
 
+	arrVarExpr := MakeExpression(nil, CurrentFile, LineNo)
+	arrVarExpr.Package = pkg
+
 	var endPointsCounter int
 	for _, expr := range exprs {
 		if expr.IsArrayLiteral {
@@ -1579,17 +1582,6 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 			// 	strct = sym.Fields[c - 1].CustomType
 			// }
 		}
-		// for c := len(sym.Fields) - 1; c > 0; c-- {
-		// 	if sym.Fields[c - 1].CustomType != nil {
-		// 		strct = sym.Fields[c - 1].CustomType
-		// 	}
-		// 	if inFld, err := strct.GetField(sym.Fields[c].Name); err == nil {
-		// 		// sym.Fields[c].CustomType = strct
-		// 		strct = inFld.CustomType
-		// 	} else {
-		// 		println(ErrorHeader(sym.Fields[c].FileName, sym.Fields[c].FileLine), err.Error())
-		// 	}
-		// }
 
 		strct = arg.CustomType
 		// then we copy all the type struct fields
