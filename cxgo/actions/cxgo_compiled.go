@@ -1723,7 +1723,7 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 
 					strct := arg.CustomType
 
-					if fn, err := PRGRM.GetFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, sym.Package.Name); err == nil {
+					if fn, err := sym.Package.GetMethod(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, strct.Name); err == nil {
 						expr.Operator = fn
 					} else {
 						panic("")

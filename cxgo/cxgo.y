@@ -1137,9 +1137,19 @@ selection_statement:
                 {
 			$$ = SelectionExpressions($2, $4, $6)
                 }
+        |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON
+                {
+			// 
+			$$ = SelectionExpressions($2, nil, $5)
+                }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
                 {
 			$$ = SelectionStatement($2, $4, $6, nil, SEL_ELSEIF)
+                }
+        |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
+                {
+			//
+			$$ = SelectionStatement($2, nil, $5, nil, SEL_ELSEIF)
                 }
         |       IF conditional_expression compound_statement
                 {
