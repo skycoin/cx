@@ -700,7 +700,6 @@ func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CX
 }
 
 func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
-
 	var elt *CXArgument
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) - 1]
@@ -1732,9 +1731,12 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 						panic("")
 					}
 
+					// expr.Inputs = append([]*CXArgument{expr.Outputs[0]}, expr.Inputs...)
+					expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
+					
 					// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
 					sym.Fields = sym.Fields[:len(sym.Fields) - 1]
-					sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
+					// sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
 
 					expr.Outputs = nil
 				}
@@ -2118,6 +2120,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 
 	for _, expr := range fn.Expressions {
 		// ProcessShortDeclaration(expr)
+		
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 		
@@ -2137,7 +2140,7 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 	if expr.Operator == nil {
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
-		
+
 		if op, err := PRGRM.GetFunction(opName, opPkg.Name); err == nil {
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
@@ -2145,8 +2148,13 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 			println(ErrorHeader(CurrentFile, LineNo), err.Error())
 			os.Exit(3)
 			return nil
+		} else {
+			expr.IsMethodCall = true
 		}
-		expr.Outputs = nil
+
+		if expr.Outputs[0].Fields == nil {
+			expr.Outputs = nil
+		}
 	}
 
 	var nestedExprs []*CXExpression
