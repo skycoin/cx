@@ -773,17 +773,15 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
 		// then it's a method call or function in field
-		expr := prevExprs[len(prevExprs) - 1]
-		// opName := expr.Outputs[0].Fields[0].CustomType.Name + "." +
-		// 	expr.Outputs[0].Fields[0].Name
-		expr.IsMethodCall = true
-		// method name
-		expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
-		inp := MakeArgument(expr.Outputs[0].Name, CurrentFile, LineNo)
-		inp.Package = expr.Package
-		inp.Type = expr.Outputs[0].Type
-		inp.CustomType = expr.Outputs[0].CustomType
-		expr.Inputs = append(expr.Inputs, inp)
+		// expr := prevExprs[len(prevExprs) - 1]
+		// expr.IsMethodCall = true
+		// // method name
+		// expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
+		// inp := MakeArgument(expr.Outputs[0].Name, CurrentFile, LineNo)
+		// inp.Package = expr.Package
+		// inp.Type = expr.Outputs[0].Type
+		// inp.CustomType = expr.Outputs[0].CustomType
+		// expr.Inputs = append(expr.Inputs, inp)
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1731,7 +1729,6 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 						panic("")
 					}
 
-					// expr.Inputs = append([]*CXArgument{expr.Outputs[0]}, expr.Inputs...)
 					expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
 					
 					// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
