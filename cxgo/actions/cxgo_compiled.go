@@ -435,6 +435,19 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 	symName := MakeGenSym(LOCAL_PREFIX)
 
+	arrVarExpr := MakeExpression(nil, CurrentFile, LineNo)
+	arrVarExpr.Package = pkg
+	arrVar := MakeArgument(symName, CurrentFile, LineNo)
+	arrVar = DeclarationSpecifiers(arrVar, arrSize, DECL_ARRAY)
+	arrVar.AddType(TypeNames[typSpec])
+	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
+
+	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
+	arrVar.Package = pkg
+	arrVar.IsShortDeclaration = true
+
+	result = append(result, arrVarExpr)
+
 	var endPointsCounter int
 	for _, expr := range exprs {
 		if expr.IsArrayLiteral {
@@ -720,7 +733,23 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
-		fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
+
+		if postExprs[len(postExprs)-1].Operator == nil {
+			// expr.AddInput(postExprs[len(postExprs)-1].Outputs[0])
+			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
+		} else {
+			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Inputs[0].Type])
+			sym.Package = postExprs[len(postExprs)-1].Package
+			sym.IsShortDeclaration = true
+			postExprs[len(postExprs)-1].AddOutput(sym)
+
+			prevExprs = append(postExprs, prevExprs...)
+
+			fld.Indexes = append(fld.Indexes, sym)
+			// expr.AddInput(sym)
+		}
+		
+		// fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 	} else {
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
@@ -1575,21 +1604,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 			} else {
 				println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
 			}
-			// if sym.Fields[c - 1].CustomType != nil {
-			// 	strct = sym.Fields[c - 1].CustomType
-			// }
 		}
-		// for c := len(sym.Fields) - 1; c > 0; c-- {
-		// 	if sym.Fields[c - 1].CustomType != nil {
-		// 		strct = sym.Fields[c - 1].CustomType
-		// 	}
-		// 	if inFld, err := strct.GetField(sym.Fields[c].Name); err == nil {
-		// 		// sym.Fields[c].CustomType = strct
-		// 		strct = inFld.CustomType
-		// 	} else {
-		// 		println(ErrorHeader(sym.Fields[c].FileName, sym.Fields[c].FileLine), err.Error())
-		// 	}
-		// }
 
 		strct = arg.CustomType
 		// then we copy all the type struct fields
@@ -1642,8 +1657,6 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
 
-	
-
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
 	
@@ -1673,7 +1686,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	}
 }
 
-func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
+func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.Package, sym.Name)
@@ -1744,7 +1757,6 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 
 func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
-
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.Package, sym.Name)
 		}
@@ -1756,29 +1768,46 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 				os.Exit(3)
 			}
 
-			if sym.SynonymousTo != "" {
-				// then the offset needs to be shared
-				GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
-				sym.Offset = (*symbols)[sym.Package.Name+"."+sym.SynonymousTo].Offset
+			// if sym.SynonymousTo != "" && false {
+			// 	// then the offset needs to be shared
+			// 	GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
+			// 	sym.Offset = (*symbols)[sym.Package.Name+"."+sym.SynonymousTo].Offset
 
-				(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+			// } else {
+			// 	sym.Offset = *offset
+			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+
+			// 	if sym.IsSlice {
+			// 		*offset += sym.Size
+			// 	} else {
+			// 		*offset += sym.TotalSize
+			// 	}
+
+			// 	if sym.IsPointer {
+			// 		pointer := sym
+			// 		for c := 0; c < sym.IndirectionLevels-1; c++ {
+			// 			pointer = pointer.Pointee
+			// 			pointer.Offset = *offset
+			// 			*offset += pointer.TotalSize
+			// 		}
+			// 	}
+			// }
+			sym.Offset = *offset
+			(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+
+			if sym.IsSlice {
+				*offset += sym.Size
 			} else {
-				sym.Offset = *offset
-				(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+				*offset += sym.TotalSize
+			}
 
-				if sym.IsSlice {
-					*offset += sym.Size
-				} else {
-					*offset += sym.TotalSize
-				}
-
-				if sym.IsPointer {
-					pointer := sym
-					for c := 0; c < sym.IndirectionLevels-1; c++ {
-						pointer = pointer.Pointee
-						pointer.Offset = *offset
-						*offset += pointer.TotalSize
-					}
+			if sym.IsPointer {
+				pointer := sym
+				for c := 0; c < sym.IndirectionLevels-1; c++ {
+					pointer = pointer.Pointee
+					pointer.Offset = *offset
+					*offset += pointer.TotalSize
 				}
 			}
 		}
