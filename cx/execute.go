@@ -11,24 +11,6 @@ import (
 	"time"
 )
 
-// func callsEqual(call1, call2 *CXCall) bool {
-// 	if call1.Line != call2.Line ||
-// 		len(call1.State) != len(call2.State) ||
-// 		call1.Operator != call2.Operator ||
-// 		call1.ReturnAddress != call2.ReturnAddress ||
-// 		call1.Package != call2.Package {
-// 		return false
-// 	}
-
-// 	for k, v := range call1.State {
-// 		if call2.State[k] != v {
-// 			return false
-// 		}
-// 	}
-
-// 	return true
-// }
-
 // It "un-runs" a program
 func (prgrm *CXProgram) Reset() {
 	prgrm.CallStack = MakeCallStack(0)

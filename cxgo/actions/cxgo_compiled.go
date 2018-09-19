@@ -437,6 +437,16 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 	arrVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	arrVarExpr.Package = pkg
+	arrVar := MakeArgument(symName, CurrentFile, LineNo)
+	arrVar = DeclarationSpecifiers(arrVar, arrSize, DECL_ARRAY)
+	arrVar.AddType(TypeNames[typSpec])
+	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
+
+	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
+	arrVar.Package = pkg
+	arrVar.IsShortDeclaration = true
+
+	result = append(result, arrVarExpr)
 
 	var endPointsCounter int
 	for _, expr := range exprs {
@@ -1578,9 +1588,6 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 			} else {
 				println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
 			}
-			// if sym.Fields[c - 1].CustomType != nil {
-			// 	strct = sym.Fields[c - 1].CustomType
-			// }
 		}
 
 		strct = arg.CustomType
@@ -1665,7 +1672,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	}
 }
 
-func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
+func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.Package, sym.Name)
@@ -1673,8 +1680,8 @@ func GiveOffset(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, s
 
 		if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
 			// ProcessDereferenceLevels()
-			ProcessSymbolFields(sym, arg)
 			CopyArgFields(sym, arg)
+			ProcessSymbolFields(sym, arg)
 		}
 	}
 }
@@ -1736,7 +1743,6 @@ func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym 
 
 func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
 	if sym.Name != "" {
-
 		if !sym.IsLocalDeclaration {
 			GetGlobalSymbol(symbols, sym.Package, sym.Name)
 		}

@@ -13,6 +13,9 @@ func op_assert_value(expr *CXExpression, fp int) {
 	if inp1.Type == TYPE_STR {
 		byts1 = []byte(ReadStr(fp, inp1))
 		byts2 = []byte(ReadStr(fp, inp2))
+
+		Debug("huehue", ReadStr(fp, inp1))
+		Debug("huehue", ReadStr(fp, inp2))
 	} else {
 		byts1 = ReadMemory(GetFinalOffset(fp, inp1), inp1)
 		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
