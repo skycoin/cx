@@ -1680,8 +1680,8 @@ func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, 
 
 		if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
 			// ProcessDereferenceLevels()
-			CopyArgFields(sym, arg)
 			ProcessSymbolFields(sym, arg)
+			CopyArgFields(sym, arg)
 		}
 	}
 }
@@ -1754,29 +1754,46 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 				os.Exit(3)
 			}
 
-			if sym.SynonymousTo != "" {
-				// then the offset needs to be shared
-				GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
-				sym.Offset = (*symbols)[sym.Package.Name+"."+sym.SynonymousTo].Offset
+			// if sym.SynonymousTo != "" && false {
+			// 	// then the offset needs to be shared
+			// 	GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
+			// 	sym.Offset = (*symbols)[sym.Package.Name+"."+sym.SynonymousTo].Offset
 
-				(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+			// } else {
+			// 	sym.Offset = *offset
+			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+
+			// 	if sym.IsSlice {
+			// 		*offset += sym.Size
+			// 	} else {
+			// 		*offset += sym.TotalSize
+			// 	}
+
+			// 	if sym.IsPointer {
+			// 		pointer := sym
+			// 		for c := 0; c < sym.IndirectionLevels-1; c++ {
+			// 			pointer = pointer.Pointee
+			// 			pointer.Offset = *offset
+			// 			*offset += pointer.TotalSize
+			// 		}
+			// 	}
+			// }
+			sym.Offset = *offset
+			(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+
+			if sym.IsSlice {
+				*offset += sym.Size
 			} else {
-				sym.Offset = *offset
-				(*symbols)[sym.Package.Name+"."+sym.Name] = sym
+				*offset += sym.TotalSize
+			}
 
-				if sym.IsSlice {
-					*offset += sym.Size
-				} else {
-					*offset += sym.TotalSize
-				}
-
-				if sym.IsPointer {
-					pointer := sym
-					for c := 0; c < sym.IndirectionLevels-1; c++ {
-						pointer = pointer.Pointee
-						pointer.Offset = *offset
-						*offset += pointer.TotalSize
-					}
+			if sym.IsPointer {
+				pointer := sym
+				for c := 0; c < sym.IndirectionLevels-1; c++ {
+					pointer = pointer.Pointee
+					pointer.Offset = *offset
+					*offset += pointer.TotalSize
 				}
 			}
 		}
