@@ -733,7 +733,23 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
-		fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
+
+		if postExprs[len(postExprs)-1].Operator == nil {
+			// expr.AddInput(postExprs[len(postExprs)-1].Outputs[0])
+			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
+		} else {
+			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Inputs[0].Type])
+			sym.Package = postExprs[len(postExprs)-1].Package
+			sym.IsShortDeclaration = true
+			postExprs[len(postExprs)-1].AddOutput(sym)
+
+			prevExprs = append(postExprs, prevExprs...)
+
+			fld.Indexes = append(fld.Indexes, sym)
+			// expr.AddInput(sym)
+		}
+		
+		// fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 	} else {
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
@@ -1640,8 +1656,6 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.Offset = arg.Offset
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
-
-	
 
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
