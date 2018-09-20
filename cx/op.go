@@ -63,7 +63,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 	
 	if dbg {
-		fmt.Println("(start", arg.Name, finalOffset, arg.DereferenceOperations)
+		fmt.Println("(start", arg.Name, arg.FileName, arg.FileLine, finalOffset, arg.DereferenceOperations)
 	}
 
 	elt = arg
@@ -115,7 +115,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	if finalOffset >= PROGRAM.HeapStartsAt && !(len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER) {
 		// then it's an object
 		finalOffset += OBJECT_HEADER_SIZE
-		if arg.IsSlice {
+		if GetAssignmentElement(arg).IsSlice {
 			finalOffset += SLICE_HEADER_SIZE
 		}
 	}

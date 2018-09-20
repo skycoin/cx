@@ -1506,11 +1506,11 @@ func PreFinalSize (finalSize *int, sym *CXArgument, arg *CXArgument) {
 	for _, op := range sym.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
-			if sym.IsSlice {
+			if GetAssignmentElement(sym).IsSlice {
 				continue
 			}
 			var subSize int = 1
-			for _, len := range sym.Lengths[:len(sym.Indexes)] {
+			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {
 				subSize *= len
 			}
 			*finalSize /= subSize
@@ -1659,7 +1659,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
-	
+
 	sym.Pointee = arg.Pointee
 	sym.Lengths = arg.Lengths
 	sym.PointeeSize = arg.PointeeSize
@@ -1668,9 +1668,14 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
+	if arg.IsSlice && (len(sym.Fields) > 0 || len(sym.Indexes) > 0) {
+		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+		sym.DereferenceLevels++
+	}
+
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields) - 1].Type
-		sym.IsSlice = sym.Fields[len(sym.Fields) - 1].IsSlice
+		// sym.IsSlice = sym.Fields[len(sym.Fields) - 1].IsSlice
 	} else {
 		sym.Type = arg.Type
 	}
@@ -1831,7 +1836,7 @@ func ProcessSlice (inp *CXArgument) {
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations) - 1]
 	} else if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
-		elt.DereferenceOperations = append([]int{DEREF_POINTER}, elt.DereferenceOperations...)
+		// elt.DereferenceOperations = append([]int{DEREF_POINTER}, elt.DereferenceOperations...)
 	}
 }
 
