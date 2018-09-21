@@ -300,7 +300,8 @@ func op_len(expr *CXExpression, fp int) {
 
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[offset : offset + STR_HEADER_SIZE])
 	} else {
-		outB1 := FromI32(int32(inp1.Lengths[0]))
+		// outB1 := FromI32(int32(GetAssignmentElement(inp1).Lengths[0]))
+		outB1 := FromI32(int32(GetAssignmentElement(inp1).Lengths[0]))
 		WriteMemory(GetFinalOffset(fp, out1), outB1)
 	}
 }

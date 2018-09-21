@@ -72,11 +72,29 @@ similar to Golang's. CX provides a new programming paradigm based on
 the concept of affordances, where the user can ask the programming
 language at runtime what can be done with a CX object (functions,
 expressions, packages, etc.), and interactively or automatically choose
-one of the affordances to be applied.
+one of the affordances to be applied. This paradigm has the main objective
+of providing an additional security layer for decentralized,
+blockchain-based applications, but can also be used for general
+purpose programming.
 
 # CX Roadmap
 
 ![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/cx-roadmap.png)
+
+# Video Games in CX
+
+In order to test out the language, programmers from the Skycoin
+community have already developed a number of video games, and more are
+in-coming. Below is a list of the current video games that we are
+aware of. If you are developing a video game using CX, please let us
+know in our official telegram for video game development
+https://t.me/skycoin_game_dev, or in the general CX group https://t.me/skycoin_cx.
+
+https://github.com/Lunier/Snake
+https://github.com/galah4d/casino-cx
+https://github.com/redcurse/SynthCat-Brick-Breaker
+https://github.com/atang152/crappyBall-cx
+https://github.com/galah4d/pacman-cx
 
 # CX Playground
 
@@ -89,15 +107,42 @@ Check out the latest additions and bug fixes in the [changelog](https://github.c
 
 # Installation
 
+## Binary Releases
+
+This repository provides new binary releases of the language every
+week. Check this link and download the appropriate binary release for
+your platfrom: https://github.com/skycoin/cx/releases
+
+More platforms will be added in the future.
+
 CX has been successfully installed and tested in recent versions of
 Linux (Ubuntu), MacOS X and Windows. Nevertheless, if you run into any
 problems, please create an issue and we'll try to solve the problem as
 soon as possible.
 
+Once you have downloaded and de-compressed the binary release file,
+you should place it somewhere in your operating system's $PATH
+environment variable (or similar). The purpose of this is to have cx
+globally accessible when using the terminal.
+
+If you don't want to have it globally accessible, you can always try
+out CX locally, inside the directory where you have the binary file.
+
+## Compiling from Source
+
+If a binary release is not currently available for your platfrom or if
+you want to have a nightly build of CX, you'll have to compile from
+source. If you're not familiarized with Go, Git, your OS's terminal or
+your OS's package manager (to name a few), we *strongly* recommend you
+to try out a binary release. If you find any bugs or problems with the
+binary release, submit an issue here:
+https://github.com/skycoin/cx/issues, and we'll fix it for the next
+week's release.
+
 ## Installing Go
 
-First, make sure that you have Go installed by running `go
-version`. It should output something similar to:
+In order to compile CX from source, first make sure that you have Go
+installed by running `go version`. It should output something similar to:
 
 ```
 go version go1.8.3 darwin/amd64
@@ -223,11 +268,10 @@ Once CX has been successfully installed, running `cx` should print
 this in your terminal:
 
 ```
-CX 0.5.6
+CX 0.5.13
 More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
-
 :func main {...
-	*
+	* 
 ```
 
 This is the CX REPL
@@ -357,121 +401,121 @@ func main () () {
 ```
 
 Every CX program must have at least a *main* package, and a *main*
-function. As mentioned before, CX has a very stricty type system,
+function. As mentioned before, CX has a very strictly type system,
 where functions can only be associated with a single type
 signature. As a consequence,
 if we want to print a string, as in the example above, we have to call
 *str*'s print function, where *str* is a package containing string
 related functions.
 
-# Shorthands to Native Functions
+<!-- # Shorthands to Native Functions -->
 
-In the following sections you might see function calls like:
+<!-- In the following sections you might see function calls like: -->
 
-```
-i32.add(5, 10)
-i64.sub(i32.i64(10), i32.i64(5)) 
-```
+<!-- ``` -->
+<!-- i32.add(5, 10) -->
+<!-- i64.sub(i32.i64(10), i32.i64(5))  -->
+<!-- ``` -->
 
-In previous versions of CX, you couldn't write
-*infix* operations (e.g. `5 + 10`), but this is not the case
-anymore. In other words, the two examples above can now be written as:
+<!-- In previous versions of CX, you couldn't write -->
+<!-- *infix* operations (e.g. `5 + 10`), but this is not the case -->
+<!-- anymore. In other words, the two examples above can now be written as: -->
 
-```
-5 + 10
-10 - 5
-```
+<!-- ``` -->
+<!-- 5 + 10 -->
+<!-- 10 - 5 -->
+<!-- ``` -->
 
-Also, now you don't need to use the cast functions `i32.i64`,
-`f32.f64`, etc. If you want to tell the compiler that you want a
-number to be interpreted as a *byte*, an *i64* or as an *f64*, you can use the
-suffixes `B`, `L` and `D`, respectively:
+<!-- Also, now you don't need to use the cast functions `i32.i64`, -->
+<!-- `f32.f64`, etc. If you want to tell the compiler that you want a -->
+<!-- number to be interpreted as a *byte*, an *i64* or as an *f64*, you can use the -->
+<!-- suffixes `B`, `L` and `D`, respectively: -->
 
-```
-byte.print(55B)
-i64.add(31L, 62L)
-f64.mul(25D, 25D)
-```
+<!-- ``` -->
+<!-- byte.print(55B) -->
+<!-- i64.add(31L, 62L) -->
+<!-- f64.mul(25D, 25D) -->
+<!-- ``` -->
 
-or
+<!-- or -->
 
-```
-31L + 62L
-25D * 25D
-```
+<!-- ``` -->
+<!-- 31L + 62L -->
+<!-- 25D * 25D -->
+<!-- ``` -->
 
-A bunch of shorthands for are now implemented
-Many shorthands to native functions are now implemented. These
-shorthands are similar to those present in many other programming
-languages, like `&&` (the *and* logical operator) or `>` (the
-*greather than* relational operator). The following subsections
-present these shorthands.
+<!-- A bunch of shorthands for are now implemented -->
+<!-- Many shorthands to native functions are now implemented. These -->
+<!-- shorthands are similar to those present in many other programming -->
+<!-- languages, like `&&` (the *and* logical operator) or `>` (the -->
+<!-- *greather than* relational operator). The following subsections -->
+<!-- present these shorthands. -->
 
-## Relational Operators
+<!-- ## Relational Operators -->
 
-\* These shorthands can also be used with other
-data types, such as *i64*, *f32*, *str*, etc., and they can also be
-used with identifiers (variables).
+<!-- \* These shorthands can also be used with other -->
+<!-- data types, such as *i64*, *f32*, *str*, etc., and they can also be -->
+<!-- used with identifiers (variables). -->
 
-| Shorthand 	| Native Function 	|
-|:---------:	|:---------------:	|
-|   5 == 5  	|   i32.eq(5, 5)  	|
-|   5 != 5  	|  i32.uneq(5, 5) 	|
-|   5 > 5   	|   i32.gt(5, 5)  	|
-|   5 >= 5  	|  i32.gteq(5, 5) 	|
-|   5 < 5   	|   i32.lt(5, 5)  	|
-|   5 <= 5  	|  i32.lteq(5, 5) 	|
+<!-- | Shorthand 	| Native Function 	| -->
+<!-- |:---------:	|:---------------:	| -->
+<!-- |   5 == 5  	|   i32.eq(5, 5)  	| -->
+<!-- |   5 != 5  	|  i32.uneq(5, 5) 	| -->
+<!-- |   5 > 5   	|   i32.gt(5, 5)  	| -->
+<!-- |   5 >= 5  	|  i32.gteq(5, 5) 	| -->
+<!-- |   5 < 5   	|   i32.lt(5, 5)  	| -->
+<!-- |   5 <= 5  	|  i32.lteq(5, 5) 	| -->
 
-## Logical Operators
+<!-- ## Logical Operators -->
 
-\* These shorthands can also be used with identifiers (variables).
+<!-- \* These shorthands can also be used with identifiers (variables). -->
 
-|   Shorthand   	| Native Function 	|
-|:-------------:	|:---------------:	|
-|     !true     	|    bool.not(true)    	|
-|  true && true 	| bool.and(true, true) 	|
-| true \|\| false 	| bool.or(true, false) 	|
+<!-- |   Shorthand   	| Native Function 	| -->
+<!-- |:-------------:	|:---------------:	| -->
+<!-- |     !true     	|    bool.not(true)    	| -->
+<!-- |  true && true 	| bool.and(true, true) 	| -->
+<!-- | true \|\| false 	| bool.or(true, false) 	| -->
 
-## Arithmetic Operators
+<!-- ## Arithmetic Operators -->
 
-\* These shorthands can also be used with other
-data types, such as *i64*, *f32*, etc., and they can also be
-used with identifiers (variables).
+<!-- \* These shorthands can also be used with other -->
+<!-- data types, such as *i64*, *f32*, etc., and they can also be -->
+<!-- used with identifiers (variables). -->
 
-| Shorthand 	|   Native Function  	|
-|:---------:	|:------------------:	|
-|    5++    	|    i32.add(5, 1)   	|
-|    5--    	|    i32.sub(5, 1)   	|
-|   5 + 5   	|    i32.add(5, 5)   	|
-|   5 - 5   	|    i32.sub(5, 5)   	|
-|   5 * 5   	|    i32.mul(5, 5)   	|
-|   5 / 5   	|    i32.div(5, 5)   	|
-|   5 % 5   	|    i32.mod(5, 5)   	|
-|   5 << 5  	|  i32.bitshl(5, 5)  	|
-|   5 >> 5  	|  i32.bitshr(5, 5)  	|
-|   5 & 5   	|  i32.bitand(5, 5)  	|
-|   5 \| 5   	|   i32.bitor(5, 5)  	|
-|   5 ^ 5   	|  i32.bitxor(5, 5)  	|
-|   5 &^ 5  	| i32.bitclear(5, 5) 	|
+<!-- | Shorthand 	|   Native Function  	| -->
+<!-- |:---------:	|:------------------:	| -->
+<!-- |    5++    	|    i32.add(5, 1)   	| -->
+<!-- |    5--    	|    i32.sub(5, 1)   	| -->
+<!-- |   5 + 5   	|    i32.add(5, 5)   	| -->
+<!-- |   5 - 5   	|    i32.sub(5, 5)   	| -->
+<!-- |   5 * 5   	|    i32.mul(5, 5)   	| -->
+<!-- |   5 / 5   	|    i32.div(5, 5)   	| -->
+<!-- |   5 % 5   	|    i32.mod(5, 5)   	| -->
+<!-- |   5 << 5  	|  i32.bitshl(5, 5)  	| -->
+<!-- |   5 >> 5  	|  i32.bitshr(5, 5)  	| -->
+<!-- |   5 & 5   	|  i32.bitand(5, 5)  	| -->
+<!-- |   5 \| 5   	|   i32.bitor(5, 5)  	| -->
+<!-- |   5 ^ 5   	|  i32.bitxor(5, 5)  	| -->
+<!-- |   5 &^ 5  	| i32.bitclear(5, 5) 	| -->
 
-## Arithmetic Assignment Operators
+<!-- ## Arithmetic Assignment Operators -->
 
-\* These shorthands can also be used with other
-data types that make sense (for example, there's no `f64.mod` native function), such as *i64*, *f32*, etc., and they can also be
-used with identifiers (variables).
+<!-- \* These shorthands can also be used with other -->
+<!-- data types that make sense (for example, there's no `f64.mod` native function), such as *i64*, *f32*, etc., and they can also be -->
+<!-- used with identifiers (variables). -->
 
-| Shorthand 	|      Native Function     	|
-|:---------:	|:------------------------:	|
-|  foo += 5 	|   foo = i32.add(foo, 5)  	|
-|  foo -= 5 	|   foo = i32.sub(foo, 5)  	|
-|  foo *= 5 	|   foo = i32.mul(foo, 5)  	|
-|  foo /= 5 	|   foo = i32.div(foo, 5)  	|
-|  foo %= 5 	|   foo = i32.mod(foo, 5)  	|
-| foo <<= 5 	| foo = i32.bitshl(foo, 5) 	|
-| foo >>= 5 	| foo = i32.bitshr(foo, 5) 	|
-|  foo &= 5 	| foo = i32.bitand(foo, 5) 	|
-|  foo \|= 5 	|  foo = i32.bitor(foo, 5) 	|
-|  foo ^= 5 	| foo = i32.bitxor(foo, 5) 	|
+<!-- | Shorthand 	|      Native Function     	| -->
+<!-- |:---------:	|:------------------------:	| -->
+<!-- |  foo += 5 	|   foo = i32.add(foo, 5)  	| -->
+<!-- |  foo -= 5 	|   foo = i32.sub(foo, 5)  	| -->
+<!-- |  foo *= 5 	|   foo = i32.mul(foo, 5)  	| -->
+<!-- |  foo /= 5 	|   foo = i32.div(foo, 5)  	| -->
+<!-- |  foo %= 5 	|   foo = i32.mod(foo, 5)  	| -->
+<!-- | foo <<= 5 	| foo = i32.bitshl(foo, 5) 	| -->
+<!-- | foo >>= 5 	| foo = i32.bitshr(foo, 5) 	| -->
+<!-- |  foo &= 5 	| foo = i32.bitand(foo, 5) 	| -->
+<!-- |  foo \|= 5 	|  foo = i32.bitor(foo, 5) 	| -->
+<!-- |  foo ^= 5 	| foo = i32.bitxor(foo, 5) 	| -->
 
 # Comments
 
@@ -1046,35 +1090,35 @@ to create complex programs. The downside with *go-to*s is usually that
 programs become harder to read, but they can become very powerful in the
 correct hands.
 
-## Return
+<!-- ## Return -->
 
-If you want to make a function stop its execution and return to its
-calling function, you can use `return`, followed by the arguments that
-you want to return as outputs, separated by commas if more than one.
+<!-- If you want to make a function stop its execution and return to its -->
+<!-- calling function, you can use `return`, followed by the arguments that -->
+<!-- you want to return as outputs, separated by commas if more than one. -->
 
-```
-func safeDiv (num i32, den i32) (res i32) {
-	if den == 0 {
-		return
-	}
-	res = num / den
-}
-```
+<!-- ``` -->
+<!-- func safeDiv (num i32, den i32) (res i32) { -->
+<!-- 	if den == 0 { -->
+<!-- 		return -->
+<!-- 	} -->
+<!-- 	res = num / den -->
+<!-- } -->
+<!-- ``` -->
 
-`return` can also be used without any arguments, but in this case, you
-need to place a semicolon (;) in front of it. If a semicolon is not
-present, the CX parser will consider the code in the following lines
-to be the function's output:
+<!-- `return` can also be used without any arguments, but in this case, you -->
+<!-- need to place a semicolon (;) in front of it. If a semicolon is not -->
+<!-- present, the CX parser will consider the code in the following lines -->
+<!-- to be the function's output: -->
 
-```
-func foo () (num i32) {
-	num = 5
-	return
-	num = i32.add(5, 5)
-}
-```
+<!-- ``` -->
+<!-- func foo () (num i32) { -->
+<!-- 	num = 5 -->
+<!-- 	return -->
+<!-- 	num = i32.add(5, 5) -->
+<!-- } -->
+<!-- ``` -->
 
-The function above will return 10, instead of 5.
+<!-- The function above will return 10, instead of 5. -->
 
 # Functions
 
@@ -1307,33 +1351,33 @@ raised, and it was caused by *i32.div* at line #7. Lastly, we can see
 that the CX REPL starts, where the programmer can enter some commands
 to try to fix the error.
 
-## Halt
+<!-- ## Halt -->
 
-Sometimes we want to *halt* a program's execution: maybe because we
-want to check what's the current call's state, maybe because we want
-to see if the program's flow is reaching somewhere, maybe simply
-because it's fun. Whatever the reason might be, CX provides us with a
-very helpful function, which is curiously named "halt."
+<!-- Sometimes we want to *halt* a program's execution: maybe because we -->
+<!-- want to check what's the current call's state, maybe because we want -->
+<!-- to see if the program's flow is reaching somewhere, maybe simply -->
+<!-- because it's fun. Whatever the reason might be, CX provides us with a -->
+<!-- very helpful function, which is curiously named "halt." -->
 
-```
-for true {
-	str.print("Enter a number greater than 0: ")
-	value := i32.read()
+<!-- ``` -->
+<!-- for true { -->
+<!-- 	str.print("Enter a number greater than 0: ") -->
+<!-- 	value := i32.read() -->
 
-	if i32.gt(value, 0) {
-		str.print("Good, good.")
-	} else {
-		halt("The number was not greater than 0.")
-	}
-}
-```
+<!-- 	if i32.gt(value, 0) { -->
+<!-- 		str.print("Good, good.") -->
+<!-- 	} else { -->
+<!-- 		halt("The number was not greater than 0.") -->
+<!-- 	} -->
+<!-- } -->
+<!-- ``` -->
 
-In this example, CX enters an infinite loop using *for true*. The user
-is asked to enter a number greater than 0, and this value is *read*
-using the *i32.read* function. If this value is greater than 0, the
-program congratulates the user, and if it is not greater than 0, the
-program halts. As you can see, halt receives a string as it's
-argument, which serves as an error message for the user.
+<!-- In this example, CX enters an infinite loop using *for true*. The user -->
+<!-- is asked to enter a number greater than 0, and this value is *read* -->
+<!-- using the *i32.read* function. If this value is greater than 0, the -->
+<!-- program congratulates the user, and if it is not greater than 0, the -->
+<!-- program halts. As you can see, halt receives a string as it's -->
+<!-- argument, which serves as an error message for the user. -->
 
 ## Unit Testing
 
@@ -1345,24 +1389,17 @@ from 0 to 3 to it's corresponding "word name" (for example, 3 =>
 
 ```
 func toWord (num i32) (name str) {
-	if i32.eq(0, num) {
+	if num == 0 {
 		name = "zero"
-		return
-	}
-	if i32.eq(1, num) {
+	} else if num == 1 {
 		name = "one"
-		return
-	}
-	if i32.eq(2, num) {
+	} else if num == 2 {
 		name = "two"
-		return
-	}
-	if i32.eq(3, num) {
+	} else if num == 3 {
 		name = "three"
-		return
+	} else {
+		name = "error"
 	}
-	name = "error"
-	return
 }
 ```
 
@@ -1382,13 +1419,12 @@ complicated when your program reaches dozens of functions. A better
 solution is to use CX's *test* package:
 
 ```
-test.start()
-test.str(toWord(0), "zero", "0 failed")
-test.str(toWord(1), "one", "0 failed")
-test.str(toWord(2), "two", "0 failed")
-test.str(toWord(3), "three", "0 failed")
-test.str(toWord(4), "error", "0 failed")
-test.stop()
+var results [5]bool
+results[0] = assert(toWord(0), "zero", "0 failed")
+results[1] = assert(toWord(1), "one", "1 failed")
+results[2] = assert(toWord(2), "two", "2 failed")
+results[3] = assert(toWord(3), "three", "3 failed")
+results[4] = assert(toWord(4), "error", "4 failed")
 ```
 
 *test.start* tells CX that unit testing will start, and that
@@ -1420,414 +1456,414 @@ you want to see a complete example, you can see CX's unit tests
 [here](https://github.com/skycoin/cx/blob/master/tests/test.cx) (that
 is, you're seeing how we use CX to test that CX is working correctly).
 
-# Affordances
-
-If we create a CX function, what can we do with it? We can call it, we
-can add more expressions to it, we can add more input and output
-parameters, we can remove them, we can change its name, we can remove
-the function entirely... These are called affordances in CX, and they
-help us achieve meta-programming: programs that can get themselves
-modified.
-
-CX applies the affordance paradigm by using its affordance system and
-inference engine. The affordance system can determine everything that
-can be done to an object, and everything that that object can do to
-its surroundings. The inference system filters these affordances
-according to certain criteria.
-
-As this is a complex subject in CX, let's go step by step. First, we
-need to tell CX somehow what element is our target, i.e., what element
-we want to get affordances of. To do this, we need to create a
-*target*:
-
-```
-target := ->{
-  pkg(main) fn(double) exp(multiplication)
-}
-```
-
-Everything contained in *->{...}* is practically a different
-mini-language, but it tries to resemble what we have seen in CX until
-now, as much as possible. *pkg* is used to tell CX what package we
-want to target, *fn* to target a function, and *exp* to target an
-expression. In this case, *main*, *double* and *multiplication* are
-not CX variables; they are simply identifiers for the inference
-engine.
-
-Now, we need to create something similar to a *knowledge base*,
-containing *facts* or *objects*, as are called in CX. Objects simply
-tell CX something that is true or, more correctly, something that
-exists in the current environment.
-
-```
-objects := ->{
-    cloudy $0.7,
-    hot $0.2
-}
-```
-
-As you can see, we keep using the *->{...}* syntax. We are stating
-that the objects *cloudy* and *hot* exist. Notice that objects are
-separated by commas, and that they have numbers next to them, preceded
-by a dollar sign ($). These numbers are called *weights*, and they
-help us assign a grade of truthiness to the object. For instance, we
-are perceiving the weather to be 0.7 cloudy, or *very* cloudy perhaps,
-while we are perceiving it to be only 0.2 hot, or *not so* hot.
-
-Lastly, we need to define a set of *rules* that describe how the
-stated objects are going to filter the affordances determined by the
-affordance system.
-
-```
-if cloudy $0.8 {
-  allow(*.lightSensitive == true)
-  obj(drones $1.0)
-}
-if and(cloudy $0.5, hot $0.1) {
-  allow(*.numberWheels > 2)
-  reject(*.solarPowered == true)
-  obj(rovers $1.0)
-}
-if true {
-  allow(*.class == "bipedal")
-}  
-if or(drones $1.0, rovers $1.0) {
-  reject(*.class == "bipedal")
-}
-```
-
-Let's imagine that we want to program some logic that determines what
-kind of robots can or should be deployed to a particular
-environment. We need to keep in mind that
-at the beginning, the affordance system should have thrown *every*
-robot that exists in the system and that is accessible to the targeted
-CX expression in this case.
-
-The first rule is telling the inference system to allow any robot that
-is light sensitive, and then we dynamically add another object to the
-object set: *drones $1.0* (actually, this is an actual set, as in the
-mathematical sense, i.e., objects can't be repeated). Rules can add
-new objects to affect the execution of the following rules. Adding the
-*drones* object can be interpreted as saying "we can/will deploy
-drones."
-
-The second rule tells the inference system to allow any robot that has
-more than 2 wheels, but to reject any robot that is solar powered
-(because it's too cloudy). The robots meeting these criteria are
-rovers, so we add an object *rovers*.
-
-The third rule is interesting because, regardless of what objects we
-have and regardless of their weights, bipedal robots are going to be
-deployed... *unless* the fourth rule is true. The fourth rule tells
-the inference engine to reject bipedal robots if we are deploying
-either drones or rovers already.
-
-Now we have all the requirements to create a query: a target, objects
-and rules. But first, we need to assign a label to the expression that
-we want to query.
-
-```
-multiplication:
-	i32.mul(5, 0)
-```
-
-The expression above is a simple multiplication. Notice how we are
-multiplying 5 by 0. CX's affordance system, when querying expressions,
-is always going find out what arguments we can send as the last output
-that we have given. In this case, we want to replace the 0. To label
-the expression, we use the same kind of labels that we use for *go-to*
-statements.
-
-```
-affs := aff.query(target, objs, rules)
-```
-
-The code above will query the affordance system and perform the
-filtering according to the provided objects and rules. Notice that
-*aff.query* returns something and is stored in *affs*. *aff.query*
-returns all the affordances for the queried expression. We can print
-the obtained affordances by using *aff.print*:
-
-```
-aff.print(affs)
-```
-
-And should return something similar to:
-
-```
-(0)	Operator: AddArgument	Name: foo1
-(1)	Operator: AddArgument	Name: foo2
-(2)	Operator: AddArgument	Name: foo3
-(3)	Operator: AddArgument	Name: foo4
-```
-
-The numbers enclosed in parentheses are the affordance indexes, and
-they are used to know what affordance we want to execute or apply in
-particular. For example:
-
-```
-aff.execute(target, affs, 0)
-```
-
-*aff.execute* executes the nth affordance from a list of affordances
- to a target. In this case, we want to apply the 0th affordance from
- *affs* to *target* (which is the multiplication
- expression). Following the robots example, we actually want to send
- all the robots that meet the criteria defined by the rules. We can
- loop over all the affordances by using *aff.len*:
-
-```
-for c := 0; i32.lt(c, aff.len(affs)); c = i32.add(c, 1) {
-	aff.execute(target, affs, c)
-deployRobot:
-	deployRobot(new Robot{class: "default"})
-}
-```
-
-You should always send a default value, in case the affordance system
-returns 0 results. Also, CX will complain that *deployRobot* requires
-one argument and won't compile or interpret the program. If you don't
-want a default value, just send a dummy value like 0, an empty
-struct instance, etc., and then have an *if* statement check if the
-resulting affordances array is empty before continuing with *aff.execute*.
-
-## Limiting the Affordance System's Search Space
-
-As you may have noticed, the affordance system takes into
-consideration *all* your program as its search space. If you're
-looking for *i32*s and you have some *i32* fields in some global
-struct instances in an imported package, CX will consider it. This
-behaviour might be useful for some type of applications: for example,
-creating an IDE that lists you all the variables that you can send to an
-expression as an argument. However, for many other applications, you
-might want to limit this search space.
-
-Let's imagine that you want to allow all the variables with values that are
-greater than 2, you could write this rule:
-
-```
-rules := ->{
-    if true {
-        allow(x > 2)
-    }
-}
-```
-
-But the inference process is taking too long, even if you only wanted
-to search in a pair of arrays that were sent as arguments to the
-currently called function:
-
-```
-func doSomething (array1 []i32, array2 []i32) () {
- /* ... */
-}
-```
-How can we limit the search space to *locals* and *arrays*? With the
-`search` function:
-
-```
-rules := ->{
-    if true {
-        search(locals)
-        search(arrays)
-        allow(x > 2)
-    }
-}
-```
-
-You can create combinations for limiting the search space using the
-following keywords: *nonArrays*, *arrays*, *structs*, *locals*,
-*globals*, *allScopes*, and *allTypes*. As you can see, these keywords
-limit the *type* (arrays or non-arrays) and *scope* (locals and
-globals). Additionally, you can tell CX if you want to also search in
-struct instances' fields.
-
-Not limiting the search space is equivalent to the following:
-
-```
-rules := ->{
-    if true {
-        search(structs)
-        search(allScopes)
-        search(allTypes)
-    }
-}
-```
-
-# Experimental Features
-
-CX continues growing every day. As a consequence, some features are
-still in its infancy stages. This also means that they are very prone
-to change and be improved in the future. Particularly, in this
-tutorial we'll mention CX's evolutionary algorithm, CX's capability to
-serialize itself, and GLFW and OpenGL API.
-
-## Evolutionary Algorithm
-
-After creating the first prototype of CX's affordance system, one of
-the first ideas that came to mind was to use it to create an
-evolutionary algorithm; particularly, a genetic programming (GP)
-algorithm. Programming languages that can manipulate themselves or
-that can programmatically create programs are usual targets to
-experiment with new GP ideas, such as lisps.
-
-In the case of CX, the affordance system is ideal for creating such
-algorithms. CX can start with a null object that represents a CX
-program, and then query that object to know what we can do with it. As
-it is empty, the first and only action would be to add a *main*
-package. The second option only option would be to create a *main*
-function. From this point, the possibilities start to grow
-exponentially: add new definitions, new functions, new input and
-output parameters, add expressions to these functions, etc. Actually,
-one of the first experiments using the affordance system was to create
-a random program.
-
-With some restrictions, it was easy to create a basic GP algorithm for
-CX: we need to target a single function which will act as a solution
-to a problem, this function needs to have only one input and one
-output (although this will probably change later on), we'll be adding
-only a limited number of expressions to the function, the operators
-for these expressions are limited to a certain set and, lastly, the
-arguments to these expressions are limited to local variables only. We
-could provide a deeper explanation on how it is constructed, but
-that's out of the scope of this tutorial, but you can [read the
-source code](https://github.com/skycoin/cx/blob/master/src/base/evolution.go).
-
-Let's suppose that we have an function that we don't know how it
-works, but we know what are its outputs when sent certain inputs (for
-example, a stock market time-series).
-
-```
-[-10 -9 -8 -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10]
-```
-
-We decide to test the function with the input values above, and the
-unknown function responded with the following outputs:
-
-```
-[110 90 72 56 42 30 20 12 6 2 0 0 2 6 12 20 30 42 56 72 90]
-```
-
-How can we know what function responds that way? Well, one option is
-to just think a little but and after some minutes you should find out
-that a possible function is *n\*n+n*, but let's pretend that this is a
-harder problem. How can we find a solution to this problem? One way is
-to use a [curve-fitting](https://en.wikipedia.org/wiki/Curve_fitting)
-algorithm, such as neural networks or, you guessed it, genetic
-programming.
-
-First, let's program the *real function*:
-
-```
-func realFn (n f64) (out f64) {
-	out = f64.add(f64.mul(n, n), n)
-}
-```
-
-And now, let's create the function that *simulates* the real function:
-
-```
-func simFn (n f64) (out f64) {}
-```
-
-Woa! Wait, it's empty! Yeah, we're going to ask CX to fill it for us
-using its evolutionary algorithm. If we had a rough idea of how the
-real function is composed, we could help CX by writing some
-expressions that approximate the solution, like:
-
-```
-func simFn (n f64) (out f64) {
-  someHelp := f64.mul(n, n)
-}
-```
-
-And the evolutionary algorithm could converge to a solution faster (or
-maybe not. Maybe your guess is not as good as you think). But let's
-make CX do all the work and leave *simFn* empty. Now, we only need to
-call *evolve*:
-
-```
-evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1))
-```
-
-*evolve*'s first parameter is used to indicate CX what's the target
- function to be evolved, which is *simFn* in this case. The second
- parameter is a string representing a bag of functions to be used to
- find the solution. If you have no idea of what could be part of the
- solution, you could just write "." and CX will use every function it
- knows to create a solution. The third and fourth parameters are the
- inputs and outputs that represent the real function's behaviour. The
- sixth parameter represents how many expressions you want the solution
- to have.
-
-The last two parameters are known as *stop criteria*, which
- are: for how many iterations do you want CX to run the evolutionary
- algorithm, and what is a "good enough" error to reach before
- stopping. But why do we need these parameters? Why not run the
- evolutionary algorithm until it finds *THE* solution? Well, for this
- example we have chosen a very easy problem to solve, but most
- problems in the real world are very hard to solve. *Bio-inspired*
- search algorithms, such as GP algorithms, are considered as
- *heuristics*, which is a fancy word to say that they won't
- necessarily reach the optimal solution. There are indeed algorithms
- that are guaranteed to find an optimal solution, but these algorithms
- can take a lot of time to find it (and by a lot of time, we mean
- weeks or even months, depending on the problem and how rich you are
- te get a suitable server, of course). Anyway, *stop criteria* are
- used to tell the evolutionary algorithm when it should stop
- searching.
-
-Anyway, after either reaching 100 iterations or an error lower or
-equal to 0.1, our evolutionary algorithm will stop, and now we can
-test the solution:
-
-```
-str.print("Testing evolved solution")
-for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) {
-	f64.print(simFn([]f64.read(inps, c)))
-}
-```
-
-As the problem is very easy to solve, the code above should print the
-same numbers that are present in the outputs array. If you are curious
-on how the evolved function looks like, you can add a call to *halt*
-before the program finishes, and type *:dProgram;* in the *REPL*. You
-should see something like this:
-
-```
-1.- Function: simFn (n f64) (out f64)
-			0.- Expression: var_1037 = f64.mul(n f64, n f64)
-			1.- Expression: var_9874 = f64.sub(var_1037 , var_1037 )
-			2.- Expression: var_9905 = f64.mul(var_9874 , n f64)
-			3.- Expression: var_9936 = f64.add(var_1037 , var_9874 )
-			4.- Expression: out = f64.add(var_9936 , n f64)
-```
-
-That function is an equivalent function to *n\*n+n*. Awesome, right?
-
-## Serialization
-
-CX programs can fully or partially serialize themselves. At the
-moment, CX's serialization feature only has functions to completely
-serialize the calling program, and to deserialize it back and print
-its structure to the user
-
-*serialize* is a parameter-less function, which returns a byte array
- that represents the current program.
-
-```
-sPrgrm := serialize()
-```
-
-And *deserialize* receives a byte array which should represent a
-serialized program.
-
-```
-deserialize(sPrgrm)
-```
-
-After a call to *deserialize*, the terminal should print the program's
-abstract syntax tree.
+<!-- # Affordances -->
+
+<!-- If we create a CX function, what can we do with it? We can call it, we -->
+<!-- can add more expressions to it, we can add more input and output -->
+<!-- parameters, we can remove them, we can change its name, we can remove -->
+<!-- the function entirely... These are called affordances in CX, and they -->
+<!-- help us achieve meta-programming: programs that can get themselves -->
+<!-- modified. -->
+
+<!-- CX applies the affordance paradigm by using its affordance system and -->
+<!-- inference engine. The affordance system can determine everything that -->
+<!-- can be done to an object, and everything that that object can do to -->
+<!-- its surroundings. The inference system filters these affordances -->
+<!-- according to certain criteria. -->
+
+<!-- As this is a complex subject in CX, let's go step by step. First, we -->
+<!-- need to tell CX somehow what element is our target, i.e., what element -->
+<!-- we want to get affordances of. To do this, we need to create a -->
+<!-- *target*: -->
+
+<!-- ``` -->
+<!-- target := ->{ -->
+<!--   pkg(main) fn(double) exp(multiplication) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- Everything contained in *->{...}* is practically a different -->
+<!-- mini-language, but it tries to resemble what we have seen in CX until -->
+<!-- now, as much as possible. *pkg* is used to tell CX what package we -->
+<!-- want to target, *fn* to target a function, and *exp* to target an -->
+<!-- expression. In this case, *main*, *double* and *multiplication* are -->
+<!-- not CX variables; they are simply identifiers for the inference -->
+<!-- engine. -->
+
+<!-- Now, we need to create something similar to a *knowledge base*, -->
+<!-- containing *facts* or *objects*, as are called in CX. Objects simply -->
+<!-- tell CX something that is true or, more correctly, something that -->
+<!-- exists in the current environment. -->
+
+<!-- ``` -->
+<!-- objects := ->{ -->
+<!--     cloudy $0.7, -->
+<!--     hot $0.2 -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- As you can see, we keep using the *->{...}* syntax. We are stating -->
+<!-- that the objects *cloudy* and *hot* exist. Notice that objects are -->
+<!-- separated by commas, and that they have numbers next to them, preceded -->
+<!-- by a dollar sign ($). These numbers are called *weights*, and they -->
+<!-- help us assign a grade of truthiness to the object. For instance, we -->
+<!-- are perceiving the weather to be 0.7 cloudy, or *very* cloudy perhaps, -->
+<!-- while we are perceiving it to be only 0.2 hot, or *not so* hot. -->
+
+<!-- Lastly, we need to define a set of *rules* that describe how the -->
+<!-- stated objects are going to filter the affordances determined by the -->
+<!-- affordance system. -->
+
+<!-- ``` -->
+<!-- if cloudy $0.8 { -->
+<!--   allow(*.lightSensitive == true) -->
+<!--   obj(drones $1.0) -->
+<!-- } -->
+<!-- if and(cloudy $0.5, hot $0.1) { -->
+<!--   allow(*.numberWheels > 2) -->
+<!--   reject(*.solarPowered == true) -->
+<!--   obj(rovers $1.0) -->
+<!-- } -->
+<!-- if true { -->
+<!--   allow(*.class == "bipedal") -->
+<!-- }   -->
+<!-- if or(drones $1.0, rovers $1.0) { -->
+<!--   reject(*.class == "bipedal") -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- Let's imagine that we want to program some logic that determines what -->
+<!-- kind of robots can or should be deployed to a particular -->
+<!-- environment. We need to keep in mind that -->
+<!-- at the beginning, the affordance system should have thrown *every* -->
+<!-- robot that exists in the system and that is accessible to the targeted -->
+<!-- CX expression in this case. -->
+
+<!-- The first rule is telling the inference system to allow any robot that -->
+<!-- is light sensitive, and then we dynamically add another object to the -->
+<!-- object set: *drones $1.0* (actually, this is an actual set, as in the -->
+<!-- mathematical sense, i.e., objects can't be repeated). Rules can add -->
+<!-- new objects to affect the execution of the following rules. Adding the -->
+<!-- *drones* object can be interpreted as saying "we can/will deploy -->
+<!-- drones." -->
+
+<!-- The second rule tells the inference system to allow any robot that has -->
+<!-- more than 2 wheels, but to reject any robot that is solar powered -->
+<!-- (because it's too cloudy). The robots meeting these criteria are -->
+<!-- rovers, so we add an object *rovers*. -->
+
+<!-- The third rule is interesting because, regardless of what objects we -->
+<!-- have and regardless of their weights, bipedal robots are going to be -->
+<!-- deployed... *unless* the fourth rule is true. The fourth rule tells -->
+<!-- the inference engine to reject bipedal robots if we are deploying -->
+<!-- either drones or rovers already. -->
+
+<!-- Now we have all the requirements to create a query: a target, objects -->
+<!-- and rules. But first, we need to assign a label to the expression that -->
+<!-- we want to query. -->
+
+<!-- ``` -->
+<!-- multiplication: -->
+<!-- 	i32.mul(5, 0) -->
+<!-- ``` -->
+
+<!-- The expression above is a simple multiplication. Notice how we are -->
+<!-- multiplying 5 by 0. CX's affordance system, when querying expressions, -->
+<!-- is always going find out what arguments we can send as the last output -->
+<!-- that we have given. In this case, we want to replace the 0. To label -->
+<!-- the expression, we use the same kind of labels that we use for *go-to* -->
+<!-- statements. -->
+
+<!-- ``` -->
+<!-- affs := aff.query(target, objs, rules) -->
+<!-- ``` -->
+
+<!-- The code above will query the affordance system and perform the -->
+<!-- filtering according to the provided objects and rules. Notice that -->
+<!-- *aff.query* returns something and is stored in *affs*. *aff.query* -->
+<!-- returns all the affordances for the queried expression. We can print -->
+<!-- the obtained affordances by using *aff.print*: -->
+
+<!-- ``` -->
+<!-- aff.print(affs) -->
+<!-- ``` -->
+
+<!-- And should return something similar to: -->
+
+<!-- ``` -->
+<!-- (0)	Operator: AddArgument	Name: foo1 -->
+<!-- (1)	Operator: AddArgument	Name: foo2 -->
+<!-- (2)	Operator: AddArgument	Name: foo3 -->
+<!-- (3)	Operator: AddArgument	Name: foo4 -->
+<!-- ``` -->
+
+<!-- The numbers enclosed in parentheses are the affordance indexes, and -->
+<!-- they are used to know what affordance we want to execute or apply in -->
+<!-- particular. For example: -->
+
+<!-- ``` -->
+<!-- aff.execute(target, affs, 0) -->
+<!-- ``` -->
+
+<!-- *aff.execute* executes the nth affordance from a list of affordances -->
+<!--  to a target. In this case, we want to apply the 0th affordance from -->
+<!--  *affs* to *target* (which is the multiplication -->
+<!--  expression). Following the robots example, we actually want to send -->
+<!--  all the robots that meet the criteria defined by the rules. We can -->
+<!--  loop over all the affordances by using *aff.len*: -->
+
+<!-- ``` -->
+<!-- for c := 0; i32.lt(c, aff.len(affs)); c = i32.add(c, 1) { -->
+<!-- 	aff.execute(target, affs, c) -->
+<!-- deployRobot: -->
+<!-- 	deployRobot(new Robot{class: "default"}) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- You should always send a default value, in case the affordance system -->
+<!-- returns 0 results. Also, CX will complain that *deployRobot* requires -->
+<!-- one argument and won't compile or interpret the program. If you don't -->
+<!-- want a default value, just send a dummy value like 0, an empty -->
+<!-- struct instance, etc., and then have an *if* statement check if the -->
+<!-- resulting affordances array is empty before continuing with *aff.execute*. -->
+
+<!-- ## Limiting the Affordance System's Search Space -->
+
+<!-- As you may have noticed, the affordance system takes into -->
+<!-- consideration *all* your program as its search space. If you're -->
+<!-- looking for *i32*s and you have some *i32* fields in some global -->
+<!-- struct instances in an imported package, CX will consider it. This -->
+<!-- behaviour might be useful for some type of applications: for example, -->
+<!-- creating an IDE that lists you all the variables that you can send to an -->
+<!-- expression as an argument. However, for many other applications, you -->
+<!-- might want to limit this search space. -->
+
+<!-- Let's imagine that you want to allow all the variables with values that are -->
+<!-- greater than 2, you could write this rule: -->
+
+<!-- ``` -->
+<!-- rules := ->{ -->
+<!--     if true { -->
+<!--         allow(x > 2) -->
+<!--     } -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- But the inference process is taking too long, even if you only wanted -->
+<!-- to search in a pair of arrays that were sent as arguments to the -->
+<!-- currently called function: -->
+
+<!-- ``` -->
+<!-- func doSomething (array1 []i32, array2 []i32) () { -->
+<!--  /* ... */ -->
+<!-- } -->
+<!-- ``` -->
+<!-- How can we limit the search space to *locals* and *arrays*? With the -->
+<!-- `search` function: -->
+
+<!-- ``` -->
+<!-- rules := ->{ -->
+<!--     if true { -->
+<!--         search(locals) -->
+<!--         search(arrays) -->
+<!--         allow(x > 2) -->
+<!--     } -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- You can create combinations for limiting the search space using the -->
+<!-- following keywords: *nonArrays*, *arrays*, *structs*, *locals*, -->
+<!-- *globals*, *allScopes*, and *allTypes*. As you can see, these keywords -->
+<!-- limit the *type* (arrays or non-arrays) and *scope* (locals and -->
+<!-- globals). Additionally, you can tell CX if you want to also search in -->
+<!-- struct instances' fields. -->
+
+<!-- Not limiting the search space is equivalent to the following: -->
+
+<!-- ``` -->
+<!-- rules := ->{ -->
+<!--     if true { -->
+<!--         search(structs) -->
+<!--         search(allScopes) -->
+<!--         search(allTypes) -->
+<!--     } -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- # Experimental Features -->
+
+<!-- CX continues growing every day. As a consequence, some features are -->
+<!-- still in its infancy stages. This also means that they are very prone -->
+<!-- to change and be improved in the future. Particularly, in this -->
+<!-- tutorial we'll mention CX's evolutionary algorithm, CX's capability to -->
+<!-- serialize itself, and GLFW and OpenGL API. -->
+
+<!-- ## Evolutionary Algorithm -->
+
+<!-- After creating the first prototype of CX's affordance system, one of -->
+<!-- the first ideas that came to mind was to use it to create an -->
+<!-- evolutionary algorithm; particularly, a genetic programming (GP) -->
+<!-- algorithm. Programming languages that can manipulate themselves or -->
+<!-- that can programmatically create programs are usual targets to -->
+<!-- experiment with new GP ideas, such as lisps. -->
+
+<!-- In the case of CX, the affordance system is ideal for creating such -->
+<!-- algorithms. CX can start with a null object that represents a CX -->
+<!-- program, and then query that object to know what we can do with it. As -->
+<!-- it is empty, the first and only action would be to add a *main* -->
+<!-- package. The second option only option would be to create a *main* -->
+<!-- function. From this point, the possibilities start to grow -->
+<!-- exponentially: add new definitions, new functions, new input and -->
+<!-- output parameters, add expressions to these functions, etc. Actually, -->
+<!-- one of the first experiments using the affordance system was to create -->
+<!-- a random program. -->
+
+<!-- With some restrictions, it was easy to create a basic GP algorithm for -->
+<!-- CX: we need to target a single function which will act as a solution -->
+<!-- to a problem, this function needs to have only one input and one -->
+<!-- output (although this will probably change later on), we'll be adding -->
+<!-- only a limited number of expressions to the function, the operators -->
+<!-- for these expressions are limited to a certain set and, lastly, the -->
+<!-- arguments to these expressions are limited to local variables only. We -->
+<!-- could provide a deeper explanation on how it is constructed, but -->
+<!-- that's out of the scope of this tutorial, but you can [read the -->
+<!-- source code](https://github.com/skycoin/cx/blob/master/src/base/evolution.go). -->
+
+<!-- Let's suppose that we have an function that we don't know how it -->
+<!-- works, but we know what are its outputs when sent certain inputs (for -->
+<!-- example, a stock market time-series). -->
+
+<!-- ``` -->
+<!-- [-10 -9 -8 -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10] -->
+<!-- ``` -->
+
+<!-- We decide to test the function with the input values above, and the -->
+<!-- unknown function responded with the following outputs: -->
+
+<!-- ``` -->
+<!-- [110 90 72 56 42 30 20 12 6 2 0 0 2 6 12 20 30 42 56 72 90] -->
+<!-- ``` -->
+
+<!-- How can we know what function responds that way? Well, one option is -->
+<!-- to just think a little but and after some minutes you should find out -->
+<!-- that a possible function is *n\*n+n*, but let's pretend that this is a -->
+<!-- harder problem. How can we find a solution to this problem? One way is -->
+<!-- to use a [curve-fitting](https://en.wikipedia.org/wiki/Curve_fitting) -->
+<!-- algorithm, such as neural networks or, you guessed it, genetic -->
+<!-- programming. -->
+
+<!-- First, let's program the *real function*: -->
+
+<!-- ``` -->
+<!-- func realFn (n f64) (out f64) { -->
+<!-- 	out = f64.add(f64.mul(n, n), n) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- And now, let's create the function that *simulates* the real function: -->
+
+<!-- ``` -->
+<!-- func simFn (n f64) (out f64) {} -->
+<!-- ``` -->
+
+<!-- Woa! Wait, it's empty! Yeah, we're going to ask CX to fill it for us -->
+<!-- using its evolutionary algorithm. If we had a rough idea of how the -->
+<!-- real function is composed, we could help CX by writing some -->
+<!-- expressions that approximate the solution, like: -->
+
+<!-- ``` -->
+<!-- func simFn (n f64) (out f64) { -->
+<!--   someHelp := f64.mul(n, n) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- And the evolutionary algorithm could converge to a solution faster (or -->
+<!-- maybe not. Maybe your guess is not as good as you think). But let's -->
+<!-- make CX do all the work and leave *simFn* empty. Now, we only need to -->
+<!-- call *evolve*: -->
+
+<!-- ``` -->
+<!-- evolve("simFn", "f64.add|f64.mul|f64.sub", inps, outs, 5, 100, f32.f64(0.1)) -->
+<!-- ``` -->
+
+<!-- *evolve*'s first parameter is used to indicate CX what's the target -->
+<!--  function to be evolved, which is *simFn* in this case. The second -->
+<!--  parameter is a string representing a bag of functions to be used to -->
+<!--  find the solution. If you have no idea of what could be part of the -->
+<!--  solution, you could just write "." and CX will use every function it -->
+<!--  knows to create a solution. The third and fourth parameters are the -->
+<!--  inputs and outputs that represent the real function's behaviour. The -->
+<!--  sixth parameter represents how many expressions you want the solution -->
+<!--  to have. -->
+
+<!-- The last two parameters are known as *stop criteria*, which -->
+<!--  are: for how many iterations do you want CX to run the evolutionary -->
+<!--  algorithm, and what is a "good enough" error to reach before -->
+<!--  stopping. But why do we need these parameters? Why not run the -->
+<!--  evolutionary algorithm until it finds *THE* solution? Well, for this -->
+<!--  example we have chosen a very easy problem to solve, but most -->
+<!--  problems in the real world are very hard to solve. *Bio-inspired* -->
+<!--  search algorithms, such as GP algorithms, are considered as -->
+<!--  *heuristics*, which is a fancy word to say that they won't -->
+<!--  necessarily reach the optimal solution. There are indeed algorithms -->
+<!--  that are guaranteed to find an optimal solution, but these algorithms -->
+<!--  can take a lot of time to find it (and by a lot of time, we mean -->
+<!--  weeks or even months, depending on the problem and how rich you are -->
+<!--  te get a suitable server, of course). Anyway, *stop criteria* are -->
+<!--  used to tell the evolutionary algorithm when it should stop -->
+<!--  searching. -->
+
+<!-- Anyway, after either reaching 100 iterations or an error lower or -->
+<!-- equal to 0.1, our evolutionary algorithm will stop, and now we can -->
+<!-- test the solution: -->
+
+<!-- ``` -->
+<!-- str.print("Testing evolved solution") -->
+<!-- for c := 0; i32.lt(c, []f64.len(inps)); c = i32.add(c, 1) { -->
+<!-- 	f64.print(simFn([]f64.read(inps, c))) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- As the problem is very easy to solve, the code above should print the -->
+<!-- same numbers that are present in the outputs array. If you are curious -->
+<!-- on how the evolved function looks like, you can add a call to *halt* -->
+<!-- before the program finishes, and type *:dProgram;* in the *REPL*. You -->
+<!-- should see something like this: -->
+
+<!-- ``` -->
+<!-- 1.- Function: simFn (n f64) (out f64) -->
+<!-- 			0.- Expression: var_1037 = f64.mul(n f64, n f64) -->
+<!-- 			1.- Expression: var_9874 = f64.sub(var_1037 , var_1037 ) -->
+<!-- 			2.- Expression: var_9905 = f64.mul(var_9874 , n f64) -->
+<!-- 			3.- Expression: var_9936 = f64.add(var_1037 , var_9874 ) -->
+<!-- 			4.- Expression: out = f64.add(var_9936 , n f64) -->
+<!-- ``` -->
+
+<!-- That function is an equivalent function to *n\*n+n*. Awesome, right? -->
+
+<!-- ## Serialization -->
+
+<!-- CX programs can fully or partially serialize themselves. At the -->
+<!-- moment, CX's serialization feature only has functions to completely -->
+<!-- serialize the calling program, and to deserialize it back and print -->
+<!-- its structure to the user -->
+
+<!-- *serialize* is a parameter-less function, which returns a byte array -->
+<!--  that represents the current program. -->
+
+<!-- ``` -->
+<!-- sPrgrm := serialize() -->
+<!-- ``` -->
+
+<!-- And *deserialize* receives a byte array which should represent a -->
+<!-- serialized program. -->
+
+<!-- ``` -->
+<!-- deserialize(sPrgrm) -->
+<!-- ``` -->
+
+<!-- After a call to *deserialize*, the terminal should print the program's -->
+<!-- abstract syntax tree. -->
 
 ## OpenGL 1.2 API
 
