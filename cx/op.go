@@ -6,6 +6,7 @@ import (
 )
 
 func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool) {
+	var isPointer bool
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
@@ -26,11 +27,8 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 
 				*finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
 			}
-		// case DEREF_FIELD:
-		// 	elt = arg.Fields[fldIdx]
-		// 	finalOffset += elt.Offset
-		// 	fldIdx++
 		case DEREF_POINTER:
+			isPointer = true
 			var offset int32
 			var byts []byte
 
@@ -40,7 +38,19 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 			*finalOffset = int(offset)
 		}
 		if dbg {
-			fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset)
+			fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+		}
+	}
+	if dbg {
+		fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+	}
+
+	// if *finalOffset >= PROGRAM.HeapStartsAt {
+	if *finalOffset >= PROGRAM.HeapStartsAt && isPointer {
+		// then it's an object
+		*finalOffset += OBJECT_HEADER_SIZE
+		if arg.IsSlice {
+			*finalOffset += SLICE_HEADER_SIZE
 		}
 	}
 }
@@ -63,13 +73,14 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 	
 	if dbg {
-		fmt.Println("(start", arg.Name, arg.FileName, arg.FileLine, finalOffset, arg.DereferenceOperations)
+		fmt.Println("(start", arg.Name, arg.FileName, finalOffset, arg.DereferenceOperations)
 	}
 
 	elt = arg
+	_ = elt
 	CalculateDereferences(arg, &finalOffset, fp, dbg)
 	for _, fld := range arg.Fields {
-		elt = fld
+		// elt = fld
 		finalOffset += fld.Offset
 		CalculateDereferences(fld, &finalOffset, fp, dbg)
 	}
@@ -105,20 +116,20 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	// 		byts = PROGRAM.Memory[finalOffset : finalOffset + TYPE_POINTER_SIZE]
 
 	// 		encoder.DeserializeAtomic(byts, &offset)
-	// 		finalOffset = int(offset)
+	// 		finalOffset = int(offset) 
 	// 	}
 	// 	if dbg {
 	// 		fmt.Println("update", arg.Name, finalOffset)
 	// 	}
 	// }
 
-	if finalOffset >= PROGRAM.HeapStartsAt && !(len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER) {
-		// then it's an object
-		finalOffset += OBJECT_HEADER_SIZE
-		if GetAssignmentElement(arg).IsSlice {
-			finalOffset += SLICE_HEADER_SIZE
-		}
-	}
+	// if finalOffset >= PROGRAM.HeapStartsAt && !(len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER) {
+	// 	// then it's an object
+	// 	finalOffset += OBJECT_HEADER_SIZE
+	// 	if arg.IsSlice {
+	// 		finalOffset += SLICE_HEADER_SIZE
+	// 	}
+	// }
 
 	if dbg {
 		fmt.Println("result", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
