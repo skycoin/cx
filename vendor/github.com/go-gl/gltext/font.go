@@ -21,6 +21,10 @@ type Font struct {
 	maxGlyphHeight int         // Largest glyph height.
 }
 
+func (f *Font) Texture() uint32 {
+	return f.texture
+}
+
 // loadFont loads the given font data. This does not deal with font scaling.
 // Scaling should be handled by the independent Bitmap/Truetype loaders.
 // We therefore expect the supplied image and charset to already be adjusted
