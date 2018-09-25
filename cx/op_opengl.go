@@ -11,7 +11,6 @@ import (
 	_ "image/gif"
 	"runtime"
 	"strings"
-	"unsafe"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -85,8 +84,13 @@ func op_gl_EnableVertexAttribArray(expr *CXExpression, fp int) {
 }
 
 func op_gl_VertexAttribPointer(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4, inp5 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4]
+	gl.VertexAttribPointer(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), ReadBool(fp, inp4), ReadI32(fp, inp5), nil)
+}
+
+func op_gl_VertexAttribPointerI32(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
-	gl.VertexAttribPointer(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), ReadBool(fp, inp4), ReadI32(fp, inp5), unsafe.Pointer(uintptr(ReadI32(fp, inp6))))
+	gl.VertexAttribPointer(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), ReadBool(fp, inp4), ReadI32(fp, inp5), gl.PtrOffset(int(ReadI32(fp, inp6))))
 }
 
 func op_gl_DrawArrays(expr *CXExpression, fp int) {
@@ -405,13 +409,20 @@ func op_gl_Hint(expr *CXExpression, fp int) {
 
 /* gl_1_0 */
 func op_gl_TexImage2D(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8, inp9 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7], expr.Inputs[8]
-	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)),  unsafe.Pointer(uintptr(ReadI32(fp, inp9))))
+	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7]
+	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)), nil)
 }
 
 func op_gl_TexParameteri(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.TexParameteri(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), ReadI32(fp, inp3))
+}
+
+func op_gl_GetTexLevelParameteriv(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
+	var outValue int32 = 0
+	gl.GetTexLevelParameteriv(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), &outValue)
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(outValue))
 }
 
 /* gl_1_1 */

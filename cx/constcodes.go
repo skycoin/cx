@@ -39,6 +39,8 @@ const (
 	CONST_GL_BLEND
 	CONST_GL_POLYGON_SMOOTH_HINT
 	CONST_GL_TEXTURE_2D
+	CONST_GL_TEXTURE_WIDTH
+	CONST_GL_TEXTURE_HEIGHT
 	CONST_GL_DONT_CARE
 	CONST_GL_UNSIGNED_BYTE
 	CONST_GL_FLOAT
@@ -192,6 +194,8 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_BLEND:                  "gl.BLEND",
 	CONST_GL_POLYGON_SMOOTH_HINT:    "gl.POLYGON_SMOOTH_HINT",
 	CONST_GL_TEXTURE_2D:             "gl.TEXTURE_2D",
+	CONST_GL_TEXTURE_WIDTH:          "gl.TEXTURE_WIDTH",
+	CONST_GL_TEXTURE_HEIGHT:         "gl.TEXTURE_HEIGHT",
 	CONST_GL_DONT_CARE:              "gl.DONT_CARE",
 	CONST_GL_UNSIGNED_BYTE:          "gl.UNSIGNED_BYTE",
 	CONST_GL_FLOAT:                  "gl.FLOAT",
@@ -345,6 +349,8 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.BLEND":                  CONST_GL_BLEND,
 	"gl.POLYGON_SMOOTH_HINT":    CONST_GL_POLYGON_SMOOTH_HINT,
 	"gl.TEXTURE_2D":             CONST_GL_TEXTURE_2D,
+	"gl.TEXTURE_WIDTH":          CONST_GL_TEXTURE_WIDTH,
+	"gl.TEXTURE_HEIGHT":         CONST_GL_TEXTURE_HEIGHT,
 	"gl.DONT_CARE":              CONST_GL_DONT_CARE,
 	"gl.UNSIGNED_BYTE":          CONST_GL_UNSIGNED_BYTE,
 	"gl.FLOAT":                  CONST_GL_FLOAT,
@@ -497,6 +503,8 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_BLEND:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0BE2)},
 	CONST_GL_POLYGON_SMOOTH_HINT:    CXConstant{Type: TYPE_I32, Value: FromI32(0x0C53)},
 	CONST_GL_TEXTURE_2D:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0DE1)},
+	CONST_GL_TEXTURE_WIDTH:          CXConstant{Type: TYPE_I32, Value: FromI32(0x1000)},
+	CONST_GL_TEXTURE_HEIGHT:         CXConstant{Type: TYPE_I32, Value: FromI32(0x1001)},
 	CONST_GL_DONT_CARE:              CXConstant{Type: TYPE_I32, Value: FromI32(0x1100)},
 	CONST_GL_UNSIGNED_BYTE:          CXConstant{Type: TYPE_I32, Value: FromI32(0x1401)},
 	CONST_GL_FLOAT:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x1406)},

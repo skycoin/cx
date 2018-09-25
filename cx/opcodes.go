@@ -254,6 +254,7 @@ const (
 	OP_GL_BIND_VERTEX_ARRAY
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY
 	OP_GL_VERTEX_ATTRIB_POINTER
+	OP_GL_VERTEX_ATTRIB_POINTER_I32
 	OP_GL_DRAW_ARRAYS
 	OP_GL_GEN_BUFFERS
 	OP_GL_DELETE_BUFFERS
@@ -307,6 +308,7 @@ const (
 	/* gl_1_0 */
 	OP_GL_TEX_IMAGE_2D
 	OP_GL_TEX_PARAMETERI
+	OP_GL_GET_TEX_LEVEL_PARAMETERIV
 
 	/* gl_1_1 */
 	OP_GL_BIND_TEXTURE
@@ -795,6 +797,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_EnableVertexAttribArray(expr, fp)
 	case OP_GL_VERTEX_ATTRIB_POINTER:
 		op_gl_VertexAttribPointer(expr, fp)
+	case OP_GL_VERTEX_ATTRIB_POINTER_I32:
+	    op_gl_VertexAttribPointerI32(expr, fp)
 	case OP_GL_DRAW_ARRAYS:
 		op_gl_DrawArrays(expr, fp)
 	case OP_GL_GEN_BUFFERS:
@@ -897,6 +901,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_TexImage2D(expr, fp)
 	case OP_GL_TEX_PARAMETERI:
 		op_gl_TexParameteri(expr, fp)
+	case OP_GL_GET_TEX_LEVEL_PARAMETERIV:
+		op_gl_GetTexLevelParameteriv(expr, fp)
 
 	/* gl_1_1 */
 	case OP_GL_BIND_TEXTURE:
@@ -973,7 +979,7 @@ func execNative(prgrm *CXProgram) {
 		op_gltext_Printf(expr, fp)
 	case OP_GLTEXT_METRICS:
 		op_gltext_Metrics(expr, fp)
-		
+
 	case OP_HTTP_GET:
 		op_http_get(expr, fp)
 
@@ -1199,6 +1205,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_BIND_VERTEX_ARRAY:          "gl.BindVertexArray",
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY: "gl.EnableVertexAttribArray",
 	OP_GL_VERTEX_ATTRIB_POINTER:      "gl.VertexAttribPointer",
+	OP_GL_VERTEX_ATTRIB_POINTER_I32:  "gl.VertexAttribPointerI32",
 	OP_GL_DRAW_ARRAYS:                "gl.DrawArrays",
 	OP_GL_GEN_BUFFERS:                "gl.GenBuffers",
 	OP_GL_DELETE_BUFFERS:             "gl.DeleteBuffers",
@@ -1251,6 +1258,7 @@ var OpNames map[int]string = map[int]string{
 	/* gl_1_0 */
 	OP_GL_TEX_IMAGE_2D:               "gl.TexImage2D",
 	OP_GL_TEX_PARAMETERI:             "gl.TexParameteri",
+	OP_GL_GET_TEX_LEVEL_PARAMETERIV:   "gl.GetTexLevelParameteriv",
 
 	/* gl_1_1 */
 	OP_GL_BIND_TEXTURE:               "gl.BindTexture",
@@ -1294,7 +1302,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
 	OP_GLTEXT_PRINTF:                  "gltext.Printf",
 	OP_GLTEXT_METRICS:                 "gltext.Metrics",
-	
+
 	// http
 	OP_HTTP_GET:                       "http.Get",
 
@@ -1517,6 +1525,7 @@ var OpCodes map[string]int = map[string]int{
 	"gl.BindVertexArray":         OP_GL_BIND_VERTEX_ARRAY,
 	"gl.EnableVertexAttribArray": OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY,
 	"gl.VertexAttribPointer":     OP_GL_VERTEX_ATTRIB_POINTER,
+	"gl.VertexAttribPointerI32":  OP_GL_VERTEX_ATTRIB_POINTER_I32,
 	"gl.DrawArrays":              OP_GL_DRAW_ARRAYS,
 	"gl.GenBuffers":              OP_GL_GEN_BUFFERS,
 	"gl.DeleteBuffers":           OP_GL_DELETE_BUFFERS,
@@ -1569,6 +1578,7 @@ var OpCodes map[string]int = map[string]int{
 	/* gl_1_0 */
 	"gl.TexImage2D":              OP_GL_TEX_IMAGE_2D,
 	"gl.TexParameteri":           OP_GL_TEX_PARAMETERI,
+	"gl.GetTexLevelParameteriv":  OP_GL_GET_TEX_LEVEL_PARAMETERIV,
 
 	/* gl_1_1 */
 	"gl.BindTexture":             OP_GL_BIND_TEXTURE,
@@ -1612,7 +1622,7 @@ var OpCodes map[string]int = map[string]int{
 	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
 	"gltext.Printf":               OP_GLTEXT_PRINTF,
 	"gltext.Metrics":              OP_GLTEXT_METRICS,
-	
+
 	// http
 	"http.Get":                    OP_HTTP_GET,
 	// os
@@ -1833,7 +1843,8 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_BIND_BUFFER:                MakeNative(OP_GL_BIND_BUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_BIND_VERTEX_ARRAY:          MakeNative(OP_GL_BIND_VERTEX_ARRAY, []int{TYPE_I32}, []int{}),
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY: MakeNative(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, []int{TYPE_I32}, []int{}),
-	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_VERTEX_ATTRIB_POINTER:      MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{}),
+	OP_GL_VERTEX_ATTRIB_POINTER_I32:  MakeNative(OP_GL_VERTEX_ATTRIB_POINTER_I32,[]int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DRAW_ARRAYS:                MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_BUFFERS:                MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_DELETE_BUFFERS:             MakeNative(OP_GL_DELETE_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
@@ -1886,8 +1897,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_TEX_COORD_2F: MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{}),
 
 	/* gl_1_0 */
-	OP_GL_TEX_IMAGE_2D:   MakeNative(OP_GL_TEX_IMAGE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_TEX_IMAGE_2D:   MakeNative(OP_GL_TEX_IMAGE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_TEX_PARAMETERI: MakeNative(OP_GL_TEX_PARAMETERI, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_GET_TEX_LEVEL_PARAMETERIV: MakeNative(OP_GL_GET_TEX_LEVEL_PARAMETERIV, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 
 	/* gl_1_1 */
 	OP_GL_BIND_TEXTURE:     MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{}),
@@ -1930,7 +1942,6 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),
 	OP_GLTEXT_METRICS:                 MakeNative(OP_GLTEXT_METRICS, []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
-	
 	// http
 	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
 
