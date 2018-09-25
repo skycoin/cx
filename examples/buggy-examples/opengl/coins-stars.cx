@@ -83,15 +83,16 @@ func keyPress (window str, key i32, scancode i32, action i32, mods i32) {
 		var newStars []Star
 
 		// first we'll find what stars are not being overlapped
-		for s := 0; s < []Star.len(stars); s++ {
+		var s i32
+		for s = 0; s < len(stars); s++ {
 			var star Star
-			star = []Star.read(stars, s)
+			star = stars[s]
 
 			isOverlapped := false
 
-			for c := 0; c < []Coin.len(coins); c++ {
+			for c := 0; c < len(coins); c++ {
 				var coin Coin
-				coin = []Coin.read(coins, c)
+				coin = coins[c]
 				
 				if star.x + 0.05 > coin.x && star.x - 0.05 < coin.x &&
 					star.y + 0.05 > coin.y && star.y - 0.05 < coin.y {
@@ -99,22 +100,22 @@ func keyPress (window str, key i32, scancode i32, action i32, mods i32) {
 				}
 			}
 
-			if !isOverlapped {
+			if bool.not(isOverlapped) {
 				// we save the stars that are not being overlapped
-				newStars = []Star.append(newStars, star)
+				newStars = append(newStars, star)
 			}
 		}
 
 		// now we'll find what coins are not being overlapped
-		for c := 0; c < []Coin.len(coins); c++ {
+		for c := 0; c < len(coins); c++ {
 			var coin Coin
-			coin = []Coin.read(coins, c)
+			coin = coins[c]
 
 			isOverlapped := false
 
-			for s := 0; s < []Star.len(stars); s++ {
+			for s := 0; s < len(stars); s++ {
 				var star Star
-				star = []Star.read(stars, s)
+				star = stars[s]
 				
 				if coin.x + 0.05 > star.x && coin.x - 0.05 < star.x &&
 					coin.y + 0.05 > star.y && coin.y - 0.05 < star.y {
@@ -123,8 +124,8 @@ func keyPress (window str, key i32, scancode i32, action i32, mods i32) {
 			}
 
 			// we save the coins that are not being overlapped
-			if !isOverlapped {
-				newCoins = []Coin.append(newCoins, coin)
+			if bool.not(isOverlapped) {
+				newCoins = append(newCoins, coin)
 			}
 		}
 
@@ -138,7 +139,7 @@ func mouseButton (window str, key i32, action i32, mods i32) {
 	x, y := glfw.GetCursorPos("window")
 	if key == glfw.MouseButtonLeft {
 		if action == glfw.Press {
-			coins = []Coin.append(coins, new Coin{
+			coins = append(coins, new Coin{
 				// we need to scale the width and height to min = -1.0 and max = 1.0
 				x: (2.0 * f64.f32(x) / i32.f32(width)) - 1.0,
 				y: -1.0 * ((2.0 * f64.f32(y) / i32.f32(height)) - 1.0)
@@ -153,8 +154,9 @@ func mouseButton (window str, key i32, action i32, mods i32) {
 			// except for the one we clicked on
 			var newCoins []Coin
 			
-			for c := 0; c < []Coin.len(coins); c++ {
-				coin := []Coin.read(coins, c)
+			for c := 0; c < len(coins); c++ {
+				var coin Coin
+				coin = coins[c]
 				sx := (2.0 * f64.f32(x) / i32.f32(width)) - 1.0
 				sy := -1.0 * ((2.0 * f64.f32(y) / i32.f32(height)) - 1.0)
 
