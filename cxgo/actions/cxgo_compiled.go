@@ -1675,10 +1675,27 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.IsSlice && (len(sym.Fields) > 0 || len(sym.Indexes) > 0) {
+	// if arg.IsSlice && (len(GetAssignmentElement(sym).Fields) > 0 || len(GetAssignmentElement(sym).Indexes) > 0) {
+
+	
+
+	if arg.IsSlice {
 		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
 		sym.DereferenceLevels++
 	}
+
+	// assignElt := GetAssignmentElement(sym)
+	
+	// if assignElt.IsSlice && len(assignElt.Indexes) > 0 {
+	// 	sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+	// 	sym.DereferenceLevels++
+	// }
+	
+	// if (GetAssignmentElement(sym).IsSlice || (arg.IsSlice && len(sym.Fields) == 0)) &&
+	// 	(len(GetAssignmentElement(sym).Fields) > 0 || len(GetAssignmentElement(sym).Indexes) > 0) {
+	// 	sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+	// 	sym.DereferenceLevels++
+	// }
 
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields) - 1].Type
@@ -1931,8 +1948,7 @@ func ProcessSlice (inp *CXArgument) {
 	} else {
 		elt = inp
 	}
-	
-	// if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
+
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations) - 1]
 	} else if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
@@ -1941,29 +1957,33 @@ func ProcessSlice (inp *CXArgument) {
 }
 
 func ProcessSliceAssignment (expr *CXExpression) {
-	// if expr.Operator == Natives[OP_IDENTITY] {
-	// 	var inp *CXArgument
-	// 	var out *CXArgument
+	if expr.Operator == Natives[OP_IDENTITY] {
+		var inp *CXArgument
+		var out *CXArgument
 
-	// 	inp = GetAssignmentElement(expr.Inputs[0])
-	// 	out = GetAssignmentElement(expr.Outputs[0])
+		inp = GetAssignmentElement(expr.Inputs[0])
+		out = GetAssignmentElement(expr.Outputs[0])
+
+		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
+			out.PassBy = PASSBY_VALUE
+		}
 		
-	// 	// if len(expr.Inputs[0].Fields) > 0 {
-	// 	// 	inp = expr.Inputs[0].Fields[len(expr.Inputs[0].Fields) - 1]
-	// 	// } else {
-	// 	// 	inp = expr.Inputs[0]
-	// 	// }
-	// 	// if len(expr.Outputs[0].Fields) > 0 {
-	// 	// 	out = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1]
-	// 	// } else {
-	// 	// 	out = expr.Outputs[0]
-	// 	// }
+		// if len(expr.Inputs[0].Fields) > 0 {
+		// 	inp = expr.Inputs[0].Fields[len(expr.Inputs[0].Fields) - 1]
+		// } else {
+		// 	inp = expr.Inputs[0]
+		// }
+		// if len(expr.Outputs[0].Fields) > 0 {
+		// 	out = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1]
+		// } else {
+		// 	out = expr.Outputs[0]
+		// }
 		
-	// 	// if out.IsSlice && inp.IsSlice {
-	// 	// 	inp.DereferenceOperations = append([]int{DEREF_POINTER}, inp.DereferenceOperations...)
-	// 	// 	out.PassBy = PASSBY_REFERENCE
-	// 	// }
-	// }
+		// if out.IsSlice && inp.IsSlice {
+		// 	inp.DereferenceOperations = append([]int{DEREF_POINTER}, inp.DereferenceOperations...)
+		// 	out.PassBy = PASSBY_REFERENCE
+		// }
+	}
 }
 
 func ProcessStringAssignment (expr *CXExpression) {
