@@ -1,0 +1,9 @@
+package issues
+import "issue18"
+
+func issue18 () {
+	issues = append(issues, assert(issue18.string, "test", ""))
+}
+
+package issue18
+var string str = "test"

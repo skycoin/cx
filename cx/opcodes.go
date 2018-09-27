@@ -352,6 +352,9 @@ const (
 	OP_GLTEXT_LOAD_TRUE_TYPE
 	OP_GLTEXT_PRINTF
 	OP_GLTEXT_METRICS
+	OP_GLTEXT_TEXTURE
+	OP_GLTEXT_NEXT_RUNE
+	OP_GLTEXT_GLYPH_BOUNDS
 
 	// os
 	OP_OS_GET_WORKING_DIRECTORY
@@ -979,6 +982,12 @@ func execNative(prgrm *CXProgram) {
 		op_gltext_Printf(expr, fp)
 	case OP_GLTEXT_METRICS:
 		op_gltext_Metrics(expr, fp)
+	case OP_GLTEXT_TEXTURE:
+		op_gltext_Texture(expr, fp)
+	case OP_GLTEXT_NEXT_RUNE:
+		op_gltext_NextRune(expr, fp)
+	case OP_GLTEXT_GLYPH_BOUNDS:
+		op_gltext_GlyphBounds(expr, fp)
 
 	case OP_HTTP_GET:
 		op_http_get(expr, fp)
@@ -1302,6 +1311,9 @@ var OpNames map[int]string = map[int]string{
 	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
 	OP_GLTEXT_PRINTF:                  "gltext.Printf",
 	OP_GLTEXT_METRICS:                 "gltext.Metrics",
+	OP_GLTEXT_TEXTURE:                 "gltext.Texture",
+	OP_GLTEXT_NEXT_RUNE:               "gltext.NextRune",
+	OP_GLTEXT_GLYPH_BOUNDS:            "gltext.GlyphBounds",
 
 	// http
 	OP_HTTP_GET:                       "http.Get",
@@ -1622,6 +1634,9 @@ var OpCodes map[string]int = map[string]int{
 	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
 	"gltext.Printf":               OP_GLTEXT_PRINTF,
 	"gltext.Metrics":              OP_GLTEXT_METRICS,
+	"gltext.Texture":              OP_GLTEXT_TEXTURE,
+	"gltext.NextRune":             OP_GLTEXT_NEXT_RUNE,
+	"gltext.GlyphBounds":          OP_GLTEXT_GLYPH_BOUNDS,
 
 	// http
 	"http.Get":                    OP_HTTP_GET,
@@ -1942,6 +1957,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),
 	OP_GLTEXT_METRICS:                 MakeNative(OP_GLTEXT_METRICS, []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
+	OP_GLTEXT_TEXTURE:                 MakeNative(OP_GLTEXT_TEXTURE, []int{TYPE_STR}, []int{TYPE_I32}),
+	OP_GLTEXT_NEXT_RUNE:               MakeNative(OP_GLTEXT_NEXT_RUNE, []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}),
+	OP_GLTEXT_GLYPH_BOUNDS:            MakeNative(OP_GLTEXT_GLYPH_BOUNDS, []int{}, []int{TYPE_I32, TYPE_I32}),
 	// http
 	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
 

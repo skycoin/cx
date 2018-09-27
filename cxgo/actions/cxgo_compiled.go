@@ -822,12 +822,14 @@ func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 
 		prevExprs[0].Inputs = nil
 	}
-	
+
 	return FunctionCall(prevExprs, nil)
 }
 
 func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) []*CXExpression {
-	if prevExprs[len(prevExprs)-1].Operator == nil {
+	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
+		// then it's a method
+	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 				prevExprs[0].Package = pkg
@@ -835,9 +837,9 @@ func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) 
 			prevExprs[0].Outputs = nil
 			prevExprs[0].Operator = Natives[opCode]
 		}
-	}
 
-	prevExprs[0].Inputs = nil
+		prevExprs[0].Inputs = nil
+	}
 
 	return FunctionCall(prevExprs, args)
 }
@@ -1379,7 +1381,12 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
 		to[0].Outputs[0].Program = PRGRM
 
-		from[idx].Inputs = from[idx].Outputs
+		if from[idx].IsMethodCall {
+			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
+		} else {
+			from[idx].Inputs = from[idx].Outputs
+		}
+
 		from[idx].Outputs = to[len(to)-1].Outputs
 		from[idx].Program = PRGRM
 
@@ -1668,10 +1675,27 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	if arg.IsSlice && (len(sym.Fields) > 0 || len(sym.Indexes) > 0) {
+	// if arg.IsSlice && (len(GetAssignmentElement(sym).Fields) > 0 || len(GetAssignmentElement(sym).Indexes) > 0) {
+
+	
+
+	if arg.IsSlice {
 		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
 		sym.DereferenceLevels++
 	}
+
+	// assignElt := GetAssignmentElement(sym)
+	
+	// if assignElt.IsSlice && len(assignElt.Indexes) > 0 {
+	// 	sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+	// 	sym.DereferenceLevels++
+	// }
+	
+	// if (GetAssignmentElement(sym).IsSlice || (arg.IsSlice && len(sym.Fields) == 0)) &&
+	// 	(len(GetAssignmentElement(sym).Fields) > 0 || len(GetAssignmentElement(sym).Indexes) > 0) {
+	// 	sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+	// 	sym.DereferenceLevels++
+	// }
 
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields) - 1].Type
@@ -1705,7 +1729,7 @@ func GiveOffset (symbols *map[string]*CXArgument, sym *CXArgument, offset *int, 
 	}
 }
 
-func ProcessTempVariable(expr *CXExpression) {
+func ProcessTempVariable (expr *CXExpression) {
 	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
@@ -1730,34 +1754,126 @@ func ProcessTempVariable(expr *CXExpression) {
 // 	}
 // }
 
-func ProcessMethodCall(expr *CXExpression, symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
-	if sym.Name != "" {
-		if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
-			panic("")
-		} else {
-			if expr.IsMethodCall {
-				if len(sym.Fields) > 0 {
-					// var found bool
+func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, offset *int, shouldExist bool) {
+	if expr.IsMethodCall {
+		var inp *CXArgument
+		var out *CXArgument
 
-					strct := arg.CustomType
+		if len(expr.Inputs) > 0 && expr.Inputs[0].Name != "" {
+			inp = expr.Inputs[0]
+		}
+		if len(expr.Outputs) > 0 && expr.Outputs[0].Name != "" {
+			out = expr.Outputs[0]
+		}
 
-					if fn, err := sym.Package.GetMethod(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, strct.Name); err == nil {
+		if inp != nil {
+			if argInp, found := (*symbols)[inp.Package.Name+"."+inp.Name]; !found {
+				if out != nil {
+					if argOut, found := (*symbols)[out.Package.Name+"."+out.Name]; !found {
+						panic("")
+					} else {
+						// then we found an output
+						if len(out.Fields) > 0 {
+							strct := argOut.CustomType
+
+							if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+								expr.Operator = fn
+							} else {
+								panic("")
+							}
+
+							expr.Inputs = append([]*CXArgument{out}, expr.Inputs...)
+							
+							out.Fields = out.Fields[:len(out.Fields) - 1]
+							
+							expr.Outputs = expr.Outputs[1:]
+						}
+					}
+				} else {
+					panic("")
+				}
+			} else {
+				// then we found an input
+				if len(inp.Fields) > 0 {
+					strct := argInp.CustomType
+
+					if fn, err := inp.Package.GetMethod(strct.Name + "." + inp.Fields[len(inp.Fields) - 1].Name, strct.Name); err == nil {
 						expr.Operator = fn
 					} else {
 						panic("")
 					}
-
-					expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
 					
-					// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
-					sym.Fields = sym.Fields[:len(sym.Fields) - 1]
-					// sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
-
-					expr.Outputs = nil
+					inp.Fields = inp.Fields[:len(inp.Fields) - 1]
 				}
+			}
+		} else {
+			if out != nil {
+				if argOut, found := (*symbols)[out.Package.Name+"."+out.Name]; !found {
+					panic("")
+				} else {
+					// then we found an output
+					if len(out.Fields) > 0 {
+						strct := argOut.CustomType
+
+						if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+							expr.Operator = fn
+						} else {
+							panic("")
+						}
+
+						expr.Inputs = append([]*CXArgument{out}, expr.Inputs...)
+						
+						out.Fields = out.Fields[:len(out.Fields) - 1]
+						
+						expr.Outputs = expr.Outputs[1:]
+						// expr.Outputs = nil
+					}
+				}
+			} else {
+				panic("")
 			}
 		}
 	}
+	
+	// if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
+	// 	panic("")
+	// } else {
+	// 	if expr.IsMethodCall {
+	// 		if len(sym.Fields) > 0 {
+	// 			// var found bool
+	// 			strct := arg.CustomType
+
+	// 			if fn, err := sym.Package.GetMethod(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, strct.Name); err == nil {
+	// 				expr.Operator = fn
+	// 			} else {
+	// 				panic("")
+	// 			}
+
+	// 			// if len(expr.Outputs) == 0 {
+	// 			// 	expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
+	// 			// } else {
+	// 			// }
+
+	// 			// if isAssignment {
+				
+	// 			// }
+	// 			expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
+				
+
+	// 			// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
+	// 			if len(sym.Fields) > 0 {
+	// 				sym.Fields = sym.Fields[:len(sym.Fields) - 1]
+	// 			}
+	// 			// sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
+
+	// 			// if isAssignment {
+	// 			// 	expr.Outputs = expr.Outputs[1:]
+	// 			// }
+	// 			expr.Outputs = expr.Outputs[1:]
+	// 			// expr.Outputs = nil
+	// 		}
+	// 	}
+	// }
 }
 
 func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {
@@ -1832,8 +1948,7 @@ func ProcessSlice (inp *CXArgument) {
 	} else {
 		elt = inp
 	}
-	
-	// if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
+
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations) - 1]
 	} else if elt.IsSlice && len(elt.DereferenceOperations) > 0 && len(inp.Fields) == 0 {
@@ -1842,29 +1957,43 @@ func ProcessSlice (inp *CXArgument) {
 }
 
 func ProcessSliceAssignment (expr *CXExpression) {
-	// if expr.Operator == Natives[OP_IDENTITY] {
-	// 	var inp *CXArgument
-	// 	var out *CXArgument
+	if expr.Operator == Natives[OP_IDENTITY] {
+		var inp *CXArgument
+		var out *CXArgument
 
-	// 	inp = GetAssignmentElement(expr.Inputs[0])
-	// 	out = GetAssignmentElement(expr.Outputs[0])
+		inp = GetAssignmentElement(expr.Inputs[0])
+		out = GetAssignmentElement(expr.Outputs[0])
+
+		if inp.IsSlice && out.IsSlice && len(inp.Indexes) == 0 && len(out.Indexes) == 0 {
+			out.PassBy = PASSBY_VALUE
+		}
 		
-	// 	// if len(expr.Inputs[0].Fields) > 0 {
-	// 	// 	inp = expr.Inputs[0].Fields[len(expr.Inputs[0].Fields) - 1]
-	// 	// } else {
-	// 	// 	inp = expr.Inputs[0]
-	// 	// }
-	// 	// if len(expr.Outputs[0].Fields) > 0 {
-	// 	// 	out = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1]
-	// 	// } else {
-	// 	// 	out = expr.Outputs[0]
-	// 	// }
+		// if len(expr.Inputs[0].Fields) > 0 {
+		// 	inp = expr.Inputs[0].Fields[len(expr.Inputs[0].Fields) - 1]
+		// } else {
+		// 	inp = expr.Inputs[0]
+		// }
+		// if len(expr.Outputs[0].Fields) > 0 {
+		// 	out = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1]
+		// } else {
+		// 	out = expr.Outputs[0]
+		// }
 		
-	// 	// if out.IsSlice && inp.IsSlice {
-	// 	// 	inp.DereferenceOperations = append([]int{DEREF_POINTER}, inp.DereferenceOperations...)
-	// 	// 	out.PassBy = PASSBY_REFERENCE
-	// 	// }
-	// }
+		// if out.IsSlice && inp.IsSlice {
+		// 	inp.DereferenceOperations = append([]int{DEREF_POINTER}, inp.DereferenceOperations...)
+		// 	out.PassBy = PASSBY_REFERENCE
+		// }
+	}
+	if expr.Operator != nil && !expr.Operator.IsNative {
+		// then it's a function call
+		for _, inp := range expr.Inputs {
+			assignElt := GetAssignmentElement(inp)
+			
+			if assignElt.IsSlice && len(assignElt.Indexes) == 0 {
+				assignElt.PassBy = PASSBY_VALUE
+			}
+		}
+	}
 }
 
 func ProcessStringAssignment (expr *CXExpression) {
@@ -1908,6 +2037,7 @@ func CheckTypes(expr *CXExpression) {
 					plural2 = ""
 					plural3 = "was"
 				}
+
 				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
 				os.Exit(3)
 			}
@@ -2081,6 +2211,9 @@ func FunctionProcessParameters (symbols *map[string]*CXArgument, symbolsScope *m
 		SetFinalSize(symbols, param)
 
 		AddPointer(fn, param)
+
+		// as these are declarations, they should not have any dereference operations
+		param.DereferenceOperations = nil
 	}
 }
 
@@ -2100,8 +2233,14 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 		} else {
 			UpdateSymbolsTable(symbols, arg, offset, true)
 		}
-		
-		ProcessMethodCall(expr, symbols, arg, offset, true)
+
+		// if isInput {
+		// 	// we do this only once, for inputs
+		// 	ProcessMethodCall(expr, symbols, arg, offset, true)
+		// }
+		// ProcessMethodCall(expr, symbols, arg, offset, true)
+		// ProcessMethodCall(expr, symbols, arg, offset, true)
+
 		if isInput {
 			GiveOffset(symbols, arg, offset, true)
 		} else {
@@ -2156,7 +2295,13 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 
 	for _, expr := range fn.Expressions {
 		// ProcessShortDeclaration(expr)
-		
+
+		// if expr.IsMethodCall && len(expr.Outputs) > 0 && len(expr.Outputs[0].Fields) > 0 {
+			
+		// } else if expr.IsMethodCall && len(expr.Inputs) > 0 && len(expr.Inputs[0].Fields) > 0 {
+		// 	ProcessMethodCall(expr, &symbols, &offset, true)
+		// }
+		ProcessMethodCall(expr, &symbols, &offset, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 		
@@ -2230,9 +2375,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 						out.TotalSize = inpExpr.Operator.Outputs[0].Size
 					}
 
-					// out.Size = inpExpr.Operator.Outputs[0].Size
-					// out.TotalSize = inpExpr.Operator.Outputs[0].Size
-
 					out.Type = inpExpr.Operator.Outputs[0].Type
 					out.IsShortDeclaration = true
 				}
@@ -2248,6 +2390,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 
 		}
 	}
-
+	
 	return append(nestedExprs, exprs...)
 }

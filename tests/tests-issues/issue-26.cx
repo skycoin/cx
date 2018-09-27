@@ -1,0 +1,17 @@
+package issues
+
+func issue26 () {
+	var ai[5]i32
+
+	ai = [5]i32 { 0, 1, 2, 3, 4 }
+	issues = append(issues, assert(ai[3], 3, ""))
+
+	ai[3] = 10 + 20
+	issues = append(issues, assert(ai[3], 30, ""))
+
+	ai[3 + 0] = 300
+	issues = append(issues, assert(ai[3], 300, ""))
+
+	ai[3 + 0] = 1000 + 2000
+	issues = append(issues, assert(ai[3], 3000, ""))
+}

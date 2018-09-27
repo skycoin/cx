@@ -37,7 +37,33 @@ func drawBall (ball Ball) () {
 	gl.End()
 }
 
-func main () () {
+func ballJumpHeight (window str, key i32, action i32, mods i32) {
+	if i32.eq(key, glfw.MouseButtonLeft) {
+		if action == glfw.Press {
+			ball.vy = f32.add(ball.vy, -0.1)
+		}
+	}
+	if i32.eq(key, glfw.MouseButtonRight) {
+		if action == glfw.Press {
+			ball.vy = f32.add(ball.vy, 0.1)
+		}
+	}
+}
+
+func ballDirection (window str, xpos f64, ypos f64) {
+	var proportion f64
+	proportion = f64.sub(f64.div(xpos, i32.f64(width)), 0.5D)
+
+	if f64.gt(proportion, f64.add(f32.f64(ball.x), 0.01D)) {
+		// go right
+		ball.vx = 0.01
+	} else {
+		// go left
+		ball.vx = -0.01
+	}
+}
+
+func main () {
 	glfw.Init()
 
 	glfw.CreateWindow("window", width, height, "Bouncing Ball")
@@ -48,6 +74,10 @@ func main () () {
 	program = gl.CreateProgram()
 	gl.LinkProgram(program)
 
+	// glfw.SetKeyCallback("window", "ballDirection")
+	glfw.SetMouseButtonCallback("window", "ballJumpHeight")
+	glfw.SetCursorPosCallback("window", "ballDirection")
+
 	ball = Ball{
 		radius: 0.05,
 		x: 0.0,
@@ -56,15 +86,26 @@ func main () () {
 		vy: 0.01,
 		gravity: 0.01}
 
+	var ratio f32
+
+	str.print("\nMove the ball to the right or the left using the arrow keys.")
+
 	for bool.not(glfw.ShouldClose("window")) {
+		var bufferWidth i32
+		var bufferHeight i32
+		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(program)
 		
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
+		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
 		gl.MatrixMode(gl.MODELVIEW)
 
+		//Bounce on window bottom
 		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
 			ball.vy = f32.abs(ball.vy)
 		} else {
@@ -73,8 +114,10 @@ func main () () {
 
 		ball.x = f32.add(ball.x, ball.vx)
 		ball.y = f32.add(ball.y, ball.vy)
-
+		
 		drawBall(ball)
+
+
 		
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")

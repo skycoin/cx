@@ -1,0 +1,23 @@
+package issue28
+
+type Structure struct {
+	string str
+}
+
+func (structure Structure) function () (out str) {
+	out = structure.string
+}
+
+package issues
+import "issue28"
+
+func issue28 () {
+	var structure issue28.Structure
+	structure.string = "abc"
+	issues = append(issues, assert(structure.string, "abc", ""))
+
+	var out str
+	out = structure.function()
+
+	issues = append(issues, assert(out, "abc", ""))
+}

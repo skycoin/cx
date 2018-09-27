@@ -39,10 +39,10 @@ func drawBall (ball Ball) () {
 
 func ballDirection (window str, key i32, scancode i32, action i32, mods i32) () {
 	if bool.and(i32.eq(key, 263), i32.eq(action, 1)) {
-		ball.vx = -0.01
+		ball.vx = ball.vx + -0.01
 	}
 	if bool.and(i32.eq(key, 262), i32.eq(action, 1)) {
-		ball.vx = 0.01
+		ball.vx = ball.vx + 0.01
 	}
 }
 
@@ -59,7 +59,6 @@ func main () {
 
 	glfw.SetKeyCallback("window", "ballDirection")
 
-	var ball Ball
 	ball = Ball{
 		radius: 0.05,
 		x: 0.0,

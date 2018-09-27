@@ -1,0 +1,7 @@
+package issue19a1
+import "issue19a2"
+
+func main () {
+	// If this fails, it will throw a compile-time error
+	var structure issue19a2.Structure
+}
