@@ -1,0 +1,11 @@
+package issues
+
+type issue30type struct {
+	ai [5]i32
+}
+
+func issue30 () {
+	var too issue30type
+	too.ai[3 + 0] = 444
+	issues = append(issues, assert(too.ai[3], 444, ""))
+}

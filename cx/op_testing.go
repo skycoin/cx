@@ -25,14 +25,16 @@ func op_assert_value(expr *CXExpression, fp int) {
 		same = false
 		fmt.Println("byts1", byts1)
 		fmt.Println("byts2", byts2)
-	} else {
+	}
+
+	if same {
 		for i, byt := range byts1 {
 			if byt != byts2[i] {
 				same = false
 				fmt.Println("byts1", byts1)
 				fmt.Println("byts2", byts2)
+				break
 			}
-			break
 		}
 	}
 	
