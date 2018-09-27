@@ -1984,6 +1984,16 @@ func ProcessSliceAssignment (expr *CXExpression) {
 		// 	out.PassBy = PASSBY_REFERENCE
 		// }
 	}
+	if expr.Operator != nil && !expr.Operator.IsNative {
+		// then it's a function call
+		for _, inp := range expr.Inputs {
+			assignElt := GetAssignmentElement(inp)
+			
+			if assignElt.IsSlice && len(assignElt.Indexes) == 0 {
+				assignElt.PassBy = PASSBY_VALUE
+			}
+		}
+	}
 }
 
 func ProcessStringAssignment (expr *CXExpression) {
@@ -2201,6 +2211,9 @@ func FunctionProcessParameters (symbols *map[string]*CXArgument, symbolsScope *m
 		SetFinalSize(symbols, param)
 
 		AddPointer(fn, param)
+
+		// as these are declarations, they should not have any dereference operations
+		param.DereferenceOperations = nil
 	}
 }
 
