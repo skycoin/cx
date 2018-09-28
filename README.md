@@ -683,8 +683,7 @@ func (p Point) print () {
 }
 
 func (l Line) print () {
-	printf("Line point A: (%d, %d), Line point B: (%d, %d)\n", l.a.x,
-		l.a.y, l.b.x, l.b.y)
+	printf("Line point A: (%d, %d), Line point B: (%d, %d)\n", l.a.x, l.a.y, l.b.x, l.b.y)
 }
 
 func main () {
@@ -707,7 +706,15 @@ func main () {
 ```
 
 In the example above, we define two custom types: *Point* and
-*Line*. As can be noted, Line is defined by two fields of type *Point*.
+*Line*. The type line is defined by two fields of type
+*Point*, and the type *Point* is defined as coordinate defined by two
+fields of type *i32*.
+
+As a simple example, we create two methods called `print`, one for the
+type *Point* and another for the type *Line*. In the case of
+`Point.print`, we just print the two coordinates, and in
+the case of `Line.print` we print the coordinates of the two points
+that define the *Line* instance.
 
 ### Packages
 
@@ -743,14 +750,199 @@ func main () {
 }
 ```
 
+In the example above, we can see how two functions with the same name
+(`fn`) are declared, each in a separate package. Both of these
+functions have different signatures, as `foo.fn` accepts a single
+input parameter and `bar.fn` doesn't accept any inputs but returns a
+single output parameter.
+
+We can then see how the `main` package `import`s both the `foo` and
+`bar` packages, to later call each of these functions.
+
 ## Statements
 
+Statements are different to declarations, as they don't create any
+named elements in a program. They are used to control the flow of a
+program.
+
 ### If and if/else
+
+The most basic statement is the *if* statement, which is going to
+execute a block of code only if a condition is true.
+
+```
+package main
+
+func main () {
+    if false {
+        str.print("This will never print")
+    }
+}
+```
+
+The example above won't do anything, as the condition for the *if*
+statement is always going to evaluate to *false*.
+
+```
+package main
+
+func main () {
+    if true {
+        str.print("This will always print")
+    }
+}
+```
+
+In contrast, the example above will always print.
+
+```
+package main
+
+func main () {
+    if true {
+        str.print("This will always print")
+    } else {
+        str.print("This will never print")
+    }
+}
+```
+
+Lastly, the example above shows how to write an *if/else* statement in CX.
+
+As a note about its syntax, the predicates or conditions don't need to
+be enclosed in parentheses, just like in Go.
+
 ### For loop
-### Go-to
+
+CX's only looping statement is the *for* loop. Similar to Go, the
+*for* loop in CX can be used as the *while* statement in other
+programming languages, and as a traditional *for* statement.
+
+```
+package main
+
+func main () {
+	for true {
+		str.print("forever")
+	}
+}
+```
+
+As the simplest example of a loop, we have the infinite loop shown in
+the example above. In this case, the loop will print the character
+string "forever" indefinitely. If you try this code, remember that you
+can cancel the program's execution by hitting `Ctrl-C`.
+
+```
+package main
+
+func main () {
+	for str.eq("hi", "hi") {
+		str.print("hi")
+	}
+}
+```
+
+The code above shows another example, one where we use an expression
+as its predicate, rather than a literal `true` or `false`. It is worth
+mentioning that you can replace `str.eq("hi", "hi")` by `"hi" == "hi"`.
+
+
+```
+package main
+
+func main () {
+	var c i32
+	for c = 0 ; c < 10; c++ {
+		i32.print(c)
+	}
+}
+```
+
+The traditional *for* loop shown in the example above. In languages
+like C, you need to first declare your counter variable, and then you
+have the option to initialize or reassign the counter in the first
+part of the *for* loop. The second part of the *for* loop is reserved
+for the predicate, and the last part is usually used to increment the
+counter. Nevertheless, just like in C, there's nothing stopping you
+from doing whatever you want in the first and last parts. However, the
+predicate part needs to be an expression that evaluates to a Boolean.
+
+```
+package main
+
+func main () {
+	for c := 0; c < 10; c++ {
+		i32.print(c)
+	}
+}
+```
+
+A more Go-ish way of declaring and initializing the counter is to use
+an inline declaration, as seen in the example above.
+
+```
+package main
+
+func main () {
+	var c i32
+	c = 0
+	for ; c < 10; c++ {
+		i32.print(c)
+	}
+}
+```
+
+Lastly, the for loop can also completely omit the initialization part,
+as seen above.
+
+### Goto
+
+`goto` can be used to immediately jump the execution of a program to
+the corresponding labeled expression.
+
+```
+package main
+
+func main () (out i32) {
+	goto label2
+label1:
+	str.print("this should never be reached")
+label2:
+	str.print("this should be printed")
+}
+```
+
+In the example above, we see how a `goto` statement forces CX to
+ignore executing the expression labeled as `label1`, and instead jumps
+to the `label2` expression.
 
 ## Expressions
-### Arguments
+
+Expressions are basically function calls. But the term expression also
+takes into consideration the variables that are receiving the
+function's output arguments, the input arguments, and any dereference
+operations.
+
+```
+package main
+
+func foo () (arr [2]i32) {
+    arr = [2]i32{10, 20}
+}
+
+func main () {
+    // as of version 0.5.14, this doesn't work yet
+    // but it's a very good example to differentiate between expressions and function calls
+    i32.print(foo()[0])
+}
+```
+
+For example, the expression `i32.print(foo()[0])` in the code above
+consists of two function calls, and the array returned by the call
+to `foo` is "dereferenced" to its *0th* element.
+
+## Assignments and Initializations
 
 # Runtime
 
