@@ -40,9 +40,9 @@ Table of Contents
       * [Statements](#statements)
          * [If and if/else](#if-and-ifelse)
          * [For loop](#for-loop)
-         * [Go-to](#go-to)
+         * [Goto](#goto)
       * [Expressions](#expressions)
-         * [Arguments](#arguments)
+      * [Assignments and Initializations](#assignments-and-initializations)
    * [Runtime](#runtime)
       * [Packages](#packages-1)
       * [Data Structures](#data-structures)
@@ -56,7 +56,7 @@ Table of Contents
          * [Methods](#methods-1)
          * [If and if/else](#if-and-ifelse-1)
          * [For loop](#for-loop-1)
-         * [Go-to](#go-to-1)
+         * [Go-to](#go-to)
    * [Native Functions](#native-functions)
       * [Parse functions](#parse-functions)
       * [Unit testing](#unit-testing)
@@ -943,6 +943,37 @@ consists of two function calls, and the array returned by the call
 to `foo` is "dereferenced" to its *0th* element.
 
 ## Assignments and Initializations
+
+As in many other C-like languages, assignments are done using the
+equal (`=`) sign.
+
+```
+package main
+
+func main () {
+    var foo i32
+    foo = 5
+    foo = 50
+}
+```
+
+In the case of the code above, the variable `foo` is declared and then
+initialized to `5` using the `=` sign. Then we reassign the `foo`
+variable to the value `50`.
+
+```
+package main
+
+func main () {
+    foo := 5
+    foo = 50
+}
+```
+
+As in other programming languages, *short variable declarations* exist
+in CX. The `:=` token can be used to tell CX to infer a variable's
+type. This way, CX declares and initializes at the same time, as seen
+in the example above.
 
 # Runtime
 
