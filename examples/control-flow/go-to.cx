@@ -1,9 +1,9 @@
 package main
 
 func main () (out i32) {
-	goto label4
-label3:
+	goto label2
+label1:
 	str.print("this should never be reached")
-label4:
+label2:
 	str.print("this should be printed")
 }
