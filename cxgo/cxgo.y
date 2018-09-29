@@ -1105,7 +1105,6 @@ block_item_list:
 
 block_item:     declaration
         |       statement
-                
         |       stepping
                 { $$ = nil }
         /* |       debugging */

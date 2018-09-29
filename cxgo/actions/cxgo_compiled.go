@@ -196,7 +196,7 @@ func DeclareStruct (ident string, strctFlds []*CXArgument) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 			// strct := MakeStruct(ident)
-			// pkg.AddStruct(strct)
+			// pkg.AddStruct(
 
 			strct.Fields = nil
 			strct.Size = 0
@@ -536,6 +536,8 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	slcVar = DeclarationSpecifiers(slcVar, 0, DECL_SLICE)
 	slcVar.AddType(TypeNames[typSpec])
 
+	// slcVar.IsSlice = true
+
 	slcVar.TotalSize = TYPE_POINTER_SIZE
 	
 
@@ -552,6 +554,9 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 			symInp.Package = pkg
 			symOut := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symOut.Package = pkg
+
+			// symOut.IsSlice = true
+			// symInp.IsSlice = true
 
 			endPointsCounter++
 
@@ -612,6 +617,8 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
+
+	// symExpr.IsArrayLiteral = true
 
 	symOutput.SynonymousTo = symInput.Name
 
@@ -1333,11 +1340,24 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
 			} else {
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+
+				
+				if from[idx].IsArrayLiteral {
+					sym.Size = from[idx].Inputs[0].Size
+					sym.TotalSize = from[idx].Inputs[0].TotalSize
+					sym.Lengths = from[idx].Inputs[0].Lengths
+				}
+				if from[idx].Inputs[0].IsSlice {
+					sym.Lengths = append([]int{0}, sym.Lengths...)
+				}
+				
+				sym.IsSlice = from[idx].Inputs[0].IsSlice
 			}
 			sym.Package = pkg
 			sym.IsShortDeclaration = true
 
 			expr.AddOutput(sym)
+
 			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
 			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
@@ -1371,7 +1391,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			return ShortAssign(expr, to, from, pkg, idx)
 		}
 	}
-	
+
 	if from[idx].Operator == nil {
 		from[idx].Operator = Natives[OP_IDENTITY]
 		to[0].Outputs[0].Size = from[idx].Outputs[0].Size
@@ -1394,10 +1414,18 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 	} else {
 		if from[idx].Operator.IsNative {
 			// only assigning as if the operator had only one output defined
-			to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
-			to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 
-			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+			if from[idx].Operator.OpCode != OP_IDENTITY {
+				// it's a short variable declaration
+				to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
+				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
+				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+			}
+
+			// to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
+			// to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+			// to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
+
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
 			to[0].Outputs[0].Program = PRGRM
@@ -1415,7 +1443,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 
 		from[idx].Outputs = to[len(to) - 1].Outputs
 		from[idx].Program = to[len(to) - 1].Program
-
+		
 		return append(to[:len(to)-1], from...)
 		// return append(to, from...)
 	}
@@ -1517,6 +1545,7 @@ func PreFinalSize (finalSize *int, sym *CXArgument, arg *CXArgument) {
 				continue
 			}
 			var subSize int = 1
+			
 			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {
 				subSize *= len
 			}
@@ -1535,6 +1564,8 @@ func PreFinalSize (finalSize *int, sym *CXArgument, arg *CXArgument) {
 						for _, len := range arg.Lengths {
 							subSize *= len
 						}
+					// case DECL_SLICE:
+					// 	subSize = TYPE_POINTER_SIZE
 					case DECL_BASIC:
 						subSize = GetArgSize(sym.Type)
 					case DECL_STRUCT:
