@@ -29,6 +29,7 @@ Table of Contents
    * [Syntax](#syntax)
       * [Comments](#comments)
       * [Declarations](#declarations)
+         * [Allowed Names](#allowed-names)
          * [Strict Type System](#strict-type-system-1)
          * [Primitive Types](#primitive-types)
          * [Global variables](#global-variables)
@@ -488,6 +489,15 @@ expressions and other statements. For example: a function can be
 referred by its name and it's constructed by expressions and local
 variable declarations.
 
+### Allowed Names
+
+Any name that satisfies the PCRE regular expression
+`[_a-zA-Z][_a-zA-Z0-9]*` is allowed as an identifier for a declared
+element. In other words, an identifier can start with an underscore
+(*_*) or any lowercase or uppercase letter, and can be followed by 0
+or more underscores or lowercase or uppercase letters, and any number
+from 0 to 9.
+
 ### Strict Type System
 
 One of CX's goals is to provide a very strict type system. The purpose
@@ -583,6 +593,115 @@ exist`, so CX will not even try to run that program. If we could
 de-activate CX's compile-time type checking, and the program above
 could make it to the runtime, CX would not print 5 when running
 `foo()`, as that function is unaware of that variable.
+
+### Arrays
+
+Arrays (or vectors) and multi-dimensional arrays (or matrices) can be
+declared using a syntax similar to C's.
+
+```
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func main () {
+    var arr1 [5]i32
+    var arr2 [5]Point
+    var arr3 [2][2]f32
+
+    arr1[0] = 10
+    arr2[1] = 20
+}
+```
+
+In the example above we see the declaration of an array of 5 elements
+of type *i32*, followed by an array of the same cardinality but of
+type *Point*, which is a custom type. Custom types are discussed in a
+later section. Lastly, we see an example of a 2x2 matrix of type
+*f32*.
+
+Lastly, we can see how we can initialize an array using the bracket
+notation, e.g. `arr1[0] = 10`.
+
+### Slices
+
+Golang-like slices exist in CX (dynamic arrays). Slices are declared
+similarly to arrays, with the only difference that the size is
+omitted.
+
+```
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func main () {
+    var slc1 []i32
+    var slc2 []Point
+    var slc3 [][]f32
+}
+```
+
+Slices, unlike arrays, cannot be directly initialized using the
+bracket notation (unless you use the native function `make`
+first). You can use the bracket notation to reassign values to a
+slice, once an element associated to the index that you want to use
+already exists, as shown in the example below.
+
+```
+package main
+
+func main () {
+    var slc []i32
+
+    slc = append(slc, 1)
+    slc = append(slc, 2)
+
+    slc[0] = 10
+    slc[2] = 30 // This is not allowed, as len(slc) == 2, not 3
+}
+```
+
+As this behavior is more related to the logic behind slices, it is
+further explained in the *Runtime->Data Structures->Slices* section.
+
+### Literals
+
+A literal is any data structure that is not being referenced by any
+variable yet. For example: `1`, `true`, `[]i32{1, 2, 3}`, `Point{x:
+10, y: 20}`.
+
+Particularly, it is worth noting the cases of array, slice and struct
+literals.
+
+```
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func main () {
+    var a Point
+    var b [5]i32
+    var c []i32
+    
+    a = Point{x: 10, y: 20}
+    b = [5]i32{1, 2, 3, 4, 5}
+    c = []i32{100, 200, 300}
+}
+```
+
+In the example above we can see examples of struct (`Point{x: 10,
+y: 20}`), array (`[5]i32{1, 2, 3, 4, 5}`), and slice (`[]i32{100, 200, 300}`)
+literals, in that order. These literals exist to simplify the creation
+of such data structures.
 
 ### Functions
 
@@ -932,8 +1051,6 @@ func foo () (arr [2]i32) {
 }
 
 func main () {
-    // as of version 0.5.14, this doesn't work yet
-    // but it's a very good example to differentiate between expressions and function calls
     i32.print(foo()[0])
 }
 ```
@@ -977,10 +1094,178 @@ in the example above.
 
 # Runtime
 
+The previous section presents the language features from a syntax
+perspective. In this section we'll cover what's the logic behind these
+features: how they interact with other elements in your program, and
+what are the intrinsic capabilities of each of these features.
+
 ## Packages
 
+Packages are CX's mechanism for better organizing your code. Although
+it is theoretically possible to store a big project in a single
+package, the code will most likely become very hard to understand. In
+CX the programmer is encouraged to place the files that define the
+code of a package in separate directory. Any subdirectory in a
+package's directory should also contain only source code files that
+define elements of the same package. Nevertheless, CX will not
+throw any error if you don't follow this way of laying out your source
+files. In fact, you can declare different packages in a single source
+code file.
+
 ## Data Structures
+
+Data structures are particular arrangements of bytes that the language
+interprets and stores in special ways. The most basic data structures
+represent basic data, such as numbers and character strings, but these
+basic types can be used to construct more complex data types.
+
+### Literals
+
+A literal is any data structure that is not being referenced by any
+variable yet. For example: `1`, `true`, `[]i32{1, 2, 3}`, `Point{x:
+10, y: 20}`.
+
+It's important to make a distinction, particularly with *arrays*,
+*slices* and *struct instances*.
+
+```
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+func main () {
+	var p1 Point
+	p1.x = 10
+	p1.y = 20
+
+	p2 := Point{x: 11, y: 21}
+
+	i32.print(p2.x)
+	i32.print(p2.y)
+}
+```
+
+In the example above we are creating two instances of the `Point`
+type. The first method we use does not involve struct literals, as a
+variable of that type is first created and then initialized.
+
+In the second case (`p2`), the full struct instance is first
+created. CX creates an anonymous struct instance as soon as it
+encounters `Points{x: 11, y: 21}`, and then it proceeds to assign that
+literal to the `p2` variable, using *short variable declarations*.
+
+```
+package main
+
+func main () {
+	var arr1 [3]i32
+	arr1[0] = 1
+	arr1[1] = 2
+	arr1[2] = 3
+
+	arr2 := [3]i32{10, 20, 30}
+}
+```
+
+```
+package main
+
+func main () {
+	var slc1 []i32
+	slc1 = append(slc1, 1)
+	slc1 = append(slc1, 2)
+	slc1 = append(slc1, 3)
+	
+	slc2 := []i32{10, 20, 30}
+}
+```
+Similarly, in the two examples above we can see how we can declare
+array and slice variables and then we initialize them. In the case of
+arrays, we use the bracket notation, and for slices we have to use
+`append`, as `slc1` starts with a size and capacity of 0. In the cases
+of `arr2` and `slc2`, we use literals to initialize them more
+conveniently.
+
 ### Variables
+
+When CX compiles a program, it knows how many bytes need to be
+reserved in the stack for each of the functions. CX can know this
+thanks to variable declarations.
+
+
+```
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func foo (inp Point) {
+    var test1 i64
+    var test2 bool
+}
+
+func main () {
+    var test3 i32
+    var test4 f32
+}
+```
+
+The two functions declared in the example above are going to reserve 17
+and 8 bytes in the stack, respectively. In the case of the first
+function, `foo` needs to reserve space for an input parameter of type
+`Point`, which requires 8 bytes (because of the two *i32* fields), and
+two local variables: one 64-bit integer that requires 8 bytes and a
+Boolean that requires a single byte. In the case of `main`, CX needs
+to reserve bytes for two local variables: a 32-bit integer and a
+single-precision floating point number, where each of them require 4
+bytes.
+
+```
+package main
+
+var global1 i32
+
+func main () {
+    var local i32
+}
+```
+
+Local variables are different than global variables. In order for
+globals to have a global scope they need to be allocated in a
+different memory segment than local variables. This different memory
+segment does not shrink or get bigger like the stack. This means that
+any global variable is going to be kept "alive" as long as the program
+keeps being executed.
+
+A global scope means that variables of this type are accessible to any
+function declared in the same package where the variable is declared,
+and to any function of other packages that are importing this package.
+
+```
+package main
+
+func main () {
+    var foo i32
+    i32.print(foo) // prints 0
+}
+```
+
+In CX every variable is going to initially point to a *nil*
+value. This *nil* value is basically a series of one or more zeroes,
+depending on the size of the data type of a given variable. For
+example, in the code above we see that we have declared a variable of
+type *i32* and we immediately print its value without initializing
+it. This CX program will print 0, as the value of `foo` is `[0 0 0 0]`
+in the stack (4 zeroes, as a 32-bit integer is represented by 4
+bytes). In the case of data types that point to variable-sized
+structures, such as slices or character strings, these are initialized
+to a nil pointer, which is represented by 4 zeroed bytes.
+
 ### Primitive types
 ### Arrays
 ### Slices
