@@ -34,6 +34,9 @@ Table of Contents
          * [Primitive Types](#primitive-types)
          * [Global variables](#global-variables)
          * [Local variables](#local-variables)
+         * [Arrays](#arrays)
+         * [Slices](#slices)
+         * [Literals](#literals)
          * [Functions](#functions)
          * [Custom Types](#custom-types)
          * [Methods](#methods)
@@ -47,10 +50,11 @@ Table of Contents
    * [Runtime](#runtime)
       * [Packages](#packages-1)
       * [Data Structures](#data-structures)
+         * [Literals](#literals-1)
          * [Variables](#variables)
          * [Primitive types](#primitive-types-1)
-         * [Arrays](#arrays)
-         * [Slices](#slices)
+         * [Arrays](#arrays-1)
+         * [Slices](#slices-1)
          * [Structures](#structures)
       * [Control Flow](#control-flow)
          * [Functions](#functions-1)
@@ -1189,6 +1193,15 @@ arrays, we use the bracket notation, and for slices we have to use
 of `arr2` and `slc2`, we use literals to initialize them more
 conveniently.
 
+Regarding numbers, you need to be aware that implicit casting does not
+exist in CX. This means that the number `34` cannot be assigned to a
+variable of type *i64*. In order to assign it, you need to either
+parse it using the native function `i32.i64` or you can create a
+64-bit integer literal. To create a number literal of a type other
+than *i32*, you can use different suffixes: `B`, `L` and `D`, for
+*byte*, *i64* (long) and *f64*, respectively. So, assuming `foo` is of
+type *i64*, you can do this assignment: `foo = 34L`.
+
 ### Variables
 
 When CX compiles a program, it knows how many bytes need to be
@@ -1262,14 +1275,209 @@ example, in the code above we see that we have declared a variable of
 type *i32* and we immediately print its value without initializing
 it. This CX program will print 0, as the value of `foo` is `[0 0 0 0]`
 in the stack (4 zeroes, as a 32-bit integer is represented by 4
-bytes). In the case of data types that point to variable-sized
+bytes).
+
+In the case of data types that point to variable-sized
 structures, such as slices or character strings, these are initialized
-to a nil pointer, which is represented by 4 zeroed bytes.
+to a nil pointer, which is represented by 4 zeroed bytes. This nil
+pointer is located in the heap memory segment, instead of the stack.
 
 ### Primitive types
+
+There are seven primitive types in CX: *bool*, *str*, *byte*, *i32*,
+*i64*, *f32*, and *f64*. These types can be used to construct other
+more complex types, as will be seen in the next sections.
+
+*bool* and *byte* both require a single byte to represent their
+ values. In the case of *bool*, there are only two possible values:
+ `true` or `false`. In the case of *byte* you can represent up to 256
+ values, which range from 0 to 255. Next in size, we have *i32* and
+ *f32* , where both of them require 4 bytes, and then we have *i64*
+ and *f64*, which require 8 bytes each.
+
+Now, strings are special as they are static and dynamic sized at the
+same time. If you have a look at how a variable of type *str* reserves
+memory in the stack, you'll see that it requires 4 bytes, regardless
+of what text it's pointing to. The explanation behind this is that any
+*str* in CX actually behaves like a pointer behind the scenes, and the
+actual string gets stored in the heap memory segment.
+
+```
+package main
+
+func main () {
+	var foo str
+
+	foo = str.concat("Hello, ", "World!")
+	foo = "Hi"
+}
+```
+
+When CX compiles the example above, three strings are first stored in
+the data memory segment (just like global variables, as these strings
+are constants, memory-wise): `"Hello, "`, `"World"` and `"Hi"`. When
+the program is executed, `str.concat` is called, which creates a new
+string by concatenating `"Hello, "` and `"World!"`, and this new
+character string is allocated in the heap memory segment. Then `foo`
+is assigned only the address of this new character string. Then we
+immediately re-assign `foo` with the address of `"Hi"`. This means
+that `foo` was first assigned a memory address located in the data
+memory segment, and then it was assigned an address located in the
+heap.
+
 ### Arrays
+
+Arrays, as in other programming languages, are used to create
+collections of data structures. These data structures can be primitive
+types, custom types or even arrays or slices.
+
+
+```
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func main () {
+    var [5]i32
+    var [5]Point
+}
+```
+
+In the example above, we're creating two arrays, one of a primitive
+type and the other one of a custom type. CX reserves memory for these
+arrays in the stack as soon as the function that contains them is
+called. In this case, 60 bytes are going to be reserved for `main` as
+soon as the program starts its execution, as `main` acts as the
+program's entry point. You need to be careful with arrays, as those
+can easily fill up your memory, especially with multi-dimensional
+arrays (or matrices).
+
+Also, another point to consider is performance. While accessing arrays
+is almost as fast as accessing an atomic variable, arrays can be
+troublesome when being sent/received as to/from functions. The reason
+behind this is that an array needs to be copied whenever it is sent to
+another function. If you're working with arrays of millions of
+elements and you need to be sending that arrays millions of times to
+another function, it's going to impact your program's performance a
+lot. A way to avoid this is to either use pointers to arrays or slices.
+
 ### Slices
+
+Dynamic arrays don't exist in CX. This means that the following
+code is not a valid CX program:
+
+```
+package main
+
+func main () {
+    var size i32
+    size = 13
+    var arr [size] // this is not valid
+}
+```
+
+If you need an array that can grow in size as required, you need to
+use slices. Behind the scenes, slices are just arrays with some extra
+features. First of all, any slice in CX goes directly to the heap, as
+it's a data structure that is going to be changing in size. In
+contrast, arrays are always going to be stored in the stack, unless
+we're handling pointers to arrays. However, this behavior may change
+in the future, when CX's escape analysis mechanism improves (for
+example, the compiler can determine if an array is never going to change
+its size, and decide to keep it in the stack).
+
+The second characteristic of slices in CX is how they change their
+size. Any slice, when it's first declared, starts with a size and
+capacity of 0. The size represents how many elements are in a given
+slice, while the capacity represents how many elements can be
+allocated in that slice without having to be relocated in the heap.
+
+```
+package main
+
+func main () {
+	var slc []i32
+
+	slc = append(slc, 1)
+	slc = append(slc, 2)
+	slc = append(slc, 3)
+	slc = append(slc, 4)
+}
+```
+
+In the code above we can see how we declare a slice and then we
+initialize it using the `append`function. After all the `append`s,
+we'll end up with a slice of size 4 and capacity 4, and this
+`append`ing process will create the following objects in the heap:
+
+```
+[0 0 0 0 0 12 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 16 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 2 0 0 0 0 0 0 0 0 24 0 0 0 4 0 0 0 4 0 0 0 1 0 0 0 2 0 0 0 3 0 0 0 4 0 0 0]
+```
+
+First, the slice `slc` starts with 0 objects in it; it is pointing to
+*nil*. Then, after the first `append`, the object
+`[0 0 0 0 0 12 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0]` is allocated to the
+heap. The first five bytes are used by CX's garbage collector. The
+next 4 bytes indicate the size of the object, and the remaining bytes
+are the actual slice `slc`. The first four bytes of `slc` tell us its
+current size, while the next four tell us its capacity. The remaining
+bytes of this object are the elements of the slice.
+
+The following object,
+`[0 0 0 0 0 16 0 0 0 2 0 0 0 2 0 0 0 1 0 0 0 2 0 0 0]`, shows now a
+size of 2 and a capacity of 2, with the 32-bit integers `1` and `2` as
+its elements. The last object, `0 0 0 0 0 24 0 0 0 4 0 0 0 4 0 0 0 1 0
+0 0 2 0 0 0 3 0 0 0 4 0 0 0`, needs careful attention. We can see that
+our objects jumped from size 1 to 2 and finally 4. The same happened
+to its capacity, and the containing elements are now `1`, `2`, `3` and
+`4`. What happened to the slice of size 3 and capacity 3? First of
+all, capacities are increased by getting doubled each time the size of
+an object is greater than its capacity, so we would never get a slice
+of capacity 4 by following this method. Next, we need to think on what
+is capacity used for.
+
+Slices are just arrays, which means that they can't be resized. The
+dynamic nature of slices is emulated by copying the *full* slice to
+somewhere else in memory, but with a greater capacity. However, this
+will only happen if adding a new element to the existing slice would
+overflow it. This is why slices keep track of two metrics: *size* and
+*capacity*, i.e. how many actual elements are in the slice, and how
+many elements the currently allocated slice can hold, respectively.
+
+```
+package main
+
+func main () {
+    var arr1 [1]i32
+    arr1[0] = 1 // add the first value
+    
+    var arr2 [2]i32 // double the size
+    arr2[0] = arr1[0] // copy previous array
+    arr2[1] = 2 // add the second value
+
+    var arr3 [4]i32 // double the size
+    arr3[0] = arr2[0] // copy previous array
+    arr3[1] = arr2[1] // copy previous array
+    
+    arr3[2] = 3 // add the third value
+    arr3[3] = 4 // add the fourth value
+}
+```
+
+The example above shows the behavior of the slice in the previous
+example, but using arrays.
+
 ### Structures
+
+Structures are CX's mechanism for creating custom types, as in many other
+C-like languages.
+
+### Pointers
+
+### Escape Analysis
 
 ## Control Flow
 ### Functions
@@ -1281,6 +1489,68 @@ to a nil pointer, which is represented by 4 zeroed bytes.
 
 # Native Functions
 ## Parse functions
+
+All parse functions follow the same pattern: `XXX.YYY` where *XXX* is
+the receiving type and *YYY* is the target type. You can read these
+functions as "parse XXX to YYY".
+
+### `byte.str`
+### `byte.i32`
+### `byte.i64`
+### `byte.f32`
+### `byte.f64`
+
+
+### Example
+
+```
+package main
+
+func main () {
+	var b byte
+	b = 30B
+
+	str.print(str.concat("Hello, ", byte.str(b)))
+	i32.print(5 + byte.i32(b))
+	i64.print(10L + byte.i64(b))
+	f32.print(33.3 + byte.f32(b))
+	f64.print(50.111D + byte.f64(b))
+}
+```
+
+### `i32.byte`
+### `i32.str`
+### `i32.i64`
+### `i32.f32`
+### `i32.f64`
+
+### Example
+
+```
+package main
+
+func main () {
+	var num i32
+	num = 43
+
+	str.print(str.concat("Hello, ", i32.str(num)))
+	byte.print(5B + i32.byte(num))
+	i64.print(10L + i32.i64(num))
+	f32.print(33.3 + i32.f32(num))
+	f64.print(50.111D + i32.f64(num))
+}
+```
+
+### `i64.byte`
+### `i64.str`
+### `i64.i32`
+### `i64.f32`
+### `i64.f64`
+
+### Example
+
+
+
 ## Unit testing
 ## OpenGL
 ## GLFW
