@@ -251,11 +251,25 @@ func f (token int) int {
 	}
 }
 
+func NormalizeNewlines(d []byte) []byte {
+	// replace CR LF \r\n (windows) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+	// replace CF \r (mac) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+	return d
+}
+
 func countNewLines (s []byte) int {
 	count := 0
 	for i := 0; i < len(s); i++ {
+		// if s[i] == '\r' && len(s) > i && s[i + 1] == '\n' {
+		// 	count++
+		// 	i++
+		// 	continue
+		// }
 		if s[i] == '\n' {
 			count++
+			continue
 		}
 	}
 	return count
@@ -263,6 +277,7 @@ func countNewLines (s []byte) int {
 
 func readline (fi *bufio.Reader) (string, bool) {
 	//s, err := fi.ReadString(';')
+	
 	s, err := fi.ReadString('\n')
 	
 	if err != nil {
@@ -546,11 +561,6 @@ func checkCXPathSet () {
 }
 
 func main () {
-
-	if true == true {
-		
-	}
-	
 	checkCXPathSet()
 	
 	runtime.LockOSThread()

@@ -12,7 +12,7 @@ func op_str_str(expr *CXExpression, fp int) {
 
 	switch out1.Type {
 	case TYPE_BYTE:
-		b, err := strconv.ParseInt(ReadStr(fp, inp1), 10, 1)
+		b, err := strconv.ParseInt(ReadStr(fp, inp1), 10, 8)
 		if err != nil {
 			panic("")
 		}

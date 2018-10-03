@@ -10,10 +10,14 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_lt(expr *CXExpression, fp int) {
+func op_lt (expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) < ReadByte(fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(fp, inp1) < ReadStr(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(fp, inp1) < ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -31,6 +35,10 @@ func op_gt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) > ReadByte(fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(fp, inp1) > ReadStr(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(fp, inp1) > ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -47,6 +55,10 @@ func op_lteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) <= ReadByte(fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(fp, inp1) <= ReadStr(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(fp, inp1) <= ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -64,6 +76,10 @@ func op_gteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) >= ReadByte(fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(fp, inp1) >= ReadStr(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(fp, inp1) >= ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -81,6 +97,8 @@ func op_equal(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) == ReadByte(fp, inp2))
 	case TYPE_BOOL:
 		outB1 = FromBool(ReadBool(fp, inp1) == ReadBool(fp, inp2))
 	case TYPE_STR:
@@ -102,8 +120,12 @@ func op_unequal(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromBool(ReadByte(fp, inp1) != ReadByte(fp, inp2))
 	case TYPE_BOOL:
 		outB1 = FromBool(ReadBool(fp, inp1) != ReadBool(fp, inp2))
+	case TYPE_STR:
+		outB1 = FromBool(ReadStr(fp, inp1) != ReadStr(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromBool(ReadI32(fp, inp1) != ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -160,6 +182,8 @@ func op_mul(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromByte(ReadByte(fp, inp1) * ReadByte(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromI32(ReadI32(fp, inp1) * ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -177,6 +201,8 @@ func op_div(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromByte(ReadByte(fp, inp1) / ReadByte(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromI32(ReadI32(fp, inp1) / ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -194,6 +220,8 @@ func op_mod(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromByte(ReadByte(fp, inp1) % ReadByte(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromI32(ReadI32(fp, inp1) % ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -207,6 +235,8 @@ func op_add(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromByte(ReadByte(fp, inp1) + ReadByte(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromI32(ReadI32(fp, inp1) + ReadI32(fp, inp2))
 	case TYPE_I64:
@@ -224,6 +254,8 @@ func op_sub(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
+	case TYPE_BYTE:
+		outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))
 	case TYPE_I32:
 		outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
 	case TYPE_I64:

@@ -1330,8 +1330,8 @@ var OpCodes map[string]int = map[string]int{
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
-	"equal":    OP_UND_EQUAL,
-	"unequal":  OP_UND_UNEQUAL,
+	"eq":    OP_UND_EQUAL,
+	"uneq":  OP_UND_UNEQUAL,
 	"bitand":   OP_UND_BITAND,
 	"bitxor":   OP_UND_BITXOR,
 	"bitor":    OP_UND_BITOR,
@@ -1342,6 +1342,7 @@ var OpCodes map[string]int = map[string]int{
 	"add":      OP_UND_ADD,
 	"sub":      OP_UND_SUB,
 	"bitshl":   OP_UND_BITSHL,
+	"bitshr":   OP_UND_BITSHR,
 	"lt":       OP_UND_LT,
 	"gt":       OP_UND_GT,
 	"lteq":     OP_UND_LTEQ,
