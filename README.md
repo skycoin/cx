@@ -56,6 +56,8 @@ Table of Contents
          * [Arrays](#arrays-1)
          * [Slices](#slices-1)
          * [Structures](#structures)
+         * [Pointers](#pointers)
+         * [Escape Analysis](#escape-analysis)
       * [Control Flow](#control-flow)
          * [Functions](#functions-1)
          * [Methods](#methods-1)
@@ -63,7 +65,9 @@ Table of Contents
          * [For loop](#for-loop-1)
          * [Go-to](#go-to)
    * [Native Functions](#native-functions)
-      * [Parse functions](#parse-functions)
+      * [Type-inferenced Functions](#type-inferenced-functions)
+      * [Input/Output Functions](#inputoutput-functions)
+      * [Parse Functions](#parse-functions)
       * [Unit testing](#unit-testing)
       * [OpenGL](#opengl)
       * [GLFW](#glfw)
@@ -1488,7 +1492,255 @@ C-like languages.
 ### Go-to
 
 # Native Functions
-## Parse functions
+
+## Type-inferenced Functions
+
+CX has a small set of functions that are not associated to a single
+type signature. For example, instead of using `i32.add` to add two
+32-bit integers, you can use the generalized `add`
+function. Furthermore, whenever you use arithmetic operators, such as
+`+`, `-` or `%`, these are translated to their corresponding
+"type-inferenced" function, e.g. `num = 5 + 5` is translated to `num =
+i32.add(5, 5)`. These native functions still follow CX's philosophy of
+having a strict typing system, as the types of the arguments sent to
+these native functions must be the same.
+
+Note that after listing a group of similar "type-inferenced" functions
+below, we list the compatible types for the corresponding functions.
+
+### `eq`
+### `uneq`
+
+Note: the preceding functions only work with arguments of type
+*bool*, *byte*, *str*, *i32*, *i64*, *f32* or *f64*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(eq(5, 5))
+	bool.print(5 == 5) // alternative
+	
+	bool.print(uneq("hihi", "byebye"))
+	bool.print("hihi" != "byebye") // alternative
+}
+```
+
+### `lt`
+### `gt`
+### `lteq`
+### `gteq`
+
+Note: the preceding function only works with arguments of type *byte*,
+*bool*, *str*, *i32*, *i64*, *f32* or *f64*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(lt(3B, 4B))
+	bool.print(3B < 4B) // alternative
+
+	bool.print(gt("hello", "hi!"))
+	bool.print("hello" > "hi!") // alternative
+
+	bool.print(lteq(5.3D, 5.3D))
+	bool.print(5.3D <= 5.3D) // alternative
+
+	bool.print(gteq(10L, 3L))
+	bool.print(10L >= 3L) // alternative
+}
+```
+
+### `bitand`
+### `bitor`
+### `bitxor`
+### `bitclear`
+### `bitshl`
+### `bitshr`
+
+Note: the preceding functions only work with arguments of type *i32*
+or *i64*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(bitand(5, 1))
+	i32.print(5 & 1) // alternative
+
+	i64.print(bitor(3L, 2L))
+	i64.print(3L | 2L) // alternative
+
+	i32.print(bitxor(10, 2))
+	i32.print(10 ^ 2) // alternative
+
+	i64.print(bitclear(5L, 2L))
+	i64.print(5L &^ 2L) // alternative
+
+	i32.print(bitshl(2, 3))
+	i32.print(2 << 3) // alternative
+
+	i32.print(bitshr(16, 3))
+	i32.print(16 >> 3) // alternative
+}
+```
+
+### `add`
+### `sub`
+### `mul`
+### `div`
+
+Note: the preceding functions only work with arguments of type
+*byte*, *i32*, *i64*, *f32* or *f64*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	byte.print(add(5B, 10B))
+	byte.print(5B + 10B) // alternative
+
+	i32.print(sub(3, 7))
+	i32.print(3 - 7) // alternative
+
+	i64.print(mul(4L, 5L))
+	i64.print(4L * 5L) // alternative
+
+	f32.print(div(4.3, 2.1))
+	f32.print(4.3 / 2.1) // alternative
+}
+```
+
+### `mod`
+
+Note: the preceding function only works with arguments of type *byte*,
+*i32* or *i64*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	byte.print(mod(5B, 3B))
+	byte.print(5B % 3B) // alternative
+}
+```
+
+### `len`
+
+Note: the preceding function only works with arguments of type *str*,
+*arrays* or *slices*.
+
+#### Example
+
+```
+package main
+
+func main () {
+	var string str
+	var array [5]i32
+	var slice []i32
+
+	string = "this should print 20"
+	array = [5]i32{1, 2, 3, 4, 5}
+	slice = []i32{10, 20, 30}
+	
+	i32.print(len(string)) // prints 20
+	i32.print(len(array)) // prints 5
+	i32.print(len(slice)) // prints 3
+}
+```
+
+### `printf`
+
+Note: the preceding function requires a format *str* as its first
+argument, followed by any number of arguments of type *str*, *i32*,
+*i64*, *f32* or *f64*. The format string recognizes the following
+directives: `%s` for strings, `%d` for integers and `%f` for floating
+point numbers.
+
+#### Example
+
+```
+package main
+
+func main () {
+	var name str
+	var age i32
+	var wrongPI f32
+	var error f64
+
+	name = "Richard"
+	age = 14
+	wrongPI = 3.16
+	error = 0.0000000000000001D
+
+	printf("Hello, %s. My name is %s. I see that you calculated the value of PI wrong (%f). I think this is not so bad, considering your young age of %d. When I was %d years old, I remember I miscalculated it, too (I got %f as a result, using a numerical method). If you are using a numerical method, please consider reaching an error lower than %f to get an acceptable result, and not a ridiculous value such as %f. \n\nBest regards!\n", name, "Edward", wrongPI, age, 25, 3.1417, error, 0.1)
+}
+```
+
+### `sprintf`
+
+Note: the preceding function requires a format *str* as its first
+argument, followed by any number of arguments of type *str*, *i32*,
+*i64*, *f32* or *f64*. The format string recognizes the following
+directives: `%s` for strings, `%d` for integers and `%f` for floating
+point numbers.
+
+```
+package main
+
+func main () {
+	var reply str
+	var name str
+	var title str
+
+	name = "Edward"
+	title = "Richard 8 PI"
+
+	reply = sprintf("Thank you for contacting our technical support, %s. We see that you are having trouble with our video game titled '%s', targetted to kids under age %d. If you provide us with your parents e-mail address, we'll be glad to help you!", name, title, 14)
+
+	str.print(reply)
+}
+```
+
+## Input/Output Functions
+
+### `read`
+
+#### Example
+
+```
+package main
+
+func main () {
+	var password str
+
+	for true {
+		printf("What's the password, kid? ")
+		password = read()
+
+		if password == "123" {
+			str.print("Welcome back.")
+			return
+		} else {
+			str.print("Wrong, but you'll get another chance.")
+		}
+	}
+}
+```
+
+## Parse Functions
 
 All parse functions follow the same pattern: `XXX.YYY` where *XXX* is
 the receiving type and *YYY* is the target type. You can read these
@@ -1501,7 +1753,7 @@ functions as "parse XXX to YYY".
 ### `byte.f64`
 
 
-### Example
+#### Example
 
 ```
 package main
@@ -1524,7 +1776,7 @@ func main () {
 ### `i32.f32`
 ### `i32.f64`
 
-### Example
+#### Example
 
 ```
 package main
@@ -1547,9 +1799,91 @@ func main () {
 ### `i64.f32`
 ### `i64.f64`
 
-### Example
+#### Example
 
+```
+package main
 
+func main () {
+	var num i64
+	num = 43L
+
+	str.print(str.concat("Hello, ", i64.str(num)))
+	byte.print(5B + i64.byte(num))
+	i64.print(10L + i64.i64(num))
+	f32.print(33.3 + i64.f32(num))
+	f64.print(50.111D + i64.f64(num))
+}
+```
+
+### `f32.byte`
+### `f32.str`
+### `f32.i32`
+### `f32.i64`
+### `f32.f64`
+
+#### Example
+
+```
+package main
+
+func main () {
+	var num f32
+	num = 43.33
+
+	str.print(str.concat("Hello, ", f32.str(num)))
+	byte.print(5B + f32.byte(num))
+	i32.print(33 + f32.f32(num))
+	i64.print(10L + f32.i64(num))
+	f64.print(50.111D + f32.f64(num))
+}
+```
+
+### `f64.byte`
+### `f64.str`
+### `f64.i32`
+### `f64.i64`
+### `f64.f32`
+
+#### Example
+
+```
+package main
+
+func main () {
+	var num f64
+	num = 43.33D
+
+	str.print(str.concat("Hello, ", f64.str(num)))
+	byte.print(5B + f64.byte(num))
+	i32.print(33 + f64.f32(num))
+	i64.print(10L + f64.i64(num))
+	f32.print(50.111 + f64.f32(num))
+}
+```
+
+### `str.byte`
+### `str.i32`
+### `str.i64`
+### `str.f32`
+### `str.f64`
+
+#### Example
+
+```
+package main
+
+func main () {
+	var num str
+	num = "33"
+
+	byte.print(5B + str.byte(num))
+	i32.print(33 + str.f32(num))
+	i64.print(10L + str.i64(num))
+	f32.print(50.111 + str.f32(num))
+	f64.print(50.111D + str.f32(num))
+}
+```
 
 ## Unit testing
 ## OpenGL
