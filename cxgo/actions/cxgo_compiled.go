@@ -1825,6 +1825,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 				}
 			} else {
 				// then we found an input
+					
 				if len(inp.Fields) > 0 {
 					strct := argInp.CustomType
 
@@ -1835,6 +1836,24 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 					}
 					
 					inp.Fields = inp.Fields[:len(inp.Fields) - 1]
+				} else if len(out.Fields) > 0 {
+					if argOut, found := (*symbols)[out.Package.Name+"."+out.Name]; found {
+						strct := argOut.CustomType
+
+						expr.Inputs = append(expr.Outputs[:1], expr.Inputs...)
+						
+						expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
+						
+						if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+							expr.Operator = fn
+						} else {
+							panic("")
+						}
+						
+						out.Fields = out.Fields[:len(out.Fields) - 1]
+					} else {
+						panic("")
+					}
 				}
 			}
 		} else {

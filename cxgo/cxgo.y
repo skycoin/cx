@@ -1226,7 +1226,7 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 
 				// simulating a label so it gets executed without evaluating a predicate
-				expr.Label = " "
+				expr.Label = MakeGenSym(LABEL_PREFIX)
 				expr.ThenLines = MAX_INT32
 				expr.Package = pkg
 
@@ -1241,6 +1241,25 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 			}
                 }
 	|       RETURN expression SEMICOLON
-                { $$ = nil }
+                {
+			// temporary. same as empty return
+			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+
+				// simulating a label so it gets executed without evaluating a predicate
+				expr.Label = " "
+				expr.ThenLines = MAX_INT32
+				expr.Package = pkg
+
+				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
+				arg.Package = pkg
+
+				expr.AddInput(arg)
+
+				$$ = []*CXExpression{expr}
+			} else {
+				panic(err)
+			}
+                }
                 ;
 %%
