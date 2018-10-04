@@ -1477,18 +1477,611 @@ example, but using arrays.
 ### Structures
 
 Structures are CX's mechanism for creating custom types, as in many other
-C-like languages.
+C-like languages. Structures are basically a grouping of other
+primitive or custom types (called *fields*) that together create
+another type of data structure. For example, a *point* can be defined
+by its coordinates in a two-dimensional space. In order to create a
+type `Point`, you can use a structure that contains two fields of type
+*i32*, one for `x` and another for `y`, as in the example below.
+
+
+```
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+func main () {
+	var p Point
+	p.x = 10
+	p.y = 20
+}
+```
+
+Whenever an instance of a structure is created by either declaring a
+variable of that type or by creating a literal of that type, CX
+reserves memory to hold space for all the fields defined in the
+structure declaration. Like in C, the bytes are reserved depending on
+the order of the fields in the structure declaration.
+
+```
+package main
+
+type struct1 struct {
+	field1 bool
+	field2 i32
+	field3 i64
+}
+
+type struct2 struct {
+	field1 i64
+	field2 bool
+	field3 i32
+}
+
+func main () {
+	var s1 struct1
+	var s2 struct2
+}
+```
+
+For example, in the code above a call to `main` will reserve a total
+of 26 bytes in the stack. In the case of the first struct instance,
+the first byte is going to represent `field1` of type *bool*, the next
+four bytes are going to represent `field2` of type *i32*, and the
+final 8 bytes are going to represent `field3` of type *i64*. In the
+case of the next struct instance, the first eight bytes represent an
+*i64* field so, although both struct instances contain the same number
+of fields and of the same type, the byte layout changes.
 
 ### Pointers
 
+Sometimes it's useful to pass variables to functions by reference
+instead of by value.
+
+```
+package main
+import "time"
+
+func foo (nums [100][100]i32) {
+	// do something with nums
+}
+
+func main () {
+	var start i64
+	var end i64
+	var nums [100][100]i32
+
+	start = time.UnixMilli()
+	
+	for c := 0; c < 10000; c++ {
+		foo(nums)
+	}
+
+	end = time.UnixMilli()
+
+	printf("elapsed time: \t%d milliseconds\n", end - start)
+}
+```
+
+The example above is very inefficient, as CX is going to be sending a
+10,000 element matrix to `foo` 10,000 times. Every time `foo` is
+called, every byte of that matrix needs to be copied for `foo`. In my
+computer the example above takes around 638 milliseconds to run.
+
+```
+package main
+import "time"
+
+func foo (nums *[100][100]i32) {
+	// do something with nums
+}
+
+func main () {
+	var start i64
+	var end i64
+	var nums [100][100]i32
+
+	start = time.UnixMilli()
+	
+	for c := 0; c < 10000; c++ {
+		foo(&nums)
+	}
+
+	end = time.UnixMilli()
+
+	printf("elapsed time: \t%d milliseconds\n", end - start)
+}
+```
+
+A new version of the last program is shown above. In contrast to the
+last program, the code above sends a pointer to the matrix to
+`foo`. A pointer in CX uses only 4 bytes (in the future, pointers will
+use 8 bytes in 64-bit systems and 4 bytes in 32-bit systems), so
+instead of copying 10,000 bytes, we only copy 4 bytes to `foo` every
+time we call it. This version of the program takes only 3 milliseconds
+to run in my computer.
+
+```
+package main
+
+func foo (inp i32) {
+	inp = 10
+}
+
+func main () {
+	var num i32
+	num = 15
+	i32.print(num) // prints 15
+	foo(num)
+	i32.print(num) // prints 15
+}
+```
+
+In the example above, we send`num` to `foo`, and then we re-assign
+the input's value to `10`. If we print the value of `num` before and
+after calling `foo`, we can see that in both instances `15` will be
+printed to the console.
+
+```
+package main
+
+func foo (num *i32) {
+	*num = 10
+}
+
+func main () {
+	var num i32
+	num = 15
+	i32.print(num) // prints 15
+	foo(&num)
+	i32.print(num) // prints 10
+}
+```
+
+The code above is a pointer-version of the previous example. In this
+case, instead of sending `num` by value, we send it by reference,
+using the `&` operator. `foo` also changed, and it now accepts a
+pointer to a 32-bit integer, i.e. `*i32`. After running the example,
+you'll notice that, this time, `foo` is now changing `num`'s value.
+
 ### Escape Analysis
 
+Consider the following example:
+
+```
+package main
+
+func foo () (pNum *i32) {
+	var num i32
+	num = 5 // this is in the stack
+
+	pNum = &num
+}
+
+func stackDestroyer () {
+	var arr [5]i32
+}
+
+func main () {
+	var pNum *i32
+	pNum = foo()
+
+	stackDestroyer()
+	
+	i32.print(*pNum)
+}
+```
+
+If we store `foo`'s `num`'s value (`5`) in the stack, and then we call
+`stackDestroyer`, isn't `arr` going to overwrite the bytes storing the
+`5`? This doesn't happen, because that `5` is now in the heap. But
+this doesn't mean that any value being pointed to is going to be moved
+to the heap. For example, let's re-examine one of the examples
+presented in the *Pointers* section:
+
+```
+package main
+
+func foo (num *i32) {
+	*num = 10
+}
+
+func main () {
+	var num i32
+	num = 15
+	i32.print(num) // prints 15
+	foo(&num)
+	i32.print(num) // prints 10
+}
+```
+
+If any value being pointed to by a pointer was sent to the heap, we
+wouldn't be able to change `num`s value, which is stored in the stack;
+we would be changing the heap's copied value.
+
+```
+package main
+
+func foo () (pNum *i32) {
+	var num i32
+	var pNum *i32
+
+	num = 5
+
+	pNum = &num
+}
+
+func main () {
+	var pNum *i32
+	pNum = foo()
+
+	i32.print(*pNum) // prints 5, which is stored in the heap
+}
+```
+
+Basically, in order to fix this problem, whenever a pointer needs to
+be returned from a function, the value it is pointing to "escapes" to
+the heap. In the example above, we can see that `num`'s value is going
+to be preserved by escaping to the heap, as we are returning a pointer
+to it from `foo`.
+
+```
+package main
+
+func foo () (pNum *i32) {
+	var num i32
+	var pNum *i32
+
+	num = 5 // this is in the stack
+
+	pNum = &num // the pointer will be returned, so the value is sent to the heap
+}
+
+func stackDestroyer () {
+	var arr [5]i32
+}
+
+func main () {
+	var pNum *i32
+	pNum = foo()
+	stackDestroyer() // if 5 does not escape, it would be destroyed by this function
+
+	i32.print(*pNum) // prints 5, which is stored in the heap
+}
+```
+
+We can check this behavior even further in the example above. After
+calling `foo`, we call `stackDestroyer`, which overwrites the
+following 20 bytes after `main`'s stack frame. Yet, when we call
+`i32.print(*pNum)`, we'll see that we still have access to a `5`. This
+`5` is not the one created in `foo`, though, but a copy of it that was
+allocated in the heap.
+
 ## Control Flow
+
+Once we have the appropriate data structures for our program, we'll
+now need to process them. In order to do so, we need to have access to
+some control flow structures.
+
 ### Functions
 <!-- talk about Expressions in here -->
+
+Functions are used to encapsulate routines that we plan to be
+frequently calling. In addition to encapsulating a series of
+expressions and statements, we can also receive input parameters and
+return output parameters, just like mathematical functions.
+
+```
+package main
+
+func main () {
+	var players []str
+	players = []str{"Richard", "Mario", "Edward"}
+
+	str.print("=======================")
+	str.print(str.concat("Name: \t", players[0]))
+	str.print("=======================")
+
+	str.print("=======================")
+	str.print(str.concat("Name: \t", players[1]))
+	str.print("=======================")
+
+	str.print("=======================")
+	str.print(str.concat("Name: \t", players[2]))
+	str.print("=======================")
+}
+```
+
+For example, if we see the code above we'll notice that it seems
+repetitive. We can fix this by creating a function, as seen in the
+example below.
+
+
+```
+package main
+
+func drawBox (player str) {
+	str.print("=======================")
+	str.print(str.concat("Name: \t", player))
+	str.print("=======================")
+}
+
+func main () {
+	var players []str
+	players = []str{"Richard", "Mario", "Edward"}
+
+	drawBox(players[0])
+	drawBox(players[1])
+	drawBox(players[2])
+}
+```
+
 ### Methods
+
+Methods are useful when we want to associate a particular function to
+a particular custom type (associating functions to primitive types is
+not allowed). This allows us to create more readable code.
+
+```
+package main
+
+type Player struct {
+	Name str
+	HP i32
+	Mana i32
+	Lives i32
+}
+
+type Monster struct {
+	Name str
+	HP i32
+	Mana i32
+}
+
+func (player Player) draw () {
+	str.print(sprintf("\n\tName: \t%s\n\tHP: \t%d\n\tMana: \t%d\n\tLives: \t%d\n\n%s",
+		player.Name,
+		player.HP,
+		player.Mana,
+		player.Lives,
+		`
+─▄████▄▄░
+▄▀█▀▐└─┐░░
+█▄▐▌▄█▄┘██
+└▄▄▄▄▄┘███
+██▒█▒███▀`))
+}
+
+func (monster Monster) draw () {
+	str.print(sprintf("\n\tName: \t%s\n\tHP: \t%d\n\tMana: \t%d\n\n%s",
+		monster.Name,
+		monster.HP,
+		monster.Mana,
+		`
+╲╲╭━━━━╮╲╲
+╭╮┃▆┈┈▆┃╭╮
+┃╰┫▽▽▽▽┣╯┃
+╰━┫△△△△┣━╯
+╲╲┃┈┈┈┈┃╲╲
+╲╲┃┈┏┓┈┃╲╲
+▔▔╰━╯╰━╯▔▔`))
+}
+
+func main () {
+	var player Player
+	player.Name = "Mario"
+	player.HP = 10
+	player.Mana = 10
+	player.Lives = 3
+	
+	player.draw()
+
+	var monster Monster
+	monster.Name = "Domo-kun"
+	monster.HP = 7
+	monster.Mana = 4
+
+	monster.draw()
+}
+```
+
+The example above shows us how we can create two versions of the
+function `draw`, and the behavior of each depends on the custom type
+that we're using to call it.
+
 ### If and if/else
+
+*if* and *if/else* statements are used to execute a block of
+ instructions only if certain condition is true or false.
+
+```
+package main
+
+type Player struct {
+	Name str
+	HP i32
+	Mana i32
+	Lives i32
+}
+
+type Monster struct {
+	Name str
+	HP i32
+	Mana i32
+}
+
+func main () {
+	var player Player
+	player.Name = "Mario"
+	player.HP = 10
+	player.Mana = 10
+	player.Lives = 3
+	
+	var monster Monster
+	monster.Name = "Domo-kun"
+	monster.HP = 7
+	monster.Mana = 4
+
+	if player.HP < 5 {
+		str.print("===DANGER!===")
+	} else {
+		str.print("===YOU CAN DO IT!===")
+	}
+
+	if monster.HP < 10 {
+		str.print(sprintf("===%s is bleeding!===", monster.Name))
+	}
+
+	if monster.HP < 5 {
+		str.print(sprintf("===%s is dying!===", monster.Name))
+	}
+
+	if monster.HP == 0 {
+		str.print(sprintf("===%s is dead!===", monster.Name))
+	}
+}
+```
+
+Continuing with the example from the previous section (to some
+extent), let's use *if* and *if/else* statements to determine what
+messages are going to be displayed to the user. These messages
+represent the state of the player or the monster, depending on their
+hit points (HP).
+
 ### For loop
+
+```
+package main
+
+type Player struct {
+	Name str
+	HP i32
+	Mana i32
+	Lives i32
+}
+
+type Monster struct {
+	Name str
+	HP i32
+	Mana i32
+}
+
+func (player Player) draw () {
+	str.print(sprintf("\n\tName: \t%s\n\tHP: \t%d\n\tMana: \t%d\n\tLives: \t%d\n\n%s",
+		player.Name,
+		player.HP,
+		player.Mana,
+		player.Lives,
+		`
+─▄████▄▄░
+▄▀█▀▐└─┐░░
+█▄▐▌▄█▄┘██
+└▄▄▄▄▄┘███
+██▒█▒███▀`))
+}
+
+func (monster Monster) draw () {
+	str.print(sprintf("\n\tName: \t%s\n\tHP: \t%d\n\tMana: \t%d\n\n%s",
+		monster.Name,
+		monster.HP,
+		monster.Mana,
+		`
+╲╲╭━━━━╮╲╲
+╭╮┃▆┈┈▆┃╭╮
+┃╰┫▽▽▽▽┣╯┃
+╰━┫△△△△┣━╯
+╲╲┃┈┈┈┈┃╲╲
+╲╲┃┈┏┓┈┃╲╲
+▔▔╰━╯╰━╯▔▔`))
+}
+
+func (player Player) attack (cmd str, monster *Monster) {
+	if bool.or(cmd == "M", cmd == "m") {
+		var dmg i32
+		dmg = i32.rand(1, 4)
+		(*monster).HP = (*monster).HP - dmg
+		printf("'%s' suffered a magic attack. Lost %d HP. New HP is %d\n", (*monster).Name, dmg, (*monster).HP)
+	} else {
+		var dmg i32
+		dmg = i32.rand(1, 2)
+		(*monster).HP = (*monster).HP - dmg
+		printf("'%s' suffered a physical attack. Lost %d HP. New HP is %d\n", (*monster).Name, dmg, (*monster).HP)
+	}
+}
+
+func (monster Monster) attack (cmd str, player *Player) {
+	var dmg i32
+	dmg = i32.rand(1, 5)
+	(*player).HP = (*player).HP - dmg
+
+	printf("'%s' suffered a physical attack. Lost %d HP. New HP is %d\n", (*player).Name, dmg, (*player).HP)
+}
+
+func battleStatus (player Player, monster Monster) {
+	if player.HP < 5 {
+		str.print("===DANGER!===")
+	} else {
+		str.print("===YOU CAN DO IT!===")
+	}
+
+	if player.HP == 0 {
+		str.print("===YOU DIED===")
+	}
+
+	if monster.HP < 10 && monster.HP >= 5 {
+		str.print(sprintf("===%s is bleeding!===", monster.Name))
+	}
+
+	if monster.HP < 5 && monster.HP > 0 {
+		str.print(sprintf("===%s is dying!===", monster.Name))
+	}
+
+	if monster.HP <= 0 {
+		str.print(sprintf("===%s is dead!===", monster.Name))
+	}
+}
+
+func main () {
+	var player Player
+	player.Name = "Mario"
+	player.HP = 10
+	player.Mana = 10
+	player.Lives = 3
+
+	var monster Monster
+	monster.Name = "Domo-kun"
+	monster.HP = 7
+	monster.Mana = 4
+
+	player.draw()
+	monster.draw()
+	
+	for true {
+		if player.HP < 1 || monster.HP < 1 {
+			return
+		}
+		
+		printf("Command? (M)agic; (P)hysical; (E)xit\t")
+		var cmd str
+		cmd = read()
+
+		if cmd == "E" || cmd == "e" {
+			return
+		}
+
+		player.draw()
+		monster.draw()
+
+		player.attack(cmd, &monster)
+		monster.attack(cmd, &player)
+		battleStatus(player, monster)
+	}
+}
+```
+
 ### Go-to
 
 # Native Functions
@@ -1714,7 +2307,33 @@ func main () {
 }
 ```
 
+## Slice Functions
+
+### `append`
+
+#### Example
+
+```
+package main
+
+func main () {
+	var slc1 []i32
+	slc1 = append(slc1, 1)
+	slc1 = append(slc1, 2)
+
+	var slc2 []i32
+	slc2 = append(slc1, 3)
+	slc2 = append(slc2, 4)
+
+	i32.print(len(slc1)) // prints 2
+	i32.print(len(slc2)) // prints 4
+}
+```
+
 ## Input/Output Functions
+
+The following functions are used to handle input from the user and to
+print output to a terminal.
 
 ### `read`
 
@@ -1737,6 +2356,32 @@ func main () {
 			str.print("Wrong, but you'll get another chance.")
 		}
 	}
+}
+```
+
+### `byte.print`
+### `bool.print`
+### `str.print`
+### `i32.print`
+### `i64.print`
+### `f32.print`
+### `f64.print`
+### `printf`
+
+#### Example
+
+```
+package main
+
+func main () {
+    byte.print(5B)
+    bool.print(true)
+    str.print("Hello!")
+    i32.print(5)
+    i64.print(5L)
+    f32.print(5.0)
+    f64.print(5.0D)
+    printf("For a better example, check section Type-inferenced Functions'")
 }
 ```
 
@@ -1885,7 +2530,337 @@ func main () {
 }
 ```
 
-## Unit testing
-## OpenGL
-## GLFW
-## gltext
+## Unit Testing
+
+The `assert` function is used to test the value of an expression
+against another value. This function is useful to test that a
+package is working as intended.
+
+### assert
+
+#### Example
+
+```
+package main
+
+func foo() (res str) {
+    res = "Working well"
+}
+
+func main () {
+    var results []bool
+
+    results = append(results, assert(5 + 5, 10, "Something went wrong with 5 + 5"))
+    results = append(results, assert(foo(), "Working well", "Something went wrong with foo()"))
+
+    var successfulTests i32
+	for c := 0; c < len(results); c++ {
+		if results[c] {
+			successfulTests = successfulTests + 1
+		}
+	}
+
+    printf("%d tests were performed\n", len(results))
+    printf("%d were successful\n", successfulTests)
+    printf("%d failed\n", len(results) - successfulTests)
+}
+```
+
+## `bool` Type Functions
+
+### `bool.print`
+### `bool.eq`
+### `bool.uneq`
+### `bool.not`
+### `bool.or`
+### `bool.and`
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(bool.eq(true, true))
+	bool.print(bool.uneq(false, true))
+	bool.print(bool.not(false))
+	bool.print(bool.or(true, false))
+	bool.print(bool.and(true, true))
+}
+```
+
+## `str` Type Functions
+
+### `str.print`
+### `str.concat`
+
+#### Example
+
+```
+package main
+
+func main () {
+	str.print(str.concat("Hello, ", "World!"))
+}
+```
+
+## `i32` Type Functions
+
+### `i32.print`
+### `i32.add`
+### `i32.sub`
+### `i32.mul`
+### `i32.div`
+### `i32.abs`
+### `i32.pow`
+### `i32.gt`
+### `i32.gteq`
+### `i32.lt`
+### `i32.lteq`
+### `i32.eq`
+### `i32.uneq`
+### `i32.mod`
+### `i32.rand`
+### `i32.bitand`
+### `i32.bitor`
+### `i32.bitxor`
+### `i32.bitclear`
+### `i32.bitshl`
+### `i32.bitshr`
+### `i32.sqrt`
+### `i32.log`
+### `i32.log2`
+### `i32.log10`
+### `i32.max`
+### `i32.min`
+### `i32.sin`
+### `i32.cos`
+
+## `i64` Type Functions
+
+### `i64.print`
+### `i64.add`
+### `i64.sub`
+### `i64.mul`
+### `i64.div`
+### `i64.abs`
+### `i64.pow`
+### `i64.gt`
+### `i64.gteq`
+### `i64.lt`
+### `i64.lteq`
+### `i64.eq`
+### `i64.uneq`
+### `i64.mod`
+### `i64.rand`
+### `i64.bitand`
+### `i64.bitor`
+### `i64.bitxor`
+### `i64.bitclear`
+### `i64.bitshl`
+### `i64.bitshr`
+### `i64.sqrt`
+### `i64.log`
+### `i64.log2`
+### `i64.log10`
+### `i64.max`
+### `i64.min`
+### `i64.sin`
+### `i64.cos`
+
+## `f32` Type Functions
+
+### `f32.print`
+### `f32.add`
+### `f32.sub`
+### `f32.mul`
+### `f32.div`
+### `f32.abs`
+### `f32.pow`
+### `f32.gt`
+### `f32.gteq`
+### `f32.lt`
+### `f32.lteq`
+### `f32.eq`
+### `f32.uneq`
+### `f32.sqrt`
+### `f32.log`
+### `f32.log2`
+### `f32.log10`
+### `f32.max`
+### `f32.min`
+### `f32.sin`
+### `f32.cos`
+
+## `f64` Type Functions
+
+### `f64.print`
+### `f64.add`
+### `f64.sub`
+### `f64.mul`
+### `f64.div`
+### `f64.abs`
+### `f64.pow`
+### `f64.gt`
+### `f64.gteq`
+### `f64.lt`
+### `f64.lteq`
+### `f64.eq`
+### `f64.uneq`
+### `f64.sqrt`
+### `f64.log`
+### `f64.log2`
+### `f64.log10`
+### `f64.max`
+### `f64.min`
+### `f64.sin`
+### `f64.cos`
+
+## `time` Package Functions
+
+The functions in the `time` package deal with real-time in your
+programs. They are used to measure and stop time. Note that in order
+to use these functions you need to import the `time` package.
+
+### `time.Sleep`
+### `time.UnixMilli`
+### `time.UnixNano`
+
+#### Example
+
+```
+package main
+import "time"
+
+func main () {
+	var start i64
+	var end i64
+
+	start = time.UnixMilli()
+	time.Sleep(1000)
+	end = time.UnixMilli()
+
+	printf("elapsed time in milliseconds: \t%d\n", end - start)
+
+	start = time.UnixNano()
+	time.Sleep(1000)
+	end = time.UnixNano()
+
+	printf("elapsed time in nanoseconds: \t%d\n", end - start)
+}
+```
+
+## `os` Package Functions
+
+### `os.GetWorkingDirectory`
+### `os.Open`
+### `os.Close`
+
+## `gl` Package Functions
+
+### `gl.ActiveTexture`
+### `gl.AttachShader`
+### `gl.Begin`
+### `gl.BindAttribLocation`
+### `gl.BindBuffer`
+### `gl.BindFramebuffer`
+### `gl.BindTexture`
+### `gl.BindVertexArray`
+### `gl.BlendFunc`
+### `gl.BufferData`
+### `gl.BufferSubData`
+### `gl.CheckFramebufferStatus`
+### `gl.ClearColor`
+### `gl.ClearDepth`
+### `gl.Clear`
+### `gl.Color3f`
+### `gl.Color4f`
+### `gl.CompileShader`
+### `gl.CreateProgram`
+### `gl.CreateShader`
+### `gl.CullFace`
+### `gl.DeleteBuffers`
+### `gl.DeleteFramebuffers`
+### `gl.DeleteProgram`
+### `gl.DeleteShader`
+### `gl.DeleteTextures`
+### `gl.DeleteVertexArrays`
+### `gl.DepthFunc`
+### `gl.DepthMask`
+### `gl.DetachShader`
+### `gl.Disable`
+### `gl.DrawArrays`
+### `gl.EnableClientState`
+### `gl.EnableVertexAttribArray`
+### `gl.Enable`
+### `gl.End`
+### `gl.FramebufferTexture2D`
+### `gl.Free`
+### `gl.Frustum`
+### `gl.GenBuffers`
+### `gl.GenFramebuffers`
+### `gl.GenTextures`
+### `gl.GenVertexArrays`
+### `gl.GetAttribLocation`
+### `gl.GetError`
+### `gl.GetShaderiv`
+### `gl.GetTexLevelParameteriv`
+### `gl.Hint`
+### `gl.Init`
+### `gl.Lightfv`
+### `gl.LinkProgram`
+### `gl.LoadIdentity`
+### `gl.MatrixMode`
+### `gl.NewTexture`
+### `gl.Normal3f`
+### `gl.Ortho`
+### `gl.PopMatrix`
+### `gl.PushMatrix`
+### `gl.Rotatef`
+### `gl.Scalef`
+### `gl.ShaderSource`
+### `gl.Strs`
+### `gl.TexCoord2d`
+### `gl.TexCoord2f`
+### `gl.TexEnvi`
+### `gl.TexImage2D`
+### `gl.TexParameteri`
+### `gl.Translatef`
+### `gl.Uniform1f`
+### `gl.Uniform1i`
+### `gl.UseProgram`
+### `gl.Vertex2f`
+### `gl.Vertex3f`
+### `gl.VertexAttribPointerI32`
+### `gl.VertexAttribPointer`
+### `gl.Viewport`
+### `gl.getUniformLocation`
+
+## `glfw` Package Functions
+
+### `glfw.CreateWindow`
+### `glfw.GetCursorPos`
+### `glfw.GetFramebufferSize`
+### `glfw.GetTime`
+### `glfw.Init`
+### `glfw.MakeContextCurrent`
+### `glfw.PollEvents`
+### `glfw.SetCursorPosCallback`
+### `glfw.SetInputMode`
+### `glfw.SetKeyCallback`
+### `glfw.SetMouseButtonCallback`
+### `glfw.SetShouldClose`
+### `glfw.SetWindowPos`
+### `glfw.ShouldClose`
+### `glfw.SwapBuffers`
+### `glfw.SwapInterval`
+### `glfw.WindowHint`
+
+## `gltext` Package Functions
+
+### `gltext.GlyphBounds`
+### `gltext.LoadTrueType`
+### `gltext.Metrics`
+### `gltext.NextRune`
+### `gltext.Printf`
+### `gltext.Texture`

@@ -1118,12 +1118,14 @@ var OpNames map[int]string = map[int]string{
 	OP_I64_MIN:      "i64.min",
 	OP_I64_COS:      "i64.cos",
 	OP_I64_SIN:      "i64.sin",
+	
 	OP_F32_BYTE:     "f32.byte",
 	OP_F32_STR:      "f32.str",
 	OP_F32_I32:      "f32.i32",
 	OP_F32_I64:      "f32.i64",
 	OP_F32_F32:      "f32.f32",
 	OP_F32_F64:      "f32.f64",
+	
 	OP_F32_PRINT:    "f32.print",
 	OP_F32_ADD:      "f32.add",
 	OP_F32_SUB:      "f32.sub",
@@ -1185,6 +1187,8 @@ var OpNames map[int]string = map[int]string{
 	OP_STR_I64: "str.i64",
 	OP_STR_F32: "str.f32",
 	OP_STR_F64: "str.f64",
+
+	// time
 
 	OP_TIME_SLEEP:      "time.Sleep",
 	OP_TIME_UNIX_MILLI: "time.UnixMilli",
@@ -1330,8 +1334,8 @@ var OpCodes map[string]int = map[string]int{
 	"jmp":      OP_JMP,
 	"debug":    OP_DEBUG,
 
-	"eq":    OP_UND_EQUAL,
-	"uneq":  OP_UND_UNEQUAL,
+	"eq":       OP_UND_EQUAL,
+	"uneq":     OP_UND_UNEQUAL,
 	"bitand":   OP_UND_BITAND,
 	"bitxor":   OP_UND_BITXOR,
 	"bitor":    OP_UND_BITOR,
