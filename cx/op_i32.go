@@ -174,18 +174,6 @@ func op_i32_bitshr(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i32_sin(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Sin(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-func op_i32_cos(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Cos(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
 // op_i32_sqrt. The sqrt built-in function returns the square root of x number
 func op_i32_sqrt(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]

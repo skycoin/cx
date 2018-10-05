@@ -59,12 +59,9 @@ func op_goTo(expr *CXExpression, call *CXCall) {
 }
 
 func op_jmp(expr *CXExpression, fp int, call *CXCall) {
-	// inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	inp1 := expr.Inputs[0]
 	var predicate bool
-	// var thenLines int32
-	// var elseLines int32
-
+	
 	if expr.Label != "" {
 		// then it's a goto
 		call.Line = call.Line + expr.ThenLines
