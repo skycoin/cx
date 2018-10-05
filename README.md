@@ -1904,7 +1904,44 @@ that we're using to call it.
 ### If and if/else
 
 *if* and *if/else* statements are used to execute a block of
- instructions only if certain condition is true or false.
+ instructions only if certain condition is true or false. Behind the
+ scenes, *if* and *if/else* statements are parsed to a series of
+ `jmp` instructions internally. For example, in the case of an *if*
+ statement, we will jump *0* instructions if certain predicate is
+ true, and it will jump *n* instructions if the predicate is false,
+ where *n* is the number of instructions in the *if* block of
+ instructions.
+
+```
+package main
+
+func main () {
+	if true {
+		str.print("hi")
+	}
+	str.print("bye")
+}
+```
+
+```
+Program
+0.- Package: main
+	Functions
+		0.- Function: main () ()
+			0.- Expression: jmp(true bool)
+			1.- Expression: str.print("" str)
+			2.- Expression: jmp(true bool)
+			3.- Expression: str.print("" str)
+		1.- Function: *init () ()
+```
+
+In the two code snippets above we can see how an if statement is
+translated by the parser to a set of two `jmp` instructions. These
+`jmp` instructions have some meta data in them that is not shown in
+the second snippet: how many lines to jump if its predicate is true
+and how many lines to jump if the predicate is false. `jmp` is
+not meant to be used by CX programmers (it's only part of the CX base
+language), so you don't need to worry about it.
 
 ```
 package main
@@ -1961,6 +1998,39 @@ represent the state of the player or the monster, depending on their
 hit points (HP).
 
 ### For loop
+
+The *for* loop is the only looping mechanism in CX. Just like *if* and
+*if/else* statements are constructed using `jmp` statements, *for*
+loop statements are also constructed the same way.
+
+```
+package main
+
+func main () {
+	for c := 0; c < 10; c++ {
+		i32.print(c)
+	}
+}
+```
+
+```
+Program
+0.- Package: main
+	Functions
+		0.- Function: main () ()
+			0.- Declaration: c i32
+			1.- Expression: c i32 = identity(0 i32)
+			2.- Expression: *lcl_0 bool = lt(c i32, 10 i32)
+			3.- Expression: jmp(*lcl_0 bool)
+			4.- Expression: i32.print(c i32)
+			5.- Declaration: c i32
+			6.- Expression: c i32 = i32.add(c i32, 1 i32)
+			7.- Expression: jmp(true bool)
+		1.- Function: *init () ()
+```
+
+The code snippets above illustrate how a *for* loop that counts from 0
+to 9 is translated to a set of of `jmp` instructions.
 
 ```
 package main
@@ -2091,7 +2161,52 @@ func main () {
 }
 ```
 
+Lastly, we can see how we use a *for* loop to create something similar
+to a REPL for the program that we have been building in the last few sections.
+
 ### Go-to
+
+The last control flow mechanism is *go-to*, which is achieved through
+the `goto` statement.
+
+
+```
+package main
+
+func main () (out i32) {
+beginning:
+	printf("What animal do you like the most: (C)at; (D)og; (P)igeon\n")
+
+	var cmd str
+	cmd = read()
+	
+	if cmd == "C" || cmd == "c" {
+		goto cat
+	}
+
+	if cmd == "D" || cmd == "d" {
+		goto dog
+	}
+
+	if cmd == "P" || cmd == "p" {
+		goto pigeon
+	}
+
+cat:
+	str.print("meow")
+	goto beginning
+dog:
+	str.print("woof")
+	goto beginning
+pigeon:
+	str.print("tweet")
+	goto beginning
+}
+```
+
+The program above creates an infinite loop by using `goto`s. The loop
+will keep asking the user to input commands, and will jump to certain
+expression depending on the command.
 
 # Native Functions
 
@@ -2615,69 +2730,244 @@ func main () {
 
 ## `i32` Type Functions
 
+The following functions are of general purpose and are restricted to
+work with data structures of type *i32* where it makes sense.
+
 ### `i32.print`
 ### `i32.add`
 ### `i32.sub`
 ### `i32.mul`
 ### `i32.div`
+### `i32.mod`
 ### `i32.abs`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(i32.add(5, 7))
+	i32.print(i32.sub(6, 3))
+	i32.print(i32.mul(4, 8))
+	i32.print(i32.div(15, 3))
+	i32.print(i32.mod(5, 3))
+	i32.print(i32.abs(-13))
+}
+```
+
+### `i32.log`
+### `i32.log2`
+### `i32.log10`
 ### `i32.pow`
+### `i32.sqrt`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(i32.log(13))
+	i32.print(i32.log2(3))
+	i32.print(i32.log10(12))
+	i32.print(i32.pow(4, 4))
+	i32.print(i32.sqrt(2))
+}
+```
+
 ### `i32.gt`
 ### `i32.gteq`
 ### `i32.lt`
 ### `i32.lteq`
 ### `i32.eq`
 ### `i32.uneq`
-### `i32.mod`
-### `i32.rand`
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(i32.gt(5, 3))
+	bool.print(i32.gteq(3, 8))
+	bool.print(i32.lt(4, 3))
+	bool.print(i32.lteq(8, 6))
+	bool.print(i32.eq(-9, -9))
+	bool.print(i32.uneq(3, 3))
+}
+```
+
 ### `i32.bitand`
 ### `i32.bitor`
 ### `i32.bitxor`
 ### `i32.bitclear`
 ### `i32.bitshl`
 ### `i32.bitshr`
-### `i32.sqrt`
-### `i32.log`
-### `i32.log2`
-### `i32.log10`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(i32.bitand(2, 5))
+	i32.print(i32.bitor(8, 3))
+	i32.print(i32.bitxor(3, 9))
+	i32.print(i32.bitclear(4, 4))
+	i32.print(i32.bitshl(5, 9))
+	i32.print(i32.bitshr(1, 6))
+}
+```
+
 ### `i32.max`
 ### `i32.min`
-### `i32.sin`
-### `i32.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(i32.max(2, 5))
+	i32.print(i32.min(10, 3))
+}
+```
+
+### `i32.rand`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i32.print(i32.rand(0, 100))
+}
+```
 
 ## `i64` Type Functions
+
+The following functions are of general purpose and are restricted to
+work with data structures of type *i64* where it makes sense.
 
 ### `i64.print`
 ### `i64.add`
 ### `i64.sub`
 ### `i64.mul`
 ### `i64.div`
+### `i64.mod`
 ### `i64.abs`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i64.print(i64.add(5L, 7L))
+	i64.print(i64.sub(6L, 3L))
+	i64.print(i64.mul(4L, 8L))
+	i64.print(i64.div(15L, 3L))
+	i64.print(i64.mod(5L, 3L))
+	i64.print(i64.abs(-13L))
+}
+```
+
+### `i64.log`
+### `i64.log2`
+### `i64.log10`
 ### `i64.pow`
+### `i64.sqrt`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i64.print(i64.log(13L))
+	i64.print(i64.log2(3L))
+	i64.print(i64.log10(12L))
+	i64.print(i64.pow(4L, 4L))
+	i64.print(i64.sqrt(2L))
+}
+```
+
 ### `i64.gt`
 ### `i64.gteq`
 ### `i64.lt`
 ### `i64.lteq`
 ### `i64.eq`
 ### `i64.uneq`
-### `i64.mod`
-### `i64.rand`
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(i64.gt(5L, 3L))
+	bool.print(i64.gteq(3L, 8L))
+	bool.print(i64.lt(4L, 3L))
+	bool.print(i64.lteq(8L, 6L))
+	bool.print(i64.eq(-9L, -9L))
+	bool.print(i64.uneq(3L, 3L))
+}
+```
+
 ### `i64.bitand`
 ### `i64.bitor`
 ### `i64.bitxor`
 ### `i64.bitclear`
 ### `i64.bitshl`
 ### `i64.bitshr`
-### `i64.sqrt`
-### `i64.log`
-### `i64.log2`
-### `i64.log10`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i64.print(i64.bitand(2L, 5L))
+	i64.print(i64.bitor(8L, 3L))
+	i64.print(i64.bitxor(3L, 9L))
+	i64.print(i64.bitclear(4L, 4L))
+	i64.print(i64.bitshl(5L, 9L))
+	i64.print(i64.bitshr(1L, 6L))
+}
+```
+
 ### `i64.max`
 ### `i64.min`
-### `i64.sin`
-### `i64.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i64.print(i64.max(2L, 5L))
+	i64.print(i64.min(10L, 3L))
+}
+```
+
+### `i64.rand`
+
+#### Example
+
+```
+package main
+
+func main () {
+	i64.print(i64.rand(0L, 100L))
+}
+```
 
 ## `f32` Type Functions
+
+The following functions are of general purpose and are restricted to
+work with data structures of type *f32* where it makes sense.
 
 ### `f32.print`
 ### `f32.add`
@@ -2685,23 +2975,95 @@ func main () {
 ### `f32.mul`
 ### `f32.div`
 ### `f32.abs`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f32.print(f32.add(5.3, 10.5))
+	f32.print(f32.sub(3.2, 6.7))
+	f32.print(f32.mul(-7.9, -7.1))
+	f32.print(f32.div(10.3, 2.4))
+	f32.print(f32.abs(-3.14159))
+}
+```
+
+### `f32.log`
+### `f32.log2`
+### `f32.log10`
 ### `f32.pow`
+### `f32.sqrt`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f32.print(f32.log(2.3))
+	f32.print(f32.log2(3.4))
+	f32.print(f32.log10(3.0))
+	f32.print(f32.pow(-5.3, 2.0))
+	f32.print(f32.sqrt(4.0))
+}
+```
+
+### `f32.sin`
+### `f32.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f32.print(f32.sin(1.0))
+	f32.print(f32.cos(2.0))
+}
+```
+
 ### `f32.gt`
 ### `f32.gteq`
 ### `f32.lt`
 ### `f32.lteq`
 ### `f32.eq`
 ### `f32.uneq`
-### `f32.sqrt`
-### `f32.log`
-### `f32.log2`
-### `f32.log10`
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(f32.gt(5.3, 3.1))
+	bool.print(f32.gteq(3.7, 1.9))
+	bool.print(f32.lt(2.4, 5.5))
+	bool.print(f32.lteq(8.4, 3.2))
+	bool.print(f32.eq(10.3, 10.3))
+	bool.print(f32.uneq(8.9, 3.3))
+}
+```
+
 ### `f32.max`
 ### `f32.min`
-### `f32.sin`
-### `f32.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f32.print(f32.max(3.3, 4.2))
+	f32.print(f32.min(5.8, 9.9))
+}
+```
 
 ## `f64` Type Functions
+
+The following functions are of general purpose and are restricted to
+work with data structures of type *f64* where it makes sense.
 
 ### `f64.print`
 ### `f64.add`
@@ -2709,21 +3071,90 @@ func main () {
 ### `f64.mul`
 ### `f64.div`
 ### `f64.abs`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f64.print(f64.add(5.3D, 10.5D))
+	f64.print(f64.sub(3.2D, 6.7D))
+	f64.print(f64.mul(-7.9D, -7.1D))
+	f64.print(f64.div(10.3D, 2.4D))
+	f64.print(f64.abs(-3.14159D))
+}
+```
+
+### `f64.log`
+### `f64.log2`
+### `f64.log10`
 ### `f64.pow`
+### `f64.sqrt`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f64.print(f64.log(2.3D))
+	f64.print(f64.log2(3.4D))
+	f64.print(f64.log10(3.0D))
+	f64.print(f64.pow(-5.3D, 2.0D))
+	f64.print(f64.sqrt(4.0D))
+}
+```
+
+### `f64.sin`
+### `f64.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f64.print(f64.sin(1.0D))
+	f64.print(f64.cos(2.0D))
+}
+```
+
 ### `f64.gt`
 ### `f64.gteq`
 ### `f64.lt`
 ### `f64.lteq`
 ### `f64.eq`
 ### `f64.uneq`
-### `f64.sqrt`
-### `f64.log`
-### `f64.log2`
-### `f64.log10`
+
+#### Example
+
+```
+package main
+
+func main () {
+	bool.print(f64.gt(5.3D, 3.1D))
+	bool.print(f64.gteq(3.7D, 1.9D))
+	bool.print(f64.lt(2.4D, 5.5D))
+	bool.print(f64.lteq(8.4D, 3.2D))
+	bool.print(f64.eq(10.3D, 10.3D))
+	bool.print(f64.uneq(8.9D, 3.3D))
+}
+```
+
 ### `f64.max`
 ### `f64.min`
-### `f64.sin`
-### `f64.cos`
+
+#### Example
+
+```
+package main
+
+func main () {
+	f64.print(f64.max(3.3D, 4.2D))
+	f64.print(f64.min(5.8D, 9.9D))
+}
+```
 
 ## `time` Package Functions
 
@@ -2761,11 +3192,46 @@ func main () {
 
 ## `os` Package Functions
 
+The `os` package provides functions that serve as an interface to CX's
+underlaying operating system.
+
 ### `os.GetWorkingDirectory`
 ### `os.Open`
 ### `os.Close`
 
+#### Example
+
+```
+package main
+import "os"
+
+func main () {
+	var wd str
+	wd = os.GetWorkingDirectory()
+
+	var fileName str
+	fileName = str.concat(wd, "testing.cx")
+
+	os.Open(fileName)
+	os.Close(fileName)
+}
+```
+
 ## `gl` Package Functions
+
+"OpenGL is the premier environment for developing portable,
+interactive 2D and 3D graphics applications. Since its introduction in
+1992, OpenGL has become the industry's most widely used and supported
+2D and 3D graphics application programming interface (API), bringing
+thousands of applications to a wide variety of computer
+platforms. OpenGL fosters innovation and speeds application
+development by incorporating a broad set of rendering, texture
+mapping, special effects, and other powerful visualization
+functions. Developers can leverage the power of OpenGL across all
+popular desktop and workstation platforms, ensuring wide application
+deployment." This description was extracted from OpenGL's website
+(https://www.opengl.org/).
+
 
 ### `gl.ActiveTexture`
 ### `gl.AttachShader`
@@ -2847,6 +3313,12 @@ func main () {
 
 ## `glfw` Package Functions
 
+"GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES
+and Vulkan development on the desktop. It provides a simple API for
+creating windows, contexts and surfaces, receiving input and events."
+This description was extracted from GLFW's website (https://www.glfw.org/).
+
+
 ### `glfw.CreateWindow`
 ### `glfw.GetCursorPos`
 ### `glfw.GetFramebufferSize`
@@ -2866,6 +3338,17 @@ func main () {
 ### `glfw.WindowHint`
 
 ## `gltext` Package Functions
+
+"The gltext package offers a simple set of text rendering utilities
+for OpenGL programs. It deals with TrueType and Bitmap (raster)
+fonts. Text can be rendered in various directions (Left-to-right,
+right-to-left and top-to-bottom). This allows for correct display of
+text for various languages." This description was extracted from
+gltext's website (https://github.com/go-gl/gltext).
+
+
+The `gltext` functions can be used to display character strings on
+windows. Different fonts can be used by loading font files using `gltext.LoadTrueType`.
 
 ### `gltext.GlyphBounds`
 ### `gltext.LoadTrueType`
