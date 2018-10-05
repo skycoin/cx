@@ -20,8 +20,6 @@ func I32ArithmeticFunctions() () {
 	res = append(res, assert(i32.log10(10), 1, "Log10 error"))
 	res = append(res, assert(i32.max(2, 3), 3, "MAX error"))
 	res = append(res, assert(i32.min(2, 3), 2, "MIN error"))
-	res = append(res, assert(i32.sin(0), 0 ,"Sin error"))
-	res = append(res, assert(i32.cos(0), 1, "Cos error"))
 }
 
 func I32ArithmeticShorthand() () {

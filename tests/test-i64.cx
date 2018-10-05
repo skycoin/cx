@@ -20,8 +20,6 @@ func I64ArithmeticFunctions() () {
 	res = append(res, assert(i64.log10(10L), 1L, "Log10 error"))
 	res = append(res, assert(i64.max(3L, 1L), 3L, "MAX error"))
 	res = append(res, assert(i64.min(3L, 1L), 1L, "MIN error"))
-	res = append(res, assert(i64.sin(0L), 0L, "Sin error"))
-	res = append(res, assert(i64.cos(0L), 1L, "Cos error"))
 }
 
 func I64ArithmeticShorthand() () {
