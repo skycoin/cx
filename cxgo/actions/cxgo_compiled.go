@@ -2244,6 +2244,7 @@ func ProcessGoTos (fn *CXFunction, exprs []*CXExpression) {
 				if e.Label == expr.Label && i != j {
 					// ElseLines is used because arg's default val is false
 					expr.ThenLines = j - i - 1
+					break
 				}
 			}
 		}
