@@ -4,7 +4,7 @@ func main () (out i32) {
 	// This won't be evaluated
 	//out := i32.div(5, 0) // This won't either
 
-	out = i32.div(10, 3) // The program will return 2
+	out = i32.div(10, 3) // The program will return 3
 	i32.print(out)
 
 	/*
