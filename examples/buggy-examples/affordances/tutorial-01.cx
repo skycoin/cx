@@ -1,50 +1,98 @@
 package main
+import "aff"
 
-func main () {
-	// var foo1 i32
-	// var foo2 i32
-	// var foo3 i32
-	
-  	// foo1 = 1
-  	// foo2 = 2
-  	// foo3 = 3
+// func caller (caller Caller) (res bool) {
+// 	caller.Name
+// }
 
-	var target aff
-	var rules aff
-
-	
-	// target = append(target, "hi")
-
-	// var foo []i32
-	// foo = append(foo, 5)
-	// foo = []i32{1, 2, 3, 4}
-	// i32.print(foo[0])
-
-	// target = append(target, "hello")
+// func testing () {
+// 	rules := ->{
+// 		caller(caller)
+// 	}
+// }
 
 
-	
-	// target = [0]str{"hi", "hello"}
+func predicate (num i32) (res bool) {
+	if num > 1 {
+		res = true
+	} else {
+		res = false
+	}
 
-	target = ->{
+}
+
+func inter () {
+	target := ->{
 		pkg(main)
 		fn(main)
 		expr(message)
 	}
 
 	aff.print(target)
-  	
-  	rules = ->{
-		allow(* > 1.0D)
+
+  	rules := ->{
+		filter(predicate)
   	}
 
 	aff.print(rules)
 
+
+
 	
-  	// affs := aff.query(target, rules)
+  	affs := aff.query(target, rules)
   	// aff.print(affs)
+}
+
+func main () {
+	// var foo1 i32
+	// var foo2 i32
+	// var foo3 i32
+
+	bar1 := 10.3
 	
+  	foo1 := 1
+  	foo2 := 2
+  	foo3 := 3
+	foo4 := 4
+
+	// var target aff
+	// var rules aff
+
+	target := ->{
+		pkg(main)
+		fn(main)
+		expr(message)
+	}
+
+	aff.print(target)
+
+	// rules := ->{
+	// 	filter(predicate)
+  	// }
+
+	// conj, disj
+
+	var affs aff
+	
+  	filters := ->{
+		filter(filter(predicate))
+		// conj(filter(affs, pred1))
+		
+		// conj(
+		// 	disj(conj(
+		// 		filter(pred1)
+		// 		filter(pred2))
+		// 		filter(pred3))
+		// )
+  	}
+
+	aff.print(filters)
+	
+  	affs := aff.query(target, filters)
+  	aff.print(affs)
+
+	// aff.execute(affs, 0)
+
 message:
   	i32.print(0)
 }
-
