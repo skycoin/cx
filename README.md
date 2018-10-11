@@ -3350,9 +3350,9 @@ gltext's website (https://github.com/go-gl/gltext).
 The `gltext` functions can be used to display character strings on
 windows. Different fonts can be used by loading font files using `gltext.LoadTrueType`.
 
-### `gltext.GlyphBounds`
-### `gltext.LoadTrueType`
-### `gltext.Metrics`
-### `gltext.NextRune`
+### `gltext.GlyphBounds () (i32, i32)`
+### `gltext.LoadTrueType (str, str, i32, i32, i32, i32) ()`
+### `gltext.Metrics (str, str) (i32, i32)`
+### `gltext.NextRune (str, str, i32) (i32, i32, i32, i32, i32, i32, i32)`
 ### `gltext.Printf`
 ### `gltext.Texture`
