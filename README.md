@@ -1776,7 +1776,6 @@ now need to process them. In order to do so, we need to have access to
 some control flow structures.
 
 ### Functions
-<!-- talk about Expressions in here -->
 
 Functions are used to encapsulate routines that we plan to be
 frequently calling. In addition to encapsulating a series of
@@ -2207,6 +2206,10 @@ pigeon:
 The program above creates an infinite loop by using `goto`s. The loop
 will keep asking the user to input commands, and will jump to certain
 expression depending on the command.
+
+## Affordances
+
+![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/affordances.png)
 
 # Native Functions
 
