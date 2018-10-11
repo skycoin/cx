@@ -2,6 +2,7 @@
 	package main
 	import (
 		// "fmt"
+		// "strconv"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
@@ -156,7 +157,8 @@
 
 %type   <function>      function_header
 
-%type   <stringA>       infer_action_arg, infer_action, infer_actions, infer_target, infer_targets
+//                      %type   <stringA>       infer_action, infer_actions
+%type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
                         
                         // for struct literals
@@ -616,21 +618,34 @@ slice_literal_expression:
 
 
 
-infer_action_arg:
-                MUL_OP GT_OP assignment_expression
-                {
-			$$ = []string{$1, "", $2}
-                }
-        |       MUL_OP GT_OP MUL_OP
-                {
-			$$ = []string{$1, $1, $2}
-                }
-        ;
+/* infer_action_arg: */
+/*                 MUL_OP GT_OP assignment_expression */
+/*                 { */
+/* 			if $3[len($3) - 1].Outputs[0].Name != "" { */
+/* 				$$ = []string{$1, $3[len($3) - 1].Outputs[0].Name, $2} */
+/* 			} else { */
+/* 				$$ = []string{$1, strconv.Itoa($3[len($3) - 1].Outputs[0].Offset), $2} */
+/* 			} */
+			
+/*                 } */
+/*         |       MUL_OP GT_OP MUL_OP */
+/*                 { */
+/* 			$$ = []string{$1, $1, $2} */
+/*                 } */
+/*         ; */
 
 infer_action:
-		IDENTIFIER LPAREN infer_action_arg RPAREN SEMICOLON
+                // IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
+                IDENTIFIER LPAREN argument_expression_list RPAREN
                 {
-			$$ = append($3, $1)
+			var args []string
+
+			for _, expr := range $3 {
+				args = append(args, expr.Outputs[0].Name)
+			}
+			
+			// $$ = append([]string{$3}, $1)
+			$$ = append(args, $1)
                 }
         ;
 
@@ -646,49 +661,49 @@ infer_actions:
                 }
                 ;
 
-infer_target:
-                IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
-                {
-			$$ = []string{$3, $1}
-                }
+/* infer_target: */
+/*                 IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON */
+/*                 { */
+/* 			$$ = []string{$3, $1} */
+/*                 } */
         ;
 
-infer_targets:
-                infer_target
-                {
-			$$ = $1
-                }
-        |       infer_targets infer_target
-                {
-			$1 = append($1, $2...)
-			$$ = $1
-                }
-        ;
+/* infer_targets: */
+/*                 infer_target */
+/*                 { */
+/* 			$$ = $1 */
+/*                 } */
+/*         |       infer_targets infer_target */
+/*                 { */
+/* 			$1 = append($1, $2...) */
+/* 			$$ = $1 */
+/*                 } */
+/*         ; */
 
 infer_clauses:
                 infer_actions
                 {
 			var exprs []*CXExpression
 			for _, str := range $1 {
-				expr := WritePrimary(TYPE_STR, encoder.Serialize(str), false)
+				expr := WritePrimary(TYPE_AFF, encoder.Serialize(str), false)
 				expr[len(expr) - 1].IsArrayLiteral = true
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = SliceLiteralExpression(TYPE_STR, exprs)
+			$$ = SliceLiteralExpression(TYPE_AFF, exprs)
                 }
-        |       infer_targets
-                {
-			var exprs []*CXExpression
-			for _, str := range $1 {
-				expr := WritePrimary(TYPE_STR, encoder.Serialize(str), false)
-				expr[len(expr) - 1].IsArrayLiteral = true
-				exprs = append(exprs, expr...)
-			}
+        /* |       infer_targets */
+        /*         { */
+	/* 		var exprs []*CXExpression */
+	/* 		for _, str := range $1 { */
+	/* 			expr := WritePrimary(TYPE_AFF, encoder.Serialize(str), false) */
+	/* 			expr[len(expr) - 1].IsArrayLiteral = true */
+	/* 			exprs = append(exprs, expr...) */
+	/* 		} */
 			
-			// $$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs)
-			$$ = SliceLiteralExpression(TYPE_STR, exprs)
-                }
+	/* 		// $$ = ArrayLiteralExpression(len(exprs), TYPE_STR, exprs) */
+	/* 		$$ = SliceLiteralExpression(TYPE_AFF, exprs) */
+        /*         } */
                 ;
 
 

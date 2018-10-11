@@ -54,10 +54,10 @@
 /\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
 /\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
 /%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
-/>/                       { return f(GT_OP) }
-/</                       { return f(LT_OP) }
-/>=/                      { return f(GTEQ_OP) }
-/<=/                      { return f(LTEQ_OP) }
+/>/                       { lval.tok = yylex.Text(); return f(GT_OP) }
+/</                       { lval.tok = yylex.Text(); return f(LT_OP) }
+/>=/                      { lval.tok = yylex.Text(); return f(GTEQ_OP) }
+/<=/                      { lval.tok = yylex.Text(); return f(LTEQ_OP) }
 />>=/                     { lval.tok = yylex.Text(); return f(RIGHT_ASSIGN)}
 /<<=/                     { lval.tok = yylex.Text(); return f(LEFT_ASSIGN)}
 /\+=/                     { lval.tok = yylex.Text(); return f(ADD_ASSIGN)}

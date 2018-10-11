@@ -667,13 +667,14 @@ slice_literal_expression:
 
 
 
-infer_action_arg:
-                MUL_OP GT_OP assignment_expression
-        |       MUL_OP GT_OP MUL_OP
-        ;
+/* infer_action_arg: */
+/*                 MUL_OP GT_OP assignment_expression */
+/*         |       MUL_OP GT_OP MUL_OP */
+/*         ; */
 
 infer_action:
-		IDENTIFIER LPAREN infer_action_arg RPAREN SEMICOLON
+		IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
+        |       IDENTIFIER LPAREN infer_action RPAREN
         ;
 
 infer_actions:
@@ -681,18 +682,18 @@ infer_actions:
         |       infer_actions infer_action
                 ;
 
-infer_target:
-                IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
-        ;
+/* infer_target: */
+/*                 IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON */
+/*         ; */
 
-infer_targets:
-                infer_target
-        |       infer_targets infer_target
-        ;
+/* infer_targets: */
+/*                 infer_target */
+/*         |       infer_targets infer_target */
+/*         ; */
 
 infer_clauses:
                 infer_actions
-        |       infer_targets
+        /* |       infer_targets */
                 ;
 
 

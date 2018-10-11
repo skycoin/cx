@@ -70,6 +70,22 @@ func ErrorHeader (currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
+// this function adds the roots (pointers) for some GC algorithms
+func AddPointer(fn *CXFunction, sym *CXArgument) {
+	if sym.IsPointer && sym.Name != "" {
+		var found bool
+		for _, ptr := range fn.ListOfPointers {
+			if sym.Name == ptr.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			fn.ListOfPointers = append(fn.ListOfPointers, sym)
+		}
+	}
+}
+
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		declaration_specifiers.Package = pkg
@@ -457,7 +473,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 			sym.Package = pkg
 			sym.IsShortDeclaration = true
 
-			if sym.Type == TYPE_STR {
+			if sym.Type == TYPE_STR || sym.Type == TYPE_AFF {
 				sym.PassBy = PASSBY_REFERENCE
 			}
 
@@ -1192,7 +1208,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg.TotalSize = size
 		arg.Offset = DataOffset
 
-		if arg.Type == TYPE_STR {
+		if arg.Type == TYPE_STR || arg.Type == TYPE_AFF {
 			arg.PassBy = PASSBY_REFERENCE
 			arg.Size = TYPE_POINTER_SIZE
 			arg.TotalSize = TYPE_POINTER_SIZE
@@ -1672,7 +1688,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 					nameFld.PassBy = fld.PassBy
 					nameFld.IsSlice = fld.IsSlice
 					
-					if fld.Type == TYPE_STR {
+					if fld.Type == TYPE_STR || fld.Type == TYPE_AFF {
 						nameFld.PassBy = PASSBY_REFERENCE
 						// nameFld.Size = TYPE_POINTER_SIZE
 						// nameFld.TotalSize = TYPE_POINTER_SIZE
@@ -1706,9 +1722,9 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	// if arg.IsSlice && (len(GetAssignmentElement(sym).Fields) > 0 || len(GetAssignmentElement(sym).Indexes) > 0) {
-
-	
+	if arg.Type == TYPE_STR {
+		sym.IsPointer = true
+	}
 
 	if arg.IsSlice {
 		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
@@ -1993,11 +2009,14 @@ func GiveCustomType(symbols *map[string]*CXArgument, sym *CXArgument, offset *in
 
 func ProcessSlice (inp *CXArgument) {
 	var elt *CXArgument
+
 	if len(inp.Fields) > 0 {
 		elt = inp.Fields[len(inp.Fields) - 1]
 	} else {
 		elt = inp
 	}
+
+	elt.IsPointer = true
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations) - 1]
@@ -2053,8 +2072,8 @@ func ProcessStringAssignment (expr *CXExpression) {
 				out = GetAssignmentElement(out)
 				inp := GetAssignmentElement(expr.Inputs[i])
 
-				if out.Type == TYPE_STR && out.Name != "" &&
-					inp.Type == TYPE_STR && inp.Name != "" {
+				if (out.Type == TYPE_STR || out.Type == TYPE_AFF) && out.Name != "" &&
+					(inp.Type == TYPE_STR || inp.Type == TYPE_AFF) && inp.Name != "" {
 					out.PassBy = PASSBY_VALUE
 				}
 			}
@@ -2230,7 +2249,7 @@ func FunctionAddParameters (fn *CXFunction, inputs, outputs []*CXArgument) {
 	}
 
 	for _, out := range fn.Outputs {
-		if out.IsPointer && out.Type != TYPE_STR {
+		if out.IsPointer && out.Type != TYPE_STR && out.Type != TYPE_AFF {
 			out.DoesEscape = true
 		}
 	}
