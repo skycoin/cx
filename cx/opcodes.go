@@ -233,6 +233,7 @@ const (
 	// affordances
 	OP_AFF_PRINT
 	OP_AFF_QUERY
+	OP_AFF_EXECUTE
 
 	// serialize
 	OP_S_PROGRAM
@@ -762,6 +763,8 @@ func execNative(prgrm *CXProgram) {
 		op_aff_print(expr, fp)
 	case OP_AFF_QUERY:
 		op_aff_query(expr, fp)
+	case OP_AFF_EXECUTE:
+		op_aff_execute(expr, fp)
 
 	// opengl
 	case OP_GL_INIT:
@@ -1186,8 +1189,9 @@ var OpNames map[int]string = map[int]string{
 
 	OP_APPEND: "append",
 
-	OP_AFF_PRINT: "aff.print",
-	OP_AFF_QUERY: "aff.query",
+	OP_AFF_PRINT:    "aff.print",
+	OP_AFF_QUERY:    "aff.query",
+	OP_AFF_EXECUTE:  "aff.execute",
 
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
@@ -1508,6 +1512,7 @@ var OpCodes map[string]int = map[string]int{
 
 	"aff.print": OP_AFF_PRINT,
 	"aff.query": OP_AFF_QUERY,
+	"aff.execute": OP_AFF_EXECUTE,
 
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
@@ -1824,8 +1829,9 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	// slices
 	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 
-	OP_AFF_PRINT:  MakeNative(OP_AFF_PRINT, []int{TYPE_STR}, []int{}),
-	OP_AFF_QUERY:  MakeNative(OP_AFF_QUERY, []int{TYPE_STR}, []int{TYPE_STR}),
+	OP_AFF_PRINT:   MakeNative(OP_AFF_PRINT, []int{TYPE_AFF}, []int{}),
+	OP_AFF_QUERY:   MakeNative(OP_AFF_QUERY, []int{TYPE_AFF, TYPE_AFF}, []int{TYPE_AFF}),
+	OP_AFF_EXECUTE: MakeNative(OP_AFF_EXECUTE, []int{TYPE_AFF, TYPE_I32}, []int{}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),
@@ -1934,6 +1940,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLFW_SET_WINDOW_POS:            MakeNative(OP_GLFW_SET_WINDOW_POS, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
+	
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLTEXT_PRINTF:                  MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{}),
@@ -1941,6 +1948,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLTEXT_TEXTURE:                 MakeNative(OP_GLTEXT_TEXTURE, []int{TYPE_STR}, []int{TYPE_I32}),
 	OP_GLTEXT_NEXT_RUNE:               MakeNative(OP_GLTEXT_NEXT_RUNE, []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}),
 	OP_GLTEXT_GLYPH_BOUNDS:            MakeNative(OP_GLTEXT_GLYPH_BOUNDS, []int{}, []int{TYPE_I32, TYPE_I32}),
+	
 	// http
 	OP_HTTP_GET:                       MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR}),
 

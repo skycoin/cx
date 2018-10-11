@@ -4,10 +4,6 @@ package base
   Root Program
 */
 
-// type Data []byte
-// type Heap []byte
-// type Stack []byte
-
 type CXProgram struct {
 	Packages       []*CXPackage
 	CurrentPackage *CXPackage
@@ -17,10 +13,6 @@ type CXProgram struct {
 
 	CallStack   []CXCall
 	CallCounter int
-
-	// Stacks []CXStack
-	// Heap   CXHeap
-	// Data   Data
 
 	Memory []byte
 	HeapPointer int
@@ -33,20 +25,6 @@ type CXProgram struct {
 	Path  string
 	Steps [][]CXCall
 }
-
-// type CXHeap struct {
-// 	Heap        Heap
-// 	HeapPointer int
-
-// 	Program *CXProgram
-// }
-
-// type CXStack struct {
-// 	Stack        Stack
-// 	StackPointer int
-
-// 	Program *CXProgram
-// }
 
 type CXCall struct {
 	Operator     *CXFunction
@@ -188,9 +166,6 @@ type CXArgument struct {
 	
 	Package *CXPackage
 	Program *CXProgram
-
-	// Value *[]byte
-	// Typ   string
 }
 
 /*

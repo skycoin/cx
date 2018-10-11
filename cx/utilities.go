@@ -452,22 +452,6 @@ func (prgrm *CXProgram) PrintProgram() {
 	currentPackage.CurrentFunction = currentFunction
 }
 
-// this function adds the roots (pointers) for some GC algorithms
-func AddPointer(fn *CXFunction, sym *CXArgument) {
-	if sym.IsPointer {
-		var found bool
-		for _, ptr := range fn.ListOfPointers {
-			if sym.Name == ptr.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			fn.ListOfPointers = append(fn.ListOfPointers, sym)
-		}
-	}
-}
-
 func CheckArithmeticOp(expr *CXExpression) bool {
 	if expr.Operator.IsNative {
 		switch expr.Operator.OpCode {
@@ -727,6 +711,92 @@ func GetAssignmentElement (arg *CXArgument) *CXArgument {
 		return arg.Fields[len(arg.Fields) - 1]
 	} else {
 		return arg
+	}
+}
+
+func WriteToSlice (off int, inp []byte) int {
+	var heapOffset int
+	
+	if off == 0 {
+		// then it's a new slice
+		heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp))
+
+		var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+
+
+		size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
+		
+		for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+			header[c] = size[c-5]
+		}
+
+		one := []byte{1, 0, 0, 0}
+
+		// len == 1
+		finalObj := append(header, one...)
+		// cap == 1
+		finalObj = append(finalObj, one...)
+		finalObj = append(finalObj, inp...)
+
+		WriteMemory(heapOffset, finalObj)
+		return heapOffset
+	} else {
+		// then it already exists
+		var sliceHeader []byte
+		sliceHeader = PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+
+		var l int32
+		var c int32
+
+		encoder.DeserializeAtomic(sliceHeader[:4], &l)
+		encoder.DeserializeAtomic(sliceHeader[4:], &c)
+
+		if l >= c {
+			// then we need to increase cap and relocate slice
+			var obj []byte
+
+			obj = PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(len(inp))]
+
+			l++
+			c = c * 2
+
+			heapOffset = AllocateSeq(int(c) * len(inp) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
+
+			size := encoder.SerializeAtomic(int32(int(c) * len(inp) + SLICE_HEADER_SIZE))
+
+			var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+				header[c] = size[c-5]
+			}
+
+			lB := encoder.SerializeAtomic(l)
+			cB := encoder.SerializeAtomic(c)
+
+			finalObj := append(header, lB...)
+			finalObj = append(finalObj, cB...)
+			finalObj = append(finalObj, obj...)
+			finalObj = append(finalObj, inp...)
+
+			WriteMemory(heapOffset, finalObj)
+
+			return heapOffset
+		} else {
+			// then we can simply write the element
+
+			// updating the length
+			newL := encoder.SerializeAtomic(l+int32(1))
+
+			for i, byt := range newL {
+				PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + i] = byt
+			}
+
+			// write the obj
+			for i, byt := range inp {
+				PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int(l) * len(inp) + i] = byt
+			}
+
+			return off
+		}
 	}
 }
 

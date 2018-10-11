@@ -212,7 +212,6 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			returnLine := returnAddr.Line
 			returnFP := returnAddr.FramePointer
 			fp := call.FramePointer
-
 			
 			expr := returnOp.Expressions[returnLine]
 			// for i, out := range expr.Outputs {
@@ -223,6 +222,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// 			call.Operator.Outputs[i]))
 			// }
 
+			// lenOuts := len(expr.Outputs)
 			for i, out := range call.Operator.Outputs {
 				WriteMemory(
 					GetFinalOffset(returnFP, expr.Outputs[i]),
@@ -236,7 +236,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// we'll now execute the next command
 			prgrm.CallStack[prgrm.CallCounter].Line++
 			// calling the actual command
-			prgrm.CallStack[prgrm.CallCounter].ccall(prgrm)
+			// prgrm.CallStack[prgrm.CallCounter].ccall(prgrm)
 		}
 	} else {
 		/*

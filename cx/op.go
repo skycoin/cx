@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"os"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -151,10 +152,10 @@ func MarkAndCompact() {
 	newHeapPointer := NULL_HEAP_ADDRESS_OFFSET
 	for c := NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapPointer; {
 		var forwardingAddress int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
+		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt + c + MARK_SIZE : PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE], &forwardingAddress)
 
 		var objSize int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
+		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE : PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE + OBJECT_SIZE], &objSize)
 
 		if PROGRAM.Memory[c] == 1 {
 			// setting the mark back to 0
@@ -177,15 +178,20 @@ func AllocateSeq(size int) (offset int) {
 	result := PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 	newFree := PROGRAM.HeapPointer + size
 
-	if newFree > MEMORY_SIZE {
+	// if newFree > MEMORY_SIZE {
+	if result + size > MEMORY_SIZE {
 		// call GC
 		MarkAndCompact()
 		result = PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 		newFree = PROGRAM.HeapPointer + size
 
-		if newFree > MEMORY_SIZE {
+		if result + size > MEMORY_SIZE {
 			// heap exhausted
-			panic("heap exhausted")
+			errorCall := PROGRAM.CallStack[PROGRAM.CallCounter]
+			fileName := errorCall.Operator.Expressions[errorCall.Line].FileName
+			fileLine := errorCall.Operator.Expressions[errorCall.Line].FileLine
+			fmt.Println(fmt.Sprintf("runtime error: heap exhausted: %s:%d", fileName, fileLine))
+			os.Exit(3)
 		}
 	}
 

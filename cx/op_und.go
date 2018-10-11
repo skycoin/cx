@@ -338,7 +338,7 @@ func op_len(expr *CXExpression, fp int) {
 	}
 }
 
-func op_append(expr *CXExpression, fp int) {
+func op_append (expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	
 	preInp1Offset := GetFinalOffset(fp, inp1)
@@ -378,10 +378,9 @@ func op_append(expr *CXExpression, fp int) {
 		var obj1 []byte
 		var obj2 []byte
 
-		// obj1 = PROGRAM.Memory[inp1Offset : int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 		obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 
-		if inp2.Type == TYPE_STR {
+		if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
 			obj2 = encoder.SerializeAtomic(int32(inp2Offset))
 		} else {
 			obj2 = ReadMemory(inp2Offset, inp2)
@@ -432,9 +431,9 @@ func op_append(expr *CXExpression, fp int) {
 			var obj1 []byte
 			var obj2 []byte
 
-			obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(inp1Offset) + l*int32(inp2.TotalSize)]
+			obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(inp1Offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
 
-			if inp2.Type == TYPE_STR {
+			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
 				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
@@ -447,7 +446,7 @@ func op_append(expr *CXExpression, fp int) {
 
 			WriteMemory(out1Offset, encoder.SerializeAtomic(int32(heapOffset)))
 
-			size := encoder.SerializeAtomic(int32(int(c)*inp2.TotalSize + SLICE_HEADER_SIZE))
+			size := encoder.SerializeAtomic(int32(int(c) * inp2.TotalSize + SLICE_HEADER_SIZE))
 
 			var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
 			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
@@ -476,7 +475,7 @@ func op_append(expr *CXExpression, fp int) {
 			}
 
 			var obj2 []byte
-			if inp2.Type == TYPE_STR {
+			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
 				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
