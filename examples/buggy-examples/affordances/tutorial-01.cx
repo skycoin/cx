@@ -21,78 +21,42 @@ func predicate (num i32) (res bool) {
 
 }
 
-func inter () {
-	target := ->{
-		pkg(main)
-		fn(main)
-		expr(message)
-	}
-
-	aff.print(target)
-
-  	rules := ->{
-		filter(predicate)
-  	}
-
-	aff.print(rules)
-
-
-
-	
-  	affs := aff.query(target, rules)
-  	// aff.print(affs)
-}
+// func inter () {
+// }
 
 func main () {
-	// var foo1 i32
-	// var foo2 i32
-	// var foo3 i32
-
 	bar1 := 10.3
 	
   	foo1 := 1
   	foo2 := 2
   	foo3 := 3
-	foo4 := 4
-
-	// var target aff
-	// var rules aff
 
 	target := ->{
 		pkg(main)
 		fn(main)
-		expr(message)
+		expr(message) // we could write expr(34) or whatever number
+		inp(0)
 	}
 
-	aff.print(target)
-
-	// rules := ->{
-	// 	filter(predicate)
-  	// }
-
-	// conj, disj
-
-	var affs aff
-	
   	filters := ->{
-		filter(filter(predicate))
-		// conj(filter(affs, pred1))
-		
-		// conj(
-		// 	disj(conj(
-		// 		filter(pred1)
-		// 		filter(pred2))
-		// 		filter(pred3))
-		// )
+		filter(predicate)
+		filter(predicate)
+		disj(filter(pred1),
+			filter(pred2))
   	}
 
-	aff.print(filters)
+	affs := aff.query(filters)
 	
-  	affs := aff.query(target, filters)
-  	aff.print(affs)
+	aff.print(target)
+	aff.print(filters)
+	aff.print(affs)
 
-	// aff.execute(affs, 0)
+	aff.on(affs, target)
+	aff.of(affs, target)
+
+	aff.inform(affs, 0, target)
+	aff.request(affs, 0, target)
 
 message:
-  	i32.print(0)
+	i32.print(0)
 }
