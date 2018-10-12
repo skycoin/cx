@@ -64,6 +64,7 @@ Table of Contents
          * [If and if/else](#if-and-ifelse-1)
          * [For loop](#for-loop-1)
          * [Go-to](#go-to)
+      * [Affordances](#affordances)
    * [Native Functions](#native-functions)
       * [Type-inferenced Functions](#type-inferenced-functions)
       * [Slice Functions](#slice-functions)
