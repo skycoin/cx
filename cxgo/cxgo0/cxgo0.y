@@ -673,13 +673,15 @@ slice_literal_expression:
 /*         ; */
 
 infer_action:
-		IDENTIFIER LPAREN IDENTIFIER RPAREN SEMICOLON
-        |       IDENTIFIER LPAREN infer_action RPAREN
+                IDENTIFIER LPAREN IDENTIFIER COMMA IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN infer_action RPAREN
+	|	IDENTIFIER LPAREN infer_action COMMA infer_action RPAREN
         ;
 
 infer_actions:
-                infer_action
-        |       infer_actions infer_action
+                infer_action SEMICOLON
+        |       infer_actions infer_action SEMICOLON
                 ;
 
 /* infer_target: */
