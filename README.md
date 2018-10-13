@@ -1110,6 +1110,60 @@ in CX. The `:=` token can be used to tell CX to infer a variable's
 type. This way, CX declares and initializes at the same time, as seen
 in the example above.
 
+## Affordances
+
+The affordance system in CX uses a special operator: `->`.  This
+operator takes a series of statements that have the form of function
+calls, and transforms them to a series of instructions that can be
+internally interpreted by the affordance system.
+
+
+```
+package main
+
+func exprPredicate (expr Expression) (res bool) {
+	if expr.Operator == "i32.add" {
+		res = true
+	}
+}
+
+func prgrmPredicate (prgrm Program) () {
+	if prgrm.FreeHeap > 50 {
+		res = true
+	}
+}
+
+func main () {
+	num1 := 5
+	num2 := 10
+	
+targetExpr:
+	sum := i32.add(0, 0)
+	
+	tgt := ->{
+		pkg(main)
+		fn(main)
+		expr(targetExpr)
+	}
+
+	fltrs := ->{
+		filter(exprPredicate)
+		filter(prgrmPredicate)
+	}
+
+	aff.print(tgt)
+	aff.print(fltrs)
+
+	affs := aff.query(fltrs, tgt)
+	
+	aff.on(affs, tgt)
+	aff.of(affs, tgt)
+
+	aff.inform(affs, 0, tgt)
+	aff.request(affs, 0, tgt)
+}
+```
+
 # Runtime
 
 The previous section presents the language features from a syntax
@@ -2211,6 +2265,8 @@ expression depending on the command.
 ## Affordances
 
 ![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/affordances.png)
+
+
 
 # Native Functions
 
