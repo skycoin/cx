@@ -242,6 +242,74 @@ func DeclarePackage(ident string) {
 	}
 }
 
+func AffordanceStructs (pkg *CXPackage) {
+	// Argument type
+	argStrct := MakeStruct("Argument")
+	argStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
+	
+	argFldName := MakeField("Name", TYPE_STR, "", 0)
+	argFldType := MakeField("Type", TYPE_STR, "", 0)
+	
+	argStrct.AddField(argFldName)
+	argStrct.AddField(argFldType)
+	
+	pkg.AddStruct(argStrct)
+
+	// Expression type
+	exprStrct := MakeStruct("Expression")
+	exprStrct.Size = GetArgSize(TYPE_STR)
+	
+	exprFldOperator := MakeField("Operator", TYPE_STR, "", 0)
+	
+	exprStrct.AddField(exprFldOperator)
+	
+	pkg.AddStruct(exprStrct)
+
+	// Function type
+	fnStrct := MakeStruct("Function")
+	fnStrct.Size = GetArgSize(TYPE_STR)
+	
+	fnFldName := MakeField("Name", TYPE_STR, "", 0)
+	
+	fnStrct.AddField(fnFldName)
+	
+	pkg.AddStruct(fnStrct)
+	
+	// Structure type
+	strctStrct := MakeStruct("Structure")
+	strctStrct.Size = GetArgSize(TYPE_STR)
+	
+	strctFldName := MakeField("Name", TYPE_STR, "", 0)
+	
+	strctStrct.AddField(strctFldName)
+	
+	pkg.AddStruct(strctStrct)
+	
+	// Package type
+	pkgStrct := MakeStruct("Structure")
+	pkgStrct.Size = GetArgSize(TYPE_STR)
+	
+	pkgFldName := MakeField("Name", TYPE_STR, "", 0)
+	
+	pkgStrct.AddField(pkgFldName)
+	
+	pkg.AddStruct(pkgStrct)
+
+	// Call type
+	
+	// Program type
+	prgrmStrct := MakeStruct("Program")
+	prgrmStrct.Size = GetArgSize(TYPE_I32) + GetArgSize(TYPE_I32)
+	
+	prgrmFldCallCounter := MakeField("CallCounter", TYPE_I32, "", 0)
+	prgrmFldFreeHeap := MakeField("FreeHeap", TYPE_I32, "", 0)
+	
+	prgrmStrct.AddField(prgrmFldCallCounter)
+	prgrmStrct.AddField(prgrmFldFreeHeap)
+	
+	pkg.AddStruct(prgrmStrct)
+}
+
 func DeclareImport(ident string, currentFile string, lineNo int) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(ident); err != nil {
@@ -253,6 +321,12 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 				if IsCorePackage(ident) {
 					imp := MakePackage(ident)
 					pkg.AddImport(imp)
+					PRGRM.AddPackage(imp)
+					PRGRM.CurrentPackage = pkg
+
+					if ident == "aff" {
+						AffordanceStructs(imp)
+					}
 				} else {
 					println(ErrorHeader(currentFile, lineNo), err.Error())
 				}

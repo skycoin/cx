@@ -452,6 +452,10 @@ declaration_specifiers:
                 {
 			$$ = DeclarationSpecifiersStruct($3, $1, true)
                 }
+	|       type_specifier PERIOD IDENTIFIER
+                {
+			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true)
+                }
         /* |       package_identifier */
         /*         { */
 	/* 		$$ = DeclarationSpecifiersStruct($1[1], $1[0], true) */
@@ -1098,7 +1102,11 @@ labeled_statement:
                 {
 			// it has to be the first expression so all the nested expressions are executed
 			// instead of only executing the last one
-			$3[0].Label = $1
+			// UPDATE: I need to label all expressions. `goto` will jump to first occurrance anyway, so no problem
+			// I need this behavior for affordances
+			for _, expr := range $3 {
+				expr.Label = $1
+			}
 
 			$$ = $3
                 }

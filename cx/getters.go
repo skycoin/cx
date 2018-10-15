@@ -216,7 +216,9 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 			break
 		}
 	}
+	
 	var foundStrct *CXStruct
+	
 	for _, strct := range foundPkg.Structs {
 		if strct.Name == strctName {
 			foundStrct = strct

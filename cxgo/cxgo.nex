@@ -558,6 +558,13 @@ func checkCXPathSet () {
 		PKGPATH = CXPATH + "pkg/"
 		SRCPATH = CXPATH + "src/"
 	}
+
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	COREPATH = filepath.Dir(ex)
 }
 
 func main () {

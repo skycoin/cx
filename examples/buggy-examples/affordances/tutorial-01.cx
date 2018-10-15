@@ -1,62 +1,115 @@
+// package main
+// import "aff"
+
+// // func caller (caller Caller) (res bool) {
+// // 	caller.Name
+// // }
+
+// // func testing () {
+// // 	rules := ->{
+// // 		caller(caller)
+// // 	}
+// // }
+
+
+// func predicate (num i32) (res bool) {
+// 	if num > 1 {
+// 		res = true
+// 	} else {
+// 		res = false
+// 	}
+
+// }
+
+// // func inter () {
+// // }
+
+// func main () {
+// 	bar1 := 10.3
+	
+//   	foo1 := 1
+//   	foo2 := 2
+//   	foo3 := 3
+
+// 	target := ->{
+// 		pkg(main)
+// 		fn(main)
+// 		expr(message) // we could write expr(34) or whatever number
+// 		inp(0)
+// 	}
+
+//   	filters := ->{
+// 		filter(predicate)
+// 		filter(predicate)
+// 		disj(filter(pred1),
+// 			filter(pred2))
+//   	}
+
+// 	affs := aff.query(filters)
+	
+// 	aff.print(target)
+// 	aff.print(filters)
+// 	aff.print(affs)
+
+// 	aff.on(affs, target)
+// 	aff.of(affs, target)
+
+// 	aff.inform(affs, 0, target)
+// 	aff.request(affs, 0, target)
+
+// message:
+// 	i32.print(0)
+// }
+
+
 package main
 import "aff"
 
-// func caller (caller Caller) (res bool) {
-// 	caller.Name
-// }
-
-// func testing () {
-// 	rules := ->{
-// 		caller(caller)
-// 	}
-// }
-
-
-func predicate (num i32) (res bool) {
-	if num > 1 {
+func exprPredicate (expr aff.Expression) (res bool) {
+	str.print(expr.Operator)
+	if expr.Operator == "i32.add" {
 		res = true
-	} else {
-		res = false
 	}
-
 }
 
-// func inter () {
+func prgrmPredicate (prgrm aff.Program) (res bool) {
+	if prgrm.FreeHeap > 50 {
+		res = true
+	}
+}
+
+// func argPredicate (arg aff.Argument) (res bool) {
+// 	if 
 // }
 
 func main () {
-	bar1 := 10.3
+	num1 := 5
+	num2 := 10
 	
-  	foo1 := 1
-  	foo2 := 2
-  	foo3 := 3
-
-	target := ->{
+targetExpr:
+	sum := i32.add(0, 0)
+	
+	tgt := ->{
 		pkg(main)
 		fn(main)
-		expr(message) // we could write expr(34) or whatever number
-		inp(0)
+		expr(targetExpr)
 	}
 
-  	filters := ->{
-		filter(predicate)
-		filter(predicate)
-		disj(filter(pred1),
-			filter(pred2))
-  	}
+	fltrs := ->{
+		filter(exprPredicate)
+		filter(prgrmPredicate)
+	}
 
-	affs := aff.query(filters)
-	
-	aff.print(target)
-	aff.print(filters)
+	aff.print(tgt)
+	aff.print(fltrs)
+
+	affs := aff.query(fltrs)
+
 	aff.print(affs)
 
-	aff.on(affs, target)
-	aff.of(affs, target)
+	aff.on(affs, tgt)
+	aff.of(affs, tgt)
 
-	aff.inform(affs, 0, target)
-	aff.request(affs, 0, target)
-
-message:
-	i32.print(0)
+	aff.inform(affs, 0, tgt)
+	aff.request(affs, 0, tgt)
 }

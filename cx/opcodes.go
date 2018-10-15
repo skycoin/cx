@@ -233,7 +233,10 @@ const (
 	// affordances
 	OP_AFF_PRINT
 	OP_AFF_QUERY
-	OP_AFF_EXECUTE
+	OP_AFF_ON
+	OP_AFF_OF
+	OP_AFF_INFORM
+	OP_AFF_REQUEST
 
 	// serialize
 	OP_S_PROGRAM
@@ -763,8 +766,14 @@ func execNative(prgrm *CXProgram) {
 		op_aff_print(expr, fp)
 	case OP_AFF_QUERY:
 		op_aff_query(expr, fp)
-	case OP_AFF_EXECUTE:
-		op_aff_execute(expr, fp)
+	case OP_AFF_ON:
+		op_aff_on(expr, fp)
+	case OP_AFF_OF:
+		op_aff_of(expr, fp)
+	case OP_AFF_INFORM:
+		op_aff_inform(expr, fp)
+	case OP_AFF_REQUEST:
+		op_aff_request(expr, fp)
 
 	// opengl
 	case OP_GL_INIT:
@@ -1191,7 +1200,10 @@ var OpNames map[int]string = map[int]string{
 
 	OP_AFF_PRINT:    "aff.print",
 	OP_AFF_QUERY:    "aff.query",
-	OP_AFF_EXECUTE:  "aff.execute",
+	OP_AFF_ON:       "aff.on",
+	OP_AFF_OF:       "aff.of",
+	OP_AFF_INFORM:   "aff.inform",
+	OP_AFF_REQUEST:  "aff.request",
 
 	// opengl
 	OP_GL_INIT:                       "gl.Init",
@@ -1510,10 +1522,13 @@ var OpCodes map[string]int = map[string]int{
 	// slices
 	"append": OP_APPEND,
 
-	"aff.print": OP_AFF_PRINT,
-	"aff.query": OP_AFF_QUERY,
-	"aff.execute": OP_AFF_EXECUTE,
-
+	"aff.print":      OP_AFF_PRINT,
+	"aff.query":      OP_AFF_QUERY,
+	"aff.on":         OP_AFF_ON,
+	"aff.of":         OP_AFF_OF,
+	"aff.inform":     OP_AFF_INFORM,
+	"aff.request":    OP_AFF_REQUEST,
+	
 	// opengl
 	"gl.Init":                    OP_GL_INIT,
 	"gl.GetError":                OP_GL_GET_ERROR,
@@ -1830,8 +1845,11 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_APPEND:     MakeNative(OP_APPEND, []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED}),
 
 	OP_AFF_PRINT:   MakeNative(OP_AFF_PRINT, []int{TYPE_AFF}, []int{}),
-	OP_AFF_QUERY:   MakeNative(OP_AFF_QUERY, []int{TYPE_AFF, TYPE_AFF}, []int{TYPE_AFF}),
-	OP_AFF_EXECUTE: MakeNative(OP_AFF_EXECUTE, []int{TYPE_AFF, TYPE_I32}, []int{}),
+	OP_AFF_QUERY:   MakeNative(OP_AFF_QUERY, []int{TYPE_AFF}, []int{TYPE_AFF}),
+	OP_AFF_ON:      MakeNative(OP_AFF_ON, []int{TYPE_AFF, TYPE_AFF}, []int{}),
+	OP_AFF_OF:      MakeNative(OP_AFF_OF, []int{TYPE_AFF, TYPE_AFF}, []int{}),
+	OP_AFF_INFORM:  MakeNative(OP_AFF_INFORM, []int{TYPE_AFF, TYPE_I32, TYPE_AFF}, []int{}),
+	OP_AFF_REQUEST: MakeNative(OP_AFF_REQUEST, []int{TYPE_AFF, TYPE_I32, TYPE_AFF}, []int{}),
 
 	// opengl
 	OP_GL_INIT:                       MakeNative(OP_GL_INIT, []int{}, []int{}),

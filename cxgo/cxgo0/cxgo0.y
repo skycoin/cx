@@ -593,6 +593,10 @@ declaration_specifiers:
 			// 	panic(err)
 			// }
                 }
+	|       type_specifier PERIOD IDENTIFIER
+		{
+			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true)
+		}
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
 	/* |       type_qualifier declaration_specifiers */

@@ -11,6 +11,7 @@ var CXPATH string = os.Getenv("CXPATH") + "/"
 var BINPATH string = CXPATH + "bin/"
 var PKGPATH string = CXPATH + "pkg/"
 var SRCPATH string = CXPATH + "src/"
+var COREPATH string
 
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
