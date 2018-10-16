@@ -78,38 +78,56 @@ func prgrmPredicate (prgrm aff.Program) (res bool) {
 	}
 }
 
+func callerPredicate (call aff.Caller) (res bool) {
+	str.print(call.FnName)
+	if call.FnName == "main" {
+		res = true
+	}
+}
+
 // func argPredicate (arg aff.Argument) (res bool) {
 // 	if 
 // }
 
-func main () {
-	num1 := 5
-	num2 := 10
-	
-targetExpr:
-	sum := i32.add(0, 0)
-	
-	tgt := ->{
-		pkg(main)
-		fn(main)
-		expr(targetExpr)
-	}
-
+func foobar () {
 	fltrs := ->{
-		filter(exprPredicate)
-		filter(prgrmPredicate)
+		filter(callerPredicate)
 	}
-
-	aff.print(tgt)
-	aff.print(fltrs)
-
 	affs := aff.query(fltrs)
-
 	aff.print(affs)
+}
 
-	aff.on(affs, tgt)
-	aff.of(affs, tgt)
+func main () {
+	// num1 := 5
+// 	num2 := 10
+	
+// targetExpr:
+// 	sum := i32.add(0, 0)
+	
+// 	tgt := ->{
+// 		pkg(main)
+// 		fn(main)
+// 		expr(targetExpr)
+// 	}
 
-	aff.inform(affs, 0, tgt)
-	aff.request(affs, 0, tgt)
+// 	fltrs := ->{
+// 		filter(exprPredicate)
+// 		// filter(prgrmPredicate)
+// 		// filter(callerPredicate)
+// 	}
+
+// 	aff.print(tgt)
+// 	aff.print(fltrs)
+
+// 	affs := aff.query(fltrs)
+
+// 	aff.print(affs)
+
+// 	aff.on(affs, tgt)
+// 	aff.of(affs, tgt)
+
+// 	aff.inform(affs, 0, tgt)
+// 	aff.request(affs, 0, tgt)
+
+	foobar()
 }

@@ -22,9 +22,13 @@ const LABEL_PREFIX = "*lbl"
 const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
-const SLICE_SIZE = 32
+
+const I32_SIZE = 4
+const STR_SIZE = 4
+
 const MARK_SIZE = 1
 const OBJECT_HEADER_SIZE = 9
+const OBJECT_GC_HEADER_SIZE = 5
 const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
 const CALLSTACK_SIZE = 1000

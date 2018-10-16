@@ -295,7 +295,17 @@ func AffordanceStructs (pkg *CXPackage) {
 	
 	pkg.AddStruct(pkgStrct)
 
-	// Call type
+	// Caller type
+	callStrct := MakeStruct("Caller")
+	callStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_I32)
+	
+	callFldFnName := MakeField("FnName", TYPE_STR, "", 0)
+	callFldFnSize := MakeField("FnSize", TYPE_I32, "", 0)
+	
+	callStrct.AddField(callFldFnName)
+	callStrct.AddField(callFldFnSize)
+
+	pkg.AddStruct(callStrct)
 	
 	// Program type
 	prgrmStrct := MakeStruct("Program")
