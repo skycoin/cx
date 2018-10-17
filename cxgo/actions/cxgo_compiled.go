@@ -300,7 +300,9 @@ func AffordanceStructs (pkg *CXPackage) {
 	callStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_I32)
 	
 	callFldFnName := MakeField("FnName", TYPE_STR, "", 0)
+	callFldFnName.TotalSize = GetArgSize(TYPE_STR)
 	callFldFnSize := MakeField("FnSize", TYPE_I32, "", 0)
+	callFldFnSize.TotalSize = GetArgSize(TYPE_I32)
 	
 	callStrct.AddField(callFldFnName)
 	callStrct.AddField(callFldFnSize)
@@ -309,10 +311,12 @@ func AffordanceStructs (pkg *CXPackage) {
 	
 	// Program type
 	prgrmStrct := MakeStruct("Program")
-	prgrmStrct.Size = GetArgSize(TYPE_I32) + GetArgSize(TYPE_I32)
+	prgrmStrct.Size = GetArgSize(TYPE_I32) + GetArgSize(TYPE_I64)
 	
 	prgrmFldCallCounter := MakeField("CallCounter", TYPE_I32, "", 0)
-	prgrmFldFreeHeap := MakeField("FreeHeap", TYPE_I32, "", 0)
+	prgrmFldCallCounter.TotalSize = GetArgSize(TYPE_I32)
+	prgrmFldFreeHeap := MakeField("HeapUsed", TYPE_I64, "", 0)
+	prgrmFldFreeHeap.TotalSize = GetArgSize(TYPE_I64)
 	
 	prgrmStrct.AddField(prgrmFldCallCounter)
 	prgrmStrct.AddField(prgrmFldFreeHeap)

@@ -355,7 +355,7 @@ func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction
 	}
 }
 
-func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
+func (fn *CXFunction) GetExpressions () ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
 	} else {
@@ -363,7 +363,21 @@ func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 	}
 }
 
-func (fn *CXFunction) GetExpression(line int) (*CXExpression, error) {
+func (fn *CXFunction) GetExpressionByLabel (lbl string) (*CXExpression, error) {
+	if fn.Expressions != nil {
+		for _, expr := range fn.Expressions {
+			if expr.Label == lbl {
+				return expr, nil
+			}
+		}
+
+		return nil, errors.New(fmt.Sprintf("expression '%s' not found in function '%s'", lbl, fn.Name))
+	} else {
+		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
+	}
+}
+
+func (fn *CXFunction) GetExpressionByLine (line int) (*CXExpression, error) {
 	if fn.Expressions != nil {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
@@ -376,7 +390,7 @@ func (fn *CXFunction) GetExpression(line int) (*CXExpression, error) {
 	}
 }
 
-func (expr *CXExpression) GetInputs() ([]*CXArgument, error) {
+func (expr *CXExpression) GetInputs () ([]*CXArgument, error) {
 	if expr.Inputs != nil {
 		return expr.Inputs, nil
 	} else {

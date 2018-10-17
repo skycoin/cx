@@ -127,8 +127,6 @@ type CXArgument struct {
 	PointeeSize int
 
 	Offset      int
-	// HeapOffset  int
-	// OffsetOffset int // for struct fields
 
 	IndirectionLevels     int
 	DereferenceLevels     int
@@ -142,7 +140,7 @@ type CXArgument struct {
 	IsArrayFirst bool // and then dereference
 	IsPointer    bool
 	IsReference  bool
-	// IsDereference bool
+
 	IsDereferenceFirst bool // and then array
 	IsStruct           bool
 	IsField            bool
@@ -153,9 +151,7 @@ type CXArgument struct {
 	PassBy int  // pass by value or reference
 	DoesEscape bool
 
-	// Sizes []int // used to access struct fields
 	Lengths []int // declared lengths at compile time
-	// NumIndexes int // how many levels we'll go deep. NumIndexes <= len(Lengths)
 	Indexes []*CXArgument
 	Fields  []*CXArgument // strct.fld1.fld2().fld3
 

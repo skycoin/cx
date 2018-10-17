@@ -295,7 +295,6 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	sizeB := PROGRAM.Memory[offset : offset + STR_HEADER_SIZE]
 
 	encoder.DeserializeAtomic(sizeB, &size)
-	
 	encoder.DeserializeRaw(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE+size], &out)
 
 	return

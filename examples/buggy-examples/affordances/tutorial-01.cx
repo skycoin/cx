@@ -1,133 +1,73 @@
-// package main
-// import "aff"
-
-// // func caller (caller Caller) (res bool) {
-// // 	caller.Name
-// // }
-
-// // func testing () {
-// // 	rules := ->{
-// // 		caller(caller)
-// // 	}
-// // }
-
-
-// func predicate (num i32) (res bool) {
-// 	if num > 1 {
-// 		res = true
-// 	} else {
-// 		res = false
-// 	}
-
-// }
-
-// // func inter () {
-// // }
-
-// func main () {
-// 	bar1 := 10.3
-	
-//   	foo1 := 1
-//   	foo2 := 2
-//   	foo3 := 3
-
-// 	target := ->{
-// 		pkg(main)
-// 		fn(main)
-// 		expr(message) // we could write expr(34) or whatever number
-// 		inp(0)
-// 	}
-
-//   	filters := ->{
-// 		filter(predicate)
-// 		filter(predicate)
-// 		disj(filter(pred1),
-// 			filter(pred2))
-//   	}
-
-// 	affs := aff.query(filters)
-	
-// 	aff.print(target)
-// 	aff.print(filters)
-// 	aff.print(affs)
-
-// 	aff.on(affs, target)
-// 	aff.of(affs, target)
-
-// 	aff.inform(affs, 0, target)
-// 	aff.request(affs, 0, target)
-
-// message:
-// 	i32.print(0)
-// }
-
-
 package main
 import "aff"
 
 func exprPredicate (expr aff.Expression) (res bool) {
-	str.print(expr.Operator)
 	if expr.Operator == "i32.add" {
 		res = true
 	}
 }
 
 func prgrmPredicate (prgrm aff.Program) (res bool) {
-	if prgrm.FreeHeap > 50 {
+	if prgrm.HeapUsed > 300L {
 		res = true
 	}
 }
 
 func callerPredicate (call aff.Caller) (res bool) {
-	str.print(call.FnName)
-	if call.FnName == "main" {
+	if call.FnName == "main.bar" && call.FnSize == 0 {
 		res = true
 	}
 }
 
-// func argPredicate (arg aff.Argument) (res bool) {
-// 	if 
-// }
-
-func foobar () {
+func foo () {
 	fltrs := ->{
 		filter(callerPredicate)
 	}
 	affs := aff.query(fltrs)
-	aff.print(affs)
+	if len(affs) < 1 {
+		return
+	}
+
+	str.print("SECRET")
+}
+
+func bar () {
+	foo()
 }
 
 func main () {
-	// num1 := 5
-// 	num2 := 10
+	num0 := 2
+	num1 := 5
+	num2 := 10
 	
-// targetExpr:
-// 	sum := i32.add(0, 0)
+targetExpr:
+	sum := i32.add(0, 0)
 	
-// 	tgt := ->{
-// 		pkg(main)
-// 		fn(main)
-// 		expr(targetExpr)
-// 	}
+	tgt := ->{
+		pkg(main)
+		fn(main)
+		expr(targetExpr)
+	}
 
-// 	fltrs := ->{
-// 		filter(exprPredicate)
-// 		// filter(prgrmPredicate)
-// 		// filter(callerPredicate)
-// 	}
+	fltrs := ->{
+		filter(exprPredicate)
+		filter(prgrmPredicate)
+		filter(callerPredicate)
+	}
 
-// 	aff.print(tgt)
-// 	aff.print(fltrs)
+	aff.print(tgt)
+	aff.print(fltrs)
 
-// 	affs := aff.query(fltrs)
+	affs := aff.query(fltrs)
 
-// 	aff.print(affs)
+	aff.print(affs)
+	
+	foo()
+	bar()
 
-// 	aff.on(affs, tgt)
-// 	aff.of(affs, tgt)
+	aff.on(affs, tgt)
+	aff.of(affs, tgt)
 
-// 	aff.inform(affs, 0, tgt)
-// 	aff.request(affs, 0, tgt)
-
-	foobar()
+	aff.inform(affs, 0, tgt)
+	aff.request(affs, 0, tgt)
 }

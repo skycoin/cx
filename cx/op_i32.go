@@ -28,8 +28,6 @@ func op_i32_i32(expr *CXExpression, fp int) {
 	}
 }
 
-// op_i32_print. The print built-in function formats its arguments in an
-// implementation-specific
 func op_i32_print(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadI32(fp, inp1))

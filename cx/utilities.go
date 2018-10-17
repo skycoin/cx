@@ -800,20 +800,31 @@ func WriteToSlice (off int, inp []byte) int {
 	}
 }
 
-func WriteObject (out1Offset int, byts []byte) {
-	size := encoder.Serialize(int32(len(byts)))
-	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
+// refactoring reuse in WriteObject and WriteObjectRetOff
+func writeObj (obj []byte) int {
+	size := len(obj)
+	sizeB := encoder.SerializeAtomic(int32(size))
+	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
 	
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
+	var finalObj []byte = make([]byte, OBJECT_HEADER_SIZE + size)
+	
+	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
+		finalObj[c] = sizeB[c - OBJECT_GC_HEADER_SIZE]
+	}
+	for c := OBJECT_HEADER_SIZE; c < size + OBJECT_HEADER_SIZE; c++ {
+		finalObj[c] = obj[c - OBJECT_HEADER_SIZE]
 	}
 
-	obj := append(header, byts...)
+	WriteMemory(heapOffset, finalObj)
+	return heapOffset
+}
 
-	WriteMemory(heapOffset, obj)
-
-	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
-
+func WriteObject (out1Offset int, obj []byte) {
+	off := encoder.SerializeAtomic(int32(writeObj(obj) + OBJECT_HEADER_SIZE))
+	
 	WriteMemory(out1Offset, off)
+}
+
+func WriteObjectRetOff (obj []byte) int {
+	return writeObj(obj)
 }

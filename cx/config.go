@@ -24,6 +24,7 @@ const ID_FN = "identity"
 const INIT_FN = "initDef"
 
 const I32_SIZE = 4
+const I64_SIZE = 8
 const STR_SIZE = 4
 
 const MARK_SIZE = 1
