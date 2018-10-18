@@ -310,18 +310,26 @@ func op_bitclear(expr *CXExpression, fp int) {
 
 func op_len(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-
-	if inp1.IsSlice || inp1.Type == TYPE_AFF {
+	elt := GetAssignmentElement(inp1)
+	
+	if elt.IsSlice || elt.Type == TYPE_AFF {
 		preInp1Offset := GetFinalOffset(fp, inp1)
+		
 		var inp1Offset int32
 		encoder.DeserializeAtomic(PROGRAM.Memory[preInp1Offset : preInp1Offset + TYPE_POINTER_SIZE], &inp1Offset)
+
+		if inp1Offset == 0 {
+			// then it's nil
+			WriteMemory(GetFinalOffset(fp, out1), encoder.SerializeAtomic(int32(0)))
+			return
+		}
 		
 		sliceHeader := PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 		WriteMemory(GetFinalOffset(fp, out1), sliceHeader[:4])
-	} else if inp1.Type == TYPE_STR {
+	} else if elt.Type == TYPE_STR {
 		inp1Offset := GetFinalOffset(fp, inp1)
 		var offset int32
-		if inp1.Name == "" {
+		if elt.Name == "" {
 			// then it's a literal
 			offset = int32(inp1Offset)
 		} else {
@@ -330,7 +338,7 @@ func op_len(expr *CXExpression, fp int) {
 
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[offset : offset + STR_HEADER_SIZE])
 	} else {
-		outB1 := FromI32(int32(GetAssignmentElement(inp1).Lengths[0]))
+		outB1 := FromI32(int32(elt.Lengths[0]))
 		WriteMemory(GetFinalOffset(fp, out1), outB1)
 	}
 }

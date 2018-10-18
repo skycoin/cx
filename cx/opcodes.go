@@ -6,7 +6,7 @@ import(
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial",
 }
 
 // op codes
@@ -239,7 +239,7 @@ const (
 	OP_AFF_REQUEST
 
 	// serialize
-	OP_S_PROGRAM
+	OP_SERIAL_PROGRAM
 
 	// opengl
 	OP_GL_INIT

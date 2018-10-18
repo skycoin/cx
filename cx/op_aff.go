@@ -272,8 +272,31 @@ func QueryExpressions (fn *CXFunction, expr *CXExpression, exprOffsetB []byte, a
 	}
 }
 
+func getSignatureSlice (params []*CXArgument) int {
+	var sliceOffset int
+	for _, param := range params {
+		
+		var typOffset int
+		if param.CustomType != nil {
+			// then it's custom type
+			typOffset = WriteObjectRetOff(encoder.Serialize(param.CustomType.Package.Name + "." + param.CustomType.Name))
+		} else {
+			// then it's native type
+			typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))
+		}
+		
+		sliceOffset = WriteToSlice(sliceOffset, encoder.SerializeAtomic(int32(typOffset)))
+	}
+
+	return sliceOffset
+}
+
 func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
 	for _, f := range expr.Package.Functions {
+		if f.Name == SYS_INIT_FUNC {
+			continue
+		}
+		
 		var opNameB []byte
 		if f.IsNative {
 			opNameB = encoder.Serialize(OpNames[f.OpCode])
@@ -283,17 +306,8 @@ func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOff
 
 		opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB)))
 		
-		var inpSigOffset int
-		for _, inp := range f.Inputs {
-			typOffset := WriteObjectRetOff(encoder.Serialize(inp.Name))
-			inpSigOffset = WriteToSlice(inpSigOffset, encoder.SerializeAtomic(int32(typOffset)))
-		}
-
-		var outSigOffset int
-		for _, out := range f.Outputs {
-			typOffset := WriteObjectRetOff(encoder.Serialize(out.Name))
-			outSigOffset = WriteToSlice(outSigOffset, encoder.SerializeAtomic(int32(typOffset)))
-		}
+		inpSigOffset := getSignatureSlice(f.Inputs)
+		outSigOffset := getSignatureSlice(f.Outputs)
 
 		fnOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE)
 		// Name
@@ -307,8 +321,8 @@ func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOff
 		res := CallAffPredicate(fn, val)
 		
 		if res == 1 {
-			*affOffset = WriteToSlice(*affOffset, opNameOffsetB)
 			*affOffset = WriteToSlice(*affOffset, fnOffsetB)
+			*affOffset = WriteToSlice(*affOffset, opNameOffsetB)
 		}
 	}
 }

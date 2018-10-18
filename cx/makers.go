@@ -129,12 +129,12 @@ func MakeCall(op *CXFunction, pkg *CXPackage, prgrm *CXProgram) CXCall {
 	}
 }
 
-func MakeAffordance(desc string, action func()) *CXAffordance {
-	return &CXAffordance{
-		Description: desc,
-		Action:      action,
-	}
-}
+// func MakeAffordance(desc string, action func()) *CXAffordance {
+// 	return &CXAffordance{
+// 		Description: desc,
+// 		Action:      action,
+// 	}
+// }
 
 func MakeIdentityOpName(typeName string) string {
 	switch typeName {

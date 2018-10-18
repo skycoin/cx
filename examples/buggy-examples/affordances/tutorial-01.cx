@@ -1,6 +1,10 @@
 package main
 import "aff"
 
+func meow (in1 i32, in2 i32, in3 i32) {
+	
+}
+
 func exprPredicate (expr aff.Expression) (res bool) {
 	if expr.Operator == "i32.add" {
 		res = true
@@ -8,14 +12,21 @@ func exprPredicate (expr aff.Expression) (res bool) {
 }
 
 func fnPredicate (fn aff.Function) (res bool) {
-	i32.print(len(fn.InputSignature))
-	// str.print(fn.InputSignature[0])
-
 	str.print(fn.Name)
-	
-	// for c := 0; c < len(fn.Signature); c++ {
-		
-	// }
+	i32.print(len(fn.InputSignature))
+
+	var allI32 bool
+	allI32 = true
+	for c := 0; c < len(fn.InputSignature); c++ {
+		printf("Input Signature: %s\n", fn.InputSignature[c])
+		if fn.InputSignature[c] != "i32" {
+			allI32 = false
+		}
+	}
+
+	if (len(fn.InputSignature) == 2 && allI32) {
+		res = true
+	}
 }
 
 func prgrmPredicate (prgrm aff.Program) (res bool) {

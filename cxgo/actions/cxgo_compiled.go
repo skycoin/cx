@@ -275,7 +275,7 @@ func AffordanceStructs (pkg *CXPackage) {
 	fnFldInpSig := MakeField("InputSignature", TYPE_STR, "", 0)
 	fnFldInpSig.Size = GetArgSize(TYPE_STR)
 	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, 0, DECL_SLICE)
-	
+
 	fnFldOutSig := MakeField("OutputSignature", TYPE_STR, "", 0)
 	fnFldOutSig.Size = GetArgSize(TYPE_STR)
 	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, 0, DECL_SLICE)
@@ -403,7 +403,7 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_POINTER)
 		if !declSpec.IsPointer {
 			declSpec.IsPointer = true
-			declSpec.PointeeSize = declSpec.Size
+			// declSpec.PointeeSize = declSpec.Size
 			declSpec.Size = TYPE_POINTER_SIZE
 			declSpec.TotalSize = TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
@@ -1318,7 +1318,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		}
 		DataOffset += size
 		
-		arg.PointeeSize = size
+		// arg.PointeeSize = size
 
 		expr := MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
@@ -1815,7 +1815,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 
 	sym.Pointee = arg.Pointee
 	sym.Lengths = arg.Lengths
-	sym.PointeeSize = arg.PointeeSize
+	// sym.PointeeSize = arg.PointeeSize
 	sym.Package = arg.Package
 	sym.Program = arg.Program
 	sym.DoesEscape = arg.DoesEscape
