@@ -41,6 +41,10 @@ func op_aff_print (expr *CXExpression, fp int) {
 	fmt.Println(GetInferActions(inp1, fp))
 }
 
+func affExpr (expr *CXExpression) {
+	
+}
+
 func op_aff_on (expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
@@ -53,39 +57,86 @@ func op_aff_on (expr *CXExpression, fp int) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var inPkg *CXPackage = prevPkg
-	var inFn *CXFunction = prevFn
-	var inExpr *CXExpression = prevExpr
+	var tgtPkg *CXPackage = prevPkg
+	var tgtFn *CXFunction = prevFn
+	var tgtExpr *CXExpression = prevExpr
 
-	_ = inExpr
+	_ = tgtExpr
 
 	// processing the target
-	var cmd string
+	var tgtCmd string
 	for _, aff := range GetInferActions(inp2, fp) {
 		switch aff {
 		case "pkg":
-			cmd = "pkg"
+			tgtCmd = "pkg"
 		case "fn":
-			cmd = "fn"
+			tgtCmd = "fn"
 		case "expr":
-			cmd = "expr"
+			tgtCmd = "expr"
 		default:
-			switch cmd {
+			switch tgtCmd {
 			case "pkg":
 				if pkg, err := PROGRAM.GetPackage(aff); err == nil {
-					inPkg = pkg
+					tgtPkg = pkg
 				} else {
 					panic(err)
 				}
 			case "fn":
-				if fn, err := inPkg.GetFunction(aff); err == nil {
-					inFn = fn
+				if fn, err := tgtPkg.GetFunction(aff); err == nil {
+					tgtFn = fn
 				} else {
 					panic(err)
 				}
 			case "expr":
-				if expr, err := inFn.GetExpressionByLabel(aff); err == nil {
-					inExpr = expr
+				if expr, err := tgtFn.GetExpressionByLabel(aff); err == nil {
+					tgtExpr = expr
+				} else {
+					panic(err)
+				}
+			}
+		}
+	}
+
+	// var affPkg *CXPackage = prevPkg
+	// var affFn *CXFunction = prevFn
+	// var affExpr *CXExpression = prevExpr
+	
+	// processing the affordances
+	var affCmd string
+	var results []string
+	for _, aff := range GetInferActions(inp1, fp) {
+		switch aff {
+		case "expr":
+			affCmd = "expr"
+		case "program":
+			affCmd = "program"
+			// do it in here
+		default:
+			switch affCmd {
+			case "pkg":
+				if pkg, err := PROGRAM.GetPackage(aff); err == nil {
+					// affPkg = pkg
+					_ = pkg
+				} else {
+					panic(err)
+				}
+			case "fn":
+				if fn, err := tgtPkg.GetFunction(aff); err == nil {
+					// affFn = fn
+					_ = fn
+				} else {
+					panic(err)
+				}
+			case "expr":
+				if expr, err := tgtFn.GetExpressionByLabel(aff); err == nil {
+					// affExpr = expr
+					_ = expr
+					switch tgtCmd {
+					case "pkg":
+					case "fn":
+					case "expr":
+						results = append(results, "expr-expr")
+					}
 				} else {
 					panic(err)
 				}
@@ -97,6 +148,8 @@ func op_aff_on (expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage = prevPkg
 	PROGRAM.CurrentPackage.CurrentFunction = prevFn
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
+
+	fmt.Println(results)
 }
 
 func op_aff_of (expr *CXExpression, fp int) {
@@ -219,6 +272,47 @@ func QueryExpressions (fn *CXFunction, expr *CXExpression, exprOffsetB []byte, a
 	}
 }
 
+func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
+	for _, f := range expr.Package.Functions {
+		var opNameB []byte
+		if f.IsNative {
+			opNameB = encoder.Serialize(OpNames[f.OpCode])
+		} else {
+			opNameB = encoder.Serialize(f.Name)
+		}
+
+		opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB)))
+		
+		var inpSigOffset int
+		for _, inp := range f.Inputs {
+			typOffset := WriteObjectRetOff(encoder.Serialize(inp.Name))
+			inpSigOffset = WriteToSlice(inpSigOffset, encoder.SerializeAtomic(int32(typOffset)))
+		}
+
+		var outSigOffset int
+		for _, out := range f.Outputs {
+			typOffset := WriteObjectRetOff(encoder.Serialize(out.Name))
+			outSigOffset = WriteToSlice(outSigOffset, encoder.SerializeAtomic(int32(typOffset)))
+		}
+
+		fnOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE)
+		// Name
+		WriteMemory(fnOffset + OBJECT_HEADER_SIZE, opNameOffsetB)
+		// InputSignature
+		WriteMemory(fnOffset + OBJECT_HEADER_SIZE + TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(inpSigOffset)))
+		// OutputSignature
+		WriteMemory(fnOffset + OBJECT_HEADER_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(outSigOffset)))
+
+		val := PROGRAM.Memory[fnOffset + OBJECT_HEADER_SIZE : fnOffset + OBJECT_HEADER_SIZE + STR_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE]
+		res := CallAffPredicate(fn, val)
+		
+		if res == 1 {
+			*affOffset = WriteToSlice(*affOffset, opNameOffsetB)
+			*affOffset = WriteToSlice(*affOffset, fnOffsetB)
+		}
+	}
+}
+
 func QueryCaller (fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOffset *int) {
 	if PROGRAM.CallCounter == 0 {
 		// then it's entry point
@@ -235,13 +329,13 @@ func QueryCaller (fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affO
 	}
 
 
-	opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB) + OBJECT_HEADER_SIZE))
+	opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB)))
 
 	callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
 	// FnName
 	WriteMemory(callOffset + OBJECT_HEADER_SIZE, opNameOffsetB)
 	// FnSize
-	WriteMemory(callOffset + STR_SIZE + OBJECT_HEADER_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
+	WriteMemory(callOffset + OBJECT_HEADER_SIZE + STR_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
 
 	res := CallAffPredicate(fn, PROGRAM.Memory[callOffset + OBJECT_HEADER_SIZE : callOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE])
 
@@ -293,6 +387,12 @@ func op_aff_query (expr *CXExpression, fp int) {
 					exprOffset := AllocateSeq(len(exprB))
 					WriteMemory(exprOffset, exprB)
 					exprOffsetB := encoder.SerializeAtomic(int32(exprOffset))
+					
+					// fn keyword
+					fnB := encoder.Serialize("fn")
+					fnOffset := AllocateSeq(len(fnB))
+					WriteMemory(fnOffset, fnB)
+					fnOffsetB := encoder.SerializeAtomic(int32(fnOffset))
 
 					// caller keyword
 					callerB := encoder.Serialize("caller")
@@ -300,7 +400,7 @@ func op_aff_query (expr *CXExpression, fp int) {
 					WriteMemory(callerOffset, callerB)
 					callerOffsetB := encoder.SerializeAtomic(int32(callerOffset))
 
-					// caller keyword
+					// program keyword
 					prgrmB := encoder.Serialize("program")
 					prgrmOffset := AllocateSeq(len(prgrmB))
 					WriteMemory(prgrmOffset, prgrmB)
@@ -315,6 +415,8 @@ func op_aff_query (expr *CXExpression, fp int) {
 								QueryArgument(fn, argOffsetB, &affOffset)
 							case "Expression":
 								QueryExpressions(fn, expr, exprOffsetB, &affOffset)
+							case "Function":
+								QueryFunction(fn, expr, fnOffsetB, &affOffset)
 							case "Caller":
 								QueryCaller(fn, expr, callerOffsetB, &affOffset)
 							case "Program":

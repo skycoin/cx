@@ -267,11 +267,22 @@ func AffordanceStructs (pkg *CXPackage) {
 
 	// Function type
 	fnStrct := MakeStruct("Function")
-	fnStrct.Size = GetArgSize(TYPE_STR)
+	fnStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
 	
 	fnFldName := MakeField("Name", TYPE_STR, "", 0)
+	fnFldName.TotalSize = GetArgSize(TYPE_STR)
 	
+	fnFldInpSig := MakeField("InputSignature", TYPE_STR, "", 0)
+	fnFldInpSig.Size = GetArgSize(TYPE_STR)
+	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, 0, DECL_SLICE)
+	
+	fnFldOutSig := MakeField("OutputSignature", TYPE_STR, "", 0)
+	fnFldOutSig.Size = GetArgSize(TYPE_STR)
+	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, 0, DECL_SLICE)
+
 	fnStrct.AddField(fnFldName)
+	fnStrct.AddField(fnFldInpSig)
+	fnStrct.AddField(fnFldOutSig)
 	
 	pkg.AddStruct(fnStrct)
 	

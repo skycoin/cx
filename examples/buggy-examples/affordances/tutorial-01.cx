@@ -7,6 +7,17 @@ func exprPredicate (expr aff.Expression) (res bool) {
 	}
 }
 
+func fnPredicate (fn aff.Function) (res bool) {
+	i32.print(len(fn.InputSignature))
+	// str.print(fn.InputSignature[0])
+
+	str.print(fn.Name)
+	
+	// for c := 0; c < len(fn.Signature); c++ {
+		
+	// }
+}
+
 func prgrmPredicate (prgrm aff.Program) (res bool) {
 	if prgrm.HeapUsed > 300L {
 		res = true
@@ -53,6 +64,7 @@ targetExpr:
 		filter(exprPredicate)
 		filter(prgrmPredicate)
 		filter(callerPredicate)
+		filter(fnPredicate)
 	}
 
 	aff.print(tgt)

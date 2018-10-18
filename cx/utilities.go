@@ -54,6 +54,7 @@ func IsArray(typ string) bool {
 	}
 	return false
 }
+
 func IsStructInstance(typ string, mod *CXPackage) bool {
 	if _, err := mod.Program.GetStruct(typ, mod.Name); err == nil {
 		return true
@@ -61,14 +62,7 @@ func IsStructInstance(typ string, mod *CXPackage) bool {
 		return false
 	}
 }
-// func IsLocal(identName string, call *CXCall) bool {
-// 	for _, def := range call.State {
-// 		if def.Name == identName {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+
 func IsGlobal(identName string, mod *CXPackage) bool {
 	for _, def := range mod.Globals {
 		if def.Name == identName {
@@ -804,7 +798,8 @@ func WriteToSlice (off int, inp []byte) int {
 func writeObj (obj []byte) int {
 	size := len(obj)
 	sizeB := encoder.SerializeAtomic(int32(size))
-	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
+	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
+	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
 	
 	var finalObj []byte = make([]byte, OBJECT_HEADER_SIZE + size)
 	
@@ -816,11 +811,11 @@ func writeObj (obj []byte) int {
 	}
 
 	WriteMemory(heapOffset, finalObj)
-	return heapOffset
+	return heapOffset + OBJECT_HEADER_SIZE
 }
 
 func WriteObject (out1Offset int, obj []byte) {
-	off := encoder.SerializeAtomic(int32(writeObj(obj) + OBJECT_HEADER_SIZE))
+	off := encoder.SerializeAtomic(int32(writeObj(obj)))
 	
 	WriteMemory(out1Offset, off)
 }
