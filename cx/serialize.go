@@ -11,17 +11,14 @@ package base
 
 // type sIndex struct {
 //         ProgramOffset                   int32
-//         NamesOffset                     int32
-//         ValuesOffset                    int32
+//         CallsOffset                     int32
 //         PackagesOffset                  int32
-//         GlobalsOffset                   int32
-//         ImportsOffset                   int32
-//         FunctionsOffset                 int32
 //         StructsOffset                   int32
-//         FieldsOffset                    int32
+//         FunctionsOffset                 int32
 //         ExpressionsOffset               int32
 //         ArgumentsOffset                 int32
-//         CallsOffset                     int32
+//         NamesOffset                     int32
+//         MemoryOffset                    int32
 // }
 
 // type sProgram struct {
@@ -40,33 +37,14 @@ package base
 
 //         CallCounter                     int32
 
-//         StacksOffset                    int32
-//         StacksSize                      int32
+//         MemoryOffset                    int32
+//         MemorySize                      int32
 
-//         HeapOffset                      int32
-//         DataOffset                      int32
-
-//         Terminated                      int32
-
-//         PathOffset                      int32
-//         PathSize                        int32
-	
-//         StepsOffset                     int32
-//         StepsSize                       int32
-// }
-
-// type sHeap struct {
-//         HeapOffset                      int32
-//         HeapSize                        int32
 //         HeapPointer                     int32
-//         ProgramOffset                   int32
-// }
-
-// type sStack struct {
-//         StackOffset                     int32
-//         StackSize                       int32
 //         StackPointer                    int32
-//         ProgramOffset                   int32
+//         HeapStartsAt                    int32
+        
+//         Terminated                      int32
 // }
 
 // type sCall struct {
@@ -74,10 +52,6 @@ package base
 //         Line                            int32
 //         FramePointer                    int32
 
-//         StateOffset                     int32
-//         StateSize                       int32
-//         ReturnAddressOffset             int32
-        
 //         PackageOffset                   int32
 //         ProgramOffset                   int32
 // }
@@ -103,17 +77,6 @@ package base
 //         ProgramOffset                   int32
 // }
 
-// type sGlobal struct {
-//         NameOffset                      int32
-//         NameSize                        int32
-//         TypeOffset                      int32
-//         TypeSize                        int32
-//         ValueOffset                     int32
-//         ValueSize                       int32
-
-//         PackageOffset                   int32
-// }
-
 // /*
 //   Structs
 // */
@@ -129,18 +92,6 @@ package base
 //         PackageOffset                   int32
 //         ProgramOffset                   int32
 // }
-
-// // type sField struct {
-// //      NameOffset int32
-// //      NameSize int32
-// //      TypeOffset int32
-// //      TypeSize int32
-// // }
-
-// // type sType struct {
-// //      NameOffset int32
-// //      NameSize int32
-// // }
 
 // /*
 //   Functions
@@ -169,13 +120,6 @@ package base
 //         ProgramOffset                   int32
 // }
 
-// // type sParameter struct {
-// //      NameOffset                      int32
-// //      NameSize                        int32
-// //      TypeOffset                      int32
-// //      TypeSize                        int32
-// // }
-
 // type sExpression struct {
 //         OperatorOffset                  int32
 //         InputsOffset                    int32
@@ -184,15 +128,13 @@ package base
 //         OutputsSize                     int32
         
 //         Line                            int32
-//         FileLine                        int32
-//         FileNameOffset                  int32
-//         FileNameSize                    int32
         
 //         LabelOffset                     int32
 //         LabelSize                       int32
 //         ThenLines                       int32
 //         ElseLines                       int32
 
+//         IsMethodCall                    int32
 //         IsStructLiteral                 int32
 //         IsArrayLiteral                  int32
 
@@ -201,44 +143,37 @@ package base
 //         ProgramOffset                   int32
 // }
 
-// type sConstant struct {
-//         Type                            int32
-//         ValueOffset                     int32
-//         ValueSize                       int32
-// }
-
 // type sArgument struct {
 //         NameOffset                      int32
 //         NameSize                        int32
-//         TypeOffset                      int32
+//         Type                            int32
 //         CustomTypeOffset                int32
 //         Size                            int32
 //         TotalSize                       int32
-//         PointeeSize                     int32
 
-//         MemoryRead                      int32
-//         MemoryWrite int32
 //         Offset                          int32
-//         HeapOffset                      int32
         
 //         IndirectionLevels               int32
 //         DereferenceLevels               int32
-//         PointeeOffset                   int32
-//         PointeeMemoryType               int32
 //         DereferenceOperationsOffset     int32
 //         DereferenceOperationsSize       int32
 //         DereferenceSpecifiersOffset     int32
 //         DereferenceSpecifiersSize       int32
 
+//         IsSlice                         int32
 //         IsArray                         int32
 //         IsArrayFirst                    int32
 //         IsPointer                       int32
 //         IsReference                     int32
+        
 //         IsDeferenceFirst                int32
 //         IsStruct                        int32
-//         IsField                         int32
 //         IsRest                          int32
 //         IsLocalDeclaration              int32
+//         IsShortDeclaration              int32
+
+//         PassBy                          int32
+//         DoesEscape                      int32
 
 //         LengthsOffset                   int32
 //         LengthsSize                     int32
@@ -247,16 +182,8 @@ package base
 //         FieldsOffset                    int32
 //         FieldsSize                      int32
 
-//         SynonymousToOffset              int32
-//         SynonymousToSize                int32
-
 //         PackageOffset                   int32
 //         ProgramOffset                   int32
-
-//         ValueOffset                     int32
-//         ValueSize                       int32
-//         TypOffset                       int32
-//         TypSize                         int32
 // }
 
 // func serializeName (name string, sNamesMap *map[string]int, sNames *[]byte, sNamesCounter *int) (offset, size int32) {
@@ -296,35 +223,24 @@ package base
 //         return offset, size
 // }
 
-// func Serialize (cxt *CXProgram) *[]byte {
+// func Serialize (prgrm *CXProgram) []byte {
+//         // result of serializing the full program
 //         serialized := make([]byte, 0)
 
-//         sNames := make([]byte, 0)
-//         sNamesCounter := 0
-//         sNamesMap := make(map[string]int, 0)
-
-//         sValues := make([]byte, 0)
-//         sValuesCounter := 0
+//         sCalls := make([]byte, 0)
+//         sCallsCounter := 0
 
 //         sPacks := make([]byte, 0)
 //         sPacksCounter := 0
 //         sPacksMap := make(map[string]int, 0)
 
-//         sGlobals := make([]byte, 0)
-//         sGlobalsCounter := 0
-
-//         sImps := make([]byte, 0)
-//         sImpsCounter := 0
-
+//         sStrcts := make([]byte, 0)
+//         sStrctsCounter := 0
+// 	sStrctsMap := make(map[string]int, 0)
+        
 //         sFns := make([]byte, 0)
 //         sFnsCounter := 0
 //         sFnsMap := make([]string, 0)
-
-//         sStrcts := make([]byte, 0)
-//         sStrctsCounter := 0
-
-//         sFlds := make([]byte, 0)
-//         sFldsCounter := 0
 
 //         sExprs := make([]byte, 0)
 //         sExprsCounter := 0
@@ -332,32 +248,23 @@ package base
 //         sArgs := make([]byte, 0)
 //         sArgsCounter := 0
 
-//         sCalls := make([]byte, 0)
-//         sCallsCounter := 0
-
-//         sStacks := make([]byte, 0)
-//         sStacksCounter := 0
-        
-//         sHeap := make([]byte, 0)
-//         sHeapCounter := 0
-
-//         sData := make([]byte, 0)
-//         sDataCOunter := 0
+//         sNames := make([]byte, 0)
+//         sNamesCounter := 0
+//         sNamesMap := make(map[string]int, 0)
 
 //         // Program Serialize
-
 //         sPrgrm := &sProgram{}
 //         sPrgrm.PackagesOffset = int32(sPacksCounter)
-//         sPrgrm.PackagesSize = int32(len(cxt.Packages))
+//         sPrgrm.PackagesSize = int32(len(prgrm.Packages))
 
-//         cxtPackages := make([]*CXPackage, 0)
-//         packFunctions := make([][]*CXFunction, len(cxt.Packages))
+//         prgrmPackages := make([]*CXPackage, 0)
+//         packFunctions := make([][]*CXFunction, len(prgrm.Packages))
 //         packCounter := 0
 
 //         // Program Packages
-//         for _, pack := range cxt.Packages {
+//         for _, pack := range prgrm.Packages {
 //                 sPacksMap[pack.Name] = sPacksCounter
-//                 cxtPackages = append(cxtPackages, pack)
+//                 prgrmPackages = append(prgrmPackages, pack)
 //                 sPacksCounter++
 
 //                 //Functions
@@ -372,7 +279,7 @@ package base
 //         sPacksCounter = 0
 
 //         // Packages Serialize
-//         for i, pack := range cxtPackages {
+//         for i, pack := range prgrmPackages {
 //                 sPack := sPackage{}
 
 //                 // Pack's Name
@@ -382,7 +289,7 @@ package base
 //                 sPack.ImportsOffset, sPack.ImportsSize = serializeImports(pack.Imports, &sPacksMap, &sImps, &sImpsCounter)
 
 //                 // Serialize Pack's Functions
-//                 if packFunctions[i] != nil && len(packFunctions[i]) > 0{
+//                 if packFunctions[i] != nil && len(packFunctions[i]) > 0 {
 //                         sPack.FunctionsOffset = int32(sFnsCounter)
 //                         sPack.FunctionsSize = int32(len(pack.Functions))
 
@@ -393,7 +300,7 @@ package base
 //                                 sFn.NameOffset, sFn.NameSize = serializeName(fn.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 //                                 // Serialize Function's Inputs
-//                                 if fn.Inputs != nil && len(fn.Inputs) > 0 { 
+//                                 if fn.Inputs != nil && len(fn.Inputs) > 0 {
 //                                         sFn.InputsOffset = int32(sArgsCounter)
 //                                         sFn.InputsSize = int32(len(fn.Inputs))
 
@@ -404,20 +311,12 @@ package base
 //                                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
 
 //                                                 // Input Type
-//                                                 sInput.TypOffset, sInput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                                 sInput.TypeOffset = int32(arg.Type)
-
-//                                                 // Input values
-//                                                 sInput.ValuesOffset, sInput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
+//                                                 sInput.Type = int32(arg.Type)
 
 //                                                 // Others Options
 //                                                 sInput.Size = int32(arg.Size)
-//                                                 sInput.TotalSize = int32(arg.Size)
-//                                                 sInput.PointeeSize = int32(arg.PointeeSize)
-//                                                 sInput.MemoryRead = int32(arg.MemoryRead)
-//                                                 sInput.MemoryWrite = int32(arg.MemoryWrite)
+//                                                 sInput.TotalSize = int32(arg.TotalSize)
 //                                                 sInput.Offset = int32(arg.Offset)
-//                                                 sInput.HeapOffset = int32(arg.HeapOffset)
 
 //                                                 if arg.IsArray {
 //                                                         sInput.IsArray = int32(1)
@@ -474,9 +373,6 @@ package base
 //                                                 } else {
 //                                                         sInput.IsLocalDeclaration = int32(0)
 //                                                 }
-
-//                                                 // Synonymous To...
-//                                                 sInput.SynonymousToOffset, sInput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
 
 //                                                 // Package Offset
 //                                                 sInput.PackageOffset = int32(sPacksMap[fn.Package.Name])
@@ -1118,7 +1014,7 @@ package base
 //                         }
 //                 }
 
-//                 if cxt.CurrentPackage == pack {
+//                 if prgrm.CurrentPackage == pack {
 //                         sPrgrm.CurrentPackageOffset = int32(sPacksCounter)
 //                 }
                 
@@ -1126,7 +1022,7 @@ package base
 //                 sPacksCounter++
 //         }
 
-//         if cxt.Terminated {
+//         if prgrm.Terminated {
 //                 sPrgrm.Terminated = int32(1)
 //         } else {
 //                 sPrgrm.Terminated = int32(0)
@@ -1134,10 +1030,10 @@ package base
 
 //         // Program's CallStack
 //         sPrgrm.CallStackOffset = int32(sCallsCounter)
-//         sPrgrm.CallStackSize = int32(len(cxt.CallStack))
+//         sPrgrm.CallStackSize = int32(len(prgrm.CallStack))
 //         lastCallOffset := int32(-1)
-        
-//         for _, call := range cxt.CallStack{
+
+//         for _, call := range prgrm.CallStack{
 //                 sCll := sCall{}
                 
 //                 opName := fmt.Sprintf("%s.%s", call.Operator.Package.Name, call.Operator.Name)
@@ -1267,10 +1163,10 @@ package base
 
 //         // Program's Stacks
 //         sPrgrm.StacksOffset = int32(sStacksCounter)
-//         sPrgrm.StacksSize = int32(len(cxt.Stacks))
+//         sPrgrm.StacksSize = int32(len(prgrm.Stacks))
 //         lastStackOffset := int32(-1)
 
-//         for i, stack := range cxt.Stacks {
+//         for i, stack := range prgrm.Stacks {
 //                 sStck := sStack{}
 
 //                 sStck.StackOffset = int32(i)
@@ -1289,12 +1185,12 @@ package base
 
 //         // sHp := sHeap{}
 //         // sHp.HeapOffset = int32(lastHeapOffset + 1)
-//         // sHp.HeapSize = int32(len(cxt.Heap.Heap))
-//         // sHp.HeapPointer = int32(cxt.Heap.HeapPointer)
+//         // sHp.HeapSize = int32(len(prgrm.Heap.Heap))
+//         // sHp.HeapPointer = int32(prgrm.Heap.HeapPointer)
 
 //         //Program Path
 
-//         sPrgrm.PathOffset, sPrgrm.PathSize = serializeName(cxt.Path, &sNamesMap, &sNames, &sNamesCounter)
+//         sPrgrm.PathOffset, sPrgrm.PathSize = serializeName(prgrm.Path, &sNamesMap, &sNames, &sNamesCounter)
 
 //         //Program's Steps
 
@@ -1327,13 +1223,13 @@ package base
 //         serialized = append(serialized, encoder.Serialize(sArgs)...)
 //         serialized = append(serialized, encoder.Serialize(sCalls)...)
         
-//         return &serialized
+//         return serialized
 // }
 
 // func Deserialize (prgrm *[]byte) *CXProgram {
 //         cxt := CXProgram{}
 
-//         var dsIdx sIndex
+// 	var dsIdx sIndex
 //         sIdx := (*prgrm)[:encoder.Size(sIndex{})]
 //         encoder.DeserializeRaw(sIdx, &dsIdx)
 

@@ -403,7 +403,6 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_POINTER)
 		if !declSpec.IsPointer {
 			declSpec.IsPointer = true
-			// declSpec.PointeeSize = declSpec.Size
 			declSpec.Size = TYPE_POINTER_SIZE
 			declSpec.TotalSize = TYPE_POINTER_SIZE
 			declSpec.IndirectionLevels++
@@ -411,20 +410,14 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 			pointer := declSpec
 
 			for c := declSpec.IndirectionLevels - 1; c > 0; c-- {
-				pointer = pointer.Pointee
 				pointer.IndirectionLevels = c
 				pointer.IsPointer = true
 			}
-
-			pointee := MakeArgument("", CurrentFile, LineNo)
-			pointee.AddType(TypeNames[pointer.Type])
-			pointee.IsPointer = true
 
 			declSpec.IndirectionLevels++
 
 			pointer.Size = TYPE_POINTER_SIZE
 			pointer.TotalSize = TYPE_POINTER_SIZE
-			pointer.Pointee = pointee
 		}
 
 		return declSpec
@@ -625,7 +618,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
 
-	symOutput.SynonymousTo = symInput.Name
+	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
 	symExpr.IsArrayLiteral = true
@@ -735,7 +728,7 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 
 	// symExpr.IsArrayLiteral = true
 
-	symOutput.SynonymousTo = symInput.Name
+	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
 	result = append(result, symExpr)
@@ -1318,8 +1311,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		}
 		DataOffset += size
 		
-		// arg.PointeeSize = size
-
 		expr := MakeExpression(nil, CurrentFile, LineNo)
 		expr.Package = pkg
 		expr.Outputs = append(expr.Outputs, arg)
@@ -1435,9 +1426,9 @@ func ShortAssign (expr *CXExpression, to []*CXExpression, from []*CXExpression, 
 func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
-	if from[idx].IsArrayLiteral {
-		from[0].Outputs[0].SynonymousTo = to[0].Outputs[0].Name
-	}
+	// if from[idx].IsArrayLiteral {
+	// 	from[0].Outputs[0].SynonymousTo = to[0].Outputs[0].Name
+	// }
 
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 
@@ -1813,9 +1804,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
 
-	sym.Pointee = arg.Pointee
 	sym.Lengths = arg.Lengths
-	// sym.PointeeSize = arg.PointeeSize
 	sym.Package = arg.Package
 	sym.Program = arg.Program
 	sym.DoesEscape = arg.DoesEscape
@@ -2054,31 +2043,6 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 				os.Exit(3)
 			}
 
-			// if sym.SynonymousTo != "" && false {
-			// 	// then the offset needs to be shared
-			// 	GetGlobalSymbol(symbols, sym.Package, sym.SynonymousTo)
-			// 	sym.Offset = (*symbols)[sym.Package.Name+"."+sym.SynonymousTo].Offset
-
-			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
-			// } else {
-			// 	sym.Offset = *offset
-			// 	(*symbols)[sym.Package.Name+"."+sym.Name] = sym
-
-			// 	if sym.IsSlice {
-			// 		*offset += sym.Size
-			// 	} else {
-			// 		*offset += sym.TotalSize
-			// 	}
-
-			// 	if sym.IsPointer {
-			// 		pointer := sym
-			// 		for c := 0; c < sym.IndirectionLevels-1; c++ {
-			// 			pointer = pointer.Pointee
-			// 			pointer.Offset = *offset
-			// 			*offset += pointer.TotalSize
-			// 		}
-			// 	}
-			// }
 			sym.Offset = *offset
 			(*symbols)[sym.Package.Name+"."+sym.Name] = sym
 
@@ -2086,15 +2050,6 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 				*offset += sym.Size
 			} else {
 				*offset += sym.TotalSize
-			}
-
-			if sym.IsPointer {
-				pointer := sym
-				for c := 0; c < sym.IndirectionLevels-1; c++ {
-					pointer = pointer.Pointee
-					pointer.Offset = *offset
-					*offset += pointer.TotalSize
-				}
 			}
 		}
 	}
@@ -2304,36 +2259,9 @@ func FunctionAddParameters (fn *CXFunction, inputs, outputs []*CXArgument) {
 		// it must be a method declaration
 		// so we save the first input
 		fn.Inputs = fn.Inputs[:1]
-
-		// it's a method declaration so we preserve the receiver
-		// for i, inp := range inputs {
-		// 	// we're going to update the inputs with the second pass inputs
-		// 	fn.Inputs[i+1].TotalSize = inp.TotalSize
-		// 	fn.Inputs[i+1].Size = inp.Size
-		// 	fn.Inputs[i+1].CustomType = inp.CustomType
-		// 	fn.Inputs[i+1].Type = inp.Type
-		// 	// *(fn.Inputs[i+1]) = *inp
-		// }
 	} else {
 		fn.Inputs = nil
-		// for i, inp := range inputs {
-		// 	// we're going to update the inputs with the second pass inputs
-		// 	fn.Inputs[i].TotalSize = inp.TotalSize
-		// 	fn.Inputs[i].Size = inp.Size
-		// 	fn.Inputs[i].CustomType = inp.CustomType
-		// 	fn.Inputs[i].Type = inp.Type
-		// 	// *(fn.Inputs[i]) = *inp
-		// }
 	}
-
-	// for i, out := range outputs {
-	// 	// *(fn.Outputs[i]) = *out
-	// 	fn.Outputs[i].TotalSize = out.TotalSize
-	// 	fn.Outputs[i].Size = out.Size
-	// 	fn.Outputs[i].CustomType = out.CustomType
-	// 	fn.Outputs[i].Type = out.Type
-	// }
-	
 
 	// we need to wipe the inputs recognized in the first pass
 	// as these don't have all the fields correctly
@@ -2403,26 +2331,13 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 			UpdateSymbolsTable(symbols, arg, offset, true)
 		}
 
-		// if isInput {
-		// 	// we do this only once, for inputs
-		// 	ProcessMethodCall(expr, symbols, arg, offset, true)
-		// }
-		// ProcessMethodCall(expr, symbols, arg, offset, true)
-		// ProcessMethodCall(expr, symbols, arg, offset, true)
-
 		if isInput {
 			GiveOffset(symbols, arg, offset, true)
 		} else {
 			GiveOffset(symbols, arg, offset, false)
 		}
-		
-		// if isInput {
-		// 	ProcessInputSlice(arg)
-		// } else {
-		// 	ProcessOutputSlice(arg)
-		// }
-		ProcessSlice(arg)
 
+		ProcessSlice(arg)
 		
 		for _, idx := range arg.Indexes {
 			UpdateSymbolsTable(symbols, idx, offset, true)

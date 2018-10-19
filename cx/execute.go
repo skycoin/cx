@@ -12,12 +12,12 @@ import (
 )
 
 // It "un-runs" a program
-func (prgrm *CXProgram) Reset() {
-	prgrm.CallStack = MakeCallStack(0)
-	prgrm.Steps = make([][]CXCall, 0)
-	prgrm.Outputs = make([]*CXArgument, 0)
-	//prgrm.ProgramSteps = nil
-}
+// func (prgrm *CXProgram) Reset() {
+// 	prgrm.CallStack = MakeCallStack(0)
+// 	prgrm.Steps = make([][]CXCall, 0)
+// 	prgrm.Outputs = make([]*CXArgument, 0)
+// 	//prgrm.ProgramSteps = nil
+// }
 
 func (prgrm *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || prgrm.CallCounter < 0 {

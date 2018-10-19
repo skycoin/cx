@@ -5,34 +5,33 @@ package base
 */
 
 type CXProgram struct {
-	Packages                        []*CXPackage
-	CurrentPackage                  *CXPackage
+        Packages                        []*CXPackage
+        CurrentPackage                  *CXPackage
 
-	Inputs                          []*CXArgument
-	Outputs                         []*CXArgument
+        Inputs                          []*CXArgument
+        Outputs                         []*CXArgument
 
-	CallStack                       []CXCall
-	CallCounter                     int
+        CallStack                       []CXCall
+        CallCounter                     int
 
-	Memory                          []byte
-	HeapPointer                     int
-	StackPointer                    int
+        Memory                          []byte
+        HeapPointer                     int
+        StackPointer                    int
 
-	HeapStartsAt                    int
+        HeapStartsAt                    int
 
-	Terminated                      bool
+        Terminated                      bool
 
-	Path                            string
-	Steps                           [][]CXCall
+        Path                            string
 }
 
 type CXCall struct {
-	Operator                        *CXFunction
-	Line         			int
-	FramePointer 			int
+        Operator                        *CXFunction
+        Line                            int
+        FramePointer                    int
 
-	Package 			*CXPackage
-	Program 			*CXProgram
+        Package                         *CXPackage
+        Program                         *CXProgram
 }
 
 /*
@@ -40,15 +39,15 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-	Name      			string
-	Imports   			[]*CXPackage
-	Functions 			[]*CXFunction
-	Structs  		        []*CXStruct
-	Globals   			[]*CXArgument
+        Name                            string
+        Imports                         []*CXPackage
+        Functions                       []*CXFunction
+        Structs                         []*CXStruct
+        Globals                         []*CXArgument
 
-	CurrentFunction 		*CXFunction
-	CurrentStruct   		*CXStruct
-	Program         		*CXProgram
+        CurrentFunction                 *CXFunction
+        CurrentStruct                   *CXStruct
+        Program                         *CXProgram
 }
 
 /*
@@ -56,12 +55,12 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
-	Name   				string
-	Fields 				[]*CXArgument
-	Size   				int
+        Name                            string
+        Fields                          []*CXArgument
+        Size                            int
 
-	Package 			*CXPackage
-	Program 			*CXProgram
+        Package                         *CXPackage
+        Program                         *CXProgram
 }
 
 /*
@@ -69,97 +68,89 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
-	Name        			string
-	Inputs      			[]*CXArgument
-	Outputs     			[]*CXArgument
-	Expressions 			[]*CXExpression
-	Size        			int // automatic memory size
-	Length      			int // number of expressions, pre-computed for performance
+        Name                            string
+        Inputs                          []*CXArgument
+        Outputs                         []*CXArgument
+        Expressions                     []*CXExpression
+        Size                            int // automatic memory size
+        Length                          int // number of expressions, pre-computed for performance
 
-	ListOfPointers 			[]*CXArgument
-	NumberOutputs  			int
+        ListOfPointers                  []*CXArgument
 
-	IsNative 			bool
-	OpCode   			int
+        IsNative                        bool
+        OpCode                          int
 
-	CurrentExpression 		*CXExpression
-	Package           		*CXPackage
-	Program           		*CXProgram
+        CurrentExpression               *CXExpression
+        Package                         *CXPackage
+        Program                         *CXProgram
 }
 
 type CXExpression struct {
-	Operator 			*CXFunction
-	Inputs   			[]*CXArgument
-	Outputs  			[]*CXArgument
-	// debugging
-	Line     			int
-	FileLine 			int
-	FileName 			string
+        Operator                        *CXFunction
+        Inputs                          []*CXArgument
+        Outputs                         []*CXArgument
+        // debugging
+        Line                            int
+        FileLine                        int
+        FileName                        string
 
-	// used for jmp statements
-	Label     			string
-	ThenLines 			int
-	ElseLines 			int
+        // used for jmp statements
+        Label                           string
+        ThenLines                       int
+        ElseLines                       int
 
-	IsMethodCall 			bool
-	IsStructLiteral 		bool
-	IsArrayLiteral  		bool
-	IsFlattened bool // used for nested struct literals
+        IsMethodCall                    bool
+        IsStructLiteral                 bool
+        IsArrayLiteral                  bool
 
-	Function 			*CXFunction
-	Package  			*CXPackage
-	Program  			*CXProgram
+        Function                        *CXFunction
+        Package                         *CXPackage
+        Program                         *CXProgram
 }
 
 type CXConstant struct {
-	// native constants. only used for pre-packaged constants (e.g. math package's PI)
-	// these fields are used to feed WritePrimary
-	Type  				int
-	Value 				[]byte
+        // native constants. only used for pre-packaged constants (e.g. math package's PI)
+        // these fields are used to feed WritePrimary
+        Type                            int
+        Value                           []byte
 }
 
 type CXArgument struct {
-	Name        			string
-	Type        			int
-	CustomType  			*CXStruct
-	Size        			int // size of underlaying basic type
-	TotalSize   			int // total size of an array, performance reasons
-	//PointeeSize 			int
+        Name                            string
+        Type                            int
+        CustomType                      *CXStruct
+        Size                            int // size of underlaying basic type
+        TotalSize                       int // total size of an array, performance reasons
 
-	Offset      			int
+        Offset                          int
 
-	IndirectionLevels     		int
-	DereferenceLevels     		int
-	Pointee               		*CXArgument
-	PointeeMemoryType     		int
-	DereferenceOperations 		[]int // offset by array index, struct field, pointer
-	DeclarationSpecifiers 		[]int // used to determine finalSize
+        IndirectionLevels               int
+        DereferenceLevels               int
+        DereferenceOperations           []int // offset by array index, struct field, pointer
+        DeclarationSpecifiers           []int // used to determine finalSize
 
-	IsSlice      			bool
-	IsArray      			bool
-	IsArrayFirst 			bool // and then dereference
-	IsPointer    			bool
-	IsReference  			bool
+        IsSlice                         bool
+        IsArray                         bool
+        IsArrayFirst                    bool // and then dereference
+        IsPointer                       bool
+        IsReference                     bool
 
-	IsDereferenceFirst 		bool // and then array
-	IsStruct           		bool
-	IsField            		bool
-	IsRest             		bool // pkg.var <- var is rest
-	IsLocalDeclaration 		bool
-	IsShortDeclaration 		bool
+        IsDereferenceFirst              bool // and then array
+        IsStruct                        bool
+        IsRest                          bool // pkg.var <- var is rest
+        IsLocalDeclaration              bool
+        IsShortDeclaration              bool
 
-	PassBy 				int  // pass by value or reference
-	DoesEscape 			bool
+        PassBy                          int  // pass by value or reference
+        DoesEscape                      bool
 
-	Lengths 			[]int // declared lengths at compile time
-	Indexes 			[]*CXArgument
-	Fields  			[]*CXArgument // strct.fld1.fld2().fld3
+        Lengths                         []int // declared lengths at compile time
+        Indexes                         []*CXArgument
+        Fields                          []*CXArgument // strct.fld1.fld2().fld3
 
-	SynonymousTo 			string // when the symbol is just a temporary holder for another symbol
-
-	FileLine 			int
-	FileName 			string
-	
-	Package 			*CXPackage
-	Program 			*CXProgram
+        FileLine                        int
+        FileName                        string
+        
+        Package                         *CXPackage
+        Program                         *CXProgram
 }
