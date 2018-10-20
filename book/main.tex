@@ -76,13 +76,11 @@
 
 %\noindent Copyright \copyright\ 2014 Andrea Hidalgo\\ % Copyright notice
 
-\noindent \textsc{Summer Research Internship, University of Western Ontario}\\
+\noindent \textsc{}\\
 
-\noindent \textsc{github.com/LaurethTeX/Clustering}\\ % URL
+\noindent \textsc{}\\ % URL
 
-\noindent This research was done under the supervision of Dr. Pauline Barmby with the financial support of the MITACS Globalink Research Internship Award within a total of 12 weeks, from June 16th to September 5th of 2014.\\ % License information
-
-\noindent \textit{First release, August 2014} % Printing/edition date
+\noindent \textit{} % Printing/edition date
 
 %----------------------------------------------------------------------------------------
 %	TABLE OF CONTENTS
@@ -118,9 +116,9 @@
 
 This Chapter works as an introduction to Skycoin's programming language: CX. In the following Sections you will learn about the objectives and philosophy of the language and about the features that make CX unique.
 
-In this first Chapter you can find instructions on how to install CX, and how to write and run your first program using the language. We will then start with some basic programming concepts in Chapter \ref{chapter:data-structures}, like what is a variable and the types of data these variables can represent, how you can group different values in arrays and slices, how you can group different types of values in structures, and how you can change the scope of a variable in a program. In Chapter \ref{chapter:functions} you will learn how to use functions and methods, and we'll talk a bit about side effects. The different control flow mechanisms that CX currently offers are covered in Chapter \ref{chapter:control-flow}, such as \textit{if} and the \textit{for loop}. The last fundamental piece is packages, which help us modularize our programs, and they are covered in Chapter \ref{chapter:packages}.
+In this first Chapter you can find instructions on how to install CX, and how to write and run your first program using the language. We will check how CX programs are internally represented in Chapter \ref{chapter:cx-programs-representation}, so we can understand some debugging features and the CX REPL. We'll then review some basic programming concepts in Chapter \ref{chapter:data-structures}, like what is a variable and the types of data these variables can represent, how you can group different values in arrays and slices, how you can group different types of values in structures, and how you can change the scope of a variable in a program. In Chapter \ref{chapter:functions} you will learn how to use functions and methods, and we'll talk a bit about side effects. The different control flow mechanisms that CX currently offers are covered in Chapter \ref{chapter:control-flow}, such as \textit{if} and the \textit{for loop}. The last fundamental piece is packages, which help us modularize our programs, and they are covered in Chapter \ref{chapter:packages}.
 
-After Chapter \ref{chapter:packages}, we'll start covering more complex subjects, such as how to use CX with OpenGL and GLFW in Chapter \ref{chapter:opengl-and-glfw-with-cx}. Chapter \ref{chapter:interpreted-and-compiled} covers how CX can work both as an interpreted and as a compiled language, and what advantages bring each mode. Chapters \ref{chapter:garbage-collector} and \ref{chapter:affordances} describe CX's garbage collector and affordances.%, respectively, which allow us to create an interesting tool: the object explorer, which is described in Chapter \ref{chapter:object-explorer}.%
+After Chapter \ref{chapter:packages}, we'll start covering more complex subjects, such as pointers in Chapter \ref{chapter:pointers} and how to use CX with OpenGL and GLFW in Chapter \ref{chapter:opengl-and-glfw-with-cx}. Chapter \ref{chapter:interpreted-and-compiled} covers how CX can work both as an interpreted and as a compiled language, and what advantages bring each mode. Chapters \ref{chapter:garbage-collector} and \ref{chapter:affordances} describe CX's garbage collector and affordances.%, respectively, which allow us to create an interesting tool: the object explorer, which is described in Chapter \ref{chapter:object-explorer}.%
  Chapter \ref{chapter:serialization} describes CX's serialization capabilities, and we'll learn how we can serialize a full, running program, store it in a file, and later deserialize it to continue its execution.
 
 CX uses its affordance system to create a genetic programming algorithm that can be used to create programs that create programs, and this feature is explained in Chapter \ref{chapter:genetic-programming}. Talking about creating programs that create programs, are you interested on creating your very own CX? If you are, we'll cover that subject in Chapter \ref{chapter:creating-your-own-cx}. Lastly, we'll cover some advanced techniques you can use while using the REPL to create a program in Chapter \ref{chapter:mastering-the-repl}, and Chapter \ref{chapter:unit-testing-in-cx} teaches us how to create unit tests to make sure everything works as intended while your programs grow larger.
@@ -325,7 +323,7 @@ If you want to try it out, you can save the program in Listing \ref{listing:ast-
 \begin{lstlisting}[caption={Abstract Syntax Tree Example - Code},captionpos=b,label={listing:ast-example-code}]
 package main
 
-var glblVariable i32
+var global i32
 
 func main () {
 	var foo i32
@@ -1217,7 +1215,7 @@ The different packages and their definitions can be placed altogether in a singl
 
 Dividing your code into different files is essential as your projects grow bigger. CX takes an approach similar to Go for handling projects: a package in a directory can split into a number of files, but you can't use more than one package declaration in these files inside this directory. In other words, a directory represents a package. An exception to this rule would be declaring several packages in a single file. The purpose of this exception is to allow the programmer to test ideas quickly without them being required to create packages in different directories and another directory for their application (which will contain the \textbf{main} package).
 
-Listings \ref{listing:import-example} and \ref{listing:main-package-example} show the code for two packages: \textbf{math} and \textbf{main}. The \textbf{math} code needs to be in a file named however you want, inside a directory that you should name the same as your package. It's not mandatory to do so, but the consistency helps other programmers that are reading your code.
+Listings \ref{listing:import-example} and \ref{listing:main-package-example} show the code for two packages: \textbf{math} and \textbf{main}. The \textbf{math} code needs to be in a file named whatever you want, inside a directory that you should name the same as your package. It's not mandatory to do so, but the consistency helps other programmers that are reading your code.
 
 
 \begin{lstlisting}[caption={Package to be Imported},captionpos=b,label={listing:import-example}]
@@ -1277,7 +1275,7 @@ If you're working in a single file, you can just import your packages using the 
 \chapter{Pointers}
 \label{chapter:pointers}
 
-Programming languages that that use a stack to pass values to function calls can pass the actual value or a reference to it. Passing by value means that all the bytes that represent that data structure are copied to the function call. In the case of a simple integer or a floating-point number, this isn't a big problem, because you're copying at most 8 bytes. The real problem arises when you try to pass a really big data structure, like an array or a string (which is basically an array). Copying all these bytes every time a function is called creates two problems: 1) it is slow; imagine that you have to execute a for loop that iterates $N$ times, where $N$ is the size of your data structure, and you have to do this every time you call that function; and 2) you are more prone to encounter a stack overflow error, as you are filling your stack with all these copies of your data structure.
+Programming languages that use a stack to pass values to function calls can pass the actual value or a reference to it. Passing by value means that all the bytes that represent that data structure are copied to the function call. In the case of a simple integer or a floating-point number, this isn't a big problem, because you're copying at most 8 bytes. The real problem arises when you try to pass a really big data structure, like an array or a string (which is basically an array). Copying all these bytes every time a function is called creates two problems: 1) it is slow; imagine that you have to execute a for loop that iterates $N$ times, where $N$ is the size of your data structure, and you have to do this every time you call that function; and 2) you are more prone to encounter a stack overflow error, as you are filling your stack with all these copies of your data structure.
 
 A solution to the pass-by-value problem is to use pass-by-reference. In pass-by-reference, instead of copying the actual value, you send the address of the value that you want to use. A reference is just a number that represents the index where you can find the actual value in memory, and as such, a reference only needs 4 bytes, as it's just a normal 32-bit integer. This also means that creating a pointer to a 32-bit integer is useless if your purpose is to increase your program's performance (actually, using a pointer would make your program a tiny bit slower, because it needs to dereference the pointer).
 
@@ -1827,7 +1825,7 @@ message:|\label{line:affordance-label}|
 }
 \end{lstlisting}
 
-Listing \ref{listing:affordances-example1} shows a basic program that uses affordances to filter among the possible values that the expression at \textbf{Line \ref{line:affordance-expression}} can take. As this is a small program, the only possible values are those being held by \textbf{foo1}, \textbf{foo2} and \textbf{foo3}. In order to know what expression we want to target, we need to label it first. To do this, we can simply use to-do labels, as seen at \textbf{Line \ref{line:affordance-label}}, where we label our target expression as "message." The next step is to create a variable to hold the target expression. To do this, we use the affordance mini programming-language, which is called by writing \textbf{->{}}, and we write the desired statements inside of the braces. Creating a target is done at \textbf{Line \ref{line:affordance-target}}. Targets are constructed by going down in levels of scope: the package is specified first, then the function, and lastly the expression. To specify the desired package, you use \textbf(pkg) followed by the name of the package enclosed by parentheses. For functions, you use \textbf{fn}, followed by the name of the package main enclosed by parentheses. Lastly, to specify the expression, you use \textbf{exp} followed by the label given to the expression, again, enclosed by parentheses.
+Listing \ref{listing:affordances-example1} shows a basic program that uses affordances to filter among the possible values that the expression at \textbf{Line \ref{line:affordance-expression}} can take. As this is a small program, the only possible values are those being held by \textbf{foo1}, \textbf{foo2} and \textbf{foo3}. In order to know what expression we want to target, we need to label it first. To do this, we can simply use to-do labels, as seen at \textbf{Line \ref{line:affordance-label}}, where we label our target expression as "message." The next step is to create a variable to hold the target expression. To do this, we use the affordance mini programming-language, which is called by writing \textbf{->{}}, and we write the desired statements inside of the braces. Creating a target is done at \textbf{Line \ref{line:affordance-target}}. Targets are constructed by going down in levels of scope: the package is specified first, then the function, and lastly the expression. To specify the desired package, you use \textbf(pkg) followed by the name of the package enclosed by parentheses. For functions, you use \textbf{fn}, followed by the name of the function enclosed by parentheses. Lastly, to specify the expression, you use \textbf{exp} followed by the label given to the expression, again, enclosed by parentheses.
 
 Rules, as mentioned before, are used to filter the possible options. In this example, rules are defined at \textbf{Line \ref{line:affordance-rules}}, and they contain only one clause: allow anything that is greater than \lstinline{1}. The asterisk in here represents the initial allowed objects to be sent to the targeted expression. As the expression is waiting for a 32-bit integer, the asterisk will be of type i32. Think about it like how the x in mathematics can mean any number but, in this case, it can mean any program element. If the targeted expression can receive a structure instance as its input, we could create predicates of the form \lstinline{*.field == something}, for example.
 
@@ -1978,20 +1976,20 @@ Listing \ref{listing:affordances-example2} shows a much more complex example. Th
 \chapter{Serialization}
 \label{chapter:serialization}
 
-\begin{remark}
-Section Outline
-    \begin{itemize}
-    	\item CX comes with object serialization included
-        \item In this case, any object in the program structure is capable of being serialized
-        \item For example, we can serialize functions, packages or a whole program
-        \item Although perhaps the most frequent operation would be to serialize struct instances to be saved to files
-        \item However, something interesting is that we could serialize a full program, send it to another server, deseralize it there, and continue its execution there
-        \item Another interesting use is that we could have a distributed application that evolves functions (see Chapter \ref{chapter:genetic-programming}), and sends these evolved functions to a central server
-        \item At the moment, one can only serialize full programs or struct instances in CX
-        \item Show serialization examples (program and struct instances)
-        \item \textbf{NOTE} I need to clean up the struct serialization example
-    \end{itemize}
-\end{remark}
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item CX comes with object serialization included
+%         \item In this case, any object in the program structure is capable of being serialized
+%         \item For example, we can serialize functions, packages or a whole program
+%         \item Although perhaps the most frequent operation would be to serialize struct instances to be saved to files
+%         \item However, something interesting is that we could serialize a full program, send it to another server, deseralize it there, and continue its execution there
+%         \item Another interesting use is that we could have a distributed application that evolves functions (see Chapter \ref{chapter:genetic-programming}), and sends these evolved functions to a central server
+%         \item At the moment, one can only serialize full programs or struct instances in CX
+%         \item Show serialization examples (program and struct instances)
+%         \item \textbf{NOTE} I need to clean up the struct serialization example
+%     \end{itemize}
+% \end{remark}
 
 In CX, every program object and piece of data can be serialized at any moment, preserving any state in which the program is. You can choose to serialize all the program or only certain parts of it, such as structure instances or functions. These serialization features are very useful, as you can save a program to a file or a database.
 
@@ -2600,7 +2598,7 @@ func main () {
 
 Listing \ref{listing:unit-testing-example} shows an example on how to use \textbf{assert} to test different arithmetic operations. The first and second input arguments to assert are the ones that get compared byte by byte, while the third argument is a custom error message that is appended to the default error message. In CX it's conventional to start with the expression to be tested as the first input argument, and then use the second input argument as the desired result of the first input argument. The custom error message is helpful to understand what expression raised an error, in addition to the usual file name and line number thrown by CX.
 
-Also, notice that \textbf{assert} returns a boolean argument, which indicates if the test was successful or not. This might seem like it does not make sense, as \textbf{assert} will stop a program's execution if the test is not successful, but this behavior is there for two reasons: 1) you can count the number of tests performed, and 2) CX will re-implement in the future a function which was present in previous versions of CX, \textbf{test.error}, which tests if an expression raised an error in a particular situation, while avoiding halting the program. For example, \lstinline{i32.div(0, 0)} has to raise a \emph{divide by 0} error, and if it doesn't, then this is an error. After re-implementing this function (most likely with a different name, as the test package no longer exists), we will be able to count how many tests return true and how many return false.
+Also, notice that \textbf{assert} returns a boolean argument, which indicates if the test was successful or not. This might seem like it does not make sense, as \textbf{assert} will stop a program's execution if the test is not successful, but this behavior is there for two reasons: 1) you can count the number of tests performed, and 2) CX will implement in the future a function, \textbf{test.error}, which tests if an expression raised an error in a particular situation, while avoiding halting the program. For example, \lstinline{i32.div(0, 0)} has to raise a \emph{divide by 0} error, and if it doesn't, then this is an error. After re-implementing this function (most likely with a different name, as the test package no longer exists), we will be able to count how many tests return true and how many return false.
 
 \begin{lstlisting}[caption={Testing control flow statements},captionpos=b,label={listing:testing-control-flow-statements}]
 package main
