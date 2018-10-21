@@ -1946,7 +1946,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_CREATE_WINDOW:             MakeNative(OP_GLFW_CREATE_WINDOW, []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{}),
 	OP_GLFW_MAKE_CONTEXT_CURRENT:      MakeNative(OP_GLFW_MAKE_CONTEXT_CURRENT, []int{TYPE_STR}, []int{}),
 	OP_GLFW_SHOULD_CLOSE:              MakeNative(OP_GLFW_SHOULD_CLOSE, []int{TYPE_STR}, []int{TYPE_BOOL}),
-	OP_GLFW_SET_SHOULD_CLOSE:          MakeNative(OP_GLFW_SET_SHOULD_CLOSE, []int{TYPE_STR, TYPE_BOOL}, []int{TYPE_BOOL}),
+	OP_GLFW_SET_SHOULD_CLOSE:          MakeNative(OP_GLFW_SET_SHOULD_CLOSE, []int{TYPE_STR, TYPE_BOOL}, []int{}),
 	OP_GLFW_POLL_EVENTS:               MakeNative(OP_GLFW_POLL_EVENTS, []int{}, []int{}),
 	OP_GLFW_SWAP_BUFFERS:              MakeNative(OP_GLFW_SWAP_BUFFERS, []int{TYPE_STR}, []int{}),
 	OP_GLFW_GET_FRAMEBUFFER_SIZE:      MakeNative(OP_GLFW_GET_FRAMEBUFFER_SIZE, []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32}),
