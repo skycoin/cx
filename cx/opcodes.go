@@ -347,6 +347,7 @@ const (
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
+	OP_GLFW_GET_KEY
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
@@ -974,6 +975,8 @@ func execNative(prgrm *CXProgram) {
 		op_glfw_SetInputMode(expr, fp)
 	case OP_GLFW_SET_WINDOW_POS:
 		op_glfw_SetWindowPos(expr, fp)
+	case OP_GLFW_GET_KEY:
+		op_glfw_GetKey(expr, fp)
 	
 		// gltext
 	case OP_GLTEXT_LOAD_TRUE_TYPE:
@@ -1310,6 +1313,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GLFW_GET_CURSOR_POS:            "glfw.GetCursorPos",
 	OP_GLFW_SET_INPUT_MODE:            "glfw.SetInputMode",
 	OP_GLFW_SET_WINDOW_POS:            "glfw.SetWindowPos",
+	OP_GLFW_GET_KEY:                   "glfw.GetKey",
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          "gltext.LoadTrueType",
@@ -1634,6 +1638,7 @@ var OpCodes map[string]int = map[string]int{
 	"glfw.GetCursorPos":           OP_GLFW_GET_CURSOR_POS,
 	"glfw.SetInputMode":           OP_GLFW_SET_INPUT_MODE,
 	"glfw.SetWindowPos":           OP_GLFW_SET_WINDOW_POS,
+	"glfw.GetKey":                 OP_GLFW_GET_KEY,
 
 	// gltext
 	"gltext.LoadTrueType":         OP_GLTEXT_LOAD_TRUE_TYPE,
@@ -1958,6 +1963,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLFW_SET_WINDOW_POS:            MakeNative(OP_GLFW_SET_WINDOW_POS, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GLFW_GET_KEY:                   MakeNative(OP_GLFW_GET_KEY, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 	
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),

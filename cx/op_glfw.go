@@ -12,21 +12,28 @@ func op_glfw_Init(expr *CXExpression, fp int) {
 	glfw.Init()
 }
 
-func op_glfw_WindowHint(expr *CXExpression, fp int) {
+func op_glfw_WindowHint (expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	glfw.WindowHint(glfw.Hint(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)))
 }
 
-func op_glfw_SetInputMode(expr *CXExpression, fp int) {
+func op_glfw_SetInputMode (expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	windows[ReadStr(fp, inp1)].SetInputMode(glfw.InputMode(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
 }
 
-func op_glfw_GetCursorPos(expr *CXExpression, fp int) {
+func op_glfw_GetCursorPos (expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	x, y := windows[ReadStr(fp, inp1)].GetCursorPos()
 	WriteMemory(GetFinalOffset(fp, out1), FromF64(x))
 	WriteMemory(GetFinalOffset(fp, out2), FromF64(y))
+}
+
+func op_glfw_GetKey (expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	act := int32(windows[ReadStr(fp, inp1)].GetKey(glfw.Key(ReadI32(fp, inp2))))
+
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(act))
 }
 
 func op_glfw_CreateWindow(expr *CXExpression, fp int) {
@@ -85,10 +92,10 @@ func op_glfw_GetTime(expr *CXExpression, fp int) {
 
 func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	prgrm := expr.Program
+	// prgrm := expr.Program
 
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -109,20 +116,19 @@ func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 			inps[3] = FromI32(int32(action)) // sAction
 			inps[4] = FromI32(int32(mods)) // sModifierKey
 
-			prgrm.CallCounter++
-			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			PROGRAM.CallCounter++
+			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 			newCall.Operator = fn
 			newCall.Line = 0
-			newCall.FramePointer = prgrm.StackPointer
-			prgrm.StackPointer += newCall.Operator.Size
+			newCall.FramePointer = PROGRAM.StackPointer
+			PROGRAM.StackPointer += newCall.Operator.Size
 
 			newFP := newCall.FramePointer
 
 			// wiping next mem frame (removing garbage)
 			for c := 0; c < expr.Operator.Size; c++ {
-				prgrm.Memory[newFP+c] = 0
+				PROGRAM.Memory[newFP+c] = 0
 			}
-
 
 			for i, inp := range inps {
 				WriteMemory(
@@ -137,10 +143,10 @@ func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 
 func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	prgrm := expr.Program
+	// prgrm := expr.Program
 
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
-		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -155,18 +161,18 @@ func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 			inps[1] = FromF64(xpos)
 			inps[2] = FromF64(ypos)
 
-			prgrm.CallCounter++
-			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			PROGRAM.CallCounter++
+			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 			newCall.Operator = fn
 			newCall.Line = 0
-			newCall.FramePointer = prgrm.StackPointer
-			prgrm.StackPointer += newCall.Operator.Size
+			newCall.FramePointer = PROGRAM.StackPointer
+			PROGRAM.StackPointer += newCall.Operator.Size
 
 			newFP := newCall.FramePointer
 
 			// wiping next mem frame (removing garbage)
 			for c := 0; c < expr.Operator.Size; c++ {
-				prgrm.Memory[newFP+c] = 0
+				PROGRAM.Memory[newFP+c] = 0
 			}
 
 			for i, inp := range inps {
@@ -191,10 +197,10 @@ func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
 
 func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	prgrm := expr.Program
+	// prgrm := expr.Program
 
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := expr.Program.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -214,18 +220,18 @@ func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 			inps[2] = FromI32(int32(action))
 			inps[3] = FromI32(int32(mods))
 
-			prgrm.CallCounter++
-			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			PROGRAM.CallCounter++
+			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 			newCall.Operator = fn
 			newCall.Line = 0
-			newCall.FramePointer = prgrm.StackPointer
-			prgrm.StackPointer += newCall.Operator.Size
+			newCall.FramePointer = PROGRAM.StackPointer
+			PROGRAM.StackPointer += newCall.Operator.Size
 
 			newFP := newCall.FramePointer
 
 			// wiping next mem frame (removing garbage)
 			for c := 0; c < expr.Operator.Size; c++ {
-				prgrm.Memory[newFP+c] = 0
+				PROGRAM.Memory[newFP+c] = 0
 			}
 
 			for i, inp := range inps {
