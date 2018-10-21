@@ -302,10 +302,9 @@ in a terminal.
 
 ### Windows
 
-An installation script is also provided for Windows named cx.bat.
+An installation script is also provided for Windows named `cx-setup.bat`.
 The Windows version of this method would be to manually
-download the provided [batch script](https://github.com/skycoin/cx/blob/master/cx.bat) (which is similar to the bash
-script for *nix systems described above), and run it in a terminal.
+download the provided [batch script](https://github.com/skycoin/cx/blob/master/cx-setup.bat) (which is similar to the bash script for *nix systems described above), and run it in a terminal.
 
 You should test your installation by running `cx
 %GOPATH%\src\github.com\skycoin\cx\tests`.
@@ -322,7 +321,7 @@ again:
 or, in Windows:
 
 ```
-cx.bat
+cx-setup.bat
 ```
 
 # Running CX
