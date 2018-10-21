@@ -5,6 +5,7 @@ import "glfw"
 
 var width i32 = 800
 var height i32 = 600
+var velocity f32 = 0.5
 
 type Ball struct {
 	x f32
@@ -16,6 +17,20 @@ type Ball struct {
 }
 
 var ball Ball
+
+var prevTime f32
+var currTime f32
+var timeDelta f32
+func updateTiming() () {
+	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
+	if prevTime == 0.0 {
+		prevTime = f64.f32(glfw.GetTime())
+	}
+
+	currTime = f64.f32(glfw.GetTime())
+	timeDelta = currTime - prevTime
+	prevTime = currTime
+}
 
 func drawBall (ball Ball) () {
 	var full_angle f32
@@ -52,11 +67,13 @@ func main () () {
 		radius: 0.05,
 		x: 0.0,
 		y: 0.0,
-		vx: 0.01,
-		vy: 0.01,
-		gravity: 0.01}
+		vx: velocity,
+		vy: velocity,
+		gravity: 8.0}
 
 	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(program)
@@ -65,14 +82,25 @@ func main () () {
 		gl.LoadIdentity()
 		gl.MatrixMode(gl.MODELVIEW)
 
-		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
+		// move ball 
+		ball.x = f32.add(ball.x, ball.vx * timeDelta)
+		ball.y = f32.add(ball.y, ball.vy * timeDelta)
+
+		if f32.lteq(f32.sub(ball.y, ball.radius), -1.0) { // (touched bottom) 
+			// bounce up 
 			ball.vy = f32.abs(ball.vy)
 		} else {
-			ball.vy = f32.sub(ball.vy, ball.gravity)
+			// decrease y velocity 
+			ball.vy = ball.vy - ball.gravity * timeDelta
 		}
 
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
+		if f32.gteq(f32.add(ball.x, ball.radius), 1.0) { // (touched right edge) 
+			ball.vx = 0.0 - velocity
+		}
+
+		if f32.lteq(f32.sub(ball.x, ball.radius), -1.0) { // (touched left edge) 
+			ball.vx = velocity
+		}
 
 		drawBall(ball)
 		
