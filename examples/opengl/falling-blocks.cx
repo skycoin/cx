@@ -21,13 +21,33 @@ type Wall struct {
 	z f32
 }
 
+//Funcs
+
+var prevTime f32
+var currTime f32
+var timeDelta f32
+func updateTiming() () {
+	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
+	if prevTime == 0.0 {
+		prevTime = f64.f32(glfw.GetTime())
+	}
+
+	currTime = f64.f32(glfw.GetTime())
+	timeDelta = currTime - prevTime
+	prevTime = currTime
+}
+
+
 func drawItem(box Item) () {
+	var t f32 // thickness 
+	t = 0.05
+
 	gl.Begin(gl.POLYGON)
 	gl.Color3f(1.0, 1.0, 0.0)
-	gl.Vertex3f(f32.add(box.x, 0.05), f32.add(box.y, 0.05), box.z)
-	gl.Vertex3f(f32.add(box.x, 0.05), box.y, box.z)
-	gl.Vertex3f(box.x, box.y, box.z)
-	gl.Vertex3f(box.x, f32.add(box.y, 0.05), box.z)
+	gl.Vertex3f(f32.add(box.x, t), box.y,   box.z)
+	gl.Vertex3f(f32.add(box.x, t), box.y-t, box.z)
+	gl.Vertex3f(box.x,             box.y-t, box.z)
+	gl.Vertex3f(box.x,             box.y,   box.z)
 	gl.End()
 }
 
@@ -41,7 +61,7 @@ func drawBG () () {
 	gl.End()
 }
 
-func drawWalls (w Wall, color f32) () {
+func drawWall (w Wall, color f32) () {
 	gl.Begin(gl.POLYGON)
 	gl.Color3f(color, color, 1.0)
 	gl.Vertex3f(-1.0, f32.add(-1.0, w.y), w.z)
@@ -49,6 +69,17 @@ func drawWalls (w Wall, color f32) () {
 	gl.Vertex3f(1.0, -1.0, w.z)
 	gl.Vertex3f(1.0, f32.add(-1.0, w.y), w.z)
 	gl.End()
+}
+
+func moveMaybeTeleport (box Item, w Wall, color f32) (box Item) {
+	if f32.lteq(box.y, f32.add(-1.0, w.y)) {
+		box.y = 1.0
+	} else {
+		box.y = f32.sub(box.y, timeDelta / 2.0)
+	}
+
+	drawItem(box)
+	drawWall(w, color)
 }
 
 //Main Functions
@@ -81,23 +112,23 @@ func startGame(mw Window) () {
 	var w4 Wall
 	
 	obj1 = Item{
-		x:0.75,
-		y:1.0,
+		x: 0.75,
+		y: 1.0,
 		z: -0.4}
 
 	obj2 = Item{
-		x:0.25,
-		y:1.0,
+		x: 0.25,
+		y: 1.0,
 		z: -0.3}
 	
 	obj3 = Item{
-		x:-0.25,
-		y:1.0,
+		x: -0.25,
+		y: 1.0,
 		z: -0.2}
 	
 	obj4 = Item{
-		x:-0.75,
-		y:1.0,
+		x: -0.75,
+		y: 1.0,
 		z: -0.1}
 
 	w1 = Wall{
@@ -118,6 +149,8 @@ func startGame(mw Window) () {
 
 	//Main Loop
 	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		gl.UseProgram(program)
 
@@ -128,61 +161,10 @@ func startGame(mw Window) () {
 		gl.MatrixMode(gl.MODELVIEW)
 		drawBG()
 
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		if f32.lteq(obj4.y, f32.add(-1.0, w4.y)) {
-			obj4.y = 1.0
-		} else {
-			obj4.y = f32.sub(obj4.y, 0.001)
-		}
-
-		drawItem(obj4)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		drawWalls(w4, 0.2)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		if f32.lteq(obj3.y, f32.add(-1.0, w3.y)) {
-			obj3.y = 1.0
-		} else {
-			obj3.y = f32.sub(obj3.y, 0.001)
-		}
-
-		drawItem(obj3)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		drawWalls(w3, 0.3)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		if f32.lteq(obj2.y, f32.add(-1.0, w2.y)) {
-			obj2.y = 1.0
-		} else {
-			obj2.y = f32.sub(obj2.y, 0.001)
-		}
-
-		drawItem(obj2)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		drawWalls(w2, 0.4)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		if f32.lteq(obj1.y, f32.add(-1.0, w1.y)) {
-			obj1.y = 1.0
-		} else {
-			obj1.y = f32.sub(obj1.y, 0.001)
-		}
-
-		drawItem(obj1)
-
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-		drawWalls(w1, 0.5)
+		obj4 = moveMaybeTeleport(obj4, w4, 0.2)
+		obj3 = moveMaybeTeleport(obj3, w3, 0.3)
+		obj2 = moveMaybeTeleport(obj2, w2, 0.4)
+		obj1 = moveMaybeTeleport(obj1, w1, 0.5)
 
 		glfw.PollEvents()
 		glfw.SwapBuffers("window")

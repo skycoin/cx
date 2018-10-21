@@ -5,6 +5,7 @@ import "glfw"
 
 var width i32 = 800
 var height i32 = 600
+var velocity f32 = 1.0
 
 type Ball struct {
 	x f32
@@ -16,6 +17,20 @@ type Ball struct {
 }
 
 var ball Ball
+
+var prevTime f32
+var currTime f32
+var timeDelta f32
+func updateTiming() () {
+	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
+	if prevTime == 0.0 {
+		prevTime = f64.f32(glfw.GetTime())
+	}
+
+	currTime = f64.f32(glfw.GetTime())
+	timeDelta = currTime - prevTime
+	prevTime = currTime
+}
 
 func drawBall (ball Ball) () {
 	var full_angle f32
@@ -39,17 +54,17 @@ func drawBall (ball Ball) () {
 
 func ballDirection (window str, key i32, scancode i32, action i32, mods i32) () {
 	if bool.and(i32.eq(key, 263), i32.eq(action, 1)) {
-		ball.vx = ball.vx + -0.01
+		ball.vx = ball.vx - velocity
 	}
 	if bool.and(i32.eq(key, 262), i32.eq(action, 1)) {
-		ball.vx = ball.vx + 0.01
+		ball.vx = ball.vx + velocity
 	}
 }
 
 func main () {
 	glfw.Init()
 
-	glfw.CreateWindow("window", width, height, "Bouncing Ball")
+	glfw.CreateWindow("window", width, height, "Bouncing Ball (Keyboard Controlled)")
 	glfw.MakeContextCurrent("window")
 	
 	gl.Init()
@@ -63,15 +78,17 @@ func main () {
 		radius: 0.05,
 		x: 0.0,
 		y: 0.0,
-		vx: 0.01,
-		vy: 0.01,
-		gravity: 0.01}
+		vx: velocity,
+		vy: velocity,
+		gravity: 8.0}
 
 	var ratio f32
 
 	str.print("\nMove the ball to the right or the left using the arrow keys.")
 
 	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
 		var bufferWidth i32
 		var bufferHeight i32
 		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
@@ -84,17 +101,28 @@ func main () {
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
 		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
+		gl.Viewport(0, 0, bufferWidth, bufferHeight)
 		gl.MatrixMode(gl.MODELVIEW)
 
 		//Bounce on window bottom
-		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
+		if f32.lteq(f32.sub(ball.y, ball.radius), -1.0) {
 			ball.vy = f32.abs(ball.vy)
 		} else {
-			ball.vy = f32.sub(ball.vy, ball.gravity)
+			ball.vy = ball.vy - ball.gravity * timeDelta
 		}
 
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
+		//Bounce off left edge
+		if lteq(f32.sub(ball.x, ball.radius), f32.sub(0.0, ratio)) {
+			ball.vx = velocity
+		}
+
+		//Bounce off right edge
+		if gteq(f32.add(ball.x, ball.radius), ratio) {
+			ball.vx = 0.0 - velocity
+		}
+
+		ball.x = f32.add(ball.x, ball.vx * timeDelta)
+		ball.y = f32.add(ball.y, ball.vy * timeDelta)
 
 
 		
