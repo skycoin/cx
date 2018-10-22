@@ -6,7 +6,6 @@ import (
 )
 
 func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
-	mod.Program = prgrm
 	found := false
 	for _, md := range prgrm.Packages {
 		if md.Name == mod.Name {
@@ -23,7 +22,7 @@ func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
 }
 
 func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
-	def.Program = mod.Program
+	// def.Program = mod.Program
 	def.Package = mod
 	found := false
 	for i, df := range mod.Globals {
@@ -40,7 +39,6 @@ func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
 }
 
 func (mod *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
-	fn.Program = mod.Program
 	fn.Package = mod
 
 	found := false
@@ -52,7 +50,6 @@ func (mod *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
 			mod.Functions[i].Expressions = fn.Expressions
 			mod.Functions[i].CurrentExpression = fn.CurrentExpression
 			mod.Functions[i].Package = fn.Package
-			mod.Functions[i].Program = fn.Program
 			mod.CurrentFunction = mod.Functions[i]
 			found = true
 			break
@@ -83,8 +80,6 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 	for i, s := range pkg.Structs {
 		if s.Name == strct.Name {
 			pkg.Structs[i] = strct
-			// pkg.Structs[i].Fields = strct.Fields
-			// strct = pkg.Structs[i]
 			found = true
 			break
 		}
@@ -93,8 +88,6 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 		pkg.Structs = append(pkg.Structs, strct)
 	}
 
-	prgrm := pkg.Program
-	strct.Program = prgrm
 	strct.Package = pkg
 	pkg.CurrentStruct = strct
 	
@@ -132,7 +125,7 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 }
 
 func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
-	expr.Program = fn.Program
+	// expr.Program = fn.Program
 	expr.Package = fn.Package
 	expr.Function = fn
 	fn.Expressions = append(fn.Expressions, expr)

@@ -119,13 +119,13 @@ func MakeValue(value string) *[]byte {
 	return &byts
 }
 
-func MakeCall(op *CXFunction, pkg *CXPackage, prgrm *CXProgram) CXCall {
+func MakeCall(op *CXFunction) CXCall {
 	return CXCall{
 		Operator:      op,
 		Line:          0,
 		FramePointer:  0,
-		Package:       pkg,
-		Program:       prgrm,
+		// Package:       pkg,
+		// Program:       prgrm,
 	}
 }
 

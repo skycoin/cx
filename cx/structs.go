@@ -29,9 +29,6 @@ type CXCall struct {
         Operator                        *CXFunction
         Line                            int
         FramePointer                    int
-
-        Package                         *CXPackage
-        Program                         *CXProgram
 }
 
 /*
@@ -47,7 +44,6 @@ type CXPackage struct {
 
         CurrentFunction                 *CXFunction
         CurrentStruct                   *CXStruct
-        Program                         *CXProgram
 }
 
 /*
@@ -60,7 +56,6 @@ type CXStruct struct {
         Size                            int
 
         Package                         *CXPackage
-        Program                         *CXProgram
 }
 
 /*
@@ -82,7 +77,6 @@ type CXFunction struct {
 
         CurrentExpression               *CXExpression
         Package                         *CXPackage
-        Program                         *CXProgram
 }
 
 type CXExpression struct {
@@ -90,7 +84,6 @@ type CXExpression struct {
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
         // debugging
-        Line                            int
         FileLine                        int
         FileName                        string
 
@@ -105,7 +98,6 @@ type CXExpression struct {
 
         Function                        *CXFunction
         Package                         *CXPackage
-        Program                         *CXProgram
 }
 
 type CXConstant struct {
@@ -152,5 +144,4 @@ type CXArgument struct {
         FileName                        string
         
         Package                         *CXPackage
-        Program                         *CXProgram
 }

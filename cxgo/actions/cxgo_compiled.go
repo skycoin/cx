@@ -768,7 +768,7 @@ func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpress
 				expr.IsStructLiteral = true
 
 				expr.Outputs[0].Package = pkg
-				expr.Outputs[0].Program = PRGRM
+				// expr.Outputs[0].Program = PRGRM
 
 				if expr.Outputs[0].CustomType == nil {
 					expr.Outputs[0].CustomType = strct
@@ -805,7 +805,7 @@ func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CX
 					expr.IsStructLiteral = true
 
 					expr.Outputs[0].Package = pkg
-					expr.Outputs[0].Program = PRGRM
+					// expr.Outputs[0].Program = PRGRM
 
 					expr.Outputs[0].CustomType = strct
 					expr.Outputs[0].Size = strct.Size
@@ -1290,7 +1290,7 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg := MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(TypeNames[typ])
 		arg.Package = pkg
-		arg.Program = PRGRM
+		// arg.Program = PRGRM
 		
 		var size int
 
@@ -1505,7 +1505,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
 		to[0].Outputs[0].PassBy = from[idx].Outputs[0].PassBy
 		to[0].Outputs[0].DoesEscape = from[idx].Outputs[0].DoesEscape
-		to[0].Outputs[0].Program = PRGRM
+		// to[0].Outputs[0].Program = PRGRM
 
 		if from[idx].IsMethodCall {
 			from[idx].Inputs = append(from[idx].Outputs, from[idx].Inputs...)
@@ -1514,7 +1514,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		}
 
 		from[idx].Outputs = to[len(to)-1].Outputs
-		from[idx].Program = PRGRM
+		// from[idx].Program = PRGRM
 
 		return append(to[:len(to)-1], from...)
 	} else {
@@ -1534,7 +1534,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			to[0].Outputs[0].Program = PRGRM
+			// to[0].Outputs[0].Program = PRGRM
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
@@ -1544,11 +1544,11 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy
-			to[0].Outputs[0].Program = PRGRM
+			// to[0].Outputs[0].Program = PRGRM
 		}
 
 		from[idx].Outputs = to[len(to) - 1].Outputs
-		from[idx].Program = to[len(to) - 1].Program
+		// from[idx].Program = to[len(to) - 1].Program
 		
 		return append(to[:len(to)-1], from...)
 		// return append(to, from...)
@@ -1806,7 +1806,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 
 	sym.Lengths = arg.Lengths
 	sym.Package = arg.Package
-	sym.Program = arg.Program
+	// sym.Program = arg.Program
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 

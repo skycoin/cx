@@ -80,7 +80,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
 				// *init function
-				mainCall := MakeCall(fn, mod, mod.Program)
+				mainCall := MakeCall(fn)
 				prgrm.CallStack[0] = mainCall
 				prgrm.StackPointer = fn.Size
 
@@ -109,7 +109,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 
 			if prgrm.CallStack[0].Operator == nil {
 				// main function
-				mainCall := MakeCall(fn, mod, mod.Program)
+				mainCall := MakeCall(fn)
 				// initializing program resources
 				prgrm.CallStack[0] = mainCall
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))

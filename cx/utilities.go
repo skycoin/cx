@@ -56,7 +56,7 @@ func IsArray(typ string) bool {
 }
 
 func IsStructInstance(typ string, mod *CXPackage) bool {
-	if _, err := mod.Program.GetStruct(typ, mod.Name); err == nil {
+	if _, err := PROGRAM.GetStruct(typ, mod.Name); err == nil {
 		return true
 	} else {
 		return false

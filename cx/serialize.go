@@ -1,1322 +1,786 @@
 package base
 
-// import (
-//         "fmt"
-//         "github.com/skycoin/skycoin/src/cipher/encoder"
-// )
+import (
+        "github.com/skycoin/skycoin/src/cipher/encoder"
+)
 
-// /*
-//   Program
-// */
+type sIndex struct {
+        ProgramOffset                   int32
+        CallsOffset                     int32
+        PackagesOffset                  int32
+        StructsOffset                   int32
+        FunctionsOffset                 int32
+        ExpressionsOffset               int32
+        ArgumentsOffset                 int32
+        NamesOffset                     int32
+        MemoryOffset                    int32
+}
 
-// type sIndex struct {
-//         ProgramOffset                   int32
-//         CallsOffset                     int32
-//         PackagesOffset                  int32
-//         StructsOffset                   int32
-//         FunctionsOffset                 int32
-//         ExpressionsOffset               int32
-//         ArgumentsOffset                 int32
-//         NamesOffset                     int32
-//         MemoryOffset                    int32
-// }
-
-// type sProgram struct {
-//         PackagesOffset                  int32
-//         PackagesSize                    int32
-//         CurrentPackageOffset            int32
+type sProgram struct {
+        PackagesOffset                  int32
+        PackagesSize                    int32
+        CurrentPackageOffset            int32
         
-//         InputsOffset                    int32
-//         InputsSize                      int32
+        InputsOffset                    int32
+        InputsSize                      int32
 
-//         OutputsOffset                   int32
-//         OutputsSize                     int32
+        OutputsOffset                   int32
+        OutputsSize                     int32
         
-//         CallStackOffset                 int32
-//         CallStackSize                   int32
+        CallStackOffset                 int32
+        CallStackSize                   int32
 
-//         CallCounter                     int32
+        CallCounter                     int32
 
-//         MemoryOffset                    int32
-//         MemorySize                      int32
+        MemoryOffset                    int32
+        MemorySize                      int32
 
-//         HeapPointer                     int32
-//         StackPointer                    int32
-//         HeapStartsAt                    int32
+        HeapPointer                     int32
+        StackPointer                    int32
+        HeapStartsAt                    int32
         
-//         Terminated                      int32
-// }
+        Terminated                      int32
+}
 
-// type sCall struct {
-//         OperatorOffset                  int32
-//         Line                            int32
-//         FramePointer                    int32
+type sCall struct {
+        OperatorOffset                  int32
+        Line                            int32
+        FramePointer                    int32
+}
 
-//         PackageOffset                   int32
-//         ProgramOffset                   int32
-// }
+type sPackage struct {
+        NameOffset                      int32
+        NameSize                        int32
+        ImportsOffset                   int32
+        ImportsSize                     int32
+        StructsOffset                   int32
+        StructsSize                     int32
+	GlobalsOffset                   int32
+        GlobalsSize                     int32
+	FunctionsOffset                 int32
+        FunctionsSize                   int32
+        CurrentFunctionOffset           int32
+        CurrentStructOffset             int32
+}
 
-// /*
-//   Packages
-// */
+type sStruct struct {
+        NameOffset                      int32
+        NameSize                        int32
+        FieldsOffset                    int32
+        FieldsSize                      int32
 
-// type sPackage struct {
-//         NameOffset                      int32
-//         NameSize                        int32
-//         ImportsOffset                   int32
-//         ImportsSize                     int32
-//         FunctionsOffset                 int32
-//         FunctionsSize                   int32
-//         StructsOffset                   int32
-//         StructsSize                     int32
-//         GlobalsOffset                   int32
-//         GlobalsSize                     int32
+        Size                            int32
 
-//         CurrentFunctionOffset           int32
-//         CurrentStructOffset             int32
-//         ProgramOffset                   int32
-// }
+        PackageOffset                   int32
+}
 
-// /*
-//   Structs
-// */
+type sFunction struct {
+        NameOffset                      int32
+        NameSize                        int32
+        InputsOffset                    int32
+        InputsSize                      int32
+        OutputsOffset                   int32
+        OutputsSize                     int32
+        ExpressionsOffset               int32
+        ExpressionsSize                 int32
+        Size                            int32
+        Length                          int32
 
-// type sStruct struct {
-//         NameOffset                      int32
-//         NameSize                        int32
-//         FieldsOffset                    int32
-//         FieldsSize                      int32
+        ListOfPointersOffset            int32
+        ListOfPointersSize              int32
 
-//         Size                            int32
+	// We're going to determine this when procesing the expressions. Check sExpression type
+        // IsNative                        int32
+        // OpCode                          int32
 
-//         PackageOffset                   int32
-//         ProgramOffset                   int32
-// }
+        CurrentExpressionOffset         int32
+        PackageOffset                   int32
+}
 
-// /*
-//   Functions
-// */
-
-// type sFunction struct {
-//         NameOffset                      int32
-//         NameSize                        int32
-//         InputsOffset                    int32
-//         InputsSize                      int32
-//         OutputsOffset                   int32
-//         OutputsSize                     int32
-//         ExpressionsOffset               int32
-//         ExpressionsSize                 int32
-//         Size                            int32
-//         Length                          int32
-
-//         ListOfPointersOffset            int32
-//         ListOfPointersSize              int32
-
-//         IsNative                        int32
-//         OpCode                          int32
-
-//         CurrentExpressionOffset         int32
-//         PackageOffset                   int32
-//         ProgramOffset                   int32
-// }
-
-// type sExpression struct {
-//         OperatorOffset                  int32
-//         InputsOffset                    int32
-//         InputsSize                      int32
-//         OutputsOffset                   int32
-//         OutputsSize                     int32
+type sExpression struct {
+        OperatorOffset                  int32
+	// we add these two fields here so we don't add every native sFunction to the serialization
+	// the CX runtime already knows about the natives properties. We just need the code if IsNative = true
+	IsNative                        int32
+	OpCode                          int32
+	
+        InputsOffset                    int32
+        InputsSize                      int32
+        OutputsOffset                   int32
+        OutputsSize                     int32
         
-//         Line                            int32
+        LabelOffset                     int32
+        LabelSize                       int32
+        ThenLines                       int32
+        ElseLines                       int32
+
+        IsMethodCall                    int32
+        IsStructLiteral                 int32
+        IsArrayLiteral                  int32
+
+        FunctionOffset                  int32
+        PackageOffset                   int32
+}
+
+type sArgument struct {
+        NameOffset                      int32
+        NameSize                        int32
+        Type                            int32
+        CustomTypeOffset                int32
+        Size                            int32
+        TotalSize                       int32
+
+        Offset                          int32
         
-//         LabelOffset                     int32
-//         LabelSize                       int32
-//         ThenLines                       int32
-//         ElseLines                       int32
+        IndirectionLevels               int32
+        DereferenceLevels               int32
+        DereferenceOperationsOffset     int32
+        DereferenceOperationsSize       int32
+        DeclarationSpecifiersOffset     int32
+        DeclarationSpecifiersSize       int32
 
-//         IsMethodCall                    int32
-//         IsStructLiteral                 int32
-//         IsArrayLiteral                  int32
-
-//         FunctionOffset                  int32
-//         PackageOffset                   int32
-//         ProgramOffset                   int32
-// }
-
-// type sArgument struct {
-//         NameOffset                      int32
-//         NameSize                        int32
-//         Type                            int32
-//         CustomTypeOffset                int32
-//         Size                            int32
-//         TotalSize                       int32
-
-//         Offset                          int32
+        IsSlice                         int32
+        IsArray                         int32
+        IsArrayFirst                    int32
+        IsPointer                       int32
+        IsReference                     int32
         
-//         IndirectionLevels               int32
-//         DereferenceLevels               int32
-//         DereferenceOperationsOffset     int32
-//         DereferenceOperationsSize       int32
-//         DereferenceSpecifiersOffset     int32
-//         DereferenceSpecifiersSize       int32
-
-//         IsSlice                         int32
-//         IsArray                         int32
-//         IsArrayFirst                    int32
-//         IsPointer                       int32
-//         IsReference                     int32
-        
-//         IsDeferenceFirst                int32
-//         IsStruct                        int32
-//         IsRest                          int32
-//         IsLocalDeclaration              int32
-//         IsShortDeclaration              int32
-
-//         PassBy                          int32
-//         DoesEscape                      int32
-
-//         LengthsOffset                   int32
-//         LengthsSize                     int32
-//         IndexesOffset                   int32
-//         IndexesSize                     int32
-//         FieldsOffset                    int32
-//         FieldsSize                      int32
-
-//         PackageOffset                   int32
-//         ProgramOffset                   int32
-// }
-
-// func serializeName (name string, sNamesMap *map[string]int, sNames *[]byte, sNamesCounter *int) (offset, size int32) {
-//         if off, ok := (*sNamesMap)[name]; ok {
-//                 offset = int32(off)
-//                 size = int32(encoder.Size(name))
-//         } else {
-//                 offset = int32(*sNamesCounter)
-//                 size = int32(encoder.Size(name))
-//                 *sNames = append(*sNames, encoder.Serialize(name)...)
-//                 (*sNamesMap)[name] = *sNamesCounter
-//                 *sNamesCounter = *sNamesCounter + int(size)
-//         }
-//         return offset, size
-// }
-
-// func serializeValue (value, sValues *[]byte, sValuesCounter *int) (offset, size int32) {
-//         *sValues = append(*sValues, encoder.Serialize(*value)...)
-//         offset = int32(*sValuesCounter)
-//         size = int32(encoder.Size(*value))
-//         *sValuesCounter = *sValuesCounter + int(size)
-
-//         return offset, size
-// }
-
-// func serializeImports (imps []*CXPackage, sPacksMap *map[string]int, sImps *[]byte, sImpsCounter *int) (offset, size int32) {
-//         if imps != nil && len(imps) > 0 {
-//                 offset = int32(*sImpsCounter)
-//                 size = int32(len(imps))
-
-//                 for _, imp := range imps {
-//                         // we only need the index of the imported module
-//                         *sImps = append(*sImps, encoder.SerializeAtomic(int32((*sPacksMap)[imp.Name]))...)
-//                         *sImpsCounter++
-//                 }
-//         }
-//         return offset, size
-// }
-
-// func Serialize (prgrm *CXProgram) []byte {
-//         // result of serializing the full program
-//         serialized := make([]byte, 0)
-
-//         sCalls := make([]byte, 0)
-//         sCallsCounter := 0
-
-//         sPacks := make([]byte, 0)
-//         sPacksCounter := 0
-//         sPacksMap := make(map[string]int, 0)
-
-//         sStrcts := make([]byte, 0)
-//         sStrctsCounter := 0
-// 	sStrctsMap := make(map[string]int, 0)
-        
-//         sFns := make([]byte, 0)
-//         sFnsCounter := 0
-//         sFnsMap := make([]string, 0)
-
-//         sExprs := make([]byte, 0)
-//         sExprsCounter := 0
-
-//         sArgs := make([]byte, 0)
-//         sArgsCounter := 0
-
-//         sNames := make([]byte, 0)
-//         sNamesCounter := 0
-//         sNamesMap := make(map[string]int, 0)
-
-//         // Program Serialize
-//         sPrgrm := &sProgram{}
-//         sPrgrm.PackagesOffset = int32(sPacksCounter)
-//         sPrgrm.PackagesSize = int32(len(prgrm.Packages))
-
-//         prgrmPackages := make([]*CXPackage, 0)
-//         packFunctions := make([][]*CXFunction, len(prgrm.Packages))
-//         packCounter := 0
-
-//         // Program Packages
-//         for _, pack := range prgrm.Packages {
-//                 sPacksMap[pack.Name] = sPacksCounter
-//                 prgrmPackages = append(prgrmPackages, pack)
-//                 sPacksCounter++
-
-//                 //Functions
-//                 for _, fn := range pack.Functions {
-//                         fnName := fmt.Sprintf("%s.%s", pack.Name, fn.Name)
-//                         sFnsMap = append(sFnsMap, fnName)
-//                         packFunctions[packCounter] = append(packFunctions[packCounter], fn)
-//                 }
-//                 packCounter++
-//         }
-
-//         sPacksCounter = 0
-
-//         // Packages Serialize
-//         for i, pack := range prgrmPackages {
-//                 sPack := sPackage{}
-
-//                 // Pack's Name
-//                 sPack.NameOffset, sPack.NameSize = serializeName(pack.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                 // Serialize Pack's Imports
-//                 sPack.ImportsOffset, sPack.ImportsSize = serializeImports(pack.Imports, &sPacksMap, &sImps, &sImpsCounter)
-
-//                 // Serialize Pack's Functions
-//                 if packFunctions[i] != nil && len(packFunctions[i]) > 0 {
-//                         sPack.FunctionsOffset = int32(sFnsCounter)
-//                         sPack.FunctionsSize = int32(len(pack.Functions))
-
-//                         for _, fn := range packFunctions[i] {
-//                                 sFn := sFunction{}
-
-//                                 // Function's Name
-//                                 sFn.NameOffset, sFn.NameSize = serializeName(fn.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 // Serialize Function's Inputs
-//                                 if fn.Inputs != nil && len(fn.Inputs) > 0 {
-//                                         sFn.InputsOffset = int32(sArgsCounter)
-//                                         sFn.InputsSize = int32(len(fn.Inputs))
-
-//                                         for _, arg := range fn.Inputs {
-//                                                 sInput := sArgument{}
-
-//                                                 // Input's Name
-//                                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Input Type
-//                                                 sInput.Type = int32(arg.Type)
-
-//                                                 // Others Options
-//                                                 sInput.Size = int32(arg.Size)
-//                                                 sInput.TotalSize = int32(arg.TotalSize)
-//                                                 sInput.Offset = int32(arg.Offset)
-
-//                                                 if arg.IsArray {
-//                                                         sInput.IsArray = int32(1)
-//                                                 } else {
-//                                                         sInput.IsArray = int32(0)
-//                                                 }
-
-//                                                 if arg.IsArrayFirst {
-//                                                         sInput.IsArrayFirst = int32(1)
-//                                                 } else {
-//                                                         sInput.IsArrayFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsPointer {
-//                                                         sInput.IsPointer = int32(1)
-//                                                 } else {
-//                                                         sInput.IsPointer = int32(0)
-//                                                 }
-
-//                                                 if arg.IsReference {
-//                                                         sInput.IsReference = int32(1)
-//                                                 } else {
-//                                                         sInput.IsReference = int32(0)
-//                                                 }
-
-//                                                 if arg.IsDereferenceFirst {
-//                                                         sInput.IsDereferenceFirst = int32(1)
-//                                                 } else {
-//                                                         sInput.IsDereferenceFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsStruct {
-//                                                         sInput.IsStruct = int32(1)
-                                                        
-
-//                                                 } else {
-//                                                         sInput.IsStruct = int32(0)
-//                                                 }
-
-//                                                 if arg.IsField {
-//                                                         sInput.IsField = int32(1)
-//                                                 } else {
-//                                                         sInput.IsField = int32(0)
-//                                                 }
-
-//                                                 if arg.IsRest {
-//                                                         sInput.IsRest = int32(1)
-//                                                 } else {
-//                                                         sInput.IsRest = int32(0)
-//                                                 }
-
-//                                                 if arg.IsLocalDeclaration {
-//                                                         sInput.IsLocalDeclaration = int32(1)
-//                                                 } else {
-//                                                         sInput.IsLocalDeclaration = int32(0)
-//                                                 }
-
-//                                                 // Package Offset
-//                                                 sInput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                                 // Saving Inputs
-//                                                 sArgs = append(sArgs, encoder.Serialize(sInput)...)
-//                                                 sArgsCounter++
-//                                         }
-//                                 } else {
-//                                         sFn.InputsOffset = -1
-//                                         sFn.InputsSize = -1
-//                                 }
-
-//                                 // Serialize Function's Outputs
-//                                 if fn.Outputs != nil && len(fn.Outputs) > 0 { 
-//                                         sFn.OutputsOffset = int32(sArgsCounter)
-//                                         sFn.OutputsSize = int32(len(fn.Outputs))
-
-//                                         for _, arg := range fn.Outputs {
-//                                                 sOutput := sArgument{}
-
-//                                                 // Output's Name
-//                                                 sOutput.NameOffset, sOutput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Output Type
-//                                                 sOutput.TypOffset, sOutput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                                 sOutput.TypeOffset = int32(arg.Type)
-                                                
-//                                                 // Output values
-//                                                 sOutput.ValuesOffset, sOutput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                                 // Others Options
-//                                                 sOutput.Size = int32(arg.Size)
-//                                                 sOutput.TotalSize = int32(arg.Size)
-//                                                 sOutput.PointeeSize = int32(arg.PointeeSize)
-//                                                 sOutput.MemoryRead = int32(arg.MemoryRead)
-//                                                 sOutput.MemoryWrite = int32(arg.MemoryWrite)
-//                                                 sOutput.Offset = int32(arg.Offset)
-//                                                 sOutput.HeapOffset = int32(arg.HeapOffset)
-
-//                                                 if arg.IsArray {
-//                                                         sOutput.IsArray = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsArray = int32(0)
-//                                                 }
-
-//                                                 if arg.IsArrayFirst {
-//                                                         sOutput.IsArrayFirst = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsArrayFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsPointer {
-//                                                         sOutput.IsPointer = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsPointer = int32(0)
-//                                                 }
-
-//                                                 if arg.IsReference {
-//                                                         sOutput.IsReference = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsReference = int32(0)
-//                                                 }
-
-//                                                 if arg.IsDereferenceFirst {
-//                                                         sOutput.IsDereferenceFirst = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsDereferenceFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsStruct {
-//                                                         sOutput.IsStruct = int32(1)
-//                                                         //CustomType
-
-//                                                 } else {
-//                                                         sOutput.IsStruct = int32(0)
-//                                                 }
-
-//                                                 if arg.IsField {
-//                                                         sOutput.IsField = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsField = int32(0)
-//                                                 }
-
-//                                                 if arg.IsRest {
-//                                                         sOutput.IsRest = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsRest = int32(0)
-//                                                 }
-
-//                                                 if arg.IsLocalDeclaration {
-//                                                         sOutput.IsLocalDeclaration = int32(1)
-//                                                 } else {
-//                                                         sOutput.IsLocalDeclaration = int32(0)
-//                                                 }
-
-//                                                 // Synonymous To...
-//                                                 sOutput.SynonymousToOffset, sOutput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Package Offset
-//                                                 sOutput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                                 // Saving Inputs
-//                                                 sArgs = append(sArgs, encoder.Serialize(sOutput)...)
-//                                                 sArgsCounter++
-//                                         }
-//                                 } else {
-//                                         sFn.OutputsOffset = -1
-//                                         sFn.OutputsSize = -1
-//                                 }
-
-//                                 // Serialize Function's Expressions
-//                                 if fn.Expressions != nil && len(fn.Expressions) > 0 {
-//                                         sFn.ExpressionsOffset = int32(sExprsCounter)
-//                                         sFn.ExpressionsSize = int32(len(fn.Expressions))
-
-//                                         for _, expr := range fn.Expressions {
-//                                                 sExpr := sExpression{}
-
-//                                                 opName := fmt.Sprintf("%s.%s", expr.Operator.Package.Name, expr.Operator.Name)
-//                                                 opOffset := -1
-//                                                 for i, fn := range sFnsMap {
-//                                                         if opName == fn {
-//                                                                 opOffset = i
-//                                                                 break
-//                                                         }
-//                                                 }
-
-//                                                 //OperatorOffset
-//                                                 if opOffset >= 0 {
-//                                                         sExpr.OperatorOffset = int32(opOffset)
-//                                                 } else {
-//                                                         panic(fmt.Sprintf("Expression's operator (%s) not found in sFnsMap", opName))
-//                                                 }
-
-//                                                 // Expression's Inputs
-//                                                 if expr.Inputs != nil && len(expr.Inputs) > 0 { 
-//                                                         sExpr.InputsOffset = int32(sArgsCounter)
-//                                                         sExpr.InputsSize = int32(len(expr.Inputs))
-                                                        
-//                                                         for _, arg := range expr.Inputs {
-//                                                                 sInput := sArgument{}
-
-//                                                                 // Input's Name
-//                                                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                                 // Input Type
-//                                                                 sInput.TypOffset, sInput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                                                 sInput.TypeOffset = int32(arg.Type)
-
-//                                                                 // Input values
-//                                                                 sInput.ValuesOffset, sInput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                                                 // Others Options
-//                                                                 sInput.Size = int32(arg.Size)
-//                                                                 sInput.TotalSize = int32(arg.Size)
-//                                                                 sInput.PointeeSize = int32(arg.PointeeSize)
-//                                                                 sInput.MemoryRead = int32(arg.MemoryRead)
-//                                                                 sInput.MemoryWrite = int32(arg.MemoryWrite)
-//                                                                 sInput.Offset = int32(arg.Offset)
-//                                                                 sInput.HeapOffset = int32(arg.HeapOffset)
-
-//                                                                 if arg.IsArray {
-//                                                                         sInput.IsArray = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsArray = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsArrayFirst {
-//                                                                         sInput.IsArrayFirst = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsArrayFirst = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsPointer {
-//                                                                         sInput.IsPointer = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsPointer = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsReference {
-//                                                                         sInput.IsReference = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsReference = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsDereferenceFirst {
-//                                                                         sInput.IsDereferenceFirst = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsDereferenceFirst = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsStruct {
-//                                                                         sInput.IsStruct = int32(1)
-//                                                                         //CustomType
-
-//                                                                 } else {
-//                                                                         sInput.IsStruct = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsField {
-//                                                                         sInput.IsField = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsField = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsRest {
-//                                                                         sInput.IsRest = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsRest = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsLocalDeclaration {
-//                                                                         sInput.IsLocalDeclaration = int32(1)
-//                                                                 } else {
-//                                                                         sInput.IsLocalDeclaration = int32(0)
-//                                                                 }
-
-//                                                                 // Synonymous To...
-//                                                                 sInput.SynonymousToOffset, sInput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                                 // Package Offset
-//                                                                 sInput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                                                 // Saving Inputs
-//                                                                 sArgs = append(sArgs, encoder.Serialize(sInput)...)
-//                                                                 sArgsCounter++
-//                                                         }
-//                                                 } else {
-//                                                         sExpr.InputsOffset = -1
-//                                                         sExpr.InputsSize = -1
-//                                                 }
-
-//                                                 // Expression's Outputs
-//                                                 if expr.Outputs != nil && len(expr.Outputs) > 0 { 
-//                                                         sExpr.OutputsOffset = int32(sArgsCounter)
-//                                                         sExpr.OutputsSize = int32(len(expr.Outputs))
-                                                        
-//                                                         for _, arg := range expr.Outputs {
-//                                                                 sOutput := sArgument{}
-
-//                                                                 // Output's Name
-//                                                                 sOutput.NameOffset, sOutput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                                 // Output Type
-//                                                                 sOutput.TypOffset, sOutput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                                                 sOutput.TypeOffset = int32(arg.Type)
-                                                                
-//                                                                 // Output values
-//                                                                 sOutput.ValuesOffset, sOutput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                                                 // Others Options
-//                                                                 sOutput.Size = int32(arg.Size)
-//                                                                 sOutput.TotalSize = int32(arg.Size)
-//                                                                 sOutput.PointeeSize = int32(arg.PointeeSize)
-//                                                                 sOutput.MemoryRead = int32(arg.MemoryRead)
-//                                                                 sOutput.MemoryWrite = int32(arg.MemoryWrite)
-//                                                                 sOutput.Offset = int32(arg.Offset)
-//                                                                 sOutput.HeapOffset = int32(arg.HeapOffset)
-
-//                                                                 if arg.IsArray {
-//                                                                         sOutput.IsArray = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsArray = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsArrayFirst {
-//                                                                         sOutput.IsArrayFirst = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsArrayFirst = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsPointer {
-//                                                                         sOutput.IsPointer = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsPointer = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsReference {
-//                                                                         sOutput.IsReference = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsReference = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsDereferenceFirst {
-//                                                                         sOutput.IsDereferenceFirst = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsDereferenceFirst = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsStruct {
-//                                                                         sOutput.IsStruct = int32(1)
-//                                                                         //CustomType
-
-//                                                                 } else {
-//                                                                         sOutput.IsStruct = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsField {
-//                                                                         sOutput.IsField = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsField = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsRest {
-//                                                                         sOutput.IsRest = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsRest = int32(0)
-//                                                                 }
-
-//                                                                 if arg.IsLocalDeclaration {
-//                                                                         sOutput.IsLocalDeclaration = int32(1)
-//                                                                 } else {
-//                                                                         sOutput.IsLocalDeclaration = int32(0)
-//                                                                 }
-
-//                                                                 // Synonymous To...
-//                                                                 sOutput.SynonymousToOffset, sOutput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                                 // Package Offset
-//                                                                 sOutput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                                                 // Saving Inputs
-//                                                                 sArgs = append(sArgs, encoder.Serialize(sOutput)...)
-//                                                                 sArgsCounter++
-//                                                         }
-//                                                 } else {
-//                                                         sExpr.OutputsOffset = -1
-//                                                         sExpr.OutputsSize = -1
-//                                                 }
-
-//                                                 // Expression's FileLine and FileName
-//                                                 sExpr.Line = int32(expr.Line)
-//                                                 sExpr.FileLine = int32(expr.FileLine)
-
-//                                                 sExpr.FileNameOffset, sExpr.FileNameSize = serializeName(expr.FileName, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Label Then Else
-
-//                                                 sExpr.LabelOffset, sExpr.LabelSize = serializeName(expr.Label, &sNamesMap, &sNames, &sNamesCounter)
-//                                                 sExpr.ThenLines = int32(expr.ThenLines)
-//                                                 sExpr.ElseLines = int32(expr.ElseLines)
-
-
-//                                                 // IsStrucLiteral and IsArrayLiteral flags
-//                                                 if expr.IsStructLiteral {
-//                                                         sExpr.IsStructLiteral = int32(1)
-//                                                 } else {
-//                                                         sExpr.IsStructLiteral = int32(0)
-//                                                 }
-
-//                                                 if expr.IsArrayLiteral {
-//                                                         sExpr.IsArrayLiteral = int32(1)
-//                                                 } else {
-//                                                         sExpr.IsArrayLiteral = int32(0)
-//                                                 }
-
-//                                                 // Expression's Function
-//                                                 fnOffset := 0
-//                                                 for i, fnName := range sFnsMap {
-//                                                         if fnName == fmt.Sprintf("%s.%s", pack.Name, fn.Name) {
-//                                                                 fnOffset = i
-//                                                                 break
-//                                                         }
-//                                                 }
-
-//                                                 if fnOffset >= 0 {
-//                                                         sExpr.FunctionOffset = int32(fnOffset)
-//                                                 } else {
-//                                                         panic(fmt.Sprintf("Function '%s' not found in sFnsMap", fn.Name))
-//                                                 }
-
-//                                                 // Expression's Package
-//                                                 sExpr.PackageOffset = int32(sPacksMap[expr.Package.Name])
-
-//                                                 // Saving Expression
-//                                                 sExprs = append(sExprs, encoder.Serialize(sExpr)...)
-
-//                                                 if fn.CurrentExpression == expr {
-//                                                         sFn.CurrentExpressionOffset = int32(sExprsCounter)
-//                                                 }
-//                                                 sExprsCounter++
-//                                         }
-//                                 }
-
-//                                 // List of Pointers
-//                                 if fn.ListOfPointers != nil && len(fn.ListOfPointers) > 0 { 
-//                                         sFn.ListOfPointersOffset = int32(sArgsCounter)
-//                                         sFn.ListOfPointersSize = int32(len(fn.Outputs))
-
-//                                         for _, arg := range fn.ListOfPointers {
-//                                                 sInput := sArgument{}
-
-//                                                 // Input's Name
-//                                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Input Type
-//                                                 sInput.TypOffset, sInput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                                 sInput.TypeOffset = int32(arg.Type)
-
-//                                                 // Input values
-//                                                 sInput.ValuesOffset, sInput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                                 // Others Options
-//                                                 sInput.Size = int32(arg.Size)
-//                                                 sInput.TotalSize = int32(arg.Size)
-//                                                 sInput.PointeeSize = int32(arg.PointeeSize)
-//                                                 sInput.MemoryRead = int32(arg.MemoryRead)
-//                                                 sInput.MemoryWrite = int32(arg.MemoryWrite)
-//                                                 sInput.Offset = int32(arg.Offset)
-//                                                 sInput.HeapOffset = int32(arg.HeapOffset)
-
-//                                                 if arg.IsArray {
-//                                                         sInput.IsArray = int32(1)
-//                                                 } else {
-//                                                         sInput.IsArray = int32(0)
-//                                                 }
-
-//                                                 if arg.IsArrayFirst {
-//                                                         sInput.IsArrayFirst = int32(1)
-//                                                 } else {
-//                                                         sInput.IsArrayFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsPointer {
-//                                                         sInput.IsPointer = int32(1)
-//                                                 } else {
-//                                                         sInput.IsPointer = int32(0)
-//                                                 }
-
-//                                                 if arg.IsReference {
-//                                                         sInput.IsReference = int32(1)
-//                                                 } else {
-//                                                         sInput.IsReference = int32(0)
-//                                                 }
-
-//                                                 if arg.IsDereferenceFirst {
-//                                                         sInput.IsDereferenceFirst = int32(1)
-//                                                 } else {
-//                                                         sInput.IsDereferenceFirst = int32(0)
-//                                                 }
-
-//                                                 if arg.IsStruct {
-//                                                         sInput.IsStruct = int32(1)
-//                                                         //CustomType
-
-//                                                 } else {
-//                                                         sInput.IsStruct = int32(0)
-//                                                 }
-
-//                                                 if arg.IsField {
-//                                                         sInput.IsField = int32(1)
-//                                                 } else {
-//                                                         sInput.IsField = int32(0)
-//                                                 }
-
-//                                                 if arg.IsRest {
-//                                                         sInput.IsRest = int32(1)
-//                                                 } else {
-//                                                         sInput.IsRest = int32(0)
-//                                                 }
-
-//                                                 if arg.IsLocalDeclaration {
-//                                                         sInput.IsLocalDeclaration = int32(1)
-//                                                 } else {
-//                                                         sInput.IsLocalDeclaration = int32(0)
-//                                                 }
-
-//                                                 // Synonymous To...
-//                                                 sInput.SynonymousToOffset, sInput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 // Package Offset
-//                                                 sInput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                                 // Saving Inputs
-//                                                 sArgs = append(sArgs, encoder.Serialize(sInput)...)
-//                                                 sArgsCounter++
-//                                         }
-//                                 } else {
-//                                         sFn.ListOfPointersOffset = -1
-//                                         sFn.ListOfPointersSize = -1
-//                                 }
-
-//                                 sFn.Size = int32(fn.Size)
-//                                 sFn.Length = int32(fn.Length)
-
-//                                 if fn.IsNative {
-//                                         sFn.IsNative = int32(1)
-//                                 } else {
-//                                         sFn.IsNative = int32(0)
-//                                 }
-
-//                                 sFn.OpCode = int32(fn.OpCode)
-
-//                                 sFn.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                 if pack.CurrentFunction == fn {
-//                                         sPack.CurrentFunctionOffset = int32(sFnsCounter)
-//                                 }
-
-//                                 sFns = append(sFns, encoder.Serialize(sFn)...)
-//                                 sFnsCounter++
-//                         }
-//                 }
-
-//                 // Serialize Pack's Strucs
-//                 if pack.Structs != nil && len(pack.Structs) > 0 {
-//                         sPack.StructsOffset = int32(sStrctsCounter)
-//                         sPack.StructsSize = int32(len(pack.Structs))
-
-//                         for _, strct := range pack.Structs {
-//                                 sStrct := sStruct{}
-                                
-//                                 sStrct.NameOffset, sStrct.NameSize = serializeName(strct.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 if strct.Fields != nil && len(strct.Fields) > 0 {
-//                                         sStrct.FieldsOffset = int32(sFldsCounter)
-//                                         sStrct.FieldsSize = int32(len(strct.Fields))
-
-//                                         for _, fld := range strct.Fields {
-//                                                 sFld := sArgument{}
-
-//                                                 sFld.NameOffset, sFld.NameSize = serializeName(fld.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 sFld.TypOffset, sFld.TypSize = serializeName(fld.Typ, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                                 sFld.TypeOffset = int32(fld.Type)
-
-//                                                 sFlds = append(sFlds, encoder.Serialize(sFld)...)
-//                                                 sFldsCounter++
-//                                         }
-//                                 }
-
-//                                 sStrct.Size = int32(strct.Size)
-
-//                                 sStrct.PackageOffset = int32(sPacksMap[strct.Package.Name])
-
-//                                 if pack.CurrentStruct == strct {
-//                                         sPack.CurrentStructOffset = int32(sStrctsCounter)
-//                                 }
-//                                 sStrcts = append(sStrcts, encoder.Serialize(sStrct)...)
-//                                 sStrctsCounter++
-//                         }
-//                 } else {
-//                         sPack.CurrentStructOffset = int32(-1)
-//                 }
-
-//                 // Serialize Pack's Globals
-//                 if pack.Globals != nil && len(pack.Globals) > 0 {
-//                         sPack.GlobalsOffset = int32(sGlobalsCounter)
-//                         sPack.GlobalsSize = int32(len(pack.Globals))
-//                         for _, arg := range pack.Globals {
-//                                 sInput := sArgument{}
-
-//                                 // Input's Name
-//                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 // Input Type
-//                                 sInput.TypOffset, sInput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                 sInput.TypeOffset = int32(arg.Type)
-
-//                                 // Input values
-//                                 sInput.ValuesOffset, sInput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                 // Others Options
-//                                 sInput.Size = int32(arg.Size)
-//                                 sInput.TotalSize = int32(arg.Size)
-//                                 sInput.PointeeSize = int32(arg.PointeeSize)
-//                                 sInput.MemoryRead = int32(arg.MemoryRead)
-//                                 sInput.MemoryWrite = int32(arg.MemoryWrite)
-//                                 sInput.Offset = int32(arg.Offset)
-//                                 sInput.HeapOffset = int32(arg.HeapOffset)
-
-//                                 if arg.IsArray {
-//                                         sInput.IsArray = int32(1)
-//                                 } else {
-//                                         sInput.IsArray = int32(0)
-//                                 }
-
-//                                 if arg.IsArrayFirst {
-//                                         sInput.IsArrayFirst = int32(1)
-//                                 } else {
-//                                         sInput.IsArrayFirst = int32(0)
-//                                 }
-
-//                                 if arg.IsPointer {
-//                                         sInput.IsPointer = int32(1)
-//                                 } else {
-//                                         sInput.IsPointer = int32(0)
-//                                 }
-
-//                                 if arg.IsReference {
-//                                         sInput.IsReference = int32(1)
-//                                 } else {
-//                                         sInput.IsReference = int32(0)
-//                                 }
-
-//                                 if arg.IsDereferenceFirst {
-//                                         sInput.IsDereferenceFirst = int32(1)
-//                                 } else {
-//                                         sInput.IsDereferenceFirst = int32(0)
-//                                 }
-
-//                                 if arg.IsStruct {
-//                                         sInput.IsStruct = int32(1)
-//                                         //CustomType
-
-//                                 } else {
-//                                         sInput.IsStruct = int32(0)
-//                                 }
-
-//                                 if arg.IsField {
-//                                         sInput.IsField = int32(1)
-//                                 } else {
-//                                         sInput.IsField = int32(0)
-//                                 }
-
-//                                 if arg.IsRest {
-//                                         sInput.IsRest = int32(1)
-//                                 } else {
-//                                         sInput.IsRest = int32(0)
-//                                 }
-
-//                                 if arg.IsLocalDeclaration {
-//                                         sInput.IsLocalDeclaration = int32(1)
-//                                 } else {
-//                                         sInput.IsLocalDeclaration = int32(0)
-//                                 }
-
-//                                 // Synonymous To...
-//                                 sInput.SynonymousToOffset, sInput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 // Package Offset
-//                                 sInput.PackageOffset = int32(sPacksMap[fn.Package.Name])
-
-//                                 // Saving Inputs
-//                                 sArgs = append(sArgs, encoder.Serialize(sInput)...)
-//                                 sArgsCounter++
-//                         }
-//                 }
-
-//                 if prgrm.CurrentPackage == pack {
-//                         sPrgrm.CurrentPackageOffset = int32(sPacksCounter)
-//                 }
-                
-//                 sPacks = append(sPacks, encoder.Serialize(sPack)...)
-//                 sPacksCounter++
-//         }
-
-//         if prgrm.Terminated {
-//                 sPrgrm.Terminated = int32(1)
-//         } else {
-//                 sPrgrm.Terminated = int32(0)
-//         }
-
-//         // Program's CallStack
-//         sPrgrm.CallStackOffset = int32(sCallsCounter)
-//         sPrgrm.CallStackSize = int32(len(prgrm.CallStack))
-//         lastCallOffset := int32(-1)
-
-//         for _, call := range prgrm.CallStack{
-//                 sCll := sCall{}
-                
-//                 opName := fmt.Sprintf("%s.%s", call.Operator.Package.Name, call.Operator.Name)
-//                 opOffset := -1
-//                 for i, fn := range sFnsMap {
-//                         if opName == fn {
-//                                 opOffset = i
-//                                 break
-//                         }
-//                 }
-
-//                 if opOffset >= 0 {
-//                         sCll.OperatorOffset = int32(opOffset)
-//                 } else {
-//                         panic(fmt.Sprintf("Expression's operator (%s) not found in sFnsMap", opName))
-//                 }
-
-//                 sCll.Line = int32(call.Line)
-//                 sCll.FramePointer = int32(call.FramePointer)
-
-//                 if call.State != nil && len(call.State) > 0 {
-//                         sCll.StateOffset = int32(sArgsCounter)
-//                         sCll.StateSize = int32(len(call.State))
-
-//                         for _, arg := range call.State {
-//                                 sInput := sArgument{}
-
-//                                 // Input's Name
-//                                 sInput.NameOffset, sInput.NameSize = serializeName(arg.Name, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 // Input Type
-//                                 sInput.TypOffset, sInput.TypSize = serializeName(arg.Typ, &sNamesMap, &sNames, &sNamesCounter)
-//                                 sInput.TypeOffset = int32(arg.Type)
-
-//                                 // Input values
-//                                 sInput.ValuesOffset, sInput.ValueSize = serializeValue(arg.Value, &sValues, &sValuesCounter)
-
-//                                 // Others Options
-//                                 sInput.Size = int32(arg.Size)
-//                                 sInput.TotalSize = int32(arg.Size)
-//                                 sInput.PointeeSize = int32(arg.PointeeSize)
-//                                 sInput.MemoryRead = int32(arg.MemoryRead)
-//                                 sInput.MemoryWrite = int32(arg.MemoryWrite)
-//                                 sInput.Offset = int32(arg.Offset)
-//                                 sInput.HeapOffset = int32(arg.HeapOffset)
-
-//                                 if arg.IsArray {
-//                                         sInput.IsArray = int32(1)
-//                                 } else {
-//                                         sInput.IsArray = int32(0)
-//                                 }
-
-//                                 if arg.IsArrayFirst {
-//                                         sInput.IsArrayFirst = int32(1)
-//                                 } else {
-//                                         sInput.IsArrayFirst = int32(0)
-//                                 }
-
-//                                 if arg.IsPointer {
-//                                         sInput.IsPointer = int32(1)
-//                                 } else {
-//                                         sInput.IsPointer = int32(0)
-//                                 }
-
-//                                 if arg.IsReference {
-//                                         sInput.IsReference = int32(1)
-//                                 } else {
-//                                         sInput.IsReference = int32(0)
-//                                 }
-
-//                                 if arg.IsDereferenceFirst {
-//                                         sInput.IsDereferenceFirst = int32(1)
-//                                 } else {
-//                                         sInput.IsDereferenceFirst = int32(0)
-//                                 }
-
-//                                 if arg.IsStruct {
-//                                         sInput.IsStruct = int32(1)
-//                                         //CustomType
-
-//                                 } else {
-//                                         sInput.IsStruct = int32(0)
-//                                 }
-
-//                                 if arg.IsField {
-//                                         sInput.IsField = int32(1)
-//                                 } else {
-//                                         sInput.IsField = int32(0)
-//                                 }
-
-//                                 if arg.IsRest {
-//                                         sInput.IsRest = int32(1)
-//                                 } else {
-//                                         sInput.IsRest = int32(0)
-//                                 }
-
-//                                 if arg.IsLocalDeclaration {
-//                                         sInput.IsLocalDeclaration = int32(1)
-//                                 } else {
-//                                         sInput.IsLocalDeclaration = int32(0)
-//                                 }
-
-//                                 // Synonymous To...
-//                                 sInput.SynonymousToOffset, sInput.SynonymousToSize = serializeName(arg.SynonymousTo, &sNamesMap, &sNames, &sNamesCounter)
-
-//                                 // Package Offset
-//                                 sInput.PackageOffset = int32(sPacksMap[arg.Package.Name])
-
-//                                 // Saving Inputs
-//                                 sArgs = append(sArgs, encoder.Serialize(sInput)...)
-//                                 sArgsCounter++
-//                         }
-//                 }
-
-//                 if lastCallOffset >= 0 {
-//                         sCll.ReturnAddressOffset = lastCallOffset
-//                 } else {
-//                         sCll.ReturnAddressOffset = int32(-1) // nil
-//                 }
-
-//                 sCll.PackageOffset = int32(sPacksMap[call.Package.Name])
-
-//                 sCalls = append(sCalls, encoder.Serialize(sCll)...)
-//                 lastCallOffset = int32(sCallsCounter)
-//                 sCallsCounter++
-//         }
-
-//         // Program's Stacks
-//         sPrgrm.StacksOffset = int32(sStacksCounter)
-//         sPrgrm.StacksSize = int32(len(prgrm.Stacks))
-//         lastStackOffset := int32(-1)
-
-//         for i, stack := range prgrm.Stacks {
-//                 sStck := sStack{}
-
-//                 sStck.StackOffset = int32(i)
-//                 sStck.StackSize = int32(len(stack.Stack))
-
-//                 sStck.StackPointer = int32(stack.StackPointer)
-
-//                 lastStackOffset := int32(sStacksCounter)
-//                 sStacksCounter++
-//         }
-
-//         // Program's Heap
-
-//         // sPrgrm.HeapOffset = int32(sHeapCounter)
-//         // lastHeapOffset := int32(-1)
-
-//         // sHp := sHeap{}
-//         // sHp.HeapOffset = int32(lastHeapOffset + 1)
-//         // sHp.HeapSize = int32(len(prgrm.Heap.Heap))
-//         // sHp.HeapPointer = int32(prgrm.Heap.HeapPointer)
-
-//         //Program Path
-
-//         sPrgrm.PathOffset, sPrgrm.PathSize = serializeName(prgrm.Path, &sNamesMap, &sNames, &sNamesCounter)
-
-//         //Program's Steps
-
-//         sIdx := sIndex{}
-//         sIdx.ProgramOffset = int32(encoder.Size(sIdx))
-//         sIdx.NamesOffset = sIdx.ProgramOffset + int32(encoder.Size(sPrgrm))
-//         sIdx.ValuesOffset = sIdx.NamesOffset + int32(encoder.Size(sNames))
-//         sIdx.PackagesOffset = sIdx.ValuesOffset + int32(encoder.Size(sValues))
-//         sIdx.GlobalsOffset = sIdx.PackagesOffset + int32(encoder.Size(sPacks))
-//         sIdx.ImportsOffset = sIdx.GlobalsOffset + int32(encoder.Size(sGlobals))
-//         sIdx.FunctionsOffset = sIdx.ImportsOffset + int32(encoder.Size(sImps))
-//         sIdx.StructsOffset = sIdx.FunctionsOffset + int32(encoder.Size(sFns))
-//         sIdx.FieldsOffset = sIdx.StructsOffset + int32(encoder.Size(sStrcts))
-//         sIdx.ExpressionsOffset = sIdx.FieldsOffset + int32(encoder.Size(sFlds))
-//         sIdx.ArgumentsOffset = sIdx.ExpressionsOffset + int32(encoder.Size(sExprs))
-//         sIdx.CallsOffset = sIdx.ArgumentsOffset + int32(encoder.Size(sArgs))
-
-
-//         serialized = append(serialized, encoder.Serialize(sIdx)...)
-//         serialized = append(serialized, encoder.Serialize(sPrgrm)...)
-//         serialized = append(serialized, encoder.Serialize(sNames)...)
-//         serialized = append(serialized, encoder.Serialize(sValues)...)
-//         serialized = append(serialized, encoder.Serialize(sPacks)...)
-//         serialized = append(serialized, encoder.Serialize(sGlobals)...)
-//         serialized = append(serialized, encoder.Serialize(sImps)...)
-//         serialized = append(serialized, encoder.Serialize(sFns)...)
-//         serialized = append(serialized, encoder.Serialize(sStrcts)...)
-//         serialized = append(serialized, encoder.Serialize(sFlds)...)
-//         serialized = append(serialized, encoder.Serialize(sExprs)...)
-//         serialized = append(serialized, encoder.Serialize(sArgs)...)
-//         serialized = append(serialized, encoder.Serialize(sCalls)...)
-        
-//         return serialized
-// }
-
-// func Deserialize (prgrm *[]byte) *CXProgram {
-//         cxt := CXProgram{}
-
-// 	var dsIdx sIndex
-//         sIdx := (*prgrm)[:encoder.Size(sIndex{})]
-//         encoder.DeserializeRaw(sIdx, &dsIdx)
-
-//         var dsPrgrm sProgram
-//         sPrgrm := (*prgrm)[dsIdx.ProgramOffset:dsIdx.NamesOffset]
-//         encoder.DeserializeRaw(sPrgrm, &dsPrgrm)
-
-//         var dsNames []byte
-//         sNames := (*prgrm)[dsIdx.NamesOffset:dsIdx.ValuesOffset]
-//         encoder.DeserializeRaw(sNames, &dsNames)
-
-//         var dsValues []byte
-//         sValues := (*prgrm)[dsIdx.ValuesOffset:dsIdx.PackagesOffset]
-//         encoder.DeserializeRaw(sValues, &dsValues)
-
-//         var dsPacks []byte
-//         sPacks := (*prgrm)[dsIdx.PackageOffset: dsIdx.GlobalsOffset]
-//         encoder.DeserializeRaw(sPacks, &dsPacks)
-
-//         var dsGlobals []byte
-//         sGlobals := (*prgrm)[dsIdx.GlobalsOffset: dsIdx.ImportsOffset]
-//         encoder.DeserializeRaw(sGlobals, &dsGlobals)
-
-//         var dsImports []byte
-//         sImps := (*prgrm)[dsIdx.ImportsOffset: dsIdx.FunctionsOffset]
-//         encoder.DeserializeRaw(sImps, &dsImports)
-
-//         var dsFns []byte
-//         sFns := (*prgrm)[dsIdx.FunctionsOffset: dsIdx.StructsOffset]
-//         encoder.DeserializeRaw(sFns, &dsFns)
-
-//         var dsStrct []byte
-//         sStrct := (*prgrm)[dsIdx.StructsOffset: dsIdx.FieldsOffset]
-//         encoder.DeserializeRaw(sStrct, &dsStrct)
-
-//         var dsFlds []byte
-//         sFlds := (*prgrm)[dsIdx.FieldsOffset: dsIdx.ExpressionsOffset]
-//         encoder.DeserializeRaw(sFlds, &dsFlds)
-
-//         var dsExprs []byte
-//         sExprs := (*prgrm)[dsIdx.ExpressionsOffset: dsIdx.ArgumentsOffset]
-//         encoder.DeserializeRaw(sExprs, &dsExprs)
-
-//         var dsArgs []byte
-//         sArgs := (*prgrm)[dsIdx.ArgumentsOffset: dsIdx.CallsOffset]
-//         encoder.DeserializeRaw(sArgs, &dsArgs)
-
-//         var dsClls []byte
-//         sCll := (*prgrm)[dsIdx.CallsOffset:]
-//         encoder.DeserializeRaw(sCll, &dsClls)
-
-//         packs := make([]*CXPackage, 0)
-//         fns := make([]*CXFunction, 0)
-
-//         packSize := encoder.Size(sPackage{})
-//         for i:=0; i < int(dsPrgrm.PackagesSize); i++ {
-//                 pack := CXPackage{}
-
-//                 var dsPack sPackage
-//                 sPack := dsPacks[i *packSize: (i + 1) * packSize]
-//                 encoder.DeserializeRaw(sPack, &dsPack)
-
-//                 var dsPackName []byte
-//                 sPackName := dsNames[dsPack.NameOffset: dsPack.NameOffset + dsPack.NameSize]
-//                 encoder.DeserializeRaw(sPackName, &dsPackName)
-
-//                 pack.Name = string(dsPackName)
-//                 packs = append(packs, &pack)
-
-//                 fnSize := encoder.Size(sFunction{})
-//                 fnsOffset := int(dsPack.FunctionsOffset) * fnSize
-//                 for i := 0; i < int(dsPack.FunctionsSize); i++ {
-//                         fn := CXFunction{}
-
-//                         var dsFn sFunction
-//                         sFn := dsFns[fnsOffset + ( i * fnSize): fnOffset + (i + 1) * fnSize]
-//                         encoder.DeserializeRaw(sFn, &dsFn)
-
-//                         var dsName []byte
-//                         sName := dsNames[dsFn.NameOffset : dsFn.NameOffset + dsFn.NameSize]
-//                         encoder.DeserializeRaw(sName, &dsName)
-
-//                         fn.Name = string(dsName)
-//                         fn.Module = &pack
-
-//                         fns = append(fns, &fn)
-//                 }
-//         }
-//         return &cxt
-// }
+        IsDereferenceFirst              int32
+        IsStruct                        int32
+        IsRest                          int32
+        IsLocalDeclaration              int32
+        IsShortDeclaration              int32
+
+        PassBy                          int32
+        DoesEscape                      int32
+
+        LengthsOffset                   int32
+        LengthsSize                     int32
+        IndexesOffset                   int32
+        IndexesSize                     int32
+        FieldsOffset                    int32
+        FieldsSize                      int32
+
+        PackageOffset                   int32
+}
+
+type sAll struct {
+	Index                           sIndex
+	Program                         sProgram
+	
+	Packages                        []sPackage
+	PackagesMap                     map[string]int
+	Structs                         []sStruct
+	StructsMap                      map[string]int
+	Functions                       []sFunction
+	FunctionsMap                    map[string]int
+	
+	Expressions                     []sExpression
+	Arguments                       []sArgument
+	Calls                           []sCall
+	
+	Names                           []byte
+	NamesMap                        map[string]int
+	Integers                        []int32
+	
+	Memory                          []byte
+}
+
+func serializeName (name string, s *sAll) (int32, int32) {
+	if name == "" {
+		return int32(-1), int32(-1)
+	}
+	
+	var size int
+	var err error
+	
+	size, err = encoder.Size(name)
+	
+	if err != nil {
+		panic(err)
+	}
+	
+	if off, found := s.NamesMap[name]; found {
+		return int32(off), int32(size)
+	} else {
+		off = len(s.Names)
+		s.Names = append(s.Names, encoder.Serialize(name)...)
+		s.NamesMap[name] = off
+
+		return int32(off), int32(size)
+	}
+}
+
+func indexPackage (pkg *CXPackage, s *sAll) {
+	if _, found := s.PackagesMap[pkg.Name]; !found {
+		s.PackagesMap[pkg.Name] = len(s.PackagesMap)
+	} else {
+		panic("duplicated package in serialization process")
+	}
+}
+
+func indexStruct (strct *CXStruct, s *sAll) {
+	strctName := strct.Package.Name + "." + strct.Name
+	if _, found := s.StructsMap[strctName]; !found {
+		s.StructsMap[strctName] = len(s.StructsMap)
+	} else {
+		panic("duplicated struct in serialization process")
+	}
+}
+
+func indexFunction (fn *CXFunction, s *sAll) {
+	fnName := fn.Package.Name + "." + fn.Name
+	if _, found := s.FunctionsMap[fnName]; !found {
+		s.FunctionsMap[fnName] = len(s.FunctionsMap)
+	} else {
+		panic("duplicated function in serialization process")
+	}
+}
+
+func indexExpression (expr *CXExpression, s *sAll) {
+
+}
+
+func serializeBoolean (val bool) int32 {
+	if val {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func serializeIntegers (ints []int, s *sAll) (int32, int32) {
+	if len(ints) == 0 {
+		return int32(-1), int32(-1)
+	}
+	off := len(s.Integers)
+	l := len(ints)
+	
+	ints32 := make([]int32, l)
+	for i, int := range ints {
+		ints32[i] = int32(int)
+	}
+	
+	s.Integers = append(s.Integers, ints32...)
+
+	return int32(off), int32(l)
+}
+
+func serializeArgument (arg *CXArgument, s *sAll) int {
+	s.Arguments = append(s.Arguments, sArgument{})
+	argOff := len(s.Arguments) - 1
+	sArg := &s.Arguments[argOff]
+
+	sNil := int32(-1)
+	
+	sArg.NameOffset, sArg.NameSize = serializeName(arg.Name, s)
+	
+	sArg.Type = int32(arg.Type)
+	
+	if arg.CustomType == nil {
+		sArg.CustomTypeOffset = sNil
+	} else {
+		strctName := arg.CustomType.Package.Name + "." + arg.CustomType.Name
+		if strctOff, found := s.StructsMap[strctName]; found {
+			sArg.CustomTypeOffset = int32(strctOff)
+		} else {
+			panic("struct reference not found")
+		}
+	}
+
+	sArg.Size = int32(arg.Size)
+	sArg.TotalSize = int32(arg.TotalSize)
+	sArg.Offset = int32(arg.Offset)
+	sArg.IndirectionLevels = int32(arg.IndirectionLevels)
+	sArg.DereferenceLevels = int32(arg.DereferenceLevels)
+	sArg.DereferenceLevels = int32(arg.DereferenceLevels)
+
+	sArg.DereferenceOperationsOffset,
+	sArg.DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
+
+	sArg.DeclarationSpecifiersOffset,
+	sArg.DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
+
+	sArg.IsSlice = serializeBoolean(arg.IsSlice)
+	sArg.IsArray = serializeBoolean(arg.IsArray)
+	sArg.IsArrayFirst = serializeBoolean(arg.IsArrayFirst)
+	sArg.IsPointer = serializeBoolean(arg.IsPointer)
+	sArg.IsReference = serializeBoolean(arg.IsReference)
+
+	sArg.IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
+	sArg.IsStruct = serializeBoolean(arg.IsStruct)
+	sArg.IsRest = serializeBoolean(arg.IsRest)
+	sArg.IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
+	sArg.IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
+
+	sArg.PassBy = int32(arg.PassBy)
+	sArg.DoesEscape = serializeBoolean(arg.DoesEscape)
+
+	sArg.LengthsOffset,
+	sArg.LengthsSize = serializeIntegers(arg.Lengths, s)
+
+	sArg.IndexesOffset, sArg.IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
+	sArg.FieldsOffset, sArg.FieldsSize = serializeSliceOfArguments(arg.Fields, s)
+
+	if pkgOff, found := s.PackagesMap[arg.Package.Name]; found {
+		sArg.PackageOffset = int32(pkgOff)
+	} else {
+		panic("package reference not found")
+	}
+
+	return argOff
+}
+
+func serializeSliceOfArguments (args []*CXArgument, s *sAll) (int32, int32) {
+	if len(args) == 0 {
+		return int32(-1), int32(-1)
+	} else {
+		idxs := make([]int, len(args))
+		for i, arg := range args {
+			idxs[i] = serializeArgument(arg, s)
+		}
+		return serializeIntegers(idxs, s)
+	}
+}
+
+func serializeCalls (calls []CXCall, s *sAll) (int32, int32) {
+	if len(calls) == 0 {
+		return int32(-1), int32(-1)
+	} else {
+		idxs := make([]int, len(calls))
+		for i, call := range calls {
+			idxs[i] = serializeCall(&call, s)
+		}
+		return serializeIntegers(idxs, s)
+	}
+}
+
+func serializeExpression (expr *CXExpression, s *sAll) int {
+	s.Expressions = append(s.Expressions, sExpression{})
+	exprOff := len(s.Expressions) - 1
+	sExpr := &s.Expressions[exprOff]
+
+	sNil := int32(-1)
+
+	if expr.Operator == nil {
+		// then it's a declaration
+		sExpr.OperatorOffset = sNil
+		sExpr.IsNative = serializeBoolean(false)
+		sExpr.OpCode = int32(-1)
+	} else if expr.Operator.IsNative {
+		sExpr.OperatorOffset = sNil
+		sExpr.IsNative = serializeBoolean(true)
+		sExpr.OpCode = int32(expr.Operator.OpCode)
+	} else {
+		sExpr.IsNative = serializeBoolean(false)
+		sExpr.OpCode = sNil
+		
+		opName := expr.Operator.Package.Name + "." + expr.Operator.Name
+		if opOff, found := s.FunctionsMap[opName]; found {
+			sExpr.OperatorOffset = int32(opOff)
+		}
+	}
+
+	sExpr.InputsOffset, sExpr.InputsSize = serializeSliceOfArguments(expr.Inputs, s)
+	sExpr.OutputsOffset, sExpr.OutputsSize = serializeSliceOfArguments(expr.Outputs, s)
+
+	sExpr.LabelOffset, sExpr.LabelSize = serializeName(expr.Label, s)
+	sExpr.ThenLines = int32(expr.ThenLines)
+	sExpr.ElseLines = int32(expr.ElseLines)
+
+	sExpr.IsMethodCall = serializeBoolean(expr.IsMethodCall)
+	sExpr.IsStructLiteral = serializeBoolean(expr.IsStructLiteral)
+	sExpr.IsArrayLiteral = serializeBoolean(expr.IsArrayLiteral)
+
+	fnName := expr.Function.Package.Name + "." + expr.Function.Name
+	if fnOff, found := s.FunctionsMap[fnName]; found {
+		sExpr.FunctionOffset = int32(fnOff)
+	} else {
+		panic("function reference not found")
+	}
+	
+	if pkgOff, found := s.PackagesMap[expr.Package.Name]; found {
+		sExpr.PackageOffset = int32(pkgOff)
+	} else {
+		panic("package reference not found")
+	}
+
+	return exprOff
+}
+
+func serializeCall (call *CXCall, s *sAll) int {
+	s.Calls = append(s.Calls, sCall{})
+	callOff := len(s.Calls) - 1
+	sCall := &s.Calls[callOff]
+
+	Debug("callOffset", callOff)
+	
+	opName := call.Operator.Package.Name + "." + call.Operator.Name
+	if opOff, found := s.FunctionsMap[opName]; found {
+		sCall.OperatorOffset = int32(opOff)
+		sCall.Line = int32(call.Line)
+		sCall.FramePointer = int32(call.FramePointer)
+	} else {
+		panic("function reference not found")
+	}
+
+	return callOff
+}
+
+func serializeProgram (prgrm *CXProgram, s *sAll) {
+	s.Program = sProgram{}
+	sPrgrm := &s.Program
+	sPrgrm.PackagesOffset = int32(0)
+	sPrgrm.PackagesSize = int32(len(prgrm.Packages))
+
+	if pkgOff, found := s.PackagesMap[prgrm.CurrentPackage.Name]; found {
+		sPrgrm.CurrentPackageOffset = int32(pkgOff)
+	} else {
+		panic("package reference not found")
+	}
+
+	sPrgrm.InputsOffset, sPrgrm.InputsSize = serializeSliceOfArguments(prgrm.Inputs, s)
+	sPrgrm.OutputsOffset, sPrgrm.OutputsSize = serializeSliceOfArguments(prgrm.Outputs, s)
+
+	sPrgrm.CallStackOffset, sPrgrm.CallStackSize = serializeCalls(prgrm.CallStack[:prgrm.CallCounter], s)
+
+	sPrgrm.CallCounter = int32(prgrm.CallCounter)
+
+	sPrgrm.MemoryOffset = int32(0)
+	sPrgrm.MemorySize = int32(len(prgrm.Memory))
+
+	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
+	sPrgrm.StackPointer = int32(prgrm.StackPointer)
+	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
+
+	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
+}
+
+func sStructArguments (strct *CXStruct, s *sAll) {
+	strctName := strct.Package.Name + "." + strct.Name
+	if strctOff, found := s.StructsMap[strctName]; found {
+		sStrct := &s.Structs[strctOff]
+		sStrct.FieldsOffset, sStrct.FieldsSize = serializeSliceOfArguments(strct.Fields, s)
+	} else {
+		panic("struct reference not found")
+	}
+}
+
+func sFunctionArguments (fn *CXFunction, s *sAll) {
+	fnName := fn.Package.Name + "." + fn.Name
+	if fnOff, found := s.FunctionsMap[fnName]; found {
+		sFn := &s.Functions[fnOff]
+
+		sFn.InputsOffset, sFn.InputsSize = serializeSliceOfArguments(fn.Inputs, s)
+		sFn.OutputsOffset, sFn.OutputsSize = serializeSliceOfArguments(fn.Outputs, s)
+		sFn.ListOfPointersOffset, sFn.ListOfPointersSize = serializeSliceOfArguments(fn.ListOfPointers, s)
+	} else {
+		panic("function reference not found")
+	}
+}
+
+func sPackageName (pkg *CXPackage, s *sAll) {
+	sPkg := &s.Packages[s.PackagesMap[pkg.Name]]
+	sPkg.NameOffset, sPkg.NameSize = serializeName(pkg.Name, s)
+}
+
+func sStructName (strct *CXStruct, s *sAll) {
+	strctName := strct.Package.Name + "." + strct.Name
+	sStrct := &s.Structs[s.StructsMap[strctName]]
+	sStrct.NameOffset, sStrct.NameSize = serializeName(strct.Name, s)
+}
+
+func sFunctionName (fn *CXFunction, s *sAll) {
+	fnName := fn.Package.Name + "." + fn.Name
+	if off, found := s.FunctionsMap[fnName]; found {
+		sFn := &s.Functions[off]
+		sFn.NameOffset, sFn.NameSize = serializeName(fn.Name, s)
+	} else {
+		panic("function reference not found")
+	}
+}
+
+func sPackageGlobals (pkg *CXPackage, s *sAll) {
+	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
+		sPkg := &s.Packages[pkgOff]
+		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(pkg.Globals, s)
+	} else {
+		panic("package reference not found")
+	}
+}
+
+func sPackageImports (pkg *CXPackage, s *sAll) {
+	l := len(pkg.Imports)
+	if l == 0 {
+		s.Packages[s.PackagesMap[pkg.Name]].ImportsOffset = int32(-1)
+		s.Packages[s.PackagesMap[pkg.Name]].ImportsSize = int32(-1)
+		return
+	}
+	imps := make([]int32, l)
+	for i, imp := range pkg.Imports {
+		if idx, found := s.PackagesMap[imp.Name]; found {
+			imps[i] = int32(idx)
+		} else {
+			panic("import package reference not found")
+		}
+	}
+	s.Packages[s.PackagesMap[pkg.Name]].ImportsOffset = int32(len(s.Integers))
+	s.Packages[s.PackagesMap[pkg.Name]].ImportsSize = int32(l)
+	s.Integers = append(s.Integers, imps...)
+}
+
+func sStructFields (strct *CXStruct, s *sAll) {
+	
+}
+
+func sStructPackage (strct *CXStruct, s *sAll) {
+	strctName := strct.Package.Name + "." + strct.Name
+	if pkgOff, found := s.PackagesMap[strct.Package.Name]; found {
+		if off, found := s.StructsMap[strctName]; found {
+			sStrct := &s.Structs[off]
+			sStrct.PackageOffset = int32(pkgOff)
+		} else {
+			panic("struct reference not found")
+		}
+	} else {
+		panic("struct's package reference not found")
+	}
+}
+
+func sFunctionPackage (fn *CXFunction, s *sAll) {
+	fnName := fn.Package.Name + "." + fn.Name
+	if pkgOff, found := s.PackagesMap[fn.Package.Name]; found {
+		if off, found := s.FunctionsMap[fnName]; found {
+			sFn := &s.Functions[off]
+			sFn.PackageOffset = int32(pkgOff)
+		} else {
+			panic("function reference not found")
+		}
+	} else {
+		panic("function's package reference not found")
+	}
+}
+
+func sPackageIntegers (pkg *CXPackage, s *sAll) {
+	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
+		sPkg := &s.Packages[pkgOff]
+
+		if pkg.CurrentFunction == nil {
+			// package has no functions
+			sPkg.CurrentFunctionOffset = int32(-1)
+		} else {
+			currFnName := pkg.CurrentFunction.Package.Name + "." + pkg.CurrentFunction.Name
+
+			if fnOff, found := s.FunctionsMap[currFnName]; found {
+				sPkg.CurrentFunctionOffset = int32(fnOff)
+			} else {
+				panic("function reference not found")
+			}
+		}
+		
+		if pkg.CurrentStruct == nil {
+			// package has no structs
+			sPkg.CurrentStructOffset = int32(-1)
+		} else {
+			currStrctName := pkg.CurrentStruct.Package.Name + "." + pkg.CurrentStruct.Name
+
+			if strctOff, found := s.StructsMap[currStrctName]; found {
+				sPkg.CurrentStructOffset = int32(strctOff)
+			} else {
+				panic("struct reference not found")
+			}
+		}
+	} else {
+		panic("package reference not found")
+	}
+}
+
+func sStructIntegers (strct *CXStruct, s *sAll) {
+	strctName := strct.Package.Name + "." + strct.Name
+	if off, found := s.StructsMap[strctName]; found {
+		sStrct := &s.Structs[off]
+		sStrct.Size = int32(strct.Size)
+	} else {
+		panic("struct reference not found")
+	}
+}
+
+func sFunctionIntegers (fn *CXFunction, s *sAll) {
+	fnName := fn.Package.Name + "." + fn.Name
+	if off, found := s.FunctionsMap[fnName]; found {
+		sFn := &s.Functions[off]
+		sFn.Size = int32(fn.Size)
+		sFn.Length = int32(fn.Length)
+	} else {
+		panic("function reference not found")
+	}
+}
+
+func initAll (prgrm *CXProgram, s *sAll) {
+	s.PackagesMap = make(map[string]int, 0)
+	s.StructsMap = make(map[string]int, 0)
+	s.FunctionsMap = make(map[string]int, 0)
+	s.NamesMap = make(map[string]int, 0)
+
+	s.Calls = make([]sCall, prgrm.CallCounter)
+	s.Packages = make([]sPackage, len(prgrm.Packages))
+
+	var numStrcts int
+	var numFns int
+	
+	for _, pkg := range prgrm.Packages {
+		numStrcts += len(pkg.Structs)
+		numFns += len(pkg.Functions)
+	}
+
+	s.Structs = make([]sStruct, numStrcts)
+	s.Functions = make([]sFunction, numFns)
+	// args and exprs need to be appended as they are found
+}
+
+func Serialize (prgrm *CXProgram) []byte {
+	s := sAll{}
+	initAll(prgrm, &s)
+
+	// indexing packages and serializing their names
+	for _, pkg := range prgrm.Packages {
+		indexPackage(pkg, &s)
+		sPackageName(pkg, &s)
+	}
+	// we first needed to populate references to all packages
+	// now we add the imports' references
+	for _, pkg := range prgrm.Packages {
+		sPackageImports(pkg, &s)
+	}
+	
+	// structs
+	for _, pkg := range prgrm.Packages {
+		for _, strct := range pkg.Structs {
+			indexStruct(strct, &s)
+			sStructName(strct, &s)
+			sStructPackage(strct, &s)
+			sStructIntegers(strct, &s)
+		}
+	}
+	// we first needed to populate references to all structs
+	// now we add fields
+	for _, pkg := range prgrm.Packages {
+		for _, strct := range pkg.Structs {
+			sStructArguments(strct, &s)
+		}
+	}
+
+	// globals
+	for _, pkg := range prgrm.Packages {
+		sPackageGlobals(pkg, &s)
+	}
+
+	// functions
+	for _, pkg := range prgrm.Packages {
+		for _, fn := range pkg.Functions {
+			indexFunction(fn, &s)
+			sFunctionName(fn, &s)
+			sFunctionPackage(fn, &s)
+			sFunctionIntegers(fn, &s)
+			sFunctionArguments(fn, &s)
+		}
+	}
+
+	// package elements' offsets and sizes
+	var fnCounter int32
+	var strctCounter int32
+	for _, pkg := range prgrm.Packages {
+		if pkgOff, found := s.PackagesMap[pkg.Name]; found {
+			sPkg := &s.Packages[pkgOff]
+
+			if len(pkg.Structs) == 0 {
+				sPkg.StructsOffset = int32(-1)
+				sPkg.StructsSize = int32(-1)
+			} else {
+				sPkg.StructsOffset = strctCounter
+				lenStrcts := int32(len(pkg.Structs))
+				sPkg.StructsSize = lenStrcts
+				strctCounter += lenStrcts
+			}
+
+			if len(pkg.Functions) == 0 {
+				sPkg.FunctionsOffset = int32(-1)
+				sPkg.FunctionsSize = int32(-1)
+			} else {
+				sPkg.FunctionsOffset = fnCounter
+				lenFns := int32(len(pkg.Functions))
+				sPkg.FunctionsSize = lenFns
+				fnCounter += lenFns
+			}
+		} else {
+			panic("package reference not found")
+		}
+	}
+
+	// package integers
+	// we needed the references to all functions and structs first
+	for _, pkg := range prgrm.Packages {
+		sPackageIntegers(pkg, &s)
+	}
+
+	// expressions
+	for _, pkg := range prgrm.Packages {
+		for _, fn := range pkg.Functions {
+			fnName := fn.Package.Name + "." + fn.Name
+			if fnOff, found := s.FunctionsMap[fnName]; found {
+				sFn := &s.Functions[fnOff]
+
+				if len(fn.Expressions) == 0 {
+					sFn.ExpressionsOffset = int32(-1)
+					sFn.ExpressionsSize = int32(-1)
+					sFn.CurrentExpressionOffset = int32(-1)
+				} else {
+					exprs := make([]int, len(fn.Expressions))
+					for i, expr := range fn.Expressions {
+						exprIdx := serializeExpression(expr, &s)
+						if fn.CurrentExpression == expr {
+							sFn.CurrentExpressionOffset = int32(exprIdx)
+						}
+						exprs[i] = exprIdx
+					}
+
+					sFn.ExpressionsOffset, sFn.ExpressionsSize = serializeIntegers(exprs, &s)
+				}
+			} else {
+				panic("function reference not found")
+			}
+		}
+	}
+
+	// program
+	serializeProgram(prgrm, &s)
+
+	Debug("Program")
+	Debug(s.Program)
+	Debug("Packages")
+	for _, elt := range s.Packages {
+		Debug(elt)
+	}
+	Debug("Structs")
+	for _, elt := range s.Structs {
+		Debug(elt)
+	}
+	Debug("Functions")
+	for _, elt := range s.Functions {
+		Debug(elt)
+	}
+	Debug("Expressions")
+	for _, elt := range s.Expressions {
+		Debug(elt)
+	}
+	Debug("Arguments")
+	for _, elt := range s.Arguments {
+		Debug(elt)
+	}
+	Debug("Calls")
+	for _, elt := range s.Calls {
+		Debug(elt)
+	}
+
+	return nil
+}

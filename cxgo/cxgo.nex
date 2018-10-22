@@ -276,13 +276,22 @@ func countNewLines (s []byte) int {
 }
 
 func readline (fi *bufio.Reader) (string, bool) {
-	//s, err := fi.ReadString(';')
-	
 	s, err := fi.ReadString('\n')
-	
+
+	s = strings.Replace(s, "\n", "", -1)
+	s = strings.Replace(s, "\r", "", -1)
+
+	for _, ch := range s {
+		if ch == rune(4) {
+			err = io.EOF
+			break
+		}
+	}
+
 	if err != nil {
 		return "", false
 	}
+	
 	return s, true
 }
 
@@ -470,31 +479,37 @@ func getWorkingDirectory (file string) string {
 	return file[:c]
 }
 
+func printPrompt () {
+	if ReplTargetMod != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
+		fmt.Printf("* ")
+	} else if ReplTargetFn != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
+		fmt.Printf("\t* ")
+	} else if ReplTargetStrct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
+		fmt.Printf("\t* ")
+	} else {
+		fmt.Printf("* ")
+	}
+}
+
 func repl () {
 	fmt.Println("CX", VERSION)
 	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
 
 	InREPL = true
 
-	fi := bufio.NewReader(os.NewFile(0, "stdin"))
-	
+	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
+	fi := bufio.NewReader(os.Stdin)
+	// scanner := bufio.NewScanner(os.Stdin)
+
 	for {
 		var inp string
 		var ok bool
 
-		if ReplTargetMod != "" {
-			fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
-			fmt.Printf("* ")
-		} else if ReplTargetFn != "" {
-			fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
-			fmt.Printf("\t* ")
-		} else if ReplTargetStrct != "" {
-			fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
-			fmt.Printf("\t* ")
-		} else {
-			fmt.Printf("* ")
-		}
-		
+		printPrompt()
+	
 		if inp, ok = readline(fi); ok {
 			if ReplTargetFn != "" {
 				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
@@ -512,19 +527,16 @@ func repl () {
 		} else {
 			if ReplTargetFn != "" {
 				ReplTargetFn = ""
-				fmt.Println()
 				continue
 			}
 
 			if ReplTargetStrct != "" {
 				ReplTargetStrct = ""
-				fmt.Println()
 				continue
 			}
 
 			if ReplTargetMod != "" {
 				ReplTargetMod = ""
-				fmt.Println()
 				continue
 			}
 
@@ -957,7 +969,6 @@ func main () {
 	}
 
 	PRGRM = cxgo0.PRGRM0
-	// DataOffset = cxgo0.DataOffset0
 
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
