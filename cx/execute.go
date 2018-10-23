@@ -195,6 +195,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 }
 
 func (call *CXCall) ccall(prgrm *CXProgram) error {
+	Deserialize(Serialize(prgrm))
 	// CX is still single-threaded, so only one stack
 	if call.Line >= call.Operator.Length {
 		/*

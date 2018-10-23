@@ -12,6 +12,7 @@ type sIndex struct {
         FunctionsOffset                 int32
         ExpressionsOffset               int32
         ArgumentsOffset                 int32
+	IntegersOffset                  int32
         NamesOffset                     int32
         MemoryOffset                    int32
 }
@@ -413,8 +414,6 @@ func serializeCall (call *CXCall, s *sAll) int {
 	callOff := len(s.Calls) - 1
 	sCall := &s.Calls[callOff]
 
-	Debug("callOffset", callOff)
-	
 	opName := call.Operator.Package.Name + "." + call.Operator.Name
 	if opOff, found := s.FunctionsMap[opName]; found {
 		sCall.OperatorOffset = int32(opOff)
@@ -529,10 +528,6 @@ func sPackageImports (pkg *CXPackage, s *sAll) {
 	s.Integers = append(s.Integers, imps...)
 }
 
-func sStructFields (strct *CXStruct, s *sAll) {
-	
-}
-
 func sStructPackage (strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if pkgOff, found := s.PackagesMap[strct.Package.Name]; found {
@@ -638,7 +633,7 @@ func initAll (prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-func Serialize (prgrm *CXProgram) []byte {
+func Serialize (prgrm *CXProgram) (byts []byte) {
 	s := sAll{}
 	initAll(prgrm, &s)
 
@@ -755,32 +750,111 @@ func Serialize (prgrm *CXProgram) []byte {
 	// program
 	serializeProgram(prgrm, &s)
 
-	Debug("Program")
-	Debug(s.Program)
-	Debug("Packages")
-	for _, elt := range s.Packages {
-		Debug(elt)
-	}
-	Debug("Structs")
-	for _, elt := range s.Structs {
-		Debug(elt)
-	}
-	Debug("Functions")
-	for _, elt := range s.Functions {
-		Debug(elt)
-	}
-	Debug("Expressions")
-	for _, elt := range s.Expressions {
-		Debug(elt)
-	}
-	Debug("Arguments")
-	for _, elt := range s.Arguments {
-		Debug(elt)
-	}
-	Debug("Calls")
-	for _, elt := range s.Calls {
-		Debug(elt)
-	}
+	s.Index = sIndex{}
+	sIdx := &s.Index
 
-	return nil
+	// assigning relative offset
+
+	idxSize, _ := encoder.Size(s.Index)
+	prgrmSize, _ := encoder.Size(s.Program)
+	callSize, _ := encoder.Size(s.Calls)
+	pkgSize, _ := encoder.Size(s.Packages)
+	strctSize, _ := encoder.Size(s.Structs)
+	fnSize, _ := encoder.Size(s.Functions)
+	exprSize, _ := encoder.Size(s.Expressions)
+	argSize, _ := encoder.Size(s.Arguments)
+	intSize, _ := encoder.Size(s.Integers)
+
+	// assigning absolute offset
+	sIdx.ProgramOffset += int32(idxSize)
+	sIdx.CallsOffset += sIdx.ProgramOffset + int32(prgrmSize)
+	sIdx.PackagesOffset += sIdx.CallsOffset + int32(callSize)
+	sIdx.StructsOffset += sIdx.PackagesOffset + int32(pkgSize)
+	sIdx.FunctionsOffset += sIdx.StructsOffset + int32(strctSize)
+	sIdx.ExpressionsOffset += sIdx.FunctionsOffset + int32(fnSize)
+	sIdx.ArgumentsOffset += sIdx.ExpressionsOffset + int32(exprSize)
+	sIdx.IntegersOffset += sIdx.ArgumentsOffset + int32(argSize)
+	sIdx.NamesOffset += sIdx.IntegersOffset + int32(intSize)
+	sIdx.MemoryOffset += sIdx.NamesOffset + int32(len(s.Names))
+
+	Debug("sbyts", s.Calls, encoder.Serialize(s.Calls))
+	
+	// serializing everything
+	byts = append(byts, encoder.Serialize(s.Index)...)
+	byts = append(byts, encoder.Serialize(s.Program)...)
+	byts = append(byts, encoder.Serialize(s.Calls)...)
+	byts = append(byts, encoder.Serialize(s.Packages)...)
+	byts = append(byts, encoder.Serialize(s.Structs)...)
+	byts = append(byts, encoder.Serialize(s.Functions)...)
+	byts = append(byts, encoder.Serialize(s.Expressions)...)
+	byts = append(byts, encoder.Serialize(s.Arguments)...)
+	byts = append(byts, encoder.Serialize(s.Integers)...)
+	byts = append(byts, s.Names...)
+	byts = append(byts, s.Memory...)
+
+	return byts
+}
+
+func dsName (off int32, size int32, s *sAll) string {
+	var name string
+	encoder.DeserializeRaw(s.Names[off : off + size], &name)
+	return name
+}
+
+// func dsArgument (off int32, size int32, s *sAll) CXArgument {
+// 	var arg CXArgument
+// 	encoder.DeserializeRaw(s.Arguments[])
+// }
+
+
+// func dsArguments (off int32, size int32, s *sAll) []*CXArgument {
+// 	// s.Arguments[off : off + size]
+
+	
+// 	var args []CXArgument
+// 	var argsPtr []*CXArgument
+// 	encoder.DeserializeRaw(byts, &args)
+
+// 	for _, arg := range args {
+// 		argsPtr = append(argsPtr, &arg)
+// 	}
+
+// 	return argsPtr
+	
+// }
+
+
+func coco (byts []byte) {
+	
+}
+
+func Deserialize (byts []byte) (prgrm *CXProgram) {
+	
+
+	
+	idxSize, _ := encoder.Size(sIndex{})
+
+	var s sAll
+	
+	encoder.DeserializeRaw(byts[:idxSize], &s.Index)
+	encoder.DeserializeRaw(byts[s.Index.ProgramOffset : s.Index.CallsOffset], &s.Program)
+	encoder.DeserializeRaw(byts[s.Index.CallsOffset : s.Index.PackagesOffset], &s.Calls)
+	encoder.DeserializeRaw(byts[s.Index.PackagesOffset : s.Index.StructsOffset], &s.Packages)
+	encoder.DeserializeRaw(byts[s.Index.StructsOffset : s.Index.FunctionsOffset], &s.Structs)
+	encoder.DeserializeRaw(byts[s.Index.FunctionsOffset : s.Index.ExpressionsOffset], &s.Functions)
+	encoder.DeserializeRaw(byts[s.Index.ExpressionsOffset : s.Index.ArgumentsOffset], &s.Expressions)
+	encoder.DeserializeRaw(byts[s.Index.ArgumentsOffset : s.Index.IntegersOffset], &s.Arguments)
+	encoder.DeserializeRaw(byts[s.Index.IntegersOffset : s.Index.NamesOffset], &s.Integers)
+	s.Names = byts[s.Index.NamesOffset : s.Index.MemoryOffset]
+	s.Memory = byts[s.Index.MemoryOffset : ]
+
+
+	// prgrm.CallCounter = s.CallCounter
+	// prgrm.HeapPointer = s.HeapPointer
+	// prgrm.Inputs = dsArguments()
+
+
+	Debug("hoho", s.Packages)
+
+	return &CXProgram{}
 }
