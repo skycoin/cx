@@ -611,7 +611,7 @@ func sFunctionIntegers (fn *CXFunction, s *sAll) {
 	}
 }
 
-func initAll (prgrm *CXProgram, s *sAll) {
+func initSerialization (prgrm *CXProgram, s *sAll) {
 	s.PackagesMap = make(map[string]int, 0)
 	s.StructsMap = make(map[string]int, 0)
 	s.FunctionsMap = make(map[string]int, 0)
@@ -635,7 +635,7 @@ func initAll (prgrm *CXProgram, s *sAll) {
 
 func Serialize (prgrm *CXProgram) (byts []byte) {
 	s := sAll{}
-	initAll(prgrm, &s)
+	initSerialization(prgrm, &s)
 
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages {
@@ -777,8 +777,6 @@ func Serialize (prgrm *CXProgram) (byts []byte) {
 	sIdx.NamesOffset += sIdx.IntegersOffset + int32(intSize)
 	sIdx.MemoryOffset += sIdx.NamesOffset + int32(len(s.Names))
 
-	Debug("sbyts", s.Calls, encoder.Serialize(s.Calls))
-	
 	// serializing everything
 	byts = append(byts, encoder.Serialize(s.Index)...)
 	byts = append(byts, encoder.Serialize(s.Program)...)
@@ -801,37 +799,61 @@ func dsName (off int32, size int32, s *sAll) string {
 	return name
 }
 
-// func dsArgument (off int32, size int32, s *sAll) CXArgument {
-// 	var arg CXArgument
-// 	encoder.DeserializeRaw(s.Arguments[])
+// func dsPackages (off int32, size int32, s *sAll) []*Package {
+	
 // }
 
+// func dsPackage (sPkg *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
+// 	var pkg CXPackage
+// 	pkg.Name = dsName(sPkg.NameOffset, sPkg.NameSize, s)
+// 	return &pkg
+// }
+
+// func dsStruct (sStrct *sStruct, strct *CXStruct, s *sAll) {
+// 	strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
+// 	strct.Fields = dsArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s)
+// 	strct.Size = int(sStrct.Size)
+// 	// s.Packages[sStrct.PackageOffset]
+// }
 
 // func dsArguments (off int32, size int32, s *sAll) []*CXArgument {
-// 	// s.Arguments[off : off + size]
-
-	
-// 	var args []CXArgument
-// 	var argsPtr []*CXArgument
-// 	encoder.DeserializeRaw(byts, &args)
-
-// 	for _, arg := range args {
-// 		argsPtr = append(argsPtr, &arg)
+// 	var args []*CXArgument
+// 	for _, arg := range s.Arguments[off : off + size] {
+// 		args = append(args, dsArgument(&arg, s))
 // 	}
-
-// 	return argsPtr
-	
+// 	return args
 // }
 
+// func dsArgument (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
+// 	var arg CXArgument
+// 	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
+// 	arg.Type = int(sArg.Type)
+// 	arg.CustomType = dsStruct(s.Structs[sArg.CustomTypeOffset], prgrm.Packages[s.])
 
-func coco (byts []byte) {
-	
+
+// 	s.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
+
+// 	return &arg
+// }
+
+func dsIntegers (off int32, size int32, s *sAll) []int32 {
+	return s.Integers[off : off + size]
+}
+
+func initDeserialization (prgrm *CXProgram, s *sAll) {
+	prgrm.Packages = make([]*CXPackage, len(s.Packages))
+
+
+	for i, sPkg := range s.Packages {
+		for _, impIdx := range dsIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s) {
+			prgrm.Packages[i].Imports = append(prgrm.Packages[i].Imports, prgrm.Packages[impIdx])
+		}
+		prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
+		prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
+	}
 }
 
 func Deserialize (byts []byte) (prgrm *CXProgram) {
-	
-
-	
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var s sAll
@@ -848,13 +870,9 @@ func Deserialize (byts []byte) (prgrm *CXProgram) {
 	s.Names = byts[s.Index.NamesOffset : s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset : ]
 
-
-	// prgrm.CallCounter = s.CallCounter
-	// prgrm.HeapPointer = s.HeapPointer
-	// prgrm.Inputs = dsArguments()
-
-
-	Debug("hoho", s.Packages)
+	initDeserialization(prgrm, &s)
+	
+	
 
 	return &CXProgram{}
 }
