@@ -706,7 +706,7 @@ infer_clauses:
 
 primary_expression:
                 IDENTIFIER
-        |       IDENTIFIER LBRACE struct_literal_fields RBRACE
+        /* |       IDENTIFIER LBRACE struct_literal_fields RBRACE */
         |       INFER LBRACE infer_clauses RBRACE
         |       STRING_LITERAL
         |       BOOLEAN_LITERAL
@@ -821,6 +821,7 @@ conditional_expression:
 
 struct_literal_expression:
                 conditional_expression
+	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
         ;
 

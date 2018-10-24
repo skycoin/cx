@@ -725,10 +725,10 @@ primary_expression:
                 {
 			$$ = PrimaryIdentifier($1)
                 }
-        |       IDENTIFIER LBRACE struct_literal_fields RBRACE
-                {
-			$$ = PrimaryStructLiteral($1, $3)
-                }
+        /* |       IDENTIFIER LBRACE struct_literal_fields RBRACE */
+        /*         { */
+	/* 		$$ = PrimaryStructLiteral($1, $3) */
+        /*         } */
         |       INFER LBRACE infer_clauses RBRACE
                 {
 			$$ = $3
@@ -974,6 +974,10 @@ conditional_expression:
 
 struct_literal_expression:
                 conditional_expression
+	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
+                {
+			$$ = PrimaryStructLiteral($1, $3)
+                }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
 			$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)

@@ -1,96 +1,94 @@
 package main
 import "aff"
 
-func meow (in1 i32, in2 i32, in3 i32) {
-	
-}
-
 func exprPredicate (expr aff.Expression) (res bool) {
-	if expr.Operator == "i32.add" {
-		res = true
-	}
+   	if expr.Operator == "i32.add" {
+  		res = true
+  	}
 }
 
 func fnPredicate (fn aff.Function) (res bool) {
-	str.print(fn.Name)
-	i32.print(len(fn.InputSignature))
-
-	var allI32 bool
-	allI32 = true
-	for c := 0; c < len(fn.InputSignature); c++ {
-		printf("Input Signature: %s\n", fn.InputSignature[c])
-		if fn.InputSignature[c] != "i32" {
-			allI32 = false
-		}
-	}
-
-	if (len(fn.InputSignature) == 2 && allI32) {
-		res = true
-	}
+  	str.print(fn.Name)
+  	i32.print(len(fn.InputSignature))
+	
+  	var allI32 bool
+  	allI32 = true
+  	for c := 0; c < len(fn.InputSignature); c++ {
+  		printf("Input Signature: %s\n", fn.InputSignature[c])
+  		if fn.InputSignature[c] != "i32" {
+  			allI32 = false
+  		}
+  	}
+	
+  	if (len(fn.InputSignature) == 2 && allI32) {
+  		res = true
+  	}
 }
 
 func prgrmPredicate (prgrm aff.Program) (res bool) {
-	if prgrm.HeapUsed > 300L {
-		res = true
-	}
+  	if prgrm.HeapUsed > 300L {
+  		res = true
+  	}
 }
 
 func callerPredicate (call aff.Caller) (res bool) {
-	if call.FnName == "main.bar" && call.FnSize == 0 {
-		res = true
-	}
+  	if call.FnName == "main.bar" && call.FnSize == 0 {
+  		res = true
+  	}
 }
 
 func foo () {
-	fltrs := ->{
-		filter(callerPredicate)
-	}
-	affs := aff.query(fltrs)
-	if len(affs) < 1 {
-		return
-	}
-
-	str.print("SECRET")
+  	fltrs := ->{
+  		filter(callerPredicate)
+  	}
+  	affs := aff.query(fltrs)
+  	if len(affs) < 1 {
+  		return
+  	}
+	
+  	str.print("SECRET")
 }
 
 func bar () {
-	foo()
+  	foo()
 }
 
-func main () {
-	num0 := 2
-	num1 := 5
-	num2 := 10
-	
+func main () g{
+  	num0 := 2
+  	num1 := 5
+  	num2 := 10
+  	
 targetExpr:
-	sum := i32.add(0, 0)
+  	sum := i32.add(0, 0)
+  	
+  	tgt := ->{
+  		pkg(main)
+  		fn(main)
+  		expr(targetExpr)
+  	}
 	
-	tgt := ->{
-		pkg(main)
-		fn(main)
-		expr(targetExpr)
-	}
-
-	fltrs := ->{
-		filter(exprPredicate)
-		filter(prgrmPredicate)
-		filter(callerPredicate)
-		filter(fnPredicate)
-	}
-
-	aff.print(tgt)
-	aff.print(fltrs)
-
-	affs := aff.query(fltrs)
-
-	aff.print(affs)
+  	fltrs := ->{
+  		filter(exprPredicate)
+  		filter(prgrmPredicate)
+  		filter(callerPredicate)
+  		filter(fnPredicate)
+  	}
 	
-	foo()
-	bar()
-
-	aff.on(affs, tgt)
-	aff.of(affs, tgt)
-
-	aff.inform(affs, 0, tgt)
-	aff.request(affs, 0, tgt)
+  	aff.print(tgt)
+  	aff.print(fltrs)
+	
+  	affs := aff.query(fltrs)
+	
+  	aff.print(affs)
+  	
+  	foo()
+  	bar()
+	
+  	aff.on(affs, tgt)
+  	aff.of(affs, tgt)
+	
+  	aff.inform(affs, 0, tgt)
+  	aff.request(affs, 0, tgt)
 }
+
+

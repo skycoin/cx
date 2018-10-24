@@ -29,6 +29,8 @@ func testIssues () {
 	issue37()
 	// Issue 48: Interdependant Structs
 	issue48()
+	// Issue 86: Cannot use bool variable in if expression
+	issue86()
 
 	var end i64
 	end = time.UnixNano()
