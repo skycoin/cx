@@ -306,6 +306,7 @@ const (
 	OP_GL_TEX_COORD_2F
 
 	/* gl_1_0 */
+	OP_GL_SCISSOR
 	OP_GL_TEX_IMAGE_2D
 	OP_GL_TEX_PARAMETERI
 	OP_GL_GET_TEX_LEVEL_PARAMETERIV
@@ -323,11 +324,16 @@ const (
 	OP_GL_UNIFORM_1I
 
 	/* gl_3_0 */
+	OP_GL_BIND_RENDERBUFFER
+	OP_GL_DELETE_RENDERBUFFERS
+	OP_GL_GEN_RENDERBUFFERS
+	OP_GL_RENDERBUFFER_STORAGE
 	OP_GL_BIND_FRAMEBUFFER
 	OP_GL_DELETE_FRAMEBUFFERS
 	OP_GL_GEN_FRAMEBUFFERS
 	OP_GL_CHECK_FRAMEBUFFER_STATUS
 	OP_GL_FRAMEBUFFER_TEXTURE_2D
+	OP_GL_FRAMEBUFFER_RENDERBUFFER
 
 	// glfw
 	OP_GLFW_INIT
@@ -802,7 +808,7 @@ func execNative(prgrm *CXProgram) {
 	case OP_GL_VERTEX_ATTRIB_POINTER:
 		op_gl_VertexAttribPointer(expr, fp)
 	case OP_GL_VERTEX_ATTRIB_POINTER_I32:
-	    op_gl_VertexAttribPointerI32(expr, fp)
+		op_gl_VertexAttribPointerI32(expr, fp)
 	case OP_GL_DRAW_ARRAYS:
 		op_gl_DrawArrays(expr, fp)
 	case OP_GL_GEN_BUFFERS:
@@ -901,6 +907,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_TexCoord2f(expr, fp)
 
 	/* gl_1_0 */
+	case OP_GL_SCISSOR:
+		op_gl_Scissor(expr, fp)
 	case OP_GL_TEX_IMAGE_2D:
 		op_gl_TexImage2D(expr, fp)
 	case OP_GL_TEX_PARAMETERI:
@@ -929,6 +937,14 @@ func execNative(prgrm *CXProgram) {
 		op_gl_Uniform1i(expr, fp)
 
 	/* gl_3_0 */
+	case OP_GL_BIND_RENDERBUFFER:
+		op_gl_BindRenderbuffer(expr, fp)
+	case OP_GL_DELETE_RENDERBUFFERS:
+		op_gl_DeleteRenderbuffers(expr, fp)
+	case OP_GL_GEN_RENDERBUFFERS:
+		op_gl_GenRenderbuffers(expr, fp)
+	case OP_GL_RENDERBUFFER_STORAGE:
+		op_gl_RenderbufferStorage(expr, fp)
 	case OP_GL_BIND_FRAMEBUFFER:
 		op_gl_BindFramebuffer(expr, fp)
 	case OP_GL_DELETE_FRAMEBUFFERS:
@@ -939,6 +955,8 @@ func execNative(prgrm *CXProgram) {
 		op_gl_CheckFramebufferStatus(expr, fp)
 	case OP_GL_FRAMEBUFFER_TEXTURE_2D:
 		op_gl_FramebufferTexture2D(expr, fp)
+	case OP_GL_FRAMEBUFFER_RENDERBUFFER:
+		op_gl_FramebufferRenderbuffer(expr, fp)
 
 		// glfw
 	case OP_GLFW_INIT:
@@ -1272,6 +1290,7 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_TEX_COORD_2F:               "gl.TexCoord2f",
 
 	/* gl_1_0 */
+	OP_GL_SCISSOR:                    "gl.Scissor",
 	OP_GL_TEX_IMAGE_2D:               "gl.TexImage2D",
 	OP_GL_TEX_PARAMETERI:             "gl.TexParameteri",
 	OP_GL_GET_TEX_LEVEL_PARAMETERIV:   "gl.GetTexLevelParameteriv",
@@ -1289,11 +1308,16 @@ var OpNames map[int]string = map[int]string{
 	OP_GL_UNIFORM_1I:                 "gl.Uniform1i",
 
 	/* gl_3_0 */
+	OP_GL_BIND_RENDERBUFFER:          "gl.BindRenderbuffer",
+	OP_GL_DELETE_RENDERBUFFERS:       "gl.DeleteRenderbuffers",
+	OP_GL_GEN_RENDERBUFFERS:          "gl.GenRenderbuffers",
+	OP_GL_RENDERBUFFER_STORAGE:       "gl.RenderbufferStorage",
 	OP_GL_BIND_FRAMEBUFFER:           "gl.BindFramebuffer",
 	OP_GL_DELETE_FRAMEBUFFERS:        "gl.DeleteFramebuffers",
 	OP_GL_GEN_FRAMEBUFFERS:           "gl.GenFramebuffers",
 	OP_GL_CHECK_FRAMEBUFFER_STATUS:   "gl.CheckFramebufferStatus",
 	OP_GL_FRAMEBUFFER_TEXTURE_2D:     "gl.FramebufferTexture2D",
+	OP_GL_FRAMEBUFFER_RENDERBUFFER:   "gl.FramebufferRenderbuffer",
 
 	// glfw
 	OP_GLFW_INIT:                      "glfw.Init",
@@ -1597,6 +1621,7 @@ var OpCodes map[string]int = map[string]int{
 	"gl.TexCoord2f":              OP_GL_TEX_COORD_2F,
 
 	/* gl_1_0 */
+	"gl.Scissor":                 OP_GL_SCISSOR,
 	"gl.TexImage2D":              OP_GL_TEX_IMAGE_2D,
 	"gl.TexParameteri":           OP_GL_TEX_PARAMETERI,
 	"gl.GetTexLevelParameteriv":  OP_GL_GET_TEX_LEVEL_PARAMETERIV,
@@ -1614,11 +1639,16 @@ var OpCodes map[string]int = map[string]int{
 	"gl.Uniform1i":               OP_GL_UNIFORM_1I,
 
 	/* gl_3_0 */
+	"gl.BindRenderbuffer":        OP_GL_BIND_RENDERBUFFER,
+	"gl.DeleteRenderbuffers":     OP_GL_DELETE_RENDERBUFFERS,
+	"gl.GenRenderbuffers":        OP_GL_GEN_RENDERBUFFERS,
+	"gl.RenderbufferStorage":     OP_GL_RENDERBUFFER_STORAGE,
 	"gl.BindFramebuffer":         OP_GL_BIND_FRAMEBUFFER,
 	"gl.DeleteFramebuffers":      OP_GL_DELETE_FRAMEBUFFERS,
 	"gl.GenFramebuffers":         OP_GL_GEN_FRAMEBUFFERS,
 	"gl.CheckFramebufferStatus":  OP_GL_CHECK_FRAMEBUFFER_STATUS,
 	"gl.FramebufferTexture2D":    OP_GL_FRAMEBUFFER_TEXTURE_2D,
+	"gl.FramebufferRenderbuffer": OP_GL_FRAMEBUFFER_RENDERBUFFER,
 
 	// glfw
 	"glfw.Init":                   OP_GLFW_INIT,
@@ -1922,6 +1952,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_TEX_COORD_2F: MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{}),
 
 	/* gl_1_0 */
+	OP_GL_SCISSOR:                   MakeNative(OP_GL_SCISSOR, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_TEX_IMAGE_2D:   MakeNative(OP_GL_TEX_IMAGE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_TEX_PARAMETERI: MakeNative(OP_GL_TEX_PARAMETERI, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GET_TEX_LEVEL_PARAMETERIV: MakeNative(OP_GL_GET_TEX_LEVEL_PARAMETERIV, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
@@ -1939,11 +1970,16 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GL_UNIFORM_1I:                 MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{}),
 
 	/* gl_3_0 */
+	OP_GL_BIND_RENDERBUFFER:        MakeNative(OP_GL_BIND_RENDERBUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_DELETE_RENDERBUFFERS:     MakeNative(OP_GL_DELETE_RENDERBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_GEN_RENDERBUFFERS:        MakeNative(OP_GL_GEN_RENDERBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
+	OP_GL_RENDERBUFFER_STORAGE:     MakeNative(OP_GL_RENDERBUFFER_STORAGE, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_BIND_FRAMEBUFFER:         MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_DELETE_FRAMEBUFFERS:      MakeNative(OP_GL_DELETE_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{}),
 	OP_GL_GEN_FRAMEBUFFERS:         MakeNative(OP_GL_GEN_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_CHECK_FRAMEBUFFER_STATUS: MakeNative(OP_GL_CHECK_FRAMEBUFFER_STATUS, []int{TYPE_I32}, []int{TYPE_I32}),
 	OP_GL_FRAMEBUFFER_TEXTURE_2D:   MakeNative(OP_GL_FRAMEBUFFER_TEXTURE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GL_FRAMEBUFFER_RENDERBUFFER: MakeNative(OP_GL_FRAMEBUFFER_RENDERBUFFER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
 
 	// glfw
 	OP_GLFW_INIT:                      MakeNative(OP_GLFW_INIT, []int{}, []int{}),
