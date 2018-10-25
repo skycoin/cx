@@ -297,25 +297,13 @@ func (pkg *CXPackage) GetFunction (fnName string) (*CXFunction, error) {
 }
 
 func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunction, error) {
-	var found bool
 	for _, fn := range pkg.Functions {
 		if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
 			return fn, nil
 		}
 	}
-
-	// now checking in imported packages
-	if !found {
-		for _, imp := range pkg.Imports {
-			for _, fn := range imp.Functions {
-				if fn.Name == fnName && len(fn.Inputs) > 0 && fn.Inputs[0].CustomType != nil && fn.Inputs[0].CustomType.Name == receiverType {
-					return fn, nil
-				}
-			}
-		}
-	}
-
-	return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name))
+	
+	return nil, errors.New(fmt.Sprintf("method '%s.%s' not found in package '%s'", receiverType, fnName, pkg.Name))
 }
 
 func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {

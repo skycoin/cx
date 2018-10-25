@@ -710,8 +710,8 @@ func main () {
 	}
 
 	if WebMode {
-		// ServiceMode()
-		ObjectExplorer()
+		ServiceMode()
+		// ObjectExplorer()
 		return
 	}
 

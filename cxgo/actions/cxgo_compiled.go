@@ -944,6 +944,7 @@ func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) []*CXExpression {
 	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
 		// then it's a method
+		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1739,6 +1740,9 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 		// checking if fields do exist in their CustomType
 		// and assigning that CustomType to the sym.Field
 		strct := arg.CustomType
+
+		// methodName := arg.CustomType.Fields[len(arg.CustomType.Fields) - 1].Name
+		
 		for _, fld := range sym.Fields {
 			if inFld, err := strct.GetField(fld.Name); err == nil {
 				if inFld.CustomType != nil {
@@ -1746,7 +1750,16 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 					strct = inFld.CustomType
 				}
 			} else {
-				println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
+				methodName := sym.Fields[len(sym.Fields) - 1].Name
+				receiverType := strct.Name
+
+				if method, methodErr := strct.Package.GetMethod(receiverType + "." + methodName, receiverType); methodErr == nil {
+					fld.Type = method.Outputs[0].Type
+				} else {
+					println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
+				}
+				
+				
 			}
 		}
 
@@ -2388,7 +2401,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessMethodCall(expr, &symbols, &offset, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
-		
+
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
