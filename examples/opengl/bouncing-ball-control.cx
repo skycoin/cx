@@ -54,10 +54,10 @@ func drawBall (ball Ball) () {
 
 func ballDirection (window str, key i32, scancode i32, action i32, mods i32) () {
 	if bool.and(i32.eq(key, 263), i32.eq(action, 1)) {
-		ball.vx = ball.vx - velocity
+		ball.vx = ball.vx - f32.mul(2.0, velocity)
 	}
 	if bool.and(i32.eq(key, 262), i32.eq(action, 1)) {
-		ball.vx = ball.vx + velocity
+		ball.vx = ball.vx + f32.mul(2.0, velocity)
 	}
 }
 
@@ -109,6 +109,11 @@ func main () {
 			ball.vy = f32.abs(ball.vy)
 		} else {
 			ball.vy = ball.vy - ball.gravity * timeDelta
+		}
+
+		//Bounce off top edge 
+		if f32.gteq(f32.add(ball.y, ball.radius), 1.0) {
+			ball.vy = 0 - f32.abs(ball.vy)
 		}
 
 		//Bounce off left edge

@@ -17,6 +17,20 @@ type Ball struct {
 
 var ball Ball
 
+var prevTime f32
+var currTime f32
+var timeDelta f32
+func updateTiming() () {
+	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
+	if prevTime == 0.0 {
+		prevTime = f64.f32(glfw.GetTime())
+	}
+
+	currTime = f64.f32(glfw.GetTime())
+	timeDelta = currTime - prevTime
+	prevTime = currTime
+}
+
 func drawBall (ball Ball) () {
 	var full_angle f32
 	full_angle = f32.mul(2.0, 3.141592654)
@@ -91,6 +105,8 @@ func main () {
 	str.print("\nMove the ball to the right or the left using the arrow keys.")
 
 	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
 		var bufferWidth i32
 		var bufferHeight i32
 		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
