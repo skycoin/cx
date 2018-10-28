@@ -212,7 +212,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			returnLine := returnAddr.Line
 			returnFP := returnAddr.FramePointer
 			fp := call.FramePointer
-			
+
 			expr := returnOp.Expressions[returnLine]
 			// for i, out := range expr.Outputs {
 			// 	WriteMemory(

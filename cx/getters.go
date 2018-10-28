@@ -303,7 +303,7 @@ func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunctio
 		}
 	}
 	
-	return nil, errors.New(fmt.Sprintf("method '%s.%s' not found in package '%s'", receiverType, fnName, pkg.Name))
+	return nil, errors.New(fmt.Sprintf("method '%s' not found in package '%s'", fnName, pkg.Name))
 }
 
 func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {

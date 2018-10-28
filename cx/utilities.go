@@ -340,6 +340,9 @@ func (prgrm *CXProgram) PrintProgram() {
 
 					if arg.Name != "" {
 						name = arg.Name
+						for _, fld := range arg.Fields {
+							name += "." + fld.Name
+						}
 					}
 
 					var arrayStr string
@@ -348,13 +351,22 @@ func (prgrm *CXProgram) PrintProgram() {
 							arrayStr += fmt.Sprintf("[%d]", l)
 						}
 					}
+
+					var typeName string
+					if arg.CustomType != nil {
+						// then it's custom type
+						typeName = arg.CustomType.Name
+					} else {
+						// then it's native type
+						typeName = TypeNames[arg.Type]
+					}
 					
 					if i == len(expr.Inputs)-1 {
 						
-						args.WriteString(fmt.Sprintf("%s %s%s", name, arrayStr, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s%s", name, arrayStr, typeName))
 						// args.WriteString(TypeNames[arg.Type])
 					} else {
-						args.WriteString(fmt.Sprintf("%s %s%s, ", name, arrayStr, TypeNames[arg.Type]))
+						args.WriteString(fmt.Sprintf("%s %s%s, ", name, arrayStr, typeName))
 						// args.WriteString(TypeNames[arg.Type] + ", ")
 					}
 				}
@@ -371,10 +383,26 @@ func (prgrm *CXProgram) PrintProgram() {
 				if len(expr.Outputs) > 0 {
 					var outNames bytes.Buffer
 					for i, outName := range expr.Outputs {
-						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(fmt.Sprintf("%s %s", outName.Name, TypeNames[outName.Type]))
+						out := GetAssignmentElement(outName)
+						var typeName string
+						if out.CustomType != nil {
+							// then it's custom type
+							typeName = out.CustomType.Name
 						} else {
-							outNames.WriteString(fmt.Sprintf("%s %s", outName.Name, TypeNames[outName.Type]))
+							// then it's native type
+							typeName = TypeNames[out.Type]
+						}
+
+						var fullName string
+						fullName = outName.Name
+						for _, fld := range outName.Fields {
+							fullName += "." + fld.Name
+						}
+
+						if i == len(expr.Outputs)-1 {
+							outNames.WriteString(fmt.Sprintf("%s %s", fullName, typeName))
+						} else {
+							outNames.WriteString(fmt.Sprintf("%s %s", fullName, typeName))
 						}
 					}
 

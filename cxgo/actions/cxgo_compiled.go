@@ -211,9 +211,6 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, i
 func DeclareStruct (ident string, strctFlds []*CXArgument) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
-			// strct := MakeStruct(ident)
-			// pkg.AddStruct(
-
 			strct.Fields = nil
 			strct.Size = 0
 
@@ -886,13 +883,11 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 		}
 	}
 
-	expr := prevExprs[len(prevExprs)-1]
-	if len(expr.Inputs) < 1 {
-		expr.Inputs = append(expr.Inputs, prevExprs[len(prevExprs)-1].Outputs[0])
-	}
-
-	expr.Inputs = append(expr.Inputs, postExprs[len(postExprs)-1].Outputs[0])
-
+	// expr := prevExprs[len(prevExprs)-1]
+	// if len(expr.Inputs) < 1 {
+	// 	expr.Inputs = append(expr.Inputs, prevExprs[len(prevExprs)-1].Outputs[0])
+	// }
+	
 	return prevExprs
 }
 
@@ -917,7 +912,7 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
 		// then it's a method call or function in field
-		// expr := prevExprs[len(prevExprs) - 1]
+		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 		// expr.IsMethodCall = true
 		// // method name
 		// expr.Operator = MakeFunction(expr.Outputs[0].Fields[0].Name)
@@ -945,6 +940,7 @@ func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) 
 	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
 		// then it's a method
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
+		
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1566,12 +1562,21 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 	ifExpr.Package = pkg
 
 	var predicate *CXArgument
-	if condExprs[len(condExprs)-1].Operator == nil {
+	if condExprs[len(condExprs)-1].Operator == nil && !condExprs[len(condExprs)-1].IsMethodCall {
 		// then it's a literal
 		predicate = condExprs[len(condExprs)-1].Outputs[0]
 	} else {
 		// then it's an expression
-		predicate = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
+		predicate = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo)
+		if condExprs[len(condExprs)-1].IsMethodCall {
+			// we'll change this once we have access to method's types in
+			// ProcessMethodCall
+			predicate.AddType(TypeNames[TYPE_BOOL])
+			condExprs[len(condExprs)-1].Inputs = append(condExprs[len(condExprs)-1].Outputs, condExprs[len(condExprs)-1].Inputs...)
+			condExprs[len(condExprs)-1].Outputs = nil
+		} else {
+			predicate.AddType(TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
+		}
 		predicate.IsShortDeclaration = true
 		condExprs[len(condExprs)-1].Outputs = append(condExprs[len(condExprs)-1].Outputs, predicate)
 	}
@@ -1596,7 +1601,7 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 	skipExpr.ElseLines = 0
 
 	var exprs []*CXExpression
-	if condExprs[len(condExprs)-1].Operator != nil {
+	if condExprs[len(condExprs)-1].Operator != nil || condExprs[len(condExprs)-1].IsMethodCall {
 		exprs = append(exprs, condExprs...)
 	}
 	exprs = append(exprs, ifExpr)
@@ -1924,7 +1929,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 						if len(out.Fields) > 0 {
 							strct := argOut.CustomType
 
-							if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+							if fn, err := strct.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
 								expr.Operator = fn
 							} else {
 								panic("")
@@ -1942,29 +1947,37 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 				}
 			} else {
 				// then we found an input
-					
+
 				if len(inp.Fields) > 0 {
 					strct := argInp.CustomType
 
-					if fn, err := inp.Package.GetMethod(strct.Name + "." + inp.Fields[len(inp.Fields) - 1].Name, strct.Name); err == nil {
+					for _, fld := range inp.Fields {
+						if inFld, err := strct.GetField(fld.Name); err == nil {
+							if inFld.CustomType != nil {
+								strct = inFld.CustomType
+							}
+						}
+					}
+
+					if fn, err := strct.Package.GetMethod(strct.Name + "." + inp.Fields[len(inp.Fields) - 1].Name, strct.Name); err == nil {
 						expr.Operator = fn
 					} else {
-						panic("")
+						panic(err)
 					}
 					
 					inp.Fields = inp.Fields[:len(inp.Fields) - 1]
 				} else if len(out.Fields) > 0 {
-					if argOut, found := (*symbols)[out.Package.Name+"."+out.Name]; found {
+					if argOut, found := (*symbols)[out.Package.Name + "." + out.Name]; found {
 						strct := argOut.CustomType
 
 						expr.Inputs = append(expr.Outputs[:1], expr.Inputs...)
 						
 						expr.Outputs = expr.Outputs[:len(expr.Outputs) - 1]
 						
-						if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+						if fn, err := strct.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
 							expr.Operator = fn
 						} else {
-							panic("")
+							panic(err)
 						}
 						
 						out.Fields = out.Fields[:len(out.Fields) - 1]
@@ -1982,7 +1995,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 					if len(out.Fields) > 0 {
 						strct := argOut.CustomType
 
-						if fn, err := out.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
+						if fn, err := strct.Package.GetMethod(strct.Name + "." + out.Fields[len(out.Fields) - 1].Name, strct.Name); err == nil {
 							expr.Operator = fn
 						} else {
 							panic("")
@@ -2194,11 +2207,9 @@ func CheckTypes(expr *CXExpression) {
 			println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
 		}
 	}
-	
+
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
 		for i, _ := range expr.Inputs {
-			// if expr.Outputs[i].Type != inp.Type || expr.Outputs[i].TotalSize != inp.TotalSize {
-
 			var expectedType string
 			var receivedType string
 			if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
@@ -2369,6 +2380,32 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 	}
 }
 
+// func ProcessMethodCalls (exprs []*CXExpression, symbols *map[string]*CXArgument) []*CXExpression {
+// 	for _, expr := range exprs {
+// 		if expr.IsMethodCall {
+// 			PRGRM.PrintProgram()
+
+// 			out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
+// 			out.IsShortDeclaration = true
+			
+// 			newExpr := MakeExpression(Natives[OP_IDENTITY], expr.FileName, expr.FileLine)
+// 			newExpr.AddOutput(out)
+// 			newExpr.AddInput(exprs[len(exprs) - 1].Outputs[0])
+
+// 			out.Package = expr.Package
+// 			expr.Outputs[0].Package = expr.Package
+
+// 			// out.Fields = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1 : ]
+// 			// expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
+// 			// expr.Inputs = []*CXArgument{out}
+
+// 			// nestedExprs = append(nestedExprs, newExpr)
+// 		}
+// 	}
+
+// 	return exprs
+// }
+
 func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
 		os.Exit(3)
@@ -2390,14 +2427,11 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 	FunctionProcessParameters(&symbols, &symbolsScope, &offset, fn, fn.Inputs)
 	FunctionProcessParameters(&symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
+	// fn.Expressions = ProcessMethodCalls(fn.Expressions, &symbols)
+
 	for _, expr := range fn.Expressions {
 		// ProcessShortDeclaration(expr)
 
-		// if expr.IsMethodCall && len(expr.Outputs) > 0 && len(expr.Outputs[0].Fields) > 0 {
-			
-		// } else if expr.IsMethodCall && len(expr.Inputs) > 0 && len(expr.Inputs[0].Fields) > 0 {
-		// 	ProcessMethodCall(expr, &symbols, &offset, true)
-		// }
 		ProcessMethodCall(expr, &symbols, &offset, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
@@ -2412,9 +2446,9 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 	fn.Size = offset
 }
 
-func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
+func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 	expr := exprs[len(exprs)-1]
-
+	
 	if expr.Operator == nil {
 		opName := expr.Outputs[0].Name
 		opPkg := expr.Outputs[0].Package
@@ -2430,7 +2464,7 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 			expr.IsMethodCall = true
 		}
 
-		if expr.Outputs[0].Fields == nil {
+		if len(expr.Outputs) > 0 && expr.Outputs[0].Fields == nil {
 			expr.Outputs = nil
 		}
 	}
@@ -2487,6 +2521,32 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 
 		}
 	}
+
+	// if expr.IsMethodCall {
+	// 	// we need to break possible multiple method calls
+	// 	// e.g. sym.fld.method1().fld2.method2()
+		
+	// 	out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
+	// 	out.IsShortDeclaration = true
+		
+	// 	newExpr := MakeExpression(Natives[OP_IDENTITY], expr.FileName, expr.FileLine)
+	// 	newExpr.AddOutput(out)
+	// 	newExpr.AddInput(exprs[len(exprs) - 1].Outputs[0])
+
+	// 	out.Package = expr.Package
+	// 	expr.Outputs[0].Package = expr.Package
+
+	// 	// out.Fields = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1 : ]
+	// 	// expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
+	// 	expr.Inputs = []*CXArgument{out}
+
+	// 	nestedExprs = append(nestedExprs, newExpr)
+
+		
+	// 	if len(exprs[len(exprs) - 1].Outputs) > 0 {
+	// 		Debug("outs", exprs[len(exprs) - 1].Outputs[0].Name, exprs[len(exprs) - 1].Outputs[0].Fields)
+	// 	}
+	// }
 	
 	return append(nestedExprs, exprs...)
 }
