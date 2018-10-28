@@ -2058,7 +2058,7 @@ func ProcessSlice (inp *CXArgument) {
 		elt = inp
 	}
 
-	elt.IsPointer = true
+	// elt.IsPointer = true
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations) - 1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations) - 1]
@@ -2368,6 +2368,21 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 // 	return exprs
 // }
 
+func ProcessPointerStructs (expr *CXExpression) {
+	for _, inp := range expr.Inputs {
+		if inp.IsStruct && inp.IsPointer && inp.DereferenceLevels == 0 {
+			inp.DereferenceLevels++
+			inp.DereferenceOperations = append(inp.DereferenceOperations, DEREF_POINTER)
+		}
+	}
+	for _, out := range expr.Outputs {
+		if out.IsStruct && out.IsPointer && out.DereferenceLevels == 0 {
+			out.DereferenceLevels++
+			out.DereferenceOperations = append(out.DereferenceOperations, DEREF_POINTER)
+		}
+	}
+}
+
 func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
 		os.Exit(3)
@@ -2398,6 +2413,8 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 
+		ProcessPointerStructs(expr)
+		
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
