@@ -921,6 +921,7 @@ func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 		// inp.Type = expr.Outputs[0].Type
 		// inp.CustomType = expr.Outputs[0].CustomType
 		// expr.Inputs = append(expr.Inputs, inp)
+		
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1918,7 +1919,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 		if len(expr.Outputs) > 0 && expr.Outputs[0].Name != "" {
 			out = expr.Outputs[0]
 		}
-
+		
 		if inp != nil {
 			if argInp, found := (*symbols)[inp.Package.Name+"."+inp.Name]; !found {
 				if out != nil {
@@ -1936,7 +1937,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 							}
 
 							expr.Inputs = append([]*CXArgument{out}, expr.Inputs...)
-							
+
 							out.Fields = out.Fields[:len(out.Fields) - 1]
 							
 							expr.Outputs = expr.Outputs[1:]
@@ -2002,6 +2003,7 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 						}
 
 						expr.Inputs = append([]*CXArgument{out}, expr.Inputs...)
+
 						
 						out.Fields = out.Fields[:len(out.Fields) - 1]
 						
@@ -2014,46 +2016,6 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 			}
 		}
 	}
-	
-	// if arg, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
-	// 	panic("")
-	// } else {
-	// 	if expr.IsMethodCall {
-	// 		if len(sym.Fields) > 0 {
-	// 			// var found bool
-	// 			strct := arg.CustomType
-
-	// 			if fn, err := sym.Package.GetMethod(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name, strct.Name); err == nil {
-	// 				expr.Operator = fn
-	// 			} else {
-	// 				panic("")
-	// 			}
-
-	// 			// if len(expr.Outputs) == 0 {
-	// 			// 	expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
-	// 			// } else {
-	// 			// }
-
-	// 			// if isAssignment {
-				
-	// 			// }
-	// 			expr.Inputs = append([]*CXArgument{sym}, expr.Inputs...)
-				
-
-	// 			// expr.Operator = MakeFunction(strct.Name + "." + sym.Fields[len(sym.Fields) - 1].Name)
-	// 			if len(sym.Fields) > 0 {
-	// 				sym.Fields = sym.Fields[:len(sym.Fields) - 1]
-	// 			}
-	// 			// sym.DereferenceOperations = sym.DereferenceOperations[:len(sym.DereferenceOperations) - 1]
-
-	// 			// if isAssignment {
-	// 			// 	expr.Outputs = expr.Outputs[1:]
-	// 			// }
-	// 			expr.Outputs = expr.Outputs[1:]
-	// 			// expr.Outputs = nil
-	// 		}
-	// 	}
-	// }
 }
 
 func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset *int, shouldExist bool) {

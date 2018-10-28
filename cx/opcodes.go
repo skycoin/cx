@@ -1999,7 +1999,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{
 	OP_GLFW_GET_CURSOR_POS:            MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64}),
 	OP_GLFW_SET_INPUT_MODE:            MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
 	OP_GLFW_SET_WINDOW_POS:            MakeNative(OP_GLFW_SET_WINDOW_POS, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
-	OP_GLFW_GET_KEY:                   MakeNative(OP_GLFW_GET_KEY, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{}),
+	OP_GLFW_GET_KEY:                   MakeNative(OP_GLFW_GET_KEY, []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32}),
 	
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE:          MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{}),
