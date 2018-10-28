@@ -17,8 +17,14 @@ const (
 	CONST_GL_TRIANGLE_STRIP
 	CONST_GL_TRIANGLE_FAN
 	CONST_GL_QUADS
+	CONST_GL_NEVER
 	CONST_GL_LESS
+	CONST_GL_EQUAL
 	CONST_GL_LEQUAL
+	CONST_GL_GREATER
+	CONST_GL_NOTEQUAL
+	CONST_GL_GEQUAL
+	CONST_GL_ALWAYS
 	CONST_GL_SRC_ALPHA
 	CONST_GL_ONE_MINUS_SRC_ALPHA
 	CONST_GL_FRONT
@@ -37,6 +43,7 @@ const (
 	CONST_GL_DEPTH_TEST
 	CONST_GL_DITHER
 	CONST_GL_BLEND
+	CONST_GL_SCISSOR_TEST
 	CONST_GL_POLYGON_SMOOTH_HINT
 	CONST_GL_TEXTURE_2D
 	CONST_GL_TEXTURE_WIDTH
@@ -46,6 +53,7 @@ const (
 	CONST_GL_FLOAT
 	CONST_GL_TEXTURE
 	CONST_GL_COLOR
+	CONST_GL_DEPTH_COMPONENT
 	CONST_GL_RGBA
 	CONST_GL_REPLACE
 	CONST_GL_NEAREST
@@ -101,7 +109,10 @@ const (
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
 	CONST_GL_FRAMEBUFFER_UNSUPPORTED
 	CONST_GL_COLOR_ATTACHMENT0
+	CONST_GL_DEPTH_ATTACHMENT
+	CONST_GL_STENCIL_ATTACHMENT
 	CONST_GL_FRAMEBUFFER
+	CONST_GL_RENDERBUFFER
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
 
 	/* gl_3_2 */
@@ -173,7 +184,12 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_TRIANGLE_FAN:           "gl.TRIANGLE_FAN",
 	CONST_GL_QUADS:                  "gl.QUADS",
 	CONST_GL_LESS:                   "gl.LESS",
+	CONST_GL_EQUAL:                  "gl.EQUAL",
 	CONST_GL_LEQUAL:                 "gl.LEQUAL",
+	CONST_GL_GREATER:                "gl.GREATER",
+	CONST_GL_NOTEQUAL:               "gl.NOTEQUAL",
+	CONST_GL_GEQUAL:                 "gl.GEQUAL",
+	CONST_GL_ALWAYS:                 "gl.ALWAYS",
 	CONST_GL_SRC_ALPHA:              "gl.SRC_ALPHA",
 	CONST_GL_ONE_MINUS_SRC_ALPHA:    "gl.ONE_MINUS_SRC_ALPHA",
 	CONST_GL_FRONT:                  "gl.FRONT",
@@ -192,6 +208,7 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_DEPTH_TEST:             "gl.DEPTH_TEST",
 	CONST_GL_DITHER:                 "gl.DITHER",
 	CONST_GL_BLEND:                  "gl.BLEND",
+	CONST_GL_SCISSOR_TEST:           "gl.SCISSOR_TEST",
 	CONST_GL_POLYGON_SMOOTH_HINT:    "gl.POLYGON_SMOOTH_HINT",
 	CONST_GL_TEXTURE_2D:             "gl.TEXTURE_2D",
 	CONST_GL_TEXTURE_WIDTH:          "gl.TEXTURE_WIDTH",
@@ -201,6 +218,7 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_FLOAT:                  "gl.FLOAT",
 	CONST_GL_TEXTURE:                "gl.TEXTURE",
 	CONST_GL_COLOR:                  "gl.COLOR",
+	CONST_GL_DEPTH_COMPONENT:        "gl.DEPTH_COMPONENT",
 	CONST_GL_RGBA:                   "gl.RGBA",
 	CONST_GL_REPLACE:                "gl.REPLACE",
 	CONST_GL_NEAREST:                "gl.NEAREST",
@@ -256,7 +274,10 @@ var ConstNames map[int]string = map[int]string{
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        "gl.FRAMEBUFFER_INCOMPLETE_READ_BUFFER",
 	CONST_GL_FRAMEBUFFER_UNSUPPORTED:                   "gl.FRAMEBUFFER_UNSUPPORTED",
 	CONST_GL_COLOR_ATTACHMENT0:                         "gl.COLOR_ATTACHMENT0",
+	CONST_GL_DEPTH_ATTACHMENT:                          "gl.DEPTH_ATTACHMENT",
+	CONST_GL_STENCIL_ATTACHMENT:                        "gl.STENCIL_ATTACHMENT",
 	CONST_GL_FRAMEBUFFER:                               "gl.FRAMEBUFFER",
+	CONST_GL_RENDERBUFFER:                              "gl.RENDERBUFFER",
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        "gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE",
 
 	/* gl_3_2 */
@@ -328,7 +349,12 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.TRIANGLE_FAN":           CONST_GL_TRIANGLE_FAN,
 	"gl.QUADS":                  CONST_GL_QUADS,
 	"gl.LESS":                   CONST_GL_LESS,
+	"gl.EQUAL":                  CONST_GL_EQUAL,
 	"gl.LEQUAL":                 CONST_GL_LEQUAL,
+	"gl.GREATER":                CONST_GL_GREATER,
+	"gl.NOTEQUAL":               CONST_GL_NOTEQUAL,
+	"gl.GEQUAL":                 CONST_GL_GEQUAL,
+	"gl.ALWAYS":                 CONST_GL_ALWAYS,
 	"gl.SRC_ALPHA":              CONST_GL_SRC_ALPHA,
 	"gl.ONE_MINUS_SRC_ALPHA":    CONST_GL_ONE_MINUS_SRC_ALPHA,
 	"gl.FRONT":                  CONST_GL_FRONT,
@@ -347,6 +373,7 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.DEPTH_TEST":             CONST_GL_DEPTH_TEST,
 	"gl.DITHER":                 CONST_GL_DITHER,
 	"gl.BLEND":                  CONST_GL_BLEND,
+	"gl.SCISSOR_TEST":           CONST_GL_SCISSOR_TEST,
 	"gl.POLYGON_SMOOTH_HINT":    CONST_GL_POLYGON_SMOOTH_HINT,
 	"gl.TEXTURE_2D":             CONST_GL_TEXTURE_2D,
 	"gl.TEXTURE_WIDTH":          CONST_GL_TEXTURE_WIDTH,
@@ -356,6 +383,7 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.FLOAT":                  CONST_GL_FLOAT,
 	"gl.TEXTURE":                CONST_GL_TEXTURE,
 	"gl.COLOR":                  CONST_GL_COLOR,
+	"gl.DEPTH_COMPONENT":        CONST_GL_DEPTH_COMPONENT,
 	"gl.RGBA":                   CONST_GL_RGBA,
 	"gl.REPLACE":                CONST_GL_REPLACE,
 	"gl.NEREAST":                CONST_GL_NEAREST,
@@ -411,7 +439,10 @@ var ConstCodes map[string]int = map[string]int{
 	"gl.FRAMEBUFFER_INCOMPLETE_READ_BUFFER":        CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER,
 	"gl.FRAMEBUFFER_UNSUPPORTED":                   CONST_GL_FRAMEBUFFER_UNSUPPORTED,
 	"gl.COLOR_ATTACHMENT0":                         CONST_GL_COLOR_ATTACHMENT0,
+	"gl.DEPTH_ATTACHMENT":                          CONST_GL_DEPTH_ATTACHMENT,
+	"gl.STENCIL_ATTACHMENT":                        CONST_GL_STENCIL_ATTACHMENT,
 	"gl.FRAMEBUFFER":                               CONST_GL_FRAMEBUFFER,
+	"gl.RENDERBUFFER":                              CONST_GL_RENDERBUFFER,
 	"gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE":        CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
 
 	/* gl_3_2 */
@@ -481,8 +512,14 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_TRIANGLE_STRIP:         CXConstant{Type: TYPE_I32, Value: FromI32(0x0005)},
 	CONST_GL_TRIANGLE_FAN:           CXConstant{Type: TYPE_I32, Value: FromI32(0x0006)},
 	CONST_GL_QUADS:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0007)},
-	CONST_GL_LESS:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x201)},
-	CONST_GL_LEQUAL:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x202)},
+	CONST_GL_NEVER:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0200)},
+	CONST_GL_LESS:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x0201)},
+	CONST_GL_EQUAL:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0202)},
+	CONST_GL_LEQUAL:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0203)},
+	CONST_GL_GREATER:                CXConstant{Type: TYPE_I32, Value: FromI32(0x0204)},
+	CONST_GL_NOTEQUAL:               CXConstant{Type: TYPE_I32, Value: FromI32(0x0205)},
+	CONST_GL_GEQUAL:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0206)},
+	CONST_GL_ALWAYS:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0207)},
 	CONST_GL_SRC_ALPHA:              CXConstant{Type: TYPE_I32, Value: FromI32(0x302)},
 	CONST_GL_ONE_MINUS_SRC_ALPHA:    CXConstant{Type: TYPE_I32, Value: FromI32(0x303)},
 	CONST_GL_FRONT:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x404)},
@@ -501,6 +538,7 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_DEPTH_TEST:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0B71)},
 	CONST_GL_DITHER:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0BD0)},
 	CONST_GL_BLEND:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0BE2)},
+	CONST_GL_SCISSOR_TEST:           CXConstant{Type: TYPE_I32, Value: FromI32(0x0C11)},
 	CONST_GL_POLYGON_SMOOTH_HINT:    CXConstant{Type: TYPE_I32, Value: FromI32(0x0C53)},
 	CONST_GL_TEXTURE_2D:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0DE1)},
 	CONST_GL_TEXTURE_WIDTH:          CXConstant{Type: TYPE_I32, Value: FromI32(0x1000)},
@@ -510,6 +548,7 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_FLOAT:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x1406)},
 	CONST_GL_TEXTURE:                CXConstant{Type: TYPE_I32, Value: FromI32(0x1702)},
 	CONST_GL_COLOR:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x1800)},
+	CONST_GL_DEPTH_COMPONENT:        CXConstant{Type: TYPE_I32, Value: FromI32(0x1902)},
 	CONST_GL_RGBA:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x1908)},
 	CONST_GL_REPLACE:                CXConstant{Type: TYPE_I32, Value: FromI32(0x1E01)},
 	CONST_GL_NEAREST:                CXConstant{Type: TYPE_I32, Value: FromI32(0x2600)},
@@ -565,7 +604,10 @@ var Constants map[int]CXConstant = map[int]CXConstant{
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8CDC)},
 	CONST_GL_FRAMEBUFFER_UNSUPPORTED:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x8CDD)},
 	CONST_GL_COLOR_ATTACHMENT0:                         CXConstant{Type: TYPE_I32, Value: FromI32(0x8CE0)},
+	CONST_GL_DEPTH_ATTACHMENT:                          CXConstant{Type: TYPE_I32, Value: FromI32(0x8D00)},
+	CONST_GL_STENCIL_ATTACHMENT:                        CXConstant{Type: TYPE_I32, Value: FromI32(0x8D20)},
 	CONST_GL_FRAMEBUFFER:                               CXConstant{Type: TYPE_I32, Value: FromI32(0x8D40)},
+	CONST_GL_RENDERBUFFER:                              CXConstant{Type: TYPE_I32, Value: FromI32(0x8D41)},
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8D56)},
 
 	/* gl_3_2 */

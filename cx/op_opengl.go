@@ -408,6 +408,11 @@ func op_gl_Hint(expr *CXExpression, fp int) {
 }
 
 /* gl_1_0 */
+func op_gl_Scissor(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.Scissor(ReadI32(fp, inp1), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4))
+}
+
 func op_gl_TexImage2D(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7]
 	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)), nil)
@@ -478,6 +483,30 @@ func op_gl_Uniform1i(expr *CXExpression, fp int) {
 
 
 /* gl_3_0 */
+func op_gl_BindRenderbuffer(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	gl.BindRenderbuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_DeleteRenderbuffers(expr *CXExpression, fp int) {
+	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.DeleteRenderbuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+}
+
+func op_gl_GenRenderbuffers(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	tmp := uint32(ReadI32(fp, inp2))
+	gl.GenRenderbuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
+	outB1 := FromI32(int32(tmp))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func op_gl_RenderbufferStorage(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.RenderbufferStorage(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), ReadI32(fp, inp3), ReadI32(fp, inp4))
+}
+
 func op_gl_BindFramebuffer(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.BindFramebuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
@@ -508,3 +537,7 @@ func op_gl_FramebufferTexture2D(expr *CXExpression, fp int) {
 	gl.FramebufferTexture2D(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)), uint32(ReadI32(fp, inp4)), ReadI32(fp, inp5))
 }
 
+func op_gl_FramebufferRenderbuffer(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.FramebufferRenderbuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)), uint32(ReadI32(fp, inp4)))
+}
