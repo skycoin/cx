@@ -2370,13 +2370,13 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 
 func ProcessPointerStructs (expr *CXExpression) {
 	for _, inp := range expr.Inputs {
-		if inp.IsStruct && inp.IsPointer && inp.DereferenceLevels == 0 {
+		if inp.IsStruct && inp.IsPointer && len(inp.Fields) > 0 && inp.DereferenceLevels == 0 {
 			inp.DereferenceLevels++
 			inp.DereferenceOperations = append(inp.DereferenceOperations, DEREF_POINTER)
 		}
 	}
 	for _, out := range expr.Outputs {
-		if out.IsStruct && out.IsPointer && out.DereferenceLevels == 0 {
+		if out.IsStruct && out.IsPointer && len(out.Fields) > 0 && out.DereferenceLevels == 0 {
 			out.DereferenceLevels++
 			out.DereferenceOperations = append(out.DereferenceOperations, DEREF_POINTER)
 		}
