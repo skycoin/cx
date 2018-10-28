@@ -573,7 +573,9 @@ func op_read(expr *CXExpression, fp int) {
 
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
-	text = strings.Trim(text, " \n")
+	// text = strings.Trim(text, " \n")
+	text = strings.Replace(text, "\n", "", -1)
+	text = strings.Replace(text, "\r", "", -1)
 
 	if err != nil {
 		panic("")
