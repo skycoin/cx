@@ -1,0 +1,206 @@
+/*
+
+This example demonstrates controlling a player object (a ball)
+with keyboard polling, and smoothly ramping it's speed up & down
+
+*/
+
+
+
+package main
+
+import "gl"
+import "glfw"
+
+
+
+var WIDTH i32 = 1280
+var HEIGHT i32 = 720
+var TAU f32
+
+// keys 
+var	GLFW_KEY_W i32
+var	GLFW_KEY_A i32
+var	GLFW_KEY_S i32
+var	GLFW_KEY_D i32
+
+// timing 
+var prevTime f32 // previous 
+var currTime f32 // current 
+var timeDelta f32
+
+type Ball struct {
+	x f32
+	y f32
+	vx f32
+	vy f32
+	gravity f32
+	radius f32
+}
+
+var ball Ball
+
+
+
+func updateTiming() () {
+	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
+	if prevTime == 0.0 {
+		prevTime = f64.f32(glfw.GetTime())
+	}
+
+	currTime = f64.f32(glfw.GetTime())
+	timeDelta = currTime - prevTime
+	prevTime = currTime
+}
+
+
+func getVelocityChangesFromInput (ball Ball) (vxOut f32, vyOut f32) {
+	GLFW_KEY_W = 87
+	GLFW_KEY_A = 65
+	GLFW_KEY_S = 83
+	GLFW_KEY_D = 68
+	var forceDelta f32
+	var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
+	forceDelta = 0.001
+	forceMul   = 2.0
+
+	// vertical 
+	if i32.eq(glfw.GetKey("window", GLFW_KEY_W), 1) {
+		vyOut = f32.add(ball.vy, forceDelta)
+	} else
+	if i32.eq(glfw.GetKey("window", GLFW_KEY_S), 1) {
+		vyOut = f32.sub(ball.vy, forceDelta)
+	} else {
+		vyOut = ball.vy
+
+		if vyOut > 0.0 {
+			vyOut = f32.sub(ball.vy, forceDelta * forceMul)
+
+			if vyOut < 0.0 {
+				vyOut = 0.0
+			}
+		} else
+		if vyOut < 0.0 {
+			vyOut = f32.add(ball.vy, forceDelta * forceMul)
+
+			if vyOut > 0.0 {
+				vyOut = 0.0
+			}
+		}
+	}
+
+	// horizontal 
+	if i32.eq(glfw.GetKey("window", GLFW_KEY_A), 1) {
+		vxOut = f32.sub(ball.vx, forceDelta)
+	} else
+	if i32.eq(glfw.GetKey("window", GLFW_KEY_D), 1) {
+		vxOut = f32.add(ball.vx, forceDelta)
+	} else {
+		vxOut = ball.vx
+		//str.print("x nothing")
+	}
+
+
+
+	str.print("vxOut")
+	f32.print(vxOut)
+	str.print("vyOut")
+	f32.print(vyOut)
+}
+
+
+func drawBall (ball Ball) () {
+	var x f32
+	var y f32
+
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 1.0)
+
+	var i f32
+	for i = 0.0; f32.lt(i, 20.0); i = f32.add(i, 1.0) {
+		x = f32.add(ball.x, f32.mul(ball.radius, f32.cos(f32.div(f32.mul(i, TAU), 20.0))))
+		y = f32.add(ball.y, f32.mul(ball.radius, f32.sin(f32.div(f32.mul(i, TAU), 20.0))))
+
+		gl.Vertex2f(x, y)
+	}
+
+	gl.End()
+}
+
+
+
+func main () {
+	TAU = f32.mul(2.0, 3.141592654)
+
+	glfw.Init()
+
+	glfw.CreateWindow("window", WIDTH, HEIGHT, "Smooth Motion Control (from keyboard polling)")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	var program i32
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	ball = Ball{
+		radius: 0.05,
+		x: 0.0,
+		y: 0.0,
+		vx: 0.0,
+		vy: 0.0,
+		gravity: 0.01}
+
+	var ratio f32
+	str.print("\nMove the ball with the W,A,S,D keys.")
+
+	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+		//var ptrBall *Ball
+		//ptrBall = &ball
+		// ***********************************************************
+		// NEXT CODING SESSION: try again to make & pass a pointer variable...
+		// ...had too many errors last time, while figuring out glfw.GetKey()...
+		// ...wasn't working (i mistakenly thought i had used it successfully last week) 
+
+		ball.vx, ball.vy = getVelocityChangesFromInput(ball)
+		str.print("ball.vx RETURNED from getVelocityChangesFromInput()")
+		f32.print(ball.vx)
+		str.print("ball.vy RETURNED from getVelocityChangesFromInput()")
+		f32.print(ball.vy)
+		str.print("--------------")
+
+		var bufferWidth i32
+		var bufferHeight i32
+		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
+		gl.Viewport(0, 0, bufferWidth, bufferHeight)
+		gl.MatrixMode(gl.MODELVIEW)
+
+		// set velocity response to collision  
+		if f32.lteq(f32.sub(ball.y, ball.radius), -1.0) { // hit bottom edge 
+			ball.vy = f32.abs(ball.vy)
+		} else
+		if f32.gteq(f32.add(ball.y, ball.radius), 1.0) { // hit top edge 
+			ball.vy = 0 - ball.vy
+		}
+
+		// move by velocity 
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
+		
+		drawBall(ball)
+
+
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
