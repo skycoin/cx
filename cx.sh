@@ -166,7 +166,13 @@ if [ ! $? -eq 0 ]; then
     exit 0
 fi
 
-go build -tags full -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+if [ $# -eq 0 ];
+then
+    go build -tags full -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+else
+    go build -tags $1 -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+fi
+
 if [ $? -eq 0 ]; then
     echo "OK:\tCX was compiled successfully"
 else
