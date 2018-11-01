@@ -1,4 +1,4 @@
-// +build base extra all
+// +build base extra full
 
 package base
 
