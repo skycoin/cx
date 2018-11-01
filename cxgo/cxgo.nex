@@ -310,10 +310,18 @@ func unsafeEval (code string) (out string) {
 	os.Stdout = w
 	
 	LineNo = 0
-	
-	b := bytes.NewBufferString(code)
-	lexer = NewLexer(b)
+
+	PRGRM = MakeProgram()
+	cxgo0.PRGRM0 = PRGRM
+
+	cxgo0.Parse(code)
+
+	PRGRM = cxgo0.PRGRM0
+
+	lexer = NewLexer(bytes.NewBufferString(code))
 	yyParse(lexer)
+
+	addInitFunction(PRGRM)
 
 	if err := PRGRM.RunCompiled(0); err != nil {
 		PRGRM = MakeProgram()
@@ -377,7 +385,7 @@ func ObjectExplorer () {
 	// 		http.Error(w, err.Error(), 500)
 	// 		return
 	// 	}
-		
+	
 	// 	var source SourceCode
 	// 	if err := json.Unmarshal(b, &source); err != nil {
 	// 		http.Error(w, err.Error(), 500)
@@ -509,7 +517,7 @@ func repl () {
 		var ok bool
 
 		printPrompt()
-	
+		
 		if inp, ok = readline(fi); ok {
 			if ReplTargetFn != "" {
 				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
@@ -579,9 +587,25 @@ func checkCXPathSet () {
 	COREPATH = filepath.Dir(ex)
 }
 
+func addInitFunction (PRGRM *CXProgram) {
+	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
+		initFn := MakeFunction(SYS_INIT_FUNC)
+		main.AddFunction(initFn)
+
+		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
+		PRGRM.SelectFunction(MAIN_FUNC)
+	} else {
+		panic(err)
+	}
+}
+
 func main () {
 	checkCXPathSet()
-	
+
+	// InitBareOps()
+	// InitBaseOps()
+	// InitExtraOps()
+
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
@@ -659,7 +683,7 @@ func main () {
 			if err != nil {
 				panic(err)
 			}
-	
+			
 			switch mode := fi.Mode(); {
 			case mode.IsDir():
 				var fileList []string
@@ -1001,15 +1025,7 @@ func main () {
 	}
 
 	// adding *init function that initializes all the global variables
-	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
-		initFn := MakeFunction(SYS_INIT_FUNC)
-		main.AddFunction(initFn)
-
-		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
-		PRGRM.SelectFunction(MAIN_FUNC)
-	} else {
-		panic(err)
-	}
+	addInitFunction(PRGRM)
 	
 	LineNo = 0
 

@@ -1,3 +1,5 @@
+// +build extra all
+
 package base
 
 import (

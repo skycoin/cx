@@ -2369,16 +2369,10 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 // }
 
 func ProcessPointerStructs (expr *CXExpression) {
-	for _, inp := range expr.Inputs {
-		if inp.IsStruct && inp.IsPointer && len(inp.Fields) > 0 && inp.DereferenceLevels == 0 {
-			inp.DereferenceLevels++
-			inp.DereferenceOperations = append(inp.DereferenceOperations, DEREF_POINTER)
-		}
-	}
-	for _, out := range expr.Outputs {
-		if out.IsStruct && out.IsPointer && len(out.Fields) > 0 && out.DereferenceLevels == 0 {
-			out.DereferenceLevels++
-			out.DereferenceOperations = append(out.DereferenceOperations, DEREF_POINTER)
+	for _, arg := range append(expr.Inputs, expr.Outputs...) {
+		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+			arg.DereferenceLevels++
+			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
 		}
 	}
 }
@@ -2413,7 +2407,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 
-		ProcessPointerStructs(expr)
+		// ProcessPointerStructs(expr)
 		
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)

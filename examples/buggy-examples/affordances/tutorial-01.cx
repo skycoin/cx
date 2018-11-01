@@ -53,7 +53,7 @@ func bar () {
   	foo()
 }
 
-func main () g{
+func main () {
   	num0 := 2
   	num1 := 5
   	num2 := 10

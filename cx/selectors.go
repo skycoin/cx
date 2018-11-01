@@ -64,7 +64,7 @@ func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	}
 
 	if found == nil {
-		return nil, errors.New("Desired function does not exist")
+		return nil, errors.New(fmt.Sprintf("function '%s' does not exist", name))
 	}
 
 	return found, nil

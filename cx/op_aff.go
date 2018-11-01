@@ -45,6 +45,10 @@ func affExpr (expr *CXExpression) {
 	
 }
 
+func coco () {
+	
+}
+
 func op_aff_on (expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
@@ -108,10 +112,19 @@ func op_aff_on (expr *CXExpression, fp int) {
 		switch aff {
 		case "expr":
 			affCmd = "expr"
-		case "program":
-			affCmd = "program"
-			// do it in here
+		case "fn":
+			affCmd = "fn"
+		case "prgrm":
+			// Debug("entering")
+			affCmd = "prgrm"
+			switch tgtCmd {
+			case "pkg":
+			case "fn":
+			case "expr":
+				results = append(results, fmt.Sprintf("[call(%s)]", tgtExpr.Label))
+			}
 		default:
+			Debug("affCmd", affCmd)
 			switch affCmd {
 			case "pkg":
 				if pkg, err := PROGRAM.GetPackage(aff); err == nil {
@@ -122,8 +135,13 @@ func op_aff_on (expr *CXExpression, fp int) {
 				}
 			case "fn":
 				if fn, err := tgtPkg.GetFunction(aff); err == nil {
-					// affFn = fn
-					_ = fn
+					switch tgtCmd {
+					case "pkg":
+					case "fn":
+						results = append(results, "fn-fn")
+					case "expr":
+						results = append(results, fmt.Sprintf("[%s.Operator = %s]", tgtExpr.Label, fn.Name))
+					}
 				} else {
 					panic(err)
 				}
@@ -134,8 +152,9 @@ func op_aff_on (expr *CXExpression, fp int) {
 					switch tgtCmd {
 					case "pkg":
 					case "fn":
+						results = append(results, "expr-fn")
 					case "expr":
-						results = append(results, "expr-expr")
+						// results = append(results, "expr-expr")
 					}
 				} else {
 					panic(err)
@@ -153,6 +172,8 @@ func op_aff_on (expr *CXExpression, fp int) {
 }
 
 func op_aff_of (expr *CXExpression, fp int) {
+	// inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
+
 	
 }
 
@@ -368,6 +389,7 @@ func QueryProgram (fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affO
 
 	if res == 1 {
 		*affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
+		// *affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
 	}
 }
 
@@ -415,7 +437,7 @@ func op_aff_query (expr *CXExpression, fp int) {
 					callerOffsetB := encoder.SerializeAtomic(int32(callerOffset))
 
 					// program keyword
-					prgrmB := encoder.Serialize("program")
+					prgrmB := encoder.Serialize("prgrm")
 					prgrmOffset := AllocateSeq(len(prgrmB))
 					WriteMemory(prgrmOffset, prgrmB)
 					prgrmOffsetB := encoder.SerializeAtomic(int32(prgrmOffset))
