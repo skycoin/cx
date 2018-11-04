@@ -1,0 +1,38 @@
+sudo: required
+dist: trusty
+language: go
+
+go:
+  - "1.11.x"
+
+os:
+  - linux
+  - osx
+
+go_import_path: github.com/skycoin/cx
+
+gobuild_args: -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
+
+# Install dev dependencies 
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && apt-get install --no-install-recommends -y libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; brew install libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
+
+install:
+  - go get github.com/skycoin/skycoin/...
+  - go get github.com/go-gl/gl/v2.1/gl
+  - go get github.com/go-gl/glfw/v3.2/glfw
+  - go get github.com/go-gl/gltext
+  - go get github.com/blynn/nex
+  - go get github.com/cznic/goyacc
+  - go get github.com/skycoin/cx/...
+
+before_script:
+  - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
+  - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
+  - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
+  - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
+  
+script:
+  - go test
+  - go build
