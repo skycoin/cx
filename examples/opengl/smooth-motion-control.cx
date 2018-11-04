@@ -54,58 +54,51 @@ func updateTiming() () {
 }
 
 
-func getVelocityChangesFromInput (ball Ball) (vxOut f32, vyOut f32) {
-	GLFW_KEY_W = 87
-	GLFW_KEY_A = 65
-	GLFW_KEY_S = 83
-	GLFW_KEY_D = 68
+func getVelocityChangesFromInput (velocity f32, subKey i32, addKey i32) (out f32) {
 	var forceDelta f32
 	var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
 	forceDelta = 0.001
 	forceMul   = 2.0
 
 	// vertical 
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_W), 1) {
-		vyOut = f32.add(ball.vy, forceDelta)
+	if i32.eq(glfw.GetKey("window", addKey), 1) {
+		out = f32.add(velocity, forceDelta)
 	} else
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_S), 1) {
-		vyOut = f32.sub(ball.vy, forceDelta)
-	} else {
-		vyOut = ball.vy
+	if i32.eq(glfw.GetKey("window", subKey), 1) {
+		out = f32.sub(velocity, forceDelta)
+	} else { // both keys NOT pressed 
+		out = velocity
 
-		if vyOut > 0.0 {
-			vyOut = f32.sub(ball.vy, forceDelta * forceMul)
+		if out > 0.0 {
+			out = f32.sub(velocity, forceDelta * forceMul)
 
-			if vyOut < 0.0 {
-				vyOut = 0.0
+			if out < 0.0 {
+				out = 0.0
 			}
 		} else
-		if vyOut < 0.0 {
-			vyOut = f32.add(ball.vy, forceDelta * forceMul)
+		if out < 0.0 {
+			out = f32.add(velocity, forceDelta * forceMul)
 
-			if vyOut > 0.0 {
-				vyOut = 0.0
+			if out > 0.0 {
+				out = 0.0
 			}
 		}
 	}
+}
 
-	// horizontal 
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_A), 1) {
-		vxOut = f32.sub(ball.vx, forceDelta)
+
+// position, velocity, radius, negative value edge boundary, positive value edge boundary 
+func getVelocityChangesOnEdgeCollision (pos f32, vel f32, rad f32, negEdge f64, posEdge f64) (out f32) {
+	out = vel
+
+	if f32.lteq(f32.sub(pos, rad), f64.f32(negEdge)) { 
+		// hit neg edge 
+		out = f32.abs(vel)
 	} else
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_D), 1) {
-		vxOut = f32.add(ball.vx, forceDelta)
-	} else {
-		vxOut = ball.vx
-		//str.print("x nothing")
+	if f32.gteq(f32.add(pos, rad), f64.f32(posEdge)) { 
+		// hit pos edge 
+		out = 0 - f32.abs(vel)
 	}
-
-
-
-	str.print("vxOut")
-	f32.print(vxOut)
-	str.print("vyOut")
-	f32.print(vyOut)
 }
 
 
@@ -130,6 +123,10 @@ func drawBall (ball Ball) () {
 
 
 func main () {
+	GLFW_KEY_W = 87
+	GLFW_KEY_A = 65
+	GLFW_KEY_S = 83
+	GLFW_KEY_D = 68
 	TAU = f32.mul(2.0, 3.141592654)
 
 	glfw.Init()
@@ -150,52 +147,41 @@ func main () {
 		vy: 0.0,
 		gravity: 0.01}
 
+	var bufferWidth i32
+	var bufferHeight i32
 	var ratio f32
+	var lEdge f64 // left 
+	var rEdge f64 // right 
+
 	str.print("\nMove the ball with the W,A,S,D keys.")
+
+
 
 	for bool.not(glfw.ShouldClose("window")) {
 		updateTiming()
-		//var ptrBall *Ball
-		//ptrBall = &ball
-		// ***********************************************************
-		// NEXT CODING SESSION: try again to make & pass a pointer variable...
-		// ...had too many errors last time, while figuring out glfw.GetKey()...
-		// ...wasn't working (i mistakenly thought i had used it successfully last week) 
+		ball.vx = getVelocityChangesFromInput(ball.vx, GLFW_KEY_A, GLFW_KEY_D)
+		ball.vy = getVelocityChangesFromInput(ball.vy, GLFW_KEY_S, GLFW_KEY_W)
+		ball.vx = getVelocityChangesOnEdgeCollision(ball.x, ball.vx, ball.radius, lEdge, rEdge)
+		ball.vy = getVelocityChangesOnEdgeCollision(ball.y, ball.vy, ball.radius, -1.0D, 1.0D)
+		
+		// motion 
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
 
-		ball.vx, ball.vy = getVelocityChangesFromInput(ball)
-		str.print("ball.vx RETURNED from getVelocityChangesFromInput()")
-		f32.print(ball.vx)
-		str.print("ball.vy RETURNED from getVelocityChangesFromInput()")
-		f32.print(ball.vy)
-		str.print("--------------")
-
-		var bufferWidth i32
-		var bufferHeight i32
+		// graphics 
 		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
 		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+		lEdge = f32.f64(f32.mul(ratio, -1.0))
+		rEdge = f32.f64(ratio)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-
 		gl.UseProgram(program)
-		
 		gl.MatrixMode(gl.PROJECTION)
 		gl.LoadIdentity()
-		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
+		gl.Ortho(lEdge, rEdge, -1.0D, 1.0D, 1.0D, -1.0D)
 		gl.Viewport(0, 0, bufferWidth, bufferHeight)
 		gl.MatrixMode(gl.MODELVIEW)
 
-		// set velocity response to collision  
-		if f32.lteq(f32.sub(ball.y, ball.radius), -1.0) { // hit bottom edge 
-			ball.vy = f32.abs(ball.vy)
-		} else
-		if f32.gteq(f32.add(ball.y, ball.radius), 1.0) { // hit top edge 
-			ball.vy = 0 - ball.vy
-		}
-
-		// move by velocity 
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
-		
 		drawBall(ball)
 
 
