@@ -14,9 +14,17 @@ import "glfw"
 
 
 
+var TAU f32
+
+// graphics 
 var WIDTH i32 = 1280
 var HEIGHT i32 = 720
-var TAU f32
+var bufferWidth i32
+var bufferHeight i32
+var ratio f32
+var lEdge f64 // left 
+var rEdge f64 // right 
+var program i32
 
 // keys 
 var	GLFW_KEY_W i32
@@ -44,6 +52,81 @@ type Ball struct {
 
 var ball Ball
 
+
+
+func main () {
+	init()
+
+	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
+		// ball velocity & position 
+		ball.vx = getVelocityChangesFromInput(ball.vx, GLFW_KEY_A, GLFW_KEY_D)
+		ball.vy = getVelocityChangesFromInput(ball.vy, GLFW_KEY_S, GLFW_KEY_W)
+		ball.vx = getVelocityChangesOnEdgeCollision(ball.x, ball.vx, ball.radius, lEdge, rEdge)
+		ball.vy = getVelocityChangesOnEdgeCollision(ball.y, ball.vy, ball.radius, -1.0D, 1.0D)
+		// when speed gets high enough, a simple velocity reversal isn't enough 
+		// (jitters back & forth without getting back in bounds)
+		ball.x = ensureEntirelyWithinBounds(ball.x, ball.radius, lEdge, rEdge)
+		ball.y = ensureEntirelyWithinBounds(ball.y, ball.radius, -1.0D, 1.0D)
+		
+		// motion 
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
+
+		// graphics 
+		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+		lEdge = f32.f64(f32.mul(ratio, -1.0))
+		rEdge = f32.f64(ratio)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.UseProgram(program)
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.Ortho(lEdge, rEdge, -1.0D, 1.0D, 1.0D, -1.0D)
+		gl.Viewport(0, 0, bufferWidth, bufferHeight)
+		gl.MatrixMode(gl.MODELVIEW)
+		drawBall(ball)
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+
+
+
+func init () () {
+	str.print("\nMove the ball with the W,A,S,D keys.")
+
+	TAU = f32.mul(2.0, 3.141592654)
+
+	// movement 
+	forceDelta = 0.001
+	forceMul   = 2.0
+
+	// keys 
+	GLFW_KEY_W = 87
+	GLFW_KEY_A = 65
+	GLFW_KEY_S = 83
+	GLFW_KEY_D = 68
+
+	ball = Ball{
+		radius: 0.05,
+		x: 0.0,
+		y: 0.0,
+		vx: 0.0,
+		vy: 0.0,
+		gravity: 0.01}
+
+
+	// graphics 
+	glfw.Init()
+	glfw.CreateWindow("window", WIDTH, HEIGHT, "Smooth Motion Control (from keyboard polling)")
+	glfw.MakeContextCurrent("window")
+	gl.Init()
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+}
 
 
 func updateTiming () () {
@@ -152,84 +235,4 @@ func drawBall (ball Ball) () {
 	}
 
 	gl.End()
-}
-
-
-
-func main () {
-	GLFW_KEY_W = 87
-	GLFW_KEY_A = 65
-	GLFW_KEY_S = 83
-	GLFW_KEY_D = 68
-	TAU = f32.mul(2.0, 3.141592654)
-
-	glfw.Init()
-
-	glfw.CreateWindow("window", WIDTH, HEIGHT, "Smooth Motion Control (from keyboard polling)")
-	glfw.MakeContextCurrent("window")
-	
-	gl.Init()
-	var program i32
-	program = gl.CreateProgram()
-	gl.LinkProgram(program)
-
-	ball = Ball{
-		radius: 0.05,
-		x: 0.0,
-		y: 0.0,
-		vx: 0.0,
-		vy: 0.0,
-		gravity: 0.01}
-
-	var bufferWidth i32
-	var bufferHeight i32
-	var ratio f32
-	var lEdge f64 // left 
-	var rEdge f64 // right 
-
-	// movement 
-	forceDelta = 0.001
-	forceMul   = 2.0
-
-
-	str.print("\nMove the ball with the W,A,S,D keys.")
-
-
-
-	for bool.not(glfw.ShouldClose("window")) {
-		updateTiming()
-		ball.vx = getVelocityChangesFromInput(ball.vx, GLFW_KEY_A, GLFW_KEY_D)
-		ball.vy = getVelocityChangesFromInput(ball.vy, GLFW_KEY_S, GLFW_KEY_W)
-		ball.vx = getVelocityChangesOnEdgeCollision(ball.x, ball.vx, ball.radius, lEdge, rEdge)
-		ball.vy = getVelocityChangesOnEdgeCollision(ball.y, ball.vy, ball.radius, -1.0D, 1.0D)
-		// when speed gets high enough, a simple velocity reversal isn't enough 
-		// (jitters back & forth without getting back in bounds)
-		ball.x = ensureEntirelyWithinBounds(ball.x, ball.radius, lEdge, rEdge)
-		ball.y = ensureEntirelyWithinBounds(ball.y, ball.radius, -1.0D, 1.0D)
-		
-		// motion 
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
-
-		// graphics 
-		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
-		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
-		lEdge = f32.f64(f32.mul(ratio, -1.0))
-		rEdge = f32.f64(ratio)
-
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.UseProgram(program)
-		gl.MatrixMode(gl.PROJECTION)
-		gl.LoadIdentity()
-		gl.Ortho(lEdge, rEdge, -1.0D, 1.0D, 1.0D, -1.0D)
-		gl.Viewport(0, 0, bufferWidth, bufferHeight)
-		gl.MatrixMode(gl.MODELVIEW)
-
-		drawBall(ball)
-
-
-		
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
-	}
 }
