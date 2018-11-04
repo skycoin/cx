@@ -24,6 +24,10 @@ var	GLFW_KEY_A i32
 var	GLFW_KEY_S i32
 var	GLFW_KEY_D i32
 
+// movement 
+var forceDelta f32
+var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
+
 // timing 
 var prevTime f32 // previous 
 var currTime f32 // current 
@@ -42,7 +46,7 @@ var ball Ball
 
 
 
-func updateTiming() () {
+func updateTiming () () {
 	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
 	if prevTime == 0.0 {
 		prevTime = f64.f32(glfw.GetTime())
@@ -54,34 +58,47 @@ func updateTiming() () {
 }
 
 
+func dampenNegativeMovement (currentVelocity f32, strength f32) (out f32) {
+	out = f32.add(currentVelocity, forceDelta * forceMul * strength)
+
+	if out > 0.0 {
+		out = 0.0
+	}
+}
+
+
+func dampenPositiveMovement (currentVelocity f32, strength f32) (out f32) {
+	out = f32.sub(currentVelocity, forceDelta * forceMul * strength)
+
+	if out < 0.0 {
+		out = 0.0
+	}
+}
+
+
 func getVelocityChangesFromInput (velocity f32, subKey i32, addKey i32) (out f32) {
-	var forceDelta f32
-	var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
-	forceDelta = 0.001
-	forceMul   = 2.0
+	out = velocity
 
-	// vertical 
-	if i32.eq(glfw.GetKey("window", addKey), 1) {
-		out = f32.add(velocity, forceDelta)
-	} else
+	//______________________________________________________________________ 
+	if i32.eq(glfw.GetKey("window", addKey), 1) { //     speed up positively 
+		if out < 0.0 {
+			out = dampenNegativeMovement(out, 4.0)
+		}
+
+		out = f32.add(out, forceDelta)
+	} else //___________________________________________ speed up negatively 
 	if i32.eq(glfw.GetKey("window", subKey), 1) {
-		out = f32.sub(velocity, forceDelta)
-	} else { // both keys NOT pressed 
-		out = velocity
-
 		if out > 0.0 {
-			out = f32.sub(velocity, forceDelta * forceMul)
+			out = dampenPositiveMovement(out, 4.0)
+		}
 
-			if out < 0.0 {
-				out = 0.0
-			}
+		out = f32.sub(out, forceDelta)
+	} else { //__________________________________________ slow down 
+		if out > 0.0 {
+			out = dampenPositiveMovement(out, 1.0)
 		} else
 		if out < 0.0 {
-			out = f32.add(velocity, forceDelta * forceMul)
-
-			if out > 0.0 {
-				out = 0.0
-			}
+			out = dampenNegativeMovement(out, 1.0)
 		}
 	}
 }
@@ -169,6 +186,11 @@ func main () {
 	var ratio f32
 	var lEdge f64 // left 
 	var rEdge f64 // right 
+
+	// movement 
+	forceDelta = 0.001
+	forceMul   = 2.0
+
 
 	str.print("\nMove the ball with the W,A,S,D keys.")
 
