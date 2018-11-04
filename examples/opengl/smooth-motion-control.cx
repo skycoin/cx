@@ -15,6 +15,7 @@ import "glfw"
 
 
 var TAU f32
+var FORCE f32
 
 // graphics 
 var WIDTH i32 = 1280
@@ -31,10 +32,6 @@ var	GLFW_KEY_W i32
 var	GLFW_KEY_A i32
 var	GLFW_KEY_S i32
 var	GLFW_KEY_D i32
-
-// movement 
-var forceDelta f32
-var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
 
 // timing 
 var prevTime f32 // previous 
@@ -99,10 +96,7 @@ func init () () {
 	str.print("\nMove the ball with the W,A,S,D keys.")
 
 	TAU = f32.mul(2.0, 3.141592654)
-
-	// movement 
-	forceDelta = 0.001
-	forceMul   = 2.0
+	FORCE = 0.08
 
 	// keys 
 	GLFW_KEY_W = 87
@@ -142,7 +136,7 @@ func updateTiming () () {
 
 
 func dampenNegativeMovement (currentVelocity f32, strength f32) (out f32) {
-	out = f32.add(currentVelocity, forceDelta * forceMul * strength)
+	out = f32.add(currentVelocity, FORCE * timeDelta * strength)
 
 	if out > 0.0 {
 		out = 0.0
@@ -151,7 +145,7 @@ func dampenNegativeMovement (currentVelocity f32, strength f32) (out f32) {
 
 
 func dampenPositiveMovement (currentVelocity f32, strength f32) (out f32) {
-	out = f32.sub(currentVelocity, forceDelta * forceMul * strength)
+	out = f32.sub(currentVelocity, FORCE * timeDelta * strength)
 
 	if out < 0.0 {
 		out = 0.0
@@ -168,14 +162,14 @@ func getVelocityChangesFromInput (velocity f32, subKey i32, addKey i32) (out f32
 			out = dampenNegativeMovement(out, 4.0)
 		}
 
-		out = f32.add(out, forceDelta)
+		out = f32.add(out, FORCE * timeDelta)
 	} else //___________________________________________ speed up negatively 
 	if i32.eq(glfw.GetKey("window", subKey), 1) {
 		if out > 0.0 {
 			out = dampenPositiveMovement(out, 4.0)
 		}
 
-		out = f32.sub(out, forceDelta)
+		out = f32.sub(out, FORCE * timeDelta)
 	} else { //__________________________________________ slow down 
 		if out > 0.0 {
 			out = dampenPositiveMovement(out, 1.0)
