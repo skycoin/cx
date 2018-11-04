@@ -102,6 +102,23 @@ func getVelocityChangesOnEdgeCollision (pos f32, vel f32, rad f32, negEdge f64, 
 }
 
 
+// position, radius, negative value edge boundary, positive value edge boundary 
+func ensureEntirelyWithinBounds (pos f32, rad f32, negEdge f64, posEdge f64) (out f32) {
+	out = pos
+	ne := f64.f32(negEdge)
+	pe := f64.f32(posEdge)
+
+	if f32.lteq(f32.sub(pos, rad), ne) { 
+		// hit neg edge 
+		out = f32.add(ne, rad)
+	} else
+	if f32.gteq(f32.add(pos, rad), pe) { 
+		// hit pos edge 
+		out = f32.sub(pe, rad)
+	}
+}
+
+
 func drawBall (ball Ball) () {
 	var x f32
 	var y f32
@@ -163,6 +180,10 @@ func main () {
 		ball.vy = getVelocityChangesFromInput(ball.vy, GLFW_KEY_S, GLFW_KEY_W)
 		ball.vx = getVelocityChangesOnEdgeCollision(ball.x, ball.vx, ball.radius, lEdge, rEdge)
 		ball.vy = getVelocityChangesOnEdgeCollision(ball.y, ball.vy, ball.radius, -1.0D, 1.0D)
+		// when speed gets high enough, a simple velocity reversal isn't enough 
+		// (jitters back & forth without getting back in bounds)
+		ball.x = ensureEntirelyWithinBounds(ball.x, ball.radius, lEdge, rEdge)
+		ball.y = ensureEntirelyWithinBounds(ball.y, ball.radius, -1.0D, 1.0D)
 		
 		// motion 
 		ball.x = f32.add(ball.x, ball.vx)
