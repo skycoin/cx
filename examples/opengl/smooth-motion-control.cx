@@ -14,9 +14,18 @@ import "glfw"
 
 
 
+var TAU f32
+var FORCE f32
+
+// graphics 
 var WIDTH i32 = 1280
 var HEIGHT i32 = 720
-var TAU f32
+var bufferWidth i32
+var bufferHeight i32
+var ratio f32
+var lEdge f64 // left 
+var rEdge f64 // right 
+var program i32
 
 // keys 
 var	GLFW_KEY_W i32
@@ -42,7 +51,79 @@ var ball Ball
 
 
 
-func updateTiming() () {
+func main () {
+	init()
+
+	for bool.not(glfw.ShouldClose("window")) {
+		updateTiming()
+
+		// ball velocity & position 
+		ball.vx = getVelocityChangesFromInput(ball.vx, GLFW_KEY_A, GLFW_KEY_D)
+		ball.vy = getVelocityChangesFromInput(ball.vy, GLFW_KEY_S, GLFW_KEY_W)
+		ball.vx = getVelocityChangesOnEdgeCollision(ball.x, ball.vx, ball.radius, lEdge, rEdge)
+		ball.vy = getVelocityChangesOnEdgeCollision(ball.y, ball.vy, ball.radius, -1.0D, 1.0D)
+		// when speed gets high enough, a simple velocity reversal isn't enough 
+		// (jitters back & forth without getting back in bounds)
+		ball.x = ensureEntirelyWithinBounds(ball.x, ball.radius, lEdge, rEdge)
+		ball.y = ensureEntirelyWithinBounds(ball.y, ball.radius, -1.0D, 1.0D)
+		
+		// motion 
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
+
+		// graphics 
+		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
+		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
+		lEdge = f32.f64(f32.mul(ratio, -1.0))
+		rEdge = f32.f64(ratio)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.UseProgram(program)
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.Ortho(lEdge, rEdge, -1.0D, 1.0D, 1.0D, -1.0D)
+		gl.Viewport(0, 0, bufferWidth, bufferHeight)
+		gl.MatrixMode(gl.MODELVIEW)
+		drawBall(ball)
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+
+
+
+func init () () {
+	str.print("\nMove the ball with the W,A,S,D keys.")
+
+	TAU = f32.mul(2.0, 3.141592654)
+	FORCE = 0.08
+
+	// keys 
+	GLFW_KEY_W = 87
+	GLFW_KEY_A = 65
+	GLFW_KEY_S = 83
+	GLFW_KEY_D = 68
+
+	ball = Ball{
+		radius: 0.05,
+		x: 0.0,
+		y: 0.0,
+		vx: 0.0,
+		vy: 0.0,
+		gravity: 0.01}
+
+
+	// graphics 
+	glfw.Init()
+	glfw.CreateWindow("window", WIDTH, HEIGHT, "Smooth Motion Control (from keyboard polling)")
+	glfw.MakeContextCurrent("window")
+	gl.Init()
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+}
+
+
+func updateTiming () () {
 	// prevent 1st delta from being large, which would make moving objects teleport unpredictably 
 	if prevTime == 0.0 {
 		prevTime = f64.f32(glfw.GetTime())
@@ -54,58 +135,81 @@ func updateTiming() () {
 }
 
 
-func getVelocityChangesFromInput (ball Ball) (vxOut f32, vyOut f32) {
-	GLFW_KEY_W = 87
-	GLFW_KEY_A = 65
-	GLFW_KEY_S = 83
-	GLFW_KEY_D = 68
-	var forceDelta f32
-	var forceMul   f32 // multiplier (to decelerate faster than acceleration) 
-	forceDelta = 0.001
-	forceMul   = 2.0
+func dampenNegativeMovement (currentVelocity f32, strength f32) (out f32) {
+	out = f32.add(currentVelocity, FORCE * timeDelta * strength)
 
-	// vertical 
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_W), 1) {
-		vyOut = f32.add(ball.vy, forceDelta)
-	} else
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_S), 1) {
-		vyOut = f32.sub(ball.vy, forceDelta)
-	} else {
-		vyOut = ball.vy
+	if out > 0.0 {
+		out = 0.0
+	}
+}
 
-		if vyOut > 0.0 {
-			vyOut = f32.sub(ball.vy, forceDelta * forceMul)
 
-			if vyOut < 0.0 {
-				vyOut = 0.0
-			}
+func dampenPositiveMovement (currentVelocity f32, strength f32) (out f32) {
+	out = f32.sub(currentVelocity, FORCE * timeDelta * strength)
+
+	if out < 0.0 {
+		out = 0.0
+	}
+}
+
+
+func getVelocityChangesFromInput (velocity f32, subKey i32, addKey i32) (out f32) {
+	out = velocity
+
+	//______________________________________________________________________ 
+	if i32.eq(glfw.GetKey("window", addKey), 1) { //     speed up positively 
+		if out < 0.0 {
+			out = dampenNegativeMovement(out, 4.0)
+		}
+
+		out = f32.add(out, FORCE * timeDelta)
+	} else //___________________________________________ speed up negatively 
+	if i32.eq(glfw.GetKey("window", subKey), 1) {
+		if out > 0.0 {
+			out = dampenPositiveMovement(out, 4.0)
+		}
+
+		out = f32.sub(out, FORCE * timeDelta)
+	} else { //__________________________________________ slow down 
+		if out > 0.0 {
+			out = dampenPositiveMovement(out, 1.0)
 		} else
-		if vyOut < 0.0 {
-			vyOut = f32.add(ball.vy, forceDelta * forceMul)
-
-			if vyOut > 0.0 {
-				vyOut = 0.0
-			}
+		if out < 0.0 {
+			out = dampenNegativeMovement(out, 1.0)
 		}
 	}
+}
 
-	// horizontal 
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_A), 1) {
-		vxOut = f32.sub(ball.vx, forceDelta)
+
+// position, velocity, radius, negative value edge boundary, positive value edge boundary 
+func getVelocityChangesOnEdgeCollision (pos f32, vel f32, rad f32, negEdge f64, posEdge f64) (out f32) {
+	out = vel
+
+	if f32.lteq(f32.sub(pos, rad), f64.f32(negEdge)) { 
+		// hit neg edge 
+		out = f32.abs(vel)
 	} else
-	if i32.eq(glfw.GetKey("window", GLFW_KEY_D), 1) {
-		vxOut = f32.add(ball.vx, forceDelta)
-	} else {
-		vxOut = ball.vx
-		//str.print("x nothing")
+	if f32.gteq(f32.add(pos, rad), f64.f32(posEdge)) { 
+		// hit pos edge 
+		out = 0 - f32.abs(vel)
 	}
+}
 
 
+// position, radius, negative value edge boundary, positive value edge boundary 
+func ensureEntirelyWithinBounds (pos f32, rad f32, negEdge f64, posEdge f64) (out f32) {
+	out = pos
+	ne := f64.f32(negEdge)
+	pe := f64.f32(posEdge)
 
-	str.print("vxOut")
-	f32.print(vxOut)
-	str.print("vyOut")
-	f32.print(vyOut)
+	if f32.lteq(f32.sub(pos, rad), ne) { 
+		// hit neg edge 
+		out = f32.add(ne, rad)
+	} else
+	if f32.gteq(f32.add(pos, rad), pe) { 
+		// hit pos edge 
+		out = f32.sub(pe, rad)
+	}
 }
 
 
@@ -125,82 +229,4 @@ func drawBall (ball Ball) () {
 	}
 
 	gl.End()
-}
-
-
-
-func main () {
-	TAU = f32.mul(2.0, 3.141592654)
-
-	glfw.Init()
-
-	glfw.CreateWindow("window", WIDTH, HEIGHT, "Smooth Motion Control (from keyboard polling)")
-	glfw.MakeContextCurrent("window")
-	
-	gl.Init()
-	var program i32
-	program = gl.CreateProgram()
-	gl.LinkProgram(program)
-
-	ball = Ball{
-		radius: 0.05,
-		x: 0.0,
-		y: 0.0,
-		vx: 0.0,
-		vy: 0.0,
-		gravity: 0.01}
-
-	var ratio f32
-	str.print("\nMove the ball with the W,A,S,D keys.")
-
-	for bool.not(glfw.ShouldClose("window")) {
-		updateTiming()
-		//var ptrBall *Ball
-		//ptrBall = &ball
-		// ***********************************************************
-		// NEXT CODING SESSION: try again to make & pass a pointer variable...
-		// ...had too many errors last time, while figuring out glfw.GetKey()...
-		// ...wasn't working (i mistakenly thought i had used it successfully last week) 
-
-		ball.vx, ball.vy = getVelocityChangesFromInput(ball)
-		str.print("ball.vx RETURNED from getVelocityChangesFromInput()")
-		f32.print(ball.vx)
-		str.print("ball.vy RETURNED from getVelocityChangesFromInput()")
-		f32.print(ball.vy)
-		str.print("--------------")
-
-		var bufferWidth i32
-		var bufferHeight i32
-		bufferWidth, bufferHeight = glfw.GetFramebufferSize("window")
-		ratio = f32.div(i32.f32(bufferWidth), i32.f32(bufferHeight))
-
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		gl.UseProgram(program)
-		
-		gl.MatrixMode(gl.PROJECTION)
-		gl.LoadIdentity()
-		gl.Ortho(f32.f64(f32.mul(ratio, -1.0)), f32.f64(ratio), -1.0D, 1.0D, 1.0D, -1.0D)
-		gl.Viewport(0, 0, bufferWidth, bufferHeight)
-		gl.MatrixMode(gl.MODELVIEW)
-
-		// set velocity response to collision  
-		if f32.lteq(f32.sub(ball.y, ball.radius), -1.0) { // hit bottom edge 
-			ball.vy = f32.abs(ball.vy)
-		} else
-		if f32.gteq(f32.add(ball.y, ball.radius), 1.0) { // hit top edge 
-			ball.vy = 0 - ball.vy
-		}
-
-		// move by velocity 
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
-		
-		drawBall(ball)
-
-
-		
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
-	}
 }
