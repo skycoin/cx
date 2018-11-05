@@ -34,5 +34,5 @@ before_script:
   - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
   
 script:
-  - go test
   - go build
+  - go test
