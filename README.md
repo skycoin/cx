@@ -1,5 +1,14 @@
 ![cx logo](https://user-images.githubusercontent.com/26845312/32426758-2a4bbb00-c282-11e7-858e-a1eaf3ea92f3.png)
 
+# CX Programming Language
+
+[![Build Status](https://travis-ci.org/skycoin/cx.svg?branch=master)](https://travis-ci.org/skycoin/cx)
+
+CX is a general purpose, interpreted and compiled programming
+language, with a very strict type system and a syntax
+similar to Golang's. CX provides a new programming paradigm based on
+the concept of affordances.
+
 Table of Contents
 =================
 
