@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial
 language: go
 
 go:
@@ -9,7 +9,7 @@ os:
   - linux
   - osx
 
-go_import_path: github.com/skycoin/cx
+# go_import_path: github.com/skycoin/cx
 
 gobuild_args: -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
 
