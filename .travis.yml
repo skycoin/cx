@@ -33,7 +33,6 @@ script:
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
 
 notifications:
-  email:
-    - travis@skycoin.net
+  email: false
   # https://github.com/kvld/travisci-telegram TravisCI Telegram Bot integration
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
