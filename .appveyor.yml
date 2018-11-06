@@ -1,3 +1,7 @@
+image: Visual Studio 2017
+platform:
+- x64
+
 clone_folder: c:\gopath\src\github.com\skycoin\cx
 
 environment:
@@ -9,7 +13,6 @@ stack: go 1.11
 install:
   - set PATH=c:\cygwin64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - echo %PATH%
-  - ls
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
