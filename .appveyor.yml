@@ -9,7 +9,7 @@ stack: go 1.11
 install:
   - echo %PATH%
   - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=c:\cygwin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
