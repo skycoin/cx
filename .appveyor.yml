@@ -1,4 +1,4 @@
-clone_folder: c:\gopath\src\github.com\$username\$project
+clone_folder: c:\gopath\src\github.com\skycoin\cx
 
 environment:
   GOPATH: c:\gopath
@@ -7,7 +7,10 @@ stack: go 1.11
 
 # Install dev dependencies
 install:
-  - echo 
+  - echo %PATH%
+  - echo %GOPATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - go version
 
 before_build:
   - '%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex'
