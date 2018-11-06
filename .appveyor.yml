@@ -9,6 +9,14 @@ environment:
 
 stack: go 1.11
 
+cache:
+  - '%GOPATH%\src\github.com\skycoin\skycoin'
+  - '%GOPATH%\src\github.com\go-gl\gl'
+  - '%GOPATH%\src\github.com\go-gl\glfw'
+  - '%GOPATH%\src\github.com\go-gl\gltext'
+  - '%GOPATH%\src\github.com\blynn\nex'
+  - '%GOPATH%\src\github.com\cznic\goyacc'
+
 # Install dev dependencies
 install:
   - set PATH=c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
@@ -34,5 +42,5 @@ test_script:
   - go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
 
 artifacts:
-  - path: '%GOPATH%\bin\cx'
+  - path: 'c:\gopath\bin\cx'
     name: cx
