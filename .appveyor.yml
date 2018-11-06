@@ -11,7 +11,7 @@ stack: go 1.11
 
 # Install dev dependencies
 install:
-  - set PATH=c:\mingw64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - echo %PATH%
   - go version
   - go get github.com/skycoin/skycoin/...
