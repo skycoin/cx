@@ -1,3 +1,4 @@
+version: 1.0.{build}
 image: Visual Studio 2017
 platform:
 - x64
@@ -6,9 +7,11 @@ clone_folder: c:\gopath\src\github.com\skycoin\cx
 
 environment:
   GOPATH: c:\gopath
+  MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
 
 stack: go 1.11
 
+# cache to build faster
 cache:
   - '%GOPATH%\src\github.com\skycoin\skycoin'
   - '%GOPATH%\src\github.com\go-gl\gl'
@@ -19,7 +22,7 @@ cache:
 
 # Install dev dependencies
 install:
-  - set PATH=c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=%MINGW_W64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
@@ -38,9 +41,13 @@ before_build:
 build_script:
   - go build -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
 
+# Copy cx executable into project folder to avoid relative path problems
+after_build:
+  - copy c:\gopath\bin\cx c:\gopath\src\github.com\skycoin\cx
+
 test_script:
   - go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
 
 artifacts:
-  - path: 'c:\gopath\bin\cx'
-    name: cx
+  - path: 'cx'
+    name: cx-win64
