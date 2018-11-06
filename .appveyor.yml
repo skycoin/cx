@@ -8,6 +8,8 @@ stack: go 1.11
 # Install dev dependencies
 install:
   - set PATH=c:\cygwin64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
+  - dir c:\cygwin64\
+  - dir c:\cygwin64\bin
   - echo %PATH%
   - go version
   - go get github.com/skycoin/skycoin/...
