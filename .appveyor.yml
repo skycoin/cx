@@ -7,9 +7,8 @@ stack: go 1.11
 
 # Install dev dependencies
 install:
+  - set PATH=c:\cygwin\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - echo %PATH%
-  - echo %GOPATH%
-  - set PATH=c:\cygwin;%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
