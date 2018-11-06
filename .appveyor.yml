@@ -12,9 +12,8 @@ stack: go 1.11
 # Install dev dependencies
 install:
   - set PATH=C:\mingw-w64\bin;%GOPATH%\bin;c:\go\bin;%PATH%
-  - dir C:\
-  - dir C:\MinGW
-  - C:\MinGW\bin\mingw-get install gcc g++ mingw32-make
+  - dir C:\mingw-w64\bin
+  - C:\mingw-w64\bin\mingw-get install gcc g++ mingw32-make
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
