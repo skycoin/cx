@@ -11,15 +11,22 @@ install:
   - echo %GOPATH%
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
+  - go get github.com/skycoin/skycoin/...
+  - go get github.com/go-gl/gl/v2.1/gl
+  - go get github.com/go-gl/glfw/v3.2/glfw
+  - go get github.com/go-gl/gltext
+  - go get github.com/blynn/nex
+  - go get github.com/cznic/goyacc
+  - go get github.com/skycoin/cx/...
 
 before_build:
-  - '%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex'
-  - '%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y'
-  - '%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex'
-  - '%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y'
+  - nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
+  - nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex
+  - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
 
 build_script:
-  - 'go build -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\'
+  - go build -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
 
 test_script:
-  - 'go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\'
+  - go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
