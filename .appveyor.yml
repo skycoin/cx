@@ -1,0 +1,22 @@
+clone_folder: c:\gopath\src\github.com\$username\$project
+
+environment:
+  GOPATH: c:\gopath
+
+stack: go 1.11
+
+# Install dev dependencies
+install:
+  - echo 
+
+before_build:
+  - '%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex'
+  - '%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y'
+  - '%GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex'
+  - '%GOPATH%\bin\goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y'
+
+build_script:
+  - 'go build -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\'
+
+test_script:
+  - 'go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\'
