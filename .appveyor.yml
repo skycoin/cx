@@ -39,15 +39,15 @@ before_build:
   - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
 
 build_script:
-  - go build -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
+  - go build -race -tags full -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxgo\
 
 # Copy cx executable into project folder to avoid relative path problems
 after_build:
-  - copy c:\gopath\bin\cx c:\gopath\src\github.com\skycoin\cx
+  - copy c:\gopath\bin\cx.exe c:\gopath\src\github.com\skycoin\cx\
 
 test_script:
   - go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
 
 artifacts:
-  - path: 'cx'
-    name: cx-win64
+  - path: 'cx.exe'
+    name: cx-win64.exe
