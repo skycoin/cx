@@ -2,7 +2,7 @@
 	package main
 	import (
 		// "fmt"
-		// "strconv"
+		"strconv"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
@@ -158,6 +158,7 @@
 %type   <function>      function_header
 
 //                      %type   <stringA>       infer_action, infer_actions
+%type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
                         
@@ -638,14 +639,25 @@ slice_literal_expression:
 /*                 } */
 /*         ; */
 
+infer_action_arg:
+                IDENTIFIER
+                {
+			$$ = $1
+                }
+        |       INT_LITERAL
+                {
+			$$ = strconv.Itoa(int($1))
+                }
+        ;
+
 infer_action:
-                IDENTIFIER LPAREN IDENTIFIER COMMA IDENTIFIER RPAREN
+                IDENTIFIER LPAREN infer_action_arg COMMA IDENTIFIER RPAREN
 		{
 			res := append([]string{$3}, $5)
 			res = append(res, $1)
 			$$ = res
 		}
-	|	IDENTIFIER LPAREN IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN infer_action_arg RPAREN
 		{
 			$$ = append([]string{$1}, $3)
 		}
@@ -692,7 +704,10 @@ infer_actions:
 /*         ; */
 
 infer_clauses:
-                infer_actions
+                {
+			$$ = SliceLiteralExpression(TYPE_AFF, nil)
+                }
+        |       infer_actions
                 {
 			var exprs []*CXExpression
 			for _, str := range $1 {

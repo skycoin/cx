@@ -676,9 +676,14 @@ slice_literal_expression:
 /*         |       MUL_OP GT_OP MUL_OP */
 /*         ; */
 
+infer_action_arg:
+                IDENTIFIER
+        |       INT_LITERAL
+        ;
+
 infer_action:
-                IDENTIFIER LPAREN IDENTIFIER COMMA IDENTIFIER RPAREN
-	|	IDENTIFIER LPAREN IDENTIFIER RPAREN
+                IDENTIFIER LPAREN infer_action_arg COMMA IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN infer_action_arg RPAREN
 	|	IDENTIFIER LPAREN infer_action RPAREN
 	|	IDENTIFIER LPAREN infer_action COMMA infer_action RPAREN
         ;
@@ -698,7 +703,7 @@ infer_actions:
 /*         ; */
 
 infer_clauses:
-                infer_actions
+        |       infer_actions
         /* |       infer_targets */
                 ;
 

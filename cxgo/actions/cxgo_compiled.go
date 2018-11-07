@@ -245,9 +245,14 @@ func AffordanceStructs (pkg *CXPackage) {
 	argStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
 	
 	argFldName := MakeField("Name", TYPE_STR, "", 0)
+	argFldName.TotalSize = GetArgSize(TYPE_STR)
+	argFldIndex := MakeField("Index", TYPE_I32, "", 0)
+	argFldIndex.TotalSize = GetArgSize(TYPE_I32)
 	argFldType := MakeField("Type", TYPE_STR, "", 0)
+	argFldType.TotalSize = GetArgSize(TYPE_STR)
 	
 	argStrct.AddField(argFldName)
+	argStrct.AddField(argFldIndex)
 	argStrct.AddField(argFldType)
 	
 	pkg.AddStruct(argStrct)
@@ -279,6 +284,7 @@ func AffordanceStructs (pkg *CXPackage) {
 
 	fnStrct.AddField(fnFldName)
 	fnStrct.AddField(fnFldInpSig)
+
 	fnStrct.AddField(fnFldOutSig)
 	
 	pkg.AddStruct(fnStrct)
@@ -325,9 +331,14 @@ func AffordanceStructs (pkg *CXPackage) {
 	prgrmFldCallCounter.TotalSize = GetArgSize(TYPE_I32)
 	prgrmFldFreeHeap := MakeField("HeapUsed", TYPE_I64, "", 0)
 	prgrmFldFreeHeap.TotalSize = GetArgSize(TYPE_I64)
-	
+
+	// prgrmFldCaller := MakeField("Caller", TYPE_CUSTOM, "", 0)
+	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false)
+	prgrmFldCaller.Name = "Caller"
+
 	prgrmStrct.AddField(prgrmFldCallCounter)
 	prgrmStrct.AddField(prgrmFldFreeHeap)
+	prgrmStrct.AddField(prgrmFldCaller)
 	
 	pkg.AddStruct(prgrmStrct)
 }
