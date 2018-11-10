@@ -70,7 +70,9 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
 		size := GetArgSize(typCode)
 		arg.Size = size
 		arg.TotalSize = size
-	}
+	} else {
+        arg.Type = TYPE_UNDEFINED
+    }
 
 	return arg
 }
