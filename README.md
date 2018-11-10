@@ -2,7 +2,7 @@
 
 # CX Programming Language
 
-[![Build Status](https://travis-ci.org/skycoin/cx.svg?branch=master)](https://travis-ci.org/skycoin/cx)
+[![Build Status](https://travis-ci.org/skycoin/cx.svg?branch=master)](https://travis-ci.org/skycoin/cx) [![Build status](https://ci.appveyor.com/api/projects/status/8o4bf71mwett6ib4/branch/stdevYuniers_t13_ci_in_appveyor_for_windows?svg=true)](https://ci.appveyor.com/project/stdevYuniers/cx/branch/stdevYuniers_t13_ci_in_appveyor_for_windows)
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
