@@ -131,383 +131,128 @@ const (
 )
 
 func init () {
-	/*
-            OpNames
-        */
-	
-	// opengl
-	OpNames[OP_GL_INIT] = "gl.Init"
-	OpNames[OP_GL_GET_ERROR] = "gl.GetError"
-	OpNames[OP_GL_CULL_FACE] = "gl.CullFace"
-	OpNames[OP_GL_CREATE_PROGRAM] = "gl.CreateProgram"
-	OpNames[OP_GL_DELETE_PROGRAM] = "gl.DeleteProgram"
-	OpNames[OP_GL_LINK_PROGRAM] = "gl.LinkProgram"
-	OpNames[OP_GL_CLEAR] = "gl.Clear"
-	OpNames[OP_GL_USE_PROGRAM] = "gl.UseProgram"
-	OpNames[OP_GL_BIND_BUFFER] = "gl.BindBuffer"
-	OpNames[OP_GL_BIND_VERTEX_ARRAY] = "gl.BindVertexArray"
-	OpNames[OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY] = "gl.EnableVertexAttribArray"
-	OpNames[OP_GL_VERTEX_ATTRIB_POINTER] = "gl.VertexAttribPointer"
-	OpNames[OP_GL_VERTEX_ATTRIB_POINTER_I32] = "gl.VertexAttribPointerI32"
-	OpNames[OP_GL_DRAW_ARRAYS] = "gl.DrawArrays"
-	OpNames[OP_GL_GEN_BUFFERS] = "gl.GenBuffers"
-	OpNames[OP_GL_DELETE_BUFFERS] = "gl.DeleteBuffers"
-	OpNames[OP_GL_BUFFER_DATA] = "gl.BufferData"
-	OpNames[OP_GL_BUFFER_SUB_DATA] = "gl.BufferSubData"
-	OpNames[OP_GL_GEN_VERTEX_ARRAYS] = "gl.GenVertexArrays"
-	OpNames[OP_GL_DELETE_VERTEX_ARRAYS] = "gl.DeleteVertexArrays"
-	OpNames[OP_GL_CREATE_SHADER] = "gl.CreateShader"
-	OpNames[OP_GL_DETACH_SHADER] = "gl.DetachShader"
-	OpNames[OP_GL_DELETE_SHADER] = "gl.DeleteShader"
-	OpNames[OP_GL_STRS] = "gl.Strs"
-	OpNames[OP_GL_FREE] = "gl.Free"
-	OpNames[OP_GL_SHADER_SOURCE] = "gl.ShaderSource"
-	OpNames[OP_GL_COMPILE_SHADER] = "gl.CompileShader"
-	OpNames[OP_GL_GET_SHADERIV] = "gl.GetShaderiv"
-	OpNames[OP_GL_ATTACH_SHADER] = "gl.AttachShader"
-	OpNames[OP_GL_MATRIX_MODE] = "gl.MatrixMode"
-	OpNames[OP_GL_ROTATEF] = "gl.Rotatef"
-	OpNames[OP_GL_TRANSLATEF] = "gl.Translatef"
-	OpNames[OP_GL_LOAD_IDENTITY] = "gl.LoadIdentity"
-	OpNames[OP_GL_PUSH_MATRIX] = "gl.PushMatrix"
-	OpNames[OP_GL_POP_MATRIX] = "gl.PopMatrix"
-	OpNames[OP_GL_ENABLE_CLIENT_STATE] = "gl.EnableClientState"
-	OpNames[OP_GL_ACTIVE_TEXTURE] = "gl.ActiveTexture"
-	OpNames[OP_GL_COLOR3F] = "gl.Color3f"
-	OpNames[OP_GL_COLOR4F] = "gl.Color4f"
-	OpNames[OP_GL_BEGIN] = "gl.Begin"
-	OpNames[OP_GL_END] = "gl.End"
-	OpNames[OP_GL_NORMAL3F] = "gl.Normal3f"
-	OpNames[OP_GL_VERTEX_2F] = "gl.Vertex2f"
-	OpNames[OP_GL_VERTEX_3F] = "gl.Vertex3f"
-	OpNames[OP_GL_ENABLE] = "gl.Enable"
-	OpNames[OP_GL_CLEAR_COLOR] = "gl.ClearColor"
-	OpNames[OP_GL_CLEAR_DEPTH] = "gl.ClearDepth"
-	OpNames[OP_GL_DEPTH_FUNC] = "gl.DepthFunc"
-	OpNames[OP_GL_LIGHTFV] = "gl.Lightfv"
-	OpNames[OP_GL_FRUSTUM] = "gl.Frustum"
-	OpNames[OP_GL_DISABLE] = "gl.Disable"
-	OpNames[OP_GL_HINT] = "gl.Hint"
-	OpNames[OP_GL_NEW_TEXTURE] = "gl.NewTexture"
-	OpNames[OP_GL_DEPTH_MASK] = "gl.DepthMask"
-	OpNames[OP_GL_TEX_ENVI] = "gl.TexEnvi"
-	OpNames[OP_GL_BLEND_FUNC] = "gl.BlendFunc"
-	OpNames[OP_GL_ORTHO] = "gl.Ortho"
-	OpNames[OP_GL_VIEWPORT] = "gl.Viewport"
-	OpNames[OP_GL_SCALEF] = "gl.Scalef"
-	OpNames[OP_GL_TEX_COORD_2D] = "gl.TexCoord2d"
-	OpNames[OP_GL_TEX_COORD_2F] = "gl.TexCoord2f"
-	
-	/* gl_1_0 */
-	OpNames[OP_GL_SCISSOR] = "gl.Scissor"
-	OpNames[OP_GL_TEX_IMAGE_2D] = "gl.TexImage2D"
-	OpNames[OP_GL_TEX_PARAMETERI] = "gl.TexParameteri"
-	OpNames[OP_GL_GET_TEX_LEVEL_PARAMETERIV] = "gl.GetTexLevelParameteriv"
-	
-	/* gl_1_1 */
-	OpNames[OP_GL_BIND_TEXTURE] = "gl.BindTexture"
-	OpNames[OP_GL_GEN_TEXTURES] = "gl.GenTextures"
-	OpNames[OP_GL_DELETE_TEXTURES] = "gl.DeleteTextures"
-	
-	/* gl_2_0 */
-	OpNames[OP_GL_BIND_ATTRIB_LOCATION] = "gl.BindAttribLocation"
-	OpNames[OP_GL_GET_ATTRIB_LOCATION] = "gl.GetAttribLocation"
-	OpNames[OP_GL_GET_UNIFORM_LOCATION] = "gl.GetUniformLocation"
-	OpNames[OP_GL_UNIFORM_1F] = "gl.Uniform1f"
-	OpNames[OP_GL_UNIFORM_1I] = "gl.Uniform1i"
-	
-	/* gl_3_0 */
-	OpNames[OP_GL_BIND_RENDERBUFFER] = "gl.BindRenderbuffer"
-	OpNames[OP_GL_DELETE_RENDERBUFFERS] = "gl.DeleteRenderbuffers"
-	OpNames[OP_GL_GEN_RENDERBUFFERS] = "gl.GenRenderbuffers"
-	OpNames[OP_GL_RENDERBUFFER_STORAGE] = "gl.RenderbufferStorage"
-	OpNames[OP_GL_BIND_FRAMEBUFFER] = "gl.BindFramebuffer"
-	OpNames[OP_GL_DELETE_FRAMEBUFFERS] = "gl.DeleteFramebuffers"
-	OpNames[OP_GL_GEN_FRAMEBUFFERS] = "gl.GenFramebuffers"
-	OpNames[OP_GL_CHECK_FRAMEBUFFER_STATUS] = "gl.CheckFramebufferStatus"
-	OpNames[OP_GL_FRAMEBUFFER_TEXTURE_2D] = "gl.FramebufferTexture2D"
-	OpNames[OP_GL_FRAMEBUFFER_RENDERBUFFER] = "gl.FramebufferRenderbuffer"
-	
+	// gl_0.0
+	AddOpCode(OP_GL_INIT, "gl.Init", []int{}, []int{})
+	AddOpCode(OP_GL_GET_ERROR, "gl.GetError", []int{}, []int{TYPE_I32})
+	AddOpCode(OP_GL_CULL_FACE, "gl.CullFace", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_CREATE_PROGRAM, "gl.CreateProgram", []int{}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DELETE_PROGRAM, "gl.DeleteProgram", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_LINK_PROGRAM, "gl.LinkProgram", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_CLEAR, "gl.Clear", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_USE_PROGRAM, "gl.UseProgram", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BIND_BUFFER, "gl.BindBuffer", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BIND_VERTEX_ARRAY, "gl.BindVertexArray", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, "gl.EnableVertexAttribArray", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER_I32, "gl.VertexAttribPointerI32", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_DRAW_ARRAYS, "gl.DrawArrays", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GEN_BUFFERS, "gl.GenBuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DELETE_BUFFERS, "gl.DeleteBuffers", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BUFFER_DATA, "gl.BufferData", []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS, "gl.GenVertexArrays", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DELETE_VERTEX_ARRAYS, "gl.DeleteVertexArrays", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_CREATE_SHADER, "gl.CreateShader", []int{TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DETACH_SHADER, "gl.DetachShader", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_DELETE_SHADER, "gl.DeleteShader", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_STRS, "gl.Strs", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GL_FREE, "gl.Free", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_GL_SHADER_SOURCE, "gl.ShaderSource", []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
+	AddOpCode(OP_GL_COMPILE_SHADER, "gl.CompileShader", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GET_SHADERIV, "gl.GetShaderiv", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_ATTACH_SHADER, "gl.AttachShader", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_ROTATEF, "gl.Rotatef", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_TRANSLATEF, "gl.Translatef", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_LOAD_IDENTITY, "gl.LoadIdentity", []int{}, []int{})
+	AddOpCode(OP_GL_PUSH_MATRIX, "gl.PushMatrix", []int{}, []int{})
+	AddOpCode(OP_GL_POP_MATRIX, "gl.PopMatrix", []int{}, []int{})
+	AddOpCode(OP_GL_ENABLE_CLIENT_STATE, "gl.EnableClientState", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_ACTIVE_TEXTURE, "gl.ActiveTexture", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_COLOR3F, "gl.Color3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_COLOR4F, "gl.Color4f", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_BEGIN, "gl.Begin", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_END, "gl.End", []int{}, []int{})
+	AddOpCode(OP_GL_NORMAL3F, "gl.Normal3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_VERTEX_2F, "gl.Vertex2f", []int{TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_VERTEX_3F, "gl.Vertex3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_ENABLE, "gl.Enable", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_CLEAR_COLOR, "gl.ClearColor", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_CLEAR_DEPTH, "gl.ClearDepth", []int{TYPE_F64}, []int{})
+	AddOpCode(OP_GL_DEPTH_FUNC, "gl.DepthFunc", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_LIGHTFV, "gl.Lightfv", []int{TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_FRUSTUM, "gl.Frustum", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
+	AddOpCode(OP_GL_DISABLE, "gl.Disable", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_HINT, "gl.Hint", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture", []int{TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DEPTH_MASK, "gl.DepthMask", []int{TYPE_BOOL}, []int{})
+	AddOpCode(OP_GL_TEX_ENVI, "gl.TexEnvi", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BLEND_FUNC, "gl.BlendFunc", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_ORTHO, "gl.Ortho", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
+	AddOpCode(OP_GL_VIEWPORT, "gl.Viewport", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_SCALEF, "gl.Scalef", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_TEX_COORD_2D, "gl.TexCoord2d", []int{TYPE_F64, TYPE_F64}, []int{})
+	AddOpCode(OP_GL_TEX_COORD_2F, "gl.TexCoord2f", []int{TYPE_F32, TYPE_F32}, []int{})
+
+	// gl_1_0
+	AddOpCode(OP_GL_SCISSOR, "gl.Scissor", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_TEX_PARAMETERI, "gl.TexParameteri", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GET_TEX_LEVEL_PARAMETERIV, "gl.GetTexLevelParameteriv", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+
+	// gl_1_1
+	AddOpCode(OP_GL_BIND_TEXTURE, "gl.BindTexture", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GEN_TEXTURES, "gl.GenTextures", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DELETE_TEXTURES, "gl.DeleteTextures", []int{TYPE_I32, TYPE_I32}, []int{})
+
+	//gl_2_0
+	AddOpCode(OP_GL_BIND_ATTRIB_LOCATION, "gl.BindAttribLocation", []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
+	AddOpCode(OP_GL_GET_ATTRIB_LOCATION, "gl.GetAttribLocation", []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GL_GET_UNIFORM_LOCATION, "gl.GetUniformLocation", []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GL_UNIFORM_1F, "gl.Uniform1f", []int{TYPE_I32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_UNIFORM_1I, "gl.Uniform1i", []int{TYPE_I32, TYPE_I32}, []int{})
+
+	// gl_3_0
+	AddOpCode(OP_GL_BIND_RENDERBUFFER, "gl.BindRenderbuffer", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_DELETE_RENDERBUFFERS, "gl.DeleteRenderbuffers", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GEN_RENDERBUFFERS, "gl.GenRenderbuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_RENDERBUFFER_STORAGE, "gl.RenderbufferStorage", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_BIND_FRAMEBUFFER, "gl.BindFramebuffer", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_DELETE_FRAMEBUFFERS, "gl.DeleteFramebuffers", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_GEN_FRAMEBUFFERS, "gl.GenFramebuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_CHECK_FRAMEBUFFER_STATUS, "gl.CheckFramebufferStatus", []int{TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_FRAMEBUFFER_TEXTURE_2D, "gl.FramebufferTexture2D", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_FRAMEBUFFER_RENDERBUFFER, "gl.FramebufferRenderbuffer", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+
 	// glfw
-	OpNames[OP_GLFW_INIT] = "glfw.Init"
-	OpNames[OP_GLFW_WINDOW_HINT] = "glfw.WindowHint"
-	OpNames[OP_GLFW_CREATE_WINDOW] = "glfw.CreateWindow"
-	OpNames[OP_GLFW_MAKE_CONTEXT_CURRENT] = "glfw.MakeContextCurrent"
-	OpNames[OP_GLFW_SHOULD_CLOSE] = "glfw.ShouldClose"
-	OpNames[OP_GLFW_SET_SHOULD_CLOSE] = "glfw.SetShouldClose"
-	OpNames[OP_GLFW_POLL_EVENTS] = "glfw.PollEvents"
-	OpNames[OP_GLFW_SWAP_BUFFERS] = "glfw.SwapBuffers"
-	OpNames[OP_GLFW_GET_FRAMEBUFFER_SIZE] = "glfw.GetFramebufferSize"
-	OpNames[OP_GLFW_SWAP_INTERVAL] = "glfw.SwapInterval"
-	OpNames[OP_GLFW_SET_KEY_CALLBACK] = "glfw.SetKeyCallback"
-	OpNames[OP_GLFW_GET_TIME] = "glfw.GetTime"
-	OpNames[OP_GLFW_SET_MOUSE_BUTTON_CALLBACK] = "glfw.SetMouseButtonCallback"
-	OpNames[OP_GLFW_SET_CURSOR_POS_CALLBACK] = "glfw.SetCursorPosCallback"
-	OpNames[OP_GLFW_GET_CURSOR_POS] = "glfw.GetCursorPos"
-	OpNames[OP_GLFW_SET_INPUT_MODE] = "glfw.SetInputMode"
-	OpNames[OP_GLFW_SET_WINDOW_POS] = "glfw.SetWindowPos"
-	OpNames[OP_GLFW_GET_KEY] = "glfw.GetKey"
-	
+	AddOpCode(OP_GLFW_INIT, "glfw.Init", []int{}, []int{})
+	AddOpCode(OP_GLFW_WINDOW_HINT, "glfw.WindowHint", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GLFW_CREATE_WINDOW, "glfw.CreateWindow", []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_MAKE_CONTEXT_CURRENT, "glfw.MakeContextCurrent", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SHOULD_CLOSE, "glfw.ShouldClose", []int{TYPE_STR}, []int{TYPE_BOOL})
+	AddOpCode(OP_GLFW_SET_SHOULD_CLOSE, "glfw.SetShouldClose", []int{TYPE_STR, TYPE_BOOL}, []int{})
+	AddOpCode(OP_GLFW_POLL_EVENTS, "glfw.PollEvents", []int{}, []int{})
+	AddOpCode(OP_GLFW_SWAP_BUFFERS, "glfw.SwapBuffers", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_GET_TIME, "glfw.GetTime", []int{}, []int{TYPE_F64})
+	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos", []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64})
+	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GLFW_GET_KEY, "glfw.GetKey", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32})
+
 	// gltext
-	OpNames[OP_GLTEXT_LOAD_TRUE_TYPE] = "gltext.LoadTrueType"
-	OpNames[OP_GLTEXT_PRINTF] = "gltext.Printf"
-	OpNames[OP_GLTEXT_METRICS] = "gltext.Metrics"
-	OpNames[OP_GLTEXT_TEXTURE] = "gltext.Texture"
-	OpNames[OP_GLTEXT_NEXT_RUNE] = "gltext.NextRune"
-	OpNames[OP_GLTEXT_GLYPH_BOUNDS] = "gltext.GlyphBounds"
+	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf", []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{})
+	AddOpCode(OP_GLTEXT_METRICS, "gltext.Metrics", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_TEXTURE, "gltext.Texture", []int{TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GLTEXT_NEXT_RUNE, "gltext.NextRune", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", []int{}, []int{TYPE_I32, TYPE_I32})
 
-	/*
-            OpCodes
-        */
-	
-	// opengl
-	OpCodes["gl.Init"] = OP_GL_INIT
-	OpCodes["gl.GetError"] = OP_GL_GET_ERROR
-	OpCodes["gl.CullFace"] = OP_GL_CULL_FACE
-	OpCodes["gl.CreateProgram"] = OP_GL_CREATE_PROGRAM
-	OpCodes["gl.DeleteProgram"] = OP_GL_DELETE_PROGRAM
-	OpCodes["gl.LinkProgram"] = OP_GL_LINK_PROGRAM
-	OpCodes["gl.Clear"] = OP_GL_CLEAR
-	OpCodes["gl.UseProgram"] = OP_GL_USE_PROGRAM
-	OpCodes["gl.BindBuffer"] = OP_GL_BIND_BUFFER
-	OpCodes["gl.BindVertexArray"] = OP_GL_BIND_VERTEX_ARRAY
-	OpCodes["gl.EnableVertexAttribArray"] = OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY
-	OpCodes["gl.VertexAttribPointer"] = OP_GL_VERTEX_ATTRIB_POINTER
-	OpCodes["gl.VertexAttribPointerI32"] = OP_GL_VERTEX_ATTRIB_POINTER_I32
-	OpCodes["gl.DrawArrays"] = OP_GL_DRAW_ARRAYS
-	OpCodes["gl.GenBuffers"] = OP_GL_GEN_BUFFERS
-	OpCodes["gl.DeleteBuffers"] = OP_GL_DELETE_BUFFERS
-	OpCodes["gl.BufferData"] = OP_GL_BUFFER_DATA
-	OpCodes["gl.BufferSubData"] = OP_GL_BUFFER_SUB_DATA
-	OpCodes["gl.GenVertexArrays"] = OP_GL_GEN_VERTEX_ARRAYS
-	OpCodes["gl.DeleteVertexArrays"] = OP_GL_DELETE_VERTEX_ARRAYS
-	OpCodes["gl.CreateShader"] = OP_GL_CREATE_SHADER
-	OpCodes["gl.DetachShader"] = OP_GL_DETACH_SHADER
-	OpCodes["gl.DeleteShader"] = OP_GL_DELETE_SHADER
-	OpCodes["gl.Strs"] = OP_GL_STRS
-	OpCodes["gl.Free"] = OP_GL_FREE
-	OpCodes["gl.ShaderSource"] = OP_GL_SHADER_SOURCE
-	OpCodes["gl.CompileShader"] = OP_GL_COMPILE_SHADER
-	OpCodes["gl.GetShaderiv"] = OP_GL_GET_SHADERIV
-	OpCodes["gl.AttachShader"] = OP_GL_ATTACH_SHADER
-	OpCodes["gl.MatrixMode"] = OP_GL_MATRIX_MODE
-	OpCodes["gl.Rotatef"] = OP_GL_ROTATEF
-	OpCodes["gl.Translatef"] = OP_GL_TRANSLATEF
-	OpCodes["gl.LoadIdentity"] = OP_GL_LOAD_IDENTITY
-	OpCodes["gl.PushMatrix"] = OP_GL_PUSH_MATRIX
-	OpCodes["gl.PopMatrix"] = OP_GL_POP_MATRIX
-	OpCodes["gl.EnableClientState"] = OP_GL_ENABLE_CLIENT_STATE
-	OpCodes["gl.ActiveTexture"] = OP_GL_ACTIVE_TEXTURE
-	OpCodes["gl.Color3f"] = OP_GL_COLOR3F
-	OpCodes["gl.Color4f"] = OP_GL_COLOR4F
-	OpCodes["gl.Begin"] = OP_GL_BEGIN
-	OpCodes["gl.End"] = OP_GL_END
-	OpCodes["gl.Normal3f"] = OP_GL_NORMAL3F
-	OpCodes["gl.Vertex2f"] = OP_GL_VERTEX_2F
-	OpCodes["gl.Vertex3f"] = OP_GL_VERTEX_3F
-	OpCodes["gl.Enable"] = OP_GL_ENABLE
-	OpCodes["gl.ClearColor"] = OP_GL_CLEAR_COLOR
-	OpCodes["gl.ClearDepth"] = OP_GL_CLEAR_DEPTH
-	OpCodes["gl.DepthFunc"] = OP_GL_DEPTH_FUNC
-	OpCodes["gl.Lightfv"] = OP_GL_LIGHTFV
-	OpCodes["gl.Frustum"] = OP_GL_FRUSTUM
-	OpCodes["gl.Disable"] = OP_GL_DISABLE
-	OpCodes["gl.Hint"] = OP_GL_HINT
-	OpCodes["gl.NewTexture"] = OP_GL_NEW_TEXTURE
-	OpCodes["gl.DepthMask"] = OP_GL_DEPTH_MASK
-	OpCodes["gl.TexEnvi"] = OP_GL_TEX_ENVI
-	OpCodes["gl.BlendFunc"] = OP_GL_BLEND_FUNC
-	OpCodes["gl.Ortho"] = OP_GL_ORTHO
-	OpCodes["gl.Viewport"] = OP_GL_VIEWPORT
-	OpCodes["gl.Scalef"] = OP_GL_SCALEF
-	OpCodes["gl.TexCoord2d"] = OP_GL_TEX_COORD_2D
-	OpCodes["gl.TexCoord2f"] = OP_GL_TEX_COORD_2F
-	
-	/* gl_1_0 */
-	OpCodes["gl.Scissor"] = OP_GL_SCISSOR
-	OpCodes["gl.TexImage2D"] = OP_GL_TEX_IMAGE_2D
-	OpCodes["gl.TexParameteri"] = OP_GL_TEX_PARAMETERI
-	OpCodes["gl.GetTexLevelParameteriv"] = OP_GL_GET_TEX_LEVEL_PARAMETERIV
-	
-	/* gl_1_1 */
-	OpCodes["gl.BindTexture"] = OP_GL_BIND_TEXTURE
-	OpCodes["gl.GenTextures"] = OP_GL_GEN_TEXTURES
-	OpCodes["gl.DeleteTextures"] = OP_GL_DELETE_TEXTURES
-	
-	/* gl_2_0 */
-	OpCodes["gl.BindAttribLocation"] = OP_GL_BIND_ATTRIB_LOCATION
-	OpCodes["gl.GetAttribLocation"] = OP_GL_GET_ATTRIB_LOCATION
-	OpCodes["gl.GetUniformLocation"] = OP_GL_GET_UNIFORM_LOCATION
-	OpCodes["gl.Uniform1f"] = OP_GL_UNIFORM_1F
-	OpCodes["gl.Uniform1i"] = OP_GL_UNIFORM_1I
-	
-	/* gl_3_0 */
-	OpCodes["gl.BindRenderbuffer"] = OP_GL_BIND_RENDERBUFFER
-	OpCodes["gl.DeleteRenderbuffers"] = OP_GL_DELETE_RENDERBUFFERS
-	OpCodes["gl.GenRenderbuffers"] = OP_GL_GEN_RENDERBUFFERS
-	OpCodes["gl.RenderbufferStorage"] = OP_GL_RENDERBUFFER_STORAGE
-	OpCodes["gl.BindFramebuffer"] = OP_GL_BIND_FRAMEBUFFER
-	OpCodes["gl.DeleteFramebuffers"] = OP_GL_DELETE_FRAMEBUFFERS
-	OpCodes["gl.GenFramebuffers"] = OP_GL_GEN_FRAMEBUFFERS
-	OpCodes["gl.CheckFramebufferStatus"] = OP_GL_CHECK_FRAMEBUFFER_STATUS
-	OpCodes["gl.FramebufferTexture2D"] = OP_GL_FRAMEBUFFER_TEXTURE_2D
-	OpCodes["gl.FramebufferRenderbuffer"] = OP_GL_FRAMEBUFFER_RENDERBUFFER
-	
-	// glfw
-	OpCodes["glfw.Init"] = OP_GLFW_INIT
-	OpCodes["glfw.WindowHint"] = OP_GLFW_WINDOW_HINT
-	OpCodes["glfw.CreateWindow"] = OP_GLFW_CREATE_WINDOW
-	OpCodes["glfw.MakeContextCurrent"] = OP_GLFW_MAKE_CONTEXT_CURRENT
-	OpCodes["glfw.ShouldClose"] = OP_GLFW_SHOULD_CLOSE
-	OpCodes["glfw.SetShouldClose"] = OP_GLFW_SET_SHOULD_CLOSE
-	OpCodes["glfw.PollEvents"] = OP_GLFW_POLL_EVENTS
-	OpCodes["glfw.SwapBuffers"] = OP_GLFW_SWAP_BUFFERS
-	OpCodes["glfw.GetFramebufferSize"] = OP_GLFW_GET_FRAMEBUFFER_SIZE
-	OpCodes["glfw.SwapInterval"] = OP_GLFW_SWAP_INTERVAL
-	OpCodes["glfw.SetKeyCallback"] = OP_GLFW_SET_KEY_CALLBACK
-	OpCodes["glfw.GetTime"] = OP_GLFW_GET_TIME
-	OpCodes["glfw.SetMouseButtonCallback"] = OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
-	OpCodes["glfw.SetCursorPosCallback"] = OP_GLFW_SET_CURSOR_POS_CALLBACK
-	OpCodes["glfw.GetCursorPos"] = OP_GLFW_GET_CURSOR_POS
-	OpCodes["glfw.SetInputMode"] = OP_GLFW_SET_INPUT_MODE
-	OpCodes["glfw.SetWindowPos"] = OP_GLFW_SET_WINDOW_POS
-	OpCodes["glfw.GetKey"] = OP_GLFW_GET_KEY
-	
-	// gltext
-	OpCodes["gltext.LoadTrueType"] = OP_GLTEXT_LOAD_TRUE_TYPE
-	OpCodes["gltext.Printf"] = OP_GLTEXT_PRINTF
-	OpCodes["gltext.Metrics"] = OP_GLTEXT_METRICS
-	OpCodes["gltext.Texture"] = OP_GLTEXT_TEXTURE
-	OpCodes["gltext.NextRune"] = OP_GLTEXT_NEXT_RUNE
-	OpCodes["gltext.GlyphBounds"] = OP_GLTEXT_GLYPH_BOUNDS
-
-	/*
-            Natives
-        */
-
-	// opengl
-	Natives[OP_GL_INIT] = MakeNative(OP_GL_INIT, []int{}, []int{})
-	Natives[OP_GL_GET_ERROR] = MakeNative(OP_GL_GET_ERROR, []int{}, []int{TYPE_I32})
-	Natives[OP_GL_CULL_FACE] = MakeNative(OP_GL_CULL_FACE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_CREATE_PROGRAM] = MakeNative(OP_GL_CREATE_PROGRAM, []int{}, []int{TYPE_I32})
-	Natives[OP_GL_DELETE_PROGRAM] = MakeNative(OP_GL_DELETE_PROGRAM, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_LINK_PROGRAM] = MakeNative(OP_GL_LINK_PROGRAM, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_CLEAR] = MakeNative(OP_GL_CLEAR, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_USE_PROGRAM] = MakeNative(OP_GL_USE_PROGRAM, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_BIND_BUFFER] = MakeNative(OP_GL_BIND_BUFFER, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_BIND_VERTEX_ARRAY] = MakeNative(OP_GL_BIND_VERTEX_ARRAY, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY] = MakeNative(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_VERTEX_ATTRIB_POINTER] = MakeNative(OP_GL_VERTEX_ATTRIB_POINTER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{})
-	Natives[OP_GL_VERTEX_ATTRIB_POINTER_I32] = MakeNative(OP_GL_VERTEX_ATTRIB_POINTER_I32,[]int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_DRAW_ARRAYS] = MakeNative(OP_GL_DRAW_ARRAYS, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_GEN_BUFFERS] = MakeNative(OP_GL_GEN_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_DELETE_BUFFERS] = MakeNative(OP_GL_DELETE_BUFFERS, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_BUFFER_DATA] = MakeNative(OP_GL_BUFFER_DATA, []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{})
-	Natives[OP_GL_BUFFER_SUB_DATA] = MakeNative(OP_GL_BUFFER_SUB_DATA, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
-	Natives[OP_GL_GEN_VERTEX_ARRAYS] = MakeNative(OP_GL_GEN_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_DELETE_VERTEX_ARRAYS] = MakeNative(OP_GL_DELETE_VERTEX_ARRAYS, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_CREATE_SHADER] = MakeNative(OP_GL_CREATE_SHADER, []int{TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_DETACH_SHADER] = MakeNative(OP_GL_DETACH_SHADER, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_DELETE_SHADER] = MakeNative(OP_GL_DELETE_SHADER, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_STRS] = MakeNative(OP_GL_STRS, []int{TYPE_STR, TYPE_STR}, []int{})
-	Natives[OP_GL_FREE] = MakeNative(OP_GL_FREE, []int{TYPE_STR}, []int{})
-	Natives[OP_GL_SHADER_SOURCE] = MakeNative(OP_GL_SHADER_SOURCE, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	Natives[OP_GL_COMPILE_SHADER] = MakeNative(OP_GL_COMPILE_SHADER, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_GET_SHADERIV] = MakeNative(OP_GL_GET_SHADERIV, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_ATTACH_SHADER] = MakeNative(OP_GL_ATTACH_SHADER, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_MATRIX_MODE] = MakeNative(OP_GL_MATRIX_MODE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_ROTATEF] = MakeNative(OP_GL_ROTATEF, []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_TRANSLATEF] = MakeNative(OP_GL_TRANSLATEF, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_LOAD_IDENTITY] = MakeNative(OP_GL_LOAD_IDENTITY, []int{}, []int{})
-	Natives[OP_GL_PUSH_MATRIX] = MakeNative(OP_GL_PUSH_MATRIX, []int{}, []int{})
-	Natives[OP_GL_POP_MATRIX] = MakeNative(OP_GL_POP_MATRIX, []int{}, []int{})
-	Natives[OP_GL_ENABLE_CLIENT_STATE] = MakeNative(OP_GL_ENABLE_CLIENT_STATE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_ACTIVE_TEXTURE] = MakeNative(OP_GL_ACTIVE_TEXTURE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_COLOR3F] = MakeNative(OP_GL_COLOR3F, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_COLOR4F] = MakeNative(OP_GL_COLOR4F, []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_BEGIN] = MakeNative(OP_GL_BEGIN, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_END] = MakeNative(OP_GL_END, []int{}, []int{})
-	Natives[OP_GL_NORMAL3F] = MakeNative(OP_GL_NORMAL3F, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	
-	Natives[OP_GL_VERTEX_2F] = MakeNative(OP_GL_VERTEX_2F, []int{TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_VERTEX_3F] = MakeNative(OP_GL_VERTEX_3F, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	
-	Natives[OP_GL_ENABLE] = MakeNative(OP_GL_ENABLE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_CLEAR_COLOR] = MakeNative(OP_GL_CLEAR_COLOR, []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_CLEAR_DEPTH] = MakeNative(OP_GL_CLEAR_DEPTH, []int{TYPE_F64}, []int{})
-	Natives[OP_GL_DEPTH_FUNC] = MakeNative(OP_GL_DEPTH_FUNC, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_LIGHTFV] = MakeNative(OP_GL_LIGHTFV, []int{TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
-	Natives[OP_GL_FRUSTUM] = MakeNative(OP_GL_FRUSTUM, []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
-	Natives[OP_GL_DISABLE] = MakeNative(OP_GL_DISABLE, []int{TYPE_I32}, []int{})
-	Natives[OP_GL_HINT] = MakeNative(OP_GL_HINT, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_NEW_TEXTURE] = MakeNative(OP_GL_NEW_TEXTURE, []int{TYPE_STR}, []int{TYPE_I32})
-	Natives[OP_GL_DEPTH_MASK] = MakeNative(OP_GL_DEPTH_MASK, []int{TYPE_BOOL}, []int{})
-	Natives[OP_GL_TEX_ENVI] = MakeNative(OP_GL_TEX_ENVI, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_BLEND_FUNC] = MakeNative(OP_GL_BLEND_FUNC, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_ORTHO] = MakeNative(OP_GL_ORTHO, []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
-	Natives[OP_GL_VIEWPORT] = MakeNative(OP_GL_VIEWPORT, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_SCALEF] = MakeNative(OP_GL_SCALEF, []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	Natives[OP_GL_TEX_COORD_2D] = MakeNative(OP_GL_TEX_COORD_2D, []int{TYPE_F64, TYPE_F64}, []int{})
-	Natives[OP_GL_TEX_COORD_2F] = MakeNative(OP_GL_TEX_COORD_2F, []int{TYPE_F32, TYPE_F32}, []int{})
-	
-	/* gl_1_0 */
-	Natives[OP_GL_SCISSOR] = MakeNative(OP_GL_SCISSOR, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_TEX_IMAGE_2D] = MakeNative(OP_GL_TEX_IMAGE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_TEX_PARAMETERI] = MakeNative(OP_GL_TEX_PARAMETERI, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_GET_TEX_LEVEL_PARAMETERIV] = MakeNative(OP_GL_GET_TEX_LEVEL_PARAMETERIV, []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	
-	/* gl_1_1 */
-	Natives[OP_GL_BIND_TEXTURE] = MakeNative(OP_GL_BIND_TEXTURE, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_GEN_TEXTURES] = MakeNative(OP_GL_GEN_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_DELETE_TEXTURES] = MakeNative(OP_GL_DELETE_TEXTURES, []int{TYPE_I32, TYPE_I32}, []int{})
-	
-	/* gl_2_0 */
-	Natives[OP_GL_BIND_ATTRIB_LOCATION] = MakeNative(OP_GL_BIND_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	Natives[OP_GL_GET_ATTRIB_LOCATION] = MakeNative(OP_GL_GET_ATTRIB_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
-	Natives[OP_GL_GET_UNIFORM_LOCATION] = MakeNative(OP_GL_GET_UNIFORM_LOCATION, []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
-	Natives[OP_GL_UNIFORM_1F] = MakeNative(OP_GL_UNIFORM_1F, []int{TYPE_I32, TYPE_F32}, []int{})
-	Natives[OP_GL_UNIFORM_1I] = MakeNative(OP_GL_UNIFORM_1I, []int{TYPE_I32, TYPE_I32}, []int{})
-	
-	/* gl_3_0 */
-	Natives[OP_GL_BIND_RENDERBUFFER] = MakeNative(OP_GL_BIND_RENDERBUFFER, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_DELETE_RENDERBUFFERS] = MakeNative(OP_GL_DELETE_RENDERBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_GEN_RENDERBUFFERS] = MakeNative(OP_GL_GEN_RENDERBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_RENDERBUFFER_STORAGE] = MakeNative(OP_GL_RENDERBUFFER_STORAGE, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_BIND_FRAMEBUFFER] = MakeNative(OP_GL_BIND_FRAMEBUFFER, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_DELETE_FRAMEBUFFERS] = MakeNative(OP_GL_DELETE_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_GEN_FRAMEBUFFERS] = MakeNative(OP_GL_GEN_FRAMEBUFFERS, []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_CHECK_FRAMEBUFFER_STATUS] = MakeNative(OP_GL_CHECK_FRAMEBUFFER_STATUS, []int{TYPE_I32}, []int{TYPE_I32})
-	Natives[OP_GL_FRAMEBUFFER_TEXTURE_2D] = MakeNative(OP_GL_FRAMEBUFFER_TEXTURE_2D, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GL_FRAMEBUFFER_RENDERBUFFER] = MakeNative(OP_GL_FRAMEBUFFER_RENDERBUFFER, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	
-	// glfw
-	Natives[OP_GLFW_INIT] = MakeNative(OP_GLFW_INIT, []int{}, []int{})
-	Natives[OP_GLFW_WINDOW_HINT] = MakeNative(OP_GLFW_WINDOW_HINT, []int{TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GLFW_CREATE_WINDOW] = MakeNative(OP_GLFW_CREATE_WINDOW, []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	Natives[OP_GLFW_MAKE_CONTEXT_CURRENT] = MakeNative(OP_GLFW_MAKE_CONTEXT_CURRENT, []int{TYPE_STR}, []int{})
-	Natives[OP_GLFW_SHOULD_CLOSE] = MakeNative(OP_GLFW_SHOULD_CLOSE, []int{TYPE_STR}, []int{TYPE_BOOL})
-	Natives[OP_GLFW_SET_SHOULD_CLOSE] = MakeNative(OP_GLFW_SET_SHOULD_CLOSE, []int{TYPE_STR, TYPE_BOOL}, []int{})
-	Natives[OP_GLFW_POLL_EVENTS] = MakeNative(OP_GLFW_POLL_EVENTS, []int{}, []int{})
-	Natives[OP_GLFW_SWAP_BUFFERS] = MakeNative(OP_GLFW_SWAP_BUFFERS, []int{TYPE_STR}, []int{})
-	Natives[OP_GLFW_GET_FRAMEBUFFER_SIZE] = MakeNative(OP_GLFW_GET_FRAMEBUFFER_SIZE, []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32})
-	Natives[OP_GLFW_SWAP_INTERVAL] = MakeNative(OP_GLFW_SWAP_INTERVAL, []int{TYPE_I32}, []int{})
-	Natives[OP_GLFW_SET_KEY_CALLBACK] = MakeNative(OP_GLFW_SET_KEY_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{})
-	Natives[OP_GLFW_GET_TIME] = MakeNative(OP_GLFW_GET_TIME, []int{}, []int{TYPE_F64})
-	Natives[OP_GLFW_SET_MOUSE_BUTTON_CALLBACK] = MakeNative(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{})
-	Natives[OP_GLFW_SET_CURSOR_POS_CALLBACK] = MakeNative(OP_GLFW_SET_CURSOR_POS_CALLBACK, []int{TYPE_STR, TYPE_STR}, []int{})
-	Natives[OP_GLFW_GET_CURSOR_POS] = MakeNative(OP_GLFW_GET_CURSOR_POS, []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64})
-	Natives[OP_GLFW_SET_INPUT_MODE] = MakeNative(OP_GLFW_SET_INPUT_MODE, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GLFW_SET_WINDOW_POS] = MakeNative(OP_GLFW_SET_WINDOW_POS, []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GLFW_GET_KEY] = MakeNative(OP_GLFW_GET_KEY, []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32})
-	
-	// gltext
-	Natives[OP_GLTEXT_LOAD_TRUE_TYPE] = MakeNative(OP_GLTEXT_LOAD_TRUE_TYPE, []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	Natives[OP_GLTEXT_PRINTF] = MakeNative(OP_GLTEXT_PRINTF, []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{})
-	Natives[OP_GLTEXT_METRICS] = MakeNative(OP_GLTEXT_METRICS, []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32})
-	Natives[OP_GLTEXT_TEXTURE] = MakeNative(OP_GLTEXT_TEXTURE, []int{TYPE_STR}, []int{TYPE_I32})
-	Natives[OP_GLTEXT_NEXT_RUNE] = MakeNative(OP_GLTEXT_NEXT_RUNE, []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
-	Natives[OP_GLTEXT_GLYPH_BOUNDS] = MakeNative(OP_GLTEXT_GLYPH_BOUNDS, []int{}, []int{TYPE_I32, TYPE_I32})
-
+	// exec
 	execNative = func (prgrm *CXProgram) {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
@@ -606,7 +351,7 @@ func init () {
 			op_i32_i32(expr, fp)
 		case OP_I32_F64:
 			op_i32_i32(expr, fp)
-			
+
 		case OP_I32_PRINT:
 			op_i32_print(expr, fp)
 		case OP_I32_ADD:
@@ -743,7 +488,7 @@ func init () {
 			op_f32_f32(expr, fp)
 		case OP_F32_F64:
 			op_f32_f32(expr, fp)
-			
+
 		case OP_F32_PRINT:
 			op_f32_print(expr, fp)
 		case OP_F32_ADD:
@@ -848,7 +593,7 @@ func init () {
 			op_str_concat(expr, fp)
 		case OP_STR_EQ:
 			op_str_eq(expr, fp)
-			
+
 		case OP_STR_BYTE:
 			op_str_str(expr, fp)
 		case OP_STR_STR:
@@ -1137,7 +882,7 @@ func init () {
 			op_glfw_SetWindowPos(expr, fp)
 		case OP_GLFW_GET_KEY:
 			op_glfw_GetKey(expr, fp)
-			
+
 			// gltext
 		case OP_GLTEXT_LOAD_TRUE_TYPE:
 			op_gltext_LoadTrueType(expr, fp)
