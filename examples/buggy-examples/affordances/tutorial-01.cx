@@ -26,6 +26,13 @@ func fnPredicate (fn aff.Function) (res bool) {
 }
 
 func prgrmPredicate (prgrm aff.Program) (res bool) {
+	// var call aff.Caller
+
+	str.print("=======")
+	str.print(prgrm.Caller.FnName)
+	i32.print(prgrm.Caller.FnSize)
+	str.print("=======")
+	
   	if prgrm.HeapUsed > 300L {
   		res = true
   	}
@@ -39,7 +46,8 @@ func callerPredicate (call aff.Caller) (res bool) {
 
 func foo () {
   	fltrs := ->{
-  		filter(callerPredicate)
+		filter(prgrmPredicate)
+		// filter(callerPredicate)
   	}
   	affs := aff.query(fltrs)
   	if len(affs) < 1 {
@@ -53,7 +61,19 @@ func bar () {
   	foo()
 }
 
+func foobar (num1 i32, num2 i32) (res i32) {
+	res = num1 * num2 + num1
+}
+
+type Coco struct {
+	name str
+}
+
 func main () {
+	// var coco Coco
+	// str.print(coco.name)
+
+	
   	num0 := 2
   	num1 := 5
   	num2 := 10
@@ -90,5 +110,3 @@ targetExpr:
   	aff.inform(affs, 0, tgt)
   	aff.request(affs, 0, tgt)
 }
-
-

@@ -1,10 +1,16 @@
 package base
 
+import (
+	. "github.com/satori/go.uuid"
+)
+
 /*
   Root Program
 */
 
 type CXProgram struct {
+	ElementID                       UUID
+	
         Packages                        []*CXPackage
         CurrentPackage                  *CXPackage
 
@@ -36,6 +42,8 @@ type CXCall struct {
 */
 
 type CXPackage struct {
+	ElementID                       UUID
+	
         Name                            string
         Imports                         []*CXPackage
         Functions                       []*CXFunction
@@ -51,6 +59,8 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
+	ElementID                       UUID
+	
         Name                            string
         Fields                          []*CXArgument
         Size                            int
@@ -63,6 +73,8 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
+	ElementID                       UUID
+	
         Name                            string
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
@@ -80,6 +92,8 @@ type CXFunction struct {
 }
 
 type CXExpression struct {
+	ElementID                       UUID
+	
         Operator                        *CXFunction
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
@@ -108,6 +122,8 @@ type CXConstant struct {
 }
 
 type CXArgument struct {
+	ElementID                       UUID
+	
         Name                            string
         Type                            int
         CustomType                      *CXStruct

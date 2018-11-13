@@ -291,12 +291,18 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		encoder.DeserializeAtomic(PROGRAM.Memory[off : off + TYPE_POINTER_SIZE], &offset)
 	}
 
+	if offset == 0 {
+		// then it's nil string
+		out = ""
+		return
+	}
+
 	var size int32
 	sizeB := PROGRAM.Memory[offset : offset + STR_HEADER_SIZE]
 
 	encoder.DeserializeAtomic(sizeB, &size)
 	encoder.DeserializeRaw(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE+size], &out)
-
+	
 	return
 }
 

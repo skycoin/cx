@@ -1,0 +1,33 @@
+package main
+import "aff"
+
+func predArg (arg aff.Argument) (res bool) {
+	// accept only i32 arguments
+	if arg.Type == "i32" {
+		res = true
+	}
+}
+
+func main () {
+	var foo i32
+	
+	tgt := #{
+		expr(targetExpr)
+		inp(1)
+	}
+
+	fltrs := #{
+		filter(predArg)
+	}
+	
+	elts := aff.query(fltrs)
+
+	aff.of(elts, tgt)
+	
+	aff.request(elts, 1, tgt)
+
+targetExpr:
+	foo = i32.add(5, 6)
+
+	i32.print(foo)
+}

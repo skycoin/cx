@@ -214,12 +214,12 @@ func DeclareStruct (ident string, strctFlds []*CXArgument) {
 			strct.Fields = nil
 			strct.Size = 0
 
-			var size int
+			// var size int
 			for _, fld := range strctFlds {
 				strct.AddField(fld)
-				size += fld.TotalSize
+				// size += fld.TotalSize
 			}
-			strct.Size = size
+			// strct.Size = size
 		} else {
 			panic(err)
 		}
@@ -242,7 +242,7 @@ func DeclarePackage(ident string) {
 func AffordanceStructs (pkg *CXPackage) {
 	// Argument type
 	argStrct := MakeStruct("Argument")
-	argStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
+	// argStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
 	
 	argFldName := MakeField("Name", TYPE_STR, "", 0)
 	argFldName.TotalSize = GetArgSize(TYPE_STR)
@@ -259,7 +259,7 @@ func AffordanceStructs (pkg *CXPackage) {
 
 	// Expression type
 	exprStrct := MakeStruct("Expression")
-	exprStrct.Size = GetArgSize(TYPE_STR)
+	// exprStrct.Size = GetArgSize(TYPE_STR)
 	
 	exprFldOperator := MakeField("Operator", TYPE_STR, "", 0)
 	
@@ -269,7 +269,7 @@ func AffordanceStructs (pkg *CXPackage) {
 
 	// Function type
 	fnStrct := MakeStruct("Function")
-	fnStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
+	// fnStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
 	
 	fnFldName := MakeField("Name", TYPE_STR, "", 0)
 	fnFldName.TotalSize = GetArgSize(TYPE_STR)
@@ -291,9 +291,10 @@ func AffordanceStructs (pkg *CXPackage) {
 	
 	// Structure type
 	strctStrct := MakeStruct("Structure")
-	strctStrct.Size = GetArgSize(TYPE_STR)
+	// strctStrct.Size = GetArgSize(TYPE_STR)
 	
 	strctFldName := MakeField("Name", TYPE_STR, "", 0)
+	strctFldName.TotalSize = GetArgSize(TYPE_STR)
 	
 	strctStrct.AddField(strctFldName)
 	
@@ -301,7 +302,7 @@ func AffordanceStructs (pkg *CXPackage) {
 	
 	// Package type
 	pkgStrct := MakeStruct("Structure")
-	pkgStrct.Size = GetArgSize(TYPE_STR)
+	// pkgStrct.Size = GetArgSize(TYPE_STR)
 	
 	pkgFldName := MakeField("Name", TYPE_STR, "", 0)
 	
@@ -311,7 +312,7 @@ func AffordanceStructs (pkg *CXPackage) {
 
 	// Caller type
 	callStrct := MakeStruct("Caller")
-	callStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_I32)
+	// callStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_I32)
 	
 	callFldFnName := MakeField("FnName", TYPE_STR, "", 0)
 	callFldFnName.TotalSize = GetArgSize(TYPE_STR)
@@ -325,7 +326,7 @@ func AffordanceStructs (pkg *CXPackage) {
 	
 	// Program type
 	prgrmStrct := MakeStruct("Program")
-	prgrmStrct.Size = GetArgSize(TYPE_I32) + GetArgSize(TYPE_I64)
+	// prgrmStrct.Size = GetArgSize(TYPE_I32) + GetArgSize(TYPE_I64)
 	
 	prgrmFldCallCounter := MakeField("CallCounter", TYPE_I32, "", 0)
 	prgrmFldCallCounter.TotalSize = GetArgSize(TYPE_I32)

@@ -212,6 +212,7 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 	var foundPkg *CXPackage
 	for _, mod := range prgrm.Packages {
 		if modName == mod.Name {
+
 			foundPkg = mod
 			break
 		}

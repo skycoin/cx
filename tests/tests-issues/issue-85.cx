@@ -1,0 +1,36 @@
+package issues
+
+type Card struct {
+	suit i32
+	rank i32
+}
+
+func (c Card) issue85method1 (suit i32, rank i32) {
+	c.suit = suit
+	c.rank = rank
+}
+
+func (c *Card) issue85method2 (suit i32, rank i32) {
+	(*c).suit = suit
+	(*c).rank = rank
+
+	i32.print(c.suit)
+	i32.print(c.rank)
+}
+
+func issue85 () {
+	var card Card
+
+	issues = append(issues, assert(card.suit, 0, ""))
+	issues = append(issues, assert(card.rank, 0, ""))
+
+	card.issue85method1(7, 11)
+
+	issues = append(issues, assert(card.suit, 0, ""))
+	issues = append(issues, assert(card.rank, 0, ""))
+
+	card.issue85method2(7, 11)
+	
+	issues = append(issues, assert(card.suit, 7, ""))
+	issues = append(issues, assert(card.rank, 11, ""))
+}

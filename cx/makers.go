@@ -2,11 +2,19 @@ package base
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var HeapOffset int
-var genSymCounter int = 0
+var genSymCounter int
+var eltCounter int
+
+func MakeElementID () uuid.UUID {
+	return uuid.NewV4()
+	// eltCounter++
+	// return eltCounter
+}
 
 func MakeGenSym(name string) string {
 	gensym := fmt.Sprintf("%s_%d", name, genSymCounter)
@@ -17,6 +25,7 @@ func MakeGenSym(name string) string {
 
 func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
+		ElementID: MakeElementID(),
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE, CALLSTACK_SIZE),
 		Memory:    make([]byte, STACK_SIZE + TYPE_POINTER_SIZE + INIT_HEAP_SIZE),
@@ -27,6 +36,7 @@ func MakeProgram() *CXProgram {
 
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
+		ElementID: MakeElementID(),
 		Name:      name,
 		Globals:   make([]*CXArgument, 0, 10),
 		Imports:   make([]*CXPackage, 0),
@@ -38,6 +48,7 @@ func MakePackage(name string) *CXPackage {
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
+		ElementID:  MakeElementID(),
 		Name:       name,
 		Type:       typ,
 		Size:       size,
@@ -51,6 +62,7 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 
 func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
+		ElementID: MakeElementID(),
 		Name: name,
 		Type: typ,
 		FileName: fileName,
@@ -73,28 +85,40 @@ func MakeDefaultValue(typName string) *[]byte {
 }
 
 func MakeStruct(name string) *CXStruct {
-	return &CXStruct{Name: name}
+	return &CXStruct{
+		ElementID: MakeElementID(),
+		Name:      name,
+	}
 }
 
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
-	return &CXExpression{Operator: op, FileLine: fileLine, FileName: fileName}
+	return &CXExpression{
+		ElementID: MakeElementID(),
+		Operator: op,
+		FileLine: fileLine,
+		FileName: fileName}
 }
 
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
+		ElementID: MakeElementID(),
 		Name: name,
 		FileName: fileName,
 		FileLine: fileLine,}
 }
 
 func MakeFunction(name string) *CXFunction {
-	return &CXFunction{Name: name}
+	return &CXFunction{
+		ElementID: MakeElementID(),
+		Name: name,
+	}
 }
 
 func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	fn := &CXFunction{
-		OpCode:   opCode,
-		IsNative: true,
+		ElementID: MakeElementID(),
+		OpCode:    opCode,
+		IsNative:  true,
 	}
 
 	offset := 0

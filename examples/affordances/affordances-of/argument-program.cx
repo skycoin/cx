@@ -1,0 +1,36 @@
+package main
+import "aff"
+
+func prgrmPredicate (prgrm aff.Program) (res bool) {
+  	if prgrm.Caller.FnName == "main.main" {
+		res = true
+	}
+}
+
+func foo () {
+	var foo i32
+	
+	tgt := #{
+		expr(targetExpr)
+		inp(1)
+	}
+
+	fltrs := #{
+		filter(prgrmPredicate)
+	}
+	
+	elts := aff.query(fltrs)
+
+	aff.of(elts, tgt)
+	
+	// aff.request(elts, 1, tgt)
+
+targetExpr:
+	foo = i32.add(5, 6)
+
+	i32.print(foo)
+}
+
+func main () {
+	foo()
+}
