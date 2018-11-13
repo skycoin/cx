@@ -75,7 +75,8 @@ const (
 )
 
 const (
-	TYPE_AFF = iota
+	TYPE_UNDEFINED = iota
+	TYPE_AFF
 	TYPE_BOOL
 	TYPE_BYTE
 	TYPE_STR
@@ -92,7 +93,6 @@ const (
 
 	TYPE_THRESHOLD
 
-	TYPE_UNDEFINED
 	TYPE_CUSTOM
 	TYPE_POINTER
 	TYPE_IDENTIFIER
@@ -100,7 +100,7 @@ const (
 
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
-	"identifier": TYPE_IDENTIFIER,
+	"ident":      TYPE_IDENTIFIER,
 	"aff":        TYPE_AFF,
 	"bool":       TYPE_BOOL,
 	"byte":       TYPE_BYTE,
