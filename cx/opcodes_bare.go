@@ -1,7 +1,8 @@
 package base
 
 import (
-	
+	//"fmt"
+	//"sort"
 )
 
 var CorePackages = []string{
@@ -237,6 +238,7 @@ const (
 var OpNames map[int]string = map[int]string{}
 var OpCodes map[string]int = map[string]int{}
 var Natives map[int]*CXFunction = map[int]*CXFunction{}
+var execNativeBare func(*CXProgram)
 var execNative func(*CXProgram)
 
 func AddOpCode (code int, name string, inputs []int, outputs []int) {
@@ -244,6 +246,21 @@ func AddOpCode (code int, name string, inputs []int, outputs []int) {
 	OpCodes[name] = code
 	Natives[code] = MakeNative(code, inputs, outputs)
 }
+
+/*
+// debug helper
+func DumpOpCodes(opCode int) () {
+	var keys []int
+	for k := range OpNames {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fmt.Printf("%5d : %s\n", k, OpNames[k])
+	}
+
+	fmt.Printf("opCode : %d\n", opCode)
+}*/
 
 func init () {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
@@ -438,7 +455,7 @@ func init () {
 	AddOpCode(OP_AFF_REQUEST, "aff.request", []int{TYPE_AFF, TYPE_I32, TYPE_AFF}, []int{})
 
 	// exec
-	execNative = func(prgrm *CXProgram) {
+	execNativeBare = func(prgrm *CXProgram) {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
 		opCode := expr.Operator.OpCode
@@ -832,6 +849,11 @@ func init () {
 			op_aff_inform(expr, fp)
 		case OP_AFF_REQUEST:
 			op_aff_request(expr, fp)
+		default:
+			// DumpOpCodes(opCode) // debug helper
+			panic("invalid bare opcode")
 		}
 	}
+
+	execNative = execNativeBare
 }
