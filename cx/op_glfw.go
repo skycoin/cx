@@ -142,12 +142,12 @@ func SetKeyCallback(expr *CXExpression, window string, functionName string, pack
 
 func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-    SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
 }
 
 func op_glfw_SetKeyCallbackEx(expr *CXExpression, fp int) {
 	inp0, inp1, inp2  := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-    SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+	SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
 func SetCursorPosCallback(expr *CXExpression, window string, functionName string, packageName string) {
@@ -194,12 +194,12 @@ func SetCursorPosCallback(expr *CXExpression, window string, functionName string
 
 func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-    SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
 }
 
 func op_glfw_SetCursorPosCallbackEx(expr *CXExpression, fp int) {
 	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-    SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+	SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
 func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
@@ -260,11 +260,11 @@ func SetMouseButtonCallback(expr *CXExpression, window string, functionName stri
 
 func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-    SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
 }
 
 func op_glfw_SetMouseButtonCallbackEx(expr *CXExpression, fp int) {
 	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-    SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
+	SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
 }
 
