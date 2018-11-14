@@ -231,9 +231,24 @@ func op_gl_ClearColor(expr *CXExpression, fp int) {
 	gl.ClearColor(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3), ReadF32(fp, inp4))
 }
 
+func op_gl_ClearStencil(expr *CXExpression, fp int) {
+	inp0 := expr.Inputs[0]
+	gl.ClearStencil(ReadI32(fp, inp0))
+}
+
 func op_gl_ClearDepth(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.ClearDepth(ReadF64(fp, inp1))
+}
+
+func op_gl_StencilMask(expr *CXExpression, fp int) {
+	inp0 := expr.Inputs[0]
+	gl.StencilMask(uint32(ReadI32(fp, inp0)))
+}
+
+func op_gl_ColorMask(expr *CXExpression, fp int) {
+	inp0, inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.ColorMask(ReadBool(fp, inp0), ReadBool(fp, inp1), ReadBool(fp, inp2), ReadBool(fp, inp3))
 }
 
 func op_gl_DepthMask(expr *CXExpression, fp int) {
@@ -256,6 +271,16 @@ func op_gl_BlendFunc(expr *CXExpression, fp int) {
 	gl.BlendFunc(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
 }
 
+func op_gl_StencilFunc(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	gl.StencilFunc(uint32(ReadI32(fp, inp0)), ReadI32(fp, inp1), uint32(ReadI32(fp, inp2)))
+}
+
+func op_gl_StencilOp(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	gl.StencilOp(uint32(ReadI32(fp, inp0)), uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
+}
+
 func op_gl_DepthFunc(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.DepthFunc(uint32(ReadI32(fp, inp1)))
@@ -272,6 +297,11 @@ func op_gl_GetTexLevelParameteriv(expr *CXExpression, fp int) {
 	var outValue int32 = 0
 	gl.GetTexLevelParameteriv(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), &outValue)
 	WriteMemory(GetFinalOffset(fp, out1), FromI32(outValue))
+}
+
+func op_gl_DepthRange(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+	gl.DepthRange(ReadF64(fp, inp0), ReadF64(fp, inp1))
 }
 
 func op_gl_Viewport(expr *CXExpression, fp int) {
@@ -341,6 +371,21 @@ func op_gl_BufferSubData(expr *CXExpression, fp int) {
 }
 
 // gl_2_0
+func op_gl_StencilOpSeparate(expr *CXExpression, fp int) {
+	inp0, inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.StencilOpSeparate(uint32(ReadI32(fp, inp0)), uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)))
+}
+
+func op_gl_StencilFuncSeparate(expr *CXExpression, fp int) {
+	inp0, inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
+	gl.StencilFuncSeparate(uint32(ReadI32(fp, inp0)), uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)))
+}
+
+func op_gl_StencilMaskSeparate(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+	gl.StencilMaskSeparate(uint32(ReadI32(fp, inp0)), uint32(ReadI32(fp, inp1)))
+}
+
 func op_gl_AttachShader(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.AttachShader(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))

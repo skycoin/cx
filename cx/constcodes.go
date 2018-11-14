@@ -25,6 +25,8 @@ const (
 	CONST_GL_NOTEQUAL
 	CONST_GL_GEQUAL
 	CONST_GL_ALWAYS
+	CONST_GL_ZERO
+	CONST_GL_ONE
 	CONST_GL_SRC_ALPHA
 	CONST_GL_ONE_MINUS_SRC_ALPHA
 	CONST_GL_FRONT
@@ -40,7 +42,20 @@ const (
 	CONST_GL_LINE_SMOOTH
 	CONST_GL_POLYGON_SMOOTH
 	CONST_GL_CULL_FACE
+	CONST_GL_DEPTH_RANGE
 	CONST_GL_DEPTH_TEST
+	CONST_GL_DEPTH_WRITEMASK
+	CONST_GL_DEPTH_CLEAR_VALUE
+	CONST_GL_DEPTH_FUNC
+	CONST_GL_STENCIL_TEST
+	CONST_GL_STENCIL_CLEAR_VALUE
+	CONST_GL_STENCIL_FUNC
+	CONST_GL_STENCIL_VALUE_MASK
+	CONST_GL_STENCIL_FAIL
+	CONST_GL_STENCIL_PASS_DEPTH_FAIL
+	CONST_GL_STENCIL_PASS_DEPTH_PASS
+	CONST_GL_STENCIL_REF
+	CONST_GL_STENCIL_WRITEMASK
 	CONST_GL_DITHER
 	CONST_GL_BLEND
 	CONST_GL_SCISSOR_TEST
@@ -51,11 +66,18 @@ const (
 	CONST_GL_DONT_CARE
 	CONST_GL_UNSIGNED_BYTE
 	CONST_GL_FLOAT
+	CONST_GL_INVERT
 	CONST_GL_TEXTURE
 	CONST_GL_COLOR
+	CONST_GL_DEPTH
+	CONST_GL_STENCIL
+	CONST_GL_STENCIL_INDEX
 	CONST_GL_DEPTH_COMPONENT
 	CONST_GL_RGBA
+	CONST_GL_KEEP
 	CONST_GL_REPLACE
+	CONST_GL_INCR
+	CONST_GL_DECR
 	CONST_GL_NEAREST
 	CONST_GL_LINEAR
 	CONST_GL_NEAREST_MIPMAP_NEAREST
@@ -82,7 +104,12 @@ const (
 	CONST_GL_CLAMP_TO_BORDER
 
 	// gl_1_4
+	CONST_GL_DEPTH_COMPONENT16
+	CONST_GL_DEPTH_COMPONENT24
+	CONST_GL_DEPTH_COMPONENT32
 	CONST_GL_MIRRORED_REPEAT
+	CONST_GL_INCR_WRAP
+	CONST_GL_DECR_WRAP
 
 	// gl_1_5
 	CONST_GL_ARRAY_BUFFER
@@ -97,11 +124,23 @@ const (
 	CONST_GL_DYNAMIC_COPY
 
 	// gl_2_0
+	CONST_GL_STENCIL_BACK_FUNC
+	CONST_GL_STENCIL_BACK_FAIL
+	CONST_GL_STENCIL_BACK_PASS_DEPTH_FAIL
+	CONST_GL_STENCIL_BACK_PASS_DEPTH_PASS
 	CONST_GL_FRAGMENT_SHADER
 	CONST_GL_VERTEX_SHADER
+	CONST_GL_STENCIL_BACK_REF
+	CONST_GL_STENCIL_BACK_VALUE_MASK
+	CONST_GL_STENCIL_BACK_WRITEMASK
 
 	// gl_3_0
+	CONST_GL_DEPTH_COMPONENT32F
+	CONST_GL_DEPTH32F_STENCIL8
 	CONST_GL_FRAMEBUFFER_UNDEFINED
+	CONST_GL_DEPTH_STENCIL_ATTACHMENT
+	CONST_GL_DEPTH_STENCIL
+	CONST_GL_DEPTH24_STENCIL8
 	CONST_GL_FRAMEBUFFER_COMPLETE
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
@@ -114,6 +153,10 @@ const (
 	CONST_GL_FRAMEBUFFER
 	CONST_GL_RENDERBUFFER
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+	CONST_GL_STENCIL_INDEX1
+	CONST_GL_STENCIL_INDEX4
+	CONST_GL_STENCIL_INDEX8
+	CONST_GL_STENCIL_INDEX16
 
 	// gl_3_2
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
@@ -180,69 +223,91 @@ func AddConstCode(code int, name string, typ int, value []byte) {
 
 func init() {
 	/* gl_1_0 */
-	AddConstCode( CONST_GL_DEPTH_BUFFER_BIT      , "gl.DEPTH_BUFFER_BIT"      , TYPE_I32, FromI32(0x00000100))
-	AddConstCode( CONST_GL_STENCIL_BUFFER_BIT    , "gl.STENCIL_BUFFER_BIT"    , TYPE_I32, FromI32(0x00000400))
-	AddConstCode( CONST_GL_COLOR_BUFFER_BIT      , "gl.COLOR_BUFFER_BIT"      , TYPE_I32, FromI32(0x00004000))
-	AddConstCode( CONST_GL_FALSE                 , "gl.FALSE"                 , TYPE_I32, FromI32(0))
-	AddConstCode( CONST_GL_TRUE                  , "gl.TRUE"                  , TYPE_I32, FromI32(1))
-	AddConstCode( CONST_GL_POINTS                , "gl.POINTS"                , TYPE_I32, FromI32(0x0000))
-	AddConstCode( CONST_GL_LINES                 , "gl.LINES"                 , TYPE_I32, FromI32(0x0001))
-	AddConstCode( CONST_GL_LINE_LOOP             , "gl.LINE_LOOP"             , TYPE_I32, FromI32(0x0002))
-	AddConstCode( CONST_GL_LINE_STRIP            , "gl.LINE_STRIP"            , TYPE_I32, FromI32(0x0003))
-	AddConstCode( CONST_GL_TRIANGLES             , "gl.TRIANGLES"             , TYPE_I32, FromI32(0x0004))
-	AddConstCode( CONST_GL_TRIANGLE_STRIP        , "gl.TRIANGLE_STRIP"        , TYPE_I32, FromI32(0x0005))
-	AddConstCode( CONST_GL_TRIANGLE_FAN          , "gl.TRIANGLE_FAN"          , TYPE_I32, FromI32(0x0006))
-	AddConstCode( CONST_GL_QUADS                 , "gl.QUADS"                 , TYPE_I32, FromI32(0x0007))
-	AddConstCode( CONST_GL_NEVER                 , "gl.NEVER"                 , TYPE_I32, FromI32(0x0200))
-	AddConstCode( CONST_GL_LESS                  , "gl.LESS"                  , TYPE_I32, FromI32(0x0201))
-	AddConstCode( CONST_GL_EQUAL                 , "gl.EQUAL"                 , TYPE_I32, FromI32(0x0202))
-	AddConstCode( CONST_GL_LEQUAL                , "gl.LEQUAL"                , TYPE_I32, FromI32(0x0203))
-	AddConstCode( CONST_GL_GREATER               , "gl.GREATER"               , TYPE_I32, FromI32(0x0204))
-	AddConstCode( CONST_GL_NOTEQUAL              , "gl.NOTEQUAL"              , TYPE_I32, FromI32(0x0205))
-	AddConstCode( CONST_GL_GEQUAL                , "gl.GEQUAL"                , TYPE_I32, FromI32(0x0206))
-	AddConstCode( CONST_GL_ALWAYS                , "gl.ALWAYS"                , TYPE_I32, FromI32(0x0207))
-	AddConstCode( CONST_GL_SRC_ALPHA             , "gl.SRC_ALPHA"             , TYPE_I32, FromI32(0x302))
-	AddConstCode( CONST_GL_ONE_MINUS_SRC_ALPHA   , "gl.ONE_MINUS_SRC_ALPHA"   , TYPE_I32, FromI32(0x303))
-	AddConstCode( CONST_GL_FRONT                 , "gl.FRONT"                 , TYPE_I32, FromI32(0x404))
-	AddConstCode( CONST_GL_BACK                  , "gl.BACK"                  , TYPE_I32, FromI32(0x405))
-	AddConstCode( CONST_GL_FRONT_AND_BACK        , "gl.FRONT_AND_BACK"        , TYPE_I32, FromI32(0x408))
-	AddConstCode( CONST_GL_NO_ERROR              , "gl.NO_ERROR"              , TYPE_I32, FromI32(0))
-	AddConstCode( CONST_GL_INVALID_ENUM          , "gl.INVALID_ENUM"          , TYPE_I32, FromI32(0x500))
-	AddConstCode( CONST_GL_INVALID_VALUE         , "gl.INVALID_VALUE"         , TYPE_I32, FromI32(0x501))
-	AddConstCode( CONST_GL_INVALID_OPERATION     , "gl.INVALID_OPERATION"     , TYPE_I32, FromI32(0x502))
-	AddConstCode( CONST_GL_STACK_OVERFLOW        , "gl.STACK_OVERFLOW"        , TYPE_I32, FromI32(0x503))
-	AddConstCode( CONST_GL_STACK_UNDERFLOW       , "gl.STACK_UNDERFLOW"       , TYPE_I32, FromI32(0x504))
-	AddConstCode( CONST_GL_OUT_OF_MEMORY         , "gl.OUT_OF_MEMORY"         , TYPE_I32, FromI32(0x505))
-	AddConstCode( CONST_GL_LINE_SMOOTH           , "gl.LINE_SMOOTH"           , TYPE_I32, FromI32(0x0B20))
-	AddConstCode( CONST_GL_POLYGON_SMOOTH        , "gl.POLYGON_SMOOTH"        , TYPE_I32, FromI32(0x0B41))
-	AddConstCode( CONST_GL_CULL_FACE             , "gl.CULL_FACE"             , TYPE_I32, FromI32(0x0B44))
-	AddConstCode( CONST_GL_DEPTH_TEST            , "gl.DEPTH_TEST"            , TYPE_I32, FromI32(0x0B71))
-	AddConstCode( CONST_GL_DITHER                , "gl.DITHER"                , TYPE_I32, FromI32(0x0BD0))
-	AddConstCode( CONST_GL_BLEND                 , "gl.BLEND"                 , TYPE_I32, FromI32(0x0BE2))
-	AddConstCode( CONST_GL_SCISSOR_TEST          , "gl.SCISSOR_TEST"          , TYPE_I32, FromI32(0x0C11))
-	AddConstCode( CONST_GL_POLYGON_SMOOTH_HINT   , "gl.POLYGON_SMOOTH_HINT"   , TYPE_I32, FromI32(0x0C53))
-	AddConstCode( CONST_GL_TEXTURE_2D            , "gl.TEXTURE_2D"            , TYPE_I32, FromI32(0x0DE1))
-	AddConstCode( CONST_GL_TEXTURE_WIDTH         , "gl.TEXTURE_WIDTH"         , TYPE_I32, FromI32(0x1000))
-	AddConstCode( CONST_GL_TEXTURE_HEIGHT        , "gl.TEXTURE_HEIGHT"        , TYPE_I32, FromI32(0x1001))
-	AddConstCode( CONST_GL_DONT_CARE             , "gl.DONT_CARE"             , TYPE_I32, FromI32(0x1100))
-	AddConstCode( CONST_GL_UNSIGNED_BYTE         , "gl.UNSIGNED_BYTE"         , TYPE_I32, FromI32(0x1401))
-	AddConstCode( CONST_GL_FLOAT                 , "gl.FLOAT"                 , TYPE_I32, FromI32(0x1406))
-	AddConstCode( CONST_GL_TEXTURE               , "gl.TEXTURE"               , TYPE_I32, FromI32(0x1702))
-	AddConstCode( CONST_GL_COLOR                 , "gl.COLOR"                 , TYPE_I32, FromI32(0x1800))
-	AddConstCode( CONST_GL_DEPTH_COMPONENT       , "gl.DEPTH_COMPONENT"       , TYPE_I32, FromI32(0x1902))
-	AddConstCode( CONST_GL_RGBA                  , "gl.RGBA"                  , TYPE_I32, FromI32(0x1908))
-	AddConstCode( CONST_GL_REPLACE               , "gl.REPLACE"               , TYPE_I32, FromI32(0x1E01))
-	AddConstCode( CONST_GL_NEAREST               , "gl.NEAREST"               , TYPE_I32, FromI32(0x2600))
-	AddConstCode( CONST_GL_LINEAR                , "gl.LINEAR"                , TYPE_I32, FromI32(0x2601))
-	AddConstCode( CONST_GL_NEAREST_MIPMAP_NEAREST, "gl.NEAREST_MIPMAP_NEAREST", TYPE_I32, FromI32(0x2700))
-	AddConstCode( CONST_GL_LINEAR_MIPMAP_NEAREST , "gl.LINEAR_MIPMAP_NEAREST" , TYPE_I32, FromI32(0x2701))
-	AddConstCode( CONST_GL_NEAREST_MIPMAP_LINEAR , "gl.NEAREST_MIPMAP_LINEAR" , TYPE_I32, FromI32(0x2702))
-	AddConstCode( CONST_GL_LINEAR_MIPMAP_LINEAR  , "gl.LINEAR_MIPMAP_LINEAR"  , TYPE_I32, FromI32(0x2703))
-	AddConstCode( CONST_GL_TEXTURE_MAG_FILTER    , "gl.TEXTURE_MAG_FILTER"    , TYPE_I32, FromI32(0x2800))
-	AddConstCode( CONST_GL_TEXTURE_MIN_FILTER    , "gl.TEXTURE_MIN_FILTER"    , TYPE_I32, FromI32(0x2801))
-	AddConstCode( CONST_GL_TEXTURE_WRAP_S        , "gl.TEXTURE_WRAP_S"        , TYPE_I32, FromI32(0x2802))
-	AddConstCode( CONST_GL_TEXTURE_WRAP_T        , "gl.TEXTURE_WRAP_T"        , TYPE_I32, FromI32(0x2803))
-	AddConstCode( CONST_GL_REPEAT                , "gl.REPEAT"                , TYPE_I32, FromI32(0x2901))
+	AddConstCode( CONST_GL_DEPTH_BUFFER_BIT       , "gl.DEPTH_BUFFER_BIT"       , TYPE_I32, FromI32(0x00000100))
+	AddConstCode( CONST_GL_STENCIL_BUFFER_BIT     , "gl.STENCIL_BUFFER_BIT"     , TYPE_I32, FromI32(0x00000400))
+	AddConstCode( CONST_GL_COLOR_BUFFER_BIT       , "gl.COLOR_BUFFER_BIT"       , TYPE_I32, FromI32(0x00004000))
+	AddConstCode( CONST_GL_FALSE                  , "gl.FALSE"                  , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_TRUE                   , "gl.TRUE"                   , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GL_POINTS                 , "gl.POINTS"                 , TYPE_I32, FromI32(0x0000))
+	AddConstCode( CONST_GL_LINES                  , "gl.LINES"                  , TYPE_I32, FromI32(0x0001))
+	AddConstCode( CONST_GL_LINE_LOOP              , "gl.LINE_LOOP"              , TYPE_I32, FromI32(0x0002))
+	AddConstCode( CONST_GL_LINE_STRIP             , "gl.LINE_STRIP"             , TYPE_I32, FromI32(0x0003))
+	AddConstCode( CONST_GL_TRIANGLES              , "gl.TRIANGLES"              , TYPE_I32, FromI32(0x0004))
+	AddConstCode( CONST_GL_TRIANGLE_STRIP         , "gl.TRIANGLE_STRIP"         , TYPE_I32, FromI32(0x0005))
+	AddConstCode( CONST_GL_TRIANGLE_FAN           , "gl.TRIANGLE_FAN"           , TYPE_I32, FromI32(0x0006))
+	AddConstCode( CONST_GL_QUADS                  , "gl.QUADS"                  , TYPE_I32, FromI32(0x0007))
+	AddConstCode( CONST_GL_NEVER                  , "gl.NEVER"                  , TYPE_I32, FromI32(0x0200))
+	AddConstCode( CONST_GL_LESS                   , "gl.LESS"                   , TYPE_I32, FromI32(0x0201))
+	AddConstCode( CONST_GL_EQUAL                  , "gl.EQUAL"                  , TYPE_I32, FromI32(0x0202))
+	AddConstCode( CONST_GL_LEQUAL                 , "gl.LEQUAL"                 , TYPE_I32, FromI32(0x0203))
+	AddConstCode( CONST_GL_GREATER                , "gl.GREATER"                , TYPE_I32, FromI32(0x0204))
+	AddConstCode( CONST_GL_NOTEQUAL               , "gl.NOTEQUAL"               , TYPE_I32, FromI32(0x0205))
+	AddConstCode( CONST_GL_GEQUAL                 , "gl.GEQUAL"                 , TYPE_I32, FromI32(0x0206))
+	AddConstCode( CONST_GL_ALWAYS                 , "gl.ALWAYS"                 , TYPE_I32, FromI32(0x0207))
+	AddConstCode( CONST_GL_ZERO                   , "gl.ZERO"                   , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_ONE                    , "gl.ONE"                    , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GL_SRC_ALPHA              , "gl.SRC_ALPHA"              , TYPE_I32, FromI32(0x302))
+	AddConstCode( CONST_GL_ONE_MINUS_SRC_ALPHA    , "gl.ONE_MINUS_SRC_ALPHA"    , TYPE_I32, FromI32(0x303))
+	AddConstCode( CONST_GL_FRONT                  , "gl.FRONT"                  , TYPE_I32, FromI32(0x404))
+	AddConstCode( CONST_GL_BACK                   , "gl.BACK"                   , TYPE_I32, FromI32(0x405))
+	AddConstCode( CONST_GL_FRONT_AND_BACK         , "gl.FRONT_AND_BACK"         , TYPE_I32, FromI32(0x408))
+	AddConstCode( CONST_GL_NO_ERROR               , "gl.NO_ERROR"               , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_INVALID_ENUM           , "gl.INVALID_ENUM"           , TYPE_I32, FromI32(0x500))
+	AddConstCode( CONST_GL_INVALID_VALUE          , "gl.INVALID_VALUE"          , TYPE_I32, FromI32(0x501))
+	AddConstCode( CONST_GL_INVALID_OPERATION      , "gl.INVALID_OPERATION"      , TYPE_I32, FromI32(0x502))
+	AddConstCode( CONST_GL_STACK_OVERFLOW         , "gl.STACK_OVERFLOW"         , TYPE_I32, FromI32(0x503))
+	AddConstCode( CONST_GL_STACK_UNDERFLOW        , "gl.STACK_UNDERFLOW"        , TYPE_I32, FromI32(0x504))
+	AddConstCode( CONST_GL_OUT_OF_MEMORY          , "gl.OUT_OF_MEMORY"          , TYPE_I32, FromI32(0x505))
+	AddConstCode( CONST_GL_LINE_SMOOTH            , "gl.LINE_SMOOTH"            , TYPE_I32, FromI32(0x0B20))
+	AddConstCode( CONST_GL_POLYGON_SMOOTH         , "gl.POLYGON_SMOOTH"         , TYPE_I32, FromI32(0x0B41))
+	AddConstCode( CONST_GL_CULL_FACE              , "gl.CULL_FACE"              , TYPE_I32, FromI32(0x0B44))
+	AddConstCode( CONST_GL_DEPTH_RANGE            , "gl.DEPTH_RANGE"            , TYPE_I32, FromI32(0x0B70))
+	AddConstCode( CONST_GL_DEPTH_TEST             , "gl.DEPTH_TEST"             , TYPE_I32, FromI32(0x0B71))
+	AddConstCode( CONST_GL_DEPTH_WRITEMASK        , "gl.DEPTH_WRITEMASK"        , TYPE_I32, FromI32(0x0B72))
+	AddConstCode( CONST_GL_DEPTH_CLEAR_VALUE      , "gl.DEPTH_CLEAR_VALUE"      , TYPE_I32, FromI32(0x0B73))
+	AddConstCode( CONST_GL_DEPTH_FUNC             , "gl.DEPTH_FUNC"             , TYPE_I32, FromI32(0x0B74))
+	AddConstCode( CONST_GL_STENCIL_TEST           , "gl.STENCIL_TEST"           , TYPE_I32, FromI32(0x0B90))
+	AddConstCode( CONST_GL_STENCIL_CLEAR_VALUE    , "gl.STENCIL_CLEAR_VALUE"    , TYPE_I32, FromI32(0x0B91))
+	AddConstCode( CONST_GL_STENCIL_FUNC           , "gl.STENCIL_FUNC"           , TYPE_I32, FromI32(0x0B92))
+	AddConstCode( CONST_GL_STENCIL_VALUE_MASK     , "gl.STENCIL_VALUE_MASK"     , TYPE_I32, FromI32(0x0B93))
+	AddConstCode( CONST_GL_STENCIL_FAIL           , "gl.STENCIL_FAIL"           , TYPE_I32, FromI32(0x0B94))
+	AddConstCode( CONST_GL_STENCIL_PASS_DEPTH_FAIL, "gl.STENCIL_PASS_DEPTH_FAIL", TYPE_I32, FromI32(0x0B95))
+	AddConstCode( CONST_GL_STENCIL_PASS_DEPTH_PASS, "gl.STENCIL_PASS_DEPTH_PASS", TYPE_I32, FromI32(0x0B96))
+	AddConstCode( CONST_GL_STENCIL_REF            , "gl.STENCIL_REF"            , TYPE_I32, FromI32(0x0B97))
+	AddConstCode( CONST_GL_STENCIL_WRITEMASK      , "gl.STENCIL_WRITE_MASK"     , TYPE_I32, FromI32(0x0B98))
+	AddConstCode( CONST_GL_DITHER                 , "gl.DITHER"                 , TYPE_I32, FromI32(0x0BD0))
+	AddConstCode( CONST_GL_BLEND                  , "gl.BLEND"                  , TYPE_I32, FromI32(0x0BE2))
+	AddConstCode( CONST_GL_SCISSOR_TEST           , "gl.SCISSOR_TEST"           , TYPE_I32, FromI32(0x0C11))
+	AddConstCode( CONST_GL_POLYGON_SMOOTH_HINT    , "gl.POLYGON_SMOOTH_HINT"    , TYPE_I32, FromI32(0x0C53))
+	AddConstCode( CONST_GL_TEXTURE_2D             , "gl.TEXTURE_2D"             , TYPE_I32, FromI32(0x0DE1))
+	AddConstCode( CONST_GL_TEXTURE_WIDTH          , "gl.TEXTURE_WIDTH"          , TYPE_I32, FromI32(0x1000))
+	AddConstCode( CONST_GL_TEXTURE_HEIGHT         , "gl.TEXTURE_HEIGHT"         , TYPE_I32, FromI32(0x1001))
+	AddConstCode( CONST_GL_DONT_CARE              , "gl.DONT_CARE"              , TYPE_I32, FromI32(0x1100))
+	AddConstCode( CONST_GL_UNSIGNED_BYTE          , "gl.UNSIGNED_BYTE"          , TYPE_I32, FromI32(0x1401))
+	AddConstCode( CONST_GL_FLOAT                  , "gl.FLOAT"                  , TYPE_I32, FromI32(0x1406))
+	AddConstCode( CONST_GL_INVERT                 , "gl.INVERT"                 , TYPE_I32, FromI32(0x150A))
+	AddConstCode( CONST_GL_TEXTURE                , "gl.TEXTURE"                , TYPE_I32, FromI32(0x1702))
+	AddConstCode( CONST_GL_COLOR                  , "gl.COLOR"                  , TYPE_I32, FromI32(0x1800))
+	AddConstCode( CONST_GL_DEPTH                  , "gl.DEPTH"                  , TYPE_I32, FromI32(0x1801))
+	AddConstCode( CONST_GL_STENCIL                , "gl.STENCIL"                , TYPE_I32, FromI32(0x1802))
+	AddConstCode( CONST_GL_STENCIL_INDEX          , "gl.STENCIL_INDEX"          , TYPE_I32, FromI32(0x1901))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT        , "gl.DEPTH_COMPONENT"        , TYPE_I32, FromI32(0x1902))
+	AddConstCode( CONST_GL_RGBA                   , "gl.RGBA"                   , TYPE_I32, FromI32(0x1908))
+	AddConstCode( CONST_GL_KEEP                   , "gl.KEEP"                   , TYPE_I32, FromI32(0x1E00))
+	AddConstCode( CONST_GL_REPLACE                , "gl.REPLACE"                , TYPE_I32, FromI32(0x1E01))
+	AddConstCode( CONST_GL_INCR                   , "gl.INCR"                   , TYPE_I32, FromI32(0x1E02))
+	AddConstCode( CONST_GL_DECR                   , "gl.DECR"                   , TYPE_I32, FromI32(0x1E03))
+	AddConstCode( CONST_GL_NEAREST                , "gl.NEAREST"                , TYPE_I32, FromI32(0x2600))
+	AddConstCode( CONST_GL_LINEAR                 , "gl.LINEAR"                 , TYPE_I32, FromI32(0x2601))
+	AddConstCode( CONST_GL_NEAREST_MIPMAP_NEAREST , "gl.NEAREST_MIPMAP_NEAREST" , TYPE_I32, FromI32(0x2700))
+	AddConstCode( CONST_GL_LINEAR_MIPMAP_NEAREST  , "gl.LINEAR_MIPMAP_NEAREST"  , TYPE_I32, FromI32(0x2701))
+	AddConstCode( CONST_GL_NEAREST_MIPMAP_LINEAR  , "gl.NEAREST_MIPMAP_LINEAR"  , TYPE_I32, FromI32(0x2702))
+	AddConstCode( CONST_GL_LINEAR_MIPMAP_LINEAR   , "gl.LINEAR_MIPMAP_LINEAR"   , TYPE_I32, FromI32(0x2703))
+	AddConstCode( CONST_GL_TEXTURE_MAG_FILTER     , "gl.TEXTURE_MAG_FILTER"     , TYPE_I32, FromI32(0x2800))
+	AddConstCode( CONST_GL_TEXTURE_MIN_FILTER     , "gl.TEXTURE_MIN_FILTER"     , TYPE_I32, FromI32(0x2801))
+	AddConstCode( CONST_GL_TEXTURE_WRAP_S         , "gl.TEXTURE_WRAP_S"         , TYPE_I32, FromI32(0x2802))
+	AddConstCode( CONST_GL_TEXTURE_WRAP_T         , "gl.TEXTURE_WRAP_T"         , TYPE_I32, FromI32(0x2803))
+	AddConstCode( CONST_GL_REPEAT                 , "gl.REPEAT"                 , TYPE_I32, FromI32(0x2901))
 
 	// gl_1_1
 	AddConstCode( CONST_GL_RGBA8                 , "gl.RGBA8"                 , TYPE_I32, FromI32(0x8058))
@@ -258,7 +323,12 @@ func init() {
 	AddConstCode( CONST_GL_CLAMP_TO_BORDER       , "gl.CLAMP_TO_BORDER"       , TYPE_I32, FromI32(0x812D))
 
 	// gl_1_4
+	AddConstCode( CONST_GL_DEPTH_COMPONENT16     , "gl.DEPTH_COMPONENT16"     , TYPE_I32, FromI32(0x81A5))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT24     , "gl.DEPTH_COMPONENT24"     , TYPE_I32, FromI32(0x81A6))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT32     , "gl.DEPTH_COMPONENT32"     , TYPE_I32, FromI32(0x81A7))
 	AddConstCode( CONST_GL_MIRRORED_REPEAT       , "gl.MIRRORED_REPEAT"       , TYPE_I32, FromI32(0x8370))
+	AddConstCode( CONST_GL_INCR_WRAP             , "gl.INCR_WRAP"             , TYPE_I32, FromI32(0x8507))
+	AddConstCode( CONST_GL_DECR_WRAP             , "gl.DECR_WRAP"             , TYPE_I32, FromI32(0x8508))
 
 	// gl_1_5
 	AddConstCode( CONST_GL_ARRAY_BUFFER          , "gl.ARRAY_BUFFER"          , TYPE_I32, FromI32(0x8892))
@@ -273,11 +343,23 @@ func init() {
 	AddConstCode( CONST_GL_DYNAMIC_COPY          , "gl.DYNAMIC_COPY"          , TYPE_I32, FromI32(0x88EA))
 
 	// gl_2_0
-	AddConstCode( CONST_GL_FRAGMENT_SHADER       , "gl.FRAGMENT_SHADER"       , TYPE_I32, FromI32(0x8B30))
-	AddConstCode( CONST_GL_VERTEX_SHADER         , "gl.VERTEX_SHADER"         , TYPE_I32, FromI32(0x8B31))
+	AddConstCode( CONST_GL_STENCIL_BACK_FUNC           , "gl.STENCIL_BACK_FUNC"           , TYPE_I32, FromI32(0x8800))
+	AddConstCode( CONST_GL_STENCIL_BACK_FAIL           , "gl.STENCIL_BACK_FAIL"           , TYPE_I32, FromI32(0x8801))
+	AddConstCode( CONST_GL_STENCIL_BACK_PASS_DEPTH_FAIL, "gl.STENCIL_BACK_PASS_DEPTH_FAIL", TYPE_I32, FromI32(0x8802))
+	AddConstCode( CONST_GL_STENCIL_BACK_PASS_DEPTH_PASS, "gl.STENCIL_BACK_PASS_DEPTH_PASS", TYPE_I32, FromI32(0x8803))
+	AddConstCode( CONST_GL_FRAGMENT_SHADER             , "gl.FRAGMENT_SHADER"             , TYPE_I32, FromI32(0x8B30))
+	AddConstCode( CONST_GL_VERTEX_SHADER               , "gl.VERTEX_SHADER"               , TYPE_I32, FromI32(0x8B31))
+	AddConstCode( CONST_GL_STENCIL_BACK_REF            , "gl.STENCIL_BACK_REF"            , TYPE_I32, FromI32(0x8CA3))
+	AddConstCode( CONST_GL_STENCIL_BACK_VALUE_MASK     , "gl.STENCIL_BACK_VALUE_MASK"     , TYPE_I32, FromI32(0x8CA4))
+	AddConstCode( CONST_GL_STENCIL_BACK_WRITEMASK      , "gl.STENCIL_BACK_WRITEMASK"      , TYPE_I32, FromI32(0x8CA5))
 
 	// gl_3_0
+	AddConstCode( CONST_GL_DEPTH_COMPONENT32F                        , "gl.DEPTH_COMPONENT32F"                       , TYPE_I32, FromI32(0x8CAC))
+	AddConstCode( CONST_GL_DEPTH32F_STENCIL8                         , "gl.DEPTH32F_STENCIL8"                        , TYPE_I32, FromI32(0x8CAD))
 	AddConstCode( CONST_GL_FRAMEBUFFER_UNDEFINED                     , "gl.FRAMEBUFFER_UNDEFINED"                    , TYPE_I32, FromI32(0x8219))
+	AddConstCode( CONST_GL_DEPTH_STENCIL_ATTACHMENT                  , "gl.DEPTH_STENCIL_ATTACHMENT"                 , TYPE_I32, FromI32(0x821A))
+	AddConstCode( CONST_GL_DEPTH_STENCIL                             , "gl.DEPTH_STENCIL"                            , TYPE_I32, FromI32(0x84F9))
+	AddConstCode( CONST_GL_DEPTH24_STENCIL8                          , "gl.DEPTH24_STENCIL8"                         , TYPE_I32, FromI32(0x88F0))
 	AddConstCode( CONST_GL_FRAMEBUFFER_COMPLETE                      , "gl.FRAMEBUFFER_COMPLETE"                     , TYPE_I32, FromI32(0x8CD5))
 	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT         , "gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT"        , TYPE_I32, FromI32(0x8CD6))
 	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT , "gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT", TYPE_I32, FromI32(0x8CD7))
@@ -290,6 +372,10 @@ func init() {
 	AddConstCode( CONST_GL_FRAMEBUFFER                               , "gl.FRAMEBUFFER"                              , TYPE_I32, FromI32(0x8D40))
 	AddConstCode( CONST_GL_RENDERBUFFER                              , "gl.RENDERBUFFER"                             , TYPE_I32, FromI32(0x8D41))
 	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE        , "gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"       , TYPE_I32, FromI32(0x8D56))
+	AddConstCode( CONST_GL_STENCIL_INDEX1                            , "gl.STENCIL_INDEX1"                           , TYPE_I32, FromI32(0x8D46))
+	AddConstCode( CONST_GL_STENCIL_INDEX4                            , "gl.STENCIL_INDEX4"                           , TYPE_I32, FromI32(0x8D47))
+	AddConstCode( CONST_GL_STENCIL_INDEX8                            , "gl.STENCIL_INDEX8"                           , TYPE_I32, FromI32(0x8D48))
+	AddConstCode( CONST_GL_STENCIL_INDEX16                           , "gl.STENCIL_INDEX16"                          , TYPE_I32, FromI32(0x8D49))
 
 	// gl_3_2
 	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS      , "gl.FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"     , TYPE_I32, FromI32(0x8DA8))
