@@ -21,7 +21,7 @@ const (
 	OP_OS_GET_WORKING_DIRECTORY
 	OP_OS_OPEN
 	OP_OS_CLOSE
-	
+
 	// http
 	OP_HTTP_GET
 
@@ -33,52 +33,19 @@ const (
 
 func init () {
 	// time
-	OpNames[OP_TIME_SLEEP] = "time.Sleep"
-	OpNames[OP_TIME_UNIX_MILLI] = "time.UnixMilli"
-	OpNames[OP_TIME_UNIX_NANO] = "time.UnixNano"
-	
+	AddOpCode(OP_TIME_SLEEP, "time.Sleep", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli", []int{}, []int{TYPE_I64})
+	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano", []int{}, []int{TYPE_I64})
+
 	// http
-	OpNames[OP_HTTP_GET] = "http.Get"
-	
+	AddOpCode(OP_HTTP_GET, "http.Get", []int{TYPE_STR}, []int{TYPE_STR})
+
 	// os
-	OpNames[OP_OS_GET_WORKING_DIRECTORY] = "os.GetWorkingDirectory"
-	OpNames[OP_OS_OPEN] = "os.Open"
-	OpNames[OP_OS_CLOSE] = "os.Close"
+	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory", []int{}, []int{TYPE_STR})
+	AddOpCode(OP_OS_OPEN, "os.Open", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_OS_CLOSE, "os.Close", []int{TYPE_STR}, []int{})
 
-	/*
-            OpCodes
-        */
-
-	// time
-	OpCodes["time.Sleep"] = OP_TIME_SLEEP
-	OpCodes["time.UnixMilli"] = OP_TIME_UNIX_MILLI
-	OpCodes["time.UnixNano"] = OP_TIME_UNIX_NANO
-	
-	// http
-	OpCodes["http.Get"] = OP_HTTP_GET
-	
-	// os
-	OpCodes["os.GetWorkingDirectory"] = OP_OS_GET_WORKING_DIRECTORY
-	OpCodes["os.Open"] = OP_OS_OPEN
-	OpCodes["os.Close"] = OP_OS_CLOSE
-
-	/*
-            Natives
-        */
-
-	// time
-	Natives[OP_TIME_SLEEP] = MakeNative(OP_TIME_SLEEP, []int{TYPE_I32}, []int{})
-	Natives[OP_TIME_UNIX_MILLI] = MakeNative(OP_TIME_UNIX_MILLI, []int{}, []int{TYPE_I64})
-	Natives[OP_TIME_UNIX_NANO] = MakeNative(OP_TIME_UNIX_NANO, []int{}, []int{TYPE_I64})
-	
-	// http
-	Natives[OP_HTTP_GET] = MakeNative(OP_HTTP_GET, []int{TYPE_STR}, []int{TYPE_STR})
-	
-	// os
-	Natives[OP_OS_GET_WORKING_DIRECTORY] = MakeNative(OP_OS_GET_WORKING_DIRECTORY, []int{}, []int{TYPE_STR})
-	Natives[OP_OS_OPEN] = MakeNative(OP_OS_OPEN, []int{TYPE_STR}, []int{})
-	Natives[OP_OS_CLOSE] = MakeNative(OP_OS_CLOSE, []int{TYPE_STR}, []int{})
-
+	// exec
 	execNative = func(prgrm *CXProgram) {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
