@@ -211,7 +211,7 @@ func (prgrm *CXProgram) PrintProgram() {
 
 	i := 0
 	for _, mod := range prgrm.Packages {
-		if mod.Name == CORE_MODULE || mod.Name == "glfw" || mod.Name == "gl" || mod.Name == "gltext" {
+		if IsCorePackage(mod.Name) {
 			continue
 		}
 
@@ -353,12 +353,13 @@ func (prgrm *CXProgram) PrintProgram() {
 					}
 
 					var typeName string
-					if arg.CustomType != nil {
+					elt := GetAssignmentElement(arg)
+					if elt.CustomType != nil {
 						// then it's custom type
-						typeName = arg.CustomType.Name
+						typeName = elt.CustomType.Name
 					} else {
 						// then it's native type
-						typeName = TypeNames[arg.Type]
+						typeName = TypeNames[elt.Type]
 					}
 					
 					if i == len(expr.Inputs)-1 {

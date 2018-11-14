@@ -19,7 +19,7 @@ const MAIN_PKG = "main"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"
-const CORE_MODULE = "core"
+// const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 

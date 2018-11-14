@@ -1,16 +1,16 @@
 package issues
 
-type Card struct {
+type issue85struct struct {
 	suit i32
 	rank i32
 }
 
-func (c Card) issue85method1 (suit i32, rank i32) {
+func (c issue85struct) issue85method1 (suit i32, rank i32) {
 	c.suit = suit
 	c.rank = rank
 }
 
-func (c *Card) issue85method2 (suit i32, rank i32) {
+func (c *issue85struct) issue85method2 (suit i32, rank i32) {
 	(*c).suit = suit
 	(*c).rank = rank
 
@@ -19,7 +19,7 @@ func (c *Card) issue85method2 (suit i32, rank i32) {
 }
 
 func issue85 () {
-	var card Card
+	var card issue85struct
 
 	issues = append(issues, assert(card.suit, 0, ""))
 	issues = append(issues, assert(card.rank, 0, ""))

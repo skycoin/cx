@@ -1,0 +1,27 @@
+package issues
+
+type issue57struct struct {
+	x f32
+	y f32
+	z f32
+	w f32
+}
+
+func make_issue57struct(x f32, y f32, z f32, w f32) (out issue57struct) {
+	out.x = x
+	out.y = y
+	out.z = z
+	out.w = w
+}
+
+func alpha(color issue57struct, a f32) (out issue57struct) {
+	out = make_issue57struct(color.x, color.y, color.z, color.w * a)
+}
+
+func issue57 () {
+	var v issue57struct = alpha(make_issue57struct(1.333, 2.0, 3.0, 4.0), 0.0)
+	issues = append(issues, assert(v.x == 1.333, true, ""))
+	issues = append(issues, assert(v.y == 2.0, true, ""))
+	issues = append(issues, assert(v.z == 3.0, true, ""))
+	issues = append(issues, assert(v.w == 0.0, true, ""))
+}

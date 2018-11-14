@@ -1234,7 +1234,7 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
 		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
-
+		
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -1259,6 +1259,8 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	}
 
 	expr := MakeExpression(operator, CurrentFile, LineNo)
+	// we can't know the type until we compile the full function
+	expr.IsUndType = true
 	expr.Package = pkg
 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
@@ -1268,7 +1270,7 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	} else {
 		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
 	}
-
+	
 	if len(rightExprs[len(rightExprs)-1].Outputs[0].Indexes) > 0 || rightExprs[len(rightExprs)-1].Operator != nil {
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
@@ -2323,6 +2325,10 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 	for _, arg := range args {
 		ProcessLocalDeclaration(symbols, symbolsScope, arg)
 
+		if !isInput {
+			ProcessUndExpression(expr)
+		}
+
 		if arg.IsShortDeclaration {
 			UpdateSymbolsTable(symbols, arg, offset, false)
 		} else {
@@ -2385,6 +2391,26 @@ func ProcessPointerStructs (expr *CXExpression) {
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
+		}
+	}
+}
+
+// Depending on the operator, we're going to return the input's size or a prefixed size (like a Boolean)
+func undOutputSize (expr *CXExpression) int {
+	switch expr.Operator.OpCode {
+	case OP_UND_EQUAL, OP_UND_UNEQUAL, OP_UND_LT, OP_UND_GT, OP_UND_LTEQ, OP_UND_GTEQ:
+		// the result is a Boolean for any of these
+		return 1
+	default:
+		return GetAssignmentElement(expr.Inputs[0]).Size
+	}
+}
+
+func ProcessUndExpression (expr *CXExpression) {
+	if expr.IsUndType {
+		for _, out := range expr.Outputs {
+			out.Size = undOutputSize(expr)
+			out.TotalSize = out.Size
 		}
 	}
 }

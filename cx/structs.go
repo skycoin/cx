@@ -109,6 +109,7 @@ type CXExpression struct {
         IsMethodCall                    bool
         IsStructLiteral                 bool
         IsArrayLiteral                  bool
+	IsUndType                       bool
 
         Function                        *CXFunction
         Package                         *CXPackage
