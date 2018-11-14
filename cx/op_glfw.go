@@ -92,12 +92,9 @@ func op_glfw_GetTime(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), FromF64(glfw.GetTime()))
 }
 
-func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
-
+func SetKeyCallback(expr *CXExpression, window string, functionName string, packageName string) {
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(functionName, packageName); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -140,15 +137,22 @@ func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 		}
 	}
 
-	windows[ReadStr(fp, inp1)].SetKeyCallback(callback)
+	windows[window].SetKeyCallback(callback)
 }
 
-func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
+func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+    SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
 
+func op_glfw_SetKeyCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2  := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+    SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+}
+
+func SetCursorPosCallback(expr *CXExpression, window string, functionName string, packageName string) {
 	callback := func(w *glfw.Window, xpos float64, ypos float64) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(functionName, packageName); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -185,7 +189,17 @@ func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 		}
 	}
 
-	windows[ReadStr(fp, inp1)].SetCursorPosCallback(callback)
+	windows[window].SetCursorPosCallback(callback)
+}
+
+func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+    SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
+
+func op_glfw_SetCursorPosCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+    SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
 func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
@@ -197,12 +211,9 @@ func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
 	}
 }
 
-func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
-
+func SetMouseButtonCallback(expr *CXExpression, window string, functionName string, packageName string) {
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
+		if fn, err := PROGRAM.GetFunction(functionName, packageName); err == nil {
 			var winName []byte
 			for key, win := range windows {
 				if w == win {
@@ -244,5 +255,16 @@ func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 		}
 	}
 
-	windows[ReadStr(fp, inp1)].SetMouseButtonCallback(callback)
+	windows[window].SetMouseButtonCallback(callback)
 }
+
+func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+    SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
+
+func op_glfw_SetMouseButtonCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+    SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
+}
+

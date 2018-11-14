@@ -127,9 +127,12 @@ const (
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
 	OP_GLFW_SWAP_INTERVAL
 	OP_GLFW_SET_KEY_CALLBACK
+	OP_GLFW_SET_KEY_CALLBACK_EX
 	OP_GLFW_GET_TIME
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
+	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX
 	OP_GLFW_SET_CURSOR_POS_CALLBACK
+	OP_GLFW_SET_CURSOR_POS_CALLBACK_EX
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
@@ -272,9 +275,12 @@ func init () {
 	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_KEY_CALLBACK_EX, "glfw.SetKeyCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_GET_TIME, "glfw.GetTime", []int{}, []int{TYPE_F64})
 	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX, "glfw.SetMouseButtonCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos", []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64})
 	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
@@ -524,12 +530,18 @@ func init () {
 					op_glfw_SwapInterval(expr, fp)
 				case OP_GLFW_SET_KEY_CALLBACK:
 					op_glfw_SetKeyCallback(expr, fp)
+				case OP_GLFW_SET_KEY_CALLBACK_EX:
+					op_glfw_SetKeyCallbackEx(expr, fp)
 				case OP_GLFW_GET_TIME:
 					op_glfw_GetTime(expr, fp)
 				case OP_GLFW_SET_MOUSE_BUTTON_CALLBACK:
 					op_glfw_SetMouseButtonCallback(expr, fp)
+				case OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX:
+					op_glfw_SetMouseButtonCallbackEx(expr, fp)
 				case OP_GLFW_SET_CURSOR_POS_CALLBACK:
 					op_glfw_SetCursorPosCallback(expr, fp)
+				case OP_GLFW_SET_CURSOR_POS_CALLBACK_EX:
+					op_glfw_SetCursorPosCallbackEx(expr, fp)
 				case OP_GLFW_GET_CURSOR_POS:
 					op_glfw_GetCursorPos(expr, fp)
 				case OP_GLFW_SET_INPUT_MODE:
