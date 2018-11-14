@@ -148,6 +148,22 @@ func (f *Font) Metrics(text string) (int, int) {
 	return f.advanceSize(text), gh
 }
 
+// GlyphMetrics returns the pixel width and height for the given glyph index.
+// This takes the scale and rendering direction of the font into account.
+//
+// Unknown runes will be counted as having the maximum glyph bounds as
+// defined by Font.GlyphBounds().
+func (f *Font) GlyphMetrics(index uint32) (int, int) {
+
+	gw, gh := f.GlyphBounds()
+	advance := f.config.Glyphs[index].Advance
+	if f.config.Dir == TopToBottom {
+		return gw, advance
+	}
+
+	return advance, gh
+}
+
 // advanceSize computes the pixel width or height for the given single-line
 // input string. This iterates over all of its runes, finds the matching
 // Charset entry and adds up the Advance values.

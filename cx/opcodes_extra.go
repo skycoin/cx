@@ -137,18 +137,16 @@ const (
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
 	OP_GLFW_GET_KEY
-	OP_GLFW_FUNC_I32_I32
-	OP_GLFW_CALL_I32_I32
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
 	OP_GLTEXT_LOAD_TRUE_TYPE_EX
 	OP_GLTEXT_PRINTF
 	OP_GLTEXT_METRICS
-	OP_GLTEXT_METRICS_GLYPH
 	OP_GLTEXT_TEXTURE
-	OP_GLTEXT_NEXT_RUNE
+	OP_GLTEXT_NEXT_GLYPH
 	OP_GLTEXT_GLYPH_BOUNDS
+	OP_GLTEXT_GLYPH_METRICS
 	OP_GLTEXT_GLYPH_INFO
 )
 
@@ -291,8 +289,10 @@ func init () {
 	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf", []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{})
 	AddOpCode(OP_GLTEXT_METRICS, "gltext.Metrics", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLTEXT_TEXTURE, "gltext.Texture", []int{TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GLTEXT_NEXT_RUNE, "gltext.NextRune", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", []int{}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
 
 	// exec
 	execNativeExtra = func (prgrm *CXProgram) {
@@ -560,10 +560,14 @@ func init () {
 					op_gltext_Metrics(expr, fp)
 				case OP_GLTEXT_TEXTURE:
 					op_gltext_Texture(expr, fp)
-				case OP_GLTEXT_NEXT_RUNE:
-					op_gltext_NextRune(expr, fp)
+				case OP_GLTEXT_NEXT_GLYPH:
+					op_gltext_NextGlyph(expr, fp)
 				case OP_GLTEXT_GLYPH_BOUNDS:
 					op_gltext_GlyphBounds(expr, fp)
+				case OP_GLTEXT_GLYPH_METRICS:
+					op_gltext_GlyphMetrics(expr, fp)
+				case OP_GLTEXT_GLYPH_INFO:
+					op_gltext_GlyphInfo(expr, fp)
 				default:
 					// DumpOpCodes(opCode)
 					panic("invalid extra opcode")
