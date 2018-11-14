@@ -137,6 +137,8 @@ const (
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
 	OP_GLFW_GET_KEY
+	OP_GLFW_FUNC_I32_I32
+	OP_GLFW_CALL_I32_I32
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
@@ -283,6 +285,8 @@ func init () {
 	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_GET_KEY, "glfw.GetKey", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GLFW_FUNC_I32_I32, "glfw.func_i32_i32", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 
 	// gltext
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
@@ -550,6 +554,10 @@ func init () {
 					op_glfw_SetWindowPos(expr, fp)
 				case OP_GLFW_GET_KEY:
 					op_glfw_GetKey(expr, fp)
+				case OP_GLFW_FUNC_I32_I32:
+					op_glfw_func_i32_i32(expr, fp)
+				case OP_GLFW_CALL_I32_I32:
+					op_glfw_call_i32_i32(expr, fp)
 
 				// gltext
 				case OP_GLTEXT_LOAD_TRUE_TYPE:

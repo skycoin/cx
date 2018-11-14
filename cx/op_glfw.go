@@ -268,3 +268,52 @@ func op_glfw_SetMouseButtonCallbackEx(expr *CXExpression, fp int) {
 	SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
 }
 
+type Func_i32_i32 func(a int32, b int32)
+var Functions_i32_i32 []Func_i32_i32
+
+func op_glfw_func_i32_i32(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	packageName := ReadStr(fp, inp1)
+	functionName := ReadStr(fp, inp2)
+
+	callback := func(a int32, b int32) {
+	    if fn, err := PROGRAM.GetFunction(functionName, packageName); err == nil {
+
+			var inps [][]byte = make([][]byte, 2)
+
+			inps[0] = FromI32(a)
+			inps[1] = FromI32(b)
+
+			PROGRAM.CallCounter++
+			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
+			newCall.Operator = fn
+			newCall.Line = 0
+			newCall.FramePointer = PROGRAM.StackPointer
+			PROGRAM.StackPointer += newCall.Operator.Size
+
+			newFP := newCall.FramePointer
+
+			for c := 0; c < expr.Operator.Size; c++ {
+				PROGRAM.Memory[newFP+c] = 0
+			}
+
+			for i, inp := range inps {
+				WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+			}
+		}
+	}
+
+	Functions_i32_i32 = append(Functions_i32_i32, callback)
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(len(Functions_i32_i32) - 1)))
+}
+
+
+func op_glfw_call_i32_i32(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 :=  expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	index := ReadI32(fp, inp1)
+	count := int32(len(Functions_i32_i32))
+	if index >= 0 && index < count {
+	    Functions_i32_i32[index](ReadI32(fp, inp2), ReadI32(fp, inp3))
+	}
+}
+
