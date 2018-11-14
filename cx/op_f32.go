@@ -27,6 +27,12 @@ func op_f32_f32(expr *CXExpression, fp int) {
 	}
 }
 
+func op_f32_isnan(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromBool(math.IsNaN(float64(ReadF32(fp, inp1))))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
 func op_f32_print(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadF32(fp, inp1))
@@ -193,3 +199,4 @@ func op_f32_min(expr *CXExpression, fp int) {
 	outB1 := FromF32(float32(math.Min(float64(ReadF32(fp, inp1)), float64(ReadF32(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
+
