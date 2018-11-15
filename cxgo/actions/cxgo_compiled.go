@@ -2029,6 +2029,11 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 				panic("")
 			}
 		}
+
+		// checking if receiver is sent as pointer or not
+		if expr.Operator.Inputs[0].IsPointer {
+			expr.Inputs[0].PassBy = PASSBY_REFERENCE
+		}
 	}
 }
 
@@ -2388,7 +2393,9 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 
 func ProcessPointerStructs (expr *CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
+		// Debug("dbg", arg.Name, arg.IsStruct, arg.IsPointer, len(arg.Fields), arg.DereferenceLevels)
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
+			// Debug("majorTom")
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
 		}
@@ -2445,7 +2452,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
 
-		// ProcessPointerStructs(expr)
+		ProcessPointerStructs(expr)
 		
 		SetCorrectArithmeticOp(expr)
 		ProcessTempVariable(expr)
@@ -2532,32 +2539,6 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 
 		}
 	}
-
-	// if expr.IsMethodCall {
-	// 	// we need to break possible multiple method calls
-	// 	// e.g. sym.fld.method1().fld2.method2()
-		
-	// 	out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
-	// 	out.IsShortDeclaration = true
-		
-	// 	newExpr := MakeExpression(Natives[OP_IDENTITY], expr.FileName, expr.FileLine)
-	// 	newExpr.AddOutput(out)
-	// 	newExpr.AddInput(exprs[len(exprs) - 1].Outputs[0])
-
-	// 	out.Package = expr.Package
-	// 	expr.Outputs[0].Package = expr.Package
-
-	// 	// out.Fields = expr.Outputs[0].Fields[len(expr.Outputs[0].Fields) - 1 : ]
-	// 	// expr.Outputs[0].Fields = expr.Outputs[0].Fields[:len(expr.Outputs[0].Fields) - 1]
-	// 	expr.Inputs = []*CXArgument{out}
-
-	// 	nestedExprs = append(nestedExprs, newExpr)
-
-		
-	// 	if len(exprs[len(exprs) - 1].Outputs) > 0 {
-	// 		Debug("outs", exprs[len(exprs) - 1].Outputs[0].Name, exprs[len(exprs) - 1].Outputs[0].Fields)
-	// 	}
-	// }
 	
 	return append(nestedExprs, exprs...)
 }

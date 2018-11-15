@@ -39,11 +39,11 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 			*finalOffset = int(offset)
 		}
 		if dbg {
-			fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+			fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
 		}
 	}
 	if dbg {
-		fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+		fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
 	}
 
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
@@ -86,7 +86,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("result", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
+		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
 	}
 
 	return finalOffset
