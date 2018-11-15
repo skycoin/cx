@@ -44,14 +44,20 @@ const (
 	OP_GL_TEX_IMAGE_2D
 	OP_GL_CLEAR
 	OP_GL_CLEAR_COLOR
+	OP_GL_CLEAR_STENCIL
 	OP_GL_CLEAR_DEPTH
+	OP_GL_STENCIL_MASK
+	OP_GL_COLOR_MASK
 	OP_GL_DEPTH_MASK
 	OP_GL_DISABLE
 	OP_GL_ENABLE
 	OP_GL_BLEND_FUNC
+	OP_GL_STENCIL_FUNC
+	OP_GL_STENCIL_OP
 	OP_GL_DEPTH_FUNC
 	OP_GL_GET_ERROR
 	OP_GL_GET_TEX_LEVEL_PARAMETERIV
+	OP_GL_DEPTH_RANGE
 	OP_GL_VIEWPORT
 
 	// gl_1_1
@@ -71,6 +77,9 @@ const (
 	OP_GL_BUFFER_SUB_DATA
 
 	// gl_2_0
+	OP_GL_STENCIL_OP_SEPARATE
+	OP_GL_STENCIL_FUNC_SEPARATE
+	OP_GL_STENCIL_MASK_SEPARATE
 	OP_GL_ATTACH_SHADER
 	OP_GL_BIND_ATTRIB_LOCATION
 	OP_GL_COMPILE_SHADER
@@ -118,21 +127,29 @@ const (
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
 	OP_GLFW_SWAP_INTERVAL
 	OP_GLFW_SET_KEY_CALLBACK
+	OP_GLFW_SET_KEY_CALLBACK_EX
 	OP_GLFW_GET_TIME
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
+	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX
 	OP_GLFW_SET_CURSOR_POS_CALLBACK
+	OP_GLFW_SET_CURSOR_POS_CALLBACK_EX
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
 	OP_GLFW_GET_KEY
+	OP_GLFW_FUNC_I32_I32
+	OP_GLFW_CALL_I32_I32
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
+	OP_GLTEXT_LOAD_TRUE_TYPE_EX
 	OP_GLTEXT_PRINTF
 	OP_GLTEXT_METRICS
 	OP_GLTEXT_TEXTURE
-	OP_GLTEXT_NEXT_RUNE
+	OP_GLTEXT_NEXT_GLYPH
 	OP_GLTEXT_GLYPH_BOUNDS
+	OP_GLTEXT_GLYPH_METRICS
+	OP_GLTEXT_GLYPH_INFO
 )
 
 var execNativeExtra func(*CXProgram)
@@ -142,6 +159,7 @@ func init () {
 	AddOpCode(OP_GL_INIT, "gl.Init", []int{}, []int{})
 	AddOpCode(OP_GL_STRS, "gl.Strs", []int{TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GL_FREE, "gl.Free", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture", []int{TYPE_STR}, []int{TYPE_I32})
 
 	// gl_0.0
 	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode", []int{TYPE_I32}, []int{})
@@ -160,7 +178,6 @@ func init () {
 	AddOpCode(OP_GL_VERTEX_3F, "gl.Vertex3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
 	AddOpCode(OP_GL_LIGHTFV, "gl.Lightfv", []int{TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
 	AddOpCode(OP_GL_FRUSTUM, "gl.Frustum", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
-	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture", []int{TYPE_STR}, []int{TYPE_I32})
 	AddOpCode(OP_GL_TEX_ENVI, "gl.TexEnvi", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GL_ORTHO, "gl.Ortho", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
 	AddOpCode(OP_GL_SCALEF, "gl.Scalef", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
@@ -175,14 +192,20 @@ func init () {
 	AddOpCode(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GL_CLEAR, "gl.Clear", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GL_CLEAR_COLOR, "gl.ClearColor", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
+	AddOpCode(OP_GL_CLEAR_STENCIL, "gl.ClearStencil", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GL_CLEAR_DEPTH, "gl.ClearDepth", []int{TYPE_F64}, []int{})
+	AddOpCode(OP_GL_STENCIL_MASK, "gl.StencilMask", []int{TYPE_I32}, []int{})
+	AddOpCode(OP_GL_COLOR_MASK, "gl.ColorMask", []int{TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_BOOL}, []int{})
 	AddOpCode(OP_GL_DEPTH_MASK, "gl.DepthMask", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_GL_DISABLE, "gl.Disable", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GL_ENABLE, "gl.Enable", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GL_BLEND_FUNC, "gl.BlendFunc", []int{TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_STENCIL_FUNC, "gl.StencilFunc", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_STENCIL_OP, "gl.StencilOp", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GL_DEPTH_FUNC, "gl.DepthFunc", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GL_GET_ERROR, "gl.GetError", []int{}, []int{TYPE_I32})
 	AddOpCode(OP_GL_GET_TEX_LEVEL_PARAMETERIV, "gl.GetTexLevelParameteriv", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GL_DEPTH_RANGE, "gl.DepthRange", []int{TYPE_F64, TYPE_F64}, []int{})
 	AddOpCode(OP_GL_VIEWPORT, "gl.Viewport", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 
 	// gl_1_1
@@ -202,6 +225,9 @@ func init () {
 	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
 
 	//gl_2_0
+	AddOpCode(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_STENCIL_FUNC_SEPARATE, "gl.StencilFuncSeparate", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
+	AddOpCode(OP_GL_STENCIL_MASK_SEPARATE, "gl.StencilMaskSeparate", []int{TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GL_ATTACH_SHADER, "gl.AttachShader", []int{TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GL_BIND_ATTRIB_LOCATION, "gl.BindAttribLocation", []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
 	AddOpCode(OP_GL_COMPILE_SHADER, "gl.CompileShader", []int{TYPE_I32}, []int{})
@@ -249,21 +275,28 @@ func init () {
 	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_KEY_CALLBACK_EX, "glfw.SetKeyCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_GET_TIME, "glfw.GetTime", []int{}, []int{TYPE_F64})
 	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX, "glfw.SetMouseButtonCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", []int{TYPE_STR, TYPE_STR}, []int{})
+	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos", []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64})
 	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLFW_GET_KEY, "glfw.GetKey", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_GLFW_FUNC_I32_I32, "glfw.func_i32_i32", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 
 	// gltext
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
 	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf", []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{})
 	AddOpCode(OP_GLTEXT_METRICS, "gltext.Metrics", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLTEXT_TEXTURE, "gltext.Texture", []int{TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GLTEXT_NEXT_RUNE, "gltext.NextRune", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
 	AddOpCode(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", []int{}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
 
 	// exec
 	execNativeExtra = func (prgrm *CXProgram) {
@@ -285,6 +318,8 @@ func init () {
 					op_gl_Strs(expr, fp)
 				case OP_GL_FREE:
 					op_gl_Free(expr, fp)
+				case OP_GL_NEW_TEXTURE:
+					op_gl_NewTexture(expr, fp)
 
 				// gl_0_0
 				case OP_GL_MATRIX_MODE:
@@ -319,8 +354,6 @@ func init () {
 					op_gl_Lightfv(expr, fp)
 				case OP_GL_FRUSTUM:
 					op_gl_Frustum(expr, fp)
-				case OP_GL_NEW_TEXTURE:
-					op_gl_NewTexture(expr, fp)
 				case OP_GL_TEX_ENVI:
 					op_gl_TexEnvi(expr, fp)
 				case OP_GL_ORTHO:
@@ -347,8 +380,14 @@ func init () {
 					op_gl_Clear(expr, fp)
 				case OP_GL_CLEAR_COLOR:
 					op_gl_ClearColor(expr, fp)
+				case OP_GL_CLEAR_STENCIL:
+					op_gl_ClearStencil(expr, fp)
 				case OP_GL_CLEAR_DEPTH:
 					op_gl_ClearDepth(expr, fp)
+				case OP_GL_STENCIL_MASK:
+					op_gl_StencilMask(expr, fp)
+				case OP_GL_COLOR_MASK:
+					op_gl_ColorMask(expr, fp)
 				case OP_GL_DEPTH_MASK:
 					op_gl_DepthMask(expr, fp)
 				case OP_GL_DISABLE:
@@ -357,12 +396,18 @@ func init () {
 					op_gl_Enable(expr, fp)
 				case OP_GL_BLEND_FUNC:
 					op_gl_BlendFunc(expr, fp)
+				case OP_GL_STENCIL_FUNC:
+					op_gl_StencilFunc(expr, fp)
+				case OP_GL_STENCIL_OP:
+					op_gl_StencilOp(expr, fp)
 				case OP_GL_DEPTH_FUNC:
 					op_gl_DepthFunc(expr, fp)
 				case OP_GL_GET_ERROR:
 					op_gl_GetError(expr, fp)
 				case OP_GL_GET_TEX_LEVEL_PARAMETERIV:
 					op_gl_GetTexLevelParameteriv(expr, fp)
+				case OP_GL_DEPTH_RANGE:
+					op_gl_DepthRange(expr, fp)
 				case OP_GL_VIEWPORT:
 					op_gl_Viewport(expr, fp)
 
@@ -393,6 +438,12 @@ func init () {
 					op_gl_BufferSubData(expr, fp)
 
 				// gl_2_0
+				case OP_GL_STENCIL_OP_SEPARATE:
+					op_gl_StencilOpSeparate(expr, fp)
+				case OP_GL_STENCIL_FUNC_SEPARATE:
+					op_gl_StencilFuncSeparate(expr, fp)
+				case OP_GL_STENCIL_MASK_SEPARATE:
+					op_gl_StencilMaskSeparate(expr, fp)
 				case OP_GL_ATTACH_SHADER:
 					op_gl_AttachShader(expr, fp)
 				case OP_GL_BIND_ATTRIB_LOCATION:
@@ -483,12 +534,18 @@ func init () {
 					op_glfw_SwapInterval(expr, fp)
 				case OP_GLFW_SET_KEY_CALLBACK:
 					op_glfw_SetKeyCallback(expr, fp)
+				case OP_GLFW_SET_KEY_CALLBACK_EX:
+					op_glfw_SetKeyCallbackEx(expr, fp)
 				case OP_GLFW_GET_TIME:
 					op_glfw_GetTime(expr, fp)
 				case OP_GLFW_SET_MOUSE_BUTTON_CALLBACK:
 					op_glfw_SetMouseButtonCallback(expr, fp)
+				case OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX:
+					op_glfw_SetMouseButtonCallbackEx(expr, fp)
 				case OP_GLFW_SET_CURSOR_POS_CALLBACK:
 					op_glfw_SetCursorPosCallback(expr, fp)
+				case OP_GLFW_SET_CURSOR_POS_CALLBACK_EX:
+					op_glfw_SetCursorPosCallbackEx(expr, fp)
 				case OP_GLFW_GET_CURSOR_POS:
 					op_glfw_GetCursorPos(expr, fp)
 				case OP_GLFW_SET_INPUT_MODE:
@@ -497,6 +554,10 @@ func init () {
 					op_glfw_SetWindowPos(expr, fp)
 				case OP_GLFW_GET_KEY:
 					op_glfw_GetKey(expr, fp)
+				case OP_GLFW_FUNC_I32_I32:
+					op_glfw_func_i32_i32(expr, fp)
+				case OP_GLFW_CALL_I32_I32:
+					op_glfw_call_i32_i32(expr, fp)
 
 				// gltext
 				case OP_GLTEXT_LOAD_TRUE_TYPE:
@@ -507,10 +568,14 @@ func init () {
 					op_gltext_Metrics(expr, fp)
 				case OP_GLTEXT_TEXTURE:
 					op_gltext_Texture(expr, fp)
-				case OP_GLTEXT_NEXT_RUNE:
-					op_gltext_NextRune(expr, fp)
+				case OP_GLTEXT_NEXT_GLYPH:
+					op_gltext_NextGlyph(expr, fp)
 				case OP_GLTEXT_GLYPH_BOUNDS:
 					op_gltext_GlyphBounds(expr, fp)
+				case OP_GLTEXT_GLYPH_METRICS:
+					op_gltext_GlyphMetrics(expr, fp)
+				case OP_GLTEXT_GLYPH_INFO:
+					op_gltext_GlyphInfo(expr, fp)
 				default:
 					// DumpOpCodes(opCode)
 					panic("invalid extra opcode")

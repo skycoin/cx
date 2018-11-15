@@ -87,7 +87,6 @@ const (
 	OP_I32_LOG
 	OP_I32_LOG2
 	OP_I32_LOG10
-
 	OP_I32_MAX
 	OP_I32_MIN
 
@@ -126,6 +125,7 @@ const (
 	OP_I64_MAX
 	OP_I64_MIN
 
+	OP_F32_IS_NAN
 	OP_F32_BYTE
 	OP_F32_STR
 	OP_F32_I32
@@ -375,6 +375,7 @@ func init () {
 	AddOpCode(OP_I64_MAX, "i64.max", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
 	AddOpCode(OP_I64_MIN, "i64.min", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
 
+	AddOpCode(OP_F32_IS_NAN, "f32.isnan", []int{TYPE_F32}, []int{TYPE_BOOL})
 	AddOpCode(OP_F32_BYTE, "f32.byte", []int{TYPE_F32}, []int{TYPE_BYTE})
 	AddOpCode(OP_F32_STR, "f32.str", []int{TYPE_F32}, []int{TYPE_STR})
 	AddOpCode(OP_F32_I32, "f32.i32", []int{TYPE_F32}, []int{TYPE_I32})
@@ -678,6 +679,8 @@ func init () {
 		case OP_I64_MIN:
 			op_i64_min(expr, fp)
 
+		case OP_F32_IS_NAN:
+			op_f32_isnan(expr, fp)
 		case OP_F32_BYTE:
 			op_f32_f32(expr, fp)
 		case OP_F32_STR:
@@ -690,7 +693,6 @@ func init () {
 			op_f32_f32(expr, fp)
 		case OP_F32_F64:
 			op_f32_f32(expr, fp)
-
 		case OP_F32_PRINT:
 			op_f32_print(expr, fp)
 		case OP_F32_ADD:
