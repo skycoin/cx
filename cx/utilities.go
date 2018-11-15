@@ -269,19 +269,63 @@ func (prgrm *CXProgram) PrintProgram() {
 
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
-				if i == len(fn.Inputs)-1 {
-					inps.WriteString(fmt.Sprintf("%s %s", inp.Name, TypeNames[inp.Type]))
+				var isPointer string
+				if inp.IsPointer {
+					isPointer = "*"
+				}
+
+				var arrayStr string
+				if inp.IsArray {
+					for _, l := range inp.Lengths {
+						arrayStr += fmt.Sprintf("[%d]", l)
+					}
+				}
+
+				var typeName string
+				elt := GetAssignmentElement(inp)
+				if elt.CustomType != nil {
+					// then it's custom type
+					typeName = elt.CustomType.Name
 				} else {
-					inps.WriteString(fmt.Sprintf("%s %s, ", inp.Name, TypeNames[inp.Type]))
+					// then it's native type
+					typeName = TypeNames[elt.Type]
+				}
+				
+				if i == len(fn.Inputs)-1 {
+					inps.WriteString(fmt.Sprintf("%s %s%s%s", inp.Name, isPointer, arrayStr, typeName))
+				} else {
+					inps.WriteString(fmt.Sprintf("%s %s%s%s, ", inp.Name, isPointer, arrayStr, typeName))
 				}
 			}
 
 			var outs bytes.Buffer
 			for i, out := range fn.Outputs {
-				if i == len(fn.Outputs)-1 {
-					outs.WriteString(fmt.Sprintf("%s %s", out.Name, TypeNames[out.Type]))
+				var isPointer string
+				if out.IsPointer {
+					isPointer = "*"
+				}
+
+				var arrayStr string
+				if out.IsArray {
+					for _, l := range out.Lengths {
+						arrayStr += fmt.Sprintf("[%d]", l)
+					}
+				}
+
+				var typeName string
+				elt := GetAssignmentElement(out)
+				if elt.CustomType != nil {
+					// then it's custom type
+					typeName = elt.CustomType.Name
 				} else {
-					outs.WriteString(fmt.Sprintf("%s %s, ", out.Name, TypeNames[out.Type]))
+					// then it's native type
+					typeName = TypeNames[elt.Type]
+				}
+				
+				if i == len(fn.Outputs)-1 {
+					outs.WriteString(fmt.Sprintf("%s %s%s%s", out.Name, isPointer, arrayStr, typeName))
+				} else {
+					outs.WriteString(fmt.Sprintf("%s %s%s%s, ", out.Name, isPointer, arrayStr, typeName))
 				}
 			}
 
@@ -345,6 +389,18 @@ func (prgrm *CXProgram) PrintProgram() {
 						}
 					}
 
+					var derefLevels string
+					if arg.DereferenceLevels > 0 {
+						for c := 0; c < arg.DereferenceLevels; c++ {
+							derefLevels += "*"
+						}
+					}
+
+					var isReference string
+					if arg.PassBy == PASSBY_REFERENCE {
+						isReference = "&"
+					}
+
 					var arrayStr string
 					if arg.IsArray {
 						for _, l := range arg.Lengths {
@@ -363,12 +419,9 @@ func (prgrm *CXProgram) PrintProgram() {
 					}
 					
 					if i == len(expr.Inputs)-1 {
-						
-						args.WriteString(fmt.Sprintf("%s %s%s", name, arrayStr, typeName))
-						// args.WriteString(TypeNames[arg.Type])
+						args.WriteString(fmt.Sprintf("%s%s%s %s%s", isReference, derefLevels, name, arrayStr, typeName))
 					} else {
-						args.WriteString(fmt.Sprintf("%s %s%s, ", name, arrayStr, typeName))
-						// args.WriteString(TypeNames[arg.Type] + ", ")
+						args.WriteString(fmt.Sprintf("%s%s%s %s%s, ", isReference, derefLevels, name, arrayStr, typeName))
 					}
 				}
 
@@ -385,6 +438,21 @@ func (prgrm *CXProgram) PrintProgram() {
 					var outNames bytes.Buffer
 					for i, outName := range expr.Outputs {
 						out := GetAssignmentElement(outName)
+
+						var derefLevels string
+						if outName.DereferenceLevels > 0 {
+							for c := 0; c < outName.DereferenceLevels; c++ {
+								derefLevels += "*"
+							}
+						}
+
+						var arrayStr string
+						if outName.IsArray {
+							for _, l := range outName.Lengths {
+								arrayStr += fmt.Sprintf("[%d]", l)
+							}
+						}
+
 						var typeName string
 						if out.CustomType != nil {
 							// then it's custom type
@@ -401,9 +469,9 @@ func (prgrm *CXProgram) PrintProgram() {
 						}
 
 						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(fmt.Sprintf("%s %s", fullName, typeName))
+							outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
 						} else {
-							outNames.WriteString(fmt.Sprintf("%s %s", fullName, typeName))
+							outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
 						}
 					}
 
