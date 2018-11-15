@@ -5,7 +5,7 @@ func testIssues () {
 	printf("\nRunning CX issues tests\n")
 	
 	var start i64
-	start = time.UnixNano()
+	start = time.UnixMilli()
 	
 	// Issue 18: String not working across packages
 	issue18()
@@ -31,11 +31,17 @@ func testIssues () {
 	issue48()
 	// Issue 57: Struct field stomped
 	issue57()
+	// Issue 85: Method does not work
+	issue85()
 	// Issue 86: Cannot use bool variable in if expression
 	issue86()
+	// Issue 90: Goto not working on windows
+	issue90()
+	// Issue 91: Methods with pointer receivers don't work
+	issue91()
 
 	var end i64
-	end = time.UnixNano()
+	end = time.UnixMilli()
 
 	// counting successful tests
 	var successfulTests i32
@@ -45,7 +51,7 @@ func testIssues () {
 		}
 	}
 
-	printf("Tests finished after %d nanoseconds (%f milliseconds)\n\n", i64.sub(end, start), f64.div(i64.f64(end-start), 1000000.0D))
+	printf("Tests finished after %d milliseconds\n\n", i64.sub(end, start))
 	printf("A total of %d tests were performed\n", len(issues))
 	printf("%d were successful\n", successfulTests)
 	printf("%d failed\n", len(issues) - successfulTests)
