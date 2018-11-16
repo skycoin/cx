@@ -430,7 +430,7 @@ cx examples/hello-world.cx
 ```
 
 This should print `Hello World!` in the terminal. Now try running `cx
-examples/game.cx`.
+examples/opengl/game.cx`.
 
 ### Other Options
 
