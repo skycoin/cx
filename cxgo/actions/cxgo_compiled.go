@@ -1027,12 +1027,21 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 					}
 					return
 				}
-				
+
 				left.Package = imp
 
 				if glbl, err := imp.GetGlobal(ident); err == nil {
 					// then it's a global
-					prevExprs[len(prevExprs)-1].Outputs[0] = glbl
+					// prevExprs[len(prevExprs)-1].Outputs[0] = glbl
+					prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name
+					prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
+					prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType
+					prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
+					prevExprs[len(prevExprs)-1].Outputs[0].TotalSize = glbl.TotalSize
+					prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
+					prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
+					prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
+					prevExprs[len(prevExprs)-1].Outputs[0].Package = glbl.Package
 				} else if fn, err := PRGRM.GetFunction(ident, imp.Name); err == nil {
 					// then it's a function
 					// not sure about this next line
@@ -1595,7 +1604,7 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 		predicate.IsShortDeclaration = true
 		condExprs[len(condExprs)-1].Outputs = append(condExprs[len(condExprs)-1].Outputs, predicate)
 	}
-	predicate.Package = pkg
+	// predicate.Package = pkg
 
 	ifExpr.AddInput(predicate)
 
@@ -1723,9 +1732,9 @@ func SetFinalSize (symbols *map[string]*CXArgument, sym *CXArgument) {
 }
 
 func GetGlobalSymbol(symbols *map[string]*CXArgument, symPackage *CXPackage, symName string) {
-	if _, found := (*symbols)[symPackage.Name+"."+symName]; !found {
+	if _, found := (*symbols)[symPackage.Name + "." + symName]; !found {
 		if glbl, err := symPackage.GetGlobal(symName); err == nil {
-			(*symbols)[symPackage.Name+"."+symName] = glbl
+			(*symbols)[symPackage.Name + "." + symName] = glbl
 		}
 	}
 }
@@ -2393,9 +2402,7 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 
 func ProcessPointerStructs (expr *CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
-		// Debug("dbg", arg.Name, arg.IsStruct, arg.IsPointer, len(arg.Fields), arg.DereferenceLevels)
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
-			// Debug("majorTom")
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
 		}

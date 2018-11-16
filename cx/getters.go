@@ -259,14 +259,14 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 		}
 	}
 
-	for _, imp := range pkg.Imports {
-		for _, def := range imp.Globals {
-			if def.Name == defName {
-				foundDef = def
-				break
-			}
-		}
-	}
+	// for _, imp := range pkg.Imports {
+	// 	for _, def := range imp.Globals {
+	// 		if def.Name == defName {
+	// 			foundDef = def
+	// 			break
+	// 		}
+	// 	}
+	// }
 
 	if foundDef != nil {
 		return foundDef, nil

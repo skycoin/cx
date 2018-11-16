@@ -171,7 +171,9 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)
-	param.Package = expr.Package
+	if param.Package == nil {
+		param.Package = expr.Package
+	}
 	return expr
 }
 
