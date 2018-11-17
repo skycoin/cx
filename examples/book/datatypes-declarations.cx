@@ -1,0 +1,14 @@
+package main
+
+func main () {
+    var optionCode byte
+    var isAlive bool
+    var number i32
+    var bigNumber i64
+    var area f32
+    var epsilon f64
+    var name str
+    
+    name = "John Cole"
+    number = 14
+}

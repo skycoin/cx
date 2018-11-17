@@ -1,0 +1,9 @@
+package main
+
+func main () {
+	str.print("Hello!")
+}
+
+func main () {
+	str.print("Bye!")
+}
