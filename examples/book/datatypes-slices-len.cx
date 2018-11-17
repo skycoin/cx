@@ -1,0 +1,10 @@
+package main
+
+func main () {
+    var slice []i32
+
+slice = append(slice, 1)
+    slice = append(slice, 2)
+    
+    i32.print(len(slice)) // prints 2, not 32
+}

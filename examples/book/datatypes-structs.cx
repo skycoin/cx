@@ -1,0 +1,25 @@
+package main
+
+type Person struct {
+    name str
+    age i32
+}
+
+func main () {
+    var p1 Person
+    var p2 Person
+    
+    p1.name = "John"
+    p1.age = 22
+    
+    p2 = Person{
+        name: "Gabrielle",
+        age: 21
+    }
+    
+    str.print(p1.name)
+    i32.print(p1.age)
+    
+    str.print(p2.name)
+    i32.print(p2.age)
+}

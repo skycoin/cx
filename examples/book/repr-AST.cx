@@ -1,0 +1,12 @@
+package main
+
+var global i32
+
+func main () {
+	var foo i32
+	foo = 5
+	
+ 	str.print("Hello World!")
+	i32.print(55)
+	i32.print(i32.add(global, 10))
+}
