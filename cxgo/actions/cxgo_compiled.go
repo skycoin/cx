@@ -1458,6 +1458,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		switch assignOp {
 		case ":=":
 			expr = MakeExpression(nil, CurrentFile, LineNo)
+			// expr = MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			var sym *CXArgument
@@ -1466,24 +1467,29 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				// then it's a literal
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
 			} else {
-				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
-
+				// sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Operator.Outputs[0].Type])
 				
 				if from[idx].IsArrayLiteral {
 					sym.Size = from[idx].Inputs[0].Size
 					sym.TotalSize = from[idx].Inputs[0].TotalSize
 					sym.Lengths = from[idx].Inputs[0].Lengths
 				}
-				if from[idx].Inputs[0].IsSlice {
+				// if from[idx].Inputs[0].IsSlice {
+				if from[idx].Operator.Outputs[0].IsSlice {
 					sym.Lengths = append([]int{0}, sym.Lengths...)
 				}
 				
-				sym.IsSlice = from[idx].Inputs[0].IsSlice
+				// sym.IsSlice = from[idx].Inputs[0].IsSlice
+				sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
 			}
 			sym.Package = pkg
 			sym.IsShortDeclaration = true
 
 			expr.AddOutput(sym)
+
+			// to[len(to) - 1].Outputs[0].IsShortDeclaration = true
+			// to[len(to) - 1].Inputs[0].IsShortDeclaration = true
 
 			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
@@ -1920,16 +1926,35 @@ func ProcessTempVariable (expr *CXExpression) {
 	}
 }
 
-// func ProcessShortDeclaration(expr *CXExpression) {
-// 	if expr.IsShortDeclaration {
-// 		expr.Outputs[0].Type = expr.Inputs[0].Type
-// 		expr.Outputs[0].Size = expr.Inputs[0].Size
-// 		expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+func ProcessShortDeclaration (expr *CXExpression) {
+	// if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && (expr.Operator == nil || expr.Operator.OpCode == OP_IDENTITY) {
+	if len(expr.Inputs) > 0 && len(expr.Outputs) > 0 && expr.Outputs[0].IsShortDeclaration {
+		Debug("entering?")
+		expr.Outputs[0].Type = expr.Inputs[0].Type
+		expr.Outputs[0].Size = expr.Inputs[0].Size
+		expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+		
+		expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+		expr.Outputs[0].Fields = expr.Inputs[0].Fields
+		
+		// if expr.Operator != nil && expr.Operator.OpCode == OP_IDENTITY {
+		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
+		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
+		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 
-// 		expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
-// 		expr.Outputs[0].Fields = expr.Inputs[0].Fields
-// 	}
-// }
+		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
+		// }
+		//  else {
+		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
+		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
+		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+
+		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
+		// }
+	}
+}
 
 func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, offset *int, shouldExist bool) {
 	if expr.IsMethodCall {
@@ -2453,8 +2478,19 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 	// fn.Expressions = ProcessMethodCalls(fn.Expressions, &symbols)
 
 	for _, expr := range fn.Expressions {
-		// ProcessShortDeclaration(expr)
+		// if i != 0 && len(fn.Expressions[i - 1].Outputs) > 0 && fn.Expressions[i - 1].Outputs[0].IsShortDeclaration {
+		// 	expr.Outputs[0].Type = fn.Expressions[i - 1].Outputs[0].Type
+		// }
+		// if i != (len(fn.Expressions) - 1) && len(fn.Expressions[i + 1].Outputs) > 0 && fn.Expressions[i + 1].Outputs[0].IsShortDeclaration {
+		// 	fn.Expressions[i + 1].Outputs[0].Type = expr.Outputs[0].Type
+		// }
 
+		// if i != (len(fn.Expressions) - 1) && len(expr.Outputs) > 0 && expr.Outputs[0].IsShortDeclaration {
+		// 	Debug("hohoh", TypeNames[expr.Outputs[0].Type], TypeNames[fn.Expressions[i + 1].Outputs[0].Type], expr.FileLine)
+		// }
+
+		// ProcessShortDeclaration(expr)
+		
 		ProcessMethodCall(expr, &symbols, &offset, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Inputs, expr, true)
 		ProcessExpressionArguments(&symbols, &symbolsScope, &offset, fn, expr.Outputs, expr, false)
@@ -2465,6 +2501,9 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
 		ProcessStringAssignment(expr)
+
+		// ProcessShortDeclaration(expr)
+		
 		CheckTypes(expr)
 	}
 
