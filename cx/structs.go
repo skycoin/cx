@@ -1,7 +1,7 @@
 package base
 
 import (
-	. "github.com/satori/go.uuid"
+        . "github.com/satori/go.uuid"
 )
 
 /*
@@ -9,25 +9,25 @@ import (
 */
 
 type CXProgram struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Packages                        []*CXPackage
         CurrentPackage                  *CXPackage
-
+        
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
-
+        
         CallStack                       []CXCall
         CallCounter                     int
-
+        
         Memory                          []byte
         HeapPointer                     int
         StackPointer                    int
-
+        
         HeapStartsAt                    int
-
+        
         Terminated                      bool
-
+        
         Path                            string
 }
 
@@ -42,8 +42,8 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Name                            string
         Imports                         []*CXPackage
         Functions                       []*CXFunction
@@ -59,8 +59,8 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Name                            string
         Fields                          []*CXArgument
         Size                            int
@@ -73,8 +73,8 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Name                            string
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
@@ -92,8 +92,8 @@ type CXFunction struct {
 }
 
 type CXExpression struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Operator                        *CXFunction
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
@@ -109,7 +109,7 @@ type CXExpression struct {
         IsMethodCall                    bool
         IsStructLiteral                 bool
         IsArrayLiteral                  bool
-	IsUndType                       bool
+        IsUndType                       bool
 
         Function                        *CXFunction
         Package                         *CXPackage
@@ -123,8 +123,8 @@ type CXConstant struct {
 }
 
 type CXArgument struct {
-	ElementID                       UUID
-	
+        ElementID                       UUID
+        
         Name                            string
         Type                            int
         CustomType                      *CXStruct
@@ -148,7 +148,8 @@ type CXArgument struct {
         IsStruct                        bool
         IsRest                          bool // pkg.var <- var is rest
         IsLocalDeclaration              bool
-        IsShortDeclaration              bool
+	IsShortDeclaration              bool
+        PreviouslyDeclared              bool
 
         PassBy                          int  // pass by value or reference
         DoesEscape                      bool

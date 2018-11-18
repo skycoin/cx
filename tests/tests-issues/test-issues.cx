@@ -27,6 +27,8 @@ func testIssues () {
 	issue35()
 	// Issue 37: Unexpected results when accessing arrays of structs in a struct
 	issue37()
+	// Issue 39: Inline initializations and arrays
+	issue39()
 	// Issue 48: Interdependant Structs
 	issue48()
 	// Issue 57: Struct field stomped

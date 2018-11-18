@@ -1,0 +1,13 @@
+package issues
+
+func issue39 () {
+	var foo [1]i32
+	var bar f32
+
+	foo[0] = 3
+	
+	num := foo[0]
+
+	issues = append(issues, assert(bar, 0.0, ""))
+	issues = append(issues, assert(foo[0], 3, ""))
+}

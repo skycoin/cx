@@ -561,7 +561,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 	arrVarExpr.Outputs = append(arrVarExpr.Outputs, arrVar)
 	arrVar.Package = pkg
-	arrVar.IsShortDeclaration = true
+	arrVar.PreviouslyDeclared = true
 
 	result = append(result, arrVarExpr)
 
@@ -572,7 +572,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 			sym := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			sym.Package = pkg
-			sym.IsShortDeclaration = true
+			sym.PreviouslyDeclared = true
 
 			if sym.Type == TYPE_STR || sym.Type == TYPE_AFF {
 				sym.PassBy = PASSBY_REFERENCE
@@ -613,13 +613,13 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	symOutput := MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 	symOutput.Lengths = append(symOutput.Lengths, arrSize)
 	symOutput.Package = pkg
-	symOutput.IsShortDeclaration = true
+	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	symInput := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 	symInput.Lengths = append(symInput.Lengths, arrSize)
 	symInput.Package = pkg
-	symInput.IsShortDeclaration = true
+	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
@@ -660,7 +660,7 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
 	slcVar.Package = pkg
-	slcVar.IsShortDeclaration = true
+	slcVar.PreviouslyDeclared = true
 
 	result = append(result, slcVarExpr)
 
@@ -716,7 +716,7 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	// symOutput.PassBy = PASSBY_REFERENCE
 	symOutput.IsSlice = true
 	symOutput.Package = pkg
-	symOutput.IsShortDeclaration = true
+	symOutput.PreviouslyDeclared = true
 
 	// symOutput.DeclarationSpecifiers = append(symOutput.DeclarationSpecifiers, DECL_ARRAY)
 	
@@ -864,7 +864,7 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 		} else {
 			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Inputs[0].Type])
 			sym.Package = postExprs[len(postExprs)-1].Package
-			sym.IsShortDeclaration = true
+			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
 
 			prevExprs = append(postExprs, prevExprs...)
@@ -883,7 +883,7 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 			idxSym.TotalSize = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
 
 			idxSym.Package = postExprs[len(postExprs)-1].Package
-			idxSym.IsShortDeclaration = true
+			idxSym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].Outputs = append(postExprs[len(postExprs)-1].Outputs, idxSym)
 
 			prevExprs[len(prevExprs)-1].Outputs[0].Indexes = append(prevExprs[len(prevExprs)-1].Outputs[0].Indexes, idxSym)
@@ -1156,7 +1156,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.Package = pkg
-				declaration_specifiers.IsShortDeclaration = true
+				declaration_specifiers.PreviouslyDeclared = true
 				// declaration_specifiers.Typ = "ident"
 
 				expr.AddOutput(declaration_specifiers)
@@ -1167,7 +1167,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 				// then it's an expression (it has an operator)
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.Package = pkg
-				declaration_specifiers.IsShortDeclaration = true
+				declaration_specifiers.PreviouslyDeclared = true
 
 				expr := initializer[len(initializer)-1]
 				expr.AddOutput(declaration_specifiers)
@@ -1190,7 +1190,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.Package = pkg
-			declaration_specifiers.IsShortDeclaration = true
+			declaration_specifiers.PreviouslyDeclared = true
 			expr.AddOutput(declaration_specifiers)
 
 			return []*CXExpression{expr}
@@ -1248,7 +1248,7 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
 		name.Package = pkg
-		name.IsShortDeclaration = true
+		name.PreviouslyDeclared = true
 		
 
 		leftExprs[len(leftExprs)-1].Outputs = append(leftExprs[len(leftExprs)-1].Outputs, name)
@@ -1262,7 +1262,7 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 		name.TotalSize = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.Type = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Type
 		name.Package = pkg
-		name.IsShortDeclaration = true
+		name.PreviouslyDeclared = true
 
 		rightExprs[len(rightExprs)-1].Outputs = append(rightExprs[len(rightExprs)-1].Outputs, name)
 	}
@@ -1375,13 +1375,13 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	if len(cond[len(cond)-1].Outputs) < 1 {
 		predicate := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[cond[len(cond)-1].Operator.Outputs[0].Type])
 		predicate.Package = pkg
-		predicate.IsShortDeclaration = true
+		predicate.PreviouslyDeclared = true
 		cond[len(cond)-1].AddOutput(predicate)
 		downExpr.AddInput(predicate)
 	} else {
 		predicate := cond[len(cond)-1].Outputs[0]
 		predicate.Package = pkg
-		predicate.IsShortDeclaration = true
+		predicate.PreviouslyDeclared = true
 		downExpr.AddInput(predicate)
 	}
 
@@ -1436,7 +1436,7 @@ func ShortAssign (expr *CXExpression, to []*CXExpression, from []*CXExpression, 
 	} else {
 		sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
 		sym.Package = pkg
-		sym.IsShortDeclaration = true
+		sym.PreviouslyDeclared = true
 		from[idx].AddOutput(sym)
 		expr.AddInput(sym)
 	}
@@ -1467,29 +1467,31 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				// then it's a literal
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
 			} else {
-				// sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
-				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Operator.Outputs[0].Type])
+				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
+				// sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Operator.Outputs[0].Type])
 				
 				if from[idx].IsArrayLiteral {
 					sym.Size = from[idx].Inputs[0].Size
 					sym.TotalSize = from[idx].Inputs[0].TotalSize
 					sym.Lengths = from[idx].Inputs[0].Lengths
 				}
-				// if from[idx].Inputs[0].IsSlice {
-				if from[idx].Operator.Outputs[0].IsSlice {
+				if from[idx].Inputs[0].IsSlice {
+				// if from[idx].Operator.Outputs[0].IsSlice {
 					sym.Lengths = append([]int{0}, sym.Lengths...)
 				}
 				
-				// sym.IsSlice = from[idx].Inputs[0].IsSlice
-				sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
+				sym.IsSlice = from[idx].Inputs[0].IsSlice
+				// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
 			}
 			sym.Package = pkg
+			sym.PreviouslyDeclared = true
 			sym.IsShortDeclaration = true
 
 			expr.AddOutput(sym)
 
-			// to[len(to) - 1].Outputs[0].IsShortDeclaration = true
-			// to[len(to) - 1].Inputs[0].IsShortDeclaration = true
+			to[len(to) - 1].Outputs[0].PreviouslyDeclared = true
+			to[len(to) - 1].Outputs[0].IsShortDeclaration = true
+			// to[len(to) - 1].Inputs[0].PreviouslyDeclared = true
 
 			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
@@ -1607,7 +1609,7 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 		} else {
 			predicate.AddType(TypeNames[condExprs[len(condExprs)-1].Operator.Outputs[0].Type])
 		}
-		predicate.IsShortDeclaration = true
+		predicate.PreviouslyDeclared = true
 		condExprs[len(condExprs)-1].Outputs = append(condExprs[len(condExprs)-1].Outputs, predicate)
 	}
 	// predicate.Package = pkg
@@ -1921,40 +1923,39 @@ func ProcessTempVariable (expr *CXExpression) {
 			arg.Type = expr.Inputs[0].Type
 			arg.Size = expr.Inputs[0].Size
 			arg.TotalSize = expr.Inputs[0].TotalSize
-			arg.IsShortDeclaration = true
+			arg.PreviouslyDeclared = true
 		}
 	}
 }
 
-func ProcessShortDeclaration (expr *CXExpression) {
-	// if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && (expr.Operator == nil || expr.Operator.OpCode == OP_IDENTITY) {
-	if len(expr.Inputs) > 0 && len(expr.Outputs) > 0 && expr.Outputs[0].IsShortDeclaration {
-		Debug("entering?")
-		expr.Outputs[0].Type = expr.Inputs[0].Type
-		expr.Outputs[0].Size = expr.Inputs[0].Size
-		expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+// func ProcessShortDeclaration (expr *CXExpression) {
+// 	// if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].PreviouslyDeclared && (expr.Operator == nil || expr.Operator.OpCode == OP_IDENTITY) {
+// 	if len(expr.Inputs) > 0 && len(expr.Outputs) > 0 && expr.Outputs[0].PreviouslyDeclared {
+// 		expr.Outputs[0].Type = expr.Inputs[0].Type
+// 		expr.Outputs[0].Size = expr.Inputs[0].Size
+// 		expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 		
-		expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
-		expr.Outputs[0].Fields = expr.Inputs[0].Fields
+// 		expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+// 		expr.Outputs[0].Fields = expr.Inputs[0].Fields
 		
-		// if expr.Operator != nil && expr.Operator.OpCode == OP_IDENTITY {
-		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
-		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
-		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+// 		// if expr.Operator != nil && expr.Operator.OpCode == OP_IDENTITY {
+// 		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
+// 		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
+// 		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 
-		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
-		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
-		// }
-		//  else {
-		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
-		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
-		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
+// 		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+// 		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
+// 		// }
+// 		//  else {
+// 		// 	expr.Outputs[0].Type = expr.Inputs[0].Type
+// 		// 	expr.Outputs[0].Size = expr.Inputs[0].Size
+// 		// 	expr.Outputs[0].TotalSize = expr.Inputs[0].TotalSize
 
-		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
-		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
-		// }
-	}
-}
+// 		// 	expr.Outputs[0].Lengths = expr.Inputs[0].Lengths
+// 		// 	expr.Outputs[0].Fields = expr.Inputs[0].Fields
+// 		// }
+// 	}
+// }
 
 func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, offset *int, shouldExist bool) {
 	if expr.IsMethodCall {
@@ -2368,7 +2369,7 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 			ProcessUndExpression(expr)
 		}
 
-		if arg.IsShortDeclaration {
+		if arg.PreviouslyDeclared {
 			UpdateSymbolsTable(symbols, arg, offset, false)
 		} else {
 			UpdateSymbolsTable(symbols, arg, offset, true)
@@ -2405,7 +2406,7 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 // 			PRGRM.PrintProgram()
 
 // 			out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
-// 			out.IsShortDeclaration = true
+// 			out.PreviouslyDeclared = true
 			
 // 			newExpr := MakeExpression(Natives[OP_IDENTITY], expr.FileName, expr.FileLine)
 // 			newExpr.AddOutput(out)
@@ -2477,18 +2478,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 
 	// fn.Expressions = ProcessMethodCalls(fn.Expressions, &symbols)
 
-	for _, expr := range fn.Expressions {
-		// if i != 0 && len(fn.Expressions[i - 1].Outputs) > 0 && fn.Expressions[i - 1].Outputs[0].IsShortDeclaration {
-		// 	expr.Outputs[0].Type = fn.Expressions[i - 1].Outputs[0].Type
-		// }
-		// if i != (len(fn.Expressions) - 1) && len(fn.Expressions[i + 1].Outputs) > 0 && fn.Expressions[i + 1].Outputs[0].IsShortDeclaration {
-		// 	fn.Expressions[i + 1].Outputs[0].Type = expr.Outputs[0].Type
-		// }
-
-		// if i != (len(fn.Expressions) - 1) && len(expr.Outputs) > 0 && expr.Outputs[0].IsShortDeclaration {
-		// 	Debug("hohoh", TypeNames[expr.Outputs[0].Type], TypeNames[fn.Expressions[i + 1].Outputs[0].Type], expr.FileLine)
-		// }
-
+	for i, expr := range fn.Expressions {
 		// ProcessShortDeclaration(expr)
 		
 		ProcessMethodCall(expr, &symbols, &offset, true)
@@ -2502,8 +2492,12 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessSliceAssignment(expr)
 		ProcessStringAssignment(expr)
 
-		// ProcessShortDeclaration(expr)
-		
+		// process short declaration
+		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration {
+			fn.Expressions[i - 1].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+			fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+		}
+
 		CheckTypes(expr)
 	}
 
@@ -2552,7 +2546,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 					out.TotalSize = inpExpr.Inputs[0].Size
 					
 					out.Type = inpExpr.Inputs[0].Type
-					out.IsShortDeclaration = true
+					out.PreviouslyDeclared = true
 				} else {
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
 					
@@ -2571,7 +2565,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 					}
 
 					out.Type = inpExpr.Operator.Outputs[0].Type
-					out.IsShortDeclaration = true
+					out.PreviouslyDeclared = true
 				}
 
 				out.Package = inpExpr.Package

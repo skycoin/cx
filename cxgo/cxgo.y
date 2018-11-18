@@ -1011,6 +1011,7 @@ assignment_expression:
 				if $2 == ":=" {
 					for _, from := range $3 {
 						from.Outputs[0].IsShortDeclaration = true
+						from.Outputs[0].PreviouslyDeclared = true
 					}
 				}
 				$$ = ArrayLiteralAssignment($1, $3)
@@ -1021,6 +1022,7 @@ assignment_expression:
 				if $2 == ":=" {
 					for _, from := range $3 {
 						from.Outputs[0].IsShortDeclaration = true
+						from.Outputs[0].PreviouslyDeclared = true
 					}
 				}
 				$$ = StructLiteralAssignment($1, $3)

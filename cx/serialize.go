@@ -154,6 +154,7 @@ type sArgument struct {
         IsRest                          int32
         IsLocalDeclaration              int32
         IsShortDeclaration              int32
+	PreviouslyDeclared              int32
 
         PassBy                          int32
         DoesEscape                      int32
@@ -316,6 +317,7 @@ func serializeArgument (arg *CXArgument, s *sAll) int {
 	sArg.IsRest = serializeBoolean(arg.IsRest)
 	sArg.IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
 	sArg.IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
+	sArg.PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
 	sArg.PassBy = int32(arg.PassBy)
 	sArg.DoesEscape = serializeBoolean(arg.DoesEscape)
