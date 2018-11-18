@@ -1774,6 +1774,11 @@ func ProcessDereferenceLevels () {
 
 func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
+		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
+			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
+			os.Exit(3)
+		}
+		
 		// checking if fields do exist in their CustomType
 		// and assigning that CustomType to the sym.Field
 		strct := arg.CustomType
