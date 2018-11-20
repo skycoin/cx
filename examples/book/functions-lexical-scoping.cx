@@ -1,0 +1,11 @@
+package main
+
+func foo () {
+    i32.print(x)    // This will give a compile error
+}
+
+func main () {
+    var x i32
+    x = 15
+    foo()
+}

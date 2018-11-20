@@ -1,0 +1,13 @@
+package main
+
+func main () {
+    var out i32
+
+    if i32.lteq(50, 5) {
+        out = 100
+    } else {
+        out = 200
+    }
+
+    i32.print(out)
+}

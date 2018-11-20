@@ -1,0 +1,19 @@
+package main
+
+type Cell struct {
+    id i32
+    drawable i32
+    alive bool
+    aliveNext bool
+    x i32
+    y i32
+}
+
+func main () {
+    var cells *[900]Cell
+    cells = makeCells()
+    
+    for bool.not(glfw.ShouldClose("window")) {
+        draw(cells, "window", program)
+    }
+}

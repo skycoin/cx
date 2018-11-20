@@ -1,0 +1,85 @@
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+type Ball struct {
+    x f32
+    y f32
+    vx f32
+    vy f32
+    gravity f32
+    radius f32
+}
+
+func drawBall (ball Ball) () {
+    var full_angle f32
+    full_angle = f32.mul(2.0, 3.141592654)
+    var x f32
+    var y f32
+
+    gl.Begin(gl.POLYGON)
+    gl.Color3f(1.0, 1.0, 1.0)
+
+    var i f32
+    for i = 0.0; f32.lt(i, 20.0); i = f32.add(i, 1.0) {
+        x = f32.add(ball.x,
+                    f32.mul(ball.radius,
+                            f32.cos(f32.div(f32.mul(i, full_angle), 20.0))))
+        y = f32.add(ball.y,
+                    f32.mul(ball.radius,
+                            f32.sin(f32.div(f32.mul(i, full_angle), 20.0))))
+
+        gl.Vertex2f(x, y)
+    }
+
+    gl.End()
+}
+
+func main () () {
+    glfw.Init()
+
+    glfw.CreateWindow("window", width, height, "Bouncing Ball")
+    glfw.MakeContextCurrent("window")
+    
+    gl.Init()
+    var program i32
+    program = gl.CreateProgram()
+    gl.LinkProgram(program)
+
+    var ball Ball
+    ball = Ball{
+        radius: 0.05,
+        x: 0.0,
+        y: 0.0,
+        vx: 0.01,
+        vy: 0.01,
+        gravity: 0.01}
+
+    for bool.not(glfw.ShouldClose("window")) {
+        gl.Clear(gl.COLOR_BUFFER_BIT)
+
+        gl.UseProgram(program)
+        
+        gl.MatrixMode(gl.PROJECTION)
+        gl.LoadIdentity()
+        gl.MatrixMode(gl.MODELVIEW)
+
+        if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
+            ball.vy = f32.abs(ball.vy)
+        } else {
+            ball.vy = f32.sub(ball.vy, ball.gravity)
+        }
+
+        ball.x = f32.add(ball.x, ball.vx)
+        ball.y = f32.add(ball.y, ball.vy)
+
+        drawBall(ball)
+        
+        glfw.PollEvents()
+        glfw.SwapBuffers("window")
+    }
+}
