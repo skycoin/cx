@@ -1,0 +1,34 @@
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func main () {
+    var target aff
+    var result []byte
+    
+    var foo i32
+    var bar Point
+    
+foobar:
+    i32.print(foo)
+
+    target = #{
+        pkg(main)
+        fn(main)
+        var(foo)
+    }
+    result = serialize(target)
+    
+    target = #{
+        pkg(main)
+        fn(bar)
+        var(bar)
+    }
+    result = serialize(target)
+    
+    target = #{pkg(main) fn(bar) expr(foobar)}
+    result = serialize(target)
+}
