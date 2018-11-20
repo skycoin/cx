@@ -990,7 +990,8 @@ func PostfixExpressionIncDec (prevExprs []*CXExpression, isInc bool) []*CXExpres
 	expr.AddInput(val[len(val)-1].Outputs[0])
 	expr.AddOutput(prevExprs[len(prevExprs)-1].Outputs[0])
 
-	exprs := append(prevExprs, expr)
+	// exprs := append(prevExprs, expr)
+	exprs := append([]*CXExpression{}, expr)
 	return exprs
 }
 
@@ -2366,10 +2367,22 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 	arg.IsLocalDeclaration = (*symbolsScope)[arg.Package.Name+"."+arg.Name]
 }
 
+func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
+	if expr.Operator == nil && len(expr.Outputs) > 0 {
+		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
+			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
+		}
+	}
+}
+
 func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *map[string]bool, offset *int, fn *CXFunction, args []*CXArgument, expr *CXExpression, isInput bool) {
-	for _, arg := range args {
+	for _, arg := range args {		
 		ProcessLocalDeclaration(symbols, symbolsScope, arg)
 
+		if !isInput {
+			CheckRedeclared(symbols, expr, arg)
+		}
+		
 		if !isInput {
 			ProcessUndExpression(expr)
 		}
@@ -2408,8 +2421,6 @@ func ProcessExpressionArguments (symbols *map[string]*CXArgument, symbolsScope *
 // func ProcessMethodCalls (exprs []*CXExpression, symbols *map[string]*CXArgument) []*CXExpression {
 // 	for _, expr := range exprs {
 // 		if expr.IsMethodCall {
-// 			PRGRM.PrintProgram()
-
 // 			out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
 // 			out.PreviouslyDeclared = true
 			
