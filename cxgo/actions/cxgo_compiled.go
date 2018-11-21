@@ -14,6 +14,7 @@ var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil 
 var CurrentFile string
 var LineNo int = 0
 var WebMode bool
+var IdeMode bool
 var BaseOutput bool
 var ReplMode bool
 var HelpMode bool
