@@ -72,7 +72,7 @@ func op_os_Exit(expr *CXExpression, fp int) {
 }
 
 func op_os_Run(expr* CXExpression, fp int) {
-	inp0, out0, out1/*, out2*/ := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]//, expr.Outputs[2]
+	inp0, inp1, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
 	command := ReadStr(fp, inp0)
@@ -115,16 +115,14 @@ func op_os_Run(expr* CXExpression, fp int) {
 		}
 	}
 
-/*	stdOutStr := ""
-	if (len(out.Bytes()) > 0) {
-		stdOutStr = string(out.Bytes())
-		if (runError != OS_RUN_SUCCESS || cmdError != CX_SUCCESS) { // workaround, panic when returning TYPE_STR
-			fmt.Println(stdOutStr)
-		}
+	stdOutBytes := out.Bytes()
+	maxSize := ReadI32(fp, inp1)
+	if (maxSize > 0) && (len(stdOutBytes) > int(maxSize)) {
+		stdOutBytes = stdOutBytes[0:maxSize]
 	}
-*/
+
 	WriteMemory(GetFinalOffset(fp, out0), FromI32(runError))
 	WriteMemory(GetFinalOffset(fp, out1), FromI32(cmdError))
-//	WriteMemory(GetFinalOffset(fp, out2), FromStr(stdOutStr))
+	WriteObject(GetFinalOffset(fp, out2), FromStr(string(stdOutBytes)))
 }
 

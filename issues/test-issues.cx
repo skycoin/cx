@@ -49,15 +49,21 @@ func runTest(index i32, test test_s) (success bool) {
 	} else if (index < 100) {
 		padding = " "
 	}
-	runError, cmdError/*, stdOut */= os.Run(test.cmd)
+	runError, cmdError, stdOut = os.Run(test.cmd, 2048)
 	if (runError != 0) {
 		printf("#%s%d | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n", padding, index, test.cmd, prettyOsCode(runError), runError, test.desc)
-		//printf("%s\n", stdOut)
+		if (g_verbose >= 1) {
+			printf("%s\n", stdOut)
+		}
 	} else if (cmdError != test.exitCode) {
 		printf("#%s%d | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError, test.desc)
-		//printf("%s\n", stdOut)
+		if (g_verbose >= 1) {
+			printf("%s\n", stdOut)
+		}
 	} else {
-		//printf("#%s%d | success | '%s' | expected %s (%d) | got %s (%d)\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError)
+		if (g_verbose >= 2) {
+			printf("#%s%d | success | '%s' | expected %s (%d) | got %s (%d)\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError)
+		}
 		success = true
 	}
 }
@@ -70,6 +76,8 @@ type test_s struct {
 
 var g_tests [256]test_s
 var g_testCount i32 = 0
+
+var g_verbose i32 = 0
 
 func test(cmd str, exitCode i32, desc str) {
 	g_tests[g_testCount].cmd = cmd
@@ -86,8 +94,8 @@ func main ()() {
 	test("cx issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
 	test("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.")
 	test("cx issue-18.cx", cx.SUCCESS, "String not working across packages")
-	test("cx issue-19/case-a/*", cx.SUCCESS, "Order of files matters for structs")
-	test("cx issue-19/case-b/*", cx.SUCCESS, "Order of files matters for structs")
+	test("cx issue-19a.cx issue-19.cx", cx.SUCCESS, "Order of files matters for structs")
+	test("cx issue-19.cx issue-19a.cx", cx.SUCCESS, "Order of files matters for structs")
 	test("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.")
 	test("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData")
 	test("cx issue-25.cx", cx.SUCCESS, "Struct field crushed")
