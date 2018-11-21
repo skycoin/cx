@@ -1,0 +1,22 @@
+package main
+
+import "os"
+import "cx"
+
+func foo_val(i i32) (out i32) {
+	out = i
+}
+
+func foo_ptr(pi *i32) (out i32) {
+	out = (*pi)
+}
+
+func main()() {
+	var i i32 = 37
+	r0 := foo_val(&i)
+	r1 := foo_ptr(i)
+
+	if (assert(false, true, "should not compile") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

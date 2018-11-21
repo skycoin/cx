@@ -1,0 +1,14 @@
+package main
+import "os"
+import "cx"
+
+type AA struct {
+	i i32
+	i i32
+}
+func main()() {
+	var a AA
+	if (assert(false, true, "should not compile") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

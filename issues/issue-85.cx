@@ -1,0 +1,46 @@
+package main
+import "os"
+import "cx"
+type issue85struct struct {
+	suit i32
+	rank i32
+}
+
+func (c issue85struct) issue85method1 (suit i32, rank i32) {
+	c.suit = suit
+	c.rank = rank
+}
+
+func (c *issue85struct) issue85method2 (suit i32, rank i32) {
+	(*c).suit = suit
+	(*c).rank = rank
+}
+
+func main () {
+	var card issue85struct
+
+	if (assert(card.suit, 0, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(card.rank, 0, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+
+	card.issue85method1(7, 11)
+
+	if (assert(card.suit, 0, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(card.rank, 0, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+
+	card.issue85method2(7, 11)
+
+	if (assert(card.suit, 7, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(card.rank, 11, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

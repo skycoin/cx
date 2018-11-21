@@ -1,0 +1,21 @@
+package main
+
+import "cx"
+import "os"
+
+type issue27Type struct {
+	ai [5]i32
+}
+
+func issue27Func(too issue27Type) {
+	var index i32 = 3
+	too.ai[index] = 4
+	if (assert(too.ai[index], 4, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}
+
+func main()() {
+	var too issue27Type
+	issue27Func(too)
+}

@@ -1,0 +1,15 @@
+package main
+
+import "os"
+import "cx"
+
+func main()() {
+	for true {
+		var s []i32
+		s = append(s, 10)
+		printf("len %d\n", len(s))
+		if (assert(len(s), 1, "error when initializing slice") == false) {
+			os.Exit(cx.INTERNAL_ERROR)
+		}
+	}
+}

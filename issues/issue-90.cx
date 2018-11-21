@@ -1,0 +1,46 @@
+package main
+
+import "os"
+import "cx"
+
+func main () {
+	var cmd str
+beginning:
+	cmd = "P"
+
+	if cmd == "C" {
+		goto cat
+	}
+
+	if cmd == "D" {
+		goto dog
+	}
+
+	if cmd == "P" {
+		goto pigeon
+	}
+
+cat:
+	if (assert(cmd, "C", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	cmd = "E"
+	goto end
+dog:
+	if (assert(cmd, "D", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	cmd = "C"
+	goto cat
+pigeon:
+	if (assert(cmd, "P", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	cmd = "D"
+	goto dog
+
+end:
+	if (assert(cmd, "E", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

@@ -1,0 +1,37 @@
+package main
+
+import "os"
+import "cx"
+
+func testout()(width i32, height i32) {
+	width = 20
+	height = 40
+}
+
+func main()() {
+	// case 1
+	var attributes [3]i32
+	var stride i32 = 0 + attributes[0]
+
+	// case 2
+	var width i32 = 33
+	var height i32 = 66
+	width, height = testout()
+	var w f32 = i32.f32(width)
+	var h f32 = i32.f32(height)
+	if (assert(width, 33, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(height, 66, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}
+
+/* workaround
+func main()() {
+	// case 1
+	var attributes [3]i32
+	var itmp i32 = attributes[0]
+	var stride i32 = 0 + itmp
+}
+*/

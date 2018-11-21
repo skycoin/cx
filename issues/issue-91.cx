@@ -1,0 +1,26 @@
+package main
+import "os"
+import "cx"
+type issue91struct struct {
+	suit i32
+	rank i32
+}
+
+func (c *issue91struct) issue91method (suit i32, rank i32) {
+	c.suit = suit
+	c.rank = rank
+}
+
+func main () {
+	var card issue91struct
+
+	card.issue91method(7, 11)
+
+	if (assert(card.suit, 7, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+
+	if (assert(card.rank, 11, "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

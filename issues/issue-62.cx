@@ -1,0 +1,10 @@
+package main
+import "os"
+import "cx"
+func main()() {
+	var i i32 = 50
+	printf("*i == %d\n", *i)
+	if (assert(false, true, "should not compile") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

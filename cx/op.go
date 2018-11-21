@@ -191,7 +191,7 @@ func AllocateSeq(size int) (offset int) {
 			fileName := errorCall.Operator.Expressions[errorCall.Line].FileName
 			fileLine := errorCall.Operator.Expressions[errorCall.Line].FileLine
 			fmt.Println(fmt.Sprintf("runtime error: heap exhausted: %s:%d", fileName, fileLine))
-			os.Exit(3)
+			os.Exit(CX_RUNTIME_ERROR)
 		}
 	}
 

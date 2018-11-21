@@ -1056,7 +1056,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 				// then left is not a package name
 				if IsCorePackage(left.Name) {
 					println(ErrorHeader(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
-					os.Exit(3)
+					os.Exit(CX_COMPILATION_ERROR)
 					return
 				}
 
@@ -1776,7 +1776,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
 			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
-			os.Exit(3)
+			os.Exit(CX_COMPILATION_ERROR)
 		}
 		
 		// checking if fields do exist in their CustomType
@@ -2087,7 +2087,7 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 			if shouldExist {
 				// it should exist. error
 				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
-				os.Exit(3)
+				os.Exit(CX_COMPILATION_ERROR)
 			}
 
 			sym.Offset = *offset
@@ -2209,7 +2209,7 @@ func CheckTypes(expr *CXExpression) {
 				}
 
 				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
-				os.Exit(3)
+				os.Exit(CX_COMPILATION_ERROR)
 			}
 		}
 
@@ -2462,7 +2462,7 @@ func ProcessUndExpression (expr *CXExpression) {
 
 func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
-		os.Exit(3)
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	FunctionAddParameters(fn, inputs, outputs)
@@ -2521,7 +2521,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
 			println(ErrorHeader(CurrentFile, LineNo), err.Error())
-			os.Exit(3)
+			os.Exit(CX_COMPILATION_ERROR)
 			return nil
 		} else {
 			expr.IsMethodCall = true

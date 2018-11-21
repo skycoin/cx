@@ -4,16 +4,28 @@ package base
 
 import (
 	// "fmt"
+	"syscall"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"bytes"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+)
+
+const (
+	OS_RUN_SUCCESS = iota
+	OS_RUN_EMPTY_CMD
+	OS_RUN_PANIC // 2
+	OS_RUN_START_FAILED
+	OS_RUN_WAIT_FAILED
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
 func op_os_ReadFile(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	
+
 	_ = out1
 
 	if byts, err := ioutil.ReadFile(ReadStr(fp, inp1)); err == nil {
@@ -48,7 +60,71 @@ func op_os_Close(expr *CXExpression, fp int) {
 func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
-	
+
 	byts := encoder.Serialize(PROGRAM.Path)
 	WriteObject(out1Offset, byts)
 }
+
+func op_os_Exit(expr *CXExpression, fp int) {
+	inp0 := expr.Inputs[0]
+	exitCode := ReadI32(fp, inp0)
+	os.Exit(int(exitCode))
+}
+
+func op_os_Run(expr* CXExpression, fp int) {
+	inp0, out0, out1/*, out2*/ := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]//, expr.Outputs[2]
+	var runError int32 = OS_RUN_SUCCESS
+
+	command := ReadStr(fp, inp0)
+	args := strings.Split(command, " ")
+	if (len(args) <= 0) {
+		runError = OS_RUN_EMPTY_CMD
+	}
+
+	name := args[0]
+	if (len(args) > 1) {
+		args = args[1:]
+	} else {
+		args = []string{}
+	}
+
+	//fmt.Println("COMMAND : ", name, " ARGS : ", args)
+	cmd := exec.Command(name, args...)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	var cmdError int32 = 0
+
+	if err := cmd.Start(); err != nil {
+	   runError = OS_RUN_START_FAILED
+	} else if err := cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			// from stackoverflow
+			// The program has exited with an exit code != 0
+			// This works on both Unix and Windows. Although package
+			// syscall is generally platform dependent, WaitStatus is
+			// defined for both Unix and Windows and in both cases has
+			// an ExitStatus() method with the same signature.
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				cmdError = int32(status.ExitStatus())
+			}
+		} else {
+			runError = OS_RUN_WAIT_FAILED
+		}
+	}
+
+/*	stdOutStr := ""
+	if (len(out.Bytes()) > 0) {
+		stdOutStr = string(out.Bytes())
+		if (runError != OS_RUN_SUCCESS || cmdError != CX_SUCCESS) { // workaround, panic when returning TYPE_STR
+			fmt.Println(stdOutStr)
+		}
+	}
+*/
+	WriteMemory(GetFinalOffset(fp, out0), FromI32(runError))
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(cmdError))
+//	WriteMemory(GetFinalOffset(fp, out2), FromStr(stdOutStr))
+}
+

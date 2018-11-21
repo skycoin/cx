@@ -1,0 +1,15 @@
+package main
+import "os"
+import "cx"
+func main()() {
+
+	var b bool = true
+	if (b == true) {
+		var x f32 = 3.0
+	}
+
+	printf("x = %f\n", x)
+	if (assert(false, true, "this should not compile") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

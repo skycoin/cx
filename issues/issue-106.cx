@@ -1,0 +1,13 @@
+package main
+import "gui"
+import "os"
+import "cx"
+func main()() {
+	//printf("g_modalSkin.skin %d\n", gui.g_modalSkin.skin)
+	if (assert(gui.skin_test(g_modalSkin), -1, "ok") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(gui.skin_test(gui.g_modalSkin), -1, "not ok") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

@@ -1,0 +1,20 @@
+package main
+
+import "pending_5a"
+import "os"
+import "cx"
+
+// cx pending_5a.cx pending_5.cx asserts
+// cx pending_5.cx pending_5a.cx works
+
+var test i32 = 44
+func main()() {
+
+	printf("cx pending_5a.cx pending_5x asserts : %d\n", pending_5a.test)
+	if (assert(pending_5a.test, 666, "internal error") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(test, 44, "internal error") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

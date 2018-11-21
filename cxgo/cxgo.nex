@@ -1006,7 +1006,7 @@ func main () {
 	}
 
 	if FoundCompileErrors {
-		os.Exit(3)
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if len(sourceCode) == 0 {
@@ -1030,7 +1030,7 @@ func main () {
 	LineNo = 0
 
 	if FoundCompileErrors {
-		os.Exit(3)
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if ReplMode || len(sourceCode) == 0 {

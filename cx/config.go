@@ -54,6 +54,14 @@ var BASIC_TYPES []string = []string{
 }
 
 const (
+    CX_SUCCESS = iota
+    CX_RUNTIME_ERROR
+    CX_PANIC // 2
+    CX_COMPILATION_ERROR
+    CX_INTERNAL_ERROR
+)
+
+const (
 	DECL_POINTER = iota // 0
 	DECL_ARRAY          // 1
 	DECL_SLICE          // 2

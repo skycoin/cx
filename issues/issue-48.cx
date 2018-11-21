@@ -1,0 +1,30 @@
+package main
+import "os"
+import "cx"
+type issue48type1 struct {
+	id str
+	values [20]issue48type2
+}
+
+type issue48type2 struct {
+	id str
+	values [20]issue48type1
+}
+
+func main () {
+	var a issue48type1
+	var b issue48type2
+
+	a.id = "type1"
+	b.id = "type2"
+
+	a.values[0] = b
+	b.values[0] = a
+
+	if (assert(a.values[0].id, "type2", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(b.values[0].id, "type1", "") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

@@ -1,0 +1,22 @@
+package main
+
+import "os"
+import "cx"
+
+func foo_val(i i32) (out i32) {
+	out = i
+}
+
+func foo_ptr(pi *i32) (out i32) {
+	out = (*pi)
+}
+
+func main()() {
+	var i i32 = 37
+	if (assert(foo_val(i), 37, "foo_val(i) == 37") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+	if (assert(foo_ptr(&i), 37, "foo_ptr(&i) == 37") == false) {
+		os.Exit(cx.INTERNAL_ERROR)
+	}
+}

@@ -7,7 +7,7 @@ import (
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial", "cx",
 }
 
 // op codes
