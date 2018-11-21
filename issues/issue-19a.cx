@@ -1,4 +1,4 @@
-package issue19b1
+package issue19a
 
 type Structure struct {
 	integer i32

@@ -1,2 +1,2 @@
-package pending_5a
+package issue50a
 var test i32 = 666
