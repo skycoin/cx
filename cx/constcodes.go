@@ -215,6 +215,7 @@ const (
 	CONST_OS_RUN_PANIC
 	CONST_OS_RUN_START_FAILED
 	CONST_OS_RUN_WAIT_FAILED
+	CONST_OS_RUN_TIMEOUT
 
 	// cx
 	CONST_CX_SUCCESS
@@ -448,6 +449,7 @@ func init() {
 	AddConstCode( CONST_OS_RUN_PANIC                   , "os.RUN_PANIC"                  , TYPE_I32, FromI32(OS_RUN_PANIC))
 	AddConstCode( CONST_OS_RUN_START_FAILED            , "os.RUN_START_FAILED"           , TYPE_I32, FromI32(OS_RUN_START_FAILED))
 	AddConstCode( CONST_OS_RUN_WAIT_FAILED             , "os.RUN_WAIT_FAILED"            , TYPE_I32, FromI32(OS_RUN_WAIT_FAILED))
+	AddConstCode( CONST_OS_RUN_TIMEOUT                 , "os.RUN_TIMEOUT"                , TYPE_I32, FromI32(OS_RUN_TIMEOUT))
 
 	// cx
 	AddConstCode( CONST_CX_SUCCESS                     , "cx.SUCCESS"                    , TYPE_I32, FromI32(CX_SUCCESS))

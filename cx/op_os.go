@@ -3,14 +3,16 @@
 package base
 
 import (
-	// "fmt"
-	"syscall"
+	"bytes"
+	//"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
-	"bytes"
 	"strings"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"syscall"
+	"time"
 )
 
 const (
@@ -19,6 +21,7 @@ const (
 	OS_RUN_PANIC // 2
 	OS_RUN_START_FAILED
 	OS_RUN_WAIT_FAILED
+	OS_RUN_TIMEOUT
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
@@ -72,7 +75,7 @@ func op_os_Exit(expr *CXExpression, fp int) {
 }
 
 func op_os_Run(expr* CXExpression, fp int) {
-	inp0, inp1, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
+	inp0, inp1, inp2, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
 	command := ReadStr(fp, inp0)
@@ -97,21 +100,38 @@ func op_os_Run(expr* CXExpression, fp int) {
 
 	var cmdError int32 = 0
 
+	timeoutMs := ReadI32(fp, inp2)
+	timeout := time.Duration(math.MaxInt64)
+	if (timeoutMs > 0) {
+		timeout = time.Duration(timeoutMs) * time.Millisecond
+	}
+
 	if err := cmd.Start(); err != nil {
 	   runError = OS_RUN_START_FAILED
-	} else if err := cmd.Wait(); err != nil {
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			// from stackoverflow
-			// The program has exited with an exit code != 0
-			// This works on both Unix and Windows. Although package
-			// syscall is generally platform dependent, WaitStatus is
-			// defined for both Unix and Windows and in both cases has
-			// an ExitStatus() method with the same signature.
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				cmdError = int32(status.ExitStatus())
-			}
-		} else {
-			runError = OS_RUN_WAIT_FAILED
+	} else {
+		done := make(chan error)
+		go func() { done <- cmd.Wait() }()
+
+		select {
+			case <-time.After(timeout):
+				cmd.Process.Kill()
+				runError = OS_RUN_TIMEOUT
+			case err := <-done:
+				if err != nil {
+					if exiterr, ok := err.(*exec.ExitError); ok {
+						// from stackoverflow
+						// The program has exited with an exit code != 0
+						// This works on both Unix and Windows. Although package
+						// syscall is generally platform dependent, WaitStatus is
+						// defined for both Unix and Windows and in both cases has
+						// an ExitStatus() method with the same signature.
+						if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+							cmdError = int32(status.ExitStatus())
+						}
+					} else {
+						runError = OS_RUN_WAIT_FAILED
+					}
+				}
 		}
 	}
 
