@@ -1,0 +1,24 @@
+package main
+
+type Point struct {
+    x i32
+    y i32
+}
+
+func CreatePoints () {
+    var points [5]Point
+    var ptr *[5]Point
+    
+    var c i32
+    for c = 0; c < 5; c++ {
+        points[c] = Point{x: c, y: c + 1}
+    }
+
+    ptr = &points
+}
+
+func main () {
+    for true {
+        CreatePoints()
+    }
+}

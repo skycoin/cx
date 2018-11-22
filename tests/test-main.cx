@@ -31,7 +31,17 @@ func main () {
 
 	// counting successful tests
 	var successfulTests i32
-	for c := 0; c < len(testing.res); c++ {
+
+
+	
+	for c := 0; c < len(testing.res);
+
+
+	c++ {
+
+
+
+		
 		if testing.res[c] {
 			successfulTests = successfulTests + 1
 		}
