@@ -409,7 +409,6 @@ func ServiceMode () {
 	mux := http.NewServeMux()
 	
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
@@ -436,6 +435,21 @@ func ServiceMode () {
 	}
 }
 
+func IdeServiceMode() {
+	// Leaps's host address
+	ideHost := "localhost:5335"
+
+	// Working directory for ide
+	sharedPath := fmt.Sprintf("%s/src/github.com/skycoin/cx", os.Getenv("GOPATH"))
+
+	// Start Leaps
+	// cmd = `leaps -address localhost:5335 $GOPATH/src/skycoin/cx`
+	cmnd := exec.Command("leaps", "-address", ideHost, sharedPath)
+
+	// Just leave start command
+	cmnd.Start()
+}
+
 func parseFile (fileName string) {
 	sourceCode, err := os.Open(fileName)
 	if err != nil {
@@ -455,6 +469,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
+-ide, --ide						  Start CX as a web service, and Leaps service start also.
 
 Signal options:
 -signal-client                   Run signal client
@@ -634,6 +649,11 @@ func main () {
 			flagMode = true
 			continue
 		}
+		if arg == "--ide" || arg == "-ide" {
+			IdeMode = true
+			flagMode = true
+			continue
+		}
 		if arg == "--repl" || arg == "-r" {
 			ReplMode = true
 			flagMode = true
@@ -736,6 +756,12 @@ func main () {
 	if WebMode {
 		ServiceMode()
 		// ObjectExplorer()
+		return
+	}
+
+	if IdeMode {
+		IdeServiceMode()
+		ServiceMode()
 		return
 	}
 

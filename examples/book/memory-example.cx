@@ -1,0 +1,20 @@
+package main
+
+var epsilon i32
+
+func bar () (w i32) {
+    w = 5
+}
+
+func foo (num1 i32, num2 i32) (res i32) {
+    var weight i32
+
+    weight = bar()
+
+    res = (num1 + num2) * weight * epsilon
+}
+
+func main () {
+    epsilon = 5
+    epsilon = foo(10, 10)
+}

@@ -1,0 +1,9 @@
+package main
+
+func main () {
+    goto label2
+label1:
+    str.print("this should never be reached")
+label2:
+    str.print("this should be printed")
+}

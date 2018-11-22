@@ -1,0 +1,18 @@
+package main
+
+func foo () (out1 i32, out2 str) {
+    out1 = 5
+    out2 = "five"
+    
+    return
+    
+    out1 = 10
+    out2 = "ten"
+}
+
+func main () {
+    var num i32
+    var text str
+    
+    num, text = foo()
+}

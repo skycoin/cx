@@ -1,0 +1,17 @@
+package main
+
+func main () {
+    if false {
+        var err i32
+        err = i32.div(50, 0)
+        str.print("This will never be printed")
+    }
+
+    if true {
+        str.print("This will always print")
+    }
+
+    if i32.gt(5, 3) {
+        str.print("5 is greater than 3")
+    }
+}

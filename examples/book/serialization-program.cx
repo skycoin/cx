@@ -1,0 +1,9 @@
+package main
+
+func main () {
+    var target aff
+    var result []byte
+    
+    target = #{}
+    result = serialize(target)
+}

@@ -1,0 +1,10 @@
+package main
+
+func main () {
+    var correct []bool
+
+    correct = append(correct, assert(i32.add(10, 10), 20, "Add error"))
+    correct = append(correct, assert(10 - 10, 0, "Subtract error"))
+    correct = append(correct, assert(i32.f32(10), 10.0, "Parse to F32 error"))
+    assert(5 < 10, true, "I32 Less than error")
+}

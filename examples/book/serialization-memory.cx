@@ -1,0 +1,15 @@
+package main
+
+func main () {
+    var target aff
+    var result []byte
+    
+    target = #{mem(heap)}
+    result = serialize(target)
+    
+    target = #{mem(stack)}
+    result = serialize(target)
+    
+    target = #{mem(data)}
+    result = serialize(target)
+}
