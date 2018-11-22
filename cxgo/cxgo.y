@@ -1051,7 +1051,8 @@ expression:     assignment_expression
 	|       expression COMMA assignment_expression
                 {
 			$3[len($3) - 1].Outputs = append($1[len($1) - 1].Outputs, $3[len($3) - 1].Outputs...)
-			$$ = append($1, $3...)
+			// $$ = append($1, $3...)
+			$$ = $3
                 }
                 ;
 
