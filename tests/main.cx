@@ -168,6 +168,7 @@ func main ()() {
 	test("cx issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice")
 	test("cx issue-106a.cx issue-106.cx", cx.COMPILATION_ERROR, "Troubles when accessing a global var from another package")
 	test("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	test("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 
 	var success i32 = 0
 	for i :=0; i < g_testCount; i = i + 1 {
