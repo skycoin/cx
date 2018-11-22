@@ -14,6 +14,7 @@ var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil 
 var CurrentFile string
 var LineNo int = 0
 var WebMode bool
+var IdeMode bool
 var BaseOutput bool
 var ReplMode bool
 var HelpMode bool
@@ -1242,7 +1243,6 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[leftExprs[len(leftExprs) - 1].Operator.Outputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
 		
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
@@ -1256,7 +1256,6 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX)).AddType(TypeNames[rightExprs[len(rightExprs) - 1].Operator.Outputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[rightExprs[len(rightExprs)-1].Inputs[0].Type])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
@@ -1276,7 +1275,12 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
-		out = append(out, leftExprs...)
+		
+		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
+			out = append(out, leftExprs...)
+		} else {
+			out = append(out, leftExprs[:len(leftExprs) - 1]...)
+		}
 	} else {
 		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
 	}
@@ -1284,7 +1288,12 @@ func ArithmeticOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	if len(rightExprs[len(rightExprs)-1].Outputs[0].Indexes) > 0 || rightExprs[len(rightExprs)-1].Operator != nil {
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
-		out = append(out, rightExprs...)
+		
+		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
+			out = append(out, rightExprs...)
+		} else {
+			out = append(out, rightExprs[:len(rightExprs) - 1]...)
+		}
 	} else {
 		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs)-1].Outputs[0])
 	}
@@ -1448,10 +1457,6 @@ func ShortAssign (expr *CXExpression, to []*CXExpression, from []*CXExpression, 
 func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
-	// if from[idx].IsArrayLiteral {
-	// 	from[0].Outputs[0].SynonymousTo = to[0].Outputs[0].Name
-	// }
-
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 
 		var expr *CXExpression
@@ -1459,7 +1464,6 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 		switch assignOp {
 		case ":=":
 			expr = MakeExpression(nil, CurrentFile, LineNo)
-			// expr = MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			var sym *CXArgument
@@ -1490,10 +1494,11 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 
 			expr.AddOutput(sym)
 
-			to[len(to) - 1].Outputs[0].PreviouslyDeclared = true
-			to[len(to) - 1].Outputs[0].IsShortDeclaration = true
-			// to[len(to) - 1].Inputs[0].PreviouslyDeclared = true
-
+			for _, toExpr := range to {
+				toExpr.Outputs[0].PreviouslyDeclared = true
+				toExpr.Outputs[0].IsShortDeclaration = true
+			}
+			
 			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
 			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
@@ -1579,7 +1584,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 
 		from[idx].Outputs = to[len(to) - 1].Outputs
 		// from[idx].Program = to[len(to) - 1].Program
-		
+
 		return append(to[:len(to)-1], from...)
 		// return append(to, from...)
 	}
@@ -1924,7 +1929,7 @@ func ProcessTempVariable (expr *CXExpression) {
 	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
-		if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
+		if IsTempVar(name) {
 			// then it's a temporary variable and it needs to adopt its input's type
 			arg.Type = expr.Inputs[0].Type
 			arg.Size = expr.Inputs[0].Size
@@ -2368,8 +2373,9 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 }
 
 func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
-	if expr.Operator == nil && len(expr.Outputs) > 0 {
+	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
+			PRGRM.PrintProgram()
 			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}

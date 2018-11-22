@@ -24,7 +24,7 @@ func main () {
 
 	aff.on(elts, tgt)
 	
-	aff.inform(elts, 2, tgt)
+	aff.inform(elts, 1, tgt)
 
 targetExpr:
 	foo = i32.add(5, 6)
