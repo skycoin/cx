@@ -471,7 +471,7 @@ func (prgrm *CXProgram) PrintProgram() {
                                                 if i == len(expr.Outputs)-1 {
                                                         outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
                                                 } else {
-                                                        outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
+                                                        outNames.WriteString(fmt.Sprintf("%s%s%s %s, ", derefLevels, fullName, arrayStr, typeName))
                                                 }
                                         }
 
@@ -563,6 +563,13 @@ func IsCorePackage (ident string) bool {
                 }
         }
         return false
+}
+
+func IsTempVar (name string) bool {
+	if len(name) >= len(LOCAL_PREFIX) && name[:len(LOCAL_PREFIX)] == LOCAL_PREFIX {
+		return true
+	}
+	return false
 }
 
 func SetCorrectArithmeticOp(expr *CXExpression) {
