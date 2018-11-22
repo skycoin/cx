@@ -1,0 +1,8 @@
+package main
+import "test_60a"
+import "os"
+import "cx"
+func main ()(){
+	printf("test_60a.i : %d\n", i)
+	assert_(false, true, "this should not compile")
+}

@@ -1,0 +1,17 @@
+package main
+
+import "os"
+import "cx"
+
+func main () {
+	var b bool = true
+	var i i32 = 11
+
+	assert_(i, 11, "")
+
+	if b {
+		i = 17
+	}
+
+	assert_(i, 17, "")
+}

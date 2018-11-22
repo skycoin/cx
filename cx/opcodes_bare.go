@@ -222,6 +222,7 @@ const (
 	OP_EVOLVE
 
 	OP_ASSERT
+	OP_ASSERT_
 
 	// affordances
 	OP_AFF_PRINT
@@ -446,6 +447,7 @@ func init () {
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
+	AddOpCode(OP_ASSERT_, "assert_", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
 
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print", []int{TYPE_AFF}, []int{})
@@ -837,6 +839,8 @@ func init () {
 		case OP_EVOLVE:
 		case OP_ASSERT:
 			op_assert_value(expr, fp)
+		case OP_ASSERT_:
+			op_assert_value_(expr, fp)
 
 			// affordances
 		case OP_AFF_PRINT:

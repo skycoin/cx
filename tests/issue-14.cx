@@ -1,0 +1,16 @@
+package main
+func main() () {
+	{
+		var fa f32 = 2.3
+		var fb f32 = 2.3D
+		printf("%f vs %f\n", fa, fb)
+		assert_(fa == fb, true, "invalid implicit cast f64 to f32\n")
+	}
+
+	{
+		var da f64 = 2.4D
+		var db f64 = 2.4
+		printf("%f vs %f\n", da, db)
+		assert_(da == db, true, "\ninvalid implicit cast f32 to f64\n")
+	}
+}

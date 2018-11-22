@@ -1,0 +1,10 @@
+package main
+import "issue18"
+import "os"
+import "cx"
+func main () {
+	assert_(issue18.string, "test", "")
+}
+
+package issue18
+var string str = "test"

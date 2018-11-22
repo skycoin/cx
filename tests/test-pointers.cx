@@ -1,4 +1,4 @@
-package testing
+package main
 
 // type miniStruct struct {
 // 	mInt i32
@@ -29,13 +29,13 @@ func returnPtrArrayStruct () (ptr *[2]miniStruct) {
 	c[0] = miniStruct{mInt: 11, mString: "Foobar"}
 
 
-	
+
 	c[1] = miniStruct{mInt: 13, mString: "Barfoo"}
 
 	ptr = &c
 }
 
-func testPointers () {
+func main () {
 	var li32Ptr *i32
 	var li64Ptr *i64
 	var num1 i32
@@ -47,14 +47,14 @@ func testPointers () {
 	li32Ptr = &num1
 	li64Ptr = &num2
 
-	res = append(res, assert(*li32Ptr, 15, ""))
-	res = append(res, assert(*li64Ptr, 55L, ""))
-	
+	assert_(*li32Ptr, 15, "")
+	assert_(*li64Ptr, 55L, "")
+
 	gi32Ptr = &num1
 	gi64Ptr = &num2
 
-	res = append(res, assert(*gi32Ptr, 15, ""))
-	res = append(res, assert(*gi64Ptr, 55L, ""))
+	assert_(*gi32Ptr, 15, "")
+	assert_(*gi64Ptr, 55L, "")
 
 	var pStrct1 *TestStruct
 	var pStrct2 *TestStruct
@@ -86,8 +86,8 @@ func testPointers () {
 	(*pStrct1).int = num1
 	(*pStrct2).long = num2
 
-	res = append(res, assert((*pStrct1).int, 15, ""))
-	res = append(res, assert((*pStrct2).long, 55L, ""))
+	assert_((*pStrct1).int, 15, "")
+	assert_((*pStrct2).long, 55L, "")
 
 	var pStrcts1 *[2]TestStruct
 	var strcts1 [2]TestStruct
@@ -95,34 +95,34 @@ func testPointers () {
 	strcts1[0] = strct1
 	strcts1[1] = strct2
 
-	res = append(res, assert(strcts1[0].decimal, 64.0D, ""))
-	res = append(res, assert(strcts1[1].decimal, 63.0D, ""))
+	assert_(strcts1[0].decimal, 64.0D, "")
+	assert_(strcts1[1].decimal, 63.0D, "")
 
 	pStrcts1 = &strcts1
 
-	res = append(res, assert((*pStrct1).int, 15, ""))
-	res = append(res, assert((*pStrct1).long, 64L, ""))
-	res = append(res, assert((*pStrct1).float, 32.0, ""))
-	res = append(res, assert((*pStrct1).decimal, 64.0D, ""))
-	res = append(res, assert((*pStrct1).boolean, true, ""))
-	res = append(res, assert((*pStrct1).byt, 255B, ""))
-	res = append(res, assert((*pStrct1).string, "Foo bar", ""))
+	assert_((*pStrct1).int, 15, "")
+	assert_((*pStrct1).long, 64L, "")
+	assert_((*pStrct1).float, 32.0, "")
+	assert_((*pStrct1).decimal, 64.0D, "")
+	assert_((*pStrct1).boolean, true, "")
+	assert_((*pStrct1).byt, 255B, "")
+	assert_((*pStrct1).string, "Foo bar", "")
 
-	res = append(res, assert((*pStrct2).int, 33, ""))
-	res = append(res, assert((*pStrct2).long, 55L, ""))
-	res = append(res, assert((*pStrct2).float, 33.0, ""))
-	res = append(res, assert((*pStrct2).decimal, 63.0D, ""))
-	res = append(res, assert((*pStrct2).boolean, false, ""))
-	res = append(res, assert((*pStrct2).byt, 41B, ""))
-	res = append(res, assert((*pStrct2).string, "Bar foo", ""))
+	assert_((*pStrct2).int, 33, "")
+	assert_((*pStrct2).long, 55L, "")
+	assert_((*pStrct2).float, 33.0, "")
+	assert_((*pStrct2).decimal, 63.0D, "")
+	assert_((*pStrct2).boolean, false, "")
+	assert_((*pStrct2).byt, 41B, "")
+	assert_((*pStrct2).string, "Bar foo", "")
 
 	var ptrStrcts *[2]miniStruct
 	ptrStrcts = returnPtrArrayStruct()
 
-	res = append(res, assert((*ptrStrcts)[0].mInt, 11, ""))
-	res = append(res, assert((*ptrStrcts)[0].mString, "Foobar", ""))
-	res = append(res, assert((*ptrStrcts)[1].mInt, 13, ""))
-	res = append(res, assert((*ptrStrcts)[1].mString, "Barfoo", ""))
+	assert_((*ptrStrcts)[0].mInt, 11, "")
+	assert_((*ptrStrcts)[0].mString, "Foobar", "")
+	assert_((*ptrStrcts)[1].mInt, 13, "")
+	assert_((*ptrStrcts)[1].mString, "Barfoo", "")
 
 	// var pStrcts *[2]TestStruct
 	// // var pStrcts *[2]TestStruct
@@ -135,24 +135,24 @@ func testPointers () {
 
 	// pStrcts = &strcts
 
-	// assert((*pStrcts)[i32.add(0, 0)].int, 32, "")
-	// assert((*pStrcts)[i32.add(0, 0)].long, 64L, "")
-	// assert((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
+	// assert_((*pStrcts)[i32.add(0, 0)].int, 32, "")
+	// assert_((*pStrcts)[i32.add(0, 0)].long, 64L, "")
+	// assert_((*pStrcts)[i32.add(0, 0)].decimal, 64.0D, "")
 	// //
 	// // To Do
 	// //
-	
+
 	// var recStruct TestStruct
 	// recStruct = (*pStrcts)[0]
 
-	// assert(recStruct.int, 32, "")
-	// assert(recStruct.long, 64L, "")
+	// assert_(recStruct.int, 32, "")
+	// assert_(recStruct.long, 64L, "")
 	// //
 	// // To Do
 	// //
-	
+
 	// recStruct = (*pStrcts)[1]
-	// assert(recStruct.int, 33, "")
-	// assert(recStruct.long, 63L, "")
+	// assert_(recStruct.int, 33, "")
+	// assert_(recStruct.long, 63L, "")
 }
 

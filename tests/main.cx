@@ -1,0 +1,186 @@
+package main
+
+import "os"
+import "cx"
+import "time"
+
+func prettyOsCode(code i32) (out str) {
+	if (code == os.RUN_SUCCESS) {
+		out = "os.RUN_SUCCESS"
+	} else if (code == os.RUN_EMPTY_CMD) {
+		out = "os.RUN_EMPTY_CMD"
+	} else if (code == os.RUN_PANIC) {
+		out = "os.RUN_PANIC"
+	} else if (code == os.RUN_START_FAILED) {
+		out = "os.RUN_START_FAILED"
+	} else if (code == os.RUN_WAIT_FAILED) {
+		out = "os.RUN_WAIT_FAILED"
+	} else if (code == os.RUN_TIMEOUT) {
+		out = "os.RUN_TIMEOUT"
+	} else {
+		out = "unknown os.Run exit code"
+	}
+}
+
+func prettyCxCode(code i32) (out str) {
+	if (code == cx.SUCCESS) {
+		out = "cx.SUCCESS"
+	} else if (code == cx.RUNTIME_ERROR) {
+		out = "cx.RUNTIME_ERROR"
+	} else if (code == cx.PANIC) {
+		out = "cx.PANIC"
+	} else if (code == cx.COMPILATION_ERROR) {
+		out = "cx.COMPILATION_ERROR"
+	} else if (code == cx.INTERNAL_ERROR) {
+		out = "cx.INTERNAL_ERROR"
+	} else {
+		out = "unknown cx exit code"
+	}
+}
+
+func runTest(index i32, test test_s) (success bool) {
+	success = false
+
+	var runError i32 = 0
+	var cmdError i32 = 0
+	var stdOut str
+
+	var padding str
+	if (index < 10) {
+		padding = "  "
+	} else if (index < 100) {
+		padding = " "
+	}
+	runError, cmdError, stdOut = os.Run(test.cmd, 2048, test.timeoutMs)
+	if (runError != 0 && (runError != os.RUN_TIMEOUT || test.timeoutMs <= 0)) {
+		printf("#%s%d | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n", padding, index, test.cmd, prettyOsCode(runError), runError, test.desc)
+		if (g_verbose >= 1) {
+			printf("%s\n", stdOut)
+		}
+	} else if (cmdError != test.exitCode) {
+		printf("#%s%d | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError, test.desc)
+		if (g_verbose >= 1) {
+			printf("%s\n", stdOut)
+		}
+	} else {
+		if (g_verbose >= 2) {
+			printf("#%s%d | success | '%s' | expected %s (%d) | got %s (%d)\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError)
+		}
+		success = true
+	}
+}
+
+type test_s struct {
+	cmd str
+	exitCode i32
+	timeoutMs i32
+	desc str
+}
+
+var g_tests [256]test_s
+var g_testCount i32 = 0
+
+var g_verbose i32 = 1
+
+func testEx(cmd str, exitCode i32, timeoutMs i32, desc str) {
+	g_tests[g_testCount].cmd = cmd
+	g_tests[g_testCount].exitCode = exitCode
+	g_tests[g_testCount].timeoutMs = timeoutMs
+	g_tests[g_testCount].desc = desc
+	g_testCount = g_testCount + 1
+}
+
+func test(cmd str, exitCode i32, desc str) {
+	testEx(cmd, exitCode, 0, desc)
+}
+
+func main ()() {
+	printf("\nRunning CX tests\n\n")
+
+	var start i64
+	start = time.UnixMilli()
+
+	// tests
+	test("cx test-i32.cx", cx.SUCCESS, "i32")
+	test("cx test-i64.cx", cx.SUCCESS, "i64")
+	test("cx test-f32.cx", cx.SUCCESS, "f32")
+	test("cx test-f64.cx", cx.SUCCESS, "f64")
+	test("cx test-bool.cx", cx.SUCCESS, "bool")
+	test("cx test-array.cx", cx.SUCCESS, "array")
+	test("cx test-function.cx", cx.SUCCESS, "function")
+	test("cx test-control-flow.cx", cx.SUCCESS, "control floow")
+	test("cx test-utils.cx test-struct.cx", cx.SUCCESS, "struct")
+	test("cx test-str.cx", cx.SUCCESS, "str")
+	test("cx test-utils.cx test-pointers.cx", cx.SUCCESS, "pointers")
+	test("cx test-slices.cx", cx.SUCCESS, "slices")
+	test("cx test-short-declarations.cx", cx.SUCCESS, "short declarations")
+	test("cx test-parse.cx", cx.SUCCESS, "parse")
+	test("cx test-collection-functions.cx", cx.SUCCESS, "collection functions")
+
+	// issues
+	test("cx issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
+	test("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.")
+	test("cx issue-18.cx", cx.SUCCESS, "String not working across packages")
+	test("cx issue-19a.cx issue-19.cx", cx.SUCCESS, "Order of files matters for structs")
+	test("cx issue-19.cx issue-19a.cx", cx.SUCCESS, "Order of files matters for structs")
+	test("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.")
+	test("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData")
+	test("cx issue-25.cx", cx.SUCCESS, "Struct field crushed")
+	test("cx issue-26.cx", cx.SUCCESS, "Failed to modify value in an array")
+	test("cx issue-27.cx", cx.SUCCESS, "Panic when trying to index (using a var) an array, member of a struct passed as a function argument")
+	test("cx issue-28.cx", cx.SUCCESS, "Can't call method from package")
+	test("cx issue-29.cx", cx.SUCCESS, "Can't call method if it has a parameter")
+	test("cx issue-30.cx", cx.SUCCESS, "Panic when using arithmetic to index an array field of a struct")
+	test("cx issue-32.cx", cx.SUCCESS, "Panic if return value is used in an expression")
+	test("cx issue-35.cx", cx.SUCCESS, "Panic when accessing property of struct array passed in as argument to func")
+	test("cx issue-37.cx", cx.SUCCESS, "Unexpected results when accessing arrays of structs in a struct")
+	test("cx issue-39.cx", cx.SUCCESS, "Inline initializations and arrays")
+	test("cx issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop")
+	test("cx issue-41.cx", cx.SUCCESS, "Scope not working in loops")
+	test("cx issue-48.cx", cx.SUCCESS, "Interdependant Structs")
+	test("cx issue-49.cx", cx.COMPILATION_ERROR, "Panic when trying to access an invalid field.")
+	test("cx issue-50a.cx issue-50.cx", cx.SUCCESS, "No compilation error when using an using an invalid identifier")
+	test("cx issue-50.cx issue-50a.cx", cx.SUCCESS, "No compilation error when using an using an invalid identifier")
+	test("cx issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.")
+	test("cx issue-53.cx", cx.SUCCESS, "Panic when using +* in an expression")
+	test("cx issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.")
+	test("cx issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.")
+	test("cx issue-56.cx", cx.SUCCESS, "Panic when variable used in if statement without parenthesis.")
+	test("cx issue-57.cx", cx.SUCCESS, "Struct field stomped")
+	test("cx issue-58.cx", cx.COMPILATION_ERROR, "No compilation error when indexing an array with a non integral var.")
+	test("cx issue-59.cx", cx.SUCCESS, "Panic when a field of a struct returned by a function is used in an expression")
+	test("cx issue-60a.cx issue-60.cx", cx.COMPILATION_ERROR, "No compilation error when using var without package qualification.")
+	test("cx issue-61.cx", cx.SUCCESS, "No compilation error when passing *i32 as an i32 arg and conversely")
+	test("cx issue-61a.cx", cx.COMPILATION_ERROR, "No compilation error when passing *i32 as an i32 arg and conversely")
+	test("cx issue-62.cx", cx.COMPILATION_ERROR, "No compilation error when dereferencing an i32 var.")
+	test("cx issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.")
+	test("cx issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope")
+	test("cx issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")
+	test("cx issue-85.cx", cx.SUCCESS, "Method does not work")
+	test("cx issue-86.cx", cx.SUCCESS, "Cannot use bool variable in if expression")
+	testEx("cx issue-90.cx", cx.SUCCESS, 5000, "Goto not working on windows")
+	test("cx issue-91.cx", cx.SUCCESS, "Methods with pointer receivers don't work")
+	test("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through")
+	test("cx issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32")
+	test("cx issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work")
+	test("cx issue-103.cx", cx.SUCCESS, "Argument list is not parsed correctly")
+	test("cx issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression")
+	test("cx issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice")
+	test("cx issue-106a.cx issue-106.cx", cx.COMPILATION_ERROR, "Troubles when accessing a global var from another package")
+	test("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+
+	var success i32 = 0
+	for i :=0; i < g_testCount; i = i + 1 {
+		if (runTest(i, g_tests[i]) == true) {
+			success = success + 1
+		}
+	}
+
+	var end i64
+	end = time.UnixMilli()
+
+	printf("\nTests finished after %d milliseconds\n", i64.sub(end, start))
+	printf("A total of %d tests were performed\n", g_testCount)
+	printf("%d were successful\n", success)
+	printf("%d failed\n", g_testCount - success)
+}

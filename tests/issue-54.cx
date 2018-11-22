@@ -1,0 +1,12 @@
+package main
+import "os"
+import "cx"
+
+type AA struct {
+	i i32
+	i i32
+}
+func main()() {
+	var a AA
+	assert_(false, true, "should not compile")
+}

@@ -1,0 +1,24 @@
+package issue28
+
+type Structure struct {
+	string str
+}
+
+func (structure Structure) function () (out str) {
+	out = structure.string
+}
+
+package main
+import "issue28"
+import "os"
+import "cx"
+
+func main () {
+	var structure issue28.Structure
+	structure.string = "abc"
+	assert_(structure.string, "abc", "")
+
+	var out str
+	out = structure.function()
+	assert_(out, "abc", "")
+}

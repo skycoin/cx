@@ -1,0 +1,38 @@
+package main
+
+import "os"
+import "cx"
+
+func main () {
+	var cmd str
+beginning:
+	cmd = "P"
+
+	if cmd == "C" {
+		goto cat
+	}
+
+	if cmd == "D" {
+		goto dog
+	}
+
+	if cmd == "P" {
+		goto pigeon
+	}
+
+cat:
+	assert_(cmd, "C", "")
+	cmd = "E"
+	goto end
+dog:
+	assert_(cmd, "D", "")
+	cmd = "C"
+	goto cat
+pigeon:
+	assert_(cmd, "P", "")
+	cmd = "D"
+	goto dog
+
+end:
+	assert_(cmd, "E", "")
+}

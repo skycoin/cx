@@ -1,0 +1,10 @@
+package main
+
+import "os"
+import "cx"
+
+func main() {
+	var s str
+	s = "a" + "b"
+	assert_(s, "ab", "string concatenation failed")
+}

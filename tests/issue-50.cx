@@ -1,0 +1,12 @@
+package main
+
+import "issue50a"
+import "os"
+import "cx"
+
+var test i32 = 44
+func main()() {
+
+	assert_(issue50a.test, 666, "internal error")
+	assert_(test, 44, "internal error")
+}

@@ -1,9 +1,9 @@
-package testing
+package main
 
 // var gStr str
 
 func receivingStr (s str) {
-	res = append(res, assert(s, "foo bar bar foo", ""))
+	assert_(s, "foo bar bar foo", "")
 }
 
 func returningStr () (s str) {
@@ -17,12 +17,12 @@ func testSTRFunctions () () {
 	receivingStr("foo bar bar foo")
 	receivingStr(testStr)
 
-	res = append(res, assert(testStr, "foo bar bar foo", ""))
+	assert_(testStr, "foo bar bar foo", "")
 
-	res = append(res, assert(returningStr(), "bar bar foo foo", ""))
+	assert_(returningStr(), "bar bar foo foo", "")
 
 	// that newline in the second argument is actually needed! sprintf1s format string includes a \n at the end
-	res = append(res, assert(sprintf("%s%d%d%f%f", "hello", 11, 13L, 17.0, 19.0D), `hello111317.000000019.0000000000000000`, ""))
+	assert_(sprintf("%s%d%d%f%f", "hello", 11, 13L, 17.0, 19.0D), `hello111317.000000019.0000000000000000`, "")
 
 	var part1 str
 	var part2 str
@@ -32,41 +32,41 @@ func testSTRFunctions () () {
 
 	result = str.concat(part1, part2)
 
-	res = append(res, assert(str.concat(part1, part2), "HelloBye", ""))
-	res = append(res, assert(str.concat("One", "Two"), "OneTwo", ""))
-	res = append(res, assert(result, "HelloBye", ""))
-	
+	assert_(str.concat(part1, part2), "HelloBye", "")
+	assert_(str.concat("One", "Two"), "OneTwo", "")
+	assert_(result, "HelloBye", "")
+
 	// str.print("--------String (str) Funcitons Testing--------")
 	// var lStr str
 	// str = "Local"
 	// gStr = "Global"
-	
-	// assert(gStr, "Global", "global strings error")
-	// assert(local, "Local", "local strings error")
 
-	//assert(str.lt("foo", "bar"), false, "str.lt() error")
-	//assert(str.lt("bar", "foo"), true, "str.lt() error")
+	// assert_(gStr, "Global", "global strings error")
+	// assert_(local, "Local", "local strings error")
 
-	//assert(str.gt("foo", "bar"), true, "str.gt() error")
-	//assert(str.gt("bar", "foo"), false, "str.gt() error")
-	
-	//assert(str.eq("foo", "foo"), true, "str.eq() error")
-	//assert(str.eq("foo", "bar"), false, "str.eq() error")
-	
-	//assert(str.uneq("foo", "foo"), false, "str.uneq() error")
-	//assert(str.uneq("foo", "bar"), true, "str.uneq() error")
-	
-	//assert(str.lteq("foo", "bar"), false, "str.lteq() error")
-	//assert(str.lteq("bar", "foo"), true, "str.lteq() error")
-	
-	//assert(str.lteq("foo", "bar"), true, "str.gteq() error")
-	//assert(str.lteq("bar", "foo"), false, "str.gteq() error")
+	//assert_(str.lt("foo", "bar"), false, "str.lt() error")
+	//assert_(str.lt("bar", "foo"), true, "str.lt() error")
 
-	//assert(len("Foo bar"), 7, "len() error")
+	//assert_(str.gt("foo", "bar"), true, "str.gt() error")
+	//assert_(str.gt("bar", "foo"), false, "str.gt() error")
 
-	//assert(str.concat("Hello ", "World"), "Hello World", "str.concat() error")
+	//assert_(str.eq("foo", "foo"), true, "str.eq() error")
+	//assert_(str.eq("foo", "bar"), false, "str.eq() error")
+
+	//assert_(str.uneq("foo", "foo"), false, "str.uneq() error")
+	//assert_(str.uneq("foo", "bar"), true, "str.uneq() error")
+
+	//assert_(str.lteq("foo", "bar"), false, "str.lteq() error")
+	//assert_(str.lteq("bar", "foo"), true, "str.lteq() error")
+
+	//assert_(str.lteq("foo", "bar"), true, "str.gteq() error")
+	//assert_(str.lteq("bar", "foo"), false, "str.gteq() error")
+
+	//assert_(len("Foo bar"), 7, "len() error")
+
+	//assert_(str.concat("Hello ", "World"), "Hello World", "str.concat() error")
 }
 
-func testSTR () () {
+func main () () {
 	testSTRFunctions()
 }
