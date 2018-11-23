@@ -110,6 +110,8 @@ type CXExpression struct {
         IsStructLiteral                 bool
         IsArrayLiteral                  bool
         IsUndType                       bool
+	IsBreak                         bool
+	IsContinue                      bool
 
         Function                        *CXFunction
         Package                         *CXPackage
