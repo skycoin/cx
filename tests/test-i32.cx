@@ -54,7 +54,7 @@ func I32RelationalShorthand() (){
 	assert_(10 <= 6, false, "I32 Lesser Or Equal error")
 }
 
-func testI32() () {
+func main() () {
 	I32ArithmeticFunctions()
 	I32ArithmeticShorthand()
 	I32RelationalFunctions()

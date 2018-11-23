@@ -1020,6 +1020,7 @@ func main () {
 
 	PRGRM = cxgo0.PRGRM0
 
+	parseErrors := 0
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
@@ -1028,10 +1029,10 @@ func main () {
 		if len(fileNames) > 0 {
 			CurrentFile = fileNames[i]
 		}
-		yyParse(NewLexer(b))
+		parseErrors += yyParse(NewLexer(b))
 	}
 
-	if FoundCompileErrors {
+	if FoundCompileErrors || parseErrors > 0 {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
 
@@ -1069,7 +1070,7 @@ func main () {
 			}
 		} else {
 			if err := PRGRM.RunCompiled(0); err != nil {
-				fmt.Println(err)
+				panic(err)
 				// repl()
 			}
 		}

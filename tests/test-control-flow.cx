@@ -75,7 +75,7 @@ func main () {
 		check = i
 	}
 
-	res = append(res, assert(check, 5, "break error"))
+	assert_(check, 5, "break error")
 
 	for i = 0; i < 10; i++ {
 		if i == 9 {
@@ -84,5 +84,5 @@ func main () {
 		check = i
 	}
 
-	res = append(res, assert(check, 8, "continue error"))
+	assert_(check, 8, "continue error")
 }

@@ -48,7 +48,7 @@ func init () {
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory", []int{}, []int{TYPE_STR})
 	AddOpCode(OP_OS_OPEN, "os.Open", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_OS_CLOSE, "os.Close", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_OS_RUN, "os.Run", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_STR})
+	AddOpCode(OP_OS_RUN, "os.Run", []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{TYPE_I32, TYPE_I32, TYPE_STR})
 	AddOpCode(OP_OS_EXIT, "os.Exit", []int{TYPE_I32}, []int{})
 
 	// exec

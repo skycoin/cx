@@ -75,10 +75,11 @@ func op_os_Exit(expr *CXExpression, fp int) {
 }
 
 func op_os_Run(expr* CXExpression, fp int) {
-	inp0, inp1, inp2, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
+	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
 	command := ReadStr(fp, inp0)
+	dir := ReadStr(fp, inp3)
 	args := strings.Split(command, " ")
 	if (len(args) <= 0) {
 		runError = OS_RUN_EMPTY_CMD
@@ -93,7 +94,7 @@ func op_os_Run(expr* CXExpression, fp int) {
 
 	//fmt.Println("COMMAND : ", name, " ARGS : ", args)
 	cmd := exec.Command(name, args...)
-
+	cmd.Dir = dir
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out

@@ -51,20 +51,30 @@ func runTest(index i32, test test_s) (success bool) {
 	} else if (index < 100) {
 		padding = " "
 	}
-	runError, cmdError, stdOut = os.Run(test.cmd, 2048, test.timeoutMs)
+	var start i64 = time.UnixMilli()
+	runError, cmdError, stdOut = os.Run(test.cmd, 2048, test.timeoutMs, g_workingDir)
+	var end i64 = time.UnixMilli()
+	var deltaMs i32 = i64.i32(end - start)
 	if (runError != 0 && (runError != os.RUN_TIMEOUT || test.timeoutMs <= 0)) {
-		printf("#%s%d | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n", padding, index, test.cmd, prettyOsCode(runError), runError, test.desc)
-		if (g_verbose >= 1) {
+		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+			printf("#%s%d | %dms | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n",
+				padding, index, deltaMs, test.cmd, prettyOsCode(runError), runError, test.desc)
+		}
+		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
 			printf("%s\n", stdOut)
 		}
 	} else if (cmdError != test.exitCode) {
-		printf("#%s%d | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError, test.desc)
-		if (g_verbose >= 1) {
+		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+			printf("#%s%d | %dms | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n",
+				padding, index, deltaMs, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError, test.desc)
+		}
+		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
 			printf("%s\n", stdOut)
 		}
 	} else {
-		if (g_verbose >= 2) {
-			printf("#%s%d | success | '%s' | expected %s (%d) | got %s (%d)\n", padding, index, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError)
+		if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
+			printf("#%s%d | %dms | success | '%s' | expected %s (%d) | got %s (%d)\n",
+				padding, index, deltaMs, test.cmd, prettyCxCode(test.exitCode), test.exitCode, prettyCxCode(cmdError), cmdError)
 		}
 		success = true
 	}
@@ -80,7 +90,14 @@ type test_s struct {
 var g_tests [256]test_s
 var g_testCount i32 = 0
 
-var g_verbose i32 = 1
+var VERBOSE_NONE	 i32 = 0
+var VERBOSE_SUCCESS  i32 = 1
+var VERBOSE_STDERR   i32 = 2
+var VERBOSE_FAILURE  i32 = 4
+
+var g_verbose i32 = VERBOSE_SUCCESS | VERBOSE_FAILURE
+
+var g_workingDir str = ""
 
 func testEx(cmd str, exitCode i32, timeoutMs i32, desc str) {
 	g_tests[g_testCount].cmd = cmd
@@ -158,7 +175,7 @@ func main ()() {
 	test("cx issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")
 	test("cx issue-85.cx", cx.SUCCESS, "Method does not work")
 	test("cx issue-86.cx", cx.SUCCESS, "Cannot use bool variable in if expression")
-	testEx("cx issue-90.cx", cx.SUCCESS, 5000, "Goto not working on windows")
+	test("cx issue-90.cx", cx.SUCCESS, "Goto not working on windows")
 	test("cx issue-91.cx", cx.SUCCESS, "Methods with pointer receivers don't work")
 	test("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through")
 	test("cx issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32")
