@@ -1269,9 +1269,13 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 			}
                 }
 	|       CONTINUE SEMICOLON
-                { $$ = nil }
+		{
+			$$ = ContinueExpressions()
+		}
 	|       BREAK SEMICOLON
-                { $$ = nil }
+		{
+			$$ = BreakExpressions()
+		}
 	|       RETURN SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {

@@ -220,7 +220,7 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.17"
+const VERSION = "0.5.18"
 
 var currentFileName string
 var insert bool
@@ -241,7 +241,7 @@ func f (token int) int {
 			
 			BOOLEAN_LITERAL, BYTE_LITERAL, STRING_LITERAL,
 			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
-			RETURN,
+			RETURN, BREAK, CONTINUE,
 			
 			RPAREN, RBRACE, RBRACK:
 			insert = true

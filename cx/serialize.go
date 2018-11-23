@@ -121,6 +121,8 @@ type sExpression struct {
         IsStructLiteral                 int32
         IsArrayLiteral                  int32
 	IsUndType                       int32
+	IsBreak                         int32
+	IsContinue                      int32
 
         FunctionOffset                  int32
         PackageOffset                   int32
@@ -398,6 +400,8 @@ func serializeExpression (expr *CXExpression, s *sAll) int {
 	sExpr.IsStructLiteral = serializeBoolean(expr.IsStructLiteral)
 	sExpr.IsArrayLiteral = serializeBoolean(expr.IsArrayLiteral)
 	sExpr.IsUndType = serializeBoolean(expr.IsUndType)
+	sExpr.IsBreak = serializeBoolean(expr.IsBreak)
+	sExpr.IsContinue = serializeBoolean(expr.IsContinue)
 
 	fnName := expr.Function.Package.Name + "." + expr.Function.Name
 	if fnOff, found := s.FunctionsMap[fnName]; found {

@@ -1159,7 +1159,6 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
-				// declaration_specifiers.Typ = "ident"
 
 				expr.AddOutput(declaration_specifiers)
 				expr.AddInput(initializer[len(initializer)-1].Outputs[0])
@@ -1398,6 +1397,20 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	thenLines := 0
 	elseLines := len(incr) + len(statements) + 1
 
+	// processing possible breaks
+	for i, stat := range statements {
+		if stat.IsBreak {
+			stat.ThenLines = elseLines - i - 1
+		}
+	}
+
+	// processing possible continues
+	for i, stat := range statements {
+		if stat.IsContinue {
+			stat.ThenLines = len(statements) - i - 1
+		}
+	}
+
 	downExpr.ThenLines = thenLines
 	downExpr.ElseLines = elseLines
 
@@ -1590,7 +1603,35 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 	}
 }
 
-func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, elseExprs []*CXExpression) []*CXExpression {
+func trueJmpExpressions () []*CXExpression {
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+	
+	expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+
+	trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true), false)
+	expr.AddInput(trueArg[0].Outputs[0])
+	
+	expr.Package = pkg
+
+	return []*CXExpression{expr}
+}
+
+func BreakExpressions () []*CXExpression {
+	exprs := trueJmpExpressions()
+	exprs[0].IsBreak = true
+	return exprs
+}
+
+func ContinueExpressions () []*CXExpression {
+	exprs := trueJmpExpressions()
+	exprs[0].IsContinue = true
+	return exprs
+}
+
+func SelectionExpressions (condExprs []*CXExpression, thenExprs []*CXExpression, elseExprs []*CXExpression) []*CXExpression {
 	jmpFn := Natives[OP_JMP]
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -2375,7 +2416,6 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
 	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
-			PRGRM.PrintProgram()
 			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
