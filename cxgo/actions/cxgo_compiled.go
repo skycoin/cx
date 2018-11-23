@@ -2416,7 +2416,6 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
 	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
-			PRGRM.PrintProgram()
 			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
