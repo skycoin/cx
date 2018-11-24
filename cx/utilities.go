@@ -10,6 +10,7 @@ import (
         // "math/rand"
         // "regexp"
         "strings"
+	"strconv"
         // "time"
 )
 
@@ -926,4 +927,12 @@ func WriteObject (out1Offset int, obj []byte) {
 
 func WriteObjectRetOff (obj []byte) int {
         return writeObj(obj)
+}
+
+func ErrorHeader (currentFile string, lineNo int) string {
+	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
+}
+
+func RuntimeError (currentFile string, lineNo int) string {
+	return ErrorHeader(currentFile, lineNo)
 }

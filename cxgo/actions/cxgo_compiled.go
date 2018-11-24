@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 	"os"
-	"strconv"
 	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -66,9 +65,9 @@ type SelectStatement struct {
 	Else      []*CXExpression
 }
 
-func ErrorHeader (currentFile string, lineNo int) string {
+func CompilationError (currentFile string, lineNo int) string {
 	FoundCompileErrors = true
-	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
+	return ErrorHeader(currentFile, lineNo)
 }
 
 // this function adds the roots (pointers) for some GC algorithms
@@ -363,7 +362,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 						AffordanceStructs(imp)
 					}
 				} else {
-					println(ErrorHeader(currentFile, lineNo), err.Error())
+					println(CompilationError(currentFile, lineNo), err.Error())
 				}
 			}
 		}
@@ -495,7 +494,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 
 					return arg
 				} else {
-					println(ErrorHeader(CurrentFile, LineNo), err.Error())
+					println(CompilationError(CurrentFile, LineNo), err.Error())
 					return nil
 				}
 			} else {
@@ -916,7 +915,7 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 
 		return []*CXExpression{expr}
 	} else {
-		println(ErrorHeader(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
+		println(CompilationError(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
 	}
@@ -1057,7 +1056,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 			} else {
 				// then left is not a package name
 				if IsCorePackage(left.Name) {
-					println(ErrorHeader(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
+					println(CompilationError(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
 					os.Exit(3)
 					return
 				}
@@ -1822,7 +1821,7 @@ func ProcessDereferenceLevels () {
 func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
-			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
+			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
 			os.Exit(3)
 		}
 		
@@ -1845,7 +1844,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 				if method, methodErr := strct.Package.GetMethod(receiverType + "." + methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
 				} else {
-					println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
+					println(CompilationError(fld.FileName, fld.FileLine), err.Error())
 				}
 				
 				
@@ -2133,7 +2132,7 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
 			if shouldExist {
 				// it should exist. error
-				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
+				println(CompilationError(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
 				os.Exit(3)
 			}
 
@@ -2255,7 +2254,7 @@ func CheckTypes(expr *CXExpression) {
 					plural3 = "was"
 				}
 
-				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
+				println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
 				os.Exit(3)
 			}
 		}
@@ -2272,7 +2271,7 @@ func CheckTypes(expr *CXExpression) {
 				plural2 = ""
 				plural3 = "was"
 			}
-			println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
+			println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
 		}
 	}
 
@@ -2300,9 +2299,9 @@ func CheckTypes(expr *CXExpression) {
 			// if GetAssignmentElement(expr.Outputs[i]).Type != GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
-					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
+					println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
-					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
+					println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
 				}
 			}
 		}
@@ -2340,7 +2339,7 @@ func CheckTypes(expr *CXExpression) {
 					opName = expr.Operator.Name
 				}
 
-				println(ErrorHeader(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(CompilationError(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 		}
 	}
@@ -2416,7 +2415,7 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
 	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
-			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
+			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
 }
@@ -2577,7 +2576,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
-			println(ErrorHeader(CurrentFile, LineNo), err.Error())
+			println(CompilationError(CurrentFile, LineNo), err.Error())
 			os.Exit(3)
 			return nil
 		} else {
