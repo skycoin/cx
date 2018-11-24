@@ -523,10 +523,15 @@ func buildString(expr *CXExpression, fp int) []byte {
 				res = append(res, ch)
 				continue
 			}
-
 		}
 		if ch == '%' {
-			inp := expr.Inputs[specifiersCounter+1]
+			if specifiersCounter + 1 == len(expr.Inputs) {
+				res = append(res, []byte(fmt.Sprintf("%%!%c(MISSING)", nextCh))...)
+				c++
+				continue
+			}
+			
+			inp := expr.Inputs[specifiersCounter + 1]
 			switch nextCh {
 			case 's':
 				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
@@ -552,6 +557,16 @@ func buildString(expr *CXExpression, fp int) []byte {
 		}
 	}
 
+	if specifiersCounter != len(expr.Inputs) - 1 {
+		for _, _ = range expr.Inputs[:specifiersCounter] {
+			res = append(res, []byte("%%!(EXTRA)")...)
+		}
+	}
+	
+	// if specifiersCounter != len(expr.Inputs) - 1 {
+	// 	panic("meow")
+	// }
+
 	return res
 }
 
@@ -567,7 +582,7 @@ func op_printf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func op_read(expr *CXExpression, fp int) {
+func op_read (expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
