@@ -558,9 +558,33 @@ func buildString(expr *CXExpression, fp int) []byte {
 	}
 
 	if specifiersCounter != len(expr.Inputs) - 1 {
-		for _, _ = range expr.Inputs[:specifiersCounter] {
-			res = append(res, []byte("%%!(EXTRA)")...)
+		extra := "%!(EXTRA "
+		// for _, inp := range expr.Inputs[:specifiersCounter] {
+		lInps := len(expr.Inputs[specifiersCounter+1:])
+		for c := 0; c < lInps; c++ {
+			inp := expr.Inputs[specifiersCounter+1+c]
+			elt := GetAssignmentElement(inp)
+			typ := ""
+			_ = typ
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ = elt.CustomType.Name
+			} else {
+				// then it's native type
+				typ = TypeNames[elt.Type]
+			}
+
+			if c == lInps - 1 {
+				extra += fmt.Sprintf("%s=%s", typ, GetPrintableValue(fp, elt))
+			} else {
+				extra += fmt.Sprintf("%s=%s, ", typ, GetPrintableValue(fp, elt))
+			}
+			
 		}
+
+		extra += ")"
+		
+		res = append(res, []byte(extra)...)
 	}
 	
 	// if specifiersCounter != len(expr.Inputs) - 1 {
