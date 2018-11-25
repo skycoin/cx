@@ -909,7 +909,7 @@ statement:      labeled_statement
                 ;
 
 labeled_statement:
-                IDENTIFIER COLON statement
+                IDENTIFIER COLON block_item
 	|       CASE constant_expression COLON statement
 	|       DEFAULT COLON statement
                 ;
