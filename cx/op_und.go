@@ -549,6 +549,8 @@ func buildString(expr *CXExpression, fp int) []byte {
 				case TYPE_F64:
 					res = append(res, []byte(strconv.FormatFloat(ReadF64(fp, inp), 'f', 16, 64))...)
 				}
+			case 'v':
+				res = append(res, []byte(GetPrintableValue(fp, inp))...)
 			}
 			c++
 			specifiersCounter++
