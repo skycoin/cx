@@ -1103,6 +1103,165 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 	return prevExprs
 }
 
+func SetCorrectArithmeticOp(expr *CXExpression) {
+        if expr.Operator == nil || len(expr.Outputs) < 1 {
+                return
+        }
+        op := expr.Operator
+        typ := expr.Outputs[0].Type
+
+        if CheckArithmeticOp(expr) {
+                // if !CheckSameNativeType(expr) {
+                //      panic("wrong types")
+                // }
+                switch op.OpCode {
+                case OP_I32_MUL:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_MUL]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_MUL]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_MUL]
+                        }
+                case OP_I32_DIV:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_DIV]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_DIV]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_DIV]
+                        }
+                case OP_I32_MOD:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_MOD]
+                        }
+
+                case OP_I32_ADD:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_ADD]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_ADD]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_ADD]
+                        }
+                case OP_I32_SUB:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_ADD]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_ADD]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_ADD]
+                        }
+
+                case OP_I32_BITSHL:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITSHL]
+                        }
+                case OP_I32_BITSHR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITSHR]
+                        }
+
+                case OP_I32_LT:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_LT]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_LT]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_LT]
+                        }
+                case OP_I32_GT:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_GT]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_GT]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_GT]
+                        }
+                case OP_I32_LTEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_LTEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_LTEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_LTEQ]
+                        }
+                case OP_I32_GTEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_GTEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_GTEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_GTEQ]
+                        }
+
+                case OP_I32_EQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_EQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_EQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_EQ]
+                        }
+                case OP_I32_UNEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_UNEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_UNEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_UNEQ]
+                        }
+
+                case OP_I32_BITAND:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITAND]
+                        }
+
+                case OP_I32_BITXOR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITXOR]
+                        }
+
+                case OP_I32_BITOR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITOR]
+                        }
+                }
+        }
+}
+
 func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, op int) []*CXExpression {
 	var operator *CXFunction
 	switch op {

@@ -9,75 +9,13 @@ import (
         "github.com/skycoin/skycoin/src/cipher/encoder"
         // "math/rand"
         // "regexp"
-        "strings"
+        // "strings"
 	"strconv"
         // "time"
 )
 
 func Debug (args ...interface{}) {
         fmt.Println(args...)
-}
-
-func sameFields(flds1 []*CXArgument, flds2 []*CXArgument) bool {
-        allSame := true
-
-        if len(flds1) != len(flds2) {
-                allSame = false
-        } else {
-                for i, fld := range flds1 {
-                        if flds2[i].Name != fld.Name {
-                                allSame = false
-                        }
-                }
-        }
-
-        return allSame
-}
-
-func getArrayChunkSizes(size int, lens []int) []int {
-        var result []int
-
-        for c := len(lens) - 1; c >= 0; c-- {
-                if len(result) > 0 {
-                        result = append([]int{lens[c] * result[len(result)-1]}, result...)
-                } else {
-                        // first one to add
-                        result = append(result, lens[c]*size)
-                }
-        }
-
-        return result
-}
-
-func IsArray(typ string) bool {
-        if len(typ) > 2 && typ[:2] == "[]" {
-                return true
-        }
-        return false
-}
-
-func IsStructInstance(typ string, mod *CXPackage) bool {
-        if _, err := PROGRAM.GetStruct(typ, mod.Name); err == nil {
-                return true
-        } else {
-                return false
-        }
-}
-
-func IsGlobal(identName string, mod *CXPackage) bool {
-        for _, def := range mod.Globals {
-                if def.Name == identName {
-                        return true
-                }
-        }
-        for _, imp := range mod.Imports {
-                for _, def := range imp.Globals {
-                        if def.Name == identName {
-                                return true
-                        }
-                }
-        }
-        return false
 }
 
 // It returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean
@@ -175,21 +113,6 @@ func (prgrm *CXProgram) PrintStack() {
                 fp += op.Size
         }
         fmt.Println()
-}
-
-func PrintCallStack(callStack []CXCall) {
-        for i, call := range callStack {
-                tabs := strings.Repeat("___", i)
-                if tabs == "" {
-                        //fmt.Printf("%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
-                        fmt.Printf("%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
-                } else {
-                        //fmt.Printf("↓%sfn:%s ln:%d, \tlocals: ", tabs, call.Operator.Name, call.Line)
-                        fmt.Printf("↓%sfn:%s ln:%d", tabs, call.Operator.Name, call.Line)
-                }
-
-                fmt.Println()
-        }
 }
 
 func (prgrm *CXProgram) PrintProgram() {
@@ -573,165 +496,6 @@ func IsTempVar (name string) bool {
 	return false
 }
 
-func SetCorrectArithmeticOp(expr *CXExpression) {
-        if expr.Operator == nil || len(expr.Outputs) < 1 {
-                return
-        }
-        op := expr.Operator
-        typ := expr.Outputs[0].Type
-
-        if CheckArithmeticOp(expr) {
-                // if !CheckSameNativeType(expr) {
-                //      panic("wrong types")
-                // }
-                switch op.OpCode {
-                case OP_I32_MUL:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_MUL]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_MUL]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_MUL]
-                        }
-                case OP_I32_DIV:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_DIV]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_DIV]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_DIV]
-                        }
-                case OP_I32_MOD:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_MOD]
-                        }
-
-                case OP_I32_ADD:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_ADD]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_ADD]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_ADD]
-                        }
-                case OP_I32_SUB:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_ADD]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_ADD]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_ADD]
-                        }
-
-                case OP_I32_BITSHL:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_BITSHL]
-                        }
-                case OP_I32_BITSHR:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_BITSHR]
-                        }
-
-                case OP_I32_LT:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_LT]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_LT]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_LT]
-                        }
-                case OP_I32_GT:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_GT]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_GT]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_GT]
-                        }
-                case OP_I32_LTEQ:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_LTEQ]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_LTEQ]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_LTEQ]
-                        }
-                case OP_I32_GTEQ:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_GTEQ]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_GTEQ]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_GTEQ]
-                        }
-
-                case OP_I32_EQ:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_EQ]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_EQ]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_EQ]
-                        }
-                case OP_I32_UNEQ:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_UNEQ]
-                        case TYPE_F32:
-                                expr.Operator = Natives[OP_F32_UNEQ]
-                        case TYPE_F64:
-                                expr.Operator = Natives[OP_F64_UNEQ]
-                        }
-
-                case OP_I32_BITAND:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_BITAND]
-                        }
-
-                case OP_I32_BITXOR:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_BITXOR]
-                        }
-
-                case OP_I32_BITOR:
-                        switch typ {
-                        case TYPE_I32:
-                        case TYPE_I64:
-                                expr.Operator = Natives[OP_I64_BITOR]
-                        }
-                }
-        }
-}
-
 func GetArgSize(typ int) int {
         switch typ {
         case TYPE_BOOL, TYPE_BYTE:
@@ -743,34 +507,6 @@ func GetArgSize(typ int) int {
         default:
                 return 4
         }
-}
-
-func MakeMultiDimArray(atomicSize int, lengths []int) []byte {
-        var result []byte
-
-        fstDLen := lengths[len(lengths)-1]
-
-        sLen := encoder.SerializeAtomic(int32(fstDLen))
-
-        byts := append(sLen, make([]byte, fstDLen*atomicSize)...)
-        result = byts
-
-        if len(lengths) > 1 {
-                // -2 to ignore the first dimension
-                for c := len(lengths) - 2; c >= 0; c-- {
-                        lenB := encoder.SerializeAtomic(int32(lengths[c]))
-
-                        var tmp []byte
-
-                        for i := 0; i < lengths[c]; i++ {
-                                tmp = append(tmp, result...)
-                        }
-
-                        result = append(lenB, tmp...)
-                }
-        }
-
-        return result
 }
 
 func checkForEscapedChars (str string) []byte {
@@ -935,4 +671,51 @@ func ErrorHeader (currentFile string, lineNo int) string {
 
 func RuntimeError (currentFile string, lineNo int) string {
 	return ErrorHeader(currentFile, lineNo)
+}
+
+func GetPrintableValue (fp int, arg *CXArgument) string {
+	var typ string
+	elt := GetAssignmentElement(arg)
+	if elt.CustomType != nil {
+		// then it's custom type
+		typ = elt.CustomType.Name
+	} else {
+		// then it's native type
+		typ = TypeNames[elt.Type]
+	}
+
+	switch typ {
+	case "bool":
+		return fmt.Sprintf("%v", ReadBool(fp, elt))
+	case "byte":
+		return fmt.Sprintf("%v", ReadByte(fp, elt))
+	case "str":
+		return fmt.Sprintf("%v", ReadStr(fp, elt))
+	case "i32":
+		return fmt.Sprintf("%v", ReadI32(fp, elt))
+	case "i64":
+		return fmt.Sprintf("%v", ReadI64(fp, elt))
+	case "f32":
+		return fmt.Sprintf("%v", ReadF32(fp, elt))
+	case "f64":
+		return fmt.Sprintf("%v", ReadF64(fp, elt))
+	default:
+		// then it's a struct
+		var val string
+		val = "{"
+		// for _, fld := range elt.CustomType.Fields {
+		lFlds := len(elt.CustomType.Fields)
+		off := 0
+		for c := 0; c < lFlds; c++ {
+			fld := elt.CustomType.Fields[c]
+			if c == lFlds - 1 {
+				val += fmt.Sprintf("%s: %s", fld.Name, GetPrintableValue(fp + arg.Offset + off, fld))
+			} else {
+				val += fmt.Sprintf("%s: %s, ", fld.Name, GetPrintableValue(fp + arg.Offset + off, fld))
+			}
+			off += fld.TotalSize
+		}
+		val += "}"
+		return val
+	}
 }
