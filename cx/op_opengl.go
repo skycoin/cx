@@ -3,6 +3,7 @@
 package base
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"github.com/go-gl/gl/v2.1/gl"
@@ -10,7 +11,7 @@ import (
 	"image/draw"
 	_ "image/png"
 	_ "image/jpeg"
-	_ "image/gif"
+	"image/gif"
 	"runtime"
 	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -19,6 +20,7 @@ import (
 // declared in func_opengl.go
 var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
+var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
 
 // gogl
 func op_gl_Init() {
@@ -45,6 +47,7 @@ func op_gl_Free(expr *CXExpression, fp int) {
 	delete(cSources, fnName)
 }
 
+
 func op_gl_NewTexture(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
@@ -60,6 +63,7 @@ func op_gl_NewTexture(expr *CXExpression, fp int) {
 	if err != nil {
 		panic(err)
 	}
+
 	rgba := image.NewRGBA(img.Bounds())
 	if rgba.Stride != rgba.Rect.Size().X*4 {
 		panic("unsupported stride")
@@ -88,8 +92,63 @@ func op_gl_NewTexture(expr *CXExpression, fp int) {
 		gl.Ptr(rgba.Pix))
 
 	outB1 := encoder.SerializeAtomic(int32(texture))
-
 	WriteMemory(out1Offset, outB1)
+}
+
+func op_gl_NewGIF(expr *CXExpression, fp int) {
+	path := ReadStr(fp, expr.Inputs[0])
+
+	file, err := os.Open(path)
+	defer file.Close()
+	if (err != nil) {
+		panic(fmt.Sprintf("file not found %q, %v", path, err))
+	}
+
+	reader := bufio.NewReader(file)
+	gif, err := gif.DecodeAll(reader)
+	if (err != nil) {
+		panic(fmt.Sprintf("failed to decode file %q, %v", path, err))
+	}
+
+	gifs[path] = gif
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(len(gif.Image))))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(gif.LoopCount)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[2]), FromI32(int32(gif.Config.Width)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[3]), FromI32(int32(gif.Config.Height)))
+}
+
+func op_gl_FreeGIF(expr *CXExpression, fp int) {
+	gifs[ReadStr(fp, expr.Inputs[0])] = nil
+}
+
+func op_gl_GIFFrameToTexture(expr *CXExpression, fp int) {
+	path := ReadStr(fp, expr.Inputs[0])
+	frame := ReadI32(fp, expr.Inputs[1])
+	texture := ReadI32(fp, expr.Inputs[2])
+
+	gif := gifs[path]
+	img := gif.Image[frame]
+	delay := int32(gif.Delay[frame])
+	disposal := int32(gif.Disposal[frame])
+
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+
+	gl.BindTexture(gl.TEXTURE_2D, uint32(texture))
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(delay))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(disposal))
 }
 
 // gl_0_0
