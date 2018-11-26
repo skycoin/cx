@@ -523,10 +523,15 @@ func buildString(expr *CXExpression, fp int) []byte {
 				res = append(res, ch)
 				continue
 			}
-
 		}
 		if ch == '%' {
-			inp := expr.Inputs[specifiersCounter+1]
+			if specifiersCounter + 1 == len(expr.Inputs) {
+				res = append(res, []byte(fmt.Sprintf("%%!%c(MISSING)", nextCh))...)
+				c++
+				continue
+			}
+			
+			inp := expr.Inputs[specifiersCounter + 1]
 			switch nextCh {
 			case 's':
 				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
@@ -544,6 +549,8 @@ func buildString(expr *CXExpression, fp int) []byte {
 				case TYPE_F64:
 					res = append(res, []byte(strconv.FormatFloat(ReadF64(fp, inp), 'f', 16, 64))...)
 				}
+			case 'v':
+				res = append(res, []byte(GetPrintableValue(fp, inp))...)
 			}
 			c++
 			specifiersCounter++
@@ -551,6 +558,40 @@ func buildString(expr *CXExpression, fp int) []byte {
 			res = append(res, ch)
 		}
 	}
+
+	if specifiersCounter != len(expr.Inputs) - 1 {
+		extra := "%!(EXTRA "
+		// for _, inp := range expr.Inputs[:specifiersCounter] {
+		lInps := len(expr.Inputs[specifiersCounter+1:])
+		for c := 0; c < lInps; c++ {
+			inp := expr.Inputs[specifiersCounter+1+c]
+			elt := GetAssignmentElement(inp)
+			typ := ""
+			_ = typ
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ = elt.CustomType.Name
+			} else {
+				// then it's native type
+				typ = TypeNames[elt.Type]
+			}
+
+			if c == lInps - 1 {
+				extra += fmt.Sprintf("%s=%s", typ, GetPrintableValue(fp, elt))
+			} else {
+				extra += fmt.Sprintf("%s=%s, ", typ, GetPrintableValue(fp, elt))
+			}
+			
+		}
+
+		extra += ")"
+		
+		res = append(res, []byte(extra)...)
+	}
+	
+	// if specifiersCounter != len(expr.Inputs) - 1 {
+	// 	panic("meow")
+	// }
 
 	return res
 }
@@ -567,7 +608,7 @@ func op_printf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func op_read(expr *CXExpression, fp int) {
+func op_read (expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 

@@ -1120,7 +1120,7 @@ statement:      labeled_statement
                 ;
 
 labeled_statement:
-                IDENTIFIER COLON statement
+                IDENTIFIER COLON block_item
                 {
 			// it has to be the first expression so all the nested expressions are executed
 			// instead of only executing the last one

@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 	"os"
-	"strconv"
 	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -66,9 +65,9 @@ type SelectStatement struct {
 	Else      []*CXExpression
 }
 
-func ErrorHeader (currentFile string, lineNo int) string {
+func CompilationError (currentFile string, lineNo int) string {
 	FoundCompileErrors = true
-	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
+	return ErrorHeader(currentFile, lineNo)
 }
 
 // this function adds the roots (pointers) for some GC algorithms
@@ -363,7 +362,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 						AffordanceStructs(imp)
 					}
 				} else {
-					println(ErrorHeader(currentFile, lineNo), err.Error())
+					println(CompilationError(currentFile, lineNo), err.Error())
 				}
 			}
 		}
@@ -495,7 +494,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 
 					return arg
 				} else {
-					println(ErrorHeader(CurrentFile, LineNo), err.Error())
+					println(CompilationError(CurrentFile, LineNo), err.Error())
 					return nil
 				}
 			} else {
@@ -916,7 +915,7 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 
 		return []*CXExpression{expr}
 	} else {
-		println(ErrorHeader(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
+		println(CompilationError(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
 	}
@@ -1057,7 +1056,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 			} else {
 				// then left is not a package name
 				if IsCorePackage(left.Name) {
-					println(ErrorHeader(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
+					println(CompilationError(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
 					os.Exit(CX_COMPILATION_ERROR)
 					return
 				}
@@ -1102,6 +1101,165 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		}
 	}
 	return prevExprs
+}
+
+func SetCorrectArithmeticOp(expr *CXExpression) {
+        if expr.Operator == nil || len(expr.Outputs) < 1 {
+                return
+        }
+        op := expr.Operator
+        typ := expr.Outputs[0].Type
+
+        if CheckArithmeticOp(expr) {
+                // if !CheckSameNativeType(expr) {
+                //      panic("wrong types")
+                // }
+                switch op.OpCode {
+                case OP_I32_MUL:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_MUL]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_MUL]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_MUL]
+                        }
+                case OP_I32_DIV:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_DIV]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_DIV]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_DIV]
+                        }
+                case OP_I32_MOD:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_MOD]
+                        }
+
+                case OP_I32_ADD:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_ADD]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_ADD]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_ADD]
+                        }
+                case OP_I32_SUB:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_ADD]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_ADD]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_ADD]
+                        }
+
+                case OP_I32_BITSHL:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITSHL]
+                        }
+                case OP_I32_BITSHR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITSHR]
+                        }
+
+                case OP_I32_LT:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_LT]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_LT]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_LT]
+                        }
+                case OP_I32_GT:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_GT]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_GT]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_GT]
+                        }
+                case OP_I32_LTEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_LTEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_LTEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_LTEQ]
+                        }
+                case OP_I32_GTEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_GTEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_GTEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_GTEQ]
+                        }
+
+                case OP_I32_EQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_EQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_EQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_EQ]
+                        }
+                case OP_I32_UNEQ:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_UNEQ]
+                        case TYPE_F32:
+                                expr.Operator = Natives[OP_F32_UNEQ]
+                        case TYPE_F64:
+                                expr.Operator = Natives[OP_F64_UNEQ]
+                        }
+
+                case OP_I32_BITAND:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITAND]
+                        }
+
+                case OP_I32_BITXOR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITXOR]
+                        }
+
+                case OP_I32_BITOR:
+                        switch typ {
+                        case TYPE_I32:
+                        case TYPE_I64:
+                                expr.Operator = Natives[OP_I64_BITOR]
+                        }
+                }
+        }
 }
 
 func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, op int) []*CXExpression {
@@ -1822,7 +1980,7 @@ func ProcessDereferenceLevels () {
 func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
-			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
+			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
 			os.Exit(CX_COMPILATION_ERROR)
 		}
 		
@@ -1845,7 +2003,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 				if method, methodErr := strct.Package.GetMethod(receiverType + "." + methodName, receiverType); methodErr == nil {
 					fld.Type = method.Outputs[0].Type
 				} else {
-					println(ErrorHeader(fld.FileName, fld.FileLine), err.Error())
+					println(CompilationError(fld.FileName, fld.FileLine), err.Error())
 				}
 				
 				
@@ -2133,7 +2291,7 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; !found {
 			if shouldExist {
 				// it should exist. error
-				println(ErrorHeader(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
+				println(CompilationError(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
 				os.Exit(CX_COMPILATION_ERROR)
 			}
 
@@ -2255,7 +2413,7 @@ func CheckTypes(expr *CXExpression) {
 					plural3 = "was"
 				}
 
-				println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
+				println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
 				os.Exit(CX_COMPILATION_ERROR)
 			}
 		}
@@ -2272,7 +2430,7 @@ func CheckTypes(expr *CXExpression) {
 				plural2 = ""
 				plural3 = "was"
 			}
-			println(ErrorHeader(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
+			println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3)) 
 		}
 	}
 
@@ -2300,9 +2458,9 @@ func CheckTypes(expr *CXExpression) {
 			// if GetAssignmentElement(expr.Outputs[i]).Type != GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
-					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
+					println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("field '%s' in struct literal of type '%s' expected argument of type '%s'; '%s' was provided", expr.Outputs[i].Fields[0].Name, expr.Outputs[i].CustomType.Name, expectedType, receivedType))
 				} else {
-					println(ErrorHeader(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
+					println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("trying to assign argument of type '%s' to symbol '%s' of type '%s'", receivedType, GetAssignmentElement(expr.Outputs[i]).Name, expectedType))
 				}
 			}
 		}
@@ -2340,7 +2498,7 @@ func CheckTypes(expr *CXExpression) {
 					opName = expr.Operator.Name
 				}
 
-				println(ErrorHeader(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
+				println(CompilationError(expr.Inputs[i].FileName, expr.Inputs[i].FileLine), fmt.Sprintf("function '%s' expected input argument of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 		}
 	}
@@ -2416,7 +2574,7 @@ func ProcessLocalDeclaration (symbols *map[string]*CXArgument, symbolsScope *map
 func CheckRedeclared (symbols *map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
 	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
 		if _, found := (*symbols)[sym.Package.Name+"."+sym.Name]; found {
-			println(ErrorHeader(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
+			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
 		}
 	}
 }
@@ -2577,7 +2735,7 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 			expr.Operator = op
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
-			println(ErrorHeader(CurrentFile, LineNo), err.Error())
+			println(CompilationError(CurrentFile, LineNo), err.Error())
 			os.Exit(CX_COMPILATION_ERROR)
 			return nil
 		} else {
