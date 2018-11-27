@@ -75,6 +75,10 @@
 \vspace*{2.5cm}
 \par\normalfont\fontsize{35}{35}\sffamily\selectfont
 \textbf{CX Programming Language}\\
+\par\normalfont\fontsize{20}{20}\sffamily\selectfont
+\vspace*{0.5cm}
+% {for CX version 0.7}\\
+
 %{\LARGE A Gentle Introduction through Video Game Programming}\par % Book title
 \vspace*{1cm}
 {\Huge Amaury Hernandez-Aguila}\par % Author name
@@ -90,7 +94,7 @@
 ~\vfill
 \thispagestyle{empty}
 
-%\noindent Copyright \copyright\ 2014 Andrea Hidalgo\\ % Copyright notice
+%\noindent Copyright \copyright\ 2018 Amaury Hernandez-Aguila, Inge Wallin \\ % Copyright notice
 
 % \noindent \textsc{}\\
 
@@ -104,16 +108,36 @@
 
 \chapterimage{blank-header.png} % Table of contents heading image
 
-\pagestyle{empty} % No headers
+\pagestyle{empty} % No headers for this page
 
 \tableofcontents % Print the table of contents itself
 
 %\cleardoublepage % Forces the first chapter to start on an odd page so it's on the right
 
-\pagestyle{fancy} % Print headers again
+\pagestyle{fancy} % Use headers again for subsequent pages
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 1
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png} % Chapter heading image
+
+% \part{Introduction}
+
+\chapter{About This Book}
+\label{chapter:about-this-book}
+
+This book gives you an introduction to the CX programming language. CX is created to work on the Skycoin blockchain and other blockchains associated with Skycoin, e.g. DLT and Solar Bankers.  The intention is to provide a better foundation for so called \emph{smart contracts} than is currently done with legacy smart contract languages, such as Solidity on Ethereum.
+
+CX is modeled after the Go programming language from Google, and shows many similarities to it. However, there are also advanced extensions to the Go programming paradigm, such as \emph{Affordances} that allow you to modify a running program like LISP and \emph{Serialization} that creates a deterministic way to transfer CX program over a channel or onto a blockchain.
+
+% \section{Typographic Conventions}
+% \index{typographic conventions}
+
+% FIXME
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 2
 %----------------------------------------------------------------------------------------
 
 % \chapterimage{blank-header.png} % Chapter heading image
@@ -274,11 +298,11 @@ Hello, world!
 	* 
 \end{lstlisting}
 
-We can see that this REPL session example is another way of creating a \textit{Hello, world!} program in CX. The first thing to explain in a REPL session is that the asterisk or multiplication sign (\textit{*}) is telling the programmer that CX is waiting for an instruction to be entered. This is called a \textit{REPL prompt} At \textbf{line 5}, we decide to enter an expression: \textbf{str.print("Hello, world!")}. But where does this expression go? How does CX know what is the entry point in a REPL session? To answer this question, we need to look at \textbf{line 4}. This line is telling us that we're currently inside function \emph{main}, and that any expression that we write is going to be added to that function. This means that the entry point of a program written using the REPL is still the \textit{main} function.
+We can see that this REPL session example is another way of creating a \textit{Hello, world!} program in CX. The first thing to explain in a REPL session is that the asterisk or multiplication sign (\lstinline{*}) is telling the programmer that CX is waiting for an instruction to be entered. This is called a \textit{REPL prompt} At \textbf{line 5}, we decide to enter an expression: \textbf{str.print("Hello, world!")}. But where does this expression go? How does CX know what is the entry point in a REPL session? To answer this question, we need to look at \textbf{line 4}. This line is telling us that we're currently inside function \emph{main}, and that any expression that we write is going to be added to that function. This means that the entry point of a program written using the REPL is still the \textbf{main} function.
 
-Now, if we want to run the program, we need to use the \textbf{:step} meta-command, which is explained further in chapter \ref{chapter:mastering-the-repl}. At \textbf{line 8} we are telling CX to advance the program by 1 instruction, which results in executing the \textbf{str.print("Hello, world!")} expression and prints the message to the terminal.
+Now, if we want to run the program, we need to use the \textbf{:step} meta-command, which is explained further in chapter \ref{chapter:mastering-the-repl}. At \textbf{line 8} we are telling CX to advance the program by 1 instruction, which results in executing the \lstinline{str.print("Hello, world!")} expression and prints the message to the terminal.
 
-Something that you might have noted is that we writing \textit{str} in front of \textit{print}. This is explained in the next section.
+Something that you might have noted is that we are writing \textbf{str} in front of \textbf{print}. This is explained in the next section.
 
 \section{Strict Typing System}
 \index{strict typing system}
@@ -372,11 +396,11 @@ Program
 		1.- Function: *init () ()
 \end{lstlisting}
 
-Let's go line by line of listing \ref{listing:ast-example}. \textbf{Line 1} is first telling us that we are showing the AST of a program. \textbf{Line 2} then tells us that what follows are the contents of a package, which is named \textit{main}. We can then see that all the global variables declared in the package are going to be printed after \textbf{Line 3}, which in this case is only one. Then we are presented with the last part of the package: the functions. The first function is our \textit{main} function, which is declared to not have any input parameters nor output parameters, as seen at \textbf{Line 6}.
+Let's go line by line of listing \ref{listing:ast-example}. \textbf{Line 1} is first telling us that we are showing the AST of a program. \textbf{Line 2} then tells us that what follows are the contents of a package, which is named \textit{main}. We can then see that all the global variables declared in the package are going to be printed after \textbf{Line 3}, which in this case is only one. Then we are presented with the last part of the package: the functions. The first function is our \textbf{main} function, which is declared to not have any input parameters nor output parameters, as seen at \textbf{Line 6}.
 
-Before continuing with the analysis of the \textit{main} function, let's briefly discuss that \textit{*init} function at \textbf{Line 12}. This function is actually the first function to be called in a CX program. Yeah, we lied to you, \textit{main} is not the one called first. This function initializes all the global variables in your program, and in future versions of CX you'll be able to put other expressions you wish to run first, before your program starts (this behavior is present in languages like Go).
+Before continuing with the analysis of the \textbf{main} function, let's briefly discuss that \textbf{*init} function at \textbf{Line 12}. This function is actually the first function to be called in a CX program. Yeah, we lied to you, \textbf{main} is not the one called first. This function initializes all the global variables in your program, and in future versions of CX you'll be able to put other expressions you wish to run first, before your program starts (this behavior is present in languages like Go).
 
-Now, we can see something strange happening on \textit{main}'s list of expressions: there is a function call that we never wrote in our original CX source code (\textit{identity}), and we can see a variable that we never declared (\textit{lcl\_0}). The \textit{identity} operator is used when we want to "make a copy" of a value to a variable, and the variables called \textit{lcl\_N}, where \textit{N} is an integer, are used as temporary variables that hold intermediary calculations in nested function calls. There are other weird things that happen when parsing a CX program, which we will see in later chapters when dealing with programs' ASTs, but for now it's enough for you to understand that there is not necessarily a one-to-one relationship between your CX source code elements and the resulting AST. Actually, in more complex programs the compiler will heavily modify the resulting AST in order to optimize your code. Nevertheless, there is an important point that should be understood before continuing with the rest of the book, and this is discussed in the next Section.
+Now, we can see something strange happening on \textbf{main}'s list of expressions: there is a function call that we never wrote in our original CX source code: (\textbf{identity}), and we can see a variable that we never declared (\textbf{lcl\_0}). The \textbf{identity} operator is used when we want to "make a copy" of a value to a variable, and the variables called \textit{lcl\_N}, where \textit{N} is an integer, are used as temporary variables that hold intermediary calculations in nested function calls. There are other weird things that happen when parsing a CX program, which we will see in later chapters when dealing with programs' ASTs, but for now it's enough for you to understand that there is not necessarily a one-to-one relationship between your CX source code elements and the resulting AST. Actually, in more complex programs the compiler will heavily modify the resulting AST in order to optimize your code. Nevertheless, there is an important point that should be understood before continuing with the rest of the book, and this is discussed in the next Section.
 
 \section{Everything in a Function is an Expression}
 
@@ -1850,11 +1874,22 @@ The affordances of the environment are what it offers the animal, what it provid
 
 In other words, an affordance is whatever an environment allows an object to do or to be. Affordances can act in both ways, they describe what the object can do with its environment and what it can "receive" from its environment. For example, a person can push or pull a door, and the door can be pushed or pulled by something.
 
-In CX, affordances describe the allowed actions that can be performed on program elements and what actions can an element perform on other program elements. These program elements are function declarations, global variables, expressions, function parameters, packages, expression arguments, structure declarations and their fields. If you read section \ref{section:memory-segments}, you will notice that all of these are elements that are present in the code segment. The kind of actions that affordances describe in CX are, for example, adding an argument to an expression, removing a function parameter, adding a whole new expression to a function declaration, and modifying a global variable to hold a new value.
+In CX, \emph{affordances} describe the allowed actions that can be performed on certain program elements and what actions an element can perform on other program elements. The program elements handled by affordances are:
+\begin{itemize}
+    \item packages
+    \item function declarations
+    \item global variables
+    \item expressions
+    \item function parameters
+    \item expression arguments
+    \item structure declarations and their fields.
+\end{itemize}
 
-You will also notice that these are all actions that you usually perform when creating a program. In fact, you can create a full program only by using affordances. The first affordance of an empty program is to add a package; it can either be an arbitrary package or a \textbf{main} package, depending on if you want to create a library or an application. After adding a package, the options increase dramatically, as you could, first of all, delete or rename the previously created package, add another empty package, or add declarations to your first package. As you begin to add more elements, the number of affordances increases exponentially.
+If you read section \ref{section:memory-segments}, you will notice that these are all elements that are present in the code segment. The kind of actions that affordances describe in CX are, for example, adding an argument to an expression, removing a function parameter, adding a whole new expression to a function, or modifying a global variable to hold a new value.
 
-There are obviously some rules or limitations on what it can be done with affordances. For example, you cannot add a structure field to a function declaration. A less obvious example is that you cannot send a 32-bit integer to \textbf{str.print()}, as this function is expecting an argument of type \emph{str}. These limitations help reduce the number of affordances in a program, but they can still be a lot, even in relatively small programs.
+You will also notice that these are all actions that you usually perform when creating a program. In fact, you can create a full program only by using affordances. The first affordance of an empty program is to add a package; it can either be an arbitrary package or the \textbf{main} package, depending on if you want to create a library or an application. After adding a package, the options increase dramatically, as you could, first of all, delete or rename the previously created package, add another empty package, or add declarations to your first package. As you begin to add more elements, the number of affordances increases exponentially.
+
+There are obviously some rules and limitations on what it can be done with affordances. For example, you cannot add a structure field to a function declaration. A less obvious example is that you cannot send a 32-bit integer to \textbf{str.print()}, as this function is expecting an argument of type \emph{str}. These limitations help reduce the number of affordances in a program, but they can still be a lot, even in relatively small programs.
 
 The solution to handling this problem is to implement some mechanism that allows us to get only those affordances that are useful. CX solves this by \emph{filtering} the program elements using a predicate function that examines each of these possible elements, and allows only those that meet certain criteria. For example, in a video game we could reject any player that has hit points lower than certain quantity, or allow a boss to appear to the screen if the player has completed certain quests. Although these examples could have been solved using simple if/else statements, affordances can solve more complex problems, as they have access to the program's meta-data. Affordances can ask what is the type of an argument, rather than just ask for its value; they can ask a program how much memory it is currently using; they can ask what function called another function; and these are just some of the possibilities.
 
@@ -1865,7 +1900,7 @@ It is worth noting that affordances will not only act at compile-time, but also 
 As a last note before looking at the examples that follow, please bear in mind that CX's affordance system is still under development and many of its features could change in the future. For example, the filtering mechanism was previously managed by an embedded Prolog interpreter, and you had to know some Prolog in order to use it. This was obviously a very bad idea, but it allowed us to experiment with many of the possibilities of affordances. Then the filtering mechanism was changed to a pure-CX solution, but the syntax was cumbersome. Now the filters are created using a simpler syntax.
 
 \begin{figure}
-\caption{Affordances' workflow}
+\caption{Affordances workflow}
 \centering
 \includegraphics[width=1.0\textwidth]{img/affordances.png}
 \label{figure:affordances-workflow}
@@ -1873,7 +1908,7 @@ As a last note before looking at the examples that follow, please bear in mind t
 
 The current workflow of CX affordances is depicted in figure \ref{figure:affordances-workflow}. The topmost block in this figure shows all the program elements that can be used in this paradigm. Each of these types of elements can interact with any of the other types and with themselves. For example, we can ask for affordances between an argument and a function, as well as we can ask for affordances between an argument other arguments.
 
-The block at the lower-left corner shows in figure \ref{figure:affordances-workflow} how the \textbf{query} function uses \emph{filter} functions to generate a list of filtered program elements. We can now use one of these filtered elements in conjunction with a target to obtain an affordance. For example, an argument can replace another argument in a program, or we can use a structure and a function to create a new method.
+The block at the lower-left corner shows in figure \ref{figure:affordances-workflow} how the \textbf{query} function uses \emph{filter} functions to generate a list of program elements. We can now use one of these elements in conjunction with a target to obtain an affordance. For example, an argument can replace another argument in a program, or we can use a structure and a function to create a new method.
 
 The last part of figure \ref{figure:affordances-workflow} involves two functions: \textbf{inform} and \textbf{request}. Both of these functions are used to actually execute an affordance, but they handle "affordances of" and "affordances on" a target, respectively. An "affordance on" a target involves affordances that are going to mutate the target itself, and an "affordance of" a target involves affordances where the target is going to mutate its environment (other program elements).
 
@@ -1913,7 +1948,7 @@ Figures \ref{figure:combinations-of-affordances-of} and \ref{figure:combinations
 package main
 import "aff"
 
-func predArg (arg aff.Argument) (res bool) {|\label{line:predarg-declaration}|
+func affIsI32 (arg aff.Argument) (res bool) {|\label{line:predarg-declaration}|
 	if arg.Type == "i32" {
 		res = true
 	}
@@ -1928,7 +1963,7 @@ func main () {
 	}
 
 	fltrs := #{|\label{line:aff-filter1}|
-		filter(predArg)
+		filter(affIsI32)
 	}
 	
 	elts := aff.query(fltrs)|\label{line:aff-query1}|
@@ -1946,17 +1981,17 @@ targetExpr:
 }
 \end{lstlisting}
 
-Listing \ref{listing:affordances-example1} shows an example of affordances involving arguments of an expression. In order to create a target, we will use the affordance operator: \emph{\#\{\}}. A target is created starting at line \ref{line:aff-target1} using this operator and a series of function calls. The function calls in this case are used to select the actual target, and they can be read as: from \lstinline{expr(targetExpr)}, target the 0th input (\lstinline{inp(0)}). If \lstinline{inp(0)} is not included, we'd be targeting the expression as a whole, and not one of its arguments.
+Listing \ref{listing:affordances-example1} shows an example of affordances involving arguments of an expression. In order to create a target, we will use the affordance operator: \emph{\#\{\}}. A target is created starting at line \ref{line:aff-target1} using this operator and a series of function calls. The function calls in this case are used to select the actual target, and they can be read as: from \lstinline{expr(targetExpr)}, target the 0th input (\lstinline{inp(0)}). If \lstinline{inp(0)} is not included, we would be targeting the expression as a whole, and not one of its arguments.
 
-After having specified a target, we need to create filters that can be queried to generate program elements. In the case of this example, we are using only one filter: \lstinline{filter(predArg)}. The argument of \textbf{filter} needs to be a function that acts as a predicate, i.e. it needs to return a Boolean that tells if an element met certain criteria or not. The input argument to this predicate can be any of:
+After having specified a target, we need to create filters that can be queried to generate program elements. In the case of this example, we are using only one filter: \lstinline{filter(affIsI32)}. The argument of \textbf{filter} needs to be a function that acts as a predicate, i.e. it needs to return a Boolean that tells if an element met certain criteria or not. The input argument to this predicate can be any of:
 
 \begin{itemize}
+    \item aff.Program
+    \item aff.Package
+    \item aff.Function
     \item aff.Argument
     \item aff.Expression
-    \item aff.Function
     \item aff.Structure
-    \item aff.Package
-    \item aff.Program
 \end{itemize}
 
 \textbf{predArg} is declared at line \ref{line:predarg-declaration}, and it is a predicate that is going to filter arguments, as it is declared to have an input parameter of type \textbf{aff.Argument}. This predicate has a very simple behavior: it checks if the argument is of type \emph{i32}; if it is, it returns \emph{true}, which means that the argument meets the filter's criteria; if it is not, it returns \emph{false}, which means that the argument does not meet the filter's criteria.
@@ -1965,11 +2000,11 @@ Now that we have a filter, we can query it, as shown in line \ref{line:aff-query
 
 As shown in figure \ref{figure:affordances-workflow}, the two elements needed to execute an affordance are a target and a filtered program element, and we now have both of these. To check what are the possible affordances involving the target and each of the filtered elements, we can either call \textbf{aff.of} or \textbf{aff.on}, to print either the "affordances of" or "affordances on" the target, respectively. In the case of listing \ref{listing:affordances-example1}, we are printing to the terminal the "affordances of" the target, as can be seen in line \ref{line:aff-of1}. If you want to print the "affordances on" the target, you can un-comment line \ref{line:aff-on1}. The affordances that will be printed will resemble the ones shown in listings \ref{listing:affordances-of} and \ref{listing:affordances-on}.
 
-Finally, in order to execute one of the possible affordances, we can either use \textbf{aff.inform} or \textbf{aff.request}, to execute either an "affordance of" or an "affordance on" the target, respectively. We can see how we can do both operations in lines \ref{line:aff-request1} and \ref{line:aff-inform1}, although the line calling \textbf{aff.inform} is commented.
+Finally, in order to execute one of the possible affordances, we can either use \textbf{aff.inform} or \textbf{aff.request}, to execute either an "affordance of" or an "affordance on" the target, respectively. We can see how we can do both operations in lines \ref{line:aff-request1} and \ref{line:aff-inform1}, although the line calling \textbf{aff.inform} is commented out.
 
-without executing any affordances, the expression at line \ref{line:aff-labeled-expr1} would print an 11 to the terminal. But after executing the affordance, the expression will print 10. If we examine the second affordance shown in \ref{listing:affordances-of}, we can see that the operation to be performed is to "replace targetExpr.Input.1 with targetExpr.Input.0". In this case, \emph{targetExpr.Input.1} is the 6 being sent as the second argument to \textbf{targetExpr}, and \emph{targetExpr.Input.0} is the first argument, which is a 5. In other words, we are replacing the second input argument with the first input argument, which translates to \lstinline{foo = i32.add(5, 5)}.
+Without executing any affordances, the expression at line \ref{line:aff-labeled-expr1} would print an 11 to the terminal. But after executing the affordance, the expression will print 10. If we examine the second affordance shown in \ref{listing:affordances-of}, we can see that the operation to be performed is to "replace targetExpr.Input.1 with targetExpr.Input.0". In this case, \emph{targetExpr.Input.1} is the 6 being sent as the second argument to \textbf{targetExpr}, and \emph{targetExpr.Input.0} is the first argument, which is a 5. In other words, we are replacing the second input argument with the first input argument, which translates to \lstinline{foo = i32.add(5, 5)}.
 
-In contrast, if we are interested in the "affordances on" the target (which is obtained by un-commenting the code in listing \ref{listing:affordances-example1}), we'd be executing the second affordance shown in \ref{listing:affordances-on}, which is "replace targetExpr.Input.1 with targetExpr.Input.1", which shouldn't change the program at all, as we are replacing the second input argument with itself. As a result, the program will print 11 to the terminal.
+In contrast, if we are interested in the "affordances on" the target (which is obtained by un-commenting the code in listing \ref{listing:affordances-example1}), we would be executing the second affordance shown in \ref{listing:affordances-on}, which is "replace targetExpr.Input.1 with targetExpr.Input.1", which should not change the program at all, as we are replacing the second input argument with itself. As a result, the program will print 11 to the terminal.
 
 % Listing \ref{listing:affordances-example1} shows a basic program that uses affordances to filter among the possible values that the expression at \textbf{line \ref{line:affordance-expression}} can take. As this is a small program, the only possible values are those being held by \textbf{foo1}, \textbf{foo2} and \textbf{foo3}. In order to know what expression we want to target, we need to label it first. To do this, we can simply use to-do labels, as seen at \textbf{line \ref{line:affordance-label}}, where we label our target expression as "message." 
 % The next step is to create a variable to hold the target expression. To do this, we use the affordance mini programming-language, which is called by writing \textbf{->\{\}}, and we write the desired statements inside of the braces. Creating a target is done at \textbf{line \ref{line:affordance-target}}. Targets are constructed by going down in levels of scope: the package is specified first, then the function, and lastly the expression. To specify the desired package, you use \textbf(pkg) followed by the name of the package enclosed by parentheses. For functions, you use \textbf{fn}, followed by the name of the function enclosed by parentheses. Lastly, to specify the expression, you use \textbf{exp} followed by the label given to the expression, again, enclosed by parentheses.
@@ -1985,7 +2020,7 @@ In contrast, if we are interested in the "affordances on" the target (which is o
 package main
 import "aff"
 
-func prgrmPredicate (prgrm aff.Program) (res bool) {|\label{line:predprogram}|
+func isMainBar (prgrm aff.Program) (res bool) {|\label{line:predprogram}|
   	if prgrm.Caller.FnName == "main.bar" && prgrm.Caller.FnSize == 0 {|\label{line:predprogram-cond}|
 		res = true
 	}
@@ -1993,7 +2028,7 @@ func prgrmPredicate (prgrm aff.Program) (res bool) {|\label{line:predprogram}|
 
 func foo () {
   	fltrs := #{
-		filter(prgrmPredicate)
+		filter(isMainBar)
   	}
   	affs := aff.query(fltrs)
   	if len(affs) < 1 {
@@ -2015,7 +2050,7 @@ func main () {
 
 Affordances can also be useful without any calls to \textbf{aff.inform} or \textbf{aff.request}. Listing \ref{listing:affordances-example2} shows an example of this, where we use the program's meta-data to determine if we should execute the body of a function or not. The predicate declared at line \ref{line:predprogram} has an input parameter of type \textbf{aff.Program}, which holds meta-data about the running program. In this case, as can be seen in line \ref{line:predprogram-cond}, we are going to "accept" the program only if the caller of the function (the function calling this filter) is named "main.bar" (the function \textit{bar} from the package \textit{main}) and if the size of the caller is 0 (which means that it has no variable declarations at all).
 
-As can be seen in the body of \textbf{foo}, we create a filter that will call \textbf{prgrmPredicate}, we query it and store the result in \textbf{affs}. Then we simply determine if the result of querying the filter has returned any program elements by checking the length of \textbf{affs}. If the length is 0, this means that the caller of \textbf{foo} is not \textbf{bar} and that the caller's size is not equal to 0. As a consequence, we don't run the rest of the expressions contained in \textbf{foo}'s body. If you run code in listing \ref{listing:affordances-example2}, you should see the message 'I will only print if "main.bar" calls me' printed to the terminal only once, although we actually called \textbf{foo} twice.
+As can be seen in the body of \textbf{foo}, we create a filter that will call \textbf{prgrmPredicate}, we query it and store the result in \textbf{affs}. Then we simply determine if the result of querying the filter has returned any program elements by checking the length of \textbf{affs}. If the length is 0, this means that the caller of \textbf{foo} is not \textbf{bar} and that the caller's size is not equal to 0. As a consequence, we do not run the rest of the expressions contained in \textbf{foo}'s body. If you run code in listing \ref{listing:affordances-example2}, you should see the message 'I will only print if "main.bar" calls me' printed to the terminal only once, although we actually called \textbf{foo} twice.
 
 % Listing \ref{listing:affordances-example2} shows a much more complex example. The program is an extremely naive representation of a robot moving on a map. The map is built using two arrays, where each of the indexes represents a room, and the indexes "surrounding" them are used as the contiguous rooms. One of the arrays has walls, and the other one wormholes. If the robot encounters a wall on the map, it cannot move to that direction, but if a wormhole is on the wall, it can move to the other side. In the arrays, a true value means that a wall or a wormhole is present there, and a false means there is not. In the example, there is no wormhole, so you can play with the values to see the different results.
 
