@@ -24,8 +24,21 @@ $ brew install gtk-mac-integration gtk+3
 
 ### Windows
 
-https://www.gtk.org/download/windows.php
+Reference: https://www.gtk.org/download/windows.php
 
+- Download and install [MSYS2](http://www.msys2.org/)
+
+- Install GTK+3 and its dependencies
+
+```bash
+$ pacman -S mingw-w64-x86_64-gtk3
+```
+
+- Install Glade
+
+```bash
+$ pacman -S mingw-w64-x86_64-glade
+```
 
 Installation Glade
 ------------------
