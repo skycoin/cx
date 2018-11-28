@@ -57,17 +57,12 @@ func op_str_eq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_str_concat(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 
-	inp1Str := ReadStr(fp, inp1)
-	inp2Str := ReadStr(fp, inp2)
-
-	byts := encoder.Serialize(inp1Str + inp2Str)
+	byts := encoder.Serialize(str)
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
-	
+
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
@@ -79,5 +74,18 @@ func op_str_concat(expr *CXExpression, fp int) {
 
 	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
 
-	WriteMemory(out1Offset, off)
+	WriteMemory(GetFinalOffset(fp, out), off)
 }
+
+func op_str_concat(expr *CXExpression, fp int) {
+	writeString(expr, fp, ReadStr(fp, expr.Inputs[0]) + ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+}
+
+func op_str_substr(expr *CXExpression, fp int) {
+	str := ReadStr(fp, expr.Inputs[0])
+	begin := ReadI32(fp, expr.Inputs[1])
+	end := ReadI32(fp, expr.Inputs[2])
+
+	writeString(expr, fp, str[begin:end], expr.Outputs[0])
+}
+

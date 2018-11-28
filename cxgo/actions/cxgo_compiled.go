@@ -88,123 +88,126 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		declaration_specifiers.Package = pkg
-		
-		if glbl, err := PRGRM.GetGlobal(declarator.Name); err == nil {
-			// then it is already defined
+		DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
+	} else {
+		panic(err)
+	}
+}
+func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
+	declaration_specifiers.Package = pkg
+	
+	if glbl, err := PRGRM.GetGlobal(declarator.Name); err == nil {
+		// then it is already defined
 
-			if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
-				// then it was only added a reference to the symbol
-				var offExpr []*CXExpression
-				if declaration_specifiers.IsSlice {
-					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-				} else {
-					offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
-				}
-
-				glbl.Offset = offExpr[0].Outputs[0].Offset
-				glbl.PassBy = offExpr[0].Outputs[0].PassBy
-			}
-
-			if doesInitialize {
-				// then we just re-assign offsets
-				if initializer[len(initializer)-1].Operator == nil {
-					// then it's a literal
-					declaration_specifiers.Name = glbl.Name
-					declaration_specifiers.Offset = glbl.Offset
-					declaration_specifiers.PassBy = glbl.PassBy
-
-					*glbl = *declaration_specifiers
-
-					initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
-					initializer[len(initializer) - 1].Outputs = nil
-					initializer[len(initializer) - 1].AddOutput(glbl)
-					initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
-
-					SysInitExprs = append(SysInitExprs, initializer...)
-				} else {
-					// then it's an expression
-					declaration_specifiers.Name = glbl.Name
-					declaration_specifiers.Offset = glbl.Offset
-					declaration_specifiers.PassBy = glbl.PassBy
-
-					*glbl = *declaration_specifiers
-					
-					if initializer[len(initializer) - 1].IsStructLiteral {
-						initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{glbl}}}, initializer)
-					} else {
-						initializer[len(initializer) - 1].Outputs = nil
-						initializer[len(initializer) - 1].AddOutput(glbl)
-					}
-					
-					SysInitExprs = append(SysInitExprs, initializer...)
-				}
-			} else {
-				// we keep the last value for now
-				declaration_specifiers.Name = glbl.Name
-				declaration_specifiers.Offset = glbl.Offset
-				declaration_specifiers.PassBy = glbl.PassBy
-				*glbl = *declaration_specifiers
-			}
-		} else {
-			// then it hasn't been defined
+		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
+			// then it was only added a reference to the symbol
 			var offExpr []*CXExpression
 			if declaration_specifiers.IsSlice {
 				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
 			} else {
 				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
 			}
-			if doesInitialize {
-				if initializer[len(initializer)-1].Operator == nil {
-					// then it's a literal
 
-					declaration_specifiers.Name = declarator.Name
-					declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
-					declaration_specifiers.Size = offExpr[0].Outputs[0].Size
-					declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
-					declaration_specifiers.Package = pkg
+			glbl.Offset = offExpr[0].Outputs[0].Offset
+			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+		}
 
-					initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
-					initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
-					initializer[len(initializer) - 1].Outputs = nil
-					initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
-					
-					pkg.AddGlobal(declaration_specifiers)
+		if doesInitialize {
+			// then we just re-assign offsets
+			if initializer[len(initializer)-1].Operator == nil {
+				// then it's a literal
+				declaration_specifiers.Name = glbl.Name
+				declaration_specifiers.Offset = glbl.Offset
+				declaration_specifiers.PassBy = glbl.PassBy
 
-					SysInitExprs = append(SysInitExprs, initializer...)
-				} else {
-					// then it's an expression
-					declaration_specifiers.Name = declarator.Name
-					declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
-					declaration_specifiers.Size = offExpr[0].Outputs[0].Size
-					declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
-					declaration_specifiers.Package = pkg
+				*glbl = *declaration_specifiers
 
-					if initializer[len(initializer) - 1].IsStructLiteral {
-						initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
-					} else {
-						initializer[len(initializer) - 1].Outputs = nil
-						initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
-					}
+				initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
+				initializer[len(initializer) - 1].Outputs = nil
+				initializer[len(initializer) - 1].AddOutput(glbl)
+				initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
 
-					pkg.AddGlobal(declaration_specifiers)
-					SysInitExprs = append(SysInitExprs, initializer...)
-				}
+				SysInitExprs = append(SysInitExprs, initializer...)
 			} else {
-				// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
-				// exprOut := expr[0].Outputs[0]
+				// then it's an expression
+				declaration_specifiers.Name = glbl.Name
+				declaration_specifiers.Offset = glbl.Offset
+				declaration_specifiers.PassBy = glbl.PassBy
+
+				*glbl = *declaration_specifiers
+				
+				if initializer[len(initializer) - 1].IsStructLiteral {
+					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{glbl}}}, initializer)
+				} else {
+					initializer[len(initializer) - 1].Outputs = nil
+					initializer[len(initializer) - 1].AddOutput(glbl)
+				}
+				
+				SysInitExprs = append(SysInitExprs, initializer...)
+			}
+		} else {
+			// we keep the last value for now
+			declaration_specifiers.Name = glbl.Name
+			declaration_specifiers.Offset = glbl.Offset
+			declaration_specifiers.PassBy = glbl.PassBy
+			*glbl = *declaration_specifiers
+		}
+	} else {
+		// then it hasn't been defined
+		var offExpr []*CXExpression
+		if declaration_specifiers.IsSlice {
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+		} else {
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+		}
+		if doesInitialize {
+			if initializer[len(initializer)-1].Operator == nil {
+				// then it's a literal
 
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
 				declaration_specifiers.Package = pkg
+
+				initializer[len(initializer) - 1].Operator = Natives[OP_IDENTITY]
+				initializer[len(initializer) - 1].AddInput(initializer[len(initializer) - 1].Outputs[0])
+				initializer[len(initializer) - 1].Outputs = nil
+				initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
 				
 				pkg.AddGlobal(declaration_specifiers)
+
+				SysInitExprs = append(SysInitExprs, initializer...)
+			} else {
+				// then it's an expression
+				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
+				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
+				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+				declaration_specifiers.Package = pkg
+
+				if initializer[len(initializer) - 1].IsStructLiteral {
+					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
+				} else {
+					initializer[len(initializer) - 1].Outputs = nil
+					initializer[len(initializer) - 1].AddOutput(declaration_specifiers)
+				}
+
+				pkg.AddGlobal(declaration_specifiers)
+				SysInitExprs = append(SysInitExprs, initializer...)
 			}
+		} else {
+			// offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+			// exprOut := expr[0].Outputs[0]
+
+			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
+			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
+			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
+			declaration_specifiers.Package = pkg
+			
+			pkg.AddGlobal(declaration_specifiers)
 		}
-	} else {
-		panic(err)
 	}
 }
 
@@ -1020,13 +1023,14 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 						constant := Constants[code]
 						val := WritePrimary(constant.Type, constant.Value, false)
 						prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
+						return
 					} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
 						// then it's a native
 						// TODO: we'd be referring to the function itself, not a function call
 						// (functions as first-class objects)
 						left.Name = left.Name + "." + ident
+						return
 					}
-					return
 				}
 
 				left.Package = imp

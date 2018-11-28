@@ -16,6 +16,9 @@ var COREPATH string
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
+const OS_PKG = "os"
+const OS_ARGS = "Args"
+
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"

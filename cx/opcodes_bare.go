@@ -187,6 +187,7 @@ const (
 
 	OP_STR_PRINT
 	OP_STR_CONCAT
+	OP_STR_SUBSTR
 	OP_STR_EQ
 
 	OP_STR_BYTE
@@ -436,6 +437,7 @@ func init () {
 
 	AddOpCode(OP_STR_PRINT, "str.print", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_STR_CONCAT, "str.concat", []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR})
+	AddOpCode(OP_STR_SUBSTR, "str.substr", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_STR})
 	AddOpCode(OP_STR_EQ, "str.eq", []int{TYPE_STR, TYPE_STR}, []int{TYPE_BOOL})
 
 	AddOpCode(OP_STR_BYTE, "str.byte", []int{TYPE_STR}, []int{TYPE_BYTE})
@@ -797,6 +799,8 @@ func init () {
 			op_str_print(expr, fp)
 		case OP_STR_CONCAT:
 			op_str_concat(expr, fp)
+		case OP_STR_SUBSTR:
+			op_str_substr(expr, fp)
 		case OP_STR_EQ:
 			op_str_eq(expr, fp)
 

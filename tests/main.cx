@@ -94,10 +94,10 @@ var VERBOSE_NONE	 i32 = 0
 var VERBOSE_SUCCESS  i32 = 1
 var VERBOSE_STDERR   i32 = 2
 var VERBOSE_FAILURE  i32 = 4
-
-var g_verbose i32 = VERBOSE_SUCCESS | VERBOSE_FAILURE
+var VERBOSE_FULL	 i32 = VERBOSE_SUCCESS | VERBOSE_STDERR | VERBOSE_FAILURE
 
 var g_workingDir str = ""
+var g_verbose i32 = VERBOSE_FAILURE
 
 func testEx(cmd str, exitCode i32, timeoutMs i32, desc str) {
 	g_tests[g_testCount].cmd = cmd
@@ -111,8 +111,87 @@ func test(cmd str, exitCode i32, desc str) {
 	testEx(cmd, exitCode, 0, desc)
 }
 
+func matchArg(arg str, pattern str, match *bool) (out bool) {
+	out = false
+	var argLen i32 = len(arg)
+	var patternLen i32 = len(pattern)
+	if (argLen >= patternLen) {
+		name := str.substr(arg, 0, patternLen)
+		if (name == pattern) {
+			if *match {
+				printf("duplicate arg %s\n", arg)
+				os.Exit(cx.PANIC)
+			}
+			*match = true
+			out = true
+		}
+	}
+}
+
+func getArgValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
+	var matchName bool = matchArg(arg, pattern, match)
+	if matchName {
+		var argLen i32 = len(arg)
+		var patternLen i32 = len(pattern)
+		if argLen > patternLen {
+			*value = str.substr(arg, patternLen, argLen)
+			out = true
+		}
+	}
+}
+
+func getArgValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
+	var strValue str = ""
+	out = getArgValueStr(arg, pattern, &strValue, match)
+	if out {
+		var i32Value i32 = str.i32(strValue)
+		*value = i32Value
+	}
+}
+
+func help () {
+	printf("Options:\n")
+	printf("--help      : Prints this message.\n")
+	printf("--verbose   : Verbose mode (flags).\n")
+	printf("          0 | none\n")
+	printf("          1 | log success only\n")
+	printf("          2 | log stdout and stderr\n")
+	printf("          4 | log failure\n")
+	printf("--wdir      : Working directory\n")
+}
+
+
 func main ()() {
-	printf("\nRunning CX tests\n\n")
+
+	var argCount i32 = len(os.Args)
+	var workingDirMatch bool = false
+	var verboseMatch bool = false
+	var helpMatch bool = false
+
+	for a := 0; a < argCount; a++ {
+		var arg str = os.Args[a]
+		if getArgValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
+			continue
+		}
+
+		if getArgValueI32(arg, "++verbose=", &g_verbose, &verboseMatch) {
+			if g_verbose < VERBOSE_NONE || g_verbose > VERBOSE_FULL{
+				printf("invalid value %s\n", arg)
+				os.Exit(cx.PANIC)
+			}
+			continue
+		}
+
+		if matchArg(arg, "++help", &helpMatch) {
+			help()
+			os.Exit(0)
+		}
+
+		printf("invalid argument : %s\n", arg)
+		os.Exit(cx.PANIC)
+	}
+
+	printf("\nRunning CX tests in dir : '%s'\n\n", g_workingDir)
 
 	var start i64
 	start = time.UnixMilli()
