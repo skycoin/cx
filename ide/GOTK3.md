@@ -9,7 +9,6 @@ Installations gotk3
 ```bash
 $ go get github.com/gotk3/gotk3/...
 ```
-
 ### GNU / Linux
 
 ```bash
@@ -34,11 +33,7 @@ Reference: https://www.gtk.org/download/windows.php
 $ pacman -S mingw-w64-x86_64-gtk3
 ```
 
-- Install Glade
 
-```bash
-$ pacman -S mingw-w64-x86_64-glade
-```
 
 Installation Glade
 ------------------
@@ -57,7 +52,19 @@ $ brew install glade
 
 ### Windows
 
-http://ftp.gnome.org/pub/GNOME/binaries/win32/glade/
+```bash
+$ pacman -S mingw-w64-x86_64-glade
+```
+
+- Optionals
+
+```bash
+$ pacman -S mingw-w64-x86_64-devhelp
+```
+
+```bash
+$ pacman -S mingw-w64-x86_64-toolchain base-devel
+```
 
 ___________________
 Example
@@ -67,4 +74,14 @@ Build and run the go code from _ide_
 
 ```bash
 $ go run ide_glade.go
+```
+
+___________________
+Issues
+-------
+
+- `invalid flag in pkg-config --libs: -Wl,-luuid`
+
+```bash
+$ bash -c "sed -i -e 's/-Wl,-luuid/-luuid/g' C:/msys64/mingw64/lib/pkgconfig/gdk-3.0.pc"
 ```
