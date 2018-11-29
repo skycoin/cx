@@ -184,11 +184,13 @@ var Functions_i32_i32 []Func_i32_i32
 
 func op_glfw_func_i32_i32(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	packageName := ReadStr(fp, inp1)
+	functionName := ReadStr(fp, inp2)
 	callback := func(a int32, b int32) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = FromI32(a)
 		inps[1] = FromI32(b)
-		PROGRAM.ccallback(expr, ReadStr(fp, inp1), ReadStr(fp, inp2), inps)
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)

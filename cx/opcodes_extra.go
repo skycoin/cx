@@ -11,6 +11,10 @@ const (
 	OP_GL_INIT = iota + END_OF_BASE_OPS
 	OP_GL_STRS
 	OP_GL_FREE
+	OP_GL_NEW_TEXTURE
+	OP_GL_NEW_GIF
+	OP_GL_FREE_GIF
+	OP_GL_GIF_FRAME_TO_TEXTURE
 
 	// gl_0_0
 	OP_GL_MATRIX_MODE
@@ -29,7 +33,6 @@ const (
 	OP_GL_VERTEX_3F
 	OP_GL_LIGHTFV
 	OP_GL_FRUSTUM
-	OP_GL_NEW_TEXTURE
 	OP_GL_TEX_ENVI
 	OP_GL_ORTHO
 	OP_GL_SCALEF
@@ -160,6 +163,9 @@ func init () {
 	AddOpCode(OP_GL_STRS, "gl.Strs", []int{TYPE_STR, TYPE_STR}, []int{})
 	AddOpCode(OP_GL_FREE, "gl.Free", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture", []int{TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_GL_NEW_GIF, "gl.NewGIF", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
+	AddOpCode(OP_GL_FREE_GIF, "gl.FreeGIF", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_I32, TYPE_I32})
 
 	// gl_0.0
 	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode", []int{TYPE_I32}, []int{})
@@ -320,6 +326,12 @@ func init () {
 					op_gl_Free(expr, fp)
 				case OP_GL_NEW_TEXTURE:
 					op_gl_NewTexture(expr, fp)
+				case OP_GL_NEW_GIF:
+					op_gl_NewGIF(expr, fp)
+				case OP_GL_FREE_GIF:
+					op_gl_FreeGIF(expr, fp)
+				case OP_GL_GIF_FRAME_TO_TEXTURE:
+					op_gl_GIFFrameToTexture(expr, fp)
 
 				// gl_0_0
 				case OP_GL_MATRIX_MODE:
