@@ -85,3 +85,5 @@ Issues
 ```bash
 $ bash -c "sed -i -e 's/-Wl,-luuid/-luuid/g' C:/msys64/mingw64/lib/pkgconfig/gdk-3.0.pc"
 ```
+
+- if `pkg-config` is not recognized as a command on Windows, remember to add `C:\msys64\mingw64\bin` to your PATH
