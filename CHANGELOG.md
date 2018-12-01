@@ -3,6 +3,7 @@
 ### v0.5.19 (NOT YET RELEASED)
 * Functions as first-class objects
 * Callbacks
+* Refactor parser actions
   
 ### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
 * **Affordances**:
