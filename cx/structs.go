@@ -9,26 +9,19 @@ import (
 */
 
 type CXProgram struct {
-        ElementID                       UUID
-        
         Packages                        []*CXPackage
-        CurrentPackage                  *CXPackage
-        
-        Inputs                          []*CXArgument
+	Memory                          []byte
+	Inputs                          []*CXArgument
         Outputs                         []*CXArgument
-        
-        CallStack                       []CXCall
-        CallCounter                     int
-        
-        Memory                          []byte
+	CallStack                       []CXCall
+	Path                            string
+        CurrentPackage                  *CXPackage
+	CallCounter                     int
         HeapPointer                     int
         StackPointer                    int
-        
         HeapStartsAt                    int
-        
+	ElementID                       UUID
         Terminated                      bool
-        
-        Path                            string
 }
 
 type CXCall struct {
@@ -42,16 +35,14 @@ type CXCall struct {
 */
 
 type CXPackage struct {
-        ElementID                       UUID
-        
-        Name                            string
-        Imports                         []*CXPackage
+	Imports                         []*CXPackage
         Functions                       []*CXFunction
         Structs                         []*CXStruct
         Globals                         []*CXArgument
-
-        CurrentFunction                 *CXFunction
+	Name                            string
+	CurrentFunction                 *CXFunction
         CurrentStruct                   *CXStruct
+        ElementID                       UUID
 }
 
 /*
@@ -59,13 +50,11 @@ type CXPackage struct {
 */
 
 type CXStruct struct {
+	Fields                          []*CXArgument
+	Name                            string
+	Size                            int
+	Package                         *CXPackage
         ElementID                       UUID
-        
-        Name                            string
-        Fields                          []*CXArgument
-        Size                            int
-
-        Package                         *CXPackage
 }
 
 /*
@@ -73,95 +62,78 @@ type CXStruct struct {
 */
 
 type CXFunction struct {
-        ElementID                       UUID
-        
-        Name                            string
+	ListOfPointers                  []*CXArgument
         Inputs                          []*CXArgument
         Outputs                         []*CXArgument
         Expressions                     []*CXExpression
+	Name                            string
+	Length                          int // number of expressions, pre-computed for performance
         Size                            int // automatic memory size
-        Length                          int // number of expressions, pre-computed for performance
-
-        ListOfPointers                  []*CXArgument
-
-        IsNative                        bool
         OpCode                          int
-
-        CurrentExpression               *CXExpression
+	CurrentExpression               *CXExpression
         Package                         *CXPackage
+        ElementID                       UUID
+        IsNative                        bool
 }
 
 type CXExpression struct {
-        ElementID                       UUID
-        
-        Operator                        *CXFunction
-        Inputs                          []*CXArgument
+	Inputs                          []*CXArgument
         Outputs                         []*CXArgument
-        // debugging
+	Label                           string
+	FileName                        string
+	Operator                        *CXFunction
+	// debugging
         FileLine                        int
-        FileName                        string
-
-        // used for jmp statements
-        Label                           string
+	// used for jmp statements
         ThenLines                       int
         ElseLines                       int
-
+	Function                        *CXFunction
+        Package                         *CXPackage
+        ElementID                       UUID
         IsMethodCall                    bool
         IsStructLiteral                 bool
         IsArrayLiteral                  bool
         IsUndType                       bool
 	IsBreak                         bool
 	IsContinue                      bool
-
-        Function                        *CXFunction
-        Package                         *CXPackage
 }
 
 type CXConstant struct {
         // native constants. only used for pre-packaged constants (e.g. math package's PI)
         // these fields are used to feed WritePrimary
+	Value                           []byte
         Type                            int
-        Value                           []byte
 }
 
 type CXArgument struct {
+	Lengths                         []int // declared lengths at compile time
+        Indexes                         []*CXArgument
+        Fields                          []*CXArgument // strct.fld1.fld2().fld3
+	DereferenceOperations           []int // offset by array index, struct field, pointer
+        DeclarationSpecifiers           []int // used to determine finalSize
+	Name                            string
+	FileName                        string
         ElementID                       UUID
-        
-        Name                            string
         Type                            int
-        CustomType                      *CXStruct
         Size                            int // size of underlaying basic type
         TotalSize                       int // total size of an array, performance reasons
-
         Offset                          int
-
         IndirectionLevels               int
         DereferenceLevels               int
-        DereferenceOperations           []int // offset by array index, struct field, pointer
-        DeclarationSpecifiers           []int // used to determine finalSize
-
+	PassBy                          int  // pass by value or reference
+	FileLine                        int
+	CustomType                      *CXStruct
+	Package                         *CXPackage
         IsSlice                         bool
         IsArray                         bool
         IsArrayFirst                    bool // and then dereference
         IsPointer                       bool
         IsReference                     bool
-
         IsDereferenceFirst              bool // and then array
         IsStruct                        bool
         IsRest                          bool // pkg.var <- var is rest
         IsLocalDeclaration              bool
 	IsShortDeclaration              bool
         PreviouslyDeclared              bool
-
-        PassBy                          int  // pass by value or reference
         DoesEscape                      bool
-
-        Lengths                         []int // declared lengths at compile time
-        Indexes                         []*CXArgument
-        Fields                          []*CXArgument // strct.fld1.fld2().fld3
-
-        FileLine                        int
-        FileName                        string
-        
-        Package                         *CXPackage
 }

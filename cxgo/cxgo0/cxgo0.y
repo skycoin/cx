@@ -874,31 +874,6 @@ initializer:
                 assignment_expression
                 ;
 
-initializer_list:
-                designation initializer
-	|       initializer
-	|       initializer_list COMMA designation initializer
-	|       initializer_list COMMA initializer
-                ;
-
-designation:    designator_list ASSIGN
-                ;
-
-designator_list:
-                designator
-	|       designator_list designator
-                ;
-
-designator:
-                LBRACK constant_expression RBRACK
-	|       PERIOD IDENTIFIER
-                ;
-
-
-
-
-
-
 // statements
 statement:      labeled_statement
         |       compound_statement

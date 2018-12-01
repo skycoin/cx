@@ -37,8 +37,7 @@ func assert_(expr *CXExpression, fp int) (same bool) {
 		}
 	}
 
-	var message string
-	message = ReadStr(fp, inp3)
+	message := ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
@@ -46,9 +45,7 @@ func assert_(expr *CXExpression, fp int) (same bool) {
 		} else {
 			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 		}
-	} else {
 	}
-
 	return same
 }
 

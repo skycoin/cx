@@ -1,190 +1,3 @@
-%{
-	package main
-	import (
-		// "fmt"
-		"strconv"
-		"github.com/skycoin/skycoin/src/cipher/encoder"
-		. "github.com/skycoin/cx/cx"
-		. "github.com/skycoin/cx/cxgo/actions"
-	)
-
-	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
-	
-%}
-
-%union{
-	i int
-	byt byte
-	i32 int32
-	i64 int64
-	f32 float32
-	f64 float64
-	tok string
-	bool bool
-	string string
-	stringA []string
-
-	line int
-
-	argument *CXArgument
-	arguments []*CXArgument
-
-	expression *CXExpression
-	expressions []*CXExpression
-
-	SelectStatement SelectStatement
-	SelectStatements []SelectStatement
-
-	arrayArguments [][]*CXExpression
-
-        function *CXFunction
-}
-
-%token  <byt>           BYTE_LITERAL
-%token  <bool>          BOOLEAN_LITERAL
-%token  <i32>           INT_LITERAL
-%token  <i64>           LONG_LITERAL
-%token  <f32>           FLOAT_LITERAL
-%token  <f64>           DOUBLE_LITERAL
-%token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
-                        VAR COMMA PERIOD COMMENT STRING_LITERAL PACKAGE IF ELSE FOR TYPSTRUCT STRUCT
-                        SEMICOLON NEWLINE
-                        ASSIGN CASSIGN IMPORT RETURN GOTO GT_OP LT_OP GTEQ_OP LTEQ_OP EQUAL COLON NEW
-                        EQUALWORD GTHANWORD LTHANWORD
-                        GTHANEQ LTHANEQ UNEQUAL AND OR
-                        ADD_OP SUB_OP MUL_OP DIV_OP MOD_OP REF_OP NEG_OP AFFVAR
-                        PLUSPLUS MINUSMINUS REMAINDER LEFTSHIFT RIGHTSHIFT EXP
-                        NOT
-                        BITXOR_OP BITOR_OP BITCLEAR_OP
-                        PLUSEQ MINUSEQ MULTEQ DIVEQ REMAINDEREQ EXPEQ
-                        LEFTSHIFTEQ RIGHTSHIFTEQ BITANDEQ BITXOREQ BITOREQ
-
-                        DEC_OP INC_OP PTR_OP LEFT_OP RIGHT_OP
-                        GE_OP LE_OP EQ_OP NE_OP AND_OP OR_OP
-                        ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
-                        MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
-                        SUB_ASSIGN XOR_ASSIGN
-                        BOOL BYTE F32 F64
-                        I8 I16 I32 I64
-                        STR
-                        UI8 UI16 UI32 UI64
-                        UNION ENUM CONST CASE DEFAULT SWITCH BREAK CONTINUE
-                        TYPE
-                        
-                        /* Types */
-                        BASICTYPE
-                        /* Selectors */
-                        SPACKAGE SSTRUCT SFUNC
-                        /* Removers */
-                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
-                        /* Stepping */
-                        STEP PSTEP TSTEP
-                        /* Debugging */
-                        DSTACK DPROGRAM DSTATE
-                        /* Affordances */
-                        AFF CAFF TAG INFER VALUE
-                        /* Pointers */
-                        ADDR
-
-%type   <tok>           after_period
-%type   <tok>           unary_operator
-%type   <tok>           assignment_operator
-%type   <i>             type_specifier
-%type   <argument>      declaration_specifiers
-%type   <argument>      declarator
-%type   <argument>      direct_declarator
-%type   <argument>      parameter_declaration
-%type   <arguments>     parameter_type_list
-%type   <arguments>     function_parameters
-%type   <arguments>     parameter_list
-%type   <arguments>     fields
-%type   <arguments>     struct_fields
-
-/* %type   <stringA>       package_identifier */
-                                
-%type   <expressions>   assignment_expression
-%type   <expressions>   constant_expression
-%type   <expressions>   conditional_expression
-%type   <expressions>   logical_or_expression
-%type   <expressions>   logical_and_expression
-%type   <expressions>   exclusive_or_expression
-%type   <expressions>   inclusive_or_expression
-%type   <expressions>   and_expression
-%type   <expressions>   equality_expression
-%type   <expressions>   relational_expression
-%type   <expressions>   shift_expression
-%type   <expressions>   additive_expression
-%type   <expressions>   multiplicative_expression
-%type   <expressions>   unary_expression
-%type   <expressions>   argument_expression_list
-%type   <expressions>   postfix_expression
-%type   <expressions>   primary_expression
-
-%type   <expressions>   struct_literal_expression
-                        
-%type   <expressions>   array_literal_expression_list
-%type   <expressions>   array_literal_expression
-
-%type   <expressions>   slice_literal_expression_list
-%type   <expressions>   slice_literal_expression
-
-%type   <expressions>   selector
-
-%type   <expressions>   struct_literal_fields
-%type   <SelectStatement>   elseif
-%type   <SelectStatements>   elseif_list
-
-%type   <expressions>   declaration
-//                      %type   <expressions>   init_declarator_list
-//                      %type   <expressions>   init_declarator
-
-%type   <expressions>   initializer
-
-%type   <expressions>   expression
-%type   <expressions>   block_item
-%type   <expressions>   block_item_list
-%type   <expressions>   compound_statement
-%type   <expressions>   else_statement
-%type   <expressions>   labeled_statement
-%type   <expressions>   expression_statement
-%type   <expressions>   selection_statement
-%type   <expressions>   iteration_statement
-%type   <expressions>   jump_statement
-%type   <expressions>   statement
-
-%type   <function>      function_header
-
-//                      %type   <stringA>       infer_action, infer_actions
-%type   <string>        infer_action_arg
-%type   <stringA>       infer_action, infer_actions
-%type   <expressions>   infer_clauses
-                        
-                        // for struct literals
-%right                   IDENTIFIER LBRACE
-// %right                  IDENTIFIER
-                        
-/* %start                  translation_unit */
-%%
-
-
-
-translation_unit:
-                external_declaration
-        |       translation_unit external_declaration
-        ;
-
-external_declaration:
-                package_declaration
-        |       global_declaration
-        |       function_declaration
-        |       import_declaration
-        |       struct_declaration
-                
-        |       stepping
-        |       selector
-        |       debugging
-        ;
-
 debugging:      
                 DPROGRAM
                 {
@@ -971,7 +784,7 @@ logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
                 {
-			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_AND])
+			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_AND])
                 }
                 ;
 
@@ -979,7 +792,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_OR])
+			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_OR])
                 }
                 ;
 
@@ -1052,6 +865,7 @@ expression:     assignment_expression
 	|       expression COMMA assignment_expression
                 {
 			$3[len($3) - 1].Outputs = append($1[len($1) - 1].Outputs, $3[len($3) - 1].Outputs...)
+			// $$ = append($1, $3...)
 			$$ = $3
                 }
                 ;
@@ -1073,6 +887,39 @@ declaration:
 
 initializer:    assignment_expression
                 ;
+
+designation:    designator_list ASSIGN
+                {
+			$$ = nil
+                }
+                ;
+
+designator_list:
+                designator
+                {
+			$$ = nil
+                }
+	|       designator_list designator
+                {
+			$$ = nil
+                }
+                ;
+
+designator:
+                LBRACK constant_expression RBRACK
+                {
+			$$ = nil
+                }
+	|       PERIOD IDENTIFIER
+                {
+			$$ = nil
+                }
+                ;
+
+
+
+
+
 
 // statements
 statement:      labeled_statement
@@ -1157,6 +1004,7 @@ selection_statement:
                 }
         |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON
                 {
+			// 
 			$$ = SelectionExpressions($2, nil, $5)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
@@ -1267,4 +1115,3 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 			$$ = nil
                 }
                 ;
-%%

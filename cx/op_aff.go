@@ -10,12 +10,16 @@ var onMessages map[string]string = map[string]string{
 	"arg-arg-input": "Replace %s.Input.%d with %s",
 	"arg-arg-output": "Replace %s.Output.%d with %s",
 	"arg-expr": "Add ",
+	"prgrm-arg-input": "Print %s.Input.%d's value",
+	"prgrm-arg-output": "Print %s.Output.%d's value",
 }
 var ofMessages map[string]string = map[string]string{
 	"arg-arg-input": "Replace %[3]s with %[1]s.Input.%[2]d",
 	"arg-arg-output": "Replace %[3]s with %[1]s.Output.%[2]d",
 	"strct-arg-input": "Add %[1]s.Input.%[2]d as a new field of %s",
 	"strct-arg-output": "Add %[1]s.Output.%[2]d as a new field of %s",
+	"prgrm-arg-input": "Print %[1]s.Input.%[2]d's value",
+	"prgrm-arg-output": "Print %[1]s.Output.%[2]d's value",
 }
 
 func GetInferActions (inp *CXArgument, fp int) []string {
@@ -80,7 +84,7 @@ func CallAffPredicate (fn *CXFunction, predValue []byte) byte {
 		predValue)
 
 	prevCC := PROGRAM.CallCounter
-	for true {
+	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
 		call.ccall(PROGRAM)
 		if PROGRAM.CallCounter < prevCC {
@@ -132,8 +136,7 @@ func queryParam (fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB 
 	for i, arg := range args {
 
 		// Name
-		var argNameB []byte
-		argNameB = encoder.Serialize(arg.Name)
+		argNameB := encoder.Serialize(arg.Name)
 		argNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(argNameB)))
 
 		argOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE + STR_SIZE)
@@ -238,8 +241,7 @@ func getSignatureSlice (params []*CXArgument) int {
 // Helper function for QueryStructure. Used to query all the structs in a particular package
 func queryStructsInPackage (fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
 	for _, f := range pkg.Structs {
-		var strctNameB []byte
-		strctNameB = encoder.Serialize(f.Name)
+		strctNameB := encoder.Serialize(f.Name)
 
 		strctNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(strctNameB)))
 		
@@ -444,7 +446,10 @@ func getAffordances (inp1 *CXArgument, fp int,
 	affMsgs map[string]string,
 	affs *[]string) {
 		var fltrElt string
-		for _, elt := range GetInferActions(inp1, fp) {
+		elts := GetInferActions(inp1, fp)
+		// for _, elt := range elts {
+		for c := 0; c < len(elts); c++ {
+			elt := elts[c]
 			switch elt {
 			case "arg":
 				fltrElt = "arg"
@@ -458,7 +463,19 @@ func getAffordances (inp1 *CXArgument, fp int,
 				fltrElt = "pkg"
 			case "prgrm":
 				fltrElt = "prgrm"
+				// skipping the extra "prgrm"
+				c++
 				switch tgtElt {
+				case "arg":
+					if tgtArgType == "inp" {
+						if msg, ok := affMsgs["prgrm-arg-input"]; ok {
+							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+						}
+					} else {
+						if msg, ok := affMsgs["prgrm-arg-output"]; ok {
+							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+						}
+					}
 				case "prgrm":
 					*affs = append(*affs, "Run program")
 				}
@@ -841,7 +858,7 @@ func op_aff_request (expr *CXExpression, fp int) {
 		case "strct":
 			
 		case "prgrm":
-			
+			fmt.Println(GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
 	case "expr":
 		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
@@ -876,10 +893,6 @@ func op_aff_request (expr *CXExpression, fp int) {
 	case "strct":
 		switch tgtElt {
 		case "arg":
-			// (*readStrctAff(elt, &tgtPkg)).Fields = tgtStrct.Fields
-			// *readArgAff(elt, &tgtFn) = *tgtExpr.Outputs[tgtArgIndex]
-
-
 			if tgtArgType == "inp" {
 				// tgtExpr.Inputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
 				readStrctAff(elt, &tgtPkg).AddField(tgtExpr.Inputs[tgtArgIndex])
@@ -902,11 +915,17 @@ func op_aff_request (expr *CXExpression, fp int) {
 		} else {
 			panic(err)
 		}
-		// case "prgrm":
-		// 	switch tgtElt {
-		// 	case "prgrm":
-		// 		affs = append(affs, "Run program")
-		// 	}
+	case "prgrm":
+		switch tgtElt {
+		case "arg":
+			if tgtArgType == "inp" {
+				fmt.Println(GetPrintableValue(fp, tgtExpr.Inputs[tgtArgIndex]))
+			} else {
+				fmt.Println(GetPrintableValue(fp, tgtExpr.Outputs[tgtArgIndex]))
+			}
+		case "prgrm":
+			// affs = append(affs, "Run program")
+		}
 	}
 
 	// returning to previous state

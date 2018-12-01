@@ -20,7 +20,7 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 			return imp, nil
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("package '%s' not imported", impName))
+	return nil, fmt.Errorf("package '%s' not imported", impName)
 }
 
 func (prgrm *CXProgram) GetCurrentStruct() (*CXStruct, error) {
@@ -84,28 +84,6 @@ func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 	}
 }
 
-// func (prgrm *CXProgram) GetCurrentDefinitions () ([]*CXArgument, error) {
-// 	mod, err := prgrm.GetCurrentPackage()
-
-// 	if err == nil {
-// 		return mod.GetCurrentDefinitions()
-// 	} else {
-// 		return nil, err
-// 	}
-// }
-
-// func (mod *CXPackage) GetCurrentDefinitions () ([]*CXArgument, error) {
-// 	return mod.GetDefinitions()
-// }
-
-// func (mod *CXPackage) GetDefinitions () ([]*CXArgument, error) {
-// 	if mod.Globals != nil {
-// 		return mod.Globals, nil
-// 	} else {
-// 		return nil, errors.New("definitions array is nil")
-// 	}
-// }
-
 func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 	if mod, err := prgrm.GetCurrentPackage(); err == nil {
 		var found *CXArgument
@@ -126,7 +104,7 @@ func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 		}
 
 		if found == nil {
-			return nil, errors.New(fmt.Sprintf("global '%s' not found", name))
+			return nil, fmt.Errorf("global '%s' not found", name)
 		} else {
 			return found, nil
 		}
@@ -139,7 +117,7 @@ func (strct *CXStruct) GetFields() ([]*CXArgument, error) {
 	if strct.Fields != nil {
 		return strct.Fields, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("structure '%s' has no fields", strct.Name))
+		return nil, fmt.Errorf("structure '%s' has no fields", strct.Name)
 	}
 }
 
@@ -149,7 +127,7 @@ func (strct *CXStruct) GetField(name string) (*CXArgument, error) {
 			return fld, nil
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("field '%s' not found in struct '%s'", name, strct.Name))
+	return nil, fmt.Errorf("field '%s' not found in struct '%s'", name, strct.Name)
 }
 
 func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {
@@ -157,7 +135,7 @@ func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	if mod.Functions != nil {
 		return mod.Functions, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("package '%s' has no functions", mod.Name))
+		return nil, fmt.Errorf("package '%s' has no functions", mod.Name)
 	}
 }
 
@@ -173,10 +151,10 @@ func (prgrm *CXProgram) GetPackage(modName string) (*CXPackage, error) {
 		if found != nil {
 			return found, nil
 		} else {
-			return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
+			return nil, fmt.Errorf("package '%s' not found", modName)
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("package '%s' not found", modName))
+		return nil, fmt.Errorf("package '%s' not found", modName)
 	}
 }
 
@@ -204,7 +182,7 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 	if foundStrct != nil {
 		return foundStrct, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("struct '%s' not found in package '%s'", strctName, pkg.Name))
+		return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, pkg.Name)
 	}
 }
 
@@ -246,7 +224,7 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 	if foundPkg != nil && foundStrct != nil {
 		return foundStrct, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("struct '%s' not found in package '%s'", strctName, modName))
+		return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, modName)
 	}
 }
 
@@ -271,7 +249,7 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	if foundDef != nil {
 		return foundDef, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("global '%s' not found in package '%s'", defName, pkg.Name))
+		return nil, fmt.Errorf("global '%s' not found in package '%s'", defName, pkg.Name)
 	}
 }
 
@@ -294,7 +272,7 @@ func (pkg *CXPackage) GetFunction (fnName string) (*CXFunction, error) {
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name))
+	return nil, fmt.Errorf("function '%s' not found in package '%s' or its imports", fnName, pkg.Name)
 }
 
 func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunction, error) {
@@ -304,7 +282,7 @@ func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunctio
 		}
 	}
 	
-	return nil, errors.New(fmt.Sprintf("method '%s' not found in package '%s'", fnName, pkg.Name))
+	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
 }
 
 func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {
@@ -334,13 +312,13 @@ func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction
 			}
 		}
 	} else {
-		return nil, errors.New(fmt.Sprintf("package '%s' not found", pkgName))
+		return nil, fmt.Errorf("package '%s' not found", pkgName)
 	}
 
 	if foundPkg != nil && foundFn != nil {
 		return foundFn, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' not found in package '%s'", fnName, pkgName))
+		return nil, fmt.Errorf("function '%s' not found in package '%s'", fnName, pkgName)
 	}
 }
 
@@ -348,7 +326,7 @@ func (fn *CXFunction) GetExpressions () ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
 }
 
@@ -360,9 +338,9 @@ func (fn *CXFunction) GetExpressionByLabel (lbl string) (*CXExpression, error) {
 			}
 		}
 
-		return nil, errors.New(fmt.Sprintf("expression '%s' not found in function '%s'", lbl, fn.Name))
+		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
 }
 
@@ -371,11 +349,11 @@ func (fn *CXFunction) GetExpressionByLine (line int) (*CXExpression, error) {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
 		} else {
-			return nil, errors.New(fmt.Sprintf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name))
+			return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
 		}
 
 	} else {
-		return nil, errors.New(fmt.Sprintf("function '%s' has no expressions", fn.Name))
+		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
 }
 

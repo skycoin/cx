@@ -8,12 +8,9 @@ import (
 
 var HeapOffset int
 var genSymCounter int
-var eltCounter int
 
 func MakeElementID () uuid.UUID {
 	return uuid.NewV4()
-	// eltCounter++
-	// return eltCounter
 }
 
 func MakeGenSym(name string) string {
@@ -27,7 +24,7 @@ func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
 		ElementID: MakeElementID(),
 		Packages:  make([]*CXPackage, 0),
-		CallStack: make([]CXCall, CALLSTACK_SIZE, CALLSTACK_SIZE),
+		CallStack: make([]CXCall, CALLSTACK_SIZE),
 		Memory:    make([]byte, STACK_SIZE + TYPE_POINTER_SIZE + INIT_HEAP_SIZE),
 	}
 
@@ -75,11 +72,11 @@ func MakeDefaultValue(typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
 	case "byte":
-		zeroVal = make([]byte, 1, 1)
+		zeroVal = make([]byte, 1)
 	case "i64", "f64":
-		zeroVal = make([]byte, 8, 8)
+		zeroVal = make([]byte, 8)
 	default:
-		zeroVal = make([]byte, 4, 4)
+		zeroVal = make([]byte, 4)
 	}
 	return &zeroVal
 }

@@ -3,7 +3,7 @@
 package base
 
 import (
-	
+	// "os"
 )
 
 const (
@@ -306,6 +306,7 @@ func init () {
 
 	// exec
 	execNativeExtra = func (prgrm *CXProgram) {
+		defer RuntimeError(prgrm)
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
 		opCode := expr.Operator.OpCode

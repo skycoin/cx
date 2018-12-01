@@ -354,9 +354,8 @@ func op_append (expr *CXExpression, fp int) {
 	encoder.DeserializeAtomic(PROGRAM.Memory[preInp1Offset : preInp1Offset + TYPE_POINTER_SIZE], &inp1Offset)
 	
 	var off int32
-	var byts []byte
 
-	byts = PROGRAM.Memory[out1Offset : out1Offset + TYPE_POINTER_SIZE]
+	byts := PROGRAM.Memory[out1Offset : out1Offset + TYPE_POINTER_SIZE]
 	encoder.DeserializeAtomic(byts, &off)
 
 	var heapOffset int
@@ -398,7 +397,7 @@ func op_append (expr *CXExpression, fp int) {
 			size = encoder.SerializeAtomic(int32(len(obj2) + SLICE_HEADER_SIZE))
 		}
 
-		var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+		var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 		for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 			header[c] = size[c-5]
 		}
@@ -407,10 +406,9 @@ func op_append (expr *CXExpression, fp int) {
 		lenTotal := encoder.SerializeAtomic(len1 + 1)
 		capTotal := lenTotal
 
-		var finalObj []byte
-
-		finalObj = append(header, lenTotal...)
+		finalObj := append(header, lenTotal...)
 		finalObj = append(finalObj, capTotal...)
+		
 		if inp1Offset != 0 {
 			// then obj1 is not nil, and we need to append
 			finalObj = append(finalObj, obj1...)
@@ -420,10 +418,7 @@ func op_append (expr *CXExpression, fp int) {
 		WriteMemory(heapOffset, finalObj)
 	} else {
 		// then we have access to a size and capacity
-		var sliceHeader []byte
-
-		// sliceHeader = PROGRAM.Memory[inp1Offset - SLICE_HEADER_SIZE : inp1Offset]
-		sliceHeader = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+		sliceHeader := PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 
 		var l int32
 		var c int32
@@ -453,7 +448,7 @@ func op_append (expr *CXExpression, fp int) {
 
 			size := encoder.SerializeAtomic(int32(int(c) * inp2.TotalSize + SLICE_HEADER_SIZE))
 
-			var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+			var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 				header[c] = size[c-5]
 			}
@@ -461,9 +456,7 @@ func op_append (expr *CXExpression, fp int) {
 			lB := encoder.SerializeAtomic(l)
 			cB := encoder.SerializeAtomic(c)
 
-			var finalObj []byte
-			
-			finalObj = append(header, lB...)
+			finalObj := append(header, lB...)
 			finalObj = append(finalObj, cB...)
 			finalObj = append(finalObj, obj1...)
 			finalObj = append(finalObj, obj2...)
@@ -625,7 +618,7 @@ func op_read (expr *CXExpression, fp int) {
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 	
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
