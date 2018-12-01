@@ -46,9 +46,6 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 	}
 }
 
-var isTesting bool
-var isErrorPresent bool
-
 func (prgrm *CXProgram) ToCall () *CXExpression {
 	for c := prgrm.CallCounter - 1; c >= 0; c-- {
 		if prgrm.CallStack[c].Line + 1 >= len(prgrm.CallStack[c].Operator.Expressions) {

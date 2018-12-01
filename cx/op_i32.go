@@ -200,13 +200,6 @@ func op_i32_log10(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// round() for i32. returns the decimal logarithm of x.
-func op_i32_round(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Round(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
 // op_i32_max. The max built-in function returns the max value between x and y numbers
 func op_i32_max(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]

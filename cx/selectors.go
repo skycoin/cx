@@ -22,7 +22,7 @@ func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	}
 
 	if found == nil {
-		return nil, errors.New(fmt.Sprintf("Package '%s' does not exist", name))
+		return nil, fmt.Errorf("Package '%s' does not exist", name)
 	}
 
 	return found, nil
@@ -64,7 +64,7 @@ func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	}
 
 	if found == nil {
-		return nil, errors.New(fmt.Sprintf("function '%s' does not exist", name))
+		return nil, fmt.Errorf("function '%s' does not exist", name)
 	}
 
 	return found, nil

@@ -1,17 +1,11 @@
 package base
 
 import (
-        // "os"
-        // "path/filepath"
         "bytes"
-        // "errors"
         "fmt"
         "github.com/skycoin/skycoin/src/cipher/encoder"
-        // "math/rand"
-        // "regexp"
-        // "strings"
 	"strconv"
-        // "time"
+	"os"
 )
 
 func Debug (args ...interface{}) {
@@ -386,8 +380,8 @@ func (prgrm *CXProgram) PrintProgram() {
                                                         typeName = TypeNames[out.Type]
                                                 }
 
-                                                var fullName string
-                                                fullName = outName.Name
+                                                fullName := outName.Name
+						
                                                 for _, fld := range outName.Fields {
                                                         fullName += "." + fld.Name
                                                 }
@@ -556,7 +550,7 @@ func WriteToSlice (off int, inp []byte) int {
                 // then it's a new slice
                 heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp))
 
-                var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+                var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 
 
                 size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
@@ -577,8 +571,7 @@ func WriteToSlice (off int, inp []byte) int {
                 return heapOffset
         } else {
                 // then it already exists
-                var sliceHeader []byte
-                sliceHeader = PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+                sliceHeader := PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 
                 var l int32
                 var c int32
@@ -588,9 +581,7 @@ func WriteToSlice (off int, inp []byte) int {
 
                 if l >= c {
                         // then we need to increase cap and relocate slice
-                        var obj []byte
-
-                        obj = PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(len(inp))]
+                        obj := PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(len(inp))]
 
                         l++
                         c = c * 2
@@ -599,7 +590,7 @@ func WriteToSlice (off int, inp []byte) int {
 
                         size := encoder.SerializeAtomic(int32(int(c) * len(inp) + SLICE_HEADER_SIZE))
 
-                        var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+                        var header []byte = make([]byte, OBJECT_HEADER_SIZE)
                         for c := 5; c < OBJECT_HEADER_SIZE; c++ {
                                 header[c] = size[c-5]
                         }
@@ -669,21 +660,23 @@ func ErrorHeader (currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
-func RuntimeError (currentFile string, lineNo int) string {
-	return ErrorHeader(currentFile, lineNo)
+// func RuntimeError (currentFile string, lineNo int) string {
+// 	return ErrorHeader(currentFile, lineNo)
+// }
+
+func RuntimeError (prgrm *CXProgram) {
+	if r := recover(); r != nil {
+		call := prgrm.CallStack[prgrm.CallCounter]
+		expr := call.Operator.Expressions[call.Line]
+		Debug(ErrorHeader(expr.FileName, expr.FileLine), r)
+
+		prgrm.PrintStack()
+		
+		os.Exit(3)
+	}
 }
 
-func GetPrintableValue (fp int, arg *CXArgument) string {
-	var typ string
-	elt := GetAssignmentElement(arg)
-	if elt.CustomType != nil {
-		// then it's custom type
-		typ = elt.CustomType.Name
-	} else {
-		// then it's native type
-		typ = TypeNames[elt.Type]
-	}
-
+func getNonCollectionValue (fp int, arg, elt *CXArgument, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))
@@ -718,4 +711,86 @@ func GetPrintableValue (fp int, arg *CXArgument) string {
 		val += "}"
 		return val
 	}
+}
+
+func GetPrintableValue (fp int, arg *CXArgument) string {
+	var typ string
+	elt := GetAssignmentElement(arg)
+	if elt.CustomType != nil {
+		// then it's custom type
+		typ = elt.CustomType.Name
+	} else {
+		// then it's native type
+		typ = TypeNames[elt.Type]
+	}
+
+	if len(elt.Lengths) > 0 {
+		var val string
+		if len(elt.Lengths) == 1 {
+			val = "["
+			for c := 0; c < elt.Lengths[0]; c++ {
+				if c == elt.Lengths[0] - 1 {
+					val += getNonCollectionValue(fp + c * elt.Size, arg, elt, typ)
+				} else {
+					val += getNonCollectionValue(fp + c * elt.Size, arg, elt, typ) + ", "
+				}
+				
+			}
+			val += "]"
+		} else {
+			// 5, 4, 1
+			val = ""
+
+			finalSize := 1
+			for _, l := range elt.Lengths {
+				finalSize *= l
+			}
+			
+			lens := make([]int, len(elt.Lengths))
+			copy(lens, elt.Lengths)
+
+			for c := 0; c < len(lens); c++ {
+				for i := 0; i < len(lens[c + 1:]); i++ {
+					lens[c] *= lens[c + i]
+				}
+			}
+
+			for range lens {
+				val += "["
+			}
+			
+			// adding first element because of formatting reasons
+			val += getNonCollectionValue(fp, arg, elt, typ)
+			for c := 1; c < finalSize; c++ {
+				closeCount := 0
+				for _, l := range lens {
+					if c % l == 0 && c != 0 {
+						// val += "] ["
+						closeCount++
+					}
+				}
+
+				if closeCount > 0 {
+					for c := 0; c < closeCount; c++ {
+						val += "]"
+					}
+					val += " "
+					for c := 0; c < closeCount; c++ {
+						val += "["
+					}
+
+					val += getNonCollectionValue(fp + c * elt.Size, arg, elt, typ)
+				} else {
+					val += " " + getNonCollectionValue(fp + c * elt.Size, arg, elt, typ)
+				}
+			}
+			for range lens {
+				val += "]"
+			}
+		}
+
+		return val
+	}
+
+	return getNonCollectionValue(fp, arg, elt, typ)
 }

@@ -18,8 +18,7 @@ func op_assert_value(expr *CXExpression, fp int) {
 		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	var same bool
-	same = true
+	same := true
 
 	if len(byts1) != len(byts2) {
 		same = false
@@ -37,10 +36,8 @@ func op_assert_value(expr *CXExpression, fp int) {
 			}
 		}
 	}
-	
 
-	var message string
-	message = ReadStr(fp, inp3)
+	message := ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
@@ -48,8 +45,6 @@ func op_assert_value(expr *CXExpression, fp int) {
 		} else {
 			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 		}
-	} else {
-
 	}
 
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
