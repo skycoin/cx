@@ -33,80 +33,105 @@ func IsUndOp (fn *CXFunction) bool {
         return res
 }
 
+func ExprOpName (expr *CXExpression) string {
+	if expr.Operator.IsNative {
+		return OpNames[expr.Operator.OpCode]
+	} else {
+		return expr.Operator.Name
+	}
+}
+
+// func limitString (str string) string {
+// 	if len(str) > 3
+// }
+
+func stackValueHeader (fileName string, fileLine int) string {
+	return fmt.Sprintf("%s:%d", fileName, fileLine)
+}
+
 func (prgrm *CXProgram) PrintStack() {
         fmt.Println()
-        fmt.Println("===Stack===")
+        fmt.Println("===Callstack===")
 
-        fp := 0
+	// we're going backwards in the stack
+	fp := prgrm.StackPointer
 
-        for c := 0; c <= prgrm.CallCounter; c++ {
+        for c := prgrm.CallCounter; c >= 0; c-- {
                 op := prgrm.CallStack[c].Operator
+		fp -= op.Size
 
                 var dupNames []string
 
-                fmt.Println(">>>", op.Name, "()")
+                fmt.Printf(">>> %s()\n", op.Name)
 
                 for _, inp := range op.Inputs {
                         fmt.Println("Inputs")
-                        fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Memory[inp.Offset:inp.Offset+inp.TotalSize])
+			fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(inp.FileName, inp.FileLine), op.Name, GetPrintableValue(fp, inp))
 
                         dupNames = append(dupNames, inp.Package.Name+inp.Name)
                 }
 
                 for _, out := range op.Outputs {
                         fmt.Println("Outputs")
-                        fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Memory[out.Offset:out.Offset+out.TotalSize])
+                        fmt.Printf("\t%s : %s() : %s\n", stackValueHeader(out.FileName, out.FileLine), op.Name, GetPrintableValue(fp, out))
 
                         dupNames = append(dupNames, out.Package.Name+out.Name)
                 }
 
-                fmt.Println("Expressions")
+		// fmt.Println("Expressions")
+		exprs := ""
+		for _, expr := range op.Expressions {
+			for _, inp := range expr.Inputs {
+				if inp.Name == "" || expr.Operator == nil {
+					continue
+				}
+				var dup bool
+				for _, name := range dupNames {
+					if name == inp.Package.Name+inp.Name {
+						dup = true
+						break
+					}
+				}
+				if dup {
+					continue
+				}
 
-                for _, expr := range op.Expressions {
-                        for _, inp := range expr.Inputs {
-                                if inp.Name == "" || expr.Operator == nil {
-                                        continue
-                                }
-                                var dup bool
-                                for _, name := range dupNames {
-                                        if name == inp.Package.Name+inp.Name {
-                                                dup = true
-                                                break
-                                        }
-                                }
-                                if dup {
-                                        continue
-                                }
+				// fmt.Println("\t", inp.Name, "\t", ":", "\t", GetPrintableValue(fp, inp))
+				// exprs += fmt.Sprintln("\t", stackValueHeader(inp.FileName, inp.FileLine), "\t", ":", "\t", GetPrintableValue(fp, inp))
+				
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(inp.FileName, inp.FileLine), ExprOpName(expr), GetPrintableValue(fp, inp))
 
-                                fmt.Println("\t", inp.Name, "\t", ":", "\t", prgrm.Memory[inp.Offset:inp.Offset+inp.TotalSize])
+				dupNames = append(dupNames, inp.Package.Name+inp.Name)
+			}
 
-                                dupNames = append(dupNames, inp.Package.Name+inp.Name)
-                        }
+			for _, out := range expr.Outputs {
+				if out.Name == "" || expr.Operator == nil {
+					continue
+				}
+				var dup bool
+				for _, name := range dupNames {
+					if name == out.Package.Name+out.Name {
+						dup = true
+						break
+					}
+				}
+				if dup {
+					continue
+				}
 
-                        for _, out := range expr.Outputs {
-                                if out.Name == "" || expr.Operator == nil {
-                                        continue
-                                }
-                                var dup bool
-                                for _, name := range dupNames {
-                                        if name == out.Package.Name+out.Name {
-                                                dup = true
-                                                break
-                                        }
-                                }
-                                if dup {
-                                        continue
-                                }
+				// fmt.Println("\t", out.Name, "\t", ":", "\t", GetPrintableValue(fp, out))
+				// exprs += fmt.Sprintln("\t", stackValueHeader(out.FileName, out.FileLine), ":", GetPrintableValue(fp, out))
+				
+				exprs += fmt.Sprintf("\t%s : %s() : %s\n", stackValueHeader(out.FileName, out.FileLine), ExprOpName(expr), GetPrintableValue(fp, out))
 
-                                fmt.Println("\t", out.Name, "\t", ":", "\t", prgrm.Memory[out.Offset:out.Offset+out.TotalSize])
-
-                                dupNames = append(dupNames, out.Package.Name+out.Name)
-                        }
-                }
-
-                fp += op.Size
+				dupNames = append(dupNames, out.Package.Name+out.Name)
+			}
+		}
+		
+		if len(exprs) > 0 {
+			fmt.Println("Expressions\n", exprs)
+		}
         }
-        fmt.Println()
 }
 
 func (prgrm *CXProgram) PrintProgram() {
@@ -660,19 +685,34 @@ func ErrorHeader (currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
-// func RuntimeError (currentFile string, lineNo int) string {
-// 	return ErrorHeader(currentFile, lineNo)
-// }
+func runtimeErrorInfo (r interface{}, printStack bool) {
+	call := PROGRAM.CallStack[PROGRAM.CallCounter]
+	expr := call.Operator.Expressions[call.Line]
+	fmt.Println(ErrorHeader(expr.FileName, expr.FileLine), r)
 
-func RuntimeError (prgrm *CXProgram) {
+	if printStack {
+		PROGRAM.PrintStack()
+	}
+	
+	os.Exit(3)
+}
+
+func RuntimeError () {
 	if r := recover(); r != nil {
-		call := prgrm.CallStack[prgrm.CallCounter]
-		expr := call.Operator.Expressions[call.Line]
-		Debug(ErrorHeader(expr.FileName, expr.FileLine), r)
-
-		prgrm.PrintStack()
-		
-		os.Exit(3)
+		switch r {
+		case STACK_OVERFLOW_ERROR:
+			call := PROGRAM.CallStack[PROGRAM.CallCounter]
+			if PROGRAM.CallCounter > 0 {
+				PROGRAM.CallCounter--
+				PROGRAM.StackPointer = call.FramePointer
+				runtimeErrorInfo(r, true)
+			} else {
+				// error at entry point
+				runtimeErrorInfo(r, false)
+			}
+		default:
+			runtimeErrorInfo(r, true)
+		}
 	}
 }
 

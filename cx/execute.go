@@ -1,13 +1,9 @@
 package base
 
 import (
-	// "bytes"
-	// "errors"
 	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	// "io/ioutil"
 	"math/rand"
-	// "runtime"
 	"time"
 	"os"
 )
@@ -60,12 +56,18 @@ func (prgrm *CXProgram) ToCall () *CXExpression {
 	// panic("")
 }
 
-func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
+func (prgrm *CXProgram) Run (untilEnd bool, nCalls *int, untilCall int) error {
+	defer RuntimeError()
 	var err error
 
 	for !prgrm.Terminated && (untilEnd || *nCalls != 0) && prgrm.CallCounter > untilCall {
 		call := &prgrm.CallStack[prgrm.CallCounter]
 
+		// checking if enough memory in stack
+		if prgrm.StackPointer > STACK_SIZE {
+			panic(STACK_OVERFLOW_ERROR)
+		}
+		
 		if !untilEnd {
 			var inName string
 			var toCallName string
@@ -201,7 +203,6 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 
 func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte)() {
 	if fn, err := prgrm.GetFunction(functionName, packageName); err == nil {
-
 		line := prgrm.CallStack[prgrm.CallCounter].Line
 		previousCall := prgrm.CallCounter
 		prgrm.CallCounter++
@@ -252,13 +253,6 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			fp := call.FramePointer
 
 			expr := returnOp.Expressions[returnLine]
-			// for i, out := range expr.Outputs {
-			// 	WriteMemory(
-			// 		GetFinalOffset(returnFP, out),
-			// 		ReadMemory(
-			// 			GetFinalOffset(fp, call.Operator.Outputs[i]),
-			// 			call.Operator.Outputs[i]))
-			// }
 
 			// lenOuts := len(expr.Outputs)
 			for i, out := range call.Operator.Outputs {
@@ -304,6 +298,11 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// the stack pointer is moved to create room for the next call
 			// prgrm.MemoryPointer += fn.Size
 			prgrm.StackPointer += newCall.Operator.Size
+
+			// checking if enough memory in stack
+			if prgrm.StackPointer > STACK_SIZE {
+				panic(STACK_OVERFLOW_ERROR)
+			}
 
 			fp := call.FramePointer
 			newFP := newCall.FramePointer

@@ -332,12 +332,7 @@ func ProcessGoTos (fn *CXFunction, exprs []*CXExpression) {
 
 func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil {
-		var opName string
-		if expr.Operator.IsNative {
-			opName = OpNames[expr.Operator.OpCode]
-		} else {
-			opName = expr.Operator.Name
-		}
+		opName := ExprOpName(expr)
 
 		// checking if number of inputs is less than the required number of inputs
 		if len(expr.Inputs) != len(expr.Operator.Inputs) {

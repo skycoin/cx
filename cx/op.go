@@ -2,7 +2,7 @@ package base
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -57,6 +57,7 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 }
 
 func GetFinalOffset(fp int, arg *CXArgument) int {
+	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
 	var finalOffset int = arg.Offset
 	// var fldIdx int
@@ -187,11 +188,7 @@ func AllocateSeq(size int) (offset int) {
 
 		if result + size > MEMORY_SIZE {
 			// heap exhausted
-			errorCall := PROGRAM.CallStack[PROGRAM.CallCounter]
-			fileName := errorCall.Operator.Expressions[errorCall.Line].FileName
-			fileLine := errorCall.Operator.Expressions[errorCall.Line].FileLine
-			fmt.Println(fmt.Sprintf("runtime error: heap exhausted: %s:%d", fileName, fileLine))
-			os.Exit(3)
+			panic(HEAP_EXHAUSTED_ERROR)
 		}
 	}
 
