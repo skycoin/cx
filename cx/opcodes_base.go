@@ -53,7 +53,7 @@ func init () {
 
 	// exec
 	execNativeBase = func(prgrm *CXProgram) {
-		defer RuntimeError(prgrm)
+		defer RuntimeError()
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
 		opCode := expr.Operator.OpCode

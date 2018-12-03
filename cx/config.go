@@ -13,6 +13,8 @@ var PKGPATH string = CXPATH + "pkg/"
 var SRCPATH string = CXPATH + "src/"
 var COREPATH string
 
+const STACK_OVERFLOW_ERROR = "stack overflow"
+const HEAP_EXHAUSTED_ERROR = "stack exhausted"
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
@@ -36,8 +38,8 @@ const OBJECT_GC_HEADER_SIZE = 5
 const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
 const CALLSTACK_SIZE = 1000
-const STACK_SIZE = 500
-const INIT_HEAP_SIZE = 500
+const STACK_SIZE = 500000
+const INIT_HEAP_SIZE = 500000
 const NULL_ADDRESS = STACK_SIZE
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
