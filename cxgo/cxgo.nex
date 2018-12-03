@@ -995,7 +995,6 @@ func main () {
 		parseErrors += yyParse(NewLexer(b))
 	}
 
-
 	if FoundCompileErrors || parseErrors > 0 {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
@@ -1036,6 +1035,9 @@ func main () {
 			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
 				panic(err)
 				// repl()
+			}
+			if AssertFailed() {
+				os.Exit(CX_ASSERT)
 			}
 		}
 	}

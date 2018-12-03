@@ -240,7 +240,7 @@ func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packa
 
 		var nCalls = 0
 		if err := prgrm.Run(true, &nCalls, previousCall); err != nil {
-			os.Exit(3)
+			os.Exit(CX_INTERNAL_ERROR)
 		}
 
 		prgrm.CallCounter = previousCall

@@ -1,45 +1,45 @@
 package main
 
 func F32ArithmeticFunctions() () {
-	assert_(f32.add(10.0, 10.0), 20.0, "Add error")
-	assert_(f32.sub(10.0, 10.0), 0.0, "Subtract error")
-	assert_(f32.mul(10.0, 10.0), 100.0, "Multiply error")
-	assert_(f32.div(10.0, 10.0), 1.0, "Divide error")
-	assert_(f32.pow(10.0, 5.0), 100000.0, "Pow error")
-	assert_(f32.abs(-10.0), 10.0, "Absolute Value error")
-	assert_(f32.sqrt(4.0), 2.0, "Square Root error")
-	assert_(f32.log(1.0), 0.0, "Log error")
-	assert_(f32.log2(2.0), 1.0, "Log2 error")
-	assert_(f32.log10(10.0), 1.0, "Log10 error")
-	assert_(f32.max(3.0, 1.0), 3.0, "MAX error")
-	assert_(f32.min(3.0, 1.0), 1.0, "MIN error")
-	assert_(f32.sin(0.0), 0.0, "Sin error")
-	assert_(f32.cos(0.0), 1.0, "Cos error")
+	test(f32.add(10.0, 10.0), 20.0, "Add error")
+	test(f32.sub(10.0, 10.0), 0.0, "Subtract error")
+	test(f32.mul(10.0, 10.0), 100.0, "Multiply error")
+	test(f32.div(10.0, 10.0), 1.0, "Divide error")
+	test(f32.pow(10.0, 5.0), 100000.0, "Pow error")
+	test(f32.abs(-10.0), 10.0, "Absolute Value error")
+	test(f32.sqrt(4.0), 2.0, "Square Root error")
+	test(f32.log(1.0), 0.0, "Log error")
+	test(f32.log2(2.0), 1.0, "Log2 error")
+	test(f32.log10(10.0), 1.0, "Log10 error")
+	test(f32.max(3.0, 1.0), 3.0, "MAX error")
+	test(f32.min(3.0, 1.0), 1.0, "MIN error")
+	test(f32.sin(0.0), 0.0, "Sin error")
+	test(f32.cos(0.0), 1.0, "Cos error")
 }
 
 func F32ArithmeticShorthand() () {
-	assert_(10.0 + 10.0, 20.0, "Add error")
-	assert_(10.0 - 10.0, 0.0, "Subtract error")
-	assert_(10.0 * 10.0, 100.0, "Multiply error")
-	assert_(10.0 / 10.0, 1.0, "Divide error")
+	test(10.0 + 10.0, 20.0, "Add error")
+	test(10.0 - 10.0, 0.0, "Subtract error")
+	test(10.0 * 10.0, 100.0, "Multiply error")
+	test(10.0 / 10.0, 1.0, "Divide error")
 }
 
 func F32RelationalFunctions() () {
-	assert_(f32.eq(5.0, 5.0), true, "F32 Equality error")
-	assert_(f32.uneq(5.0, 5.0), false, "F32 Inequality error")
-	assert_(f32.gt(5.0, 10.0), false, "F32 Greater error")
-	assert_(f32.gteq(15.0, 10.0), true, "F32 Greater And Equal error")
-	assert_(f32.lt(5.0, 10.0), true, "F32 Lesser error")
-	assert_(f32.lteq(10.0, 6.0), false, "F32 Lesser Or Equal error")
+	test(f32.eq(5.0, 5.0), true, "F32 Equality error")
+	test(f32.uneq(5.0, 5.0), false, "F32 Inequality error")
+	test(f32.gt(5.0, 10.0), false, "F32 Greater error")
+	test(f32.gteq(15.0, 10.0), true, "F32 Greater And Equal error")
+	test(f32.lt(5.0, 10.0), true, "F32 Lesser error")
+	test(f32.lteq(10.0, 6.0), false, "F32 Lesser Or Equal error")
 }
 
 func F32RelationalShorthand() () {
-	assert_(5.0 == 5.0, true, "F32 Equality Shorthand error")
-	assert_(5.0 != 5.0, false, "F32 Inequality Shorthand error")
-	assert_(5.0 > 10.0, false, "F32 Greater Shorthand error")
-	assert_(15.0 >= 10.0, true, "F32 Greater And Equal Shorthand error")
-	assert_(5.0 < 10.0, true, "F32 Lesser Shorthand error")
-	assert_(10.0 <= 6.0, false, "F32 Lesser Or Equal error")
+	test(5.0 == 5.0, true, "F32 Equality Shorthand error")
+	test(5.0 != 5.0, false, "F32 Inequality Shorthand error")
+	test(5.0 > 10.0, false, "F32 Greater Shorthand error")
+	test(15.0 >= 10.0, true, "F32 Greater And Equal Shorthand error")
+	test(5.0 < 10.0, true, "F32 Lesser Shorthand error")
+	test(10.0 <= 6.0, false, "F32 Lesser Or Equal error")
 }
 
 func main() () {

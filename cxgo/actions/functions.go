@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"os"
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -71,7 +70,7 @@ func FunctionAddParameters (fn *CXFunction, inputs, outputs []*CXArgument) {
 
 func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
-		os.Exit(3)
+		return
 	}
 
 	FunctionAddParameters(fn, inputs, outputs)
@@ -128,7 +127,6 @@ func FunctionCall (exprs []*CXExpression, args []*CXExpression) []*CXExpression 
 		} else if expr.Outputs[0].Fields == nil {
 			// then it's not a possible method call
 			println(CompilationError(CurrentFile, LineNo), err.Error())
-			os.Exit(3)
 			return nil
 		} else {
 			expr.IsMethodCall = true
@@ -357,7 +355,7 @@ func CheckTypes(expr *CXExpression) {
 				}
 
 				println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects %d input%s, but %d input argument%s %s provided", opName, len(expr.Operator.Inputs), plural1, len(expr.Inputs), plural2, plural3))
-				os.Exit(3)
+				return
 			}
 		}
 
@@ -515,7 +513,7 @@ func UpdateSymbolsTable(symbols *map[string]*CXArgument, sym *CXArgument, offset
 			if shouldExist {
 				// it should exist. error
 				println(CompilationError(sym.FileName, sym.FileLine) + " identifier '" + sym.Name + "' does not exist")
-				os.Exit(3)
+				return
 			}
 
 			sym.Offset = *offset
@@ -716,7 +714,7 @@ func ProcessSymbolFields (sym *CXArgument, arg *CXArgument) {
 	if len(sym.Fields) > 0 {
 		if arg.CustomType == nil || len(arg.CustomType.Fields) == 0 {
 			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' has no fields", sym.Name))
-			os.Exit(3)
+			return
 		}
 		
 		// checking if fields do exist in their CustomType

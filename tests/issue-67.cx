@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 func main()() {
 
 	var b bool = true
@@ -9,5 +8,4 @@ func main()() {
 	}
 
 	printf("x = %f\n", x)
-	assert_(false, true, "this should not compile")
 }

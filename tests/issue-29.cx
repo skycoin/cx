@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 type issue29Structure struct {
 	string str
 }
@@ -16,8 +15,8 @@ func (structure issue29Point) function() {
 }
 
 func (structure issue29Structure) function(inputString str, extra str) {
-	assert_(inputString, "abc", "")
-	assert_(extra, "def", "")
+	test(inputString, "abc", "")
+	test(extra, "def", "")
 }
 
 func main () {

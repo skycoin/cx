@@ -1,6 +1,4 @@
 package main
-import "os"
-import "cx"
 
 type AA struct {
 	i i32
@@ -8,5 +6,4 @@ type AA struct {
 }
 func main()() {
 	var a AA
-	assert_(false, true, "should not compile")
 }

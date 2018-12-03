@@ -8,13 +8,13 @@ func main () {
 		check = 333
 	}
 
-	assert_(check, 333, "not entering IF error")
+	test(check, 333, "not entering IF error")
 
 	if  3 < 2 {
 		check = 555
 	}
 
-	assert_(check, 333, "entering IF error")
+	test(check, 333, "entering IF error")
 
 	if 2 < 3 {
 		check = 888
@@ -22,7 +22,7 @@ func main () {
 		check = 444
 	}
 
-	assert_(check, 888, "entering else in IF/ELSE error")
+	test(check, 888, "entering else in IF/ELSE error")
 
 	if  3 < 2 {
 		check = 111
@@ -30,33 +30,33 @@ func main () {
 		check = 777
 	}
 
-	assert_(check, 777, "entering if in IF/ELSE error")
+	test(check, 777, "entering if in IF/ELSE error")
 
 	if 3 > 0 {
 		if 25.0 > 29.0 {
 			check = 0
-			assert_(check, 10, "entering nested IF/ELSE 2nd level error")
+			test(check, 10, "entering nested IF/ELSE 2nd level error")
 		} else {
 			if 30L < 60L {
 				check = 999
 			} else {
 				check = 0
-				assert_(check, 10, "entering nested IF/ELSE 3rd level error")
+				test(check, 10, "entering nested IF/ELSE 3rd level error")
 			}
 		}
 	} else {
 		check = 0
-		assert_(check, 10, "entering nested IF/ELSE 1st level error")
+		test(check, 10, "entering nested IF/ELSE 1st level error")
 	}
 
-	assert_(check, 999, "entering nested IF/ELSE error")
+	test(check, 999, "entering nested IF/ELSE error")
 
 	var i i32
 	for i = 0; i < 10; i = i32.add(i, 1) {
 		check = i
 	}
 
-	assert_(check, 9, "FOR loop error")
+	test(check, 9, "FOR loop error")
 
 	for i = 1; i32.lteq(i, 10); i = i32.add(i, 1){
 		if i32.eq(i32.mod(i, 2), 0) {
@@ -66,7 +66,7 @@ func main () {
 		}
 	}
 
-	assert_(check, 10, "FOR-IF/ELSE loop error")
+	test(check, 10, "FOR-IF/ELSE loop error")
 
 	for i = 0; i < 10; i++ {
 		if i == 6 {
@@ -75,7 +75,7 @@ func main () {
 		check = i
 	}
 
-	assert_(check, 5, "break error")
+	test(check, 5, "break error")
 
 	for i = 0; i < 10; i++ {
 		if i == 9 {
@@ -84,5 +84,5 @@ func main () {
 		check = i
 	}
 
-	assert_(check, 8, "continue error")
+	test(check, 8, "continue error")
 }

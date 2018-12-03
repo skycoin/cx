@@ -1,8 +1,5 @@
 package main
 
-import "os"
-import "cx"
-
 func main () {
 	var cmd str
 beginning:
@@ -21,18 +18,18 @@ beginning:
 	}
 
 cat:
-	assert_(cmd, "C", "")
+	test(cmd, "C", "")
 	cmd = "E"
 	goto end
 dog:
-	assert_(cmd, "D", "")
+	test(cmd, "D", "")
 	cmd = "C"
 	goto cat
 pigeon:
-	assert_(cmd, "P", "")
+	test(cmd, "P", "")
 	cmd = "D"
 	goto dog
 
 end:
-	assert_(cmd, "E", "")
+	test(cmd, "E", "")
 }

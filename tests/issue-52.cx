@@ -1,10 +1,8 @@
 package main
-import "os"
-import "cx"
 
 // Invalid implicit cast
 func main()() {
 	var f f32 = 2.0 + 10
 	printf("f %f\n", f)
-	assert_(f > 2.0, true, "")
+	test(f > 2.0, true, "")
 }

@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 type issue85struct struct {
 	suit i32
 	rank i32
@@ -19,16 +18,16 @@ func (c *issue85struct) issue85method2 (suit i32, rank i32) {
 func main () {
 	var card issue85struct
 
-	assert_(card.suit, 0, "")
-	assert_(card.rank, 0, "")
+	test(card.suit, 0, "")
+	test(card.rank, 0, "")
 
 	card.issue85method1(7, 11)
 
-	assert_(card.suit, 0, "")
-	assert_(card.rank, 0, "")
+	test(card.suit, 0, "")
+	test(card.rank, 0, "")
 
 	card.issue85method2(7, 11)
 
-	assert_(card.suit, 7, "")
-	assert_(card.rank, 11, "")
+	test(card.suit, 7, "")
+	test(card.rank, 11, "")
 }

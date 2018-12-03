@@ -1,8 +1,5 @@
 package main
 
-import "os"
-import "cx"
-
 func testout()(width i32, height i32) {
 	width = 20
 	height = 40
@@ -19,8 +16,8 @@ func main()() {
 	width, height = testout()
 	var w f32 = i32.f32(width)
 	var h f32 = i32.f32(height)
-	assert_(width, 20, "")
-	assert_(height, 40, "")
+	test(width, 20, "")
+	test(height, 40, "")
 }
 
 /* workaround

@@ -1,69 +1,69 @@
 package main
 
 func Equality() () {
-	assert_(bool.eq(true, true), true, "Bool Equality(true) error")
-	assert_(bool.eq(false, true), false, "Bool Equality(false) error")
-	assert_(bool.eq(true, false), false, "Bool Equality(false) error")
-	assert_(bool.eq(false, false), true, "Bool Equality(false) error")
+	test(bool.eq(true, true), true, "Bool Equality(true) error")
+	test(bool.eq(false, true), false, "Bool Equality(false) error")
+	test(bool.eq(true, false), false, "Bool Equality(false) error")
+	test(bool.eq(false, false), true, "Bool Equality(false) error")
 
-	assert_((true == true), true, "Bool Equality(true) error")
-	assert_((true == false), false, "Bool Equality(false) error")
-	assert_((false == true), false, "Bool Equality(false) error")
-	assert_((false == false), true, "Bool Equality(true) error")
+	test((true == true), true, "Bool Equality(true) error")
+	test((true == false), false, "Bool Equality(false) error")
+	test((false == true), false, "Bool Equality(false) error")
+	test((false == false), true, "Bool Equality(true) error")
 }
 
 func Inequality() () {
-	assert_(bool.uneq(true, true), false, "Bool Inequality(false) error")
-	assert_(bool.uneq(false, true), true, "Bool Inequality(true) error")
-	assert_(bool.uneq(true, false), true, "Bool Inequality(true) error")
-	assert_(bool.uneq(false, false), false, "Bool Inequality(false) error")
+	test(bool.uneq(true, true), false, "Bool Inequality(false) error")
+	test(bool.uneq(false, true), true, "Bool Inequality(true) error")
+	test(bool.uneq(true, false), true, "Bool Inequality(true) error")
+	test(bool.uneq(false, false), false, "Bool Inequality(false) error")
 
-	assert_((true != true), false, "Bool Inequality(false) error")
-	assert_((true != false), true, "Bool Inequality(true) error")
-	assert_((false != true), true, "Bool Inequality(true) error")
-	assert_((false != false), false, "Bool Inequality(false) error")
+	test((true != true), false, "Bool Inequality(false) error")
+	test((true != false), true, "Bool Inequality(true) error")
+	test((false != true), true, "Bool Inequality(true) error")
+	test((false != false), false, "Bool Inequality(false) error")
 }
 
 func And() () {
-	assert_(bool.and(true, true), true, "Bool And(true) error")
-	assert_(bool.and(true, false), false, "Bool And(false) error")
-	assert_(bool.and(false, true), false, "Bool And(false) error")
-	assert_(bool.and(false, false), false, "Bool And(false) error")
+	test(bool.and(true, true), true, "Bool And(true) error")
+	test(bool.and(true, false), false, "Bool And(false) error")
+	test(bool.and(false, true), false, "Bool And(false) error")
+	test(bool.and(false, false), false, "Bool And(false) error")
 
-	assert_(bool.and(true, true), true, "Bool And(true) error")
-	assert_(bool.and(true, false), false, "Bool And(false) error")
-	assert_(bool.and(false, true), false, "Bool And(false) error")
-	assert_(bool.and(false, false), false, "Bool And(false) error")
+	test(bool.and(true, true), true, "Bool And(true) error")
+	test(bool.and(true, false), false, "Bool And(false) error")
+	test(bool.and(false, true), false, "Bool And(false) error")
+	test(bool.and(false, false), false, "Bool And(false) error")
 
-	assert_((true && true), true, "Bool And(true) error")
-	assert_((true && false), false, "Bool And(false) error")
-	assert_((false && false), false, "Bool And(false) error")
-	assert_((false && true), false, "Bool And(false) error")
+	test((true && true), true, "Bool And(true) error")
+	test((true && false), false, "Bool And(false) error")
+	test((false && false), false, "Bool And(false) error")
+	test((false && true), false, "Bool And(false) error")
 }
 
 func Or() () {
-	assert_(bool.or(true, true), true, "Bool Or(true) error")
-	assert_(bool.or(true, false), true, "Bool Or(true) error")
-	assert_(bool.or(false, true), true, "Bool Or(true) error")
-	assert_(bool.or(false, false), false, "Bool Or(false) error")
+	test(bool.or(true, true), true, "Bool Or(true) error")
+	test(bool.or(true, false), true, "Bool Or(true) error")
+	test(bool.or(false, true), true, "Bool Or(true) error")
+	test(bool.or(false, false), false, "Bool Or(false) error")
 
-	assert_(bool.or(true, true), true, "Bool Or(true) error")
-	assert_(bool.or(true, false), true, "Bool Or(true) error")
-	assert_(bool.or(false, true), true, "Bool Or(true) error")
-	assert_(bool.or(false, false), false, "Bool Or(false) error")
+	test(bool.or(true, true), true, "Bool Or(true) error")
+	test(bool.or(true, false), true, "Bool Or(true) error")
+	test(bool.or(false, true), true, "Bool Or(true) error")
+	test(bool.or(false, false), false, "Bool Or(false) error")
 
-	assert_((true || true), true, "Bool Or(true) error")
-	assert_((true || false), true, "Bool Or(true) error")
-	assert_((false || false), false, "Bool Or(false) error")
-	assert_((false || true), true, "Bool Or(true) error")
+	test((true || true), true, "Bool Or(true) error")
+	test((true || false), true, "Bool Or(true) error")
+	test((false || false), false, "Bool Or(false) error")
+	test((false || true), true, "Bool Or(true) error")
 }
 
 func Not() () {
-	assert_(bool.not(false), true, "Bool not(true) error")
-	assert_(bool.not(true), false, "Bool not(false) error")
+	test(bool.not(false), true, "Bool not(true) error")
+	test(bool.not(true), false, "Bool not(false) error")
 
-	assert_((!true), false, "Bool Not (false) error")
-	assert_((!false), true, "Bool Not (true) error")
+	test((!true), false, "Bool Not (false) error")
+	test((!false), true, "Bool Not (true) error")
 }
 
 func main () () {

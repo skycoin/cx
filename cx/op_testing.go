@@ -6,7 +6,12 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func assert_(expr *CXExpression, fp int) (same bool) {
+var assertSuccess bool = true
+func AssertFailed() bool {
+	return assertSuccess == false
+}
+
+func assert(expr *CXExpression, fp int) (same bool) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	var byts1, byts2 []byte
 
@@ -46,18 +51,25 @@ func assert_(expr *CXExpression, fp int) (same bool) {
 			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 		}
 	}
+
+	assertSuccess = assertSuccess && same
 	return same
 }
 
 func op_assert_value(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
-	same := assert_(expr, fp)
+	same := assert(expr, fp)
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }
 
-func op_assert_value_(expr *CXExpression, fp int) {
-	if (assert_(expr, fp) == false) {
-		os.Exit(CX_INTERNAL_ERROR)
+func op_test(expr *CXExpression, fp int) {
+	assert(expr, fp)
+}
+
+func op_panic(expr *CXExpression, fp int) {
+	if (assert(expr, fp) == false) {
+		os.Exit(CX_ASSERT)
 	}
 }
+
 

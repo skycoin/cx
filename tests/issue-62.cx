@@ -1,8 +1,6 @@
 package main
-import "os"
-import "cx"
+
 func main()() {
 	var i i32 = 50
 	printf("*i == %d\n", *i)
-	assert_(false, true, "should not compile")
 }

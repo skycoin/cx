@@ -1,13 +1,10 @@
 package main
 
-import "os"
-import "cx"
-
 func main()() {
 	for true {
 		var s []i32
 		s = append(s, 10)
 		printf("len %d\n", len(s))
-		assert_(len(s), 1, "error when initializing slice")
+		panic(len(s), 1, "error when initializing slice")
 	}
 }

@@ -672,7 +672,7 @@ func RuntimeError (prgrm *CXProgram) {
 
 		prgrm.PrintStack()
 		
-		os.Exit(3)
+		os.Exit(CX_RUNTIME_ERROR)
 	}
 }
 

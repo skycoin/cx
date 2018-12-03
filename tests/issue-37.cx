@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 type issue37type1 struct {
 	integer i32
 }
@@ -17,10 +16,10 @@ func main () {
 	structures = append(structures, structure)
 	outerStruct.structures = structures
 
-	assert_(outerStruct.structures[0].integer, 123, "")
+	test(outerStruct.structures[0].integer, 123, "")
 
 	var testStructure issue37type1
 
 	testStructure = outerStruct.structures[0]
-	assert_(testStructure.integer, 123, "")
+	test(testStructure.integer, 123, "")
 }

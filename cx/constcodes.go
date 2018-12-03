@@ -223,6 +223,7 @@ const (
 	CONST_CX_PANIC
 	CONST_CX_COMPILATION_ERROR
 	CONST_CX_INTERNAL_ERROR
+	CONST_CX_ASSERT
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -457,5 +458,5 @@ func init() {
 	AddConstCode( CONST_CX_PANIC                       , "cx.PANIC"                      , TYPE_I32, FromI32(CX_PANIC))
 	AddConstCode( CONST_CX_COMPILATION_ERROR           , "cx.COMPILATION_ERROR"          , TYPE_I32, FromI32(CX_COMPILATION_ERROR))
 	AddConstCode( CONST_CX_INTERNAL_ERROR              , "cx.INTERNAL_ERROR"             , TYPE_I32, FromI32(CX_INTERNAL_ERROR))
-
+	AddConstCode( CONST_CX_ASSERT                      , "cx.ASSERT"                     , TYPE_I32, FromI32(CX_ASSERT))
 }

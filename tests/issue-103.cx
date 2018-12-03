@@ -1,8 +1,5 @@
 package main
 
-import "os"
-import "cx"
-
 type mesh_id struct {
 	id i32
 }
@@ -18,5 +15,5 @@ func main()() {
 	var mesh mesh_id
 	mesh.id = 0
 	g_meshes[mesh.id].stride = 38
-	assert_(g_meshes[mesh.id].stride == 38, true, "error")
+	test(g_meshes[mesh.id].stride, 38,  "error")
 }

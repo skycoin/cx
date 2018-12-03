@@ -10,15 +10,13 @@ func (structure Structure) function () (out str) {
 
 package main
 import "issue28"
-import "os"
-import "cx"
 
 func main () {
 	var structure issue28.Structure
 	structure.string = "abc"
-	assert_(structure.string, "abc", "")
+	test(structure.string, "abc", "")
 
 	var out str
 	out = structure.function()
-	assert_(out, "abc", "")
+	test(out, "abc", "")
 }

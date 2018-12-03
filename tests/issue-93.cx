@@ -1,7 +1,6 @@
 package main
 import "glfw"
-import "os"
-import "cx"
+
 func test()() {
 	glfw.Init()
 	glfw.WindowHint(glfw.Resizable, glfw.False)
@@ -11,8 +10,8 @@ func test()() {
 	var height i32 = 0
 	width, height := glfw.GetFramebufferSize("window")
 	printf("width %d, height %d\n", width, height)
-	assert_(width, 320, "mrv 0 failed")
-	assert_(height, 240, "mrv 1 failed")
+	test(width, 320, "mrv 0 failed")
+	test(height, 240, "mrv 1 failed")
 }
 
 func main ()() {

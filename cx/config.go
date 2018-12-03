@@ -62,6 +62,7 @@ const (
     CX_PANIC // 2
     CX_COMPILATION_ERROR
     CX_INTERNAL_ERROR
+    CX_ASSERT
 )
 
 const (

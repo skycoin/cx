@@ -10,33 +10,33 @@ type Point struct {
 func main () {
 	byt1 := 44B
 	byt2 := 47B
-	assert_(byt1, 44B, "")
-	assert_(byt2, 47B, "")
+	test(byt1, 44B, "")
+	test(byt2, 47B, "")
 
 	bool1 := true
 	bool2 := false
-	assert_(bool1, true, "")
-	assert_(bool2, false, "")
+	test(bool1, true, "")
+	test(bool2, false, "")
 
 	num1 := 5
 	num2 := 10
-	assert_(num1, 5, "")
-	assert_(num2, 10, "")
+	test(num1, 5, "")
+	test(num2, 10, "")
 
 	num3 := 33L
 	num4 := 55L
-	assert_(num3, 33L, "")
-	assert_(num4, 55L, "")
+	test(num3, 33L, "")
+	test(num4, 55L, "")
 
 	dec1 := 5.0
 	dec2 := 10.0
-	assert_(dec1, 5.0, "")
-	assert_(dec2, 10.0, "")
+	test(dec1, 5.0, "")
+	test(dec2, 10.0, "")
 
 	dec3 := 33.0D
 	dec4 := 55.0D
-	assert_(dec3, 33.0D, "")
-	assert_(dec4, 55.0D, "")
+	test(dec3, 33.0D, "")
+	test(dec4, 55.0D, "")
 
 	p1 := Point{
 		x: 10,
@@ -49,13 +49,13 @@ func main () {
 		isTrue: false,
 		name: "Punto"}
 
-	assert_(p1.name, "Pointy", "")
-	assert_(p1.x, 10, "")
-	assert_(p1.y, 11, "")
-	assert_(p1.isTrue, true, "")
+	test(p1.name, "Pointy", "")
+	test(p1.x, 10, "")
+	test(p1.y, 11, "")
+	test(p1.isTrue, true, "")
 
-	assert_(p2.name, "Punto", "")
-	assert_(p2.x, 20, "")
-	assert_(p2.y, 21, "")
-	assert_(p2.isTrue, false, "")
+	test(p2.name, "Punto", "")
+	test(p2.x, 20, "")
+	test(p2.y, 21, "")
+	test(p2.isTrue, false, "")
 }

@@ -1,45 +1,45 @@
 package main
 
 func F64ArithmeticFunctions() () {
-	assert_(f64.add(10.0D, 10.0D), 20.0D, "Add error")
-	assert_(f64.sub(10.0D, 10.0D), 0.0D, "Subtract error")
-	assert_(f64.mul(10.0D, 10.0D), 100.0D, "Multiply error")
-	assert_(f64.div(10.0D, 10.0D), 1.0D, "Divide error")
-	assert_(f64.pow(10.0D, 5.0D), 100000.0D, "Pow error")
-	assert_(f64.abs(-10.0D), 10.0D, "Absolute Value error")
-	assert_(f64.sqrt(4.0D), 2.0D, "Square Root error")
-	assert_(f64.log(1.0D), 0.0D, "Log error")
-	assert_(f64.log2(2.0D), 1.0D, "Log2 error")
-	assert_(f64.log10(10.0D), 1.0D, "Log10 error")
-	assert_(f64.max(3.0D, 1.0D), 3.0D, "MAX error")
-	assert_(f64.min(3.0D, 1.0D), 1.0D, "MIN error")
-	assert_(f64.sin(0.0D), 0.0D, "Sin error")
-	assert_(f64.cos(0.0D), 1.0D, "Cos error")
+	test(f64.add(10.0D, 10.0D), 20.0D, "Add error")
+	test(f64.sub(10.0D, 10.0D), 0.0D, "Subtract error")
+	test(f64.mul(10.0D, 10.0D), 100.0D, "Multiply error")
+	test(f64.div(10.0D, 10.0D), 1.0D, "Divide error")
+	test(f64.pow(10.0D, 5.0D), 100000.0D, "Pow error")
+	test(f64.abs(-10.0D), 10.0D, "Absolute Value error")
+	test(f64.sqrt(4.0D), 2.0D, "Square Root error")
+	test(f64.log(1.0D), 0.0D, "Log error")
+	test(f64.log2(2.0D), 1.0D, "Log2 error")
+	test(f64.log10(10.0D), 1.0D, "Log10 error")
+	test(f64.max(3.0D, 1.0D), 3.0D, "MAX error")
+	test(f64.min(3.0D, 1.0D), 1.0D, "MIN error")
+	test(f64.sin(0.0D), 0.0D, "Sin error")
+	test(f64.cos(0.0D), 1.0D, "Cos error")
 }
 
 func F64ArithmeticShorthand() () {
-	assert_(10.0D + 10.0D, 20.0D, "Add error")
-	assert_(10.0D - 10.0D, 0.0D, "Subtract error")
-	assert_(10.0D * 10.0D, 100.0D, "Multiply error")
-	assert_(10.0D / 10.0D, 1.0D, "Divide error")
+	test(10.0D + 10.0D, 20.0D, "Add error")
+	test(10.0D - 10.0D, 0.0D, "Subtract error")
+	test(10.0D * 10.0D, 100.0D, "Multiply error")
+	test(10.0D / 10.0D, 1.0D, "Divide error")
 }
 
 func F64RelationalFunctions() () {
-	assert_(f64.eq(5.0D, 5.0D), true, "F64 Equality error")
-	assert_(f64.uneq(5.0D, 5.0D), false, "F64 Inequality error")
-	assert_(f64.gt(5.0D, 10.0D), false, "F64 Greater error")
-	assert_(f64.gteq(15.0D, 10.0D), true, "F64 Greater And Equal error")
-	assert_(f64.lt(5.0D, 10.0D), true, "F64 Lesser error")
-	assert_(f64.lteq(10.0D, 6.0D), false, "F64 Lesser Or Equal error")
+	test(f64.eq(5.0D, 5.0D), true, "F64 Equality error")
+	test(f64.uneq(5.0D, 5.0D), false, "F64 Inequality error")
+	test(f64.gt(5.0D, 10.0D), false, "F64 Greater error")
+	test(f64.gteq(15.0D, 10.0D), true, "F64 Greater And Equal error")
+	test(f64.lt(5.0D, 10.0D), true, "F64 Lesser error")
+	test(f64.lteq(10.0D, 6.0D), false, "F64 Lesser Or Equal error")
 }
 
 func F64RelationalShorthand() () {
-	assert_(5.0D == 5.0D, true, "F64 Equality Shorthand error")
-	assert_(5.0D != 5.0D, false, "F64 Inequality Shorthand error")
-	assert_(5.0D > 10.0D, false, "F64 Greater Shorthand error")
-	assert_(15.0D >= 10.0D, true, "F64 Greater And Equal Shorthand error")
-	assert_(5.0D < 10.0D, true, "F64 Lesser Shorthand error")
-	assert_(10.0D <= 6.0D, false, "F64 Lesser Or Equal error")
+	test(5.0D == 5.0D, true, "F64 Equality Shorthand error")
+	test(5.0D != 5.0D, false, "F64 Inequality Shorthand error")
+	test(5.0D > 10.0D, false, "F64 Greater Shorthand error")
+	test(15.0D >= 10.0D, true, "F64 Greater And Equal Shorthand error")
+	test(5.0D < 10.0D, true, "F64 Lesser Shorthand error")
+	test(10.0D <= 6.0D, false, "F64 Lesser Or Equal error")
 }
 
 func main() () {

@@ -1,8 +1,5 @@
 package main
 
-import "os"
-import "cx"
-
 func foo_val(i i32) (out i32) {
 	out = i
 }
@@ -13,6 +10,6 @@ func foo_ptr(pi *i32) (out i32) {
 
 func main()() {
 	var i i32 = 37
-	assert_(foo_val(i), 37, "foo_val(i) == 37")
-	assert_(foo_ptr(&i), 37, "foo_ptr(&i) == 37")
+	test(foo_val(i), 37, "foo_val(i) == 37")
+	test(foo_ptr(&i), 37, "foo_ptr(&i) == 37")
 }

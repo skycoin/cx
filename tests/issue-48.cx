@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 type issue48type1 struct {
 	id str
 	values [20]issue48type2
@@ -21,6 +20,6 @@ func main () {
 	a.values[0] = b
 	b.values[0] = a
 
-	assert_(a.values[0].id, "type2", "")
-	assert_(b.values[0].id, "type1", "")
+	test(a.values[0].id, "type2", "")
+	test(b.values[0].id, "type1", "")
 }

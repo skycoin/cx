@@ -1,6 +1,5 @@
 package main
-import "os"
-import "cx"
+
 func main () {
 	var foo [1]i32
 
@@ -10,6 +9,6 @@ func main () {
 
 	num := foo[0]
 
-	assert_(bar, 0.0, "")
-	assert_(foo[0], 3, "")
+	test(bar, 0.0, "")
+	test(foo[0], 3, "")
 }

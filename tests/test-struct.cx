@@ -19,26 +19,26 @@ func main() {
 	// 		mByt: 255B,
 	// 		mString: "Foo bar"}}
 
-	assert_((32 == mytest.int), true, "Struct i32 properties error")
-	// assert_((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
+	test((32 == mytest.int), true, "Struct i32 properties error")
+	// test((mytest.int == mytest.anotherStruct.int), true, "Struct in a Struct i32 properties error")
 
-	assert_((64L == mytest.long), true, "Struct i64 properties error")
-	// assert_((mytest.long == mytest.anotherStruct.long), true, "Struct in a Struct i64 properties error")
+	test((64L == mytest.long), true, "Struct i64 properties error")
+	// test((mytest.long == mytest.anotherStruct.long), true, "Struct in a Struct i64 properties error")
 
-	assert_((32.0 == mytest.float), true, "Struct f32 properties error")
-	// assert_((mytest.float == mytest.anotherStruct.float), true, "Struct in a Struct f32 properties error")
+	test((32.0 == mytest.float), true, "Struct f32 properties error")
+	// test((mytest.float == mytest.anotherStruct.float), true, "Struct in a Struct f32 properties error")
 
-	assert_((64.0D == mytest.decimal), true, "Struct f64 properties error")
-	// assert_((mytest.decimal == mytest.anotherStruct.decimal), true, "Struct in a Struct f64 properties error")
+	test((64.0D == mytest.decimal), true, "Struct f64 properties error")
+	// test((mytest.decimal == mytest.anotherStruct.decimal), true, "Struct in a Struct f64 properties error")
 
-	assert_(mytest.boolean, true, "Struct bool properties error")
-	// assert_((mytest.boolean && mytest.anotherStruct.boolean), true, "Struct in a Struct bool properties error")
+	test(mytest.boolean, true, "Struct bool properties error")
+	// test((mytest.boolean && mytest.anotherStruct.boolean), true, "Struct in a Struct bool properties error")
 
-	assert_(mytest.byt, 255B, "Struct byte properties error")
-	// assert_(mytest.byt, mytest.anotherStruct.byt, "Struct in a Struct byte properties error")
+	test(mytest.byt, 255B, "Struct byte properties error")
+	// test(mytest.byt, mytest.anotherStruct.byt, "Struct in a Struct byte properties error")
 
-	assert_(mytest.string, "Foo bar", "error")
-	assert_(("Foo bar" == mytest.string), true, "Struct str properties error")
-	// assert_((mytest.anotherStruct.string == mytest.string), true, "Struct in a Struct str properties error")
+	test(mytest.string, "Foo bar", "error")
+	test(("Foo bar" == mytest.string), true, "Struct str properties error")
+	// test((mytest.anotherStruct.string == mytest.string), true, "Struct in a Struct str properties error")
 }
 
