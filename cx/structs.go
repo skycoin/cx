@@ -4,26 +4,6 @@ import (
         . "github.com/satori/go.uuid"
 )
 
-/*
-  Root Program
-*/
-
-type CXProgram struct {
-        Packages                        []*CXPackage
-	Memory                          []byte
-	Inputs                          []*CXArgument
-        Outputs                         []*CXArgument
-	CallStack                       []CXCall
-	Path                            string
-        CurrentPackage                  *CXPackage
-	CallCounter                     int
-        HeapPointer                     int
-        StackPointer                    int
-        HeapStartsAt                    int
-	ElementID                       UUID
-        Terminated                      bool
-}
-
 type CXCall struct {
         Operator                        *CXFunction
         Line                            int

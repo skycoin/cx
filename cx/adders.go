@@ -5,22 +5,6 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
-	found := false
-	for _, md := range prgrm.Packages {
-		if md.Name == mod.Name {
-			prgrm.CurrentPackage = md
-			found = true
-			break
-		}
-	}
-	if !found {
-		prgrm.Packages = append(prgrm.Packages, mod)
-		prgrm.CurrentPackage = mod
-	}
-	return prgrm
-}
-
 func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
 	// def.Program = mod.Program
 	def.Package = mod

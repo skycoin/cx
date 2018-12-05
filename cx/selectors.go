@@ -5,45 +5,6 @@ import (
 	"fmt"
 )
 
-func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectPackage(name)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxt)
-
-	var found *CXPackage
-	for _, mod := range cxt.Packages {
-		if mod.Name == name {
-			cxt.CurrentPackage = mod
-			found = mod
-		}
-	}
-
-	if found == nil {
-		return nil, fmt.Errorf("Package '%s' does not exist", name)
-	}
-
-	return found, nil
-}
-
-func (cxt *CXProgram) SelectFunction(name string) (*CXFunction, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectFunction(name)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxt)
-
-	mod, err := cxt.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectFunction(name)
-	} else {
-		return nil, err
-	}
-}
-
 func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
@@ -70,22 +31,6 @@ func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	return found, nil
 }
 
-func (cxt *CXProgram) SelectStruct(name string) (*CXStruct, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectStruct(name)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxt)
-
-	mod, err := cxt.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectStruct(name)
-	} else {
-		return nil, err
-	}
-}
-
 func (mod *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
@@ -109,22 +54,6 @@ func (mod *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 	}
 
 	return found, nil
-}
-
-func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
-	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectExpression(line)
-	// 	},
-	// }
-	// saveProgramStep(prgrmStep, cxt)
-
-	mod, err := cxt.GetCurrentPackage()
-	if err == nil {
-		return mod.SelectExpression(line)
-	} else {
-		return nil, err
-	}
 }
 
 func (mod *CXPackage) SelectExpression(line int) (*CXExpression, error) {
