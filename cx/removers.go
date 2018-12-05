@@ -2,20 +2,6 @@ package base
 
 import ()
 
-func (prgrm *CXProgram) RemovePackage(modName string) {
-	lenMods := len(prgrm.Packages)
-	for i, mod := range prgrm.Packages {
-		if mod.Name == modName {
-			if i == lenMods-1 {
-				prgrm.Packages = prgrm.Packages[:len(prgrm.Packages)-1]
-			} else {
-				prgrm.Packages = append(prgrm.Packages[:i], prgrm.Packages[i+1:]...)
-			}
-			break
-		}
-	}
-}
-
 func (mod *CXPackage) RemoveGlobal(defName string) {
 	lenGlobals := len(mod.Globals)
 	for i, def := range mod.Globals {

@@ -3,16 +3,7 @@ package base
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
-
-func (prgrm *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	if prgrm.CurrentPackage != nil {
-		return prgrm.CurrentPackage, nil
-	} else {
-		return nil, errors.New("current package is nil")
-	}
-}
 
 func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	for _, imp := range pkg.Imports {
@@ -21,18 +12,6 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 		}
 	}
 	return nil, fmt.Errorf("package '%s' not imported", impName)
-}
-
-func (prgrm *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	if prgrm.CurrentPackage != nil {
-		if prgrm.CurrentPackage.CurrentStruct != nil {
-			return prgrm.CurrentPackage.CurrentStruct, nil
-		} else {
-			return nil, errors.New("current struct is nil")
-		}
-	} else {
-		return nil, errors.New("current package is nil")
-	}
 }
 
 func (mod *CXPackage) GetCurrentStruct() (*CXStruct, error) {
@@ -44,33 +23,11 @@ func (mod *CXPackage) GetCurrentStruct() (*CXStruct, error) {
 
 }
 
-func (prgrm *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	if prgrm.CurrentPackage != nil {
-		 if prgrm.CurrentPackage.CurrentFunction != nil {
-			 return prgrm.CurrentPackage.CurrentFunction, nil
-		 } else {
-			 return nil, errors.New("current function is nil")
-		 }
-	} else {
-		return nil, errors.New("current package is nil")
-	}
-}
-
 func (mod *CXPackage) GetCurrentFunction() (*CXFunction, error) {
 	if mod.CurrentFunction != nil {
 		return mod.CurrentFunction, nil
 	} else {
 		return nil, errors.New("current function is nil")
-	}
-}
-
-func (prgrm *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if prgrm.CurrentPackage != nil &&
-		prgrm.CurrentPackage.CurrentFunction != nil &&
-		prgrm.CurrentPackage.CurrentFunction.CurrentExpression != nil {
-		return prgrm.CurrentPackage.CurrentFunction.CurrentExpression, nil
-	} else {
-		return nil, errors.New("current package, function or expression is nil")
 	}
 }
 
@@ -81,35 +38,6 @@ func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 		return fn.Expressions[0], nil
 	} else {
 		return nil, errors.New("current expression is nil")
-	}
-}
-
-func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	if mod, err := prgrm.GetCurrentPackage(); err == nil {
-		var found *CXArgument
-		for _, def := range mod.Globals {
-			if def.Name == name {
-				found = def
-				break
-			}
-		}
-
-		for _, imp := range mod.Imports {
-			for _, def := range imp.Globals {
-				if def.Name == name {
-					found = def
-					break
-				}
-			}
-		}
-
-		if found == nil {
-			return nil, fmt.Errorf("global '%s' not found", name)
-		} else {
-			return found, nil
-		}
-	} else {
-		return nil, err
 	}
 }
 
@@ -139,25 +67,6 @@ func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	}
 }
 
-func (prgrm *CXProgram) GetPackage(modName string) (*CXPackage, error) {
-	if prgrm.Packages != nil {
-		var found *CXPackage
-		for _, mod := range prgrm.Packages {
-			if modName == mod.Name {
-				found = mod
-				break
-			}
-		}
-		if found != nil {
-			return found, nil
-		} else {
-			return nil, fmt.Errorf("package '%s' not found", modName)
-		}
-	} else {
-		return nil, fmt.Errorf("package '%s' not found", modName)
-	}
-}
-
 func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 	var foundStrct *CXStruct
 	for _, strct := range pkg.Structs {
@@ -183,48 +92,6 @@ func (pkg *CXPackage) GetStruct(strctName string) (*CXStruct, error) {
 		return foundStrct, nil
 	} else {
 		return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, pkg.Name)
-	}
-}
-
-func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
-	var foundPkg *CXPackage
-	for _, mod := range prgrm.Packages {
-		if modName == mod.Name {
-
-			foundPkg = mod
-			break
-		}
-	}
-	
-	var foundStrct *CXStruct
-	
-	for _, strct := range foundPkg.Structs {
-		if strct.Name == strctName {
-			foundStrct = strct
-			break
-		}
-	}
-
-	if foundStrct == nil {
-		//looking in imports
-		typParts := strings.Split(strctName, ".")
-
-		if mod, err := prgrm.GetPackage(modName); err == nil {
-			for _, imp := range mod.Imports {
-				for _, strct := range imp.Structs {
-					if strct.Name == typParts[0] {
-						foundStrct = strct
-						break
-					}
-				}
-			}
-		}
-	}
-
-	if foundPkg != nil && foundStrct != nil {
-		return foundStrct, nil
-	} else {
-		return nil, fmt.Errorf("struct '%s' not found in package '%s'", strctName, modName)
 	}
 }
 
@@ -283,43 +150,6 @@ func (pkg *CXPackage) GetMethod (fnName string, receiverType string) (*CXFunctio
 	}
 	
 	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
-}
-
-func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {
-	// I need to first look for the function in the current package
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
-		for _, fn := range pkg.Functions {
-			if fn.Name == fnName {
-				return fn, nil
-			}
-		}
-	}
-
-	var foundPkg *CXPackage
-	for _, pkg := range prgrm.Packages {
-		if pkgName == pkg.Name {
-			foundPkg = pkg
-			break
-		}
-	}
-
-	var foundFn *CXFunction
-	if foundPkg != nil {
-		for _, fn := range foundPkg.Functions {
-			if fn.Name == fnName {
-				foundFn = fn
-				break
-			}
-		}
-	} else {
-		return nil, fmt.Errorf("package '%s' not found", pkgName)
-	}
-
-	if foundPkg != nil && foundFn != nil {
-		return foundFn, nil
-	} else {
-		return nil, fmt.Errorf("function '%s' not found in package '%s'", fnName, pkgName)
-	}
 }
 
 func (fn *CXFunction) GetExpressions () ([]*CXExpression, error) {

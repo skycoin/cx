@@ -4,7 +4,8 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
-func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
+func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
+                   initializer []*CXExpression, doesInitialize bool) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 	} else {
@@ -21,9 +22,11 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			// then it was only added a reference to the symbol
 			var offExpr []*CXExpression
 			if declaration_specifiers.IsSlice {
-				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+					offExpr = WritePrimary(declaration_specifiers.Type,
+							       make([]byte, declaration_specifiers.Size), true)
 			} else {
-				offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+					offExpr = WritePrimary(declaration_specifiers.Type,
+							       make([]byte, declaration_specifiers.TotalSize), true)
 			}
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
