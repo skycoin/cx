@@ -20,17 +20,6 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-func MakeProgram() *CXProgram {
-	newPrgrm := &CXProgram{
-		ElementID: MakeElementID(),
-		Packages:  make([]*CXPackage, 0),
-		CallStack: make([]CXCall, CALLSTACK_SIZE),
-		Memory:    make([]byte, STACK_SIZE + TYPE_POINTER_SIZE + INIT_HEAP_SIZE),
-	}
-
-	return newPrgrm
-}
-
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
 		ElementID: MakeElementID(),
