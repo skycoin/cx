@@ -1,5 +1,0 @@
-package issue19b1
-
-type Structure struct {
-    integer i32
-}

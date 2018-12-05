@@ -3,7 +3,6 @@ package base
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {

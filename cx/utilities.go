@@ -693,8 +693,6 @@ func runtimeErrorInfo (r interface{}, printStack bool) {
 	if printStack {
 		PROGRAM.PrintStack()
 	}
-	
-	os.Exit(3)
 }
 
 func RuntimeError () {
@@ -713,6 +711,7 @@ func RuntimeError () {
 		default:
 			runtimeErrorInfo(r, true)
 		}
+        os.Exit(CX_RUNTIME_ERROR)
 	}
 }
 

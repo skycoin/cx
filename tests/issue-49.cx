@@ -1,0 +1,6 @@
+package main
+
+func main()() {
+	var i i32
+	i.x = 0
+}

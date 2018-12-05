@@ -21,6 +21,8 @@ const (
 	OP_OS_GET_WORKING_DIRECTORY
 	OP_OS_OPEN
 	OP_OS_CLOSE
+	OP_OS_RUN
+	OP_OS_EXIT
 
 	// http
 	OP_HTTP_GET
@@ -46,6 +48,8 @@ func init () {
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory", []int{}, []int{TYPE_STR})
 	AddOpCode(OP_OS_OPEN, "os.Open", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_OS_CLOSE, "os.Close", []int{TYPE_STR}, []int{})
+	AddOpCode(OP_OS_RUN, "os.Run", []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{TYPE_I32, TYPE_I32, TYPE_STR})
+	AddOpCode(OP_OS_EXIT, "os.Exit", []int{TYPE_I32}, []int{})
 
 	// exec
 	execNativeBase = func(prgrm *CXProgram) {
@@ -79,6 +83,11 @@ func init () {
 					op_os_Open(expr, fp)
 				case OP_OS_CLOSE:
 					op_os_Close(expr, fp)
+				case OP_OS_RUN:
+					op_os_Run(expr, fp)
+				case OP_OS_EXIT:
+					op_os_Exit(expr, fp)
+
 				default:
 					// DumpOpCodes(opCode)
 					panic("invalid base opcode")

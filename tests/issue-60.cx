@@ -1,0 +1,6 @@
+package main
+import "test_60a"
+
+func main ()(){
+	printf("test_60a.i : %d\n", i)
+}

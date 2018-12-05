@@ -1,6 +1,6 @@
-package testing
+package main
 
-func testSlices () {
+func main () {
 	var slc []i32
 	slc = append(slc, 11)
 	slc = append(slc, 12)
@@ -9,175 +9,175 @@ func testSlices () {
 	slc = append(slc, 15)
 	slc = append(slc, 16)
 
-	res = append(res, assert(len(slc), 6, ""))
+	test(len(slc), 6, "")
 
-	res = append(res, assert(slc[0], 11, ""))
-	res = append(res, assert(slc[1], 12, ""))
-	res = append(res, assert(slc[2], 13, ""))
-	res = append(res, assert(slc[3], 14, ""))
-	res = append(res, assert(slc[4], 15, ""))
-	res = append(res, assert(slc[5], 16, ""))
+	test(slc[0], 11, "")
+	test(slc[1], 12, "")
+	test(slc[2], 13, "")
+	test(slc[3], 14, "")
+	test(slc[4], 15, "")
+	test(slc[5], 16, "")
 
 	var slc2 []i32
 	slc2 = slc
 
-	res = append(res, assert(slc2[0], 11, ""))
-	res = append(res, assert(slc2[1], 12, ""))
-	res = append(res, assert(slc2[2], 13, ""))
-	res = append(res, assert(slc2[3], 14, ""))
-	res = append(res, assert(slc2[4], 15, ""))
-	res = append(res, assert(slc2[5], 16, ""))
+	test(slc2[0], 11, "")
+	test(slc2[1], 12, "")
+	test(slc2[2], 13, "")
+	test(slc2[3], 14, "")
+	test(slc2[4], 15, "")
+	test(slc2[5], 16, "")
 
-	res = append(res, assert(len(slc2), 6, ""))
+	test(len(slc2), 6, "")
 
 	var slc3 []i32
 	slc3 = []i32{21, 22, 23, 24, 25}
-	
-	res = append(res, assert(slc3[0], 21, ""))
-	res = append(res, assert(slc3[1], 22, ""))
-	res = append(res, assert(slc3[2], 23, ""))
-	res = append(res, assert(slc3[3], 24, ""))
-	res = append(res, assert(slc3[4], 25, ""))
 
-	res = append(res, assert(len(slc3), 5, ""))
+	test(slc3[0], 21, "")
+	test(slc3[1], 22, "")
+	test(slc3[2], 23, "")
+	test(slc3[3], 24, "")
+	test(slc3[4], 25, "")
+
+	test(len(slc3), 5, "")
 
 	var slc4 []i32
 	slc4 = append(slc3, 26)
 
-	res = append(res, assert(slc4[0], 21, ""))
-	res = append(res, assert(slc4[1], 22, ""))
-	res = append(res, assert(slc4[2], 23, ""))
-	res = append(res, assert(slc4[3], 24, ""))
-	res = append(res, assert(slc4[4], 25, ""))
-	res = append(res, assert(slc4[5], 26, ""))
+	test(slc4[0], 21, "")
+	test(slc4[1], 22, "")
+	test(slc4[2], 23, "")
+	test(slc4[3], 24, "")
+	test(slc4[4], 25, "")
+	test(slc4[5], 26, "")
 
-	res = append(res, assert(len(slc4), 6, ""))
+	test(len(slc4), 6, "")
 
 	var num i32
 	num = slc4[5]
 
-	res = append(res, assert(num, 26, ""))
-	res = append(res, assert(num, slc4[5], ""))
+	test(num, 26, "")
+	test(num, slc4[5], "")
 
 	var slc5 []f32
 	slc5 = append(slc5, 1.1)
 	slc5 = append(slc5, 1.2)
 	slc5 = append(slc5, 1.3)
 
-	res = append(res, assert(slc5[0], 1.1, ""))
-	res = append(res, assert(slc5[1], 1.2, ""))
-	res = append(res, assert(slc5[2], 1.3, ""))
+	test(slc5[0], 1.1, "")
+	test(slc5[1], 1.2, "")
+	test(slc5[2], 1.3, "")
 
-	res = append(res, assert(len(slc5), 3, ""))
+	test(len(slc5), 3, "")
 
 	slc5 = []f32{11.11, 12.12, 13.13, 14.14}
-	
-	res = append(res, assert(slc5[0], 11.11, ""))
-	res = append(res, assert(slc5[1], 12.12, ""))
-	res = append(res, assert(slc5[2], 13.13, ""))
-	res = append(res, assert(slc5[3], 14.14, ""))
 
-	res = append(res, assert(len(slc5), 4, ""))
+	test(slc5[0], 11.11, "")
+	test(slc5[1], 12.12, "")
+	test(slc5[2], 13.13, "")
+	test(slc5[3], 14.14, "")
+
+	test(len(slc5), 4, "")
 
 	var slc6 []i64
 	slc6 = append(slc6, 11L)
 	slc6 = append(slc6, 12L)
 	slc6 = append(slc6, 13L)
 
-	res = append(res, assert(slc6[0], 11L, ""))
-	res = append(res, assert(slc6[1], 12L, ""))
-	res = append(res, assert(slc6[2], 13L, ""))
+	test(slc6[0], 11L, "")
+	test(slc6[1], 12L, "")
+	test(slc6[2], 13L, "")
 
 	slc6 = []i64{11L, 12L, 13L, 14L}
-	
-	res = append(res, assert(slc6[0], 11L, ""))
-	res = append(res, assert(slc6[1], 12L, ""))
-	res = append(res, assert(slc6[2], 13L, ""))
-	res = append(res, assert(slc6[3], 14L, ""))
+
+	test(slc6[0], 11L, "")
+	test(slc6[1], 12L, "")
+	test(slc6[2], 13L, "")
+	test(slc6[3], 14L, "")
 
 	var slc7 []f64
 	slc7 = append(slc7, 11.11D)
 	slc7 = append(slc7, 12.12D)
 	slc7 = append(slc7, 13.13D)
 
-	res = append(res, assert(slc7[0], 11.11D, ""))
-	res = append(res, assert(slc7[1], 12.12D, ""))
-	res = append(res, assert(slc7[2], 13.13D, ""))
+	test(slc7[0], 11.11D, "")
+	test(slc7[1], 12.12D, "")
+	test(slc7[2], 13.13D, "")
 
 	slc7 = []f64{11.11D, 12.12D, 13.13D, 14.14D}
-	
-	res = append(res, assert(slc7[0], 11.11D, ""))
-	res = append(res, assert(slc7[1], 12.12D, ""))
-	res = append(res, assert(slc7[2], 13.13D, ""))
-	res = append(res, assert(slc7[3], 14.14D, ""))
+
+	test(slc7[0], 11.11D, "")
+	test(slc7[1], 12.12D, "")
+	test(slc7[2], 13.13D, "")
+	test(slc7[3], 14.14D, "")
 
 	var slc8 []bool
 	slc8 = append(slc8, true)
 	slc8 = append(slc8, false)
 	slc8 = append(slc8, true)
 
-	res = append(res, assert(slc8[0], true, ""))
-	res = append(res, assert(slc8[1], false, ""))
-	res = append(res, assert(slc8[2], true, ""))
+	test(slc8[0], true, "")
+	test(slc8[1], false, "")
+	test(slc8[2], true, "")
 
 	slc8 = []bool{false, true, true, true, false, true}
-	
-	res = append(res, assert(slc8[0], false, ""))
-	res = append(res, assert(slc8[1], true, ""))
-	res = append(res, assert(slc8[2], true, ""))
-	res = append(res, assert(slc8[3], true, ""))
-	res = append(res, assert(slc8[4], false, ""))
-	res = append(res, assert(slc8[5], true, ""))
+
+	test(slc8[0], false, "")
+	test(slc8[1], true, "")
+	test(slc8[2], true, "")
+	test(slc8[3], true, "")
+	test(slc8[4], false, "")
+	test(slc8[5], true, "")
 
 	var slc10 []bool
 	slc10 = append(slc10, true)
 	slc10 = append(slc10, false)
 	slc10 = append(slc10, true)
 
-	res = append(res, assert(slc10[0], true, ""))
-	res = append(res, assert(slc10[1], false, ""))
-	res = append(res, assert(slc10[2], true, ""))
+	test(slc10[0], true, "")
+	test(slc10[1], false, "")
+	test(slc10[2], true, "")
 
 	slc10 = []bool{false, true, true, true, false, true}
-	
-	res = append(res, assert(slc10[0], false, ""))
-	res = append(res, assert(slc10[1], true, ""))
-	res = append(res, assert(slc10[2], true, ""))
-	res = append(res, assert(slc10[3], true, ""))
-	res = append(res, assert(slc10[4], false, ""))
-	res = append(res, assert(slc10[5], true, ""))
-	
+
+	test(slc10[0], false, "")
+	test(slc10[1], true, "")
+	test(slc10[2], true, "")
+	test(slc10[3], true, "")
+	test(slc10[4], false, "")
+	test(slc10[5], true, "")
+
 	var slc9 []byte
 	slc9 = append(slc9, 15B)
 	slc9 = append(slc9, 20B)
 	slc9 = append(slc9, 35B)
 
-	res = append(res, assert(slc9[0], 15B, ""))
-	res = append(res, assert(slc9[1], 20B, ""))
-	res = append(res, assert(slc9[2], 35B, ""))
+	test(slc9[0], 15B, "")
+	test(slc9[1], 20B, "")
+	test(slc9[2], 35B, "")
 
 	slc9 = []byte{90B, 95B, 100B, 105B, 110B, 115B}
-	
-	res = append(res, assert(slc9[0], 90B, ""))
-	res = append(res, assert(slc9[1], 95B, ""))
-	res = append(res, assert(slc9[2], 100B, ""))
-	res = append(res, assert(slc9[3], 105B, ""))
-	res = append(res, assert(slc9[4], 110B, ""))
-	res = append(res, assert(slc9[5], 115B, ""))
+
+	test(slc9[0], 90B, "")
+	test(slc9[1], 95B, "")
+	test(slc9[2], 100B, "")
+	test(slc9[3], 105B, "")
+	test(slc9[4], 110B, "")
+	test(slc9[5], 115B, "")
 
 	var slc11 []str
 	slc11 = append(slc11, "hello world", "")
 	slc11 = append(slc11, "bye oh cruel world", "")
 
-	res = append(res, assert(slc11[0], "hello world", ""))
-	res = append(res, assert(slc11[1], "bye oh cruel world", ""))
+	test(slc11[0], "hello world", "")
+	test(slc11[1], "bye oh cruel world", "")
 
 	var slc12 []str
 	slc12 = append(slc11, "1", "")
 	slc12 = append(slc12, "22", "")
 
-	res = append(res, assert(slc12[0], "hello world", ""))
-	res = append(res, assert(slc12[1], "bye oh cruel world", ""))
-	res = append(res, assert(slc12[2], "1", ""))
-	res = append(res, assert(slc12[3], "22", ""))
+	test(slc12[0], "hello world", "")
+	test(slc12[1], "bye oh cruel world", "")
+	test(slc12[2], "1", "")
+	test(slc12[3], "22", "")
 }

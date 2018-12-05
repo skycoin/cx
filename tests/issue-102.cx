@@ -1,0 +1,7 @@
+package main
+
+func main() {
+	var s str
+	s = "a" + "b"
+	test(s, "ab", "string concatenation failed")
+}

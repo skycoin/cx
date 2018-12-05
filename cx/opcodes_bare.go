@@ -6,7 +6,7 @@ import (
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial", "cx",
 }
 
 // op codes
@@ -186,6 +186,7 @@ const (
 
 	OP_STR_PRINT
 	OP_STR_CONCAT
+	OP_STR_SUBSTR
 	OP_STR_EQ
 
 	OP_STR_BYTE
@@ -221,6 +222,8 @@ const (
 	OP_EVOLVE
 
 	OP_ASSERT
+	OP_TEST
+	OP_PANIC
 
 	// affordances
 	OP_AFF_PRINT
@@ -445,6 +448,7 @@ func init () {
 
 	AddOpCode(OP_STR_PRINT, "str.print", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_STR_CONCAT, "str.concat", []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR})
+	AddOpCode(OP_STR_SUBSTR, "str.substr", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_STR})
 	AddOpCode(OP_STR_EQ, "str.eq", []int{TYPE_STR, TYPE_STR}, []int{TYPE_BOOL})
 
 	AddOpCode(OP_STR_BYTE, "str.byte", []int{TYPE_STR}, []int{TYPE_BYTE})
@@ -456,6 +460,8 @@ func init () {
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
+	AddOpCode(OP_TEST, "test", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
+	AddOpCode(OP_PANIC, "panic", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
 
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print", []int{TYPE_AFF}, []int{})
@@ -806,6 +812,8 @@ func init () {
 			op_str_print(expr, fp)
 		case OP_STR_CONCAT:
 			op_str_concat(expr, fp)
+		case OP_STR_SUBSTR:
+			op_str_substr(expr, fp)
 		case OP_STR_EQ:
 			op_str_eq(expr, fp)
 
@@ -848,8 +856,12 @@ func init () {
 		case OP_EVOLVE:
 		case OP_ASSERT:
 			op_assert_value(expr, fp)
+		case OP_TEST:
+			op_test(expr, fp)
+		case OP_PANIC:
+			op_panic(expr, fp)
 
-			// affordances
+		// affordances
 		case OP_AFF_PRINT:
 			op_aff_print(expr, fp)
 		case OP_AFF_QUERY:

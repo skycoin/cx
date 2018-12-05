@@ -191,13 +191,14 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 						constant := Constants[code]
 						val := WritePrimary(constant.Type, constant.Value, false)
 						prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
+						return
 					} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
 						// then it's a native
 						// TODO: we'd be referring to the function itself, not a function call
 						// (functions as first-class objects)
 						left.Name = left.Name + "." + ident
+						return
 					}
-					return
 				}
 
 				left.Package = imp
@@ -228,7 +229,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 				// then left is not a package name
 				if IsCorePackage(left.Name) {
 					println(CompilationError(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
-					os.Exit(3)
+					os.Exit(CX_COMPILATION_ERROR)
 					return
 				}
 

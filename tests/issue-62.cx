@@ -1,0 +1,6 @@
+package main
+
+func main()() {
+	var i i32 = 50
+	printf("*i == %d\n", *i)
+}

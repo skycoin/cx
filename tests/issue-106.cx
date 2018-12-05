@@ -1,0 +1,7 @@
+package main
+import "gui"
+func main()() {
+	//printf("g_modalSkin.skin %d\n", gui.g_modalSkin.skin)
+	test(gui.skin_test(g_modalSkin), -1, "ok")
+	test(gui.skin_test(gui.g_modalSkin), -1, "not ok")
+}
