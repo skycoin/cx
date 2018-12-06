@@ -41,6 +41,8 @@ func testIssues () {
 	issue90()
 	// Issue 91: Methods with pointer receivers don't work
 	issue91()
+	// Issue 131: Problem with struct literals in short variable declarations
+	issue131()
 
 	var end i64
 	end = time.UnixMilli()

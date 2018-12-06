@@ -1,0 +1,22 @@
+package issues
+
+type issue131type1 struct {
+	name str
+	isTrue bool
+	x i32
+	y i32
+}
+
+func issue131 () {
+	var check i32
+	p1 := issue131type1{
+		x: 10,
+		y: 11,
+		isTrue: true,
+		name: "Pointy"}
+
+	issues = append(issues, assert(p1.x, 10, ""))
+	issues = append(issues, assert(p1.y, 11, ""))
+	issues = append(issues, assert(p1.isTrue, true, ""))
+	issues = append(issues, assert(p1.name, "Pointy", ""))
+}
