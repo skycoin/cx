@@ -83,8 +83,8 @@ func prettyCxCode(code i32) (out str) {
 	} else if (code == cx.INTERNAL_ERROR) {
 		out = "cx.INTERNAL_ERROR"
 	} else if (code == cx.ASSERT) {
-        out = "cx.ASSERT"
-    } else {
+		out = "cx.ASSERT"
+	} else {
 		out = "unknown cx exit code"
 	}
 }
@@ -106,7 +106,7 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 	var deltaMs i32 = i64.i32(end - start)
 	if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
 		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | %dms | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n",
+			printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
 				padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
 		}
 		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
@@ -114,7 +114,7 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 		}
 	} else if (cmdError != exitCode) {
 		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | %dms | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n",
+			printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
 				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
 		}
 		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
@@ -122,12 +122,12 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 		}
 	} else {
 		if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
-			printf("#%s%d | %dms | success | '%s' | expected %s (%d) | got %s (%d)\n",
+			printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
 				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
 		}
 		g_testSuccess = g_testSuccess + 1
 	}
-    g_testCount = g_testCount + 1
+	g_testCount = g_testCount + 1
 }
 
 func runTest(cmd str, exitCode i32, desc str) {
@@ -248,6 +248,11 @@ func main ()() {
 	runTest("cx issue-106a.cx issue-106.cx", cx.COMPILATION_ERROR, "Troubles when accessing a global var from another package")
 	runTest("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 	runTest("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTest("cx issue-120b.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTest("cx issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration")
+	runTest("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal")
+	runTest("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
+	runTest("cx issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances")
 
 	var end i64
 	end = time.UnixMilli()
