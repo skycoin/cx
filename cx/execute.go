@@ -121,7 +121,7 @@ func (prgrm *CXProgram) Run (untilEnd bool, nCalls *int, untilCall int) error {
 	return nil
 }
 
-func (prgrm *CXProgram) RunCompiled(nCalls int) error {
+func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 	PROGRAM = prgrm
 	// prgrm.PrintProgram()
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -169,11 +169,27 @@ func (prgrm *CXProgram) RunCompiled(nCalls int) error {
 			if prgrm.CallStack[0].Operator == nil {
 				// main function
 				mainCall := MakeCall(fn)
+
 				// initializing program resources
 				prgrm.CallStack[0] = mainCall
+
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 				prgrm.StackPointer = fn.Size
 
+				// feeding os.Args
+				if osPkg, err := PROGRAM.SelectPackage(OS_PKG); err == nil {
+					argsOffset := 0
+					if osGbl, err := osPkg.GetGlobal(OS_ARGS); err == nil {
+						for _, arg := range args {
+							argBytes := encoder.Serialize(arg)
+							argOffset := AllocateSeq(len(argBytes))
+							WriteMemory(argOffset, argBytes)
+							argOffsetBytes := encoder.SerializeAtomic(int32(argOffset))
+							argsOffset = WriteToSlice(argsOffset, argOffsetBytes)
+						}
+						WriteMemory(GetFinalOffset(0, osGbl), FromI32(int32(argsOffset)))
+					}
+				}
 				prgrm.Terminated = false
 			}
 
@@ -225,7 +241,7 @@ func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packa
 
 		var nCalls = 0
 		if err := prgrm.Run(true, &nCalls, previousCall); err != nil {
-			os.Exit(3)
+			os.Exit(CX_INTERNAL_ERROR)
 		}
 
 		prgrm.CallCounter = previousCall

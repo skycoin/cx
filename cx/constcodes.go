@@ -208,6 +208,22 @@ const (
 	CONST_GLTEXT_LEFT_TO_RIGHT
 	CONST_GLTEXT_RIGHT_TO_LEFT
 	CONST_GLTEXT_TOP_TO_BOTTOM
+
+	// os
+	CONST_OS_RUN_SUCCESS
+	CONST_OS_RUN_EMPTY_CMD
+	CONST_OS_RUN_PANIC
+	CONST_OS_RUN_START_FAILED
+	CONST_OS_RUN_WAIT_FAILED
+	CONST_OS_RUN_TIMEOUT
+
+	// cx
+	CONST_CX_SUCCESS
+	CONST_CX_RUNTIME_ERROR
+	CONST_CX_PANIC
+	CONST_CX_COMPILATION_ERROR
+	CONST_CX_INTERNAL_ERROR
+	CONST_CX_ASSERT
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -427,4 +443,20 @@ func init() {
 	AddConstCode( CONST_GLTEXT_LEFT_TO_RIGHT           , "gltext.LeftToRight"            , TYPE_I32, FromI32(0))
 	AddConstCode( CONST_GLTEXT_RIGHT_TO_LEFT           , "gltext.RightToLeft"            , TYPE_I32, FromI32(1))
 	AddConstCode( CONST_GLTEXT_TOP_TO_BOTTOM           , "gltext.TopToBottom"            , TYPE_I32, FromI32(2))
+
+	// os
+	AddConstCode( CONST_OS_RUN_SUCCESS                 , "os.RUN_SUCCESS"                , TYPE_I32, FromI32(OS_RUN_SUCCESS))
+	AddConstCode( CONST_OS_RUN_EMPTY_CMD               , "os.RUN_EMPTY_CMD"              , TYPE_I32, FromI32(OS_RUN_EMPTY_CMD))
+	AddConstCode( CONST_OS_RUN_PANIC                   , "os.RUN_PANIC"                  , TYPE_I32, FromI32(OS_RUN_PANIC))
+	AddConstCode( CONST_OS_RUN_START_FAILED            , "os.RUN_START_FAILED"           , TYPE_I32, FromI32(OS_RUN_START_FAILED))
+	AddConstCode( CONST_OS_RUN_WAIT_FAILED             , "os.RUN_WAIT_FAILED"            , TYPE_I32, FromI32(OS_RUN_WAIT_FAILED))
+	AddConstCode( CONST_OS_RUN_TIMEOUT                 , "os.RUN_TIMEOUT"                , TYPE_I32, FromI32(OS_RUN_TIMEOUT))
+
+	// cx
+	AddConstCode( CONST_CX_SUCCESS                     , "cx.SUCCESS"                    , TYPE_I32, FromI32(CX_SUCCESS))
+	AddConstCode( CONST_CX_RUNTIME_ERROR               , "cx.RUNTIME_ERROR"              , TYPE_I32, FromI32(CX_RUNTIME_ERROR))
+	AddConstCode( CONST_CX_PANIC                       , "cx.PANIC"                      , TYPE_I32, FromI32(CX_PANIC))
+	AddConstCode( CONST_CX_COMPILATION_ERROR           , "cx.COMPILATION_ERROR"          , TYPE_I32, FromI32(CX_COMPILATION_ERROR))
+	AddConstCode( CONST_CX_INTERNAL_ERROR              , "cx.INTERNAL_ERROR"             , TYPE_I32, FromI32(CX_INTERNAL_ERROR))
+	AddConstCode( CONST_CX_ASSERT                      , "cx.ASSERT"                     , TYPE_I32, FromI32(CX_ASSERT))
 }

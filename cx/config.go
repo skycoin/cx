@@ -4,6 +4,8 @@ import (
 	"os"
 )
 
+const DBG_GOLANG_STACK_TRACE = true
+
 // global reference to our program
 var PROGRAM *CXProgram
 
@@ -18,6 +20,9 @@ const HEAP_EXHAUSTED_ERROR = "stack exhausted"
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
+const OS_PKG = "os"
+const OS_ARGS = "Args"
+
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"
@@ -54,6 +59,15 @@ var BASIC_TYPES []string = []string{
 	"bool", "str", "byte", "i32", "i64", "f32", "f64",
 	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
 }
+
+const (
+    CX_SUCCESS = iota
+    CX_RUNTIME_ERROR
+    CX_PANIC // 2
+    CX_COMPILATION_ERROR
+    CX_INTERNAL_ERROR
+    CX_ASSERT
+)
 
 const (
 	DECL_POINTER = iota // 0

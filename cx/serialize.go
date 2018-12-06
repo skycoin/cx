@@ -803,6 +803,27 @@ func Serialize (prgrm *CXProgram) (byts []byte) {
 	return byts
 }
 
+func op_serialize (expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	out1Offset := GetFinalOffset(fp, out1)
+
+	_ = inp1
+
+	var slcOff int
+	byts := Serialize(PROGRAM)
+	for _, b := range byts {
+		slcOff = WriteToSlice(slcOff, []byte{b})
+	}
+
+	Deserialize(byts)
+
+	WriteMemory(out1Offset, FromI32(int32(slcOff)))
+}
+
+func op_deserialize (expr *CXExpression, fp int) {
+	
+}
+
 func dsName (off int32, size int32, s *sAll) string {
 	var name string
 	encoder.DeserializeRaw(s.Names[off : off + size], &name)
@@ -814,8 +835,19 @@ func dsName (off int32, size int32, s *sAll) string {
 // }
 
 // func dsPackage (sPkg *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
-// 	var pkg CXPackage
+// 	pkg := CXPackage{}
+// 	prgrm.Packages[i] = &pkg
+
 // 	pkg.Name = dsName(sPkg.NameOffset, sPkg.NameSize, s)
+
+// 	if sPkg.FunctionsSize > 0 {
+// 		prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
+// 	}
+
+// 	if sPkg.StructsSize > 0 {
+// 		prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
+// 	}
+	
 // 	return &pkg
 // }
 
@@ -838,8 +870,7 @@ func dsName (off int32, size int32, s *sAll) string {
 // 	var arg CXArgument
 // 	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
 // 	arg.Type = int(sArg.Type)
-// 	arg.CustomType = dsStruct(s.Structs[sArg.CustomTypeOffset], prgrm.Packages[s.])
-
+// 	// arg.CustomType = dsStruct(s.Structs[sArg.CustomTypeOffset], prgrm.Packages[s.])
 
 // 	s.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
 
@@ -853,17 +884,23 @@ func dsIntegers (off int32, size int32, s *sAll) []int32 {
 func initDeserialization (prgrm *CXProgram, s *sAll) {
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 
+	// for i, sPkg := range s.Packages {
+	// 	// initializing packages with their names
+	// 	// dsPackage(sPkg, s, prgrm)
+	// }
 
+	// imports
 	for i, sPkg := range s.Packages {
-		for _, impIdx := range dsIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s) {
-			prgrm.Packages[i].Imports = append(prgrm.Packages[i].Imports, prgrm.Packages[impIdx])
+		if sPkg.ImportsSize > 0 {
+			for _, impIdx := range dsIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s) {
+				prgrm.Packages[i].Imports = append(prgrm.Packages[i].Imports, prgrm.Packages[impIdx])
+			}
 		}
-		prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
-		prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
 	}
 }
 
 func Deserialize (byts []byte) (prgrm *CXProgram) {
+	prgrm = &CXProgram{}
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var s sAll
@@ -880,9 +917,9 @@ func Deserialize (byts []byte) (prgrm *CXProgram) {
 	s.Names = byts[s.Index.NamesOffset : s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset : ]
 
+	Debug("huh", s.Packages)
+
 	initDeserialization(prgrm, &s)
-	
-	
 
 	return &CXProgram{}
 }

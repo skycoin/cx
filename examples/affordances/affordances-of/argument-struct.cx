@@ -48,4 +48,5 @@ targetExpr:
 	aff.request(elts, 0, tgt)
 
 	// Use the new field through affordances
+	// Ah, let's just print an instance of Point, duh
 }

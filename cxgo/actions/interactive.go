@@ -16,7 +16,7 @@ func Stepping(steps int, delay int, withDelay bool) {
 			} else {
 				for i := 0; i < steps; i++ {
 					time.Sleep(time.Duration(int32(delay)) * time.Second)
-					err := PRGRM.RunCompiled(1)
+					err := PRGRM.RunCompiled(1, nil)
 					if PRGRM.Terminated {
 						break
 					}
@@ -29,7 +29,7 @@ func Stepping(steps int, delay int, withDelay bool) {
 	} else {
 		if steps == 0 {
 			// we run until halt or end of program;
-			if err := PRGRM.RunCompiled(0); err != nil {
+			if err := PRGRM.RunCompiled(0, nil); err != nil {
 				fmt.Println(err)
 			}
 		} else {
@@ -38,7 +38,7 @@ func Stepping(steps int, delay int, withDelay bool) {
 				// PRGRM.UnRun(int(nCalls))
 				PRGRM.UnRun(steps)
 			} else {
-				PRGRM.RunCompiled(steps)
+				PRGRM.RunCompiled(steps, nil)
 				// err := PRGRM.RunInterpreted(dStack, int(steps))
 				// if err != nil {
 				// 	fmt.Println(err)

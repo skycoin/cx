@@ -1,0 +1,24 @@
+package main
+
+type miniStruct struct {
+	mInt i32
+	mLong i64
+	mFloat f32
+	mDecimal f64
+	mBoolean bool
+	mByt byte
+	mString str
+}
+
+type TestStruct struct {
+	int i32
+	long i64
+	float f32
+	decimal f64
+	boolean bool
+	byt byte
+	string str
+	anotherStruct miniStruct
+}
+
+

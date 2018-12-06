@@ -1,0 +1,11 @@
+package main
+
+func main()() {
+
+	var b bool = true
+	if (b == true) {
+		var x f32 = 3.0
+	}
+
+	printf("x = %f\n", x)
+}

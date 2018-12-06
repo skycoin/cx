@@ -10,7 +10,6 @@ func prgrmPredicate (prgrm aff.Program) (res bool) {
 func foo () {
   	fltrs := #{
 		filter(prgrmPredicate)
-		// filter(callerPredicate)
   	}
   	affs := aff.query(fltrs)
   	if len(affs) < 1 {
@@ -28,3 +27,5 @@ func main () {
   	foo()
   	bar()
 }
+
+

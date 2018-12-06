@@ -6,6 +6,7 @@ import (
         "github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
 	"os"
+	"runtime/debug"
 )
 
 func Debug (args ...interface{}) {
@@ -577,7 +578,6 @@ func WriteToSlice (off int, inp []byte) int {
 
                 var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 
-
                 size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
                 
                 for c := 5; c < OBJECT_HEADER_SIZE; c++ {
@@ -693,6 +693,10 @@ func runtimeErrorInfo (r interface{}, printStack bool) {
 	if printStack {
 		PROGRAM.PrintStack()
 	}
+
+	if DBG_GOLANG_STACK_TRACE {
+		debug.PrintStack()
+	}
 	
 	os.Exit(3)
 }
@@ -713,6 +717,7 @@ func RuntimeError () {
 		default:
 			runtimeErrorInfo(r, true)
 		}
+        os.Exit(CX_RUNTIME_ERROR)
 	}
 }
 

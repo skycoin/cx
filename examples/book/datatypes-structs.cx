@@ -14,8 +14,7 @@ func main () {
     
     p2 = Person{
         name: "Gabrielle",
-        age: 21
-    }
+        age: 21}
     
     str.print(p1.name)
     i32.print(p1.age)

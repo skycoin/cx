@@ -315,7 +315,7 @@ func unsafeEval (code string) (out string) {
 
 	addInitFunction(PRGRM)
 
-	if err := PRGRM.RunCompiled(0); err != nil {
+	if err := PRGRM.RunCompiled(0, nil); err != nil {
 		PRGRM = MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
@@ -579,6 +579,7 @@ func main () {
 		ReplMode = true
 	}
 
+	cxArgs := []string{}
 	flagMode := false
 	newProject := false
 	var compileOutput string = "o"
@@ -629,6 +630,10 @@ func main () {
 		if arg == "--help" || arg == "-h" {
 			HelpMode = true
 			flagMode = true
+			continue
+		}
+		if len(arg) > 2 && arg[0:2] == "++" {
+		   cxArgs = append(cxArgs, arg)
 			continue
 		}
 		// viscript options
@@ -966,6 +971,19 @@ func main () {
 
 	PRGRM = cxgo0.PRGRM0
 
+	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
+
+		arg0 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_UNDEFINED])
+		arg0.Package = osPkg
+
+		arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
+		arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
+		arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
+
+
+		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
+	}
+	parseErrors := 0
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
@@ -974,17 +992,17 @@ func main () {
 		if len(fileNames) > 0 {
 			CurrentFile = fileNames[i]
 		}
-		yyParse(NewLexer(b))
+		parseErrors += yyParse(NewLexer(b))
 	}
 
-	if FoundCompileErrors {
-		os.Exit(3)
+	if FoundCompileErrors || parseErrors > 0 {
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if len(sourceCode) == 0 {
 		mod := MakePackage(MAIN_PKG)
 		PRGRM.AddPackage(mod)
-		fn := MakeFunction("main")
+		fn := MakeFunction(MAIN_FUNC)
 		mod.AddFunction(fn)
 
 		ReplTargetFn = MAIN_FUNC
@@ -1002,21 +1020,24 @@ func main () {
 	LineNo = 0
 
 	if FoundCompileErrors {
-		os.Exit(3)
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if ReplMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
 		if InterpretMode {
-			if err := PRGRM.RunCompiled(0); err != nil {
+			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
 				fmt.Println(err)
 				repl()
 			}
 		} else {
-			if err := PRGRM.RunCompiled(0); err != nil {
-				fmt.Println(err)
+			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
+				panic(err)
 				// repl()
+			}
+			if AssertFailed() {
+				os.Exit(CX_ASSERT)
 			}
 		}
 	}

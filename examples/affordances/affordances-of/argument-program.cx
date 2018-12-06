@@ -7,12 +7,23 @@ func prgrmPredicate (prgrm aff.Program) (res bool) {
 	}
 }
 
+type Point struct {
+	a i64
+	b i64
+	x i32
+	y i32
+}
+
+func printX (p Point) {
+	i32.print(p.x)
+}
+
 func foo () {
 	var foo i32
 	
 	tgt := #{
 		expr(targetExpr)
-		inp(1)
+		inp(0)
 	}
 
 	fltrs := #{
@@ -22,13 +33,17 @@ func foo () {
 	elts := aff.query(fltrs)
 
 	aff.of(elts, tgt)
+
+	var p Point
+	p.a = 100L
+	p.b = 200L
+	p.x = 10
+	p.y = 20
 	
-	// aff.request(elts, 1, tgt)
-
 targetExpr:
-	foo = i32.add(5, 6)
+	printX(p)
 
-	i32.print(foo)
+	aff.request(elts, 0, tgt)
 }
 
 func main () {

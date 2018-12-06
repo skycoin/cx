@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_i32_i32(expr *CXExpression, fp int) {
+func op_i32_i32 (expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
