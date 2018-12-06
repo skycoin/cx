@@ -273,6 +273,7 @@ func main ()() {
 	runTest("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 	runTest("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 	runTest("cx issue-120b.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTest("cx issue-131.cx", cx.SUCCESS, "Problem with struct literals in short variable declarations")
 	runTest("cx issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration")
 	runTest("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal")
 	runTest("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
