@@ -105,7 +105,7 @@ func FunctionDeclaration (fn *CXFunction, inputs, outputs []*CXArgument, exprs [
 		ProcessStringAssignment(expr)
 
 		// process short declaration
-		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration {
+		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral {
 			fn.Expressions[i - 1].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
 			fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
 		}

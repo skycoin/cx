@@ -1,12 +1,13 @@
 # Changelog
 
 ### v0.5.19 (NOT YET RELEASED)
+* Serialization and deserialization
 * Functions as first-class objects
 * Callbacks
 * Libraries
   * Added GIF support to OpenGL
 * Fixed issues
-  * ...
+  * Fix #131: Problem with struct literals in short variable declarations
 * IDE (WiP)
   * Added a simple guide
 * Improve error reporting system

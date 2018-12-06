@@ -116,6 +116,7 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 
 func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpression {
 	var result []*CXExpression
+	
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
