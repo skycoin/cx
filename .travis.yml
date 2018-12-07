@@ -11,7 +11,7 @@ os:
 
 # Install dev dependencies
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y gir1.2-gtk-3.0 libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
 
 install:
   - go get github.com/skycoin/skycoin/...
@@ -31,6 +31,7 @@ before_script:
 script:
   - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
+  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests
 
 notifications:
   email: false
