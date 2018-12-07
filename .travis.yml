@@ -1,19 +1,23 @@
-sudo: required
-dist: xenial
+# Travis build configuration
+# https://docs.travis-ci.com/user/customizing-the-build/
 language: go
+sudo: required
 
 go:
   - "1.11.x"
 
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+    - os: osx
 
 # Install dev dependencies
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y libgtk-3-dev libpango1.0-dev libcairo2-dev libperl-dev libgtk2.0-dev libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get install --no-install-recommends -y libgtk-3-dev libpango1.0-dev libcairo2-dev libperl-dev libgtk2.0-dev gir1.2-gtk-3.0 libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gtk; fi
 
+# Install necessaries go packages
 install:
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
@@ -23,17 +27,20 @@ install:
   - go get github.com/cznic/goyacc
   - go get github.com/skycoin/cx/...
 
+# Generate cxgo necessaries files
 before_script:
   - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
   - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
   - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
   - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
-  
+
+# Build & test
 script:
   - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests
 
+# Notifications to Telegram channel
 notifications:
   email: false
   # https://github.com/kvld/travisci-telegram TravisCI Telegram Bot integration
