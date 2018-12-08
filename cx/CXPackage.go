@@ -42,12 +42,12 @@ func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	return nil, fmt.Errorf("package '%s' not imported", impName)
 }
 
-func (mod *CXPackage) GetFunctions() ([]*CXFunction, error) {
+func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	// going from map to slice
-	if mod.Functions != nil {
-		return mod.Functions, nil
+	if pkg.Functions != nil {
+		return pkg.Functions, nil
 	} else {
-		return nil, fmt.Errorf("package '%s' has no functions", mod.Name)
+		return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
 	}
 }
 
@@ -136,17 +136,17 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 	}
 }
 
-func (mod *CXPackage) GetCurrentFunction() (*CXFunction, error) {
-	if mod.CurrentFunction != nil {
-		return mod.CurrentFunction, nil
+func (pkg *CXPackage) GetCurrentFunction() (*CXFunction, error) {
+	if pkg.CurrentFunction != nil {
+		return pkg.CurrentFunction, nil
 	}
 
 	return nil, errors.New("current function is nil")
 }
 
-func (mod *CXPackage) GetCurrentStruct() (*CXStruct, error) {
-	if mod.CurrentStruct != nil {
-		return mod.CurrentStruct, nil
+func (pkg *CXPackage) GetCurrentStruct() (*CXStruct, error) {
+	if pkg.CurrentStruct != nil {
+		return pkg.CurrentStruct, nil
 	}
 
 	return nil, errors.New("current struct is nil")
@@ -155,68 +155,68 @@ func (mod *CXPackage) GetCurrentStruct() (*CXStruct, error) {
 // ----------------------------------------------------------------
 //                     Member handling
 
-func (mod *CXPackage) AddImport(imp *CXPackage) *CXPackage {
+func (pkg *CXPackage) AddImport(imp *CXPackage) *CXPackage {
 	found := false
-	for _, im := range mod.Imports {
+	for _, im := range pkg.Imports {
 		if im.Name == imp.Name {
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Imports = append(mod.Imports, imp)
+		pkg.Imports = append(pkg.Imports, imp)
 	}
 
-	return mod
+	return pkg
 }
 
-func (mod *CXPackage) RemoveImport(impName string) {
-	lenImps := len(mod.Imports)
-	for i, imp := range mod.Imports {
+func (pkg *CXPackage) RemoveImport(impName string) {
+	lenImps := len(pkg.Imports)
+	for i, imp := range pkg.Imports {
 		if imp.Name == impName {
 			if i == lenImps-1 {
-				mod.Imports = mod.Imports[:len(mod.Imports)-1]
+				pkg.Imports = pkg.Imports[:len(pkg.Imports)-1]
 			} else {
-				mod.Imports = append(mod.Imports[:i], mod.Imports[i+1:]...)
+				pkg.Imports = append(pkg.Imports[:i], pkg.Imports[i+1:]...)
 			}
 			break
 		}
 	}
 }
 
-func (mod *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
-	fn.Package = mod
+func (pkg *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
+	fn.Package = pkg
 
 	found := false
-	for i, f := range mod.Functions {
+	for i, f := range pkg.Functions {
 		if f.Name == fn.Name {
-			mod.Functions[i].Name = fn.Name
-			mod.Functions[i].Inputs = fn.Inputs
-			mod.Functions[i].Outputs = fn.Outputs
-			mod.Functions[i].Expressions = fn.Expressions
-			mod.Functions[i].CurrentExpression = fn.CurrentExpression
-			mod.Functions[i].Package = fn.Package
-			mod.CurrentFunction = mod.Functions[i]
+			pkg.Functions[i].Name = fn.Name
+			pkg.Functions[i].Inputs = fn.Inputs
+			pkg.Functions[i].Outputs = fn.Outputs
+			pkg.Functions[i].Expressions = fn.Expressions
+			pkg.Functions[i].CurrentExpression = fn.CurrentExpression
+			pkg.Functions[i].Package = fn.Package
+			pkg.CurrentFunction = pkg.Functions[i]
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Functions = append(mod.Functions, fn)
-		mod.CurrentFunction = fn
+		pkg.Functions = append(pkg.Functions, fn)
+		pkg.CurrentFunction = fn
 	}
 
-	return mod
+	return pkg
 }
 
-func (mod *CXPackage) RemoveFunction(fnName string) {
-	lenFns := len(mod.Functions)
-	for i, fn := range mod.Functions {
+func (pkg *CXPackage) RemoveFunction(fnName string) {
+	lenFns := len(pkg.Functions)
+	for i, fn := range pkg.Functions {
 		if fn.Name == fnName {
 			if i == lenFns-1 {
-				mod.Functions = mod.Functions[:len(mod.Functions)-1]
+				pkg.Functions = pkg.Functions[:len(pkg.Functions)-1]
 			} else {
-				mod.Functions = append(mod.Functions[:i], mod.Functions[i+1:]...)
+				pkg.Functions = append(pkg.Functions[:i], pkg.Functions[i+1:]...)
 			}
 			break
 		}
@@ -242,45 +242,45 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 	return pkg
 }
 
-func (mod *CXPackage) RemoveStruct(strctName string) {
-	lenStrcts := len(mod.Structs)
-	for i, strct := range mod.Structs {
+func (pkg *CXPackage) RemoveStruct(strctName string) {
+	lenStrcts := len(pkg.Structs)
+	for i, strct := range pkg.Structs {
 		if strct.Name == strctName {
 			if i == lenStrcts-1 {
-				mod.Structs = mod.Structs[:len(mod.Structs)-1]
+				pkg.Structs = pkg.Structs[:len(pkg.Structs)-1]
 			} else {
-				mod.Structs = append(mod.Structs[:i], mod.Structs[i+1:]...)
+				pkg.Structs = append(pkg.Structs[:i], pkg.Structs[i+1:]...)
 			}
 			break
 		}
 	}
 }
 
-func (mod *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
-	// def.Program = mod.Program
-	def.Package = mod
+func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
+	// def.Program = pkg.Program
+	def.Package = pkg
 	found := false
-	for i, df := range mod.Globals {
+	for i, df := range pkg.Globals {
 		if df.Name == def.Name {
-			mod.Globals[i] = def
+			pkg.Globals[i] = def
 			found = true
 			break
 		}
 	}
 	if !found {
-		mod.Globals = append(mod.Globals, def)
+		pkg.Globals = append(pkg.Globals, def)
 	}
-	return mod
+	return pkg
 }
 
-func (mod *CXPackage) RemoveGlobal(defName string) {
-	lenGlobals := len(mod.Globals)
-	for i, def := range mod.Globals {
+func (pkg *CXPackage) RemoveGlobal(defName string) {
+	lenGlobals := len(pkg.Globals)
+	for i, def := range pkg.Globals {
 		if def.Name == defName {
 			if i == lenGlobals-1 {
-				mod.Globals = mod.Globals[:len(mod.Globals)-1]
+				pkg.Globals = pkg.Globals[:len(pkg.Globals)-1]
 			} else {
-				mod.Globals = append(mod.Globals[:i], mod.Globals[i+1:]...)
+				pkg.Globals = append(pkg.Globals[:i], pkg.Globals[i+1:]...)
 			}
 			break
 		}
@@ -290,21 +290,21 @@ func (mod *CXPackage) RemoveGlobal(defName string) {
 // ----------------------------------------------------------------
 //                             Selectors
 
-func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
+func (pkg *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
 
-	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
-	// 			mod.SelectFunction(name)
+	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	// 			pkg.SelectFunction(name)
 	// 		}
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, mod.Context)
+	// saveProgramStep(prgrmStep, pkg.Context)
 
 	var found *CXFunction
-	for _, fn := range mod.Functions {
+	for _, fn := range pkg.Functions {
 		if fn.Name == name {
-			mod.CurrentFunction = fn
+			pkg.CurrentFunction = fn
 			found = fn
 		}
 	}
@@ -316,20 +316,20 @@ func (mod *CXPackage) SelectFunction(name string) (*CXFunction, error) {
 	return found, nil
 }
 
-func (mod *CXPackage) SelectStruct(name string) (*CXStruct, error) {
+func (pkg *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
-	// 			mod.SelectStruct(name)
+	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	// 			pkg.SelectStruct(name)
 	// 		}
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, mod.Context)
+	// saveProgramStep(prgrmStep, pkg.Context)
 
 	var found *CXStruct
-	for _, strct := range mod.Structs {
+	for _, strct := range pkg.Structs {
 		if strct.Name == name {
-			mod.CurrentStruct = strct
+			pkg.CurrentStruct = strct
 			found = strct
 		}
 	}
@@ -341,16 +341,16 @@ func (mod *CXPackage) SelectStruct(name string) (*CXStruct, error) {
 	return found, nil
 }
 
-func (mod *CXPackage) SelectExpression(line int) (*CXExpression, error) {
+func (pkg *CXPackage) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
-	// 		if mod, err := cxt.GetCurrentPackage(); err == nil {
-	// 			mod.SelectExpression(line)
+	// 		if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	// 			pkg.SelectExpression(line)
 	// 		}
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, mod.Context)
-	fn, err := mod.GetCurrentFunction()
+	// saveProgramStep(prgrmStep, pkg.Context)
+	fn, err := pkg.GetCurrentFunction()
 	if err == nil {
 		return fn.SelectExpression(line)
 	} else {
