@@ -6,11 +6,16 @@ sudo: required
 go:
   - "1.11.x"
 
+# Define global variables
+env:
+  - GOARCH=amd64
+
 # Use a matrix to define SO and possible future changes
 matrix:
   include:
     - os: linux
       dist: trusty
+
     # - os: osx
 
 # Install dev dependencies
