@@ -59,14 +59,6 @@ func MakeDefaultValue(typName string) *[]byte {
 	return &zeroVal
 }
 
-func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
-	return &CXExpression{
-		ElementID: MakeElementID(),
-		Operator: op,
-		FileLine: fileLine,
-		FileName: fileName}
-}
-
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),

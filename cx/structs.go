@@ -14,32 +14,6 @@ type CXCall struct {
   Packages
 */
 
-/*
-  Structs
-*/
-
-type CXExpression struct {
-	Inputs                          []*CXArgument
-        Outputs                         []*CXArgument
-	Label                           string
-	FileName                        string
-	Operator                        *CXFunction
-	// debugging
-        FileLine                        int
-	// used for jmp statements
-        ThenLines                       int
-        ElseLines                       int
-	Function                        *CXFunction
-        Package                         *CXPackage
-        ElementID                       UUID
-        IsMethodCall                    bool
-        IsStructLiteral                 bool
-        IsArrayLiteral                  bool
-        IsUndType                       bool
-	IsBreak                         bool
-	IsContinue                      bool
-}
-
 type CXConstant struct {
         // native constants. only used for pre-packaged constants (e.g. math package's PI)
         // these fields are used to feed WritePrimary
