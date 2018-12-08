@@ -11,12 +11,12 @@ matrix:
   include:
     - os: linux
       dist: xenial
-    - os: osx
+    # - os: osx
 
 # Install dev dependencies
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get upgrade -y && sudo apt-get install --no-install-recommends -y libglib2.0-dev gtk+3.0 libgtk-3-dev libpango1.0-dev libcairo2-dev libperl-dev libgtk2.0-dev gir1.2-gtk-3.0 libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl -o MacPorts-HighSierra.pkg https://github.com/macports/macports-base/releases/download/v2.5.4/MacPorts-2.5.4-10.13-HighSierra.pkg && sudo installer -pkg MacPorts-HighSierra.pkg -target / && brew install gtk && sudo port install gtk3; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl -o MacPorts-HighSierra.pkg https://github.com/macports/macports-base/releases/download/v2.5.4/MacPorts-2.5.4-10.13-HighSierra.pkg && sudo installer -pkg MacPorts-HighSierra.pkg -target / && brew install gtk && sudo port install gtk3; fi
 
 # Install necessaries go packages
 install:
