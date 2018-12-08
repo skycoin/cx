@@ -19,21 +19,6 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
 	return arg
 }
 
-func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
-	found := false
-	for _, fl := range strct.Fields {
-		if fl.Name == fld.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		strct.Fields = append(strct.Fields, fld)
-		strct.Size += fld.TotalSize
-	}
-	return strct
-}
-
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)

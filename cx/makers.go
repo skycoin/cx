@@ -59,13 +59,6 @@ func MakeDefaultValue(typName string) *[]byte {
 	return &zeroVal
 }
 
-func MakeStruct(name string) *CXStruct {
-	return &CXStruct{
-		ElementID: MakeElementID(),
-		Name:      name,
-	}
-}
-
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
 	return &CXExpression{
 		ElementID: MakeElementID(),

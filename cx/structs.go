@@ -18,14 +18,6 @@ type CXCall struct {
   Structs
 */
 
-type CXStruct struct {
-	Fields                          []*CXArgument
-	Name                            string
-	Size                            int
-	Package                         *CXPackage
-        ElementID                       UUID
-}
-
 type CXExpression struct {
 	Inputs                          []*CXArgument
         Outputs                         []*CXArgument
