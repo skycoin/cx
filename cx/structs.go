@@ -26,25 +26,6 @@ type CXStruct struct {
         ElementID                       UUID
 }
 
-/*
-  Functions
-*/
-
-type CXFunction struct {
-	ListOfPointers                  []*CXArgument
-        Inputs                          []*CXArgument
-        Outputs                         []*CXArgument
-        Expressions                     []*CXExpression
-	Name                            string
-	Length                          int // number of expressions, pre-computed for performance
-        Size                            int // automatic memory size
-        OpCode                          int
-	CurrentExpression               *CXExpression
-        Package                         *CXPackage
-        ElementID                       UUID
-        IsNative                        bool
-}
-
 type CXExpression struct {
 	Inputs                          []*CXArgument
         Outputs                         []*CXArgument

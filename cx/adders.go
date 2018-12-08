@@ -34,48 +34,6 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	return strct
 }
 
-func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
-	// expr.Program = fn.Program
-	expr.Package = fn.Package
-	expr.Function = fn
-	fn.Expressions = append(fn.Expressions, expr)
-	fn.CurrentExpression = expr
-	fn.Length++
-	return fn
-}
-
-func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
-	found := false
-	for _, inp := range fn.Inputs {
-		if inp.Name == param.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		fn.Inputs = append(fn.Inputs, param)
-	}
-
-	return fn
-}
-
-func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
-	found := false
-	for _, out := range fn.Outputs {
-		if out.Name == param.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		fn.Outputs = append(fn.Outputs, param)
-	}
-
-	param.Package = fn.Package
-
-	return fn
-}
-
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)

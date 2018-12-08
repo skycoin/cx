@@ -82,13 +82,6 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 		FileLine: fileLine,}
 }
 
-func MakeFunction(name string) *CXFunction {
-	return &CXFunction{
-		ElementID: MakeElementID(),
-		Name: name,
-	}
-}
-
 func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	fn := &CXFunction{
 		ElementID: MakeElementID(),
