@@ -2,62 +2,6 @@ package base
 
 import ()
 
-func (mod *CXPackage) RemoveGlobal(defName string) {
-	lenGlobals := len(mod.Globals)
-	for i, def := range mod.Globals {
-		if def.Name == defName {
-			if i == lenGlobals-1 {
-				mod.Globals = mod.Globals[:len(mod.Globals)-1]
-			} else {
-				mod.Globals = append(mod.Globals[:i], mod.Globals[i+1:]...)
-			}
-			break
-		}
-	}
-}
-
-func (mod *CXPackage) RemoveFunction(fnName string) {
-	lenFns := len(mod.Functions)
-	for i, fn := range mod.Functions {
-		if fn.Name == fnName {
-			if i == lenFns-1 {
-				mod.Functions = mod.Functions[:len(mod.Functions)-1]
-			} else {
-				mod.Functions = append(mod.Functions[:i], mod.Functions[i+1:]...)
-			}
-			break
-		}
-	}
-}
-
-func (mod *CXPackage) RemoveStruct(strctName string) {
-	lenStrcts := len(mod.Structs)
-	for i, strct := range mod.Structs {
-		if strct.Name == strctName {
-			if i == lenStrcts-1 {
-				mod.Structs = mod.Structs[:len(mod.Structs)-1]
-			} else {
-				mod.Structs = append(mod.Structs[:i], mod.Structs[i+1:]...)
-			}
-			break
-		}
-	}
-}
-
-func (mod *CXPackage) RemoveImport(impName string) {
-	lenImps := len(mod.Imports)
-	for i, imp := range mod.Imports {
-		if imp.Name == impName {
-			if i == lenImps-1 {
-				mod.Imports = mod.Imports[:len(mod.Imports)-1]
-			} else {
-				mod.Imports = append(mod.Imports[:i], mod.Imports[i+1:]...)
-			}
-			break
-		}
-	}
-}
-
 func (strct *CXStruct) RemoveField(fldName string) {
 	if len(strct.Fields) > 0 {
 		lenFlds := len(strct.Fields)

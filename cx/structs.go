@@ -14,17 +14,6 @@ type CXCall struct {
   Packages
 */
 
-type CXPackage struct {
-	Imports                         []*CXPackage
-        Functions                       []*CXFunction
-        Structs                         []*CXStruct
-        Globals                         []*CXArgument
-	Name                            string
-	CurrentFunction                 *CXFunction
-        CurrentStruct                   *CXStruct
-        ElementID                       UUID
-}
-
 /*
   Structs
 */

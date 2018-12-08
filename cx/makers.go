@@ -20,17 +20,6 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-func MakePackage(name string) *CXPackage {
-	return &CXPackage{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Globals:   make([]*CXArgument, 0, 10),
-		Imports:   make([]*CXPackage, 0),
-		Functions: make([]*CXFunction, 0, 10),
-		Structs:   make([]*CXStruct, 0),
-	}
-}
-
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{

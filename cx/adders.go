@@ -5,48 +5,6 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func (mod *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
-	// def.Program = mod.Program
-	def.Package = mod
-	found := false
-	for i, df := range mod.Globals {
-		if df.Name == def.Name {
-			mod.Globals[i] = def
-			found = true
-			break
-		}
-	}
-	if !found {
-		mod.Globals = append(mod.Globals, def)
-	}
-	return mod
-}
-
-func (mod *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
-	fn.Package = mod
-
-	found := false
-	for i, f := range mod.Functions {
-		if f.Name == fn.Name {
-			mod.Functions[i].Name = fn.Name
-			mod.Functions[i].Inputs = fn.Inputs
-			mod.Functions[i].Outputs = fn.Outputs
-			mod.Functions[i].Expressions = fn.Expressions
-			mod.Functions[i].CurrentExpression = fn.CurrentExpression
-			mod.Functions[i].Package = fn.Package
-			mod.CurrentFunction = mod.Functions[i]
-			found = true
-			break
-		}
-	}
-	if !found {
-		mod.Functions = append(mod.Functions, fn)
-		mod.CurrentFunction = fn
-	}
-
-	return mod
-}
-
 func (arg *CXArgument) AddType(typ string) *CXArgument {
 	// arg.Typ = typ
 	if typCode, found := TypeCodes[typ]; found {
@@ -59,40 +17,6 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
     }
 
 	return arg
-}
-
-func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
-	found := false
-	for i, s := range pkg.Structs {
-		if s.Name == strct.Name {
-			pkg.Structs[i] = strct
-			found = true
-			break
-		}
-	}
-	if !found {
-		pkg.Structs = append(pkg.Structs, strct)
-	}
-
-	strct.Package = pkg
-	pkg.CurrentStruct = strct
-	
-	return pkg
-}
-
-func (mod *CXPackage) AddImport(imp *CXPackage) *CXPackage {
-	found := false
-	for _, im := range mod.Imports {
-		if im.Name == imp.Name {
-			found = true
-			break
-		}
-	}
-	if !found {
-		mod.Imports = append(mod.Imports, imp)
-	}
-
-	return mod
 }
 
 func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
