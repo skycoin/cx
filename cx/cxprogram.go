@@ -1,52 +1,48 @@
 package base
 
 import (
-        . "github.com/satori/go.uuid"
 	"errors"
 	"fmt"
+	. "github.com/satori/go.uuid"
 	"strings"
 )
-
 
 /*
  * The CXProgram struct contains a full program.
  *
  * It is the root data structures for all code, variable and data structures
  * declarations.
-*/
+ */
 
 type CXProgram struct {
-        Packages                        []*CXPackage
-	Memory                          []byte
-	Inputs                          []*CXArgument
-        Outputs                         []*CXArgument
-	CallStack                       []CXCall
-	Path                            string
-        CurrentPackage                  *CXPackage
-	CallCounter                     int
-        HeapPointer                     int
-        StackPointer                    int
-        HeapStartsAt                    int
-	ElementID                       UUID
-        Terminated                      bool
+	Packages       []*CXPackage
+	Memory         []byte
+	Inputs         []*CXArgument
+	Outputs        []*CXArgument
+	CallStack      []CXCall
+	Path           string
+	CurrentPackage *CXPackage
+	CallCounter    int
+	HeapPointer    int
+	StackPointer   int
+	HeapStartsAt   int
+	ElementID      UUID
+	Terminated     bool
 }
-
 
 func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
 		ElementID: MakeElementID(),
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE),
-		Memory:    make([]byte, STACK_SIZE + TYPE_POINTER_SIZE + INIT_HEAP_SIZE),
+		Memory:    make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
 	}
 
 	return newPrgrm
 }
 
-
 // ----------------------------------------------------------------
 //                             Getters
-
 
 func (prgrm *CXProgram) GetCurrentPackage() (*CXPackage, error) {
 	if prgrm.CurrentPackage != nil {
@@ -70,11 +66,11 @@ func (prgrm *CXProgram) GetCurrentStruct() (*CXStruct, error) {
 
 func (prgrm *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 	if prgrm.CurrentPackage != nil {
-		 if prgrm.CurrentPackage.CurrentFunction != nil {
-			 return prgrm.CurrentPackage.CurrentFunction, nil
-		 } else {
-			 return nil, errors.New("current function is nil")
-		 }
+		if prgrm.CurrentPackage.CurrentFunction != nil {
+			return prgrm.CurrentPackage.CurrentFunction, nil
+		} else {
+			return nil, errors.New("current function is nil")
+		}
 	} else {
 		return nil, errors.New("current package is nil")
 	}
@@ -91,31 +87,32 @@ func (prgrm *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 }
 
 func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	if mod, err := prgrm.GetCurrentPackage(); err == nil {
-		var found *CXArgument
-		for _, def := range mod.Globals {
+	mod, err := prgrm.GetCurrentPackage()
+	if err != nil {
+		return nil, err
+	}
+
+	var foundArgument *CXArgument
+	for _, def := range mod.Globals {
+		if def.Name == name {
+			foundArgument = def
+			break
+		}
+	}
+
+	for _, imp := range mod.Imports {
+		for _, def := range imp.Globals {
 			if def.Name == name {
-				found = def
+				foundArgument = def
 				break
 			}
 		}
+	}
 
-		for _, imp := range mod.Imports {
-			for _, def := range imp.Globals {
-				if def.Name == name {
-					found = def
-					break
-				}
-			}
-		}
-
-		if found == nil {
-			return nil, fmt.Errorf("global '%s' not found", name)
-		} else {
-			return found, nil
-		}
+	if foundArgument == nil {
+		return nil, fmt.Errorf("global '%s' not found", name)
 	} else {
-		return nil, err
+		return foundArgument, nil
 	}
 }
 
@@ -142,14 +139,13 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 	var foundPkg *CXPackage
 	for _, mod := range prgrm.Packages {
 		if modName == mod.Name {
-
 			foundPkg = mod
 			break
 		}
 	}
-	
+
 	var foundStrct *CXStruct
-	
+
 	for _, strct := range foundPkg.Structs {
 		if strct.Name == strctName {
 			foundStrct = strct
@@ -180,7 +176,7 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 	}
 }
 
-func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction, error) {
+func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, error) {
 	// I need to first look for the function in the current package
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		for _, fn := range pkg.Functions {
@@ -217,10 +213,8 @@ func (prgrm *CXProgram) GetFunction (fnName string, pkgName string) (*CXFunction
 	}
 }
 
-
 // ----------------------------------------------------------------
 //                         Package handling
-
 
 func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
 	found := false
@@ -252,10 +246,8 @@ func (prgrm *CXProgram) RemovePackage(modName string) {
 	}
 }
 
-
 // ----------------------------------------------------------------
 //                             Selectors
-
 
 func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{
@@ -327,4 +319,3 @@ func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 		return nil, err
 	}
 }
-

@@ -4,13 +4,13 @@
 * Serialization and deserialization
 * Functions as first-class objects
 * Callbacks
+* Improve error reporting system
 * Libraries
   * Added GIF support to OpenGL
 * Fixed issues
   * Fix #131: Problem with struct literals in short variable declarations
 * IDE (WiP)
   * Added a simple guide
-* Improve error reporting system
 
 ### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
 * **Affordances**:
@@ -35,8 +35,8 @@
 
 ### v0.5.17
 * Fixed issues:
-  * Fix #111: Trying to use global variables from other packages is no longer
-    allowed without their owner package prefixed to them, i.e. `foo` was
-    allowed, now it must be written as `pkg.foo`
   * Fix #90: `goto` now works properly on Windows
   * Fix #91: Methods with pointer receivers are working now
+  * Fix #111: Trying to use global variables from other packages is no longer
+              allowed without their owner package prefixed to them, i.e. `foo` was
+	      allowed, now it must be written as `pkg.foo`

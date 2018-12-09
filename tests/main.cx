@@ -292,6 +292,7 @@ func main ()() {
 	runTest("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal")
 	runTest("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
 	runTest("cx issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances")
+	runTest("cx issue-141.cx", cx.SUCCESS, "Parser gets confused with `2 -2`")
 
 	var end i64
 	end = time.UnixMilli()
