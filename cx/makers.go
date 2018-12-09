@@ -20,17 +20,6 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-func MakePackage(name string) *CXPackage {
-	return &CXPackage{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Globals:   make([]*CXArgument, 0, 10),
-		Imports:   make([]*CXPackage, 0),
-		Functions: make([]*CXFunction, 0, 10),
-		Structs:   make([]*CXStruct, 0),
-	}
-}
-
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
@@ -70,34 +59,12 @@ func MakeDefaultValue(typName string) *[]byte {
 	return &zeroVal
 }
 
-func MakeStruct(name string) *CXStruct {
-	return &CXStruct{
-		ElementID: MakeElementID(),
-		Name:      name,
-	}
-}
-
-func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
-	return &CXExpression{
-		ElementID: MakeElementID(),
-		Operator: op,
-		FileLine: fileLine,
-		FileName: fileName}
-}
-
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),
 		Name: name,
 		FileName: fileName,
 		FileLine: fileLine,}
-}
-
-func MakeFunction(name string) *CXFunction {
-	return &CXFunction{
-		ElementID: MakeElementID(),
-		Name: name,
-	}
 }
 
 func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
