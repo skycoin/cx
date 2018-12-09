@@ -11,5 +11,6 @@ func main()() {
 	}
 	if (bool.eq(b, false)) {
 		printf("false\n")
+		panic(true, false, "")
 	}
 }
