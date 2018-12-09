@@ -8,12 +8,16 @@ var VERBOSE_NONE	 i32 = 0
 var VERBOSE_SUCCESS  i32 = 1
 var VERBOSE_STDERR   i32 = 2
 var VERBOSE_FAILURE  i32 = 4
-var VERBOSE_FULL	 i32 = VERBOSE_SUCCESS | VERBOSE_STDERR | VERBOSE_FAILURE
+var VERBOSE_SKIPPED  i32 = 8
+var VERBOSE_FULL	 i32 = VERBOSE_SUCCESS | VERBOSE_STDERR | VERBOSE_FAILURE | VERBOSE_SKIPPED
 
 var g_testCount i32 = 0
 var g_testSuccess i32 = 0
+var g_testSkipped i32 = 0
+
 var g_workingDir str = ""
 var g_verbose i32 = VERBOSE_FAILURE
+var g_noGui bool = false
 
 func matchArg(arg str, pattern str, match *bool) (out bool) {
 	out = false
@@ -83,8 +87,8 @@ func prettyCxCode(code i32) (out str) {
 	} else if (code == cx.INTERNAL_ERROR) {
 		out = "cx.INTERNAL_ERROR"
 	} else if (code == cx.ASSERT) {
-        out = "cx.ASSERT"
-    } else {
+		out = "cx.ASSERT"
+	} else {
 		out = "unknown cx exit code"
 	}
 }
@@ -106,7 +110,7 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 	var deltaMs i32 = i64.i32(end - start)
 	if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
 		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | %dms | FAILED  | '%s' | os.Run exited with code %s (%d) | %s\n",
+			printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
 				padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
 		}
 		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
@@ -114,7 +118,7 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 		}
 	} else if (cmdError != exitCode) {
 		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | %dms | FAILED  | '%s' | expected %s (%d) | got %s (%d) | %s\n",
+			printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
 				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
 		}
 		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
@@ -122,26 +126,40 @@ func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
 		}
 	} else {
 		if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
-			printf("#%s%d | %dms | success | '%s' | expected %s (%d) | got %s (%d)\n",
+			printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
 				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
 		}
 		g_testSuccess = g_testSuccess + 1
 	}
-    g_testCount = g_testCount + 1
+	g_testCount = g_testCount + 1
 }
 
 func runTest(cmd str, exitCode i32, desc str) {
 	runTestEx(cmd, exitCode, 0, desc)
 }
 
+func runGuiTest(cmd str, exitCode i32, desc str) {
+	if g_noGui == false {
+		runTestEx(cmd, exitCode, 0, desc)
+	} else {
+		if ((g_verbose & VERBOSE_SKIPPED) == VERBOSE_SKIPPED) {
+			printf("#--- | Skipped |  0ms | '%s' | %s\n", cmd, desc)
+		}
+		g_testSkipped = g_testSkipped + 1
+	}
+}
+
 func help () {
 	printf("Options:\n")
 	printf("++help      : Prints this message.\n")
+	printf("++nogui     : Disable tests using gui (eg glfw/gl).\n")
 	printf("++verbose   : Set verbose mode (flags).\n")
 	printf("          0 | none\n")
 	printf("          1 | log success only\n")
 	printf("          2 | log stdout and stderr\n")
 	printf("          4 | log failure\n")
+	printf("          8 | log skipped tests\n")
+	printf("         15 | full log\n")
 	printf("++wdir      : Set working directory\n")
 }
 
@@ -150,6 +168,7 @@ func main ()() {
 	var workingDirMatch bool = false
 	var verboseMatch bool = false
 	var helpMatch bool = false
+	var noGuiMatch bool = false
 
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
@@ -168,6 +187,11 @@ func main ()() {
 		if matchArg(arg, "++help", &helpMatch) {
 			help()
 			os.Exit(0)
+		}
+
+		if matchArg(arg, "++nogui", &noGuiMatch) {
+			g_noGui = true
+			continue
 		}
 
 		printf("invalid argument : %s\n", arg)
@@ -198,12 +222,12 @@ func main ()() {
 
 	// issues
 	runTest("cx issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
-	runTest("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.")
+	runGuiTest("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.")
 	runTest("cx issue-18.cx", cx.SUCCESS, "String not working across packages")
 	runTest("cx issue-19a.cx issue-19.cx", cx.SUCCESS, "Order of files matters for structs")
 	runTest("cx issue-19.cx issue-19a.cx", cx.SUCCESS, "Order of files matters for structs")
-	runTest("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.")
-	runTest("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData")
+	runGuiTest("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.")
+	runGuiTest("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData")
 	runTest("cx issue-25.cx", cx.SUCCESS, "Struct field crushed")
 	runTest("cx issue-26.cx", cx.SUCCESS, "Failed to modify value in an array")
 	runTest("cx issue-27.cx", cx.SUCCESS, "Panic when trying to index (using a var) an array, member of a struct passed as a function argument")
@@ -239,7 +263,7 @@ func main ()() {
 	runTest("cx issue-86.cx", cx.SUCCESS, "Cannot use bool variable in if expression")
 	runTest("cx issue-90.cx", cx.SUCCESS, "Goto not working on windows")
 	runTest("cx issue-91.cx", cx.SUCCESS, "Methods with pointer receivers don't work")
-	runTest("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through")
+	runGuiTest("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through")
 	runTest("cx issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32")
 	runTest("cx issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work")
 	runTest("cx issue-103.cx", cx.SUCCESS, "Argument list is not parsed correctly")
@@ -248,6 +272,12 @@ func main ()() {
 	runTest("cx issue-106a.cx issue-106.cx", cx.COMPILATION_ERROR, "Troubles when accessing a global var from another package")
 	runTest("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 	runTest("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTest("cx issue-120b.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTest("cx issue-131.cx", cx.SUCCESS, "Problem with struct literals in short variable declarations")
+	runTest("cx issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration")
+	runTest("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal")
+	runTest("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
+	runTest("cx issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances")
 
 	var end i64
 	end = time.UnixMilli()
@@ -256,4 +286,5 @@ func main ()() {
 	printf("A total of %d tests were performed\n", g_testCount)
 	printf("%d were successful\n", g_testSuccess)
 	printf("%d failed\n", g_testCount - g_testSuccess)
+	printf("%d skipped (eg ++nogui)\n", g_testSkipped)
 }
