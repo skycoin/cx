@@ -19,8 +19,7 @@ matrix:
   include:
     - os: linux
       dist: xenial
-
-    # - os: osx
+    - os: osx
 
 # Install dev dependencies
 before_install:

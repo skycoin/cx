@@ -26,3 +26,7 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     export Pango_VERSION=$(pkg-config --modversion pango)
     echo "GTK version ${GTK_VERSION} (Glib ${Glib_VERSION}, Cairo ${Cairo_VERSION}, Pango ${Pango_VERSION})"
 fi
+
+if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+    brew install gtk
+fi
