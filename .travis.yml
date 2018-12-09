@@ -3,8 +3,12 @@
 language: go
 sudo: required
 
+# Version of go to use
 go:
   - "1.11.x"
+
+# Placed source code under GOPATH
+go_import_path: github.com/skycoin/cx
 
 # Define global variables
 env:
@@ -32,7 +36,7 @@ install:
   - go get -v github.com/go-gl/gltext
   - go get -v github.com/blynn/nex
   - go get -v github.com/cznic/goyacc
-  - go get -v ...
+  - go get -v ./...
 
 # Generate cxgo necessaries files
 before_script:
