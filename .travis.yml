@@ -24,18 +24,16 @@ matrix:
 # Install dev dependencies
 before_install:
   - ./.ci-scripts/install-deps.sh
-  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq && sudo apt-get upgrade -y && sudo apt-get install --no-install-recommends -y libglib2.0-dev gtk+3.0 libgtk-3-dev libpango1.0-dev libcairo2-dev libperl-dev libgtk2.0-dev gir1.2-gtk-3.0 libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl -o MacPorts-HighSierra.pkg https://github.com/macports/macports-base/releases/download/v2.5.4/MacPorts-2.5.4-10.13-HighSierra.pkg && sudo installer -pkg MacPorts-HighSierra.pkg -target / && brew install gtk && sudo port install gtk3; fi
 
 # Install necessaries go packages
 install:
-  - go get -v github.com/skycoin/skycoin/...
-  - go get -v github.com/go-gl/gl/v2.1/gl
-  - go get -v github.com/go-gl/glfw/v3.2/glfw
-  - go get -v github.com/go-gl/gltext
-  - go get -v github.com/blynn/nex
-  - go get -v github.com/cznic/goyacc
-  - go get -v ./...
+  - go get github.com/skycoin/skycoin/...
+  - go get github.com/go-gl/gl/v2.1/gl
+  - go get github.com/go-gl/glfw/v3.2/glfw
+  - go get github.com/go-gl/gltext
+  - go get github.com/blynn/nex
+  - go get github.com/cznic/goyacc
+  - go get ./...
 
 # Generate cxgo necessaries files
 before_script:
@@ -44,7 +42,7 @@ before_script:
   - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
   - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
 
-# Build & test
+# Build, test & run cx test
 script:
   - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
