@@ -2,7 +2,7 @@
 	package main
 	import (
 		// "fmt"
-		// "strconv"
+		"strconv"
 		"github.com/skycoin/skycoin/src/cipher/encoder"
 		. "github.com/skycoin/cx/cx"
 		. "github.com/skycoin/cx/cxgo/actions"
@@ -139,9 +139,6 @@
 //                      %type   <expressions>   init_declarator
 
 %type   <expressions>   initializer
-%type   <expressions>   designation
-%type   <expressions>   designator_list
-%type   <expressions>   designator
 
 %type   <expressions>   expression
 %type   <expressions>   block_item
@@ -158,6 +155,7 @@
 %type   <function>      function_header
 
 //                      %type   <stringA>       infer_action, infer_actions
+%type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
                         
@@ -638,14 +636,25 @@ slice_literal_expression:
 /*                 } */
 /*         ; */
 
+infer_action_arg:
+                IDENTIFIER
+                {
+			$$ = $1
+                }
+        |       INT_LITERAL
+                {
+			$$ = strconv.Itoa(int($1))
+                }
+        ;
+
 infer_action:
-                IDENTIFIER LPAREN IDENTIFIER COMMA IDENTIFIER RPAREN
+                IDENTIFIER LPAREN infer_action_arg COMMA IDENTIFIER RPAREN
 		{
 			res := append([]string{$3}, $5)
 			res = append(res, $1)
 			$$ = res
 		}
-	|	IDENTIFIER LPAREN IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN infer_action_arg RPAREN
 		{
 			$$ = append([]string{$1}, $3)
 		}
@@ -692,7 +701,10 @@ infer_actions:
 /*         ; */
 
 infer_clauses:
-                infer_actions
+                {
+			$$ = SliceLiteralExpression(TYPE_AFF, nil)
+                }
+        |       infer_actions
                 {
 			var exprs []*CXExpression
 			for _, str := range $1 {
@@ -729,6 +741,10 @@ primary_expression:
         /*         { */
 	/* 		$$ = PrimaryStructLiteral($1, $3) */
         /*         } */
+	|	FUNC LPAREN RPAREN
+		{
+			$$ = nil
+		}
         |       INFER LBRACE infer_clauses RBRACE
                 {
 			$$ = $3
@@ -955,7 +971,7 @@ logical_and_expression:
                 inclusive_or_expression
 	|       logical_and_expression AND_OP inclusive_or_expression
                 {
-			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_AND])
+			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_AND])
                 }
                 ;
 
@@ -963,7 +979,7 @@ logical_or_expression:
                 logical_and_expression
 	|       logical_or_expression OR_OP logical_and_expression
                 {
-			$$ = ArithmeticOperation($1, $3, Natives[OP_BOOL_OR])
+			$$ = UndefinedTypeOperation($1, $3, Natives[OP_BOOL_OR])
                 }
                 ;
 
@@ -996,6 +1012,7 @@ assignment_expression:
 				if $2 == ":=" {
 					for _, from := range $3 {
 						from.Outputs[0].IsShortDeclaration = true
+						from.Outputs[0].PreviouslyDeclared = true
 					}
 				}
 				$$ = ArrayLiteralAssignment($1, $3)
@@ -1006,6 +1023,7 @@ assignment_expression:
 				if $2 == ":=" {
 					for _, from := range $3 {
 						from.Outputs[0].IsShortDeclaration = true
+						from.Outputs[0].PreviouslyDeclared = true
 					}
 				}
 				$$ = StructLiteralAssignment($1, $3)
@@ -1034,7 +1052,7 @@ expression:     assignment_expression
 	|       expression COMMA assignment_expression
                 {
 			$3[len($3) - 1].Outputs = append($1[len($1) - 1].Outputs, $3[len($3) - 1].Outputs...)
-			$$ = append($1, $3...)
+			$$ = $3
                 }
                 ;
 
@@ -1056,39 +1074,6 @@ declaration:
 initializer:    assignment_expression
                 ;
 
-designation:    designator_list ASSIGN
-                {
-			$$ = nil
-                }
-                ;
-
-designator_list:
-                designator
-                {
-			$$ = nil
-                }
-	|       designator_list designator
-                {
-			$$ = nil
-                }
-                ;
-
-designator:
-                LBRACK constant_expression RBRACK
-                {
-			$$ = nil
-                }
-	|       PERIOD IDENTIFIER
-                {
-			$$ = nil
-                }
-                ;
-
-
-
-
-
-
 // statements
 statement:      labeled_statement
 	|       compound_statement
@@ -1102,7 +1087,7 @@ statement:      labeled_statement
                 ;
 
 labeled_statement:
-                IDENTIFIER COLON statement
+                IDENTIFIER COLON block_item
                 {
 			// it has to be the first expression so all the nested expressions are executed
 			// instead of only executing the last one
@@ -1172,7 +1157,6 @@ selection_statement:
                 }
         |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON
                 {
-			// 
 			$$ = SelectionExpressions($2, nil, $5)
                 }
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
@@ -1251,9 +1235,13 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 			}
                 }
 	|       CONTINUE SEMICOLON
-                { $$ = nil }
+		{
+			$$ = ContinueExpressions()
+		}
 	|       BREAK SEMICOLON
-                { $$ = nil }
+		{
+			$$ = BreakExpressions()
+		}
 	|       RETURN SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {

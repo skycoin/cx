@@ -2,14 +2,19 @@ package base
 
 import (
 	"fmt"
+	"os"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_assert_value(expr *CXExpression, fp int) {
+var assertSuccess bool = true
+func AssertFailed() bool {
+	return assertSuccess == false
+}
+
+func assert(expr *CXExpression, fp int) (same bool) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	out1 := expr.Outputs[0]
 	var byts1, byts2 []byte
-	
+
 	if inp1.Type == TYPE_STR {
 		byts1 = []byte(ReadStr(fp, inp1))
 		byts2 = []byte(ReadStr(fp, inp2))
@@ -18,7 +23,6 @@ func op_assert_value(expr *CXExpression, fp int) {
 		byts2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	var same bool
 	same = true
 
 	if len(byts1) != len(byts2) {
@@ -37,10 +41,8 @@ func op_assert_value(expr *CXExpression, fp int) {
 			}
 		}
 	}
-	
 
-	var message string
-	message = ReadStr(fp, inp3)
+	message := ReadStr(fp, inp3)
 
 	if !same {
 		if message != "" {
@@ -48,9 +50,26 @@ func op_assert_value(expr *CXExpression, fp int) {
 		} else {
 			fmt.Printf("%s: %d: result was not equal to the expected value\n", expr.FileName, expr.FileLine)
 		}
-	} else {
-
 	}
 
+	assertSuccess = assertSuccess && same
+	return same
+}
+
+func op_assert_value(expr *CXExpression, fp int) {
+	out1 := expr.Outputs[0]
+	same := assert(expr, fp)
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }
+
+func op_test(expr *CXExpression, fp int) {
+	assert(expr, fp)
+}
+
+func op_panic(expr *CXExpression, fp int) {
+	if (assert(expr, fp) == false) {
+		os.Exit(CX_ASSERT)
+	}
+}
+
+

@@ -147,7 +147,7 @@ core language) associated to
 
 # CX Roadmap
 
-![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/cx-roadmap.png)
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/README-images/cx-roadmap.png)
 
 # Video Games in CX
 
@@ -430,7 +430,7 @@ cx examples/hello-world.cx
 ```
 
 This should print `Hello World!` in the terminal. Now try running `cx
-examples/game.cx`.
+examples/opengl/game.cx`.
 
 ### Other Options
 
@@ -2272,7 +2272,7 @@ expression depending on the command.
 
 ## Affordances
 
-![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/affordances.png)
+![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/README-images/affordances.png)
 
 
 

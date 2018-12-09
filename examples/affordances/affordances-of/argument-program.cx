@@ -1,0 +1,51 @@
+package main
+import "aff"
+
+func prgrmPredicate (prgrm aff.Program) (res bool) {
+  	if prgrm.Caller.FnName == "main.main" {
+		res = true
+	}
+}
+
+type Point struct {
+	a i64
+	b i64
+	x i32
+	y i32
+}
+
+func printX (p Point) {
+	i32.print(p.x)
+}
+
+func foo () {
+	var foo i32
+	
+	tgt := #{
+		expr(targetExpr)
+		inp(0)
+	}
+
+	fltrs := #{
+		filter(prgrmPredicate)
+	}
+	
+	elts := aff.query(fltrs)
+
+	aff.of(elts, tgt)
+
+	var p Point
+	p.a = 100L
+	p.b = 200L
+	p.x = 10
+	p.y = 20
+	
+targetExpr:
+	printX(p)
+
+	aff.request(elts, 0, tgt)
+}
+
+func main () {
+	foo()
+}

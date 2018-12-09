@@ -3,7 +3,6 @@
 package base
 
 import (
-	// "fmt"
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -92,100 +91,60 @@ func op_glfw_GetTime(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), FromF64(glfw.GetTime()))
 }
 
-func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
-
+func glfw_SetKeyCallback(expr *CXExpression, window string, functionName string, packageName string) {
 	callback := func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
-			var winName []byte
-			for key, win := range windows {
-				if w == win {
-					winName = []byte(key)
-					break
-				}
-			}
+		var inps [][]byte = make([][]byte, 5)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromI32(int32(key))
+		inps[2] = FromI32(int32(scancode))
+		inps[3] = FromI32(int32(action))
+		inps[4] = FromI32(int32(mods))
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
 
-			// if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
-			// 	return
-			// }
+	windows[window].SetKeyCallback(callback)
+}
 
-			var inps [][]byte = make([][]byte, 5)
+func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+	glfw_SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
 
-			inps[0] = winName
-			inps[1] = FromI32(int32(key)) // sKey
-			inps[2] = FromI32(int32(scancode)) // sScancode
-			inps[3] = FromI32(int32(action)) // sAction
-			inps[4] = FromI32(int32(mods)) // sModifierKey
+func op_glfw_SetKeyCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2  := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	glfw_SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+}
 
-			PROGRAM.CallCounter++
-			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
-			newCall.Operator = fn
-			newCall.Line = 0
-			newCall.FramePointer = PROGRAM.StackPointer
-			PROGRAM.StackPointer += newCall.Operator.Size
-
-			newFP := newCall.FramePointer
-
-			// wiping next mem frame (removing garbage)
-			for c := 0; c < expr.Operator.Size; c++ {
-				PROGRAM.Memory[newFP+c] = 0
-			}
-
-			for i, inp := range inps {
-				WriteMemory(
-					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
-					inp)
-			}
+func GetWindowName(w *glfw.Window) []byte {
+	for key, win := range windows {
+		if w == win {
+			return FromStr(key)
 		}
 	}
 
-	windows[ReadStr(fp, inp1)].SetKeyCallback(callback)
+	return nil
+}
+
+func glfw_SetCursorPosCallback(expr *CXExpression, window string, functionName string, packageName string) {
+	callback := func(w *glfw.Window, xpos float64, ypos float64) {
+		var inps [][]byte = make([][]byte, 3)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromF64(xpos)
+		inps[2] = FromF64(ypos)
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
+
+	windows[window].SetCursorPosCallback(callback)
 }
 
 func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+	glfw_SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
 
-	callback := func(w *glfw.Window, xpos float64, ypos float64) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
-			var winName []byte
-			for key, win := range windows {
-				if w == win {
-					winName = []byte(key)
-					break
-				}
-			}
-
-			var inps [][]byte = make([][]byte, 3)
-
-			inps[0] = winName
-			inps[1] = FromF64(xpos)
-			inps[2] = FromF64(ypos)
-
-			PROGRAM.CallCounter++
-			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
-			newCall.Operator = fn
-			newCall.Line = 0
-			newCall.FramePointer = PROGRAM.StackPointer
-			PROGRAM.StackPointer += newCall.Operator.Size
-
-			newFP := newCall.FramePointer
-
-			// wiping next mem frame (removing garbage)
-			for c := 0; c < expr.Operator.Size; c++ {
-				PROGRAM.Memory[newFP+c] = 0
-			}
-
-			for i, inp := range inps {
-				WriteMemory(
-					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
-					inp)
-			}
-		}
-	}
-
-	windows[ReadStr(fp, inp1)].SetCursorPosCallback(callback)
+func op_glfw_SetCursorPosCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	glfw_SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
 func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
@@ -197,52 +156,54 @@ func op_glfw_SetShouldClose(expr *CXExpression, fp int) {
 	}
 }
 
-func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	// prgrm := expr.Program
-
+func glfw_SetMouseButtonCallback(expr *CXExpression, window string, functionName string, packageName string) {
 	callback := func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		if fn, err := PROGRAM.GetFunction(ReadStr(fp, inp2), expr.Package.Name); err == nil {
-			var winName []byte
-			for key, win := range windows {
-				if w == win {
-					winName = []byte(key)
-					break
-				}
-			}
-
-			// if prgrm.CallStack[prgrm.CallCounter].Operator == fn {
-			// 	return
-			// }
-
-			var inps [][]byte = make([][]byte, 4)
-
-			inps[0] = winName
-			inps[1] = FromI32(int32(key))
-			inps[2] = FromI32(int32(action))
-			inps[3] = FromI32(int32(mods))
-
-			PROGRAM.CallCounter++
-			newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
-			newCall.Operator = fn
-			newCall.Line = 0
-			newCall.FramePointer = PROGRAM.StackPointer
-			PROGRAM.StackPointer += newCall.Operator.Size
-
-			newFP := newCall.FramePointer
-
-			// wiping next mem frame (removing garbage)
-			for c := 0; c < expr.Operator.Size; c++ {
-				PROGRAM.Memory[newFP+c] = 0
-			}
-
-			for i, inp := range inps {
-				WriteMemory(
-					GetFinalOffset(newFP, newCall.Operator.Inputs[i]),
-					inp)
-			}
-		}
+		var inps [][]byte = make([][]byte, 4)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromI32(int32(key))
+		inps[2] = FromI32(int32(action))
+		inps[3] = FromI32(int32(mods))
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
 	}
 
-	windows[ReadStr(fp, inp1)].SetMouseButtonCallback(callback)
+	windows[window].SetMouseButtonCallback(callback)
 }
+
+func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
+	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
+	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+}
+
+func op_glfw_SetMouseButtonCallbackEx(expr *CXExpression, fp int) {
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
+}
+
+type Func_i32_i32 func(a int32, b int32)
+var Functions_i32_i32 []Func_i32_i32
+
+func op_glfw_func_i32_i32(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	packageName := ReadStr(fp, inp1)
+	functionName := ReadStr(fp, inp2)
+	callback := func(a int32, b int32) {
+		var inps [][]byte = make([][]byte, 2)
+		inps[0] = FromI32(a)
+		inps[1] = FromI32(b)
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
+
+	Functions_i32_i32 = append(Functions_i32_i32, callback)
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(len(Functions_i32_i32) - 1)))
+}
+
+
+func op_glfw_call_i32_i32(expr *CXExpression, fp int) {
+	inp1, inp2, inp3 :=  expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	index := ReadI32(fp, inp1)
+	count := int32(len(Functions_i32_i32))
+	if index >= 0 && index < count {
+		Functions_i32_i32[index](ReadI32(fp, inp2), ReadI32(fp, inp3))
+	}
+}
+

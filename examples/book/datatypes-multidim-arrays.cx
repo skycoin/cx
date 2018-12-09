@@ -1,0 +1,9 @@
+package main
+
+func main () {
+    var foo [3][3]i32
+    
+    foo[1][2] = 40
+
+    i32.print(foo[1][2])
+}

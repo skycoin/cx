@@ -46,8 +46,8 @@
 /ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
 /ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
 /ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
-/union/                   { return f(UNION) }
-/->/                      { return f(INFER)      }
+/union/                   { return f(UNION)      }
+/#/                       { return f(INFER)      }
 /&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
 /\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
 /-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
@@ -220,9 +220,8 @@ import (
 	// "github.com/skycoin/cx/src/interpreted"
 )
 
-const VERSION = "0.5.16"
+const VERSION = "0.5.18"
 
-var currentFileName string
 var insert bool
 // var PRGRM *CXProgram
 
@@ -241,7 +240,8 @@ func f (token int) int {
 			
 			BOOLEAN_LITERAL, BYTE_LITERAL, STRING_LITERAL,
 			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
-			RETURN,
+			RETURN, BREAK, CONTINUE,
+			INC_OP, DEC_OP,
 			
 			RPAREN, RBRACE, RBRACK:
 			insert = true
@@ -249,14 +249,6 @@ func f (token int) int {
 		}
 		return token
 	}
-}
-
-func NormalizeNewlines(d []byte) []byte {
-	// replace CR LF \r\n (windows) with LF \n (unix)
-	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
-	// replace CF \r (mac) with LF \n (unix)
-	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
-	return d
 }
 
 func countNewLines (s []byte) int {
@@ -323,7 +315,7 @@ func unsafeEval (code string) (out string) {
 
 	addInitFunction(PRGRM)
 
-	if err := PRGRM.RunCompiled(0); err != nil {
+	if err := PRGRM.RunCompiled(0, nil); err != nil {
 		PRGRM = MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
@@ -370,46 +362,12 @@ type SourceCode struct {
 	Code string
 }
 
-func ObjectExplorer () {
-	host := ":5337"
-
-	mux := http.NewServeMux()
-	
-	mux.Handle("/", http.FileServer(http.Dir("./object-explorer")))
-	
-	// mux.HandleFunc("/get-objects", func(w http.ResponseWriter, r *http.Request) {
-	// 	defer r.Body.Close()
-	// 	var b []byte
-	// 	var err error
-	// 	if b, err = ioutil.ReadAll(r.Body); err != nil {
-	// 		http.Error(w, err.Error(), 500)
-	// 		return
-	// 	}
-	
-	// 	var source SourceCode
-	// 	if err := json.Unmarshal(b, &source); err != nil {
-	// 		http.Error(w, err.Error(), 500)
-	// 		return
-	// 	}
-
-	// 	if err := r.ParseForm(); err == nil {
-	// 		fmt.Fprintf(w, "%s", Eval(source.Code))
-	// 	}
-	// })
-
-	if listener, err := net.Listen("tcp", host); err == nil {
-		fmt.Println("Starting CX web service on http://127.0.0.1:5337/")
-		http.Serve(listener, mux)
-	}
-}
-
 func ServiceMode () {
 	host := ":5336"
 
 	mux := http.NewServeMux()
 	
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
@@ -426,7 +384,7 @@ func ServiceMode () {
 		}
 
 		if err := r.ParseForm(); err == nil {
-			fmt.Fprintf(w, "%s", Eval(source.Code))
+			fmt.Fprintf(w, "%s", Eval(source.Code + "\n"))
 		}
 	})
 
@@ -436,12 +394,19 @@ func ServiceMode () {
 	}
 }
 
-func parseFile (fileName string) {
-	sourceCode, err := os.Open(fileName)
-	if err != nil {
-		panic(fmt.Sprintf("Couldn't read file."))
-	}
-	yyParse(NewLexer(sourceCode))
+func IdeServiceMode() {
+	// Leaps's host address
+	ideHost := "localhost:5335"
+
+	// Working directory for ide
+	sharedPath := fmt.Sprintf("%s/src/github.com/skycoin/cx", os.Getenv("GOPATH"))
+
+	// Start Leaps
+	// cmd = `leaps -address localhost:5335 $GOPATH/src/skycoin/cx`
+	cmnd := exec.Command("leaps", "-address", ideHost, sharedPath)
+
+	// Just leave start command
+	cmnd.Start()
 }
 
 func help () {
@@ -455,6 +420,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
+-ide, --ide						  Start CX as a web service, and Leaps service start also.
 
 Signal options:
 -signal-client                   Run signal client
@@ -602,10 +568,6 @@ func addInitFunction (PRGRM *CXProgram) {
 func main () {
 	checkCXPathSet()
 
-	// InitBareOps()
-	// InitBaseOps()
-	// InitExtraOps()
-
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
@@ -617,6 +579,7 @@ func main () {
 		ReplMode = true
 	}
 
+	cxArgs := []string{}
 	flagMode := false
 	newProject := false
 	var compileOutput string = "o"
@@ -631,6 +594,11 @@ func main () {
 		}
 		if arg == "--web" || arg == "-w" {
 			WebMode = true
+			flagMode = true
+			continue
+		}
+		if arg == "--ide" || arg == "-ide" {
+			IdeMode = true
 			flagMode = true
 			continue
 		}
@@ -662,6 +630,10 @@ func main () {
 		if arg == "--help" || arg == "-h" {
 			HelpMode = true
 			flagMode = true
+			continue
+		}
+		if len(arg) > 2 && arg[0:2] == "++" {
+		   cxArgs = append(cxArgs, arg)
 			continue
 		}
 		// viscript options
@@ -735,7 +707,12 @@ func main () {
 
 	if WebMode {
 		ServiceMode()
-		// ObjectExplorer()
+		return
+	}
+
+	if IdeMode {
+		IdeServiceMode()
+		ServiceMode()
 		return
 	}
 
@@ -994,6 +971,19 @@ func main () {
 
 	PRGRM = cxgo0.PRGRM0
 
+	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
+
+		arg0 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_UNDEFINED])
+		arg0.Package = osPkg
+
+		arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
+		arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
+		arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
+
+
+		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
+	}
+	parseErrors := 0
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
@@ -1002,17 +992,17 @@ func main () {
 		if len(fileNames) > 0 {
 			CurrentFile = fileNames[i]
 		}
-		yyParse(NewLexer(b))
+		parseErrors += yyParse(NewLexer(b))
 	}
 
-	if FoundCompileErrors {
-		os.Exit(3)
+	if FoundCompileErrors || parseErrors > 0 {
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if len(sourceCode) == 0 {
 		mod := MakePackage(MAIN_PKG)
 		PRGRM.AddPackage(mod)
-		fn := MakeFunction("main")
+		fn := MakeFunction(MAIN_FUNC)
 		mod.AddFunction(fn)
 
 		ReplTargetFn = MAIN_FUNC
@@ -1030,21 +1020,24 @@ func main () {
 	LineNo = 0
 
 	if FoundCompileErrors {
-		os.Exit(3)
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	if ReplMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
 		if InterpretMode {
-			if err := PRGRM.RunCompiled(0); err != nil {
+			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
 				fmt.Println(err)
 				repl()
 			}
 		} else {
-			if err := PRGRM.RunCompiled(0); err != nil {
-				fmt.Println(err)
+			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
+				panic(err)
 				// repl()
+			}
+			if AssertFailed() {
+				os.Exit(CX_ASSERT)
 			}
 		}
 	}

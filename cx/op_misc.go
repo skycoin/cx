@@ -6,16 +6,14 @@ import (
 )
 
 func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
-	var heapOffset int
-
-	heapOffset = AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
 
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
 	size := encoder.SerializeAtomic(int32(len(byts)))
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
@@ -51,11 +49,6 @@ func op_identity(expr *CXExpression, fp int) {
 			WriteMemory(out1Offset, encoder.SerializeAtomic(int32(inp1Offset)))
 		}
 	}
-}
-
-func op_goTo(expr *CXExpression, call *CXCall) {
-	// inp1 := expr.Inputs[0]
-	// call.Line = ReadI32(inp1)
 }
 
 func op_jmp(expr *CXExpression, fp int, call *CXCall) {

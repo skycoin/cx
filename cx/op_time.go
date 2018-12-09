@@ -6,9 +6,13 @@ import (
 	"time"
 )
 
+func makeTimestamp() int64 {
+	return time.Now().UnixNano() / (int64(time.Millisecond)/int64(time.Nanosecond))
+}
+
 func op_time_UnixMilli(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
-	outB1 := FromI64(time.Now().UnixNano() / int64(1000000))
+	outB1 := FromI64(makeTimestamp())
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 

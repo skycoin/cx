@@ -1,0 +1,31 @@
+package main
+
+var foo i32
+
+func bar () {
+    str.print("Hi.")
+}
+
+type foobar struct {
+    foo i32
+}
+
+func main () {
+    var target aff
+    var result []byte
+
+    target = #{
+        pkg(main)
+        var(foo)
+    }
+    result = serialize(target)
+    
+    target = #{
+        pkg(main)
+        fn(bar)
+    }
+    result = serialize(target)
+    
+    target = #{pkg(main) strct(foobar)}
+    result = serialize(target)
+}

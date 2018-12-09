@@ -8,7 +8,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_i32_i32(expr *CXExpression, fp int) {
+func op_i32_i32 (expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -197,13 +197,6 @@ func op_i32_log2(expr *CXExpression, fp int) {
 func op_i32_log10(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI32(int32(math.Log10(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// round() for i32. returns the decimal logarithm of x.
-func op_i32_round(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Round(float64(ReadI32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 

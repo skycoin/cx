@@ -5,7 +5,6 @@ package base
 import (
 	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	// "encoding/json"
 )
 
 func GetAllObjects(prgrm *CXProgram) {

@@ -676,9 +676,14 @@ slice_literal_expression:
 /*         |       MUL_OP GT_OP MUL_OP */
 /*         ; */
 
+infer_action_arg:
+                IDENTIFIER
+        |       INT_LITERAL
+        ;
+
 infer_action:
-                IDENTIFIER LPAREN IDENTIFIER COMMA IDENTIFIER RPAREN
-	|	IDENTIFIER LPAREN IDENTIFIER RPAREN
+                IDENTIFIER LPAREN infer_action_arg COMMA IDENTIFIER RPAREN
+	|	IDENTIFIER LPAREN infer_action_arg RPAREN
 	|	IDENTIFIER LPAREN infer_action RPAREN
 	|	IDENTIFIER LPAREN infer_action COMMA infer_action RPAREN
         ;
@@ -698,7 +703,7 @@ infer_actions:
 /*         ; */
 
 infer_clauses:
-                infer_actions
+        |       infer_actions
         /* |       infer_targets */
                 ;
 
@@ -869,31 +874,6 @@ initializer:
                 assignment_expression
                 ;
 
-initializer_list:
-                designation initializer
-	|       initializer
-	|       initializer_list COMMA designation initializer
-	|       initializer_list COMMA initializer
-                ;
-
-designation:    designator_list ASSIGN
-                ;
-
-designator_list:
-                designator
-	|       designator_list designator
-                ;
-
-designator:
-                LBRACK constant_expression RBRACK
-	|       PERIOD IDENTIFIER
-                ;
-
-
-
-
-
-
 // statements
 statement:      labeled_statement
         |       compound_statement
@@ -904,7 +884,7 @@ statement:      labeled_statement
                 ;
 
 labeled_statement:
-                IDENTIFIER COLON statement
+                IDENTIFIER COLON block_item
 	|       CASE constant_expression COLON statement
 	|       DEFAULT COLON statement
                 ;

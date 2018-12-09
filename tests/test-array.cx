@@ -1,4 +1,4 @@
-package testing
+package main
 
 var intArray [5]i32
 var longArray [5]i64
@@ -9,36 +9,25 @@ var boolArray [5]bool
 // var stringArray [5]str
 
 func testGetElement () {
-	res = append(res, assert(intArray[4], 5, "I32 Get element error"))
-	res = append(res, assert(longArray[2], 90L, "I64 Get element error"))
-	res = append(res, assert(floatArray[0], 3.9, "F32 Get element error"))
-	res = append(res, assert(doubleArray[1], 70.0D, "F64 Get element error"))
-	res = append(res, assert(boolArray[4], false, "BOOL Get element error"))
-	res = append(res, assert(byteArray[2], 379B, "BYTE Get element error"))
-	
-	// assert(stringArray[4], "Hello there!", "STR Get element error")
+	test(intArray[4], 5, "I32 Get element error")
+	test(longArray[2], 90L, "I64 Get element error")
+	test(floatArray[0], 3.9, "F32 Get element error")
+	test(doubleArray[1], 70.0D, "F64 Get element error")
+	test(boolArray[4], false, "BOOL Get element error")
+	test(byteArray[2], 379B, "BYTE Get element error")
+
+	// test(stringArray[4], "Hello there!", "STR Get element error")
 }
 
 // func testGetArray() () {
-// 	assert(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
-// 	assert(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
-// 	assert(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
-// 	assert(doubleArray, []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}, "[]F64 Get error")
-// 	assert(boolArray, []bool{ true, false, true, true, false}, "[]BOOL Get error")
-// 	assert(byteArray, []byte{ 70, 256, 379, 0, 255}, "[]BYTE Get error")
-// 	// assert(stringArray, []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}, "[]STR Get error")
+// 	test(intArray, []i32{ 1, 2, 3, 4, 5}, "[]I32 Get error")
+// 	test(longArray, []i64{ 20L, 30L, 90L, 1L, 5L}, "[]I64 Get error")
+// 	test(floatArray, []f32{ 3.9, 6.7, 1.2, 5.3, 9.102}, "[]F32 Get error")
+// 	test(doubleArray, []f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}, "[]F64 Get error")
+// 	test(boolArray, []bool{ true, false, true, true, false}, "[]BOOL Get error")
+// 	test(byteArray, []byte{ 70, 256, 379, 0, 255}, "[]BYTE Get error")
+// 	// test(stringArray, []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}, "[]STR Get error")
 // }
-
-
-
-
-
-
-
-
-
-
-
 
 // func testPrintElement() () {
 // 	str.print("PASS: I32 Print element")
@@ -123,36 +112,36 @@ func testGetElement () {
 // func testRead() () {
 // 	str.print("--------Array Read Test--------")
 // 	str.print("FAIL: []I32 Read")
-// 	//assert([]i32.read(intArray, 1), 2, "[]I32 Read error")
+// 	//test([]i32.read(intArray, 1), 2, "[]I32 Read error")
 
 // 	str.print("FAIL: []I64 Read")
-// 	//assert([]i64.read(longArray, 1), 30L, "[]I64 Read error")
+// 	//test([]i64.read(longArray, 1), 30L, "[]I64 Read error")
 
 // 	str.print("FAIL: []F32 Read")
-// 	//assert([]f32.read(floatArray, 1), 6.7, "[]F32 Read error")
+// 	//test([]f32.read(floatArray, 1), 6.7, "[]F32 Read error")
 
 // 	str.print("FAIL: []F64 Read")
-// 	//assert([]f64.read(doubleArray, 1), 70.0D, "[]F64 Read error")
+// 	//test([]f64.read(doubleArray, 1), 70.0D, "[]F64 Read error")
 
 // 	str.print("FAIL: []BOOL Read")
-// 	//assert([]bool.read(boolArray, 1), false, "[]BOOL Read error")
+// 	//test([]bool.read(boolArray, 1), false, "[]BOOL Read error")
 
 // 	str.print("FAIL: []BYTE Read")
-// 	//assert([]byte.read(byteArray, 1), 0, "[]BYTE Read error")
+// 	//test([]byte.read(byteArray, 1), 0, "[]BYTE Read error")
 
 // 	str.print("FAIL: []STR Read")
-// 	//assert([]str.read(stringArray, 1), "Foo!", "[]STR Read error")
+// 	//test([]str.read(stringArray, 1), "Foo!", "[]STR Read error")
 // }
 
 // func testLength() () {
 // 	str.print("--------Lenght Array Test--------")
-// 	assert(len(intArray), 5, "[]I32 len() error")
-// 	assert(len(longArray), 5, "[]I64 len() error")
-// 	assert(len(floatArray), 5, "[]F32 len() error")
-// 	assert(len(doubleArray), 5, "[]F64 len() error")
-// 	assert(len(boolArray), 5, "[]BOOL len() error")
-// 	assert(len(byteArray), 5, "[]BYTE len() error")
-// 	// assert(len(stringArray), 5, "[]STR len() error")
+// 	test(len(intArray), 5, "[]I32 len() error")
+// 	test(len(longArray), 5, "[]I64 len() error")
+// 	test(len(floatArray), 5, "[]F32 len() error")
+// 	test(len(doubleArray), 5, "[]F64 len() error")
+// 	test(len(boolArray), 5, "[]BOOL len() error")
+// 	test(len(byteArray), 5, "[]BYTE len() error")
+// 	// test(len(stringArray), 5, "[]STR len() error")
 // }
 
 // func testWriteElement() () {
@@ -174,13 +163,13 @@ func testGetElement () {
 // 	byteArray[2] = 8964
 // 	// stringArray[2] = "Oops!"
 
-// 	assert(intArray[2], 374, "I32 Write element error")
-// 	assert(longArray[2], 9386489L, "I64 Write element error")
-// 	assert(floatArray[2], 294.873, "F32 Write element error")
-// 	assert(doubleArray[2], 2048.2345D, "F64 Write element error")
-// 	assert(boolArray[2], false, "BOOL Write element error")
-// 	assert(byteArray[2], 4, "BYTE Write element error")
-// 	// assert(stringArray[2], "Oops!", "STR Write element error")
+// 	test(intArray[2], 374, "I32 Write element error")
+// 	test(longArray[2], 9386489L, "I64 Write element error")
+// 	test(floatArray[2], 294.873, "F32 Write element error")
+// 	test(doubleArray[2], 2048.2345D, "F64 Write element error")
+// 	test(boolArray[2], false, "BOOL Write element error")
+// 	test(byteArray[2], 4, "BYTE Write element error")
+// 	// test(stringArray[2], "Oops!", "STR Write element error")
 
 // 	intArray[2] = tempI32
 // 	longArray[2] = tempI64
@@ -191,16 +180,14 @@ func testGetElement () {
 // 	// stringArray[2] = tempString
 // }
 
-
-
-func testArray () () {
+func main () () {
 	intArray = [5]i32{ 1, 2, 3, 4, 5}
 	longArray = [5]i64{20L, 30L, 90L, 1L, 5L}
 	floatArray = [5]f32{3.9, 6.7, 1.2, 5.3, 9.102}
 	doubleArray = [5]f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
 	byteArray = [5]byte{70B, 256B, 379B, 0B, 255B}
 	boolArray = [5]bool{ true, false, true, true, false}
-	
+
 	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}
 
 	testGetElement()

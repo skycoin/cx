@@ -1,0 +1,52 @@
+package foo
+
+type Matrix struct {
+	a i32
+}
+
+package main
+import "aff"
+import "foo"
+
+type Point struct {
+	a i32
+}
+
+type Line struct {
+	b i32
+}
+
+type Person struct {
+	c i32
+}
+
+func predStrct (strct aff.Structure) (res bool) {
+	if strct.Name == "Point" || strct.Name == "Line" {
+		res = true
+	}
+}
+
+func main () {
+	var foo i32
+	
+targetExpr:
+	foo = i32.add(5, 6)
+	
+	tgt := #{
+		expr(targetExpr)
+		out(0)
+	}
+
+	fltrs := #{
+		filter(predStrct)
+	}
+
+	elts := aff.query(fltrs)
+
+	aff.of(elts, tgt)
+	
+	aff.request(elts, 0, tgt)
+
+	// Use the new field through affordances
+	// Ah, let's just print an instance of Point, duh
+}

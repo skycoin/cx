@@ -1,0 +1,29 @@
+package main
+import "aff"
+
+func isMainBar (prgrm aff.Program) (res bool) {
+    if prgrm.Caller.FnName == "main.bar" && prgrm.Caller.FnSize == 0 {
+        res = true
+    }
+}
+
+func foo () {
+    fltrs := #{
+      filter(isMainBar)
+    }
+    affs := aff.query(fltrs)
+    if len(affs) < 1 {
+        return
+    }
+
+    str.print(`I will only print if "main.bar" calls me`)
+}
+
+func bar () {
+   foo()
+}
+
+func main () {
+    foo()
+    bar()
+}

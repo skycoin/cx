@@ -1,4 +1,4 @@
-package testing
+package main
 
 func testI32out() (out i32) {
 	out = 1
@@ -41,7 +41,7 @@ func testF32in(n f32, m f32, o f32) (out f32) {
 }
 
 func testF64in(n f64, m f64, o f64) (out f64) {
-	out = f64.add(f64.mul(n, m), o) 
+	out = f64.add(f64.mul(n, m), o)
 }
 
 func testBoolin(n bool, m bool, o bool) (out bool) {
@@ -49,34 +49,34 @@ func testBoolin(n bool, m bool, o bool) (out bool) {
 }
 
 func testBytein(n byte, m byte, o byte) (out byte) {
-	out = m 
-} 
+	out = m
+}
 
 func testStringin(a str, b str) (out str) {
 	out = b
 }
 
 func testAllIns() () {
-	res = append(res, assert(testI32in(1, 2, 3), 6, "function in i32 error"))
-	res = append(res, assert(testI64in(1L, 2L, 3L), 0L, "function in i64 error"))
-	res = append(res, assert(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error"))
-	res = append(res, assert(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error"))
-	res = append(res, assert(testBoolin(true, false, true), false, "function in bool error"))
-	res = append(res, assert(testBytein(2B, 80B, 26B), 80B, "function in byte error"))
-	res = append(res, assert(testStringin("Not working", "It's working!"), "It's working!", "function in str error"))
+	test(testI32in(1, 2, 3), 6, "function in i32 error")
+	test(testI64in(1L, 2L, 3L), 0L, "function in i64 error")
+	test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
+	test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
+	test(testBoolin(true, false, true), false, "function in bool error")
+	test(testBytein(2B, 80B, 26B), 80B, "function in byte error")
+	test(testStringin("Not working", "It's working!"), "It's working!", "function in str error")
 }
 
 func testAllOuts() () {
-	res = append(res, assert(testI32out(), 1, "function out i32 error"))
-	res = append(res, assert(testI64out(), 1L, "function out i64 error"))
-	res = append(res, assert(testF32out(), 1.0, "function out f32 error"))
-	res = append(res, assert(testF64out(), 1.0D, "function out f64 error"))
-	res = append(res, assert(testBoolout(), false, "function out bool error"))
-	res = append(res, assert(testByteout(), i32.byte(255), "function out byte error"))
-	res = append(res, assert(testStringout(), "Foo bar", "function out str error"))
+	test(testI32out(), 1, "function out i32 error")
+	test(testI64out(), 1L, "function out i64 error")
+	test(testF32out(), 1.0, "function out f32 error")
+	test(testF64out(), 1.0D, "function out f64 error")
+	test(testBoolout(), false, "function out bool error")
+	test(testByteout(), i32.byte(255), "function out byte error")
+	test(testStringout(), "Foo bar", "function out str error")
 }
 
-func testFunctions () () {
+func main () () {
 	testAllIns()
 	testAllOuts()
 }

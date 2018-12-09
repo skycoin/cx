@@ -3,7 +3,7 @@ package base
 // constant codes
 const (
 	// https://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
-	/* gl_1_0 */
+	// gl_1_0
 	CONST_GL_DEPTH_BUFFER_BIT = iota
 	CONST_GL_STENCIL_BUFFER_BIT
 	CONST_GL_COLOR_BUFFER_BIT
@@ -25,6 +25,8 @@ const (
 	CONST_GL_NOTEQUAL
 	CONST_GL_GEQUAL
 	CONST_GL_ALWAYS
+	CONST_GL_ZERO
+	CONST_GL_ONE
 	CONST_GL_SRC_ALPHA
 	CONST_GL_ONE_MINUS_SRC_ALPHA
 	CONST_GL_FRONT
@@ -40,7 +42,20 @@ const (
 	CONST_GL_LINE_SMOOTH
 	CONST_GL_POLYGON_SMOOTH
 	CONST_GL_CULL_FACE
+	CONST_GL_DEPTH_RANGE
 	CONST_GL_DEPTH_TEST
+	CONST_GL_DEPTH_WRITEMASK
+	CONST_GL_DEPTH_CLEAR_VALUE
+	CONST_GL_DEPTH_FUNC
+	CONST_GL_STENCIL_TEST
+	CONST_GL_STENCIL_CLEAR_VALUE
+	CONST_GL_STENCIL_FUNC
+	CONST_GL_STENCIL_VALUE_MASK
+	CONST_GL_STENCIL_FAIL
+	CONST_GL_STENCIL_PASS_DEPTH_FAIL
+	CONST_GL_STENCIL_PASS_DEPTH_PASS
+	CONST_GL_STENCIL_REF
+	CONST_GL_STENCIL_WRITEMASK
 	CONST_GL_DITHER
 	CONST_GL_BLEND
 	CONST_GL_SCISSOR_TEST
@@ -51,11 +66,18 @@ const (
 	CONST_GL_DONT_CARE
 	CONST_GL_UNSIGNED_BYTE
 	CONST_GL_FLOAT
+	CONST_GL_INVERT
 	CONST_GL_TEXTURE
 	CONST_GL_COLOR
+	CONST_GL_DEPTH
+	CONST_GL_STENCIL
+	CONST_GL_STENCIL_INDEX
 	CONST_GL_DEPTH_COMPONENT
 	CONST_GL_RGBA
+	CONST_GL_KEEP
 	CONST_GL_REPLACE
+	CONST_GL_INCR
+	CONST_GL_DECR
 	CONST_GL_NEAREST
 	CONST_GL_LINEAR
 	CONST_GL_NEAREST_MIPMAP_NEAREST
@@ -68,23 +90,28 @@ const (
 	CONST_GL_TEXTURE_WRAP_T
 	CONST_GL_REPEAT
 
-	/* gl_1_1 */
+	// gl_1_1
 	CONST_GL_RGBA8
 	CONST_GL_VERTEX_ARRAY
 
-	/* gl_1_2 */
+	// gl_1_2
 	CONST_GL_TEXTURE_WRAP_R
 	CONST_GL_CLAMP_TO_EDGE
 
-	/* gl_1_3 */
+	// gl_1_3
 	CONST_GL_TEXTURE0
 	CONST_GL_MULTISAMPLE_ARB // remove _ARB
 	CONST_GL_CLAMP_TO_BORDER
 
-	/* gl_1_4 */
+	// gl_1_4
+	CONST_GL_DEPTH_COMPONENT16
+	CONST_GL_DEPTH_COMPONENT24
+	CONST_GL_DEPTH_COMPONENT32
 	CONST_GL_MIRRORED_REPEAT
+	CONST_GL_INCR_WRAP
+	CONST_GL_DECR_WRAP
 
-	/* gl_1_5 */
+	// gl_1_5
 	CONST_GL_ARRAY_BUFFER
 	CONST_GL_STREAM_DRAW
 	CONST_GL_STREAM_READ
@@ -96,12 +123,24 @@ const (
 	CONST_GL_DYNAMIC_READ
 	CONST_GL_DYNAMIC_COPY
 
-	/* gl_2_0 */
+	// gl_2_0
+	CONST_GL_STENCIL_BACK_FUNC
+	CONST_GL_STENCIL_BACK_FAIL
+	CONST_GL_STENCIL_BACK_PASS_DEPTH_FAIL
+	CONST_GL_STENCIL_BACK_PASS_DEPTH_PASS
 	CONST_GL_FRAGMENT_SHADER
 	CONST_GL_VERTEX_SHADER
+	CONST_GL_STENCIL_BACK_REF
+	CONST_GL_STENCIL_BACK_VALUE_MASK
+	CONST_GL_STENCIL_BACK_WRITEMASK
 
-	/* gl_3_0 */
+	// gl_3_0
+	CONST_GL_DEPTH_COMPONENT32F
+	CONST_GL_DEPTH32F_STENCIL8
 	CONST_GL_FRAMEBUFFER_UNDEFINED
+	CONST_GL_DEPTH_STENCIL_ATTACHMENT
+	CONST_GL_DEPTH_STENCIL
+	CONST_GL_DEPTH24_STENCIL8
 	CONST_GL_FRAMEBUFFER_COMPLETE
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
@@ -114,14 +153,18 @@ const (
 	CONST_GL_FRAMEBUFFER
 	CONST_GL_RENDERBUFFER
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+	CONST_GL_STENCIL_INDEX1
+	CONST_GL_STENCIL_INDEX4
+	CONST_GL_STENCIL_INDEX8
+	CONST_GL_STENCIL_INDEX16
 
-	/* gl_3_2 */
+	// gl_3_2
 	CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
 
-	/* gl_4_4 */
+	// gl_4_4
 	CONST_GL_MIRROR_CLAMP_TO_EDGE
 
-	/* Fixed pipeline. Deprecated ? */
+	// Fixed pipeline. Deprecated ?
 	CONST_GL_POLYGON
 	CONST_GL_MODELVIEW
 	CONST_GL_PROJECTION
@@ -165,499 +208,255 @@ const (
 	CONST_GLTEXT_LEFT_TO_RIGHT
 	CONST_GLTEXT_RIGHT_TO_LEFT
 	CONST_GLTEXT_TOP_TO_BOTTOM
+
+	// os
+	CONST_OS_RUN_SUCCESS
+	CONST_OS_RUN_EMPTY_CMD
+	CONST_OS_RUN_PANIC
+	CONST_OS_RUN_START_FAILED
+	CONST_OS_RUN_WAIT_FAILED
+	CONST_OS_RUN_TIMEOUT
+
+	// cx
+	CONST_CX_SUCCESS
+	CONST_CX_RUNTIME_ERROR
+	CONST_CX_PANIC
+	CONST_CX_COMPILATION_ERROR
+	CONST_CX_INTERNAL_ERROR
+	CONST_CX_ASSERT
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
-var ConstNames map[int]string = map[int]string{
-	/* gl_1_0 */
-	CONST_GL_DEPTH_BUFFER_BIT:       "gl.DEPTH_BUFFER_BIT",
-	CONST_GL_STENCIL_BUFFER_BIT:     "gl.STENCIL_BUFFER_BIT",
-	CONST_GL_COLOR_BUFFER_BIT:       "gl.COLOR_BUFFER_BIT",
-	CONST_GL_FALSE:                  "gl.FALSE",
-	CONST_GL_TRUE:                   "gl.TRUE",
-	CONST_GL_POINTS:                 "gl.POINTS",
-	CONST_GL_LINES:                  "gl.LINES",
-	CONST_GL_LINE_LOOP:              "gl.LINE_LOOP",
-	CONST_GL_LINE_STRIP:             "gl.LINE_STRIP",
-	CONST_GL_TRIANGLES:              "gl.TRIANGLES",
-	CONST_GL_TRIANGLE_STRIP:         "gl.TRIANGLE_STRIP",
-	CONST_GL_TRIANGLE_FAN:           "gl.TRIANGLE_FAN",
-	CONST_GL_QUADS:                  "gl.QUADS",
-	CONST_GL_LESS:                   "gl.LESS",
-	CONST_GL_EQUAL:                  "gl.EQUAL",
-	CONST_GL_LEQUAL:                 "gl.LEQUAL",
-	CONST_GL_GREATER:                "gl.GREATER",
-	CONST_GL_NOTEQUAL:               "gl.NOTEQUAL",
-	CONST_GL_GEQUAL:                 "gl.GEQUAL",
-	CONST_GL_ALWAYS:                 "gl.ALWAYS",
-	CONST_GL_SRC_ALPHA:              "gl.SRC_ALPHA",
-	CONST_GL_ONE_MINUS_SRC_ALPHA:    "gl.ONE_MINUS_SRC_ALPHA",
-	CONST_GL_FRONT:                  "gl.FRONT",
-	CONST_GL_BACK:                   "gl.BACK",
-	CONST_GL_FRONT_AND_BACK:         "gl.FRONT_AND_BACK",
-	CONST_GL_NO_ERROR:               "gl.NO_ERROR",
-	CONST_GL_INVALID_ENUM:           "gl.INVALID_ENUM",
-	CONST_GL_INVALID_VALUE:          "gl.INVALID_VALUE",
-	CONST_GL_INVALID_OPERATION:      "gl.INVALID_OPERATION",
-	CONST_GL_STACK_OVERFLOW:         "gl.STACK_OVERFLOW",
-	CONST_GL_STACK_UNDERFLOW:        "gl.STACK_UNDERFLOW",
-	CONST_GL_OUT_OF_MEMORY:          "gl.OUT_OF_MEMORY",
-	CONST_GL_LINE_SMOOTH:            "gl.LINE_SMOOTH",
-	CONST_GL_POLYGON_SMOOTH:         "gl.POLYGON_SMOOTH",
-	CONST_GL_CULL_FACE:              "gl.CULL_FACE",
-	CONST_GL_DEPTH_TEST:             "gl.DEPTH_TEST",
-	CONST_GL_DITHER:                 "gl.DITHER",
-	CONST_GL_BLEND:                  "gl.BLEND",
-	CONST_GL_SCISSOR_TEST:           "gl.SCISSOR_TEST",
-	CONST_GL_POLYGON_SMOOTH_HINT:    "gl.POLYGON_SMOOTH_HINT",
-	CONST_GL_TEXTURE_2D:             "gl.TEXTURE_2D",
-	CONST_GL_TEXTURE_WIDTH:          "gl.TEXTURE_WIDTH",
-	CONST_GL_TEXTURE_HEIGHT:         "gl.TEXTURE_HEIGHT",
-	CONST_GL_DONT_CARE:              "gl.DONT_CARE",
-	CONST_GL_UNSIGNED_BYTE:          "gl.UNSIGNED_BYTE",
-	CONST_GL_FLOAT:                  "gl.FLOAT",
-	CONST_GL_TEXTURE:                "gl.TEXTURE",
-	CONST_GL_COLOR:                  "gl.COLOR",
-	CONST_GL_DEPTH_COMPONENT:        "gl.DEPTH_COMPONENT",
-	CONST_GL_RGBA:                   "gl.RGBA",
-	CONST_GL_REPLACE:                "gl.REPLACE",
-	CONST_GL_NEAREST:                "gl.NEAREST",
-	CONST_GL_LINEAR:                 "gl.LINEAR",
-	CONST_GL_NEAREST_MIPMAP_NEAREST: "gl.NEAREST_MIPMAP_NEAREST",
-	CONST_GL_LINEAR_MIPMAP_NEAREST:  "gl.LINEAR_MIPMAP_NEAREST",
-	CONST_GL_NEAREST_MIPMAP_LINEAR:  "gl.NEAREST_MIPMAP_LINEAR",
-	CONST_GL_LINEAR_MIPMAP_LINEAR:   "gl.LINEAR_MIPMAP_LINEAR",
-	CONST_GL_TEXTURE_MAG_FILTER:     "gl.TEXTURE_MAP_FILTER",
-	CONST_GL_TEXTURE_MIN_FILTER:     "gl.TEXTURE_MIN_FILTER",
-	CONST_GL_TEXTURE_WRAP_S:         "gl.TEXTURE_WRAP_S",
-	CONST_GL_TEXTURE_WRAP_T:         "gl.TEXTURE_WRAP_T",
-	CONST_GL_REPEAT:                 "gl.REPEAT",
+var ConstNames map[int]string = map[int]string {}
+var ConstCodes map[string]int = map[string]int {}
+var Constants map[int]CXConstant = map[int]CXConstant {}
 
-	/* gl_1_1 */
-	CONST_GL_RGBA8:                  "gl.RGBA8",
-	CONST_GL_VERTEX_ARRAY:           "gl.VERTEX_ARRAY",
-
-	/* gl_1_2 */
-	CONST_GL_TEXTURE_WRAP_R:         "gl.TEXTURE_WRAP_R",
-	CONST_GL_CLAMP_TO_EDGE:          "gl.CLAMP_TO_EDGE",
-
-	/* gl_1_3 */
-	CONST_GL_TEXTURE0:               "gl.TEXTURE0",
-	CONST_GL_MULTISAMPLE_ARB:        "gl.MULTISAMPLE_ARB", // remove _ARB
-	CONST_GL_CLAMP_TO_BORDER:        "gl.CLAMP_TO_BORDER",
-
-	/* gl_1_4 */
-	CONST_GL_MIRRORED_REPEAT:        "gl.MIRRORED_REPEAT",
-
-	/* gl_1_5 */
-	CONST_GL_ARRAY_BUFFER:        "gl.ARRAY_BUFFER",
-	CONST_GL_STREAM_DRAW:         "gl.STREAM_DRAW",
-	CONST_GL_STREAM_READ:         "gl.STREAM_READ",
-	CONST_GL_STREAM_COPY:         "gl.STREAM_COPY",
-	CONST_GL_STATIC_DRAW:         "gl.STATIC_DRAW",
-	CONST_GL_STATIC_READ:         "gl.STATIC_READ",
-	CONST_GL_STATIC_COPY:         "gl.STATIC_COPY",
-	CONST_GL_DYNAMIC_DRAW:        "gl.DYNAMIC_DRAW",
-	CONST_GL_DYNAMIC_READ:        "gl.DYNAMIC_READ",
-	CONST_GL_DYNAMIC_COPY:        "gl.DYNAMIC_COPY",
-
-	/* gl_2_0 */
-	CONST_GL_FRAGMENT_SHADER:     "gl.FRAGMENT_SHADER",
-	CONST_GL_VERTEX_SHADER:       "gl.VERTEX_SHADER",
-
-	/* gl_3_0 */
-	CONST_GL_FRAMEBUFFER_UNDEFINED:                     "gl.FRAMEBUFFER_UNDEFINED",
-	CONST_GL_FRAMEBUFFER_COMPLETE:                      "gl.FRAMEBUFFER_COMPLETE",
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         "gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT",
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: "gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT",
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        "gl.FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER",
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        "gl.FRAMEBUFFER_INCOMPLETE_READ_BUFFER",
-	CONST_GL_FRAMEBUFFER_UNSUPPORTED:                   "gl.FRAMEBUFFER_UNSUPPORTED",
-	CONST_GL_COLOR_ATTACHMENT0:                         "gl.COLOR_ATTACHMENT0",
-	CONST_GL_DEPTH_ATTACHMENT:                          "gl.DEPTH_ATTACHMENT",
-	CONST_GL_STENCIL_ATTACHMENT:                        "gl.STENCIL_ATTACHMENT",
-	CONST_GL_FRAMEBUFFER:                               "gl.FRAMEBUFFER",
-	CONST_GL_RENDERBUFFER:                              "gl.RENDERBUFFER",
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        "gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE",
-
-	/* gl_3_2 */
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      "gl.FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS",
-
-	/* gl_4_4 */
-	CONST_GL_MIRROR_CLAMP_TO_EDGE: "gl.MIRROR_CLAMP_TO_EDGE",
-
-	/* Fixed pipeline. Deprecated ? */
-	CONST_GL_POLYGON:             "gl.POLYGON",
-	CONST_GL_MODELVIEW:           "gl.MODELVIEW",
-	CONST_GL_PROJECTION:          "gl.PROJECTION",
-	CONST_GL_MODELVIEW_MATRIX:    "gl.MODELVIEW_MATRIX",
-	CONST_GL_LIGHTING:            "gl.LIGHTING",
-	CONST_GL_LIGHT0:              "gl.LIGHT0",
-	CONST_GL_AMBIENT:             "gl.AMBIENT",
-	CONST_GL_DIFFUSE:             "gl.DIFFUSE",
-	CONST_GL_POSITION:            "gl.POSITION",
-	CONST_GL_TEXTURE_ENV:         "gl.TEXTURE_ENV",
-	CONST_GL_TEXTURE_ENV_MODE:    "gl.TEXTURE_ENV_MODE",
-	CONST_GL_MODULATE:            "gl.MODULATE",
-	CONST_GL_DECAL:               "gl.DECAL",
-	CONST_GL_POINT_SMOOTH:        "gl.POINT_SMOOTH",
-
-	// glfw
-	CONST_GLFW_FALSE:                     "glfw.False",
-	CONST_GLFW_TRUE:                      "glfw.True",
-	CONST_GLFW_PRESS:                     "glfw.Press",
-	CONST_GLFW_RELEASE:                   "glfw.Release",
-	CONST_GLFW_REPEAT:                    "glfw.Repeat",
-	CONST_GLFW_KEY_UNKNOWN:               "glfw.KeyUnknown",
-	CONST_GLFW_CURSOR:                    "glfw.Cursor",
-	CONST_GLFW_STICKY_KEYS:               "glfw.StickyKeys",
-	CONST_GLFW_STICKY_MOUSE_BUTTONS:      "glfw.StickyMouseButtons",
-	CONST_GLFW_CURSOR_NORMAL:             "glfw.CursorNormal",
-	CONST_GLFW_CURSOR_HIDDEN:             "glfw.CursorHidden",
-	CONST_GLFW_CURSOR_DISABLED:           "glfw.CursorDisabled",
-	CONST_GLFW_RESIZABLE:                 "glfw.Resizable",
-	CONST_GLFW_CONTEXT_VERSION_MAJOR:     "glfw.ContextVersionMajor",
-	CONST_GLFW_CONTEXT_VERSION_MINOR:     "glfw.ContextVersionMinor",
-	CONST_GLFW_OPENGL_PROFILE:            "glfw.Opengl.Profile",
-	CONST_GLFW_OPENGL_COREPROFILE:        "glfw.Opengl.Coreprofile",
-	CONST_GLFW_OPENGL_FORWARD_COMPATIBLE: "glfw.Opengl.ForwardCompatible",
-	CONST_GLFW_MOUSE_BUTTON_LAST:         "glfw.MouseButtonLast",
-	CONST_GLFW_MOUSE_BUTTON_LEFT:         "glfw.MouseButtonLeft",
-	CONST_GLFW_MOUSE_BUTTON_RIGHT:        "glfw.MouseButtonRight",
-	CONST_GLFW_MOUSE_BUTTON_MIDDLE:       "glfw.MouseButtonMiddle",
-
-	// gltext
-	CONST_GLTEXT_LEFT_TO_RIGHT:           "gltext.LeftToRight",
-	CONST_GLTEXT_RIGHT_TO_LEFT:           "gltext.RightToLeft",
-	CONST_GLTEXT_TOP_TO_BOTTOM:           "gltext.TopToBottom",
+func AddConstCode(code int, name string, typ int, value []byte) {
+	ConstNames[code] = name
+	ConstCodes[name] = code
+	Constants[code] = CXConstant{Type: typ, Value: value}
 }
 
-// For the parser. These shouldn't be used in the runtime for performance reasons
-var ConstCodes map[string]int = map[string]int{
+func init() {
 	/* gl_1_0 */
-	"gl.DEPTH_BUFFER_BIT":       CONST_GL_DEPTH_BUFFER_BIT,
-	"gl.STENCIL_BUFFER_BIT":     CONST_GL_STENCIL_BUFFER_BIT,
-	"gl.COLOR_BUFFER_BIT":       CONST_GL_COLOR_BUFFER_BIT,
-	"gl.FALSE":                  CONST_GL_FALSE,
-	"gl.TRUE":                   CONST_GL_TRUE,
-	"gl.POINTS":                 CONST_GL_POINTS,
-	"gl.LINES":                  CONST_GL_LINES,
-	"gl.LINE_LOOP":              CONST_GL_LINE_LOOP,
-	"gl.LINE_STRIP":             CONST_GL_LINE_STRIP,
-	"gl.TRIANGLES":              CONST_GL_TRIANGLES,
-	"gl.TRIANGLE_STRIP":         CONST_GL_TRIANGLE_STRIP,
-	"gl.TRIANGLE_FAN":           CONST_GL_TRIANGLE_FAN,
-	"gl.QUADS":                  CONST_GL_QUADS,
-	"gl.LESS":                   CONST_GL_LESS,
-	"gl.EQUAL":                  CONST_GL_EQUAL,
-	"gl.LEQUAL":                 CONST_GL_LEQUAL,
-	"gl.GREATER":                CONST_GL_GREATER,
-	"gl.NOTEQUAL":               CONST_GL_NOTEQUAL,
-	"gl.GEQUAL":                 CONST_GL_GEQUAL,
-	"gl.ALWAYS":                 CONST_GL_ALWAYS,
-	"gl.SRC_ALPHA":              CONST_GL_SRC_ALPHA,
-	"gl.ONE_MINUS_SRC_ALPHA":    CONST_GL_ONE_MINUS_SRC_ALPHA,
-	"gl.FRONT":                  CONST_GL_FRONT,
-	"gl.BACK":                   CONST_GL_BACK,
-	"gl.FRONT_AND_BACK":         CONST_GL_FRONT_AND_BACK,
-	"gl.NO_ERROR":               CONST_GL_NO_ERROR,
-	"gl.INVALID_ENUM":           CONST_GL_INVALID_ENUM,
-	"gl.INVALID_VALUE":          CONST_GL_INVALID_VALUE,
-	"gl.INVALID_OPERATION":      CONST_GL_INVALID_OPERATION,
-	"gl.STACK_OVERFLOW":         CONST_GL_STACK_OVERFLOW,
-	"gl.STACK_UNDERFLOW":        CONST_GL_STACK_UNDERFLOW,
-	"gl.OUT_OF_MEMORY":          CONST_GL_OUT_OF_MEMORY,
-	"gl.LINE_SMOOTH":            CONST_GL_LINE_SMOOTH,
-	"gl.POLYGON_SMOOTH":         CONST_GL_POLYGON_SMOOTH,
-	"gl.CULL_FACE":              CONST_GL_CULL_FACE,
-	"gl.DEPTH_TEST":             CONST_GL_DEPTH_TEST,
-	"gl.DITHER":                 CONST_GL_DITHER,
-	"gl.BLEND":                  CONST_GL_BLEND,
-	"gl.SCISSOR_TEST":           CONST_GL_SCISSOR_TEST,
-	"gl.POLYGON_SMOOTH_HINT":    CONST_GL_POLYGON_SMOOTH_HINT,
-	"gl.TEXTURE_2D":             CONST_GL_TEXTURE_2D,
-	"gl.TEXTURE_WIDTH":          CONST_GL_TEXTURE_WIDTH,
-	"gl.TEXTURE_HEIGHT":         CONST_GL_TEXTURE_HEIGHT,
-	"gl.DONT_CARE":              CONST_GL_DONT_CARE,
-	"gl.UNSIGNED_BYTE":          CONST_GL_UNSIGNED_BYTE,
-	"gl.FLOAT":                  CONST_GL_FLOAT,
-	"gl.TEXTURE":                CONST_GL_TEXTURE,
-	"gl.COLOR":                  CONST_GL_COLOR,
-	"gl.DEPTH_COMPONENT":        CONST_GL_DEPTH_COMPONENT,
-	"gl.RGBA":                   CONST_GL_RGBA,
-	"gl.REPLACE":                CONST_GL_REPLACE,
-	"gl.NEREAST":                CONST_GL_NEAREST,
-	"gl.LINEAR":                 CONST_GL_LINEAR,
-	"gl.NEAREST_MIPMAP_NEAREST": CONST_GL_NEAREST_MIPMAP_NEAREST,
-	"gl.LINEAR_MIPMAP_NEAREST":  CONST_GL_LINEAR_MIPMAP_NEAREST,
-	"gl.NEAREST_MIPMAP_LINEAR":  CONST_GL_NEAREST_MIPMAP_LINEAR,
-	"gl.LINEAR_MIPMAP_LINEAR":   CONST_GL_LINEAR_MIPMAP_LINEAR,
-	"gl.TEXTURE_MAG_FILTER":     CONST_GL_TEXTURE_MAG_FILTER,
-	"gl.TEXTURE_MIN_FILTER":     CONST_GL_TEXTURE_MIN_FILTER,
-	"gl.TEXTURE_WRAP_S":         CONST_GL_TEXTURE_WRAP_S,
-	"gl.TEXTURE_WRAP_T":         CONST_GL_TEXTURE_WRAP_T,
-	"gl.REPEAT":                 CONST_GL_REPEAT,
+	AddConstCode( CONST_GL_DEPTH_BUFFER_BIT       , "gl.DEPTH_BUFFER_BIT"       , TYPE_I32, FromI32(0x00000100))
+	AddConstCode( CONST_GL_STENCIL_BUFFER_BIT     , "gl.STENCIL_BUFFER_BIT"     , TYPE_I32, FromI32(0x00000400))
+	AddConstCode( CONST_GL_COLOR_BUFFER_BIT       , "gl.COLOR_BUFFER_BIT"       , TYPE_I32, FromI32(0x00004000))
+	AddConstCode( CONST_GL_FALSE                  , "gl.FALSE"                  , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_TRUE                   , "gl.TRUE"                   , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GL_POINTS                 , "gl.POINTS"                 , TYPE_I32, FromI32(0x0000))
+	AddConstCode( CONST_GL_LINES                  , "gl.LINES"                  , TYPE_I32, FromI32(0x0001))
+	AddConstCode( CONST_GL_LINE_LOOP              , "gl.LINE_LOOP"              , TYPE_I32, FromI32(0x0002))
+	AddConstCode( CONST_GL_LINE_STRIP             , "gl.LINE_STRIP"             , TYPE_I32, FromI32(0x0003))
+	AddConstCode( CONST_GL_TRIANGLES              , "gl.TRIANGLES"              , TYPE_I32, FromI32(0x0004))
+	AddConstCode( CONST_GL_TRIANGLE_STRIP         , "gl.TRIANGLE_STRIP"         , TYPE_I32, FromI32(0x0005))
+	AddConstCode( CONST_GL_TRIANGLE_FAN           , "gl.TRIANGLE_FAN"           , TYPE_I32, FromI32(0x0006))
+	AddConstCode( CONST_GL_QUADS                  , "gl.QUADS"                  , TYPE_I32, FromI32(0x0007))
+	AddConstCode( CONST_GL_NEVER                  , "gl.NEVER"                  , TYPE_I32, FromI32(0x0200))
+	AddConstCode( CONST_GL_LESS                   , "gl.LESS"                   , TYPE_I32, FromI32(0x0201))
+	AddConstCode( CONST_GL_EQUAL                  , "gl.EQUAL"                  , TYPE_I32, FromI32(0x0202))
+	AddConstCode( CONST_GL_LEQUAL                 , "gl.LEQUAL"                 , TYPE_I32, FromI32(0x0203))
+	AddConstCode( CONST_GL_GREATER                , "gl.GREATER"                , TYPE_I32, FromI32(0x0204))
+	AddConstCode( CONST_GL_NOTEQUAL               , "gl.NOTEQUAL"               , TYPE_I32, FromI32(0x0205))
+	AddConstCode( CONST_GL_GEQUAL                 , "gl.GEQUAL"                 , TYPE_I32, FromI32(0x0206))
+	AddConstCode( CONST_GL_ALWAYS                 , "gl.ALWAYS"                 , TYPE_I32, FromI32(0x0207))
+	AddConstCode( CONST_GL_ZERO                   , "gl.ZERO"                   , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_ONE                    , "gl.ONE"                    , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GL_SRC_ALPHA              , "gl.SRC_ALPHA"              , TYPE_I32, FromI32(0x302))
+	AddConstCode( CONST_GL_ONE_MINUS_SRC_ALPHA    , "gl.ONE_MINUS_SRC_ALPHA"    , TYPE_I32, FromI32(0x303))
+	AddConstCode( CONST_GL_FRONT                  , "gl.FRONT"                  , TYPE_I32, FromI32(0x404))
+	AddConstCode( CONST_GL_BACK                   , "gl.BACK"                   , TYPE_I32, FromI32(0x405))
+	AddConstCode( CONST_GL_FRONT_AND_BACK         , "gl.FRONT_AND_BACK"         , TYPE_I32, FromI32(0x408))
+	AddConstCode( CONST_GL_NO_ERROR               , "gl.NO_ERROR"               , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GL_INVALID_ENUM           , "gl.INVALID_ENUM"           , TYPE_I32, FromI32(0x500))
+	AddConstCode( CONST_GL_INVALID_VALUE          , "gl.INVALID_VALUE"          , TYPE_I32, FromI32(0x501))
+	AddConstCode( CONST_GL_INVALID_OPERATION      , "gl.INVALID_OPERATION"      , TYPE_I32, FromI32(0x502))
+	AddConstCode( CONST_GL_STACK_OVERFLOW         , "gl.STACK_OVERFLOW"         , TYPE_I32, FromI32(0x503))
+	AddConstCode( CONST_GL_STACK_UNDERFLOW        , "gl.STACK_UNDERFLOW"        , TYPE_I32, FromI32(0x504))
+	AddConstCode( CONST_GL_OUT_OF_MEMORY          , "gl.OUT_OF_MEMORY"          , TYPE_I32, FromI32(0x505))
+	AddConstCode( CONST_GL_LINE_SMOOTH            , "gl.LINE_SMOOTH"            , TYPE_I32, FromI32(0x0B20))
+	AddConstCode( CONST_GL_POLYGON_SMOOTH         , "gl.POLYGON_SMOOTH"         , TYPE_I32, FromI32(0x0B41))
+	AddConstCode( CONST_GL_CULL_FACE              , "gl.CULL_FACE"              , TYPE_I32, FromI32(0x0B44))
+	AddConstCode( CONST_GL_DEPTH_RANGE            , "gl.DEPTH_RANGE"            , TYPE_I32, FromI32(0x0B70))
+	AddConstCode( CONST_GL_DEPTH_TEST             , "gl.DEPTH_TEST"             , TYPE_I32, FromI32(0x0B71))
+	AddConstCode( CONST_GL_DEPTH_WRITEMASK        , "gl.DEPTH_WRITEMASK"        , TYPE_I32, FromI32(0x0B72))
+	AddConstCode( CONST_GL_DEPTH_CLEAR_VALUE      , "gl.DEPTH_CLEAR_VALUE"      , TYPE_I32, FromI32(0x0B73))
+	AddConstCode( CONST_GL_DEPTH_FUNC             , "gl.DEPTH_FUNC"             , TYPE_I32, FromI32(0x0B74))
+	AddConstCode( CONST_GL_STENCIL_TEST           , "gl.STENCIL_TEST"           , TYPE_I32, FromI32(0x0B90))
+	AddConstCode( CONST_GL_STENCIL_CLEAR_VALUE    , "gl.STENCIL_CLEAR_VALUE"    , TYPE_I32, FromI32(0x0B91))
+	AddConstCode( CONST_GL_STENCIL_FUNC           , "gl.STENCIL_FUNC"           , TYPE_I32, FromI32(0x0B92))
+	AddConstCode( CONST_GL_STENCIL_VALUE_MASK     , "gl.STENCIL_VALUE_MASK"     , TYPE_I32, FromI32(0x0B93))
+	AddConstCode( CONST_GL_STENCIL_FAIL           , "gl.STENCIL_FAIL"           , TYPE_I32, FromI32(0x0B94))
+	AddConstCode( CONST_GL_STENCIL_PASS_DEPTH_FAIL, "gl.STENCIL_PASS_DEPTH_FAIL", TYPE_I32, FromI32(0x0B95))
+	AddConstCode( CONST_GL_STENCIL_PASS_DEPTH_PASS, "gl.STENCIL_PASS_DEPTH_PASS", TYPE_I32, FromI32(0x0B96))
+	AddConstCode( CONST_GL_STENCIL_REF            , "gl.STENCIL_REF"            , TYPE_I32, FromI32(0x0B97))
+	AddConstCode( CONST_GL_STENCIL_WRITEMASK      , "gl.STENCIL_WRITE_MASK"     , TYPE_I32, FromI32(0x0B98))
+	AddConstCode( CONST_GL_DITHER                 , "gl.DITHER"                 , TYPE_I32, FromI32(0x0BD0))
+	AddConstCode( CONST_GL_BLEND                  , "gl.BLEND"                  , TYPE_I32, FromI32(0x0BE2))
+	AddConstCode( CONST_GL_SCISSOR_TEST           , "gl.SCISSOR_TEST"           , TYPE_I32, FromI32(0x0C11))
+	AddConstCode( CONST_GL_POLYGON_SMOOTH_HINT    , "gl.POLYGON_SMOOTH_HINT"    , TYPE_I32, FromI32(0x0C53))
+	AddConstCode( CONST_GL_TEXTURE_2D             , "gl.TEXTURE_2D"             , TYPE_I32, FromI32(0x0DE1))
+	AddConstCode( CONST_GL_TEXTURE_WIDTH          , "gl.TEXTURE_WIDTH"          , TYPE_I32, FromI32(0x1000))
+	AddConstCode( CONST_GL_TEXTURE_HEIGHT         , "gl.TEXTURE_HEIGHT"         , TYPE_I32, FromI32(0x1001))
+	AddConstCode( CONST_GL_DONT_CARE              , "gl.DONT_CARE"              , TYPE_I32, FromI32(0x1100))
+	AddConstCode( CONST_GL_UNSIGNED_BYTE          , "gl.UNSIGNED_BYTE"          , TYPE_I32, FromI32(0x1401))
+	AddConstCode( CONST_GL_FLOAT                  , "gl.FLOAT"                  , TYPE_I32, FromI32(0x1406))
+	AddConstCode( CONST_GL_INVERT                 , "gl.INVERT"                 , TYPE_I32, FromI32(0x150A))
+	AddConstCode( CONST_GL_TEXTURE                , "gl.TEXTURE"                , TYPE_I32, FromI32(0x1702))
+	AddConstCode( CONST_GL_COLOR                  , "gl.COLOR"                  , TYPE_I32, FromI32(0x1800))
+	AddConstCode( CONST_GL_DEPTH                  , "gl.DEPTH"                  , TYPE_I32, FromI32(0x1801))
+	AddConstCode( CONST_GL_STENCIL                , "gl.STENCIL"                , TYPE_I32, FromI32(0x1802))
+	AddConstCode( CONST_GL_STENCIL_INDEX          , "gl.STENCIL_INDEX"          , TYPE_I32, FromI32(0x1901))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT        , "gl.DEPTH_COMPONENT"        , TYPE_I32, FromI32(0x1902))
+	AddConstCode( CONST_GL_RGBA                   , "gl.RGBA"                   , TYPE_I32, FromI32(0x1908))
+	AddConstCode( CONST_GL_KEEP                   , "gl.KEEP"                   , TYPE_I32, FromI32(0x1E00))
+	AddConstCode( CONST_GL_REPLACE                , "gl.REPLACE"                , TYPE_I32, FromI32(0x1E01))
+	AddConstCode( CONST_GL_INCR                   , "gl.INCR"                   , TYPE_I32, FromI32(0x1E02))
+	AddConstCode( CONST_GL_DECR                   , "gl.DECR"                   , TYPE_I32, FromI32(0x1E03))
+	AddConstCode( CONST_GL_NEAREST                , "gl.NEAREST"                , TYPE_I32, FromI32(0x2600))
+	AddConstCode( CONST_GL_LINEAR                 , "gl.LINEAR"                 , TYPE_I32, FromI32(0x2601))
+	AddConstCode( CONST_GL_NEAREST_MIPMAP_NEAREST , "gl.NEAREST_MIPMAP_NEAREST" , TYPE_I32, FromI32(0x2700))
+	AddConstCode( CONST_GL_LINEAR_MIPMAP_NEAREST  , "gl.LINEAR_MIPMAP_NEAREST"  , TYPE_I32, FromI32(0x2701))
+	AddConstCode( CONST_GL_NEAREST_MIPMAP_LINEAR  , "gl.NEAREST_MIPMAP_LINEAR"  , TYPE_I32, FromI32(0x2702))
+	AddConstCode( CONST_GL_LINEAR_MIPMAP_LINEAR   , "gl.LINEAR_MIPMAP_LINEAR"   , TYPE_I32, FromI32(0x2703))
+	AddConstCode( CONST_GL_TEXTURE_MAG_FILTER     , "gl.TEXTURE_MAG_FILTER"     , TYPE_I32, FromI32(0x2800))
+	AddConstCode( CONST_GL_TEXTURE_MIN_FILTER     , "gl.TEXTURE_MIN_FILTER"     , TYPE_I32, FromI32(0x2801))
+	AddConstCode( CONST_GL_TEXTURE_WRAP_S         , "gl.TEXTURE_WRAP_S"         , TYPE_I32, FromI32(0x2802))
+	AddConstCode( CONST_GL_TEXTURE_WRAP_T         , "gl.TEXTURE_WRAP_T"         , TYPE_I32, FromI32(0x2803))
+	AddConstCode( CONST_GL_REPEAT                 , "gl.REPEAT"                 , TYPE_I32, FromI32(0x2901))
 
-	/* gl_1_1 */
-	"gl.RGBA8":                  CONST_GL_RGBA8,
-	"gl.VERTEX_ARRAY":           CONST_GL_VERTEX_ARRAY,
+	// gl_1_1
+	AddConstCode( CONST_GL_RGBA8                 , "gl.RGBA8"                 , TYPE_I32, FromI32(0x8058))
+	AddConstCode( CONST_GL_VERTEX_ARRAY          , "gl.VERTEX_ARRAY"          , TYPE_I32, FromI32(0x8074))
 
-	/* gl_1_2 */
-	"gl.TEXTURE_WRAP_R":         CONST_GL_TEXTURE_WRAP_R,
-	"gl.CLAMP_TO_EDGE":          CONST_GL_CLAMP_TO_EDGE,
+	// gl_1_2
+	AddConstCode( CONST_GL_TEXTURE_WRAP_R        , "gl.TEXTURE_WRAP_R"        , TYPE_I32, FromI32(0x8072))
+	AddConstCode( CONST_GL_CLAMP_TO_EDGE         , "gl.CLAMP_TO_EDGE"         , TYPE_I32, FromI32(0x812F))
 
-	/* gl_1_3 */
-	"gl.TEXTURE0":               CONST_GL_TEXTURE0,
-	"gl.MULTISAMPLE_ARB":        CONST_GL_MULTISAMPLE_ARB, // remove _ARB
-	"gl.CLAMP_TO_BORDER":        CONST_GL_CLAMP_TO_BORDER,
+	// gl_1_3
+	AddConstCode( CONST_GL_TEXTURE0              , "gl.TEXTURE0"              , TYPE_I32, FromI32(0x84C0))
+	AddConstCode( CONST_GL_MULTISAMPLE_ARB       , "gl.MULTISAMPLE_ARB"       , TYPE_I32, FromI32(0x809D)) // remove _ARB
+	AddConstCode( CONST_GL_CLAMP_TO_BORDER       , "gl.CLAMP_TO_BORDER"       , TYPE_I32, FromI32(0x812D))
 
-	/* gl_1_4 */
-	"gl.MIRRORED_REPEAT":        CONST_GL_MIRRORED_REPEAT,
+	// gl_1_4
+	AddConstCode( CONST_GL_DEPTH_COMPONENT16     , "gl.DEPTH_COMPONENT16"     , TYPE_I32, FromI32(0x81A5))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT24     , "gl.DEPTH_COMPONENT24"     , TYPE_I32, FromI32(0x81A6))
+	AddConstCode( CONST_GL_DEPTH_COMPONENT32     , "gl.DEPTH_COMPONENT32"     , TYPE_I32, FromI32(0x81A7))
+	AddConstCode( CONST_GL_MIRRORED_REPEAT       , "gl.MIRRORED_REPEAT"       , TYPE_I32, FromI32(0x8370))
+	AddConstCode( CONST_GL_INCR_WRAP             , "gl.INCR_WRAP"             , TYPE_I32, FromI32(0x8507))
+	AddConstCode( CONST_GL_DECR_WRAP             , "gl.DECR_WRAP"             , TYPE_I32, FromI32(0x8508))
 
-	/* gl_1_5 */
-	"gl.ARRAY_BUFFER":        CONST_GL_ARRAY_BUFFER,
-	"gl.STREAM_DRAW":         CONST_GL_STREAM_DRAW,
-	"gl.STREAM_READ":         CONST_GL_STREAM_READ,
-	"gl.STREAM_COPY":         CONST_GL_STREAM_COPY,
-	"gl.STATIC_DRAW":         CONST_GL_STATIC_DRAW,
-	"gl.STATIC_READ":         CONST_GL_STATIC_READ,
-	"gl.STATIC_COPY":         CONST_GL_STATIC_COPY,
-	"gl.DYNAMIC_DRAW":        CONST_GL_DYNAMIC_DRAW,
-	"gl.DYNAMIC_READ":        CONST_GL_DYNAMIC_READ,
-	"gl.DYNAMIC_COPY":        CONST_GL_DYNAMIC_COPY,
+	// gl_1_5
+	AddConstCode( CONST_GL_ARRAY_BUFFER          , "gl.ARRAY_BUFFER"          , TYPE_I32, FromI32(0x8892))
+	AddConstCode( CONST_GL_STREAM_DRAW           , "gl.STREAM_DRAW"           , TYPE_I32, FromI32(0x88E0))
+	AddConstCode( CONST_GL_STREAM_READ           , "gl.STREAM_READ"           , TYPE_I32, FromI32(0x88E1))
+	AddConstCode( CONST_GL_STREAM_COPY           , "gl.STREAM_COPY"           , TYPE_I32, FromI32(0x88E2))
+	AddConstCode( CONST_GL_STATIC_DRAW           , "gl.STATIC_DRAW"           , TYPE_I32, FromI32(0x88E4))
+	AddConstCode( CONST_GL_STATIC_READ           , "gl.STATIC_READ"           , TYPE_I32, FromI32(0x88E5))
+	AddConstCode( CONST_GL_STATIC_COPY           , "gl.STATIC_COPY"           , TYPE_I32, FromI32(0x88E6))
+	AddConstCode( CONST_GL_DYNAMIC_DRAW          , "gl.DYNAMIC_DRAW"          , TYPE_I32, FromI32(0x88E8))
+	AddConstCode( CONST_GL_DYNAMIC_READ          , "gl.DYNAMIC_READ"          , TYPE_I32, FromI32(0x88E9))
+	AddConstCode( CONST_GL_DYNAMIC_COPY          , "gl.DYNAMIC_COPY"          , TYPE_I32, FromI32(0x88EA))
 
-	/* gl_2_0 */
-	"gl.FRAGMENT_SHADER":     CONST_GL_FRAGMENT_SHADER,
-	"gl.VERTEX_SHADER":       CONST_GL_VERTEX_SHADER,
+	// gl_2_0
+	AddConstCode( CONST_GL_STENCIL_BACK_FUNC           , "gl.STENCIL_BACK_FUNC"           , TYPE_I32, FromI32(0x8800))
+	AddConstCode( CONST_GL_STENCIL_BACK_FAIL           , "gl.STENCIL_BACK_FAIL"           , TYPE_I32, FromI32(0x8801))
+	AddConstCode( CONST_GL_STENCIL_BACK_PASS_DEPTH_FAIL, "gl.STENCIL_BACK_PASS_DEPTH_FAIL", TYPE_I32, FromI32(0x8802))
+	AddConstCode( CONST_GL_STENCIL_BACK_PASS_DEPTH_PASS, "gl.STENCIL_BACK_PASS_DEPTH_PASS", TYPE_I32, FromI32(0x8803))
+	AddConstCode( CONST_GL_FRAGMENT_SHADER             , "gl.FRAGMENT_SHADER"             , TYPE_I32, FromI32(0x8B30))
+	AddConstCode( CONST_GL_VERTEX_SHADER               , "gl.VERTEX_SHADER"               , TYPE_I32, FromI32(0x8B31))
+	AddConstCode( CONST_GL_STENCIL_BACK_REF            , "gl.STENCIL_BACK_REF"            , TYPE_I32, FromI32(0x8CA3))
+	AddConstCode( CONST_GL_STENCIL_BACK_VALUE_MASK     , "gl.STENCIL_BACK_VALUE_MASK"     , TYPE_I32, FromI32(0x8CA4))
+	AddConstCode( CONST_GL_STENCIL_BACK_WRITEMASK      , "gl.STENCIL_BACK_WRITEMASK"      , TYPE_I32, FromI32(0x8CA5))
 
-	/* gl_3_0 */
-	"gl.FRAMEBUFFER_UNDEFINED":                     CONST_GL_FRAMEBUFFER_UNDEFINED,
-	"gl.FRAMEBUFFER_COMPLETE":                      CONST_GL_FRAMEBUFFER_COMPLETE,
-	"gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT":         CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
-	"gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT": CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT,
-	"gl.FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER":        CONST_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER,
-	"gl.FRAMEBUFFER_INCOMPLETE_READ_BUFFER":        CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER,
-	"gl.FRAMEBUFFER_UNSUPPORTED":                   CONST_GL_FRAMEBUFFER_UNSUPPORTED,
-	"gl.COLOR_ATTACHMENT0":                         CONST_GL_COLOR_ATTACHMENT0,
-	"gl.DEPTH_ATTACHMENT":                          CONST_GL_DEPTH_ATTACHMENT,
-	"gl.STENCIL_ATTACHMENT":                        CONST_GL_STENCIL_ATTACHMENT,
-	"gl.FRAMEBUFFER":                               CONST_GL_FRAMEBUFFER,
-	"gl.RENDERBUFFER":                              CONST_GL_RENDERBUFFER,
-	"gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE":        CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
+	// gl_3_0
+	AddConstCode( CONST_GL_DEPTH_COMPONENT32F                        , "gl.DEPTH_COMPONENT32F"                       , TYPE_I32, FromI32(0x8CAC))
+	AddConstCode( CONST_GL_DEPTH32F_STENCIL8                         , "gl.DEPTH32F_STENCIL8"                        , TYPE_I32, FromI32(0x8CAD))
+	AddConstCode( CONST_GL_FRAMEBUFFER_UNDEFINED                     , "gl.FRAMEBUFFER_UNDEFINED"                    , TYPE_I32, FromI32(0x8219))
+	AddConstCode( CONST_GL_DEPTH_STENCIL_ATTACHMENT                  , "gl.DEPTH_STENCIL_ATTACHMENT"                 , TYPE_I32, FromI32(0x821A))
+	AddConstCode( CONST_GL_DEPTH_STENCIL                             , "gl.DEPTH_STENCIL"                            , TYPE_I32, FromI32(0x84F9))
+	AddConstCode( CONST_GL_DEPTH24_STENCIL8                          , "gl.DEPTH24_STENCIL8"                         , TYPE_I32, FromI32(0x88F0))
+	AddConstCode( CONST_GL_FRAMEBUFFER_COMPLETE                      , "gl.FRAMEBUFFER_COMPLETE"                     , TYPE_I32, FromI32(0x8CD5))
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT         , "gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT"        , TYPE_I32, FromI32(0x8CD6))
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT , "gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT", TYPE_I32, FromI32(0x8CD7))
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER        , "gl.FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"       , TYPE_I32, FromI32(0x8CDB))
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER        , "gl.FRAMEBUFFER_INCOMPLETE_READ_BUFFER"       , TYPE_I32, FromI32(0x8CDC))
+	AddConstCode( CONST_GL_FRAMEBUFFER_UNSUPPORTED                   , "gl.FRAMEBUFFER_UNSUPPORTED"                  , TYPE_I32, FromI32(0x8CDD))
+	AddConstCode( CONST_GL_COLOR_ATTACHMENT0                         , "gl.COLOR_ATTACHMENT0"                        , TYPE_I32, FromI32(0x8CE0))
+	AddConstCode( CONST_GL_DEPTH_ATTACHMENT                          , "gl.DEPTH_ATTACHMENT"                         , TYPE_I32, FromI32(0x8D00))
+	AddConstCode( CONST_GL_STENCIL_ATTACHMENT                        , "gl.STENCIL_ATTACHMENT"                       , TYPE_I32, FromI32(0x8D20))
+	AddConstCode( CONST_GL_FRAMEBUFFER                               , "gl.FRAMEBUFFER"                              , TYPE_I32, FromI32(0x8D40))
+	AddConstCode( CONST_GL_RENDERBUFFER                              , "gl.RENDERBUFFER"                             , TYPE_I32, FromI32(0x8D41))
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE        , "gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"       , TYPE_I32, FromI32(0x8D56))
+	AddConstCode( CONST_GL_STENCIL_INDEX1                            , "gl.STENCIL_INDEX1"                           , TYPE_I32, FromI32(0x8D46))
+	AddConstCode( CONST_GL_STENCIL_INDEX4                            , "gl.STENCIL_INDEX4"                           , TYPE_I32, FromI32(0x8D47))
+	AddConstCode( CONST_GL_STENCIL_INDEX8                            , "gl.STENCIL_INDEX8"                           , TYPE_I32, FromI32(0x8D48))
+	AddConstCode( CONST_GL_STENCIL_INDEX16                           , "gl.STENCIL_INDEX16"                          , TYPE_I32, FromI32(0x8D49))
 
-	/* gl_3_2 */
-	"gl.FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS":      CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS,
+	// gl_3_2
+	AddConstCode( CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS      , "gl.FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"     , TYPE_I32, FromI32(0x8DA8))
 
-	/* gl_4_4 */
-	"gl.MIRROR_CLAMP_TO_EDGE": CONST_GL_MIRROR_CLAMP_TO_EDGE,
+	// gl_4_4
+	AddConstCode( CONST_GL_MIRROR_CLAMP_TO_EDGE   , "gl.MIRROR_CLAMP_TO_EDGE", TYPE_I32, FromI32(0x8743))
 
-	/* Deprecated ? */
-	"gl.POLYGON":             CONST_GL_POLYGON,
-	"gl.MODELVIEW":           CONST_GL_MODELVIEW,
-	"gl.PROJECTION":          CONST_GL_PROJECTION,
-	"gl.MODELVIEW_MATRIX":    CONST_GL_MODELVIEW_MATRIX,
-	"gl.LIGHTING":            CONST_GL_LIGHTING,
-	"gl.LIGHT0":              CONST_GL_LIGHT0,
-	"gl.AMBIENT":             CONST_GL_AMBIENT,
-	"gl.DIFFUSE":             CONST_GL_DIFFUSE,
-	"gl.POSITION":            CONST_GL_POSITION,
-	"gl.TEXTURE_ENV":         CONST_GL_TEXTURE_ENV,
-	"gl.TEXTURE_ENV_MODE":    CONST_GL_TEXTURE_ENV_MODE,
-	"gl.MODULATE":            CONST_GL_MODULATE,
-	"gl.DECAL":               CONST_GL_DECAL,
-	"gl.POINT_SMOOTH":        CONST_GL_POINT_SMOOTH,
+	// Fixed pipeline. Deprecated ?
+	AddConstCode( CONST_GL_POLYGON                , "gl.POLYGON"          , TYPE_I32, FromI32(9))
+	AddConstCode( CONST_GL_MODELVIEW              , "gl.MODELVIEW"        , TYPE_I32, FromI32(5888))
+	AddConstCode( CONST_GL_PROJECTION             , "gl.PROJECTION"       , TYPE_I32, FromI32(5889))
+	AddConstCode( CONST_GL_MODELVIEW_MATRIX       , "gl.MODELVIEW_MATRIX" , TYPE_I32, FromI32(2982))
+	AddConstCode( CONST_GL_LIGHTING               , "gl.LIGHTING"         , TYPE_I32, FromI32(2896))
+	AddConstCode( CONST_GL_LIGHT0                 , "gl.LIGHT0"           , TYPE_I32, FromI32(16384))
+	AddConstCode( CONST_GL_AMBIENT                , "gl.AMBIENT"          , TYPE_I32, FromI32(4608))
+	AddConstCode( CONST_GL_DIFFUSE                , "gl.DIFFUSE"          , TYPE_I32, FromI32(4609))
+	AddConstCode( CONST_GL_POSITION               , "gl.POSITION"         , TYPE_I32, FromI32(4611))
+	AddConstCode( CONST_GL_TEXTURE_ENV            , "gl.TEXTURE_ENV"      , TYPE_I32, FromI32(8960))
+	AddConstCode( CONST_GL_TEXTURE_ENV_MODE       , "gl.TEXTURE_ENV_MODE" , TYPE_I32, FromI32(8704))
+	AddConstCode( CONST_GL_MODULATE               , "gl.MODULATE"         , TYPE_I32, FromI32(8448))
+	AddConstCode( CONST_GL_DECAL                  , "gl.DECAL"            , TYPE_I32, FromI32(8449))
+	AddConstCode( CONST_GL_POINT_SMOOTH           , "gl.POINT_SMOOTH"     , TYPE_I32, FromI32(2832))
 
 	// glfw
-	"glfw.False":                    CONST_GLFW_FALSE,
-	"glfw.True":                     CONST_GLFW_TRUE,
-	"glfw.Press":                    CONST_GLFW_PRESS,
-	"glfw.Release":                  CONST_GLFW_RELEASE,
-	"glfw.Repeat":                   CONST_GLFW_REPEAT,
-	"glfw.KeyUnknown":               CONST_GLFW_KEY_UNKNOWN,
-	"glfw.Cursor":                   CONST_GLFW_CURSOR,
-	"glfw.StickyKeys":               CONST_GLFW_STICKY_KEYS,
-	"glfw.StickyMouseButtons":       CONST_GLFW_STICKY_MOUSE_BUTTONS,
-	"glfw.CursorNormal":             CONST_GLFW_CURSOR_NORMAL,
-	"glfw.CursorHidden":             CONST_GLFW_CURSOR_HIDDEN,
-	"glfw.CursorDisabled":           CONST_GLFW_CURSOR_DISABLED,
-	"glfw.Resizable":                CONST_GLFW_RESIZABLE,
-	"glfw.ContextVersionMajor":      CONST_GLFW_CONTEXT_VERSION_MAJOR,
-	"glfw.ContextVersionMinor":      CONST_GLFW_CONTEXT_VERSION_MINOR,
-	"glfw.Opengl.Profile":           CONST_GLFW_OPENGL_PROFILE,
-	"glfw.Opengl.Coreprofile":       CONST_GLFW_OPENGL_COREPROFILE,
-	"glfw.Opengl.ForwardCompatible": CONST_GLFW_OPENGL_FORWARD_COMPATIBLE,
-	"glfw.MouseButtonLast":          CONST_GLFW_MOUSE_BUTTON_LAST,
-	"glfw.MouseButtonLeft":          CONST_GLFW_MOUSE_BUTTON_LEFT,
-	"glfw.MouseButtonRight":         CONST_GLFW_MOUSE_BUTTON_RIGHT,
-	"glfw.MouseButtonMiddle":        CONST_GLFW_MOUSE_BUTTON_MIDDLE,
+	AddConstCode( CONST_GLFW_FALSE                     , "glfw.False"                    , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GLFW_TRUE                      , "glfw.True"                     , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GLFW_PRESS                     , "glfw.Press"                    , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GLFW_RELEASE                   , "glfw.Release"                  , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GLFW_REPEAT                    , "glfw.Repeat"                   , TYPE_I32, FromI32(2))
+	AddConstCode( CONST_GLFW_KEY_UNKNOWN               , "glfw.KeyUnknown"               , TYPE_I32, FromI32(-1))
+	AddConstCode( CONST_GLFW_CURSOR                    , "glfw.Cursor"                   , TYPE_I32, FromI32(208897))
+	AddConstCode( CONST_GLFW_STICKY_KEYS               , "glfw.StickyKeys"               , TYPE_I32, FromI32(208898))
+	AddConstCode( CONST_GLFW_STICKY_MOUSE_BUTTONS      , "glfw.StickyMouseButtons"       , TYPE_I32, FromI32(208899))
+	AddConstCode( CONST_GLFW_CURSOR_NORMAL             , "glfw.CursorNormal"             , TYPE_I32, FromI32(212993))
+	AddConstCode( CONST_GLFW_CURSOR_HIDDEN             , "glfw.CursorHidden"             , TYPE_I32, FromI32(212994))
+	AddConstCode( CONST_GLFW_CURSOR_DISABLED           , "glfw.CursorDisabled"           , TYPE_I32, FromI32(212995))
+	AddConstCode( CONST_GLFW_RESIZABLE                 , "glfw.Resizable"                , TYPE_I32, FromI32(131075))
+	AddConstCode( CONST_GLFW_CONTEXT_VERSION_MAJOR     , "glfw.ContextVersionMajor"      , TYPE_I32, FromI32(139266))
+	AddConstCode( CONST_GLFW_CONTEXT_VERSION_MINOR     , "glfw.ContextVersionMinor"      , TYPE_I32, FromI32(139267))
+	AddConstCode( CONST_GLFW_OPENGL_PROFILE            , "glfw.Opengl.Profile"           , TYPE_I32, FromI32(139272))
+	AddConstCode( CONST_GLFW_OPENGL_COREPROFILE        , "glfw.Opengl.Coreprofile"       , TYPE_I32, FromI32(204801))
+	AddConstCode( CONST_GLFW_OPENGL_FORWARD_COMPATIBLE , "glfw.Opengl.ForwardCompatible" , TYPE_I32, FromI32(139270))
+	AddConstCode( CONST_GLFW_MOUSE_BUTTON_LAST         , "glfw.MouseButtonLast"          , TYPE_I32, FromI32(7))
+	AddConstCode( CONST_GLFW_MOUSE_BUTTON_LEFT         , "glfw.MouseButtonLeft"          , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GLFW_MOUSE_BUTTON_RIGHT        , "glfw.MouseButtonRight"         , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GLFW_MOUSE_BUTTON_MIDDLE       , "glfw.MouseButtonMiddle"        , TYPE_I32, FromI32(2))
 
 	// gltext
-	"gltext.LeftToRight":           CONST_GLTEXT_LEFT_TO_RIGHT,
-	"gltext.RightToLeft":           CONST_GLTEXT_RIGHT_TO_LEFT,
-	"gltext.TopToBottom":           CONST_GLTEXT_TOP_TO_BOTTOM,
-}
+	AddConstCode( CONST_GLTEXT_LEFT_TO_RIGHT           , "gltext.LeftToRight"            , TYPE_I32, FromI32(0))
+	AddConstCode( CONST_GLTEXT_RIGHT_TO_LEFT           , "gltext.RightToLeft"            , TYPE_I32, FromI32(1))
+	AddConstCode( CONST_GLTEXT_TOP_TO_BOTTOM           , "gltext.TopToBottom"            , TYPE_I32, FromI32(2))
 
-var Constants map[int]CXConstant = map[int]CXConstant{
-	/* gl_1_0 */
-	CONST_GL_DEPTH_BUFFER_BIT:       CXConstant{Type: TYPE_I32, Value: FromI32(0x00000100)},
-	CONST_GL_STENCIL_BUFFER_BIT:     CXConstant{Type: TYPE_I32, Value: FromI32(0x00000400)},
-	CONST_GL_COLOR_BUFFER_BIT:       CXConstant{Type: TYPE_I32, Value: FromI32(0x00004000)},
-	CONST_GL_FALSE:                  CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GL_TRUE:                   CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GL_POINTS:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0000)},
-	CONST_GL_LINES:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0001)},
-	CONST_GL_LINE_LOOP:              CXConstant{Type: TYPE_I32, Value: FromI32(0x0002)},
-	CONST_GL_LINE_STRIP:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0003)},
-	CONST_GL_TRIANGLES:              CXConstant{Type: TYPE_I32, Value: FromI32(0x0004)},
-	CONST_GL_TRIANGLE_STRIP:         CXConstant{Type: TYPE_I32, Value: FromI32(0x0005)},
-	CONST_GL_TRIANGLE_FAN:           CXConstant{Type: TYPE_I32, Value: FromI32(0x0006)},
-	CONST_GL_QUADS:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0007)},
-	CONST_GL_NEVER:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0200)},
-	CONST_GL_LESS:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x0201)},
-	CONST_GL_EQUAL:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0202)},
-	CONST_GL_LEQUAL:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0203)},
-	CONST_GL_GREATER:                CXConstant{Type: TYPE_I32, Value: FromI32(0x0204)},
-	CONST_GL_NOTEQUAL:               CXConstant{Type: TYPE_I32, Value: FromI32(0x0205)},
-	CONST_GL_GEQUAL:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0206)},
-	CONST_GL_ALWAYS:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0207)},
-	CONST_GL_SRC_ALPHA:              CXConstant{Type: TYPE_I32, Value: FromI32(0x302)},
-	CONST_GL_ONE_MINUS_SRC_ALPHA:    CXConstant{Type: TYPE_I32, Value: FromI32(0x303)},
-	CONST_GL_FRONT:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x404)},
-	CONST_GL_BACK:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x405)},
-	CONST_GL_FRONT_AND_BACK:         CXConstant{Type: TYPE_I32, Value: FromI32(0x408)},
-	CONST_GL_NO_ERROR:               CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GL_INVALID_ENUM:           CXConstant{Type: TYPE_I32, Value: FromI32(0x500)},
-	CONST_GL_INVALID_VALUE:          CXConstant{Type: TYPE_I32, Value: FromI32(0x501)},
-	CONST_GL_INVALID_OPERATION:      CXConstant{Type: TYPE_I32, Value: FromI32(0x502)},
-	CONST_GL_STACK_OVERFLOW:         CXConstant{Type: TYPE_I32, Value: FromI32(0x503)},
-	CONST_GL_STACK_UNDERFLOW:        CXConstant{Type: TYPE_I32, Value: FromI32(0x504)},
-	CONST_GL_OUT_OF_MEMORY:          CXConstant{Type: TYPE_I32, Value: FromI32(0x505)},
-	CONST_GL_LINE_SMOOTH:            CXConstant{Type: TYPE_I32, Value: FromI32(0x0B20)},
-	CONST_GL_POLYGON_SMOOTH:         CXConstant{Type: TYPE_I32, Value: FromI32(0x0B41)},
-	CONST_GL_CULL_FACE:              CXConstant{Type: TYPE_I32, Value: FromI32(0x0B44)},
-	CONST_GL_DEPTH_TEST:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0B71)},
-	CONST_GL_DITHER:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x0BD0)},
-	CONST_GL_BLEND:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x0BE2)},
-	CONST_GL_SCISSOR_TEST:           CXConstant{Type: TYPE_I32, Value: FromI32(0x0C11)},
-	CONST_GL_POLYGON_SMOOTH_HINT:    CXConstant{Type: TYPE_I32, Value: FromI32(0x0C53)},
-	CONST_GL_TEXTURE_2D:             CXConstant{Type: TYPE_I32, Value: FromI32(0x0DE1)},
-	CONST_GL_TEXTURE_WIDTH:          CXConstant{Type: TYPE_I32, Value: FromI32(0x1000)},
-	CONST_GL_TEXTURE_HEIGHT:         CXConstant{Type: TYPE_I32, Value: FromI32(0x1001)},
-	CONST_GL_DONT_CARE:              CXConstant{Type: TYPE_I32, Value: FromI32(0x1100)},
-	CONST_GL_UNSIGNED_BYTE:          CXConstant{Type: TYPE_I32, Value: FromI32(0x1401)},
-	CONST_GL_FLOAT:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x1406)},
-	CONST_GL_TEXTURE:                CXConstant{Type: TYPE_I32, Value: FromI32(0x1702)},
-	CONST_GL_COLOR:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x1800)},
-	CONST_GL_DEPTH_COMPONENT:        CXConstant{Type: TYPE_I32, Value: FromI32(0x1902)},
-	CONST_GL_RGBA:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x1908)},
-	CONST_GL_REPLACE:                CXConstant{Type: TYPE_I32, Value: FromI32(0x1E01)},
-	CONST_GL_NEAREST:                CXConstant{Type: TYPE_I32, Value: FromI32(0x2600)},
-	CONST_GL_LINEAR:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x2601)},
-	CONST_GL_NEAREST_MIPMAP_NEAREST: CXConstant{Type: TYPE_I32, Value: FromI32(0x2700)},
-	CONST_GL_LINEAR_MIPMAP_NEAREST:  CXConstant{Type: TYPE_I32, Value: FromI32(0x2701)},
-	CONST_GL_NEAREST_MIPMAP_LINEAR:  CXConstant{Type: TYPE_I32, Value: FromI32(0x2702)},
-	CONST_GL_LINEAR_MIPMAP_LINEAR:   CXConstant{Type: TYPE_I32, Value: FromI32(0x2703)},
-	CONST_GL_TEXTURE_MAG_FILTER:     CXConstant{Type: TYPE_I32, Value: FromI32(0x2800)},
-	CONST_GL_TEXTURE_MIN_FILTER:     CXConstant{Type: TYPE_I32, Value: FromI32(0x2801)},
-	CONST_GL_TEXTURE_WRAP_S:         CXConstant{Type: TYPE_I32, Value: FromI32(0x2802)},
-	CONST_GL_TEXTURE_WRAP_T:         CXConstant{Type: TYPE_I32, Value: FromI32(0x2803)},
-	CONST_GL_REPEAT:                 CXConstant{Type: TYPE_I32, Value: FromI32(0x2901)},
+	// os
+	AddConstCode( CONST_OS_RUN_SUCCESS                 , "os.RUN_SUCCESS"                , TYPE_I32, FromI32(OS_RUN_SUCCESS))
+	AddConstCode( CONST_OS_RUN_EMPTY_CMD               , "os.RUN_EMPTY_CMD"              , TYPE_I32, FromI32(OS_RUN_EMPTY_CMD))
+	AddConstCode( CONST_OS_RUN_PANIC                   , "os.RUN_PANIC"                  , TYPE_I32, FromI32(OS_RUN_PANIC))
+	AddConstCode( CONST_OS_RUN_START_FAILED            , "os.RUN_START_FAILED"           , TYPE_I32, FromI32(OS_RUN_START_FAILED))
+	AddConstCode( CONST_OS_RUN_WAIT_FAILED             , "os.RUN_WAIT_FAILED"            , TYPE_I32, FromI32(OS_RUN_WAIT_FAILED))
+	AddConstCode( CONST_OS_RUN_TIMEOUT                 , "os.RUN_TIMEOUT"                , TYPE_I32, FromI32(OS_RUN_TIMEOUT))
 
-	/* gl_1_1 */
-	CONST_GL_RGBA8:                  CXConstant{Type: TYPE_I32, Value: FromI32(0x8058)},
-	CONST_GL_VERTEX_ARRAY:           CXConstant{Type: TYPE_I32, Value: FromI32(0x8074)},
-
-	/* gl_1_2 */
-	CONST_GL_TEXTURE_WRAP_R:         CXConstant{Type: TYPE_I32, Value: FromI32(0x8072)},
-	CONST_GL_CLAMP_TO_EDGE:          CXConstant{Type: TYPE_I32, Value: FromI32(0x812F)},
-
-	/* gl_1_3 */
-	CONST_GL_TEXTURE0:            CXConstant{Type: TYPE_I32, Value: FromI32(0x84C0)},
-	CONST_GL_MULTISAMPLE_ARB:     CXConstant{Type: TYPE_I32, Value: FromI32(0x809D)}, // remove _ARB
-	CONST_GL_CLAMP_TO_BORDER:     CXConstant{Type: TYPE_I32, Value: FromI32(0x812D)},
-
-	/* gl_1_4 */
-	CONST_GL_MIRRORED_REPEAT:     CXConstant{Type: TYPE_I32, Value: FromI32(0x8370)},
-
-	/* gl_1_5 */
-	CONST_GL_ARRAY_BUFFER:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8892)},
-	CONST_GL_STREAM_DRAW:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E0)},
-	CONST_GL_STREAM_READ:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E1)},
-	CONST_GL_STREAM_COPY:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E2)},
-	CONST_GL_STATIC_DRAW:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E4)},
-	CONST_GL_STATIC_READ:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E5)},
-	CONST_GL_STATIC_COPY:         CXConstant{Type: TYPE_I32, Value: FromI32(0x88E6)},
-	CONST_GL_DYNAMIC_DRAW:        CXConstant{Type: TYPE_I32, Value: FromI32(0x88E8)},
-	CONST_GL_DYNAMIC_READ:        CXConstant{Type: TYPE_I32, Value: FromI32(0x88E9)},
-	CONST_GL_DYNAMIC_COPY:        CXConstant{Type: TYPE_I32, Value: FromI32(0x88EA)},
-
-	/* gl_2_0 */
-	CONST_GL_FRAGMENT_SHADER:     CXConstant{Type: TYPE_I32, Value: FromI32(0x8B30)},
-	CONST_GL_VERTEX_SHADER:       CXConstant{Type: TYPE_I32, Value: FromI32(0x8B31)},
-
-	/* gl_3_0 */
-	CONST_GL_FRAMEBUFFER_UNDEFINED:                     CXConstant{Type: TYPE_I32, Value: FromI32(0x8219)},
-	CONST_GL_FRAMEBUFFER_COMPLETE:                      CXConstant{Type: TYPE_I32, Value: FromI32(0x8CD5)},
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:         CXConstant{Type: TYPE_I32, Value: FromI32(0x8CD6)},
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: CXConstant{Type: TYPE_I32, Value: FromI32(0x8CD7)},
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8CDB)},
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8CDC)},
-	CONST_GL_FRAMEBUFFER_UNSUPPORTED:                   CXConstant{Type: TYPE_I32, Value: FromI32(0x8CDD)},
-	CONST_GL_COLOR_ATTACHMENT0:                         CXConstant{Type: TYPE_I32, Value: FromI32(0x8CE0)},
-	CONST_GL_DEPTH_ATTACHMENT:                          CXConstant{Type: TYPE_I32, Value: FromI32(0x8D00)},
-	CONST_GL_STENCIL_ATTACHMENT:                        CXConstant{Type: TYPE_I32, Value: FromI32(0x8D20)},
-	CONST_GL_FRAMEBUFFER:                               CXConstant{Type: TYPE_I32, Value: FromI32(0x8D40)},
-	CONST_GL_RENDERBUFFER:                              CXConstant{Type: TYPE_I32, Value: FromI32(0x8D41)},
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:        CXConstant{Type: TYPE_I32, Value: FromI32(0x8D56)},
-
-	/* gl_3_2 */
-	CONST_GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:      CXConstant{Type: TYPE_I32, Value: FromI32(0x8DA8)},
-
-	/* gl_4_4 */
-	CONST_GL_MIRROR_CLAMP_TO_EDGE: CXConstant{Type: TYPE_I32, Value: FromI32(0x8743)},
-
-	/* Fixed pipeline. Deprecated ? */
-	CONST_GL_POLYGON:             CXConstant{Type: TYPE_I32, Value: FromI32(9)},
-	CONST_GL_MODELVIEW:           CXConstant{Type: TYPE_I32, Value: FromI32(5888)},
-	CONST_GL_PROJECTION:          CXConstant{Type: TYPE_I32, Value: FromI32(5889)},
-	CONST_GL_MODELVIEW_MATRIX:    CXConstant{Type: TYPE_I32, Value: FromI32(2982)},
-	CONST_GL_LIGHTING:            CXConstant{Type: TYPE_I32, Value: FromI32(2896)},
-	CONST_GL_LIGHT0:              CXConstant{Type: TYPE_I32, Value: FromI32(16384)},
-	CONST_GL_AMBIENT:             CXConstant{Type: TYPE_I32, Value: FromI32(4608)},
-	CONST_GL_DIFFUSE:             CXConstant{Type: TYPE_I32, Value: FromI32(4609)},
-	CONST_GL_POSITION:            CXConstant{Type: TYPE_I32, Value: FromI32(4611)},
-	CONST_GL_TEXTURE_ENV:         CXConstant{Type: TYPE_I32, Value: FromI32(8960)},
-	CONST_GL_TEXTURE_ENV_MODE:    CXConstant{Type: TYPE_I32, Value: FromI32(8704)},
-	CONST_GL_MODULATE:            CXConstant{Type: TYPE_I32, Value: FromI32(8448)},
-	CONST_GL_DECAL:               CXConstant{Type: TYPE_I32, Value: FromI32(8449)},
-	CONST_GL_POINT_SMOOTH:        CXConstant{Type: TYPE_I32, Value: FromI32(2832)},
-
-	// glfw
-	CONST_GLFW_FALSE:                     CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GLFW_TRUE:                      CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GLFW_PRESS:                     CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GLFW_RELEASE:                   CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GLFW_REPEAT:                    CXConstant{Type: TYPE_I32, Value: FromI32(2)},
-	CONST_GLFW_KEY_UNKNOWN:               CXConstant{Type: TYPE_I32, Value: FromI32(-1)},
-	CONST_GLFW_CURSOR:                    CXConstant{Type: TYPE_I32, Value: FromI32(208897)},
-	CONST_GLFW_STICKY_KEYS:               CXConstant{Type: TYPE_I32, Value: FromI32(208898)},
-	CONST_GLFW_STICKY_MOUSE_BUTTONS:      CXConstant{Type: TYPE_I32, Value: FromI32(208899)},
-	CONST_GLFW_CURSOR_NORMAL:             CXConstant{Type: TYPE_I32, Value: FromI32(212993)},
-	CONST_GLFW_CURSOR_HIDDEN:             CXConstant{Type: TYPE_I32, Value: FromI32(212994)},
-	CONST_GLFW_CURSOR_DISABLED:           CXConstant{Type: TYPE_I32, Value: FromI32(212995)},
-	CONST_GLFW_RESIZABLE:                 CXConstant{Type: TYPE_I32, Value: FromI32(131075)},
-	CONST_GLFW_CONTEXT_VERSION_MAJOR:     CXConstant{Type: TYPE_I32, Value: FromI32(139266)},
-	CONST_GLFW_CONTEXT_VERSION_MINOR:     CXConstant{Type: TYPE_I32, Value: FromI32(139267)},
-	CONST_GLFW_OPENGL_PROFILE:            CXConstant{Type: TYPE_I32, Value: FromI32(139272)},
-	CONST_GLFW_OPENGL_COREPROFILE:        CXConstant{Type: TYPE_I32, Value: FromI32(204801)},
-	CONST_GLFW_OPENGL_FORWARD_COMPATIBLE: CXConstant{Type: TYPE_I32, Value: FromI32(139270)},
-	CONST_GLFW_MOUSE_BUTTON_LAST:         CXConstant{Type: TYPE_I32, Value: FromI32(7)},
-	CONST_GLFW_MOUSE_BUTTON_LEFT:         CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GLFW_MOUSE_BUTTON_RIGHT:        CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GLFW_MOUSE_BUTTON_MIDDLE:       CXConstant{Type: TYPE_I32, Value: FromI32(2)},
-
-	// gltext
-	CONST_GLTEXT_LEFT_TO_RIGHT:           CXConstant{Type: TYPE_I32, Value: FromI32(0)},
-	CONST_GLTEXT_RIGHT_TO_LEFT:           CXConstant{Type: TYPE_I32, Value: FromI32(1)},
-	CONST_GLTEXT_TOP_TO_BOTTOM:           CXConstant{Type: TYPE_I32, Value: FromI32(2)},
+	// cx
+	AddConstCode( CONST_CX_SUCCESS                     , "cx.SUCCESS"                    , TYPE_I32, FromI32(CX_SUCCESS))
+	AddConstCode( CONST_CX_RUNTIME_ERROR               , "cx.RUNTIME_ERROR"              , TYPE_I32, FromI32(CX_RUNTIME_ERROR))
+	AddConstCode( CONST_CX_PANIC                       , "cx.PANIC"                      , TYPE_I32, FromI32(CX_PANIC))
+	AddConstCode( CONST_CX_COMPILATION_ERROR           , "cx.COMPILATION_ERROR"          , TYPE_I32, FromI32(CX_COMPILATION_ERROR))
+	AddConstCode( CONST_CX_INTERNAL_ERROR              , "cx.INTERNAL_ERROR"             , TYPE_I32, FromI32(CX_INTERNAL_ERROR))
+	AddConstCode( CONST_CX_ASSERT                      , "cx.ASSERT"                     , TYPE_I32, FromI32(CX_ASSERT))
 }

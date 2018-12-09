@@ -4,6 +4,8 @@ import (
 	"os"
 )
 
+const DBG_GOLANG_STACK_TRACE = true
+
 // global reference to our program
 var PROGRAM *CXProgram
 
@@ -13,13 +15,18 @@ var PKGPATH string = CXPATH + "pkg/"
 var SRCPATH string = CXPATH + "src/"
 var COREPATH string
 
+const STACK_OVERFLOW_ERROR = "stack overflow"
+const HEAP_EXHAUSTED_ERROR = "stack exhausted"
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
+const OS_PKG = "os"
+const OS_ARGS = "Args"
+
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"
-const CORE_MODULE = "core"
+// const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
@@ -54,6 +61,15 @@ var BASIC_TYPES []string = []string{
 }
 
 const (
+    CX_SUCCESS = iota
+    CX_RUNTIME_ERROR
+    CX_PANIC // 2
+    CX_COMPILATION_ERROR
+    CX_INTERNAL_ERROR
+    CX_ASSERT
+)
+
+const (
 	DECL_POINTER = iota // 0
 	DECL_ARRAY          // 1
 	DECL_SLICE          // 2
@@ -75,7 +91,8 @@ const (
 )
 
 const (
-	TYPE_AFF = iota
+	TYPE_UNDEFINED = iota
+	TYPE_AFF
 	TYPE_BOOL
 	TYPE_BYTE
 	TYPE_STR
@@ -92,7 +109,6 @@ const (
 
 	TYPE_THRESHOLD
 
-	TYPE_UNDEFINED
 	TYPE_CUSTOM
 	TYPE_POINTER
 	TYPE_IDENTIFIER
@@ -100,7 +116,7 @@ const (
 
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
-	"identifier": TYPE_IDENTIFIER,
+	"ident":      TYPE_IDENTIFIER,
 	"aff":        TYPE_AFF,
 	"bool":       TYPE_BOOL,
 	"byte":       TYPE_BYTE,

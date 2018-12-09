@@ -1,0 +1,29 @@
+package main
+import "aff"
+
+func predArg (arg aff.Argument) (res bool) {
+	// accept any argument
+	str.print(arg.Name)
+	res = true
+}
+
+func main () {
+	var foo i32
+	
+targetExpr:
+	foo = i32.add(5, 5)
+	
+	tgt := ->{
+		expr(targetExpr)
+		inp(0)
+	}
+
+	fltrs := ->{
+		filter(predArg)
+	}
+	
+	affs := aff.query(fltrs)
+
+	// aff.print(fltrs)
+	aff.print(tgt)
+}

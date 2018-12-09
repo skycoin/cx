@@ -1,4 +1,4 @@
-package testing
+package main
 
 type Point struct {
 	name str
@@ -7,36 +7,36 @@ type Point struct {
 	y i32
 }
 
-func testShortDeclarations () {
+func main () {
 	byt1 := 44B
 	byt2 := 47B
-	res = append(res, assert(byt1, 44B, ""))
-	res = append(res, assert(byt2, 47B, ""))
+	test(byt1, 44B, "")
+	test(byt2, 47B, "")
 
 	bool1 := true
 	bool2 := false
-	res = append(res, assert(bool1, true, ""))
-	res = append(res, assert(bool2, false, ""))
-	
+	test(bool1, true, "")
+	test(bool2, false, "")
+
 	num1 := 5
 	num2 := 10
-	res = append(res, assert(num1, 5, ""))
-	res = append(res, assert(num2, 10, ""))
+	test(num1, 5, "")
+	test(num2, 10, "")
 
 	num3 := 33L
 	num4 := 55L
-	res = append(res, assert(num3, 33L, ""))
-	res = append(res, assert(num4, 55L, ""))
+	test(num3, 33L, "")
+	test(num4, 55L, "")
 
 	dec1 := 5.0
 	dec2 := 10.0
-	res = append(res, assert(dec1, 5.0, ""))
-	res = append(res, assert(dec2, 10.0, ""))
+	test(dec1, 5.0, "")
+	test(dec2, 10.0, "")
 
 	dec3 := 33.0D
 	dec4 := 55.0D
-	res = append(res, assert(dec3, 33.0D, ""))
-	res = append(res, assert(dec4, 55.0D, ""))
+	test(dec3, 33.0D, "")
+	test(dec4, 55.0D, "")
 
 	p1 := Point{
 		x: 10,
@@ -49,13 +49,13 @@ func testShortDeclarations () {
 		isTrue: false,
 		name: "Punto"}
 
-	res = append(res, assert(p1.name, "Pointy", ""))
-	res = append(res, assert(p1.x, 10, ""))
-	res = append(res, assert(p1.y, 11, ""))
-	res = append(res, assert(p1.isTrue, true, ""))
+	test(p1.name, "Pointy", "")
+	test(p1.x, 10, "")
+	test(p1.y, 11, "")
+	test(p1.isTrue, true, "")
 
-	res = append(res, assert(p2.name, "Punto", ""))
-	res = append(res, assert(p2.x, 20, ""))
-	res = append(res, assert(p2.y, 21, ""))
-	res = append(res, assert(p2.isTrue, false, ""))
+	test(p2.name, "Punto", "")
+	test(p2.x, 20, "")
+	test(p2.y, 21, "")
+	test(p2.isTrue, false, "")
 }

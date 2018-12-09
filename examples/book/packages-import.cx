@@ -1,0 +1,15 @@
+package math
+
+func double () (out i32) {
+    out = i32.add(5, 2)
+}
+
+package main
+import "math"
+
+func main () {
+    str.print("hi")
+    var foo i32
+    foo = math.double()
+    i32.print(foo)
+}

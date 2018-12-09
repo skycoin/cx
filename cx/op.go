@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	"os"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -39,11 +38,11 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 			*finalOffset = int(offset)
 		}
 		if dbg {
-			fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+			fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
 		}
 	}
 	if dbg {
-		fmt.Println("update", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+		fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
 	}
 
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
@@ -57,6 +56,7 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 }
 
 func GetFinalOffset(fp int, arg *CXArgument) int {
+	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
 	var finalOffset int = arg.Offset
 	// var fldIdx int
@@ -86,7 +86,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("result", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
+		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
 	}
 
 	return finalOffset
@@ -187,11 +187,7 @@ func AllocateSeq(size int) (offset int) {
 
 		if result + size > MEMORY_SIZE {
 			// heap exhausted
-			errorCall := PROGRAM.CallStack[PROGRAM.CallCounter]
-			fileName := errorCall.Operator.Expressions[errorCall.Line].FileName
-			fileLine := errorCall.Operator.Expressions[errorCall.Line].FileLine
-			fmt.Println(fmt.Sprintf("runtime error: heap exhausted: %s:%d", fileName, fileLine))
-			os.Exit(3)
+			panic(HEAP_EXHAUSTED_ERROR)
 		}
 	}
 
@@ -291,12 +287,18 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		encoder.DeserializeAtomic(PROGRAM.Memory[off : off + TYPE_POINTER_SIZE], &offset)
 	}
 
+	if offset == 0 {
+		// then it's nil string
+		out = ""
+		return
+	}
+
 	var size int32
 	sizeB := PROGRAM.Memory[offset : offset + STR_HEADER_SIZE]
 
 	encoder.DeserializeAtomic(sizeB, &size)
 	encoder.DeserializeRaw(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE+size], &out)
-
+	
 	return
 }
 
