@@ -6,8 +6,9 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 platform:
-- x64
+  - x64
 
+# Clone project into GOPATH folder
 clone_folder: c:\gopath\src\github.com\skycoin\cx
 
 # Define environment variables
@@ -41,7 +42,7 @@ install:
   - go get github.com/go-gl/gltext
   - go get github.com/blynn/nex
   - go get github.com/cznic/goyacc
-  - go get github.com/skycoin/cx/...
+  - go get ./...
 
 # scripts to run before build
 before_build:
