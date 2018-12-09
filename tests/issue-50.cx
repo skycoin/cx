@@ -1,10 +1,5 @@
 package main
-
-import "issue50a"
-
-var test i32 = 44
-func main()() {
-
-	test(issue50a.test, 666, "internal error")
-	test(test, 44, "internal error")
+func  main()() {
+	nthsnthnsth
+	if (assert(true, false, "must not compile")) {}
 }
