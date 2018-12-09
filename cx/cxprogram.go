@@ -87,7 +87,8 @@ func (prgrm *CXProgram) GetCurrentExpression() (*CXExpression, error) {
 }
 
 func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	if mod, err := prgrm.GetCurrentPackage(); err != nil {
+	mod, err := prgrm.GetCurrentPackage()
+	if err != nil {
 		return nil, err
 	}
 

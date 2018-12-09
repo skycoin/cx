@@ -1,8 +1,9 @@
 package base
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
+	. "github.com/satori/go.uuid"
 )
 
 /* The CXStruct struct contains information about a CX struct.

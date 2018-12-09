@@ -2,7 +2,8 @@ package base
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
+	. "github.com/satori/go.uuid"
 )
 
 /* The CXExpression struct contains information about a CX expression.
