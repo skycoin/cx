@@ -14,7 +14,7 @@ env:
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: xenial
 
     # - os: osx
 
@@ -32,7 +32,7 @@ install:
   - go get -v github.com/go-gl/gltext
   - go get -v github.com/blynn/nex
   - go get -v github.com/cznic/goyacc
-  - go get -v github.com/skycoin/cx/...
+  - go get -v ...
 
 # Generate cxgo necessaries files
 before_script:
