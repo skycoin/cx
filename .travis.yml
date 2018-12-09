@@ -46,7 +46,7 @@ before_script:
 script:
   - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
-  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests
+  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests/main.cx ++wdir=$GOPATH/src/github.com/skycoin/cx/tests
 
 # Notifications to Telegram channel
 notifications:
