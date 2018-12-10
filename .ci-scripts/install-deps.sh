@@ -17,6 +17,7 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
                 libxcursor-dev \
                 libxinerama-dev \
                 xvfb \
+                glade \
                 --no-install-recommends
     export DISPLAY=:99.0
     sudo /usr/bin/Xvfb $DISPLAY 2>1 > /dev/null &
@@ -28,5 +29,5 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
 fi
 
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-    brew install gtk
+    brew install gtk gtk-mac-integration gtk+3 glade
 fi
