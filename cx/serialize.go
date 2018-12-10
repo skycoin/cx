@@ -1,5 +1,3 @@
-// +build base extra full
-
 package base
 
 import (
@@ -245,7 +243,7 @@ func indexFunction (fn *CXFunction, s *sAll) {
 }
 
 func indexExpression (expr *CXExpression, s *sAll) {
-
+	
 }
 
 func serializeBoolean (val bool) int32 {
@@ -456,7 +454,10 @@ func serializeProgram (prgrm *CXProgram, s *sAll) {
 	sPrgrm.CallCounter = int32(prgrm.CallCounter)
 
 	sPrgrm.MemoryOffset = int32(0)
-	sPrgrm.MemorySize = int32(len(prgrm.Memory))
+	// we need to call GC to compress memory usage
+	MarkAndCompact()
+	// sPrgrm.MemorySize = int32(len(prgrm.Memory))
+	sPrgrm.MemorySize = int32(PROGRAM.HeapStartsAt + PROGRAM.HeapPointer)
 
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int32(prgrm.StackPointer)
@@ -630,6 +631,8 @@ func initSerialization (prgrm *CXProgram, s *sAll) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
+	s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+
 	var numStrcts int
 	var numFns int
 	
@@ -644,6 +647,8 @@ func initSerialization (prgrm *CXProgram, s *sAll) {
 }
 
 func Serialize (prgrm *CXProgram) (byts []byte) {
+	// prgrm.PrintProgram()
+	
 	s := sAll{}
 	initSerialization(prgrm, &s)
 
@@ -744,7 +749,8 @@ func Serialize (prgrm *CXProgram) (byts []byte) {
 					for i, expr := range fn.Expressions {
 						exprIdx := serializeExpression(expr, &s)
 						if fn.CurrentExpression == expr {
-							sFn.CurrentExpressionOffset = int32(exprIdx)
+							// sFn.CurrentExpressionOffset = int32(exprIdx)
+							sFn.CurrentExpressionOffset = int32(i)
 						}
 						exprs[i] = exprIdx
 					}
@@ -815,88 +821,339 @@ func op_serialize (expr *CXExpression, fp int) {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
 
-	Deserialize(byts)
-
 	WriteMemory(out1Offset, FromI32(int32(slcOff)))
 }
 
 func op_deserialize (expr *CXExpression, fp int) {
-	
+	inp := expr.Inputs[0]
+
+	inpOffset := GetFinalOffset(fp, inp)
+
+	var off int32
+	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset : inpOffset + TYPE_POINTER_SIZE], &off)
+
+	var l int32
+	_l := PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+	encoder.DeserializeAtomic(_l[:4], &l)
+
+	Deserialize(PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l])
 }
 
 func dsName (off int32, size int32, s *sAll) string {
+	if size < 1 {
+		return ""
+	}
 	var name string
 	encoder.DeserializeRaw(s.Names[off : off + size], &name)
 	return name
 }
 
-// func dsPackages (off int32, size int32, s *sAll) []*Package {
-	
-// }
+func dsPackages (s *sAll, prgrm *CXProgram) {
+	for i, sPkg := range s.Packages {
+		// initializing packages with their names,
+		// empty functions, structs, imports and globals
+		// and current function and struct
+		pkg := CXPackage{}
+		prgrm.Packages[i] = &pkg
 
-// func dsPackage (sPkg *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
-// 	pkg := CXPackage{}
-// 	prgrm.Packages[i] = &pkg
+		pkg.Name = dsName(sPkg.NameOffset, sPkg.NameSize, s)
 
-// 	pkg.Name = dsName(sPkg.NameOffset, sPkg.NameSize, s)
+		if sPkg.ImportsSize > 0 {
+			prgrm.Packages[i].Imports = make([]*CXPackage, sPkg.ImportsSize)
+		}
+		
+		if sPkg.FunctionsSize > 0 {
+			prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
 
-// 	if sPkg.FunctionsSize > 0 {
-// 		prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
-// 	}
+			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset + sPkg.FunctionsSize] {
+				var fn CXFunction
+				fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
+				prgrm.Packages[i].Functions[j] = &fn
+			}
+		}
 
-// 	if sPkg.StructsSize > 0 {
-// 		prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
-// 	}
-	
-// 	return &pkg
-// }
+		if sPkg.StructsSize > 0 {
+			prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
 
-// func dsStruct (sStrct *sStruct, strct *CXStruct, s *sAll) {
-// 	strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
-// 	strct.Fields = dsArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s)
-// 	strct.Size = int(sStrct.Size)
-// 	// s.Packages[sStrct.PackageOffset]
-// }
+			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset + sPkg.StructsSize] {
+				var strct CXStruct
+				strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
+				prgrm.Packages[i].Structs[j] = &strct
+			}
+		}
 
-// func dsArguments (off int32, size int32, s *sAll) []*CXArgument {
-// 	var args []*CXArgument
-// 	for _, arg := range s.Arguments[off : off + size] {
-// 		args = append(args, dsArgument(&arg, s))
-// 	}
-// 	return args
-// }
+		if sPkg.GlobalsSize > 0 {
+			prgrm.Packages[i].Globals = make([]*CXArgument, sPkg.GlobalsSize)
+		}
 
-// func dsArgument (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
-// 	var arg CXArgument
-// 	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
-// 	arg.Type = int(sArg.Type)
-// 	// arg.CustomType = dsStruct(s.Structs[sArg.CustomTypeOffset], prgrm.Packages[s.])
+		// CurrentFunction
+		if sPkg.FunctionsSize > 0 {
+			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset]
+		}
 
-// 	s.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
-
-// 	return &arg
-// }
-
-func dsIntegers (off int32, size int32, s *sAll) []int32 {
-	return s.Integers[off : off + size]
-}
-
-func initDeserialization (prgrm *CXProgram, s *sAll) {
-	prgrm.Packages = make([]*CXPackage, len(s.Packages))
-
-	// for i, sPkg := range s.Packages {
-	// 	// initializing packages with their names
-	// 	// dsPackage(sPkg, s, prgrm)
-	// }
+		// CurrentStruct
+		if sPkg.StructsSize > 0 {
+			prgrm.Packages[i].CurrentStruct = prgrm.Packages[i].Structs[sPkg.CurrentStructOffset]
+		}
+	}
 
 	// imports
 	for i, sPkg := range s.Packages {
 		if sPkg.ImportsSize > 0 {
-			for _, impIdx := range dsIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s) {
-				prgrm.Packages[i].Imports = append(prgrm.Packages[i].Imports, prgrm.Packages[impIdx])
+			// getting indexes of imports
+			idxs := dsIntegers(sPkg.ImportsOffset, sPkg.ImportsSize, s)
+
+			for j, idx := range idxs {
+				prgrm.Packages[i].Imports[j] = getImport(&s.Packages[idx], s, prgrm)
 			}
 		}
 	}
+
+	// globals
+	for i, sPkg := range s.Packages {
+		if sPkg.GlobalsSize > 0 {
+			prgrm.Packages[i].Globals = dsArguments(sPkg.GlobalsOffset, sPkg.GlobalsSize, s, prgrm)
+		}
+	}
+
+	// structs
+	for i, sPkg := range s.Packages {
+		if sPkg.StructsSize > 0 {
+			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset + sPkg.StructsSize] {
+				dsStruct(&sStrct, prgrm.Packages[i].Structs[j], s, prgrm)
+			}
+		}
+	}
+
+	// functions
+	for i, sPkg := range s.Packages {
+		if sPkg.FunctionsSize > 0 {
+			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset + sPkg.FunctionsSize] {
+				dsFunction(&sFn, prgrm.Packages[i].Functions[j], s, prgrm)
+			}
+		}
+	}
+
+	// current package
+	prgrm.CurrentPackage = prgrm.Packages[s.Program.CurrentPackageOffset]
+}
+
+func dsStruct (sStrct *sStruct, strct *CXStruct, s *sAll, prgrm *CXProgram) {
+	strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
+	strct.Fields = dsArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
+	strct.Size = int(sStrct.Size)
+	strct.Package = prgrm.Packages[sStrct.PackageOffset]
+}
+
+func dsArguments (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXArgument {
+	if size < 1 {
+		return nil
+	}
+
+	// getting indexes of arguments
+	idxs := dsIntegers(off, size, s)
+	
+	// sArgs := s.Arguments[off : off + size]
+	args := make([]*CXArgument, size)
+	for i, idx := range idxs {
+		args[i] = dsArgument(&s.Arguments[idx], s, prgrm)
+	}
+	return args
+}
+
+func getCustomType (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
+	if sArg.CustomTypeOffset < 0 {
+		return nil
+	}
+
+	customTypePkg := prgrm.Packages[s.Structs[sArg.CustomTypeOffset].PackageOffset]
+	sStrct := s.Structs[sArg.CustomTypeOffset]
+	customTypeName := dsName(sStrct.NameOffset, sStrct.NameSize, s)
+
+	for _, strct := range customTypePkg.Structs {
+		if strct.Name == customTypeName {
+			return strct
+		}
+	}
+
+	return nil
+}
+
+func dsArgument (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
+	var arg CXArgument
+	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
+	arg.Type = int(sArg.Type)
+	
+	arg.CustomType = getCustomType(sArg, s, prgrm)
+	
+	arg.Size = int(sArg.Size)
+	arg.TotalSize = int(sArg.TotalSize)
+	arg.Offset = int(sArg.Offset)
+	arg.IndirectionLevels = int(sArg.IndirectionLevels)
+	arg.DereferenceLevels = int(sArg.DereferenceLevels)
+	arg.PassBy = int(sArg.PassBy)
+	
+	arg.DereferenceOperations = dsIntegers(sArg.DereferenceOperationsOffset, sArg.DereferenceOperationsSize, s)
+	arg.DeclarationSpecifiers = dsIntegers(sArg.DeclarationSpecifiersOffset, sArg.DeclarationSpecifiersSize, s)
+
+	arg.IsSlice = dsBool(sArg.IsSlice)
+	arg.IsArray = dsBool(sArg.IsArray)
+	arg.IsArrayFirst = dsBool(sArg.IsArrayFirst)
+	arg.IsPointer = dsBool(sArg.IsPointer)
+	arg.IsReference = dsBool(sArg.IsReference)
+	arg.IsDereferenceFirst = dsBool(sArg.IsDereferenceFirst)
+	arg.IsStruct = dsBool(sArg.IsStruct)
+	arg.IsRest = dsBool(sArg.IsRest)
+	arg.IsLocalDeclaration = dsBool(sArg.IsLocalDeclaration)
+	arg.IsShortDeclaration = dsBool(sArg.IsShortDeclaration)
+	arg.PreviouslyDeclared = dsBool(sArg.PreviouslyDeclared)
+	arg.DoesEscape = dsBool(sArg.DoesEscape)
+
+	arg.Lengths = dsIntegers(sArg.LengthsOffset, sArg.LengthsSize, s)
+	arg.Indexes = dsArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
+	arg.Fields = dsArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
+
+	arg.Package = prgrm.Packages[sArg.PackageOffset]
+	
+	return &arg
+}
+
+func getOperator (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
+	if sExpr.OperatorOffset < 0 {
+		return nil
+	}
+
+	opPkg := prgrm.Packages[s.Functions[sExpr.OperatorOffset].PackageOffset]
+	sOp := s.Functions[sExpr.OperatorOffset]
+	opName := dsName(sOp.NameOffset, sOp.NameSize, s)
+
+	for _, fn := range opPkg.Functions {
+		if fn.Name == opName {
+			return fn
+		}
+	}
+
+	return nil
+}
+
+func getImport (sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
+	impName := dsName(sImp.NameOffset, sImp.NameSize, s)
+
+	for _, pkg := range prgrm.Packages {
+		if pkg.Name == impName {
+			return pkg
+		}
+	}
+
+	return nil
+}
+
+func getFunction (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
+	if sExpr.FunctionOffset < 0 {
+		return nil
+	}
+
+	fnPkg := prgrm.Packages[s.Functions[sExpr.FunctionOffset].PackageOffset]
+	sFn := s.Functions[sExpr.FunctionOffset]
+	fnName := dsName(sFn.NameOffset, sFn.NameSize, s)
+
+	for _, fn := range fnPkg.Functions {
+		if fn.Name == fnName {
+			return fn
+		}
+	}
+
+	return nil
+}
+
+func dsExpressions (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXExpression {
+	if size < 1 {
+		return nil
+	}
+
+	// getting indexes of expressions
+	idxs := dsIntegers(off, size, s)
+	
+	// sExprs := s.Expressions[off : off + size]
+	exprs := make([]*CXExpression, size)
+	for i, idx := range idxs {
+		exprs[i] = dsExpression(&s.Expressions[idx], s, prgrm)
+	}
+	return exprs
+}
+
+func dsExpression (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression {
+	var expr CXExpression
+
+	if dsBool(sExpr.IsNative) {
+		expr.Operator = Natives[int(sExpr.OpCode)]
+	} else {
+		expr.Operator = getOperator(sExpr, s, prgrm)
+	}
+
+	expr.Inputs = dsArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
+	expr.Outputs = dsArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
+	
+	expr.Label = dsName(sExpr.LabelOffset, sExpr.LabelSize, s)
+
+	expr.ThenLines = int(sExpr.ThenLines)
+	expr.ElseLines = int(sExpr.ElseLines)
+
+	expr.IsMethodCall = dsBool(sExpr.IsMethodCall)
+	expr.IsStructLiteral = dsBool(sExpr.IsStructLiteral)
+	expr.IsArrayLiteral = dsBool(sExpr.IsArrayLiteral)
+	expr.IsUndType = dsBool(sExpr.IsUndType)
+	expr.IsBreak = dsBool(sExpr.IsBreak)
+	expr.IsContinue = dsBool(sExpr.IsContinue)
+
+	expr.Function = getFunction(sExpr, s, prgrm)
+	expr.Package = prgrm.Packages[sExpr.PackageOffset]
+
+	return &expr
+}
+
+func dsFunction (sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
+	fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
+	fn.Inputs = dsArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
+	fn.Outputs = dsArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
+	fn.ListOfPointers = dsArguments(sFn.ListOfPointersOffset, sFn.ListOfPointersSize, s, prgrm)
+	fn.Expressions = dsExpressions(sFn.ExpressionsOffset, sFn.ExpressionsSize, s, prgrm)
+	fn.Size = int(sFn.Size)
+	fn.Length = int(sFn.Length)
+
+	if sFn.CurrentExpressionOffset > 0 {
+		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
+	}
+	
+	fn.Package = prgrm.Packages[sFn.PackageOffset]
+}
+
+func dsBool (val int32) bool {
+	if val == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func dsIntegers (off int32, size int32, s *sAll) []int {
+	if size < 1 {
+		return nil
+	}
+ 	ints := s.Integers[off : off + size]
+	res := make([]int, len(ints))
+	for i, in := range ints {
+		res[i]= int(in)
+	}
+	
+	return res
+}
+
+func initDeserialization (prgrm *CXProgram, s *sAll) {
+	prgrm.Memory = s.Memory
+	prgrm.Packages = make([]*CXPackage, len(s.Packages))
+
+	dsPackages(s, prgrm)
 }
 
 func Deserialize (byts []byte) (prgrm *CXProgram) {
@@ -917,9 +1174,9 @@ func Deserialize (byts []byte) (prgrm *CXProgram) {
 	s.Names = byts[s.Index.NamesOffset : s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset : ]
 
-	Debug("huh", s.Packages)
-
 	initDeserialization(prgrm, &s)
 
-	return &CXProgram{}
+	prgrm.PrintProgram()
+
+	return prgrm
 }

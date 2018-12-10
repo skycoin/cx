@@ -436,20 +436,27 @@ func (prgrm *CXProgram) PrintProgram() {
                                                 )
                                         } else {
                                                 if len(expr.Outputs) > 0 {
-                                                        var typ string
-                                                        if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {
-                                                                // then it's custom type
-                                                                typ = GetAssignmentElement(expr.Outputs[i]).CustomType.Name
-                                                        } else {
-                                                                // then it's native type
-                                                                typ = TypeNames[GetAssignmentElement(expr.Outputs[i]).Type]
-                                                        }
-                                                        
-                                                        fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
+                                                        var typs string
+
+							for i, out := range expr.Outputs {
+								if GetAssignmentElement(out).CustomType != nil {
+									// then it's custom type
+									typs += GetAssignmentElement(out).CustomType.Name
+								} else {
+									// then it's native type
+									typs += TypeNames[GetAssignmentElement(out).Type]
+								}
+								
+								if i != len(expr.Outputs) {
+									typs += ", "
+								}
+							}
+
+							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
                                                                 k,
                                                                 lbl,
                                                                 expr.Outputs[0].Name,
-                                                                typ)
+                                                                typs)
                                                 }
                                         }
 

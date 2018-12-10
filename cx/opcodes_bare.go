@@ -6,7 +6,7 @@ import (
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial", "cx",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
 }
 
 // op codes
@@ -267,24 +267,13 @@ func DumpOpCodes(opCode int) () {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-// func RuntimeError (prgrm *CXProgram) {
-// 	if r := recover(); r != nil {
-// 		prgrm.PrintStack()
-
-// 		call := prgrm.CallStack[prgrm.CallCounter]
-// 		expr := call.Operator.Expressions[call.Line]
-// 		Debug(RuntimeError(expr.FileName, expr.FileLine), r)
-// 		os.Exit(3)
-// 	}
-// }
-
 func init () {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_JMP, "jmp", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_DEBUG, "debug", []int{}, []int{})
 
-	AddOpCode(OP_SERIALIZE, "serialize", []int{TYPE_AFF}, []int{TYPE_BOOL})
-	AddOpCode(OP_DESERIALIZE, "deserialize", []int{TYPE_BOOL}, []int{})
+	AddOpCode(OP_SERIALIZE, "serialize", []int{TYPE_AFF}, []int{TYPE_BYTE})
+	AddOpCode(OP_DESERIALIZE, "deserialize", []int{TYPE_BYTE}, []int{})
 
 	AddOpCode(OP_UND_EQUAL, "eq", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL})
 	AddOpCode(OP_UND_UNEQUAL, "uneq", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL})

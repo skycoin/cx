@@ -23,10 +23,10 @@ type CXConstant struct {
 
 type CXArgument struct {
 	Lengths                         []int // declared lengths at compile time
-        Indexes                         []*CXArgument
-        Fields                          []*CXArgument // strct.fld1.fld2().fld3
 	DereferenceOperations           []int // offset by array index, struct field, pointer
         DeclarationSpecifiers           []int // used to determine finalSize
+        Indexes                         []*CXArgument
+        Fields                          []*CXArgument // strct.fld1.fld2().fld3
 	Name                            string
 	FileName                        string
         ElementID                       UUID
