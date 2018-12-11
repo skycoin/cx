@@ -1,0 +1,7 @@
+package main
+
+func main() {
+	var i i32 = 0
+	i++
+	test(i, 1, "")
+}
