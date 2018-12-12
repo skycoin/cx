@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -89,3 +90,12 @@ func op_str_substr(expr *CXExpression, fp int) {
 	writeString(expr, fp, str[begin:end], expr.Outputs[0])
 }
 
+func op_str_index(expr *CXExpression, fp int) {
+	str := ReadStr(fp, expr.Inputs[0])
+	substr := ReadStr(fp, expr.Inputs[1])
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(strings.Index(str, substr))))
+}
+
+func op_str_trim_space(expr *CXExpression, fp int) {
+	writeString(expr, fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
+}
