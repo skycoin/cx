@@ -22,7 +22,7 @@ stack: go 1.11
 # Do some things at start
 init:
   # Enable Windows RDP Client Access to Build Worker
-  # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - set PATH=%MSYS_W64%;%MINGW_W64%\bin;%GOPATH%\bin;c:\go\bin;%PATH%
   - set MSYSTEM=MINGW64
 
@@ -83,7 +83,7 @@ on_failure:
 
 # after build failure or success
 on_finish:
-  #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # https://www.appveyor.com/docs/environment-variables/
   # Environment variables that are set by AppVeyor for every build:
   # APPVEYOR - True if build runs in AppVeyor environment;
