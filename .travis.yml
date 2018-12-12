@@ -28,7 +28,7 @@ before_install:
 # Install necessaries go packages
 install:
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]] ; then sudo apt install libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev ; fi
-  - cx.sh
+  - ./cx.sh
 
 # Generate cxgo necessaries files
 before_script:
