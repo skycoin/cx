@@ -14,8 +14,7 @@ clone_folder: c:\gopath\src\github.com\skycoin\cx
 # Define environment variables
 environment:
   GOPATH: c:\gopath
-  MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
-  # MSYS_W64: c:\msys64\mingw64\bin
+  MINGW_W64: C:\msys64\mingw64\bin
   MSYS_W64: C:\msys64\usr\bin
   APPVEYOR_RDP_PASSWORD: J8kDX3vVHGBT
   MSYSTEM: MINGW64
@@ -26,21 +25,13 @@ stack: go 1.11
 init:
   # Enable Windows RDP Client Access to Build Worker
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - set PATH=%MSYS_W64%;%GOPATH%\bin;%PATH%
-
-# cache to build faster
-cache:
-  - '%GOPATH%\src\github.com\skycoin\skycoin'
-  - '%GOPATH%\src\github.com\go-gl\gl'
-  - '%GOPATH%\src\github.com\go-gl\glfw'
-  - '%GOPATH%\src\github.com\go-gl\gltext'
-  - '%GOPATH%\src\github.com\blynn\nex'
-  - '%GOPATH%\src\github.com\cznic\goyacc'
+  - set PATH=%MSYS_W64%;%MINGW_W64%;%GOPATH%\bin;%PATH%
 
 # Install go dev dependencies
 install:
   - bash -lc "pacman --noconfirm -S pacman"
   - bash -lc "pacman --noconfirm -S mingw-w64-x86_64-devhelp mingw-w64-x86_64-glade mingw-w64-x86_64-toolchain base-devel"
+  - bash -c "sed -i -e 's/-Wl,-luuid/-luuid/g' C:/msys64/mingw64/lib/pkgconfig/gdk-3.0.pc"
   - go version
   - go get github.com/skycoin/skycoin/...
   - go get github.com/go-gl/gl/v2.1/gl
@@ -48,7 +39,7 @@ install:
   - go get github.com/go-gl/gltext
   - go get github.com/blynn/nex
   - go get github.com/cznic/goyacc
-  - go get ./...
+  - go get -v ./...
 
 # scripts to run before build
 before_build:
