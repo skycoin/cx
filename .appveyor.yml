@@ -16,6 +16,7 @@ environment:
   GOPATH: c:\gopath
   MINGW_W64: c:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64
   MSYS_W64: c:\msys64\mingw64\bin
+  APPVEYOR_RDP_PASSWORD: J8kDX3vVHGBT
 
 stack: go 1.11
 
