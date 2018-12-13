@@ -39,7 +39,7 @@ install:
   - go get github.com/go-gl/gltext
   - go get github.com/blynn/nex
   - go get github.com/cznic/goyacc
-  - go get -v ./...
+  # - go get -v ./...
 
 # scripts to run before build
 before_build:
