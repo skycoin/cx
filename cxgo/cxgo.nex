@@ -444,12 +444,14 @@ func (yylex Lexer) Error (e string) {
 }
 
 func getWorkingDirectory (file string) string {
+	file = filepath.FromSlash(file)
 	var c int = len(file) - 1
 	for ; c > 0; c-- {
 		if file[c - 1] == os.PathSeparator {
 			break
 		}
 	}
+	
 	return file[:c]
 }
 

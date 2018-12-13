@@ -6,7 +6,7 @@ import (
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "serial", "cx",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
 }
 
 // op codes
@@ -190,6 +190,8 @@ const (
 	OP_STR_PRINT
 	OP_STR_CONCAT
 	OP_STR_SUBSTR
+	OP_STR_INDEX
+	OP_STR_TRIM_SPACE
 	OP_STR_EQ
 
 	OP_STR_BYTE
@@ -267,24 +269,13 @@ func DumpOpCodes(opCode int) () {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-// func RuntimeError (prgrm *CXProgram) {
-// 	if r := recover(); r != nil {
-// 		prgrm.PrintStack()
-
-// 		call := prgrm.CallStack[prgrm.CallCounter]
-// 		expr := call.Operator.Expressions[call.Line]
-// 		Debug(RuntimeError(expr.FileName, expr.FileLine), r)
-// 		os.Exit(3)
-// 	}
-// }
-
 func init () {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_JMP, "jmp", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_DEBUG, "debug", []int{}, []int{})
 
-	AddOpCode(OP_SERIALIZE, "serialize", []int{TYPE_AFF}, []int{TYPE_BOOL})
-	AddOpCode(OP_DESERIALIZE, "deserialize", []int{TYPE_BOOL}, []int{})
+	AddOpCode(OP_SERIALIZE, "serialize", []int{TYPE_AFF}, []int{TYPE_BYTE})
+	AddOpCode(OP_DESERIALIZE, "deserialize", []int{TYPE_BYTE}, []int{})
 
 	AddOpCode(OP_UND_EQUAL, "eq", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL})
 	AddOpCode(OP_UND_UNEQUAL, "uneq", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL})
@@ -455,6 +446,8 @@ func init () {
 	AddOpCode(OP_STR_PRINT, "str.print", []int{TYPE_STR}, []int{})
 	AddOpCode(OP_STR_CONCAT, "str.concat", []int{TYPE_STR, TYPE_STR}, []int{TYPE_STR})
 	AddOpCode(OP_STR_SUBSTR, "str.substr", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_STR})
+	AddOpCode(OP_STR_INDEX, "str.index", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32})
+	AddOpCode(OP_STR_TRIM_SPACE, "str.trimspace", []int{TYPE_STR}, []int{TYPE_STR})
 	AddOpCode(OP_STR_EQ, "str.eq", []int{TYPE_STR, TYPE_STR}, []int{TYPE_BOOL})
 
 	AddOpCode(OP_STR_BYTE, "str.byte", []int{TYPE_STR}, []int{TYPE_BYTE})
@@ -825,6 +818,10 @@ func init () {
 			op_str_concat(expr, fp)
 		case OP_STR_SUBSTR:
 			op_str_substr(expr, fp)
+		case OP_STR_INDEX:
+			op_str_index(expr, fp)
+		case OP_STR_TRIM_SPACE:
+			op_str_trim_space(expr, fp)
 		case OP_STR_EQ:
 			op_str_eq(expr, fp)
 

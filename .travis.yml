@@ -27,13 +27,8 @@ before_install:
 
 # Install necessaries go packages
 install:
-  - go get github.com/skycoin/skycoin/...
-  - go get github.com/go-gl/gl/v2.1/gl
-  - go get github.com/go-gl/glfw/v3.2/glfw
-  - go get github.com/go-gl/gltext
-  - go get github.com/blynn/nex
-  - go get github.com/cznic/goyacc
-  - go get -t -v ./...
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]] ; then sudo apt install libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev ; fi
+  - ./cx.sh
 
 # Generate cxgo necessaries files
 before_script:
@@ -46,7 +41,7 @@ before_script:
 script:
   - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
   - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
-  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests/main.cx ++wdir=$GOPATH/src/github.com/skycoin/cx/tests
+  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests/main.cx ++wdir=$GOPATH/src/github.com/skycoin/cx/tests ++disable-tests=gui,issue
 
 # Notifications to Telegram channel
 notifications:

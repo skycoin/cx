@@ -101,7 +101,6 @@ var sp_act_right Sprite
 var sp_act_water Sprite
 
 func compileShader(source str, shaderType i32) (shader i32) {
-	var shader i32
 	shader = gl.CreateShader(shaderType)
 
 	gl.Strs(source, "csources")
@@ -123,7 +122,6 @@ func initOpenGL () (program i32) {
 	vertexShader = compileShader(addNull(vertexShaderSource), gl.VERTEX_SHADER)
 	fragmentShader = compileShader(addNull(fragmentShaderSource), gl.FRAGMENT_SHADER)
 
-	var program i32
 	program = gl.CreateProgram()
 	
 	gl.AttachShader(program, vertexShader)
