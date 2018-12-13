@@ -25,7 +25,7 @@ stack: go 1.11
 init:
   # Enable Windows RDP Client Access to Build Worker
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - set PATH=%MSYS_W64%;%MINGW_W64%;%GOPATH%\bin;%PATH%
+  - set PATH=%MINGW_W64%;%MSYS_W64%;%GOPATH%\bin;%PATH%
 
 # Install go dev dependencies
 install:
