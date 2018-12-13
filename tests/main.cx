@@ -11,6 +11,13 @@ var VERBOSE_FAILURE  i32 = 4
 var VERBOSE_SKIPPED  i32 = 8
 var VERBOSE_FULL	 i32 = VERBOSE_SUCCESS | VERBOSE_STDERR | VERBOSE_FAILURE | VERBOSE_SKIPPED
 
+
+var TEST_NONE   i32 = 0
+var TEST_STABLE i32 = 1
+var TEST_ISSUE  i32 = 2
+var TEST_GUI    i32 = 4
+var TEST_ALL    i32 = TEST_STABLE | TEST_ISSUE | TEST_GUI
+
 var g_testCount i32 = 0
 var g_testSuccess i32 = 0
 var g_testSkipped i32 = 0
@@ -18,6 +25,80 @@ var g_testSkipped i32 = 0
 var g_workingDir str = ""
 var g_verbose i32 = VERBOSE_FAILURE
 var g_noGui bool = false
+var g_enabledTests i32 = TEST_ALL
+
+func addTestFlags(arg str, pattern str, filterFlags *i32) (success bool) {
+	success = false
+	var filterList str = ""
+	var filterMatch bool = false
+	if getArgValueStr(arg, pattern, &filterList, &filterMatch) {
+		var index i32 = 0
+		for index >= 0 {
+			index = str.index(filterList, ",")
+			var filter str = filterList
+			if index >= 0 {
+				filter = str.substr(filterList, 0, index)
+				filterList = str.substr(filterList, index + 1, len(filterList))
+			} else {
+				filterList = ""
+			}
+			filter = str.trimspace(filter)
+			if addTestFlag(filterFlags, filter) {
+				success = true
+			} else {
+				printf("invalid option value %s\n", arg)
+				os.Exit(cx.PANIC)
+			}
+		}
+	}
+}
+
+func addTestFlag(filterFlags *i32, filter str) (success bool) {
+	success = false
+	var tmpF i32 = *filterFlags
+	if filter == "all" {
+		tmpF = tmpF | TEST_ALL
+		success = true
+	} else {
+		if filter == "stable" {
+			tmpF = tmpF | TEST_STABLE
+			success = true
+		} else if filter == "issue" {
+			tmpF = tmpF | TEST_ISSUE
+			success = true
+		} else if filter == "gui" {
+			tmpF = tmpF | TEST_GUI
+			success = true
+		}
+	}
+	*filterFlags = tmpF
+}
+
+func printTestFlags(name str, filter i32) {
+	printf("%s : %d : ", name, filter)
+	if filter > 0 {
+		if (filter & TEST_STABLE) == TEST_STABLE {
+			printf("stable, ")
+			filter = filter & (-1 ^ TEST_STABLE)
+		}
+		if (filter & TEST_ISSUE) == TEST_ISSUE {
+			printf("issue, ")
+			filter = filter & (-1 ^ TEST_ISSUE)
+		}
+		if (filter & TEST_GUI) == TEST_GUI {
+			printf("gui, ")
+			filter = filter & (-1 ^ TEST_GUI)
+		}
+
+		if (filter > 0) {
+			printf("invalid filter %s : %d\n", name, filter)
+			os.Exit(cx.PANIC)
+		}
+	} else {
+		printf("none")
+	}
+	printf("\n\n")
+}
 
 func matchArg(arg str, pattern str, match *bool) (out bool) {
 	out = false
@@ -93,54 +174,46 @@ func prettyCxCode(code i32) (out str) {
 	}
 }
 
-func runTestEx(cmd str, exitCode i32, timeoutMs i32, desc str) () {
-	var runError i32 = 0
-	var cmdError i32 = 0
-	var stdOut str
+func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
+	if (g_enabledTests & filter) == filter {
+		var runError i32 = 0
+		var cmdError i32 = 0
+		var stdOut str
 
-	var padding str
-	if (g_testCount < 10) {
-		padding = "  "
-	} else if (g_testCount < 100) {
-		padding = " "
-	}
-	var start i64 = time.UnixMilli()
-	runError, cmdError, stdOut = os.Run(cmd, 2048, timeoutMs, g_workingDir)
-	var end i64 = time.UnixMilli()
-	var deltaMs i32 = i64.i32(end - start)
-	if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
-		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
-				padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
+		var padding str
+		if (g_testCount < 10) {
+			padding = "  "
+		} else if (g_testCount < 100) {
+			padding = " "
 		}
-		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
-			printf("%s\n", stdOut)
+		var start i64 = time.UnixMilli()
+		runError, cmdError, stdOut = os.Run(cmd, 2048, timeoutMs, g_workingDir)
+		var end i64 = time.UnixMilli()
+		var deltaMs i32 = i64.i32(end - start)
+		if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
+			if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+				printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
+					padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
+			}
+			if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
+				printf("%s\n", stdOut)
+			}
+		} else if (cmdError != exitCode) {
+			if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+				printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
+					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
+			}
+			if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
+				printf("%s\n", stdOut)
+			}
+		} else {
+			if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
+				printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
+					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
+			}
+			g_testSuccess = g_testSuccess + 1
 		}
-	} else if (cmdError != exitCode) {
-		if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
-			printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
-				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
-		}
-		if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
-			printf("%s\n", stdOut)
-		}
-	} else {
-		if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
-			printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
-				padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
-		}
-		g_testSuccess = g_testSuccess + 1
-	}
-	g_testCount = g_testCount + 1
-}
-
-func runTest(cmd str, exitCode i32, desc str) {
-	runTestEx(cmd, exitCode, 0, desc)
-}
-
-func runGuiTest(cmd str, exitCode i32, desc str) {
-	if g_noGui == false {
-		runTestEx(cmd, exitCode, 0, desc)
+		g_testCount = g_testCount + 1
 	} else {
 		if ((g_verbose & VERBOSE_SKIPPED) == VERBOSE_SKIPPED) {
 			printf("#--- | Skipped |  0ms | '%s' | %s\n", cmd, desc)
@@ -149,26 +222,34 @@ func runGuiTest(cmd str, exitCode i32, desc str) {
 	}
 }
 
+func runTest(cmd str, exitCode i32, desc str) {
+	runTestEx(cmd, exitCode, desc, TEST_STABLE, 0)
+}
+
 func help () {
 	printf("Options:\n")
-	printf("++help      : Prints this message.\n")
-	printf("++nogui     : Disable tests using gui (eg glfw/gl).\n")
-	printf("++verbose   : Set verbose mode (flags).\n")
-	printf("          0 | none\n")
-	printf("          1 | log success only\n")
-	printf("          2 | log stdout and stderr\n")
-	printf("          4 | log failure\n")
-	printf("          8 | log skipped tests\n")
-	printf("         15 | full log\n")
-	printf("++wdir      : Set working directory\n")
+	printf("++help          : Prints this message.\n")
+	printf("++enable-tests  : Enable test set (all, stable, issue, gui).\n")
+	printf("++disable-tests : Disable test set (all, stable, issue, gui).\n")
+	printf("++verbose       : Set verbose mode (flags).\n")
+	printf("              0 | none\n")
+	printf("              1 | log success only\n")
+	printf("              2 | log stdout and stderr\n")
+	printf("              4 | log failure\n")
+	printf("              8 | log skipped tests\n")
+	printf("             15 | full log\n")
+	printf("++wdir          : Set working directory\n")
 }
 
 func main ()() {
 	var argCount i32 = len(os.Args)
+
 	var workingDirMatch bool = false
 	var verboseMatch bool = false
 	var helpMatch bool = false
-	var noGuiMatch bool = false
+
+	var enabledTests i32 = 0
+	var disabledTests i32 = 0
 
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
@@ -178,9 +259,17 @@ func main ()() {
 
 		if getArgValueI32(arg, "++verbose=", &g_verbose, &verboseMatch) {
 			if g_verbose < VERBOSE_NONE || g_verbose > VERBOSE_FULL{
-				printf("invalid value %s\n", arg)
+				printf("invalid option value %s\n", arg)
 				os.Exit(cx.PANIC)
 			}
+			continue
+		}
+
+		if addTestFlags(arg, "++enable-tests=", &enabledTests) {
+			continue
+		}
+
+		if addTestFlags(arg, "++disable-tests=", &disabledTests) {
 			continue
 		}
 
@@ -189,16 +278,23 @@ func main ()() {
 			os.Exit(0)
 		}
 
-		if matchArg(arg, "++nogui", &noGuiMatch) {
-			g_noGui = true
-			continue
-		}
-
 		printf("invalid argument : %s\n", arg)
 		os.Exit(cx.PANIC)
 	}
 
-	printf("\nRunning CX tests in dir : '%s'\n\n", g_workingDir)
+	if enabledTests == TEST_ALL && disabledTests == TEST_ALL {
+		printf("Invalid test combination :\n")
+		printTestFlags("++enabled-test=", enabledTests)
+		printTestFlags("++disabled-tests=", disabledTests)
+		os.Exit(cx.PANIC)
+	} else if disabledTests == TEST_ALL {
+		g_enabledTests = enabledTests
+	} else {
+		g_enabledTests = (g_enabledTests | enabledTests) & (-1 ^ disabledTests)
+	}
+
+	printf("\nRunning CX tests in dir : '%s'\n", g_workingDir)
+	printTestFlags("Enabled tests", g_enabledTests)
 
 	var start i64
 	start = time.UnixMilli()
@@ -222,79 +318,79 @@ func main ()() {
 
 	// issues
 	runTest("cx issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
-	runGuiTest("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.")
+	runTestEx("cx issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.", TEST_GUI | TEST_STABLE, 0)
 	runTest("cx issue-18.cx", cx.SUCCESS, "String not working across packages")
 	runTest("cx issue-19a.cx issue-19.cx", cx.SUCCESS, "Order of files matters for structs")
 	runTest("cx issue-19.cx issue-19a.cx", cx.SUCCESS, "Order of files matters for structs")
-	runGuiTest("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.")
-	runGuiTest("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData")
+	runTestEx("cx issue-23.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.", TEST_GUI | TEST_STABLE, 0)
+	runTestEx("cx issue-24.cx", cx.SUCCESS, "Panic when giving []f32 argument to gl.BufferData", TEST_GUI | TEST_STABLE, 0)
 	runTest("cx issue-25.cx", cx.SUCCESS, "Struct field crushed")
 	runTest("cx issue-26.cx", cx.SUCCESS, "Failed to modify value in an array")
 	runTest("cx issue-27.cx", cx.SUCCESS, "Panic when trying to index (using a var) an array, member of a struct passed as a function argument")
 	runTest("cx issue-28.cx", cx.SUCCESS, "Can't call method from package")
 	runTest("cx issue-29.cx", cx.SUCCESS, "Can't call method if it has a parameter")
 	runTest("cx issue-30.cx", cx.SUCCESS, "Panic when using arithmetic to index an array field of a struct")
-	runTest("cx issue-32.cx", cx.SUCCESS, "Panic if return value is used in an expression")
+	runTestEx("cx issue-32.cx", cx.SUCCESS, "Panic if return value is used in an expression", TEST_ISSUE, 0)
 	runTest("cx issue-33.cx", cx.SUCCESS, "Using a variable to store the return boolean value of a function doesnt work with an if statement")
 	runTest("cx issue-35.cx", cx.SUCCESS, "Panic when accessing property of struct array passed in as argument to func")
 	runTest("cx issue-37.cx", cx.SUCCESS, "Unexpected results when accessing arrays of structs in a struct")
 	runTest("cx issue-39.cx", cx.SUCCESS, "Inline initializations and arrays")
-	runTest("cx issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop")
-	runTest("cx issue-41.cx", cx.SUCCESS, "Scope not working in loops")
+	runTestEx("cx issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop", TEST_ISSUE, 0)
+	runTestEx("cx issue-41.cx", cx.SUCCESS, "Scope not working in loops", TEST_ISSUE, 0)
 	runTest("cx issue-48.cx", cx.SUCCESS, "Interdependant Structs")
 	runTest("cx issue-49.cx", cx.COMPILATION_ERROR, "Panic when trying to access an invalid field.")
-	runTest("cx issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier")
-	runTest("cx issue-51a.cx issue-51.cx", cx.SUCCESS, "Silent name clash between packages")
-	runTest("cx issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages")
-	runTest("cx issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.")
-	runTest("cx issue-53.cx", cx.SUCCESS, "Panic when using +* in an expression")
-	runTest("cx issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.")
-	runTest("cx issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.")
+	runTestEx("cx issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier", TEST_ISSUE, 0)
+	runTestEx("cx issue-51a.cx issue-51.cx", cx.SUCCESS, "Silent name clash between packages", TEST_ISSUE, 0)
+	runTestEx("cx issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages", TEST_ISSUE, 0)
+	runTestEx("cx issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.", TEST_ISSUE, 0)
+	runTestEx("cx issue-53.cx", cx.SUCCESS, "Panic when using +* in an expression", TEST_ISSUE, 0)
+	runTestEx("cx issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.", TEST_ISSUE, 0)
+	runTestEx("cx issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.", TEST_ISSUE, 0)
 	runTest("cx issue-56.cx", cx.SUCCESS, "Panic when variable used in if statement without parenthesis.")
 	runTest("cx issue-57.cx", cx.SUCCESS, "Struct field stomped")
-	runTest("cx issue-58.cx", cx.COMPILATION_ERROR, "No compilation error when indexing an array with a non integral var.")
-	runTest("cx issue-59.cx", cx.SUCCESS, "Panic when a field of a struct returned by a function is used in an expression")
+	runTestEx("cx issue-58.cx", cx.COMPILATION_ERROR, "No compilation error when indexing an array with a non integral var.", TEST_ISSUE, 0)
+	runTestEx("cx issue-59.cx", cx.SUCCESS, "Panic when a field of a struct returned by a function is used in an expression", TEST_ISSUE, 0)
 	runTest("cx issue-60a.cx issue-60.cx", cx.COMPILATION_ERROR, "No compilation error when using var without package qualification.")
 	runTest("cx issue-61.cx", cx.SUCCESS, "No compilation error when passing *i32 as an i32 arg and conversely")
-	runTest("cx issue-61a.cx", cx.COMPILATION_ERROR, "No compilation error when passing *i32 as an i32 arg and conversely")
-	runTest("cx issue-62.cx", cx.COMPILATION_ERROR, "No compilation error when dereferencing an i32 var.")
-	runTest("cx issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.")
-	runTest("cx issue-65.cx", cx.SUCCESS, "Return from a function doesnt work")
-	runTest("cx issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope")
+	runTestEx("cx issue-61a.cx", cx.COMPILATION_ERROR, "No compilation error when passing *i32 as an i32 arg and conversely", TEST_ISSUE, 0)
+	runTestEx("cx issue-62.cx", cx.COMPILATION_ERROR, "No compilation error when dereferencing an i32 var.", TEST_ISSUE, 0)
+	runTestEx("cx issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.", TEST_ISSUE, 0)
+	runTestEx("cx issue-65.cx", cx.SUCCESS, "Return from a function doesnt work", TEST_ISSUE, 0)
+	runTestEx("cx issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope", TEST_ISSUE, 0)
 	runTest("cx issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")
-	runTest("cx issue-70.cx", cx.SUCCESS, "Inline field and index 'dereferences' to function calls' outputs")
+	runTestEx("cx issue-70.cx", cx.SUCCESS, "Inline field and index 'dereferences' to function calls' outputs", TEST_ISSUE, 0)
 	runTest("cx issue-71.cx", cx.COMPILATION_ERROR, "No compilation error when redeclaring a variable")
-	runTest("cx issue-72.cx", cx.SUCCESS, "Multi-dimensional slices don't work")
-	runTest("cx issue-75.cx", cx.SUCCESS, "can't prefix a (f32) variable with minus to flip it's signedness")
+	runTestEx("cx issue-72.cx", cx.SUCCESS, "Multi-dimensional slices don't work", TEST_ISSUE, 0)
+	runTestEx("cx issue-75.cx", cx.SUCCESS, "can't prefix a (f32) variable with minus to flip it's signedness", TEST_ISSUE, 0)
 	runTest("cx issue-78.cx", cx.COMPILATION_ERROR, "struct identifier (when initializing fields) can be with or without a '&' prefix, with no CX error")
 	runTest("cx issue-79.cx", cx.COMPILATION_ERROR, "can assign to previously undeclared vars with just '='")
-	runTest("cx issue-82.cx", cx.SUCCESS, "empty code blocks (even if they contain commented-out lines) crash like this")
+	runTestEx("cx issue-82.cx", cx.SUCCESS, "empty code blocks (even if they contain commented-out lines) crash like this", TEST_ISSUE, 0)
 	runTest("cx issue-84.cx", cx.SUCCESS, "increment operator ++ does not work")
 	runTest("cx issue-85.cx", cx.SUCCESS, "Method does not work")
 	runTest("cx issue-86.cx", cx.SUCCESS, "Cannot use bool variable in if expression")
 	runTest("cx issue-88.cx", cx.SUCCESS, "CX Parser does not recognize method")
 	runTest("cx issue-90.cx", cx.SUCCESS, "Goto not working on windows")
 	runTest("cx issue-91.cx", cx.SUCCESS, "Methods with pointer receivers don't work")
-	runGuiTest("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through")
+	runTestEx("cx issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through", TEST_GUI | TEST_STABLE, 0)
 	runTest("cx issue-98.cx", cx.COMPILATION_ERROR, "Variable redeclaration should not be allowed")
-	runTest("cx issue-99.cx", cx.SUCCESS, "Short variable declarations are not working with calls to methods or functions")
-	runTest("cx issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32")
-	runTest("cx issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work")
+	runTestEx("cx issue-99.cx", cx.SUCCESS, "Short variable declarations are not working with calls to methods or functions", TEST_ISSUE, 0)
+	runTestEx("cx issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32", TEST_ISSUE, 0)
+	runTestEx("cx issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work", TEST_ISSUE, 0)
 	runTest("cx issue-103.cx", cx.SUCCESS, "Argument list is not parsed correctly")
-	runTest("cx issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression")
-	runTest("cx issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice")
+	runTestEx("cx issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression", TEST_ISSUE, 0)
+	runTestEx("cx issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice", TEST_ISSUE, 0)
 	runTest("cx issue-106a.cx issue-106.cx", cx.SUCCESS, "Troubles when accessing a global var from another package")
-	runTest("cx issue-108.cx", cx.SUCCESS, "same func names (but in different packages) collide")
+	runTestEx("cx issue-108.cx", cx.SUCCESS, "same func names (but in different packages) collide", TEST_ISSUE, 0)
 	runTest("cx issue-111.cx", cx.COMPILATION_ERROR, "can use vars from other packages without a 'packageName.' prefix")
 	runTest("cx issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
-	runTest("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
-	runTest("cx issue-120b.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
+	runTestEx("cx issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.", TEST_ISSUE, 0)
+	runTestEx("cx issue-120b.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.", TEST_ISSUE, 0)
 	runTest("cx issue-131.cx", cx.SUCCESS, "Problem with struct literals in short variable declarations")
-	runTest("cx issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration")
-	runTest("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal")
-	runTest("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
-	runTest("cx issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances")
-	runTest("cx issue-141.cx", cx.SUCCESS, "Parser gets confused with `2 -2`")
+	runTestEx("cx issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration", TEST_ISSUE, 0)
+	runTestEx("cx issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal", TEST_ISSUE, 0)
+	runTestEx("cx issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type", TEST_ISSUE, 0)
+	runTestEx("cx issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances", TEST_ISSUE, 0)
+	runTestEx("cx issue-141.cx", cx.SUCCESS, "Parser gets confused with `2 -2`", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
@@ -303,5 +399,9 @@ func main ()() {
 	printf("A total of %d tests were performed\n", g_testCount)
 	printf("%d were successful\n", g_testSuccess)
 	printf("%d failed\n", g_testCount - g_testSuccess)
-	printf("%d skipped (eg ++nogui)\n", g_testSkipped)
+	printf("%d skipped\n", g_testSkipped)
+
+	if g_testCount == 0 || (g_testSuccess != g_testCount) {
+		os.Exit(cx.PANIC)
+	}
 }
