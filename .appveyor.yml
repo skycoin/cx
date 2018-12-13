@@ -29,8 +29,8 @@ init:
 
 # Install go dev dependencies
 install:
-  - bash -lc "pacman --noconfirm -S pacman"
-  - bash -lc "pacman --noconfirm -S mingw-w64-x86_64-devhelp mingw-w64-x86_64-glade mingw-w64-x86_64-toolchain base-devel"
+  - bash -lc "pacman --noconfirm -S bash pacman pacman-mirrors"
+  - bash -lc "pacman --noconfirm -S mingw-w64-x86_64-gcc mingw64/mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gtk3 mingw-w64-x86_64-devhelp mingw-w64-x86_64-glade mingw-w64-x86_64-toolchain base-devel"
   - bash -c "sed -i -e 's/-Wl,-luuid/-luuid/g' C:/msys64/mingw64/lib/pkgconfig/gdk-3.0.pc"
   - go version
   - go get github.com/skycoin/skycoin/...
