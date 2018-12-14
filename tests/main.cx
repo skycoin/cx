@@ -399,6 +399,9 @@ func main ()() {
 	runTestEx("issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type", TEST_ISSUE, 0)
 	runTestEx("issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances", TEST_ISSUE, 0)
 	runTestEx("issue-141.cx", cx.SUCCESS, "Parser gets confused with `2 -2`", TEST_ISSUE, 0)
+	runTestEx("issue-153.cx", cx.SUCCESS, "Panic in when assigning an empty initializer list to a []i32 variable", TEST_ISSUE, 0)
+	runTestEx("issue-154.cx", cx.SUCCESS, "Cx stack overflow when appending to a slice passed by address", TEST_ISSUE, 0)
+	runTestEx("issue-155.cx", cx.COMPILATION_ERROR, "Panic when trying to assign return value of a function returning void", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
