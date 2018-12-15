@@ -15,13 +15,16 @@ ifeq ($(UNAME_S), Linux)
   PANGO_VERSION := $(pkg-config --modversion pango)
 endif
 
+configure: ## Configure the system to build and run CX
+	export PATH="${GOPATH}/bin:${PATH}"
+
 build-parser: ## Generate lexer and parser for CX grammar
 	nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	nex -e cxgo/cxgo.nex
 	goyacc -o cxgo/cxgo.go cxgo/cxgo.y
 
-build: build-parser ## Build CX from sources
+build: configure build-parser ## Build CX from sources
 	go build -tags full -i -o ${GOPATH}/bin/cx ./cxgo/
 
 install-deps-Linux:
@@ -41,12 +44,13 @@ install-deps-Darwin:
 install-deps: $(INSTALL_DEPS)
 	go test -race -tags full -i github.com/skycoin/cx/cxgo/
 
-install: install-deps ## Install CX from sources plus dependencies
+install: configure install-deps ## Install CX from sources. Build dependencies
+	source ./cx.sh
 	go install -tags full -i -o ${GOPATH}/bin/cx ./cxgo/
 
 test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
-	${GOPATH}/bin/cx ${GOPATH}/src/github.com/skycoin/cx/tests/main.cx ++wdir=${GOPATH}/src/github.com/skycoin/cx/tests ++disable-tests=gui,issue
+	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: ## Update golden files used in CX test suite
 	# TODO: Implement
