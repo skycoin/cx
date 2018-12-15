@@ -44,9 +44,8 @@ install-deps-Darwin:
 install-deps: $(INSTALL_DEPS)
 	go test -race -tags full -i github.com/skycoin/cx/cxgo/
 
-install: configure install-deps ## Install CX from sources. Build dependencies
+install: configure install-deps build-parser ## Install CX from sources. Build dependencies
 	source ./cx.sh
-	go install -tags full -i -o ${GOPATH}/bin/cx ./cxgo/
 
 test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
