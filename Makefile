@@ -5,7 +5,7 @@
 PKG_NAMES_LINUX := 'glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev'
 PKG_NAMES_MACOS := 'gtk gtk-mac-integration gtk+3 glade'
 UNAME_S := $(shell uname -s)
-INSTALL_DEPS := "build-deps-$(UNAME_S)"
+INSTALL_DEPS := "install-deps-$(UNAME_S)"
 
 ifeq ($(UNAME_S), Linux)
   DISPLAY       := ':99.0'
