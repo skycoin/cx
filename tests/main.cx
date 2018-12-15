@@ -4,103 +4,6 @@ import "os"
 import "cx"
 import "time"
 
-var VERBOSE_NONE	 i32 = 0
-var VERBOSE_SUCCESS  i32 = 1
-var VERBOSE_STDERR   i32 = 2
-var VERBOSE_FAILURE  i32 = 4
-var VERBOSE_SKIPPED  i32 = 8
-var VERBOSE_FULL	 i32 = VERBOSE_SUCCESS | VERBOSE_STDERR | VERBOSE_FAILURE | VERBOSE_SKIPPED
-
-
-var TEST_NONE   i32 = 0
-var TEST_STABLE i32 = 1
-var TEST_ISSUE  i32 = 2
-var TEST_GUI    i32 = 4
-var TEST_ALL    i32 = TEST_STABLE | TEST_ISSUE | TEST_GUI
-
-var g_testCount i32 = 0
-var g_testSuccess i32 = 0
-var g_testSkipped i32 = 0
-
-var g_workingDir str = ""
-var g_cxPath str = "cx"
-var g_verbose i32 = VERBOSE_FAILURE
-var g_noGui bool = false
-var g_enabledTests i32 = TEST_ALL
-
-func addTestFlags(arg str, pattern str, filterFlags *i32) (success bool) {
-	success = false
-	var filterList str = ""
-	var filterMatch bool = false
-	if getArgValueStr(arg, pattern, &filterList, &filterMatch) {
-		var index i32 = 0
-		for index >= 0 {
-			index = str.index(filterList, ",")
-			var filter str = filterList
-			if index >= 0 {
-				filter = str.substr(filterList, 0, index)
-				filterList = str.substr(filterList, index + 1, len(filterList))
-			} else {
-				filterList = ""
-			}
-			filter = str.trimspace(filter)
-			if addTestFlag(filterFlags, filter) {
-				success = true
-			} else {
-				printf("invalid option value %s\n", arg)
-				os.Exit(cx.PANIC)
-			}
-		}
-	}
-}
-
-func addTestFlag(filterFlags *i32, filter str) (success bool) {
-	success = false
-	var tmpF i32 = *filterFlags
-	if filter == "all" {
-		tmpF = tmpF | TEST_ALL
-		success = true
-	} else {
-		if filter == "stable" {
-			tmpF = tmpF | TEST_STABLE
-			success = true
-		} else if filter == "issue" {
-			tmpF = tmpF | TEST_ISSUE
-			success = true
-		} else if filter == "gui" {
-			tmpF = tmpF | TEST_GUI
-			success = true
-		}
-	}
-	*filterFlags = tmpF
-}
-
-func printTestFlags(name str, filter i32) {
-	printf("%s : %d : ", name, filter)
-	if filter > 0 {
-		if (filter & TEST_STABLE) == TEST_STABLE {
-			printf("stable, ")
-			filter = filter & (-1 ^ TEST_STABLE)
-		}
-		if (filter & TEST_ISSUE) == TEST_ISSUE {
-			printf("issue, ")
-			filter = filter & (-1 ^ TEST_ISSUE)
-		}
-		if (filter & TEST_GUI) == TEST_GUI {
-			printf("gui, ")
-			filter = filter & (-1 ^ TEST_GUI)
-		}
-
-		if (filter > 0) {
-			printf("invalid filter %s : %d\n", name, filter)
-			os.Exit(cx.PANIC)
-		}
-	} else {
-		printf("none")
-	}
-	printf("\n\n")
-}
-
 func matchArg(arg str, pattern str, match *bool) (out bool) {
 	out = false
 	var argLen i32 = len(arg)
@@ -119,8 +22,7 @@ func matchArg(arg str, pattern str, match *bool) (out bool) {
 }
 
 func getArgValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
-	var matchName bool = matchArg(arg, pattern, match)
-	if matchName {
+	if matchArg(arg, pattern, match) {
 		var argLen i32 = len(arg)
 		var patternLen i32 = len(pattern)
 		if argLen > patternLen {
@@ -128,6 +30,28 @@ func getArgValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
 			out = true
 		}
 	}
+}
+
+func getArgValueStrSlice(arg str, pattern str, match *bool) (out []str) {
+	var filterList str = ""
+	var filterMatch bool = false
+	var slice []str
+	if getArgValueStr(arg, pattern, &filterList, &filterMatch) {
+		var index i32 = 0
+		for index >= 0 {
+			index = str.index(filterList, ",")
+			var filter str = filterList
+			if index >= 0 {
+				filter = str.substr(filterList, 0, index)
+				filterList = str.substr(filterList, index + 1, len(filterList))
+			} else {
+				filterList = ""
+			}
+			filter = str.trimspace(filter)
+			slice = append(slice, filter)
+		}
+	}
+	out = slice
 }
 
 func getArgValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
@@ -138,6 +62,66 @@ func getArgValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
 		*value = i32Value
 	}
 }
+
+func getFlags(arg str, pattern str, flags *i32, match *bool, names []str, values[]i32) (success bool) {
+	panic(len(names), len(values), "invalid flags")
+	success = false
+	var list str = ""
+	var slice []str = getArgValueStrSlice(arg, pattern, &match)
+	for i := 0; i < len(slice); i++ {
+		var value i32 = 0
+		for k := 0; k < len(names); k++ {
+			if slice[i] == names[k] {
+				value = values[k]
+			}
+		}
+
+		if value != 0 {
+			*flags = *flags | value
+			success = true
+		} else {
+			printf("invalid option value %s\n", arg)
+			os.Exit(cx.PANIC)
+		}
+	}
+}
+
+func printFlags(name str, flags i32, names []str, values[]i32) {
+	panic(len(names), len(values), "invalid flags")
+	printf("%s : %d : ", name, flags)
+	var count i32 = len(values)
+	for i := 0; i < count && flags > 0; i++ {
+		var flag i32 = values[i]
+		if (flags & flag) == flag {
+			printf("%s, ", names[i])
+			flags = flags & (-1 ^ flag)
+		}
+	}
+	printf("\n")
+	panic(flags, 0, "invalid flags")
+}
+
+var TEST_NONE   i32 = 0
+var TEST_STABLE i32 = 1
+var TEST_ISSUE  i32 = 2
+var TEST_GUI    i32 = 4
+var TEST_ALL    i32 = 7//TEST_STABLE | TEST_ISSUE | TEST_GUI
+
+var LOG_NONE	i32 = 0
+var LOG_SUCCESS i32 = 1
+var LOG_STDERR  i32 = 2
+var LOG_FAIL    i32 = 4
+var LOG_SKIP    i32 = 8
+var LOG_ALL	    i32 = 15//LOG_SUCCESS | LOG_STDERR | LOG_FAIL | LOG_SKIP
+
+var g_testCount i32 = 0
+var g_testSuccess i32 = 0
+var g_testSkipped i32 = 0
+
+var g_enabledTests i32 = TEST_ALL
+var g_log i32 = LOG_FAIL
+var g_cxPath str = "cx"
+var g_workingDir str = ""
 
 func prettyOsCode(code i32) (out str) {
 	if (code == os.RUN_SUCCESS) {
@@ -193,23 +177,23 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		var end i64 = time.UnixMilli()
 		var deltaMs i32 = i64.i32(end - start)
 		if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
-			if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+			if ((g_log & LOG_FAIL) == LOG_FAIL) {
 				printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
 					padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
 			}
-			if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
+			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
 			}
 		} else if (cmdError != exitCode) {
-			if ((g_verbose & VERBOSE_FAILURE) == VERBOSE_FAILURE) {
+			if ((g_log & LOG_FAIL) == LOG_FAIL) {
 				printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
 					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
 			}
-			if ((g_verbose & VERBOSE_STDERR) == VERBOSE_STDERR) {
+			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
 			}
 		} else {
-			if ((g_verbose & VERBOSE_SUCCESS) == VERBOSE_SUCCESS) {
+			if ((g_log & LOG_SUCCESS) == LOG_SUCCESS) {
 				printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
 					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
 			}
@@ -217,7 +201,7 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		}
 		g_testCount = g_testCount + 1
 	} else {
-		if ((g_verbose & VERBOSE_SKIPPED) == VERBOSE_SKIPPED) {
+		if ((g_log & LOG_SKIP) == LOG_SKIP) {
 			printf("#--- | Skipped |  0ms | '%s' | %s\n", cmd, desc)
 		}
 		g_testSkipped = g_testSkipped + 1
@@ -233,30 +217,38 @@ func help () {
 	printf("++help          : Prints this message.\n")
 	printf("++enable-tests  : Enable test set (all, stable, issue, gui).\n")
 	printf("++disable-tests : Disable test set (all, stable, issue, gui).\n")
-	printf("++verbose       : Set verbose mode (flags).\n")
-	printf("              0 | none\n")
-	printf("              1 | log success only\n")
-	printf("              2 | log stdout and stderr\n")
-	printf("              4 | log failure\n")
-	printf("              8 | log skipped tests\n")
-	printf("             15 | full log\n")
+	printf("++log           : Enable log set (all, success, stderr, fail, skip).\n")
 	printf("++cxpath        : Set cx directory\n")
 	printf("++wdir          : Set working directory\n")
 }
 
 func main ()() {
+	var testNames []str
+	var testValues []i32
+	testNames = []str { "all", "stable", "issue", "gui" }
+	testValues = []i32 { TEST_ALL, TEST_STABLE, TEST_ISSUE, TEST_GUI }
+
+	var logNames []str
+	var logValues []i32
+	logNames = []str { "all", "success", "stderr", "fail", "skip" }
+	logValues = []i32 { LOG_ALL, LOG_SUCCESS, LOG_STDERR, LOG_FAIL, LOG_SKIP }
+
 	var argCount i32 = len(os.Args)
 
 	var workingDirMatch bool = false
 	var cxPathMatch bool = false
-	var verboseMatch bool = false
+	var logMatch bool = false
+	var enabledTestMatch bool = false
+	var disabledTestMatch bool = false
 	var helpMatch bool = false
 
 	var enabledTests i32 = 0
 	var disabledTests i32 = 0
+	var log i32 = 0
 
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
+
 		if getArgValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
 			continue
 		}
@@ -265,19 +257,15 @@ func main ()() {
 			continue
 		}
 
-		if getArgValueI32(arg, "++verbose=", &g_verbose, &verboseMatch) {
-			if g_verbose < VERBOSE_NONE || g_verbose > VERBOSE_FULL{
-				printf("invalid option value %s\n", arg)
-				os.Exit(cx.PANIC)
-			}
+		if getFlags(arg, "++log=", &log, &logMatch, logNames, logValues) {
 			continue
 		}
 
-		if addTestFlags(arg, "++enable-tests=", &enabledTests) {
+		if getFlags(arg, "++enable-tests=", &enabledTests, &enabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if addTestFlags(arg, "++disable-tests=", &disabledTests) {
+		if getFlags(arg, "++disable-tests=", &disabledTests, &disabledTestMatch, testNames, testValues) {
 			continue
 		}
 
@@ -292,8 +280,8 @@ func main ()() {
 
 	if enabledTests == TEST_ALL && disabledTests == TEST_ALL {
 		printf("Invalid test combination :\n")
-		printTestFlags("++enabled-test=", enabledTests)
-		printTestFlags("++disabled-tests=", disabledTests)
+		printFlags("++enabled-test=", enabledTests, testNames, testValues)
+		printFlags("++disabled-tests=", disabledTests, testNames, testValues)
 		os.Exit(cx.PANIC)
 	} else if disabledTests == TEST_ALL {
 		g_enabledTests = enabledTests
@@ -301,8 +289,14 @@ func main ()() {
 		g_enabledTests = (g_enabledTests | enabledTests) & (-1 ^ disabledTests)
 	}
 
+	if log > LOG_NONE {
+		g_log = log
+	}
+
 	printf("\nRunning CX tests in dir : '%s'\n", g_workingDir)
-	printTestFlags("Enabled tests", g_enabledTests)
+	printFlags("Enabled tests", g_enabledTests, testNames, testValues)
+	printFlags("Enabled log", g_log, logNames, logValues)
+	printf("\n")
 
 	var start i64
 	start = time.UnixMilli()
