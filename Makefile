@@ -42,7 +42,6 @@ install-deps-Darwin:
 	brew install $(PKG_NAMES_MACOS)
 
 install-deps: $(INSTALL_DEPS)
-	go test -race -tags full -i github.com/skycoin/cx/cxgo/
 
 install: configure install-deps build-parser ## Install CX from sources. Build dependencies
 	source ./cx.sh
