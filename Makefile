@@ -9,10 +9,6 @@ INSTALL_DEPS := install-deps-$(UNAME_S)
 
 ifeq ($(UNAME_S), Linux)
   DISPLAY       := :99.0
-  GTK_VERSION   := $(pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)
-  GLIB_VERSION  := $(pkg-config --modversion glib-2.0)
-  CAIRO_VERSION := $(pkg-config --modversion cairo)
-  PANGO_VERSION := $(pkg-config --modversion pango)
 endif
 
 configure: ## Configure the system to build and run CX
@@ -36,17 +32,19 @@ build: configure build-parser ## Build CX from sources
 	chmod +x ${GOPATH}/bin/cx
 
 install-deps-Linux:
+	echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
 	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
 	export DISPLAY=$(DISPLAY)
-	sudo /usr/bin/Xvfb $(DISPLAY) 2>1 > /dev/null &
-	export GTK_VERSION=$(GTK_VERSION)
-	export Glib_VERSION=$(GLIB_VERSION)
-	export Cairo_VERSION=$(CAIRO_VERSION)
-	export Pango_VERSION=$(PANGO_VERSION)
+	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
+	export GTK_VERSION=$(pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)
+	export Glib_VERSION=$(pkg-config --modversion glib-2.0)
+	export Cairo_VERSION=$(pkg-config --modversion cairo)
+	export Pango_VERSION=$(pkg-config --modversion pango)
 	echo "GTK version ${GTK_VERSION} (Glib ${Glib_VERSION}, Cairo ${Cairo_VERSION}, Pango ${Pango_VERSION})"
 
 install-deps-Darwin:
+	echo 'Installing dependencies for $(UNAME_S)'
 	brew install $(PKG_NAMES_MACOS)
 
 install-deps: $(INSTALL_DEPS)
