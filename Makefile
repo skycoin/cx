@@ -13,13 +13,13 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 configure: ## Configure the system to build and run CX
-	if [ -z ${GOPATH+x} ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="${HOME}/go"; export PATH="${GOPATH}/bin:${PATH}" fi
+	if [ -z "${GOPATH+x}" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="${HOME}/go"; export PATH="${GOPATH}/bin:${PATH}" ; fi
 	mkdir -p ${GOPATH}
 	echo "GOPATH=${GOPATH}"
 	if [ ! -d ${GOPATH}/src/github.com/skycoin/cx ]; then mkdir -p ${GOPATH}/src/github.com/skycoin ; ln -s $(PWD) ${GOPATH}/src/github.com/skycoin/cx ; fi
 
 configure-workspace: ## Configure CX workspace environment
-	if [ -z ${CXPATH+x} ]; then export CX_PATH="${HOME}/cx" ; else export CX_PATH=${CXPATH} ; fi
+	if [ -z "${CXPATH+x}" ]; then export CX_PATH="${HOME}/cx" ; else export CX_PATH=${CXPATH} ; fi
 	mkdir -p ${CX_PATH}/{,src,bin,pkg}
 	echo "NOTE:\tCX workspace at ${CX_PATH}"
 
