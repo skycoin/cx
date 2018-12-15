@@ -2,6 +2,7 @@
 .PHONY: build-parser build test update-golden-files
 .PHONY: install-deps-Darwin install-deps-Linux install-deps install
 
+PWD := $(shell pwd)
 PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
 PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
 UNAME_S := $(shell uname -s)
@@ -15,6 +16,7 @@ configure: ## Configure the system to build and run CX
 	if [ -z ${GOPATH+x} ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="${HOME}/go"; export PATH="${GOPATH}/bin:${PATH}" fi
 	mkdir -p ${GOPATH}
 	echo "GOPATH=${GOPATH}"
+	if [ ! -d ${GOPATH}/src/github.com/skycoin/cx ]; then mkdir -p ${GOPATH}/src/github.com/skycoin ; ln -s $(PWD) ${GOPATH}/src/github.com/skycoin/cx ; fi
 
 configure-workspace: ## Configure CX workspace environment
 	if [ -z ${CXPATH+x} ]; then export CX_PATH="${HOME}/cx" ; else export CX_PATH=${CXPATH} ; fi
@@ -47,14 +49,14 @@ install-deps-Darwin:
 	echo 'Installing dependencies for $(UNAME_S)'
 	brew install $(PKG_NAMES_MACOS)
 
-install-deps: $(INSTALL_DEPS)
+install-deps: configure $(INSTALL_DEPS)
 	go get github.com/skycoin/skycoin/...
 	go get github.com/go-gl/gl/v2.1/gl
 	go get github.com/go-gl/glfw/v3.2/glfw
 	go get github.com/go-gl/gltext
 	go get github.com/blynn/nex
 	go get github.com/cznic/goyacc
-	go get ./...
+	go get github.com/skycoin/cx/...
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
 	echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/skycoin/cx/tests"'
