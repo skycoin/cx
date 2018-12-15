@@ -402,6 +402,8 @@ func main ()() {
 	runTestEx("issue-153.cx", cx.SUCCESS, "Panic in when assigning an empty initializer list to a []i32 variable", TEST_ISSUE, 0)
 	runTestEx("issue-154.cx", cx.SUCCESS, "Cx stack overflow when appending to a slice passed by address", TEST_ISSUE, 0)
 	runTestEx("issue-155.cx", cx.COMPILATION_ERROR, "Panic when trying to assign return value of a function returning void", TEST_ISSUE, 0)
+	runTestEx("issue-156.cx", cx.COMPILATION_ERROR, "Panic when using a function declared in another package without importing the package", TEST_ISSUE, 0)
+	runTestEx("issue-157.cx", cx.SUCCESS, "Cx memory stomped", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()

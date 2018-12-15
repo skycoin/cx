@@ -1,0 +1,11 @@
+package main
+var TEST_ALL i32 = 1 | 2 | 4
+var LOG_ALL  i32 = 1 | 2 | 4 | 8
+func main()() {
+	var testNames []str
+	var testValues []i32
+	testNames = []str { "all", "stable", "issue", "gui" }
+	test(testNames[0], "all", "")
+	testValues = []i32 { 0, 1, 2, 3 }
+	test(testNames[0], "all", "")
+}
