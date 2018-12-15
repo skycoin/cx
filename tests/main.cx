@@ -404,6 +404,7 @@ func main ()() {
 	runTestEx("issue-155.cx", cx.COMPILATION_ERROR, "Panic when trying to assign return value of a function returning void", TEST_ISSUE, 0)
 	runTestEx("issue-156.cx", cx.COMPILATION_ERROR, "Panic when using a function declared in another package without importing the package", TEST_ISSUE, 0)
 	runTestEx("issue-157.cx", cx.SUCCESS, "Cx memory stomped", TEST_ISSUE, 0)
+	runTestEx("issue-158.cx", cx.SUCCESS, "Invalid offset calculation of non literal strings when appended to a slice", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
