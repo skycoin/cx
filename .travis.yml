@@ -21,15 +21,10 @@ matrix:
       dist: xenial
     - os: osx
 
-## Install dev dependencies
-#before_install:
-#  - make install-deps
-
 # Install necessaries go packages
 install:
   - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
   - cd $GOPATH/src/github.com/skycoin/cx
-  - echo "$(pwd)" && ls ./cxgo
   - make install
 
 # Build, test & run cx test

@@ -16,16 +16,24 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 configure: ## Configure the system to build and run CX
-	export PATH="${GOPATH}/bin:${PATH}"
+	if [ -z ${GOPATH+x} ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="${HOME}/go"; export PATH="${GOPATH}/bin:${PATH}" fi
+	mkdir -p ${GOPATH}
+	echo "GOPATH=${GOPATH}"
 
-build-parser: ## Generate lexer and parser for CX grammar
+configure-workspace: ## Configure CX workspace environment
+	if [ -z ${CXPATH+x} ]; then export CX_PATH="${HOME}/cx" ; else export CX_PATH=${CXPATH} ; fi
+	mkdir -p ${CX_PATH}/{,src,bin,pkg}
+	echo "NOTE:\tCX workspace at ${CX_PATH}"
+
+build-parser: configure ## Generate lexer and parser for CX grammar
 	nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	nex -e cxgo/cxgo.nex
 	goyacc -o cxgo/cxgo.go cxgo/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -tags full -i -o ${GOPATH}/bin/cx ./cxgo/
+	go build -tags full -i -o ${GOPATH}/bin/cx github.com/skycoin/cx/cxgo/
+	chmod +x ${GOPATH}/bin/cx
 
 install-deps-Linux:
 	sudo apt-get update -qq
@@ -42,9 +50,17 @@ install-deps-Darwin:
 	brew install $(PKG_NAMES_MACOS)
 
 install-deps: $(INSTALL_DEPS)
+	go get github.com/skycoin/skycoin/...
+	go get github.com/go-gl/gl/v2.1/gl
+	go get github.com/go-gl/glfw/v3.2/glfw
+	go get github.com/go-gl/gltext
+	go get github.com/blynn/nex
+	go get github.com/cznic/goyacc
+	go get ./...
 
-install: configure install-deps build-parser ## Install CX from sources. Build dependencies
-	source ./cx.sh
+install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
+	echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/skycoin/cx/tests"'
+	cx -v
 
 test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
