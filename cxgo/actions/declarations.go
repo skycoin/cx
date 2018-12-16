@@ -178,7 +178,7 @@ func DeclareImport (ident string, currentFile string, lineNo int) {
 					PRGRM.CurrentPackage = pkg
 
 					if ident == "aff" {
-						AffordanceStructs(imp)
+						AffordanceStructs(imp, currentFile, lineNo)
 					}
 				} else {
 					println(CompilationError(currentFile, lineNo), err.Error())
@@ -191,6 +191,9 @@ func DeclareImport (ident string, currentFile string, lineNo int) {
 }
 
 func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) []*CXExpression {
+	if FoundCompileErrors {
+		return nil
+	}
 	if doesInitialize {
 		declaration_specifiers.IsLocalDeclaration = true
 
@@ -316,13 +319,13 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
 }
 
-func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool) *CXArgument {
+func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool, currentFile string, lineNo int) *CXArgument {
 	if isExternal {
 		// custom type in an imported package
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			if imp, err := pkg.GetImport(pkgName); err == nil {
 				if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
-					arg := MakeArgument("", CurrentFile, LineNo)
+					arg := MakeArgument("", currentFile, lineNo)
 					arg.Type = TYPE_CUSTOM
 					arg.CustomType = strct
 					arg.Size = strct.Size
@@ -333,7 +336,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 
 					return arg
 				} else {
-					println(CompilationError(CurrentFile, LineNo), err.Error())
+					println(CompilationError(currentFile, lineNo), err.Error())
 					return nil
 				}
 			} else {
@@ -346,7 +349,7 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 		// custom type in the current package
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
-				arg := MakeArgument("", CurrentFile, LineNo)
+				arg := MakeArgument("", currentFile, lineNo)
 				arg.Type = TYPE_CUSTOM
 				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
 				arg.CustomType = strct
@@ -356,7 +359,8 @@ func DeclarationSpecifiersStruct (ident string, pkgName string, isExternal bool)
 
 				return arg
 			} else {
-				panic("type '" + ident + "' does not exist")
+				println(CompilationError(currentFile, lineNo), err.Error())
+				return nil
 			}
 		} else {
 			panic(err)

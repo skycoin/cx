@@ -229,7 +229,7 @@ func StructLiteralFields (ident string) *CXExpression {
 	}
 }
 
-func AffordanceStructs (pkg *CXPackage) {
+func AffordanceStructs (pkg *CXPackage, currentFile string, lineNo int) {
 	// Argument type
 	argStrct := MakeStruct("Argument")
 	// argStrct.Size = GetArgSize(TYPE_STR) + GetArgSize(TYPE_STR)
@@ -324,7 +324,7 @@ func AffordanceStructs (pkg *CXPackage) {
 	prgrmFldFreeHeap.TotalSize = GetArgSize(TYPE_I64)
 
 	// prgrmFldCaller := MakeField("Caller", TYPE_CUSTOM, "", 0)
-	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false)
+	prgrmFldCaller := DeclarationSpecifiersStruct(callStrct.Name, callStrct.Package.Name, false, currentFile, lineNo)
 	prgrmFldCaller.Name = "Caller"
 
 	prgrmStrct.AddField(prgrmFldCallCounter)

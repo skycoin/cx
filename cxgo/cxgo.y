@@ -444,15 +444,15 @@ declaration_specifiers:
                 }
         |       IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($1, "", false)
+			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($3, $1, true)
+			$$ = DeclarationSpecifiersStruct($3, $1, true, CurrentFile, LineNo)
                 }
 	|       type_specifier PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true)
+			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true, CurrentFile, LineNo)
                 }
         /* |       package_identifier */
         /*         { */

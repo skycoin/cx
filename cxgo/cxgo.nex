@@ -738,6 +738,7 @@ func main () {
 	}
 
 	var prePkg *CXPackage
+	parseErrors := 0
 	
 	if len(sourceCode) > 0 {
 		// we need to traverse the elements by hierarchy
@@ -967,11 +968,14 @@ func main () {
 			if len(fileNames) > 0 {
 				cxgo0.CurrentFileName = fileNames[i]
 			}
-			cxgo0.Parse(source)
+			parseErrors += cxgo0.Parse(source)
 		}
 	}
 
 	PRGRM = cxgo0.PRGRM0
+	if FoundCompileErrors || parseErrors > 0 {
+		os.Exit(CX_COMPILATION_ERROR)
+	}
 
 	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
 
@@ -985,7 +989,7 @@ func main () {
 
 		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 	}
-	parseErrors := 0
+
 	// parsing all source code files
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
