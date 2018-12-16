@@ -21,27 +21,16 @@ matrix:
       dist: xenial
     - os: osx
 
-# Install dev dependencies
-before_install:
-  - ./.ci-scripts/install-deps.sh
-
 # Install necessaries go packages
 install:
-  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]] ; then sudo apt install libxi-dev libgl1-mesa-dev libxrandr-dev libxcursor-dev libxinerama-dev ; fi
-  - ./cx.sh
-
-# Generate cxgo necessaries files
-before_script:
-  - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
-  - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
-  - $GOPATH/bin/nex -e $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
-  - $GOPATH/bin/goyacc -o $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.go $GOPATH/src/github.com/skycoin/cx/cxgo/cxgo.y
+  - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
+  - cd $GOPATH/src/github.com/skycoin/cx
+  - make install
 
 # Build, test & run cx test
 script:
-  - go build -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
-  - go test -race -tags full -i -o $GOPATH/bin/cx github.com/skycoin/cx/cxgo/
-  - $GOPATH/bin/cx $GOPATH/src/github.com/skycoin/cx/tests/main.cx ++wdir=$GOPATH/src/github.com/skycoin/cx/tests ++disable-tests=gui,issue
+  - make build
+  - make test
 
 # Notifications to Telegram channel
 notifications:
