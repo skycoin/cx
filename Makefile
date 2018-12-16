@@ -39,10 +39,10 @@ install-deps-Linux:
 	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
 	export DISPLAY=$(DISPLAY)
 	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
-	export GTK_VERSION=$(pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)
-	export Glib_VERSION=$(pkg-config --modversion glib-2.0)
-	export Cairo_VERSION=$(pkg-config --modversion cairo)
-	export Pango_VERSION=$(pkg-config --modversion pango)
+	export GTK_VERSION="$(shell pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)"
+	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
+	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
+	export Pango_VERSION="$(shell pkg-config --modversion pango)"
 	echo "GTK version ${GTK_VERSION} (Glib ${Glib_VERSION}, Cairo ${Cairo_VERSION}, Pango ${Pango_VERSION})"
 
 install-deps-Darwin:
@@ -50,13 +50,14 @@ install-deps-Darwin:
 	brew install $(PKG_NAMES_MACOS)
 
 install-deps: configure $(INSTALL_DEPS)
+	echo "Installing go package dependencies"
 	go get github.com/skycoin/skycoin/...
 	go get github.com/go-gl/gl/v2.1/gl
 	go get github.com/go-gl/glfw/v3.2/glfw
 	go get github.com/go-gl/gltext
 	go get github.com/blynn/nex
 	go get github.com/cznic/goyacc
-	go get github.com/skycoin/cx/...
+#	go get github.com/skycoin/cx/...
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
 	echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/skycoin/cx/tests"'
