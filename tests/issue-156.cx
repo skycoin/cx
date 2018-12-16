@@ -1,0 +1,8 @@
+package issue
+func foo() () {
+}
+
+package main
+func main()() {
+	issue.foo()
+}

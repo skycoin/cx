@@ -327,16 +327,8 @@ func op_len(expr *CXExpression, fp int) {
 		sliceHeader := PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE : inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
 		WriteMemory(GetFinalOffset(fp, out1), sliceHeader[:4])
 	} else if elt.Type == TYPE_STR {
-		inp1Offset := GetFinalOffset(fp, inp1)
-		var offset int32
-		if elt.Name == "" {
-			// then it's a literal
-			offset = int32(inp1Offset)
-		} else {
-			encoder.DeserializeAtomic(PROGRAM.Memory[inp1Offset:inp1Offset+TYPE_POINTER_SIZE], &offset)
-		}
-
-		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[offset : offset + STR_HEADER_SIZE])
+		var strOffset int = GetStrOffset(fp, inp1)
+		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
 		outB1 := FromI32(int32(elt.Lengths[0]))
 		WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -385,7 +377,8 @@ func op_append (expr *CXExpression, fp int) {
 		obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int32(inp1Offset) + len1*int32(inp2.TotalSize)]
 
 		if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-			obj2 = encoder.SerializeAtomic(int32(inp2Offset))
+			var strOffset int32 = int32(GetStrOffset(fp, inp2))
+			obj2 = encoder.SerializeAtomic(strOffset)
 		} else {
 			obj2 = ReadMemory(inp2Offset, inp2)
 		}
@@ -434,7 +427,8 @@ func op_append (expr *CXExpression, fp int) {
 			obj1 = PROGRAM.Memory[inp1Offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(inp1Offset) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(inp2.TotalSize)]
 
 			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
+				var strOffset int32 = int32(GetStrOffset(fp, inp2))
+				obj2 = encoder.SerializeAtomic(strOffset)
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
 			}
@@ -474,7 +468,8 @@ func op_append (expr *CXExpression, fp int) {
 
 			var obj2 []byte
 			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-				obj2 = encoder.SerializeAtomic(int32(inp2Offset))
+				var strOffset int32 = int32(GetStrOffset(fp, inp2))
+				obj2 = encoder.SerializeAtomic(strOffset)
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
 			}

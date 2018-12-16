@@ -55,6 +55,17 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 	}
 }
 
+func GetStrOffset(fp int, arg *CXArgument) int {
+	strOffset := GetFinalOffset(fp, arg)
+	if arg.Name != "" {
+		// then it's not a literal
+		var offset int32 = 0
+		encoder.DeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
+		strOffset = int(offset)
+	}
+	return strOffset
+}
+
 func GetFinalOffset(fp int, arg *CXArgument) int {
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
