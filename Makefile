@@ -29,10 +29,10 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 configure: ## Configure the system to build and run CX
-	if [ -z "$(GLOBAL_GOPATH)" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="$(LOCAL_GOPATH)"; export PATH="$(LOCAL_GOPATH)/bin:${PATH}" ; fi
+	if [[ -z "$(GLOBAL_GOPATH)" ]]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="$(LOCAL_GOPATH)"; export PATH="$(LOCAL_GOPATH)/bin:${PATH}" ; fi
 	echo "GOPATH=$(GOPATH)"
 	mkdir -p $(GOPATH)/src/github.com/skycoin
-	if [ ! -a $(GOPATH)/src/github.com/skycoin/cx ]; then mkdir -p $(GOPATH)/src/github.com/skycoin ; ln -s $(PWD) $(GOPATH)/src/github.com/skycoin/cx ; fi
+	if [[ ! -a $(GOPATH)/src/github.com/skycoin/cx ]]; then mkdir -p $(GOPATH)/src/github.com/skycoin ; ln -s $(PWD) $(GOPATH)/src/github.com/skycoin/cx ; fi
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/{,src,bin,pkg}
