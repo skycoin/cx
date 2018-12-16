@@ -8,20 +8,35 @@ PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
 UNAME_S := $(shell uname -s)
 INSTALL_DEPS := install-deps-$(UNAME_S)
 
+GLOBAL_GOPATH := ${GOPATH}
+LOCAL_GOPATH  := ${HOME}/go
+CXPATH        := ${CXPATH}
+
+ifdef GLOBAL_GOPATH
+  GOPATH := $(GLOBAL_GOPATH)
+else
+  GOPATH := $(LOCAL_GOPATH)
+endif
+
+ifdef CXPATH
+	CX_PATH := $(CXPATH)
+else
+	CX_PATH := ${HOME}/cx
+endif
+
 ifeq ($(UNAME_S), Linux)
   DISPLAY       := :99.0
 endif
 
 configure: ## Configure the system to build and run CX
-	if [ -z "${GOPATH+x}" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="${HOME}/go"; export PATH="${GOPATH}/bin:${PATH}" ; fi
-	mkdir -p ${GOPATH}
-	echo "GOPATH=${GOPATH}"
-	if [ ! -d ${GOPATH}/src/github.com/skycoin/cx ]; then mkdir -p ${GOPATH}/src/github.com/skycoin ; ln -s $(PWD) ${GOPATH}/src/github.com/skycoin/cx ; fi
+	if [ -z "$(GLOBAL_GOPATH)" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="$(LOCAL_GOPATH)"; export PATH="$(LOCAL_GOPATH)/bin:${PATH}" ; fi
+	echo "GOPATH=$(GOPATH)"
+	mkdir -p $(GOPATH)/src/github.com/skycoin
+	if [ ! -a "$(GOPATH)/src/github.com/skycoin/cx ]; then mkdir -p $(GOPATH)/src/github.com/skycoin ; ln -s $(PWD) $(GOPATH)/src/github.com/skycoin/cx ; fi
 
 configure-workspace: ## Configure CX workspace environment
-	if [ -z "${CXPATH+x}" ]; then export CX_PATH="${HOME}/cx" ; else export CX_PATH=${CXPATH} ; fi
-	mkdir -p ${CX_PATH}/{,src,bin,pkg}
-	echo "NOTE:\tCX workspace at ${CX_PATH}"
+	mkdir -p $(CX_PATH)/{,src,bin,pkg}
+	echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: configure ## Generate lexer and parser for CX grammar
 	nex -e cxgo/cxgo0/cxgo0.nex
@@ -30,8 +45,8 @@ build-parser: configure ## Generate lexer and parser for CX grammar
 	goyacc -o cxgo/cxgo.go cxgo/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -tags full -i -o ${GOPATH}/bin/cx github.com/skycoin/cx/cxgo/
-	chmod +x ${GOPATH}/bin/cx
+	go build -tags full -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
+	chmod +x $(GOPATH)/bin/cx
 
 install-deps-Linux:
 	echo 'Installing dependencies for $(UNAME_S)'
@@ -43,7 +58,6 @@ install-deps-Linux:
 	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
 	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
 	export Pango_VERSION="$(shell pkg-config --modversion pango)"
-	echo "GTK version ${GTK_VERSION} (Glib ${Glib_VERSION}, Cairo ${Cairo_VERSION}, Pango ${Pango_VERSION})"
 
 install-deps-Darwin:
 	echo 'Installing dependencies for $(UNAME_S)'
