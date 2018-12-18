@@ -421,7 +421,31 @@ func PersistantServiceMode() {
 		printPrompt()
 
 		if inp, ok = readline(fi); ok {
-			fmt.Println(inp)
+			// fmt.Println(inp)
+			if isJSON(inp) {
+				// var err error
+				client := &http.Client{}
+				body := strings.NewReader(inp)
+				req, err := http.NewRequest("GET", "http://127.0.0.1:5336/eval", body)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				resp, err := client.Do(req)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				defer resp.Body.Close()
+				
+				var hello string
+				err = json.NewDecoder(resp.Body).Decode(&hello)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				fmt.Println(hello)
+			}
 		}
 	}
 }
@@ -586,7 +610,8 @@ func addInitFunction (PRGRM *CXProgram) {
 
 func isJSON(str string) bool {
 	var js map[string]interface{}
-	return json.Unmarshal([]byte(str), &js) == nil
+	err := json.Unmarshal([]byte(str), &js)
+	return err == nil
 }
 
 func main () {
@@ -746,7 +771,7 @@ func main () {
 	}
 
 	if WebPersistantMode {
-		ServiceMode()
+		go ServiceMode()
 		PersistantServiceMode()
 		return
 	}
