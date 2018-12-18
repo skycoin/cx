@@ -409,6 +409,23 @@ func IdeServiceMode() {
 	cmnd.Start()
 }
 
+func PersistantServiceMode() {
+	fmt.Println("Start persistant for service mode!")
+
+	fi := bufio.NewReader(os.Stdin)
+
+	for {
+		var inp string
+		var ok bool
+		
+		printPrompt()
+
+		if inp, ok = readline(fi); ok {
+			fmt.Println(inp)
+		}
+	}
+}
+
 func help () {
 	fmt.Printf(`Usage: cx [options] [source-files]
 
@@ -567,6 +584,11 @@ func addInitFunction (PRGRM *CXProgram) {
 	}
 }
 
+func isJSON(str string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(str), &js) == nil
+}
+
 func main () {
 	checkCXPathSet()
 
@@ -601,6 +623,11 @@ func main () {
 		}
 		if arg == "--ide" || arg == "-ide" {
 			IdeMode = true
+			flagMode = true
+			continue
+		}
+		if arg == "--pw" || arg == "-pw" {
+			WebPersistantMode = true
 			flagMode = true
 			continue
 		}
@@ -715,6 +742,12 @@ func main () {
 	if IdeMode {
 		IdeServiceMode()
 		ServiceMode()
+		return
+	}
+
+	if WebPersistantMode {
+		ServiceMode()
+		PersistantServiceMode()
 		return
 	}
 
