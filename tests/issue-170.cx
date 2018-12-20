@@ -1,0 +1,7 @@
+package main
+
+func main()() {
+	b:=assert("3", 3, "")
+	test("5", 5, "")
+	panic("4", 4, "")
+}
