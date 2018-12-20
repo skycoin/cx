@@ -605,7 +605,8 @@ func ProcessMethodCall (expr *CXExpression, symbols *map[string]*CXArgument, off
 		} else {
 			if out != nil {
 				if argOut, found := (*symbols)[out.Package.Name+"."+out.Name]; !found {
-					panic("")
+					println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("'%s.%s' not found", out.Package.Name, out.Name))
+					return
 				} else {
 					// then we found an output
 					if len(out.Fields) > 0 {

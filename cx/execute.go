@@ -169,12 +169,12 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 			if prgrm.CallStack[0].Operator == nil {
 				// main function
 				mainCall := MakeCall(fn)
-
+				mainCall.FramePointer = prgrm.StackPointer
 				// initializing program resources
 				prgrm.CallStack[0] = mainCall
 
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-				prgrm.StackPointer = fn.Size
+				prgrm.StackPointer += fn.Size
 
 				// feeding os.Args
 				if osPkg, err := PROGRAM.SelectPackage(OS_PKG); err == nil {

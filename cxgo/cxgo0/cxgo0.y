@@ -528,7 +528,7 @@ declaration_specifiers:
                 }
         |       IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($1, "", false)
+			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFileName, lineNo)
 			// // custom type in the current package
 			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 			// 	if strct, err := PRGRM0.GetStruct($1, pkg.Name); err == nil {
@@ -552,7 +552,7 @@ declaration_specifiers:
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
-			$$ = DeclarationSpecifiersStruct($3, $1, true)
+			$$ = DeclarationSpecifiersStruct($3, $1, true, CurrentFileName, lineNo)
 			// // custom type in an imported package
 			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
 			// 	if imp, err := pkg.GetImport($1); err == nil {
@@ -595,7 +595,7 @@ declaration_specifiers:
                 }
 	|       type_specifier PERIOD IDENTIFIER
 		{
-			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true)
+			$$ = DeclarationSpecifiersStruct($3, TypeNames[$1], true, CurrentFileName, lineNo)
 		}
 		/* type_specifier declaration_specifiers */
 	/* |       type_specifier */
