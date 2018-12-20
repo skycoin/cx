@@ -421,30 +421,21 @@ func PersistantServiceMode() {
 		printPrompt()
 
 		if inp, ok = readline(fi); ok {
-			// fmt.Println(inp)
 			if isJSON(inp) {
-				// var err error
+				var err error
 				client := &http.Client{}
-				body := strings.NewReader(inp)
+                body := bytes.NewBufferString(inp)
 				req, err := http.NewRequest("GET", "http://127.0.0.1:5336/eval", body)
 				if err != nil {
 					fmt.Println(err)
+					return
 				}
 
-				resp, err := client.Do(req)
-				if err != nil {
+				if resp, err := client.Do(req); err != nil {
 					fmt.Println(err)
+				} else {
+					fmt.Println(resp.Status)
 				}
-
-				defer resp.Body.Close()
-				
-				var hello string
-				err = json.NewDecoder(resp.Body).Decode(&hello)
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				fmt.Println(hello)
 			}
 		}
 	}
