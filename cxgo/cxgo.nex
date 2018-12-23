@@ -201,7 +201,7 @@ import (
 
 	"regexp"
 	
-	// "flag"
+	"flag"
 
 	"path/filepath"
 
@@ -409,28 +409,36 @@ func IdeServiceMode() {
 	cmnd.Start()
 }
 
-func help () {
-	fmt.Printf(`Usage: cx [options] [source-files]
+func PersistantServiceMode() {
+	fmt.Println("Start persistant for service mode!")
 
-CX options:
--b, --base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
--c, --compile                     Generate a "out" executable file of the program.
--co, --compile-output FILENAME    Specifies the filename for the generated executable.
--h, --help                        Prints this message.
--n, --new                         Creates a new project located at $CXPATH/src
--r, --repl                        Loads source files into memory and starts a read-eval-print loop.
--w, --web                         Start CX as a web service.
--ide, --ide						  Start CX as a web service, and Leaps service start also.
+	fi := bufio.NewReader(os.Stdin)
 
-Signal options:
--signal-client                   Run signal client
--signal-client-id UINT           Id of signal client (default 1)
--signal-server-address STRING    Address of signal server (default "localhost:7999")
+	for {
+		var inp string
+		var ok bool
+		
+		printPrompt()
 
-Notes:
-* Options --compile and --repl are mutually exclusive.
-* Option --web makes every other flag to be ignored.
-`)
+		if inp, ok = readline(fi); ok {
+			if isJSON(inp) {
+				var err error
+				client := &http.Client{}
+                body := bytes.NewBufferString(inp)
+				req, err := http.NewRequest("GET", "http://127.0.0.1:5336/eval", body)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				if resp, err := client.Do(req); err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Println(resp.Status)
+				}
+			}
+		}
+	}
 }
 
 func (yylex Lexer) Error (e string) {
@@ -564,7 +572,13 @@ func addInitFunction (PRGRM *CXProgram) {
 		PRGRM.SelectFunction(MAIN_FUNC)
 	} else {
 		panic(err)
-	}
+}
+}
+
+func isJSON(str string) bool {
+	var js map[string]interface{}
+	err := json.Unmarshal([]byte(str), &js)
+	return err == nil
 }
 
 func main () {
@@ -573,152 +587,50 @@ func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
-	args := os.Args[1:]
-	var sourceCode []*os.File
-	var fileNames []string
+  options := defaultCmdFlags()
+	compileOutput := "o"
 
-	if len(args) == 0 {
-		ReplMode = true
-	}
+  registerFlags(&options)
+  flag.Parse()
 
-	cxArgs := []string{}
-	flagMode := false
-	newProject := false
-	var compileOutput string = "o"
-	for i, arg := range args {
-		if arg == "--version" || arg == "-v" {
-			fmt.Println("CX version", VERSION)
-			return
-		}
-		if arg == "--new" || arg == "-n" {
-			flagMode = false
-			newProject = true
-		}
-		if arg == "--web" || arg == "-w" {
-			WebMode = true
-			flagMode = true
-			continue
-		}
-		if arg == "--ide" || arg == "-ide" {
-			IdeMode = true
-			flagMode = true
-			continue
-		}
-		if arg == "--repl" || arg == "-r" {
-			ReplMode = true
-			flagMode = true
-			continue
-		}
-		if arg == "--base" || arg == "-b" {
-			BaseOutput = true
-			flagMode = true
-			continue
-		}
-		if arg == "--interpret" || arg == "-i" {
-			InterpretMode = true
-			flagMode = true
-			continue
-		}
-		if arg == "--compile" || arg == "-c" {
-			CompileMode = true
-			BaseOutput = true
-			flagMode = true
-			continue
-		}
-		if arg == "--compile-output" || arg == "-co" {
-			compileOutput = args[i+1]
-			continue
-		}
-		if arg == "--help" || arg == "-h" {
-			HelpMode = true
-			flagMode = true
-			continue
-		}
-		if len(arg) > 2 && arg[0:2] == "++" {
-		   cxArgs = append(cxArgs, arg)
-			continue
-		}
-		// viscript options
-		if arg == "-signal-client" || arg == "-signal-client-id" || arg == "-signal-server-address" {
-			continue
-		}
-		if i > 0 && (args[i-1] == "-signal-client-id" || args[i-1] == "-signal-server-address") {
-			continue
-		}
-		if newProject {
-			initNewProject()
-			return
-		}
-		if !flagMode {
+  if options.printHelp {
+    printHelp()
+    return
+  }
+  if options.printVersion {
+    printVersion()
+    return
+  }
+  if options.newProject {
+    initNewProject()
+    return
+  }
+  if options.compileMode {
+    options.baseOutput = true
+  }
 
-			fi, err := os.Stat(arg)
-			_ = err
-
-			if err != nil {
-				panic(err)
-			}
-			
-			switch mode := fi.Mode(); {
-			case mode.IsDir():
-				var fileList []string
-
-				err := filepath.Walk(arg, func(path string, f os.FileInfo, err error) error {
-					fileList = append(fileList, path)
-					return nil
-				})
-
-				if err != nil {
-					panic(err)
-				}
-
-				for _, path := range fileList {
-					file, err := os.Open(path)
-					
-					if err != nil {
-						panic(err)
-					}
-
-					fiName := file.Name()
-					fiNameLen := len(fiName)
-					
-					if fiNameLen > 2 && fiName[fiNameLen - 3:] == ".cx" {
-						// only loading .cx files
-						sourceCode = append(sourceCode, file)
-						fileNames = append(fileNames, fiName)
-					}
-				}
-			case mode.IsRegular():
-				file, err := os.Open(arg)
-				
-				if err != nil {
-					panic(err)
-				}
-
-				fileNames = append(fileNames, file.Name())
-				sourceCode = append(sourceCode, file)
-			}
-		}
-	}
+  cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
 
 	PRGRM = MakeProgram()
 
-	if HelpMode {
-		help()
-		return
-	}
-
-	if WebMode {
+	if options.webMode {
 		ServiceMode()
 		return
 	}
 
-	if IdeMode {
+	if options.ideMode {
 		IdeServiceMode()
 		ServiceMode()
 		return
 	}
 
-	if CompileMode && ReplMode {
+	if options.webPersistantMode {
+		go ServiceMode()
+		PersistantServiceMode()
+		return
+	}
+
+	if options.compileMode && options.replMode {
 		fmt.Println("Error: Options --compile and --repl are mutually exclusive.")
 		return
 	}
@@ -726,7 +638,7 @@ func main () {
 	cxgo0.PRGRM0 = PRGRM
 
 	// setting project's working directory
-	if !ReplMode {
+	if !options.replMode {
 		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 

@@ -197,8 +197,8 @@ That will format the Go source file in place.
 ### Running the Test Suite
 
 The CX sources contain a sizable and growing test suite, containing regression
-tests from the registered issues and product test suite.  The simplest way to
-run the test suite is running the following command in the top directory of
+tests from the registered issues and a product test suite.  The simplest way
+to run the test suite is running the following command in the top directory of
 the repository:
 
 ```
@@ -213,15 +213,33 @@ like this:
 # 89 | FAILED  | 127ms | 'cx issue-153.cx' | expected cx.SUCCESS (0) | got cx.PANIC (2) | Panic in when assigning an empty initializer list to a []i32 variable
 ```
 
-It should be easy to find an issue that you want to look at. If think they are
-to many or taking to long to run, you can disable some of the tests with the
-`++disable-tests` option like this:
+It should be easy to find an issue that you want to look at. If you think they
+are to many or taking to long to run, you can disable some of the tests with
+the `++disable-tests` option like this:
 
 ```
 cx tests/main.cx ++wdir=tests ++disable-tests=issue
 ```
 
 The available types of tests are `stable`, `issue` and `gui`.
+
+If you are using the tests while debugging, you can add more information by
+adding the `++log` option.
+
+```
+cx tests/main.cx ++wdir=tests ++log=fail,skip
+```
+
+The available types of extra logging are `success`, `stderr`, `fail` and
+`skip`.  You can use them individually or combine them by separating them with
+a comma.
+
+And finally, you do not always have to run all of the test suite. You can also
+run a single test like this:
+
+```
+cx tests/issue-141.cx
+```
 
 ### Internal Documentation
 
