@@ -9,6 +9,8 @@
   * Added GIF support to OpenGL
 * Fixed issues
   * Fix #131: Problem with struct literals in short variable declarations
+* Documentation
+  * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
 
@@ -20,7 +22,7 @@
   * Support for `affordances-on`: argument -> argument
 * `break`: Implemented
 * `continue`: Implemented
-* `printf`: Added %v format directive which tries to deduce an argument's type and prints its value 
+* `printf`: Added %v format directive which tries to deduce an argument's type and prints its value
 * `printf()`: Tell the type and value of extra arguments
 * **Labels**: can now be anywhere in a function's block of statements
 * Fixed issues:
@@ -30,7 +32,7 @@
   * Fix #92: Conflict when calling multiple callbacks using GLFW
   * Fix #98: CX now throws an error when trying to redeclare a variable
   * Fix #112: `printf` now prints either a `MISSING` or `EXTRA` when there are
-              fewer or more arguments than format directives, respectively 
+              fewer or more arguments than format directives, respectively
   * Fix #120: CX was throwing redeclaration errors in multiple return expressions
 
 ### v0.5.17
