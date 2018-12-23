@@ -409,6 +409,38 @@ func IdeServiceMode() {
 	cmnd.Start()
 }
 
+func PersistantServiceMode() {
+	fmt.Println("Start persistant for service mode!")
+
+	fi := bufio.NewReader(os.Stdin)
+
+	for {
+		var inp string
+		var ok bool
+		
+		printPrompt()
+
+		if inp, ok = readline(fi); ok {
+			if isJSON(inp) {
+				var err error
+				client := &http.Client{}
+                body := bytes.NewBufferString(inp)
+				req, err := http.NewRequest("GET", "http://127.0.0.1:5336/eval", body)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				if resp, err := client.Do(req); err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Println(resp.Status)
+				}
+			}
+		}
+	}
+}
+
 func (yylex Lexer) Error (e string) {
 	// if InREPL {
 	// 	fmt.Printf("syntax error: %s\n", e)
@@ -543,6 +575,12 @@ func addInitFunction (PRGRM *CXProgram) {
 }
 }
 
+func isJSON(str string) bool {
+	var js map[string]interface{}
+	err := json.Unmarshal([]byte(str), &js)
+	return err == nil
+}
+
 func main () {
 	checkCXPathSet()
 
@@ -564,6 +602,11 @@ func main () {
     return
   }
   if options.newProject {
+		if arg == "--pw" || arg == "-pw" {
+			WebPersistantMode = true
+			flagMode = true
+			continue
+		}
     initNewProject()
     return
   }
@@ -583,6 +626,12 @@ func main () {
 	if options.ideMode {
 		IdeServiceMode()
 		ServiceMode()
+		return
+	}
+
+	if WebPersistantMode {
+		go ServiceMode()
+		PersistantServiceMode()
 		return
 	}
 

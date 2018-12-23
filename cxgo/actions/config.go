@@ -11,6 +11,7 @@ var CurrentFile string
 var LineNo int = 0
 var WebMode bool
 var IdeMode bool
+var WebPersistantMode bool
 var BaseOutput bool
 var ReplMode bool
 var HelpMode bool
