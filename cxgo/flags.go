@@ -18,10 +18,9 @@ type cxCmdFlags struct {
 	signalServerAddress string
 	webMode             bool
 	ideMode             bool
-	flagMode            bool
+	webPersistantMode   bool
 	printHelp           bool
 	printVersion        bool
-	interpretMode       bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -36,9 +35,9 @@ func defaultCmdFlags() cxCmdFlags {
 		signalServerAddress: "localhost:7999",
 		webMode:             false,
 		ideMode:             false,
+		webPersistantMode:   false,
 		printHelp:           false,
 		printVersion:        false,
-		interpretMode:       false,
 	}
 }
 
@@ -56,7 +55,6 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.baseOutput, "b", options.baseOutput, "alias for -base")
 	flag.BoolVar(&options.compileMode, "compile", options.compileMode, "generate a 'out' executable file of the program")
 	flag.BoolVar(&options.compileMode, "c", options.compileMode, "alias for -compile")
-	flag.StringVar(&options.compileOutput, "compile-output", options.compileOutput, "Specifies the filename for the generated executable.")
 	flag.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
 	flag.BoolVar(&options.newProject, "new", options.newProject, "Creates a new project located at $CXPATH/src")
 	flag.BoolVar(&options.newProject, "n", options.newProject, "alias for -new")
@@ -65,6 +63,7 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
+	flag.BoolVar(&options.webPersistantMode, "pw", options.webPersistantMode, "Start CX as a web service with a persistent web REPL session")
 	// viscript options
 	flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
 	flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")

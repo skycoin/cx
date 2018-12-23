@@ -602,11 +602,6 @@ func main () {
     return
   }
   if options.newProject {
-		if arg == "--pw" || arg == "-pw" {
-			WebPersistantMode = true
-			flagMode = true
-			continue
-		}
     initNewProject()
     return
   }
@@ -629,7 +624,7 @@ func main () {
 		return
 	}
 
-	if WebPersistantMode {
+	if options.webPersistantMode {
 		go ServiceMode()
 		PersistantServiceMode()
 		return
