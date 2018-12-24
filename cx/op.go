@@ -184,6 +184,21 @@ func MarkAndCompact() {
 	PROGRAM.HeapPointer = newHeapPointer
 }
 
+func ResizeMemory(newMemSize int, isExpand bool) {
+	if newMemSize > MAX_HEAP_SIZE {
+		// heap exhausted
+		panic(HEAP_EXHAUSTED_ERROR)
+	}
+
+	if isExpand {
+		PROGRAM.Memory = append(PROGRAM.Memory, make([]byte, MEMORY_SIZE-newMemSize)...)
+		MEMORY_SIZE = newMemSize
+	} else {
+		PROGRAM.Memory = PROGRAM.Memory[:newMemSize]
+		MEMORY_SIZE = newMemSize
+	}
+}
+
 // allocates memory in the heap
 func AllocateSeq(size int) (offset int) {
 	result := PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
@@ -196,9 +211,16 @@ func AllocateSeq(size int) (offset int) {
 		result = PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 		newFree = PROGRAM.HeapPointer + size
 
-		if result + size > MEMORY_SIZE {
-			// heap exhausted
-			panic(HEAP_EXHAUSTED_ERROR)
+		freeMemPerc := 1.0 - float32(newFree) / float32(MEMORY_SIZE - PROGRAM.HeapStartsAt)
+
+		if freeMemPerc < float32(MIN_HEAP_FREE_RATIO) / 100.0 {
+			// then we have less than MIN_HEAP_FREE_RATIO memory left. expand!
+			ResizeMemory(int(float32(MIN_HEAP_FREE_RATIO * (MEMORY_SIZE - PROGRAM.HeapStartsAt)) / freeMemPerc), true)
+		}
+		
+		if freeMemPerc > float32(MAX_HEAP_FREE_RATIO) / 100.0 {
+			// then we have more than MAX_HEAP_FREE_RATIO memory left. shrink!
+			ResizeMemory(int(float32(MAX_HEAP_FREE_RATIO * (MEMORY_SIZE - PROGRAM.HeapStartsAt)) / freeMemPerc), false)
 		}
 	}
 
