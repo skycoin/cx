@@ -147,7 +147,7 @@ core language) associated to
 
 # CX Roadmap
 
-![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/README-images/cx-roadmap.png)
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/README-images/cx-roadmap.jpg)
 
 # Video Games in CX
 
