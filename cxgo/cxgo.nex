@@ -643,7 +643,7 @@ func main () {
 		} else {
 			sourceFilename := fileNames[0]
 			if len(fileNames) > 1 {
-				fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except %s", sourceFilename)
+				fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 			}
 			r, err = os.Open(sourceFilename)
 			if err != nil {
