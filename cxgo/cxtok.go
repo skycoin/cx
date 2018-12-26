@@ -12,9 +12,33 @@ func tokenize(r io.Reader, w io.Writer) {
 	lex := NewLexer(r)
 	token := lex.Lex(&sym)
 	for token > 0 {
-		fmt.Fprintln(w, "%s %s", tokenName(token), sym.tok)
+		fmt.Fprintln(w, tokenName(token), tokenValue(token, &sym))
 		token = lex.Lex(&sym)
 	}
+}
+
+func tokenValue(token int, sym *yySymType) interface{} {
+	switch token {
+	case BYTE_LITERAL:
+		return sym.byt
+	case BOOLEAN_LITERAL:
+		return sym.bool
+	case INT_LITERAL:
+		return sym.i32
+	case LONG_LITERAL:
+		return sym.i64
+	case FLOAT_LITERAL:
+		return sym.f32
+	case DOUBLE_LITERAL:
+		return sym.f64
+	case AFF, BOOL, BYTE, F32, F64, I8, I16, I32, I64,
+		UI8, UI16, UI32, UI64, REF_OP, ADD_OP, SUB_OP, MUL_OP, DIV_OP, MOD_OP,
+		GT_OP, LT_OP, GTEQ_OP, LTEQ_OP, RIGHT_ASSIGN, LEFT_ASSIGN, ADD_ASSIGN,
+		SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, AND_ASSIGN, XOR_ASSIGN,
+		OR_ASSIGN, NEG_OP, ASSIGN, CASSIGN, STRING_LITERAL, IDENTIFIER:
+		return sym.tok
+	}
+	return ""
 }
 
 func tokenName(token int) string {

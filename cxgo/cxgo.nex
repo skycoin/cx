@@ -97,9 +97,7 @@
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
-/:package/                {
-	return f(SPACKAGE)
-}
+/:package/                { return f(SPACKAGE)   }
 /:struct/                 { return f(SSTRUCT)    }
 /:func/                   { return f(SFUNC)      }
 /:rem/                    { return f(REM)        }
