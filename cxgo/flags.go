@@ -21,6 +21,7 @@ type cxCmdFlags struct {
 	webPersistantMode   bool
 	printHelp           bool
 	printVersion        bool
+	tokenizeMode        bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -53,6 +54,8 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.printHelp, "h", options.printHelp, "alias for -help")
 	flag.BoolVar(&options.baseOutput, "base", options.baseOutput, "generate a 'out.cx.go' file with the transcompiled CX Base source code.")
 	flag.BoolVar(&options.baseOutput, "b", options.baseOutput, "alias for -base")
+	flag.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
+	flag.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
 	flag.BoolVar(&options.compileMode, "compile", options.compileMode, "generate a 'out' executable file of the program")
 	flag.BoolVar(&options.compileMode, "c", options.compileMode, "alias for -compile")
 	flag.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
@@ -81,7 +84,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide						  Start CX as a web service, and Leaps service start also.
+-ide, --ide						            Start CX as a web service, and Leaps service start also.
 
 Signal options:
 -signal-client                   Run signal client

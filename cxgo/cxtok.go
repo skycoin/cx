@@ -1,63 +1,19 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
+	"io"
+	"strconv"
 )
 
-type cgoTokOptions struct {
-	src   string
-	out   string
-	force bool
-}
-
-func registerFlags(options *cgoTokOptions) {
-	flag.StringVar(&options.src, "i", "", "PATH to input file")
-	flag.StringVar(&options.out, "o", "", "PATH to output file")
-	flag.BoolVar(&options.force, "f", false, "Overwrite output file if it exists")
-}
-
-func main() {
+func tokenize(r io.Reader, w io.Writer) {
 	var sym yySymType
-	var options cgoTokOptions
-	var r *os.File
-	var w *os.File
-	var err error
-
-	registerFlags(&options)
-	flag.Parse()
-	if options.src == "" {
-		r = os.Stdin
-	} else {
-		r, err = os.Open(options.src)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error opening %s : %s", options.src, err)
-			os.Exit(1)
-		}
-		defer r.Close()
-	}
-
-	outFlags := os.O_WRONLY | os.O_CREATE
-	if options.force {
-		outFlags |= os.O_EXCL
-	}
-	if options.out == "" {
-		w = os.Stdout
-	} else {
-		w, err = os.OpenFile(options.out, outFlags, 0555)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error opening %s : %s", options.src, err)
-			os.Exit(1)
-		}
-		defer w.Close()
-	}
 
 	lex := NewLexer(r)
 	token := lex.Lex(&sym)
-	for token >= 0 {
+	for token > 0 {
 		fmt.Fprintln(w, "%s %s", tokenName(token), sym.tok)
-		lex.Lex(&sym)
+		token = lex.Lex(&sym)
 	}
 }
 
@@ -354,4 +310,5 @@ func tokenName(token int) string {
 	case XOR_ASSIGN:
 		return "XORSET"
 	}
+	return "UNK" + strconv.Itoa(token)
 }

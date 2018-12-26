@@ -635,6 +635,43 @@ func main () {
 		return
 	}
 
+	if options.tokenizeMode {
+		var r *os.File
+		var w *os.File
+		var err error
+
+		if len(fileNames) == 0 {
+			r = os.Stdin
+		} else {
+			sourceFilename := fileNames[0]
+			if len(fileNames) > 1 {
+				fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except %s", sourceFilename)
+			}
+			r, err = os.Open(sourceFilename)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error opening %s : %s", sourceFilename, err)
+				return
+			}
+			defer r.Close()
+		}
+
+		outFlags := os.O_WRONLY | os.O_CREATE
+		if options.compileOutput == "" {
+			w = os.Stdout
+		} else {
+			tokenFileName := options.compileOutput + ".txt"
+			w, err = os.OpenFile(tokenFileName, outFlags, 0555)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error opening %s : %s", tokenFileName, err)
+				return
+			}
+			defer w.Close()
+		}
+
+		tokenize(r, w)
+		return
+	}
+
 	cxgo0.PRGRM0 = PRGRM
 
 	// setting project's working directory
