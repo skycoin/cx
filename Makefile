@@ -81,8 +81,8 @@ test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
-update-golden-files: ## Update golden files used in CX test suite
-	# TODO: Implement
+update-golden-files: build ## Update golden files used in CX test suite
+	ls -1 tests/ | grep '.cx$$' | xargs -I NAME cx -t -co tests/testdata/tokens/NAME.txt tests/NAME
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
