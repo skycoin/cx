@@ -647,20 +647,19 @@ func main () {
 			}
 			r, err = os.Open(sourceFilename)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error opening %s : %s", sourceFilename, err)
+				fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
 				return
 			}
 			defer r.Close()
 		}
 
-		outFlags := os.O_WRONLY | os.O_CREATE
 		if options.compileOutput == "" {
 			w = os.Stdout
 		} else {
-			tokenFileName := options.compileOutput + ".txt"
-			w, err = os.OpenFile(tokenFileName, outFlags, 0555)
+			tokenFilename := options.compileOutput
+			w, err = os. Create(tokenFilename)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error opening %s : %s", tokenFileName, err)
+				fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
 				return
 			}
 			defer w.Close()
