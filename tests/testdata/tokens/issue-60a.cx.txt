@@ -1,0 +1,9 @@
+PACKAG 
+ IDENT test_60a
+SCOLON 
+   VAR 
+ IDENT i
+   I32 i32
+  ASGN =
+INTLIT 50
+SCOLON 
