@@ -551,17 +551,17 @@ func init () {
 			op_byte_print(expr, fp)
 
 		case OP_BOOL_PRINT:
-			op_bool_print(expr, fp)
+			opBoolPrint(expr, fp)
 		case OP_BOOL_EQUAL:
-			op_bool_equal(expr, fp)
+			opBoolEqual(expr, fp)
 		case OP_BOOL_UNEQUAL:
-			op_bool_unequal(expr, fp)
+			opBoolUnequal(expr, fp)
 		case OP_BOOL_NOT:
-			op_bool_not(expr, fp)
+			opBoolNot(expr, fp)
 		case OP_BOOL_OR:
-			op_bool_or(expr, fp)
+			opBoolOr(expr, fp)
 		case OP_BOOL_AND:
-			op_bool_and(expr, fp)
+			opBoolAnd(expr, fp)
 
 		case OP_I32_BYTE:
 			op_i32_i32(expr, fp)
