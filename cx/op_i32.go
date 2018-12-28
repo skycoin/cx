@@ -204,7 +204,7 @@ func opI32Log10(expr *CXExpression, fp int) {
 func opI32Max(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI32(int32(math.Max(float64(ReadI32(fp, inp1)), float64(ReadI32(fp, inp2)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1?)
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 // The built-in min function returns the smallest of the two operands.

@@ -548,7 +548,7 @@ func init () {
 			opByteByte(expr, fp)
 
 		case OP_BYTE_PRINT:
-			op_byte_print(expr, fp)
+			opBytePrint(expr, fp)
 
 		case OP_BOOL_PRINT:
 			opBoolPrint(expr, fp)
@@ -592,8 +592,8 @@ func init () {
 			opI32Pow(expr, fp)
 		case OP_I32_GT:
 			opI32Gt(expr, fp)
-		case OP_I32_GTEQ
-			OpI32Gteq(expr, fp)
+		case OP_I32_GTEQ:
+			opI32Gteq(expr, fp)
 		case OP_I32_LT:
 			opI32Lt(expr, fp)
 		case OP_I32_LTEQ:
