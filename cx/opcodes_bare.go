@@ -535,17 +535,17 @@ func init () {
 			op_read(expr, fp)
 
 		case OP_BYTE_BYTE:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_STR:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_I32:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_I64:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_F32:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_F64:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 
 		case OP_BYTE_PRINT:
 			op_byte_print(expr, fp)
