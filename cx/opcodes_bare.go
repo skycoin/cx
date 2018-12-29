@@ -758,60 +758,61 @@ func init () {
 			opF32Min(expr, fp)
 
 		case OP_F64_BYTE:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_STR:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_I32:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_I64:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_F32:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_F64:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 
 		case OP_F64_PRINT:
-			op_f64_print(expr, fp)
+			opF64Print(expr, fp)
 		case OP_F64_ADD:
-			op_f64_add(expr, fp)
+			opF64Add(expr, fp)
 		case OP_F64_SUB:
-			op_f64_sub(expr, fp)
+			opF64Sub(expr, fp)
 		case OP_F64_MUL:
-			op_f64_mul(expr, fp)
+			opF64Mul(expr, fp)
 		case OP_F64_DIV:
-			op_f64_div(expr, fp)
+			opF64Div(expr, fp)
 		case OP_F64_ABS:
-			op_f64_abs(expr, fp)
+			opF64Abs(expr, fp)
 		case OP_F64_POW:
-			op_f64_pow(expr, fp)
+			opF64Pow(expr, fp)
 		case OP_F64_GT:
-			op_f64_gt(expr, fp)
+			opF64Gt(expr, fp)
 		case OP_F64_GTEQ:
-			op_f64_gteq(expr, fp)
+			opF64Gteq(expr, fp)
 		case OP_F64_LT:
-			op_f64_lt(expr, fp)
+			opF64Lt(expr, fp)
 		case OP_F64_LTEQ:
-			op_f64_lteq(expr, fp)
+			opF64Lteq(expr, fp)
 		case OP_F64_EQ:
-			op_f64_eq(expr, fp)
+			opF64Eq(expr, fp)
 		case OP_F64_UNEQ:
-			op_f64_uneq(expr, fp)
+			opF64Uneq(expr, fp)
 		case OP_F64_COS:
-			op_f64_cos(expr, fp)
+			opF64Cos(expr, fp)
 		case OP_F64_SIN:
-			op_f64_sin(expr, fp)
+			opF64Sin(expr, fp)
 		case OP_F64_SQRT:
-			op_f64_sqrt(expr, fp)
+			opF64Sqrt(expr, fp)
 		case OP_F64_LOG:
-			op_f64_log(expr, fp)
+			opF64Log(expr, fp)
 		case OP_F64_LOG2:
-			op_f64_log2(expr, fp)
+			opF64Log2(expr, fp)
 		case OP_F64_LOG10:
-			op_f64_log10(expr, fp)
+			opF64Log10(expr, fp)
 		case OP_F64_MAX:
-			op_f64_max(expr, fp)
+			opF64Max(expr, fp)
 		case OP_F64_MIN:
-			op_f64_min(expr, fp)
+			opF64Min(expr, fp)
+
 		case OP_STR_PRINT:
 			op_str_print(expr, fp)
 		case OP_STR_CONCAT:
