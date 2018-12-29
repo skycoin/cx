@@ -103,7 +103,7 @@
 			</div>
 			<div class="icon-container">
 				<a class="undecorated" href="https://github.com/jeffail/leaps">
-					<h1 class="inline">Leaps</h1><img src="leaps_logo.png" class="inline logo">
+					<h1 class="inline"></h1><img src="logoWhite.070120ac.png" class="inline logo">
 				</a>
 			</div>
 		</header>
@@ -114,7 +114,7 @@
 					</file-item>
 				</ul>
 			</nav>
-			<div id="users-list" class="flexbox-container-wrapped border-top border-bottom fw-font">
+			<div id="users-list" class="flexbox-container-wrapped border-top border-bottom fw-font2">
 				<div v-if="Object.keys(users).length === 0"><span>You are alone &#128542;</span></div>
 				<div v-for="(value, key) in users"
 					v-bind:style="style(key)"
@@ -139,7 +139,9 @@
 		</div>
 		<div id="editor">
 		</div>
-		<div v-if="options.length > 0" id="cmd-menu" class="fw-font foreground border-top">
+		<div id="editor2">
+		</div>
+		<div v-if="options.length == 0" id="cmd-menu" class="fw-font foreground border-top">
 			<button v-on:click="run_cmd" class="border-right">
 				<i class="fa fa-play" aria-hidden="true"></i>
 			</button>

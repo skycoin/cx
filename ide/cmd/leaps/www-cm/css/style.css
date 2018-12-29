@@ -11,6 +11,13 @@ h1 {
 
 .fw-font {
 	font-family: "Open Sans Mono", monospace;
+	background-color: #212121;
+}
+
+/*Yo agregue esta nueva fw-font2*/
+.fw-font2 {
+	font-family: "Open Sans Mono", monospace;
+	background-color: #102E66;
 }
 
 .bold {
@@ -74,12 +81,12 @@ input {
 }
 
 .dark, .dark select, .dark button {
-	background-color: #7c7c7c;
-	color: #fcfcfc;
+	background-color: #CACCD0;/*Color del cuadro donde muestra el codigo*/
+	color: #FFFFFF;/*Color de la letra superior izquierda*/
 }
 
 .dark .foreground, .dark .foreground select, .dark .foreground button {
-	background-color: #3c3c3c;
+	background-color: #102E66;/*Color de los bordes de la pagina   rgb(16, 31, 52)  #0072FF  rgb(0, 114, 255)   #4E81B4*/
 }
 
 .dark .lighter {
@@ -87,11 +94,11 @@ input {
 }
 
 .dark .border-bottom {
-	border-bottom: 1px solid #5c5c5c;
+	border-bottom: 1px solid #0072FF;/*lineas de arriba(2)*/
 }
 
 .dark .border-right {
-	border-right: 1px solid #5c5c5c;
+	border-right: 1px solid #0072FF;/*Linea que cruza por el medio*/
 }
 
 .dark .border-left {
@@ -99,12 +106,12 @@ input {
 }
 
 .dark .border-top {
-	border-top: 1px solid #5c5c5c;
+	border-top: 1px solid #0072FF;/*Unda linea de la parte superior izquierda*/
 }
 
 .dark input {
 	border: 0;
-	border-bottom: 4px solid #d0d0d0;
+	border-bottom: 4px solid #d0d0d0;/*La linea donde dice Username*/
 	border-radius: 10px;
 	background-color: rgba(0,0,0,0);
 	color: #fcfcfc;
@@ -123,7 +130,7 @@ input {
 }
 
 .red {
-	color: #bf5661;
+	color: #bf5661;/*Color rojo, aparece en la linea de error en la parte superior izquierda*/
 }
 
 .blue {
@@ -291,6 +298,7 @@ header > .buttons-container, header > .icon-container {
 	min-height: 20px;
 	overflow: auto;
 	flex-grow: 1;
+	background-color: #212121;
 }
 
 #message-list pre {
@@ -339,13 +347,29 @@ header > .buttons-container, header > .icon-container {
 
 #editor {
 	grid-column-start: 2;
+	grid-column-end: 5;
+	grid-row-start: 2;
+	grid-row-end: 3;
+	position: absolute;
+	height: 50%;
+	width: 100%;
+	overflow: auto;
+	background-color: #FFFFFF
+	
+}
+
+#editor2 {
+	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 2;
 	grid-row-end: 3;
 	position: absolute;
-	height: 100%;
+	height: 50%;
 	width: 100%;
 	overflow: auto;
+	left: 0px;
+    top: 293px;
+	background-color: #000000
 }
 
 @media screen
