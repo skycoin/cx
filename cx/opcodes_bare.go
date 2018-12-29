@@ -814,30 +814,30 @@ func init () {
 			opF64Min(expr, fp)
 
 		case OP_STR_PRINT:
-			op_str_print(expr, fp)
-		case OP_STR_CONCAT:
-			op_str_concat(expr, fp)
-		case OP_STR_SUBSTR:
-			op_str_substr(expr, fp)
-		case OP_STR_INDEX:
-			op_str_index(expr, fp)
-		case OP_STR_TRIM_SPACE:
-			op_str_trim_space(expr, fp)
+			opStrPrint(expr, fp)
 		case OP_STR_EQ:
-			op_str_eq(expr, fp)
+			opStrEq(expr, fp)
+		case OP_STR_CONCAT:
+			opStrConcat(expr, fp)
+		case OP_STR_SUBSTR:
+			opStrSubstr(expr, fp)
+		case OP_STR_INDEX:
+			opStrIndex(expr, fp)
+		case OP_STR_TRIM_SPACE:
+			opStrTrimSpace(expr, fp)
 
 		case OP_STR_BYTE:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_STR:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_I32:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_I64:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_F32:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_F64:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 
 		case OP_MAKE:
 		case OP_READ:

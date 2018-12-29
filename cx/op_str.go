@@ -7,7 +7,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_str_str(expr *CXExpression, fp int) {
+func opStrStr(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -47,12 +47,12 @@ func op_str_str(expr *CXExpression, fp int) {
 	}
 }
 
-func op_str_print(expr *CXExpression, fp int) {
+func opStrPrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadStr(fp, inp1))
 }
 
-func op_str_eq(expr *CXExpression, fp int) {
+func opStrEq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadStr(fp, inp1) == ReadStr(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -78,11 +78,11 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 	WriteMemory(GetFinalOffset(fp, out), off)
 }
 
-func op_str_concat(expr *CXExpression, fp int) {
+func opStrConcat(expr *CXExpression, fp int) {
 	writeString(expr, fp, ReadStr(fp, expr.Inputs[0]) + ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
 }
 
-func op_str_substr(expr *CXExpression, fp int) {
+func opStrSubstr(expr *CXExpression, fp int) {
 	str := ReadStr(fp, expr.Inputs[0])
 	begin := ReadI32(fp, expr.Inputs[1])
 	end := ReadI32(fp, expr.Inputs[2])
@@ -90,12 +90,12 @@ func op_str_substr(expr *CXExpression, fp int) {
 	writeString(expr, fp, str[begin:end], expr.Outputs[0])
 }
 
-func op_str_index(expr *CXExpression, fp int) {
+func opStrIndex(expr *CXExpression, fp int) {
 	str := ReadStr(fp, expr.Inputs[0])
 	substr := ReadStr(fp, expr.Inputs[1])
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(strings.Index(str, substr))))
 }
 
-func op_str_trim_space(expr *CXExpression, fp int) {
+func opStrTrimSpace(expr *CXExpression, fp int) {
 	writeString(expr, fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
 }
