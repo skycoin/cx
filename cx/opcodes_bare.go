@@ -535,102 +535,102 @@ func init () {
 			op_read(expr, fp)
 
 		case OP_BYTE_BYTE:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_STR:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_I32:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_I64:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_F32:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 		case OP_BYTE_F64:
-			op_byte_byte(expr, fp)
+			opByteByte(expr, fp)
 
 		case OP_BYTE_PRINT:
-			op_byte_print(expr, fp)
+			opBytePrint(expr, fp)
 
 		case OP_BOOL_PRINT:
-			op_bool_print(expr, fp)
+			opBoolPrint(expr, fp)
 		case OP_BOOL_EQUAL:
-			op_bool_equal(expr, fp)
+			opBoolEqual(expr, fp)
 		case OP_BOOL_UNEQUAL:
-			op_bool_unequal(expr, fp)
+			opBoolUnequal(expr, fp)
 		case OP_BOOL_NOT:
-			op_bool_not(expr, fp)
+			opBoolNot(expr, fp)
 		case OP_BOOL_OR:
-			op_bool_or(expr, fp)
+			opBoolOr(expr, fp)
 		case OP_BOOL_AND:
-			op_bool_and(expr, fp)
+			opBoolAnd(expr, fp)
 
 		case OP_I32_BYTE:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 		case OP_I32_STR:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 		case OP_I32_I32:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 		case OP_I32_I64:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 		case OP_I32_F32:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 		case OP_I32_F64:
-			op_i32_i32(expr, fp)
+			opI32I32(expr, fp)
 
 		case OP_I32_PRINT:
-			op_i32_print(expr, fp)
+			opI32Print(expr, fp)
 		case OP_I32_ADD:
-			op_i32_add(expr, fp)
+			opI32Add(expr, fp)
 		case OP_I32_SUB:
-			op_i32_sub(expr, fp)
+			opI32Sub(expr, fp)
 		case OP_I32_MUL:
-			op_i32_mul(expr, fp)
+			opI32Mul(expr, fp)
 		case OP_I32_DIV:
-			op_i32_div(expr, fp)
+			opI32Div(expr, fp)
 		case OP_I32_ABS:
-			op_i32_abs(expr, fp)
+			opI32Abs(expr, fp)
 		case OP_I32_POW:
-			op_i32_pow(expr, fp)
+			opI32Pow(expr, fp)
 		case OP_I32_GT:
-			op_i32_gt(expr, fp)
+			opI32Gt(expr, fp)
 		case OP_I32_GTEQ:
-			op_i32_gteq(expr, fp)
+			opI32Gteq(expr, fp)
 		case OP_I32_LT:
-			op_i32_lt(expr, fp)
+			opI32Lt(expr, fp)
 		case OP_I32_LTEQ:
-			op_i32_lteq(expr, fp)
+			opI32Lteq(expr, fp)
 		case OP_I32_EQ:
-			op_i32_eq(expr, fp)
+			opI32Eq(expr, fp)
 		case OP_I32_UNEQ:
-			op_i32_uneq(expr, fp)
+			opI32Uneq(expr, fp)
 		case OP_I32_MOD:
-			op_i32_mod(expr, fp)
+			opI32Mod(expr, fp)
 		case OP_I32_RAND:
-			op_i32_rand(expr, fp)
+			opI32Rand(expr, fp)
 		case OP_I32_BITAND:
-			op_i32_bitand(expr, fp)
+			opI32Bitand(expr, fp)
 		case OP_I32_BITOR:
-			op_i32_bitor(expr, fp)
+			opI32Bitor(expr, fp)
 		case OP_I32_BITXOR:
-			op_i32_bitxor(expr, fp)
+			opI32Bitxor(expr, fp)
 		case OP_I32_BITCLEAR:
-			op_i32_bitclear(expr, fp)
+			opI32Bitclear(expr, fp)
 		case OP_I32_BITSHL:
-			op_i32_bitshl(expr, fp)
+			opI32Bitshl(expr, fp)
 		case OP_I32_BITSHR:
-			op_i32_bitshr(expr, fp)
+			opI32Bitshr(expr, fp)
 		case OP_I32_SQRT:
-			op_i32_sqrt(expr, fp)
+			opI32Sqrt(expr, fp)
 		case OP_I32_LOG:
-			op_i32_log(expr, fp)
+			opI32Log(expr, fp)
 		case OP_I32_LOG2:
-			op_i32_log2(expr, fp)
+			opI32Log2(expr, fp)
 		case OP_I32_LOG10:
-			op_i32_log10(expr, fp)
+			opI32Log10(expr, fp)
 
 		case OP_I32_MAX:
-			op_i32_max(expr, fp)
+			opI32Max(expr, fp)
 		case OP_I32_MIN:
-			op_i32_min(expr, fp)
+			opI32Min(expr, fp)
 
 		case OP_I64_BYTE:
 			op_i64_i64(expr, fp)

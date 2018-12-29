@@ -6,7 +6,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_byte_byte(expr *CXExpression, fp int) {
+func opByteByte(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 	switch out1.Type {
@@ -25,7 +25,7 @@ func op_byte_byte(expr *CXExpression, fp int) {
 	}
 }
 
-func op_byte_print(expr *CXExpression, fp int) {
+func opBytePrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadByte(fp, inp1))
 }
