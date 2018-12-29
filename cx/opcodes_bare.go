@@ -701,61 +701,61 @@ func init () {
 			opI64Min(expr, fp)
 
 		case OP_F32_IS_NAN:
-			op_f32_isnan(expr, fp)
+			opF32Isnan(expr, fp)
 		case OP_F32_BYTE:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_STR:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_I32:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_I64:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_F32:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_F64:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_PRINT:
-			op_f32_print(expr, fp)
+			opF32Print(expr, fp)
 		case OP_F32_ADD:
-			op_f32_add(expr, fp)
+			opF32Add(expr, fp)
 		case OP_F32_SUB:
-			op_f32_sub(expr, fp)
+			opF32Sub(expr, fp)
 		case OP_F32_MUL:
-			op_f32_mul(expr, fp)
+			opF32Mul(expr, fp)
 		case OP_F32_DIV:
-			op_f32_div(expr, fp)
+			opF32Div(expr, fp)
 		case OP_F32_ABS:
-			op_f32_abs(expr, fp)
+			opF32Abs(expr, fp)
 		case OP_F32_POW:
-			op_f32_pow(expr, fp)
+			opF32Pow(expr, fp)
 		case OP_F32_GT:
-			op_f32_gt(expr, fp)
+			opF32Gt(expr, fp)
 		case OP_F32_GTEQ:
-			op_f32_gteq(expr, fp)
+			opF32Gteq(expr, fp)
 		case OP_F32_LT:
-			op_f32_lt(expr, fp)
+			opF32Lt(expr, fp)
 		case OP_F32_LTEQ:
-			op_f32_lteq(expr, fp)
+			opF32Lteq(expr, fp)
 		case OP_F32_EQ:
-			op_f32_eq(expr, fp)
+			opF32Eq(expr, fp)
 		case OP_F32_UNEQ:
-			op_f32_uneq(expr, fp)
+			opF32Uneq(expr, fp)
 		case OP_F32_COS:
-			op_f32_cos(expr, fp)
+			opF32Cos(expr, fp)
 		case OP_F32_SIN:
-			op_f32_sin(expr, fp)
+			opF32Sin(expr, fp)
 		case OP_F32_SQRT:
-			op_f32_sqrt(expr, fp)
+			opF32Sqrt(expr, fp)
 		case OP_F32_LOG:
-			op_f32_log(expr, fp)
+			opF32Log(expr, fp)
 		case OP_F32_LOG2:
-			op_f32_log2(expr, fp)
+			opF32Log2(expr, fp)
 		case OP_F32_LOG10:
-			op_f32_log10(expr, fp)
+			opF32Log10(expr, fp)
 		case OP_F32_MAX:
-			op_f32_max(expr, fp)
+			opF32Max(expr, fp)
 		case OP_F32_MIN:
-			op_f32_min(expr, fp)
+			opF32Min(expr, fp)
 
 		case OP_F64_BYTE:
 			op_f64_f64(expr, fp)
