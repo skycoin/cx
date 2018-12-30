@@ -201,12 +201,14 @@ const (
 	OP_STR_F32
 	OP_STR_F64
 
+	OP_APPEND
+	OP_RESIZE
+
 	OP_MAKE
 	OP_READ
 	OP_WRITE
 	OP_LEN
 	OP_CONCAT
-	OP_APPEND
 	OP_COPY
 	OP_CAST
 	OP_EQ
@@ -458,6 +460,8 @@ func init () {
 	AddOpCode(OP_STR_F64, "str.f64", []int{TYPE_STR}, []int{TYPE_F64})
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
+	AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{})
+
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
 	AddOpCode(OP_TEST, "test", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
 	AddOpCode(OP_PANIC, "panic", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
@@ -838,13 +842,16 @@ func init () {
 		case OP_STR_F64:
 			op_str_str(expr, fp)
 
+		case OP_APPEND:
+			op_append(expr, fp)
+		case OP_RESIZE:
+			op_resize(expr, fp)
+
 		case OP_MAKE:
 		case OP_READ:
 		case OP_WRITE:
 		case OP_LEN:
 		case OP_CONCAT:
-		case OP_APPEND:
-			op_append(expr, fp)
 		case OP_COPY:
 		case OP_CAST:
 		case OP_EQ:

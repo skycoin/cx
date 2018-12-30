@@ -582,14 +582,10 @@ func WriteToSlice (off int, inp []byte) int {
         if off == 0 {
                 // then it's a new slice
                 heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp))
+                size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
 
                 var header []byte = make([]byte, OBJECT_HEADER_SIZE)
-
-                size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
-                
-                for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-                        header[c] = size[c-5]
-                }
+                copy(header[5:], size)
 
                 one := []byte{1, 0, 0, 0}
 
@@ -608,8 +604,8 @@ func WriteToSlice (off int, inp []byte) int {
                 var l int32
                 var c int32
 
-                encoder.DeserializeAtomic(sliceHeader[:4], &l)
-                encoder.DeserializeAtomic(sliceHeader[4:], &c)
+                encoder.DeserializeAtomic(sliceHeader[:4], &c)
+                encoder.DeserializeAtomic(sliceHeader[4:], &l)
 
                 if l >= c {
                         // then we need to increase cap and relocate slice
@@ -618,20 +614,17 @@ func WriteToSlice (off int, inp []byte) int {
                         l++
                         c = c * 2
 
-                        heapOffset = AllocateSeq(int(c) * len(inp) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
-
+                        heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp) * int(c))
                         size := encoder.SerializeAtomic(int32(int(c) * len(inp) + SLICE_HEADER_SIZE))
 
                         var header []byte = make([]byte, OBJECT_HEADER_SIZE)
-                        for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-                                header[c] = size[c-5]
-                        }
+                        copy(header[5:], size)
 
-                        lB := encoder.SerializeAtomic(l)
                         cB := encoder.SerializeAtomic(c)
+                        lB := encoder.SerializeAtomic(l)
 
-                        finalObj := append(header, lB...)
-                        finalObj = append(finalObj, cB...)
+                        finalObj := append(header, cB...)
+                        finalObj = append(finalObj, lB...)
                         finalObj = append(finalObj, obj...)
                         finalObj = append(finalObj, inp...)
 
@@ -643,16 +636,11 @@ func WriteToSlice (off int, inp []byte) int {
 
                         // updating the length
                         newL := encoder.SerializeAtomic(l+int32(1))
-
-                        for i, byt := range newL {
-                                PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + i] = byt
-                        }
+                        copy(GetSliceHeader(int32(off))[4:], newL)
 
                         // write the obj
-                        for i, byt := range inp {
-                                PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + int(l) * len(inp) + i] = byt
-                        }
-
+                        sizeofInp := len(inp)
+                        copy(GetSliceData(int32(off), sizeofInp)[int(l) * sizeofInp:], inp)
                         return off
                 }
         }
@@ -704,8 +692,8 @@ func runtimeErrorInfo (r interface{}, printStack bool) {
 	if DBG_GOLANG_STACK_TRACE {
 		debug.PrintStack()
 	}
-	
-	os.Exit(3)
+
+	os.Exit(CX_RUNTIME_ERROR)
 }
 
 func RuntimeError () {
@@ -724,7 +712,6 @@ func RuntimeError () {
 		default:
 			runtimeErrorInfo(r, true)
 		}
-        os.Exit(CX_RUNTIME_ERROR)
 	}
 }
 

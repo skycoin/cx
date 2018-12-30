@@ -419,14 +419,31 @@ func op_gl_GenBuffers(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+func GetF32Data(fp int, inp *CXArgument) (data interface{}){
+    elt := GetAssignmentElement(inp)
+    var dataF32 []float32 = nil
+    if elt.IsSlice {
+        dataF32 = ReadF32Slice(fp, inp)
+    } else if elt.IsArray {
+        dataF32 = ReadF32A(fp, inp)
+    } else {
+        fmt.Println("NOT SLICE ARRAY")
+        panic(CX_RUNTIME_INVALID_ARGUMENT)
+    }
+    if len(dataF32) > 0 {
+        data = dataF32
+    }
+    return
+}
+
 func op_gl_BufferData(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.BufferData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), gl.Ptr(ReadF32A(fp, inp3)), uint32(ReadI32(fp, inp4)))
+	gl.BufferData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), gl.Ptr(GetF32Data(fp, inp3)), uint32(ReadI32(fp, inp4)))
 }
 
 func op_gl_BufferSubData(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadF32A(fp,  inp4)))
+	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(GetF32Data(fp, inp4)))
 }
 
 // gl_2_0
