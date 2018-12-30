@@ -480,9 +480,9 @@ func init () {
 
 		switch opCode {
 		case OP_IDENTITY:
-			op_identity(expr, fp)
+			opIdentity(expr, fp)
 		case OP_JMP:
-			op_jmp(expr, fp, call)
+			opJmp(expr, fp, call)
 		case OP_DEBUG:
 			prgrm.PrintStack()
 
