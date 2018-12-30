@@ -480,9 +480,9 @@ func init () {
 
 		switch opCode {
 		case OP_IDENTITY:
-			op_identity(expr, fp)
+			opIdentity(expr, fp)
 		case OP_JMP:
-			op_jmp(expr, fp, call)
+			opJmp(expr, fp, call)
 		case OP_DEBUG:
 			prgrm.PrintStack()
 
@@ -633,210 +633,211 @@ func init () {
 			opI32Min(expr, fp)
 
 		case OP_I64_BYTE:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 		case OP_I64_STR:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 		case OP_I64_I32:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 		case OP_I64_I64:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 		case OP_I64_F32:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 		case OP_I64_F64:
-			op_i64_i64(expr, fp)
+			opI64I64(expr, fp)
 
 		case OP_I64_PRINT:
-			op_i64_print(expr, fp)
+			opI64Print(expr, fp)
 		case OP_I64_ADD:
-			op_i64_add(expr, fp)
+			opI64Add(expr, fp)
 		case OP_I64_SUB:
-			op_i64_sub(expr, fp)
+			opI64Sub(expr, fp)
 		case OP_I64_MUL:
-			op_i64_mul(expr, fp)
+			opI64Mul(expr, fp)
 		case OP_I64_DIV:
-			op_i64_div(expr, fp)
+			opI64Div(expr, fp)
 		case OP_I64_ABS:
-			op_i64_abs(expr, fp)
+			opI64Abs(expr, fp)
 		case OP_I64_POW:
-			op_i64_pow(expr, fp)
+			opI64Pow(expr, fp)
 		case OP_I64_GT:
-			op_i64_gt(expr, fp)
+			opI64Gt(expr, fp)
 		case OP_I64_GTEQ:
-			op_i64_gteq(expr, fp)
+			opI64Gteq(expr, fp)
 		case OP_I64_LT:
-			op_i64_lt(expr, fp)
+			opI64Lt(expr, fp)
 		case OP_I64_LTEQ:
-			op_i64_lteq(expr, fp)
+			opI64Lteq(expr, fp)
 		case OP_I64_EQ:
-			op_i64_eq(expr, fp)
+			opI64Eq(expr, fp)
 		case OP_I64_UNEQ:
-			op_i64_uneq(expr, fp)
+			opI64Uneq(expr, fp)
 		case OP_I64_MOD:
-			op_i64_mod(expr, fp)
+			opI64Mod(expr, fp)
 		case OP_I64_RAND:
-			op_i64_rand(expr, fp)
+			opI64Rand(expr, fp)
 		case OP_I64_BITAND:
-			op_i64_bitand(expr, fp)
+			opI64Bitand(expr, fp)
 		case OP_I64_BITOR:
-			op_i64_bitor(expr, fp)
+			opI64Bitor(expr, fp)
 		case OP_I64_BITXOR:
-			op_i64_bitxor(expr, fp)
+			opI64Bitxor(expr, fp)
 		case OP_I64_BITCLEAR:
-			op_i64_bitclear(expr, fp)
+			opI64Bitclear(expr, fp)
 		case OP_I64_BITSHL:
-			op_i64_bitshl(expr, fp)
+			opI64Bitshl(expr, fp)
 		case OP_I64_BITSHR:
-			op_i64_bitshr(expr, fp)
+			opI64Bitshr(expr, fp)
 		case OP_I64_SQRT:
-			op_i64_sqrt(expr, fp)
+			opI64Sqrt(expr, fp)
 		case OP_I64_LOG:
-			op_i64_log(expr, fp)
+			opI64Log(expr, fp)
 		case OP_I64_LOG2:
-			op_i64_log2(expr, fp)
+			opI64Log2(expr, fp)
 		case OP_I64_LOG10:
-			op_i64_log10(expr, fp)
+			opI64Log10(expr, fp)
 		case OP_I64_MAX:
-			op_i64_max(expr, fp)
+			opI64Max(expr, fp)
 		case OP_I64_MIN:
-			op_i64_min(expr, fp)
+			opI64Min(expr, fp)
 
 		case OP_F32_IS_NAN:
-			op_f32_isnan(expr, fp)
+			opF32Isnan(expr, fp)
 		case OP_F32_BYTE:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_STR:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_I32:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_I64:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_F32:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_F64:
-			op_f32_f32(expr, fp)
+			opF32F32(expr, fp)
 		case OP_F32_PRINT:
-			op_f32_print(expr, fp)
+			opF32Print(expr, fp)
 		case OP_F32_ADD:
-			op_f32_add(expr, fp)
+			opF32Add(expr, fp)
 		case OP_F32_SUB:
-			op_f32_sub(expr, fp)
+			opF32Sub(expr, fp)
 		case OP_F32_MUL:
-			op_f32_mul(expr, fp)
+			opF32Mul(expr, fp)
 		case OP_F32_DIV:
-			op_f32_div(expr, fp)
+			opF32Div(expr, fp)
 		case OP_F32_ABS:
-			op_f32_abs(expr, fp)
+			opF32Abs(expr, fp)
 		case OP_F32_POW:
-			op_f32_pow(expr, fp)
+			opF32Pow(expr, fp)
 		case OP_F32_GT:
-			op_f32_gt(expr, fp)
+			opF32Gt(expr, fp)
 		case OP_F32_GTEQ:
-			op_f32_gteq(expr, fp)
+			opF32Gteq(expr, fp)
 		case OP_F32_LT:
-			op_f32_lt(expr, fp)
+			opF32Lt(expr, fp)
 		case OP_F32_LTEQ:
-			op_f32_lteq(expr, fp)
+			opF32Lteq(expr, fp)
 		case OP_F32_EQ:
-			op_f32_eq(expr, fp)
+			opF32Eq(expr, fp)
 		case OP_F32_UNEQ:
-			op_f32_uneq(expr, fp)
+			opF32Uneq(expr, fp)
 		case OP_F32_COS:
-			op_f32_cos(expr, fp)
+			opF32Cos(expr, fp)
 		case OP_F32_SIN:
-			op_f32_sin(expr, fp)
+			opF32Sin(expr, fp)
 		case OP_F32_SQRT:
-			op_f32_sqrt(expr, fp)
+			opF32Sqrt(expr, fp)
 		case OP_F32_LOG:
-			op_f32_log(expr, fp)
+			opF32Log(expr, fp)
 		case OP_F32_LOG2:
-			op_f32_log2(expr, fp)
+			opF32Log2(expr, fp)
 		case OP_F32_LOG10:
-			op_f32_log10(expr, fp)
+			opF32Log10(expr, fp)
 		case OP_F32_MAX:
-			op_f32_max(expr, fp)
+			opF32Max(expr, fp)
 		case OP_F32_MIN:
-			op_f32_min(expr, fp)
+			opF32Min(expr, fp)
 
 		case OP_F64_BYTE:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_STR:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_I32:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_I64:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_F32:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 		case OP_F64_F64:
-			op_f64_f64(expr, fp)
+			opF64F64(expr, fp)
 
 		case OP_F64_PRINT:
-			op_f64_print(expr, fp)
+			opF64Print(expr, fp)
 		case OP_F64_ADD:
-			op_f64_add(expr, fp)
+			opF64Add(expr, fp)
 		case OP_F64_SUB:
-			op_f64_sub(expr, fp)
+			opF64Sub(expr, fp)
 		case OP_F64_MUL:
-			op_f64_mul(expr, fp)
+			opF64Mul(expr, fp)
 		case OP_F64_DIV:
-			op_f64_div(expr, fp)
+			opF64Div(expr, fp)
 		case OP_F64_ABS:
-			op_f64_abs(expr, fp)
+			opF64Abs(expr, fp)
 		case OP_F64_POW:
-			op_f64_pow(expr, fp)
+			opF64Pow(expr, fp)
 		case OP_F64_GT:
-			op_f64_gt(expr, fp)
+			opF64Gt(expr, fp)
 		case OP_F64_GTEQ:
-			op_f64_gteq(expr, fp)
+			opF64Gteq(expr, fp)
 		case OP_F64_LT:
-			op_f64_lt(expr, fp)
+			opF64Lt(expr, fp)
 		case OP_F64_LTEQ:
-			op_f64_lteq(expr, fp)
+			opF64Lteq(expr, fp)
 		case OP_F64_EQ:
-			op_f64_eq(expr, fp)
+			opF64Eq(expr, fp)
 		case OP_F64_UNEQ:
-			op_f64_uneq(expr, fp)
+			opF64Uneq(expr, fp)
 		case OP_F64_COS:
-			op_f64_cos(expr, fp)
+			opF64Cos(expr, fp)
 		case OP_F64_SIN:
-			op_f64_sin(expr, fp)
+			opF64Sin(expr, fp)
 		case OP_F64_SQRT:
-			op_f64_sqrt(expr, fp)
+			opF64Sqrt(expr, fp)
 		case OP_F64_LOG:
-			op_f64_log(expr, fp)
+			opF64Log(expr, fp)
 		case OP_F64_LOG2:
-			op_f64_log2(expr, fp)
+			opF64Log2(expr, fp)
 		case OP_F64_LOG10:
-			op_f64_log10(expr, fp)
+			opF64Log10(expr, fp)
 		case OP_F64_MAX:
-			op_f64_max(expr, fp)
+			opF64Max(expr, fp)
 		case OP_F64_MIN:
-			op_f64_min(expr, fp)
+			opF64Min(expr, fp)
+
 		case OP_STR_PRINT:
-			op_str_print(expr, fp)
-		case OP_STR_CONCAT:
-			op_str_concat(expr, fp)
-		case OP_STR_SUBSTR:
-			op_str_substr(expr, fp)
-		case OP_STR_INDEX:
-			op_str_index(expr, fp)
-		case OP_STR_TRIM_SPACE:
-			op_str_trim_space(expr, fp)
+			opStrPrint(expr, fp)
 		case OP_STR_EQ:
-			op_str_eq(expr, fp)
+			opStrEq(expr, fp)
+		case OP_STR_CONCAT:
+			opStrConcat(expr, fp)
+		case OP_STR_SUBSTR:
+			opStrSubstr(expr, fp)
+		case OP_STR_INDEX:
+			opStrIndex(expr, fp)
+		case OP_STR_TRIM_SPACE:
+			opStrTrimSpace(expr, fp)
 
 		case OP_STR_BYTE:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_STR:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_I32:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_I64:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_F32:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 		case OP_STR_F64:
-			op_str_str(expr, fp)
+			opStrStr(expr, fp)
 
 		case OP_MAKE:
 		case OP_READ:

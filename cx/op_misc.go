@@ -27,7 +27,7 @@ func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
 	WriteMemory(outOffset, off)
 }
 
-func op_identity(expr *CXExpression, fp int) {
+func opIdentity(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(fp, inp1)
 	out1Offset := GetFinalOffset(fp, out1)
@@ -51,7 +51,7 @@ func op_identity(expr *CXExpression, fp int) {
 	}
 }
 
-func op_jmp(expr *CXExpression, fp int, call *CXCall) {
+func opJmp(expr *CXExpression, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
 	
@@ -70,5 +70,4 @@ func op_jmp(expr *CXExpression, fp int, call *CXCall) {
 			call.Line = call.Line + expr.ElseLines
 		}
 	}
-
 }
