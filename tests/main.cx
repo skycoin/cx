@@ -112,7 +112,8 @@ var LOG_SUCCESS i32 = 1
 var LOG_STDERR  i32 = 2
 var LOG_FAIL    i32 = 4
 var LOG_SKIP    i32 = 8
-var LOG_ALL	    i32 = 15//LOG_SUCCESS | LOG_STDERR | LOG_FAIL | LOG_SKIP
+var LOG_TIME    i32 = 16
+var LOG_ALL	    i32 = 31//LOG_SUCCESS | LOG_STDERR | LOG_FAIL | LOG_SKIP | LOG_TIME
 
 var g_testCount i32 = 0
 var g_testSuccess i32 = 0
@@ -175,34 +176,40 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		var start i64 = time.UnixMilli()
 		runError, cmdError, stdOut = os.Run(cmd, 2048, timeoutMs, g_workingDir)
 		var end i64 = time.UnixMilli()
-		var deltaMs i32 = i64.i32(end - start)
+		var timing str
+		timing = "na"
+		if (g_log & LOG_TIME) == LOG_TIME {
+			var deltaMs i32 = i64.i32(end - start)
+			timing = sprintf("%dms", deltaMs)
+		}
+
 		if (runError != 0 && (runError != os.RUN_TIMEOUT || timeoutMs <= 0)) {
 			if ((g_log & LOG_FAIL) == LOG_FAIL) {
-				printf("#%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s\n",
-					padding, g_testCount, deltaMs, cmd, prettyOsCode(runError), runError, desc)
+				printf("#%s%d | FAILED  | %s | '%s' | os.Run exited with code %s (%d) | %s\n",
+					padding, g_testCount, timing, cmd, prettyOsCode(runError), runError, desc)
 			}
 			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
 			}
 		} else if (cmdError != exitCode) {
 			if ((g_log & LOG_FAIL) == LOG_FAIL) {
-				printf("#%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s\n",
-					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
+				printf("#%s%d | FAILED  | %s | '%s' | expected %s (%d) | got %s (%d) | %s\n",
+					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
 			}
 			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
 			}
 		} else {
 			if ((g_log & LOG_SUCCESS) == LOG_SUCCESS) {
-				printf("#%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)\n",
-					padding, g_testCount, deltaMs, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
+				printf("#%s%d | success | %s | '%s' | expected %s (%d) | got %s (%d)\n",
+					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
 			}
 			g_testSuccess = g_testSuccess + 1
 		}
 		g_testCount = g_testCount + 1
 	} else {
 		if ((g_log & LOG_SKIP) == LOG_SKIP) {
-			printf("#--- | Skipped |  0ms | '%s' | %s\n", cmd, desc)
+			printf("#--- | Skipped | na | '%s' | na | na | %s\n", cmd, desc)
 		}
 		g_testSkipped = g_testSkipped + 1
 	}
@@ -217,7 +224,7 @@ func help () {
 	printf("++help          : Prints this message.\n")
 	printf("++enable-tests  : Enable test set (all, stable, issue, gui).\n")
 	printf("++disable-tests : Disable test set (all, stable, issue, gui).\n")
-	printf("++log           : Enable log set (all, success, stderr, fail, skip).\n")
+	printf("++log           : Enable log set (all, success, stderr, fail, skip, time).\n")
 	printf("++cxpath        : Set cx directory\n")
 	printf("++wdir          : Set working directory\n")
 }
@@ -230,8 +237,8 @@ func main ()() {
 
 	var logNames []str
 	var logValues []i32
-	logNames = []str { "all", "success", "stderr", "fail", "skip" }
-	logValues = []i32 { LOG_ALL, LOG_SUCCESS, LOG_STDERR, LOG_FAIL, LOG_SKIP }
+	logNames = []str { "all", "success", "stderr", "fail", "skip", "time" }
+	logValues = []i32 { LOG_ALL, LOG_SUCCESS, LOG_STDERR, LOG_FAIL, LOG_SKIP, LOG_TIME }
 
 	var argCount i32 = len(os.Args)
 
@@ -408,8 +415,11 @@ func main ()() {
 	var end i64
 	end = time.UnixMilli()
 
-	printf("\nTests finished after %d milliseconds\n", i64.sub(end, start))
-	printf("A total of %d tests were performed\n", g_testCount)
+	if (g_log & LOG_TIME) == LOG_TIME {
+		printf("\nTests finished after %d milliseconds", i64.sub(end, start))
+	}
+
+	printf("\nA total of %d tests were performed\n", g_testCount)
 	printf("%d were successful\n", g_testSuccess)
 	printf("%d failed\n", g_testCount - g_testSuccess)
 	printf("%d skipped\n", g_testSkipped)
