@@ -499,7 +499,7 @@ func CheckArithmeticOp(expr *CXExpression) bool {
 	if expr.Operator.IsNative {
 		switch expr.Operator.OpCode {
 		case OP_I32_MUL, OP_I32_DIV, OP_I32_MOD, OP_I32_ADD,
-			OP_I32_SUB, OP_I32_BITSHL, OP_I32_BITSHR, OP_I32_LT,
+			OP_I32_SUB, OP_I32_NEG, OP_I32_BITSHL, OP_I32_BITSHR, OP_I32_LT,
 			OP_I32_GT, OP_I32_LTEQ, OP_I32_GTEQ, OP_I32_EQ, OP_I32_UNEQ,
 			OP_I32_BITAND, OP_I32_BITXOR, OP_I32_BITOR, OP_STR_EQ:
 			return true
