@@ -1,8 +1,6 @@
 package base
 
-import (
-
-)
+import ()
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
@@ -238,6 +236,11 @@ const (
 	OP_AFF_INFORM
 	OP_AFF_REQUEST
 
+	OP_UND_NEG
+	OP_I32_NEG
+	OP_I64_NEG
+	OP_F32_NEG
+	OP_F64_NEG
 	END_OF_BARE_OPS
 )
 
@@ -248,7 +251,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{}
 var execNativeBare func(*CXProgram)
 var execNative func(*CXProgram)
 
-func AddOpCode (code int, name string, inputs []int, outputs []int) {
+func AddOpCode(code int, name string, inputs []int, outputs []int) {
 	OpNames[code] = name
 	OpCodes[name] = code
 	Natives[code] = MakeNative(code, inputs, outputs)
@@ -269,7 +272,7 @@ func DumpOpCodes(opCode int) () {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-func init () {
+func init() {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_JMP, "jmp", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_DEBUG, "debug", []int{}, []int{})
@@ -288,6 +291,7 @@ func init () {
 	AddOpCode(OP_UND_MOD, "mod", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_UND_ADD, "add", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_UND_SUB, "sub", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
+	AddOpCode(OP_UND_NEG, "neg", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_UND_BITSHL, "bitshl", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_UND_BITSHR, "bitshr", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_UND_LT, "lt", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_BOOL})
@@ -325,6 +329,7 @@ func init () {
 	AddOpCode(OP_I32_PRINT, "i32.print", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_I32_ADD, "i32.add", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
 	AddOpCode(OP_I32_SUB, "i32.sub", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
+	AddOpCode(OP_I32_NEG, "i32.neg", []int{TYPE_I32}, []int{TYPE_I32})
 	AddOpCode(OP_I32_MUL, "i32.mul", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
 	AddOpCode(OP_I32_DIV, "i32.div", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
 	AddOpCode(OP_I32_ABS, "i32.abs", []int{TYPE_I32}, []int{TYPE_I32})
@@ -360,6 +365,7 @@ func init () {
 	AddOpCode(OP_I64_PRINT, "i64.print", []int{TYPE_I64}, []int{})
 	AddOpCode(OP_I64_ADD, "i64.add", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
 	AddOpCode(OP_I64_SUB, "i64.sub", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
+	AddOpCode(OP_I64_NEG, "i64.neg", []int{TYPE_I64}, []int{TYPE_I64})
 	AddOpCode(OP_I64_MUL, "i64.mul", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
 	AddOpCode(OP_I64_DIV, "i64.div", []int{TYPE_I64, TYPE_I64}, []int{TYPE_I64})
 	AddOpCode(OP_I64_ABS, "i64.abs", []int{TYPE_I64}, []int{TYPE_I64})
@@ -395,6 +401,7 @@ func init () {
 	AddOpCode(OP_F32_PRINT, "f32.print", []int{TYPE_F32}, []int{})
 	AddOpCode(OP_F32_ADD, "f32.add", []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32})
 	AddOpCode(OP_F32_SUB, "f32.sub", []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32})
+	AddOpCode(OP_F32_NEG, "f32.neg", []int{TYPE_F32}, []int{TYPE_F32})
 	AddOpCode(OP_F32_MUL, "f32.mul", []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32})
 	AddOpCode(OP_F32_DIV, "f32.div", []int{TYPE_F32, TYPE_F32}, []int{TYPE_F32})
 	AddOpCode(OP_F32_ABS, "f32.abs", []int{TYPE_F32}, []int{TYPE_F32})
@@ -424,6 +431,7 @@ func init () {
 	AddOpCode(OP_F64_PRINT, "f64.print", []int{TYPE_F64}, []int{})
 	AddOpCode(OP_F64_ADD, "f64.add", []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64})
 	AddOpCode(OP_F64_SUB, "f64.sub", []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64})
+	AddOpCode(OP_F64_NEG, "f64.neg", []int{TYPE_F64}, []int{TYPE_F64})
 	AddOpCode(OP_F64_MUL, "f64.mul", []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64})
 	AddOpCode(OP_F64_DIV, "f64.div", []int{TYPE_F64, TYPE_F64}, []int{TYPE_F64})
 	AddOpCode(OP_F64_ABS, "f64.abs", []int{TYPE_F64}, []int{TYPE_F64})
@@ -511,7 +519,7 @@ func init () {
 			op_mod(expr, fp)
 		case OP_UND_ADD:
 			op_add(expr, fp)
-		case OP_UND_SUB:
+		case OP_UND_SUB, OP_UND_NEG:
 			op_sub(expr, fp)
 		case OP_UND_BITSHL:
 			op_bitshl(expr, fp)
@@ -580,7 +588,7 @@ func init () {
 			opI32Print(expr, fp)
 		case OP_I32_ADD:
 			opI32Add(expr, fp)
-		case OP_I32_SUB:
+		case OP_I32_SUB, OP_I32_NEG:
 			opI32Sub(expr, fp)
 		case OP_I32_MUL:
 			opI32Mul(expr, fp)
@@ -649,7 +657,7 @@ func init () {
 			opI64Print(expr, fp)
 		case OP_I64_ADD:
 			opI64Add(expr, fp)
-		case OP_I64_SUB:
+		case OP_I64_SUB, OP_I64_NEG:
 			opI64Sub(expr, fp)
 		case OP_I64_MUL:
 			opI64Mul(expr, fp)
@@ -718,7 +726,7 @@ func init () {
 			opF32Print(expr, fp)
 		case OP_F32_ADD:
 			opF32Add(expr, fp)
-		case OP_F32_SUB:
+		case OP_F32_SUB, OP_F32_NEG:
 			opF32Sub(expr, fp)
 		case OP_F32_MUL:
 			opF32Mul(expr, fp)
@@ -774,7 +782,7 @@ func init () {
 			opF64Print(expr, fp)
 		case OP_F64_ADD:
 			opF64Add(expr, fp)
-		case OP_F64_SUB:
+		case OP_F64_SUB, OP_F64_NEG:
 			opF64Sub(expr, fp)
 		case OP_F64_MUL:
 			opF64Mul(expr, fp)
