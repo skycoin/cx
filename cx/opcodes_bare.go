@@ -203,13 +203,13 @@ const (
 
 	OP_APPEND
 	OP_RESIZE
+	OP_COPY
 
 	OP_MAKE
 	OP_READ
 	OP_WRITE
 	OP_LEN
 	OP_CONCAT
-	OP_COPY
 	OP_CAST
 	OP_EQ
 	OP_UNEQ
@@ -461,6 +461,7 @@ func init () {
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{})
+	AddOpCode(OP_COPY, "copy", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_I32} )
 
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
 	AddOpCode(OP_TEST, "test", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
@@ -846,13 +847,14 @@ func init () {
 			op_append(expr, fp)
 		case OP_RESIZE:
 			op_resize(expr, fp)
+		case OP_COPY:
+			op_copy(expr, fp)
 
 		case OP_MAKE:
 		case OP_READ:
 		case OP_WRITE:
 		case OP_LEN:
 		case OP_CONCAT:
-		case OP_COPY:
 		case OP_CAST:
 		case OP_EQ:
 		case OP_UNEQ:
