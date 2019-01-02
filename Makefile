@@ -84,6 +84,11 @@ test: build ## Run CX test suite.
 update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | xargs -I NAME cx -t -co tests/testdata/tokens/NAME.txt tests/NAME
 
+check-golden-files: update-golden-files ## Ensure golden files are up to date
+	if [ "$(shell git diff ./ | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Goden files not up to date' ; exit 2 ; fi
+
+check: check-golden-files test ## Perform self-tests
+
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
