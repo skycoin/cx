@@ -3,12 +3,7 @@
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
-  packages = [
-    "autorest",
-    "autorest/adal",
-    "autorest/azure",
-    "autorest/date"
-  ]
+  packages = ["autorest","autorest/adal","autorest/azure","autorest/date"]
   revision = "fc3b03a2d2d1f43fad3007038bd16f044f870722"
   version = "v9.10.0"
 
@@ -19,12 +14,15 @@
   version = "1.0"
 
 [[projects]]
+  name = "github.com/Jeffail/leaps"
+  packages = ["lib/acl","lib/api","lib/api/events","lib/api/io","lib/audit","lib/binder","lib/curator","lib/store","lib/text","lib/util","lib/util/service/log","lib/util/service/metrics"]
+  revision = "89d8ab9e9130238e56a0df283edbcd1115ec9225"
+  version = "v0.9.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/amir/raidman"
-  packages = [
-    ".",
-    "proto"
-  ]
+  packages = [".","proto"]
   revision = "1ccc43bfb9c93cb401a4025e49c64ba71e5e668b"
 
 [[projects]]
@@ -53,10 +51,7 @@
 
 [[projects]]
   name = "github.com/garyburd/redigo"
-  packages = [
-    "internal",
-    "redis"
-  ]
+  packages = ["internal","redis"]
   revision = "d1ed5c67e5794de818ea85e6b522fda02623a484"
   version = "v1.5.0"
 
@@ -87,10 +82,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [
-    ".",
-    "oid"
-  ]
+  packages = [".","oid"]
   revision = "88edab0803230a3898347e77b474f8c1820a1f20"
 
 [[projects]]
@@ -107,10 +99,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = [
-    "context",
-    "proxy"
-  ]
+  packages = ["context","proxy"]
   revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
 
 [[projects]]
@@ -128,6 +117,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d3ddb55d95c9c41adbf1b58c629f07f17442179c2a2927e3e38df7aa5fa99f6f"
+  inputs-digest = "1c1c9a484c507d1fdd596d8e14d8d74e88a4c727c1e5feb7d4915e81b8e4db67"
   solver-name = "gps-cdcl"
   solver-version = 1
