@@ -2,9 +2,9 @@ package base
 
 import (
 	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
 	"strconv"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opF64F64(expr *CXExpression, fp int) {
@@ -45,8 +45,14 @@ func opF64Add(expr *CXExpression, fp int) {
 // The built-in sub function returns the difference between the two operands.
 //
 func opF64Sub(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	var outB1 []byte
+	if len(expr.Inputs) == 2 {
+		inp2 := expr.Inputs[1]
+		outB1 = FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
+	} else {
+		outB1 = FromF64(-ReadF64(fp, inp1))
+	}
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
