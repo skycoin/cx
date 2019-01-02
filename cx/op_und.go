@@ -362,65 +362,18 @@ func op_copy(expr *CXExpression, fp int) {
 	}
 }
 
-var FUCK bool = false
-
 func op_append (expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != inp2.Type || inp1.Type != out1.Type {
+	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	sizeofElement := inp2.TotalSize
-
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-
-	outputSliceElement := GetAssignmentElement(out1)
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(outputSliceElement, int32(outputSlicePointer))
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
-	var inputSliceLen int32
-	if inputSliceOffset != 0 {
-		inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
-
-		var inputSliceCap int32
-		encoder.DeserializeAtomic(inputSliceHeader[0:4], &inputSliceCap)
-	}
-
-	var outputSliceHeader []byte
-	var outputSliceLen int32
-	var outputSliceCap int32
-
-	if outputSliceOffset > 0 {
-		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		encoder.DeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
-		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
-	}
-
-	var newLen int32 = inputSliceLen + 1
-	var newCap int32 = outputSliceCap
-	if newLen > newCap {
-		if newCap <= 0 {
-			newCap = newLen
-		} else {
-			newCap *= 2
-		}
-		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap * int32(sizeofElement)
-		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
-		copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
-		copy(GetObjectHeader(outputSliceOffset)[5:9], encoder.SerializeAtomic(outputObjectSize))
-
-		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
-	}
-
-	copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
-	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
-
-	if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
-		copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
-	}
+	inputSlicePointer := GetFinalOffset(fp, inp1)
+	inputSliceOffset := GetPointerOffset(int32(inputSlicePointer))
 
 	var obj2[]byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
@@ -429,7 +382,8 @@ func op_append (expr *CXExpression, fp int) {
 		obj2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	copy(outputSliceData[int(inputSliceLen) * sizeofElement:], obj2)
+	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj2, inp2.TotalSize))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
 func buildString(expr *CXExpression, fp int) []byte {

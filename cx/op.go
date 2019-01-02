@@ -290,20 +290,16 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
-func GetPointerOffset(element* CXArgument, pointerOffset int32) int32 {
-	if element.IsSlice {
-		var offset int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[pointerOffset : pointerOffset + TYPE_POINTER_SIZE], &offset)
-		return offset
-	}
-
-	return -1
+func GetPointerOffset(pointer int32) int32 {
+	var offset int32
+	encoder.DeserializeAtomic(PROGRAM.Memory[pointer : pointer + TYPE_POINTER_SIZE], &offset)
+	return offset
 }
 
 func GetSliceOffset(fp int, arg *CXArgument) int32 {
 	element := GetAssignmentElement(arg)
 	if element.IsSlice {
-		return GetPointerOffset(element, int32(GetFinalOffset(fp, arg)))
+		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
 	}
 
 	return -1
@@ -341,6 +337,23 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 		return slice[4:]
 	}
 	return nil
+}
+
+func ReadF32Data(fp int, inp *CXArgument) (interface{}){
+	var data interface{}
+	elt := GetAssignmentElement(inp)
+	var dataF32 []float32 = nil
+	if elt.IsSlice {
+		dataF32 = ReadF32Slice(fp, inp)
+	} else if elt.IsArray {
+		dataF32 = ReadF32A(fp, inp)
+	} else {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+	if len(dataF32) > 0 {
+		data = dataF32
+	}
+	return data
 }
 
 func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {

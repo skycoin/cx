@@ -569,81 +569,59 @@ func checkForEscapedChars (str string) []byte {
 }
 
 func GetAssignmentElement (arg *CXArgument) *CXArgument {
-        if len(arg.Fields) > 0 {
-                return arg.Fields[len(arg.Fields) - 1]
-        } else {
-                return arg
-        }
+	if len(arg.Fields) > 0 {
+		return arg.Fields[len(arg.Fields) - 1]
+	} else {
+		return arg
+	}
+}
+
+func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte, sizeofElement int) int {
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceHeader := GetSliceHeader(inputSliceOffset)
+		encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+	}
+
+	var outputSliceHeader []byte
+	var outputSliceLen int32
+	var outputSliceCap int32
+
+	if outputSliceOffset > 0 {
+		outputSliceHeader = GetSliceHeader(outputSliceOffset)
+		encoder.DeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
+		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+	}
+
+	var newLen int32 = inputSliceLen + 1
+	var newCap int32 = outputSliceCap
+	if newLen > newCap {
+		if newCap <= 0 {
+			newCap = newLen
+		} else {
+			newCap *= 2
+		}
+		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap * int32(sizeofElement)
+		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
+		copy(GetObjectHeader(outputSliceOffset)[5:9], encoder.SerializeAtomic(outputObjectSize))
+
+		outputSliceHeader = GetSliceHeader(outputSliceOffset)
+		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
+	}
+
+	copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
+	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
+
+	if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
+		copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
+	}
+
+	copy(outputSliceData[int(inputSliceLen) * sizeofElement:], object)
+	return int(outputSliceOffset)
 }
 
 func WriteToSlice (off int, inp []byte) int {
-        var heapOffset int
-        
-        if off == 0 {
-                // then it's a new slice
-                heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp))
-                size := encoder.SerializeAtomic(int32(len(inp)) + SLICE_HEADER_SIZE)
-
-                var header []byte = make([]byte, OBJECT_HEADER_SIZE)
-                copy(header[5:], size)
-
-                one := []byte{1, 0, 0, 0}
-
-                // len == 1
-                finalObj := append(header, one...)
-                // cap == 1
-                finalObj = append(finalObj, one...)
-                finalObj = append(finalObj, inp...)
-
-                WriteMemory(heapOffset, finalObj)
-                return heapOffset
-        } else {
-                // then it already exists
-                sliceHeader := PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
-
-                var l int32
-                var c int32
-
-                encoder.DeserializeAtomic(sliceHeader[:4], &c)
-                encoder.DeserializeAtomic(sliceHeader[4:], &l)
-
-                if l >= c {
-                        // then we need to increase cap and relocate slice
-                        obj := PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : int32(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l*int32(len(inp))]
-
-                        l++
-                        c = c * 2
-
-                        heapOffset = AllocateSeq(OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + len(inp) * int(c))
-                        size := encoder.SerializeAtomic(int32(int(c) * len(inp) + SLICE_HEADER_SIZE))
-
-                        var header []byte = make([]byte, OBJECT_HEADER_SIZE)
-                        copy(header[5:], size)
-
-                        cB := encoder.SerializeAtomic(c)
-                        lB := encoder.SerializeAtomic(l)
-
-                        finalObj := append(header, cB...)
-                        finalObj = append(finalObj, lB...)
-                        finalObj = append(finalObj, obj...)
-                        finalObj = append(finalObj, inp...)
-
-                        WriteMemory(heapOffset, finalObj)
-
-                        return heapOffset
-                } else {
-                        // then we can simply write the element
-
-                        // updating the length
-                        newL := encoder.SerializeAtomic(l+int32(1))
-                        copy(GetSliceHeader(int32(off))[4:], newL)
-
-                        // write the obj
-                        sizeofInp := len(inp)
-                        copy(GetSliceData(int32(off), sizeofInp)[int(l) * sizeofInp:], inp)
-                        return off
-                }
-        }
+	return SliceAppend(int32(off), int32(off), inp, len(inp))
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
