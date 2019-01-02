@@ -401,9 +401,10 @@ func op_append (expr *CXExpression, fp int) {
 	var newLen int32 = inputSliceLen + 1
 	var newCap int32 = outputSliceCap
 	if newLen > newCap {
-		newCap *= 2
 		if newCap <= 0 {
-			newCap = 1
+			newCap = newLen
+		} else {
+			newCap *= 2
 		}
 		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap * int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
