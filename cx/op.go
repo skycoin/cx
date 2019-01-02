@@ -290,13 +290,20 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
-func GetSliceOffset(fp int, arg *CXArgument) int32 {
-	element := GetAssignmentElement(arg)
+func GetPointerOffset(element* CXArgument, pointerOffset int32) int32 {
 	if element.IsSlice {
-		var pointerOffset int = GetFinalOffset(fp, arg)
 		var offset int32
 		encoder.DeserializeAtomic(PROGRAM.Memory[pointerOffset : pointerOffset + TYPE_POINTER_SIZE], &offset)
 		return offset
+	}
+
+	return -1
+}
+
+func GetSliceOffset(fp int, arg *CXArgument) int32 {
+	element := GetAssignmentElement(arg)
+	if element.IsSlice {
+		return GetPointerOffset(element, int32(GetFinalOffset(fp, arg)))
 	}
 
 	return -1
