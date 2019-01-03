@@ -17,6 +17,7 @@ import (
 // 	//prgrm.ProgramSteps = nil
 // }
 
+// UnRun ...
 func (prgrm *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || prgrm.CallCounter < 0 {
 		return
@@ -43,6 +44,7 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 	}
 }
 
+// ToCall ...
 func (prgrm *CXProgram) ToCall() *CXExpression {
 	for c := prgrm.CallCounter - 1; c >= 0; c-- {
 		if prgrm.CallStack[c].Line+1 >= len(prgrm.CallStack[c].Operator.Expressions) {
@@ -57,6 +59,7 @@ func (prgrm *CXProgram) ToCall() *CXExpression {
 	// panic("")
 }
 
+// Run ...
 func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
@@ -122,6 +125,7 @@ func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	return nil
 }
 
+// RunCompiled ...
 func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 	PROGRAM = prgrm
 	// prgrm.PrintProgram()
@@ -131,8 +135,8 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 	if nCalls == 0 {
 		untilEnd = true
 	}
-
-	if mod, err := prgrm.SelectPackage(MAIN_PKG); err == nil {
+	mod, err := prgrm.SelectPackage(MAIN_PKG)
+	if err == nil {
 		// initializing program resources
 		// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 
@@ -210,12 +214,12 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 			}
 
 			return err
-		} else {
-			return err
 		}
-	} else {
 		return err
+
 	}
+	return err
+
 }
 
 func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {

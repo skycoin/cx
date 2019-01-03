@@ -7,13 +7,18 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-var HeapOffset int
-var genSymCounter int
+// Var
+var (
+	HeapOffset    int
+	genSymCounter int
+)
 
+// MakeElementID ...
 func MakeElementID() uuid.UUID {
 	return uuid.NewV4()
 }
 
+// MakeGenSym ...
 func MakeGenSym(name string) string {
 	gensym := fmt.Sprintf("%s_%d", name, genSymCounter)
 	genSymCounter++
@@ -21,6 +26,7 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
+// MakeGlobal ...
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
@@ -36,6 +42,7 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 	return global
 }
 
+// MakeField ...
 func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),
@@ -46,7 +53,7 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 	}
 }
 
-// Used only for native types
+// MakeDefaultValue Used only for native types
 func MakeDefaultValue(typName string) *[]byte {
 	var zeroVal []byte
 	switch typName {
@@ -60,6 +67,7 @@ func MakeDefaultValue(typName string) *[]byte {
 	return &zeroVal
 }
 
+// MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),
@@ -68,6 +76,7 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 		FileLine:  fileLine}
 }
 
+// MakeNative ...
 func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	fn := &CXFunction{
 		ElementID: MakeElementID(),
@@ -92,11 +101,13 @@ func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	return fn
 }
 
+// MakeValue ...
 func MakeValue(value string) *[]byte {
 	byts := encoder.Serialize(value)
 	return &byts
 }
 
+// MakeCall ...
 func MakeCall(op *CXFunction) CXCall {
 	return CXCall{
 		Operator:     op,
@@ -114,6 +125,7 @@ func MakeCall(op *CXFunction) CXCall {
 // 	}
 // }
 
+// MakeIdentityOpName ...
 func MakeIdentityOpName(typeName string) string {
 	switch typeName {
 	case "str":
@@ -292,6 +304,7 @@ func MakeIdentityOpName(typeName string) string {
 // 	}
 // }
 
+// MakeCallStack ...
 func MakeCallStack(size int) []CXCall {
 	return make([]CXCall, 0)
 	// return &CXCallStack{
