@@ -65,7 +65,7 @@ func main () {
 	var pnts [2][2][2]Point
 	pnts[0][0][0] = pnt
 
-	testArrayPnts(pnts)
+	testArrayPnts(pnts[0])
 	testPointerPnts(&pnt)
 
 	var ppnts **Point
@@ -76,4 +76,6 @@ func main () {
 
 	var apPnts [3]*Point
 	testArrayPointerPnts(apPnts)
+
+	testSlicePnts(returnSlicePnts())
 }

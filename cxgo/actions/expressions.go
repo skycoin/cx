@@ -270,7 +270,6 @@ func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 
 func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 	exprOut := prevExprs[len(prevExprs)-1].Outputs[0]
-	// exprInp := prevExprs[len(prevExprs)-1].Inputs[0]
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++

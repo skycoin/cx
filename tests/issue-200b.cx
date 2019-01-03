@@ -1,5 +1,17 @@
 package main
 
+type Point struct {
+	x i32
+	y i32
+}
+
+func testArrayPnts (pnts [1][2]Point) {}
+func testPointerPnts (num *Point) {}
+func testPointerLevelsPnts (num **Point) {}
+func testSlicePnts (slc [][]Point) {}
+func testArrayPointerPnts (pnums [3]*Point) {}
+func returnSlicePnts () (slc []Point) {}
+
 func testArray (byts [5][5]byte) {}
 func testPointer (num *i32) {}
 func testPointerLevels (num **i32) {}
@@ -44,4 +56,32 @@ func main () {
 
 	// it should be *(pnums[0])
 	i32.print(pnums[0])
+
+	var pnt Point
+	pnt.x = 10
+	pnt.y = 20
+	
+	var pnts [2][1][2]Point
+	pnts[0][0][0] = pnt
+
+	// it should be pnts[0]
+	testArrayPnts(pnts[0][0])
+
+	// it should be &pnt
+	testPointerPnts(pnt)
+
+	// it should be **Point
+	var ppnts ***Point
+	testPointerLevelsPnts(ppnts)
+
+	var slcPnts [][][]Point
+	// it should be slcPnts[0]
+	testSlicePnts(slcPnts)
+
+	var apPnts [3]*Point
+	// it should be apPnts
+	testArrayPointerPnts(apPnts[0])
+
+	// returnSlicePnts declared to return []Point; it should be [][]Point
+	testSlicePnts(returnSlicePnts())
 }

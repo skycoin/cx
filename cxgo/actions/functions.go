@@ -336,7 +336,7 @@ func GetFormattedType (arg *CXArgument) string {
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec
-	arrDeclCount := 0
+	arrDeclCount := len(arg.Lengths)-1
 	// looping declaration specifiers
 	for _, spec := range elt.DeclarationSpecifiers {
 		switch spec {
@@ -346,23 +346,10 @@ func GetFormattedType (arg *CXArgument) string {
 			typ = typ[1:]
 		case DECL_ARRAY:
 			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
-			arrDeclCount++
+			arrDeclCount--
 		case DECL_SLICE:
 			typ = "[]" + typ
 		case DECL_INDEXING:
-			// rBrcktIdx := 0
-			// if typ[0] != '[' {
-			// 	// then it's an invalid indexing error
-			// 	Debug("huehue", typ)
-			// 	println(CompilationError(arg.FileName, arg.FileLine), fmt.Sprintf("invalid indexing"))
-			// }
-			// for _, ch := range typ {
-			// 	rBrcktIdx++
-			// 	if ch == ']' {
-			// 		break
-			// 	}
-			// }
-			// typ = typ[rBrcktIdx:]
 		default:
 			// base type
 			if elt.CustomType != nil {
@@ -374,9 +361,7 @@ func GetFormattedType (arg *CXArgument) string {
 			}
 		}
 	}
-
-	// Debug("types", elt.Name, typ)
-
+	
 	return typ
 }
 
@@ -711,7 +696,7 @@ func CopyArgFields (sym *CXArgument, arg *CXArgument) {
 	sym.Offset = arg.Offset
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
-	
+
 	if sym.FileLine != arg.FileLine {
 		declSpec := make([]int, len(arg.DeclarationSpecifiers))
 		for i, spec := range arg.DeclarationSpecifiers {

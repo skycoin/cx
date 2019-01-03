@@ -8,7 +8,7 @@ var PRGRM *CXProgram
 var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil pointers
 
 var CurrentFile string
-var LineNo int = 0
+var LineNo int
 var WebMode bool
 var IdeMode bool
 var WebPersistantMode bool

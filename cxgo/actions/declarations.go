@@ -5,7 +5,7 @@ import (
 )
 
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
-                   initializer []*CXExpression, doesInitialize bool) {
+	initializer []*CXExpression, doesInitialize bool) {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 	} else {
@@ -86,6 +86,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				// then it's a literal
 
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -102,6 +103,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -122,6 +124,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			// exprOut := expr[0].Outputs[0]
 
 			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -204,6 +207,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 				expr.Package = pkg
 
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
@@ -214,6 +218,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 			} else {
 				// then it's an expression (it has an operator)
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
@@ -237,6 +242,7 @@ func DeclareLocal (declarator *CXArgument, declaration_specifiers *CXArgument, i
 			expr.Package = pkg
 
 			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Package = pkg
 			declaration_specifiers.PreviouslyDeclared = true
 			expr.AddOutput(declaration_specifiers)
