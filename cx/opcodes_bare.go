@@ -860,11 +860,11 @@ func init() {
 		case OP_NAME:
 		case OP_EVOLVE:
 		case OP_ASSERT:
-			op_assert_value(expr, fp)
+			opAssertValue(expr, fp)
 		case OP_TEST:
-			op_test(expr, fp)
+			opTest(expr, fp)
 		case OP_PANIC:
-			op_panic(expr, fp)
+			opPanic(expr, fp)
 
 		// affordances
 		case OP_AFF_PRINT:
