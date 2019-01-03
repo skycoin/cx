@@ -340,13 +340,13 @@ func serializeArgument(arg *CXArgument, s *sAll) int {
 func serializeSliceOfArguments(args []*CXArgument, s *sAll) (int32, int32) {
 	if len(args) == 0 {
 		return int32(-1), int32(-1)
-	} else {
-		idxs := make([]int, len(args))
-		for i, arg := range args {
-			idxs[i] = serializeArgument(arg, s)
-		}
-		return serializeIntegers(idxs, s)
 	}
+	idxs := make([]int, len(args))
+	for i, arg := range args {
+		idxs[i] = serializeArgument(arg, s)
+	}
+	return serializeIntegers(idxs, s)
+
 }
 
 func serializeCalls(calls []CXCall, s *sAll) (int32, int32) {

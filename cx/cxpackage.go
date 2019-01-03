@@ -52,9 +52,9 @@ func (pkg *CXPackage) GetFunctions() ([]*CXFunction, error) {
 	// going from map to slice
 	if pkg.Functions != nil {
 		return pkg.Functions, nil
-	} else {
-		return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
 	}
+	return nil, fmt.Errorf("package '%s' has no functions", pkg.Name)
+
 }
 
 // GetFunction ...
