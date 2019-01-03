@@ -65,7 +65,7 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
