@@ -5,16 +5,16 @@ package base
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"image"
 	"image/draw"
-	_ "image/png"
-	_ "image/jpeg"
 	"image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"os"
 	"runtime"
 	"strings"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // declared in func_opengl.go
@@ -46,7 +46,6 @@ func op_gl_Free(expr *CXExpression, fp int) {
 	delete(freeFns, fnName)
 	delete(cSources, fnName)
 }
-
 
 func op_gl_NewTexture(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
@@ -100,13 +99,13 @@ func op_gl_NewGIF(expr *CXExpression, fp int) {
 
 	file, err := os.Open(path)
 	defer file.Close()
-	if (err != nil) {
+	if err != nil {
 		panic(fmt.Sprintf("file not found %q, %v", path, err))
 	}
 
 	reader := bufio.NewReader(file)
 	gif, err := gif.DecodeAll(reader)
-	if (err != nil) {
+	if err != nil {
 		panic(fmt.Sprintf("failed to decode file %q, %v", path, err))
 	}
 
@@ -252,7 +251,6 @@ func op_gl_TexCoord2f(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.TexCoord2f(ReadF32(fp, inp1), ReadF32(fp, inp2))
 }
-
 
 // gl_1_0
 func op_gl_CullFace(expr *CXExpression, fp int) {
@@ -426,7 +424,7 @@ func op_gl_BufferData(expr *CXExpression, fp int) {
 
 func op_gl_BufferSubData(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadF32A(fp,  inp4)))
+	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadF32A(fp, inp4)))
 }
 
 // gl_2_0
@@ -651,4 +649,3 @@ func op_gl_GenVertexArrays(expr *CXExpression, fp int) {
 	outB1 := FromI32(int32(tmp))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
-

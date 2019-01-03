@@ -1,210 +1,210 @@
 package base
 
 import (
-        "github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 type sIndex struct {
-        ProgramOffset                   int32
-        CallsOffset                     int32
-        PackagesOffset                  int32
-        StructsOffset                   int32
-        FunctionsOffset                 int32
-        ExpressionsOffset               int32
-        ArgumentsOffset                 int32
-	IntegersOffset                  int32
-        NamesOffset                     int32
-        MemoryOffset                    int32
+	ProgramOffset     int32
+	CallsOffset       int32
+	PackagesOffset    int32
+	StructsOffset     int32
+	FunctionsOffset   int32
+	ExpressionsOffset int32
+	ArgumentsOffset   int32
+	IntegersOffset    int32
+	NamesOffset       int32
+	MemoryOffset      int32
 }
 
 type sProgram struct {
-        PackagesOffset                  int32
-        PackagesSize                    int32
-        CurrentPackageOffset            int32
-        
-        InputsOffset                    int32
-        InputsSize                      int32
+	PackagesOffset       int32
+	PackagesSize         int32
+	CurrentPackageOffset int32
 
-        OutputsOffset                   int32
-        OutputsSize                     int32
-        
-        CallStackOffset                 int32
-        CallStackSize                   int32
+	InputsOffset int32
+	InputsSize   int32
 
-        CallCounter                     int32
+	OutputsOffset int32
+	OutputsSize   int32
 
-        MemoryOffset                    int32
-        MemorySize                      int32
+	CallStackOffset int32
+	CallStackSize   int32
 
-        HeapPointer                     int32
-        StackPointer                    int32
-        HeapStartsAt                    int32
-        
-        Terminated                      int32
+	CallCounter int32
+
+	MemoryOffset int32
+	MemorySize   int32
+
+	HeapPointer  int32
+	StackPointer int32
+	HeapStartsAt int32
+
+	Terminated int32
 }
 
 type sCall struct {
-        OperatorOffset                  int32
-        Line                            int32
-        FramePointer                    int32
+	OperatorOffset int32
+	Line           int32
+	FramePointer   int32
 }
 
 type sPackage struct {
-        NameOffset                      int32
-        NameSize                        int32
-        ImportsOffset                   int32
-        ImportsSize                     int32
-        StructsOffset                   int32
-        StructsSize                     int32
-	GlobalsOffset                   int32
-        GlobalsSize                     int32
-	FunctionsOffset                 int32
-        FunctionsSize                   int32
-        CurrentFunctionOffset           int32
-        CurrentStructOffset             int32
+	NameOffset            int32
+	NameSize              int32
+	ImportsOffset         int32
+	ImportsSize           int32
+	StructsOffset         int32
+	StructsSize           int32
+	GlobalsOffset         int32
+	GlobalsSize           int32
+	FunctionsOffset       int32
+	FunctionsSize         int32
+	CurrentFunctionOffset int32
+	CurrentStructOffset   int32
 }
 
 type sStruct struct {
-        NameOffset                      int32
-        NameSize                        int32
-        FieldsOffset                    int32
-        FieldsSize                      int32
+	NameOffset   int32
+	NameSize     int32
+	FieldsOffset int32
+	FieldsSize   int32
 
-        Size                            int32
+	Size int32
 
-        PackageOffset                   int32
+	PackageOffset int32
 }
 
 type sFunction struct {
-        NameOffset                      int32
-        NameSize                        int32
-        InputsOffset                    int32
-        InputsSize                      int32
-        OutputsOffset                   int32
-        OutputsSize                     int32
-        ExpressionsOffset               int32
-        ExpressionsSize                 int32
-        Size                            int32
-        Length                          int32
+	NameOffset        int32
+	NameSize          int32
+	InputsOffset      int32
+	InputsSize        int32
+	OutputsOffset     int32
+	OutputsSize       int32
+	ExpressionsOffset int32
+	ExpressionsSize   int32
+	Size              int32
+	Length            int32
 
-        ListOfPointersOffset            int32
-        ListOfPointersSize              int32
+	ListOfPointersOffset int32
+	ListOfPointersSize   int32
 
 	// We're going to determine this when procesing the expressions. Check sExpression type
-        // IsNative                        int32
-        // OpCode                          int32
+	// IsNative                        int32
+	// OpCode                          int32
 
-        CurrentExpressionOffset         int32
-        PackageOffset                   int32
+	CurrentExpressionOffset int32
+	PackageOffset           int32
 }
 
 type sExpression struct {
-        OperatorOffset                  int32
+	OperatorOffset int32
 	// we add these two fields here so we don't add every native sFunction to the serialization
 	// the CX runtime already knows about the natives properties. We just need the code if IsNative = true
-	IsNative                        int32
-	OpCode                          int32
-	
-        InputsOffset                    int32
-        InputsSize                      int32
-        OutputsOffset                   int32
-        OutputsSize                     int32
-        
-        LabelOffset                     int32
-        LabelSize                       int32
-        ThenLines                       int32
-        ElseLines                       int32
+	IsNative int32
+	OpCode   int32
 
-        IsMethodCall                    int32
-        IsStructLiteral                 int32
-        IsArrayLiteral                  int32
-	IsUndType                       int32
-	IsBreak                         int32
-	IsContinue                      int32
+	InputsOffset  int32
+	InputsSize    int32
+	OutputsOffset int32
+	OutputsSize   int32
 
-        FunctionOffset                  int32
-        PackageOffset                   int32
+	LabelOffset int32
+	LabelSize   int32
+	ThenLines   int32
+	ElseLines   int32
+
+	IsMethodCall    int32
+	IsStructLiteral int32
+	IsArrayLiteral  int32
+	IsUndType       int32
+	IsBreak         int32
+	IsContinue      int32
+
+	FunctionOffset int32
+	PackageOffset  int32
 }
 
 type sArgument struct {
-        NameOffset                      int32
-        NameSize                        int32
-        Type                            int32
-        CustomTypeOffset                int32
-        Size                            int32
-        TotalSize                       int32
+	NameOffset       int32
+	NameSize         int32
+	Type             int32
+	CustomTypeOffset int32
+	Size             int32
+	TotalSize        int32
 
-        Offset                          int32
-        
-        IndirectionLevels               int32
-        DereferenceLevels               int32
-        DereferenceOperationsOffset     int32
-        DereferenceOperationsSize       int32
-        DeclarationSpecifiersOffset     int32
-        DeclarationSpecifiersSize       int32
+	Offset int32
 
-        IsSlice                         int32
-        IsArray                         int32
-        IsArrayFirst                    int32
-        IsPointer                       int32
-        IsReference                     int32
-        
-        IsDereferenceFirst              int32
-        IsStruct                        int32
-        IsRest                          int32
-        IsLocalDeclaration              int32
-        IsShortDeclaration              int32
-	PreviouslyDeclared              int32
+	IndirectionLevels           int32
+	DereferenceLevels           int32
+	DereferenceOperationsOffset int32
+	DereferenceOperationsSize   int32
+	DeclarationSpecifiersOffset int32
+	DeclarationSpecifiersSize   int32
 
-        PassBy                          int32
-        DoesEscape                      int32
+	IsSlice      int32
+	IsArray      int32
+	IsArrayFirst int32
+	IsPointer    int32
+	IsReference  int32
 
-        LengthsOffset                   int32
-        LengthsSize                     int32
-        IndexesOffset                   int32
-        IndexesSize                     int32
-        FieldsOffset                    int32
-        FieldsSize                      int32
+	IsDereferenceFirst int32
+	IsStruct           int32
+	IsRest             int32
+	IsLocalDeclaration int32
+	IsShortDeclaration int32
+	PreviouslyDeclared int32
 
-        PackageOffset                   int32
+	PassBy     int32
+	DoesEscape int32
+
+	LengthsOffset int32
+	LengthsSize   int32
+	IndexesOffset int32
+	IndexesSize   int32
+	FieldsOffset  int32
+	FieldsSize    int32
+
+	PackageOffset int32
 }
 
 type sAll struct {
-	Index                           sIndex
-	Program                         sProgram
-	
-	Packages                        []sPackage
-	PackagesMap                     map[string]int
-	Structs                         []sStruct
-	StructsMap                      map[string]int
-	Functions                       []sFunction
-	FunctionsMap                    map[string]int
-	
-	Expressions                     []sExpression
-	Arguments                       []sArgument
-	Calls                           []sCall
-	
-	Names                           []byte
-	NamesMap                        map[string]int
-	Integers                        []int32
-	
-	Memory                          []byte
+	Index   sIndex
+	Program sProgram
+
+	Packages     []sPackage
+	PackagesMap  map[string]int
+	Structs      []sStruct
+	StructsMap   map[string]int
+	Functions    []sFunction
+	FunctionsMap map[string]int
+
+	Expressions []sExpression
+	Arguments   []sArgument
+	Calls       []sCall
+
+	Names    []byte
+	NamesMap map[string]int
+	Integers []int32
+
+	Memory []byte
 }
 
-func serializeName (name string, s *sAll) (int32, int32) {
+func serializeName(name string, s *sAll) (int32, int32) {
 	if name == "" {
 		return int32(-1), int32(-1)
 	}
-	
+
 	var size int
 	var err error
-	
+
 	size, err = encoder.Size(name)
-	
+
 	if err != nil {
 		panic(err)
 	}
-	
+
 	if off, found := s.NamesMap[name]; found {
 		return int32(off), int32(size)
 	} else {
@@ -216,7 +216,7 @@ func serializeName (name string, s *sAll) (int32, int32) {
 	}
 }
 
-func indexPackage (pkg *CXPackage, s *sAll) {
+func indexPackage(pkg *CXPackage, s *sAll) {
 	if _, found := s.PackagesMap[pkg.Name]; !found {
 		s.PackagesMap[pkg.Name] = len(s.PackagesMap)
 	} else {
@@ -224,7 +224,7 @@ func indexPackage (pkg *CXPackage, s *sAll) {
 	}
 }
 
-func indexStruct (strct *CXStruct, s *sAll) {
+func indexStruct(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if _, found := s.StructsMap[strctName]; !found {
 		s.StructsMap[strctName] = len(s.StructsMap)
@@ -233,7 +233,7 @@ func indexStruct (strct *CXStruct, s *sAll) {
 	}
 }
 
-func indexFunction (fn *CXFunction, s *sAll) {
+func indexFunction(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if _, found := s.FunctionsMap[fnName]; !found {
 		s.FunctionsMap[fnName] = len(s.FunctionsMap)
@@ -242,11 +242,11 @@ func indexFunction (fn *CXFunction, s *sAll) {
 	}
 }
 
-func indexExpression (expr *CXExpression, s *sAll) {
-	
+func indexExpression(expr *CXExpression, s *sAll) {
+
 }
 
-func serializeBoolean (val bool) int32 {
+func serializeBoolean(val bool) int32 {
 	if val {
 		return 1
 	} else {
@@ -254,34 +254,34 @@ func serializeBoolean (val bool) int32 {
 	}
 }
 
-func serializeIntegers (ints []int, s *sAll) (int32, int32) {
+func serializeIntegers(ints []int, s *sAll) (int32, int32) {
 	if len(ints) == 0 {
 		return int32(-1), int32(-1)
 	}
 	off := len(s.Integers)
 	l := len(ints)
-	
+
 	ints32 := make([]int32, l)
 	for i, int := range ints {
 		ints32[i] = int32(int)
 	}
-	
+
 	s.Integers = append(s.Integers, ints32...)
 
 	return int32(off), int32(l)
 }
 
-func serializeArgument (arg *CXArgument, s *sAll) int {
+func serializeArgument(arg *CXArgument, s *sAll) int {
 	s.Arguments = append(s.Arguments, sArgument{})
 	argOff := len(s.Arguments) - 1
 	sArg := &s.Arguments[argOff]
 
 	sNil := int32(-1)
-	
+
 	sArg.NameOffset, sArg.NameSize = serializeName(arg.Name, s)
-	
+
 	sArg.Type = int32(arg.Type)
-	
+
 	if arg.CustomType == nil {
 		sArg.CustomTypeOffset = sNil
 	} else {
@@ -301,10 +301,10 @@ func serializeArgument (arg *CXArgument, s *sAll) int {
 	sArg.DereferenceLevels = int32(arg.DereferenceLevels)
 
 	sArg.DereferenceOperationsOffset,
-	sArg.DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
+		sArg.DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
 
 	sArg.DeclarationSpecifiersOffset,
-	sArg.DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
+		sArg.DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
 
 	sArg.IsSlice = serializeBoolean(arg.IsSlice)
 	sArg.IsArray = serializeBoolean(arg.IsArray)
@@ -323,7 +323,7 @@ func serializeArgument (arg *CXArgument, s *sAll) int {
 	sArg.DoesEscape = serializeBoolean(arg.DoesEscape)
 
 	sArg.LengthsOffset,
-	sArg.LengthsSize = serializeIntegers(arg.Lengths, s)
+		sArg.LengthsSize = serializeIntegers(arg.Lengths, s)
 
 	sArg.IndexesOffset, sArg.IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
 	sArg.FieldsOffset, sArg.FieldsSize = serializeSliceOfArguments(arg.Fields, s)
@@ -337,7 +337,7 @@ func serializeArgument (arg *CXArgument, s *sAll) int {
 	return argOff
 }
 
-func serializeSliceOfArguments (args []*CXArgument, s *sAll) (int32, int32) {
+func serializeSliceOfArguments(args []*CXArgument, s *sAll) (int32, int32) {
 	if len(args) == 0 {
 		return int32(-1), int32(-1)
 	} else {
@@ -349,7 +349,7 @@ func serializeSliceOfArguments (args []*CXArgument, s *sAll) (int32, int32) {
 	}
 }
 
-func serializeCalls (calls []CXCall, s *sAll) (int32, int32) {
+func serializeCalls(calls []CXCall, s *sAll) (int32, int32) {
 	if len(calls) == 0 {
 		return int32(-1), int32(-1)
 	} else {
@@ -361,7 +361,7 @@ func serializeCalls (calls []CXCall, s *sAll) (int32, int32) {
 	}
 }
 
-func serializeExpression (expr *CXExpression, s *sAll) int {
+func serializeExpression(expr *CXExpression, s *sAll) int {
 	s.Expressions = append(s.Expressions, sExpression{})
 	exprOff := len(s.Expressions) - 1
 	sExpr := &s.Expressions[exprOff]
@@ -380,7 +380,7 @@ func serializeExpression (expr *CXExpression, s *sAll) int {
 	} else {
 		sExpr.IsNative = serializeBoolean(false)
 		sExpr.OpCode = sNil
-		
+
 		opName := expr.Operator.Package.Name + "." + expr.Operator.Name
 		if opOff, found := s.FunctionsMap[opName]; found {
 			sExpr.OperatorOffset = int32(opOff)
@@ -407,7 +407,7 @@ func serializeExpression (expr *CXExpression, s *sAll) int {
 	} else {
 		panic("function reference not found")
 	}
-	
+
 	if pkgOff, found := s.PackagesMap[expr.Package.Name]; found {
 		sExpr.PackageOffset = int32(pkgOff)
 	} else {
@@ -417,7 +417,7 @@ func serializeExpression (expr *CXExpression, s *sAll) int {
 	return exprOff
 }
 
-func serializeCall (call *CXCall, s *sAll) int {
+func serializeCall(call *CXCall, s *sAll) int {
 	s.Calls = append(s.Calls, sCall{})
 	callOff := len(s.Calls) - 1
 	sCall := &s.Calls[callOff]
@@ -434,7 +434,7 @@ func serializeCall (call *CXCall, s *sAll) int {
 	return callOff
 }
 
-func serializeProgram (prgrm *CXProgram, s *sAll) {
+func serializeProgram(prgrm *CXProgram, s *sAll) {
 	s.Program = sProgram{}
 	sPrgrm := &s.Program
 	sPrgrm.PackagesOffset = int32(0)
@@ -466,7 +466,7 @@ func serializeProgram (prgrm *CXProgram, s *sAll) {
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
 }
 
-func sStructArguments (strct *CXStruct, s *sAll) {
+func sStructArguments(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if strctOff, found := s.StructsMap[strctName]; found {
 		sStrct := &s.Structs[strctOff]
@@ -476,7 +476,7 @@ func sStructArguments (strct *CXStruct, s *sAll) {
 	}
 }
 
-func sFunctionArguments (fn *CXFunction, s *sAll) {
+func sFunctionArguments(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if fnOff, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[fnOff]
@@ -489,18 +489,18 @@ func sFunctionArguments (fn *CXFunction, s *sAll) {
 	}
 }
 
-func sPackageName (pkg *CXPackage, s *sAll) {
+func sPackageName(pkg *CXPackage, s *sAll) {
 	sPkg := &s.Packages[s.PackagesMap[pkg.Name]]
 	sPkg.NameOffset, sPkg.NameSize = serializeName(pkg.Name, s)
 }
 
-func sStructName (strct *CXStruct, s *sAll) {
+func sStructName(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	sStrct := &s.Structs[s.StructsMap[strctName]]
 	sStrct.NameOffset, sStrct.NameSize = serializeName(strct.Name, s)
 }
 
-func sFunctionName (fn *CXFunction, s *sAll) {
+func sFunctionName(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if off, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[off]
@@ -510,7 +510,7 @@ func sFunctionName (fn *CXFunction, s *sAll) {
 	}
 }
 
-func sPackageGlobals (pkg *CXPackage, s *sAll) {
+func sPackageGlobals(pkg *CXPackage, s *sAll) {
 	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 		sPkg := &s.Packages[pkgOff]
 		sPkg.GlobalsOffset, sPkg.GlobalsSize = serializeSliceOfArguments(pkg.Globals, s)
@@ -519,7 +519,7 @@ func sPackageGlobals (pkg *CXPackage, s *sAll) {
 	}
 }
 
-func sPackageImports (pkg *CXPackage, s *sAll) {
+func sPackageImports(pkg *CXPackage, s *sAll) {
 	l := len(pkg.Imports)
 	if l == 0 {
 		s.Packages[s.PackagesMap[pkg.Name]].ImportsOffset = int32(-1)
@@ -539,7 +539,7 @@ func sPackageImports (pkg *CXPackage, s *sAll) {
 	s.Integers = append(s.Integers, imps...)
 }
 
-func sStructPackage (strct *CXStruct, s *sAll) {
+func sStructPackage(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if pkgOff, found := s.PackagesMap[strct.Package.Name]; found {
 		if off, found := s.StructsMap[strctName]; found {
@@ -553,7 +553,7 @@ func sStructPackage (strct *CXStruct, s *sAll) {
 	}
 }
 
-func sFunctionPackage (fn *CXFunction, s *sAll) {
+func sFunctionPackage(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if pkgOff, found := s.PackagesMap[fn.Package.Name]; found {
 		if off, found := s.FunctionsMap[fnName]; found {
@@ -567,7 +567,7 @@ func sFunctionPackage (fn *CXFunction, s *sAll) {
 	}
 }
 
-func sPackageIntegers (pkg *CXPackage, s *sAll) {
+func sPackageIntegers(pkg *CXPackage, s *sAll) {
 	if pkgOff, found := s.PackagesMap[pkg.Name]; found {
 		sPkg := &s.Packages[pkgOff]
 
@@ -583,7 +583,7 @@ func sPackageIntegers (pkg *CXPackage, s *sAll) {
 				panic("function reference not found")
 			}
 		}
-		
+
 		if pkg.CurrentStruct == nil {
 			// package has no structs
 			sPkg.CurrentStructOffset = int32(-1)
@@ -601,7 +601,7 @@ func sPackageIntegers (pkg *CXPackage, s *sAll) {
 	}
 }
 
-func sStructIntegers (strct *CXStruct, s *sAll) {
+func sStructIntegers(strct *CXStruct, s *sAll) {
 	strctName := strct.Package.Name + "." + strct.Name
 	if off, found := s.StructsMap[strctName]; found {
 		sStrct := &s.Structs[off]
@@ -611,7 +611,7 @@ func sStructIntegers (strct *CXStruct, s *sAll) {
 	}
 }
 
-func sFunctionIntegers (fn *CXFunction, s *sAll) {
+func sFunctionIntegers(fn *CXFunction, s *sAll) {
 	fnName := fn.Package.Name + "." + fn.Name
 	if off, found := s.FunctionsMap[fnName]; found {
 		sFn := &s.Functions[off]
@@ -622,7 +622,7 @@ func sFunctionIntegers (fn *CXFunction, s *sAll) {
 	}
 }
 
-func initSerialization (prgrm *CXProgram, s *sAll) {
+func initSerialization(prgrm *CXProgram, s *sAll) {
 	s.PackagesMap = make(map[string]int, 0)
 	s.StructsMap = make(map[string]int, 0)
 	s.FunctionsMap = make(map[string]int, 0)
@@ -635,7 +635,7 @@ func initSerialization (prgrm *CXProgram, s *sAll) {
 
 	var numStrcts int
 	var numFns int
-	
+
 	for _, pkg := range prgrm.Packages {
 		numStrcts += len(pkg.Structs)
 		numFns += len(pkg.Functions)
@@ -646,9 +646,9 @@ func initSerialization (prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
-func Serialize (prgrm *CXProgram) (byts []byte) {
+func Serialize(prgrm *CXProgram) (byts []byte) {
 	// prgrm.PrintProgram()
-	
+
 	s := sAll{}
 	initSerialization(prgrm, &s)
 
@@ -662,7 +662,7 @@ func Serialize (prgrm *CXProgram) (byts []byte) {
 	for _, pkg := range prgrm.Packages {
 		sPackageImports(pkg, &s)
 	}
-	
+
 	// structs
 	for _, pkg := range prgrm.Packages {
 		for _, strct := range pkg.Structs {
@@ -809,7 +809,7 @@ func Serialize (prgrm *CXProgram) (byts []byte) {
 	return byts
 }
 
-func op_serialize (expr *CXExpression, fp int) {
+func op_serialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -824,31 +824,31 @@ func op_serialize (expr *CXExpression, fp int) {
 	WriteMemory(out1Offset, FromI32(int32(slcOff)))
 }
 
-func op_deserialize (expr *CXExpression, fp int) {
+func op_deserialize(expr *CXExpression, fp int) {
 	inp := expr.Inputs[0]
 
 	inpOffset := GetFinalOffset(fp, inp)
 
 	var off int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset : inpOffset + TYPE_POINTER_SIZE], &off)
+	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
 
 	var l int32
-	_l := PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 	encoder.DeserializeAtomic(_l[:4], &l)
 
-	Deserialize(PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l])
+	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l])
 }
 
-func dsName (off int32, size int32, s *sAll) string {
+func dsName(off int32, size int32, s *sAll) string {
 	if size < 1 {
 		return ""
 	}
 	var name string
-	encoder.DeserializeRaw(s.Names[off : off + size], &name)
+	encoder.DeserializeRaw(s.Names[off:off+size], &name)
 	return name
 }
 
-func dsPackages (s *sAll, prgrm *CXProgram) {
+func dsPackages(s *sAll, prgrm *CXProgram) {
 	for i, sPkg := range s.Packages {
 		// initializing packages with their names,
 		// empty functions, structs, imports and globals
@@ -861,11 +861,11 @@ func dsPackages (s *sAll, prgrm *CXProgram) {
 		if sPkg.ImportsSize > 0 {
 			prgrm.Packages[i].Imports = make([]*CXPackage, sPkg.ImportsSize)
 		}
-		
+
 		if sPkg.FunctionsSize > 0 {
 			prgrm.Packages[i].Functions = make([]*CXFunction, sPkg.FunctionsSize)
 
-			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset + sPkg.FunctionsSize] {
+			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				var fn CXFunction
 				fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
 				prgrm.Packages[i].Functions[j] = &fn
@@ -875,7 +875,7 @@ func dsPackages (s *sAll, prgrm *CXProgram) {
 		if sPkg.StructsSize > 0 {
 			prgrm.Packages[i].Structs = make([]*CXStruct, sPkg.StructsSize)
 
-			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset + sPkg.StructsSize] {
+			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				var strct CXStruct
 				strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
 				prgrm.Packages[i].Structs[j] = &strct
@@ -919,7 +919,7 @@ func dsPackages (s *sAll, prgrm *CXProgram) {
 	// structs
 	for i, sPkg := range s.Packages {
 		if sPkg.StructsSize > 0 {
-			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset + sPkg.StructsSize] {
+			for j, sStrct := range s.Structs[sPkg.StructsOffset : sPkg.StructsOffset+sPkg.StructsSize] {
 				dsStruct(&sStrct, prgrm.Packages[i].Structs[j], s, prgrm)
 			}
 		}
@@ -928,7 +928,7 @@ func dsPackages (s *sAll, prgrm *CXProgram) {
 	// functions
 	for i, sPkg := range s.Packages {
 		if sPkg.FunctionsSize > 0 {
-			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset + sPkg.FunctionsSize] {
+			for j, sFn := range s.Functions[sPkg.FunctionsOffset : sPkg.FunctionsOffset+sPkg.FunctionsSize] {
 				dsFunction(&sFn, prgrm.Packages[i].Functions[j], s, prgrm)
 			}
 		}
@@ -938,21 +938,21 @@ func dsPackages (s *sAll, prgrm *CXProgram) {
 	prgrm.CurrentPackage = prgrm.Packages[s.Program.CurrentPackageOffset]
 }
 
-func dsStruct (sStrct *sStruct, strct *CXStruct, s *sAll, prgrm *CXProgram) {
+func dsStruct(sStrct *sStruct, strct *CXStruct, s *sAll, prgrm *CXProgram) {
 	strct.Name = dsName(sStrct.NameOffset, sStrct.NameSize, s)
 	strct.Fields = dsArguments(sStrct.FieldsOffset, sStrct.FieldsSize, s, prgrm)
 	strct.Size = int(sStrct.Size)
 	strct.Package = prgrm.Packages[sStrct.PackageOffset]
 }
 
-func dsArguments (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXArgument {
+func dsArguments(off int32, size int32, s *sAll, prgrm *CXProgram) []*CXArgument {
 	if size < 1 {
 		return nil
 	}
 
 	// getting indexes of arguments
 	idxs := dsIntegers(off, size, s)
-	
+
 	// sArgs := s.Arguments[off : off + size]
 	args := make([]*CXArgument, size)
 	for i, idx := range idxs {
@@ -961,7 +961,7 @@ func dsArguments (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXArgumen
 	return args
 }
 
-func getCustomType (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
+func getCustomType(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
 	if sArg.CustomTypeOffset < 0 {
 		return nil
 	}
@@ -979,20 +979,20 @@ func getCustomType (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXStruct {
 	return nil
 }
 
-func dsArgument (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
+func dsArgument(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	var arg CXArgument
 	arg.Name = dsName(sArg.NameOffset, sArg.NameSize, s)
 	arg.Type = int(sArg.Type)
-	
+
 	arg.CustomType = getCustomType(sArg, s, prgrm)
-	
+
 	arg.Size = int(sArg.Size)
 	arg.TotalSize = int(sArg.TotalSize)
 	arg.Offset = int(sArg.Offset)
 	arg.IndirectionLevels = int(sArg.IndirectionLevels)
 	arg.DereferenceLevels = int(sArg.DereferenceLevels)
 	arg.PassBy = int(sArg.PassBy)
-	
+
 	arg.DereferenceOperations = dsIntegers(sArg.DereferenceOperationsOffset, sArg.DereferenceOperationsSize, s)
 	arg.DeclarationSpecifiers = dsIntegers(sArg.DeclarationSpecifiersOffset, sArg.DeclarationSpecifiersSize, s)
 
@@ -1014,11 +1014,11 @@ func dsArgument (sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	arg.Fields = dsArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
 
 	arg.Package = prgrm.Packages[sArg.PackageOffset]
-	
+
 	return &arg
 }
 
-func getOperator (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
+func getOperator(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	if sExpr.OperatorOffset < 0 {
 		return nil
 	}
@@ -1036,7 +1036,7 @@ func getOperator (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	return nil
 }
 
-func getImport (sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
+func getImport(sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
 	impName := dsName(sImp.NameOffset, sImp.NameSize, s)
 
 	for _, pkg := range prgrm.Packages {
@@ -1048,7 +1048,7 @@ func getImport (sImp *sPackage, s *sAll, prgrm *CXProgram) *CXPackage {
 	return nil
 }
 
-func getFunction (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
+func getFunction(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	if sExpr.FunctionOffset < 0 {
 		return nil
 	}
@@ -1066,14 +1066,14 @@ func getFunction (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXFunction {
 	return nil
 }
 
-func dsExpressions (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXExpression {
+func dsExpressions(off int32, size int32, s *sAll, prgrm *CXProgram) []*CXExpression {
 	if size < 1 {
 		return nil
 	}
 
 	// getting indexes of expressions
 	idxs := dsIntegers(off, size, s)
-	
+
 	// sExprs := s.Expressions[off : off + size]
 	exprs := make([]*CXExpression, size)
 	for i, idx := range idxs {
@@ -1082,7 +1082,7 @@ func dsExpressions (off int32, size int32, s *sAll, prgrm *CXProgram) []*CXExpre
 	return exprs
 }
 
-func dsExpression (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression {
+func dsExpression(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression {
 	var expr CXExpression
 
 	if dsBool(sExpr.IsNative) {
@@ -1093,7 +1093,7 @@ func dsExpression (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression 
 
 	expr.Inputs = dsArguments(sExpr.InputsOffset, sExpr.InputsSize, s, prgrm)
 	expr.Outputs = dsArguments(sExpr.OutputsOffset, sExpr.OutputsSize, s, prgrm)
-	
+
 	expr.Label = dsName(sExpr.LabelOffset, sExpr.LabelSize, s)
 
 	expr.ThenLines = int(sExpr.ThenLines)
@@ -1112,7 +1112,7 @@ func dsExpression (sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression 
 	return &expr
 }
 
-func dsFunction (sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
+func dsFunction(sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
 	fn.Name = dsName(sFn.NameOffset, sFn.NameSize, s)
 	fn.Inputs = dsArguments(sFn.InputsOffset, sFn.InputsSize, s, prgrm)
 	fn.Outputs = dsArguments(sFn.OutputsOffset, sFn.OutputsSize, s, prgrm)
@@ -1124,11 +1124,11 @@ func dsFunction (sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
 	if sFn.CurrentExpressionOffset > 0 {
 		fn.CurrentExpression = fn.Expressions[sFn.CurrentExpressionOffset]
 	}
-	
+
 	fn.Package = prgrm.Packages[sFn.PackageOffset]
 }
 
-func dsBool (val int32) bool {
+func dsBool(val int32) bool {
 	if val == 1 {
 		return true
 	} else {
@@ -1136,43 +1136,43 @@ func dsBool (val int32) bool {
 	}
 }
 
-func dsIntegers (off int32, size int32, s *sAll) []int {
+func dsIntegers(off int32, size int32, s *sAll) []int {
 	if size < 1 {
 		return nil
 	}
- 	ints := s.Integers[off : off + size]
+	ints := s.Integers[off : off+size]
 	res := make([]int, len(ints))
 	for i, in := range ints {
-		res[i]= int(in)
+		res[i] = int(in)
 	}
-	
+
 	return res
 }
 
-func initDeserialization (prgrm *CXProgram, s *sAll) {
+func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 
 	dsPackages(s, prgrm)
 }
 
-func Deserialize (byts []byte) (prgrm *CXProgram) {
+func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var s sAll
-	
+
 	encoder.DeserializeRaw(byts[:idxSize], &s.Index)
-	encoder.DeserializeRaw(byts[s.Index.ProgramOffset : s.Index.CallsOffset], &s.Program)
-	encoder.DeserializeRaw(byts[s.Index.CallsOffset : s.Index.PackagesOffset], &s.Calls)
-	encoder.DeserializeRaw(byts[s.Index.PackagesOffset : s.Index.StructsOffset], &s.Packages)
-	encoder.DeserializeRaw(byts[s.Index.StructsOffset : s.Index.FunctionsOffset], &s.Structs)
-	encoder.DeserializeRaw(byts[s.Index.FunctionsOffset : s.Index.ExpressionsOffset], &s.Functions)
-	encoder.DeserializeRaw(byts[s.Index.ExpressionsOffset : s.Index.ArgumentsOffset], &s.Expressions)
-	encoder.DeserializeRaw(byts[s.Index.ArgumentsOffset : s.Index.IntegersOffset], &s.Arguments)
-	encoder.DeserializeRaw(byts[s.Index.IntegersOffset : s.Index.NamesOffset], &s.Integers)
-	s.Names = byts[s.Index.NamesOffset : s.Index.MemoryOffset]
-	s.Memory = byts[s.Index.MemoryOffset : ]
+	encoder.DeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	encoder.DeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	encoder.DeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	encoder.DeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	encoder.DeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	encoder.DeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	encoder.DeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	encoder.DeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
+	s.Names = byts[s.Index.NamesOffset:s.Index.MemoryOffset]
+	s.Memory = byts[s.Index.MemoryOffset:]
 
 	initDeserialization(prgrm, &s)
 

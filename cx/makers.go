@@ -9,7 +9,7 @@ import (
 var HeapOffset int
 var genSymCounter int
 
-func MakeElementID () uuid.UUID {
+func MakeElementID() uuid.UUID {
 	return uuid.NewV4()
 }
 
@@ -23,13 +23,13 @@ func MakeGenSym(name string) string {
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
-		ElementID:  MakeElementID(),
-		Name:       name,
-		Type:       typ,
-		Size:       size,
-		Offset:     HeapOffset,
-		FileName:   fileName,
-		FileLine:   fileLine,
+		ElementID: MakeElementID(),
+		Name:      name,
+		Type:      typ,
+		Size:      size,
+		Offset:    HeapOffset,
+		FileName:  fileName,
+		FileLine:  fileLine,
 	}
 	HeapOffset += size
 	return global
@@ -38,10 +38,10 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),
-		Name: name,
-		Type: typ,
-		FileName: fileName,
-		FileLine: fileLine,
+		Name:      name,
+		Type:      typ,
+		FileName:  fileName,
+		FileLine:  fileLine,
 	}
 }
 
@@ -62,9 +62,9 @@ func MakeDefaultValue(typName string) *[]byte {
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
 		ElementID: MakeElementID(),
-		Name: name,
-		FileName: fileName,
-		FileLine: fileLine,}
+		Name:      name,
+		FileName:  fileName,
+		FileLine:  fileLine}
 }
 
 func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
@@ -98,9 +98,9 @@ func MakeValue(value string) *[]byte {
 
 func MakeCall(op *CXFunction) CXCall {
 	return CXCall{
-		Operator:      op,
-		Line:          0,
-		FramePointer:  0,
+		Operator:     op,
+		Line:         0,
+		FramePointer: 0,
 		// Package:       pkg,
 		// Program:       prgrm,
 	}

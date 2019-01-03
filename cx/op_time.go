@@ -7,7 +7,7 @@ import (
 )
 
 func makeTimestamp() int64 {
-	return time.Now().UnixNano() / (int64(time.Millisecond)/int64(time.Nanosecond))
+	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
 func op_time_UnixMilli(expr *CXExpression, fp int) {

@@ -74,19 +74,19 @@ func op_os_Exit(expr *CXExpression, fp int) {
 	os.Exit(int(exitCode))
 }
 
-func op_os_Run(expr* CXExpression, fp int) {
+func op_os_Run(expr *CXExpression, fp int) {
 	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
 	command := ReadStr(fp, inp0)
 	dir := ReadStr(fp, inp3)
 	args := strings.Split(command, " ")
-	if (len(args) <= 0) {
+	if len(args) <= 0 {
 		runError = OS_RUN_EMPTY_CMD
 	}
 
 	name := args[0]
-	if (len(args) > 1) {
+	if len(args) > 1 {
 		args = args[1:]
 	} else {
 		args = []string{}
@@ -103,36 +103,36 @@ func op_os_Run(expr* CXExpression, fp int) {
 
 	timeoutMs := ReadI32(fp, inp2)
 	timeout := time.Duration(math.MaxInt64)
-	if (timeoutMs > 0) {
+	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
 	}
 
 	if err := cmd.Start(); err != nil {
-	   runError = OS_RUN_START_FAILED
+		runError = OS_RUN_START_FAILED
 	} else {
 		done := make(chan error)
 		go func() { done <- cmd.Wait() }()
 
 		select {
-			case <-time.After(timeout):
-				cmd.Process.Kill()
-				runError = OS_RUN_TIMEOUT
-			case err := <-done:
-				if err != nil {
-					if exiterr, ok := err.(*exec.ExitError); ok {
-						// from stackoverflow
-						// The program has exited with an exit code != 0
-						// This works on both Unix and Windows. Although package
-						// syscall is generally platform dependent, WaitStatus is
-						// defined for both Unix and Windows and in both cases has
-						// an ExitStatus() method with the same signature.
-						if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-							cmdError = int32(status.ExitStatus())
-						}
-					} else {
-						runError = OS_RUN_WAIT_FAILED
+		case <-time.After(timeout):
+			cmd.Process.Kill()
+			runError = OS_RUN_TIMEOUT
+		case err := <-done:
+			if err != nil {
+				if exiterr, ok := err.(*exec.ExitError); ok {
+					// from stackoverflow
+					// The program has exited with an exit code != 0
+					// This works on both Unix and Windows. Although package
+					// syscall is generally platform dependent, WaitStatus is
+					// defined for both Unix and Windows and in both cases has
+					// an ExitStatus() method with the same signature.
+					if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+						cmdError = int32(status.ExitStatus())
 					}
+				} else {
+					runError = OS_RUN_WAIT_FAILED
 				}
+			}
 		}
 	}
 
@@ -146,4 +146,3 @@ func op_os_Run(expr* CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), FromI32(cmdError))
 	WriteObject(GetFinalOffset(fp, out2), FromStr(string(stdOutBytes)))
 }
-

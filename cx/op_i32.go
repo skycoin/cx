@@ -2,10 +2,10 @@ package base
 
 import (
 	"fmt"
-	"strconv"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
 	"math/rand"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"strconv"
 )
 
 func opI32I32(expr *CXExpression, fp int) {

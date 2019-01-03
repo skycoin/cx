@@ -2,9 +2,9 @@ package base
 
 import (
 	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
 	"strings"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opStrStr(expr *CXExpression, fp int) {
@@ -79,7 +79,7 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 }
 
 func opStrConcat(expr *CXExpression, fp int) {
-	writeString(expr, fp, ReadStr(fp, expr.Inputs[0]) + ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+	writeString(expr, fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
 }
 
 func opStrSubstr(expr *CXExpression, fp int) {

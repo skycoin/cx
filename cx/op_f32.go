@@ -2,9 +2,9 @@ package base
 
 import (
 	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
 	"strconv"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opF32F32(expr *CXExpression, fp int) {
@@ -199,4 +199,3 @@ func opF32Min(expr *CXExpression, fp int) {
 	outB1 := FromF32(float32(math.Min(float64(ReadF32(fp, inp1)), float64(ReadF32(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
-

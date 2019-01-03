@@ -5,8 +5,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
-	heapOffset := AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
+	heapOffset := AllocateSeq(arg.TotalSize + OBJECT_HEADER_SIZE)
 
 	byts := ReadMemory(inpOffset, arg)
 
@@ -34,7 +34,7 @@ func opIdentity(expr *CXExpression, fp int) {
 
 	var elt *CXArgument
 	if len(out1.Fields) > 0 {
-		elt = out1.Fields[len(out1.Fields) - 1]
+		elt = out1.Fields[len(out1.Fields)-1]
 	} else {
 		elt = out1
 	}
@@ -54,7 +54,7 @@ func opIdentity(expr *CXExpression, fp int) {
 func opJmp(expr *CXExpression, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
-	
+
 	if expr.Label != "" {
 		// then it's a goto
 		call.Line = call.Line + expr.ThenLines

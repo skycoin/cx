@@ -1,8 +1,6 @@
 package base
 
-import (
-
-)
+import ()
 
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
@@ -248,7 +246,7 @@ var Natives map[int]*CXFunction = map[int]*CXFunction{}
 var execNativeBare func(*CXProgram)
 var execNative func(*CXProgram)
 
-func AddOpCode (code int, name string, inputs []int, outputs []int) {
+func AddOpCode(code int, name string, inputs []int, outputs []int) {
 	OpNames[code] = name
 	OpCodes[name] = code
 	Natives[code] = MakeNative(code, inputs, outputs)
@@ -269,7 +267,7 @@ func DumpOpCodes(opCode int) () {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-func init () {
+func init() {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_JMP, "jmp", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_DEBUG, "debug", []int{}, []int{})

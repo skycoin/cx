@@ -2,34 +2,34 @@ package base
 
 import (
 	"fmt"
-	"strconv"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"strconv"
 )
 
 var onMessages map[string]string = map[string]string{
-	"arg-arg-input": "Replace %s.Input.%d with %s",
-	"arg-arg-output": "Replace %s.Output.%d with %s",
-	"arg-expr": "Add ",
-	"prgrm-arg-input": "Print %s.Input.%d's value",
+	"arg-arg-input":    "Replace %s.Input.%d with %s",
+	"arg-arg-output":   "Replace %s.Output.%d with %s",
+	"arg-expr":         "Add ",
+	"prgrm-arg-input":  "Print %s.Input.%d's value",
 	"prgrm-arg-output": "Print %s.Output.%d's value",
 }
 var ofMessages map[string]string = map[string]string{
-	"arg-arg-input": "Replace %[3]s with %[1]s.Input.%[2]d",
-	"arg-arg-output": "Replace %[3]s with %[1]s.Output.%[2]d",
-	"strct-arg-input": "Add %[1]s.Input.%[2]d as a new field of %s",
+	"arg-arg-input":    "Replace %[3]s with %[1]s.Input.%[2]d",
+	"arg-arg-output":   "Replace %[3]s with %[1]s.Output.%[2]d",
+	"strct-arg-input":  "Add %[1]s.Input.%[2]d as a new field of %s",
 	"strct-arg-output": "Add %[1]s.Output.%[2]d as a new field of %s",
-	"prgrm-arg-input": "Print %[1]s.Input.%[2]d's value",
+	"prgrm-arg-input":  "Print %[1]s.Input.%[2]d's value",
 	"prgrm-arg-output": "Print %[1]s.Output.%[2]d's value",
 }
 
-func GetInferActions (inp *CXArgument, fp int) []string {
+func GetInferActions(inp *CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
 	var off int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset : inpOffset + TYPE_POINTER_SIZE], &off)
+	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
 
 	var l int32
-	_l := PROGRAM.Memory[off + OBJECT_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 	encoder.DeserializeAtomic(_l[:4], &l)
 
 	result := make([]string, l)
@@ -38,13 +38,13 @@ func GetInferActions (inp *CXArgument, fp int) []string {
 	for c := 0; c < int(l); c++ {
 		var elOff int32
 		// encoder.DeserializeAtomic(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE], &elOff)
-		encoder.DeserializeAtomic(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c + 1) * STR_HEADER_SIZE], &elOff)
+		encoder.DeserializeAtomic(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE:int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE], &elOff)
 
 		var size int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[elOff : elOff + STR_HEADER_SIZE], &size)
+		encoder.DeserializeAtomic(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE], &size)
 
 		var res string
-		encoder.DeserializeRaw(PROGRAM.Memory[elOff : elOff + STR_HEADER_SIZE + size], &res)
+		encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
 
 		// result[int(l) - c] = res
 		result[c] = res
@@ -53,7 +53,7 @@ func GetInferActions (inp *CXArgument, fp int) []string {
 	return result
 }
 
-func op_aff_print (expr *CXExpression, fp int) {
+func op_aff_print(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -61,9 +61,9 @@ func op_aff_print (expr *CXExpression, fp int) {
 	// }
 }
 
-func CallAffPredicate (fn *CXFunction, predValue []byte) byte {
+func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 	prevCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
-	
+
 	PROGRAM.CallCounter++
 	newCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 	newCall.Operator = fn
@@ -105,7 +105,7 @@ func CallAffPredicate (fn *CXFunction, predValue []byte) byte {
 // 	for c := 0; c <= PROGRAM.CallCounter; c++ {
 // 		inFP := 0
 // 		op := PROGRAM.CallStack[c].Operator
-		
+
 // 		for _, expr := range op.Expressions {
 // 			if expr.Operator == nil {
 // 				for _, out := range expr.Outputs {
@@ -132,7 +132,7 @@ func CallAffPredicate (fn *CXFunction, predValue []byte) byte {
 // }
 
 // Used by QueryArgument to query inputs and then outputs from expressions.
-func queryParam (fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB []byte, affOffset *int) {
+func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB []byte, affOffset *int) {
 	for i, arg := range args {
 
 		// Name
@@ -140,7 +140,6 @@ func queryParam (fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB 
 		argNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(argNameB)))
 
 		argOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE + STR_SIZE)
-
 
 		var typOffset int
 		elt := GetAssignmentElement(arg)
@@ -153,13 +152,13 @@ func queryParam (fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB 
 		}
 
 		// Name
-		WriteMemory(argOffset + OBJECT_HEADER_SIZE, argNameOffsetB)
+		WriteMemory(argOffset+OBJECT_HEADER_SIZE, argNameOffsetB)
 		// Index
-		WriteMemory(argOffset + OBJECT_HEADER_SIZE + STR_SIZE, encoder.SerializeAtomic(int32(i)))
+		WriteMemory(argOffset+OBJECT_HEADER_SIZE+STR_SIZE, encoder.SerializeAtomic(int32(i)))
 		// Type
-		WriteMemory(argOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE, encoder.SerializeAtomic(int32(typOffset)))
+		WriteMemory(argOffset+OBJECT_HEADER_SIZE+STR_SIZE+I32_SIZE, encoder.SerializeAtomic(int32(typOffset)))
 
-		res := CallAffPredicate(fn, PROGRAM.Memory[argOffset + OBJECT_HEADER_SIZE : argOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE + STR_SIZE])
+		res := CallAffPredicate(fn, PROGRAM.Memory[argOffset+OBJECT_HEADER_SIZE:argOffset+OBJECT_HEADER_SIZE+STR_SIZE+I32_SIZE+STR_SIZE])
 
 		if res == 1 {
 			*affOffset = WriteToSlice(*affOffset, argOffsetB)
@@ -173,19 +172,19 @@ func queryParam (fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB 
 	}
 }
 
-func QueryArgument (fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOffset *int) {
+func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Label == "" {
 			// it's a non-labelled expression
 			continue
 		}
 
-		queryParam(fn, ex.Inputs, ex.Label + ".Input", argOffsetB, affOffset)
-		queryParam(fn, ex.Outputs, ex.Label + ".Output", argOffsetB, affOffset)
+		queryParam(fn, ex.Inputs, ex.Label+".Input", argOffsetB, affOffset)
+		queryParam(fn, ex.Outputs, ex.Label+".Output", argOffsetB, affOffset)
 	}
 }
 
-func QueryExpressions (fn *CXFunction, expr *CXExpression, exprOffsetB []byte, affOffset *int) {
+func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Operator == nil || ex.Label == "" {
 			// then it's a variable declaration
@@ -219,10 +218,10 @@ func QueryExpressions (fn *CXFunction, expr *CXExpression, exprOffsetB []byte, a
 	}
 }
 
-func getSignatureSlice (params []*CXArgument) int {
+func getSignatureSlice(params []*CXArgument) int {
 	var sliceOffset int
 	for _, param := range params {
-		
+
 		var typOffset int
 		if param.CustomType != nil {
 			// then it's custom type
@@ -231,7 +230,7 @@ func getSignatureSlice (params []*CXArgument) int {
 			// then it's native type
 			typOffset = WriteObjectRetOff(encoder.Serialize(TypeNames[param.Type]))
 		}
-		
+
 		sliceOffset = WriteToSlice(sliceOffset, encoder.SerializeAtomic(int32(typOffset)))
 	}
 
@@ -239,19 +238,19 @@ func getSignatureSlice (params []*CXArgument) int {
 }
 
 // Helper function for QueryStructure. Used to query all the structs in a particular package
-func queryStructsInPackage (fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
+func queryStructsInPackage(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
 	for _, f := range pkg.Structs {
 		strctNameB := encoder.Serialize(f.Name)
 
 		strctNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(strctNameB)))
-		
+
 		strctOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE)
 		// Name
-		WriteMemory(strctOffset + OBJECT_HEADER_SIZE, strctNameOffsetB)
+		WriteMemory(strctOffset+OBJECT_HEADER_SIZE, strctNameOffsetB)
 
-		val := PROGRAM.Memory[strctOffset + OBJECT_HEADER_SIZE : strctOffset + OBJECT_HEADER_SIZE + STR_SIZE]
+		val := PROGRAM.Memory[strctOffset+OBJECT_HEADER_SIZE : strctOffset+OBJECT_HEADER_SIZE+STR_SIZE]
 		res := CallAffPredicate(fn, val)
-		
+
 		if res == 1 {
 			*affOffset = WriteToSlice(*affOffset, strctOffsetB)
 			*affOffset = WriteToSlice(*affOffset, strctNameOffsetB)
@@ -259,19 +258,19 @@ func queryStructsInPackage (fn *CXFunction, expr *CXExpression, strctOffsetB []b
 	}
 }
 
-func QueryStructure (fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int) {
+func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int) {
 	queryStructsInPackage(fn, expr, strctOffsetB, affOffset, expr.Package)
 	for _, imp := range expr.Package.Imports {
 		queryStructsInPackage(fn, expr, strctOffsetB, affOffset, imp)
 	}
 }
 
-func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
+func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
 	for _, f := range expr.Package.Functions {
 		if f.Name == SYS_INIT_FUNC {
 			continue
 		}
-		
+
 		var opNameB []byte
 		if f.IsNative {
 			opNameB = encoder.Serialize(OpNames[f.OpCode])
@@ -280,21 +279,21 @@ func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOff
 		}
 
 		opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB)))
-		
+
 		inpSigOffset := getSignatureSlice(f.Inputs)
 		outSigOffset := getSignatureSlice(f.Outputs)
 
 		fnOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE)
 		// Name
-		WriteMemory(fnOffset + OBJECT_HEADER_SIZE, opNameOffsetB)
+		WriteMemory(fnOffset+OBJECT_HEADER_SIZE, opNameOffsetB)
 		// InputSignature
-		WriteMemory(fnOffset + OBJECT_HEADER_SIZE + TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(inpSigOffset)))
+		WriteMemory(fnOffset+OBJECT_HEADER_SIZE+TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(inpSigOffset)))
 		// OutputSignature
-		WriteMemory(fnOffset + OBJECT_HEADER_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(outSigOffset)))
+		WriteMemory(fnOffset+OBJECT_HEADER_SIZE+TYPE_POINTER_SIZE+TYPE_POINTER_SIZE, encoder.SerializeAtomic(int32(outSigOffset)))
 
-		val := PROGRAM.Memory[fnOffset + OBJECT_HEADER_SIZE : fnOffset + OBJECT_HEADER_SIZE + STR_SIZE + TYPE_POINTER_SIZE + TYPE_POINTER_SIZE]
+		val := PROGRAM.Memory[fnOffset+OBJECT_HEADER_SIZE : fnOffset+OBJECT_HEADER_SIZE+STR_SIZE+TYPE_POINTER_SIZE+TYPE_POINTER_SIZE]
 		res := CallAffPredicate(fn, val)
-		
+
 		if res == 1 {
 			*affOffset = WriteToSlice(*affOffset, fnOffsetB)
 			*affOffset = WriteToSlice(*affOffset, opNameOffsetB)
@@ -302,13 +301,13 @@ func QueryFunction (fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOff
 	}
 }
 
-func QueryCaller (fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOffset *int) {
+func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOffset *int) {
 	if PROGRAM.CallCounter == 0 {
 		// then it's entry point
 		return
 	}
 
-	call := PROGRAM.CallStack[PROGRAM.CallCounter - 1]
+	call := PROGRAM.CallStack[PROGRAM.CallCounter-1]
 
 	var opNameB []byte
 	if call.Operator.IsNative {
@@ -317,33 +316,32 @@ func QueryCaller (fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affO
 		opNameB = encoder.Serialize(call.Operator.Package.Name + "." + call.Operator.Name)
 	}
 
-
 	opNameOffsetB := encoder.SerializeAtomic(int32(WriteObjectRetOff(opNameB)))
 
 	callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
 	// FnName
-	WriteMemory(callOffset + OBJECT_HEADER_SIZE, opNameOffsetB)
+	WriteMemory(callOffset+OBJECT_HEADER_SIZE, opNameOffsetB)
 	// FnSize
-	WriteMemory(callOffset + OBJECT_HEADER_SIZE + STR_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
+	WriteMemory(callOffset+OBJECT_HEADER_SIZE+STR_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
 
-	res := CallAffPredicate(fn, PROGRAM.Memory[callOffset + OBJECT_HEADER_SIZE : callOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE])
+	res := CallAffPredicate(fn, PROGRAM.Memory[callOffset+OBJECT_HEADER_SIZE:callOffset+OBJECT_HEADER_SIZE+STR_SIZE+I32_SIZE])
 
 	if res == 1 {
 		*affOffset = WriteToSlice(*affOffset, callerOffsetB)
 	}
 }
 
-func QueryProgram (fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOffset *int) {
+func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOffset *int) {
 	prgrmOffset := AllocateSeq(OBJECT_HEADER_SIZE + I32_SIZE + I64_SIZE + STR_SIZE + I32_SIZE)
 	// Callcounter
-	WriteMemory(prgrmOffset + OBJECT_HEADER_SIZE, encoder.SerializeAtomic(int32(PROGRAM.CallCounter)))
+	WriteMemory(prgrmOffset+OBJECT_HEADER_SIZE, encoder.SerializeAtomic(int32(PROGRAM.CallCounter)))
 	// HeapUsed
-	WriteMemory(prgrmOffset + OBJECT_HEADER_SIZE + I32_SIZE, encoder.Serialize(int64(PROGRAM.HeapPointer)))
+	WriteMemory(prgrmOffset+OBJECT_HEADER_SIZE+I32_SIZE, encoder.Serialize(int64(PROGRAM.HeapPointer)))
 
 	// Caller
 	if PROGRAM.CallCounter != 0 {
 		// then it's not just entry point
-		call := PROGRAM.CallStack[PROGRAM.CallCounter - 1]
+		call := PROGRAM.CallStack[PROGRAM.CallCounter-1]
 
 		var opNameB []byte
 		if call.Operator.IsNative {
@@ -356,9 +354,9 @@ func QueryProgram (fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affO
 
 		// callOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE)
 		// FnName
-		WriteMemory(prgrmOffset + OBJECT_HEADER_SIZE + I32_SIZE + I64_SIZE, opNameOffsetB)
+		WriteMemory(prgrmOffset+OBJECT_HEADER_SIZE+I32_SIZE+I64_SIZE, opNameOffsetB)
 		// FnSize
-		WriteMemory(prgrmOffset + OBJECT_HEADER_SIZE + I32_SIZE + I64_SIZE + STR_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
+		WriteMemory(prgrmOffset+OBJECT_HEADER_SIZE+I32_SIZE+I64_SIZE+STR_SIZE, encoder.SerializeAtomic(int32(call.Operator.Size)))
 
 		// res := CallAffPredicate(fn, PROGRAM.Memory[callOffset + OBJECT_HEADER_SIZE : callOffset + OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE])
 
@@ -367,7 +365,7 @@ func QueryProgram (fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affO
 		// }
 	}
 
-	res := CallAffPredicate(fn, PROGRAM.Memory[prgrmOffset + OBJECT_HEADER_SIZE : prgrmOffset + OBJECT_HEADER_SIZE + I32_SIZE + I64_SIZE + STR_SIZE + I32_SIZE])
+	res := CallAffPredicate(fn, PROGRAM.Memory[prgrmOffset+OBJECT_HEADER_SIZE:prgrmOffset+OBJECT_HEADER_SIZE+I32_SIZE+I64_SIZE+STR_SIZE+I32_SIZE])
 
 	if res == 1 {
 		*affOffset = WriteToSlice(*affOffset, prgrmOffsetB)
@@ -375,7 +373,7 @@ func QueryProgram (fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affO
 	}
 }
 
-func getTarget (inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
+func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
 	tgtPkg *CXPackage, tgtStrct *CXStruct, tgtFn *CXFunction, tgtExpr *CXExpression) {
 	for _, aff := range GetInferActions(inp2, fp) {
 		switch aff {
@@ -440,134 +438,134 @@ func getTarget (inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tg
 	}
 }
 
-func getAffordances (inp1 *CXArgument, fp int,
+func getAffordances(inp1 *CXArgument, fp int,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
 	tgtPkg *CXPackage, tgtStrct *CXStruct, tgtFn *CXFunction, tgtExpr *CXExpression,
 	affMsgs map[string]string,
 	affs *[]string) {
-		var fltrElt string
-		elts := GetInferActions(inp1, fp)
-		// for _, elt := range elts {
-		for c := 0; c < len(elts); c++ {
-			elt := elts[c]
-			switch elt {
+	var fltrElt string
+	elts := GetInferActions(inp1, fp)
+	// for _, elt := range elts {
+	for c := 0; c < len(elts); c++ {
+		elt := elts[c]
+		switch elt {
+		case "arg":
+			fltrElt = "arg"
+		case "expr":
+			fltrElt = "expr"
+		case "fn":
+			fltrElt = "fn"
+		case "strct":
+			fltrElt = "strct"
+		case "pkg":
+			fltrElt = "pkg"
+		case "prgrm":
+			fltrElt = "prgrm"
+			// skipping the extra "prgrm"
+			c++
+			switch tgtElt {
 			case "arg":
-				fltrElt = "arg"
-			case "expr":
-				fltrElt = "expr"
-			case "fn":
-				fltrElt = "fn"
-			case "strct":
-				fltrElt = "strct"
-			case "pkg":
-				fltrElt = "pkg"
+				if tgtArgType == "inp" {
+					if msg, ok := affMsgs["prgrm-arg-input"]; ok {
+						*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+					}
+				} else {
+					if msg, ok := affMsgs["prgrm-arg-output"]; ok {
+						*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+					}
+				}
 			case "prgrm":
-				fltrElt = "prgrm"
-				// skipping the extra "prgrm"
-				c++
+				*affs = append(*affs, "Run program")
+			}
+		default:
+			switch fltrElt {
+			case "arg":
 				switch tgtElt {
 				case "arg":
 					if tgtArgType == "inp" {
-						if msg, ok := affMsgs["prgrm-arg-input"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+						if msg, ok := affMsgs["arg-arg-input"]; ok {
+							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
 						}
 					} else {
-						if msg, ok := affMsgs["prgrm-arg-output"]; ok {
-							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex))
+						if msg, ok := affMsgs["arg-arg-output"]; ok {
+							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
 						}
 					}
 				case "prgrm":
-					*affs = append(*affs, "Run program")
+					*affs = append(*affs, "Print FA's value")
 				}
-			default:
-				switch fltrElt {
-				case "arg":
+			case "expr":
+				if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
+					_ = expr
 					switch tgtElt {
 					case "arg":
-						if tgtArgType == "inp" {
-							if msg, ok := affMsgs["arg-arg-input"]; ok {
-								*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
-							}
-						} else {
-							if msg, ok := affMsgs["arg-arg-output"]; ok {
-								*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
-							}
-						}
+						*affs = append(*affs, "Replace TA by FE")
+					case "fn":
+						*affs = append(*affs, "Add FE to TF")
 					case "prgrm":
-						*affs = append(*affs, "Print FA's value")
+						*affs = append(*affs, "Call FE")
 					}
-				case "expr":
-					if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
-						_ = expr
-						switch tgtElt {
-						case "arg":
-							*affs = append(*affs, "Replace TA by FE")
-						case "fn":
-							*affs = append(*affs, "Add FE to TF")
-						case "prgrm":
-							*affs = append(*affs, "Call FE")
-						}
-					} else {
-						panic(err)
-					}
-				case "fn":
-					if fn, err := tgtPkg.GetFunction(elt); err == nil {
-						_ = fn
-						switch tgtElt {
-						case "arg":
-							*affs = append(*affs, "Replace TA by a call to FF")
-						case "expr":
-							*affs = append(*affs, "Change TE's operator to FF")
-						case "pkg":
-							// affs = append(affs, fmt.Sprintf("[%s.Operator = %s]", tgtExpr.Label, fn.Name))
-							*affs = append(*affs, "Move FF to TP")
-						case "prgrm":
-							*affs = append(*affs, "Call FF")
-						}
-					} else {
-						panic(err)
-					}
-				case "strct":
+				} else {
+					panic(err)
+				}
+			case "fn":
+				if fn, err := tgtPkg.GetFunction(elt); err == nil {
+					_ = fn
 					switch tgtElt {
 					case "arg":
-						if msg, ok := affMsgs["arg-strct"]; ok {
+						*affs = append(*affs, "Replace TA by a call to FF")
+					case "expr":
+						*affs = append(*affs, "Change TE's operator to FF")
+					case "pkg":
+						// affs = append(affs, fmt.Sprintf("[%s.Operator = %s]", tgtExpr.Label, fn.Name))
+						*affs = append(*affs, "Move FF to TP")
+					case "prgrm":
+						*affs = append(*affs, "Call FF")
+					}
+				} else {
+					panic(err)
+				}
+			case "strct":
+				switch tgtElt {
+				case "arg":
+					if msg, ok := affMsgs["arg-strct"]; ok {
+						*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
+					}
+					if tgtArgType == "inp" {
+						if msg, ok := affMsgs["strct-arg-input"]; ok {
 							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
 						}
-						if tgtArgType == "inp" {
-							if msg, ok := affMsgs["strct-arg-input"]; ok {
-								*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
-							}
-						} else {
-							if msg, ok := affMsgs["strct-arg-output"]; ok {
-								*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
-							}
-						}
-					case "fn":
-						*affs = append(*affs, "Add or change TF's receiver to FS")
-					case "pkg":
-						*affs = append(*affs, "Move FS to TP")
-					}
-				case "pkg":
-					if pkg, err := PROGRAM.GetPackage(elt); err == nil {
-						_ = pkg
-						switch tgtElt {
-						case "pkg":
-							*affs = append(*affs, "Make TP import FP")
-						}
 					} else {
-						panic(err)
+						if msg, ok := affMsgs["strct-arg-output"]; ok {
+							*affs = append(*affs, fmt.Sprintf(msg, tgtExpr.Label, tgtArgIndex, elt))
+						}
 					}
-					// case "prgrm":
-					// 	switch tgtElt {
-					// 	case "prgrm":
-					// 		affs = append(affs, "Run program")
-					// 	}
+				case "fn":
+					*affs = append(*affs, "Add or change TF's receiver to FS")
+				case "pkg":
+					*affs = append(*affs, "Move FS to TP")
 				}
+			case "pkg":
+				if pkg, err := PROGRAM.GetPackage(elt); err == nil {
+					_ = pkg
+					switch tgtElt {
+					case "pkg":
+						*affs = append(*affs, "Make TP import FP")
+					}
+				} else {
+					panic(err)
+				}
+				// case "prgrm":
+				// 	switch tgtElt {
+				// 	case "prgrm":
+				// 		affs = append(affs, "Run program")
+				// 	}
 			}
 		}
 	}
+}
 
-func op_aff_on (expr *CXExpression, fp int) {
+func op_aff_on(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -587,13 +585,13 @@ func op_aff_on (expr *CXExpression, fp int) {
 	var tgtElt string
 	var tgtArgType string
 	var tgtArgIndex int
-	
+
 	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr)
 
 	// var affPkg *CXPackage = prevPkg
 	// var affFn *CXFunction = prevFn
 	// var affExpr *CXExpression = prevExpr
-	
+
 	// processing the affordances
 	var affs []string
 	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr, onMessages, &affs)
@@ -608,7 +606,7 @@ func op_aff_on (expr *CXExpression, fp int) {
 	}
 }
 
-func op_aff_of (expr *CXExpression, fp int) {
+func op_aff_of(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -645,7 +643,7 @@ func op_aff_of (expr *CXExpression, fp int) {
 	}
 }
 
-func readStrctAff (aff string, tgtPkg *CXPackage) *CXStruct {
+func readStrctAff(aff string, tgtPkg *CXPackage) *CXStruct {
 	if strct, err := tgtPkg.GetStruct(aff); err == nil {
 		return strct
 	} else {
@@ -653,12 +651,12 @@ func readStrctAff (aff string, tgtPkg *CXPackage) *CXStruct {
 	}
 }
 
-func readArgAff (aff string, tgtFn *CXFunction) *CXArgument {
+func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 	var affExpr *CXExpression
 	var lIdx int
 	var rIdx int
 	var ch rune
-	
+
 	for _, ch = range aff {
 		if ch == '.' {
 			exprLbl := aff[lIdx:rIdx]
@@ -681,7 +679,7 @@ func readArgAff (aff string, tgtFn *CXFunction) *CXArgument {
 	lIdx = rIdx
 
 	var argType string
-	
+
 	for _, ch = range aff[lIdx:] {
 		if ch == '.' {
 			argType = aff[lIdx:rIdx]
@@ -710,7 +708,7 @@ func readArgAff (aff string, tgtFn *CXFunction) *CXArgument {
 	}
 }
 
-func op_aff_inform (expr *CXExpression, fp int) {
+func op_aff_inform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -735,8 +733,8 @@ func op_aff_inform (expr *CXExpression, fp int) {
 
 	elts := GetInferActions(inp1, fp)
 	eltIdx := ReadI32(fp, inp2)
-	eltType := elts[eltIdx * 2]
-	elt := elts[eltIdx * 2 + 1]
+	eltType := elts[eltIdx*2]
+	elt := elts[eltIdx*2+1]
 
 	switch eltType {
 	case "arg":
@@ -748,20 +746,20 @@ func op_aff_inform (expr *CXExpression, fp int) {
 				tgtExpr.Outputs[tgtArgIndex] = readArgAff(elt, &tgtFn)
 			}
 		case "strct":
-			
+
 		case "prgrm":
-			
+
 		}
 	case "expr":
 		if expr, err := tgtFn.GetExpressionByLabel(elt); err == nil {
 			_ = expr
 			switch tgtElt {
 			case "arg":
-				
+
 			case "fn":
-				
+
 			case "prgrm":
-				
+
 			}
 		} else {
 			panic(err)
@@ -771,13 +769,13 @@ func op_aff_inform (expr *CXExpression, fp int) {
 			_ = fn
 			switch tgtElt {
 			case "arg":
-				
+
 			case "expr":
-				
+
 			case "pkg":
-				
+
 			case "prgrm":
-				
+
 			}
 		} else {
 			panic(err)
@@ -785,18 +783,18 @@ func op_aff_inform (expr *CXExpression, fp int) {
 	case "strct":
 		switch tgtElt {
 		case "arg":
-			
+
 		case "fn":
-			
+
 		case "pkg":
-			
+
 		}
 	case "pkg":
 		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
-				
+
 			}
 		} else {
 			panic(err)
@@ -814,7 +812,7 @@ func op_aff_inform (expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func op_aff_request (expr *CXExpression, fp int) {
+func op_aff_request(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -841,8 +839,8 @@ func op_aff_request (expr *CXExpression, fp int) {
 
 	elts := GetInferActions(inp1, fp)
 	eltIdx := ReadI32(fp, inp2)
-	eltType := elts[eltIdx * 2]
-	elt := elts[eltIdx * 2 + 1]
+	eltType := elts[eltIdx*2]
+	elt := elts[eltIdx*2+1]
 
 	switch eltType {
 	case "arg":
@@ -856,7 +854,7 @@ func op_aff_request (expr *CXExpression, fp int) {
 				*readArgAff(elt, &tgtFn) = *tgtExpr.Outputs[tgtArgIndex]
 			}
 		case "strct":
-			
+
 		case "prgrm":
 			fmt.Println(GetPrintableValue(fp, readArgAff(elt, &tgtFn)))
 		}
@@ -865,11 +863,11 @@ func op_aff_request (expr *CXExpression, fp int) {
 			_ = expr
 			switch tgtElt {
 			case "arg":
-				
+
 			case "fn":
-				
+
 			case "prgrm":
-				
+
 			}
 		} else {
 			panic(err)
@@ -879,13 +877,13 @@ func op_aff_request (expr *CXExpression, fp int) {
 			_ = fn
 			switch tgtElt {
 			case "arg":
-				
+
 			case "expr":
-				
+
 			case "pkg":
-				
+
 			case "prgrm":
-				
+
 			}
 		} else {
 			panic(err)
@@ -901,16 +899,16 @@ func op_aff_request (expr *CXExpression, fp int) {
 				readStrctAff(elt, &tgtPkg).AddField(tgtExpr.Outputs[tgtArgIndex])
 			}
 		case "fn":
-			
+
 		case "pkg":
-			
+
 		}
 	case "pkg":
 		if pkg, err := PROGRAM.GetPackage(elt); err == nil {
 			_ = pkg
 			switch tgtElt {
 			case "pkg":
-				
+
 			}
 		} else {
 			panic(err)
@@ -934,13 +932,13 @@ func op_aff_request (expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func op_aff_query (expr *CXExpression, fp int) {
+func op_aff_query(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)
 
 	var affOffset int
-	
+
 	var cmd string
 	for _, rule := range GetInferActions(inp1, fp) {
 		switch rule {
@@ -964,7 +962,7 @@ func op_aff_query (expr *CXExpression, fp int) {
 					exprOffset := AllocateSeq(len(exprB))
 					WriteMemory(exprOffset, exprB)
 					exprOffsetB := encoder.SerializeAtomic(int32(exprOffset))
-					
+
 					// fn keyword
 					fnB := encoder.Serialize("fn")
 					fnOffset := AllocateSeq(len(fnB))
@@ -990,7 +988,7 @@ func op_aff_query (expr *CXExpression, fp int) {
 					prgrmOffsetB := encoder.SerializeAtomic(int32(prgrmOffset))
 
 					predInp := fn.Inputs[0]
-					
+
 					if predInp.Type == TYPE_CUSTOM {
 						if predInp.CustomType != nil {
 							switch predInp.CustomType.Name {
@@ -1014,7 +1012,7 @@ func op_aff_query (expr *CXExpression, fp int) {
 					panic(err)
 				}
 			case "sort":
-				
+
 			}
 		}
 	}

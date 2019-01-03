@@ -13,24 +13,24 @@ func op_glfw_Init(expr *CXExpression, fp int) {
 	glfw.Init()
 }
 
-func op_glfw_WindowHint (expr *CXExpression, fp int) {
+func op_glfw_WindowHint(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	glfw.WindowHint(glfw.Hint(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)))
 }
 
-func op_glfw_SetInputMode (expr *CXExpression, fp int) {
+func op_glfw_SetInputMode(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	windows[ReadStr(fp, inp1)].SetInputMode(glfw.InputMode(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
 }
 
-func op_glfw_GetCursorPos (expr *CXExpression, fp int) {
+func op_glfw_GetCursorPos(expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	x, y := windows[ReadStr(fp, inp1)].GetCursorPos()
 	WriteMemory(GetFinalOffset(fp, out1), FromF64(x))
 	WriteMemory(GetFinalOffset(fp, out2), FromF64(y))
 }
 
-func op_glfw_GetKey (expr *CXExpression, fp int) {
+func op_glfw_GetKey(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	act := int32(windows[ReadStr(fp, inp1)].GetKey(glfw.Key(ReadI32(fp, inp2))))
 
@@ -111,7 +111,7 @@ func op_glfw_SetKeyCallback(expr *CXExpression, fp int) {
 }
 
 func op_glfw_SetKeyCallbackEx(expr *CXExpression, fp int) {
-	inp0, inp1, inp2  := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	glfw_SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
@@ -176,10 +176,11 @@ func op_glfw_SetMouseButtonCallback(expr *CXExpression, fp int) {
 
 func op_glfw_SetMouseButtonCallbackEx(expr *CXExpression, fp int) {
 	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp ,inp1), ReadStr(fp, inp2))
+	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
 }
 
 type Func_i32_i32 func(a int32, b int32)
+
 var Functions_i32_i32 []Func_i32_i32
 
 func op_glfw_func_i32_i32(expr *CXExpression, fp int) {
@@ -194,16 +195,14 @@ func op_glfw_func_i32_i32(expr *CXExpression, fp int) {
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(len(Functions_i32_i32) - 1)))
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(len(Functions_i32_i32)-1)))
 }
 
-
 func op_glfw_call_i32_i32(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 :=  expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
+	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	index := ReadI32(fp, inp1)
 	count := int32(len(Functions_i32_i32))
 	if index >= 0 && index < count {
 		Functions_i32_i32[index](ReadI32(fp, inp2), ReadI32(fp, inp3))
 	}
 }
-

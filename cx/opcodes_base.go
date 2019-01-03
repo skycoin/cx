@@ -2,9 +2,7 @@
 
 package base
 
-import (
-	
-)
+import ()
 
 // op codes
 const (
@@ -35,7 +33,7 @@ const (
 
 var execNativeBase func(*CXProgram)
 
-func init () {
+func init() {
 	// time
 	AddOpCode(OP_TIME_SLEEP, "time.Sleep", []int{TYPE_I32}, []int{})
 	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli", []int{}, []int{TYPE_I64})
@@ -59,38 +57,38 @@ func init () {
 		opCode := expr.Operator.OpCode
 		fp := call.FramePointer
 
-		if (opCode < END_OF_BARE_OPS) {
+		if opCode < END_OF_BARE_OPS {
 			execNativeBare(prgrm)
 		} else {
 			switch opCode {
-				// time
-				case OP_TIME_SLEEP:
-					op_time_Sleep(expr, fp)
-				case OP_TIME_UNIX:
-				case OP_TIME_UNIX_MILLI:
-					op_time_UnixMilli(expr, fp)
-				case OP_TIME_UNIX_NANO:
-					op_time_UnixNano(expr, fp)
+			// time
+			case OP_TIME_SLEEP:
+				op_time_Sleep(expr, fp)
+			case OP_TIME_UNIX:
+			case OP_TIME_UNIX_MILLI:
+				op_time_UnixMilli(expr, fp)
+			case OP_TIME_UNIX_NANO:
+				op_time_UnixNano(expr, fp)
 
-				// http
-				case OP_HTTP_GET:
-					op_http_get(expr, fp)
+			// http
+			case OP_HTTP_GET:
+				op_http_get(expr, fp)
 
-				// os
-				case OP_OS_GET_WORKING_DIRECTORY:
-					op_os_GetWorkingDirectory(expr, fp)
-				case OP_OS_OPEN:
-					op_os_Open(expr, fp)
-				case OP_OS_CLOSE:
-					op_os_Close(expr, fp)
-				case OP_OS_RUN:
-					op_os_Run(expr, fp)
-				case OP_OS_EXIT:
-					op_os_Exit(expr, fp)
+			// os
+			case OP_OS_GET_WORKING_DIRECTORY:
+				op_os_GetWorkingDirectory(expr, fp)
+			case OP_OS_OPEN:
+				op_os_Open(expr, fp)
+			case OP_OS_CLOSE:
+				op_os_Close(expr, fp)
+			case OP_OS_RUN:
+				op_os_Run(expr, fp)
+			case OP_OS_EXIT:
+				op_os_Exit(expr, fp)
 
-				default:
-					// DumpOpCodes(opCode)
-					panic("invalid base opcode")
+			default:
+				// DumpOpCodes(opCode)
+				panic("invalid base opcode")
 			}
 		}
 	}

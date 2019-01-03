@@ -5,7 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool) {
+func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) {
 	var isPointer bool
 	for _, op := range arg.DereferenceOperations {
 		switch op {
@@ -32,7 +32,7 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 			var offset int32
 			var byts []byte
 
-			byts = PROGRAM.Memory[*finalOffset : *finalOffset + TYPE_POINTER_SIZE]
+			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
 			encoder.DeserializeAtomic(byts, &offset)
 			*finalOffset = int(offset)
@@ -73,7 +73,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	// var fldIdx int
 
 	// elt = arg
-	
+
 	var dbg bool
 	if arg.Name != "" {
 		dbg = false
@@ -83,7 +83,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		// then it's in the stack, not in data or heap
 		finalOffset += fp
 	}
-	
+
 	if dbg {
 		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), finalOffset, arg.DereferenceOperations)
 	}
@@ -163,10 +163,10 @@ func MarkAndCompact() {
 	newHeapPointer := NULL_HEAP_ADDRESS_OFFSET
 	for c := NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapPointer; {
 		var forwardingAddress int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt + c + MARK_SIZE : PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE], &forwardingAddress)
+		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
 
 		var objSize int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE : PROGRAM.HeapStartsAt + c + MARK_SIZE + FORWARDING_ADDRESS_SIZE + OBJECT_SIZE], &objSize)
+		encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
 
 		if PROGRAM.Memory[c] == 1 {
 			// setting the mark back to 0
@@ -205,22 +205,22 @@ func AllocateSeq(size int) (offset int) {
 	newFree := PROGRAM.HeapPointer + size
 
 	// if newFree > MEMORY_SIZE {
-	if result + size > MEMORY_SIZE {
+	if result+size > MEMORY_SIZE {
 		// call GC
 		MarkAndCompact()
 		result = PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 		newFree = PROGRAM.HeapPointer + size
 
-		freeMemPerc := 1.0 - float32(newFree) / float32(MEMORY_SIZE - PROGRAM.HeapStartsAt)
+		freeMemPerc := 1.0 - float32(newFree)/float32(MEMORY_SIZE-PROGRAM.HeapStartsAt)
 
-		if freeMemPerc < float32(MIN_HEAP_FREE_RATIO) / 100.0 {
+		if freeMemPerc < float32(MIN_HEAP_FREE_RATIO)/100.0 {
 			// then we have less than MIN_HEAP_FREE_RATIO memory left. expand!
-			ResizeMemory(int(float32(MIN_HEAP_FREE_RATIO * (MEMORY_SIZE - PROGRAM.HeapStartsAt)) / freeMemPerc), true)
+			ResizeMemory(int(float32(MIN_HEAP_FREE_RATIO*(MEMORY_SIZE-PROGRAM.HeapStartsAt))/freeMemPerc), true)
 		}
-		
-		if freeMemPerc > float32(MAX_HEAP_FREE_RATIO) / 100.0 {
+
+		if freeMemPerc > float32(MAX_HEAP_FREE_RATIO)/100.0 {
 			// then we have more than MAX_HEAP_FREE_RATIO memory left. shrink!
-			ResizeMemory(int(float32(MAX_HEAP_FREE_RATIO * (MEMORY_SIZE - PROGRAM.HeapStartsAt)) / freeMemPerc), false)
+			ResizeMemory(int(float32(MAX_HEAP_FREE_RATIO*(MEMORY_SIZE-PROGRAM.HeapStartsAt))/freeMemPerc), false)
 		}
 	}
 
@@ -249,11 +249,11 @@ func FromByte(in byte) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
-func FromStr (in string) []byte {
+func FromStr(in string) []byte {
 	return encoder.Serialize(in)
 }
 
-func FromI8 (in int8) []byte {
+func FromI8(in int8) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
@@ -317,7 +317,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		// then it's a literal
 		offset = int32(off)
 	} else {
-		encoder.DeserializeAtomic(PROGRAM.Memory[off : off + TYPE_POINTER_SIZE], &offset)
+		encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
 	}
 
 	if offset == 0 {
@@ -327,15 +327,15 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	}
 
 	var size int32
-	sizeB := PROGRAM.Memory[offset : offset + STR_HEADER_SIZE]
+	sizeB := PROGRAM.Memory[offset : offset+STR_HEADER_SIZE]
 
 	encoder.DeserializeAtomic(sizeB, &size)
-	encoder.DeserializeRaw(PROGRAM.Memory[offset : offset+STR_HEADER_SIZE+size], &out)
-	
+	encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
+
 	return
 }
 
-func ReadI8 (fp int, inp *CXArgument) (out int8) {
+func ReadI8(fp int, inp *CXArgument) (out int8) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
 	return

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
-	"time"
 	"os"
+	"time"
 )
 
 // It "un-runs" a program
@@ -42,13 +42,13 @@ func (prgrm *CXProgram) UnRun(nCalls int) {
 	}
 }
 
-func (prgrm *CXProgram) ToCall () *CXExpression {
+func (prgrm *CXProgram) ToCall() *CXExpression {
 	for c := prgrm.CallCounter - 1; c >= 0; c-- {
-		if prgrm.CallStack[c].Line + 1 >= len(prgrm.CallStack[c].Operator.Expressions) {
+		if prgrm.CallStack[c].Line+1 >= len(prgrm.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
 			continue
 		}
-		return prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[c].Line + 1]
+		return prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[c].Line+1]
 		// prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
 	}
 	// error
@@ -56,7 +56,7 @@ func (prgrm *CXProgram) ToCall () *CXExpression {
 	// panic("")
 }
 
-func (prgrm *CXProgram) Run (untilEnd bool, nCalls *int, untilCall int) error {
+func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
 
@@ -67,7 +67,7 @@ func (prgrm *CXProgram) Run (untilEnd bool, nCalls *int, untilCall int) error {
 		if prgrm.StackPointer > STACK_SIZE {
 			panic(STACK_OVERFLOW_ERROR)
 		}
-		
+
 		if !untilEnd {
 			var inName string
 			var toCallName string
@@ -108,7 +108,7 @@ func (prgrm *CXProgram) Run (untilEnd bool, nCalls *int, untilCall int) error {
 				}
 			}
 
-			fmt.Printf("in:%s, expr#:%d, calling:%s()\n", inName, call.Line + 1, toCallName)
+			fmt.Printf("in:%s, expr#:%d, calling:%s()\n", inName, call.Line+1, toCallName)
 			*nCalls--
 		}
 
@@ -217,7 +217,7 @@ func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
 	}
 }
 
-func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte)() {
+func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
 	if fn, err := prgrm.GetFunction(functionName, packageName); err == nil {
 		line := prgrm.CallStack[prgrm.CallCounter].Line
 		previousCall := prgrm.CallCounter
@@ -237,7 +237,6 @@ func (prgrm *CXProgram) ccallback(expr *CXExpression, functionName string, packa
 		for i, inp := range inputs {
 			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 		}
-
 
 		var nCalls = 0
 		if err := prgrm.Run(true, &nCalls, previousCall); err != nil {
@@ -294,8 +293,8 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
 		if expr.Operator == nil {
-		// then it's a declaration
-		call.Line++
+			// then it's a declaration
+			call.Line++
 		} else if expr.Operator.IsNative {
 			execNative(prgrm)
 			call.Line++

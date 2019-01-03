@@ -1,9 +1,9 @@
 package actions
 
 import (
+	"fmt"
 	. "github.com/skycoin/cx/cx"
 	"time"
-	"fmt"
 )
 
 func Stepping(steps int, delay int, withDelay bool) {

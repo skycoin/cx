@@ -43,7 +43,7 @@ func op_gltext_Texture(expr *CXExpression, fp int) {
 
 func op_gltext_NextGlyph(expr *CXExpression, fp int) { // refactor
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	out1, out2, out3, out4, out5, out6, out7 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4],  expr.Outputs[5], expr.Outputs[6]
+	out1, out2, out3, out4, out5, out6, out7 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4], expr.Outputs[5], expr.Outputs[6]
 	font := fonts[ReadStr(fp, inp1)]
 	str := ReadStr(fp, inp2)
 	var index int = int(ReadI32(fp, inp3))
@@ -56,7 +56,7 @@ func op_gltext_NextGlyph(expr *CXExpression, fp int) { // refactor
 	var advance int = 0
 	if index < len(str) {
 		runeValue, width = utf8.DecodeRuneInString(str[index:])
-		g := font.Glyphs()[runeValue - font.Low()]
+		g := font.Glyphs()[runeValue-font.Low()]
 		x = g.X
 		y = g.Y
 		w = g.Width
@@ -64,7 +64,7 @@ func op_gltext_NextGlyph(expr *CXExpression, fp int) { // refactor
 		advance = g.Advance
 	}
 
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(runeValue - font.Low())))
+	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(runeValue-font.Low())))
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(width)))
 	WriteMemory(GetFinalOffset(fp, out3), FromI32(int32(x)))
 	WriteMemory(GetFinalOffset(fp, out4), FromI32(int32(y)))
@@ -113,5 +113,3 @@ func op_gltext_GlyphInfo(expr *CXExpression, fp int) { // refactor
 	WriteMemory(GetFinalOffset(fp, out4), FromI32(int32(h)))
 	WriteMemory(GetFinalOffset(fp, out5), FromI32(int32(advance)))
 }
-
-

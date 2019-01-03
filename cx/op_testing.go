@@ -7,6 +7,7 @@ import (
 )
 
 var assertSuccess bool = true
+
 func AssertFailed() bool {
 	return assertSuccess == false
 }
@@ -67,9 +68,7 @@ func op_test(expr *CXExpression, fp int) {
 }
 
 func op_panic(expr *CXExpression, fp int) {
-	if (assert(expr, fp) == false) {
+	if assert(expr, fp) == false {
 		os.Exit(CX_ASSERT)
 	}
 }
-
-
