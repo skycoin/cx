@@ -1,9 +1,10 @@
 package base
 
 import (
-	. "github.com/satori/go.uuid"
+	. "github.com/satori/go.uuid" //nolint golint
 )
 
+// CXCall ...
 type CXCall struct {
 	Operator     *CXFunction
 	Line         int
@@ -14,6 +15,7 @@ type CXCall struct {
   Packages
 */
 
+// CXConstant ...
 type CXConstant struct {
 	// native constants. only used for pre-packaged constants (e.g. math package's PI)
 	// these fields are used to feed WritePrimary
@@ -21,6 +23,7 @@ type CXConstant struct {
 	Type  int
 }
 
+// CXArgument ...
 type CXArgument struct {
 	Lengths               []int // declared lengths at compile time
 	DereferenceOperations []int // offset by array index, struct field, pointer
