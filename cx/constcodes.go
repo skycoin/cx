@@ -1,6 +1,7 @@
 package base
 
 // constant codes
+// nolint golint
 const (
 	// https://www.khronos.org/registry/OpenGL/api/GL/glcorearb.h
 	// gl_1_0
@@ -227,10 +228,13 @@ const (
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
-var ConstNames map[int]string = map[int]string{}
-var ConstCodes map[string]int = map[string]int{}
-var Constants map[int]CXConstant = map[int]CXConstant{}
+var (
+	ConstNames = map[int]string{}
+	ConstCodes = map[string]int{}
+	Constants  = map[int]CXConstant{}
+)
 
+// AddConstCode ...
 func AddConstCode(code int, name string, typ int, value []byte) {
 	ConstNames[code] = name
 	ConstCodes[name] = code
