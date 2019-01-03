@@ -237,6 +237,7 @@ func AddConstCode(code int, name string, typ int, value []byte) {
 	Constants[code] = CXConstant{Type: typ, Value: value}
 }
 
+// nolint typecheck
 func init() {
 	/* gl_1_0 */
 	AddConstCode(CONST_GL_DEPTH_BUFFER_BIT, "gl.DEPTH_BUFFER_BIT", TYPE_I32, FromI32(0x00000100))
