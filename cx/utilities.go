@@ -54,15 +54,15 @@ func stackValueHeader(fileName string, fileLine int) string {
 }
 
 // PrintStack ...
-func (prgrm *CXProgram) PrintStack() {
+func (cxt *CXProgram) PrintStack() {
 	fmt.Println()
 	fmt.Println("===Callstack===")
 
 	// we're going backwards in the stack
-	fp := prgrm.StackPointer
+	fp := cxt.StackPointer
 
-	for c := prgrm.CallCounter; c >= 0; c-- {
-		op := prgrm.CallStack[c].Operator
+	for c := cxt.CallCounter; c >= 0; c-- {
+		op := cxt.CallStack[c].Operator
 		fp -= op.Size
 
 		var dupNames []string
@@ -140,7 +140,7 @@ func (prgrm *CXProgram) PrintStack() {
 }
 
 // PrintProgram ...
-func (prgrm *CXProgram) PrintProgram() {
+func (cxt *CXProgram) PrintProgram() {
 	fmt.Println("Program")
 
 	var currentFunction *CXFunction
@@ -150,16 +150,16 @@ func (prgrm *CXProgram) PrintProgram() {
 	_ = currentPackage
 
 	// saving current program state because PrintProgram uses SelectXXX
-	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
+	if pkg, err := cxt.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
 	}
 
-	if fn, err := prgrm.GetCurrentFunction(); err == nil {
+	if fn, err := cxt.GetCurrentFunction(); err == nil {
 		currentFunction = fn
 	}
 
 	i := 0
-	for _, mod := range prgrm.Packages {
+	for _, mod := range cxt.Packages {
 		if IsCorePackage(mod.Name) {
 			continue
 		}
@@ -294,7 +294,7 @@ func (prgrm *CXProgram) PrintProgram() {
 					var dat []byte
 
 					if arg.Offset > STACK_SIZE {
-						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
+						dat = cxt.Memory[arg.Offset : arg.Offset+arg.Size]
 					} else {
 						name = arg.Name
 					}
@@ -489,13 +489,13 @@ func (prgrm *CXProgram) PrintProgram() {
 	}
 
 	if currentPackage != nil {
-		prgrm.SelectPackage(currentPackage.Name)
+		cxt.SelectPackage(currentPackage.Name)
 	}
 	if currentFunction != nil {
-		prgrm.SelectFunction(currentFunction.Name)
+		cxt.SelectFunction(currentFunction.Name)
 	}
 
-	prgrm.CurrentPackage = currentPackage
+	cxt.CurrentPackage = currentPackage
 	currentPackage.CurrentFunction = currentFunction
 }
 
