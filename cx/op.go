@@ -6,13 +6,14 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+// CalculateDereferences ...
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) {
 	var isPointer bool
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
 			for i, idxArg := range arg.Indexes {
-				var subSize int = 1
+				var subSize = int(1)
 				for _, len := range arg.Lengths[i+1:] {
 					subSize *= len
 				}
@@ -56,21 +57,23 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 	}
 }
 
+// GetStrOffset ...
 func GetStrOffset(fp int, arg *CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		var offset int32 = 0
+		var offset = int32(0)
 		encoder.DeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
 		strOffset = int(offset)
 	}
 	return strOffset
 }
 
+// GetFinalOffset ...
 func GetFinalOffset(fp int, arg *CXArgument) int {
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
-	var finalOffset int = arg.Offset
+	var finalOffset = int(arg.Offset)
 	// var fldIdx int
 
 	// elt = arg
@@ -104,11 +107,12 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	return finalOffset
 }
 
+// ReadMemory ...
 func ReadMemory(offset int, arg *CXArgument) []byte {
 	return PROGRAM.Memory[offset : offset+arg.TotalSize]
 }
 
-// marks all the alive objects in the heap
+// Mark marks all the alive objects in the heap
 func Mark(prgrm *CXProgram) {
 	fp := 0
 	for c := 0; c <= prgrm.CallCounter; c++ {
@@ -125,9 +129,10 @@ func Mark(prgrm *CXProgram) {
 	}
 }
 
+// MarkAndCompact ...
 func MarkAndCompact() {
 	var fp int
-	var faddr int32 = NULL_HEAP_ADDRESS_OFFSET
+	var faddr = int32(NULL_HEAP_ADDRESS_OFFSET)
 
 	// marking, setting forward addresses and updating references
 	for c := 0; c <= PROGRAM.CallCounter; c++ {
@@ -185,6 +190,7 @@ func MarkAndCompact() {
 	PROGRAM.HeapPointer = newHeapPointer
 }
 
+// ResizeMemory ...
 func ResizeMemory(newMemSize int, isExpand bool) {
 	if newMemSize > MAX_HEAP_SIZE {
 		// heap exhausted
@@ -200,7 +206,7 @@ func ResizeMemory(newMemSize int, isExpand bool) {
 	}
 }
 
-// allocates memory in the heap
+// AllocateSeq allocates memory in the heap
 func AllocateSeq(size int) (offset int) {
 	result := PROGRAM.HeapStartsAt + PROGRAM.HeapPointer
 	newFree := PROGRAM.HeapPointer + size
@@ -230,6 +236,7 @@ func AllocateSeq(size int) (offset int) {
 	return result
 }
 
+// WriteMemory ...
 func WriteMemory(offset int, byts []byte) {
 	for c := 0; c < len(byts); c++ {
 		PROGRAM.Memory[offset+c] = byts[c]
@@ -238,42 +245,51 @@ func WriteMemory(offset int, byts []byte) {
 
 // Utilities
 
+// FromBool ...
 func FromBool(in bool) []byte {
 	if in {
 		return []byte{1}
-	} else {
-		return []byte{0}
 	}
+	return []byte{0}
+
 }
 
+// FromByte ...
 func FromByte(in byte) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromStr ...
 func FromStr(in string) []byte {
 	return encoder.Serialize(in)
 }
 
+// FromI8 ...
 func FromI8(in int8) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromI32 ...
 func FromI32(in int32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromUI32 ...
 func FromUI32(in uint32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromI64 ...
 func FromI64(in int64) []byte {
 	return encoder.Serialize(in)
 }
 
+// FromF32 ...
 func FromF32(in float32) []byte {
 	return encoder.Serialize(in)
 }
 
+// FromF64 ...
 func FromF64(in float64) []byte {
 	return encoder.Serialize(in)
 }
@@ -291,6 +307,7 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
+// ReadF32A ...
 func ReadF32A(fp int, inp *CXArgument) (out []float32) {
 	offset := GetFinalOffset(fp, inp)
 	byts := ReadMemory(offset, inp)
@@ -299,18 +316,21 @@ func ReadF32A(fp int, inp *CXArgument) (out []float32) {
 	return
 }
 
+// ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadByte ...
 func ReadByte(fp int, inp *CXArgument) (out byte) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadStr ...
 func ReadStr(fp int, inp *CXArgument) (out string) {
 	var offset int32
 	off := GetFinalOffset(fp, inp)
@@ -336,30 +356,35 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	return
 }
 
+// ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) (out int8) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) (out int32) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadI64 ...
 func ReadI64(fp int, inp *CXArgument) (out int64) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) (out float32) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
+// ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) (out float64) {
 	offset := GetFinalOffset(fp, inp)
 	encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
