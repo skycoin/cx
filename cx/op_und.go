@@ -10,7 +10,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_lt(expr *CXExpression, fp int) {
+func opLt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -31,7 +31,7 @@ func op_lt(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_gt(expr *CXExpression, fp int) {
+func opGt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -51,7 +51,7 @@ func op_gt(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_lteq(expr *CXExpression, fp int) {
+func opLteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -72,7 +72,7 @@ func op_lteq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_gteq(expr *CXExpression, fp int) {
+func opGteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -93,7 +93,7 @@ func op_gteq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_equal(expr *CXExpression, fp int) {
+func opEqual(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -116,7 +116,7 @@ func op_equal(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_unequal(expr *CXExpression, fp int) {
+func opUnequal(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -139,7 +139,7 @@ func op_unequal(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitand(expr *CXExpression, fp int) {
+func opBitand(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -152,7 +152,7 @@ func op_bitand(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitor(expr *CXExpression, fp int) {
+func opBitor(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -165,7 +165,7 @@ func op_bitor(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitxor(expr *CXExpression, fp int) {
+func opBitxor(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -178,7 +178,7 @@ func op_bitxor(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_mul(expr *CXExpression, fp int) {
+func opMul(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -197,7 +197,7 @@ func op_mul(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_div(expr *CXExpression, fp int) {
+func opDiv(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -216,7 +216,7 @@ func op_div(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_mod(expr *CXExpression, fp int) {
+func opMod(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -231,7 +231,7 @@ func op_mod(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_add(expr *CXExpression, fp int) {
+func opAdd(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -250,7 +250,7 @@ func op_add(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_sub(expr *CXExpression, fp int) {
+func opSub(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -269,7 +269,7 @@ func op_sub(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitshl(expr *CXExpression, fp int) {
+func opBitshl(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -282,7 +282,7 @@ func op_bitshl(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitshr(expr *CXExpression, fp int) {
+func opBitshr(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -295,7 +295,7 @@ func op_bitshr(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_bitclear(expr *CXExpression, fp int) {
+func opBitclear(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -308,7 +308,7 @@ func op_bitclear(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_len(expr *CXExpression, fp int) {
+func opLen(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -327,7 +327,7 @@ func op_len(expr *CXExpression, fp int) {
 		sliceHeader := PROGRAM.Memory[inp1Offset+OBJECT_HEADER_SIZE : inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 		WriteMemory(GetFinalOffset(fp, out1), sliceHeader[:4])
 	} else if elt.Type == TYPE_STR {
-		var strOffset int = GetStrOffset(fp, inp1)
+		var strOffset = int(GetStrOffset(fp, inp1))
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
 		outB1 := FromI32(int32(elt.Lengths[0]))
@@ -335,7 +335,7 @@ func op_len(expr *CXExpression, fp int) {
 	}
 }
 
-func op_append(expr *CXExpression, fp int) {
+func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	preInp1Offset := GetFinalOffset(fp, inp1)
@@ -377,7 +377,7 @@ func op_append(expr *CXExpression, fp int) {
 		obj1 = PROGRAM.Memory[inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+int32(inp1Offset)+len1*int32(inp2.TotalSize)]
 
 		if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-			var strOffset int32 = int32(GetStrOffset(fp, inp2))
+			var strOffset = int32(GetStrOffset(fp, inp2))
 			obj2 = encoder.SerializeAtomic(strOffset)
 		} else {
 			obj2 = ReadMemory(inp2Offset, inp2)
@@ -390,7 +390,7 @@ func op_append(expr *CXExpression, fp int) {
 			size = encoder.SerializeAtomic(int32(len(obj2) + SLICE_HEADER_SIZE))
 		}
 
-		var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+		var header = make([]byte, OBJECT_HEADER_SIZE)
 		for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 			header[c] = size[c-5]
 		}
@@ -427,7 +427,7 @@ func op_append(expr *CXExpression, fp int) {
 			obj1 = PROGRAM.Memory[inp1Offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : int32(inp1Offset)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l*int32(inp2.TotalSize)]
 
 			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-				var strOffset int32 = int32(GetStrOffset(fp, inp2))
+				var strOffset = int32(GetStrOffset(fp, inp2))
 				obj2 = encoder.SerializeAtomic(strOffset)
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
@@ -442,7 +442,7 @@ func op_append(expr *CXExpression, fp int) {
 
 			size := encoder.SerializeAtomic(int32(int(c)*inp2.TotalSize + SLICE_HEADER_SIZE))
 
-			var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+			var header = make([]byte, OBJECT_HEADER_SIZE)
 			for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 				header[c] = size[c-5]
 			}
@@ -468,7 +468,7 @@ func op_append(expr *CXExpression, fp int) {
 
 			var obj2 []byte
 			if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-				var strOffset int32 = int32(GetStrOffset(fp, inp2))
+				var strOffset = int32(GetStrOffset(fp, inp2))
 				obj2 = encoder.SerializeAtomic(strOffset)
 			} else {
 				obj2 = ReadMemory(inp2Offset, inp2)
@@ -489,7 +489,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 
 	var res []byte
 	var specifiersCounter int
-	var lenStr int = len(fmtStr)
+	var lenStr = int(len(fmtStr))
 
 	for c := 0; c < len(fmtStr); c++ {
 		var nextCh byte
@@ -584,7 +584,7 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func op_sprintf(expr *CXExpression, fp int) {
+func opSprintf(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -592,11 +592,11 @@ func op_sprintf(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func op_printf(expr *CXExpression, fp int) {
+func opPrintf(expr *CXExpression, fp int) {
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func op_read(expr *CXExpression, fp int) {
+func opRead(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -613,7 +613,7 @@ func op_read(expr *CXExpression, fp int) {
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
