@@ -2,7 +2,8 @@ package base
 
 import (
 	"fmt"
-	"github.com/satori/go.uuid"
+
+	uuid "github.com/satori/go.uuid"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

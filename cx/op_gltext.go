@@ -3,8 +3,9 @@
 package base
 
 import (
-	"github.com/go-gl/gltext"
 	"unicode/utf8"
+
+	"github.com/go-gl/gltext"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)

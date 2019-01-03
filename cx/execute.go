@@ -2,10 +2,11 @@ package base
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program

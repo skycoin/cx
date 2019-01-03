@@ -3,6 +3,7 @@ package base
 import (
 	"errors"
 	"fmt"
+
 	. "github.com/satori/go.uuid"
 )
 

@@ -2,8 +2,9 @@ package base
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var onMessages map[string]string = map[string]string{

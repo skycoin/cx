@@ -2,10 +2,11 @@ package base
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"math"
 	"math/rand"
 	"strconv"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opI64I64(expr *CXExpression, fp int) {

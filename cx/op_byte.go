@@ -2,8 +2,9 @@ package base
 
 import (
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"strconv"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opByteByte(expr *CXExpression, fp int) {

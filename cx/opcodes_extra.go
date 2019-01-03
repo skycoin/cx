@@ -2,9 +2,7 @@
 
 package base
 
-import (
 // "os"
-)
 
 const (
 	// gogl

@@ -3,10 +3,11 @@ package base
 import (
 	"bytes"
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"os"
 	"runtime/debug"
 	"strconv"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func Debug(args ...interface{}) {
