@@ -487,9 +487,9 @@ func init() {
 			prgrm.PrintStack()
 
 		case OP_SERIALIZE:
-			op_serialize(expr, fp)
+			opSerialize(expr, fp)
 		case OP_DESERIALIZE:
-			op_deserialize(expr, fp)
+			opDeserialize(expr, fp)
 
 		case OP_UND_EQUAL:
 			opEqual(expr, fp)

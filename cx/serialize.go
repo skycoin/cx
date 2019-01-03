@@ -204,16 +204,16 @@ func serializeName(name string, s *sAll) (int32, int32) {
 	if err != nil {
 		panic(err)
 	}
-
-	if off, found := s.NamesMap[name]; found {
-		return int32(off), int32(size)
-	} else {
-		off = len(s.Names)
-		s.Names = append(s.Names, encoder.Serialize(name)...)
-		s.NamesMap[name] = off
-
+	off, found := s.NamesMap[name]
+	if found {
 		return int32(off), int32(size)
 	}
+	off = len(s.Names)
+	s.Names = append(s.Names, encoder.Serialize(name)...)
+	s.NamesMap[name] = off
+
+	return int32(off), int32(size)
+
 }
 
 func indexPackage(pkg *CXPackage, s *sAll) {
@@ -249,9 +249,9 @@ func indexExpression(expr *CXExpression, s *sAll) {
 func serializeBoolean(val bool) int32 {
 	if val {
 		return 1
-	} else {
-		return 0
 	}
+	return 0
+
 }
 
 func serializeIntegers(ints []int, s *sAll) (int32, int32) {
@@ -352,13 +352,13 @@ func serializeSliceOfArguments(args []*CXArgument, s *sAll) (int32, int32) {
 func serializeCalls(calls []CXCall, s *sAll) (int32, int32) {
 	if len(calls) == 0 {
 		return int32(-1), int32(-1)
-	} else {
-		idxs := make([]int, len(calls))
-		for i, call := range calls {
-			idxs[i] = serializeCall(&call, s)
-		}
-		return serializeIntegers(idxs, s)
 	}
+	idxs := make([]int, len(calls))
+	for i, call := range calls {
+		idxs[i] = serializeCall(&call, s)
+	}
+	return serializeIntegers(idxs, s)
+
 }
 
 func serializeExpression(expr *CXExpression, s *sAll) int {
@@ -646,6 +646,7 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	// args and exprs need to be appended as they are found
 }
 
+// Serialize ...
 func Serialize(prgrm *CXProgram) (byts []byte) {
 	// prgrm.PrintProgram()
 
@@ -809,7 +810,7 @@ func Serialize(prgrm *CXProgram) (byts []byte) {
 	return byts
 }
 
-func op_serialize(expr *CXExpression, fp int) {
+func opSerialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -824,7 +825,7 @@ func op_serialize(expr *CXExpression, fp int) {
 	WriteMemory(out1Offset, FromI32(int32(slcOff)))
 }
 
-func op_deserialize(expr *CXExpression, fp int) {
+func opDeserialize(expr *CXExpression, fp int) {
 	inp := expr.Inputs[0]
 
 	inpOffset := GetFinalOffset(fp, inp)
@@ -1131,9 +1132,9 @@ func dsFunction(sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
 func dsBool(val int32) bool {
 	if val == 1 {
 		return true
-	} else {
-		return false
 	}
+	return false
+
 }
 
 func dsIntegers(off int32, size int32, s *sAll) []int {
@@ -1156,6 +1157,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	dsPackages(s, prgrm)
 }
 
+// Deserialize ...
 func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
 	idxSize, _ := encoder.Size(sIndex{})
