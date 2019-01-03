@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/satori/go.uuid"
+	. "github.com/satori/go.uuid" //nolint golint
 )
 
 /* The CXPackage struct contains information about a CX package.
  */
+
 // CXPackage ...
 type CXPackage struct {
 	Imports         []*CXPackage
@@ -35,6 +36,7 @@ func MakePackage(name string) *CXPackage {
 
 // ----------------------------------------------------------------
 //                             Getters
+
 // GetImport ...
 func (pkg *CXPackage) GetImport(impName string) (*CXPackage, error) {
 	for _, imp := range pkg.Imports {
