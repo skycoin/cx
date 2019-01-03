@@ -7,6 +7,7 @@ var CorePackages = []string{
 }
 
 // op codes
+// nolint golint
 const (
 	OP_IDENTITY = iota
 	OP_JMP
