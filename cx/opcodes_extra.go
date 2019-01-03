@@ -159,151 +159,403 @@ var execNativeExtra func(*CXProgram)
 
 func init () {
 	// gogl
-	AddOpCode(OP_GL_INIT, "gl.Init", []int{}, []int{})
-	AddOpCode(OP_GL_STRS, "gl.Strs", []int{TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GL_FREE, "gl.Free", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture", []int{TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GL_NEW_GIF, "gl.NewGIF", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GL_FREE_GIF, "gl.FreeGIF", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{TYPE_I32, TYPE_I32})
-
+	AddOpCode(OP_GL_INIT, "gl.Init",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STRS, "gl.Strs",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_FREE, "gl.Free",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_NEW_GIF, "gl.NewGIF",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_FREE_GIF, "gl.FreeGIF",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	
 	// gl_0.0
-	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_ROTATEF, "gl.Rotatef", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_TRANSLATEF, "gl.Translatef", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_LOAD_IDENTITY, "gl.LoadIdentity", []int{}, []int{})
-	AddOpCode(OP_GL_PUSH_MATRIX, "gl.PushMatrix", []int{}, []int{})
-	AddOpCode(OP_GL_POP_MATRIX, "gl.PopMatrix", []int{}, []int{})
-	AddOpCode(OP_GL_ENABLE_CLIENT_STATE, "gl.EnableClientState", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_COLOR3F, "gl.Color3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_COLOR4F, "gl.Color4f", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_BEGIN, "gl.Begin", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_END, "gl.End", []int{}, []int{})
-	AddOpCode(OP_GL_NORMAL3F, "gl.Normal3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_VERTEX_2F, "gl.Vertex2f", []int{TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_VERTEX_3F, "gl.Vertex3f", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_LIGHTFV, "gl.Lightfv", []int{TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_FRUSTUM, "gl.Frustum", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
-	AddOpCode(OP_GL_TEX_ENVI, "gl.TexEnvi", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_ORTHO, "gl.Ortho", []int{TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64, TYPE_F64}, []int{})
-	AddOpCode(OP_GL_SCALEF, "gl.Scalef", []int{TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_TEX_COORD_2D, "gl.TexCoord2d", []int{TYPE_F64, TYPE_F64}, []int{})
-	AddOpCode(OP_GL_TEX_COORD_2F, "gl.TexCoord2f", []int{TYPE_F32, TYPE_F32}, []int{})
-
+	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ROTATEF, "gl.Rotatef",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TRANSLATEF, "gl.Translatef",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_LOAD_IDENTITY, "gl.LoadIdentity",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_PUSH_MATRIX, "gl.PushMatrix",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_POP_MATRIX, "gl.PopMatrix",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ENABLE_CLIENT_STATE, "gl.EnableClientState",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_COLOR3F, "gl.Color3f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_COLOR4F, "gl.Color4f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BEGIN, "gl.Begin",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_END, "gl.End",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_NORMAL3F, "gl.Normal3f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_VERTEX_2F, "gl.Vertex2f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_VERTEX_3F, "gl.Vertex3f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_LIGHTFV, "gl.Lightfv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_FRUSTUM, "gl.Frustum",
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TEX_ENVI, "gl.TexEnvi",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ORTHO, "gl.Ortho",
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_SCALEF, "gl.Scalef",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TEX_COORD_2D, "gl.TexCoord2d",
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TEX_COORD_2F, "gl.TexCoord2f",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	
 	// gl_1_0
-	AddOpCode(OP_GL_CULL_FACE, "gl.CullFace", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_HINT, "gl.Hint", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_SCISSOR, "gl.Scissor", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_TEX_PARAMETERI, "gl.TexParameteri", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_CLEAR, "gl.Clear", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_CLEAR_COLOR, "gl.ClearColor", []int{TYPE_F32, TYPE_F32, TYPE_F32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_CLEAR_STENCIL, "gl.ClearStencil", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_CLEAR_DEPTH, "gl.ClearDepth", []int{TYPE_F64}, []int{})
-	AddOpCode(OP_GL_STENCIL_MASK, "gl.StencilMask", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_COLOR_MASK, "gl.ColorMask", []int{TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_BOOL}, []int{})
-	AddOpCode(OP_GL_DEPTH_MASK, "gl.DepthMask", []int{TYPE_BOOL}, []int{})
-	AddOpCode(OP_GL_DISABLE, "gl.Disable", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_ENABLE, "gl.Enable", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BLEND_FUNC, "gl.BlendFunc", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_STENCIL_FUNC, "gl.StencilFunc", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_STENCIL_OP, "gl.StencilOp", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DEPTH_FUNC, "gl.DepthFunc", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GET_ERROR, "gl.GetError", []int{}, []int{TYPE_I32})
-	AddOpCode(OP_GL_GET_TEX_LEVEL_PARAMETERIV, "gl.GetTexLevelParameteriv", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_DEPTH_RANGE, "gl.DepthRange", []int{TYPE_F64, TYPE_F64}, []int{})
-	AddOpCode(OP_GL_VIEWPORT, "gl.Viewport", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-
+	AddOpCode(OP_GL_CULL_FACE, "gl.CullFace",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_HINT, "gl.Hint",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_SCISSOR, "gl.Scissor",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TEX_PARAMETERI, "gl.TexParameteri",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR, "gl.Clear",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR_COLOR, "gl.ClearColor",
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR_STENCIL, "gl.ClearStencil",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR_DEPTH, "gl.ClearDepth",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STENCIL_MASK, "gl.StencilMask",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_COLOR_MASK, "gl.ColorMask",
+		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DEPTH_MASK, "gl.DepthMask",
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DISABLE, "gl.Disable",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ENABLE, "gl.Enable",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BLEND_FUNC, "gl.BlendFunc",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STENCIL_FUNC, "gl.StencilFunc",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STENCIL_OP, "gl.StencilOp",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DEPTH_FUNC, "gl.DepthFunc",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GET_ERROR, "gl.GetError",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GET_TEX_LEVEL_PARAMETERIV, "gl.GetTexLevelParameteriv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_DEPTH_RANGE, "gl.DepthRange",
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_VIEWPORT, "gl.Viewport",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	
 	// gl_1_1
-	AddOpCode(OP_GL_DRAW_ARRAYS, "gl.DrawArrays", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BIND_TEXTURE, "gl.BindTexture", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_TEXTURES, "gl.DeleteTextures", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GEN_TEXTURES, "gl.GenTextures", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-
+	AddOpCode(OP_GL_DRAW_ARRAYS, "gl.DrawArrays",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BIND_TEXTURE, "gl.BindTexture",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_TEXTURES, "gl.DeleteTextures",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GEN_TEXTURES, "gl.GenTextures",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	
 	// gl_1_3
-	AddOpCode(OP_GL_ACTIVE_TEXTURE, "gl.ActiveTexture", []int{TYPE_I32}, []int{})
-
+	AddOpCode(OP_GL_ACTIVE_TEXTURE, "gl.ActiveTexture",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	
 	// gl_1_5
-	AddOpCode(OP_GL_BIND_BUFFER, "gl.BindBuffer", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_BUFFERS, "gl.DeleteBuffers", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GEN_BUFFERS, "gl.GenBuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_BUFFER_DATA, "gl.BufferData", []int{TYPE_I32, TYPE_I32, TYPE_F32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_F32}, []int{})
-
+	AddOpCode(OP_GL_BIND_BUFFER, "gl.BindBuffer",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_BUFFERS, "gl.DeleteBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GEN_BUFFERS, "gl.GenBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_BUFFER_DATA, "gl.BufferData",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	
 	//gl_2_0
-	AddOpCode(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_STENCIL_FUNC_SEPARATE, "gl.StencilFuncSeparate", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_STENCIL_MASK_SEPARATE, "gl.StencilMaskSeparate", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_ATTACH_SHADER, "gl.AttachShader", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BIND_ATTRIB_LOCATION, "gl.BindAttribLocation", []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	AddOpCode(OP_GL_COMPILE_SHADER, "gl.CompileShader", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_CREATE_PROGRAM, "gl.CreateProgram", []int{}, []int{TYPE_I32})
-	AddOpCode(OP_GL_CREATE_SHADER, "gl.CreateShader", []int{TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_DELETE_PROGRAM, "gl.DeleteProgram", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_SHADER, "gl.DeleteShader", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DETACH_SHADER, "gl.DetachShader", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, "gl.EnableVertexAttribArray", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GET_ATTRIB_LOCATION, "gl.GetAttribLocation", []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GL_GET_SHADERIV, "gl.GetShaderiv", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GET_UNIFORM_LOCATION, "gl.GetUniformLocation", []int{TYPE_I32, TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GL_LINK_PROGRAM, "gl.LinkProgram", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_SHADER_SOURCE, "gl.ShaderSource", []int{TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	AddOpCode(OP_GL_USE_PROGRAM, "gl.UseProgram", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_UNIFORM_1F, "gl.Uniform1f", []int{TYPE_I32, TYPE_F32}, []int{})
-	AddOpCode(OP_GL_UNIFORM_1I, "gl.Uniform1i", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER_I32, "gl.VertexAttribPointerI32", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_BOOL, TYPE_I32, TYPE_I32}, []int{})
-
+	AddOpCode(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STENCIL_FUNC_SEPARATE, "gl.StencilFuncSeparate",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_STENCIL_MASK_SEPARATE, "gl.StencilMaskSeparate",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ATTACH_SHADER, "gl.AttachShader",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BIND_ATTRIB_LOCATION, "gl.BindAttribLocation",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_COMPILE_SHADER, "gl.CompileShader",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CREATE_PROGRAM, "gl.CreateProgram",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_CREATE_SHADER, "gl.CreateShader",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_DELETE_PROGRAM, "gl.DeleteProgram",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_SHADER, "gl.DeleteShader",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DETACH_SHADER, "gl.DetachShader",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY, "gl.EnableVertexAttribArray",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GET_ATTRIB_LOCATION, "gl.GetAttribLocation",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GET_SHADERIV, "gl.GetShaderiv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GET_UNIFORM_LOCATION, "gl.GetUniformLocation",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_LINK_PROGRAM, "gl.LinkProgram",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_SHADER_SOURCE, "gl.ShaderSource",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_USE_PROGRAM, "gl.UseProgram",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_1F, "gl.Uniform1f",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_1I, "gl.Uniform1i",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER_I32, "gl.VertexAttribPointerI32",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	
 	// gl_3_0
-	AddOpCode(OP_GL_BIND_RENDERBUFFER, "gl.BindRenderbuffer", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_RENDERBUFFERS, "gl.DeleteRenderbuffers", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GEN_RENDERBUFFERS, "gl.GenRenderbuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_RENDERBUFFER_STORAGE, "gl.RenderbufferStorage", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BIND_FRAMEBUFFER, "gl.BindFramebuffer", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_FRAMEBUFFERS, "gl.DeleteFramebuffers", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GEN_FRAMEBUFFERS, "gl.GenFramebuffers", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_CHECK_FRAMEBUFFER_STATUS, "gl.CheckFramebufferStatus", []int{TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GL_FRAMEBUFFER_TEXTURE_2D, "gl.FramebufferTexture2D", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_FRAMEBUFFER_RENDERBUFFER, "gl.FramebufferRenderbuffer", []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_BIND_VERTEX_ARRAY, "gl.BindVertexArray", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GL_DELETE_VERTEX_ARRAYS, "gl.DeleteVertexArrays", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS, "gl.GenVertexArrays", []int{TYPE_I32, TYPE_I32}, []int{TYPE_I32})
-
+	AddOpCode(OP_GL_BIND_RENDERBUFFER, "gl.BindRenderbuffer",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_RENDERBUFFERS, "gl.DeleteRenderbuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GEN_RENDERBUFFERS, "gl.GenRenderbuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_RENDERBUFFER_STORAGE, "gl.RenderbufferStorage",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BIND_FRAMEBUFFER, "gl.BindFramebuffer",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_FRAMEBUFFERS, "gl.DeleteFramebuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GEN_FRAMEBUFFERS, "gl.GenFramebuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_CHECK_FRAMEBUFFER_STATUS, "gl.CheckFramebufferStatus",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_FRAMEBUFFER_TEXTURE_2D, "gl.FramebufferTexture2D",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_FRAMEBUFFER_RENDERBUFFER, "gl.FramebufferRenderbuffer",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_BIND_VERTEX_ARRAY, "gl.BindVertexArray",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_VERTEX_ARRAYS, "gl.DeleteVertexArrays",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS, "gl.GenVertexArrays",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	
 	// glfw
-	AddOpCode(OP_GLFW_INIT, "glfw.Init", []int{}, []int{})
-	AddOpCode(OP_GLFW_WINDOW_HINT, "glfw.WindowHint", []int{TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GLFW_CREATE_WINDOW, "glfw.CreateWindow", []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_MAKE_CONTEXT_CURRENT, "glfw.MakeContextCurrent", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_SHOULD_CLOSE, "glfw.ShouldClose", []int{TYPE_STR}, []int{TYPE_BOOL})
-	AddOpCode(OP_GLFW_SET_SHOULD_CLOSE, "glfw.SetShouldClose", []int{TYPE_STR, TYPE_BOOL}, []int{})
-	AddOpCode(OP_GLFW_POLL_EVENTS, "glfw.PollEvents", []int{}, []int{})
-	AddOpCode(OP_GLFW_SWAP_BUFFERS, "glfw.SwapBuffers", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize", []int{TYPE_STR}, []int{TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", []int{TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_SET_KEY_CALLBACK_EX, "glfw.SetKeyCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_GET_TIME, "glfw.GetTime", []int{}, []int{TYPE_F64})
-	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", []int{TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX, "glfw.SetMouseButtonCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", []int{TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx", []int{TYPE_STR, TYPE_STR, TYPE_STR}, []int{})
-	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos", []int{TYPE_STR}, []int{TYPE_F64, TYPE_F64})
-	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", []int{TYPE_STR, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GLFW_GET_KEY, "glfw.GetKey", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32})
-	AddOpCode(OP_GLFW_FUNC_I32_I32, "glfw.func_i32_i32", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32", []int{TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-
+	AddOpCode(OP_GLFW_INIT, "glfw.Init",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_WINDOW_HINT, "glfw.WindowHint",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_CREATE_WINDOW, "glfw.CreateWindow",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_MAKE_CONTEXT_CURRENT, "glfw.MakeContextCurrent",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SHOULD_CLOSE, "glfw.ShouldClose",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_GLFW_SET_SHOULD_CLOSE, "glfw.SetShouldClose",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_POLL_EVENTS, "glfw.PollEvents",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SWAP_BUFFERS, "glfw.SwapBuffers",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_KEY_CALLBACK_EX, "glfw.SetKeyCallbackEx",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_GET_TIME, "glfw.GetTime",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX, "glfw.SetMouseButtonCallbackEx",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_GET_KEY, "glfw.GetKey",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLFW_FUNC_I32_I32, "glfw.func_i32_i32",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	
 	// gltext
-	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType", []int{TYPE_STR, TYPE_STR, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32}, []int{})
-	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf", []int{TYPE_STR, TYPE_F32, TYPE_F32, TYPE_STR}, []int{})
-	AddOpCode(OP_GLTEXT_METRICS, "gltext.Metrics", []int{TYPE_STR, TYPE_STR}, []int{TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GLTEXT_TEXTURE, "gltext.Texture", []int{TYPE_STR}, []int{TYPE_I32})
-	AddOpCode(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph", []int{TYPE_STR, TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds", []int{}, []int{TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32})
-	AddOpCode(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo", []int{TYPE_STR, TYPE_I32}, []int{TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32, TYPE_I32})
-
+	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLTEXT_METRICS, "gltext.Metrics",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLTEXT_TEXTURE, "gltext.Texture",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLTEXT_NEXT_GLYPH, "gltext.NextGlyph",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLTEXT_GLYPH_BOUNDS, "gltext.GlyphBounds",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLTEXT_GLYPH_METRICS, "gltext.GlyphMetrics",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	
 	// exec
 	execNativeExtra = func (prgrm *CXProgram) {
 		defer RuntimeError()

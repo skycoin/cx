@@ -278,10 +278,11 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		if !exprOut.IsArrayFirst {
 			exprOut.IsDereferenceFirst = true
 		}
-
+		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_DEREF)
 		exprOut.IsReference = false
 	case "&":
 		exprOut.PassBy = PASSBY_REFERENCE
+		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_POINTER)
 	case "!":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			expr := MakeExpression(Natives[OP_BOOL_NOT], CurrentFile, LineNo)

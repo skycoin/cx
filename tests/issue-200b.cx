@@ -1,0 +1,47 @@
+package main
+
+func testArray (byts [5][5]byte) {}
+func testPointer (num *i32) {}
+func testPointerLevels (num **i32) {}
+func testSlice (slc [][]i32) {}
+func testArrayPointer (pnums [3]*i32) {}
+
+func returnSlice () (slc [][]i32) {}
+
+func main () {
+	var bar [5]byte
+	bar = [5]byte{1B, 2B, 3B, 4B, 5B}
+
+	testArray(bar)
+	
+	var num i32
+	num = 5
+
+	// it should be &num
+	testPointer(num)
+
+	var pnum *i32
+	testPointerLevels(pnum)
+
+	var ts []i32
+	ts = []i32{1, 2, 3}
+	// it should be [][]i32
+	testSlice(ts)
+
+	testSlice(returnSlice())
+
+	// it should be [3]*i32
+	var pnums [4]*i32
+	n1 := 1
+	n2 := 2
+	n3 := 3
+
+	pnums[0] = &n1
+	pnums[1] = &n2
+	pnums[2] = &n3
+
+	testArrayPointer(pnums)
+
+	// it should be *(pnums[0])
+	i32.print(pnums[0])
+}
