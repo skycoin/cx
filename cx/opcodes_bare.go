@@ -868,17 +868,17 @@ func init() {
 
 		// affordances
 		case OP_AFF_PRINT:
-			op_aff_print(expr, fp)
+			opAffPrint(expr, fp)
 		case OP_AFF_QUERY:
-			op_aff_query(expr, fp)
+			opAffQuery(expr, fp)
 		case OP_AFF_ON:
-			op_aff_on(expr, fp)
+			opAffOn(expr, fp)
 		case OP_AFF_OF:
-			op_aff_of(expr, fp)
+			opAffOf(expr, fp)
 		case OP_AFF_INFORM:
-			op_aff_inform(expr, fp)
+			opAffInform(expr, fp)
 		case OP_AFF_REQUEST:
-			op_aff_request(expr, fp)
+			opAffRequest(expr, fp)
 		default:
 			// DumpOpCodes(opCode) // debug helper
 			panic("invalid bare opcode")

@@ -7,14 +7,14 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-var onMessages map[string]string = map[string]string{
+var onMessages = map[string]string{
 	"arg-arg-input":    "Replace %s.Input.%d with %s",
 	"arg-arg-output":   "Replace %s.Output.%d with %s",
 	"arg-expr":         "Add ",
 	"prgrm-arg-input":  "Print %s.Input.%d's value",
 	"prgrm-arg-output": "Print %s.Output.%d's value",
 }
-var ofMessages map[string]string = map[string]string{
+var ofMessages = map[string]string{
 	"arg-arg-input":    "Replace %[3]s with %[1]s.Input.%[2]d",
 	"arg-arg-output":   "Replace %[3]s with %[1]s.Output.%[2]d",
 	"strct-arg-input":  "Add %[1]s.Input.%[2]d as a new field of %s",
@@ -23,6 +23,7 @@ var ofMessages map[string]string = map[string]string{
 	"prgrm-arg-output": "Print %[1]s.Output.%[2]d's value",
 }
 
+// GetInferActions ...
 func GetInferActions(inp *CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
@@ -54,7 +55,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	return result
 }
 
-func op_aff_print(expr *CXExpression, fp int) {
+func opAffPrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -62,6 +63,7 @@ func op_aff_print(expr *CXExpression, fp int) {
 	// }
 }
 
+// CallAffPredicate ...
 func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 	prevCall := &PROGRAM.CallStack[PROGRAM.CallCounter]
 
@@ -173,6 +175,7 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 	}
 }
 
+// QueryArgument ...
 func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Label == "" {
@@ -185,6 +188,7 @@ func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOff
 	}
 }
 
+// QueryExpressions ...
 func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Operator == nil || ex.Label == "" {
@@ -259,6 +263,7 @@ func queryStructsInPackage(fn *CXFunction, expr *CXExpression, strctOffsetB []by
 	}
 }
 
+// QueryStructure ...
 func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int) {
 	queryStructsInPackage(fn, expr, strctOffsetB, affOffset, expr.Package)
 	for _, imp := range expr.Package.Imports {
@@ -266,6 +271,7 @@ func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, aff
 	}
 }
 
+// QueryFunction ...
 func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffset *int) {
 	for _, f := range expr.Package.Functions {
 		if f.Name == SYS_INIT_FUNC {
@@ -302,6 +308,7 @@ func QueryFunction(fn *CXFunction, expr *CXExpression, fnOffsetB []byte, affOffs
 	}
 }
 
+// QueryCaller ...
 func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOffset *int) {
 	if PROGRAM.CallCounter == 0 {
 		// then it's entry point
@@ -332,6 +339,7 @@ func QueryCaller(fn *CXFunction, expr *CXExpression, callerOffsetB []byte, affOf
 	}
 }
 
+// QueryProgram ...
 func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOffset *int) {
 	prgrmOffset := AllocateSeq(OBJECT_HEADER_SIZE + I32_SIZE + I64_SIZE + STR_SIZE + I32_SIZE)
 	// Callcounter
@@ -566,7 +574,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 	}
 }
 
-func op_aff_on(expr *CXExpression, fp int) {
+func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -574,13 +582,13 @@ func op_aff_on(expr *CXExpression, fp int) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg CXPackage = *prevPkg
+	var tgtPkg = CXPackage(*prevPkg)
 	var tgtStrct CXStruct
 	if prevStrct != nil {
 		tgtStrct = *prevStrct
 	}
-	var tgtFn CXFunction = *expr.Function
-	var tgtExpr CXExpression = *prevExpr
+	var tgtFn = CXFunction(*expr.Function)
+	var tgtExpr = CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -607,7 +615,7 @@ func op_aff_on(expr *CXExpression, fp int) {
 	}
 }
 
-func op_aff_of(expr *CXExpression, fp int) {
+func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -615,13 +623,13 @@ func op_aff_of(expr *CXExpression, fp int) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg CXPackage = *expr.Package
+	var tgtPkg = CXPackage(*expr.Package)
 	var tgtStrct CXStruct
 	if prevStrct != nil {
 		tgtStrct = *prevStrct
 	}
-	var tgtFn CXFunction = *expr.Function
-	var tgtExpr CXExpression = *prevExpr
+	var tgtFn = CXFunction(*expr.Function)
+	var tgtExpr = CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -645,11 +653,12 @@ func op_aff_of(expr *CXExpression, fp int) {
 }
 
 func readStrctAff(aff string, tgtPkg *CXPackage) *CXStruct {
-	if strct, err := tgtPkg.GetStruct(aff); err == nil {
-		return strct
-	} else {
+	strct, err := tgtPkg.GetStruct(aff)
+	if err != nil {
 		panic(err)
 	}
+
+	return strct
 }
 
 func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
@@ -704,12 +713,12 @@ func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 
 	if argType == "Input" {
 		return affExpr.Inputs[argIdx]
-	} else {
-		return affExpr.Outputs[argIdx]
 	}
+	return affExpr.Outputs[argIdx]
+
 }
 
-func op_aff_inform(expr *CXExpression, fp int) {
+func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -717,13 +726,13 @@ func op_aff_inform(expr *CXExpression, fp int) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg CXPackage = *prevPkg
+	var tgtPkg = CXPackage(*prevPkg)
 	var tgtStrct CXStruct
 	if prevStrct != nil {
 		tgtStrct = *prevStrct
 	}
-	var tgtFn CXFunction = *expr.Function
-	var tgtExpr CXExpression = *prevExpr
+	var tgtFn = CXFunction(*expr.Function)
+	var tgtExpr = CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -813,7 +822,7 @@ func op_aff_inform(expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func op_aff_request(expr *CXExpression, fp int) {
+func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -821,13 +830,13 @@ func op_aff_request(expr *CXExpression, fp int) {
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
-	var tgtPkg CXPackage = *prevPkg
+	var tgtPkg = CXPackage(*prevPkg)
 	var tgtStrct CXStruct
 	if prevStrct != nil {
 		tgtStrct = *prevStrct
 	}
-	var tgtFn CXFunction = *expr.Function
-	var tgtExpr CXExpression = *prevExpr
+	var tgtFn = CXFunction(*expr.Function)
+	var tgtExpr = CXExpression(*prevExpr)
 
 	// processing the target
 	var tgtElt string
@@ -933,7 +942,7 @@ func op_aff_request(expr *CXExpression, fp int) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func op_aff_query(expr *CXExpression, fp int) {
+func opAffQuery(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)
