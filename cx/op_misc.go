@@ -5,6 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+// EscapeAnalysis ...
 func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	heapOffset := AllocateSeq(arg.TotalSize + OBJECT_HEADER_SIZE)
 
@@ -13,7 +14,7 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	// creating a header for this object
 	size := encoder.SerializeAtomic(int32(len(byts)))
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}

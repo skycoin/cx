@@ -633,7 +633,7 @@ func WriteToSlice(off int, inp []byte) int {
 
 		size := encoder.SerializeAtomic(int32(int(c)*len(inp) + SLICE_HEADER_SIZE))
 
-		var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+		var header = make([]byte, OBJECT_HEADER_SIZE)
 		for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 			header[c] = size[c-5]
 		}
