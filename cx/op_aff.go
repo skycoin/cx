@@ -179,7 +179,7 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 func QueryArgument(fn *CXFunction, expr *CXExpression, argOffsetB []byte, affOffset *int) {
 	for _, ex := range expr.Function.Expressions {
 		if ex.Label == "" {
-			// it's a non-labelled expression
+			// it's a non-labeled expression
 			continue
 		}
 
@@ -193,7 +193,7 @@ func QueryExpressions(fn *CXFunction, expr *CXExpression, exprOffsetB []byte, af
 	for _, ex := range expr.Function.Expressions {
 		if ex.Operator == nil || ex.Label == "" {
 			// then it's a variable declaration
-			// or it's a non-labelled expression
+			// or it's a non-labeled expression
 			continue
 		}
 
