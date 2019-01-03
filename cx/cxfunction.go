@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/satori/go.uuid"
+	. "github.com/satori/go.uuid" //nolint golint
 )
 
 /* The CXFunction struct contains information about a CX function.
  */
 
+// CXFunction ...
 type CXFunction struct {
 	ListOfPointers    []*CXArgument
 	Inputs            []*CXArgument
@@ -25,6 +26,7 @@ type CXFunction struct {
 	IsNative          bool
 }
 
+// MakeFunction ...
 func MakeFunction(name string) *CXFunction {
 	return &CXFunction{
 		ElementID: MakeElementID(),
@@ -35,14 +37,16 @@ func MakeFunction(name string) *CXFunction {
 // ----------------------------------------------------------------
 //                             Getters
 
+// GetExpressions ...
 func (fn *CXFunction) GetExpressions() ([]*CXExpression, error) {
 	if fn.Expressions != nil {
 		return fn.Expressions, nil
-	} else {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
+	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+
 }
 
+// GetExpressionByLabel ...
 func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 	if fn.Expressions != nil {
 		for _, expr := range fn.Expressions {
@@ -52,24 +56,25 @@ func (fn *CXFunction) GetExpressionByLabel(lbl string) (*CXExpression, error) {
 		}
 
 		return nil, fmt.Errorf("expression '%s' not found in function '%s'", lbl, fn.Name)
-	} else {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
+	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+
 }
 
+// GetExpressionByLine ...
 func (fn *CXFunction) GetExpressionByLine(line int) (*CXExpression, error) {
 	if fn.Expressions != nil {
 		if line <= len(fn.Expressions) {
 			return fn.Expressions[line], nil
-		} else {
-			return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
 		}
+		return nil, fmt.Errorf("expression line number '%d' exceeds number of expressions in function '%s'", line, fn.Name)
 
-	} else {
-		return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
 	}
+	return nil, fmt.Errorf("function '%s' has no expressions", fn.Name)
+
 }
 
+// GetCurrentExpression ...
 func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 	if fn.CurrentExpression != nil {
 		return fn.CurrentExpression, nil
@@ -86,6 +91,7 @@ func (fn *CXFunction) GetCurrentExpression() (*CXExpression, error) {
 // ----------------------------------------------------------------
 //                     Member handling
 
+// AddInput ...
 func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
 	found := false
 	for _, inp := range fn.Inputs {
@@ -101,6 +107,7 @@ func (fn *CXFunction) AddInput(param *CXArgument) *CXFunction {
 	return fn
 }
 
+// RemoveInput ...
 func (fn *CXFunction) RemoveInput(inpName string) {
 	if len(fn.Inputs) > 0 {
 		lenInps := len(fn.Inputs)
@@ -117,6 +124,7 @@ func (fn *CXFunction) RemoveInput(inpName string) {
 	}
 }
 
+// AddOutput ...
 func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 	found := false
 	for _, out := range fn.Outputs {
@@ -134,6 +142,7 @@ func (fn *CXFunction) AddOutput(param *CXArgument) *CXFunction {
 	return fn
 }
 
+// RemoveOutput ...
 func (fn *CXFunction) RemoveOutput(outName string) {
 	if len(fn.Outputs) > 0 {
 		lenOuts := len(fn.Outputs)
@@ -150,6 +159,7 @@ func (fn *CXFunction) RemoveOutput(outName string) {
 	}
 }
 
+// AddExpression ...
 func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	// expr.Program = fn.Program
 	expr.Package = fn.Package
@@ -160,6 +170,7 @@ func (fn *CXFunction) AddExpression(expr *CXExpression) *CXFunction {
 	return fn
 }
 
+// RemoveExpression ...
 func (fn *CXFunction) RemoveExpression(line int) {
 	if len(fn.Expressions) > 0 {
 		lenExprs := len(fn.Expressions)
@@ -177,6 +188,7 @@ func (fn *CXFunction) RemoveExpression(line int) {
 // ----------------------------------------------------------------
 //                             Selectors
 
+// SelectExpression ...
 func (fn *CXFunction) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
 	// 	Action: func(cxt *CXProgram) {
