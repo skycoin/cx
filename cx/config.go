@@ -73,7 +73,19 @@ const (
     CX_INTERNAL_ERROR
     CX_ASSERT
     CX_RUNTIME_INVALID_ARGUMENT
+    CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE
 )
+
+var ErrorStrings map[int]string = map[int]string {
+	CX_SUCCESS:                             "CX_SUCCESS",
+	CX_RUNTIME_ERROR:                       "CX_RUNTIME_ERROR",
+	CX_PANIC:                               "CX_PANIC",
+	CX_COMPILATION_ERROR:                   "CX_COMPILATION_ERROR",
+	CX_INTERNAL_ERROR:                      "CX_INTERNAL_ERROR",
+	CX_ASSERT:                              "CX_ASSERT",
+	CX_RUNTIME_INVALID_ARGUMENT:            "CX_RUNTIME_INVALID_ARGUMENT",
+	CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE:    "CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE",
+}
 
 const (
 	DECL_POINTER = iota // 0

@@ -7,6 +7,8 @@ import (
 
 func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool) {
 	var isPointer bool
+	var baseOffset int
+	var sizeofElement int
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
@@ -25,7 +27,9 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 					sizeToUse = arg.Size
 				}
 
-				*finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
+				baseOffset = *finalOffset
+				sizeofElement = subSize * sizeToUse
+				*finalOffset += int(ReadI32(fp, idxArg)) * sizeofElement
 			}
 		case DEREF_POINTER:
 			isPointer = true
@@ -51,6 +55,9 @@ func CalculateDereferences (arg *CXArgument, finalOffset *int, fp int, dbg bool)
 		*finalOffset += OBJECT_HEADER_SIZE
 		if arg.IsSlice {
 			*finalOffset += SLICE_HEADER_SIZE
+			if IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) == false {
+				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+			}
 		}
 	}
 }
@@ -289,6 +296,16 @@ func FromF64(in float64) []byte {
 
 // 	return offset, size
 // }
+
+func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
+	sliceLen := GetSliceLen(int32(offset))
+	bytesLen := sliceLen * int32(sizeofElement)
+	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
+	if index >= 0 && index < int(bytesLen) && (index % sizeofElement) == 0 {
+		return true
+	}
+	return false
+}
 
 func GetPointerOffset(pointer int32) int32 {
 	var offset int32
