@@ -313,7 +313,7 @@ func opLen(expr *CXExpression, fp int) {
 	elt := GetAssignmentElement(inp1)
 
 	if elt.IsSlice || elt.Type == TYPE_AFF {
-		var sliceOffset int32 = GetSliceOffset(fp, inp1)
+		var sliceOffset = GetSliceOffset(fp, inp1)
 		var sliceLen []byte
 		if sliceOffset > 0 {
 			sliceLen = GetSliceHeader(sliceOffset)[4:8]
@@ -325,7 +325,7 @@ func opLen(expr *CXExpression, fp int) {
 
 		WriteMemory(GetFinalOffset(fp, out1), sliceLen)
 	} else if elt.Type == TYPE_STR {
-		var strOffset int = GetStrOffset(fp, inp1)
+		var strOffset = GetStrOffset(fp, inp1)
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
 		outB1 := FromI32(int32(elt.Lengths[0]))
@@ -335,7 +335,7 @@ func opLen(expr *CXExpression, fp int) {
 
 func opResize(expr *CXExpression, fp int) {
 	sliceOffset := GetSliceOffset(fp, expr.Inputs[0])
-	var newLen int32 = ReadI32(fp, expr.Inputs[1])
+	var newLen = ReadI32(fp, expr.Inputs[1])
 	if sliceOffset >= 0 && newLen >= 0 {
 		sliceHeader := GetSliceHeader(sliceOffset)
 		var oldCap int32

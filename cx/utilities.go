@@ -586,6 +586,7 @@ func GetAssignmentElement(arg *CXArgument) *CXArgument {
 
 }
 
+// SliceAppend ...
 func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte, sizeofElement int) int {
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
@@ -603,15 +604,15 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
 	}
 
-	var newLen int32 = inputSliceLen + 1
-	var newCap int32 = outputSliceCap
+	var newLen = inputSliceLen + 1
+	var newCap = outputSliceCap
 	if newLen > newCap {
 		if newCap <= 0 {
 			newCap = newLen
 		} else {
 			newCap *= 2
 		}
-		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
+		var outputObjectSize = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
 		copy(GetObjectHeader(outputSliceOffset)[5:9], encoder.SerializeAtomic(outputObjectSize))
 
@@ -630,6 +631,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 	return int(outputSliceOffset)
 }
 
+// WriteToSlice ...
 func WriteToSlice(off int, inp []byte) int {
 	return SliceAppend(int32(off), int32(off), inp, len(inp))
 }
@@ -671,6 +673,7 @@ func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
+// ErrorCode ...
 func ErrorCode(r interface{}) int {
 	switch v := r.(type) {
 	case int:

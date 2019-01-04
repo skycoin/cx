@@ -314,6 +314,7 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
+// IsValidSliceIndex ...
 func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
 	bytesLen := sliceLen * int32(sizeofElement)
@@ -324,12 +325,14 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	return false
 }
 
+// GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
 	var offset int32
 	encoder.DeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
 	return offset
 }
 
+// GetSliceOffset ...
 func GetSliceOffset(fp int, arg *CXArgument) int32 {
 	element := GetAssignmentElement(arg)
 	if element.IsSlice {
@@ -339,14 +342,17 @@ func GetSliceOffset(fp int, arg *CXArgument) int32 {
 	return -1
 }
 
+// GetObjectHeader ...
 func GetObjectHeader(offset int32) []byte {
 	return PROGRAM.Memory[offset : offset+OBJECT_HEADER_SIZE]
 }
 
+// GetSliceHeader ...
 func GetSliceHeader(offset int32) []byte {
 	return PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 }
 
+// GetSliceLen ...
 func GetSliceLen(offset int32) int32 {
 	var sliceLen int32
 	sliceHeader := GetSliceHeader(offset)
@@ -354,6 +360,7 @@ func GetSliceLen(offset int32) int32 {
 	return sliceLen
 }
 
+// GetSlice ...
 func GetSlice(offset int32, sizeofElement int) []byte {
 	if offset > 0 {
 		sliceLen := GetSliceLen(offset)
@@ -366,6 +373,7 @@ func GetSlice(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
+// GetSliceData ...
 func GetSliceData(offset int32, sizeofElement int) []byte {
 	if slice := GetSlice(offset, sizeofElement); slice != nil {
 		return slice[4:]
@@ -373,10 +381,11 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
+// ReadF32Data ...
 func ReadF32Data(fp int, inp *CXArgument) interface{} {
 	var data interface{}
 	elt := GetAssignmentElement(inp)
-	var dataF32 []float32 = nil
+	var dataF32 []float32
 	if elt.IsSlice {
 		dataF32 = ReadF32Slice(fp, inp)
 	} else if elt.IsArray {
@@ -390,6 +399,7 @@ func ReadF32Data(fp int, inp *CXArgument) interface{} {
 	return data
 }
 
+// ReadF32Slice ...
 func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {
 	sliceOffset := GetSliceOffset(fp, inp)
 	if sliceOffset >= 0 && inp.Type == TYPE_F32 {
