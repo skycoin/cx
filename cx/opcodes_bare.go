@@ -1,15 +1,13 @@
 package base
 
-import (
-
-)
-
+// CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
 	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
 }
 
 // op codes
+// nolint golint
 const (
 	OP_IDENTITY = iota
 	OP_JMP
@@ -242,13 +240,16 @@ const (
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
-var OpNames map[int]string = map[int]string{}
-var OpCodes map[string]int = map[string]int{}
-var Natives map[int]*CXFunction = map[int]*CXFunction{}
-var execNativeBare func(*CXProgram)
-var execNative func(*CXProgram)
+var (
+	OpNames        = map[int]string{}
+	OpCodes        = map[string]int{}
+	Natives        = map[int]*CXFunction{}
+	execNativeBare func(*CXProgram)
+	execNative     func(*CXProgram)
+)
 
-func AddOpCode (code int, name string, inputs []int, outputs []int) {
+// AddOpCode ...
+func AddOpCode(code int, name string, inputs []int, outputs []int) {
 	OpNames[code] = name
 	OpCodes[name] = code
 	Natives[code] = MakeNative(code, inputs, outputs)
@@ -269,7 +270,7 @@ func DumpOpCodes(opCode int) () {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-func init () {
+func init() {
 	AddOpCode(OP_IDENTITY, "identity", []int{TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_JMP, "jmp", []int{TYPE_BOOL}, []int{})
 	AddOpCode(OP_DEBUG, "debug", []int{}, []int{})
@@ -487,52 +488,52 @@ func init () {
 			prgrm.PrintStack()
 
 		case OP_SERIALIZE:
-			op_serialize(expr, fp)
+			opSerialize(expr, fp)
 		case OP_DESERIALIZE:
-			op_deserialize(expr, fp)
+			opDeserialize(expr, fp)
 
 		case OP_UND_EQUAL:
-			op_equal(expr, fp)
+			opEqual(expr, fp)
 		case OP_UND_UNEQUAL:
-			op_unequal(expr, fp)
+			opUnequal(expr, fp)
 		case OP_UND_BITAND:
-			op_bitand(expr, fp)
+			opBitand(expr, fp)
 		case OP_UND_BITXOR:
-			op_bitxor(expr, fp)
+			opBitxor(expr, fp)
 		case OP_UND_BITOR:
-			op_bitor(expr, fp)
+			opBitor(expr, fp)
 		case OP_UND_BITCLEAR:
-			op_bitclear(expr, fp)
+			opBitclear(expr, fp)
 		case OP_UND_MUL:
-			op_mul(expr, fp)
+			opMul(expr, fp)
 		case OP_UND_DIV:
-			op_div(expr, fp)
+			opDiv(expr, fp)
 		case OP_UND_MOD:
-			op_mod(expr, fp)
+			opMod(expr, fp)
 		case OP_UND_ADD:
-			op_add(expr, fp)
+			opAdd(expr, fp)
 		case OP_UND_SUB:
-			op_sub(expr, fp)
+			opSub(expr, fp)
 		case OP_UND_BITSHL:
-			op_bitshl(expr, fp)
+			opBitshl(expr, fp)
 		case OP_UND_BITSHR:
-			op_bitshr(expr, fp)
+			opBitshr(expr, fp)
 		case OP_UND_LT:
-			op_lt(expr, fp)
+			opLt(expr, fp)
 		case OP_UND_GT:
-			op_gt(expr, fp)
+			opGt(expr, fp)
 		case OP_UND_LTEQ:
-			op_lteq(expr, fp)
+			opLteq(expr, fp)
 		case OP_UND_GTEQ:
-			op_gteq(expr, fp)
+			opGteq(expr, fp)
 		case OP_UND_LEN:
-			op_len(expr, fp)
+			opLen(expr, fp)
 		case OP_UND_PRINTF:
-			op_printf(expr, fp)
+			opPrintf(expr, fp)
 		case OP_UND_SPRINTF:
-			op_sprintf(expr, fp)
+			opSprintf(expr, fp)
 		case OP_UND_READ:
-			op_read(expr, fp)
+			opRead(expr, fp)
 
 		case OP_BYTE_BYTE:
 			opByteByte(expr, fp)
@@ -845,7 +846,7 @@ func init () {
 		case OP_LEN:
 		case OP_CONCAT:
 		case OP_APPEND:
-			op_append(expr, fp)
+			opAppend(expr, fp)
 		case OP_COPY:
 		case OP_CAST:
 		case OP_EQ:
@@ -864,25 +865,25 @@ func init () {
 		case OP_NAME:
 		case OP_EVOLVE:
 		case OP_ASSERT:
-			op_assert_value(expr, fp)
+			opAssertValue(expr, fp)
 		case OP_TEST:
-			op_test(expr, fp)
+			opTest(expr, fp)
 		case OP_PANIC:
-			op_panic(expr, fp)
+			opPanic(expr, fp)
 
 		// affordances
 		case OP_AFF_PRINT:
-			op_aff_print(expr, fp)
+			opAffPrint(expr, fp)
 		case OP_AFF_QUERY:
-			op_aff_query(expr, fp)
+			opAffQuery(expr, fp)
 		case OP_AFF_ON:
-			op_aff_on(expr, fp)
+			opAffOn(expr, fp)
 		case OP_AFF_OF:
-			op_aff_of(expr, fp)
+			opAffOf(expr, fp)
 		case OP_AFF_INFORM:
-			op_aff_inform(expr, fp)
+			opAffInform(expr, fp)
 		case OP_AFF_REQUEST:
-			op_aff_request(expr, fp)
+			opAffRequest(expr, fp)
 		default:
 			// DumpOpCodes(opCode) // debug helper
 			panic("invalid bare opcode")

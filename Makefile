@@ -77,12 +77,25 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 	echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/skycoin/cx/tests"'
 	cx -v
 
+install-linters: ## Install linters
+	go get -u github.com/FiloSottile/vendorcheck
+	# For some reason this install method is not recommended, see https://github.com/golangci/golangci-lint#install
+	# However, they suggest `curl ... | bash` which we should not do
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+
+lint: ## Run linters. Use make install-linters first.
+	vendorcheck ./...
+	golangci-lint run -c .golangci.yml ./cx
+
 test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | xargs -I NAME cx -t -co tests/testdata/tokens/NAME.txt tests/NAME
+
+format: ## Formats the code. Must have goimports installed (use make install-linters).
+	goimports -w -local github.com/skycoin/cx ./cx
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

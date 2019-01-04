@@ -2,9 +2,10 @@ package base
 
 import (
 	"fmt"
-	"strconv"
 	"math"
 	"math/rand"
+	"strconv"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

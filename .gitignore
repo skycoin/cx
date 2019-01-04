@@ -88,3 +88,5 @@ jira*
 *.swp
 *.swo
 *.orig
+.idea
+.directory

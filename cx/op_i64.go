@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

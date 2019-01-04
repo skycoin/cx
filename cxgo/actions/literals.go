@@ -5,7 +5,7 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression {
+func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -25,7 +25,6 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	// slcVar.IsSlice = true
 
 	slcVar.TotalSize = TYPE_POINTER_SIZE
-	
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
 	slcVar.Package = pkg
@@ -88,7 +87,6 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	symOutput.PreviouslyDeclared = true
 
 	// symOutput.DeclarationSpecifiers = append(symOutput.DeclarationSpecifiers, DECL_ARRAY)
-	
 
 	symInput := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 	// symInput.DereferenceOperations = append(symInput.DereferenceOperations, DEREF_POINTER)
@@ -114,9 +112,9 @@ func SliceLiteralExpression (typSpec int, exprs []*CXExpression) []*CXExpression
 	return result
 }
 
-func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpression {
+func PrimaryStructLiteral(ident string, strctFlds []*CXExpression) []*CXExpression {
 	var result []*CXExpression
-	
+
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
 			for _, expr := range strctFlds {
@@ -152,7 +150,7 @@ func PrimaryStructLiteral (ident string, strctFlds []*CXExpression) []*CXExpress
 	return result
 }
 
-func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CXExpression) []*CXExpression {
+func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 		if _, err := pkg.GetImport(impName); err == nil {
@@ -187,7 +185,7 @@ func PrimaryStructLiteralExternal (impName string, ident string, strctFlds []*CX
 	return result
 }
 
-func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []*CXExpression {
+func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -243,7 +241,7 @@ func ArrayLiteralExpression (arrSize int, typSpec int, exprs []*CXExpression) []
 				// hack to get the correct lengths below
 				expr.Outputs = append(expr.Outputs, sym)
 			}
-			
+
 			result = append(result, symExpr)
 
 			sym.Lengths = append(expr.Outputs[0].Lengths, arrSize)

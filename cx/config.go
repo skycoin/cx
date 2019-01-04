@@ -26,6 +26,7 @@ const OS_ARGS = "Args"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"
+
 // const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
@@ -41,7 +42,7 @@ const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
 
 const CALLSTACK_SIZE = 1000
-const STACK_SIZE = 1048576 // 1 Mb
+const STACK_SIZE = 1048576     // 1 Mb
 const INIT_HEAP_SIZE = 2097152 // 2 Mb
 const MAX_HEAP_SIZE = 67108864 // 64 Mb
 const MIN_HEAP_FREE_RATIO = 40
@@ -53,6 +54,7 @@ const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
 const TYPE_POINTER_SIZE = 4
 const SLICE_HEADER_SIZE = 8
+
 var MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
 
 const MAX_UINT32 = ^uint32(0)
@@ -66,12 +68,12 @@ var BASIC_TYPES []string = []string{
 }
 
 const (
-    CX_SUCCESS = iota
-    CX_RUNTIME_ERROR
-    CX_PANIC // 2
-    CX_COMPILATION_ERROR
-    CX_INTERNAL_ERROR
-    CX_ASSERT
+	CX_SUCCESS = iota
+	CX_RUNTIME_ERROR
+	CX_PANIC // 2
+	CX_COMPILATION_ERROR
+	CX_INTERNAL_ERROR
+	CX_ASSERT
 )
 
 const (
@@ -121,22 +123,22 @@ const (
 
 var TypeCounter int
 var TypeCodes map[string]int = map[string]int{
-	"ident":      TYPE_IDENTIFIER,
-	"aff":        TYPE_AFF,
-	"bool":       TYPE_BOOL,
-	"byte":       TYPE_BYTE,
-	"str":        TYPE_STR,
-	"f32":        TYPE_F32,
-	"f64":        TYPE_F64,
-	"i8":         TYPE_I8,
-	"i16":        TYPE_I16,
-	"i32":        TYPE_I32,
-	"i64":        TYPE_I64,
-	"ui8":        TYPE_UI8,
-	"ui16":       TYPE_UI16,
-	"ui32":       TYPE_UI32,
-	"ui64":       TYPE_UI64,
-	"und":        TYPE_UNDEFINED,
+	"ident": TYPE_IDENTIFIER,
+	"aff":   TYPE_AFF,
+	"bool":  TYPE_BOOL,
+	"byte":  TYPE_BYTE,
+	"str":   TYPE_STR,
+	"f32":   TYPE_F32,
+	"f64":   TYPE_F64,
+	"i8":    TYPE_I8,
+	"i16":   TYPE_I16,
+	"i32":   TYPE_I32,
+	"i64":   TYPE_I64,
+	"ui8":   TYPE_UI8,
+	"ui16":  TYPE_UI16,
+	"ui32":  TYPE_UI32,
+	"ui64":  TYPE_UI64,
+	"und":   TYPE_UNDEFINED,
 }
 
 var TypeNames map[int]string = map[int]string{

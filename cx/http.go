@@ -4,9 +4,10 @@ package base
 
 import (
 	// "fmt"
-	"time"
-	"net/http"
 	"io/ioutil"
+	"net/http"
+	"time"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -14,7 +15,6 @@ const (
 	// StatusCode = 4
 	// Body 4
 	RESPONSE_SIZE = 8
-		
 )
 
 func op_http_get(expr *CXExpression, fp int) {
@@ -29,7 +29,7 @@ func op_http_get(expr *CXExpression, fp int) {
 		Timeout: time.Second * 10,
 	}
 	resp, err = netClient.Get(ReadStr(fp, inp1))
-	
+
 	// resp, err = http.Get(ReadStr(mem, fp, inp1))
 
 	if err != nil {
@@ -37,14 +37,14 @@ func op_http_get(expr *CXExpression, fp int) {
 	}
 
 	defer resp.Body.Close()
-        contents, err = ioutil.ReadAll(resp.Body)
-        if err != nil {
+	contents, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
 		panic(err)
-        }
+	}
 
 	byts := encoder.Serialize(string(contents))
 	length := len(byts)
-	heapOffset := AllocateSeq(length+OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(length + OBJECT_HEADER_SIZE)
 	size := encoder.Serialize(int32(len(byts)))
 
 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
@@ -60,8 +60,6 @@ func op_http_get(expr *CXExpression, fp int) {
 
 	WriteMemory(out1Offset, off)
 }
-
-
 
 // type Response struct {
 //         Status     string // e.g. "200 OK"

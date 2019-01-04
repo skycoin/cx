@@ -3,12 +3,13 @@ package base
 import (
 	"errors"
 	// "fmt"
-	. "github.com/satori/go.uuid"
+	. "github.com/satori/go.uuid" //nolint golint
 )
 
 /* The CXExpression struct contains information about a CX expression.
  */
 
+// CXExpression ...
 type CXExpression struct {
 	Inputs   []*CXArgument
 	Outputs  []*CXArgument
@@ -31,6 +32,7 @@ type CXExpression struct {
 	IsContinue      bool
 }
 
+// MakeExpression ...
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
 	return &CXExpression{
 		ElementID: MakeElementID(),
@@ -42,17 +44,19 @@ func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression
 // ----------------------------------------------------------------
 //                             Getters
 
+// GetInputs ...
 func (expr *CXExpression) GetInputs() ([]*CXArgument, error) {
 	if expr.Inputs != nil {
 		return expr.Inputs, nil
-	} else {
-		return nil, errors.New("expression has no arguments")
 	}
+	return nil, errors.New("expression has no arguments")
+
 }
 
 // ----------------------------------------------------------------
 //                     Member handling
 
+// AddInput ...
 func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Inputs = append(expr.Inputs, param)
@@ -62,12 +66,14 @@ func (expr *CXExpression) AddInput(param *CXArgument) *CXExpression {
 	return expr
 }
 
+// RemoveInput ...
 func (expr *CXExpression) RemoveInput() {
 	if len(expr.Inputs) > 0 {
 		expr.Inputs = expr.Inputs[:len(expr.Inputs)-1]
 	}
 }
 
+// AddOutput ...
 func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Outputs = append(expr.Outputs, param)
@@ -75,12 +81,14 @@ func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	return expr
 }
 
+// RemoveOutput ...
 func (expr *CXExpression) RemoveOutput() {
 	if len(expr.Outputs) > 0 {
 		expr.Outputs = expr.Outputs[:len(expr.Outputs)-1]
 	}
 }
 
+// AddLabel ...
 func (expr *CXExpression) AddLabel(lbl string) *CXExpression {
 	expr.Label = lbl
 	return expr

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -64,7 +65,7 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 	size := encoder.Serialize(int32(len(byts)))
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
@@ -79,7 +80,7 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 }
 
 func opStrConcat(expr *CXExpression, fp int) {
-	writeString(expr, fp, ReadStr(fp, expr.Inputs[0]) + ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+	writeString(expr, fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
 }
 
 func opStrSubstr(expr *CXExpression, fp int) {

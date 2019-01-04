@@ -6,7 +6,9 @@ import (
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-var assertSuccess bool = true
+var assertSuccess = true
+
+// AssertFailed ...
 func AssertFailed() bool {
 	return assertSuccess == false
 }
@@ -56,20 +58,18 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	return same
 }
 
-func op_assert_value(expr *CXExpression, fp int) {
+func opAssertValue(expr *CXExpression, fp int) {
 	out1 := expr.Outputs[0]
 	same := assert(expr, fp)
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }
 
-func op_test(expr *CXExpression, fp int) {
+func opTest(expr *CXExpression, fp int) {
 	assert(expr, fp)
 }
 
-func op_panic(expr *CXExpression, fp int) {
-	if (assert(expr, fp) == false) {
+func opPanic(expr *CXExpression, fp int) {
+	if assert(expr, fp) == false {
 		os.Exit(CX_ASSERT)
 	}
 }
-
-
