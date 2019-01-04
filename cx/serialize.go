@@ -837,7 +837,7 @@ func opDeserialize(expr *CXExpression, fp int) {
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 	encoder.DeserializeAtomic(_l[4:8], &l)
 
-	Deserialize(PROGRAM.Memory[off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE : off + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + l]) // BUG : should be l * elt.TotalSize ?
+	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
 
 func dsName(off int32, size int32, s *sAll) string {

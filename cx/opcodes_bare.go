@@ -462,7 +462,7 @@ func init() {
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{})
-	AddOpCode(OP_COPY, "copy", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_I32} )
+	AddOpCode(OP_COPY, "copy", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_I32})
 
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
 	AddOpCode(OP_TEST, "test", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{})
@@ -846,11 +846,11 @@ func init() {
 			opStrStr(expr, fp)
 
 		case OP_APPEND:
-			op_append(expr, fp)
+			opAppend(expr, fp)
 		case OP_RESIZE:
-			op_resize(expr, fp)
+			opResize(expr, fp)
 		case OP_COPY:
-			op_copy(expr, fp)
+			opCopy(expr, fp)
 
 		case OP_MAKE:
 		case OP_READ:

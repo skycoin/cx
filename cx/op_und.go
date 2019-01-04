@@ -314,8 +314,8 @@ func opLen(expr *CXExpression, fp int) {
 
 	if elt.IsSlice || elt.Type == TYPE_AFF {
 		var sliceOffset int32 = GetSliceOffset(fp, inp1)
-		var sliceLen  []byte
-		if sliceOffset > 0  {
+		var sliceLen []byte
+		if sliceOffset > 0 {
 			sliceLen = GetSliceHeader(sliceOffset)[4:8]
 		} else if sliceOffset == 0 {
 			sliceLen = FromI32(0)
@@ -333,7 +333,7 @@ func opLen(expr *CXExpression, fp int) {
 	}
 }
 
-func op_resize(expr *CXExpression, fp int) {
+func opResize(expr *CXExpression, fp int) {
 	sliceOffset := GetSliceOffset(fp, expr.Inputs[0])
 	var newLen int32 = ReadI32(fp, expr.Inputs[1])
 	if sliceOffset >= 0 && newLen >= 0 {
@@ -349,7 +349,7 @@ func op_resize(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_INVALID_ARGUMENT)
 }
 
-func op_copy(expr *CXExpression, fp int) {
+func opCopy(expr *CXExpression, fp int) {
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -362,7 +362,7 @@ func op_copy(expr *CXExpression, fp int) {
 	}
 }
 
-func op_append (expr *CXExpression, fp int) {
+func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
@@ -375,7 +375,7 @@ func op_append (expr *CXExpression, fp int) {
 	inputSlicePointer := GetFinalOffset(fp, inp1)
 	inputSliceOffset := GetPointerOffset(int32(inputSlicePointer))
 
-	var obj2[]byte
+	var obj2 []byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
 		obj2 = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp2)))
 	} else {

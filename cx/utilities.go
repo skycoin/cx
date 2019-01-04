@@ -611,7 +611,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 		} else {
 			newCap *= 2
 		}
-		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap * int32(sizeofElement)
+		var outputObjectSize int32 = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
 		copy(GetObjectHeader(outputSliceOffset)[5:9], encoder.SerializeAtomic(outputObjectSize))
 
@@ -626,11 +626,11 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 		copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
 	}
 
-	copy(outputSliceData[int(inputSliceLen) * sizeofElement:], object)
+	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
 	return int(outputSliceOffset)
 }
 
-func WriteToSlice (off int, inp []byte) int {
+func WriteToSlice(off int, inp []byte) int {
 	return SliceAppend(int32(off), int32(off), inp, len(inp))
 }
 
@@ -672,12 +672,12 @@ func ErrorHeader(currentFile string, lineNo int) string {
 }
 
 func ErrorCode(r interface{}) int {
-    switch v := r.(type) {
-    case int:
-        return int(v)
-    default:
-        return CX_RUNTIME_ERROR
-    }
+	switch v := r.(type) {
+	case int:
+		return int(v)
+	default:
+		return CX_RUNTIME_ERROR
+	}
 }
 
 func runtimeErrorInfo(r interface{}, printStack bool) {

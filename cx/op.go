@@ -318,7 +318,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
 	bytesLen := sliceLen * int32(sizeofElement)
 	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
-	if index >= 0 && index < int(bytesLen) && (index % sizeofElement) == 0 {
+	if index >= 0 && index < int(bytesLen) && (index%sizeofElement) == 0 {
 		return true
 	}
 	return false
@@ -326,7 +326,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 func GetPointerOffset(pointer int32) int32 {
 	var offset int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[pointer : pointer + TYPE_POINTER_SIZE], &offset)
+	encoder.DeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
 	return offset
 }
 
@@ -340,11 +340,11 @@ func GetSliceOffset(fp int, arg *CXArgument) int32 {
 }
 
 func GetObjectHeader(offset int32) []byte {
-	return PROGRAM.Memory[offset : offset + OBJECT_HEADER_SIZE]
+	return PROGRAM.Memory[offset : offset+OBJECT_HEADER_SIZE]
 }
 
 func GetSliceHeader(offset int32) []byte {
-	return PROGRAM.Memory[offset + OBJECT_HEADER_SIZE : offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE]
+	return PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
 }
 
 func GetSliceLen(offset int32) int32 {
@@ -359,8 +359,8 @@ func GetSlice(offset int32, sizeofElement int) []byte {
 		sliceLen := GetSliceLen(offset)
 		if sliceLen > 0 {
 			dataOffset := offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE - 4
-			dataLen := 4 + sliceLen * int32(sizeofElement)
-			return PROGRAM.Memory[dataOffset : dataOffset + dataLen]
+			dataLen := 4 + sliceLen*int32(sizeofElement)
+			return PROGRAM.Memory[dataOffset : dataOffset+dataLen]
 		}
 	}
 	return nil
@@ -373,7 +373,7 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-func ReadF32Data(fp int, inp *CXArgument) (interface{}){
+func ReadF32Data(fp int, inp *CXArgument) interface{} {
 	var data interface{}
 	elt := GetAssignmentElement(inp)
 	var dataF32 []float32 = nil
