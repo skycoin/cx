@@ -463,7 +463,7 @@ package base
 
 // 	// Output names affordances
 // 	// if len(expr.Outputs) < len(expr.Operator.Outputs) {
-		
+
 // 	// }
 // 	outName := MakeGenSym(LOCAL_PREFIX)
 // 	affs = append(affs, &CXAffordance{

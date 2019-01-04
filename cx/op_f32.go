@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_f32_f32(expr *CXExpression, fp int) {
+func opF32F32(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -27,176 +28,175 @@ func op_f32_f32(expr *CXExpression, fp int) {
 	}
 }
 
-func op_f32_isnan(expr *CXExpression, fp int) {
+func opF32Isnan(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromBool(math.IsNaN(float64(ReadF32(fp, inp1))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_f32_print(expr *CXExpression, fp int) {
+func opF32Print(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadF32(fp, inp1))
 }
 
-// op_f32_add. The add built-in function returns the add of two numbers
-
-func op_f32_add(expr *CXExpression, fp int) {
+// The built-in add function returns the sum of the two operands.
+//
+func opF32Add(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(ReadF32(fp, inp1) + ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f32_sub. The sub built-in function returns the substract of two numbers
-
-func op_f32_sub(expr *CXExpression, fp int) {
+// The built-in sub function returns the difference between the two operands.
+//
+func opF32Sub(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(ReadF32(fp, inp1) - ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f32_sub. The mul built-in function returns the multiplication of two numbers
-
-func op_f32_mul(expr *CXExpression, fp int) {
+// The built-in mul function returns the product of the two operands.
+//
+func opF32Mul(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(ReadF32(fp, inp1) * ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f32_sub. The div built-in function returns the divides two numbers
-
-func op_f32_div(expr *CXExpression, fp int) {
+// The built-in div function returns the quotient between the two operands.
+//
+func opF32Div(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(ReadF32(fp, inp1) / ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f32_abs. The div built-in function returns the absolute number of the number
-
-func op_f32_abs(expr *CXExpression, fp int) {
+// The built-in abs function returns the absolute value of the operand.
+//
+func opF32Abs(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Abs(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_pow. The div built-in function returns x**n for n>0 otherwise 1
-
-func op_f32_pow(expr *CXExpression, fp int) {
+// The built-in pow function returns x**n for n>0 otherwise 1
+//
+func opF32Pow(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Pow(float64(ReadF32(fp, inp1)), float64(ReadF32(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_gt. The gt built-in function returns true if x number is greater than a y number
-
-func op_f32_gt(expr *CXExpression, fp int) {
+// The built-in gt function returns true if operand 1 is greater than operand 2.
+//
+func opF32Gt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) > ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f32_gteq. The gteq built-in function returns true if x number is greater or
-// equal than a y number
-
-func op_f32_gteq(expr *CXExpression, fp int) {
+// The built-in gteq function returns true if the operand 1 is greater than or
+// equal to operand 2.
+//
+func opF32Gteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) >= ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_lt. The lt built-in function returns true if x number is less then
+// The built-in lt function returns true if operand 1 is less than operand 2.
 
-func op_f32_lt(expr *CXExpression, fp int) {
+func opF32Lt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) < ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_lteq. The lteq built-in function returns true if x number is less or
-// equal than a y number
-
-func op_f32_lteq(expr *CXExpression, fp int) {
+// The built-in lteq function returns true if operand 1 is less than or
+// equal to operand 2.
+//
+func opF32Lteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) <= ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_eq. The eq built-in function returns true if x number is equal to the y number
-
-func op_f32_eq(expr *CXExpression, fp int) {
+// The built-in eq function returns true if operand 1 is equal to operand 2.
+//
+func opF32Eq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) == ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_uneq. The uneq built-in function returns true if x number is diferent to the y number
-
-func op_f32_uneq(expr *CXExpression, fp int) {
+// The built-in uneq function returns true operand1 is different from operand 2.
+//
+func opF32Uneq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF32(fp, inp1) != ReadF32(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_cos. The cos built-in function returns the cosine of x number.
-
-func op_f32_cos(expr *CXExpression, fp int) {
+// The built-in cos function returns the cosine of the operand.
+//
+func opF32Cos(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Cos(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_cos. The cos built-in function returns the sine of x number.
-
-func op_f32_sin(expr *CXExpression, fp int) {
+// The built-in sin function returns the sine of the operand.
+//
+func opF32Sin(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Sin(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_sqrt. The sqrt built-in function returns the square root of x number
-
-func op_f32_sqrt(expr *CXExpression, fp int) {
+// The built-in sqrt function returns the square root of the operand.
+//
+func opF32Sqrt(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Sqrt(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_log. The log built-in function returns the natural logarithm of x number
-
-func op_f32_log(expr *CXExpression, fp int) {
+// The built-in log function returns the natural logarithm of the operand.
+//
+func opF32Log(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Log(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_log2. The log2 built-in function returns the natural logarithm based 2 of x number
-
-func op_f32_log2(expr *CXExpression, fp int) {
+// The built-in log2 function returns the 2-logarithm of the operand.
+//
+func opF32Log2(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Log2(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_log10. The log10 built-in function returns the natural logarithm based 2 of x number
-
-func op_f32_log10(expr *CXExpression, fp int) {
+// The built-in log10 function returns the 10-logarithm of the operand.
+//
+func opF32Log10(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Log10(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_max. The max built-in function returns the max value between x and y numbers
-
-func op_f32_max(expr *CXExpression, fp int) {
+// The built-in max function returns the largest value of the two operands.
+//
+func opF32Max(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Max(float64(ReadF32(fp, inp1)), float64(ReadF32(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_f64_min. The min built-in function returns the min value between x and y numbers
-
-func op_f32_min(expr *CXExpression, fp int) {
+// The built-in min function returns the smallest value of the two operands.
+//
+func opF32Min(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Min(float64(ReadF32(fp, inp1)), float64(ReadF32(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
-

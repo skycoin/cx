@@ -5,15 +5,16 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
-	heapOffset := AllocateSeq(arg.TotalSize+OBJECT_HEADER_SIZE)
+// EscapeAnalysis ...
+func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
+	heapOffset := AllocateSeq(arg.TotalSize + OBJECT_HEADER_SIZE)
 
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
 	size := encoder.SerializeAtomic(int32(len(byts)))
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE)
+	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
 		header[c] = size[c-5]
 	}
@@ -27,14 +28,14 @@ func EscapeAnalysis (fp int, inpOffset, outOffset int, arg *CXArgument) {
 	WriteMemory(outOffset, off)
 }
 
-func op_identity(expr *CXExpression, fp int) {
+func opIdentity(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(fp, inp1)
 	out1Offset := GetFinalOffset(fp, out1)
 
 	var elt *CXArgument
 	if len(out1.Fields) > 0 {
-		elt = out1.Fields[len(out1.Fields) - 1]
+		elt = out1.Fields[len(out1.Fields)-1]
 	} else {
 		elt = out1
 	}
@@ -51,10 +52,10 @@ func op_identity(expr *CXExpression, fp int) {
 	}
 }
 
-func op_jmp(expr *CXExpression, fp int, call *CXCall) {
+func opJmp(expr *CXExpression, fp int, call *CXCall) {
 	inp1 := expr.Inputs[0]
 	var predicate bool
-	
+
 	if expr.Label != "" {
 		// then it's a goto
 		call.Line = call.Line + expr.ThenLines
@@ -70,5 +71,4 @@ func op_jmp(expr *CXExpression, fp int, call *CXCall) {
 			call.Line = call.Line + expr.ElseLines
 		}
 	}
-
 }

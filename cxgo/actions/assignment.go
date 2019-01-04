@@ -16,7 +16,7 @@ func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpr
 
 		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
 	}
-	
+
 	return from
 }
 
@@ -29,7 +29,7 @@ func ArrayLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpre
 	return from
 }
 
-func ShortAssignment (expr *CXExpression, to []*CXExpression, from []*CXExpression, pkg *CXPackage, idx int) []*CXExpression {
+func ShortAssignment(expr *CXExpression, to []*CXExpression, from []*CXExpression, pkg *CXPackage, idx int) []*CXExpression {
 	expr.AddInput(to[0].Outputs[0])
 	expr.AddOutput(to[0].Outputs[0])
 	expr.Package = pkg
@@ -47,13 +47,13 @@ func ShortAssignment (expr *CXExpression, to []*CXExpression, from []*CXExpressi
 	return append(from, expr)
 }
 
-func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
+func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 
 		var expr *CXExpression
-		
+
 		switch assignOp {
 		case ":=":
 			expr = MakeExpression(nil, CurrentFile, LineNo)
@@ -67,17 +67,17 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			} else {
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
 				// sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Operator.Outputs[0].Type])
-				
+
 				if from[idx].IsArrayLiteral {
 					sym.Size = from[idx].Inputs[0].Size
 					sym.TotalSize = from[idx].Inputs[0].TotalSize
 					sym.Lengths = from[idx].Inputs[0].Lengths
 				}
 				if from[idx].Inputs[0].IsSlice {
-				// if from[idx].Operator.Outputs[0].IsSlice {
+					// if from[idx].Operator.Outputs[0].IsSlice {
 					sym.Lengths = append([]int{0}, sym.Lengths...)
 				}
-				
+
 				sym.IsSlice = from[idx].Inputs[0].IsSlice
 				// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
 			}
@@ -91,7 +91,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				toExpr.Outputs[0].PreviouslyDeclared = true
 				toExpr.Outputs[0].IsShortDeclaration = true
 			}
-			
+
 			to = append([]*CXExpression{expr}, to...)
 		case ">>=":
 			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
@@ -175,7 +175,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 			// to[0].Outputs[0].Program = PRGRM
 		}
 
-		from[idx].Outputs = to[len(to) - 1].Outputs
+		from[idx].Outputs = to[len(to)-1].Outputs
 		// from[idx].Program = to[len(to) - 1].Program
 
 		return append(to[:len(to)-1], from...)

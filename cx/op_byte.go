@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"strconv"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

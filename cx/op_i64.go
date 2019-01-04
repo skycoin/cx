@@ -5,10 +5,11 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func op_i64_i64(expr *CXExpression, fp int) {
+func opI64I64(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -28,120 +29,120 @@ func op_i64_i64(expr *CXExpression, fp int) {
 	}
 }
 
-// op_i64_print. The print built-in function formats its arguments in an
+// The built-in print function formats its arguments in an
 // implementation-specific
 
-func op_i64_print(expr *CXExpression, fp int) {
+func opI64Print(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadI64(fp, inp1))
 }
 
-// op_i64_add. The add built-in function returns the add of two numbers
+// The built-in add function returns the sum of the two operands.
 
-func op_i64_add(expr *CXExpression, fp int) {
+func opI64Add(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) + ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_sub. The sub built-in function returns the substract of two numbers
+// The built-in sub function returns the difference between the two operands.
 
-func op_i64_sub(expr *CXExpression, fp int) {
+func opI64Sub(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) - ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_sub. The mul built-in function returns the multiplication of two numbers
+// The built-in mul function returns the product of the two operands.
 
-func op_i64_mul(expr *CXExpression, fp int) {
+func opI64Mul(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) * ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_sub. The div built-in function returns the divides two numbers
+// The built-in div function returns the quotient of the two operands.
 
-func op_i64_div(expr *CXExpression, fp int) {
+func opI64Div(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) / ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_abs. The div built-in function returns the absolute number of the number
+// The built-in abs function returns the absolute value of the operand.
 
-func op_i64_abs(expr *CXExpression, fp int) {
+func opI64Abs(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Abs(float64(ReadI64(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_pow. The div built-in function returns x**n for n>0 otherwise 1
+// The built-in pow function returns x**n for n>0 otherwise 1
 
-func op_i64_pow(expr *CXExpression, fp int) {
+func opI64Pow(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Pow(float64(ReadI64(fp, inp1)), float64(ReadI64(fp, inp2)))))
 
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_gt. The gt built-in function returns true if x number is greater than a y number
+// The built-in gt function returns true if operand 1 is greater than operand 2.
 
-func op_i64_gt(expr *CXExpression, fp int) {
+func opI64Gt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) > ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_gteq. The gteq built-in function returns true if x number is greater or
-// equal than a y number
+// The built-in gteq function returns true if operand 1 is greater than or
+// equal to operand 2.
 
-func op_i64_gteq(expr *CXExpression, fp int) {
+func opI64Gteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) >= ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_lt. The lt built-in function returns true if x number is less then
+// The built-in lt function returns true if operand 1 is less than oeprand 2.
 
-func op_i64_lt(expr *CXExpression, fp int) {
+func opI64Lt(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) < ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_lteq. The lteq built-in function returns true if x number is less or
-// equal than a y number
+// The built-in lteq function returns true if operand 1 is less than or
+// equal to operand 2.
 
-func op_i64_lteq(expr *CXExpression, fp int) {
+func opI64Lteq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) <= ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_eq. The eq built-in function returns true if x number is equal to the y number
+// The built-in eq function returns true if operand 1 is equal to operand 2.
 
-func op_i64_eq(expr *CXExpression, fp int) {
+func opI64Eq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) == ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_uneq. The uneq built-in function returns true if x number is diferent to the y number
+// The built-in uneq function returns true if operand 1 is different from operand 2.
 
-func op_i64_uneq(expr *CXExpression, fp int) {
+func opI64Uneq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadI64(fp, inp1) != ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_mod(expr *CXExpression, fp int) {
+func opI64Mod(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) % ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_rand(expr *CXExpression, fp int) {
+func opI64Rand(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	minimum := ReadI64(fp, inp1)
@@ -152,85 +153,85 @@ func op_i64_rand(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitand(expr *CXExpression, fp int) {
+func opI64Bitand(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) & ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitor(expr *CXExpression, fp int) {
+func opI64Bitor(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) | ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitxor(expr *CXExpression, fp int) {
+func opI64Bitxor(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) ^ ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitclear(expr *CXExpression, fp int) {
+func opI64Bitclear(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(ReadI64(fp, inp1) &^ ReadI64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitshl(expr *CXExpression, fp int) {
+func opI64Bitshl(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(uint64(ReadI64(fp, inp1)) << uint64(ReadI64(fp, inp2))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_i64_bitshr(expr *CXExpression, fp int) {
+func opI64Bitshr(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(uint64(ReadI64(fp, inp1)) >> uint64(ReadI64(fp, inp2))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_sqrt. The sqrt built-in function returns the square root of x number
+// The built-in sqrt function returns the square root of the operand.
 
-func op_i64_sqrt(expr *CXExpression, fp int) {
+func opI64Sqrt(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Sqrt(float64(ReadI64(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_log. The log built-in function returns the natural logarithm of x number
+// The built-in log function returns the natural logarithm of the operand.
 
-func op_i64_log(expr *CXExpression, fp int) {
+func opI64Log(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Log(float64(ReadI64(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_log2. The log2 built-in function returns the natural logarithm based 2 of x number
+// The built-in log2 function returns the 2-logarithm of the operand.
 
-func op_i64_log2(expr *CXExpression, fp int) {
+func opI64Log2(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Log2(float64(ReadI64(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_log10. The log10 built-in function returns the natural logarithm based 2 of x number
+// The built-in log10 function returns the 10-logarithm of the operand.
 
-func op_i64_log10(expr *CXExpression, fp int) {
+func opI64Log10(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Log10(float64(ReadI64(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_max. The max built-in function returns the max value between x and y numbers
+// The built-in max function returns the greatest value of the two operands.
 
-func op_i64_max(expr *CXExpression, fp int) {
+func opI64Max(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Max(float64(ReadI64(fp, inp1)), float64(ReadI64(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// op_i64_min. The min built-in function returns the min value between x and y numbers
+// The built-in min function returns the smallest value of the two operands.
 
-func op_i64_min(expr *CXExpression, fp int) {
+func opI64Min(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromI64(int64(math.Min(float64(ReadI64(fp, inp1)), float64(ReadI64(fp, inp2)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)

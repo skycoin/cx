@@ -1,0 +1,3341 @@
+PACKAG 
+ IDENT main
+SCOLON 
+IMPORT 
+STRLIT os
+SCOLON 
+IMPORT 
+STRLIT cx
+SCOLON 
+IMPORT 
+STRLIT time
+SCOLON 
+  FUNC 
+ IDENT matchArg
+LPAREN 
+ IDENT arg
+   STR 
+ COMMA 
+ IDENT pattern
+   STR 
+ COMMA 
+ IDENT match
+ MULOP *
+  BOOL bool
+RPAREN 
+LPAREN 
+ IDENT out
+  BOOL bool
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT argLen
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT arg
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT patternLen
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT pattern
+RPAREN 
+SCOLON 
+    IF 
+LPAREN 
+ IDENT argLen
+GTEQOP >=
+ IDENT patternLen
+RPAREN 
+LBRACE 
+ IDENT name
+CASSGN :=
+   STR 
+PERIOD 
+ IDENT substr
+LPAREN 
+ IDENT arg
+ COMMA 
+INTLIT 0
+ COMMA 
+ IDENT patternLen
+RPAREN 
+SCOLON 
+    IF 
+LPAREN 
+ IDENT name
+  EQOP 
+ IDENT pattern
+RPAREN 
+LBRACE 
+    IF 
+ MULOP *
+ IDENT match
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT duplicate arg %s
+
+ COMMA 
+ IDENT arg
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+ MULOP *
+ IDENT match
+  ASGN =
+BOOLLT true
+SCOLON 
+ IDENT out
+  ASGN =
+BOOLLT true
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT getArgValueStr
+LPAREN 
+ IDENT arg
+   STR 
+ COMMA 
+ IDENT pattern
+   STR 
+ COMMA 
+ IDENT value
+ MULOP *
+   STR 
+ COMMA 
+ IDENT match
+ MULOP *
+  BOOL bool
+RPAREN 
+LPAREN 
+ IDENT out
+  BOOL bool
+RPAREN 
+LBRACE 
+    IF 
+ IDENT matchArg
+LPAREN 
+ IDENT arg
+ COMMA 
+ IDENT pattern
+ COMMA 
+ IDENT match
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT argLen
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT arg
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT patternLen
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT pattern
+RPAREN 
+SCOLON 
+    IF 
+ IDENT argLen
+  GTOP >
+ IDENT patternLen
+LBRACE 
+ MULOP *
+ IDENT value
+  ASGN =
+   STR 
+PERIOD 
+ IDENT substr
+LPAREN 
+ IDENT arg
+ COMMA 
+ IDENT patternLen
+ COMMA 
+ IDENT argLen
+RPAREN 
+SCOLON 
+ IDENT out
+  ASGN =
+BOOLLT true
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT getArgValueStrSlice
+LPAREN 
+ IDENT arg
+   STR 
+ COMMA 
+ IDENT pattern
+   STR 
+ COMMA 
+ IDENT match
+ MULOP *
+  BOOL bool
+RPAREN 
+LPAREN 
+ IDENT out
+LBRACK 
+RBRACK 
+   STR 
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT filterList
+   STR 
+  ASGN =
+STRLIT 
+SCOLON 
+   VAR 
+ IDENT filterMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT slice
+LBRACK 
+RBRACK 
+   STR 
+SCOLON 
+    IF 
+ IDENT getArgValueStr
+LPAREN 
+ IDENT arg
+ COMMA 
+ IDENT pattern
+ COMMA 
+ REFOP &
+ IDENT filterList
+ COMMA 
+ REFOP &
+ IDENT filterMatch
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT index
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   FOR 
+ IDENT index
+GTEQOP >=
+INTLIT 0
+LBRACE 
+ IDENT index
+  ASGN =
+   STR 
+PERIOD 
+ IDENT index
+LPAREN 
+ IDENT filterList
+ COMMA 
+STRLIT ,
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT filter
+   STR 
+  ASGN =
+ IDENT filterList
+SCOLON 
+    IF 
+ IDENT index
+GTEQOP >=
+INTLIT 0
+LBRACE 
+ IDENT filter
+  ASGN =
+   STR 
+PERIOD 
+ IDENT substr
+LPAREN 
+ IDENT filterList
+ COMMA 
+INTLIT 0
+ COMMA 
+ IDENT index
+RPAREN 
+SCOLON 
+ IDENT filterList
+  ASGN =
+   STR 
+PERIOD 
+ IDENT substr
+LPAREN 
+ IDENT filterList
+ COMMA 
+ IDENT index
+ ADDOP +
+INTLIT 1
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT filterList
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+ IDENT filterList
+  ASGN =
+STRLIT 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT filter
+  ASGN =
+   STR 
+PERIOD 
+ IDENT trimspace
+LPAREN 
+ IDENT filter
+RPAREN 
+SCOLON 
+ IDENT slice
+  ASGN =
+ IDENT append
+LPAREN 
+ IDENT slice
+ COMMA 
+ IDENT filter
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT out
+  ASGN =
+ IDENT slice
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT getArgValueI32
+LPAREN 
+ IDENT arg
+   STR 
+ COMMA 
+ IDENT pattern
+   STR 
+ COMMA 
+ IDENT value
+ MULOP *
+   I32 i32
+ COMMA 
+ IDENT match
+ MULOP *
+  BOOL bool
+RPAREN 
+LPAREN 
+ IDENT out
+  BOOL bool
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT strValue
+   STR 
+  ASGN =
+STRLIT 
+SCOLON 
+ IDENT out
+  ASGN =
+ IDENT getArgValueStr
+LPAREN 
+ IDENT arg
+ COMMA 
+ IDENT pattern
+ COMMA 
+ REFOP &
+ IDENT strValue
+ COMMA 
+ IDENT match
+RPAREN 
+SCOLON 
+    IF 
+ IDENT out
+LBRACE 
+   VAR 
+ IDENT i32Value
+   I32 i32
+  ASGN =
+   STR 
+PERIOD 
+   I32 i32
+LPAREN 
+ IDENT strValue
+RPAREN 
+SCOLON 
+ MULOP *
+ IDENT value
+  ASGN =
+ IDENT i32Value
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT getFlags
+LPAREN 
+ IDENT arg
+   STR 
+ COMMA 
+ IDENT pattern
+   STR 
+ COMMA 
+ IDENT flags
+ MULOP *
+   I32 i32
+ COMMA 
+ IDENT match
+ MULOP *
+  BOOL bool
+ COMMA 
+ IDENT names
+LBRACK 
+RBRACK 
+   STR 
+ COMMA 
+ IDENT values
+LBRACK 
+RBRACK 
+   I32 i32
+RPAREN 
+LPAREN 
+ IDENT success
+  BOOL bool
+RPAREN 
+LBRACE 
+ IDENT panic
+LPAREN 
+ IDENT len
+LPAREN 
+ IDENT names
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+STRLIT invalid flags
+RPAREN 
+SCOLON 
+ IDENT success
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT list
+   STR 
+  ASGN =
+STRLIT 
+SCOLON 
+   VAR 
+ IDENT slice
+LBRACK 
+RBRACK 
+   STR 
+  ASGN =
+ IDENT getArgValueStrSlice
+LPAREN 
+ IDENT arg
+ COMMA 
+ IDENT pattern
+ COMMA 
+ REFOP &
+ IDENT match
+RPAREN 
+SCOLON 
+   FOR 
+ IDENT i
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT i
+  LTOP <
+ IDENT len
+LPAREN 
+ IDENT slice
+RPAREN 
+SCOLON 
+ IDENT i
+ INCOP 
+LBRACE 
+   VAR 
+ IDENT value
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   FOR 
+ IDENT k
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT k
+  LTOP <
+ IDENT len
+LPAREN 
+ IDENT names
+RPAREN 
+SCOLON 
+ IDENT k
+ INCOP 
+LBRACE 
+    IF 
+ IDENT slice
+LBRACK 
+ IDENT i
+RBRACK 
+  EQOP 
+ IDENT names
+LBRACK 
+ IDENT k
+RBRACK 
+LBRACE 
+ IDENT value
+  ASGN =
+ IDENT values
+LBRACK 
+ IDENT k
+RBRACK 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT value
+  NEOP 
+INTLIT 0
+LBRACE 
+ MULOP *
+ IDENT flags
+  ASGN =
+ MULOP *
+ IDENT flags
+ BOROP 
+ IDENT value
+SCOLON 
+ IDENT success
+  ASGN =
+BOOLLT true
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT invalid option value %s
+
+ COMMA 
+ IDENT arg
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT printFlags
+LPAREN 
+ IDENT name
+   STR 
+ COMMA 
+ IDENT flags
+   I32 i32
+ COMMA 
+ IDENT names
+LBRACK 
+RBRACK 
+   STR 
+ COMMA 
+ IDENT values
+LBRACK 
+RBRACK 
+   I32 i32
+RPAREN 
+LBRACE 
+ IDENT panic
+LPAREN 
+ IDENT len
+LPAREN 
+ IDENT names
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+STRLIT invalid flags
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT %s : %d : 
+ COMMA 
+ IDENT name
+ COMMA 
+ IDENT flags
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT count
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+SCOLON 
+   FOR 
+ IDENT i
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT i
+  LTOP <
+ IDENT count
+ ANDOP 
+ IDENT flags
+  GTOP >
+INTLIT 0
+SCOLON 
+ IDENT i
+ INCOP 
+LBRACE 
+   VAR 
+ IDENT flag
+   I32 i32
+  ASGN =
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+SCOLON 
+    IF 
+LPAREN 
+ IDENT flags
+ REFOP &
+ IDENT flag
+RPAREN 
+  EQOP 
+ IDENT flag
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT %s, 
+ COMMA 
+ IDENT names
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+SCOLON 
+ IDENT flags
+  ASGN =
+ IDENT flags
+ REFOP &
+LPAREN 
+INTLIT -1
+BXOROP 
+ IDENT flag
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT 
+
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT flags
+ COMMA 
+INTLIT 0
+ COMMA 
+STRLIT invalid flags
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+   VAR 
+ IDENT TEST_NONE
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT TEST_STABLE
+   I32 i32
+  ASGN =
+INTLIT 1
+SCOLON 
+   VAR 
+ IDENT TEST_ISSUE
+   I32 i32
+  ASGN =
+INTLIT 2
+SCOLON 
+   VAR 
+ IDENT TEST_GUI
+   I32 i32
+  ASGN =
+INTLIT 4
+SCOLON 
+   VAR 
+ IDENT TEST_ALL
+   I32 i32
+  ASGN =
+INTLIT 7
+SCOLON 
+   VAR 
+ IDENT LOG_NONE
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT LOG_SUCCESS
+   I32 i32
+  ASGN =
+INTLIT 1
+SCOLON 
+   VAR 
+ IDENT LOG_STDERR
+   I32 i32
+  ASGN =
+INTLIT 2
+SCOLON 
+   VAR 
+ IDENT LOG_FAIL
+   I32 i32
+  ASGN =
+INTLIT 4
+SCOLON 
+   VAR 
+ IDENT LOG_SKIP
+   I32 i32
+  ASGN =
+INTLIT 8
+SCOLON 
+   VAR 
+ IDENT LOG_ALL
+   I32 i32
+  ASGN =
+INTLIT 15
+SCOLON 
+   VAR 
+ IDENT g_testCount
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT g_testSuccess
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT g_testSkipped
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT g_enabledTests
+   I32 i32
+  ASGN =
+ IDENT TEST_ALL
+SCOLON 
+   VAR 
+ IDENT g_log
+   I32 i32
+  ASGN =
+ IDENT LOG_FAIL
+SCOLON 
+   VAR 
+ IDENT g_cxPath
+   STR 
+  ASGN =
+STRLIT cx
+SCOLON 
+   VAR 
+ IDENT g_workingDir
+   STR 
+  ASGN =
+STRLIT 
+SCOLON 
+  FUNC 
+ IDENT prettyOsCode
+LPAREN 
+ IDENT code
+   I32 i32
+RPAREN 
+LPAREN 
+ IDENT out
+   STR 
+RPAREN 
+LBRACE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_SUCCESS
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_SUCCESS
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_EMPTY_CMD
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_EMPTY_CMD
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_PANIC
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_PANIC
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_START_FAILED
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_START_FAILED
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_WAIT_FAILED
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_WAIT_FAILED
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_TIMEOUT
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT os.RUN_TIMEOUT
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT unknown os.Run exit code
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT prettyCxCode
+LPAREN 
+ IDENT code
+   I32 i32
+RPAREN 
+LPAREN 
+ IDENT out
+   STR 
+RPAREN 
+LBRACE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.SUCCESS
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.RUNTIME_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.PANIC
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.COMPILATION_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT INTERNAL_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.INTERNAL_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT ASSERT
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.ASSERT
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT unknown cx exit code
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT runTestEx
+LPAREN 
+ IDENT cmd
+   STR 
+ COMMA 
+ IDENT exitCode
+   I32 i32
+ COMMA 
+ IDENT desc
+   STR 
+ COMMA 
+ IDENT filter
+   I32 i32
+ COMMA 
+ IDENT timeoutMs
+   I32 i32
+RPAREN 
+LPAREN 
+RPAREN 
+LBRACE 
+    IF 
+LPAREN 
+ IDENT g_enabledTests
+ REFOP &
+ IDENT filter
+RPAREN 
+  EQOP 
+ IDENT filter
+LBRACE 
+ IDENT cmd
+  ASGN =
+ IDENT sprintf
+LPAREN 
+STRLIT %s %s
+ COMMA 
+ IDENT g_cxPath
+ COMMA 
+ IDENT cmd
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT runError
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT cmdError
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT stdOut
+   STR 
+SCOLON 
+   VAR 
+ IDENT padding
+   STR 
+SCOLON 
+    IF 
+LPAREN 
+ IDENT g_testCount
+  LTOP <
+INTLIT 10
+RPAREN 
+LBRACE 
+ IDENT padding
+  ASGN =
+STRLIT   
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT g_testCount
+  LTOP <
+INTLIT 100
+RPAREN 
+LBRACE 
+ IDENT padding
+  ASGN =
+STRLIT  
+SCOLON 
+RBRACE 
+SCOLON 
+   VAR 
+ IDENT start
+   I64 i64
+  ASGN =
+ IDENT time
+PERIOD 
+ IDENT UnixMilli
+LPAREN 
+RPAREN 
+SCOLON 
+ IDENT runError
+ COMMA 
+ IDENT cmdError
+ COMMA 
+ IDENT stdOut
+  ASGN =
+ IDENT os
+PERIOD 
+ IDENT Run
+LPAREN 
+ IDENT cmd
+ COMMA 
+INTLIT 2048
+ COMMA 
+ IDENT timeoutMs
+ COMMA 
+ IDENT g_workingDir
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT end
+   I64 i64
+  ASGN =
+ IDENT time
+PERIOD 
+ IDENT UnixMilli
+LPAREN 
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT deltaMs
+   I32 i32
+  ASGN =
+   I64 i64
+PERIOD 
+   I32 i32
+LPAREN 
+ IDENT end
+ SUBOP -
+ IDENT start
+RPAREN 
+SCOLON 
+    IF 
+LPAREN 
+ IDENT runError
+  NEOP 
+INTLIT 0
+ ANDOP 
+LPAREN 
+ IDENT runError
+  NEOP 
+ IDENT os
+PERIOD 
+ IDENT RUN_TIMEOUT
+  OROP 
+ IDENT timeoutMs
+LTEQOP <=
+INTLIT 0
+RPAREN 
+RPAREN 
+LBRACE 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_FAIL
+RPAREN 
+  EQOP 
+ IDENT LOG_FAIL
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT #%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s
+
+ COMMA 
+ IDENT padding
+ COMMA 
+ IDENT g_testCount
+ COMMA 
+ IDENT deltaMs
+ COMMA 
+ IDENT cmd
+ COMMA 
+ IDENT prettyOsCode
+LPAREN 
+ IDENT runError
+RPAREN 
+ COMMA 
+ IDENT runError
+ COMMA 
+ IDENT desc
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_STDERR
+RPAREN 
+  EQOP 
+ IDENT LOG_STDERR
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT %s
+
+ COMMA 
+ IDENT stdOut
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT cmdError
+  NEOP 
+ IDENT exitCode
+RPAREN 
+LBRACE 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_FAIL
+RPAREN 
+  EQOP 
+ IDENT LOG_FAIL
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT #%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s
+
+ COMMA 
+ IDENT padding
+ COMMA 
+ IDENT g_testCount
+ COMMA 
+ IDENT deltaMs
+ COMMA 
+ IDENT cmd
+ COMMA 
+ IDENT prettyCxCode
+LPAREN 
+ IDENT exitCode
+RPAREN 
+ COMMA 
+ IDENT exitCode
+ COMMA 
+ IDENT prettyCxCode
+LPAREN 
+ IDENT cmdError
+RPAREN 
+ COMMA 
+ IDENT cmdError
+ COMMA 
+ IDENT desc
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_STDERR
+RPAREN 
+  EQOP 
+ IDENT LOG_STDERR
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT %s
+
+ COMMA 
+ IDENT stdOut
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_SUCCESS
+RPAREN 
+  EQOP 
+ IDENT LOG_SUCCESS
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT #%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)
+
+ COMMA 
+ IDENT padding
+ COMMA 
+ IDENT g_testCount
+ COMMA 
+ IDENT deltaMs
+ COMMA 
+ IDENT cmd
+ COMMA 
+ IDENT prettyCxCode
+LPAREN 
+ IDENT exitCode
+RPAREN 
+ COMMA 
+ IDENT exitCode
+ COMMA 
+ IDENT prettyCxCode
+LPAREN 
+ IDENT cmdError
+RPAREN 
+ COMMA 
+ IDENT cmdError
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT g_testSuccess
+  ASGN =
+ IDENT g_testSuccess
+ ADDOP +
+INTLIT 1
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT g_testCount
+  ASGN =
+ IDENT g_testCount
+ ADDOP +
+INTLIT 1
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+    IF 
+LPAREN 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_SKIP
+RPAREN 
+  EQOP 
+ IDENT LOG_SKIP
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT #--- | Skipped |  0ms | '%s' | %s
+
+ COMMA 
+ IDENT cmd
+ COMMA 
+ IDENT desc
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT g_testSkipped
+  ASGN =
+ IDENT g_testSkipped
+ ADDOP +
+INTLIT 1
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT runTest
+LPAREN 
+ IDENT cmd
+   STR 
+ COMMA 
+ IDENT exitCode
+   I32 i32
+ COMMA 
+ IDENT desc
+   STR 
+RPAREN 
+LBRACE 
+ IDENT runTestEx
+LPAREN 
+ IDENT cmd
+ COMMA 
+ IDENT exitCode
+ COMMA 
+ IDENT desc
+ COMMA 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT help
+LPAREN 
+RPAREN 
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT Options:
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++help          : Prints this message.
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++enable-tests  : Enable test set (all, stable, issue, gui).
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++disable-tests : Disable test set (all, stable, issue, gui).
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++log           : Enable log set (all, success, stderr, fail, skip).
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++cxpath        : Set cx directory
+
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT ++wdir          : Set working directory
+
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT main
+LPAREN 
+RPAREN 
+LPAREN 
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT testNames
+LBRACK 
+RBRACK 
+   STR 
+SCOLON 
+   VAR 
+ IDENT testValues
+LBRACK 
+RBRACK 
+   I32 i32
+SCOLON 
+ IDENT testNames
+  ASGN =
+LBRACK 
+RBRACK 
+   STR 
+LBRACE 
+STRLIT all
+ COMMA 
+STRLIT stable
+ COMMA 
+STRLIT issue
+ COMMA 
+STRLIT gui
+RBRACE 
+SCOLON 
+ IDENT testValues
+  ASGN =
+LBRACK 
+RBRACK 
+   I32 i32
+LBRACE 
+ IDENT TEST_ALL
+ COMMA 
+ IDENT TEST_STABLE
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+ IDENT TEST_GUI
+RBRACE 
+SCOLON 
+   VAR 
+ IDENT logNames
+LBRACK 
+RBRACK 
+   STR 
+SCOLON 
+   VAR 
+ IDENT logValues
+LBRACK 
+RBRACK 
+   I32 i32
+SCOLON 
+ IDENT logNames
+  ASGN =
+LBRACK 
+RBRACK 
+   STR 
+LBRACE 
+STRLIT all
+ COMMA 
+STRLIT success
+ COMMA 
+STRLIT stderr
+ COMMA 
+STRLIT fail
+ COMMA 
+STRLIT skip
+RBRACE 
+SCOLON 
+ IDENT logValues
+  ASGN =
+LBRACK 
+RBRACK 
+   I32 i32
+LBRACE 
+ IDENT LOG_ALL
+ COMMA 
+ IDENT LOG_SUCCESS
+ COMMA 
+ IDENT LOG_STDERR
+ COMMA 
+ IDENT LOG_FAIL
+ COMMA 
+ IDENT LOG_SKIP
+RBRACE 
+SCOLON 
+   VAR 
+ IDENT argCount
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT os
+PERIOD 
+ IDENT Args
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT workingDirMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT cxPathMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT logMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT enabledTestMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT disabledTestMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT helpMatch
+  BOOL bool
+  ASGN =
+BOOLLT false
+SCOLON 
+   VAR 
+ IDENT enabledTests
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT disabledTests
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   VAR 
+ IDENT log
+   I32 i32
+  ASGN =
+INTLIT 0
+SCOLON 
+   FOR 
+ IDENT a
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT a
+  LTOP <
+ IDENT argCount
+SCOLON 
+ IDENT a
+ INCOP 
+LBRACE 
+   VAR 
+ IDENT arg
+   STR 
+  ASGN =
+ IDENT os
+PERIOD 
+ IDENT Args
+LBRACK 
+ IDENT a
+RBRACK 
+SCOLON 
+    IF 
+ IDENT getArgValueStr
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++wdir=
+ COMMA 
+ REFOP &
+ IDENT g_workingDir
+ COMMA 
+ REFOP &
+ IDENT workingDirMatch
+RPAREN 
+LBRACE 
+CONTNU 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT getArgValueStr
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++cxpath=
+ COMMA 
+ REFOP &
+ IDENT g_cxPath
+ COMMA 
+ REFOP &
+ IDENT cxPathMatch
+RPAREN 
+LBRACE 
+CONTNU 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT getFlags
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++log=
+ COMMA 
+ REFOP &
+ IDENT log
+ COMMA 
+ REFOP &
+ IDENT logMatch
+ COMMA 
+ IDENT logNames
+ COMMA 
+ IDENT logValues
+RPAREN 
+LBRACE 
+CONTNU 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT getFlags
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++enable-tests=
+ COMMA 
+ REFOP &
+ IDENT enabledTests
+ COMMA 
+ REFOP &
+ IDENT enabledTestMatch
+ COMMA 
+ IDENT testNames
+ COMMA 
+ IDENT testValues
+RPAREN 
+LBRACE 
+CONTNU 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT getFlags
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++disable-tests=
+ COMMA 
+ REFOP &
+ IDENT disabledTests
+ COMMA 
+ REFOP &
+ IDENT disabledTestMatch
+ COMMA 
+ IDENT testNames
+ COMMA 
+ IDENT testValues
+RPAREN 
+LBRACE 
+CONTNU 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT matchArg
+LPAREN 
+ IDENT arg
+ COMMA 
+STRLIT ++help
+ COMMA 
+ REFOP &
+ IDENT helpMatch
+RPAREN 
+LBRACE 
+ IDENT help
+LPAREN 
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+INTLIT 0
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT invalid argument : %s
+
+ COMMA 
+ IDENT arg
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT enabledTests
+  EQOP 
+ IDENT TEST_ALL
+ ANDOP 
+ IDENT disabledTests
+  EQOP 
+ IDENT TEST_ALL
+LBRACE 
+ IDENT printf
+LPAREN 
+STRLIT Invalid test combination :
+
+RPAREN 
+SCOLON 
+ IDENT printFlags
+LPAREN 
+STRLIT ++enabled-test=
+ COMMA 
+ IDENT enabledTests
+ COMMA 
+ IDENT testNames
+ COMMA 
+ IDENT testValues
+RPAREN 
+SCOLON 
+ IDENT printFlags
+LPAREN 
+STRLIT ++disabled-tests=
+ COMMA 
+ IDENT disabledTests
+ COMMA 
+ IDENT testNames
+ COMMA 
+ IDENT testValues
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+ IDENT disabledTests
+  EQOP 
+ IDENT TEST_ALL
+LBRACE 
+ IDENT g_enabledTests
+  ASGN =
+ IDENT enabledTests
+SCOLON 
+RBRACE 
+  ELSE 
+LBRACE 
+ IDENT g_enabledTests
+  ASGN =
+LPAREN 
+ IDENT g_enabledTests
+ BOROP 
+ IDENT enabledTests
+RPAREN 
+ REFOP &
+LPAREN 
+INTLIT -1
+BXOROP 
+ IDENT disabledTests
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+    IF 
+ IDENT log
+  GTOP >
+ IDENT LOG_NONE
+LBRACE 
+ IDENT g_log
+  ASGN =
+ IDENT log
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT 
+Running CX tests in dir : '%s'
+
+ COMMA 
+ IDENT g_workingDir
+RPAREN 
+SCOLON 
+ IDENT printFlags
+LPAREN 
+STRLIT Enabled tests
+ COMMA 
+ IDENT g_enabledTests
+ COMMA 
+ IDENT testNames
+ COMMA 
+ IDENT testValues
+RPAREN 
+SCOLON 
+ IDENT printFlags
+LPAREN 
+STRLIT Enabled log
+ COMMA 
+ IDENT g_log
+ COMMA 
+ IDENT logNames
+ COMMA 
+ IDENT logValues
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT 
+
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT start
+   I64 i64
+SCOLON 
+ IDENT start
+  ASGN =
+ IDENT time
+PERIOD 
+ IDENT UnixMilli
+LPAREN 
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-i32.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-i64.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i64
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-f32.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT f32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-f64.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT f64
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-bool.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT bool
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-array.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT array
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-function.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT function
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-control-flow.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT control floow
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-utils.cx test-struct.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT struct
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-str.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT str
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-utils.cx test-pointers.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT pointers
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT slices
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-short-declarations.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT short declarations
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-parse.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT parse
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-collection-functions.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT collection functions
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-14.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Type casting error not reported.
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-15.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic if return value is not used.
+ COMMA 
+ IDENT TEST_GUI
+ BOROP 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-18.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT String not working across packages
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-19a.cx issue-19.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Order of files matters for structs
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-19.cx issue-19a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Order of files matters for structs
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-23.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when calling gl.BindBuffer with only one argument.
+ COMMA 
+ IDENT TEST_GUI
+ BOROP 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-24.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when giving []f32 argument to gl.BufferData
+ COMMA 
+ IDENT TEST_GUI
+ BOROP 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-25.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Struct field crushed
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-26.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Failed to modify value in an array
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-27.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when trying to index (using a var) an array, member of a struct passed as a function argument
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-28.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Can't call method from package
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-29.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Can't call method if it has a parameter
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-30.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when using arithmetic to index an array field of a struct
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-32.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic if return value is used in an expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-33.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Using a variable to store the return boolean value of a function doesnt work with an if statement
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-35.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when accessing property of struct array passed in as argument to func
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-37.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Unexpected results when accessing arrays of structs in a struct
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-39.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Inline initializations and arrays
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-40.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Slice keeps growing though it's cleared inside the loop
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-41.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Scope not working in loops
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-48.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Interdependant Structs
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-49.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when trying to access an invalid field.
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-50.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when using an using an invalid identifier
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-51a.cx issue-51.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Silent name clash between packages
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-51.cx issue-51a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Silent name clash between packages
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-52.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Invalid implicit cast.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-53.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when using +* in an expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-54.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when defining a struct with duplicate fields.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-55.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Can't define struct with a single character identifier.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-56.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when variable used in if statement without parenthesis.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-57.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Struct field stomped
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-58.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when indexing an array with a non integral var.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-59.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when a field of a struct returned by a function is used in an expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-60a.cx issue-60.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when using var without package qualification.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-61.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT No compilation error when passing *i32 as an i32 arg and conversely
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-61a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when passing *i32 as an i32 arg and conversely
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-62.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when dereferencing an i32 var.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-63.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Wrong pointer behaviour.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-65.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Return from a function doesnt work
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-67.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when var is accessed outside of its declaring scope
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-68.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when a str var is shadowed by a struct var in another scope
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-70.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Inline field and index 'dereferences' to function calls' outputs
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-71.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when redeclaring a variable
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-72.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Multi-dimensional slices don't work
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-75.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT can't prefix a (f32) variable with minus to flip it's signedness
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-78.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT struct identifier (when initializing fields) can be with or without a '&' prefix, with no CX error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-79.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT can assign to previously undeclared vars with just '='
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-82.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT empty code blocks (even if they contain commented-out lines) crash like this
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-84.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT increment operator ++ does not work
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-85.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Method does not work
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-86.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Cannot use bool variable in if expression
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-88.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT CX Parser does not recognize method
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-90.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Goto not working on windows
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-91.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Methods with pointer receivers don't work
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-93.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT when using 2 f32 out parameters, only the value of the 2nd gets through
+ COMMA 
+ IDENT TEST_GUI
+ BOROP 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-98.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Variable redeclaration should not be allowed
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-99.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Short variable declarations are not working with calls to methods or functions
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-101.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when using equality operator between a bool and an i32
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-102.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT String concatenation using the + operator doesn't work
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-103.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Argument list is not parsed correctly
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-104.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Dubious error message when indexing an array with a substraction expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-105.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Dubious error message when inline initializing a slice
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-106a.cx issue-106.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Troubles when accessing a global var from another package
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-108.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT same func names (but in different packages) collide
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-111.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT can use vars from other packages without a 'packageName.' prefix
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-120.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT False positive when detecting variable redeclaration.
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-120a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT False positive when detecting variable redeclaration.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-120b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT False positive when detecting variable redeclaration.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-131.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Problem with struct literals in short variable declarations
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-132.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when using the return value of a function in a short declaration
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-133.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when inserting a new line in a string literal
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-134.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when declaring a variable of an unknown type
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-135.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when using arithmetic operators on struct instances
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-141.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Parser gets confused with `2 -2`
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-153.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic in when assigning an empty initializer list to a []i32 variable
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-154.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Cx stack overflow when appending to a slice passed by address
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-155.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when trying to assign return value of a function returning void
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-156.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when using a function declared in another package without importing the package
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-157.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Cx memory stomped
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-158.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Invalid offset calculation of non literal strings when appended to a slice
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-166.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when calling a function from another package where the package name alias a local variable name
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-167.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Garbage memory when passing the address of slice element to a function
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-168.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Type deduction of struct field fails
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-169.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when assigning a i32 value to a []i32 variable
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-170.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when comparing value of different types
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT end
+   I64 i64
+SCOLON 
+ IDENT end
+  ASGN =
+ IDENT time
+PERIOD 
+ IDENT UnixMilli
+LPAREN 
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT 
+Tests finished after %d milliseconds
+
+ COMMA 
+   I64 i64
+PERIOD 
+ IDENT sub
+LPAREN 
+ IDENT end
+ COMMA 
+ IDENT start
+RPAREN 
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT A total of %d tests were performed
+
+ COMMA 
+ IDENT g_testCount
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT %d were successful
+
+ COMMA 
+ IDENT g_testSuccess
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT %d failed
+
+ COMMA 
+ IDENT g_testCount
+ SUBOP -
+ IDENT g_testSuccess
+RPAREN 
+SCOLON 
+ IDENT printf
+LPAREN 
+STRLIT %d skipped
+
+ COMMA 
+ IDENT g_testSkipped
+RPAREN 
+SCOLON 
+    IF 
+ IDENT g_testCount
+  EQOP 
+INTLIT 0
+  OROP 
+LPAREN 
+ IDENT g_testSuccess
+  NEOP 
+ IDENT g_testCount
+RPAREN 
+LBRACE 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 

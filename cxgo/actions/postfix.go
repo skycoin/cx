@@ -2,15 +2,15 @@ package actions
 
 import (
 	"fmt"
-	"os"
+	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	. "github.com/skycoin/cx/cx"	
+	"os"
 )
 
-func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
+func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	var elt *CXArgument
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
-		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) - 1]
+		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
 	} else {
 		elt = prevExprs[len(prevExprs)-1].Outputs[0]
 	}
@@ -25,7 +25,7 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	if !elt.IsDereferenceFirst {
 		elt.IsArrayFirst = true
 	}
-	
+
 	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		fld := prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
 
@@ -43,7 +43,7 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 			fld.Indexes = append(fld.Indexes, sym)
 			// expr.AddInput(sym)
 		}
-		
+
 		// fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 	} else {
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
@@ -70,11 +70,11 @@ func PostfixExpressionArray (prevExprs []*CXExpression, postExprs []*CXExpressio
 	// if len(expr.Inputs) < 1 {
 	// 	expr.Inputs = append(expr.Inputs, prevExprs[len(prevExprs)-1].Outputs[0])
 	// }
-	
+
 	return prevExprs
 }
 
-func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
+func PostfixExpressionNative(typCode int, opStrCode string) []*CXExpression {
 	// these will always be native functions
 	if opCode, ok := OpCodes[TypeNames[typCode]+"."+opStrCode]; ok {
 		expr := MakeExpression(Natives[opCode], CurrentFile, LineNo)
@@ -86,14 +86,14 @@ func PostfixExpressionNative (typCode int, opStrCode string) []*CXExpression {
 
 		return []*CXExpression{expr}
 	} else {
-		println(CompilationError(CurrentFile, LineNo) + " function '" + TypeNames[typCode]+"."+opStrCode + "' does not exist")
+		println(CompilationError(CurrentFile, LineNo) + " function '" + TypeNames[typCode] + "." + opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
 	}
 }
 
-func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
-	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
+func PostfixExpressionEmptyFunCall(prevExprs []*CXExpression) []*CXExpression {
+	if prevExprs[len(prevExprs)-1].Outputs != nil && len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		// then it's a method call or function in field
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
 		// expr.IsMethodCall = true
@@ -104,7 +104,7 @@ func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 		// inp.Type = expr.Outputs[0].Type
 		// inp.CustomType = expr.Outputs[0].CustomType
 		// expr.Inputs = append(expr.Inputs, inp)
-		
+
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -120,11 +120,11 @@ func PostfixExpressionEmptyFunCall (prevExprs []*CXExpression) []*CXExpression {
 	return FunctionCall(prevExprs, nil)
 }
 
-func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) []*CXExpression {
-	if prevExprs[len(prevExprs) - 1].Outputs != nil && len(prevExprs[len(prevExprs) - 1].Outputs[0].Fields) > 0 {
+func PostfixExpressionFunCall(prevExprs []*CXExpression, args []*CXExpression) []*CXExpression {
+	if prevExprs[len(prevExprs)-1].Outputs != nil && len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
 		// then it's a method
 		// prevExprs[len(prevExprs) - 1].IsMethodCall = true
-		
+
 	} else if prevExprs[len(prevExprs)-1].Operator == nil {
 		if opCode, ok := OpCodes[prevExprs[len(prevExprs)-1].Outputs[0].Name]; ok {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -140,7 +140,7 @@ func PostfixExpressionFunCall (prevExprs []*CXExpression, args []*CXExpression) 
 	return FunctionCall(prevExprs, args)
 }
 
-func PostfixExpressionIncDec (prevExprs []*CXExpression, isInc bool) []*CXExpression {
+func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpression {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -166,7 +166,7 @@ func PostfixExpressionIncDec (prevExprs []*CXExpression, isInc bool) []*CXExpres
 	return exprs
 }
 
-func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
+func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 	left := prevExprs[len(prevExprs)-1].Outputs[0]
 
 	if left.IsRest {
@@ -235,7 +235,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) {
 
 				// then it's a struct
 				left.IsStruct = true
-				
+
 				fld := MakeArgument(ident, CurrentFile, LineNo)
 				fld.AddType(TypeNames[TYPE_IDENTIFIER])
 				left.Fields = append(left.Fields, fld)

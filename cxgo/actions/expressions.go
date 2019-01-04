@@ -71,35 +71,35 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	return exprs
 }
 
-func trueJmpExpressions () []*CXExpression {
+func trueJmpExpressions() []*CXExpression {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
-	
+
 	expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 
 	trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true), false)
 	expr.AddInput(trueArg[0].Outputs[0])
-	
+
 	expr.Package = pkg
 
 	return []*CXExpression{expr}
 }
 
-func BreakExpressions () []*CXExpression {
+func BreakExpressions() []*CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsBreak = true
 	return exprs
 }
 
-func ContinueExpressions () []*CXExpression {
+func ContinueExpressions() []*CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsContinue = true
 	return exprs
 }
 
-func SelectionExpressions (condExprs []*CXExpression, thenExprs []*CXExpression, elseExprs []*CXExpression) []*CXExpression {
+func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, elseExprs []*CXExpression) []*CXExpression {
 	jmpFn := Natives[OP_JMP]
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -159,7 +159,7 @@ func SelectionExpressions (condExprs []*CXExpression, thenExprs []*CXExpression,
 	return exprs
 }
 
-func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
+func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -167,13 +167,12 @@ func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpressi
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
-		
+
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
 		name.Package = pkg
 		name.PreviouslyDeclared = true
-		
 
 		leftExprs[len(leftExprs)-1].Outputs = append(leftExprs[len(leftExprs)-1].Outputs, name)
 	}
@@ -198,29 +197,29 @@ func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpressi
 	if len(leftExprs[len(leftExprs)-1].Outputs[0].Indexes) > 0 || leftExprs[len(leftExprs)-1].Operator != nil {
 		// then it's a function call or an array access
 		expr.AddInput(leftExprs[len(leftExprs)-1].Outputs[0])
-		
+
 		if IsTempVar(leftExprs[len(leftExprs)-1].Outputs[0].Name) {
 			out = append(out, leftExprs...)
 		} else {
-			out = append(out, leftExprs[:len(leftExprs) - 1]...)
+			out = append(out, leftExprs[:len(leftExprs)-1]...)
 		}
 	} else {
 		expr.Inputs = append(expr.Inputs, leftExprs[len(leftExprs)-1].Outputs[0])
 	}
-	
+
 	if len(rightExprs[len(rightExprs)-1].Outputs[0].Indexes) > 0 || rightExprs[len(rightExprs)-1].Operator != nil {
 		// then it's a function call or an array access
 		expr.AddInput(rightExprs[len(rightExprs)-1].Outputs[0])
-		
+
 		if IsTempVar(rightExprs[len(rightExprs)-1].Outputs[0].Name) {
 			out = append(out, rightExprs...)
 		} else {
-			out = append(out, rightExprs[:len(rightExprs) - 1]...)
+			out = append(out, rightExprs[:len(rightExprs)-1]...)
 		}
 	} else {
 		expr.Inputs = append(expr.Inputs, rightExprs[len(rightExprs)-1].Outputs[0])
 	}
-	
+
 	out = append(out, expr)
 
 	return

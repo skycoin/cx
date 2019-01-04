@@ -26,11 +26,13 @@ install:
   - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
   - cd $GOPATH/src/github.com/skycoin/cx
   - make install
+  - make install-linters
 
 # Build, test & run cx test
 script:
   - make build
   - make test
+  - make lint
 
 # Notifications to Telegram channel
 notifications:

@@ -97,9 +97,7 @@
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
-/:package/                {
-	return f(SPACKAGE)
-}
+/:package/                { return f(SPACKAGE)   }
 /:struct/                 { return f(SSTRUCT)    }
 /:func/                   { return f(SFUNC)      }
 /:rem/                    { return f(REM)        }
@@ -632,6 +630,42 @@ func main () {
 
 	if options.compileMode && options.replMode {
 		fmt.Println("Error: Options --compile and --repl are mutually exclusive.")
+		return
+	}
+
+	if options.tokenizeMode {
+		var r *os.File
+		var w *os.File
+		var err error
+
+		if len(fileNames) == 0 {
+			r = os.Stdin
+		} else {
+			sourceFilename := fileNames[0]
+			if len(fileNames) > 1 {
+				fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
+			}
+			r, err = os.Open(sourceFilename)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
+				return
+			}
+			defer r.Close()
+		}
+
+		if options.compileOutput == "" {
+			w = os.Stdout
+		} else {
+			tokenFilename := options.compileOutput
+			w, err = os. Create(tokenFilename)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
+				return
+			}
+			defer w.Close()
+		}
+
+		tokenize(r, w)
 		return
 	}
 
