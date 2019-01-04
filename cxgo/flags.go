@@ -22,6 +22,9 @@ type cxCmdFlags struct {
 	printHelp           bool
 	printVersion        bool
 	tokenizeMode        bool
+	initialHeap         string
+	maxHeap             string
+	stackSize           string
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -50,9 +53,9 @@ func registerFlags(options *cxCmdFlags) {
 
 	flag.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	flag.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
-	flag.BoolVar(&options.printHelp, "help", options.printHelp, "Print CX version")
-	flag.BoolVar(&options.printHelp, "h", options.printHelp, "alias for -help")
-	flag.BoolVar(&options.baseOutput, "base", options.baseOutput, "generate a 'out.cx.go' file with the transcompiled CX Base source code.")
+	// flag.BoolVar(&options.printHelp, "help", options.printHelp, "Print CX version")
+	// flag.BoolVar(&options.printHelp, "h", options.printHelp, "alias for -help")
+	flag.BoolVar(&options.baseOutput, "base", options.baseOutput, "generate a 'out.cx.go' file with the transcompiled CX base source code.")
 	flag.BoolVar(&options.baseOutput, "b", options.baseOutput, "alias for -base")
 	flag.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	flag.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
@@ -67,10 +70,16 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
 	flag.BoolVar(&options.webPersistantMode, "pw", options.webPersistantMode, "Start CX as a web service with a persistent web REPL session")
+	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine")
+	flag.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
+	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine")
+	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
+	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
+	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
 	// viscript options
-	flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
-	flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")
-	flag.StringVar(&options.signalServerAddress, "signal-client-address", options.signalServerAddress, "Address of signal server (default 'localhost:7999')")
+	// flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
+	// flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")
+	// flag.StringVar(&options.signalServerAddress, "signal-client-address", options.signalServerAddress, "Address of signal server (default 'localhost:7999')")
 }
 
 func printHelp() {

@@ -705,7 +705,7 @@ func runtimeErrorInfo (r interface{}, printStack bool) {
 		debug.PrintStack()
 	}
 	
-	os.Exit(3)
+	// os.Exit(3)
 }
 
 func RuntimeError () {
@@ -721,6 +721,11 @@ func RuntimeError () {
 				// error at entry point
 				runtimeErrorInfo(r, false)
 			}
+			os.Exit(CONST_CX_STACK_OVERFLOW_ERROR)
+		case HEAP_EXHAUSTED_ERROR:
+			runtimeErrorInfo(r, true)
+			Debug("entering")
+			os.Exit(CONST_CX_HEAP_EXHAUSTED_ERROR)
 		default:
 			runtimeErrorInfo(r, true)
 		}

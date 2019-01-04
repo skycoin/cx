@@ -155,6 +155,10 @@ func prettyCxCode(code i32) (out str) {
 		out = "cx.INTERNAL_ERROR"
 	} else if (code == cx.ASSERT) {
 		out = "cx.ASSERT"
+	} else if (code == cx.STACK_OVERFLOW_ERROR) {
+		out = "cx.STACK_OVERFLOW_ERROR"
+	} else if (code == cx.HEAP_EXHAUSTED_ERROR) {
+		out = "cx.HEAP_EXHAUSTED_ERROR"
 	} else {
 		out = "unknown cx exit code"
 	}
@@ -411,6 +415,8 @@ func main ()() {
 	runTestEx("issue-168.cx", cx.SUCCESS, "Type deduction of struct field fails", TEST_ISSUE, 0)
 	runTestEx("issue-169.cx", cx.COMPILATION_ERROR, "No compilation error when assigning a i32 value to a []i32 variable", TEST_ISSUE, 0)
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
+	runTest("-stack-size 30 issue-207a.cx", cx.STACK_OVERFLOW_ERROR, "No stack overflow error")
+	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
 
 	var end i64
 	end = time.UnixMilli()

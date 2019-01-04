@@ -4,12 +4,6 @@ import (
         . "github.com/satori/go.uuid"
 )
 
-type CXCall struct {
-        Operator                        *CXFunction
-        Line                            int
-        FramePointer                    int
-}
-
 /*
   Packages
 */
