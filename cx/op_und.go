@@ -334,8 +334,9 @@ func opLen(expr *CXExpression, fp int) {
 }
 
 func opResize(expr *CXExpression, fp int) {
-	sliceOffset := GetSliceOffset(fp, expr.Inputs[0])
 	var newLen = ReadI32(fp, expr.Inputs[1])
+	sliceOffset := GetSliceOffset(fp, expr.Inputs[0])
+
 	if sliceOffset >= 0 && newLen >= 0 {
 		sliceHeader := GetSliceHeader(sliceOffset)
 		var oldCap int32
@@ -372,8 +373,7 @@ func opAppend(expr *CXExpression, fp int) {
 	outputSlicePointer := GetFinalOffset(fp, out1)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
-	inputSlicePointer := GetFinalOffset(fp, inp1)
-	inputSliceOffset := GetPointerOffset(int32(inputSlicePointer))
+	inputSliceOffset := GetSliceOffset(fp, inp1)
 
 	var obj2 []byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
@@ -382,8 +382,17 @@ func opAppend(expr *CXExpression, fp int) {
 		obj2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj2, inp2.TotalSize))
+	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj2))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+}
+
+func opInsert(expr *CXExpression, fp int) {
+}
+
+func opRemove(expr *CXExpression, fp int) {
+}
+
+func opRemoveUnordered(expr *CXExpression, fp int) {
 }
 
 func buildString(expr *CXExpression, fp int) []byte {

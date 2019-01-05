@@ -586,8 +586,83 @@ func GetAssignmentElement(arg *CXArgument) *CXArgument {
 
 }
 
-// SliceAppend ...
-func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte, sizeofElement int) int {
+// IsValidSliceIndex ...
+func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
+	sliceLen := GetSliceLen(int32(offset))
+	bytesLen := sliceLen * int32(sizeofElement)
+	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
+	if index >= 0 && index < int(bytesLen) && (index%sizeofElement) == 0 {
+		return true
+	}
+	return false
+}
+
+// GetPointerOffset ...
+func GetPointerOffset(pointer int32) int32 {
+	var offset int32
+	encoder.DeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
+	return offset
+}
+
+// GetSliceOffset ...
+func GetSliceOffset(fp int, arg *CXArgument) int32 {
+	element := GetAssignmentElement(arg)
+	if element.IsSlice {
+		return GetPointerOffset(int32(GetFinalOffset(fp, arg)))
+	}
+
+	return -1
+}
+
+// GetObjectHeader ...
+func GetObjectHeader(offset int32) []byte {
+	return PROGRAM.Memory[offset : offset+OBJECT_HEADER_SIZE]
+}
+
+// GetSliceHeader ...
+func GetSliceHeader(offset int32) []byte {
+	return PROGRAM.Memory[offset+OBJECT_HEADER_SIZE : offset+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
+}
+
+// GetSliceLen ...
+func GetSliceLen(offset int32) int32 {
+	var sliceLen int32
+	sliceHeader := GetSliceHeader(offset)
+	encoder.DeserializeAtomic(sliceHeader[4:8], &sliceLen)
+	return sliceLen
+}
+
+// GetSlice ...
+func GetSlice(offset int32, sizeofElement int) []byte {
+	if offset > 0 {
+		sliceLen := GetSliceLen(offset)
+		if sliceLen > 0 {
+			dataOffset := offset + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE - 4
+			dataLen := 4 + sliceLen*int32(sizeofElement)
+			return PROGRAM.Memory[dataOffset : dataOffset+dataLen]
+		}
+	}
+	return nil
+}
+
+// GetSliceData ...
+func GetSliceData(offset int32, sizeofElement int) []byte {
+	if slice := GetSlice(offset, sizeofElement); slice != nil {
+		return slice[4:]
+	}
+	return nil
+}
+
+// SliceResize ...
+func SliceResize() {
+}
+
+// SliceGrow ...
+func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
+	if count < 0 {
+		panic(CX_RUNTIME_INVALID_ARGUMENT) // TODO : should use uint32
+	}
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceHeader := GetSliceHeader(inputSliceOffset)
@@ -604,7 +679,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
 	}
 
-	var newLen = inputSliceLen + 1
+	var newLen = count
 	var newCap = outputSliceCap
 	if newLen > newCap {
 		if newCap <= 0 {
@@ -627,13 +702,27 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte,
 		copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
 	}
 
+	return int(outputSliceOffset)
+}
+
+// SliceAppend ...
+func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte) int {
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceHeader := GetSliceHeader(inputSliceOffset)
+		encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+	}
+
+	sizeofElement := len(object)
+	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
+	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
 	return int(outputSliceOffset)
 }
 
 // WriteToSlice ...
 func WriteToSlice(off int, inp []byte) int {
-	return SliceAppend(int32(off), int32(off), inp, len(inp))
+	return SliceAppend(int32(off), int32(off), inp)
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
