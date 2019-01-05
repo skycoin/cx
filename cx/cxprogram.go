@@ -32,6 +32,7 @@ type CXProgram struct {
 	Terminated     bool
 }
 
+// CXCall ...
 type CXCall struct {
         Operator                        *CXFunction
         Line                            int
