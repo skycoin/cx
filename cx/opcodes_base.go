@@ -33,20 +33,38 @@ var execNativeBase func(*CXProgram)
 
 func init() {
 	// time
-	AddOpCode(OP_TIME_SLEEP, "time.Sleep", []int{TYPE_I32}, []int{})
-	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli", []int{}, []int{TYPE_I64})
-	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano", []int{}, []int{TYPE_I64})
-
+	AddOpCode(OP_TIME_SLEEP, "time.Sleep",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	
 	// http
-	AddOpCode(OP_HTTP_GET, "http.Get", []int{TYPE_STR}, []int{TYPE_STR})
+	AddOpCode(OP_HTTP_GET, "http.Get",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// os
-	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory", []int{}, []int{TYPE_STR})
-	AddOpCode(OP_OS_OPEN, "os.Open", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_OS_CLOSE, "os.Close", []int{TYPE_STR}, []int{})
-	AddOpCode(OP_OS_RUN, "os.Run", []int{TYPE_STR, TYPE_I32, TYPE_I32, TYPE_STR}, []int{TYPE_I32, TYPE_I32, TYPE_STR})
-	AddOpCode(OP_OS_EXIT, "os.Exit", []int{TYPE_I32}, []int{})
-
+	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_OS_OPEN, "os.Open",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_OS_CLOSE, "os.Close",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_OS_RUN, "os.Run",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_OS_EXIT, "os.Exit",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	
 	// exec
 	execNativeBase = func(prgrm *CXProgram) {
 		defer RuntimeError()

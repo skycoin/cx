@@ -18,7 +18,7 @@ type cxCmdFlags struct {
 	signalServerAddress string
 	webMode             bool
 	ideMode             bool
-	webPersistantMode   bool
+	webPersistentMode   bool
 	printHelp           bool
 	printVersion        bool
 	tokenizeMode        bool
@@ -36,7 +36,7 @@ func defaultCmdFlags() cxCmdFlags {
 		signalServerAddress: "localhost:7999",
 		webMode:             false,
 		ideMode:             false,
-		webPersistantMode:   false,
+		webPersistentMode:   false,
 		printHelp:           false,
 		printVersion:        false,
 	}
@@ -66,7 +66,7 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
-	flag.BoolVar(&options.webPersistantMode, "pw", options.webPersistantMode, "Start CX as a web service with a persistent web REPL session")
+	flag.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
 	// viscript options
 	flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
 	flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")

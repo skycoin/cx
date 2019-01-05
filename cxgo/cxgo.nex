@@ -407,8 +407,8 @@ func IdeServiceMode() {
 	cmnd.Start()
 }
 
-func PersistantServiceMode() {
-	fmt.Println("Start persistant for service mode!")
+func PersistentServiceMode() {
+	fmt.Println("Start persistent for service mode!")
 
 	fi := bufio.NewReader(os.Stdin)
 
@@ -585,29 +585,29 @@ func main () {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
-  options := defaultCmdFlags()
+	options := defaultCmdFlags()
 	compileOutput := "o"
 
-  registerFlags(&options)
-  flag.Parse()
+	registerFlags(&options)
+	flag.Parse()
 
-  if options.printHelp {
-    printHelp()
-    return
-  }
-  if options.printVersion {
-    printVersion()
-    return
-  }
-  if options.newProject {
-    initNewProject()
-    return
-  }
-  if options.compileMode {
-    options.baseOutput = true
-  }
+	if options.printHelp {
+		printHelp()
+		return
+	}
+	if options.printVersion {
+		printVersion()
+		return
+	}
+	if options.newProject {
+		initNewProject()
+		return
+	}
+	if options.compileMode {
+		options.baseOutput = true
+	}
 
-  cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
+	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
 
 	PRGRM = MakeProgram()
 
@@ -622,9 +622,9 @@ func main () {
 		return
 	}
 
-	if options.webPersistantMode {
+	if options.webPersistentMode {
 		go ServiceMode()
-		PersistantServiceMode()
+		PersistentServiceMode()
 		return
 	}
 

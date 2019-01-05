@@ -67,7 +67,7 @@ func getFlags(arg str, pattern str, flags *i32, match *bool, names []str, values
 	panic(len(names), len(values), "invalid flags")
 	success = false
 	var list str = ""
-	var slice []str = getArgValueStrSlice(arg, pattern, &match)
+	var slice []str = getArgValueStrSlice(arg, pattern, match)
 	for i := 0; i < len(slice); i++ {
 		var value i32 = 0
 		for k := 0; k < len(names); k++ {
@@ -411,6 +411,8 @@ func main ()() {
 	runTestEx("issue-168.cx", cx.SUCCESS, "Type deduction of struct field fails", TEST_ISSUE, 0)
 	runTestEx("issue-169.cx", cx.COMPILATION_ERROR, "No compilation error when assigning a i32 value to a []i32 variable", TEST_ISSUE, 0)
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
+	runTestEx("issue-200a.cx", cx.SUCCESS, "No compilation error when sending wrong types to functions", TEST_STABLE, 0)
+	runTestEx("issue-200b.cx", cx.COMPILATION_ERROR, "No compilation error when sending wrong types to functions", TEST_STABLE, 0)
 
 	var end i64
 	end = time.UnixMilli()
