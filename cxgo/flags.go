@@ -69,7 +69,7 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
-	flag.BoolVar(&options.webPersistantMode, "pw", options.webPersistantMode, "Start CX as a web service with a persistent web REPL session")
+	flag.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
 	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine")
 	flag.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
 	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine")
