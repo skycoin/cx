@@ -4,13 +4,6 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-// CXCall ...
-type CXCall struct {
-	Operator     *CXFunction
-	Line         int
-	FramePointer int
-}
-
 /*
   Packages
 */

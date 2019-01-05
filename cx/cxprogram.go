@@ -32,6 +32,12 @@ type CXProgram struct {
 	Terminated     bool
 }
 
+type CXCall struct {
+        Operator                        *CXFunction
+        Line                            int
+        FramePointer                    int
+}
+
 // MakeProgram ...
 func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
