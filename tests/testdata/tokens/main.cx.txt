@@ -2424,7 +2424,7 @@ PERIOD
 STRLIT Slice keeps growing though it's cleared inside the loop
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-41.cx
  COMMA 
@@ -2433,10 +2433,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Scope not working in loops
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

@@ -349,7 +349,7 @@ func main ()() {
 	runTest("issue-37.cx", cx.SUCCESS, "Unexpected results when accessing arrays of structs in a struct")
 	runTest("issue-39.cx", cx.SUCCESS, "Inline initializations and arrays")
 	runTest("issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop")
-	runTestEx("issue-41.cx", cx.SUCCESS, "Scope not working in loops", TEST_ISSUE, 0)
+	runTest("issue-41.cx", cx.SUCCESS, "Scope not working in loops")
 	runTest("issue-48.cx", cx.SUCCESS, "Interdependant Structs")
 	runTest("issue-49.cx", cx.COMPILATION_ERROR, "Panic when trying to access an invalid field.")
 	runTestEx("issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier", TEST_ISSUE, 0)
