@@ -295,7 +295,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		   continue with call operator's execution
 		*/
 		fn := call.Operator
-		expr := fn.Expressions[call.Line]		
+		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
 		if expr.Operator == nil {
 			// then it's a declaration
