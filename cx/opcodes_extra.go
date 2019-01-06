@@ -178,7 +178,7 @@ func init() {
 	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
-	
+
 	// gl_0.0
 	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
@@ -243,7 +243,7 @@ func init() {
 	AddOpCode(OP_GL_TEX_COORD_2F, "gl.TexCoord2f",
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{})
-	
+
 	// gl_1_0
 	AddOpCode(OP_GL_CULL_FACE, "gl.CullFace",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
@@ -311,7 +311,7 @@ func init() {
 	AddOpCode(OP_GL_VIEWPORT, "gl.Viewport",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
-	
+
 	// gl_1_1
 	AddOpCode(OP_GL_DRAW_ARRAYS, "gl.DrawArrays",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -325,12 +325,12 @@ func init() {
 	AddOpCode(OP_GL_GEN_TEXTURES, "gl.GenTextures",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
-	
+
 	// gl_1_3
 	AddOpCode(OP_GL_ACTIVE_TEXTURE, "gl.ActiveTexture",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
-	
+
 	// gl_1_5
 	AddOpCode(OP_GL_BIND_BUFFER, "gl.BindBuffer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -347,7 +347,7 @@ func init() {
 	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{})
-	
+
 	//gl_2_0
 	AddOpCode(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -415,7 +415,7 @@ func init() {
 	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER_I32, "gl.VertexAttribPointerI32",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
-	
+
 	// gl_3_0
 	AddOpCode(OP_GL_BIND_RENDERBUFFER, "gl.BindRenderbuffer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -456,7 +456,7 @@ func init() {
 	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS, "gl.GenVertexArrays",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
-	
+
 	// glfw
 	AddOpCode(OP_GLFW_INIT, "glfw.Init",
 		[]*CXArgument{},
@@ -527,7 +527,7 @@ func init() {
 	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
-	
+
 	// gltext
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -553,7 +553,7 @@ func init() {
 	AddOpCode(OP_GLTEXT_GLYPH_INFO, "gltext.GlyphInfo",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
-	
+
 	// exec
 	execNativeExtra = func(prgrm *CXProgram) {
 		defer RuntimeError()

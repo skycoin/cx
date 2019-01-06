@@ -93,7 +93,7 @@ func MakeNative(opCode int, inputs, outputs []*CXArgument) *CXFunction {
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
-	// for _, typCode := range outputs {
+		// for _, typCode := range outputs {
 		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
 		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		fn.Outputs = append(fn.Outputs, out)

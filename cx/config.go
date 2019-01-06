@@ -40,13 +40,15 @@ const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
 
 const CALLSTACK_SIZE = 1000
-var STACK_SIZE = 1048576 // 1 Mb
+
+var STACK_SIZE = 1048576     // 1 Mb
 var INIT_HEAP_SIZE = 2097152 // 2 Mb
 var MAX_HEAP_SIZE = 67108864 // 64 Mb
 const MIN_HEAP_FREE_RATIO = 40
 const MAX_HEAP_FREE_RATIO = 70
 
 var NULL_ADDRESS = STACK_SIZE
+
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
@@ -75,13 +77,13 @@ const (
 )
 
 const (
-	DECL_POINTER = iota // 0
-	DECL_DEREF          // 1
-	DECL_ARRAY          // 2 
-	DECL_SLICE          // 3
-	DECL_STRUCT         // 4
-	DECL_INDEXING       // 5
-	DECL_BASIC          // 6
+	DECL_POINTER  = iota // 0
+	DECL_DEREF           // 1
+	DECL_ARRAY           // 2
+	DECL_SLICE           // 3
+	DECL_STRUCT          // 4
+	DECL_INDEXING        // 5
+	DECL_BASIC           // 6
 )
 
 // what to write

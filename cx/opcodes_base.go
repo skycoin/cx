@@ -42,7 +42,7 @@ func init() {
 	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano",
 		[]*CXArgument{},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
-	
+
 	// http
 	AddOpCode(OP_HTTP_GET, "http.Get",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
@@ -64,7 +64,7 @@ func init() {
 	AddOpCode(OP_OS_EXIT, "os.Exit",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
-	
+
 	// exec
 	execNativeBase = func(prgrm *CXProgram) {
 		defer RuntimeError()

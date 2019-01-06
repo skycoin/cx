@@ -34,9 +34,9 @@ type CXProgram struct {
 
 // CXCall ...
 type CXCall struct {
-        Operator                        *CXFunction
-        Line                            int
-        FramePointer                    int
+	Operator     *CXFunction
+	Line         int
+	FramePointer int
 }
 
 // MakeProgram ...

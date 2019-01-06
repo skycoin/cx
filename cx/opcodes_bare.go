@@ -249,7 +249,7 @@ var (
 )
 
 // AddOpCode ...
-func AddOpCode (code int, name string, inputs []*CXArgument, outputs []*CXArgument) {
+func AddOpCode(code int, name string, inputs []*CXArgument, outputs []*CXArgument) {
 	OpNames[code] = name
 	OpCodes[name] = code
 	Natives[code] = MakeNative(code, inputs, outputs)
@@ -281,7 +281,7 @@ func newOpPar(typCode int, isSlice bool) *CXArgument {
 	return arg
 }
 
-func init () {
+func init() {
 	AddOpCode(OP_IDENTITY, "identity",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
@@ -291,14 +291,14 @@ func init () {
 	AddOpCode(OP_DEBUG, "debug",
 		[]*CXArgument{},
 		[]*CXArgument{})
-	
+
 	AddOpCode(OP_SERIALIZE, "serialize",
 		[]*CXArgument{newOpPar(TYPE_AFF, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
 	AddOpCode(OP_DESERIALIZE, "deserialize",
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
 		[]*CXArgument{})
-	
+
 	AddOpCode(OP_UND_EQUAL, "eq",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
@@ -362,7 +362,7 @@ func init () {
 	AddOpCode(OP_UND_READ, "read",
 		[]*CXArgument{},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
-	
+
 	AddOpCode(OP_BYTE_BYTE, "byte.byte",
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -381,11 +381,11 @@ func init () {
 	AddOpCode(OP_BYTE_F64, "byte.f64",
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_BYTE_PRINT, "byte.print",
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
 		[]*CXArgument{})
-	
+
 	AddOpCode(OP_BOOL_PRINT, "bool.print",
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
 		[]*CXArgument{})
@@ -404,7 +404,7 @@ func init () {
 	AddOpCode(OP_BOOL_AND, "bool.and",
 		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
-	
+
 	AddOpCode(OP_I32_BYTE, "i32.byte",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -423,7 +423,7 @@ func init () {
 	AddOpCode(OP_I32_F64, "i32.f64",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_I32_PRINT, "i32.print",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -505,7 +505,7 @@ func init () {
 	AddOpCode(OP_I32_MIN, "i32.min",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
-	
+
 	AddOpCode(OP_I64_BYTE, "i64.byte",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -524,7 +524,7 @@ func init () {
 	AddOpCode(OP_I64_F64, "i64.f64",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_I64_PRINT, "i64.print",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{})
@@ -606,7 +606,7 @@ func init () {
 	AddOpCode(OP_I64_MIN, "i64.min",
 		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
-	
+
 	AddOpCode(OP_F32_IS_NAN, "f32.isnan",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
@@ -691,7 +691,7 @@ func init () {
 	AddOpCode(OP_F32_MIN, "f32.min",
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
-	
+
 	AddOpCode(OP_F64_BYTE, "f64.byte",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -710,7 +710,7 @@ func init () {
 	AddOpCode(OP_F64_F64, "f64.f64",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_F64_PRINT, "f64.print",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{})
@@ -774,7 +774,7 @@ func init () {
 	AddOpCode(OP_F64_MIN, "f64.min",
 		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_STR_PRINT, "str.print",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
@@ -793,7 +793,7 @@ func init () {
 	AddOpCode(OP_STR_EQ, "str.eq",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
-	
+
 	AddOpCode(OP_STR_BYTE, "str.byte",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -812,7 +812,7 @@ func init () {
 	AddOpCode(OP_STR_F64, "str.f64",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-	
+
 	AddOpCode(OP_APPEND, "append",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
@@ -825,7 +825,7 @@ func init () {
 	AddOpCode(OP_PANIC, "panic",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
-	
+
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print",
 		[]*CXArgument{newOpPar(TYPE_AFF, false)},
@@ -845,7 +845,7 @@ func init () {
 	AddOpCode(OP_AFF_REQUEST, "aff.request",
 		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_AFF, false)},
 		[]*CXArgument{})
-	
+
 	// exec
 	execNativeBare = func(prgrm *CXProgram) {
 		defer RuntimeError()
