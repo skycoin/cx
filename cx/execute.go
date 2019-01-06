@@ -295,10 +295,16 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		   continue with call operator's execution
 		*/
 		fn := call.Operator
-		expr := fn.Expressions[call.Line]
+		expr := fn.Expressions[call.Line]		
 		// if it's a native, then we just process the arguments with execNative
 		if expr.Operator == nil {
 			// then it's a declaration
+			// wiping this declaration's memory (removing garbage)
+			newCall := &prgrm.CallStack[prgrm.CallCounter]
+			newFP := newCall.FramePointer
+			for c := 0; c < expr.Outputs[0].Size; c++ {
+				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
+			}
 			call.Line++
 		} else if expr.Operator.IsNative {
 			execNative(prgrm)
