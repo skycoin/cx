@@ -481,7 +481,6 @@ LPAREN
  COMMA 
  IDENT pattern
  COMMA 
- REFOP &
  IDENT match
 RPAREN 
 SCOLON 
@@ -775,10 +774,16 @@ SCOLON
 INTLIT 8
 SCOLON 
    VAR 
+ IDENT LOG_TIME
+   I32 i32
+  ASGN =
+INTLIT 16
+SCOLON 
+   VAR 
  IDENT LOG_ALL
    I32 i32
   ASGN =
-INTLIT 15
+INTLIT 31
 SCOLON 
    VAR 
  IDENT g_testCount
@@ -1033,6 +1038,36 @@ STRLIT cx.ASSERT
 SCOLON 
 RBRACE 
   ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT STACK_OVERFLOW_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.STACK_OVERFLOW_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT HEAP_EXHAUSTED_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.HEAP_EXHAUSTED_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
 LBRACE 
  IDENT out
   ASGN =
@@ -1169,6 +1204,23 @@ LPAREN
 RPAREN 
 SCOLON 
    VAR 
+ IDENT timing
+   STR 
+SCOLON 
+ IDENT timing
+  ASGN =
+STRLIT na
+SCOLON 
+    IF 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_TIME
+RPAREN 
+  EQOP 
+ IDENT LOG_TIME
+LBRACE 
+   VAR 
  IDENT deltaMs
    I32 i32
   ASGN =
@@ -1180,6 +1232,17 @@ LPAREN
  SUBOP -
  IDENT start
 RPAREN 
+SCOLON 
+ IDENT timing
+  ASGN =
+ IDENT sprintf
+LPAREN 
+STRLIT %dms
+ COMMA 
+ IDENT deltaMs
+RPAREN 
+SCOLON 
+RBRACE 
 SCOLON 
     IF 
 LPAREN 
@@ -1213,14 +1276,14 @@ RPAREN
 LBRACE 
  IDENT printf
 LPAREN 
-STRLIT #%s%d | FAILED  | %dms | '%s' | os.Run exited with code %s (%d) | %s
+STRLIT #%s%d | FAILED  | %s | '%s' | os.Run exited with code %s (%d) | %s
 
  COMMA 
  IDENT padding
  COMMA 
  IDENT g_testCount
  COMMA 
- IDENT deltaMs
+ IDENT timing
  COMMA 
  IDENT cmd
  COMMA 
@@ -1279,14 +1342,14 @@ RPAREN
 LBRACE 
  IDENT printf
 LPAREN 
-STRLIT #%s%d | FAILED  | %dms | '%s' | expected %s (%d) | got %s (%d) | %s
+STRLIT #%s%d | FAILED  | %s | '%s' | expected %s (%d) | got %s (%d) | %s
 
  COMMA 
  IDENT padding
  COMMA 
  IDENT g_testCount
  COMMA 
- IDENT deltaMs
+ IDENT timing
  COMMA 
  IDENT cmd
  COMMA 
@@ -1346,14 +1409,14 @@ RPAREN
 LBRACE 
  IDENT printf
 LPAREN 
-STRLIT #%s%d | success | %dms | '%s' | expected %s (%d) | got %s (%d)
+STRLIT #%s%d | success | %s | '%s' | expected %s (%d) | got %s (%d)
 
  COMMA 
  IDENT padding
  COMMA 
  IDENT g_testCount
  COMMA 
- IDENT deltaMs
+ IDENT timing
  COMMA 
  IDENT cmd
  COMMA 
@@ -1404,7 +1467,7 @@ RPAREN
 LBRACE 
  IDENT printf
 LPAREN 
-STRLIT #--- | Skipped |  0ms | '%s' | %s
+STRLIT #--- | Skipped | na | '%s' | na | na | %s
 
  COMMA 
  IDENT cmd
@@ -1483,7 +1546,7 @@ RPAREN
 SCOLON 
  IDENT printf
 LPAREN 
-STRLIT ++log           : Enable log set (all, success, stderr, fail, skip).
+STRLIT ++log           : Enable log set (all, success, stderr, fail, skip, time).
 
 RPAREN 
 SCOLON 
@@ -1577,6 +1640,8 @@ STRLIT stderr
 STRLIT fail
  COMMA 
 STRLIT skip
+ COMMA 
+STRLIT time
 RBRACE 
 SCOLON 
  IDENT logValues
@@ -1594,6 +1659,8 @@ LBRACE
  IDENT LOG_FAIL
  COMMA 
  IDENT LOG_SKIP
+ COMMA 
+ IDENT LOG_TIME
 RBRACE 
 SCOLON 
    VAR 
@@ -3253,6 +3320,28 @@ STRLIT No compilation error when comparing value of different types
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -stack-size 30 issue-207a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT STACK_OVERFLOW_ERROR
+ COMMA 
+STRLIT No stack overflow error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -heap-initial 100 -heap-max 110 issue-207b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT HEAP_EXHAUSTED_ERROR
+ COMMA 
+STRLIT No heap exhausted error
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
@@ -3265,11 +3354,19 @@ PERIOD
 LPAREN 
 RPAREN 
 SCOLON 
+    IF 
+LPAREN 
+ IDENT g_log
+ REFOP &
+ IDENT LOG_TIME
+RPAREN 
+  EQOP 
+ IDENT LOG_TIME
+LBRACE 
  IDENT printf
 LPAREN 
 STRLIT 
 Tests finished after %d milliseconds
-
  COMMA 
    I64 i64
 PERIOD 
@@ -3281,9 +3378,12 @@ LPAREN
 RPAREN 
 RPAREN 
 SCOLON 
+RBRACE 
+SCOLON 
  IDENT printf
 LPAREN 
-STRLIT A total of %d tests were performed
+STRLIT 
+A total of %d tests were performed
 
  COMMA 
  IDENT g_testCount
