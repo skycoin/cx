@@ -2358,7 +2358,7 @@ PERIOD
 STRLIT Panic when using arithmetic to index an array field of a struct
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-32.cx
  COMMA 
@@ -2367,10 +2367,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic if return value is used in an expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2417,7 +2413,7 @@ PERIOD
 STRLIT Inline initializations and arrays
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-40.cx
  COMMA 
@@ -2426,10 +2422,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Slice keeps growing though it's cleared inside the loop
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
