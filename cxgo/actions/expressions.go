@@ -159,6 +159,29 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 	return exprs
 }
 
+// resolveTypeForUnd tries to determine the type that will be returned from an expression
+func resolveTypeForUnd (expr *CXExpression) int {
+	if len(expr.Inputs) > 0 {
+		// it's a literal
+		return expr.Inputs[0].Type
+	}
+	if len(expr.Outputs) > 0 {
+		// it's an expression with an output
+		return expr.Outputs[0].Type
+	}
+	if expr.Operator == nil {
+		// the expression doesn't return anything
+		return -1
+	}
+	if len(expr.Operator.Outputs) > 0 {
+		// always return first output's type
+		return expr.Operator.Outputs[0].Type
+	}
+
+	// error
+	return -1
+}
+
 func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -166,7 +189,8 @@ func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpressio
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
+		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
+		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
@@ -178,7 +202,8 @@ func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpressio
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[rightExprs[len(rightExprs)-1].Inputs[0].Type])
+		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[rightExprs[len(rightExprs)-1].Inputs[0].Type])
+		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
