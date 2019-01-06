@@ -76,7 +76,7 @@ func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 		FileLine:  fileLine}
 }
 
-// func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
+// MakeNative ...
 func MakeNative(opCode int, inputs, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		ElementID: MakeElementID(),
@@ -86,7 +86,7 @@ func MakeNative(opCode int, inputs, outputs []*CXArgument) *CXFunction {
 
 	offset := 0
 	for _, inp := range inputs {
-	// for _, typCode := range inputs {
+		// for _, typCode := range inputs {
 		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		inp.Offset = offset
 		offset += inp.Size
@@ -120,13 +120,6 @@ func MakeCall(op *CXFunction) CXCall {
 		// Program:       prgrm,
 	}
 }
-
-// func MakeAffordance(desc string, action func()) *CXAffordance {
-// 	return &CXAffordance{
-// 		Description: desc,
-// 		Action:      action,
-// 	}
-// }
 
 // MakeIdentityOpName ...
 func MakeIdentityOpName(typeName string) string {

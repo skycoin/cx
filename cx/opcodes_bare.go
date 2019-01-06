@@ -248,6 +248,7 @@ var (
 	execNative     func(*CXProgram)
 )
 
+// AddOpCode ...
 func AddOpCode (code int, name string, inputs []*CXArgument, outputs []*CXArgument) {
 	OpNames[code] = name
 	OpCodes[name] = code
