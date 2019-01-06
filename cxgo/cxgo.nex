@@ -1025,7 +1025,7 @@ func main () {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
 
-	if ReplMode || len(sourceCode) == 0 {
+	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
 		if InterpretMode {
