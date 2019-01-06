@@ -29,7 +29,9 @@ install:
   - make install-linters
 
 # Build, test & run cx test
+# Block PR if golden files not up to date
 script:
+  - if [[ $TRAVIS_PULL_REQUEST != "false" ]] ; then make check-golden-files ; fi
   - make build
   - make test
   - make lint
