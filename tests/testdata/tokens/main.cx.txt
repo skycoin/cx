@@ -2457,7 +2457,7 @@ PERIOD
 STRLIT Panic when trying to access an invalid field.
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-50.cx
  COMMA 
@@ -2466,10 +2466,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when using an using an invalid identifier
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
