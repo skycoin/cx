@@ -333,21 +333,82 @@ func opLen(expr *CXExpression, fp int) {
 	}
 }
 
-func opResize(expr *CXExpression, fp int) {
-	var newLen = ReadI32(fp, expr.Inputs[1])
-	sliceOffset := GetSliceOffset(fp, expr.Inputs[0])
+func opAppend(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if sliceOffset >= 0 && newLen >= 0 {
-		sliceHeader := GetSliceHeader(sliceOffset)
-		var oldCap int32
-		encoder.DeserializeAtomic(sliceHeader[0:4], &oldCap)
-		if newLen <= oldCap {
-			copy(GetSliceHeader(sliceOffset)[4:8], encoder.SerializeAtomic(newLen))
-			return
-		}
+	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	panic(CX_RUNTIME_INVALID_ARGUMENT)
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+
+	inputSliceOffset := GetSliceOffset(fp, inp1)
+
+	var obj []byte
+	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
+		obj = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp2)))
+	} else {
+		obj = ReadMemory(GetFinalOffset(fp, inp2), inp2)
+	}
+
+	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+}
+
+func opResize(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+
+	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+
+	inputSliceOffset := GetSliceOffset(fp, inp1)
+
+	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+}
+
+func opInsert(expr *CXExpression, fp int) {
+	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
+
+	if inp1.Type != inp3.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+
+	inputSliceOffset := GetSliceOffset(fp, inp1)
+
+	var obj []byte
+	if inp3.Type == TYPE_STR || inp3.Type == TYPE_AFF {
+		obj = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp3)))
+	} else {
+		obj = ReadMemory(GetFinalOffset(fp, inp3), inp3)
+	}
+
+	outputSliceOffset = int32(SliceInsert(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), obj))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+}
+
+func opRemove(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+
+	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+
+	inputSliceOffset := GetSliceOffset(fp, inp1)
+
+	outputSliceOffset = int32(SliceRemove(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), int32(GetAssignmentElement(inp1).TotalSize)))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
 func opCopy(expr *CXExpression, fp int) {
@@ -361,38 +422,6 @@ func opCopy(expr *CXExpression, fp int) {
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-}
-
-func opAppend(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-
-	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
-	}
-
-	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-
-	var obj2 []byte
-	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-		obj2 = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp2)))
-	} else {
-		obj2 = ReadMemory(GetFinalOffset(fp, inp2), inp2)
-	}
-
-	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj2))
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
-}
-
-func opInsert(expr *CXExpression, fp int) {
-}
-
-func opRemove(expr *CXExpression, fp int) {
-}
-
-func opRemoveUnordered(expr *CXExpression, fp int) {
 }
 
 func buildString(expr *CXExpression, fp int) []byte {

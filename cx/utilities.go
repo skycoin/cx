@@ -653,10 +653,6 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceResize ...
-func SliceResize() {
-}
-
 // SliceGrow ...
 func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
@@ -665,8 +661,9 @@ func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, siz
 
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
-		inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
+		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	var outputSliceHeader []byte
@@ -709,14 +706,51 @@ func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, siz
 func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte) int {
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
-		inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
+		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	sizeofElement := len(object)
 	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
+	return int(outputSliceOffset)
+}
+
+// SliceInsert ...
+func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, object []byte) int {
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	if index < 0 || index >= inputSliceLen {
+		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+	}
+
+	sizeofElement := len(object)
+	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
+	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
+	copy(outputSliceData[int(index+1)*sizeofElement:], outputSliceData[int(index)*sizeofElement:])
+	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
+	return int(outputSliceOffset)
+}
+
+// SliceRemove ...
+func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, sizeofElement int32) int {
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	if index <= 0 || index >= inputSliceLen {
+		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+	}
+
+	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen-1, int(sizeofElement)))
+	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
+	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
 	return int(outputSliceOffset)
 }
 

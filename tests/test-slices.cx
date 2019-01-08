@@ -1,6 +1,6 @@
 package main
 
-func main () {
+func testAppend() {
 	var slc []i32
 	slc = append(slc, 11)
 	slc = append(slc, 12)
@@ -180,4 +180,85 @@ func main () {
 	test(slc12[1], "bye oh cruel world", "")
 	test(slc12[2], "1", "")
 	test(slc12[3], "22", "")
+}
+
+func testResize() {
+	var sa []i32
+	sa = []i32{0, 1, 2, 3, 4, 5, 6 }
+	test(sa[4], 4, "")
+
+	sa = resize(sa, 4)
+	test(len(sa), 4, "")
+	test(sa[3], 3, "")
+
+    sa = resize(sa, 0)
+    test(len(sa), 0, "")
+
+    var sb []i32
+    sb = resize(sb, 10)
+    test(len(sb), 10, "")
+    sb[6] = 66
+    test(sb[6], 66, "")
+}
+
+func testCopy() {
+}
+
+func testInsert() {
+    var testi []i32
+    testi = []i32{0, 1, 2, 3}
+
+    var sa []i32
+    sa = []i32{1, 2, 3}
+    sa = insert(sa, 0, 0)
+    test(sa, testi, "")
+
+    var sb []i32
+    sb = []i32{0, 2, 3}
+    sb = insert(sb, 1, 1)
+    test(sb, testi, "")
+
+    var sc []i32
+    sc = []i32{0, 1, 3}
+    sc = insert(sc, 2, 2)
+    test(sc, testi, "")
+
+    var sd []i32
+    sd = []i32{0, 1, 2}
+    sd = insert(sd, 3, 3)
+    test(sd, testi, "")
+
+    var tests []str
+    tests = []str {"a", "b", "c"}
+
+    var se []str
+    se = []str {"b", "c", "d"}
+    se = insert(se, 0, "a")
+    test(se, tests, "")
+
+    var sf []str
+    sf = []str {"a", "c", "d"}
+    sf = insert(sf, 1, "b")
+    test(sf, tests, "")
+
+    var sg []str
+    sg = []str {"a", "b", "d"}
+    sg = insert(sg, 2, "c")
+    test(sg, tests, "")
+
+    var sh []str
+    sh = []str {"a", "b", "c"}
+    sh = insert(sh, 3, "d")
+    test(sh, tests, "")
+}
+
+func testRemove() {
+}
+
+func main () {
+    testAppend()
+    testResize()
+    testCopy()
+    testInsert()
+    testRemove()
 }

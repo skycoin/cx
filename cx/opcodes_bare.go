@@ -201,6 +201,8 @@ const (
 
 	OP_APPEND
 	OP_RESIZE
+	OP_INSERT
+	OP_REMOVE
 	OP_COPY
 
 	OP_MAKE
@@ -461,7 +463,9 @@ func init() {
 	AddOpCode(OP_STR_F64, "str.f64", []int{TYPE_STR}, []int{TYPE_F64})
 
 	AddOpCode(OP_APPEND, "append", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
-	AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{})
+	AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{TYPE_UNDEFINED})
+	AddOpCode(OP_INSERT, "insert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
+	AddOpCode(OP_REMOVE, "remove", []int{TYPE_UNDEFINED, TYPE_I32}, []int{TYPE_UNDEFINED})
 	AddOpCode(OP_COPY, "copy", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_I32})
 
 	AddOpCode(OP_ASSERT, "assert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED, TYPE_STR}, []int{TYPE_BOOL})
@@ -849,6 +853,10 @@ func init() {
 			opAppend(expr, fp)
 		case OP_RESIZE:
 			opResize(expr, fp)
+		case OP_INSERT:
+			opInsert(expr, fp)
+		case OP_REMOVE:
+			opRemove(expr, fp)
 		case OP_COPY:
 			opCopy(expr, fp)
 
