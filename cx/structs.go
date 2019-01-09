@@ -18,4 +18,3 @@ type CXConstant struct {
 	Value []byte
 	Type  int
 }
-
