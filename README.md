@@ -21,6 +21,7 @@ Table of Contents
    * [Changelog](#changelog)
    * [Installation](#installation)
       * [Binary Releases](#binary-releases)
+	    * [MacOS Homebrew Install](#macos-homebrew-install)
       * [Compiling from Source](#compiling-from-source)
       * [Installing Go](#installing-go)
    * [Additional Notes Before the Actual Installation](#additional-notes-before-the-actual-installation)
@@ -29,9 +30,7 @@ Table of Contents
       * [Windows: Installing GCC](#windows-installing-gcc)
       * [Installing CX](#installing-cx)
          * [Windows](#windows)
-		 * [MacOS Homebrew](#macos-homebrew)
       * [Updating CX](#updating-cx)
-	  	 * [MacOS Homebrew Update](#macos-homebrew-update)
    * [Running CX](#running-cx)
       * [CX REPL](#cx-repl)
          * [Running CX Programs](#running-cx-programs)
@@ -203,6 +202,25 @@ globally accessible when using the terminal.
 If you don't want to have it globally accessible, you can always try
 out CX locally, inside the directory where you have the binary file.
 
+### MacOS Homebrew Install
+
+The simplest way to install CX on MacOS is to use the Homebrew package manager to install the prebuilt binary release. If you do not already have Homebrew installed, please visit the [Homebrew website](https://brew.sh/) for installation instructions.
+
+Once Homebrew is installed, use the following commands to setup the Tap and then install CX.
+
+```sh
+brew tap BigOokie/skycoin-cx-macos
+brew install skycoin-cx
+```
+
+To update use the following command:
+
+```sh
+brew update skycoin-cx
+```
+
+Note: The Homebrew formule is currently hosted in GitHub by BigOokie - this will likely change in the near future.
+
 ## Compiling from Source
 
 If a binary release is not currently available for your platfrom or if
@@ -320,19 +338,6 @@ download the provided [batch script](https://github.com/skycoin/cx/blob/master/c
 You should test your installation by running `cx
 %GOPATH%\src\github.com\skycoin\cx\tests`.
 
-### MacOS Homebrew
-
-The simplest way to install CX on MacOS is to use the Homebrew package manager to install the prebuild binary. If you do not already have Homebrew installed, please visit the [Homebrew website](https://brew.sh/) for installation instructions.
-
-Once Homebrew is installed, use the following commands to setup the Tap and then install CX.
-
-```sh
-brew tap BigOokie/skycoin-cx-macos
-brew install skycoin-cx
-```
-
-Note: The Homebrew formule is currently hosted in GitHub by BigOokie - this will likely change in the near future.
-
 ## Updating CX
 
 Now you can update CX by simply running the installation script
@@ -346,14 +351,6 @@ or, in Windows:
 
 ```
 cx-setup.bat
-```
-
-### MacOS Homebrew Update
-
-If you installed CX on MacOS using Homebrew, simply use the following command to update CX:
-
-```sh
-brew update skycoin-cx
 ```
 
 # Running CX
