@@ -3,8 +3,9 @@
 .PHONY: install-deps-Darwin install-deps-Linux install-deps install
 
 PWD := $(shell pwd)
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
+# PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
+PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev
+# PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
 UNAME_S := $(shell uname -s)
 INSTALL_DEPS := install-deps-$(UNAME_S)
 
@@ -60,8 +61,8 @@ install-deps-Linux:
 	export Pango_VERSION="$(shell pkg-config --modversion pango)"
 
 install-deps-Darwin:
-	echo 'Installing dependencies for $(UNAME_S)'
-	brew install $(PKG_NAMES_MACOS)
+	# echo 'Installing dependencies for $(UNAME_S)'
+	# brew install $(PKG_NAMES_MACOS)
 
 install-deps: configure $(INSTALL_DEPS)
 	echo "Installing go package dependencies"
