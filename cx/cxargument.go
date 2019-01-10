@@ -4,12 +4,10 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-/*
- * The CXArgument struct contains a variable, i.e. a combination of a name and a type.
- *
- * It is used when declaring variables and in function parameters.
- */
-
+// The CXArgument struct contains a variable, i.e. a combination of a name and a type.
+//
+// It is used when declaring variables and in function parameters.
+//
 type CXArgument struct {
 	Lengths               []int // declared lengths at compile time
 	DereferenceOperations []int // offset by array index, struct field, pointer
