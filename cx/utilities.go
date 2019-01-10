@@ -799,21 +799,32 @@ func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
-// ErrorCode ...
-func ErrorCode(r interface{}, defaultError int) int {
+// ErrorString ...
+func ErrorString(code int) string {
+	if str, found := ErrorStrings[code]; found {
+		return str
+	}
+	return ErrorStrings[CX_RUNTIME_ERROR]
+}
+
+func errorCode(r interface{}) int {
 	switch v := r.(type) {
 	case int:
 		return int(v)
 	default:
-		return defaultError
+		return CX_RUNTIME_ERROR
 	}
 }
 
 func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	call := PROGRAM.CallStack[PROGRAM.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
-	code := ErrorCode(r, defaultError)
-	fmt.Println(ErrorHeader(expr.FileName, expr.FileLine), ErrorStrings[code])
+	code := errorCode(r)
+	if code == CX_RUNTIME_ERROR {
+		code = defaultError
+	}
+
+	fmt.Printf("%s, %s, %v", ErrorHeader(expr.FileName, expr.FileLine), ErrorString(code), r)
 
 	if printStack {
 		PROGRAM.PrintStack()

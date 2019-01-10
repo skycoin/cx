@@ -73,3 +73,7 @@ func opPanic(expr *CXExpression, fp int) {
 		os.Exit(CX_ASSERT)
 	}
 }
+
+func opStrError(expr *CXExpression, fp int) {
+	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(ErrorString(int(ReadI32(fp, expr.Inputs[0])))))
+}

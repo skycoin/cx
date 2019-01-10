@@ -231,6 +231,7 @@ const (
 	OP_ASSERT
 	OP_TEST
 	OP_PANIC
+	OP_STRERROR
 
 	// affordances
 	OP_AFF_PRINT
@@ -842,6 +843,9 @@ func init() {
 	AddOpCode(OP_PANIC, "panic",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_STRERROR, "strerror",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print",
@@ -1270,6 +1274,8 @@ func init() {
 			opTest(expr, fp)
 		case OP_PANIC:
 			opPanic(expr, fp)
+		case OP_STRERROR:
+			opStrError(expr, fp)
 
 		// affordances
 		case OP_AFF_PRINT:

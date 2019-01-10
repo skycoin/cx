@@ -142,28 +142,6 @@ func prettyOsCode(code i32) (out str) {
 	}
 }
 
-func prettyCxCode(code i32) (out str) {
-	if (code == cx.SUCCESS) {
-		out = "cx.SUCCESS"
-	} else if (code == cx.RUNTIME_ERROR) {
-		out = "cx.RUNTIME_ERROR"
-	} else if (code == cx.PANIC) {
-		out = "cx.PANIC"
-	} else if (code == cx.COMPILATION_ERROR) {
-		out = "cx.COMPILATION_ERROR"
-	} else if (code == cx.INTERNAL_ERROR) {
-		out = "cx.INTERNAL_ERROR"
-	} else if (code == cx.ASSERT) {
-		out = "cx.ASSERT"
-	} else if (code == cx.RUNTIME_STACK_OVERFLOW_ERROR) {
-		out = "cx.STACK_OVERFLOW_ERROR"
-	} else if (code == cx.RUNTIME_HEAP_EXHAUSTED_ERROR) {
-		out = "cx.HEAP_EXHAUSTED_ERROR"
-	} else {
-		out = "unknown cx exit code"
-	}
-}
-
 func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 	if (g_enabledTests & filter) == filter {
 		cmd = sprintf("%s %s", g_cxPath, cmd)
@@ -198,7 +176,7 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		} else if (cmdError != exitCode) {
 			if ((g_log & LOG_FAIL) == LOG_FAIL) {
 				printf("#%s%d | FAILED  | %s | '%s' | expected %s (%d) | got %s (%d) | %s\n",
-					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
+					padding, g_testCount, timing, cmd, strerror(exitCode), exitCode, strerror(cmdError), cmdError, desc)
 			}
 			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
@@ -206,7 +184,7 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		} else {
 			if ((g_log & LOG_SUCCESS) == LOG_SUCCESS) {
 				printf("#%s%d | success | %s | '%s' | expected %s (%d) | got %s (%d)\n",
-					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
+					padding, g_testCount, timing, cmd, strerror(exitCode), exitCode, strerror(cmdError), cmdError)
 			}
 			g_testSuccess = g_testSuccess + 1
 		}
