@@ -368,7 +368,7 @@ func opResize(expr *CXExpression, fp int) {
 
 	inputSliceOffset := GetSliceOffset(fp, inp1)
 
-	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
+	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
@@ -417,11 +417,23 @@ func opCopy(expr *CXExpression, fp int) {
 	dstOffset := GetSliceOffset(fp, dstInput)
 	srcOffset := GetSliceOffset(fp, srcInput)
 
+	dstElem := GetAssignmentElement(dstInput)
+	srcElem := GetAssignmentElement(srcInput)
+
+	if dstInput.Type != srcInput.Type || dstElem.IsSlice == false || srcElem.IsSlice == false || dstElem.TotalSize != srcElem.TotalSize {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	var count int
 	if dstInput.Type == srcInput.Type && dstOffset >= 0 && srcOffset >= 0 {
-		copy(GetSlice(dstOffset, GetAssignmentElement(dstInput).TotalSize), GetSlice(srcOffset, GetAssignmentElement(srcInput).TotalSize))
+		count = copy(GetSliceData(dstOffset, dstElem.TotalSize), GetSliceData(srcOffset, srcElem.TotalSize))
+		if count%dstElem.TotalSize != 0 {
+			panic(CX_RUNTIME_ERROR)
+		}
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(count/dstElem.TotalSize)))
 }
 
 func buildString(expr *CXExpression, fp int) []byte {

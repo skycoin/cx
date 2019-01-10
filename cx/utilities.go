@@ -653,10 +653,10 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceGrow ...
-func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
+// SliceResize ...
+func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
-		panic(CX_RUNTIME_INVALID_ARGUMENT) // TODO : should use uint32
+		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
 	}
 
 	var inputSliceLen int32
@@ -692,11 +692,13 @@ func SliceGrow(outputSliceOffset int32, inputSliceOffset int32, count int32, siz
 		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
 	}
 
-	copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
-	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
+	if outputSliceOffset > 0 {
+		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
+		outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 
-	if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
-		copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
+		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
+			copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
+		}
 	}
 
 	return int(outputSliceOffset)
@@ -712,7 +714,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte)
 	}
 
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
+	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
 	return int(outputSliceOffset)
@@ -725,15 +727,16 @@ func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, o
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 	}
 
-	if index < 0 || index >= inputSliceLen {
+	if index < 0 || index > inputSliceLen {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
+	var newLen = inputSliceLen + 1
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
+	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, newLen, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index+1)*sizeofElement:], outputSliceData[int(index)*sizeofElement:])
-	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
+	copy(outputSliceData[int(index)*sizeofElement:], object)
 	return int(outputSliceOffset)
 }
 
@@ -744,13 +747,13 @@ func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, s
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 	}
 
-	if index <= 0 || index >= inputSliceLen {
+	if index < 0 || index >= inputSliceLen {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 	}
 
-	outputSliceOffset = int32(SliceGrow(outputSliceOffset, inputSliceOffset, inputSliceLen-1, int(sizeofElement)))
 	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
+	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen-1, int(sizeofElement)))
 	return int(outputSliceOffset)
 }
 
