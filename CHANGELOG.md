@@ -17,6 +17,7 @@
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
+* CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
 ### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
 * **Affordances**:
