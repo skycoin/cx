@@ -59,7 +59,7 @@ after_build:
 # use custom test_script
 test_script:
   - go test -race -tags full -i -o %GOPATH%\bin\cx github.com\skycoin\cx\cxgo\
-  - cmd: cx.exe %GOPATH%\src\github.com\skycoin\cx\tests\main.cx ++cxpath=cx.exe ++wdir=%GOPATH%\src\github.com\skycoin\cx\tests ++disable-tests=gui,issue
+  - cmd: cx.exe %GOPATH%\src\github.com\skycoin\cx\tests\main.cx ++cxpath=%GOPATH%\bin\cx.exe ++wdir=%GOPATH%\src\github.com\skycoin\cx\tests ++disable-tests=gui,issue
 
 #specify artifacts to upload
 artifacts:

@@ -41,7 +41,7 @@ func MakeDefaultValue(typName string) *[]byte {
 }
 
 // MakeNative ...
-func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
+func MakeNative(opCode int, inputs, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
 		ElementID: MakeElementID(),
 		OpCode:    opCode,
@@ -49,15 +49,18 @@ func MakeNative(opCode int, inputs []int, outputs []int) *CXFunction {
 	}
 
 	offset := 0
-	for _, typCode := range inputs {
-		inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+	for _, inp := range inputs {
+		// for _, typCode := range inputs {
+		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		inp.Offset = offset
 		offset += inp.Size
 		fn.Inputs = append(fn.Inputs, inp)
 	}
-	for _, typCode := range outputs {
-		fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
-		out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+	for _, out := range outputs {
+		// for _, typCode := range outputs {
+		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
+		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
 		offset += out.Size
 	}
@@ -81,13 +84,6 @@ func MakeCall(op *CXFunction) CXCall {
 		// Program:       prgrm,
 	}
 }
-
-// func MakeAffordance(desc string, action func()) *CXAffordance {
-// 	return &CXAffordance{
-// 		Description: desc,
-// 		Action:      action,
-// 	}
-// }
 
 // MakeIdentityOpName ...
 func MakeIdentityOpName(typeName string) string {

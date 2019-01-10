@@ -407,8 +407,8 @@ func IdeServiceMode() {
 	cmnd.Start()
 }
 
-func PersistantServiceMode() {
-	fmt.Println("Start persistant for service mode!")
+func PersistentServiceMode() {
+	fmt.Println("Start persistent for service mode!")
 
 	fi := bufio.NewReader(os.Stdin)
 
@@ -579,35 +579,85 @@ func isJSON(str string) bool {
 	return err == nil
 }
 
+// Used for the -heap-initial, -heap-max and -stack-size flags.
+// This function parses, for example, "1M" to 1048576 (the corresponding number of bytes)
+// Possible suffixes are: G or g (gigabytes), M or m (megabytes), K or k (kilobytes)
+func parseMemoryString (s string) int {
+	suffix := s[len(s) - 1]
+	_, notSuffix := strconv.ParseFloat(string(suffix), 64)
+
+	if notSuffix == nil {
+		// then we don't have a suffix
+		num, err := strconv.ParseInt(s, 10, 64)
+
+		if err != nil {
+			// malformed size
+			return -1
+		}
+
+		return int(num)
+	} else {
+		// then we have a suffix
+		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
+
+		if err != nil {
+			// malformed size
+			return -1
+		}
+		
+		switch suffix {
+		case 'G':
+			return int(num * 1073741824)
+		case 'M':
+			return int(num * 1048576)
+		case 'K':
+			return int(num * 1024)
+		default:
+			return -1
+		}
+	}
+}
+
 func main () {
 	checkCXPathSet()
 
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
-  options := defaultCmdFlags()
+	options := defaultCmdFlags()
 	compileOutput := "o"
 
-  registerFlags(&options)
-  flag.Parse()
+	registerFlags(&options)
+	flag.Parse()
 
-  if options.printHelp {
-    printHelp()
-    return
-  }
-  if options.printVersion {
-    printVersion()
-    return
-  }
-  if options.newProject {
-    initNewProject()
-    return
-  }
-  if options.compileMode {
-    options.baseOutput = true
-  }
+	if options.printHelp {
+		printHelp()
+		return
+	}
+	if options.printVersion {
+		printVersion()
+		return
+	}
+	if options.newProject {
+		initNewProject()
+		return
+	}
+	if options.compileMode {
+		options.baseOutput = true
+	}
+	if options.initialHeap != "" {
+		INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+	}
+	if options.maxHeap != "" {
+		MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+	}
+	if options.stackSize != "" {
+		STACK_SIZE = parseMemoryString(options.stackSize)
+	}
 
-  cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
+	MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
+
+	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
 
 	PRGRM = MakeProgram()
 
@@ -622,9 +672,9 @@ func main () {
 		return
 	}
 
-	if options.webPersistantMode {
+	if options.webPersistentMode {
 		go ServiceMode()
-		PersistantServiceMode()
+		PersistentServiceMode()
 		return
 	}
 
@@ -672,7 +722,7 @@ func main () {
 	cxgo0.PRGRM0 = PRGRM
 
 	// setting project's working directory
-	if !options.replMode {
+	if !options.replMode && len(sourceCode) > 0 {
 		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 
@@ -975,7 +1025,7 @@ func main () {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
 
-	if ReplMode || len(sourceCode) == 0 {
+	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
 		if InterpretMode {

@@ -481,7 +481,6 @@ LPAREN
  COMMA 
  IDENT pattern
  COMMA 
- REFOP &
  IDENT match
 RPAREN 
 SCOLON 
@@ -1036,6 +1035,36 @@ LBRACE
  IDENT out
   ASGN =
 STRLIT cx.ASSERT
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT STACK_OVERFLOW_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.STACK_OVERFLOW_ERROR
+SCOLON 
+RBRACE 
+  ELSE 
+    IF 
+LPAREN 
+ IDENT code
+  EQOP 
+ IDENT cx
+PERIOD 
+ IDENT HEAP_EXHAUSTED_ERROR
+RPAREN 
+LBRACE 
+ IDENT out
+  ASGN =
+STRLIT cx.HEAP_EXHAUSTED_ERROR
 SCOLON 
 RBRACE 
   ELSE 
@@ -2329,7 +2358,7 @@ PERIOD
 STRLIT Panic when using arithmetic to index an array field of a struct
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-32.cx
  COMMA 
@@ -2338,10 +2367,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic if return value is used in an expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2388,7 +2413,7 @@ PERIOD
 STRLIT Inline initializations and arrays
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-40.cx
  COMMA 
@@ -2397,13 +2422,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Slice keeps growing though it's cleared inside the loop
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-41.cx
  COMMA 
@@ -2412,10 +2433,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Scope not working in loops
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2440,7 +2457,7 @@ PERIOD
 STRLIT Panic when trying to access an invalid field.
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-50.cx
  COMMA 
@@ -2449,10 +2466,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when using an using an invalid identifier
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -3289,6 +3302,28 @@ STRLIT No compilation error when comparing value of different types
  IDENT TEST_ISSUE
  COMMA 
 INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -stack-size 30 issue-207a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT STACK_OVERFLOW_ERROR
+ COMMA 
+STRLIT No stack overflow error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -heap-initial 100 -heap-max 110 issue-207b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT HEAP_EXHAUSTED_ERROR
+ COMMA 
+STRLIT No heap exhausted error
 RPAREN 
 SCOLON 
    VAR 

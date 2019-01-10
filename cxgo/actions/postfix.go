@@ -21,6 +21,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 		// this way we avoid calling deref_array multiple times (one for each index)
 		elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
 	}
+	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, DECL_INDEXING)
 
 	if !elt.IsDereferenceFirst {
 		elt.IsArrayFirst = true
@@ -43,8 +44,6 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			fld.Indexes = append(fld.Indexes, sym)
 			// expr.AddInput(sym)
 		}
-
-		// fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 	} else {
 		if len(postExprs[len(postExprs)-1].Outputs) < 1 {
 			// then it's an expression (e.g. i32.add(0, 0))
@@ -65,11 +64,6 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			prevExprs[len(prevExprs)-1].Outputs[0].Indexes = append(prevExprs[len(prevExprs)-1].Outputs[0].Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		}
 	}
-
-	// expr := prevExprs[len(prevExprs)-1]
-	// if len(expr.Inputs) < 1 {
-	// 	expr.Inputs = append(expr.Inputs, prevExprs[len(prevExprs)-1].Outputs[0])
-	// }
 
 	return prevExprs
 }
@@ -238,6 +232,7 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 
 				fld := MakeArgument(ident, CurrentFile, LineNo)
 				fld.AddType(TypeNames[TYPE_IDENTIFIER])
+				
 				left.Fields = append(left.Fields, fld)
 			}
 		} else {

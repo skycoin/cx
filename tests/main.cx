@@ -67,7 +67,7 @@ func getFlags(arg str, pattern str, flags *i32, match *bool, names []str, values
 	panic(len(names), len(values), "invalid flags")
 	success = false
 	var list str = ""
-	var slice []str = getArgValueStrSlice(arg, pattern, &match)
+	var slice []str = getArgValueStrSlice(arg, pattern, match)
 	for i := 0; i < len(slice); i++ {
 		var value i32 = 0
 		for k := 0; k < len(names); k++ {
@@ -155,6 +155,10 @@ func prettyCxCode(code i32) (out str) {
 		out = "cx.INTERNAL_ERROR"
 	} else if (code == cx.ASSERT) {
 		out = "cx.ASSERT"
+	} else if (code == cx.STACK_OVERFLOW_ERROR) {
+		out = "cx.STACK_OVERFLOW_ERROR"
+	} else if (code == cx.HEAP_EXHAUSTED_ERROR) {
+		out = "cx.HEAP_EXHAUSTED_ERROR"
 	} else {
 		out = "unknown cx exit code"
 	}
@@ -339,16 +343,16 @@ func main ()() {
 	runTest("issue-28.cx", cx.SUCCESS, "Can't call method from package")
 	runTest("issue-29.cx", cx.SUCCESS, "Can't call method if it has a parameter")
 	runTest("issue-30.cx", cx.SUCCESS, "Panic when using arithmetic to index an array field of a struct")
-	runTestEx("issue-32.cx", cx.SUCCESS, "Panic if return value is used in an expression", TEST_ISSUE, 0)
+	runTest("issue-32.cx", cx.SUCCESS, "Panic if return value is used in an expression")
 	runTest("issue-33.cx", cx.SUCCESS, "Using a variable to store the return boolean value of a function doesnt work with an if statement")
 	runTest("issue-35.cx", cx.SUCCESS, "Panic when accessing property of struct array passed in as argument to func")
 	runTest("issue-37.cx", cx.SUCCESS, "Unexpected results when accessing arrays of structs in a struct")
 	runTest("issue-39.cx", cx.SUCCESS, "Inline initializations and arrays")
-	runTestEx("issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop", TEST_ISSUE, 0)
-	runTestEx("issue-41.cx", cx.SUCCESS, "Scope not working in loops", TEST_ISSUE, 0)
+	runTest("issue-40.cx", cx.SUCCESS, "Slice keeps growing though it's cleared inside the loop")
+	runTest("issue-41.cx", cx.SUCCESS, "Scope not working in loops")
 	runTest("issue-48.cx", cx.SUCCESS, "Interdependant Structs")
 	runTest("issue-49.cx", cx.COMPILATION_ERROR, "Panic when trying to access an invalid field.")
-	runTestEx("issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier", TEST_ISSUE, 0)
+	runTest("issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier")
 	runTestEx("issue-51a.cx issue-51.cx", cx.SUCCESS, "Silent name clash between packages", TEST_ISSUE, 0)
 	runTestEx("issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages", TEST_ISSUE, 0)
 	runTestEx("issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.", TEST_ISSUE, 0)
@@ -411,6 +415,8 @@ func main ()() {
 	runTestEx("issue-168.cx", cx.SUCCESS, "Type deduction of struct field fails", TEST_ISSUE, 0)
 	runTestEx("issue-169.cx", cx.COMPILATION_ERROR, "No compilation error when assigning a i32 value to a []i32 variable", TEST_ISSUE, 0)
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
+	runTest("-stack-size 30 issue-207a.cx", cx.STACK_OVERFLOW_ERROR, "No stack overflow error")
+	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
 
 	var end i64
 	end = time.UnixMilli()
