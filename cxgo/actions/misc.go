@@ -169,7 +169,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg := MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(TypeNames[typ])
 		arg.Package = pkg
-		// arg.Program = PRGRM
 
 		var size int
 

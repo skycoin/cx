@@ -147,7 +147,7 @@ core language) associated to
 
 # CX Roadmap
 
-![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/README-images/cx-roadmap.jpg)
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
 
 # Video Games in CX
 
@@ -2272,7 +2272,7 @@ expression depending on the command.
 
 ## Affordances
 
-![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/README-images/affordances.png)
+![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/affordances.png)
 
 
 
