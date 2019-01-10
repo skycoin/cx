@@ -193,7 +193,6 @@ func MarkAndCompact() {
 // ResizeMemory ...
 func ResizeMemory(newMemSize int, isExpand bool) {
 	if newMemSize > MAX_HEAP_SIZE {
-		Debug("ENTEERIIING")
 		// heap exhausted
 		panic(HEAP_EXHAUSTED_ERROR)
 	}

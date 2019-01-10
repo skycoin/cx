@@ -798,7 +798,7 @@ after_period:   type_specifier
         ;
 
 postfix_expression:
-                primary_expression
+		primary_expression
 	|       postfix_expression LBRACK expression RBRACK
                 {
 			$$ = PostfixExpressionArray($1, $3)
@@ -1138,6 +1138,12 @@ expression_statement:
 	|       expression SEMICOLON
                 {
 			if $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
+				outs := $1[len($1) - 1].Outputs
+				if len(outs) > 0 {
+					println(CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
+				} else {
+					println(CompilationError(CurrentFile, LineNo), "invalid expression")
+				}
 				$$ = nil
 			} else {
 				$$ = $1

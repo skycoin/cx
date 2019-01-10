@@ -736,7 +736,6 @@ func RuntimeError() {
 			os.Exit(CONST_CX_STACK_OVERFLOW_ERROR)
 		case HEAP_EXHAUSTED_ERROR:
 			runtimeErrorInfo(r, true)
-			Debug("entering")
 			os.Exit(CONST_CX_HEAP_EXHAUSTED_ERROR)
 		default:
 			runtimeErrorInfo(r, true)
