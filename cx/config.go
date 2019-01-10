@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-const DBG_GOLANG_STACK_TRACE = true
+const DBG_GOLANG_STACK_TRACE = false
 
 // global reference to our program
 var PROGRAM *CXProgram
@@ -26,8 +26,6 @@ const OS_ARGS = "Args"
 const NON_ASSIGN_PREFIX = "nonAssign"
 const LOCAL_PREFIX = "*lcl"
 const LABEL_PREFIX = "*lbl"
-
-// const CORE_MODULE = "core"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
@@ -42,13 +40,15 @@ const FORWARDING_ADDRESS_SIZE = 4
 const OBJECT_SIZE = 4
 
 const CALLSTACK_SIZE = 1000
-const STACK_SIZE = 1048576     // 1 Mb
-const INIT_HEAP_SIZE = 2097152 // 2 Mb
-const MAX_HEAP_SIZE = 67108864 // 64 Mb
+
+var STACK_SIZE = 1048576     // 1 Mb
+var INIT_HEAP_SIZE = 2097152 // 2 Mb
+var MAX_HEAP_SIZE = 67108864 // 64 Mb
 const MIN_HEAP_FREE_RATIO = 40
 const MAX_HEAP_FREE_RATIO = 70
 
-const NULL_ADDRESS = STACK_SIZE
+var NULL_ADDRESS = STACK_SIZE
+
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
@@ -90,11 +90,13 @@ var ErrorStrings map[int]string = map[int]string{
 }
 
 const (
-	DECL_POINTER = iota // 0
-	DECL_ARRAY          // 1
-	DECL_SLICE          // 2
-	DECL_STRUCT         // 3
-	DECL_BASIC          // 4
+	DECL_POINTER  = iota // 0
+	DECL_DEREF           // 1
+	DECL_ARRAY           // 2
+	DECL_SLICE           // 3
+	DECL_STRUCT          // 4
+	DECL_INDEXING        // 5
+	DECL_BASIC           // 6
 )
 
 // what to write
@@ -127,10 +129,10 @@ const (
 	TYPE_UI32
 	TYPE_UI64
 
-	TYPE_THRESHOLD
-
 	TYPE_CUSTOM
 	TYPE_POINTER
+	TYPE_ARRAY
+	TYPE_SLICE
 	TYPE_IDENTIFIER
 )
 

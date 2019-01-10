@@ -86,6 +86,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				// then it's a literal
 
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -102,6 +103,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			} else {
 				// then it's an expression
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 				declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 				declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -122,6 +124,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			// exprOut := expr[0].Outputs[0]
 
 			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Offset = offExpr[0].Outputs[0].Offset
 			declaration_specifiers.Size = offExpr[0].Outputs[0].Size
 			declaration_specifiers.TotalSize = offExpr[0].Outputs[0].TotalSize
@@ -204,6 +207,7 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				expr.Package = pkg
 
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
@@ -214,6 +218,7 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 			} else {
 				// then it's an expression (it has an operator)
 				declaration_specifiers.Name = declarator.Name
+				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
@@ -237,6 +242,7 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 			expr.Package = pkg
 
 			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Package = pkg
 			declaration_specifiers.PreviouslyDeclared = true
 			expr.AddOutput(declaration_specifiers)
@@ -296,7 +302,7 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		return arg
 	case DECL_BASIC:
 		arg := declSpec
-		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
+		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 		arg.TotalSize = arg.Size
 		return arg
 	}

@@ -8,11 +8,16 @@
 * Libraries
   * Added GIF support to OpenGL
 * Fixed issues
-  * Fix #131: Problem with struct literals in short variable declarations
+  * #32: Panic if return value is used in an expression
+  * #40: Slice keeps growing though it's cleared inside the loop
+  * #41: Scope not working in loops
+  * #50: No compilation error when using an invalid identifier
+  * #131: Problem with struct literals in short variable declarations
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
+* CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
 ### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
 * **Affordances**:
