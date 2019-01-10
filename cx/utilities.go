@@ -800,19 +800,19 @@ func ErrorHeader(currentFile string, lineNo int) string {
 }
 
 // ErrorCode ...
-func ErrorCode(r interface{}) int {
+func ErrorCode(r interface{}, defaultError int) int {
 	switch v := r.(type) {
 	case int:
 		return int(v)
 	default:
-		return CX_RUNTIME_ERROR
+		return defaultError
 	}
 }
 
-func runtimeErrorInfo(r interface{}, printStack bool) {
+func runtimeErrorInfo(r interface{}, printStack bool, defaultError int) {
 	call := PROGRAM.CallStack[PROGRAM.CallCounter]
 	expr := call.Operator.Expressions[call.Line]
-	code := ErrorCode(r)
+	code := ErrorCode(r, defaultError)
 	fmt.Println(ErrorHeader(expr.FileName, expr.FileLine), ErrorStrings[code])
 
 	if printStack {
@@ -835,17 +835,15 @@ func RuntimeError() {
 			if PROGRAM.CallCounter > 0 {
 				PROGRAM.CallCounter--
 				PROGRAM.StackPointer = call.FramePointer
-				runtimeErrorInfo(r, true)
+				runtimeErrorInfo(r, true, CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			} else {
 				// error at entry point
-				runtimeErrorInfo(r, false)
+				runtimeErrorInfo(r, false, CX_RUNTIME_STACK_OVERFLOW_ERROR)
 			}
-			os.Exit(CONST_CX_STACK_OVERFLOW_ERROR)
 		case HEAP_EXHAUSTED_ERROR:
-			runtimeErrorInfo(r, true)
-			os.Exit(CONST_CX_HEAP_EXHAUSTED_ERROR)
+			runtimeErrorInfo(r, true, CX_RUNTIME_HEAP_EXHAUSTED_ERROR)
 		default:
-			runtimeErrorInfo(r, true)
+			runtimeErrorInfo(r, true, CX_RUNTIME_ERROR)
 		}
 	}
 }

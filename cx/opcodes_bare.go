@@ -818,12 +818,20 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 
 	AddOpCode(OP_APPEND, "append",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
-		AddOpCode(OP_RESIZE, "resize", []int{TYPE_UNDEFINED, TYPE_I32}, []int{TYPE_UNDEFINED})
-	AddOpCode(OP_INSERT, "insert", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_UNDEFINED})
-	AddOpCode(OP_REMOVE, "remove", []int{TYPE_UNDEFINED, TYPE_I32}, []int{TYPE_UNDEFINED})
-	AddOpCode(OP_COPY, "copy", []int{TYPE_UNDEFINED, TYPE_UNDEFINED}, []int{TYPE_I32})
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_RESIZE, "resize",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_INSERT, "insert",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_REMOVE, "remove",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_COPY, "copy",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
 
 	AddOpCode(OP_ASSERT, "assert",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
