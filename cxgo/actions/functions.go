@@ -5,6 +5,13 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
+// FunctionHeader takes a function name ('ident') and either creates the
+// function if it's not known before or returns the already existing function
+// if it is.
+//
+// If the function is a method (isMethod = true), then it adds the object that
+// it's called on as the first argument.
+//
 func FunctionHeader(ident string, receiver []*CXArgument, isMethod bool) *CXFunction {
 	if isMethod {
 		if len(receiver) > 1 {

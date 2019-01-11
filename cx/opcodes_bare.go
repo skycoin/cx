@@ -257,7 +257,7 @@ var (
 func AddOpCode(code int, name string, inputs []*CXArgument, outputs []*CXArgument) {
 	OpNames[code] = name
 	OpCodes[name] = code
-	Natives[code] = MakeNative(code, inputs, outputs)
+	Natives[code] = MakeNativeFunction(code, inputs, outputs)
 }
 
 /*
