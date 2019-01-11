@@ -169,7 +169,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		arg := MakeArgument("", CurrentFile, LineNo)
 		arg.AddType(TypeNames[typ])
 		arg.Package = pkg
-		// arg.Program = PRGRM
 
 		var size int
 
@@ -336,7 +335,7 @@ func AffordanceStructs(pkg *CXPackage, currentFile string, lineNo int) {
 
 func PrimaryIdentifier(ident string) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		arg := MakeArgument(ident, CurrentFile, LineNo)
+		arg := MakeArgument(ident, CurrentFile, LineNo) // fix: line numbers in errors sometimes report +1 or -1. Issue #195
 		arg.AddType(TypeNames[TYPE_IDENTIFIER])
 		// arg.Typ = "ident"
 		arg.Name = ident

@@ -159,7 +159,8 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 					out.PreviouslyDeclared = true
 				} else {
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
-
+					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
+					
 					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
 
 					if inpExpr.Operator.Outputs[0].CustomType != nil {
@@ -184,7 +185,6 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 				expr.AddInput(inpExpr.Outputs[0])
 			}
 			nestedExprs = append(nestedExprs, inpExpr)
-
 		}
 	}
 
@@ -326,6 +326,41 @@ func ProcessGoTos(fn *CXFunction, exprs []*CXExpression) {
 	}
 }
 
+func GetFormattedType (arg *CXArgument) string {
+	typ := ""
+	elt := GetAssignmentElement(arg)
+
+	// this is used to know what arg.Lengths index to use
+	// used for cases like [5]*[3]i32, where we jump to another decl spec
+	arrDeclCount := len(arg.Lengths)-1
+	// looping declaration specifiers
+	for _, spec := range elt.DeclarationSpecifiers {
+		switch spec {
+		case DECL_POINTER:
+			typ = "*" + typ
+		case DECL_DEREF:
+			typ = typ[1:]
+		case DECL_ARRAY:
+			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
+			arrDeclCount--
+		case DECL_SLICE:
+			typ = "[]" + typ
+		case DECL_INDEXING:
+		default:
+			// base type
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ = elt.CustomType.Name + typ
+			} else {
+				// then it's basic type
+				typ = TypeNames[elt.Type] + typ
+			}
+		}
+	}
+	
+	return typ
+}
+
 func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil {
 		opName := ExprOpName(expr)
@@ -388,6 +423,7 @@ func CheckTypes(expr *CXExpression) {
 				receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
 			}
 
+			
 			// if GetAssignmentElement(expr.Outputs[i]).Type != GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
@@ -403,26 +439,14 @@ func CheckTypes(expr *CXExpression) {
 	if expr.Operator != nil {
 		// then it's a function call and not a declaration
 		for i, inp := range expr.Operator.Inputs {
+			expectedType := GetFormattedType(expr.Operator.Inputs[i])
+			receivedType := GetFormattedType(expr.Inputs[i])
 
-			var expectedType string
-			var receivedType string
-			if expr.Operator.Inputs[i].CustomType != nil {
-				// then it's custom type
-				expectedType = expr.Operator.Inputs[i].CustomType.Name
-			} else {
-				// then it's native type
-				expectedType = TypeNames[expr.Operator.Inputs[i].Type]
+			if expr.IsMethodCall && expr.Operator.Inputs[i].IsPointer && i == 0 {
+				// if method receiver is pointer, remove *
+				expectedType = expectedType[1:]
 			}
 
-			if GetAssignmentElement(expr.Inputs[i]).CustomType != nil {
-				// then it's custom type
-				receivedType = GetAssignmentElement(expr.Inputs[i]).CustomType.Name
-			} else {
-				// then it's native type
-				receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
-			}
-
-			// if inp.Type != expr.Inputs[i].Type && inp.Type != TYPE_UNDEFINED {
 			if expectedType != receivedType && inp.Type != TYPE_UNDEFINED {
 				var opName string
 				if expr.Operator.IsNative {
@@ -666,6 +690,41 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.Offset = arg.Offset
 	sym.IsPointer = arg.IsPointer
 	sym.IndirectionLevels = arg.IndirectionLevels
+
+	if sym.FileLine != arg.FileLine {
+		declSpec := make([]int, len(arg.DeclarationSpecifiers))
+		for i, spec := range arg.DeclarationSpecifiers {
+			declSpec[i] = spec
+		}
+
+		for _, spec := range sym.DeclarationSpecifiers {
+			// checking if we need to remove or add DECL_POINTERs
+			// also we could be removing
+			switch spec {
+			case DECL_INDEXING:
+				if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
+					declSpec = declSpec[:len(declSpec)-1]
+				} else {
+					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+				}
+			case DECL_DEREF:
+				if declSpec[len(declSpec)-1] == DECL_POINTER {
+					declSpec = declSpec[:len(declSpec)-1]
+				} else {
+					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+				}
+			case DECL_POINTER:
+				if sym.FileLine != arg.FileLine {
+					// This function is also called so it assigns offset and other fields to signature parameters
+					// 
+					declSpec = append(declSpec, DECL_POINTER)
+				}
+			}
+		}
+		sym.DeclarationSpecifiers = declSpec
+	} else {
+		sym.DeclarationSpecifiers = arg.DeclarationSpecifiers
+	}
 
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType

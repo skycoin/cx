@@ -1,12 +1,5 @@
 package base
 
-// CXCall ...
-type CXCall struct {
-	Operator     *CXFunction
-	Line         int
-	FramePointer int
-}
-
 /*
   Packages
 */
