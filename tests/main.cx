@@ -142,28 +142,6 @@ func prettyOsCode(code i32) (out str) {
 	}
 }
 
-func prettyCxCode(code i32) (out str) {
-	if (code == cx.SUCCESS) {
-		out = "cx.SUCCESS"
-	} else if (code == cx.RUNTIME_ERROR) {
-		out = "cx.RUNTIME_ERROR"
-	} else if (code == cx.PANIC) {
-		out = "cx.PANIC"
-	} else if (code == cx.COMPILATION_ERROR) {
-		out = "cx.COMPILATION_ERROR"
-	} else if (code == cx.INTERNAL_ERROR) {
-		out = "cx.INTERNAL_ERROR"
-	} else if (code == cx.ASSERT) {
-		out = "cx.ASSERT"
-	} else if (code == cx.STACK_OVERFLOW_ERROR) {
-		out = "cx.STACK_OVERFLOW_ERROR"
-	} else if (code == cx.HEAP_EXHAUSTED_ERROR) {
-		out = "cx.HEAP_EXHAUSTED_ERROR"
-	} else {
-		out = "unknown cx exit code"
-	}
-}
-
 func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 	if (g_enabledTests & filter) == filter {
 		cmd = sprintf("%s %s", g_cxPath, cmd)
@@ -198,7 +176,7 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		} else if (cmdError != exitCode) {
 			if ((g_log & LOG_FAIL) == LOG_FAIL) {
 				printf("#%s%d | FAILED  | %s | '%s' | expected %s (%d) | got %s (%d) | %s\n",
-					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError, desc)
+					padding, g_testCount, timing, cmd, strerror(exitCode), exitCode, strerror(cmdError), cmdError, desc)
 			}
 			if ((g_log & LOG_STDERR) == LOG_STDERR) {
 				printf("%s\n", stdOut)
@@ -206,7 +184,7 @@ func runTestEx(cmd str, exitCode i32, desc str, filter i32, timeoutMs i32) () {
 		} else {
 			if ((g_log & LOG_SUCCESS) == LOG_SUCCESS) {
 				printf("#%s%d | success | %s | '%s' | expected %s (%d) | got %s (%d)\n",
-					padding, g_testCount, timing, cmd, prettyCxCode(exitCode), exitCode, prettyCxCode(cmdError), cmdError)
+					padding, g_testCount, timing, cmd, strerror(exitCode), exitCode, strerror(cmdError), cmdError)
 			}
 			g_testSuccess = g_testSuccess + 1
 		}
@@ -325,6 +303,15 @@ func main ()() {
 	runTest("test-str.cx", cx.SUCCESS, "str")
 	runTest("test-utils.cx test-pointers.cx", cx.SUCCESS, "pointers")
 	runTest("test-slices.cx", cx.SUCCESS, "slices")
+	runTest("test-slices-index-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test index < 0")
+	runTest("test-slices-index-out-of-range-b.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test index >= len")
+	runTest("test-slices-resize-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test out of range after resize")
+	runTest("test-slices-resize-out-of-range-b.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test resize with count < 0")
+	runTest("test-slices-insert-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test insert with index > len")
+	runTest("test-slices-insert-out-of-range-b.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test insert with index < 0")
+	runTest("test-slices-remove-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test remove with index < 0")
+	runTest("test-slices-remove-out-of-range-b.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test remove with index >= len")
+	runTest("test-slices-remove-out-of-range-c.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test remove with index == 0 && len == 0")
 	runTest("test-short-declarations.cx", cx.SUCCESS, "short declarations")
 	runTest("test-parse.cx", cx.SUCCESS, "parse")
 	runTest("test-collection-functions.cx", cx.SUCCESS, "collection functions")
@@ -415,8 +402,9 @@ func main ()() {
 	runTestEx("issue-168.cx", cx.SUCCESS, "Type deduction of struct field fails", TEST_ISSUE, 0)
 	runTestEx("issue-169.cx", cx.COMPILATION_ERROR, "No compilation error when assigning a i32 value to a []i32 variable", TEST_ISSUE, 0)
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
-	runTest("-stack-size 30 issue-207a.cx", cx.STACK_OVERFLOW_ERROR, "No stack overflow error")
-	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
+	runTest("-stack-size 30 issue-207a.cx", cx.RUNTIME_STACK_OVERFLOW_ERROR, "No stack overflow error")
+	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.RUNTIME_HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
+	runTestEx("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()

@@ -1,0 +1,7 @@
+package main
+
+func main()() {
+	var s []i32
+	s = remove(s, 0)
+	test(false, true, "runtime must throw CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE")
+}

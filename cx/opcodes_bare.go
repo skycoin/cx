@@ -199,13 +199,17 @@ const (
 	OP_STR_F32
 	OP_STR_F64
 
+	OP_APPEND
+	OP_RESIZE
+	OP_INSERT
+	OP_REMOVE
+	OP_COPY
+
 	OP_MAKE
 	OP_READ
 	OP_WRITE
 	OP_LEN
 	OP_CONCAT
-	OP_APPEND
-	OP_COPY
 	OP_CAST
 	OP_EQ
 	OP_UNEQ
@@ -227,6 +231,7 @@ const (
 	OP_ASSERT
 	OP_TEST
 	OP_PANIC
+	OP_STRERROR
 
 	// affordances
 	OP_AFF_PRINT
@@ -814,8 +819,21 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 
 	AddOpCode(OP_APPEND, "append",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_RESIZE, "resize",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_INSERT, "insert",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_REMOVE, "remove",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+	AddOpCode(OP_COPY, "copy",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+
 	AddOpCode(OP_ASSERT, "assert",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
@@ -825,6 +843,9 @@ func init() {
 	AddOpCode(OP_PANIC, "panic",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_STRERROR, "strerror",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print",
@@ -1215,14 +1236,22 @@ func init() {
 		case OP_STR_F64:
 			opStrStr(expr, fp)
 
+		case OP_APPEND:
+			opAppend(expr, fp)
+		case OP_RESIZE:
+			opResize(expr, fp)
+		case OP_INSERT:
+			opInsert(expr, fp)
+		case OP_REMOVE:
+			opRemove(expr, fp)
+		case OP_COPY:
+			opCopy(expr, fp)
+
 		case OP_MAKE:
 		case OP_READ:
 		case OP_WRITE:
 		case OP_LEN:
 		case OP_CONCAT:
-		case OP_APPEND:
-			opAppend(expr, fp)
-		case OP_COPY:
 		case OP_CAST:
 		case OP_EQ:
 		case OP_UNEQ:
@@ -1245,6 +1274,8 @@ func init() {
 			opTest(expr, fp)
 		case OP_PANIC:
 			opPanic(expr, fp)
+		case OP_STRERROR:
+			opStrError(expr, fp)
 
 		// affordances
 		case OP_AFF_PRINT:

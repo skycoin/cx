@@ -1,0 +1,8 @@
+package main
+
+func main()() {
+	var s []i32
+	s = []i32 {0, 1, 2, 3, 4, 5, 6 }
+	i := s[7]
+	test(false, true, "runtime must throw CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE")
+}

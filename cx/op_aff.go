@@ -32,7 +32,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 
 	var l int32
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	encoder.DeserializeAtomic(_l[:4], &l)
+	encoder.DeserializeAtomic(_l[4:], &l)
 
 	result := make([]string, l)
 

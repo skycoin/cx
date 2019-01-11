@@ -1,6 +1,44 @@
 package main
 
-func main () {
+func printSliceI32(msg str, a []i32) {
+	printf("%s : {", msg)
+	for i := 0; i < len(a); i++ {
+		printf("%d, ", a[i])
+	}
+	printf("}\n")
+}
+
+func printSliceStr(msg str, a []str) {
+	printf("%s : {", msg)
+	for i := 0; i < len(a); i++ {
+		printf("'%s', ", a[i])
+	}
+	printf("}\n")
+}
+
+func testSliceI32(a []i32, b []i32, msg str) {
+	//printSliceI32("a", a)
+	//printSliceI32("b", b)
+	if assert(len(a), len(b), msg) {
+		for i := 0; i < len(a); i++ {
+			test(a[i], b[i], msg)
+		}
+	}
+}
+
+func testSliceStr(a []str, b []str, msg str) {
+	//printSliceStr("a", a)
+	//printSliceStr("b", b)
+	if assert(len(a), len(b), msg) {
+		for i := 0; i < len(a); i++ {
+			if a[i] != b[i] {
+				test(false, true, msg)
+			}
+		}
+	}
+}
+
+func testAppend() {
 	var slc []i32
 	slc = append(slc, 11)
 	slc = append(slc, 12)
@@ -180,4 +218,216 @@ func main () {
 	test(slc12[1], "bye oh cruel world", "")
 	test(slc12[2], "1", "")
 	test(slc12[3], "22", "")
+}
+
+func testResize() {
+	var ia []i32
+	ia = resize(ia, 0)
+	test(len(ia), 0, "")
+
+	ia = []i32{0, 1, 2, 3, 4, 5, 6 }
+	test(ia[4], 4, "")
+
+	ia = resize(ia, 4)
+	test(len(ia), 4, "")
+	test(ia[3], 3, "")
+
+	ia = resize(ia, 0)
+	test(len(ia), 0, "")
+
+	var ib []i32
+	ib = resize(ib, 10)
+	test(len(ib), 10, "")
+	ib[6] = 66
+	test(ib[6], 66, "")
+
+	var ic []i32
+	ic = resize(ic, 7)
+	test(len(ic), 7, "")
+
+	var id []str
+	id = resize(id, 5)
+	test(len(id), 5, "")
+}
+
+func testCopy() {
+	var count i32
+	var ia []i32
+	var ib []i32
+	count = copy(ia, ib)
+	test(count, 0, "")
+	testSliceI32(ia, ib, "")
+
+	var ic []i32
+	ic = []i32 {1, 2, 3, 4}
+
+	var id []i32
+	id = resize(id, 4)
+	count = copy(id, ic)
+	test(count, 4, "fuck")
+	testSliceI32(id, ic, "")
+
+	var ie []i32
+	ie = []i32 {5, 6}
+	count = copy(id, ie)
+	test(count, 2, "")
+	var testid []i32
+	testid = []i32{ 5, 6, 3, 4}
+	testSliceI32(id, testid, "")
+
+	count = copy(id, ic)
+	test(count, 4, "")
+	count = copy(ie, id)
+	test(count, 2, "")
+	var testie []i32
+	testie = []i32{1, 2}
+	testSliceI32(ie, testie, "")
+
+	var sa []str
+	var sb []str
+	count = copy(sa, sb)
+	test(count, 0, "")
+	testSliceStr(sa, sb, "")
+
+	var sc []str
+	sc = []str {"a", "bb", "ccc", "dddd"}
+
+	var sd []str
+	sd = resize(sd, 4)
+	count = copy(sd, sc)
+	test(count, 4, "")
+	testSliceStr(sd, sc, "")
+
+	var se []str
+	se = []str {"eeeee", "ffffff"}
+	count = copy(sd, se)
+	test(count, 2, "")
+	var testsd []str
+	testsd = []str{ "eeeee", "ffffff", "ccc", "dddd"}
+	testSliceStr(sd, testsd, "")
+
+	count = copy(sd, sc)
+	test(count, 4, "")
+	count = copy(se, sd)
+	test(count, 2, "")
+	var testse []str
+	testse = []str{"a", "bb"}
+	testSliceStr(se, testse, "")
+}
+
+func testInsert() {
+	var testi []i32
+	testi = []i32{0, 1, 2, 3}
+
+	var ia []i32
+	ia = []i32{1, 2, 3}
+	ia = insert(ia, 0, 0)
+	testSliceI32(ia, testi, "")
+
+	var ib []i32
+	ib = []i32{0, 2, 3}
+	ib = insert(ib, 1, 1)
+	testSliceI32(ib, testi, "")
+
+	var ic []i32
+	ic = []i32{0, 1, 3}
+	ic = insert(ic, 2, 2)
+	testSliceI32(ic, testi, "")
+
+	var id []i32
+	id = []i32{0, 1, 2}
+	id = insert(id, 3, 3)
+	testSliceI32(id, testi, "")
+
+	var ie []i32
+	var ig []i32
+	ig = []i32{4}
+	ie = insert(ie, 0, 4)
+	testSliceI32(ie, ig, "")
+
+	var tests []str
+	tests = []str {"a", "bb", "ccc", "dddd"}
+
+	var sa []str
+	sa = []str {"bb", "ccc", "dddd"}
+	sa = insert(sa, 0, "a")
+	testSliceStr(sa, tests, "")
+
+	var sb []str
+	sb = []str {"a", "ccc", "dddd"}
+	sb = insert(sb, 1, "bb")
+	testSliceStr(sb, tests, "")
+
+	var sc []str
+	sc = []str {"a", "bb", "dddd"}
+	sc = insert(sc, 2, "ccc")
+	testSliceStr(sc, tests, "")
+
+	var sd []str
+	sd = []str {"a", "bb", "ccc"}
+	sd = insert(sd, 3, "dddd")
+	testSliceStr(sd, tests, "")
+
+	var se []str
+	var sg []str
+	sg = []str{"4"}
+	se = insert(se, 0, "4")
+	testSliceStr(se, sg, "")
+}
+
+func testRemove() {
+	var testi []i32
+	testi = []i32{1, 2, 3}
+
+	var ia []i32
+	ia = []i32{0, 1, 2, 3}
+	ia = remove(ia, 0)
+	testSliceI32(ia, testi, "")
+
+	var ib []i32
+	ib = []i32{1, 0, 2, 3}
+	ib = remove(ib, 1)
+	testSliceI32(ib, testi, "")
+
+	var ic []i32
+	ic = []i32{1, 2, 0, 3}
+	ic = remove(ic, 2)
+	testSliceI32(ic, testi, "")
+
+	var id []i32
+	id = []i32{1, 2, 3, 0}
+	id = remove(id, 3)
+	testSliceI32(id, testi, "")
+
+
+	var tests []str
+	tests = []str {"bb", "ccc", "dddd"}
+
+	var sa []str
+	sa = []str {"a", "bb", "ccc", "dddd"}
+	sa = remove(sa, 0)
+	testSliceStr(sa, tests, "")
+
+	var sb []str
+	sb = []str {"bb", "a", "ccc", "dddd"}
+	sb = remove(sb, 1)
+	testSliceStr(sb, tests, "")
+
+	var sc []str
+	sc = []str {"bb", "ccc", "a", "dddd"}
+	sc = remove(sc, 2)
+	testSliceStr(sc, tests, "")
+
+	var sd []str
+	sd = []str {"bb", "ccc", "dddd", "a"}
+	sd = remove(sd, 3)
+	testSliceStr(sd, tests, "")
+}
+
+func main () {
+	testAppend()
+	testResize()
+	testCopy()
+	testInsert()
+	testRemove()
 }

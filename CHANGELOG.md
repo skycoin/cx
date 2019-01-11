@@ -1,10 +1,21 @@
 # Changelog
 
-### v0.5.19 (NOT YET RELEASED)
-* Serialization and deserialization
-* Functions as first-class objects
-* Callbacks
-* Improve error reporting system
+### v0.6 (NOT YET RELEASED)
+* Additions
+  * Serialization and deserialization
+  * Functions as first-class objects
+  * Callbacks
+  * Improve error reporting system
+  * Add slice resize/copy/insert/remove functions
+  * Add ReadF32Slice (gl.BufferData and gl.BufferSubData accept slice arguments)
+  * Add slice helpers
+  * Switch len and size in slice header to avoid unecessary alloc/copy.
+  * Refactor cx/op_und.go::op_append
+  * Refactor cx/utilities.go::WriteToSlice
+  * Add runtime bound checks on slices
+  * Print exit code string when a runtime error is thrown
+  * CX process returns CX_RUNTIME_* exit code when a runtime error is thrown
+  * Add strerror opcode returning a string matching the CX_* error code passed as argument
 * Libraries
   * Added GIF support to OpenGL
 * Fixed issues

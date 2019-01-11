@@ -9,6 +9,8 @@ import (
 // CalculateDereferences ...
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) {
 	var isPointer bool
+	var baseOffset int
+	var sizeofElement int
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:
@@ -27,7 +29,9 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 					sizeToUse = arg.Size
 				}
 
-				*finalOffset += int(ReadI32(fp, idxArg)) * subSize * sizeToUse
+				baseOffset = *finalOffset
+				sizeofElement = subSize * sizeToUse
+				*finalOffset += int(ReadI32(fp, idxArg)) * sizeofElement
 			}
 		case DEREF_POINTER:
 			isPointer = true
@@ -53,6 +57,9 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 		*finalOffset += OBJECT_HEADER_SIZE
 		if arg.IsSlice {
 			*finalOffset += SLICE_HEADER_SIZE
+			if IsValidSliceIndex(baseOffset, *finalOffset, sizeofElement) == false {
+				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+			}
 		}
 	}
 }
@@ -306,6 +313,38 @@ func FromF64(in float64) []byte {
 
 // 	return offset, size
 // }
+
+// ReadF32Data ...
+func ReadF32Data(fp int, inp *CXArgument) interface{} {
+	var data interface{}
+	elt := GetAssignmentElement(inp)
+	var dataF32 []float32
+	if elt.IsSlice {
+		dataF32 = ReadF32Slice(fp, inp)
+	} else if elt.IsArray {
+		dataF32 = ReadF32A(fp, inp)
+	} else {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+	if len(dataF32) > 0 {
+		data = dataF32
+	}
+	return data
+}
+
+// ReadF32Slice ...
+func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {
+	sliceOffset := GetSliceOffset(fp, inp)
+	if sliceOffset >= 0 && inp.Type == TYPE_F32 {
+		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).TotalSize)
+		if slice != nil {
+			encoder.DeserializeRaw(slice, &out)
+		}
+	} else {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+	return
+}
 
 // ReadF32A ...
 func ReadF32A(fp int, inp *CXArgument) (out []float32) {

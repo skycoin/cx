@@ -938,146 +938,6 @@ SCOLON
 RBRACE 
 SCOLON 
   FUNC 
- IDENT prettyCxCode
-LPAREN 
- IDENT code
-   I32 i32
-RPAREN 
-LPAREN 
- IDENT out
-   STR 
-RPAREN 
-LBRACE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT SUCCESS
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.SUCCESS
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT RUNTIME_ERROR
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.RUNTIME_ERROR
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT PANIC
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.PANIC
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT COMPILATION_ERROR
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.COMPILATION_ERROR
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT INTERNAL_ERROR
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.INTERNAL_ERROR
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT ASSERT
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.ASSERT
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT STACK_OVERFLOW_ERROR
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.STACK_OVERFLOW_ERROR
-SCOLON 
-RBRACE 
-  ELSE 
-    IF 
-LPAREN 
- IDENT code
-  EQOP 
- IDENT cx
-PERIOD 
- IDENT HEAP_EXHAUSTED_ERROR
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT cx.HEAP_EXHAUSTED_ERROR
-SCOLON 
-RBRACE 
-  ELSE 
-LBRACE 
- IDENT out
-  ASGN =
-STRLIT unknown cx exit code
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
  IDENT runTestEx
 LPAREN 
  IDENT cmd
@@ -1353,14 +1213,14 @@ STRLIT #%s%d | FAILED  | %s | '%s' | expected %s (%d) | got %s (%d) | %s
  COMMA 
  IDENT cmd
  COMMA 
- IDENT prettyCxCode
+ IDENT strerror
 LPAREN 
  IDENT exitCode
 RPAREN 
  COMMA 
  IDENT exitCode
  COMMA 
- IDENT prettyCxCode
+ IDENT strerror
 LPAREN 
  IDENT cmdError
 RPAREN 
@@ -1420,14 +1280,14 @@ STRLIT #%s%d | success | %s | '%s' | expected %s (%d) | got %s (%d)
  COMMA 
  IDENT cmd
  COMMA 
- IDENT prettyCxCode
+ IDENT strerror
 LPAREN 
  IDENT exitCode
 RPAREN 
  COMMA 
  IDENT exitCode
  COMMA 
- IDENT prettyCxCode
+ IDENT strerror
 LPAREN 
  IDENT cmdError
 RPAREN 
@@ -2162,6 +2022,105 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT slices
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-index-out-of-range-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test index < 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-index-out-of-range-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test index >= len
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-resize-out-of-range-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test out of range after resize
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-resize-out-of-range-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test resize with count < 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-insert-out-of-range-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test insert with index > len
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-insert-out-of-range-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test insert with index < 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-remove-out-of-range-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test remove with index < 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-remove-out-of-range-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test remove with index >= len
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-slices-remove-out-of-range-c.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+ COMMA 
+STRLIT Test remove with index == 0 && len == 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3310,7 +3269,7 @@ STRLIT -stack-size 30 issue-207a.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT STACK_OVERFLOW_ERROR
+ IDENT RUNTIME_STACK_OVERFLOW_ERROR
  COMMA 
 STRLIT No stack overflow error
 RPAREN 
@@ -3321,9 +3280,24 @@ STRLIT -heap-initial 100 -heap-max 110 issue-207b.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT HEAP_EXHAUSTED_ERROR
+ IDENT RUNTIME_HEAP_EXHAUSTED_ERROR
  COMMA 
 STRLIT No heap exhausted error
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-214.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
 RPAREN 
 SCOLON 
    VAR 
