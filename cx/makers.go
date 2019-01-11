@@ -26,33 +26,6 @@ func MakeGenSym(name string) string {
 	return gensym
 }
 
-// MakeGlobal ...
-func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
-	size := GetArgSize(typ)
-	global := &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Type:      typ,
-		Size:      size,
-		Offset:    HeapOffset,
-		FileName:  fileName,
-		FileLine:  fileLine,
-	}
-	HeapOffset += size
-	return global
-}
-
-// MakeField ...
-func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
-	return &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Type:      typ,
-		FileName:  fileName,
-		FileLine:  fileLine,
-	}
-}
-
 // MakeDefaultValue Used only for native types
 func MakeDefaultValue(typName string) *[]byte {
 	var zeroVal []byte
@@ -65,15 +38,6 @@ func MakeDefaultValue(typName string) *[]byte {
 		zeroVal = make([]byte, 4)
 	}
 	return &zeroVal
-}
-
-// MakeArgument ...
-func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
-	return &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine}
 }
 
 // MakeNative ...
