@@ -141,7 +141,7 @@ func (prgrm *CXProgram) PrintStack() {
 }
 
 // PrintProgram ...
-func (cxt *CXProgram) PrintProgram() {
+func (prgrm *CXProgram) PrintProgram() {
 	fmt.Println("Program")
 
 	var currentFunction *CXFunction
@@ -151,17 +151,17 @@ func (cxt *CXProgram) PrintProgram() {
 	_ = currentPackage
 
 	// saving current program state because PrintProgram uses SelectXXX
-	if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
 	}
 
-	if fn, err := cxt.GetCurrentFunction(); err == nil {
+	if fn, err := prgrm.GetCurrentFunction(); err == nil {
 		currentFunction = fn
 	}
 
 	i := 0
 
-	for _, mod := range cxt.Packages {
+	for _, mod := range prgrm.Packages {
 		if IsCorePackage(mod.Name) {
 			continue
 		}
@@ -296,7 +296,7 @@ func (cxt *CXProgram) PrintProgram() {
 					var dat []byte
 
 					if arg.Offset > STACK_SIZE {
-						dat = cxt.Memory[arg.Offset : arg.Offset+arg.Size]
+						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
 					} else {
 						name = arg.Name
 					}
@@ -491,13 +491,13 @@ func (cxt *CXProgram) PrintProgram() {
 	}
 
 	if currentPackage != nil {
-		cxt.SelectPackage(currentPackage.Name)
+		prgrm.SelectPackage(currentPackage.Name)
 	}
 	if currentFunction != nil {
-		cxt.SelectFunction(currentFunction.Name)
+		prgrm.SelectFunction(currentFunction.Name)
 	}
 
-	cxt.CurrentPackage = currentPackage
+	prgrm.CurrentPackage = currentPackage
 	currentPackage.CurrentFunction = currentFunction
 }
 

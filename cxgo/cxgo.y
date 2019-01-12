@@ -86,7 +86,7 @@
                         /* Pointers */
                         ADDR
 
-%type  <i32>            int_value
+%type   <i32>           int_value
 
 %type   <tok>           after_period
 %type   <tok>           unary_operator
@@ -735,11 +735,11 @@ infer_clauses:
 int_value:
             INT_LITERAL
             {
-      $$ = $1
+		    $$ = $1
             }
         |   SUB_OP INT_LITERAL
             {
-      $$ = -$2
+		    $$ = -$2
             }
 
 primary_expression:

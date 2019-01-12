@@ -156,27 +156,27 @@
 	lval.bool = false
 	return f(BOOLEAN_LITERAL)
 }
-/-?[0-9]+B/ {
+/[0-9]+B/ {
 	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
 	lval.byt = byte(result)
 	return f(BYTE_LITERAL)
 }
-/-?[0-9]+L/ {
+/[0-9]+L/ {
 	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
 	lval.i64 = int64(result)
 	return f(LONG_LITERAL)
 }
-/-?[0-9]+\.[0-9]*D/ {
+/[0-9]+\.[0-9]*D/ {
 	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
 	lval.f64 = float64 (result)
 	return f(DOUBLE_LITERAL)
 }
-/-?[0-9]+/ {
+/[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())
 	lval.i32 = int32(result)
 	return f(INT_LITERAL)
 }
-/-?[0-9]+\.[0-9]*/ {
+/[0-9]+\.[0-9]*/ {
 	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
 	lval.f32 = float32(result)
 	return f(FLOAT_LITERAL)

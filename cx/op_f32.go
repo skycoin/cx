@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

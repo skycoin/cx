@@ -342,6 +342,9 @@ func init() {
 	AddOpCode(OP_UND_SUB, "sub",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+	AddOpCode(OP_UND_NEG, "neg",
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
 	AddOpCode(OP_UND_BITSHL, "bitshl",
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
@@ -443,6 +446,9 @@ func init() {
 	AddOpCode(OP_I32_SUB, "i32.sub",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_I32_NEG, "i32.neg",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_I32_MUL, "i32.mul",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
@@ -543,6 +549,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 	AddOpCode(OP_I64_SUB, "i64.sub",
 		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_I64_NEG, "i64.neg",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 	AddOpCode(OP_I64_MUL, "i64.mul",
 		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
@@ -647,6 +656,9 @@ func init() {
 	AddOpCode(OP_F32_SUB, "f32.sub",
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_F32_NEG, "f32.neg",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
 	AddOpCode(OP_F32_MUL, "f32.mul",
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
@@ -729,6 +741,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 	AddOpCode(OP_F64_SUB, "f64.sub",
 		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_F64_NEG, "f64.neg",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 	AddOpCode(OP_F64_MUL, "f64.mul",
 		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},

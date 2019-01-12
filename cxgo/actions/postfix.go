@@ -198,7 +198,6 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 				left.Package = imp
 
 				if glbl, err := imp.GetGlobal(ident); err == nil {
-					Debug("imp", ident, imp.Name, glbl.Name, glbl.Package.Name)
 					// then it's a global
 					// prevExprs[len(prevExprs)-1].Outputs[0] = glbl
 					prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name

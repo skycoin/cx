@@ -251,9 +251,10 @@ func opAdd(expr *CXExpression, fp int) {
 }
 
 func opSub(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var outB1 []byte
 	if len(expr.Inputs) == 2 {
+		inp2 := expr.Inputs[1]
 		switch inp1.Type {
 		case TYPE_BYTE:
 			outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))

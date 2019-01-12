@@ -71,7 +71,7 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	return exprs
 }
 
-func trueJmpExpressions() []*CXExpression {
+func trueJmpExpressions () []*CXExpression {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -87,7 +87,7 @@ func trueJmpExpressions() []*CXExpression {
 	return []*CXExpression{expr}
 }
 
-func BreakExpressions() []*CXExpression {
+func BreakExpressions () []*CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsBreak = true
 	return exprs

@@ -2730,7 +2730,7 @@ PERIOD
  COMMA 
 STRLIT can't prefix a (f32) variable with minus to flip it's signedness
  COMMA 
- IDENT TEST_ISSUE
+ IDENT TEST_STABLE
  COMMA 
 INTLIT 0
 RPAREN 
@@ -3107,7 +3107,7 @@ PERIOD
  COMMA 
 STRLIT Parser gets confused with `2 -2`
  COMMA 
- IDENT TEST_ISSUE
+ IDENT TEST_STABLE
  COMMA 
 INTLIT 0
 RPAREN 
