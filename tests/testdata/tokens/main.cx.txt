@@ -2451,7 +2451,7 @@ PERIOD
 STRLIT Silent name clash between packages
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-52.cx
  COMMA 
@@ -2460,10 +2460,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Invalid implicit cast.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx

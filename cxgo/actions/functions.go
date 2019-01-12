@@ -1,7 +1,9 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
+	
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -209,7 +211,28 @@ func undOutputSize(expr *CXExpression) int {
 	}
 }
 
+// checkSameNativeType checks if all the inputs of an expression are of the same type.
+// It is used mainly to prevent implicit castings in arithmetic operations
+func checkSameNativeType (expr *CXExpression) error {
+	if len(expr.Inputs) < 1 {
+		return errors.New("cannot perform arithmetic without operands")
+	}
+	var typ int = expr.Inputs[0].Type
+	for _, inp := range expr.Inputs {
+		if inp.Type != typ {
+			return errors.New("operands are not of the same type")
+		}
+		typ = inp.Type
+	}
+	return nil
+}
+
 func ProcessUndExpression(expr *CXExpression) {
+	if expr.Operator != nil && IsUndOp(expr.Operator) {
+		if err := checkSameNativeType(expr); err != nil {
+			println(CompilationError(CurrentFile, LineNo), err.Error())
+		}
+	}
 	if expr.IsUndType {
 		for _, out := range expr.Outputs {
 			out.Size = undOutputSize(expr)

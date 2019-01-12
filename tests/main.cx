@@ -342,7 +342,7 @@ func main ()() {
 	runTest("issue-50.cx", cx.COMPILATION_ERROR, "No compilation error when using an using an invalid identifier")
 	runTest("issue-51a.cx issue-51.cx", cx.SUCCESS, "Silent name clash between packages")
 	runTest("issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages")
-	runTestEx("issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.", TEST_ISSUE, 0)
+	runTest("issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.")
 	runTestEx("issue-53.cx", cx.SUCCESS, "Panic when using +* in an expression", TEST_ISSUE, 0)
 	runTestEx("issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.", TEST_ISSUE, 0)
 	runTestEx("issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.", TEST_ISSUE, 0)
