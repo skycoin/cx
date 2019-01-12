@@ -7,7 +7,7 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-// CXPackage is used to represent a CX struct declaration.
+// CXPackage is used to represent a CX package.
 //
 type CXPackage struct {
 	// Metadata
