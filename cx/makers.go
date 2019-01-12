@@ -40,34 +40,6 @@ func MakeDefaultValue(typName string) *[]byte {
 	return &zeroVal
 }
 
-// MakeNative ...
-func MakeNative(opCode int, inputs, outputs []*CXArgument) *CXFunction {
-	fn := &CXFunction{
-		ElementID: MakeElementID(),
-		OpCode:    opCode,
-		IsNative:  true,
-	}
-
-	offset := 0
-	for _, inp := range inputs {
-		// for _, typCode := range inputs {
-		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
-		inp.Offset = offset
-		offset += inp.Size
-		fn.Inputs = append(fn.Inputs, inp)
-	}
-	for _, out := range outputs {
-		// for _, typCode := range outputs {
-		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
-		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
-		fn.Outputs = append(fn.Outputs, out)
-		out.Offset = offset
-		offset += out.Size
-	}
-
-	return fn
-}
-
 // MakeValue ...
 func MakeValue(value string) *[]byte {
 	byts := encoder.Serialize(value)

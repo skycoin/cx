@@ -7,31 +7,68 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-/* The CXFunction struct contains information about a CX function.
- */
-
-// CXFunction ...
+// CXFunction is used to represent a CX function.
+//
 type CXFunction struct {
-	ListOfPointers    []*CXArgument
-	Inputs            []*CXArgument
-	Outputs           []*CXArgument
-	Expressions       []*CXExpression
-	Name              string
-	Length            int // number of expressions, pre-computed for performance
-	Size              int // automatic memory size
-	OpCode            int
+	// Function metadata
+	Name      string     // Name of the function
+	Package   *CXPackage // The package it's a member of
+	ElementID UUID
+	IsNative  bool // True if the function is native to CX, e.g. int32.add()
+	OpCode    int  // opcode if IsNative = true
+
+	// Contents
+	Inputs      []*CXArgument   // Input parameters to the function
+	Outputs     []*CXArgument   // Output parameters from the function
+	Expressions []*CXExpression // Expressions, including control flow statements, in the function
+	Length      int             // number of expressions, pre-computed for performance
+	Size        int             // automatic memory size
+
+	// Used by the GC
+	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
+
+	// Used by the REPL and parser
 	CurrentExpression *CXExpression
-	Package           *CXPackage
-	ElementID         UUID
-	IsNative          bool
 }
 
-// MakeFunction ...
+// MakeFunction creates an empty function.
+//
+// Later, parameters and contents can be added.
+//
 func MakeFunction(name string) *CXFunction {
 	return &CXFunction{
 		ElementID: MakeElementID(),
 		Name:      name,
 	}
+}
+
+// MakeNativeFunction creates a native function such as i32.add()
+//
+func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
+	fn := &CXFunction{
+		ElementID: MakeElementID(),
+		IsNative:  true,
+		OpCode:    opCode,
+	}
+
+	offset := 0
+	for _, inp := range inputs {
+		// for _, typCode := range inputs {
+		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+		inp.Offset = offset
+		offset += inp.Size
+		fn.Inputs = append(fn.Inputs, inp)
+	}
+	for _, out := range outputs {
+		// for _, typCode := range outputs {
+		// fn.Outputs = append(fn.Outputs, MakeArgument("", "", -1).AddType(TypeNames[typCode]))
+		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+		fn.Outputs = append(fn.Outputs, out)
+		out.Offset = offset
+		offset += out.Size
+	}
+
+	return fn
 }
 
 // ----------------------------------------------------------------
