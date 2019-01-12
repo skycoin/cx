@@ -12,6 +12,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
 		panic(err)
 	}
 }
+
 func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 

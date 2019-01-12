@@ -71,7 +71,7 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	return exprs
 }
 
-func trueJmpExpressions() []*CXExpression {
+func trueJmpExpressions () []*CXExpression {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -87,7 +87,7 @@ func trueJmpExpressions() []*CXExpression {
 	return []*CXExpression{expr}
 }
 
-func BreakExpressions() []*CXExpression {
+func BreakExpressions () []*CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsBreak = true
 	return exprs
@@ -182,7 +182,7 @@ func resolveTypeForUnd (expr *CXExpression) int {
 	return -1
 }
 
-func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
+func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -191,7 +191,6 @@ func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpressio
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
 		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
-
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
@@ -311,8 +310,17 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 			expr := MakeExpression(Natives[OP_BOOL_NOT], CurrentFile, LineNo)
 			expr.Package = pkg
 
-			expr.AddInput(prevExprs[len(prevExprs)-1].Outputs[0])
+			expr.AddInput(exprOut)
 
+			prevExprs[len(prevExprs)-1] = expr
+		} else {
+			panic(err)
+		}
+	case "-":
+		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			expr := MakeExpression(Natives[OP_UND_NEG], CurrentFile, LineNo)
+			expr.Package = pkg
+			expr.AddInput(exprOut)
 			prevExprs[len(prevExprs)-1] = expr
 		} else {
 			panic(err)

@@ -86,6 +86,8 @@
                         /* Pointers */
                         ADDR
 
+%type   <i32>           int_value
+
 %type   <tok>           after_period
 %type   <tok>           unary_operator
 %type   <tok>           assignment_operator
@@ -192,11 +194,11 @@ debugging:
                 }
         ;
 
-stepping:       TSTEP INT_LITERAL INT_LITERAL
+stepping:       TSTEP int_value int_value
                 {
 			Stepping(int($2), int($3), true)
                 }
-        |       STEP INT_LITERAL
+        |       STEP int_value
                 {
 			Stepping(int($2), 0, false)
                 }
@@ -641,7 +643,7 @@ infer_action_arg:
                 {
 			$$ = $1
                 }
-        |       INT_LITERAL
+        |       int_value
                 {
 			$$ = strconv.Itoa(int($1))
                 }
@@ -730,7 +732,15 @@ infer_clauses:
                 ;
 
 
-
+int_value:
+            INT_LITERAL
+            {
+		    $$ = $1
+            }
+        |   SUB_OP INT_LITERAL
+            {
+		    $$ = -$2
+            }
 
 primary_expression:
                 IDENTIFIER
