@@ -130,14 +130,7 @@ func (pkg *CXPackage) GetGlobal(defName string) (*CXArgument, error) {
 		}
 	}
 
-	// for _, imp := range pkg.Imports {
-	// 	for _, def := range imp.Globals {
-	// 		if def.Name == defName {
-	// 			foundDef = def
-	// 			break
-	// 		}
-	// 	}
-	// }
+	// Debug("found", foundDef.Name, foundDef.Package.Name)
 
 	if foundDef != nil {
 		return foundDef, nil
@@ -240,7 +233,7 @@ func (pkg *CXPackage) RemoveFunction(fnName string) {
 }
 
 // AddStruct ...
-func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
+func (pkg *CXPackage) AddStruct (strct *CXStruct) *CXPackage {
 	found := false
 	for i, s := range pkg.Structs {
 		if s.Name == strct.Name {
@@ -260,7 +253,7 @@ func (pkg *CXPackage) AddStruct(strct *CXStruct) *CXPackage {
 }
 
 // RemoveStruct ...
-func (pkg *CXPackage) RemoveStruct(strctName string) {
+func (pkg *CXPackage) RemoveStruct (strctName string) {
 	lenStrcts := len(pkg.Structs)
 	for i, strct := range pkg.Structs {
 		if strct.Name == strctName {
@@ -275,8 +268,7 @@ func (pkg *CXPackage) RemoveStruct(strctName string) {
 }
 
 // AddGlobal ...
-func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
-	// def.Program = pkg.Program
+func (pkg *CXPackage) AddGlobal (def *CXArgument) *CXPackage {
 	def.Package = pkg
 	found := false
 	for i, df := range pkg.Globals {
@@ -289,6 +281,9 @@ func (pkg *CXPackage) AddGlobal(def *CXArgument) *CXPackage {
 	if !found {
 		pkg.Globals = append(pkg.Globals, def)
 	}
+
+	Debug("adding", def.Name, def.Package.Name)
+	
 	return pkg
 }
 
