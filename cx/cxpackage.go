@@ -7,30 +7,36 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-/* The CXPackage struct contains information about a CX package.
- */
-
-// CXPackage ...
+// CXPackage is used to represent a CX struct declaration.
+//
 type CXPackage struct {
-	Imports         []*CXPackage
-	Functions       []*CXFunction
-	Structs         []*CXStruct
-	Globals         []*CXArgument
-	Name            string
+	// Metadata
+	Name      string // Name of the package
+	ElementID UUID
+
+	// Contents
+	Imports   []*CXPackage  // imported packages
+	Functions []*CXFunction // declared functions in this package
+	Structs   []*CXStruct   // declared structs in this package
+	Globals   []*CXArgument // declared global variables in this package
+
+	// Used by the REPL and parser
 	CurrentFunction *CXFunction
 	CurrentStruct   *CXStruct
-	ElementID       UUID
 }
 
-// MakePackage ...
+// MakePackage() creates a new empty CXPackage.
+//
+// It can be filled in later with imports, structs, globals and functions.
+//
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
 		ElementID: MakeElementID(),
 		Name:      name,
 		Globals:   make([]*CXArgument, 0, 10),
 		Imports:   make([]*CXPackage, 0),
-		Functions: make([]*CXFunction, 0, 10),
 		Structs:   make([]*CXStruct, 0),
+		Functions: make([]*CXFunction, 0, 10),
 	}
 }
 

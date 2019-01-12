@@ -10,7 +10,7 @@ import (
 // CXFunction is used to represent a CX function.
 //
 type CXFunction struct {
-	// Function metadata
+	// Metadata
 	Name      string     // Name of the function
 	Package   *CXPackage // The package it's a member of
 	ElementID UUID

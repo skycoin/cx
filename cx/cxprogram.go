@@ -15,21 +15,32 @@ import (
  * declarations.
  */
 
-// CXProgram ...
+// CXProgram is used to represent a full CX program.
+//
+// It is the root data structure for the declarations of all functions,
+// variables and data structures.
+//
 type CXProgram struct {
-	Packages       []*CXPackage
-	Memory         []byte
-	Inputs         []*CXArgument
-	Outputs        []*CXArgument
-	CallStack      []CXCall
-	Path           string
+	// Metadata
+	Path      string
+	ElementID UUID
+
+	// Contents
+	Packages []*CXPackage
+
+	// Runtime information
+	Inputs       []*CXArgument
+	Outputs      []*CXArgument
+	Memory       []byte // Used when running the program
+	HeapStartsAt int
+	StackPointer int
+	CallStack    []CXCall
+	CallCounter  int
+	HeapPointer  int
+	Terminated   bool
+
+	// Used by the REPL and parser
 	CurrentPackage *CXPackage
-	CallCounter    int
-	HeapPointer    int
-	StackPointer   int
-	HeapStartsAt   int
-	ElementID      UUID
-	Terminated     bool
 }
 
 // CXCall ...
