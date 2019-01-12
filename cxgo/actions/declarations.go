@@ -16,7 +16,7 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
 func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 
-	if glbl, err := PRGRM.GetGlobal(declarator.Name); err == nil {
+	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
 		// then it is already defined
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
@@ -32,6 +32,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+			// glbl.Package = offExpr[0].Outputs[0].Package
 		}
 
 		if doesInitialize {
@@ -41,6 +42,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -48,6 +50,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(glbl)
 				initializer[len(initializer)-1].Operator = Natives[OP_IDENTITY]
+				initializer[len(initializer)-1].Package = glbl.Package
 
 				SysInitExprs = append(SysInitExprs, initializer...)
 			} else {
@@ -55,6 +58,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -72,6 +76,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			declaration_specifiers.Name = glbl.Name
 			declaration_specifiers.Offset = glbl.Offset
 			declaration_specifiers.PassBy = glbl.PassBy
+			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
 		}
 	} else {
