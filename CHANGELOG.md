@@ -28,6 +28,7 @@
   * #53: CX was not catching an error involving invalid indirections
   * #55: Single character declarations are now allowed
   * #131: Problem with struct literals in short variable declarations
+  * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
