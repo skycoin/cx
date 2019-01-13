@@ -3282,6 +3282,17 @@ STRLIT Argument type deduction failed when passing address of an i32 struct fiel
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-218.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Type checking is not working with receiving variables of unexpected types
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64

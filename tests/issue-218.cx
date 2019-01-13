@@ -8,8 +8,6 @@ func retAA() (out AA) {
 }
 
 func main ()() {
-	// var ii i32 = retAA().i
-
 	var num i32
 	num = retAA()
 }
