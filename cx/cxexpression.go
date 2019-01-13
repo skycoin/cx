@@ -13,7 +13,7 @@ import (
 //
 type CXExpression struct {
 	// Metadata
-	ElementID       UUID
+	ElementID UUID
 
 	// Contents
 	Inputs   []*CXArgument
