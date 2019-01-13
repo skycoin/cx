@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"os"
+	
 	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
@@ -292,6 +294,12 @@ func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 }
 
 func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
+	if len(prevExprs[len(prevExprs)-1].Outputs) == 0 {
+		println(CompilationError(CurrentFile, LineNo), "invalid indirection")
+		// needs to be stopped immediately
+		os.Exit(CX_COMPILATION_ERROR)
+	}
+	
 	exprOut := prevExprs[len(prevExprs)-1].Outputs[0]
 	switch op {
 	case "*":

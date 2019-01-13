@@ -23,6 +23,9 @@
   * #40: Slice keeps growing though it's cleared inside the loop
   * #41: Scope not working in loops
   * #50: No compilation error when using an invalid identifier
+  * #51: Silent name clash between packages
+  * #52: Some implicit casts were not being caught at compile time
+  * #53: CX was not catching an error involving invalid indirections
   * #131: Problem with struct literals in short variable declarations
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX

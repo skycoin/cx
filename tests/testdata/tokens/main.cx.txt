@@ -2429,7 +2429,7 @@ PERIOD
 STRLIT No compilation error when using an using an invalid identifier
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-51a.cx issue-51.cx
  COMMA 
@@ -2438,13 +2438,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Silent name clash between packages
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-51.cx issue-51a.cx
  COMMA 
@@ -2453,13 +2449,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Silent name clash between packages
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-52.cx
  COMMA 
@@ -2468,25 +2460,17 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Invalid implicit cast.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-53.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when using +* in an expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
