@@ -7,16 +7,17 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-/* The CXStruct struct contains information about a CX struct.
- */
-
-// CXStruct ...
+// CXStruct is used to represent a CX struct.
+//
 type CXStruct struct {
-	Fields    []*CXArgument
-	Name      string
-	Size      int
-	Package   *CXPackage
+	// Metadata
+	Name      string     // Name of the struct
+	Package   *CXPackage // The package this struct belongs to
+	Size      int        // The size in memory that this struct takes.
 	ElementID UUID
+
+	// Contents
+	Fields []*CXArgument // The fields of the struct
 }
 
 // MakeStruct ...
@@ -61,6 +62,9 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 			break
 		}
 	}
+
+	// FIXME: Shouldn't it be a compilation error if we define a new field
+	// 	  with the same name as another field?
 	if !found {
 		strct.Fields = append(strct.Fields, fld)
 		strct.Size += fld.TotalSize
