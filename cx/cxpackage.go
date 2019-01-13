@@ -25,7 +25,7 @@ type CXPackage struct {
 	CurrentStruct   *CXStruct
 }
 
-// MakePackage() creates a new empty CXPackage.
+// MakePackage creates a new empty CXPackage.
 //
 // It can be filled in later with imports, structs, globals and functions.
 //

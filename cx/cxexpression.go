@@ -13,6 +13,7 @@ import (
 //
 type CXExpression struct {
 	// Metadata
+	ElementID       UUID
 
 	// Contents
 	Inputs   []*CXArgument
@@ -30,7 +31,6 @@ type CXExpression struct {
 	ThenLines int
 	ElseLines int
 
-	ElementID       UUID
 	IsMethodCall    bool
 	IsStructLiteral bool
 	IsArrayLiteral  bool
