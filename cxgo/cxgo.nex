@@ -785,7 +785,7 @@ func main () {
 					}
 
 					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
 
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
@@ -806,7 +806,7 @@ func main () {
 						continue
 					}
 
-					reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]+)?\\s")
+					reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
 
 					if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 						if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
@@ -867,7 +867,7 @@ func main () {
 						continue
 					}
 					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
 
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
@@ -920,7 +920,7 @@ func main () {
 						continue
 					}
 					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]+)")
+					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
 
 
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
@@ -943,7 +943,7 @@ func main () {
 						continue
 					}
 
-					reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]+)")
+					reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
 
 					if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
 						if _, err := prePkg.GetGlobal(match[len(match) - 1]); err != nil {
