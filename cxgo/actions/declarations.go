@@ -234,6 +234,9 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 				
+				// THEN the expression has outputs created from the result of
+				// handling a dot notation initializer, and it needs to be replaced
+				// ELSE we simply add it using `AddOutput`
 				if len(expr.Outputs) > 0 {
 					expr.Outputs = []*CXArgument{declaration_specifiers}
 				} else {
