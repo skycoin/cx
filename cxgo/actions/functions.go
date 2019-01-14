@@ -429,6 +429,7 @@ func CheckTypes(expr *CXExpression) {
 				plural2 = ""
 				plural3 = "was"
 			}
+			
 			println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3))
 		}
 	}

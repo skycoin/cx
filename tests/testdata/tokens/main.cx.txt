@@ -2540,19 +2540,26 @@ STRLIT No compilation error when indexing an array with a non integral var.
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
-STRLIT issue-59.cx
+STRLIT issue-59a.cx
  COMMA 
  IDENT cx
 PERIOD 
  IDENT SUCCESS
  COMMA 
 STRLIT Panic when a field of a struct returned by a function is used in an expression
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-59b.cx
  COMMA 
- IDENT TEST_ISSUE
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
  COMMA 
-INTLIT 0
+STRLIT Panic when a field of a struct returned by a function is used in an expression
 RPAREN 
 SCOLON 
  IDENT runTest

@@ -26,6 +26,7 @@
   * #51: Silent name clash between packages
   * #52: Some implicit casts were not being caught at compile time
   * #53: CX was not catching an error involving invalid indirections
+  * #59: Fields of a struct returned by a function call can now be accessed
   * #131: Problem with struct literals in short variable declarations
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
