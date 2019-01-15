@@ -355,7 +355,7 @@ func main ()() {
 	runTest("issue-61.cx", cx.SUCCESS, "No compilation error when passing *i32 as an i32 arg and conversely")
 	runTestEx("issue-61a.cx", cx.COMPILATION_ERROR, "No compilation error when passing *i32 as an i32 arg and conversely", TEST_ISSUE, 0)
 	runTestEx("issue-62.cx", cx.COMPILATION_ERROR, "No compilation error when dereferencing an i32 var.", TEST_ISSUE, 0)
-	runTestEx("issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.", TEST_ISSUE, 0)
+	runTest("issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.")
 	runTestEx("issue-65.cx", cx.SUCCESS, "Return from a function doesnt work", TEST_ISSUE, 0)
 	runTestEx("issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope", TEST_ISSUE, 0)
 	runTest("issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")

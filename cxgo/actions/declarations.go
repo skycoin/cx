@@ -220,8 +220,15 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
+				initOut := initializer[len(initializer)-1].Outputs[0]
+
+				// CX checks the output of an expression to determine if it's being passed
+				// by value or by reference, so we copy this property from the initializer's
+				// output, in case of something like var foo *i32 = &bar
+				declaration_specifiers.PassBy = initOut.PassBy
+
 				expr.AddOutput(declaration_specifiers)
-				expr.AddInput(initializer[len(initializer)-1].Outputs[0])
+				expr.AddInput(initOut)
 
 				initializer[len(initializer)-1] = expr
 
