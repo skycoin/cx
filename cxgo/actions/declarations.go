@@ -207,8 +207,11 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 		declaration_specifiers.IsLocalDeclaration = true
 
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			// THEN it's a literal, e.g. var foo i32 = 10;
+			// ELSE it's an expression with an operator
 			if initializer[len(initializer)-1].Operator == nil {
-				// then it's a literal, e.g. var foo i32 = 10;
+				// we need to create an expression that links the initializer expressions
+				// with the declared variable
 				expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 				expr.Package = pkg
 
@@ -220,19 +223,25 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				expr.AddOutput(declaration_specifiers)
 				expr.AddInput(initializer[len(initializer)-1].Outputs[0])
 
-				return []*CXExpression{expr}
+				initializer[len(initializer)-1] = expr
+
+				return initializer
 			} else {
-				// then it's an expression (it has an operator)
+				expr := initializer[len(initializer)-1]
+
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
-
-				expr := initializer[len(initializer)-1]
-				expr.AddOutput(declaration_specifiers)
-
-				// exprs := $5
-				// exprs = append(exprs, expr)
+				
+				// THEN the expression has outputs created from the result of
+				// handling a dot notation initializer, and it needs to be replaced
+				// ELSE we simply add it using `AddOutput`
+				if len(expr.Outputs) > 0 {
+					expr.Outputs = []*CXArgument{declaration_specifiers}
+				} else {
+					expr.AddOutput(declaration_specifiers)
+				}
 
 				return initializer
 			}

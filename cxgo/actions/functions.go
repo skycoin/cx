@@ -465,7 +465,6 @@ func CheckTypes(expr *CXExpression) {
 		}
 	}
 
-	// assignments
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
 		for i, _ := range expr.Inputs {
 			var expectedType string
@@ -498,9 +497,8 @@ func CheckTypes(expr *CXExpression) {
 		}
 	}
 
+	// then it's a function call and not a declaration
 	if expr.Operator != nil {
-		// then it's a function call and not a declaration
-
 		// checking inputs matching operator's inputs
 		checkMatchParamTypes(expr, expr.Operator.Inputs, expr.Inputs, true)
 

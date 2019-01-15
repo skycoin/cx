@@ -833,15 +833,10 @@ postfix_expression:
                 {
 			$$ = PostfixExpressionIncDec($1, false)
                 }
-
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			PostfixExpressionField($1, $3)
+			$$ = PostfixExpressionField($1, $3)
                 }
-        // |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
-        //         {
-	// 		$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
-        //         }
                 ;
 
 argument_expression_list:
@@ -1011,7 +1006,6 @@ struct_literal_expression:
                 ;
 
 assignment_expression:
-                /* conditional_expression */
                 struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
