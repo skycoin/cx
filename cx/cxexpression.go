@@ -6,24 +6,31 @@ import (
 	. "github.com/satori/go.uuid" //nolint golint
 )
 
-/* The CXExpression struct contains information about a CX expression.
- */
-
-// CXExpression ...
+// CXExpression is used represent a CX expression.
+//
+// All statements in CX are expressions, including for loops and other control
+// flow.
+//
 type CXExpression struct {
+	// Metadata
+	ElementID UUID
+
+	// Contents
 	Inputs   []*CXArgument
 	Outputs  []*CXArgument
 	Label    string
-	FileName string
 	Operator *CXFunction
+	Function *CXFunction
+	Package  *CXPackage
+
 	// debugging
+	FileName string
 	FileLine int
+
 	// used for jmp statements
-	ThenLines       int
-	ElseLines       int
-	Function        *CXFunction
-	Package         *CXPackage
-	ElementID       UUID
+	ThenLines int
+	ElseLines int
+
 	IsMethodCall    bool
 	IsStructLiteral bool
 	IsArrayLiteral  bool
