@@ -191,7 +191,6 @@ func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpressi
 	}
 
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
-		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[leftExprs[len(leftExprs)-1].Inputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
 		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
@@ -203,7 +202,6 @@ func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpressi
 	}
 
 	if len(rightExprs[len(rightExprs)-1].Outputs) < 1 {
-		// name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[rightExprs[len(rightExprs)-1].Inputs[0].Type])
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
