@@ -175,6 +175,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		// we need to declare an aux variable, e.g. `var *lcl_10 i32`
 		// that will hold the result of the function call
 		aux := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		aux.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		aux.CustomType = opOut.CustomType
 		aux.Size = opOut.Size
 		aux.TotalSize = opOut.TotalSize
@@ -189,6 +190,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 
 		// we associate the result of the function call to the aux variable
 		out := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		out.CustomType = opOut.CustomType
 		out.Size = opOut.Size
 		out.TotalSize = opOut.TotalSize
@@ -204,6 +206,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		// we need to create an expression to hold all the modifications
 		// that will take place after this if statement
 		inp := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
 		inp.CustomType = opOut.CustomType
 		inp.Size = opOut.Size
 		inp.TotalSize = opOut.TotalSize
