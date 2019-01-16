@@ -86,6 +86,8 @@
                         /* Pointers */
                         ADDR
 
+%type   <i32>           int_value
+
 %type   <tok>           after_period
 %type   <tok>           unary_operator
 %type   <tok>           assignment_operator
@@ -192,11 +194,11 @@ debugging:
                 }
         ;
 
-stepping:       TSTEP INT_LITERAL INT_LITERAL
+stepping:       TSTEP int_value int_value
                 {
 			Stepping(int($2), int($3), true)
                 }
-        |       STEP INT_LITERAL
+        |       STEP int_value
                 {
 			Stepping(int($2), 0, false)
                 }
@@ -641,7 +643,7 @@ infer_action_arg:
                 {
 			$$ = $1
                 }
-        |       INT_LITERAL
+        |       int_value
                 {
 			$$ = strconv.Itoa(int($1))
                 }
@@ -730,7 +732,15 @@ infer_clauses:
                 ;
 
 
-
+int_value:
+            INT_LITERAL
+            {
+		    $$ = $1
+            }
+        |   SUB_OP INT_LITERAL
+            {
+		    $$ = -$2
+            }
 
 primary_expression:
                 IDENTIFIER
@@ -823,15 +833,10 @@ postfix_expression:
                 {
 			$$ = PostfixExpressionIncDec($1, false)
                 }
-
         |       postfix_expression PERIOD IDENTIFIER
                 {
-			PostfixExpressionField($1, $3)
+			$$ = PostfixExpressionField($1, $3)
                 }
-        // |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
-        //         {
-	// 		$$ = PrimaryStructLiteralExternal($1[0].Outputs[0].Name, $3, $5)
-        //         }
                 ;
 
 argument_expression_list:
@@ -989,7 +994,7 @@ conditional_expression:
                 ;
 
 struct_literal_expression:
-                conditional_expression
+		conditional_expression
 	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
 			$$ = PrimaryStructLiteral($1, $3)
@@ -1001,7 +1006,6 @@ struct_literal_expression:
                 ;
 
 assignment_expression:
-                /* conditional_expression */
                 struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {

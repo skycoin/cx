@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-const DBG_GOLANG_STACK_TRACE = false
+const DBG_GOLANG_STACK_TRACE = true
 
 // global reference to our program
 var PROGRAM *CXProgram

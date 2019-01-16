@@ -251,21 +251,36 @@ func opAdd(expr *CXExpression, fp int) {
 }
 
 func opSub(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))
-	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
-	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) - ReadI64(fp, inp2))
-	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) - ReadF32(fp, inp2))
-	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
+	if len(expr.Inputs) == 2 {
+		inp2 := expr.Inputs[1]
+		switch inp1.Type {
+		case TYPE_BYTE:
+			outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))
+		case TYPE_I32:
+			outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
+		case TYPE_I64:
+			outB1 = FromI64(ReadI64(fp, inp1) - ReadI64(fp, inp2))
+		case TYPE_F32:
+			outB1 = FromF32(ReadF32(fp, inp1) - ReadF32(fp, inp2))
+		case TYPE_F64:
+			outB1 = FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
+		}
+	} else {
+		switch inp1.Type {
+		case TYPE_BYTE:
+			outB1 = FromByte(-ReadByte(fp, inp1))
+		case TYPE_I32:
+			outB1 = FromI32(-ReadI32(fp, inp1))
+		case TYPE_I64:
+			outB1 = FromI64(-ReadI64(fp, inp1))
+		case TYPE_F32:
+			outB1 = FromF32(-ReadF32(fp, inp1))
+		case TYPE_F64:
+			outB1 = FromF64(-ReadF64(fp, inp1))
+		}
 	}
-
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
@@ -342,7 +357,6 @@ func opAppend(expr *CXExpression, fp int) {
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-
 	inputSliceOffset := GetSliceOffset(fp, inp1)
 
 	var obj []byte

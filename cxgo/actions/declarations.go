@@ -12,10 +12,11 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
 		panic(err)
 	}
 }
+
 func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 
-	if glbl, err := PRGRM.GetGlobal(declarator.Name); err == nil {
+	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
 		// then it is already defined
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
@@ -31,6 +32,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
+			// glbl.Package = offExpr[0].Outputs[0].Package
 		}
 
 		if doesInitialize {
@@ -40,6 +42,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -47,6 +50,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				initializer[len(initializer)-1].Outputs = nil
 				initializer[len(initializer)-1].AddOutput(glbl)
 				initializer[len(initializer)-1].Operator = Natives[OP_IDENTITY]
+				initializer[len(initializer)-1].Package = glbl.Package
 
 				SysInitExprs = append(SysInitExprs, initializer...)
 			} else {
@@ -54,6 +58,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 				declaration_specifiers.Name = glbl.Name
 				declaration_specifiers.Offset = glbl.Offset
 				declaration_specifiers.PassBy = glbl.PassBy
+				declaration_specifiers.Package = glbl.Package
 
 				*glbl = *declaration_specifiers
 
@@ -71,6 +76,7 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 			declaration_specifiers.Name = glbl.Name
 			declaration_specifiers.Offset = glbl.Offset
 			declaration_specifiers.PassBy = glbl.PassBy
+			declaration_specifiers.Package = glbl.Package
 			*glbl = *declaration_specifiers
 		}
 	} else {
@@ -201,8 +207,11 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 		declaration_specifiers.IsLocalDeclaration = true
 
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			// THEN it's a literal, e.g. var foo i32 = 10;
+			// ELSE it's an expression with an operator
 			if initializer[len(initializer)-1].Operator == nil {
-				// then it's a literal, e.g. var foo i32 = 10;
+				// we need to create an expression that links the initializer expressions
+				// with the declared variable
 				expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 				expr.Package = pkg
 
@@ -211,22 +220,35 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
 
-				expr.AddOutput(declaration_specifiers)
-				expr.AddInput(initializer[len(initializer)-1].Outputs[0])
+				initOut := initializer[len(initializer)-1].Outputs[0]
 
-				return []*CXExpression{expr}
+				// CX checks the output of an expression to determine if it's being passed
+				// by value or by reference, so we copy this property from the initializer's
+				// output, in case of something like var foo *i32 = &bar
+				declaration_specifiers.PassBy = initOut.PassBy
+
+				expr.AddOutput(declaration_specifiers)
+				expr.AddInput(initOut)
+
+				initializer[len(initializer)-1] = expr
+
+				return initializer
 			} else {
-				// then it's an expression (it has an operator)
+				expr := initializer[len(initializer)-1]
+
 				declaration_specifiers.Name = declarator.Name
 				declaration_specifiers.FileLine = declarator.FileLine
 				declaration_specifiers.Package = pkg
 				declaration_specifiers.PreviouslyDeclared = true
-
-				expr := initializer[len(initializer)-1]
-				expr.AddOutput(declaration_specifiers)
-
-				// exprs := $5
-				// exprs = append(exprs, expr)
+				
+				// THEN the expression has outputs created from the result of
+				// handling a dot notation initializer, and it needs to be replaced
+				// ELSE we simply add it using `AddOutput`
+				if len(expr.Outputs) > 0 {
+					expr.Outputs = []*CXArgument{declaration_specifiers}
+				} else {
+					expr.AddOutput(declaration_specifiers)
+				}
 
 				return initializer
 			}

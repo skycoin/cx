@@ -160,17 +160,80 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 	return exprs
 }
 
-func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
-	left := prevExprs[len(prevExprs)-1].Outputs[0]
+// PostfixExpressionField handles the dot notation that can follow an identifier.
+// Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
+func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpression {
+	lastExpr := prevExprs[len(prevExprs)-1]
+
+	// THEN it's a function call, e.g. foo().fld
+	// and we need to create some auxiliary variables to hold the result from
+	// the function call
+	if lastExpr.Operator != nil {
+		opOut := lastExpr.Operator.Outputs[0]
+		symName := MakeGenSym(LOCAL_PREFIX)
+
+		// we need to declare an aux variable, e.g. `var *lcl_10 i32`
+		// that will hold the result of the function call
+		aux := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		aux.DeclarationSpecifiers = opOut.DeclarationSpecifiers
+		aux.CustomType = opOut.CustomType
+		aux.Size = opOut.Size
+		aux.TotalSize = opOut.TotalSize
+		aux.PreviouslyDeclared = true
+		aux.Package = lastExpr.Package
+
+		declExpr := MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
+		declExpr.Package = lastExpr.Package
+		declExpr.AddOutput(aux)
+
+		prevExprs = append([]*CXExpression{declExpr}, prevExprs...)
+
+		// we associate the result of the function call to the aux variable
+		out := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		out.DeclarationSpecifiers = opOut.DeclarationSpecifiers
+		out.CustomType = opOut.CustomType
+		out.Size = opOut.Size
+		out.TotalSize = opOut.TotalSize
+		out.IsArray = opOut.IsArray
+		out.IsReference = opOut.IsReference
+		out.Lengths = opOut.Lengths
+		out.Package = lastExpr.Package
+		out.PreviouslyDeclared = true
+		out.IsRest = true
+
+		lastExpr.Outputs = append(lastExpr.Outputs, out)
+
+		// we need to create an expression to hold all the modifications
+		// that will take place after this if statement
+		inp := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
+		inp.DeclarationSpecifiers = opOut.DeclarationSpecifiers
+		inp.CustomType = opOut.CustomType
+		inp.Size = opOut.Size
+		inp.TotalSize = opOut.TotalSize
+		inp.Package = lastExpr.Package
+		inp.IsRest = true
+
+		expr := MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
+		expr.Package = lastExpr.Package
+		expr.AddOutput(inp)
+
+		prevExprs = append(prevExprs, expr)
+		
+		lastExpr = prevExprs[len(prevExprs)-1]
+	}
+
+	left := lastExpr.Outputs[0]
 
 	if left.IsRest {
 		// then it can't be a package name
 		// and we propagate the property to the right expression
 		// right.IsRest = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
+		left.IsStruct = true
 		fld := MakeArgument(ident, CurrentFile, LineNo)
 		fld.AddType(TypeNames[TYPE_IDENTIFIER])
 		left.Fields = append(left.Fields, fld)
+		return prevExprs
 	} else {
 		left.IsRest = true
 		// then left is a first (e.g first.rest) and right is a rest
@@ -185,13 +248,13 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 						constant := Constants[code]
 						val := WritePrimary(constant.Type, constant.Value, false)
 						prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
-						return
+						return prevExprs
 					} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
 						// then it's a native
 						// TODO: we'd be referring to the function itself, not a function call
 						// (functions as first-class objects)
 						left.Name = left.Name + "." + ident
-						return
+						return prevExprs
 					}
 				}
 
@@ -224,7 +287,6 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 				if IsCorePackage(left.Name) {
 					println(CompilationError(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
 					os.Exit(CX_COMPILATION_ERROR)
-					return
 				}
 
 				// then it's a struct
@@ -239,4 +301,6 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) {
 			panic(err)
 		}
 	}
+
+	return prevExprs
 }

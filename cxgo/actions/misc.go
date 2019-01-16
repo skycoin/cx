@@ -12,9 +12,6 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 	typ := expr.Outputs[0].Type
 
 	if CheckArithmeticOp(expr) {
-		// if !CheckSameNativeType(expr) {
-		//      panic("wrong types")
-		// }
 		switch op.OpCode {
 		case OP_I32_MUL:
 			switch typ {

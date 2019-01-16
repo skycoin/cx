@@ -144,6 +144,8 @@
                         /* Pointers */
                         ADDR
 
+%type   <i32>           int_value
+
 %type   <tok>           unary_operator
 %type   <i>             type_specifier
 %type   <argument>      declaration_specifiers
@@ -180,8 +182,8 @@ external_declaration:
         |       stepping
         ;
 
-stepping:       TSTEP INT_LITERAL INT_LITERAL
-        |       STEP INT_LITERAL
+stepping:       TSTEP int_value int_value
+        |       STEP int_value
         ;
 
 global_declaration:
@@ -707,7 +709,15 @@ infer_clauses:
         /* |       infer_targets */
                 ;
 
-
+int_value:
+		INT_LITERAL
+		{
+			$$ = $1
+		}
+        |       SUB_OP INT_LITERAL
+		{
+			$$ = -$2
+		}
 
 primary_expression:
                 IDENTIFIER
