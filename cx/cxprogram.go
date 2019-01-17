@@ -358,6 +358,8 @@ func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 // ----------------------------------------------------------------
 //                             Debugging
 
+// PrintAllObjects prints all objects in a program
+//
 func (prgrm *CXProgram) PrintAllObjects() {
 	fp := 0
 
