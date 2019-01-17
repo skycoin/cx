@@ -360,15 +360,15 @@ func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 
 // PrintAllObjects prints all objects in a program
 //
-func (prgrm *CXProgram) PrintAllObjects() {
+func (cxt *CXProgram) PrintAllObjects() {
 	fp := 0
 
-	for c := 0; c <= prgrm.CallCounter; c++ {
-		op := prgrm.CallStack[c].Operator
+	for c := 0; c <= cxt.CallCounter; c++ {
+		op := cxt.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			encoder.DeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			encoder.DeserializeAtomic(cxt.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
 
 			var byts []byte
 
@@ -379,7 +379,7 @@ func (prgrm *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = prgrm.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
+				byts = cxt.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
 			}
 
 			if len(ptr.Lengths) > 0 {
@@ -414,7 +414,7 @@ func (prgrm *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.Name, ptr.CustomType, prgrm.Memory[heapOffset:int(heapOffset)+op.Size], byts)
+			fmt.Println("obj", ptr.Name, ptr.CustomType, cxt.Memory[heapOffset:int(heapOffset)+op.Size], byts)
 		}
 
 		fp += op.Size
