@@ -209,7 +209,7 @@ The simplest way to install CX on MacOS is to use the Homebrew package manager t
 Once Homebrew is installed, use the following commands to setup the Tap and then install CX.
 
 ```sh
-brew tap BigOokie/skycoin-cx-macos
+brew tap skycoin/homebrew-skycoin
 brew install skycoin-cx
 ```
 
