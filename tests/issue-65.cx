@@ -1,6 +1,14 @@
 package main
 
-func foo(b bool)(out i32) {
+func goo (in i32) (out i32) {
+	return in
+}
+
+func bar (in i32) (out1 i32, out2 i32, out3 i32) {
+	return in, i32.add(5, in), goo(1004) + 4
+}
+
+func foo(b bool) (out i32) {
 	if b {
 		out = -1
 		return out
@@ -15,4 +23,16 @@ func foo(b bool)(out i32) {
 func main()() {
 	test(foo(true), -1, "")
 	test(foo(false), 1, "")
+
+	var num1 i32
+	var num2 i32
+	var num3 i32
+	
+	num1, num2, num3 = bar(10)
+
+	test(num1, 10, "")
+	test(num2, 15, "")
+	test(num3, 1008, "")
+
+	test(goo(33), 33, "")
 }

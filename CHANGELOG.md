@@ -29,6 +29,7 @@
   * #55: Single character declarations are now allowed
   * #59: Fields of a struct returned by a function call can now be accessed
   * #63: Fixed a problem where inline initializations didn't work with dereferences
+  * #65: Return statements now work in CX, with and without return arguments
   * #131: Problem with struct literals in short variable declarations
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
