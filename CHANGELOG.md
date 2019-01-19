@@ -28,8 +28,12 @@
   * #53: CX was not catching an error involving invalid indirections
   * #55: Single character declarations are now allowed
   * #59: Fields of a struct returned by a function call can now be accessed
+  * #61: No compilation error when passing *i32 as an i32 arg and conversely
+  * #62: No compilation error when dereferencing an i32 var
   * #63: Fixed a problem where inline initializations didn't work with dereferences
   * #65: Return statements now work in CX, with and without return arguments
+  * #104: Dubious error message when indexing an array with a substraction expression
+  * #105: Dubious error message when inline initializing a slice
   * #131: Problem with struct literals in short variable declarations
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
