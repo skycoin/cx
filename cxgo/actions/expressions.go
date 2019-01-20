@@ -351,13 +351,11 @@ func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpress
 	var err error
 
 	pkg, err = PRGRM.GetCurrentPackage()
-
 	if err != nil {
 		panic(err)
 	}
 
 	fn, err = pkg.GetCurrentFunction()
-
 	if err != nil {
 		panic(err)
 	}
@@ -397,13 +395,11 @@ func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
 	var err error
 
 	pkg, err = PRGRM.GetCurrentPackage()
-
 	if err != nil {
 		panic(err)
 	}
 
 	fn, err = pkg.GetCurrentFunction()
-
 	if err != nil {
 		panic(err)
 	}
