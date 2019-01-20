@@ -653,6 +653,7 @@ func main () {
 	}
 	if options.stackSize != "" {
 		STACK_SIZE = parseMemoryString(options.stackSize)
+		DataOffset = STACK_SIZE + TYPE_POINTER_SIZE
 	}
 
 	MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
