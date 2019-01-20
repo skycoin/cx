@@ -2580,7 +2580,7 @@ PERIOD
 STRLIT No compilation error when passing *i32 as an i32 arg and conversely
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-61a.cx
  COMMA 
@@ -2589,13 +2589,9 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when passing *i32 as an i32 arg and conversely
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-62.cx
  COMMA 
@@ -2604,10 +2600,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when dereferencing an i32 var.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2912,7 +2904,7 @@ PERIOD
 STRLIT Argument list is not parsed correctly
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-104.cx
  COMMA 
@@ -2921,13 +2913,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Dubious error message when indexing an array with a substraction expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-105.cx
  COMMA 
@@ -2936,10 +2924,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Dubious error message when inline initializing a slice
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
