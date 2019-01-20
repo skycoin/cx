@@ -423,24 +423,20 @@ func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
 		println(CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
 	}
 	
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		// expression to jump to the end of the embedding function
-		expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+	// expression to jump to the end of the embedding function
+	expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 
-		// simulating a label so it gets executed without evaluating a predicate
-		expr.Label = MakeGenSym(LABEL_PREFIX)
-		expr.ThenLines = MAX_INT32
-		expr.Package = pkg
+	// simulating a label so it gets executed without evaluating a predicate
+	expr.Label = MakeGenSym(LABEL_PREFIX)
+	expr.ThenLines = MAX_INT32
+	expr.Package = pkg
 
-		arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
-		arg.Package = pkg
+	arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
+	arg.Package = pkg
 
-		expr.AddInput(arg)
+	expr.AddInput(arg)
 
-		retExprs = append(retExprs, expr)
+	retExprs = append(retExprs, expr)
 
-		return retExprs
-	} else {
-		panic(err)
-	}
+	return retExprs
 }
