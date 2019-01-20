@@ -35,6 +35,8 @@
 	SelectStatement SelectStatement
 	SelectStatements []SelectStatement
 
+	ReturnExpressions ReturnExpressions
+
 	arrayArguments [][]*CXExpression
 
         function *CXFunction
@@ -129,6 +131,8 @@
 
 %type   <expressions>   slice_literal_expression_list
 %type   <expressions>   slice_literal_expression
+
+%type	<ReturnExpressions>	return_expression
 
 %type   <expressions>   selector
 
@@ -1227,6 +1231,21 @@ iteration_statement:
                 }
                 ;
 
+return_expression:
+		struct_literal_expression
+		{
+			retExprs := ReturnExpressions{Expressions: AssociateReturnExpressions(0, $1)}
+			retExprs.Size++
+			$$ = retExprs
+		}
+	|	return_expression COMMA struct_literal_expression
+		{
+			$1.Expressions = append($1.Expressions, AssociateReturnExpressions($1.Size, $3)...)
+			$1.Size++
+			$$ = $1
+		}
+		;
+
 jump_statement: GOTO IDENTIFIER SEMICOLON
                 {
 			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -1254,27 +1273,11 @@ jump_statement: GOTO IDENTIFIER SEMICOLON
 		}
 	|       RETURN SEMICOLON
                 {
-			if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-				expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
-
-				// simulating a label so it gets executed without evaluating a predicate
-				expr.Label = MakeGenSym(LABEL_PREFIX)
-				expr.ThenLines = MAX_INT32
-				expr.Package = pkg
-
-				arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
-				arg.Package = pkg
-
-				expr.AddInput(arg)
-
-				$$ = []*CXExpression{expr}
-			} else {
-				panic(err)
-			}
+			$$ = AddJmpToReturnExpressions(ReturnExpressions{})
                 }
-	|       RETURN expression SEMICOLON
+	|       RETURN return_expression SEMICOLON
                 {
-			$$ = nil
+			$$ = AddJmpToReturnExpressions($2)
                 }
                 ;
 %%

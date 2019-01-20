@@ -1,11 +1,19 @@
 package actions
 
 import (
+	"fmt"
 	"os"
 	
 	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
+
+// ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.
+// For example: `return foo() + bar()` is a set of 3 expressions and they represent a single return argument
+type ReturnExpressions struct {
+	Size          int
+	Expressions   []*CXExpression
+}
 
 func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CXExpression, statements []*CXExpression) []*CXExpression {
 	jmpFn := Natives[OP_JMP]
@@ -333,4 +341,102 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		}
 	}
 	return prevExprs
+}
+
+// AssociateReturnExpressions associates the output of `retExprs` to the
+// `idx`th output parameter of the current function
+func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpression {
+	var pkg *CXPackage
+	var fn *CXFunction
+	var err error
+
+	pkg, err = PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	fn, err = pkg.GetCurrentFunction()
+	if err != nil {
+		panic(err)
+	}
+
+	lastExpr := retExprs[len(retExprs)-1]
+
+	outParam := fn.Outputs[idx]
+
+	out := MakeArgument(outParam.Name, CurrentFile, LineNo)
+	out.PreviouslyDeclared = true
+
+	if lastExpr.Operator == nil {
+		lastExpr.Operator = Natives[OP_IDENTITY]
+		
+		lastExpr.Inputs = lastExpr.Outputs
+		lastExpr.Outputs = nil
+		lastExpr.AddOutput(out)
+
+		return retExprs
+	} else if len(lastExpr.Outputs) > 0 {
+		expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
+		expr.AddInput(lastExpr.Outputs[0])
+		expr.AddOutput(out)
+
+		return append(retExprs, expr)
+	} else {
+		lastExpr.AddOutput(out)
+		
+		return retExprs
+	}
+}
+
+// AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
+func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
+	var pkg *CXPackage
+	var fn *CXFunction
+	var err error
+
+	pkg, err = PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
+	fn, err = pkg.GetCurrentFunction()
+	if err != nil {
+		panic(err)
+	}
+
+	retExprs := exprs.Expressions
+	
+	if len(fn.Outputs) != exprs.Size && exprs.Expressions != nil {
+		lastExpr := retExprs[len(retExprs)-1]
+		
+		var plural1 string
+		var plural2 string = "s"
+		var plural3 string = "were"
+		if len(fn.Outputs) > 1 {
+			plural1 = "s"
+		}
+		if exprs.Size == 1 {
+			plural2 = ""
+			plural3 = "was"
+		}
+		
+		println(CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
+	}
+	
+	// expression to jump to the end of the embedding function
+	expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
+
+	// simulating a label so it gets executed without evaluating a predicate
+	expr.Label = MakeGenSym(LABEL_PREFIX)
+	expr.ThenLines = MAX_INT32
+	expr.Package = pkg
+
+	arg := MakeArgument("", CurrentFile, LineNo).AddType("bool")
+	arg.Package = pkg
+
+	expr.AddInput(arg)
+
+	retExprs = append(retExprs, expr)
+
+	return retExprs
 }

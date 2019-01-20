@@ -545,10 +545,6 @@ func buildString(expr *CXExpression, fp int) []byte {
 		res = append(res, []byte(extra)...)
 	}
 
-	// if specifiersCounter != len(expr.Inputs) - 1 {
-	// 	panic("meow")
-	// }
-
 	return res
 }
 

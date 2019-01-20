@@ -2621,7 +2621,7 @@ PERIOD
 STRLIT Wrong pointer behaviour.
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-65.cx
  COMMA 
@@ -2630,10 +2630,17 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Return from a function doesnt work
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-65b.cx
  COMMA 
- IDENT TEST_ISSUE
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
  COMMA 
-INTLIT 0
+STRLIT Mismatched number of returning arguments is not throwing an error
 RPAREN 
 SCOLON 
  IDENT runTestEx
