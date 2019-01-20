@@ -11,6 +11,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 	var isPointer bool
 	var baseOffset int
 	var sizeofElement int
+
 	for _, op := range arg.DereferenceOperations {
 		switch op {
 		case DEREF_ARRAY:

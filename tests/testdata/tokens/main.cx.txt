@@ -3101,7 +3101,7 @@ STRLIT Panic in when assigning an empty initializer list to a []i32 variable
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-154.cx
  COMMA 
@@ -3110,10 +3110,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Cx stack overflow when appending to a slice passed by address
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx

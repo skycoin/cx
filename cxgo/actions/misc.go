@@ -160,6 +160,17 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 	}
 }
 
+// hasDeclSpec determines if an argument has certain declaration specifier
+func hasDeclSpec (arg *CXArgument, spec int) bool {
+	found := false
+	for _, s := range arg.DeclarationSpecifiers {
+		if s == spec {
+			found = true
+		}
+	}
+	return found
+}
+
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
