@@ -36,6 +36,7 @@
   * #105: Dubious error message when inline initializing a slice
   * #131: Problem with struct literals in short variable declarations
   * #154: Sending pointers to slices to functions is now possible
+  * #167: Passing the address of a slice element is now possible
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
