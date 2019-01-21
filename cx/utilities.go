@@ -593,6 +593,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
 	bytesLen := sliceLen * int32(sizeofElement)
 	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
+
 	if index >= 0 && index < int(bytesLen) && (index%sizeofElement) == 0 {
 		return true
 	}

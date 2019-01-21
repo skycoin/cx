@@ -35,6 +35,7 @@
   * #104: Dubious error message when indexing an array with a substraction expression
   * #105: Dubious error message when inline initializing a slice
   * #131: Problem with struct literals in short variable declarations
+  * #154: Sending pointers to slices to functions is now possible
   * #199: Trying to call an undefined function no longer throws a segfault
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation

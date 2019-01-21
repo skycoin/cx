@@ -563,7 +563,9 @@ func ProcessSliceAssignment(expr *CXExpression) {
 		for _, inp := range expr.Inputs {
 			assignElt := GetAssignmentElement(inp)
 
-			if assignElt.IsSlice && len(assignElt.Indexes) == 0 {
+			// we want to pass by value if we're sending the slice as a whole (no indexing)
+			// unless it's a pointer to the slice
+			if assignElt.IsSlice && len(assignElt.Indexes) == 0 && !hasDeclSpec(assignElt, DECL_POINTER) {
 				assignElt.PassBy = PASSBY_VALUE
 			}
 		}
