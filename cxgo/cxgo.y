@@ -1145,7 +1145,7 @@ expression_statement:
                 { $$ = nil }
 	|       expression SEMICOLON
                 {
-			if $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
+			if len($1) > 0 && $1[len($1) - 1].Operator == nil && !$1[len($1) - 1].IsMethodCall {
 				outs := $1[len($1) - 1].Outputs
 				if len(outs) > 0 {
 					println(CompilationError(outs[0].FileName, outs[0].FileLine), "invalid expression")
