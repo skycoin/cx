@@ -406,7 +406,7 @@ func main ()() {
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
 	runTest("-stack-size 30 issue-207a.cx", cx.RUNTIME_STACK_OVERFLOW_ERROR, "No stack overflow error")
 	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.RUNTIME_HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
-	runTestEx("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.", TEST_ISSUE, 0)
+	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
 
 	var end i64
