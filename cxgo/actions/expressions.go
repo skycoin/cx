@@ -306,7 +306,7 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
 	
-	exprOut := prevExprs[len(prevExprs)-1].Outputs[0]
+	exprOut := GetAssignmentElement(prevExprs[len(prevExprs)-1].Outputs[0])
 	switch op {
 	case "*":
 		exprOut.DereferenceLevels++

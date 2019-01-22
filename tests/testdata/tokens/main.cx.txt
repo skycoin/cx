@@ -3175,7 +3175,7 @@ STRLIT Panic when calling a function from another package where the package name
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-167.cx
  COMMA 
@@ -3184,10 +3184,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Garbage memory when passing the address of slice element to a function
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
