@@ -26,7 +26,8 @@ echo Checking your environment variables
 rem set GI_PATH [go installation path] 
 if defined GOPATH (
     set GI_PATH=%GOPATH%
-    call :echoWithColor green "OK:     GOPATH: %GOPATH%"
+    call :echoWithColor green "OK:     GOPATH:"
+    call :echoWithColor green "             %GOPATH%"
 ) else (
     set GI_PATH=%USERPROFILE%\go
     call :echoWithColor red "ERROR:  GOPATH not set^^^!  FIX IT^^^!"
@@ -37,7 +38,7 @@ if defined GOPATH (
 rem set CI_PATH [CX installation path] 
 if defined CXPATH (
     set CI_PATH=%CXPATH%
-    call :echoWithColor green "OK:     CX's workspace environment variable CXPATH is:"
+    call :echoWithColor green "OK:     CXPATH, CX's workspace:"
     call :echoWithColor green "             %CXPATH%"
 ) else (
     set CI_PATH=%USERPROFILE%\cx
@@ -242,7 +243,7 @@ exit /b
 
 
   go build -tags full -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
-  call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "            ERROR building CX.EXE from:"
+  call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 
 

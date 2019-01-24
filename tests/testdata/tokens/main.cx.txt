@@ -2719,6 +2719,28 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT issue-77.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT error with sending references of structs to functions
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-77b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT error with references to struct literals
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-78.cx
  COMMA 
  IDENT cx
@@ -3253,7 +3275,7 @@ PERIOD
 STRLIT No heap exhausted error
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-214.cx
  COMMA 
@@ -3262,10 +3284,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
