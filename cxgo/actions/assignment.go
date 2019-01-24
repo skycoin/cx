@@ -4,17 +4,36 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
-func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpression {
+// assignStructLiteralFields converts a struct literal to a series of struct field assignments.
+// For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`
+func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name string) []*CXExpression {
+	for _, f := range from {
+		f.Outputs[0].Name = name
+		
+		if len(to[0].Outputs[0].Indexes) > 0 {
+			f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
+			f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
+			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_ARRAY)
+		}
+
+		f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
+	}
+
+	return from
+}
+
+// StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
+// struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions
+func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+	lastFrom := from[len(from)-1]
 	// if the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference
-	lastFrom := from[len(from)-1]
 	if hasDeclSpec(GetAssignmentElement(lastFrom.Outputs[0]), DECL_POINTER) {
 		// and we also need an auxiliary variable to point to
 		// otherwise we'd be trying to assign the fields to a nil value
 		fOut := lastFrom.Outputs[0]
 		auxName := MakeGenSym(LOCAL_PREFIX)
 		aux := MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(TypeNames[fOut.Type])
-		// aux.DeclarationSpecifiers = fOut.DeclarationSpecifiers
 		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, DECL_POINTER)
 		aux.CustomType = fOut.CustomType
 		aux.Size = fOut.Size
@@ -26,22 +45,7 @@ func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpr
 		declExpr.Package = lastFrom.Package
 		declExpr.AddOutput(aux)
 
-		for _, f := range from {
-			f.Outputs[0].Name = auxName
-			
-			// f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_POINTER)
-			// f.Outputs[0].DereferenceLevels++
-			
-			// f.Outputs[0].Name = to[0].Outputs[0].Name
-			
-			if len(to[0].Outputs[0].Indexes) > 0 {
-				f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
-				f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
-				f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_ARRAY)
-			}
-
-			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
-		}
+		from = assignStructLiteralFields(to, from, auxName)
 
 		assignExpr := MakeExpression(Natives[OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
 		assignExpr.Package = lastFrom.Package
@@ -52,23 +56,10 @@ func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpr
 		assignExpr.AddInput(aux)
 
 		from = append([]*CXExpression{declExpr}, from...)
-		from = append(from, assignExpr)
+		return append(from, assignExpr)
 	} else {
-		for _, f := range from {
-			
-			f.Outputs[0].Name = to[0].Outputs[0].Name
-			
-			if len(to[0].Outputs[0].Indexes) > 0 {
-				f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
-				f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
-				f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_ARRAY)
-			}
-
-			f.Outputs[0].DereferenceOperations = append(f.Outputs[0].DereferenceOperations, DEREF_FIELD)
-		}
+		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
 	}
-
-	return from
 }
 
 func ArrayLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpression {

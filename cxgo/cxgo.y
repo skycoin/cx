@@ -165,7 +165,7 @@
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
                         
-// for struct literals
+			// for struct literals
 %right                   IDENTIFIER LBRACE
 // %left REF_OP
 // %right                  IDENTIFIER
