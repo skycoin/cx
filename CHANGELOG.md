@@ -32,12 +32,15 @@
   * #62: No compilation error when dereferencing an i32 var
   * #63: Fixed a problem where inline initializations didn't work with dereferences
   * #65: Return statements now work in CX, with and without return arguments
+  * #77: Fixed errors related to sending references of structs to functions and
+		assigning references to struct literals
   * #104: Dubious error message when indexing an array with a substraction expression
   * #105: Dubious error message when inline initializing a slice
   * #131: Problem with struct literals in short variable declarations
   * #154: Sending pointers to slices to functions is now possible
   * #167: Passing the address of a slice element is now possible
   * #199: Trying to call an undefined function no longer throws a segfault
+  * #214: Fixed an error related to type deduction in references to struct fields
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
