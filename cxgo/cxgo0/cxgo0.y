@@ -837,6 +837,7 @@ conditional_expression:
 struct_literal_expression:
                 conditional_expression
 	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
+	|       unary_operator IDENTIFIER LBRACE struct_literal_fields RBRACE
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
         ;
 
