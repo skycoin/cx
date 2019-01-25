@@ -5,7 +5,7 @@ import (
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
-// For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`
+// For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
 func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name string) []*CXExpression {
 	for _, f := range from {
 		f.Outputs[0].Name = name
@@ -23,14 +23,16 @@ func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name s
 }
 
 // StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
-// struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions
+// struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
 func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
 	lastFrom := from[len(from)-1]
-	// if the last expression in `from` is declared as pointer
-	// then it means the whole struct literal needs to be passed by reference
-	if hasDeclSpec(GetAssignmentElement(lastFrom.Outputs[0]), DECL_POINTER) {
-		// and we also need an auxiliary variable to point to
-		// otherwise we'd be trying to assign the fields to a nil value
+	// If the last expression in `from` is declared as pointer
+	// then it means the whole struct literal needs to be passed by reference.
+	if !hasDeclSpec(GetAssignmentElement(lastFrom.Outputs[0]), DECL_POINTER) {
+		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
+	} else {
+		// And we also need an auxiliary variable to point to,
+		// otherwise we'd be trying to assign the fields to a nil value.
 		fOut := lastFrom.Outputs[0]
 		auxName := MakeGenSym(LOCAL_PREFIX)
 		aux := MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(TypeNames[fOut.Type])
@@ -57,8 +59,6 @@ func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExp
 
 		from = append([]*CXExpression{declExpr}, from...)
 		return append(from, assignExpr)
-	} else {
-		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
 	}
 }
 

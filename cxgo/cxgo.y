@@ -1006,8 +1006,7 @@ struct_literal_expression:
                 }
 	|       unary_operator IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
-			strctLit := PrimaryStructLiteral($2, $4)
-			$$ = UnaryExpression($1, strctLit)
+			$$ = UnaryExpression($1, PrimaryStructLiteral($2, $4))
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {

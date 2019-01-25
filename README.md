@@ -993,11 +993,9 @@ func main () {
    
    if i == 0 {
      str.print("i is 0")
-   } else 
-   if i == 1 {
+   } else if i == 1 {
      str.print("i is 1")
-   } else 
-   if i == 2 {
+   } else if i == 2 {
      str.print("i is 2")
    } else {
      str.print("i is NOT 0, 1 or 2")

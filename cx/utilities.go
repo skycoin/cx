@@ -449,7 +449,7 @@ func (prgrm *CXProgram) PrintProgram() {
 
 							// NOTE: this only adds a single *, regardless of how many
 							// dereferences we have. won't be fixed atm, as the whole
-							// PrintProgram needs to be refactored soon
+							// PrintProgram needs to be refactored soon.
 							if out.IsPointer {
 								typ = "*"
 							}

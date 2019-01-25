@@ -530,7 +530,7 @@ func ProcessStringAssignment(expr *CXExpression) {
 }
 
 // ProcessReferenceAssignment checks if the reference of a symbol can be assigned to the expression's output.
-// For example: `var foo i32; var bar i32; bar = &foo` is not valid
+// For example: `var foo i32; var bar i32; bar = &foo` is not valid.
 func ProcessReferenceAssignment (expr *CXExpression) {
 	for _, out := range expr.Outputs {
 		if out.PassBy == PASSBY_REFERENCE &&
