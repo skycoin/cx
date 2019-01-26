@@ -2959,7 +2959,7 @@ PERIOD
 STRLIT Troubles when accessing a global var from another package
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-108.cx
  COMMA 
@@ -2968,10 +2968,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT same func names (but in different packages) collide
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

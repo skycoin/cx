@@ -36,6 +36,8 @@
 		assigning references to struct literals
   * #104: Dubious error message when indexing an array with a substraction expression
   * #105: Dubious error message when inline initializing a slice
+  * #108: Solved a bug that occured when two functions were named the same in
+    different packages
   * #131: Problem with struct literals in short variable declarations
   * #154: Sending pointers to slices to functions is now possible
   * #167: Passing the address of a slice element is now possible

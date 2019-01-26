@@ -384,7 +384,7 @@ func main ()() {
 	runTest("issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression")
 	runTest("issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice")
 	runTest("issue-106a.cx issue-106.cx", cx.SUCCESS, "Troubles when accessing a global var from another package")
-	runTestEx("issue-108.cx", cx.SUCCESS, "same func names (but in different packages) collide", TEST_ISSUE, 0)
+	runTest("issue-108.cx", cx.SUCCESS, "same func names (but in different packages) collide")
 	runTest("issue-111.cx", cx.COMPILATION_ERROR, "can use vars from other packages without a 'packageName.' prefix")
 	runTest("issue-120.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.")
 	runTestEx("issue-120a.cx", cx.SUCCESS, "False positive when detecting variable redeclaration.", TEST_ISSUE, 0)
