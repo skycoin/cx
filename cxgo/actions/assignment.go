@@ -89,7 +89,21 @@ func ShortAssignment(expr *CXExpression, to []*CXExpression, from []*CXExpressio
 	return append(from, expr)
 }
 
-func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
+// getOutputType tries to determine what's the argument that holds the type that should be
+// returned by a function call.
+// This function is needed because CX has some standard library functions that return TYPE_UNDEFINED
+// arguments. In these cases, the output type depends on its input arguments' type. In the rest of
+// the cases, we can simply use the function's return type.
+func getOutputType (expr *CXExpression) *CXArgument {
+	if expr.Operator.Outputs[0].Type != TYPE_UNDEFINED {
+		return expr.Operator.Outputs[0]
+	}
+
+	return expr.Inputs[0]
+}
+
+// Assignment handles assignment statements with different operators, like =, :=, +=, *=.
+func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -107,20 +121,21 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 				// then it's a literal
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
 			} else {
-				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Inputs[0].Type])
-				// sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Operator.Outputs[0].Type])
+				outTypeArg := getOutputType(from[idx])
 
+				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[outTypeArg.Type])
+				
 				if from[idx].IsArrayLiteral {
 					sym.Size = from[idx].Inputs[0].Size
 					sym.TotalSize = from[idx].Inputs[0].TotalSize
 					sym.Lengths = from[idx].Inputs[0].Lengths
 				}
-				if from[idx].Inputs[0].IsSlice {
+				if outTypeArg.IsSlice {
 					// if from[idx].Operator.Outputs[0].IsSlice {
 					sym.Lengths = append([]int{0}, sym.Lengths...)
 				}
 
-				sym.IsSlice = from[idx].Inputs[0].IsSlice
+				sym.IsSlice = outTypeArg.IsSlice
 				// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
 			}
 			sym.Package = pkg

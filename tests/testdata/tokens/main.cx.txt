@@ -3037,7 +3037,7 @@ PERIOD
 STRLIT Problem with struct literals in short variable declarations
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-132.cx
  COMMA 
@@ -3046,10 +3046,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic when using the return value of a function in a short declaration
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
