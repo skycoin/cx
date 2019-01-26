@@ -305,7 +305,10 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		// needs to be stopped immediately
 		os.Exit(CX_COMPILATION_ERROR)
 	}
-	
+
+	// Some properties need to be read from the base argument
+	// due to how we calculate dereferences at the moment.
+	baseOut := prevExprs[len(prevExprs)-1].Outputs[0]
 	exprOut := GetAssignmentElement(prevExprs[len(prevExprs)-1].Outputs[0])
 	switch op {
 	case "*":
@@ -317,7 +320,7 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_DEREF)
 		exprOut.IsReference = false
 	case "&":
-		exprOut.PassBy = PASSBY_REFERENCE
+		baseOut.PassBy = PASSBY_REFERENCE
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_POINTER)
 	case "!":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -344,7 +347,7 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 }
 
 // AssociateReturnExpressions associates the output of `retExprs` to the
-// `idx`th output parameter of the current function
+// `idx`th output parameter of the current function.
 func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpression {
 	var pkg *CXPackage
 	var fn *CXFunction

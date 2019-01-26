@@ -4,10 +4,12 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
-func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpression {
+// assignStructLiteralFields converts a struct literal to a series of struct field assignments.
+// For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
+func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name string) []*CXExpression {
 	for _, f := range from {
-		f.Outputs[0].Name = to[0].Outputs[0].Name
-
+		f.Outputs[0].Name = name
+		
 		if len(to[0].Outputs[0].Indexes) > 0 {
 			f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
 			f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
@@ -18,6 +20,46 @@ func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpr
 	}
 
 	return from
+}
+
+// StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
+// struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
+func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+	lastFrom := from[len(from)-1]
+	// If the last expression in `from` is declared as pointer
+	// then it means the whole struct literal needs to be passed by reference.
+	if !hasDeclSpec(GetAssignmentElement(lastFrom.Outputs[0]), DECL_POINTER) {
+		return assignStructLiteralFields(to, from, to[0].Outputs[0].Name)
+	} else {
+		// And we also need an auxiliary variable to point to,
+		// otherwise we'd be trying to assign the fields to a nil value.
+		fOut := lastFrom.Outputs[0]
+		auxName := MakeGenSym(LOCAL_PREFIX)
+		aux := MakeArgument(auxName, lastFrom.FileName, lastFrom.FileLine).AddType(TypeNames[fOut.Type])
+		aux.DeclarationSpecifiers = append(aux.DeclarationSpecifiers, DECL_POINTER)
+		aux.CustomType = fOut.CustomType
+		aux.Size = fOut.Size
+		aux.TotalSize = fOut.TotalSize
+		aux.PreviouslyDeclared = true
+		aux.Package = lastFrom.Package
+
+		declExpr := MakeExpression(nil, lastFrom.FileName, lastFrom.FileLine)
+		declExpr.Package = lastFrom.Package
+		declExpr.AddOutput(aux)
+
+		from = assignStructLiteralFields(to, from, auxName)
+
+		assignExpr := MakeExpression(Natives[OP_IDENTITY], lastFrom.FileName, lastFrom.FileLine)
+		assignExpr.Package = lastFrom.Package
+		out := MakeArgument(to[0].Outputs[0].Name, lastFrom.FileName, lastFrom.FileLine)
+		out.PassBy = PASSBY_REFERENCE
+		out.Package = lastFrom.Package
+		assignExpr.AddOutput(out)
+		assignExpr.AddInput(aux)
+
+		from = append([]*CXExpression{declExpr}, from...)
+		return append(from, assignExpr)
+	}
 }
 
 func ArrayLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpression {

@@ -114,6 +114,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 		ProcessTempVariable(expr)
 		ProcessSliceAssignment(expr)
 		ProcessStringAssignment(expr)
+		ProcessReferenceAssignment(expr)
 
 		// process short declaration
 		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral {
@@ -528,6 +529,19 @@ func ProcessStringAssignment(expr *CXExpression) {
 	}
 }
 
+// ProcessReferenceAssignment checks if the reference of a symbol can be assigned to the expression's output.
+// For example: `var foo i32; var bar i32; bar = &foo` is not valid.
+func ProcessReferenceAssignment (expr *CXExpression) {
+	for _, out := range expr.Outputs {
+		if out.PassBy == PASSBY_REFERENCE &&
+			!hasDeclSpec(out, DECL_POINTER) &&
+			out.Type != TYPE_STR && !out.IsSlice {
+			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", out.Name)
+		}
+	}
+	
+}
+
 func ProcessSlice(inp *CXArgument) {
 	var elt *CXArgument
 
@@ -786,6 +800,11 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.Package = arg.Package
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
+
+	// for example, var foo *i32; ***foo = 5 // error
+	if sym.DereferenceLevels > arg.IndirectionLevels {
+		println(CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
+	}
 
 	if arg.Type == TYPE_STR {
 		sym.IsPointer = true

@@ -443,27 +443,30 @@ func (prgrm *CXProgram) PrintProgram() {
 						)
 					} else {
 						if len(expr.Outputs) > 0 {
-							var typs string
+							var typ string
 
-							for i, out := range expr.Outputs {
-								if GetAssignmentElement(out).CustomType != nil {
-									// then it's custom type
-									typs += GetAssignmentElement(out).CustomType.Name
-								} else {
-									// then it's native type
-									typs += TypeNames[GetAssignmentElement(out).Type]
-								}
+							out := expr.Outputs[len(expr.Outputs)-1]
 
-								if i != len(expr.Outputs) {
-									typs += ", "
-								}
+							// NOTE: this only adds a single *, regardless of how many
+							// dereferences we have. won't be fixed atm, as the whole
+							// PrintProgram needs to be refactored soon.
+							if out.IsPointer {
+								typ = "*"
+							}
+
+							if GetAssignmentElement(out).CustomType != nil {
+								// then it's custom type
+								typ += GetAssignmentElement(out).CustomType.Name
+							} else {
+								// then it's native type
+								typ += TypeNames[GetAssignmentElement(out).Type]
 							}
 
 							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
 								k,
 								lbl,
 								expr.Outputs[0].Name,
-								typs)
+								typ)
 						}
 					}
 

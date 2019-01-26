@@ -364,6 +364,8 @@ func main ()() {
 	runTest("issue-71.cx", cx.COMPILATION_ERROR, "No compilation error when redeclaring a variable")
 	runTestEx("issue-72.cx", cx.SUCCESS, "Multi-dimensional slices don't work", TEST_ISSUE, 0)
 	runTestEx("issue-75.cx", cx.SUCCESS, "can't prefix a (f32) variable with minus to flip it's signedness", TEST_STABLE, 0)
+	runTest("issue-77.cx", cx.SUCCESS, "error with sending references of structs to functions")
+	runTest("issue-77b.cx", cx.SUCCESS, "error with references to struct literals")
 	runTest("issue-78.cx", cx.COMPILATION_ERROR, "struct identifier (when initializing fields) can be with or without a '&' prefix, with no CX error")
 	runTest("issue-79.cx", cx.COMPILATION_ERROR, "can assign to previously undeclared vars with just '='")
 	runTestEx("issue-82.cx", cx.SUCCESS, "empty code blocks (even if they contain commented-out lines) crash like this", TEST_ISSUE, 0)
@@ -406,7 +408,7 @@ func main ()() {
 	runTestEx("issue-170.cx", cx.COMPILATION_ERROR, "No compilation error when comparing value of different types", TEST_ISSUE, 0)
 	runTest("-stack-size 30 issue-207a.cx", cx.RUNTIME_STACK_OVERFLOW_ERROR, "No stack overflow error")
 	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.RUNTIME_HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
-	runTestEx("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.", TEST_ISSUE, 0)
+	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
 
 	var end i64

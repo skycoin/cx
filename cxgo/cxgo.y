@@ -165,8 +165,9 @@
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
                         
-                        // for struct literals
+			// for struct literals
 %right                   IDENTIFIER LBRACE
+// %left REF_OP
 // %right                  IDENTIFIER
                         
 /* %start                  translation_unit */
@@ -1002,6 +1003,10 @@ struct_literal_expression:
 	|       IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {
 			$$ = PrimaryStructLiteral($1, $3)
+                }
+	|       unary_operator IDENTIFIER LBRACE struct_literal_fields RBRACE
+                {
+			$$ = UnaryExpression($1, PrimaryStructLiteral($2, $4))
                 }
         |       postfix_expression PERIOD IDENTIFIER LBRACE struct_literal_fields RBRACE
                 {

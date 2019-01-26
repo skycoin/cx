@@ -977,6 +977,32 @@ Lastly, the example above shows how to write an *if/else* statement in CX.
 As a note about its syntax, the predicates or conditions don't need to
 be enclosed in parentheses, just like in Go.
 
+### Else if
+
+Instead of simply adding one alternative path, you can string together a series
+of *else if* blocks, which check for as many different conditions as you like.
+Giving you similar functionality as Go's *switch*/*select* blocks (containing
+various conditions/cases).
+
+```
+package main
+
+func main () {
+   var i i32
+   i = 0
+   
+   if i == 0 {
+     str.print("i is 0")
+   } else if i == 1 {
+     str.print("i is 1")
+   } else if i == 2 {
+     str.print("i is 2")
+   } else {
+     str.print("i is NOT 0, 1 or 2")
+   }
+}
+```
+
 ### For loop
 
 CX's only looping statement is the *for* loop. Similar to Go, the
