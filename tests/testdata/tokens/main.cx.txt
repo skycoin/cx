@@ -2885,19 +2885,15 @@ STRLIT Short variable declarations are not working with calls to methods or func
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-101.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when using equality operator between a bool and an i32
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx

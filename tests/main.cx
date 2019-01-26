@@ -378,7 +378,7 @@ func main ()() {
 	runTestEx("issue-93.cx", cx.SUCCESS, "when using 2 f32 out parameters, only the value of the 2nd gets through", TEST_GUI | TEST_STABLE, 0)
 	runTest("issue-98.cx", cx.COMPILATION_ERROR, "Variable redeclaration should not be allowed")
 	runTestEx("issue-99.cx", cx.SUCCESS, "Short variable declarations are not working with calls to methods or functions", TEST_ISSUE, 0)
-	runTestEx("issue-101.cx", cx.SUCCESS, "Panic when using equality operator between a bool and an i32", TEST_ISSUE, 0)
+	runTest("issue-101.cx", cx.COMPILATION_ERROR, "Panic when using equality operator between a bool and an i32")
 	runTestEx("issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work", TEST_ISSUE, 0)
 	runTest("issue-103.cx", cx.SUCCESS, "Argument list is not parsed correctly")
 	runTest("issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression")

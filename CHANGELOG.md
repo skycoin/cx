@@ -33,7 +33,8 @@
   * #63: Fixed a problem where inline initializations didn't work with dereferences
   * #65: Return statements now work in CX, with and without return arguments
   * #77: Fixed errors related to sending references of structs to functions and
-		assigning references to struct literals
+        assigning references to struct literals
+  * #101: Using different types in shorthands now throws an error
   * #104: Dubious error message when indexing an array with a substraction expression
   * #105: Dubious error message when inline initializing a slice
   * #131: Problem with struct literals in short variable declarations
