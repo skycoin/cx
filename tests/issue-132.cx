@@ -6,4 +6,6 @@ func foo()(out bool) {
 
 func main()() {
 	b := foo()
+
+	bool.print(b)
 }

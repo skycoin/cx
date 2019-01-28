@@ -39,6 +39,7 @@
   * #108: Solved a bug that occured when two functions were named the same in
     different packages
   * #131: Problem with struct literals in short variable declarations
+  * #132: Short declarations can now be assigned values coming from function calls
   * #154: Sending pointers to slices to functions is now possible
   * #167: Passing the address of a slice element is now possible
   * #199: Trying to call an undefined function no longer throws a segfault
