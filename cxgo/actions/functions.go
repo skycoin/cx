@@ -231,9 +231,9 @@ func checkSameNativeType (expr *CXExpression) error {
 	return nil
 }
 
-// isUndSameNativeType checks if the received operator is a OP_UND_*** operator and
-// if this operator's inputs should all be of the same type
-func isUndSameNativeType (op *CXFunction) bool {
+// isUndOpSameInputTypes checks if the received operator belongs to a list of OP_UND_***
+// where its inputs' types must be of the same type
+func isUndOpSameInputTypes (op *CXFunction) bool {
 	switch op.OpCode {
 	case
 		OP_UND_EQUAL,
@@ -259,7 +259,7 @@ func isUndSameNativeType (op *CXFunction) bool {
 }
 
 func ProcessUndExpression(expr *CXExpression) {
-	if expr.Operator != nil && isUndSameNativeType(expr.Operator) {
+	if expr.Operator != nil && isUndOpSameInputTypes(expr.Operator) {
 		if err := checkSameNativeType(expr); err != nil {
 			println(CompilationError(CurrentFile, LineNo), err.Error())
 		}
