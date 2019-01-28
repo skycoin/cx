@@ -15,9 +15,8 @@ func Debug(args ...interface{}) {
 	fmt.Println(args...)
 }
 
-// IsUndOp It returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean
+// IsUndOp returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean
 func IsUndOp(fn *CXFunction) bool {
-	res := false
 	switch fn.OpCode {
 	case
 		OP_UND_BITAND,
@@ -31,10 +30,9 @@ func IsUndOp(fn *CXFunction) bool {
 		OP_UND_SUB,
 		OP_UND_NEG,
 		OP_UND_BITSHL, OP_UND_BITSHR:
-		res = true
+		return true
 	}
-
-	return res
+	return false
 }
 
 // ExprOpName ...
