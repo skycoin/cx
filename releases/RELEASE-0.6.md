@@ -6,8 +6,8 @@ Today the Skycoin development team releases the CX programming language
 version 0.6.
 
 The focus of this release is two-fold:
- * to prepare CX for the integration into the blockchain
- * to fix many of the issues in the language in previous releases
+ * Prepare CX for the integration into the blockchain
+ * Fix many of the issues in the language in previous releases
 
 ## New in This Release
 
@@ -47,7 +47,6 @@ of CX 0.5, but are now officially supported.  These are:
  * Added GIF support to OpenGL
 
 ### Many fixed issues
-
  * \#32: Panic if return value is used in an expression
  * \#40: Slice keeps growing though it's cleared inside the loop
  * \#41: Scope not working in loops
@@ -57,10 +56,23 @@ of CX 0.5, but are now officially supported.  These are:
  * \#53: CX was not catching an error involving invalid indirections
  * \#55: Single character declarations are now allowed
  * \#59: Fields of a struct returned by a function call can now be accessed
+ * \#61: No compilation error when passing *i32 as an i32 arg and conversely
+ * \#62: No compilation error when dereferencing an i32 var
  * \#63: Fixed a problem where inline initializations didn't work with dereferences
+ * \#65: Return statements now work in CX, with and without return arguments
+ * \#77: Fixed errors related to sending references of structs to functions and assigning references to struct literals
+ * \#101: Using different types in shorthands now throws an error
+ * \#104: Dubious error message when indexing an array with a substraction expression
+ * \#105: Dubious error message when inline initializing a slice
+ * \#108: Solved a bug that occured when two functions were named the same in different packages
  * \#131: Problem with struct literals in short variable declarations
+ * \#132: Short declarations can now be assigned values coming from function calls
+ * \#154: Sending pointers to slices to functions is now possible
+ * \#167: Passing the address of a slice element is now possible
+ * \#199: Trying to call an undefined function no longer throws a segfault
+ * \#214: Fixed an error related to type deduction in references to struct fields
  * \#218: Type checking now works with receiving variables of unexpected types
- * ***FIXME: Add more here when they are fixed during the last week***
+
 
 ### Documentation
 
@@ -81,19 +93,18 @@ of CX 0.5, but are now officially supported.  These are:
    also contains documentation on internal data structures and control flow,
    thereby shortening the learning period for new developers.
 
-## Roadmap
+<!-- ## Roadmap -->
 
-The next step after the release of version 0.6 is to integrate it into the
-Skycoin blockchain.  The team will also update the CX book to contain all the
-new features in CX 0.6 as well as improve the documentation of the libraries.
+<!-- The next step after the release of version 0.6 is to integrate it into the -->
+<!-- Skycoin blockchain.  The team will also update the CX book to contain all the -->
+<!-- new features in CX 0.6 as well as improve the documentation of the libraries. -->
 
-The next version of CX, version 0.7, will focus on adding Affordances, a
-mechanism to secure and change programs in running state. It will also contain
-more debug features and an IDE, that already exists as work in progress.
+<!-- The next version of CX, version 0.7, will focus on adding Affordances, a -->
+<!-- mechanism to secure and change programs in running state. It will also contain -->
+<!-- more debug features and an IDE, that already exists as work in progress. -->
 
 ## About CX
 
-CX is the programming language for smart contracts on the Skycoin
-blockchain. ***FIXME: More here...***
+CX is the programming language for smart contracts on the [Skycoin](https://www.skycoin.net/) blockchain. CX is a general purpose, interpreted and compiled programming language, with a very strict type system and a syntax similar to Golang's. CX provides a new programming paradigm based on the concept of affordances.
 
 
