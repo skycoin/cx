@@ -316,6 +316,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			*/
 			// we're going to use the next call in the callstack
 			prgrm.CallCounter++
+			if prgrm.CallCounter >= CALLSTACK_SIZE {
+				panic(STACK_OVERFLOW_ERROR)
+			}
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			// setting the new call
 			newCall.Operator = expr.Operator

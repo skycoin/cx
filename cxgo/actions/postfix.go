@@ -282,7 +282,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 			prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
 			prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
 			prevExprs[len(prevExprs)-1].Outputs[0].Package = glbl.Package
-		} else if fn, err := PRGRM.GetFunction(ident, imp.Name); err == nil {
+		} else if fn, err := imp.GetFunction(ident); err == nil {
 			// then it's a function
 			// not sure about this next line
 			prevExprs[len(prevExprs)-1].Outputs = nil
