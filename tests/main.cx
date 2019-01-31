@@ -344,7 +344,7 @@ func main ()() {
 	runTest("issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages")
 	runTest("issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.")
 	runTest("issue-53.cx", cx.COMPILATION_ERROR, "Panic when using +* in an expression")
-	runTestEx("issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.", TEST_ISSUE, 0)
+	runTest("issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.")
 	runTest("issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.")
 	runTest("issue-56.cx", cx.SUCCESS, "Panic when variable used in if statement without parenthesis.")
 	runTest("issue-57.cx", cx.SUCCESS, "Struct field stomped")
