@@ -236,7 +236,7 @@ global_declaration:
 struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
-			DeclareStruct($2, $4, CurrentFile, LineNo)
+			DeclareStruct($2, $4)
                 }
                 ;
 
