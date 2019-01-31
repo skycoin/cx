@@ -1,6 +1,15 @@
 # Changelog
 
-### v0.6 (NOT YET RELEASED)
+### v0.6.1 (NOT YET RELEASED)
+* Additions
+* Libraries
+* Fixed issues
+  * #54: No compilation error when defining a struct with duplicate fields.
+* Documentation
+* IDE (WiP)
+* Miscellaneous
+
+### v0.6
 * Additions
   * Serialization and deserialization
   * Functions as first-class objects

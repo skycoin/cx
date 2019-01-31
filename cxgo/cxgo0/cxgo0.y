@@ -237,35 +237,6 @@ struct_declaration:
                 TYPE IDENTIFIER STRUCT struct_fields
                 {
 			DeclareStruct($2, $4)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	if strct, err := PRGRM0.GetStruct($2, pkg.Name); err == nil {
-			// 		// strct := MakeStruct($2)
-
-			// 		var size int
-			// 		for _, fld := range $4 {
-			// 			strct.AddField(fld)
-			// 			size += fld.TotalSize
-			// 		}
-			// 		strct.Size = size
-			// 		pkg.AddStruct(strct)
-			// 	} else {
-			// 		panic(err)
-			// 	}
-				
-			// 	// if _, err := PRGRM0.GetStruct($2, pkg.Name); err == nil {
-			// 	// 	strct := MakeStruct($2)
-			// 	// 	pkg.AddStruct(strct)
-
-			// 	// 	var size int
-			// 	// 	for _, fld := range $4 {
-			// 	// 		strct.AddField(fld)
-			// 	// 		size += fld.TotalSize
-			// 	// 	}
-			// 	// 	strct.Size = size
-			// 	// }
-			// } else {
-			// 	panic(err)
-			// }
                 }
                 ;
 

@@ -141,23 +141,32 @@ func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_
 	}
 }
 
+// DeclareStruct takes a name of a struct and a slice of fields representing
+// the members and adds the struct to the package.
+//
 func DeclareStruct(ident string, strctFlds []*CXArgument) {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
-			strct.Fields = nil
-			strct.Size = 0
-
-			// var size int
-			for _, fld := range strctFlds {
-				strct.AddField(fld)
-				// size += fld.TotalSize
-			}
-			// strct.Size = size
-		} else {
-			panic(err)
-		}
-	} else {
+	// Make sure we are inside a package.
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		// FIXME: Should give a relevant error message
 		panic(err)
+	}
+
+	// Make sure a struct with the same name is not yet defined.
+	strct, err := PRGRM.GetStruct(ident, pkg.Name)
+	if err != nil {
+		// FIXME: Should give a relevant error message
+		panic(err)
+	}
+
+	strct.Fields = nil
+	strct.Size = 0
+	for _, fld := range strctFlds {
+		if _, err := strct.GetField(fld.Name); err == nil {
+			println(CompilationError(fld.FileName, fld.FileLine), "Multiply defined struct field:", fld.Name)
+		} else {
+			strct.AddField(fld)
+		}
 	}
 }
 
