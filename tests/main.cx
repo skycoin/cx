@@ -410,6 +410,7 @@ func main ()() {
 	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.RUNTIME_HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
 	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
+	runTestEx("issue-244.cx", cx.SUCCESS, "Crash when using a constant expression in a slice literal expression", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
