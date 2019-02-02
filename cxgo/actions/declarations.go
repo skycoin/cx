@@ -4,20 +4,38 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
+// DeclareGlobal() creates a global variable in the current package.
+//
+// If `doesInitialize` is true, then `initializer` is used to initialize the
+// new variable. This function is a wrapper around DeclareGlobalInPackage()
+// which does the real work.
+//
+// FIXME: This function should be merged with DeclareGlobalInPackage.
+//        Just use pkg=nil to indicate that CurrentPackage should be used.
+//
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
-	initializer []*CXExpression, doesInitialize bool) {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
-	} else {
+	           initializer []*CXExpression, doesInitialize bool) {
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
 		panic(err)
 	}
+
+	DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
 }
 
-func DeclareGlobalInPackage(pkg *CXPackage, declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) {
+// DeclareGlobalInPackage() creates a global variable in a specified package
+//
+// If `doesInitialize` is true, then `initializer` is used to initialize the
+// new variable.
+//
+func DeclareGlobalInPackage(pkg *CXPackage,
+			    declarator *CXArgument, declaration_specifiers *CXArgument,
+			    initializer []*CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 
+	// Treat the name a bit different whether it's defined already or not.
 	if glbl, err := pkg.GetGlobal(declarator.Name); err == nil {
-		// then it is already defined
+		// The name is already defined.
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
@@ -170,121 +188,146 @@ func DeclareStruct(ident string, strctFlds []*CXArgument) {
 	}
 }
 
+// DeclarePackage() switches the current package in the program.
+//
 func DeclarePackage(ident string) {
+	// Add a new package to the program if it's not previously defined.
 	if pkg, err := PRGRM.GetPackage(ident); err != nil {
-		pkg := MakePackage(ident)
-		// pkg.AddImport(pkg)
+		pkg = MakePackage(ident)
 		PRGRM.AddPackage(pkg)
-		PRGRM.SelectPackage(pkg.Name)
-	} else {
-		PRGRM.SelectPackage(pkg.Name)
 	}
+
+	PRGRM.SelectPackage(ident)
 }
 
+// DeclareImport()
+//
 func DeclareImport(ident string, currentFile string, lineNo int) {
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-		if _, err := pkg.GetImport(ident); err != nil {
-
-			if imp, err := PRGRM.GetPackage(ident); err == nil {
-				pkg.AddImport(imp)
-			} else {
-				// TODO look in the workspace
-				if IsCorePackage(ident) {
-					imp := MakePackage(ident)
-					pkg.AddImport(imp)
-					PRGRM.AddPackage(imp)
-					PRGRM.CurrentPackage = pkg
-
-					if ident == "aff" {
-						AffordanceStructs(imp, currentFile, lineNo)
-					}
-				} else {
-					println(CompilationError(currentFile, lineNo), err.Error())
-				}
-			}
-		}
-	} else {
+        // Make sure we are inside a package
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		// FIXME: Should give a relevant error message
 		panic(err)
 	}
+
+	// If the package is already imported, then there is nothing more to be done.
+	if _, err := pkg.GetImport(ident); err == nil {
+		return;
+	}
+
+	// If the package is already defined in the program, just add it to
+	// the program.
+	if imp, err := PRGRM.GetPackage(ident); err == nil {
+		pkg.AddImport(imp)
+		return
+	}
+
+	// All packages are read during the first pass of the compilation.  So
+	// if we get here during the 2nd pass, it's either a core package or
+	// something is wrong.
+	if IsCorePackage(ident) {
+		imp := MakePackage(ident)
+		pkg.AddImport(imp)
+		PRGRM.AddPackage(imp)
+		PRGRM.CurrentPackage = pkg
+
+		if ident == "aff" {
+			AffordanceStructs(imp, currentFile, lineNo)
+		}
+	} else {
+		println(CompilationError(currentFile, lineNo), err.Error())
+	}
 }
 
-func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, initializer []*CXExpression, doesInitialize bool) []*CXExpression {
+// DeclareLocal() creates a local variable inside a function.
+// If `doesInitialize` is true, then `initializer` contains the initial values
+// of the variable(s).
+//
+// Returns a list of expressions that contains the initialization, if any.
+//
+func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
+     	          initializer []*CXExpression, doesInitialize bool) []*CXExpression {
 	if FoundCompileErrors {
 		return nil
 	}
+
+	declaration_specifiers.IsLocalDeclaration = true
+
+        pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
 	if doesInitialize {
-		declaration_specifiers.IsLocalDeclaration = true
-
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			// THEN it's a literal, e.g. var foo i32 = 10;
-			// ELSE it's an expression with an operator
-			if initializer[len(initializer)-1].Operator == nil {
-				// we need to create an expression that links the initializer expressions
-				// with the declared variable
-				expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
-				expr.Package = pkg
-
-				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.Package = pkg
-				declaration_specifiers.PreviouslyDeclared = true
-
-				initOut := initializer[len(initializer)-1].Outputs[0]
-
-				// CX checks the output of an expression to determine if it's being passed
-				// by value or by reference, so we copy this property from the initializer's
-				// output, in case of something like var foo *i32 = &bar
-				declaration_specifiers.PassBy = initOut.PassBy
-
-				expr.AddOutput(declaration_specifiers)
-				expr.AddInput(initOut)
-
-				initializer[len(initializer)-1] = expr
-
-				return initializer
-			} else {
-				expr := initializer[len(initializer)-1]
-
-				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.Package = pkg
-				declaration_specifiers.PreviouslyDeclared = true
-				
-				// THEN the expression has outputs created from the result of
-				// handling a dot notation initializer, and it needs to be replaced
-				// ELSE we simply add it using `AddOutput`
-				if len(expr.Outputs) > 0 {
-					expr.Outputs = []*CXArgument{declaration_specifiers}
-				} else {
-					expr.AddOutput(declaration_specifiers)
-				}
-
-				return initializer
-			}
-		} else {
-			panic(err)
-		}
-	} else {
-		declaration_specifiers.IsLocalDeclaration = true
-
-		// this will tell the runtime that it's just a declaration
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			expr := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+		// THEN it's a literal, e.g. var foo i32 = 10;
+		// ELSE it's an expression with an operator
+		if initializer[len(initializer)-1].Operator == nil {
+			// we need to create an expression that links the initializer expressions
+			// with the declared variable
+			expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
 
 			declaration_specifiers.Name = declarator.Name
 			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Package = pkg
 			declaration_specifiers.PreviouslyDeclared = true
-			expr.AddOutput(declaration_specifiers)
 
-			return []*CXExpression{expr}
+			initOut := initializer[len(initializer)-1].Outputs[0]
+			// CX checks the output of an expression to determine if it's being passed
+			// by value or by reference, so we copy this property from the initializer's
+			// output, in case of something like var foo *i32 = &bar
+			declaration_specifiers.PassBy = initOut.PassBy
+
+			expr.AddOutput(declaration_specifiers)
+			expr.AddInput(initOut)
+
+			initializer[len(initializer)-1] = expr
+
+			return initializer
 		} else {
-			panic(err)
+			expr := initializer[len(initializer)-1]
+
+			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
+			declaration_specifiers.Package = pkg
+			declaration_specifiers.PreviouslyDeclared = true
+				
+			// THEN the expression has outputs created from the result of
+			// handling a dot notation initializer, and it needs to be replaced
+			// ELSE we simply add it using `AddOutput`
+			if len(expr.Outputs) > 0 {
+				expr.Outputs = []*CXArgument{declaration_specifiers}
+			} else {
+				expr.AddOutput(declaration_specifiers)
+			}
+
+			return initializer
 		}
+	} else {
+		// There is no initialization.
+		expr := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+		expr.Package = pkg
+
+		declaration_specifiers.Name = declarator.Name
+		declaration_specifiers.FileLine = declarator.FileLine
+		declaration_specifiers.Package = pkg
+		declaration_specifiers.PreviouslyDeclared = true
+		expr.AddOutput(declaration_specifiers)
+
+		return []*CXExpression{expr}
 	}
 }
 
+// DeclarationSpecifiers() is called to build a type of a variable or parameter.
+//
+// It is called repeatedly while the type is parsed.
+//
+//   declSpec:  The incoming type
+//   arraySize: The size of the array if `opTyp` = DECL_ARRAY
+//   opTyp:     The type of modification to `declSpec` (array of, pointer to, ...)
+//
+// Returns the new type build from `declSpec` and `opTyp`.
+//
 func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXArgument {
 	switch opTyp {
 	case DECL_POINTER:
@@ -341,6 +384,8 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 	return nil
 }
 
+// DeclarationSpecifiersBasic() returns a type specifier created from one of the builtin types.
+//
 func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	arg := MakeArgument("", CurrentFile, LineNo)
 	arg.AddType(TypeNames[typ])
@@ -356,51 +401,53 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
 }
 
-func DeclarationSpecifiersStruct(ident string, pkgName string, isExternal bool, currentFile string, lineNo int) *CXArgument {
+// DeclarationSpecifiersStruct() declares a struct
+func DeclarationSpecifiersStruct(ident string, pkgName string,
+				 isExternal bool, currentFile string, lineNo int) *CXArgument {
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+
 	if isExternal {
 		// custom type in an imported package
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if imp, err := pkg.GetImport(pkgName); err == nil {
-				if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
-					arg := MakeArgument("", currentFile, lineNo)
-					arg.Type = TYPE_CUSTOM
-					arg.CustomType = strct
-					arg.Size = strct.Size
-					arg.TotalSize = strct.Size
-
-					arg.Package = pkg
-					arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
-
-					return arg
-				} else {
-					println(CompilationError(currentFile, lineNo), err.Error())
-					return nil
-				}
-			} else {
-				panic(err)
-			}
-		} else {
+		imp, err := pkg.GetImport(pkgName)
+		if err != nil {
 			panic(err)
 		}
+
+		strct, err := PRGRM.GetStruct(ident, imp.Name)
+		if err != nil {
+			println(CompilationError(currentFile, lineNo), err.Error())
+			return nil
+		}
+
+		arg := MakeArgument("", currentFile, lineNo)
+		arg.Type = TYPE_CUSTOM
+		arg.CustomType = strct
+		arg.Size = strct.Size
+		arg.TotalSize = strct.Size
+
+		arg.Package = pkg
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+
+		return arg
 	} else {
 		// custom type in the current package
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if strct, err := PRGRM.GetStruct(ident, pkg.Name); err == nil {
-				arg := MakeArgument("", currentFile, lineNo)
-				arg.Type = TYPE_CUSTOM
-				arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
-				arg.CustomType = strct
-				arg.Size = strct.Size
-				arg.TotalSize = strct.Size
-				arg.Package = pkg
-
-				return arg
-			} else {
-				println(CompilationError(currentFile, lineNo), err.Error())
-				return nil
-			}
-		} else {
-			panic(err)
+		strct, err := PRGRM.GetStruct(ident, pkg.Name)
+		if err != nil {
+			println(CompilationError(currentFile, lineNo), err.Error())
+			return nil
 		}
+
+		arg := MakeArgument("", currentFile, lineNo)
+		arg.Type = TYPE_CUSTOM
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+		arg.CustomType = strct
+		arg.Size = strct.Size
+		arg.TotalSize = strct.Size
+		arg.Package = pkg
+
+		return arg
 	}
 }
