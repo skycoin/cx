@@ -109,8 +109,6 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 	FunctionProcessParameters(symbols, &symbolsScope, &offset, fn, fn.Outputs)
 
 	for i, expr := range fn.Expressions {
-		// ProcessShortDeclaration(expr)
-
 		if expr.ScopeOperation == SCOPE_NEW {
 			*symbols = append(*symbols, make(map[string]*CXArgument, 0))
 		}
@@ -879,11 +877,6 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
 
-	// for example, var foo *i32; ***foo = 5 // error
-	// if sym.DereferenceLevels > arg.IndirectionLevels {
-	// 	println(CompilationError(sym.FileName, sym.FileLine), "invalid indirection")
-	// }
-
 	if arg.Type == TYPE_STR {
 		sym.IsPointer = true
 	}
@@ -999,16 +992,10 @@ func SetFinalSize(symbols *[]map[string]*CXArgument, sym *CXArgument) {
 		}
 	}
 
-	// if arg, found := (*symbols)[lastIdx][sym.Package.Name+"."+sym.Name]; found {
-	// 	PreFinalSize(&finalSize, sym, arg)
-	// 	for _, fld := range sym.Fields {
-	// 		finalSize = fld.TotalSize
-	// 		PreFinalSize(&finalSize, fld, arg)
-	// 	}
-	// }
 	sym.TotalSize = finalSize
 }
 
+// GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
 func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident string) {
 	_, err := lookupSymbol(symPkg.Name, ident, symbols)
 	if err != nil {
@@ -1017,12 +1004,6 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
 		}
 	}
-	
-	// if _, found := (*symbols)[lastIdx][symPackage.Name+"."+symName]; !found {
-	// 	if glbl, err := symPackage.GetGlobal(symName); err == nil {
-	// 		(*symbols)[lastIdx][symPackage.Name+"."+symName] = glbl
-	// 	}
-	// }
 }
 
 func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {

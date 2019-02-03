@@ -258,6 +258,9 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 		panic(err)
 	}
 
+	// Declaration expression to handle the inline initialization.
+	// For example, `var foo i32 = 11` needs to be divided into two expressions:
+	// one that declares `foo`, and another that assigns 11 to `foo`
 	decl := MakeExpression(nil, declarator.FileName, declarator.FileLine)
 	decl.Package = pkg
 
@@ -287,16 +290,10 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 
 			initializer[len(initializer)-1] = expr
 
-			// return initializer
 			return append([]*CXExpression{decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
 
-			// declaration_specifiers.Name = declarator.Name
-			// declaration_specifiers.FileLine = declarator.FileLine
-			// declaration_specifiers.Package = pkg
-			// declaration_specifiers.PreviouslyDeclared = true
-				
 			// THEN the expression has outputs created from the result of
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
@@ -306,7 +303,6 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 				expr.AddOutput(declaration_specifiers)
 			}
 
-			// return initializer
 			return append([]*CXExpression{decl}, initializer...)
 		}
 	} else {

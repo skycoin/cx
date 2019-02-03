@@ -171,8 +171,6 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 	exprs = append(exprs, skipExpr)
 	exprs = append(exprs, elseExprs...)
 
-	// DefineNewScope(exprs)
-
 	return exprs
 }
 
