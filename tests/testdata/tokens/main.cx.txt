@@ -3298,13 +3298,28 @@ RPAREN
 SCOLON 
  IDENT runTestEx
 LPAREN 
-STRLIT issue-247.cx
+STRLIT issue-247-a.cx
  COMMA 
  IDENT cx
 PERIOD 
  IDENT COMPILATION_ERROR
  COMMA 
-STRLIT Can redeclara variables if they are inline initialized
+STRLIT Can redeclare variables if they are inline initialized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-247-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Can redeclare variables if they are inline initialized
  COMMA 
  IDENT TEST_ISSUE
  COMMA 
