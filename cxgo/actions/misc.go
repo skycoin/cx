@@ -161,7 +161,7 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 }
 
 // hasDeclSpec determines if an argument has certain declaration specifier
-func hasDeclSpec (arg *CXArgument, spec int) bool {
+func hasDeclSpec(arg *CXArgument, spec int) bool {
 	found := false
 	for _, s := range arg.DeclarationSpecifiers {
 		if s == spec {

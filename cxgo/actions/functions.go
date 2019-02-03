@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	
+
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -173,7 +173,7 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 				} else {
 					out = MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, inpExpr.FileLine).AddType(TypeNames[inpExpr.Operator.Outputs[0].Type])
 					out.DeclarationSpecifiers = inpExpr.Operator.Outputs[0].DeclarationSpecifiers
-					
+
 					out.CustomType = inpExpr.Operator.Outputs[0].CustomType
 
 					if inpExpr.Operator.Outputs[0].CustomType != nil {
@@ -217,7 +217,7 @@ func undOutputSize(expr *CXExpression) int {
 
 // checkSameNativeType checks if all the inputs of an expression are of the same type.
 // It is used mainly to prevent implicit castings in arithmetic operations
-func checkSameNativeType (expr *CXExpression) error {
+func checkSameNativeType(expr *CXExpression) error {
 	if len(expr.Inputs) < 1 {
 		return errors.New("cannot perform arithmetic without operands")
 	}
@@ -233,7 +233,7 @@ func checkSameNativeType (expr *CXExpression) error {
 
 // isUndOpSameInputTypes checks if the received operator belongs to a list of OP_UND_***
 // where its inputs' types must be of the same type
-func isUndOpSameInputTypes (op *CXFunction) bool {
+func isUndOpSameInputTypes(op *CXFunction) bool {
 	switch op.OpCode {
 	case
 		OP_UND_EQUAL,
@@ -387,13 +387,13 @@ func ProcessGoTos(fn *CXFunction, exprs []*CXExpression) {
 	}
 }
 
-func GetFormattedType (arg *CXArgument) string {
+func GetFormattedType(arg *CXArgument) string {
 	typ := ""
 	elt := GetAssignmentElement(arg)
 
 	// this is used to know what arg.Lengths index to use
 	// used for cases like [5]*[3]i32, where we jump to another decl spec
-	arrDeclCount := len(arg.Lengths)-1
+	arrDeclCount := len(arg.Lengths) - 1
 	// looping declaration specifiers
 	for _, spec := range elt.DeclarationSpecifiers {
 		switch spec {
@@ -418,11 +418,11 @@ func GetFormattedType (arg *CXArgument) string {
 			}
 		}
 	}
-	
+
 	return typ
 }
 
-func checkMatchParamTypes (expr *CXExpression, expected, received []*CXArgument, isInputs bool) {
+func checkMatchParamTypes(expr *CXExpression, expected, received []*CXArgument, isInputs bool) {
 	for i, inp := range expected {
 		expectedType := GetFormattedType(expected[i])
 		receivedType := GetFormattedType(received[i])
@@ -449,7 +449,7 @@ func checkMatchParamTypes (expr *CXExpression, expected, received []*CXArgument,
 			} else {
 				println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
-			
+
 		}
 	}
 }
@@ -492,7 +492,7 @@ func CheckTypes(expr *CXExpression) {
 				plural2 = ""
 				plural3 = "was"
 			}
-			
+
 			println(CompilationError(expr.FileName, expr.FileLine), fmt.Sprintf("operator '%s' expects to return %d output%s, but %d receiving argument%s %s provided", opName, len(expr.Operator.Outputs), plural1, len(expr.Outputs), plural2, plural3))
 			os.Exit(CX_COMPILATION_ERROR)
 		}
@@ -518,7 +518,6 @@ func CheckTypes(expr *CXExpression) {
 				receivedType = TypeNames[GetAssignmentElement(expr.Inputs[i]).Type]
 			}
 
-			
 			// if GetAssignmentElement(expr.Outputs[i]).Type != GetAssignmentElement(inp).Type {
 			if receivedType != expectedType {
 				if expr.IsStructLiteral {
@@ -558,7 +557,7 @@ func ProcessStringAssignment(expr *CXExpression) {
 
 // ProcessReferenceAssignment checks if the reference of a symbol can be assigned to the expression's output.
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
-func ProcessReferenceAssignment (expr *CXExpression) {
+func ProcessReferenceAssignment(expr *CXExpression) {
 	for _, out := range expr.Outputs {
 		if out.PassBy == PASSBY_REFERENCE &&
 			!hasDeclSpec(out, DECL_POINTER) &&
@@ -566,7 +565,7 @@ func ProcessReferenceAssignment (expr *CXExpression) {
 			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", out.Name)
 		}
 	}
-	
+
 }
 
 func ProcessSlice(inp *CXArgument) {
@@ -810,7 +809,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 			case DECL_POINTER:
 				if sym.FileLine != arg.FileLine {
 					// This function is also called so it assigns offset and other fields to signature parameters
-					// 
+					//
 					declSpec = append(declSpec, DECL_POINTER)
 				}
 			}

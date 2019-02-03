@@ -2,9 +2,11 @@ package actions
 
 import (
 	"fmt"
-	. "github.com/skycoin/cx/cx"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"os"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 // PostfixExpressionArray...
@@ -166,7 +168,7 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 
 // PostfixExpressionField handles the dot notation that can follow an identifier.
 // Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
-func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpression {
+func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
 	// THEN it's a function call, e.g. foo().fld
@@ -222,7 +224,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		expr.AddOutput(inp)
 
 		prevExprs = append(prevExprs, expr)
-		
+
 		lastExpr = prevExprs[len(prevExprs)-1]
 	}
 
@@ -297,7 +299,7 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		if IsCorePackage(left.Name) {
 			println(CompilationError(left.FileName, left.FileLine),
 				fmt.Sprintf("identifier '%s' does not exist",
-					    left.Name))
+					left.Name))
 			os.Exit(CX_COMPILATION_ERROR)
 		}
 		// then it's a struct
