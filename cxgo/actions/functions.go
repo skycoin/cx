@@ -672,12 +672,6 @@ func UpdateSymbolsTable(symbols *[]map[string]*CXArgument, sym *CXArgument, offs
 			return
 		}
 
-		// it does exist but in an outer scope
-		// we need to bring it to the inner scope
-		// if shouldExist && err == nil {
-		// 	(*symbols)[lastIdx][fullName] = outerSym
-		// }
-
 		// then it is a new declaration
 		if !shouldExist && !found {
 			// then it was declared in an outer scope

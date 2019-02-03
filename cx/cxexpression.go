@@ -32,7 +32,7 @@ type CXExpression struct {
 	ElseLines int
 
 	// 1 = start new scope; -1 = end scope; 0 = just regular expression
-	ScopeOperation  int
+	ScopeOperation int
 
 	IsMethodCall    bool
 	IsStructLiteral bool

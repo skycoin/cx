@@ -315,6 +315,7 @@ func main ()() {
 	runTest("test-short-declarations.cx", cx.SUCCESS, "short declarations")
 	runTest("test-parse.cx", cx.SUCCESS, "parse")
 	runTest("test-collection-functions.cx", cx.SUCCESS, "collection functions")
+	runTest("test-scopes.cx", cx.SUCCESS, "Error in scopes.")
 
 	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
@@ -358,7 +359,7 @@ func main ()() {
 	runTest("issue-63.cx", cx.SUCCESS, "Wrong pointer behaviour.")
 	runTest("issue-65.cx", cx.SUCCESS, "Return from a function doesnt work")
 	runTest("issue-65b.cx", cx.COMPILATION_ERROR, "Mismatched number of returning arguments is not throwing an error")
-	runTestEx("issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope", TEST_ISSUE, 0)
+	runTest("issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope")
 	runTest("issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")
 	runTestEx("issue-70.cx", cx.SUCCESS, "Inline field and index 'dereferences' to function calls' outputs", TEST_ISSUE, 0)
 	runTest("issue-71.cx", cx.COMPILATION_ERROR, "No compilation error when redeclaring a variable")
@@ -411,8 +412,8 @@ func main ()() {
 	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
 	runTestEx("issue-244.cx", cx.SUCCESS, "Crash when using a constant expression in a slice literal expression", TEST_ISSUE, 0)
-	runTestEx("issue-247-a.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
-	runTestEx("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
+	runTest("issue-247-a.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized")
+	runTest("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized")
 
 	var end i64
 	end = time.UnixMilli()

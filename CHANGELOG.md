@@ -2,9 +2,12 @@
 
 ### v0.6.1 (NOT YET RELEASED)
 * Additions
+  * Support for lexical scoping
 * Libraries
 * Fixed issues
   * #54: No compilation error when defining a struct with duplicate fields.
+  * #67: No compilation error when var is accessed outside of its declaring scope.
+  * #247: No compilation error when variables are inline initialized.
 * Documentation
 * IDE (WiP)
 * Miscellaneous

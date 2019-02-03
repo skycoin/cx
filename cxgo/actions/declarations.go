@@ -282,8 +282,8 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 			// output, in case of something like var foo *i32 = &bar
 			declaration_specifiers.PassBy = initOut.PassBy
 
-			// expr.AddOutput(declaration_specifiers)
-			// expr.AddInput(initOut)
+			expr.AddOutput(declaration_specifiers)
+			expr.AddInput(initOut)
 
 			initializer[len(initializer)-1] = expr
 

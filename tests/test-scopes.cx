@@ -1,0 +1,46 @@
+package main
+import "cx"
+import "os"
+
+func main () {
+	var x i32 = 1
+	if false {
+		var x i32
+		if true {
+			var x i32 = 3
+			test(x, 3, "")
+		}
+		test(x, 0, "")
+	} else {
+		var x i32 = 5
+		if true {
+			var x i32 = 3
+		}
+	}
+	test(x, 1, "")
+
+	if x == 1 {
+		test(x, 1, "")
+		var x i32 = 5
+		test(x, 5, "")
+		if true {
+			var x i32 = 3
+			test(x, 3, "")
+		}
+		test(x, 5, "")
+	} else {
+		printf("scopes are not working properly for if statements")
+		os.Exit(cx.PANIC)
+	}
+
+	var y i32 = 3131
+	
+	for y := 0; y < 10; y++ {
+		for y := 10; y < 20; y++ {
+			test(y >= 10, true, "")
+		}
+		test(y < 10, true, "")
+	}
+
+	test(y, 3131, "")
+}
