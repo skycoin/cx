@@ -2473,7 +2473,7 @@ PERIOD
 STRLIT Panic when using +* in an expression
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-54.cx
  COMMA 
@@ -2482,10 +2482,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when defining a struct with duplicate fields.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3283,6 +3279,51 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Type checking is not working with receiving variables of unexpected types
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-244.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash when using a constant expression in a slice literal expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-247-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Can redeclare variables if they are inline initialized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-247-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Can redeclare variables if they are inline initialized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
 RPAREN 
 SCOLON 
    VAR 

@@ -344,7 +344,7 @@ func main ()() {
 	runTest("issue-51.cx issue-51a.cx", cx.SUCCESS, "Silent name clash between packages")
 	runTest("issue-52.cx", cx.COMPILATION_ERROR, "Invalid implicit cast.")
 	runTest("issue-53.cx", cx.COMPILATION_ERROR, "Panic when using +* in an expression")
-	runTestEx("issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.", TEST_ISSUE, 0)
+	runTest("issue-54.cx", cx.COMPILATION_ERROR, "No compilation error when defining a struct with duplicate fields.")
 	runTest("issue-55.cx", cx.SUCCESS, "Can't define struct with a single character identifier.")
 	runTest("issue-56.cx", cx.SUCCESS, "Panic when variable used in if statement without parenthesis.")
 	runTest("issue-57.cx", cx.SUCCESS, "Struct field stomped")
@@ -410,6 +410,9 @@ func main ()() {
 	runTest("-heap-initial 100 -heap-max 110 issue-207b.cx", cx.RUNTIME_HEAP_EXHAUSTED_ERROR, "No heap exhausted error")
 	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
+	runTestEx("issue-244.cx", cx.SUCCESS, "Crash when using a constant expression in a slice literal expression", TEST_ISSUE, 0)
+	runTestEx("issue-247-a.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
+	runTestEx("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
