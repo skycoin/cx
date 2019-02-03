@@ -78,6 +78,8 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	exprs = append(exprs, incr...)
 	exprs = append(exprs, upExpr)
 
+	DefineNewScope(exprs)
+
 	return exprs
 }
 
@@ -110,6 +112,9 @@ func ContinueExpressions() []*CXExpression {
 }
 
 func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, elseExprs []*CXExpression) []*CXExpression {
+	DefineNewScope(thenExprs)
+	DefineNewScope(elseExprs)
+
 	jmpFn := Natives[OP_JMP]
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -165,6 +170,8 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 	exprs = append(exprs, thenExprs...)
 	exprs = append(exprs, skipExpr)
 	exprs = append(exprs, elseExprs...)
+
+	// DefineNewScope(exprs)
 
 	return exprs
 }
@@ -368,6 +375,8 @@ func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpress
 	outParam := fn.Outputs[idx]
 
 	out := MakeArgument(outParam.Name, CurrentFile, LineNo)
+	out.AddType(TypeNames[outParam.Type])
+	out.CustomType = outParam.CustomType
 	out.PreviouslyDeclared = true
 
 	if lastExpr.Operator == nil {

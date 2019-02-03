@@ -207,6 +207,15 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 		declaration_specifiers.IsLocalDeclaration = true
 
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+			decl := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+			decl.Package = pkg
+
+			declaration_specifiers.Name = declarator.Name
+			declaration_specifiers.FileLine = declarator.FileLine
+			declaration_specifiers.Package = pkg
+			declaration_specifiers.PreviouslyDeclared = true
+			decl.AddOutput(declaration_specifiers)
+			
 			// THEN it's a literal, e.g. var foo i32 = 10;
 			// ELSE it's an expression with an operator
 			if initializer[len(initializer)-1].Operator == nil {
@@ -215,10 +224,10 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 				expr.Package = pkg
 
-				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.Package = pkg
-				declaration_specifiers.PreviouslyDeclared = true
+				// declaration_specifiers.Name = declarator.Name
+				// declaration_specifiers.FileLine = declarator.FileLine
+				// declaration_specifiers.Package = pkg
+				// declaration_specifiers.PreviouslyDeclared = true
 
 				initOut := initializer[len(initializer)-1].Outputs[0]
 
@@ -231,15 +240,17 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 				expr.AddInput(initOut)
 
 				initializer[len(initializer)-1] = expr
+				// initializer = append(initializer, expr)
 
-				return initializer
+				return append([]*CXExpression{decl}, initializer...)
+				// return initializer
 			} else {
 				expr := initializer[len(initializer)-1]
 
-				declaration_specifiers.Name = declarator.Name
-				declaration_specifiers.FileLine = declarator.FileLine
-				declaration_specifiers.Package = pkg
-				declaration_specifiers.PreviouslyDeclared = true
+				// declaration_specifiers.Name = declarator.Name
+				// declaration_specifiers.FileLine = declarator.FileLine
+				// declaration_specifiers.Package = pkg
+				// declaration_specifiers.PreviouslyDeclared = true
 				
 				// THEN the expression has outputs created from the result of
 				// handling a dot notation initializer, and it needs to be replaced
@@ -250,7 +261,8 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument, in
 					expr.AddOutput(declaration_specifiers)
 				}
 
-				return initializer
+				return append([]*CXExpression{decl}, initializer...)
+				// return initializer
 			}
 		} else {
 			panic(err)
