@@ -14,7 +14,7 @@ import (
 //        Just use pkg=nil to indicate that CurrentPackage should be used.
 //
 func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
-	           initializer []*CXExpression, doesInitialize bool) {
+	initializer []*CXExpression, doesInitialize bool) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -29,8 +29,8 @@ func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
 // new variable.
 //
 func DeclareGlobalInPackage(pkg *CXPackage,
-			    declarator *CXArgument, declaration_specifiers *CXArgument,
-			    initializer []*CXExpression, doesInitialize bool) {
+	declarator *CXArgument, declaration_specifiers *CXArgument,
+	initializer []*CXExpression, doesInitialize bool) {
 	declaration_specifiers.Package = pkg
 
 	// Treat the name a bit different whether it's defined already or not.
@@ -203,7 +203,7 @@ func DeclarePackage(ident string) {
 // DeclareImport()
 //
 func DeclareImport(ident string, currentFile string, lineNo int) {
-        // Make sure we are inside a package
+	// Make sure we are inside a package
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
@@ -212,7 +212,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 
 	// If the package is already imported, then there is nothing more to be done.
 	if _, err := pkg.GetImport(ident); err == nil {
-		return;
+		return
 	}
 
 	// If the package is already defined in the program, just add it to
@@ -246,14 +246,14 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 // Returns a list of expressions that contains the initialization, if any.
 //
 func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
-     	          initializer []*CXExpression, doesInitialize bool) []*CXExpression {
+	initializer []*CXExpression, doesInitialize bool) []*CXExpression {
 	if FoundCompileErrors {
 		return nil
 	}
 
 	declaration_specifiers.IsLocalDeclaration = true
 
-        pkg, err := PRGRM.GetCurrentPackage()
+	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
@@ -291,7 +291,7 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 			declaration_specifiers.FileLine = declarator.FileLine
 			declaration_specifiers.Package = pkg
 			declaration_specifiers.PreviouslyDeclared = true
-				
+
 			// THEN the expression has outputs created from the result of
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
@@ -403,7 +403,7 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 
 // DeclarationSpecifiersStruct() declares a struct
 func DeclarationSpecifiersStruct(ident string, pkgName string,
-				 isExternal bool, currentFile string, lineNo int) *CXArgument {
+	isExternal bool, currentFile string, lineNo int) *CXArgument {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)

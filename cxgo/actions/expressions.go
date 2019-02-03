@@ -3,16 +3,17 @@ package actions
 import (
 	"fmt"
 	"os"
-	
-	. "github.com/skycoin/cx/cx"
+
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 // ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.
 // For example: `return foo() + bar()` is a set of 3 expressions and they represent a single return argument
 type ReturnExpressions struct {
-	Size          int
-	Expressions   []*CXExpression
+	Size        int
+	Expressions []*CXExpression
 }
 
 func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CXExpression, statements []*CXExpression) []*CXExpression {
@@ -81,7 +82,7 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	return exprs
 }
 
-func trueJmpExpressions () []*CXExpression {
+func trueJmpExpressions() []*CXExpression {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -97,7 +98,7 @@ func trueJmpExpressions () []*CXExpression {
 	return []*CXExpression{expr}
 }
 
-func BreakExpressions () []*CXExpression {
+func BreakExpressions() []*CXExpression {
 	exprs := trueJmpExpressions()
 	exprs[0].IsBreak = true
 	return exprs
@@ -170,7 +171,7 @@ func SelectionExpressions(condExprs []*CXExpression, thenExprs []*CXExpression, 
 }
 
 // resolveTypeForUnd tries to determine the type that will be returned from an expression
-func resolveTypeForUnd (expr *CXExpression) int {
+func resolveTypeForUnd(expr *CXExpression) int {
 	if len(expr.Inputs) > 0 {
 		// it's a literal
 		return expr.Inputs[0].Type
@@ -192,7 +193,7 @@ func resolveTypeForUnd (expr *CXExpression) int {
 	return -1
 }
 
-func UndefinedTypeOperation (leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
+func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpression, operator *CXFunction) (out []*CXExpression) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
@@ -348,7 +349,7 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 
 // AssociateReturnExpressions associates the output of `retExprs` to the
 // `idx`th output parameter of the current function.
-func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpression {
+func AssociateReturnExpressions(idx int, retExprs []*CXExpression) []*CXExpression {
 	var pkg *CXPackage
 	var fn *CXFunction
 	var err error
@@ -372,7 +373,7 @@ func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpress
 
 	if lastExpr.Operator == nil {
 		lastExpr.Operator = Natives[OP_IDENTITY]
-		
+
 		lastExpr.Inputs = lastExpr.Outputs
 		lastExpr.Outputs = nil
 		lastExpr.AddOutput(out)
@@ -386,13 +387,13 @@ func AssociateReturnExpressions (idx int, retExprs []*CXExpression) []*CXExpress
 		return append(retExprs, expr)
 	} else {
 		lastExpr.AddOutput(out)
-		
+
 		return retExprs
 	}
 }
 
 // AddJmpToReturnExpressions adds an jump expression that makes a function stop its execution
-func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
+func AddJmpToReturnExpressions(exprs ReturnExpressions) []*CXExpression {
 	var pkg *CXPackage
 	var fn *CXFunction
 	var err error
@@ -408,10 +409,10 @@ func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
 	}
 
 	retExprs := exprs.Expressions
-	
+
 	if len(fn.Outputs) != exprs.Size && exprs.Expressions != nil {
 		lastExpr := retExprs[len(retExprs)-1]
-		
+
 		var plural1 string
 		var plural2 string = "s"
 		var plural3 string = "were"
@@ -422,10 +423,10 @@ func AddJmpToReturnExpressions (exprs ReturnExpressions) []*CXExpression {
 			plural2 = ""
 			plural3 = "was"
 		}
-		
+
 		println(CompilationError(lastExpr.FileName, lastExpr.FileLine), fmt.Sprintf("function '%s' expects to return %d argument%s, but %d output argument%s %s provided", fn.Name, len(fn.Outputs), plural1, exprs.Size, plural2, plural3))
 	}
-	
+
 	// expression to jump to the end of the embedding function
 	expr := MakeExpression(Natives[OP_JMP], CurrentFile, LineNo)
 

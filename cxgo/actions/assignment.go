@@ -6,10 +6,10 @@ import (
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
 // For example, `foo = Item{x: 10, y: 20}` is converted to: `foo.x = 10; foo.y = 20;`.
-func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name string) []*CXExpression {
+func assignStructLiteralFields(to []*CXExpression, from []*CXExpression, name string) []*CXExpression {
 	for _, f := range from {
 		f.Outputs[0].Name = name
-		
+
 		if len(to[0].Outputs[0].Indexes) > 0 {
 			f.Outputs[0].Lengths = to[0].Outputs[0].Lengths
 			f.Outputs[0].Indexes = to[0].Outputs[0].Indexes
@@ -24,7 +24,7 @@ func assignStructLiteralFields (to []*CXExpression, from []*CXExpression, name s
 
 // StructLiteralAssignment handles struct literals, e.g. `Item{x: 10, y: 20}`, and references to
 // struct literals, e.g. `&Item{x: 10, y: 20}` in assignment expressions.
-func StructLiteralAssignment (to []*CXExpression, from []*CXExpression) []*CXExpression {
+func StructLiteralAssignment(to []*CXExpression, from []*CXExpression) []*CXExpression {
 	lastFrom := from[len(from)-1]
 	// If the last expression in `from` is declared as pointer
 	// then it means the whole struct literal needs to be passed by reference.
@@ -94,7 +94,7 @@ func ShortAssignment(expr *CXExpression, to []*CXExpression, from []*CXExpressio
 // This function is needed because CX has some standard library functions that return TYPE_UNDEFINED
 // arguments. In these cases, the output type depends on its input arguments' type. In the rest of
 // the cases, we can simply use the function's return type.
-func getOutputType (expr *CXExpression) *CXArgument {
+func getOutputType(expr *CXExpression) *CXArgument {
 	if expr.Operator.Outputs[0].Type != TYPE_UNDEFINED {
 		return expr.Operator.Outputs[0]
 	}
@@ -103,7 +103,7 @@ func getOutputType (expr *CXExpression) *CXArgument {
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
+func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -124,7 +124,7 @@ func Assignment (to []*CXExpression, assignOp string, from []*CXExpression) []*C
 				outTypeArg := getOutputType(from[idx])
 
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[outTypeArg.Type])
-				
+
 				if from[idx].IsArrayLiteral {
 					sym.Size = from[idx].Inputs[0].Size
 					sym.TotalSize = from[idx].Inputs[0].TotalSize
