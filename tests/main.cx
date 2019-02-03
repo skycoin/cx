@@ -411,6 +411,8 @@ func main ()() {
 	runTest("issue-214.cx", cx.SUCCESS, "Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.")
 	runTest("issue-218.cx", cx.COMPILATION_ERROR, "Type checking is not working with receiving variables of unexpected types")
 	runTestEx("issue-244.cx", cx.SUCCESS, "Crash when using a constant expression in a slice literal expression", TEST_ISSUE, 0)
+	runTestEx("issue-247-a.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
+	runTestEx("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
