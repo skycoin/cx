@@ -102,6 +102,7 @@ check: check-golden-files test ## Perform self-tests
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/cx ./cx
+	goimports -w -local github.com/skycoin/cx ./cxgo/actions
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

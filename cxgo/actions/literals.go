@@ -1,8 +1,9 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression {
