@@ -15,6 +15,7 @@ func SelectionStatement(predExprs []*CXExpression, thenExprs []*CXExpression, el
 	switch op {
 	case SEL_ELSEIFELSE:
 		var lastElse []*CXExpression = elseExprs
+
 		for c := len(elseifExprs) - 1; c >= 0; c-- {
 			if lastElse != nil {
 				lastElse = SelectionExpressions(elseifExprs[c].Condition, elseifExprs[c].Then, lastElse)
@@ -33,7 +34,7 @@ func SelectionStatement(predExprs []*CXExpression, thenExprs []*CXExpression, el
 				lastElse = SelectionExpressions(elseifExprs[c].Condition, elseifExprs[c].Then, nil)
 			}
 		}
-
+		
 		return SelectionExpressions(predExprs, thenExprs, lastElse)
 	}
 

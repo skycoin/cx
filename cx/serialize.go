@@ -115,6 +115,8 @@ type sExpression struct {
 	ThenLines   int32
 	ElseLines   int32
 
+	ScopeOperation int32
+
 	IsMethodCall    int32
 	IsStructLiteral int32
 	IsArrayLiteral  int32
@@ -393,6 +395,7 @@ func serializeExpression(expr *CXExpression, s *sAll) int {
 	sExpr.LabelOffset, sExpr.LabelSize = serializeName(expr.Label, s)
 	sExpr.ThenLines = int32(expr.ThenLines)
 	sExpr.ElseLines = int32(expr.ElseLines)
+	sExpr.ScopeOperation = int32(expr.ScopeOperation)
 
 	sExpr.IsMethodCall = serializeBoolean(expr.IsMethodCall)
 	sExpr.IsStructLiteral = serializeBoolean(expr.IsStructLiteral)
@@ -1098,6 +1101,7 @@ func dsExpression(sExpr *sExpression, s *sAll, prgrm *CXProgram) *CXExpression {
 
 	expr.ThenLines = int(sExpr.ThenLines)
 	expr.ElseLines = int(sExpr.ElseLines)
+	expr.ScopeOperation = int(sExpr.ScopeOperation)
 
 	expr.IsMethodCall = dsBool(sExpr.IsMethodCall)
 	expr.IsStructLiteral = dsBool(sExpr.IsStructLiteral)

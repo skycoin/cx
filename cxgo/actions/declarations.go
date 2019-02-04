@@ -258,6 +258,18 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 		panic(err)
 	}
 
+	// Declaration expression to handle the inline initialization.
+	// For example, `var foo i32 = 11` needs to be divided into two expressions:
+	// one that declares `foo`, and another that assigns 11 to `foo`
+	decl := MakeExpression(nil, declarator.FileName, declarator.FileLine)
+	decl.Package = pkg
+
+	declaration_specifiers.Name = declarator.Name
+	declaration_specifiers.FileLine = declarator.FileLine
+	declaration_specifiers.Package = pkg
+	declaration_specifiers.PreviouslyDeclared = true
+	decl.AddOutput(declaration_specifiers)
+
 	if doesInitialize {
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
@@ -266,11 +278,6 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 			// with the declared variable
 			expr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 			expr.Package = pkg
-
-			declaration_specifiers.Name = declarator.Name
-			declaration_specifiers.FileLine = declarator.FileLine
-			declaration_specifiers.Package = pkg
-			declaration_specifiers.PreviouslyDeclared = true
 
 			initOut := initializer[len(initializer)-1].Outputs[0]
 			// CX checks the output of an expression to determine if it's being passed
@@ -283,14 +290,9 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 
 			initializer[len(initializer)-1] = expr
 
-			return initializer
+			return append([]*CXExpression{decl}, initializer...)
 		} else {
 			expr := initializer[len(initializer)-1]
-
-			declaration_specifiers.Name = declarator.Name
-			declaration_specifiers.FileLine = declarator.FileLine
-			declaration_specifiers.Package = pkg
-			declaration_specifiers.PreviouslyDeclared = true
 
 			// THEN the expression has outputs created from the result of
 			// handling a dot notation initializer, and it needs to be replaced
@@ -301,7 +303,7 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 				expr.AddOutput(declaration_specifiers)
 			}
 
-			return initializer
+			return append([]*CXExpression{decl}, initializer...)
 		}
 	} else {
 		// There is no initialization.

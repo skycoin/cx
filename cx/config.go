@@ -103,6 +103,12 @@ const (
 	DECL_BASIC           // 6
 )
 
+// create a new scope or return to the previous scope
+const (
+	SCOPE_NEW = iota + 1 // 1
+	SCOPE_REM            // 2
+)
+
 // what to write
 const (
 	PASSBY_VALUE = iota

@@ -359,3 +359,13 @@ func PrimaryIdentifier(ident string) []*CXExpression {
 		panic(err)
 	}
 }
+
+// DefineNewScope marks the first and last expressions to define the boundaries of a scope.
+func DefineNewScope (exprs []*CXExpression) {
+	if len(exprs) > 1 {
+		// initialize new scope
+		exprs[0].ScopeOperation = SCOPE_NEW
+		// remove last scope
+		exprs[len(exprs)-1].ScopeOperation = SCOPE_REM
+	}
+}
