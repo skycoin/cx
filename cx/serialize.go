@@ -633,6 +633,10 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
+	Debug("hmm", len(prgrm.Memory))
+	Debug("hmm", PROGRAM.HeapStartsAt)
+	Debug("hmm", PROGRAM.HeapPointer)
+
 	s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
 
 	var numStrcts int

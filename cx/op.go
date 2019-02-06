@@ -146,6 +146,10 @@ func MarkAndCompact() {
 	for c := 0; c <= PROGRAM.CallCounter; c++ {
 		op := PROGRAM.CallStack[c].Operator
 
+		if op == nil {
+			continue
+		}
+
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
 			encoder.DeserializeAtomic(PROGRAM.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)

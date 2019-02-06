@@ -1035,9 +1035,14 @@ func main () {
 				repl()
 			}
 		} else {
-			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
-				panic(err)
-				// repl()
+			if options.smartContractMode {
+				// PRGRM.RunCompiled(0, cxArgs)
+				println(Serialize(PRGRM))
+			} else {
+				err := PRGRM.RunCompiled(0, cxArgs)
+				if err != nil {
+					panic(err)
+				}
 			}
 			if AssertFailed() {
 				os.Exit(CX_ASSERT)
