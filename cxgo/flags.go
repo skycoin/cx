@@ -13,9 +13,6 @@ type cxCmdFlags struct {
 	compileOutput       string
 	newProject          bool
 	replMode            bool
-	signalClientMode    bool
-	signalClientID      int
-	signalServerAddress string
 	webMode             bool
 	ideMode             bool
 	webPersistentMode   bool
@@ -34,9 +31,6 @@ func defaultCmdFlags() cxCmdFlags {
 		compileOutput:       "",
 		newProject:          false,
 		replMode:            false,
-		signalClientMode:    false,
-		signalClientID:      1,
-		signalServerAddress: "localhost:7999",
 		webMode:             false,
 		ideMode:             false,
 		webPersistentMode:   false,
@@ -76,10 +70,6 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
-	// viscript options
-	// flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
-	// flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")
-	// flag.StringVar(&options.signalServerAddress, "signal-client-address", options.signalServerAddress, "Address of signal server (default 'localhost:7999')")
 }
 
 func printHelp() {
@@ -94,11 +84,6 @@ CX options:
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
 -ide, --ide						            Start CX as a web service, and Leaps service start also.
-
-Signal options:
--signal-client                   Run signal client
--signal-client-id UINT           Id of signal client (default 1)
--signal-server-address STRING    Address of signal server (default "localhost:7999")
 
 Notes:
 * Options --compile and --repl are mutually exclusive.
