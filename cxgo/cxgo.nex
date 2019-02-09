@@ -207,15 +207,10 @@ import (
 	"net/http"
 	
 	"runtime"
-	//"runtime/debug"
 
-	//"github.com/skycoin/viscript/signal"
-	
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
 	. "github.com/skycoin/cx/cx"
 	. "github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
-	// "github.com/skycoin/cx/src/interpreted"
 )
 
 const VERSION = "0.6.0"
@@ -570,7 +565,7 @@ func addInitFunction (PRGRM *CXProgram) {
 		PRGRM.SelectFunction(MAIN_FUNC)
 	} else {
 		panic(err)
-}
+	}
 }
 
 func isJSON(str string) bool {
@@ -1029,19 +1024,11 @@ func main () {
 	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
-		if InterpretMode {
-			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
-				fmt.Println(err)
-				repl()
-			}
-		} else {
-			if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
-				panic(err)
-				// repl()
-			}
-			if AssertFailed() {
-				os.Exit(CX_ASSERT)
-			}
+		if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
+			panic(err)
+		}
+		if AssertFailed() {
+			os.Exit(CX_ASSERT)
 		}
 	}
 	
