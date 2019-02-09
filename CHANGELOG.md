@@ -8,6 +8,7 @@
   * #54: No compilation error when defining a struct with duplicate fields.
   * #67: No compilation error when var is accessed outside of its declaring scope.
   * #247: No compilation error when variables are inline initialized.
+  * #244: Expressions can now be used as values in slice literals
 * Documentation
 * IDE (WiP)
 * Miscellaneous

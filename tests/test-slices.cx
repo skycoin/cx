@@ -264,7 +264,7 @@ func testCopy() {
 	var id []i32
 	id = resize(id, 4)
 	count = copy(id, ic)
-	test(count, 4, "fuck")
+	test(count, 4, "PG-13")
 	testSliceI32(id, ic, "")
 
 	var ie []i32
@@ -375,6 +375,14 @@ func testInsert() {
 	testSliceStr(se, sg, "")
 }
 
+func retI32() (out i32) {
+	out = 55
+}
+
+func retStr() (out str) {
+	out = "meow"
+}
+
 func testRemove() {
 	var testi []i32
 	testi = []i32{1, 2, 3}
@@ -422,6 +430,17 @@ func testRemove() {
 	sd = []str {"bb", "ccc", "dddd", "a"}
 	sd = remove(sd, 3)
 	testSliceStr(sd, tests, "")
+
+	// expressions inside slice literal
+	var sExprsI32 []i32
+	sExprsI32 = []i32{ i32.add(i32.add(20, 20), 10), retI32() }
+	test(sExprsI32[0], 50, "")
+	test(sExprsI32[1], 55, "")
+
+	var sExprsStr []str
+	sExprsStr = []str{ retStr(), str.concat("tweet ", "woof") }
+	test(sExprsStr[0], "meow", "")
+	test(sExprsStr[1], "tweet woof", "")
 }
 
 func main () {
