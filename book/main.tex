@@ -77,7 +77,7 @@
 \textbf{CX Programming Language}\\
 \par\normalfont\fontsize{20}{20}\sffamily\selectfont
 \vspace*{0.5cm}
-% {for CX version 0.7}\\
+{for CX version 0.5}\\
 
 %{\LARGE A Gentle Introduction through Video Game Programming}\par % Book title
 \vspace*{1cm}
@@ -116,34 +116,69 @@
 
 \pagestyle{fancy} % Use headers again for subsequent pages
 
+%================================================================
+%    PART 1: CX The Language
+%================================================================
+\part{CX - The Language}
+
 %----------------------------------------------------------------------------------------
 %	CHAPTER 1
 %----------------------------------------------------------------------------------------
 
 % \chapterimage{blank-header.png} % Chapter heading image
-
-% \part{Introduction}
-
-\chapter{About This Book}
-\label{chapter:about-this-book}
+ 
+\chapter{Introduction}
+\label{chapter:introduction}
 
 This book gives you an introduction to the CX programming language. CX is created to work on the Skycoin blockchain and other blockchains associated with Skycoin, e.g. DLT and Solar Bankers.  The intention is to provide a better foundation for so called \emph{smart contracts} than is currently done with legacy smart contract languages, such as Solidity on Ethereum.
 
 CX is modeled after the Go programming language from Google, and shows many similarities to it. However, there are also advanced extensions to the Go programming paradigm, such as \emph{Affordances} that allow you to modify a running program like LISP and \emph{Serialization} that creates a deterministic way to transfer CX program over a channel or onto a blockchain.
 
-% \section{Typographic Conventions}
-% \index{typographic conventions}
+\section{About This Book}
+\label{chapter:about-this-book}
 
-% FIXME
+We have tried to make this book consistent and easy to read. Among the tools that we have used is a consistent use of typography and a number of programming examples that illustrate each principle of CX as they are introduced.
 
-%----------------------------------------------------------------------------------------
-%	CHAPTER 2
-%----------------------------------------------------------------------------------------
+\subsection{Typographic Conventions}
+\index{typographic conventions}
 
-% \chapterimage{blank-header.png} % Chapter heading image
+The following typographic conventions are used throughout this book:
+\begin{itemize}
+    \item[\textbf{bold}] is used when 
+    \begin{itemize}
+        \item referring to a name, such as a package, a function or a variable ("in \textbf{foo} we can see that...")
+        \item
+    \end{itemize}
+    \item[\textit{italic}] is used for
+    \begin{itemize}
+        \item definitions of new terms ("In CX, \textit{affordances} refers to ...).
+        \item language keywords like 'if', 'for', etc ("The \textit{if} statement on line 17 shows that ...")
+    \end{itemize}
+    \item[qwe]
+\end{itemize}
+* Bold
+** Used whenever I'm mentioning something from a code listing. For example, a variable named foo, I'll write foo in bold
+*** But not a full expression, just an isolated element, like a function name, var name, package name
+** An element from a REPL session, like "you're still in the *main* function in the REPL"
+** If I'm just saying something like "you can create a variable named foo", no bold
+** Words that are part of a function
+*** There's this example in the book:  we are writing \textbf{str} in front of \textbf{print}, referring to str.print
+** When I mention a line in a code listing
 
-\chapter{Getting Started with CX}
-\label{chapter:getting-started-with-cx}
+* Italics
+** Whenever I'm mentioning something that I want to make it stand out from normal text, so it looks clearer
+** For example: The if statement... if would be in italics
+** Any language keywords, like for, func, etc.
+** A concept that I want to make it stand out, like "for loop" or "REPL prompt"
+
+* Monospaced font
+** File and directory names
+** Inline code
+** Command prompt stuff
+** REPL stuff
+
+\subsection{Outline of the Book}
+\index{outline of the book}
 
 % \begin{remark}
 % Section Outline
@@ -154,16 +189,16 @@ CX is modeled after the Go programming language from Google, and shows many simi
 % \end{remark}
 %
 
+----FIXME: This needs to be sligthly changed(?)
+
 This chapter works as an introduction to Skycoin's programming language: CX. In the following Sections you will learn about the objectives and philosophy of the language and about the features that make CX unique.
 
 In this first chapter you can find instructions on how to install CX, and how to write and run your first program using the language. We will check how CX programs are internally represented in chapter \ref{chapter:cx-programs-representation}, so we can understand some debugging features and the CX REPL. We will then review some basic programming concepts in chapter \ref{chapter:data-types}, like what is a variable and the types of data these variables can represent, how you can group different values in arrays and slices, how you can group different types of values in structures, and how you can change the scope of a variable in a program. In chapter \ref{chapter:functions} you will learn how to use functions and methods, and we will talk a bit about side effects. The different control flow mechanisms that CX currently offers are covered in chapter \ref{chapter:control-flow}, such as \textit{if} and the \textit{for loop}. The last fundamental piece is packages, which help us modularize our programs, and they are covered in chapter \ref{chapter:packages}.
 
-After chapter \ref{chapter:packages}, we will start covering more complex subjects, such as pointers in chapter \ref{chapter:pointers} and how to use CX with OpenGL and GLFW in chapter \ref{chapter:opengl-and-glfw-with-cx}. Chapter \ref{chapter:interpreted-and-compiled} covers how CX can work both as an interpreted and as a compiled language, and what advantages bring each mode. Chapters \ref{chapter:garbage-collector} and \ref{chapter:affordances} describe CX's garbage collector and affordances.%, respectively, which allow us to create an interesting tool: the object explorer, which is described in chapter \ref{chapter:object-explorer}.%
+After chapter \ref{chapter:packages}, we will start covering more complex subjects, such as pointers in section \ref{section:pointers} and how to use CX with OpenGL, GLFW and GlText in section \ref{section:library-opengl}. Chapter \ref{chapter:interpreted-and-compiled} covers how CX can work both as an interpreted and as a compiled language, and what advantages bring each mode. Chapters \ref{chapter:garbage-collector} and \ref{chapter:affordances} describe CX's garbage collector and affordances.%, respectively, which allow us to create an interesting tool: the object explorer, which is described in chapter \ref{chapter:object-explorer}.%
  Chapter \ref{chapter:serialization} describes CX's serialization capabilities, and we will learn how we can serialize a full, running program, store it in a file, and later deserialize it to continue its execution.
 
 CX uses its affordance system to create a genetic programming algorithm that can be used to create programs that create programs, and this feature is explained in chapter \ref{chapter:genetic-programming}. Talking about creating programs that create programs, are you interested on creating your very own CX? If you are, we will cover that subject in chapter \ref{chapter:creating-your-own-cx}. Lastly, we will cover some advanced techniques you can use while using the REPL to create a program in chapter \ref{chapter:mastering-the-repl}, and chapter \ref{chapter:unit-testing-in-cx} teaches us how to create unit tests to make sure everything works as intended while your programs grow larger.
-
-%As a final note, we will be creating video games to strengthen the knowledge you acquired after reading each of the chapters!
 
 \section{What is CX?}
 \index{CX definition}
@@ -181,90 +216,6 @@ CX is an interpreted and compiled, garbage collected, general purpose programmin
 You may be wondering about the objectives of CX -- why create another language anyway? One of the main objectives of the language is to lower the software development costs by increasing the programmer's productivity. CX achieves this by providing well-known programming tools, such as a Read-Eval-Print Loop (REPL) for interactive programming and interactive debugging mechanisms. But CX goes further by extending the common REPL's capabilities. Those extensions will be reviewed in chapter \ref{chapter:mastering-the-repl}.
 
 Another objective of CX is to provide the developer with many high-level tools that are part of the core language, i.e., the programmer will not need to install any external packages and the language will interact seamlessly with these features. Clear examples are CX's interactivity with the Skycoin ecosystem for creating decentralized applications and CX's affordance system and genetic programming functions that help the programmer create applications in a more interactive manner.
-
-\section{Installing CX}
-\index{installing CX}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item Explain there is a script for installation, which is in beta
-%         \item Explain the steps (each of the steps in the script)
-%         \item Explain special case in Windows
-%         \item Explain you need OpenGL libraries in Ubuntu
-%         \item Run tests, run examples (show command line, running the examples)
-%     \end{itemize}
-% \end{remark}
-
-Eventually, we will have a bootstrapped version of CX, and you'll be able to compile CX using CX, but in the meantime, you need to have a working installation of the Go language to compile CX, as CX is implemented in Go. Although providing instructions on how to install Go is out of the scope of this book, we will give you some guidelines:
-
-\begin{itemize}
-\item At the time of writing, you can find instructions on how to install Go here: \url{https://golang.org/doc/install}
-\item Make sure you get a version of Go superior to 1.8
-\item Correctly setting a Go environment -- particularly the GOPATH variable -- usually decreases the chances of getting errors with the installation of CX
-\end{itemize}
-
-After getting your Go installation ready, you will need to install some libraries or programs, depending on your operating system.
-
-In the case of Linux distributions, you might need to install some OpenGL libraries, if you have not done so already. CX has been tested in Ubuntu Linux, and the commands to get the required libraries for this distribution are shown in listing \ref{listing:installing-opengl}.
-
-\begin{lstlisting}[caption={Installing required OpenGL libraries in Ubuntu},captionpos=b,label={listing:installing-opengl}]
-sudo apt-get install libxi-dev
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install libxrandr-dev
-sudo apt-get install libxcursor-dev
-sudo apt-get install libxinerama-dev
-\end{lstlisting}
-
-As there are dozens of Linux distributions, it would be hard to give instructions on how to get the correct libraries for each of them. Nevertheless, using your favorite search engine to find out the names of those libraries for your distribution, and how to install them should be easy.
-
-If you are using Windows, you might only need to install \emph{GCC}. If you already installed GCC through Cygwin, you might run into trouble, as Go apparently does not get along with Cygwin. If you have not installed GCC, you should install it either through \emph{tdm-gcc} (\url{http://tdm-gcc.tdragon.net/}) or Mingw (\url{http://www.mingw.org/}).
-
-At the moment, most users of CX have installed it on MacOS systems, and in all of the cases the installation of the language has been straightforward.
-
-And finally, you'll need \emph{Git} installed, regardless of your operating system. If you find any problems with the installation, we will be grateful if you can open an issue at CX's GitHub repository (\url{https://github.com/skycoin/cx}), so we can improve the installation process!
-
-After going through the steps of installing Go and the required libraries, you should be able to install CX by running either the \emph{cx.sh} (for *nix users) or the \emph{cx.bat} (for Windows users) installation scripts, which can be found in CX's GitHub repository (\url{https://github.com/skycoin/cx}). If you are running a *nix operating system, you can also try the command shown in listing \ref{listing:cx-installation-one-liner}.
-
-\begin{lstlisting}[caption={One-liner CX installation script for *nix systems},captionpos=b,label={listing:cx-installation-one-liner}]
-sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
-\end{lstlisting}
-
-If everything went well, you should be able to see CX's version printed in your terminal after running \textbf{cx -v}.
-
-\section{Hello, world!}
-\index{Hello, world!}
-\label{subsection:hello-world}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item "It is time to write your first program, and here it is:"
-%         \item Explain the essential parts of a CX program
-%         \item Explain that there are interpreted and compiled CX
-%         \item Explain how to run it using iCX and cCX
-%         \item Explain there is also a REPL, which is explained in next section
-%         \item Briefly tell to notice how you had to write "str" in front of print
-%     \end{itemize}
-% \end{remark}
-
-Now it is time to write your first program in CX! And as the tradition dictates, this first program has to be printing \emph{Hello, world!} to the terminal. You can find this program in listing \ref{listing:hello-world-example}.
-
-\begin{lstlisting}[caption={"Hello, world!" example},captionpos=b,label={listing:hello-world-example}]
-package main
-
-func main () {
- 	str.print("Hello, world!")
-}
-\end{lstlisting}
-\index{main}
-\index{main function}
-
-We can see the essential parts of a CX program in the aforementioned program. Every CX program has to be organized in packages (you can learn more about them in chapter \ref{chapter:packages}), and, specifically, every CX program must declare a \emph{main} package. Additionally, in this \emph{main} package, you must declare a \emph{main} function, which will work as your program's \emph{entry point}. The entry point of any program is the function, subroutine or instruction that will be run first, and which will tell the operating system how to continue with the program's execution.
-
-After writing the program using your favorite text editor, save it to your computer using the name \emph{hello-world.cx}. You can then run it by using either \textbf{cx hello-world.cx} or \textbf{cx hello-world.cx -i}. After executing either instruction, you should see the text \textit{Hello, world!} printed to your terminal.
-
-In case you are curious about the \emph{-i} flag, it instructs CX to interpret the program, instead of compiling and then running it. You can learn more about this in chapter \ref{chapter:interpreted-and-compiled}. Also, there's actually a third way of running your program: \textbf{cx hello-world.cx -r}, but we will learn more about it in chapter \ref{chapter:mastering-the-repl}, and it's related to the next Section.
 
 \section{Introduction to the REPL}
 \index{introduction to the REPL}
@@ -304,6 +255,55 @@ Now, if we want to run the program, we need to use the \textbf{:step} meta-comma
 
 Something that you might have noted is that we are writing \textbf{str} in front of \textbf{print}. This is explained in the next section.
 
+\section{Hello, world!}
+\index{Hello, world!}
+\label{subsection:hello-world}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item "It is time to write your first program, and here it is:"
+%         \item Explain the essential parts of a CX program
+%         \item Explain that there are interpreted and compiled CX
+%         \item Explain how to run it using iCX and cCX
+%         \item Explain there is also a REPL, which is explained in next section
+%         \item Briefly tell to notice how you had to write "str" in front of print
+%     \end{itemize}
+% \end{remark}
+
+Now it is time to write your first program in CX! And as the tradition dictates, this first program has to be printing \emph{Hello, world!} to the terminal. You can find this program in listing \ref{listing:hello-world-example}.
+
+\begin{lstlisting}[caption={"Hello, world!" example},captionpos=b,label={listing:hello-world-example}]
+package main
+
+func main () {
+ 	str.print("Hello, world!")
+}
+\end{lstlisting}
+\index{main}
+\index{main package}
+\index{main function}
+
+We can see the essential parts of a CX program in the aforementioned program. Every CX program has to be organized in packages (you can learn more about them in chapter \ref{chapter:packages}), and, specifically, every CX program must declare a \emph{main} package. Additionally, in this \emph{main} package, you must declare a \emph{main} function, which will work as your program's \emph{entry point}. The entry point of any program is the function, subroutine or instruction that will be run first, and which will tell the operating system how to continue with the program's execution.
+
+After writing the program using your favorite text editor, save it to your computer using the name \emph{hello-world.cx}. You can then run it by using either \textbf{cx hello-world.cx} or \textbf{cx hello-world.cx -i}. After executing either instruction, you should see the text \textit{Hello, world!} printed to your terminal.
+
+In case you are curious about the \emph{-i} flag, it instructs CX to interpret the program, instead of compiling and then running it. You can learn more about this in chapter \ref{chapter:interpreted-and-compiled}. Also, there's actually a third way of running your program: \textbf{cx hello-world.cx -r}, but we will learn more about it in chapter \ref{chapter:mastering-the-repl}, and it's related to the next Section.
+
+%As a final note, we will be creating video games to strengthen the knowledge you acquired after reading each of the chapters!
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 2
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png} % Chapter heading image
+
+\chapter{Data Types and Variables}
+\label{chapter:data-types}
+\index{data types}
+
+Although you could use CX as a calculator and work with literal numbers all the time, it would be a waste of power. In order to create more robust applications, you need to work with more complex types of data, such as arrays and structures. Nevertheless, before learning about these complex data structures, we need to review the different primitive types of data that CX offers at the moment.
+
 \section{Strict Typing System}
 \index{strict typing system}
 \index{types}
@@ -336,9 +336,331 @@ Another kind of type-generalized functions are the infix arithmetic symbols, e.g
 
 The objective of having a strict typing system like this is to promote \emph{safety}. If the programmer misinterprets data in a program and, for example, tries to send an \textbf{i32} value to \textbf{str.print()}, this error can be caught early at compile-time instead of being caught at run-time.
 
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item Although using CX to print arithmetic operations is fun already, perhaps you want to use it for more complicated stuff
+%         \item Mention primitive types
+%         \item Let's review the different data structures that CX can handle at the moment
+%         \item List the data structures without explaining them        
+%     \end{itemize}
+% \end{remark}
+
+\section{Primitive Types}
+\index{primitive types}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item At the time of writing, these are the primitive types: i32, etc.
+%         \item With these types you can construct
+%     \end{itemize}
+% \end{remark}
+
+All data handled by a computer is stored as 0s and 1s\footnote{There are actually computers that use ternary logic instead of binary logic, and instead of bits you have trits, but the vast majority of the computers use binary logic.}, which are called bits. Eight of these bits comprise a byte, and a byte can represent up to 256 or $2^8$ different values. Although 256 values are enough to solve a wide variety of problems already, you can always use more bytes to hold more values. For example, the traditional approach to represent an integer is to use 4 bytes, and this is why they are sometimes called 32-bit integers. For many applications, using 32-bit integers are more than enough, as these integers can hold up to 4,294,967,296 or $2^{32}$ different values. But if you happen to need more than that, another common type of integer is the one that uses 8 bytes to represent its value, which can hold up to $2^{64}$ different values (the actual number is so big that it's not even going to make sense to you if you see it printed in here).
+
+You may or may not be wondering -- depending on your curiosity and your professional background -- how many bytes do you need to represent real numbers, e.g., 3.14159 or 2.41? In computer science parlance, real numbers are called floating-point numbers, and similarly to integers, floating-point numbers also require either 4 bytes or 8 bytes\footnote{This is the common convention. There's nothing stopping you from using an arbitrary number of bytes to represent a floating-point number.}, depending on the precision you want to work with (the number of digits after the decimal point). We could discuss how we can make a computer interpret these bytes as either an integer or a floating-point number, but that is out of the scope of this book. The true objective behind this explanation is to make you realize how a \emph{type} in a computer program is just a bunch of bytes being interpreted in a particular way.
+
+CX at the moment provides the following primitive types:
+\begin{itemize}
+    \item \textit{byte}
+    \item \textit{bool}
+    \item \textit{i32}
+    \item \textit{i64}
+    \item \textit{f32}
+    \item \textit{f64}
+    \item \textit{str}
+\end{itemize}
+
+All of the integer and floating-point number types are signed, which means that half of the possible values that they can represent are used to represent negative numbers. For example, a \textit{byte} type in CX is able to represent any integer number from -128 to 127, for a total of 256 different values. In the future other primitive types will be incorporated, such as i16 (16-bit integer) and ui64 (unsigned 64-bit integer).
+
+But this does not mean that you are limited to only those types. They are called primitive types because other more complex types are derived from them. These complex types are reviewed in the following Sections of this chapter.
+
+\section{Variables}
+\index{variables}
+
+Variables have been used in code examples in previous chapters already, but they have not been formally introduced. As was mentioned at the beginning of this chapter, you could create programs where you only use literal numbers, but you would be extremely limited on what you can create. Variables are one of those features that are very easy to understand and use, and yet, they greatly expand your development capabilities. You can see how you can declare variables of the different primitive types in CX in Listing \ref{listing:variable-declaration}.
+
+\begin{lstlisting}[caption={Variable declaration},captionpos=b,label={listing:variable-declaration}]
+package main
+
+func main () {
+	var optionCode byte
+	var isAlive bool
+	var number i32
+	var bigNumber i64
+	var area f32
+	var epsilon f64
+	var name str
+    
+    name = "John Cole"
+    number = 14
+}
+\end{lstlisting}
+
+As you can see, you can tell CX that you're going to declare a variable by using the keyword \textbf{var}, followed by the name of the variable, and finally the type that you desire that variable to have. If you want to assign a value to that variable, you just write the name of the variable, then the equal symbol (\textbf{=}) followed by the desired value.
+
+It is interesting to note that variables are not actually needed in order to create a program, but most -- if not all -- of the enterprise-level programming languages provide something similar to the concept of variable. If you are curious about this, you can check some purely functional programming languages like Haskell, and also learn about lambda calculus.
+
+\section{Arrays}
+\index{arrays}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item In CX you can have arrays and slices
+%         \item Difference between an array and a slice
+%         \item Slices in CX are always sent to the heap, which is worth noting for performance reasons
+%         \item If you'd like to handle arrays in the heap, you should create a pointer to it
+%         \item Look at examples with arrays and examples with slices
+%     \end{itemize}
+% \end{remark}
+
+If you have to create a program where you have to store three telephone numbers, you could just create three different variables to hold each of them. But what if you had to store thousands of telephone numbers? Using variables to accomplish that task would be inefficient. The answer to this problem is to use arrays.
+
+Arrays are fixed length collections of elements of the same type. To store or access an element in an array, you just need the name of the array and an index where you want to store the value to. To declare an array you have to put square brackets before the type in a variable declaration, and the number of elements that you want the array to hold must be inside the brackets. You can see an example of an array of three 32-bit integers shown in listing \ref{listing:array-example}.
+
+\begin{lstlisting}[caption={Array example},captionpos=b,label={listing:array-example}]
+package main
+
+func main () () {
+	var foo [3]i32
+	foo[0] = 10
+	foo[1] = 20
+	foo[2] = 30
+
+	i32.print(foo[2])
+}
+\end{lstlisting}
+
+At \textbf{line 4} we can see the array declaration, at \textbf{lines 5}, \textbf{6} and \textbf{7} the array gets initialized, and finally at \textit{line} 9 we print the last element of the array, as arrays are zero-indexed in CX.
+
+If you are curious enough (if you're already a programmer, it does not count), you could be asking yourself: can you have arrays of arrays? The answer is: yes! You only need to put the extra pair of brackets you need until you achieve the number of dimensions you want. An example of multi-dimensional arrays is shown in listing \ref{listing:multi-dim-arrays}.
+\index{multi-dimensional arrays}
+
+\begin{lstlisting}[caption={Multi-dimensional arrays},captionpos=b,label={listing:multi-dim-arrays}]
+package main
+
+func main () {
+	var foo [3][3]i32
+    
+    foo[1][2] = 40
+    
+    i32.print(foo[1][2])
+}
+\end{lstlisting}
+
+Before continuing to slices, it's worth mentioning the existence of \textbf{len}. \textbf{len} is a type-generalized function that accepts an array as its first and only input argument, and returns a 32-bit integer that represents the number of elements that that array is capable of holding. This function is especially useful when using arrays in combination with the \textbf{for} loop, which will be covered in chapter \ref{chapter:control-flow}. An example of \textbf{len}'s usage can be seen in listing \ref{listing:array-len-example}. Please note that there are type-specific versions of \textbf{len} for each of the primitive types.
+
+\begin{lstlisting}[caption={Printing array length},captionpos=b,label={listing:array-len-example}]
+package main
+
+func main () {
+	var foo [10]i32
+    
+    i32.print(len(foo))
+}
+\end{lstlisting}
+
+Please be careful with the sizes you choose for your arrays. If you create an array larger than $2^{32}$, you'll get an error because $2^{32}$ is the maximum array size or because you could exceed the maximum memory allocated to CX by your operating system. Also, if you are working with very large arrays, you'll most likely want to create a pointer to it to send the array to the heap memory. CX passes its arrays by value to other functions, which means that if you send a very big array to a function as its argument, you'll be creating a copy of it to be sent, which will be a very slow and memory consuming operation. You'll learn more about functions in chapter \ref{chapter:functions} and about pointers in section \ref{section:pointers}.
+
+\subsection{Slices}
+\index{slices}
+
+Under the hood, slices are just arrays. This means that a slice has the same performance in read/write operations as an array. The advantage of using slices over arrays is that slices are incremented in capacity automatically if it ever exceeds it. However, this can also be considered a disadvantage. A slice in CX starts with a capacity of 32 elements. If this limit is reached, CX creates a copy of that slice, but with an increased capacity of $2x$ its previous limit, which is 64 in its second iteration. As you can see, most of the time a slice will be wasting memory, and time whenever CX creates a copy of it in order to increase its limit.
+
+It must be noted that capacity is not the same as size or length. Capacity represents the reserved memory space for a slice, while size represents the actual number of slots in a slice that are being used. You can understand better the difference if you run the code in listing \ref{listing:capacity-size-difference}. Although any slice will start with 32 slots reserved in memory, e.g., $32*4$ bytes for a \textbf{[]i32} slice, this does not mean that all of those slots have an actual value in there. Capacity is a concept related to performance rather than to practicality.
+
+\begin{lstlisting}[caption={Difference between capacity and size},captionpos=b,label={listing:capacity-size-difference}]
+package main
+
+func main () {
+	var slice []i32
+    slice = append(slice, 1)
+    slice = append(slice, 2)
+    
+    i32.print(len(slice)) // prints 2, not 32
+}
+\end{lstlisting}
+
+There are three native functions that are specifically designed to work with slices:
+\begin{itemize}
+    \item \textbf{make} creates a slice of a type and size that you specify, initializing the elements to the specified type's \emph{nil} representation, e.g., \emph{0} for an i32 and \emph{""} or an empty string for an \emph{str}.
+    \item \textbf{append} takes a slice and an element of the type of that slice, and puts it at the end of the slice.
+    \item \textbf{copy} creates a copy of each of the elements of a slice, and puts each of the elements, in order, to the second slice until every element has been copied to it or until the capacity of the second slice runs out.
+\end{itemize}
+
+\begin{lstlisting}[caption={Slice-specific native functions},captionpos=b,label={listing:slice-natives}]
+package main
+
+func main () {
+	var slice1 []i32
+    var slice2 []i32
+    
+    slice1 = make("[]i32", 32)
+    slice1 = append(slice1, 1)
+    
+    slice2 = make("[]i32", 32)
+    
+    copy(slice2, slice1)
+}
+\end{lstlisting}
+
+Listing \ref{listing:slice-natives} shows the declaration of two slices of type \textbf{i32} at \textbf{lines 4} and \textbf{5}. The first slice then gets initialized using the \textbf{make} function, which creates a slice of size 32 in this case. This means that \textbf{slice1} now has a size of 32 elements and a capacity of 32 elements too. At \textbf{line 8}, we append a 1 to \textbf{slice1}, which makes the slice have now a size of 33 and a capacity of 64. After initializing \textbf{slice2} at \textbf{line 10}, we \textbf{copy} the contents of \textbf{slice1} to \textbf{slice2}. What do you think that are the elements of \textbf{slice2} now?
+
+As a final note, slices are always allocated in the heap in CX due to their scalability nature. It would be disastrous to have a slice grow in the stack, as it would make programs run very slow -- CX would need to juggle with the objects in the stack, making copies and moving them to different positions. If slices are allocated in the heap, we can delegate all of these operations to CX's garbage collector, and keep the stack clean. This behavior will slightly change in the future, though. If CX's compiler can detect that a slice is never going to grow during a function call, we can then flag that slice to be put in the stack for better performance. For more information about CX's heap and stack, you can read section \ref{section:pointers} and chapter \ref{chapter:garbage-collector}.
+
+\section{Structures}
+\index{structures}
+\index{struct}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     \item What about holding different types of data together
+%     \item For this you can use structs
+%     \item What kind of stuff you can hold in structs
+%     \end{itemize}
+% \end{remark}
+
+Structures allow the programmer to create more complex types. For example, you may want to create a type \emph{Person} where you can store a name and an age. This means that we want a mix of an \textbf{i32} and a \textbf{str}. A structure that solves this problem is presented in listing \ref{listing:struct-example}
+
+\begin{lstlisting}[caption={Type $Person$ using structures},captionpos=b,label={listing:struct-example}]
+package main
+
+type Person struct {
+	name str
+    age i32
+}
+
+func main () {
+    var p1 Person
+    var p2 Person
+    
+    p1.name = "John"
+    p1.age = 22
+    
+    p2 = Person{
+        name: "Gabrielle",
+        age: 21
+    }
+    
+    str.print(p1.name)
+    i32.print(p1.age)
+    
+    str.print(p2.name)
+    i32.print(p2.age)
+}
+\end{lstlisting}
+
+The syntax for declaring a new structure or type is shown at \textbf{line 3}, and \textbf{lines 4} and \textbf{5} show the structure's \emph{fields}. The fields of a structure are the components that shape the type being defined by a structure. In order to use your new \textbf{Person} type, we first need to declare and initialize variables that use this type. This can be seen at \textbf{lines 9-13}. \textbf{Lines 12} and \textbf{13} show that we can initialize the struct's fields one by one, by using a \emph{dot notation}, while \textbf{lines 15-18} show a different way of initialization: the struct literal. A struct literal is created by writing the name of the type we want to initialize, followed by the name of the struct fields' names and their values separated by a colon. Each of these field-value pairs need to be separated by a comma.
+
+Both of these initialization approaches has its advantages. The \emph{dot notation} has the advantage of versatility: you can initialize different fields at different points in a program. For example, you can initialize one field before a loop, and another field after that loop. On the other hand, the \emph{struct literal} approach has the advantages of readability and that it can be used as a function call's argument directly. For example, you can send a \textbf{Person} struct instance to a function call this way: \lstinline|PrintName(Person {name: "John"})|.
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER 2 
+%	CHAPTER 7
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png}
+\section{Pointers}
+\label{section:pointers}
+\index{pointers}
+
+Programming languages that use a stack to pass values to function calls can pass the actual value or a reference to it. Passing by value means that all the bytes that represent that data structure are copied to the function call. In the case of a simple integer or a floating-point number, this is not a problem, because you are copying at most 8 bytes. The real problem arises when you try to pass a really big data structure, like an array, struct or a long string. Copying all these bytes every time a function is called creates two problems:
+\begin{enumerate}
+    \item It is slow; imagine that you have to execute a for loop that iterates $N$ times, where $N$ is the size of your data structure, and you have to do this every time you call that function.
+    \item You are more prone to encounter a stack overflow error, as you are filling your stack with all these copies of your data structure.
+\end{enumerate}
+
+A solution to the pass-by-value problem is to use pass-by-reference. When using pass-by-reference, instead of copying the actual value, you send the address of the value that you want to use. A reference is just a number that represents the index where you can find the actual value in memory. A reference only needs 4 bytes\footnote{An address is 4 bytes on a 32-bit system.  On a 64-bit system it is actually 8 bytes, but that is not common in current Go implementations, which is what CX is currently based on.}, as it is just a normal 32-bit integer. This also means that creating a pointer to a 32-bit integer is useless if your purpose is to increase your program's performance. Actually, using a pointer would make your program a tiny bit slower, because it needs to dereference the pointer.
+
+\begin{lstlisting}[caption={Pointer to a structure instance},captionpos=b,label={listing:pointer-example-1}]
+package main
+
+type Cell struct {
+	id i32
+	drawable i32
+	alive bool
+	aliveNext bool
+	x i32
+	y i32
+}
+
+func main () {
+	var cells *[900]Cell|\label{line:pointer-to-array}|
+	cells = makeCells()
+    
+    for bool.not(glfw.ShouldClose("window")) {
+        draw(cells, "window", program)
+    }
+}
+\end{lstlisting}
+
+The code in listing \ref{listing:pointer-example-1} presents a situation where using a pointer drastically improves the performance of a program. \textbf{Line \ref{line:pointer-to-array}} shows the declaration of a variable of type pointer to an array of structure instances. This variable is then used to hold the output of \textbf{makeCells}, and the for loop draws all the cells to a window. If we were not using a pointer, we would need to pass by value all the 900 cells, which sum a total of 16,200 bytes. In contrast, by using a pointer we are only sending 4 bytes that represent the other 16,200 bytes.
+
+This listing shows an excerpt of an OpenGL example present in the CX git repository, which can be found at https://github.com/skycoin/cx. The example is currently located at the following path: \lstinline{examples/opengl/conways-game-of-life-gc.cx}, but this path could change in the future. If you try to run this example using your local CX installation, you'll find out that it does not run, so download the full example from the CX repository.
+
+\section{Variable Scope}
+\index{scope of a variable}
+\index{variable scope}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item All of the data structures above can either be local or global
+%         \item Explain what is scope
+%         \item See examples of local variables
+%         \item "On the other hand, we have global variables" and go to the next section
+%     \end{itemize}
+% \end{remark}
+
+The type and name are two of the properties of a variable. There is one property that we have not mentioned so far: \emph{scope}. The scope of a variable dictates where a variable can be seen. A \emph{local} variable is only accessible in the function where it was declared, while a \emph{global} variable can be accessed by any function of a package.
+
+\begin{lstlisting}[caption={Local and global variables},captionpos=b,label={listing:local-global-variables}]
+package main
+
+var global i32
+
+func foo () {
+    i32.print(global)
+    // i32.print(local) // this will raise an error if uncommented
+}
+
+func main () {
+    var local i32
+    
+    local = 10
+    global = 15
+    
+    i32.print(global)
+    i32.print(local)
+}
+\end{lstlisting}
+
+If you want to create a global variable, you only have to declare it outside any function declaration. If you want a local variable, declare it inside the function you want it to have access to. Listing \ref{listing:local-global-variables} shows an example that declares a global variable that is accessed to by two functions: \textbf{main} and \textbf{foo}, and a local variable that is only accessible by the \textbf{main} function.
+
+As a last note, global variables can also be accessed by other packages that import the package containing said variable. You will learn more about packages in chapter \ref{chapter:packages}.
+
+%\begin{figure}[h]
+%    \centering
+%    \includegraphics[width=0.77\textwidth]{ha-gray-conv-crp.jpg}
+%    \caption{Picuture of the M83 galaxy, image taken from the WFC3 ERS M83 Data Products, http://archive.stsci.edu/prepds/wfc3ers/m83datalist.html}
+%    \label{fig:awesome_image}
+%\end{figure}
+
+%\begin{description}
+%	\item[DS9:] It is a program that visualizes astronomy images in
+%    \begin{description}
+%    \item[Download: ]\url{http://ds9.si.edu/site/Download.html}
+%    \item[Documentation: ]\url{http://ds9.si.edu/site/Documentation.html}
+%    \begin{verbatim}
+%   pip install pyfits
+%   \end{verbatim}
+%   \end{description}
+%\end{description}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 3
 %----------------------------------------------------------------------------------------
 %\chapterimage{blank-header.png}
 
@@ -464,297 +786,7 @@ Re-declarations allow CX to be an interactive programming language. If you notic
 %    \end{itemize}
 %\end{remark}
 
-%----------------------------------------------------------------------------------------
-%	CHAPTER 3
-%----------------------------------------------------------------------------------------
-% \chapterimage{blank-header.png}
-
-\chapter{Data Types}
-\label{chapter:data-types}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item Although using CX to print arithmetic operations is fun already, perhaps you want to use it for more complicated stuff
-%         \item Mention primitive types
-%         \item Let's review the different data structures that CX can handle at the moment
-%         \item List the data structures without explaining them        
-%     \end{itemize}
-% \end{remark}
-
-Although you could use CX as a calculator and work with literal numbers all the time, it would be a waste of power. In order to create more robust applications, you need to work with more complex types of data, such as arrays and structures. Nevertheless, before learning about these complex data structures, we need to review the different primitive types of data that CX offers at the moment.
-
-\section{Primitive Types}
-\index{primitive types}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item At the time of writing, these are the primitive types: i32, etc.
-%         \item With these types you can construct
-%     \end{itemize}
-% \end{remark}
-
-All data handled by a computer is stored as 0s and 1s\footnote{There are actually computers that use ternary logic instead of binary logic, and instead of bits you have trits, but the vast majority of the computers use binary logic.}, which are called bits. Eight of these bits comprise a byte, and a byte can represent up to 256 or $2^8$ different values. Although 256 values are enough to solve a wide variety of problems already, you can always use more bytes to hold more values. For example, the traditional approach to represent an integer is to use 4 bytes, and this is why they are sometimes called 32-bit integers. For many applications, using 32-bit integers are more than enough, as these integers can hold up to 4,294,967,296 or $2^{32}$ different values. But if you happen to need more than that, another common type of integer is the one that uses 8 bytes to represent its value, which can hold up to $2^{64}$ different values (the actual number is so big that it's not even going to make sense to you if you see it printed in here).
-
-You may or may not be wondering -- depending on your curiosity and your professional background -- how many bytes do you need to represent real numbers, e.g., 3.14159 or 2.41? In computer science parlance, real numbers are called floating-point numbers, and similarly to integers, floating-point numbers also require either 4 bytes or 8 bytes\footnote{This is the common convention. There's nothing stopping you from using an arbitrary number of bytes to represent a floating-point number.}, depending on the precision you want to work with (the number of digits after the decimal point). We could discuss how we can make a computer interpret these bytes as either an integer or a floating-point number, but that is out of the scope of this book. The true objective behind this explanation is to make you realize how a \emph{type} in a computer program is just a bunch of bytes being interpreted in a particular way.
-
-CX at the moment provides the following primitive types:
-\begin{itemize}
-    \item \textit{byte}
-    \item \textit{bool}
-    \item \textit{i32}
-    \item \textit{i64}
-    \item \textit{f32}
-    \item \textit{f64}
-    \item \textit{str}
-\end{itemize}
-
-All of the integer and floating-point number types are signed, which means that half of the possible values that they can represent are used to represent negative numbers. For example, a \textit{byte} type in CX is able to represent any integer number from -128 to 127, for a total of 256 different values. In the future other primitive types will be incorporated, such as i16 (16-bit integer) and ui64 (unsigned 64-bit integer).
-
-But this does not mean that you are limited to only those types. They are called primitive types because other more complex types are derived from them. These complex types are reviewed in the following Sections of this chapter.
-
-\section{Variables}
-\index{variables}
-
-Variables have been used in code examples in previous chapters already, but they have not been formally introduced. As was mentioned at the beginning of this chapter, you could create programs where you only use literal numbers, but you would be extremely limited on what you can create. Variables are one of those features that are very easy to understand and use, and yet, they greatly expand your development capabilities. You can see how you can declare variables of the different primitive types in CX in Listing \ref{listing:variable-declaration}.
-
-\begin{lstlisting}[caption={Variable declaration},captionpos=b,label={listing:variable-declaration}]
-package main
-
-func main () {
-	var optionCode byte
-	var isAlive bool
-	var number i32
-	var bigNumber i64
-	var area f32
-	var epsilon f64
-	var name str
-    
-    name = "John Cole"
-    number = 14
-}
-\end{lstlisting}
-
-As you can see, you can tell CX that you're going to declare a variable by using the keyword \textbf{var}, followed by the name of the variable, and finally the type that you desire that variable to have. If you want to assign a value to that variable, you just write the name of the variable, then the equal symbol (\textbf{=}) followed by the desired value.
-
-It is interesting to note that variables are not actually needed in order to create a program, but most -- if not all -- of the enterprise-level programming languages provide something similar to the concept of variable. If you are curious about this, you can check some purely functional programming languages like Haskell, and also learn about lambda calculus.
-
-\section{Arrays}
-\index{arrays}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item In CX you can have arrays and slices
-%         \item Difference between an array and a slice
-%         \item Slices in CX are always sent to the heap, which is worth noting for performance reasons
-%         \item If you'd like to handle arrays in the heap, you should create a pointer to it
-%         \item Look at examples with arrays and examples with slices
-%     \end{itemize}
-% \end{remark}
-
-If you have to create a program where you have to store three telephone numbers, you could just create three different variables to hold each of them. But what if you had to store thousands of telephone numbers? Using variables to accomplish that task would be inefficient. The answer to this problem is to use arrays.
-
-Arrays are fixed length collections of elements of the same type. To store or access an element in an array, you just need the name of the array and an index where you want to store the value to. To declare an array you have to put square brackets before the type in a variable declaration, and the number of elements that you want the array to hold must be inside the brackets. You can see an example of an array of three 32-bit integers shown in listing \ref{listing:array-example}.
-
-\begin{lstlisting}[caption={Array example},captionpos=b,label={listing:array-example}]
-package main
-
-func main () () {
-	var foo [3]i32
-	foo[0] = 10
-	foo[1] = 20
-	foo[2] = 30
-
-	i32.print(foo[2])
-}
-\end{lstlisting}
-
-At \textbf{line 4} we can see the array declaration, at \textbf{lines 5}, \textbf{6} and \textbf{7} the array gets initialized, and finally at \textit{line} 9 we print the last element of the array, as arrays are zero-indexed in CX.
-
-If you are curious enough (if you're already a programmer, it does not count), you could be asking yourself: can you have arrays of arrays? The answer is: yes! You only need to put the extra pair of brackets you need until you achieve the number of dimensions you want. An example of multi-dimensional arrays is shown in listing \ref{listing:multi-dim-arrays}.
-\index{multi-dimensional arrays}
-
-\begin{lstlisting}[caption={Multi-dimensional arrays},captionpos=b,label={listing:multi-dim-arrays}]
-package main
-
-func main () {
-	var foo [3][3]i32
-    
-    foo[1][2] = 40
-    
-    i32.print(foo[1][2])
-}
-\end{lstlisting}
-
-Before continuing to slices, it's worth mentioning the existence of \textbf{len}. \textbf{len} is a type-generalized function that accepts an array as its first and only input argument, and returns a 32-bit integer that represents the number of elements that that array is capable of holding. This function is especially useful when using arrays in combination with the \textbf{for} loop, which will be covered in chapter \ref{chapter:control-flow}. An example of \textbf{len}'s usage can be seen in listing \ref{listing:array-len-example}. Please note that there are type-specific versions of \textbf{len} for each of the primitive types.
-
-\begin{lstlisting}[caption={Printing array length},captionpos=b,label={listing:array-len-example}]
-package main
-
-func main () {
-	var foo [10]i32
-    
-    i32.print(len(foo))
-}
-\end{lstlisting}
-
-Please be careful with the sizes you choose for your arrays. If you create an array larger than $2^{32}$, you'll get an error because $2^{32}$ is the maximum array size or because you could exceed the maximum memory allocated to CX by your operating system. Also, if you are working with very large arrays, you'll most likely want to create a pointer to it to send the array to the heap memory. CX passes its arrays by value to other functions, which means that if you send a very big array to a function as its argument, you'll be creating a copy of it to be sent, which will be a very slow and memory consuming operation. You'll learn more about functions in chapter \ref{chapter:functions} and about pointers in chapter \ref{chapter:pointers}.
-
-\section{Slices}
-\index{slices}
-
-Under the hood, slices are just arrays. This means that a slice has the same performance in read/write operations as an array. The advantage of using slices over arrays is that slices are incremented in capacity automatically if it ever exceeds it. However, this can also be considered a disadvantage. A slice in CX starts with a capacity of 32 elements. If this limit is reached, CX creates a copy of that slice, but with an increased capacity of $2x$ its previous limit, which is 64 in its second iteration. As you can see, most of the time a slice will be wasting memory, and time whenever CX creates a copy of it in order to increase its limit.
-
-It must be noted that capacity is not the same as size or length. Capacity represents the reserved memory space for a slice, while size represents the actual number of slots in a slice that are being used. You can understand better the difference if you run the code in listing \ref{listing:capacity-size-difference}. Although any slice will start with 32 slots reserved in memory, e.g., $32*4$ bytes for a \textbf{[]i32} slice, this does not mean that all of those slots have an actual value in there. Capacity is a concept related to performance rather than to practicality.
-
-\begin{lstlisting}[caption={Difference between capacity and size},captionpos=b,label={listing:capacity-size-difference}]
-package main
-
-func main () {
-	var slice []i32
-    slice = append(slice, 1)
-    slice = append(slice, 2)
-    
-    i32.print(len(slice)) // prints 2, not 32
-}
-\end{lstlisting}
-
-There are three native functions that are specifically designed to work with slices:
-\begin{itemize}
-    \item \textbf{make} creates a slice of a type and size that you specify, initializing the elements to the specified type's \emph{nil} representation, e.g., \emph{0} for an i32 and \emph{""} or an empty string for an \emph{str}.
-    \item \textbf{append} takes a slice and an element of the type of that slice, and puts it at the end of the slice.
-    \item \textbf{copy} creates a copy of each of the elements of a slice, and puts each of the elements, in order, to the second slice until every element has been copied to it or until the capacity of the second slice runs out.
-\end{itemize}
-
-\begin{lstlisting}[caption={Slice-specific native functions},captionpos=b,label={listing:slice-natives}]
-package main
-
-func main () {
-	var slice1 []i32
-    var slice2 []i32
-    
-    slice1 = make("[]i32", 32)
-    slice1 = append(slice1, 1)
-    
-    slice2 = make("[]i32", 32)
-    
-    copy(slice2, slice1)
-}
-\end{lstlisting}
-
-Listing \ref{listing:slice-natives} shows the declaration of two slices of type \textbf{i32} at \textbf{lines 4} and \textbf{5}. The first slice then gets initialized using the \textbf{make} function, which creates a slice of size 32 in this case. This means that \textbf{slice1} now has a size of 32 elements and a capacity of 32 elements too. At \textbf{line 8}, we append a 1 to \textbf{slice1}, which makes the slice have now a size of 33 and a capacity of 64. After initializing \textbf{slice2} at \textbf{line 10}, we \textbf{copy} the contents of \textbf{slice1} to \textbf{slice2}. What do you think that are the elements of \textbf{slice2} now?
-
-As a final note, slices are always allocated in the heap in CX due to their scalability nature. It would be disastrous to have a slice grow in the stack, as it would make programs run very slow -- CX would need to juggle with the objects in the stack, making copies and moving them to different positions. If slices are allocated in the heap, we can delegate all of these operations to CX's garbage collector, and keep the stack clean. This behavior will slightly change in the future, though. If CX's compiler can detect that a slice is never going to grow during a function call, we can then flag that slice to be put in the stack for better performance. For more information about CX's heap and stack, you can read chapters \ref{chapter:pointers} and \ref{chapter:garbage-collector}.
-
-\section{Structures}
-\index{structures}
-\index{struct}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     \item What about holding different types of data together
-%     \item For this you can use structs
-%     \item What kind of stuff you can hold in structs
-%     \end{itemize}
-% \end{remark}
-
-Structures allow the programmer to create more complex types. For example, you may want to create a type \emph{Person} where you can store a name and an age. This means that we want a mix of an \textbf{i32} and a \textbf{str}. A structure that solves this problem is presented in listing \ref{listing:struct-example}
-
-\begin{lstlisting}[caption={Type $Person$ using structures},captionpos=b,label={listing:struct-example}]
-package main
-
-type Person struct {
-	name str
-    age i32
-}
-
-func main () {
-    var p1 Person
-    var p2 Person
-    
-    p1.name = "John"
-    p1.age = 22
-    
-    p2 = Person{
-        name: "Gabrielle",
-        age: 21
-    }
-    
-    str.print(p1.name)
-    i32.print(p1.age)
-    
-    str.print(p2.name)
-    i32.print(p2.age)
-}
-\end{lstlisting}
-
-The syntax for declaring a new structure or type is shown at \textbf{line 3}, and \textbf{lines 4} and \textbf{5} show the structure's \emph{fields}. The fields of a structure are the components that shape the type being defined by a structure. In order to use your new \textbf{Person} type, we first need to declare and initialize variables that use this type. This can be seen at \textbf{lines 9-13}. \textbf{Lines 12} and \textbf{13} show that we can initialize the struct's fields one by one, by using a \emph{dot notation}, while \textbf{lines 15-18} show a different way of initialization: the struct literal. A struct literal is created by writing the name of the type we want to initialize, followed by the name of the struct fields' names and their values separated by a colon. Each of these field-value pairs need to be separated by a comma.
-
-Both of these initialization approaches has its advantages. The \emph{dot notation} has the advantage of versatility: you can initialize different fields at different points in a program. For example, you can initialize one field before a loop, and another field after that loop. On the other hand, the \emph{struct literal} approach has the advantages of readability and that it can be used as a function call's argument directly. For example, you can send a \textbf{Person} struct instance to a function call this way: \lstinline|PrintName(Person {name: "John"})|.
-
-\section{Variable Scope}
-\index{scope of a variable}
-\index{variable scope}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item All of the data structures above can either be local or global
-%         \item Explain what is scope
-%         \item See examples of local variables
-%         \item "On the other hand, we have global variables" and go to the next section
-%     \end{itemize}
-% \end{remark}
-
-The type and name are two of the properties of a variable. There is one property that we have not mentioned so far: \emph{scope}. The scope of a variable dictates where a variable can be seen. A \emph{local} variable is only accessible in the function where it was declared, while a \emph{global} variable can be accessed by any function of a package.
-
-\begin{lstlisting}[caption={Local and global variables},captionpos=b,label={listing:local-global-variables}]
-package main
-
-var global i32
-
-func foo () {
-    i32.print(global)
-    // i32.print(local) // this will raise an error if uncommented
-}
-
-func main () {
-    var local i32
-    
-    local = 10
-    global = 15
-    
-    i32.print(global)
-    i32.print(local)
-}
-\end{lstlisting}
-
-If you want to create a global variable, you only have to declare it outside any function declaration. If you want a local variable, declare it inside the function you want it to have access to. Listing \ref{listing:local-global-variables} shows an example that declares a global variable that is accessed to by two functions: \textbf{main} and \textbf{foo}, and a local variable that is only accessible by the \textbf{main} function.
-
-As a last note, global variables can also be accessed by other packages that import the package containing said variable. You will learn more about packages in chapter \ref{chapter:packages}.
-
-%\begin{figure}[h]
-%    \centering
-%    \includegraphics[width=0.77\textwidth]{ha-gray-conv-crp.jpg}
-%    \caption{Picuture of the M83 galaxy, image taken from the WFC3 ERS M83 Data Products, http://archive.stsci.edu/prepds/wfc3ers/m83datalist.html}
-%    \label{fig:awesome_image}
-%\end{figure}
-
-%\begin{description}
-%	\item[DS9:] It is a program that visualizes astronomy images in
-%    \begin{description}
-%    \item[Download: ]\url{http://ds9.si.edu/site/Download.html}
-%    \item[Documentation: ]\url{http://ds9.si.edu/site/Documentation.html}
-%    \begin{verbatim}
-%   pip install pyfits
-%   \end{verbatim}
-%   \end{description}
-%\end{description}
-
-%----------------------------------------------------------------------------------------
+%%----------------------------------------------------------------------------------------
 %	CHAPTER 4
 %----------------------------------------------------------------------------------------
 
@@ -1379,49 +1411,6 @@ Just like in Go, a project without \textbf{main} package or function is consider
 
 If you're working in a single file, you can just import your packages using the name you used in the package declaration statement, like in listing \ref{listing:packages-example}. If you are dealing with packages from different directories in your workspace, then you need to make sure that you write the full path to the desired package. For example, if the package you want to import is located in \$CXPATH/src/math\_stuff/stats or \%CXPATH\%\textbackslash src\textbackslash math\_stuff\textbackslash stats, you would need to import the package like this: \lstinline{import "math_stuff/stats"}. As you can see, you have to omit the \lstinline{src} part because all of the libraries need to be there anyway.
 
-%----------------------------------------------------------------------------------------
-%	CHAPTER 7
-%----------------------------------------------------------------------------------------
-
-% \chapterimage{blank-header.png}
-\chapter{Pointers}
-\label{chapter:pointers}
-\index{pointers}
-
-Programming languages that use a stack to pass values to function calls can pass the actual value or a reference to it. Passing by value means that all the bytes that represent that data structure are copied to the function call. In the case of a simple integer or a floating-point number, this is not a problem, because you are copying at most 8 bytes. The real problem arises when you try to pass a really big data structure, like an array, struct or a long string. Copying all these bytes every time a function is called creates two problems:
-\begin{enumerate}
-    \item It is slow; imagine that you have to execute a for loop that iterates $N$ times, where $N$ is the size of your data structure, and you have to do this every time you call that function.
-    \item You are more prone to encounter a stack overflow error, as you are filling your stack with all these copies of your data structure.
-\end{enumerate}
-
-A solution to the pass-by-value problem is to use pass-by-reference. When using pass-by-reference, instead of copying the actual value, you send the address of the value that you want to use. A reference is just a number that represents the index where you can find the actual value in memory. A reference only needs 4 bytes\footnote{An address is 4 bytes on a 32-bit system.  On a 64-bit system it is actually 8 bytes, but that is not common in current Go implementations, which is what CX is currently based on.}, as it is just a normal 32-bit integer. This also means that creating a pointer to a 32-bit integer is useless if your purpose is to increase your program's performance. Actually, using a pointer would make your program a tiny bit slower, because it needs to dereference the pointer.
-
-\begin{lstlisting}[caption={Pointer to a structure instance},captionpos=b,label={listing:pointer-example-1}]
-package main
-
-type Cell struct {
-	id i32
-	drawable i32
-	alive bool
-	aliveNext bool
-	x i32
-	y i32
-}
-
-func main () {
-	var cells *[900]Cell|\label{line:pointer-to-array}|
-	cells = makeCells()
-    
-    for bool.not(glfw.ShouldClose("window")) {
-        draw(cells, "window", program)
-    }
-}
-\end{lstlisting}
-
-The code in listing \ref{listing:pointer-example-1} presents a situation where using a pointer drastically improves the performance of a program. \textbf{Line \ref{line:pointer-to-array}} shows the declaration of a variable of type pointer to an array of structure instances. This variable is then used to hold the output of \textbf{makeCells}, and the for loop draws all the cells to a window. If we were not using a pointer, we would need to pass by value all the 900 cells, which sum a total of 16,200 bytes. In contrast, by using a pointer we are only sending 4 bytes that represent the other 16,200 bytes.
-
-This listing shows an excerpt of an OpenGL example present in the CX git repository, which can be found at https://github.com/skycoin/cx. The example is currently located at the following path: \lstinline{examples/opengl/conways-game-of-life-gc.cx}, but this path could change in the future. If you try to run this example using your local CX installation, you'll find out that it does not run, so download the full example from the CX repository.
-
 \section{Memory Segments}
 \index{memory segments}
 \label{section:memory-segments}
@@ -1517,291 +1506,6 @@ But allocating anything, wherever and whenever you want is that not problematic?
 Now, as we are doing this an indefinitely number of times, would not this program cause a \emph{heap} overflow eventually? Not really, CX has a so-called garbage collector that is activated each time the \emph{heap} is full, and removes the objects that are no longer being used. The resulting dead objects could be anywhere in the \emph{heap}, which will cause \emph{fragmentation}, but do not worry as the garbage collector deals with this problem too. As can be seen, the \emph{heap} is the most flexible memory segment.
 
 The last memory segment is the \emph{code} segment. This segment holds all the program's elements, such as functions, expressions and structure declarations. In CX, this segment can be modified at will, unlike in other programming languages. Modifying the \emph{code} segment will be discussed in chapter \ref{chapter:affordances}.% and \ref{chapter:mastering-the-repl}.
-
-%----------------------------------------------------------------------------------------
-%	CHAPTER 8
-%----------------------------------------------------------------------------------------
-
-% \chapterimage{blank-header.png}
-\chapter{OpenGL and GLFW with CX}
-\label{chapter:opengl-and-glfw-with-cx}
-\index{OpenGL}
-\index{GLFW}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     \item \emph{CONSIDER} It might be a good idea to move this section to the first chapters. This consideration gains more weight if we manage to include video games in all of the chapters
-%     	\item We all love video games in the CX team. That's why we decided to implement bindings to OpenGL and GLFW to test the language capabilities
-%         \item In order to start using functions from these libraries, you only need to import "gl" and "glfw"
-%         \item Let's review this first example, where we only open a window where we will be able to draw to later on
-%         \item Review the listing's code, almost line by line
-%         \item Review the other listings in the same way
-%     \end{itemize}
-% \end{remark}
-
-In the Skycoin team we believe that a bright future exists for blockchain technologies in video game development. For this reason, one of the first libraries that was developed for CX was the OpenGL library. This chapter presents some video game examples that should help you get started with video game development in CX. In order to use the OpenGL and GLFW libraries in your CX programs, just \lstinline{import "gl"} and \lstinline{import "glfw"} after the package declaration.
-
-The current OpenGL library does not implement all of the OpenGL functions and constants, but in future versions, this will be corrected. The OpenGL version that the CX library targets is 2.1.
-
-CX also provides a GLFW library that helps the programmer set up things like windows and input devices. The GLFW version targeted by the CX library is 3.2.
-
-The examples in this chapter are not explained thoroughly, as the purpose of this book is to explain the features of the CX programming language, not to explain how OpenGL and GLFW work.
-
-\begin{lstlisting}[caption={Creating a window using OpenGL},captionpos=b,label={listing:window-opengl}]
-package main
-
-import "gl"
-import "glfw"
-
-var width i32 = 800|\label{line:window-example-width}|
-var height i32 = 600|\label{line:window-example-height}|
-
-func main () {
-	glfw.Init()
-	glfw.WindowHint(glfw.Resizable, glfw.False)
-	glfw.WindowHint(glfw.ContextVersionMajor, 2)
-	glfw.WindowHint(glfw.ContextVersionMinor, 1)
-
-	glfw.CreateWindow("window", width, height, "Window Example")|\label{line:window-example-create}|
-	glfw.MakeContextCurrent("window")
-	
-	gl.Init()
-	var program i32
-	program = gl.CreateProgram()
-	gl.LinkProgram(program)
-	
-	for bool.not(glfw.ShouldClose("window")) {|\label{line:window-example-loop}|
-		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-
-		gl.UseProgram(program)
-
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
-	}
-}
-\end{lstlisting}
-
-The first step to creating a video game is to create the window where everything is going to be displayed. Listing \ref{listing:window-opengl} shows a bare-bones example that only displays an empty window. You could think that this is a lot of instructions to only accomplish a simple task such as creating a window, but it is the OpenGL way. This example can be used as a template to start a new OpenGL project in CX.
-
-The window has a resolution of 800x600, as defined by the global variables \textbf{width} and \textbf{height}, at \textbf{lines \ref{line:window-example-width} and \ref{line:window-example-height}}, respectively. The function that actually creates the window to be displayed is created at \textbf{line \ref{line:window-example-create}}, and it is constantly being re-drawn in the loop that begins at \textbf{line \ref{line:window-example-loop}}.
-
-\begin{lstlisting}[caption={Drawing a triangle to a window},captionpos=b,label={listing:triangle}]
-package main
-
-import "gl"
-import "glfw"
-
-var width i32 = 800
-var height i32 = 600
-
-func main () () {
-	glfw.Init()
-
-	glfw.CreateWindow("window", width, height, "Triangle")
-	glfw.MakeContextCurrent("window")
-	
-	gl.Init()
-	
-	var program i32
-	program = gl.CreateProgram()
-	
-	gl.LinkProgram(program)
-
-	for bool.not(glfw.ShouldClose("window")) {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		gl.UseProgram(program)
-		
-		gl.MatrixMode(gl.PROJECTION)|\label{line:start-triangle}|
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-
-		gl.Begin(gl.TRIANGLES)
-		gl.Color3f(1.0, 0.0, 0.0)
-		gl.Vertex3f(-0.6, -0.4, 0.0)
-		gl.Color3f(0.0, 1.0, 0.0)
-		gl.Vertex3f(0.6, -0.4, 0.0)
-		gl.Color3f(0.0, 0.0, 1.0);
-		gl.Vertex3f(0.0, 0.6, 0.0);
-		gl.End();|\label{line:end-triangle}|
-		
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
-	}
-}
-\end{lstlisting}
-
-\begin{figure}
-\caption{Triangle in OpengGL window}
-\centering
-\includegraphics[width=0.5\textwidth]{img/opengl-triangle.png}
-\label{figure:triangle}
-\end{figure}
-
-Now that we can create a window and display it, let us draw something on it. Listing \ref{listing:triangle} adds some lines of code to the code in listing \ref{listing:window-opengl} (\textbf{lines \ref{line:start-triangle} - \ref{line:end-triangle}}). Functions \textbf{gl.Color3f} and \textbf{gl.Vertex3f} are used to assign a color and coordinates to a vertex for a triangle, enclosed by calls to \textbf{gl.Begin} and \textbf{gl.End}. After running the code in this listing, you should see a window with a triangle like in the one displayed in figure \ref{figure:triangle}.
-
-\begin{lstlisting}[caption={Bouncing ball example},captionpos=b,label={listing:bouncing-ball}]
-package main
-
-import "gl"
-import "glfw"
-
-var width i32 = 800
-var height i32 = 600
-
-type Ball struct {|\label{line:ball-struct}|
-	x f32
-	y f32
-	vx f32
-	vy f32
-	gravity f32
-	radius f32
-}
-
-func drawBall (ball Ball) () {
-	var full_angle f32
-	full_angle = f32.mul(2.0, 3.141592654)
-	var x f32
-	var y f32
-
-	gl.Begin(gl.POLYGON)
-	gl.Color3f(1.0, 1.0, 1.0)
-
-	var i f32
-	for i = 0.0; f32.lt(i, 20.0); i = f32.add(i, 1.0) {
-		x = f32.add(ball.x,
-		            f32.mul(ball.radius,
-		                    f32.cos(f32.div(f32.mul(i, full_angle), 20.0))))
-		y = f32.add(ball.y,
-		            f32.mul(ball.radius,
-		                    f32.sin(f32.div(f32.mul(i, full_angle), 20.0))))
-
-		gl.Vertex2f(x, y)
-	}
-
-	gl.End()
-}
-
-func main () () {
-	glfw.Init()
-
-	glfw.CreateWindow("window", width, height, "Bouncing Ball")
-	glfw.MakeContextCurrent("window")
-	
-	gl.Init()
-	var program i32
-	program = gl.CreateProgram()
-	gl.LinkProgram(program)
-
-	var ball Ball
-	ball = Ball{
-		radius: 0.05,
-		x: 0.0,
-		y: 0.0,
-		vx: 0.01,
-		vy: 0.01,
-		gravity: 0.01}
-
-	for bool.not(glfw.ShouldClose("window")) {|\label{line:bouncing-ball-start-loop}|
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		gl.UseProgram(program)
-		
-		gl.MatrixMode(gl.PROJECTION)
-		gl.LoadIdentity()
-		gl.MatrixMode(gl.MODELVIEW)
-
-		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
-			ball.vy = f32.abs(ball.vy)
-		} else {
-			ball.vy = f32.sub(ball.vy, ball.gravity)
-		}
-
-		ball.x = f32.add(ball.x, ball.vx)
-		ball.y = f32.add(ball.y, ball.vy)
-
-		drawBall(ball)
-		
-		glfw.PollEvents()
-		glfw.SwapBuffers("window")
-	}|\label{line:bouncing-ball-end-loop}|
-}
-\end{lstlisting}
-
-\begin{figure}
-\caption{Bouncing ball in OpengGL window}
-\centering
-\includegraphics[width=0.5\textwidth]{img/bouncing-ball.png}
-\label{figure:bouncing-ball}
-\end{figure}
-
-As the final example of this chapter, listing \ref{listing:bouncing-ball} presents a little more complex situation. We use a structure that will represent a ball to be drawn on screen, declared at \textbf{line \ref{line:ball-struct}}. In the for loop that updates the screen (\textbf{lines \ref{line:bouncing-ball-start-loop}-\ref{line:bouncing-ball-end-loop}}) we update the coordinates (x and y) of the ball, and draw the ball's new position to the window. The function \textbf{drawBall} uses the coordinates of the ball structure instance as a center, and uses its radius to draw a circle using polygons, which represents the ball.
-
-After running this last example, you should see a ball that starts at the center of the screen, and starts falling and bouncing to the right of the screen. It should display something similar to figure \ref{figure:bouncing-ball}.
-
-%----------------------------------------------------------------------------------------
-%	CHAPTER 9
-%----------------------------------------------------------------------------------------
-
-% \chapterimage{blank-header.png}
-\chapter{Interpreted and Compiled}
-\label{chapter:interpreted-and-compiled}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     \item CX programs can either be interpreted or compiled.
-%     \item The reason behind this design decision is that it maximizes the number of features of the language
-%     \item If the programmer correctly adopts the CX workflow, we're pretty sure that their productivity will increase considerably
-%     \item In its interpreted mode, CX's declarations can be redefined at an expression level
-%     \item This behavior allows the affordance system to programmatically or interactively change a CX's program structure (see chapter \ref{chapter:affordances}), for example
-%     \item On the other hand, a compiled CX program has a more rigid structure, and as a consequence it'd be harder to work with many features
-%     \item Nevertheless, the programmer can interpret some pieces of code, leverage all these features, and then compile the code to increase the program's performance
-%     \item Show how you can run a program in an interpreted way and how to run it in a compiled way
-%     \end{itemize}
-% \end{remark}
-
-As has been noted in previous chapters, CX can be both an interpreted and a compiled language. But this does not only mean that you can run a program by interpreting it or compile it and then run it; CX goes further. CX can work with both compiled and interpreted code at the same time, just like some other languages, such as Common Lisp. The reason behind this design decision is that it maximizes the number of features CX can provide. For example, a function that is constantly being constructed by affordances is far easier to be evaluated if it is purely interpreted, instead of recompile the function every time (or maybe even the whole program).
-
-CX started out as being purely interpreted, mainly because the Skycoin team was still testing some ideas on what direction the language was going to take. As the language progressed in complexity, and we wanted to test programs that were more expensive regarding computational resources, it was clear that CX needed to implement optimization techniques to the code it was generating. However, we realized that the current design had reached a certain limit. The generated programs were very flexible, as many features of the language were managed by the underlaying language: Go. This flexibility allowed CX to implement affordances, an integrated genetic programming algorithm and other features in a short amount of time. Nevertheless, its speed was comparable to Martz's Ruby (no, not Ruby, Martz's Ruby is about 5 times slower than Ruby). As a consequence to this, CX had to take another direction in its design, and some core optimizations were implemented.
-
-Nowadays CX is reasonably fast, even if a plethora of optimizations still need to be implemented. At some benchmark tests CX scored a similar speed to Python, but we still need to perform more benchmarks to get a more objective conclusion. Even if the resulting speed is actually 5 times slower than Python, it is far better than before and, as stated above, many optimizations can still be implemented.
-
-\begin{lstlisting}[caption={Interpreting and compiling the same program},captionpos=b,label={listing:interpreted-compiled}]
-$ cx hello-world.cx
-Hello, world!
-$ cx hello-world.cx -i
-Hello, world!
-\end{lstlisting}
-
-You may be wondering what happened to the interpreted version of CX. It is still in use and it is faster now than before. We realized that some of the optimizations that were implemented for the compiled version could also work with the CX interpreter, and it did indeed benefited from them. It is still slow, but it retained all its flexibility. If you open a CX REPL, you will be running the CX interpreter, and if you run a \emph{cx example.cx} command, without the \emph{-i} flag, you will be running the compiled version of CX (this is shown clearer in listing \ref{listing:interpreted-compiled}).
-
-Having both interpreted and compiled code results in a workflow that you can follow to maximize productivity and performance. You can use the CX interpreter to test code without having to be re-compiling your code every time, and when you are done testing and fine-tuning your code, you can compile it for speed and better memory management.
-
-\section{Interpreted CX Features}
-\index{interpreted CX features}
-
-The first and most noteworthy feature is the REPL. Having a REPL would be cumbersome if we had all the code compiled every time a change was made to the program. However, the REPL basically does this, unless you're just testing a function call. In the CX REPL you can not only redefine full functions, global variables or other "higher scope" elements, but you can also fine-tune these elements. For example, if you only want to change the type of a structure declaration's field, you can do it in CX. You do not need to re-write all the structure declaration with your changes into the REPL's prompt. This same feature applies to functions, packages, statements inside functions, expressions, or anything else. If you are interested on finding out how you can do all of this in the REPL, see chapter \ref{chapter:mastering-the-repl}. In order to provide all the previously described functionalities, the REPL uses a feature called \emph{meta-commands} to mimic some of the functionalities of affordances (see chapter \ref{chapter:affordances}). 
-
-Similarly to meta-commands, affordances are more easily implemented using the CX's interpreter. As mentioned before, affordances are similar to meta-commands. The main differences are: affordances can be called without having to be in the REPL, i.e. you can create calls to affordances in your source code files; and affordances can work with a set of rules to have an automated behavior.
-
-Lastly, a genetic programming algorithm is provided as a native function in CX (see chapter \ref{chapter:genetic-programming}. This algorithm can be used to create functions that meet some criteria. The most traditional objective is to solve some sort of curve-fitting problem \cite{lancaster1986curve}. Theoretically, you can construct any type of function using genetic programming, and we want to achieve that in CX in later stages of the language. Just imagine setting up a rule set that defines a website or a mobile application, and the genetic programming algorithm takes care of the rest. We believe that affordances will allow to create this type of solutions in conjunction with genetic programming.
-
-And that is it, the REPL and meta-commands, affordances and genetic programming are all features that can exist in the CX environment thanks to its interpreter. Now let's review the compiler in the next section.
-
-\section{Compiled CX Features}
-\index{compiled CX features}
-
-In the first interpreted version of CX we had Golang managing all the memory allocations of a program. CX did not have any of the memory segments discussed in Section \ref{section:memory-segments}, all the values were held in Go structures, and the stack was just a sequence of structures containing all the information form each of the function calls. This is very practical because we could focus all the development to researching interesting features, but the downside was performance, both in memory and speed. A simple for loop that iterated 1 million times was taking something in the order of the dozens of seconds. This performance can be acceptable for some kind of programs or for testing some ideas, but it is definitely unacceptable for most programs in their production stage.
-
-The CX compiler is not exactly a compiler in the traditional sense of the word, but it definitely will become one soon. We call it a compiler for now because it will become one and because of the optimizations it makes to the generated code. In a sense, that can be already considered a compiler, as the code is not run line-by-line as in an interpreter. We are only lacking a proper way to create executables targeted to a platform (operating system and CPU).
-
-As stated in the previous section, CX's compiled code performs similarly to Python in some tests. Python should beat CX in other benchmarks, as it is a language that has been optimized since 1991, but at least it is not super slow like CX's interpreted programs.
-
-Another feature of CX's compiler is that it has its own garbage collector already. Go's garbage collector is remarkable, but it was not working well with CX. Now that CX has its own memory segments, we can optimize very well how that memory is allocated.
-
-In conclusion, the compiler was not necessary in terms of features, but it was definitely necessary as performance is almost always a critical aspect of any programming language. Even interpreted languages are often discarded or chosen because of their speed or how well they manage memory.
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 10
@@ -1908,7 +1612,7 @@ As a last note before looking at the examples that follow, please bear in mind t
 
 The current workflow of CX affordances is depicted in figure \ref{figure:affordances-workflow}. The topmost block in this figure shows all the program elements that can be used in this paradigm. Each of these types of elements can interact with any of the other types and with themselves. For example, we can ask for affordances between an argument and a function, as well as we can ask for affordances between an argument other arguments.
 
-The block at the lower-left corner shows in figure \ref{figure:affordances-workflow} how the \textbf{query} function uses \emph{filter} functions to generate a list of program elements. We can now use one of these elements in conjunction with a target to obtain an affordance. For example, an argument can replace another argument in a program, or we can use a structure and a function to create a new method.
+The block at the lower-left corner shows in figure \ref{figure:affordances-workflow} how the \textbf{query} function uses \emph{filter}s to generate a list of program elements. We can now use one of these elements in conjunction with a target to obtain an affordance. For example, an argument can replace another argument in a program, or we can use a structure and a function to create a new method.
 
 The last part of figure \ref{figure:affordances-workflow} involves two functions: \textbf{inform} and \textbf{request}. Both of these functions are used to actually execute an affordance, but they handle "affordances of" and "affordances on" a target, respectively. An "affordance on" a target involves affordances that are going to mutate the target itself, and an "affordance of" a target involves affordances where the target is going to mutate its environment (other program elements).
 
@@ -2269,102 +1973,6 @@ We're not going to be deserializing all of the examples from the last section, a
 What \textbf{deserialize} does is something similar to a \emph{patch}. If a declaration in the slice of bytes already exists in the current program, it will simply redefine it; if it does not exist, it will create it. In the case of function declarations, statements and expressions, they can be applied using the affordance system, although this functionality has not been implemented yet.
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER 14
-%----------------------------------------------------------------------------------------
-
-% \chapterimage{blank-header.png}
-\chapter{Genetic Programming}
-\label{chapter:genetic-programming}
-\index{genetic programming}
-
-% \begin{remark}
-% Section Outline
-%     \begin{itemize}
-%     	\item CX has a native function for calling a genetic programming algorithm
-%         \item Explain what genetic programming is
-%         \item Under the hood, the genetic programming algorithm works by using affordances
-%         \item We select the to-be-evolved function, and we ask the affordance system what we can do with it
-%         \item We select an expression to be added, etc. Explain better
-%         \item We can combine the affordance system (rule set) to evolve a function that meets the criteria set by the rule set (in the future)
-%         \item For example, we can keep evolving a function until the affordance system shows it (it means that the evolution was successful)
-%     \end{itemize}
-% \end{remark}
-
-After the first version of affordances was implemented in CX, it seemed natural to use it for creating a genetic programming algorithm. Genetic programming (GP) is an evolutionary algorithm that automatically modifies programs (programs creating programs!). In theory, you could only tell a GP algorithm a set of goals and GP will generate the program for you, so you could tell it "I want an operating system that does this and this and this" and it could arrive to that solution. But of course in practice this would be extremely difficult. In reality, GP is usually used to find solutions to problems that are relatively hard for a human being, but relatively easy for a computer to solve. For example, you can use GP to find a mathematical model that describes a financial market (such as SKY price movements!), and it will find it in minutes or maybe seconds, depending on your hardware. However, obtaining such model by hand would be very difficult, as it could take you days, weeks or even months to create such a model.
-
-GP is pretty easy to understand. Imagine that you have a set of operators, such as +, -, / and *. Now imagine that you have a set of input variables, such as $x$. Lastly, imagine that you have the plot of a curve that curiously enough resembles the curve generated by plotting $f(x) = x^2 + x$. When run the GP algorithm, it will start making random combinations of operators and variables, such as $x+x$, $x+x+x$, $x*x*x$, $x*x + x + x$, and so on. These combinations of operators then will be evaluated to see how well they perform. For example, $x * x + x + x$ will throw a curve that is closer to our target function than, say, $x + x$ (as this is not even a curve).
-
-Those combinations that behave well are kept, while the ones that perform poorly are destroyed, just like in natural selection where the strong individuals are the ones that survive (and hence the name \emph{genetic} programming). Again, as in natural selection, the strong individuals are the ones to reproduce and share their genetic material among them to create stronger individuals. In the case of GP, the genetic material represents mathematical terms. So, for example, if we reproduce $x * x$ and $x * x + x + x$, we can end up with these combinations: $x * x + x$ and $x * x + x + x$ (depending on how you design your crossover operators, i.e. how you want the individuals to be reproducing), where the former corresponds to the terms contained in an equivalent function to our target function.
-
-As said at the beginning of this chapter, CX's GP is entirely based on affordances. If you read chapter \ref{chapter:affordances}, you now know that affordances can list all the possible actions that can be performed on a program's element, such as functions. Well, we can use this functionality to list all the operators that can be used to create expressions for the target functions (the one that we want to simulate). Then we can also use affordances to determine what we can send to these expressions. Also, if we want to reproduce individuals, we can use affordances to know what expressions from each individual can be obtained, and how they can be added to their offspring. You can do everything in a GP using affordances.
-
-\begin{lstlisting}[caption={Using genetic programming to evolve a function},captionpos=b,label={listing:genetic-programming-example}]
-package main
-
-func realFn (n f64) (out f64) {|\label{line:real-function}|
-    out = n * n + n
-}
-
-func simFn (n f64) (out f64) {}|\label{line:simulate-function}|
-
-func main () (out f64) {
-	var numPoints i32
-    var inps []f64
-    var outs []f64
-    
-    var c i32
-    
-	for c = 0; c < numPoints; c++ {
-        inps = append(inps, i32.f64(c) - 10.0D)|\label{line:gp-inputs}|
-	}
-
-	for c = 0; c < numPoints; c++ {
-        outs = append(outs, realFn(inps[c]))|\label{line:gp-outputs}|
-	}
-	
-    var target aff
-    target = #{pkg(main) fn(realFn)}|\label{line:function-to-evolve}|
-    
-    var fnBag aff
-    fnBag = #{fn(f64.add) fn(f64.mul) fn(f64.sub)}|\label{line:function-bag}|
-    
-	evolve(target, fnBag, inps, outs, 5, 100, 0.1D)|\label{line:evolve-function-call}|
-
-	str.print("Testing evolved solution")
-	for c = 0; c < numPoints; c++ {|\label{line:gp-start-testing}|
-        printf("%f\n", simFn(inps[c]))
-	}|\label{line:gp-end-testing}|
-}
-\end{lstlisting}
-
-But enough about theory, let's see an example in action. Listing \ref{listing:genetic-programming-example} shows how to use CX's GP to find a function that curve-fits $f(x) = x^2 + x$. This target function is defined at \textbf{line \ref{line:real-function}}, and the function that will try to simulate the curve defined by the real function, \textbf{simFn}, is defined at \textbf{line \ref{line:simulate-function}}. As you can see, \textbf{simFn} starts as an empty function declaration. This is because the GP is going to fill this function with expressions.
-
-After defining our \textbf{simFn}, we now need our data. In curve-fitting algorithms you usually need two sets of data: the inputs and the outputs of the target function. For example, if you input 1, you'll get a 2, if you input a 2, you'll get a 3, etc. In this case, the inputs are constructed at \textbf{line \ref{line:gp-inputs}}, while the outputs at \textbf{line \ref{line:gp-outputs}}. The inputs range from -10 to 10, and the outputs are obtained by evaluating \textbf{realFn} with these inputs.
-
-The next step is to set a "bag" of operators. These operators are the ones that will be used to create the CX expressions that will be inside \textbf{simFn}. In previous versions of CX we used a string to define these operators, e.g. "i32.add|i32.mul|i32.sub", but now we have integrated affordances with the GP even more, and we specify the functions using the affordance operator, as can be seen at \textbf{line \ref{line:function-bag}}. Similarly, the function to be evolved was previously defined with a string, e.g. "simFn", but now we also use the affordance operator, as seen at \textbf{line \ref{line:function-to-evolve}}.
-
-After having defined all the data mentioned in the previous paragraphs, we only need to decide how many expressions should our simulated function have, for how many generations should our algorithm run, and what's our threshold error. "What the..." you may be saying to yourself at this point, but the cure for this is to explain these concepts in the following paragraphs.
-
-First, CX's GP is of a certain type called cartesian genetic (CGP) programming, which was devised by Miller and Thomson in \cite{miller2000cartesian}. In CGP you limit the number of expressions or statements that can be defined in a function to be evolved. This is a simple method that completely eliminates bloat, which is a major problem in traditional GP. In traditional GP, you can end up with evolved functions having thousands and thousands of expressions, and many of them might not even make any sense. For example, you could have expressions such as \lstinline{x + x + x - x - x - x} or \lstinline{x * x / x}. CGP has been proved in several research works that limiting the number of expressions forces GP to improve its solutions, while completely eliminating bloat, and use less computing resources as an extra.
-
-Next, we have the number of generations. This parameter is clearly understood once we remember that programs are reproduced or crossed over, just like in biological evolution. The number of generations tell the GP how many times individuals are going to reproduce among them. The first generation will create children, the next generation will create grandchildren, the next will create great-grandchildren, and so on.
-
-\begin{figure}
-\caption{Curve approximation}
-\centering
-\includegraphics[width=0.5\textwidth]{img/curve-approximation.png}
-\label{figure:curve-approximation}
-\end{figure}
-
-The last parameter is a threshold error, often called \emph{epsilon}. In most problems trying to be solved by any evolutionary algorithm, it will be very hard to achieve an exact solution. However, in all of these problems, a close-enough solution is usually a sufficient solution. For example, take a look at figure \ref{figure:curve-approximation}. We can see two plots, and maybe our target function is represented by the blue line, while our evolved solution is the red one. Maybe this is enough, depending on where we want to use this function. For example, maybe we want to evolve a program that manages the cruise control of a car, and if we do not get an exact solution, the car might go 2 miles per hour faster or slower than our desired speed limit, and this could be a very good solution.
-
-In other cases, any error is unacceptable, such as in determining if a patient requires an amputation or not. Now, epsilon tells the GP algorithm how bad a solution can perform while maintaining us happy with the results. In our example, this error is obtained by calculating the mean-squared error (MSE), which is pretty easy to understand: you only need subtract every simulated data point to each of its real counterpart, sum all of these numbers and average them, and then get that number's square root. If you are wondering why provide both a number of generations and an epsilon, the answer is that the program will stop when any of these criteria are met. These stop criteria can be interpreted as: "I'm willing to wait for 100 generations or until the solution achieves this performance error," and this makes perfect sense once you realize that many optimization problems can take weeks or months to finish.
-
-Having explained all the input parameters, we can now fully understand the single most important line in listing \ref{listing:genetic-programming-example}: \textbf{line \ref{line:evolve-function-call}}. In this line, we can see a call to \textbf{evolve}, which will contain all of the previously discussed input parameters. In order, we are sending: the function to be evolved (\emph{target}), the operators to be used in the evolutionary process (\emph{fnBag}), the inputs (\emph{inps}), the outputs (\emph{outs}), the limit number of expressions our evolved function can have, the number of generations the algorithm will run, and epsilon or the good-enough error.
-
-After waiting a few milliseconds (it's an extremely easy problem to solve, after all), we will have a \textbf{simFn} filled with expressions that will hopefully simulate the target function $f(x) = x^2 + x$. To test this, we can evaluate the evolved function with each of the inputs (the integers from -10 to 10), and check if these outputs correspond to the outputs from the target function. This testing is performed at \textbf{lines \ref{line:gp-start-testing}-\ref{line:gp-end-testing}}.
-
-%----------------------------------------------------------------------------------------
 %	CHAPTER 15
 %----------------------------------------------------------------------------------------
 
@@ -2383,7 +1991,7 @@ After waiting a few milliseconds (it's an extremely easy problem to solve, after
 %     \end{itemize}
 % \end{remark}
 
-In chapter \ref{chapter:getting-started-with-cx} we mentioned that CX is actually a programming language specification, which means that you could create your own CX. The CX that we have been using throughout the book to run all the examples is called CXGO (something similar to how the most popular Python implementation is actually called CPython).
+In chapter \ref{chapter:introduction} we mentioned that CX is actually a programming language specification, which means that you could create your own CX. The CX that we have been using throughout the book to run all the examples is called CXGO (something similar to how the most popular Python implementation is actually called CPython).
 
 At the moment, the specification file has not been finished and it needs to be heavily updated, which means that creating your own CX from scratch is not possible, as you would not know what conditions need to be met by your language. But fear not, because you can use the official Skycoin implementation to create it!
 
@@ -2483,6 +2091,334 @@ The next expression does a call to \textbf{i32.print}, and is defined at \textbf
 So far, it has been an exhaustive journey, but the only thing left now is to add the expressions to our \emph{main} function, as it is done at \textbf{lines \ref{line:your-own-add-sum}} and \textbf{\ref{line:your-own-add-prnt}}, and call our program's \textbf{RunCompiled} method. Finally, if we run our file with \lstinline{go run example.go}, we will see a 20 being printed to the terminal. Feel proud about your achievement!
 
 As a final comment, if you want to create your own CX, you will need to generate all these commands automatically. For example, you can use a parser such as \emph{goyacc} (the one used by CXGO) to generate the program's structure. 
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 8
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png}
+\chapter{Standard Library}
+
+----FIXME: Write an introduction
+
+\section{Os}
+\label{section:library-os}
+\index{library os}
+\index{os library}
+
+\section{Time}
+\label{section:library-time}
+\index{library time}
+\index{time library}
+
+\section{Http}
+\label{section:library-http}
+\index{library http}
+\index{http library}
+
+\section{Affordances}
+\label{section:library-aff}
+\index{library aff}
+\index{aff library}
+
+\section{Serialization}
+\label{section:library-serial}
+\index{library serial}
+\index{serial library}
+
+\section{OpenGL GLFW and GLText}
+\label{section:library-opengl}
+\index{OpenGL}
+\index{GLFW}
+\index{GLText}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     \item \emph{CONSIDER} It might be a good idea to move this section to the first chapters. This consideration gains more weight if we manage to include video games in all of the chapters
+%     	\item We all love video games in the CX team. That's why we decided to implement bindings to OpenGL and GLFW to test the language capabilities
+%         \item In order to start using functions from these libraries, you only need to import "gl" and "glfw"
+%         \item Let's review this first example, where we only open a window where we will be able to draw to later on
+%         \item Review the listing's code, almost line by line
+%         \item Review the other listings in the same way
+%     \end{itemize}
+% \end{remark}
+
+In the Skycoin team we believe that a bright future exists for blockchain technologies in video game development. For this reason, one of the first libraries that was developed for CX was the OpenGL library. This chapter presents some video game examples that should help you get started with video game development in CX. In order to use the OpenGL and GLFW libraries in your CX programs, just \lstinline{import "gl"} and \lstinline{import "glfw"} after the package declaration.
+
+The current OpenGL library does not implement all of the OpenGL functions and constants, but in future versions, this will be corrected. The OpenGL version that the CX library targets is 2.1.
+
+CX also provides a GLFW library that helps the programmer set up things like windows and input devices. The GLFW version targeted by the CX library is 3.2.
+
+The examples in this chapter are not explained thoroughly, as the purpose of this book is to explain the features of the CX programming language, not to explain how OpenGL and GLFW work.
+
+\begin{lstlisting}[caption={Creating a window using OpenGL},captionpos=b,label={listing:window-opengl}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800|\label{line:window-example-width}|
+var height i32 = 600|\label{line:window-example-height}|
+
+func main () {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 2)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+
+	glfw.CreateWindow("window", width, height, "Window Example")|\label{line:window-example-create}|
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	var program i32
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+	
+	for bool.not(glfw.ShouldClose("window")) {|\label{line:window-example-loop}|
+		gl.Clear(i32.bitor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
+
+		gl.UseProgram(program)
+
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+\end{lstlisting}
+
+The first step to creating a video game is to create the window where everything is going to be displayed. Listing \ref{listing:window-opengl} shows a bare-bones example that only displays an empty window. You could think that this is a lot of instructions to only accomplish a simple task such as creating a window, but it is the OpenGL way. This example can be used as a template to start a new OpenGL project in CX.
+
+The window has a resolution of 800x600, as defined by the global variables \textbf{width} and \textbf{height}, at \textbf{lines \ref{line:window-example-width} and \ref{line:window-example-height}}, respectively. The function that actually creates the window to be displayed is created at \textbf{line \ref{line:window-example-create}}, and it is constantly being re-drawn in the loop that begins at \textbf{line \ref{line:window-example-loop}}.
+
+\begin{lstlisting}[caption={Drawing a triangle to a window},captionpos=b,label={listing:triangle}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+func main () () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Triangle")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	
+	var program i32
+	program = gl.CreateProgram()
+	
+	gl.LinkProgram(program)
+
+	for bool.not(glfw.ShouldClose("window")) {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)|\label{line:start-triangle}|
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+
+		gl.Begin(gl.TRIANGLES)
+		gl.Color3f(1.0, 0.0, 0.0)
+		gl.Vertex3f(-0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 1.0, 0.0)
+		gl.Vertex3f(0.6, -0.4, 0.0)
+		gl.Color3f(0.0, 0.0, 1.0);
+		gl.Vertex3f(0.0, 0.6, 0.0);
+		gl.End();|\label{line:end-triangle}|
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}
+}
+\end{lstlisting}
+
+\begin{figure}
+\caption{Triangle in OpengGL window}
+\centering
+\includegraphics[width=0.5\textwidth]{img/opengl-triangle.png}
+\label{figure:triangle}
+\end{figure}
+
+Now that we can create a window and display it, let us draw something on it. Listing \ref{listing:triangle} adds some lines of code to the code in listing \ref{listing:window-opengl} (\textbf{lines \ref{line:start-triangle} - \ref{line:end-triangle}}). Functions \textbf{gl.Color3f} and \textbf{gl.Vertex3f} are used to assign a color and coordinates to a vertex for a triangle, enclosed by calls to \textbf{gl.Begin} and \textbf{gl.End}. After running the code in this listing, you should see a window with a triangle like in the one displayed in figure \ref{figure:triangle}.
+
+\begin{lstlisting}[caption={Bouncing ball example},captionpos=b,label={listing:bouncing-ball}]
+package main
+
+import "gl"
+import "glfw"
+
+var width i32 = 800
+var height i32 = 600
+
+type Ball struct {|\label{line:ball-struct}|
+	x f32
+	y f32
+	vx f32
+	vy f32
+	gravity f32
+	radius f32
+}
+
+func drawBall (ball Ball) () {
+	var full_angle f32
+	full_angle = f32.mul(2.0, 3.141592654)
+	var x f32
+	var y f32
+
+	gl.Begin(gl.POLYGON)
+	gl.Color3f(1.0, 1.0, 1.0)
+
+	var i f32
+	for i = 0.0; f32.lt(i, 20.0); i = f32.add(i, 1.0) {
+		x = f32.add(ball.x,
+		            f32.mul(ball.radius,
+		                    f32.cos(f32.div(f32.mul(i, full_angle), 20.0))))
+		y = f32.add(ball.y,
+		            f32.mul(ball.radius,
+		                    f32.sin(f32.div(f32.mul(i, full_angle), 20.0))))
+
+		gl.Vertex2f(x, y)
+	}
+
+	gl.End()
+}
+
+func main () () {
+	glfw.Init()
+
+	glfw.CreateWindow("window", width, height, "Bouncing Ball")
+	glfw.MakeContextCurrent("window")
+	
+	gl.Init()
+	var program i32
+	program = gl.CreateProgram()
+	gl.LinkProgram(program)
+
+	var ball Ball
+	ball = Ball{
+		radius: 0.05,
+		x: 0.0,
+		y: 0.0,
+		vx: 0.01,
+		vy: 0.01,
+		gravity: 0.01}
+
+	for bool.not(glfw.ShouldClose("window")) {|\label{line:bouncing-ball-start-loop}|
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UseProgram(program)
+		
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+		gl.MatrixMode(gl.MODELVIEW)
+
+		if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
+			ball.vy = f32.abs(ball.vy)
+		} else {
+			ball.vy = f32.sub(ball.vy, ball.gravity)
+		}
+
+		ball.x = f32.add(ball.x, ball.vx)
+		ball.y = f32.add(ball.y, ball.vy)
+
+		drawBall(ball)
+		
+		glfw.PollEvents()
+		glfw.SwapBuffers("window")
+	}|\label{line:bouncing-ball-end-loop}|
+}
+\end{lstlisting}
+
+\begin{figure}
+\caption{Bouncing ball in OpengGL window}
+\centering
+\includegraphics[width=0.5\textwidth]{img/bouncing-ball.png}
+\label{figure:bouncing-ball}
+\end{figure}
+
+As the final example of this chapter, listing \ref{listing:bouncing-ball} presents a little more complex situation. We use a structure that will represent a ball to be drawn on screen, declared at \textbf{line \ref{line:ball-struct}}. In the for loop that updates the screen (\textbf{lines \ref{line:bouncing-ball-start-loop}-\ref{line:bouncing-ball-end-loop}}) we update the coordinates (x and y) of the ball, and draw the ball's new position to the window. The function \textbf{drawBall} uses the coordinates of the ball structure instance as a center, and uses its radius to draw a circle using polygons, which represents the ball.
+
+After running this last example, you should see a ball that starts at the center of the screen, and starts falling and bouncing to the right of the screen. It should display something similar to figure \ref{figure:bouncing-ball}.
+
+\section{Object explorer}
+\label{section:library-explorer}
+\index{library explorer}
+\index{explorer library}
+
+
+%================================================================
+%    PART 2: CX TOOLS
+%================================================================
+
+\part{CX Tools}
+\index{tools}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER 9
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png}
+\chapter{Interpreted and Compiled}
+\label{chapter:interpreted-and-compiled}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     \item CX programs can either be interpreted or compiled.
+%     \item The reason behind this design decision is that it maximizes the number of features of the language
+%     \item If the programmer correctly adopts the CX workflow, we're pretty sure that their productivity will increase considerably
+%     \item In its interpreted mode, CX's declarations can be redefined at an expression level
+%     \item This behavior allows the affordance system to programmatically or interactively change a CX's program structure (see chapter \ref{chapter:affordances}), for example
+%     \item On the other hand, a compiled CX program has a more rigid structure, and as a consequence it'd be harder to work with many features
+%     \item Nevertheless, the programmer can interpret some pieces of code, leverage all these features, and then compile the code to increase the program's performance
+%     \item Show how you can run a program in an interpreted way and how to run it in a compiled way
+%     \end{itemize}
+% \end{remark}
+
+As has been noted in previous chapters, CX can be both an interpreted and a compiled language. But this does not only mean that you can run a program by interpreting it or compile it and then run it; CX goes further. CX can work with both compiled and interpreted code at the same time, just like some other languages, such as Common Lisp. The reason behind this design decision is that it maximizes the number of features CX can provide. For example, a function that is constantly being constructed by affordances is far easier to be evaluated if it is purely interpreted, instead of recompile the function every time (or maybe even the whole program).
+
+CX started out as being purely interpreted, mainly because the Skycoin team was still testing some ideas on what direction the language was going to take. As the language progressed in complexity, and we wanted to test programs that were more expensive regarding computational resources, it was clear that CX needed to implement optimization techniques to the code it was generating. However, we realized that the current design had reached a certain limit. The generated programs were very flexible, as many features of the language were managed by the underlaying language: Go. This flexibility allowed CX to implement affordances, an integrated genetic programming algorithm and other features in a short amount of time. Nevertheless, its speed was comparable to Martz's Ruby (no, not Ruby, Martz's Ruby is about 5 times slower than Ruby). As a consequence to this, CX had to take another direction in its design, and some core optimizations were implemented.
+
+Nowadays CX is reasonably fast, even if a plethora of optimizations still need to be implemented. At some benchmark tests CX scored a similar speed to Python, but we still need to perform more benchmarks to get a more objective conclusion. Even if the resulting speed is actually 5 times slower than Python, it is far better than before and, as stated above, many optimizations can still be implemented.
+
+\begin{lstlisting}[caption={Interpreting and compiling the same program},captionpos=b,label={listing:interpreted-compiled}]
+$ cx hello-world.cx
+Hello, world!
+$ cx hello-world.cx -i
+Hello, world!
+\end{lstlisting}
+
+You may be wondering what happened to the interpreted version of CX. It is still in use and it is faster now than before. We realized that some of the optimizations that were implemented for the compiled version could also work with the CX interpreter, and it did indeed benefited from them. It is still slow, but it retained all its flexibility. If you open a CX REPL, you will be running the CX interpreter, and if you run a \emph{cx example.cx} command, without the \emph{-i} flag, you will be running the compiled version of CX (this is shown clearer in listing \ref{listing:interpreted-compiled}).
+
+Having both interpreted and compiled code results in a workflow that you can follow to maximize productivity and performance. You can use the CX interpreter to test code without having to be re-compiling your code every time, and when you are done testing and fine-tuning your code, you can compile it for speed and better memory management.
+
+\section{Interpreted CX Features}
+\index{interpreted CX features}
+
+The first and most noteworthy feature is the REPL. Having a REPL would be cumbersome if we had all the code compiled every time a change was made to the program. However, the REPL basically does this, unless you're just testing a function call. In the CX REPL you can not only redefine full functions, global variables or other "higher scope" elements, but you can also fine-tune these elements. For example, if you only want to change the type of a structure declaration's field, you can do it in CX. You do not need to re-write all the structure declaration with your changes into the REPL's prompt. This same feature applies to functions, packages, statements inside functions, expressions, or anything else. If you are interested on finding out how you can do all of this in the REPL, see chapter \ref{chapter:mastering-the-repl}. In order to provide all the previously described functionalities, the REPL uses a feature called \emph{meta-commands} to mimic some of the functionalities of affordances (see chapter \ref{chapter:affordances}). 
+
+Similarly to meta-commands, affordances are more easily implemented using the CX's interpreter. As mentioned before, affordances are similar to meta-commands. The main differences are: affordances can be called without having to be in the REPL, i.e. you can create calls to affordances in your source code files; and affordances can work with a set of rules to have an automated behavior.
+
+Lastly, a genetic programming algorithm is provided as a native function in CX (see chapter \ref{chapter:genetic-programming}. This algorithm can be used to create functions that meet some criteria. The most traditional objective is to solve some sort of curve-fitting problem \cite{lancaster1986curve}. Theoretically, you can construct any type of function using genetic programming, and we want to achieve that in CX in later stages of the language. Just imagine setting up a rule set that defines a website or a mobile application, and the genetic programming algorithm takes care of the rest. We believe that affordances will allow to create this type of solutions in conjunction with genetic programming.
+
+And that is it, the REPL and meta-commands, affordances and genetic programming are all features that can exist in the CX environment thanks to its interpreter. Now let's review the compiler in the next section.
+
+\section{Compiled CX Features}
+\index{compiled CX features}
+
+In the first interpreted version of CX we had Golang managing all the memory allocations of a program. CX did not have any of the memory segments discussed in Section \ref{section:memory-segments}, all the values were held in Go structures, and the stack was just a sequence of structures containing all the information form each of the function calls. This is very practical because we could focus all the development to researching interesting features, but the downside was performance, both in memory and speed. A simple for loop that iterated 1 million times was taking something in the order of the dozens of seconds. This performance can be acceptable for some kind of programs or for testing some ideas, but it is definitely unacceptable for most programs in their production stage.
+
+The CX compiler is not exactly a compiler in the traditional sense of the word, but it definitely will become one soon. We call it a compiler for now because it will become one and because of the optimizations it makes to the generated code. In a sense, that can be already considered a compiler, as the code is not run line-by-line as in an interpreter. We are only lacking a proper way to create executables targeted to a platform (operating system and CPU).
+
+As stated in the previous section, CX's compiled code performs similarly to Python in some tests. Python should beat CX in other benchmarks, as it is a language that has been optimized since 1991, but at least it is not super slow like CX's interpreted programs.
+
+Another feature of CX's compiler is that it has its own garbage collector already. Go's garbage collector is remarkable, but it was not working well with CX. Now that CX has its own memory segments, we can optimize very well how that memory is allocated.
+
+In conclusion, the compiler was not necessary in terms of features, but it was definitely necessary as performance is almost always a critical aspect of any programming language. Even interpreted languages are often discarded or chosen because of their speed or how well they manage memory.
 
 %----------------------------------------------------------------------------------------
 %	CHAPTER 16
@@ -2696,6 +2632,13 @@ An even more interesting feature of \emph{stepping} is that you can give it nega
 %     \end{itemize}
 % \end{remark}
 
+%================================================================
+%    PART 3: Programming Examples
+%================================================================
+
+\part{Programming Examples}
+\index{programming examples}
+
 %----------------------------------------------------------------------------------------
 %	CHAPTER 17
 %----------------------------------------------------------------------------------------
@@ -2817,6 +2760,157 @@ Listing \ref{listing:testing-control-flow-statements} shows a more complex situa
 
 Likewise, at \textbf{line \ref{line:check-not-if}} we check if the \emph{if} statement is correctly not entering when its predicate evaluates to false. If the \emph{if} statement enters in this case, the value of \textbf{check} will be changed to 555, so we need to test using \textbf{assert} that \textbf{check}'s value is still 333.
 
+%----------------------------------------------------------------------------------------
+%	CHAPTER 14
+%----------------------------------------------------------------------------------------
+
+% \chapterimage{blank-header.png}
+\chapter{Genetic Programming}
+\label{chapter:genetic-programming}
+\index{genetic programming}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item CX has a native function for calling a genetic programming algorithm
+%         \item Explain what genetic programming is
+%         \item Under the hood, the genetic programming algorithm works by using affordances
+%         \item We select the to-be-evolved function, and we ask the affordance system what we can do with it
+%         \item We select an expression to be added, etc. Explain better
+%         \item We can combine the affordance system (rule set) to evolve a function that meets the criteria set by the rule set (in the future)
+%         \item For example, we can keep evolving a function until the affordance system shows it (it means that the evolution was successful)
+%     \end{itemize}
+% \end{remark}
+
+After the first version of affordances was implemented in CX, it seemed natural to use it for creating a genetic programming algorithm. Genetic programming (GP) is an evolutionary algorithm that automatically modifies programs (programs creating programs!). In theory, you could only tell a GP algorithm a set of goals and GP will generate the program for you, so you could tell it "I want an operating system that does this and this and this" and it could arrive to that solution. But of course in practice this would be extremely difficult. In reality, GP is usually used to find solutions to problems that are relatively hard for a human being, but relatively easy for a computer to solve. For example, you can use GP to find a mathematical model that describes a financial market (such as SKY price movements!), and it will find it in minutes or maybe seconds, depending on your hardware. However, obtaining such model by hand would be very difficult, as it could take you days, weeks or even months to create such a model.
+
+GP is pretty easy to understand. Imagine that you have a set of operators, such as +, -, / and *. Now imagine that you have a set of input variables, such as $x$. Lastly, imagine that you have the plot of a curve that curiously enough resembles the curve generated by plotting $f(x) = x^2 + x$. When run the GP algorithm, it will start making random combinations of operators and variables, such as $x+x$, $x+x+x$, $x*x*x$, $x*x + x + x$, and so on. These combinations of operators then will be evaluated to see how well they perform. For example, $x * x + x + x$ will throw a curve that is closer to our target function than, say, $x + x$ (as this is not even a curve).
+
+Those combinations that behave well are kept, while the ones that perform poorly are destroyed, just like in natural selection where the strong individuals are the ones that survive (and hence the name \emph{genetic} programming). Again, as in natural selection, the strong individuals are the ones to reproduce and share their genetic material among them to create stronger individuals. In the case of GP, the genetic material represents mathematical terms. So, for example, if we reproduce $x * x$ and $x * x + x + x$, we can end up with these combinations: $x * x + x$ and $x * x + x + x$ (depending on how you design your crossover operators, i.e. how you want the individuals to be reproducing), where the former corresponds to the terms contained in an equivalent function to our target function.
+
+As said at the beginning of this chapter, CX's GP is entirely based on affordances. If you read chapter \ref{chapter:affordances}, you now know that affordances can list all the possible actions that can be performed on a program's element, such as functions. Well, we can use this functionality to list all the operators that can be used to create expressions for the target functions (the one that we want to simulate). Then we can also use affordances to determine what we can send to these expressions. Also, if we want to reproduce individuals, we can use affordances to know what expressions from each individual can be obtained, and how they can be added to their offspring. You can do everything in a GP using affordances.
+
+\begin{lstlisting}[caption={Using genetic programming to evolve a function},captionpos=b,label={listing:genetic-programming-example}]
+package main
+
+func realFn (n f64) (out f64) {|\label{line:real-function}|
+    out = n * n + n
+}
+
+func simFn (n f64) (out f64) {}|\label{line:simulate-function}|
+
+func main () (out f64) {
+	var numPoints i32
+    var inps []f64
+    var outs []f64
+    
+    var c i32
+    
+	for c = 0; c < numPoints; c++ {
+        inps = append(inps, i32.f64(c) - 10.0D)|\label{line:gp-inputs}|
+	}
+
+	for c = 0; c < numPoints; c++ {
+        outs = append(outs, realFn(inps[c]))|\label{line:gp-outputs}|
+	}
+	
+    var target aff
+    target = #{pkg(main) fn(realFn)}|\label{line:function-to-evolve}|
+    
+    var fnBag aff
+    fnBag = #{fn(f64.add) fn(f64.mul) fn(f64.sub)}|\label{line:function-bag}|
+    
+	evolve(target, fnBag, inps, outs, 5, 100, 0.1D)|\label{line:evolve-function-call}|
+
+	str.print("Testing evolved solution")
+	for c = 0; c < numPoints; c++ {|\label{line:gp-start-testing}|
+        printf("%f\n", simFn(inps[c]))
+	}|\label{line:gp-end-testing}|
+}
+\end{lstlisting}
+
+But enough about theory, let's see an example in action. Listing \ref{listing:genetic-programming-example} shows how to use CX's GP to find a function that curve-fits $f(x) = x^2 + x$. This target function is defined at \textbf{line \ref{line:real-function}}, and the function that will try to simulate the curve defined by the real function, \textbf{simFn}, is defined at \textbf{line \ref{line:simulate-function}}. As you can see, \textbf{simFn} starts as an empty function declaration. This is because the GP is going to fill this function with expressions.
+
+After defining our \textbf{simFn}, we now need our data. In curve-fitting algorithms you usually need two sets of data: the inputs and the outputs of the target function. For example, if you input 1, you'll get a 2, if you input a 2, you'll get a 3, etc. In this case, the inputs are constructed at \textbf{line \ref{line:gp-inputs}}, while the outputs at \textbf{line \ref{line:gp-outputs}}. The inputs range from -10 to 10, and the outputs are obtained by evaluating \textbf{realFn} with these inputs.
+
+The next step is to set a "bag" of operators. These operators are the ones that will be used to create the CX expressions that will be inside \textbf{simFn}. In previous versions of CX we used a string to define these operators, e.g. "i32.add|i32.mul|i32.sub", but now we have integrated affordances with the GP even more, and we specify the functions using the affordance operator, as can be seen at \textbf{line \ref{line:function-bag}}. Similarly, the function to be evolved was previously defined with a string, e.g. "simFn", but now we also use the affordance operator, as seen at \textbf{line \ref{line:function-to-evolve}}.
+
+After having defined all the data mentioned in the previous paragraphs, we only need to decide how many expressions should our simulated function have, for how many generations should our algorithm run, and what's our threshold error. "What the..." you may be saying to yourself at this point, but the cure for this is to explain these concepts in the following paragraphs.
+
+First, CX's GP is of a certain type called cartesian genetic (CGP) programming, which was devised by Miller and Thomson in \cite{miller2000cartesian}. In CGP you limit the number of expressions or statements that can be defined in a function to be evolved. This is a simple method that completely eliminates bloat, which is a major problem in traditional GP. In traditional GP, you can end up with evolved functions having thousands and thousands of expressions, and many of them might not even make any sense. For example, you could have expressions such as \lstinline{x + x + x - x - x - x} or \lstinline{x * x / x}. CGP has been proved in several research works that limiting the number of expressions forces GP to improve its solutions, while completely eliminating bloat, and use less computing resources as an extra.
+
+Next, we have the number of generations. This parameter is clearly understood once we remember that programs are reproduced or crossed over, just like in biological evolution. The number of generations tell the GP how many times individuals are going to reproduce among them. The first generation will create children, the next generation will create grandchildren, the next will create great-grandchildren, and so on.
+
+\begin{figure}
+\caption{Curve approximation}
+\centering
+\includegraphics[width=0.5\textwidth]{img/curve-approximation.png}
+\label{figure:curve-approximation}
+\end{figure}
+
+The last parameter is a threshold error, often called \emph{epsilon}. In most problems trying to be solved by any evolutionary algorithm, it will be very hard to achieve an exact solution. However, in all of these problems, a close-enough solution is usually a sufficient solution. For example, take a look at figure \ref{figure:curve-approximation}. We can see two plots, and maybe our target function is represented by the blue line, while our evolved solution is the red one. Maybe this is enough, depending on where we want to use this function. For example, maybe we want to evolve a program that manages the cruise control of a car, and if we do not get an exact solution, the car might go 2 miles per hour faster or slower than our desired speed limit, and this could be a very good solution.
+
+In other cases, any error is unacceptable, such as in determining if a patient requires an amputation or not. Now, epsilon tells the GP algorithm how bad a solution can perform while maintaining us happy with the results. In our example, this error is obtained by calculating the mean-squared error (MSE), which is pretty easy to understand: you only need subtract every simulated data point to each of its real counterpart, sum all of these numbers and average them, and then get that number's square root. If you are wondering why provide both a number of generations and an epsilon, the answer is that the program will stop when any of these criteria are met. These stop criteria can be interpreted as: "I'm willing to wait for 100 generations or until the solution achieves this performance error," and this makes perfect sense once you realize that many optimization problems can take weeks or months to finish.
+
+Having explained all the input parameters, we can now fully understand the single most important line in listing \ref{listing:genetic-programming-example}: \textbf{line \ref{line:evolve-function-call}}. In this line, we can see a call to \textbf{evolve}, which will contain all of the previously discussed input parameters. In order, we are sending: the function to be evolved (\emph{target}), the operators to be used in the evolutionary process (\emph{fnBag}), the inputs (\emph{inps}), the outputs (\emph{outs}), the limit number of expressions our evolved function can have, the number of generations the algorithm will run, and epsilon or the good-enough error.
+
+After waiting a few milliseconds (it's an extremely easy problem to solve, after all), we will have a \textbf{simFn} filled with expressions that will hopefully simulate the target function $f(x) = x^2 + x$. To test this, we can evaluate the evolved function with each of the inputs (the integers from -10 to 10), and check if these outputs correspond to the outputs from the target function. This testing is performed at \textbf{lines \ref{line:gp-start-testing}-\ref{line:gp-end-testing}}.
+
+\begin{appendices}
+%\appendix
+%\appendixname{A}
+\chapter{Installing CX}
+\index{installing CX}
+
+% \begin{remark}
+% Section Outline
+%     \begin{itemize}
+%     	\item Explain there is a script for installation, which is in beta
+%         \item Explain the steps (each of the steps in the script)
+%         \item Explain special case in Windows
+%         \item Explain you need OpenGL libraries in Ubuntu
+%         \item Run tests, run examples (show command line, running the examples)
+%     \end{itemize}
+% \end{remark}
+
+Eventually, we will have a bootstrapped version of CX, and you'll be able to compile CX using CX, but in the meantime, you need to have a working installation of the Go language to compile CX, as CX is implemented in Go. Although providing instructions on how to install Go is out of the scope of this book, we will give you some guidelines:
+
+\begin{itemize}
+\item At the time of writing, you can find instructions on how to install Go here: \url{https://golang.org/doc/install}
+\item Make sure you get a version of Go superior to 1.8
+\item Correctly setting a Go environment -- particularly the GOPATH variable -- usually decreases the chances of getting errors with the installation of CX
+\end{itemize}
+
+After getting your Go installation ready, you will need to install some libraries or programs, depending on your operating system.
+
+In the case of Linux distributions, you might need to install some OpenGL libraries, if you have not done so already. CX has been tested in Ubuntu Linux, and the commands to get the required libraries for this distribution are shown in listing \ref{listing:installing-opengl}.
+
+\begin{lstlisting}[caption={Installing required OpenGL libraries in Ubuntu},captionpos=b,label={listing:installing-opengl}]
+sudo apt-get install libxi-dev
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install libxrandr-dev
+sudo apt-get install libxcursor-dev
+sudo apt-get install libxinerama-dev
+\end{lstlisting}
+
+As there are dozens of Linux distributions, it would be hard to give instructions on how to get the correct libraries for each of them. Nevertheless, using your favorite search engine to find out the names of those libraries for your distribution, and how to install them should be easy.
+
+If you are using Windows, you might only need to install \emph{GCC}. If you already installed GCC through Cygwin, you might run into trouble, as Go apparently does not get along with Cygwin. If you have not installed GCC, you should install it either through \emph{tdm-gcc} (\url{http://tdm-gcc.tdragon.net/}) or Mingw (\url{http://www.mingw.org/}).
+
+At the moment, most users of CX have installed it on MacOS systems, and in all of the cases the installation of the language has been straightforward.
+
+And finally, you'll need \emph{Git} installed, regardless of your operating system. If you find any problems with the installation, we will be grateful if you can open an issue at CX's GitHub repository (\url{https://github.com/skycoin/cx}), so we can improve the installation process!
+
+After going through the steps of installing Go and the required libraries, you should be able to install CX by running either the \emph{cx.sh} (for *nix users) or the \emph{cx.bat} (for Windows users) installation scripts, which can be found in CX's GitHub repository (\url{https://github.com/skycoin/cx}). If you are running a *nix operating system, you can also try the command shown in listing \ref{listing:cx-installation-one-liner}.
+
+\begin{lstlisting}[caption={One-liner CX installation script for *nix systems},captionpos=b,label={listing:cx-installation-one-liner}]
+sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
+\end{lstlisting}
+
+If everything went well, you should be able to see CX's version printed in your terminal after running \textbf{cx -v}.
+
+\end{appendices}
+
 \newpage
 
 \printindex
@@ -2824,5 +2918,8 @@ Likewise, at \textbf{line \ref{line:check-not-if}} we check if the \emph{if} sta
 \newpage
 
 \printbibliography[heading=subbibliography,notkeyword=this]
+
+\end{document}
+ibliography,notkeyword=this]
 
 \end{document}
