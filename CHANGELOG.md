@@ -8,6 +8,9 @@
   * #54: No compilation error when defining a struct with duplicate fields.
   * #67: No compilation error when var is accessed outside of its declaring scope.
   * #247: No compilation error when variables are inline initialized.
+  * #244: Crash when using a constant expression in a slice literal expression.
+	* The problem actually involved the incapability of using expressions as
+	values in slice literals
 * Documentation
 * IDE (WiP)
 * Miscellaneous
