@@ -896,11 +896,13 @@ selection_statement:
         |       IF conditional_expression LBRACE RBRACE else_statement SEMICOLON //
         |       IF conditional_expression LBRACE block_item_list RBRACE elseif_list SEMICOLON
         |       IF conditional_expression LBRACE RBRACE elseif_list SEMICOLON
+        |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
         |       IF conditional_expression compound_statement
 	|       SWITCH LPAREN conditional_expression RPAREN statement
                 ;
 
-elseif:         ELSE IF expression LBRACE block_item_list RBRACE
+elseif:         ELSE IF conditional_expression LBRACE block_item_list RBRACE
+        |       ELSE IF conditional_expression LBRACE RBRACE
         ;
 
 elseif_list:
@@ -910,6 +912,7 @@ elseif_list:
 
 else_statement:
                 ELSE LBRACE block_item_list RBRACE
+	|      	ELSE LBRACE RBRACE
         ;
 
 iteration_statement:

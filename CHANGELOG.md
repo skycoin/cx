@@ -7,6 +7,7 @@
 * Fixed issues
   * #54: No compilation error when defining a struct with duplicate fields.
   * #67: No compilation error when var is accessed outside of its declaring scope.
+  * #82: Empty code blocks (even if they contain commented-out lines) crash like this.
   * #247: No compilation error when variables are inline initialized.
 * Documentation
 * IDE (WiP)

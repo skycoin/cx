@@ -2764,7 +2764,7 @@ PERIOD
 STRLIT can assign to previously undeclared vars with just '='
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-82.cx
  COMMA 
@@ -2773,10 +2773,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT empty code blocks (even if they contain commented-out lines) crash like this
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
