@@ -370,7 +370,7 @@ func main ()() {
 	runTest("issue-77b.cx", cx.SUCCESS, "error with references to struct literals")
 	runTest("issue-78.cx", cx.COMPILATION_ERROR, "struct identifier (when initializing fields) can be with or without a '&' prefix, with no CX error")
 	runTest("issue-79.cx", cx.COMPILATION_ERROR, "can assign to previously undeclared vars with just '='")
-	runTestEx("issue-82.cx", cx.SUCCESS, "empty code blocks (even if they contain commented-out lines) crash like this", TEST_ISSUE, 0)
+	runTest("issue-82.cx", cx.SUCCESS, "empty code blocks (even if they contain commented-out lines) crash like this")
 	runTest("issue-84.cx", cx.SUCCESS, "increment operator ++ does not work")
 	runTest("issue-85.cx", cx.SUCCESS, "Method does not work")
 	runTest("issue-86.cx", cx.SUCCESS, "Cannot use bool variable in if expression")

@@ -51,6 +51,26 @@ func main () {
 
 	test(check, 999, "entering nested IF/ELSE error")
 
+	// if elseif
+	if 5 < 3 {
+	} else if 3 >= 10 {
+	} else {
+		check = 33
+	}
+
+	test(check, 33, "")
+
+	if 5 < 3 {
+	} else if 3 >= 10 {
+	} else {
+		if 5 < 2 {
+		} else {
+			check = 41
+		}
+	}
+
+	test(check, 41, "")
+
 	var i i32
 	for i = 0; i < 10; i = i32.add(i, 1) {
 		check = i

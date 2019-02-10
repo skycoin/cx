@@ -1187,6 +1187,11 @@ selection_statement:
 			//
 			$$ = SelectionStatement($2, nil, $5, nil, SEL_ELSEIF)
                 }
+        |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
+                {
+			//
+			$$ = SelectionStatement($2, nil, $5, $6, SEL_ELSEIFELSE)
+                }
         |       IF conditional_expression compound_statement
                 {
 			$$ = SelectionExpressions($2, $3, nil)
@@ -1195,13 +1200,20 @@ selection_statement:
                 { $$ = nil }
                 ;
 
-elseif:         ELSE IF expression LBRACE block_item_list RBRACE
+elseif:         ELSE IF conditional_expression LBRACE block_item_list RBRACE
                 {
 			$$ = SelectStatement{
 				Condition: $3,
 				Then: $5,
 			}
                 }
+	|       ELSE IF conditional_expression LBRACE RBRACE
+		{
+			$$ = SelectStatement{
+				Condition: $3,
+				Then: nil,
+			}
+		}
                 ;
 
 elseif_list:    elseif
@@ -1219,6 +1231,10 @@ else_statement:
                 {
 			$$ = $3
                 }
+	|	ELSE LBRACE RBRACE
+		{
+			$$ = nil
+		}
         ;
 
 iteration_statement:
