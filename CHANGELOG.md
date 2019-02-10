@@ -3,6 +3,7 @@
 ### v0.6.1 (NOT YET RELEASED)
 * Additions
   * Support for lexical scoping
+  * `if/elseif` and `if/elseif/else` statements now work properly.
 * Libraries
 * Fixed issues
   * #54: No compilation error when defining a struct with duplicate fields.
