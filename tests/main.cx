@@ -381,7 +381,7 @@ func main ()() {
 	runTest("issue-98.cx", cx.COMPILATION_ERROR, "Variable redeclaration should not be allowed")
 	runTest("issue-99.cx", cx.SUCCESS, "Short variable declarations are not working with calls to methods or functions")
 	runTest("issue-101.cx", cx.COMPILATION_ERROR, "Panic when using equality operator between a bool and an i32")
-	runTestEx("issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work", TEST_ISSUE, 0)
+	runTest("issue-102.cx", cx.SUCCESS, "String concatenation using the + operator doesn't work")
 	runTest("issue-103.cx", cx.SUCCESS, "Argument list is not parsed correctly")
 	runTest("issue-104.cx", cx.SUCCESS, "Dubious error message when indexing an array with a substraction expression")
 	runTest("issue-105.cx", cx.SUCCESS, "Dubious error message when inline initializing a slice")

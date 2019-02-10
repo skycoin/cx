@@ -2908,7 +2908,7 @@ PERIOD
 STRLIT Panic when using equality operator between a bool and an i32
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-102.cx
  COMMA 
@@ -2917,10 +2917,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT String concatenation using the + operator doesn't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
