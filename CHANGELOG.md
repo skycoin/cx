@@ -7,6 +7,7 @@
 * Fixed issues
   * #54: No compilation error when defining a struct with duplicate fields.
   * #67: No compilation error when var is accessed outside of its declaring scope.
+  * #69: glfw.GetCursorPos() throws error
   * #247: No compilation error when variables are inline initialized.
 * Documentation
 * IDE (WiP)
@@ -44,7 +45,6 @@
   * #62: No compilation error when dereferencing an i32 var
   * #63: Fixed a problem where inline initializations didn't work with dereferences
   * #65: Return statements now work in CX, with and without return arguments
-  * #69: glfw.GetCursorPos() throws error
   * #77: Fixed errors related to sending references of structs to functions and
         assigning references to struct literals
   * #101: Using different types in shorthands now throws an error
