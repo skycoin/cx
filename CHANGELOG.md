@@ -44,6 +44,7 @@
   * #62: No compilation error when dereferencing an i32 var
   * #63: Fixed a problem where inline initializations didn't work with dereferences
   * #65: Return statements now work in CX, with and without return arguments
+  * #69: glfw.GetCursorPos() throws error
   * #77: Fixed errors related to sending references of structs to functions and
         assigning references to struct literals
   * #101: Using different types in shorthands now throws an error
