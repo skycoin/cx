@@ -1,6 +1,10 @@
 PACKAG 
  IDENT main
 SCOLON 
+   VAR 
+ IDENT gStr
+   STR 
+SCOLON 
   FUNC 
  IDENT receivingStr
 LPAREN 
@@ -169,6 +173,107 @@ LPAREN
  IDENT result
  COMMA 
 STRLIT HelloBye
+ COMMA 
+STRLIT 
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT lStr
+   STR 
+SCOLON 
+ IDENT lStr
+  ASGN =
+STRLIT Local
+SCOLON 
+ IDENT gStr
+  ASGN =
+STRLIT Global
+SCOLON 
+ IDENT test
+LPAREN 
+ IDENT gStr
+ COMMA 
+STRLIT Global
+ COMMA 
+STRLIT global strings error
+RPAREN 
+SCOLON 
+ IDENT test
+LPAREN 
+ IDENT lStr
+ COMMA 
+STRLIT Local
+ COMMA 
+STRLIT local strings error
+RPAREN 
+SCOLON 
+ IDENT test
+LPAREN 
+ IDENT len
+LPAREN 
+STRLIT Foo bar
+RPAREN 
+ COMMA 
+INTLIT 7
+ COMMA 
+STRLIT len() error
+RPAREN 
+SCOLON 
+ IDENT test
+LPAREN 
+   STR 
+PERIOD 
+ IDENT concat
+LPAREN 
+STRLIT Hello 
+ COMMA 
+STRLIT World
+RPAREN 
+ COMMA 
+STRLIT Hello World
+ COMMA 
+STRLIT str.concat() error
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT concStr
+   STR 
+SCOLON 
+ IDENT concStr
+  ASGN =
+STRLIT Hello, 
+ ADDOP +
+STRLIT world!
+SCOLON 
+ IDENT test
+LPAREN 
+ IDENT concStr
+ COMMA 
+STRLIT Hello, world!
+ COMMA 
+STRLIT 
+RPAREN 
+SCOLON 
+ IDENT test
+LPAREN 
+STRLIT meow 
+ ADDOP +
+STRLIT woof
+ COMMA 
+STRLIT meow woof
+ COMMA 
+STRLIT 
+RPAREN 
+SCOLON 
+ IDENT test
+LPAREN 
+STRLIT meow 
+ ADDOP +
+STRLIT woof 
+ ADDOP +
+STRLIT tweet
+ COMMA 
+STRLIT meow woof tweet
  COMMA 
 STRLIT 
 RPAREN 
