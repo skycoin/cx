@@ -361,6 +361,7 @@ func main ()() {
 	runTest("issue-65b.cx", cx.COMPILATION_ERROR, "Mismatched number of returning arguments is not throwing an error")
 	runTest("issue-67.cx", cx.COMPILATION_ERROR, "No compilation error when var is accessed outside of its declaring scope")
 	runTest("issue-68.cx", cx.COMPILATION_ERROR, "Panic when a str var is shadowed by a struct var in another scope")
+	runTestEx("issue-69.cx", cx.SUCCESS, "glfw.GetCursorPos() throws error", TEST_GUI | TEST_STABLE, 0)
 	runTestEx("issue-70.cx", cx.SUCCESS, "Inline field and index 'dereferences' to function calls' outputs", TEST_ISSUE, 0)
 	runTest("issue-71.cx", cx.COMPILATION_ERROR, "No compilation error when redeclaring a variable")
 	runTestEx("issue-72.cx", cx.SUCCESS, "Multi-dimensional slices don't work", TEST_ISSUE, 0)
