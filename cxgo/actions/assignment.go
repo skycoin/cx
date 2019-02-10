@@ -116,7 +116,7 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 			expr.Package = pkg
 
 			var sym *CXArgument
-
+			
 			if from[idx].Operator == nil {
 				// then it's a literal
 				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])

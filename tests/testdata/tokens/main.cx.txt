@@ -2886,7 +2886,7 @@ PERIOD
 STRLIT Variable redeclaration should not be allowed
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-99.cx
  COMMA 
@@ -2895,10 +2895,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Short variable declarations are not working with calls to methods or functions
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
