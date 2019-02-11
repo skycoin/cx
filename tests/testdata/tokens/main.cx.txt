@@ -3104,7 +3104,7 @@ STRLIT Parser gets confused with `2 -2`
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-153.cx
  COMMA 
@@ -3113,10 +3113,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic in when assigning an empty initializer list to a []i32 variable
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

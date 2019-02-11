@@ -1018,30 +1018,35 @@ assignment_expression:
                 struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
-			if $3[0].IsArrayLiteral {
-				if $2 != "=" && $2 != ":=" {
-					panic("")
-				}
-				if $2 == ":=" {
-					for _, from := range $3 {
-						from.Outputs[0].IsShortDeclaration = true
-						from.Outputs[0].PreviouslyDeclared = true
+			if $3 == nil {
+				$$ = nil
+			}
+			if $3 != nil {
+				if $3[0].IsArrayLiteral {
+					if $2 != "=" && $2 != ":=" {
+						panic("")
 					}
-				}
-				$$ = ArrayLiteralAssignment($1, $3)
-			} else if $3[len($3) - 1].IsStructLiteral {
-				if $2 != "=" && $2 != ":=" {
-					panic("")
-				}
-				if $2 == ":=" {
-					for _, from := range $3 {
-						from.Outputs[0].IsShortDeclaration = true
-						from.Outputs[0].PreviouslyDeclared = true
+					if $2 == ":=" {
+						for _, from := range $3 {
+							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].PreviouslyDeclared = true
+						}
 					}
+					$$ = ArrayLiteralAssignment($1, $3)
+				} else if $3[len($3) - 1].IsStructLiteral {
+					if $2 != "=" && $2 != ":=" {
+						panic("")
+					}
+					if $2 == ":=" {
+						for _, from := range $3 {
+							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].PreviouslyDeclared = true
+						}
+					}
+					$$ = StructLiteralAssignment($1, $3)
+				} else {
+					$$ = Assignment($1, $2, $3)
 				}
-				$$ = StructLiteralAssignment($1, $3)
-			} else {
-				$$ = Assignment($1, $2, $3)
 			}
                 }
                 ;
