@@ -395,7 +395,7 @@ func main ()() {
 	runTest("issue-132.cx", cx.SUCCESS, "Panic when using the return value of a function in a short declaration")
 	runTestEx("issue-133.cx", cx.COMPILATION_ERROR, "Panic when inserting a new line in a string literal", TEST_ISSUE, 0)
 	runTest("issue-134.cx", cx.COMPILATION_ERROR, "Panic when declaring a variable of an unknown type")
-	runTestEx("issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances", TEST_ISSUE, 0)
+	runTest("issue-135.cx", cx.COMPILATION_ERROR, "No compilation error when using arithmetic operators on struct instances")
 	runTestEx("issue-141.cx", cx.SUCCESS, "Parser gets confused with `2 -2`", TEST_STABLE, 0)
 	runTestEx("issue-153.cx", cx.SUCCESS, "Panic in when assigning an empty initializer list to a []i32 variable", TEST_ISSUE, 0)
 	runTest("issue-154.cx", cx.SUCCESS, "Cx stack overflow when appending to a slice passed by address")

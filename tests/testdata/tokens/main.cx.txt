@@ -3074,7 +3074,7 @@ PERIOD
 STRLIT Panic when declaring a variable of an unknown type
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-135.cx
  COMMA 
@@ -3083,10 +3083,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when using arithmetic operators on struct instances
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx

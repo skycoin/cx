@@ -80,6 +80,15 @@ func FunctionAddParameters(fn *CXFunction, inputs, outputs []*CXArgument) {
 	}
 }
 
+// CheckUndValidTypes checks if an expression with a generic operator (operators that
+// accept `TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
+// the expression `sa + sb` is not valid if they are struct instances.
+func CheckUndValidTypes(expr *CXExpression) {
+	if expr.Operator != nil && IsUndOpBasicTypes(expr.Operator) && !IsAllArgsBasicTypes(expr) {
+		println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", OpNames[expr.Operator.OpCode]))
+	}
+}
+
 func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
 		return
@@ -137,6 +146,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 		}
 
 		CheckTypes(expr)
+		CheckUndValidTypes(expr)
 
 		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
@@ -820,7 +830,7 @@ func GiveOffset(symbols *[]map[string]*CXArgument, sym *CXArgument, offset *int,
 }
 
 func ProcessTempVariable(expr *CXExpression) {
-	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOpMimicInput(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if IsTempVar(name) {
