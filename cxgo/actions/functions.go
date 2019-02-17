@@ -437,10 +437,10 @@ func GetFormattedType(arg *CXArgument) string {
 			// base type
 			if elt.CustomType != nil {
 				// then it's custom type
-				typ = elt.CustomType.Name + typ
+				typ += typ + elt.CustomType.Name
 			} else {
 				// then it's basic type
-				typ = TypeNames[elt.Type] + typ
+				typ += TypeNames[elt.Type]
 			}
 		}
 	}
@@ -476,6 +476,21 @@ func checkMatchParamTypes(expr *CXExpression, expected, received []*CXArgument, 
 				println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 
+		}
+
+		// In the case of assignment we need to check that the input's type matches the output's type.
+		// FIXME: There are some expressions added by the parser where temporary variables are used.
+		// These temporary variables' types are not properly being set. That's why we use !IsTempVar to
+		// exclude these cases for now.
+		if expr.Operator.OpCode == OP_IDENTITY && !IsTempVar(expr.Outputs[0].Name) {
+			inpType := GetFormattedType(expr.Inputs[0])
+			outType := GetFormattedType(expr.Outputs[0])
+
+			// We use `isInputs` to only print the error once.
+			// Otherwise we'd print the error twice: once for the input and again for the output
+			if inpType != outType && isInputs {
+				println(CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, GetAssignmentElement(expr.Outputs[0]).Name, outType))
+			}
 		}
 	}
 }
@@ -839,36 +854,67 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.FileLine != arg.FileLine {
-		declSpec := make([]int, len(arg.DeclarationSpecifiers))
-		for i, spec := range arg.DeclarationSpecifiers {
-			declSpec[i] = spec
-		}
+		// FIXME Maybe we can unify this later.
+		if len(sym.Fields) > 0 {
+			elt := GetAssignmentElement(sym)
 
-		for _, spec := range sym.DeclarationSpecifiers {
-			// checking if we need to remove or add DECL_POINTERs
-			// also we could be removing
-			switch spec {
-			case DECL_INDEXING:
-				if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
-					declSpec = declSpec[:len(declSpec)-1]
-				} else {
-					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
-				}
-			case DECL_DEREF:
-				if declSpec[len(declSpec)-1] == DECL_POINTER {
-					declSpec = declSpec[:len(declSpec)-1]
-				} else {
-					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
-				}
-			case DECL_POINTER:
-				if sym.FileLine != arg.FileLine {
-					// This function is also called so it assigns offset and other fields to signature parameters
-					//
-					declSpec = append(declSpec, DECL_POINTER)
+			declSpec := make([]int, len(elt.DeclarationSpecifiers))
+
+			for i, spec := range elt.DeclarationSpecifiers {
+				declSpec[i] = spec
+			}
+
+			for c := len(elt.DeclarationSpecifiers)-1; c >= 0; c-- {
+				switch elt.DeclarationSpecifiers[c] {
+				case DECL_INDEXING:
+					if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-2]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+					}
+				case DECL_DEREF:
+					if declSpec[len(declSpec)-2] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-2]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+					}
 				}
 			}
+
+			elt.DeclarationSpecifiers = declSpec
+		} else {
+			declSpec := make([]int, len(arg.DeclarationSpecifiers))
+
+			for i, spec := range arg.DeclarationSpecifiers {
+				declSpec[i] = spec
+			}
+			
+			for _, spec := range sym.DeclarationSpecifiers {
+				// checking if we need to remove or add DECL_POINTERs
+				// also we could be removing
+				switch spec {
+				case DECL_INDEXING:
+					if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+					}
+				case DECL_DEREF:
+					if declSpec[len(declSpec)-1] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+					}
+				case DECL_POINTER:
+					if sym.FileLine != arg.FileLine {
+						// This function is also called so it assigns offset and other fields to signature parameters
+						//
+						declSpec = append(declSpec, DECL_POINTER)
+					}
+				}
+			}
+			sym.DeclarationSpecifiers = declSpec
 		}
-		sym.DeclarationSpecifiers = declSpec
 	} else {
 		sym.DeclarationSpecifiers = arg.DeclarationSpecifiers
 	}
@@ -876,7 +922,13 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
 
-	sym.Lengths = arg.Lengths
+	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
+	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the parser.
+	if len(sym.Lengths) == 0 {
+		sym.Lengths = arg.Lengths
+	}
+
+	// sym.Lengths = arg.Lengths
 	sym.Package = arg.Package
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
@@ -955,6 +1007,16 @@ func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
 					nameFld.DereferenceLevels = sym.DereferenceLevels
 					nameFld.IsPointer = fld.IsPointer
 					nameFld.CustomType = fld.CustomType
+
+					sym.Lengths = fld.Lengths
+
+					// nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
+					// nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
+					if len(nameFld.DeclarationSpecifiers) > 0 {
+						nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
+					} else {
+						nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
+					}
 
 					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 

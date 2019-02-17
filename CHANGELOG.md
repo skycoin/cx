@@ -12,6 +12,7 @@
   * #82: Empty code blocks (even if they contain commented-out lines) crash like this.
   * #99: Short variable declarations are not working with calls to methods or functions.
   * #102: String concatenation using the + operator doesn't work.
+  * #169: No compilation error when assigning a i32 value to a []i32 variable.
   * #247: No compilation error when variables are inline initialized.
   * #244: Crash when using a constant expression in a slice literal expression.
 	* The problem actually involved the incapability of using expressions as

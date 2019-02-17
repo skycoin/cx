@@ -214,7 +214,11 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 			}
 
 			// to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
-			// to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
+			// FIXME: Duct-tape solution. I'm pretty sure this needs to be handled by another
+			// function like CopyArgFields
+			if len(from[idx].Outputs) > 0 {
+				to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
+			}
 			// to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
