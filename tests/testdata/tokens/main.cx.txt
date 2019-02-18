@@ -3100,7 +3100,7 @@ STRLIT Parser gets confused with `2 -2`
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-153.cx
  COMMA 
@@ -3109,10 +3109,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic in when assigning an empty initializer list to a []i32 variable
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3215,7 +3211,7 @@ STRLIT Type deduction of struct field fails
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-169.cx
  COMMA 
@@ -3224,13 +3220,9 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when assigning a i32 value to a []i32 variable
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-170.cx
  COMMA 
@@ -3239,10 +3231,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when comparing value of different types
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

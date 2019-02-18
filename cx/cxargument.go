@@ -37,6 +37,7 @@ type CXArgument struct {
 	IsRest                bool // pkg.var <- var is rest
 	IsLocalDeclaration    bool
 	IsShortDeclaration    bool
+	IsInnerReference      bool // for example: &slice[0] or &struct.field
 	PreviouslyDeclared    bool
 	DoesEscape            bool
 }
