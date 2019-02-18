@@ -30,10 +30,25 @@ There is two major improvement over 0.6.0:
    clause. From CX 0.6.1 the CX language will enforce strict lexical scoping.
 
  * `if/elseif` and `if/elseif/else` constructs now work correctly.
+ * `+` can now be used to concatenate strings:
+ 
+ ```
+ var conc str
+ conc = "Hello " + "world!"
+ ```
+ 
+ * Expressions can now be used when initializing slice/array literals:
+ 
+ ```
+ var slc []i32
+ slc = []i32{i32.add(1, 2), foo()}
+ ```
 
 ### Library Improvements
 
 CX 0.6.1 does not contain any library improvements.
+
+ * Test functions (`assert`, `panic`, `test`) now check that their first two input arguments are of the same type. This way comparing values of different types is prohibited. In a future release a function that checks the equality of their arguments regardless of types will be introduced.
 
 ### Fixed issues
 
