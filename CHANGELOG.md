@@ -12,6 +12,7 @@
   * #82: Empty code blocks (even if they contain commented-out lines) crash like this.
   * #99: Short variable declarations are not working with calls to methods or functions.
   * #102: String concatenation using the + operator doesn't work.
+  * #135: No compilation error when using arithmetic operators on struct instances.
   * #153: Panic in when assigning an empty initializer list to a []i32 variable.
   * #169: No compilation error when assigning a i32 value to a []i32 variable.
   * #170: No compilation error when comparing value of different types.

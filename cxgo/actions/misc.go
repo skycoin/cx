@@ -369,3 +369,113 @@ func DefineNewScope (exprs []*CXExpression) {
 		exprs[len(exprs)-1].ScopeOperation = SCOPE_REM
 	}
 }
+
+// IsArgBasicType returns true if `arg`'s type is a basic type, false otherwise.
+func IsArgBasicType(arg *CXArgument) bool {
+	switch arg.Type {
+		case TYPE_BOOL,
+		TYPE_BYTE,
+		TYPE_STR,
+		TYPE_F32,
+		TYPE_F64,
+		TYPE_I8,
+		TYPE_I16,
+		TYPE_I32,
+		TYPE_I64,
+		TYPE_UI8,
+		TYPE_UI16,
+		TYPE_UI32, TYPE_UI64:
+		return true
+	}
+	return false
+}
+
+// IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
+func IsAllArgsBasicTypes(expr *CXExpression) bool {
+	for _, inp := range expr.Inputs {
+		if !IsArgBasicType(inp) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters.
+func IsUndOp(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_LEN,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
+
+// IsUndOpMimicInput returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean.
+func IsUndOpMimicInput(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_NEG,
+		OP_UND_BITSHL, OP_UND_BITSHR:
+		return true
+	}
+	return false
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters and if it's an operator that only works with basic types. For example, `sa + sb` shouldn't work with struct instances.
+func IsUndOpBasicTypes(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_LEN,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
