@@ -136,6 +136,8 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 			}
 		}
 
+		processTestExpression(expr)
+
 		CheckTypes(expr)
 
 		if expr.ScopeOperation == SCOPE_REM {
@@ -270,7 +272,8 @@ func isUndOpSameInputTypes(op *CXFunction) bool {
 		OP_UND_GT,
 		OP_UND_LTEQ,
 		OP_UND_GTEQ,
-		OP_UND_BITSHL, OP_UND_BITSHR:
+		OP_UND_BITSHL,
+		OP_UND_BITSHR:
 		return true
 	}
 	return false
@@ -295,6 +298,19 @@ func ProcessPointerStructs(expr *CXExpression) {
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
+		}
+	}
+}
+
+// ProcessAssertExpression checks for the special case of test calls. `assert`, `test`, `panic` are operators where
+// their first input's type needs to be the same as its second input's type. This can't be handled by
+// `checkSameNativeType` because these test functions' third input parameter is always a `str`.
+func processTestExpression (expr *CXExpression) {
+	if expr.Operator != nil {
+		opCode := expr.Operator.OpCode
+		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) &&
+			expr.Inputs[0].Type != expr.Inputs[1].Type {
+			println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call", OpNames[expr.Operator.OpCode]))
 		}
 	}
 }

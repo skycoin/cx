@@ -3230,7 +3230,7 @@ STRLIT No compilation error when assigning a i32 value to a []i32 variable
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-170.cx
  COMMA 
@@ -3239,10 +3239,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when comparing value of different types
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
