@@ -437,7 +437,7 @@ func GetFormattedType(arg *CXArgument) string {
 			// base type
 			if elt.CustomType != nil {
 				// then it's custom type
-				typ += typ + elt.CustomType.Name
+				typ += elt.CustomType.Name
 			} else {
 				// then it's basic type
 				typ += TypeNames[elt.Type]
