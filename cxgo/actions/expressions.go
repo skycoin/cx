@@ -334,6 +334,12 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 	case "&":
 		baseOut.PassBy = PASSBY_REFERENCE
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_POINTER)
+		if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, DECL_INDEXING) {
+			// If we're referencing an inner element, like an element of a slice (&slc[0])
+			// or a field of a struct (&struct.fld) we no longer need to add
+			// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
+			baseOut.IsInnerReference = true
+		}
 	case "!":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			expr := MakeExpression(Natives[OP_BOOL_NOT], CurrentFile, LineNo)

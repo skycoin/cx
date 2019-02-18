@@ -351,6 +351,12 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 				// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 				// }
 				if inp.PassBy == PASSBY_REFERENCE {
+					// If we're referencing an inner element, like an element of a slice (&slc[0])
+					// or a field of a struct (&struct.fld) we no longer need to add
+					// the OBJECT_HEADER_SIZE to the offset
+					if inp.IsInnerReference {
+						finalOffset -= OBJECT_HEADER_SIZE
+					}
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
 					byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]

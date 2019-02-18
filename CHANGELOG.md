@@ -13,6 +13,7 @@
   * #99: Short variable declarations are not working with calls to methods or functions.
   * #102: String concatenation using the + operator doesn't work.
   * #153: Panic in when assigning an empty initializer list to a []i32 variable.
+  * #169: No compilation error when assigning a i32 value to a []i32 variable.
   * #170: No compilation error when comparing value of different types.
   * #247: No compilation error when variables are inline initialized.
   * #244: Crash when using a constant expression in a slice literal expression.
