@@ -8,12 +8,11 @@ version 0.6.1. This is the first bugfix release of the CX 0.6 series.
 The focus of this release is to improve the quality of the language compiler
 and interpreter.
 
-
 ## New in This Release
 
 ### Language Improvements
 
-There is two major improvement over 0.6.0:
+There are a number of major improvement over 0.6.0:
 
  * Support for lexical scoping.
 
@@ -30,25 +29,27 @@ There is two major improvement over 0.6.0:
    clause. From CX 0.6.1 the CX language will enforce strict lexical scoping.
 
  * `if/elseif` and `if/elseif/else` constructs now work correctly.
- * `+` can now be used to concatenate strings:
  
- ```
- var conc str
- conc = "Hello " + "world!"
- ```
+ * The `+` operator can now be used to concatenate strings:
+ 
+    ```
+    var conc str
+    conc = "Hello " + "world!"
+    ```
  
  * Expressions can now be used when initializing slice/array literals:
  
- ```
- var slc []i32
- slc = []i32{i32.add(1, 2), foo()}
- ```
+   ```
+   var slc []i32
+   slc = []i32{i32.add(1, 2), foo()}
+   ```
 
 ### Library Improvements
 
-CX 0.6.1 does not contain any library improvements.
-
- * Test functions (`assert`, `panic`, `test`) now check that their first two input arguments are of the same type. This way comparing values of different types is prohibited. In a future release a function that checks the equality of their arguments regardless of types will be introduced.
+ * Test functions (`assert`, `panic`, `test`) now check that their first two
+   input arguments are of the same type. This way comparing values of
+   different types is prohibited. In a future release a function that checks
+   the equality of their arguments regardless of types will be introduced.
 
 ### Fixed issues
 
@@ -64,8 +65,8 @@ CX 0.6.1 does not contain any library improvements.
   * \#170: No compilation error when comparing value of different types.
   * \#247: No compilation error when variables are inline initialized.
   * \#244: Crash when using a constant expression in a slice literal expression.
-	* The problem actually involved the incapability of using expressions as
-	values in slice literals
+      * The problem actually involved the incapability of using expressions as
+        values in slice literals
 
 ### Documentation
 
