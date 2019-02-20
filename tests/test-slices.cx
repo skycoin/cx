@@ -1,5 +1,9 @@
 package main
 
+type test struct {
+	x i32
+}
+
 func printSliceI32(msg str, a []i32) {
 	printf("%s : {", msg)
 	for i := 0; i < len(a); i++ {
@@ -443,10 +447,33 @@ func testRemove() {
 	test(sExprsStr[1], "tweet woof", "")
 }
 
+func testLen() {
+	var nums []i32
+	
+	test(len(nums), 0, "")
+
+	nums = append(nums, 1)
+	nums = append(nums, 2)
+	nums = append(nums, 3)
+
+	test(len(nums), 3, "")
+	
+	var ts []test
+	var test test
+
+	test(len(ts), 0, "")
+	
+	ts = append(ts, test)
+	ts = append(ts, test)
+
+	test(len(ts), 2, "")
+}
+
 func main () {
 	testAppend()
 	testResize()
 	testCopy()
 	testInsert()
 	testRemove()
+	testLen()
 }
