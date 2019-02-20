@@ -415,6 +415,7 @@ func main ()() {
 	runTest("issue-244.cx", cx.SUCCESS, "Crash when using a constant expression in a slice literal expression")
 	runTest("issue-247-a.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized")
 	runTest("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized")
+	runTest("issue-264.cx", cx.SUCCESS, "Trying to determine the length of a slice of struct instances throws an error.")
 
 	var end i64
 	end = time.UnixMilli()

@@ -3310,6 +3310,17 @@ PERIOD
 STRLIT Can redeclare variables if they are inline initialized
 RPAREN 
 SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-264.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Trying to determine the length of a slice of struct instances throws an error.
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
