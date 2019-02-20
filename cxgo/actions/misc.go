@@ -471,7 +471,6 @@ func IsUndOpBasicTypes(fn *CXFunction) bool {
 		OP_UND_GT,
 		OP_UND_LTEQ,
 		OP_UND_GTEQ,
-		OP_UND_LEN,
 		OP_UND_PRINTF,
 		OP_UND_SPRINTF,
 		OP_UND_READ:
