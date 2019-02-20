@@ -1100,11 +1100,11 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 
 func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
 	for _, op := range sym.DereferenceOperations {
+		if GetAssignmentElement(sym).IsSlice {
+			continue
+		}
 		switch op {
 		case DEREF_ARRAY:
-			if GetAssignmentElement(sym).IsSlice {
-				continue
-			}
 			var subSize int = 1
 
 			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {
