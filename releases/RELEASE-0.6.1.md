@@ -61,12 +61,14 @@ There are a number of major improvement over 0.6.0:
   * \#102: String concatenation using the + operator doesn't work.
   * \#135: No compilation error when using arithmetic operators on struct instances.
   * \#153: Panic in when assigning an empty initializer list to a []i32 variable.
+  * \#168: Type deduction of struct field fails.
   * \#169: No compilation error when assigning a i32 value to a []i32 variable.
   * \#170: No compilation error when comparing value of different types.
   * \#247: No compilation error when variables are inline initialized.
   * \#244: Crash when using a constant expression in a slice literal expression.
       * The problem actually involved the incapability of using expressions as
         values in slice literals
+  * \#264: Trying to determine the length of a slice of struct instances throws an error.
 
 ### Documentation
 
