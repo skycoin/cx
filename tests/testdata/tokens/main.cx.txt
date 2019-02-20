@@ -3196,7 +3196,7 @@ PERIOD
 STRLIT Garbage memory when passing the address of slice element to a function
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-168.cx
  COMMA 
@@ -3205,10 +3205,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Type deduction of struct field fails
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
