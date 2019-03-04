@@ -369,3 +369,10 @@ func DefineNewScope (exprs []*CXExpression) {
 		exprs[len(exprs)-1].ScopeOperation = SCOPE_REM
 	}
 }
+
+// Recompile focuses on re-assigning
+func Recompile (prgrm *CXProgram) {
+	for _, pkg := range prgrm.Packages {
+		
+	}
+}

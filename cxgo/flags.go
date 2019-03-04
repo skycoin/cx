@@ -25,7 +25,8 @@ type cxCmdFlags struct {
 	initialHeap         string
 	maxHeap             string
 	stackSize           string
-	smartContractMode   bool
+	blockchainMode      bool
+	transactionMode      bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -78,8 +79,10 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
 
-	flag.BoolVar(&options.smartContractMode, "smart-contract", options.smartContractMode, "Creates a smart contract using the CX project supplied")
-	flag.BoolVar(&options.smartContractMode, "sc", options.smartContractMode, "alias for -smart-contract")
+	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain project")
+	flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
+	flag.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Start a CX blockchain transaction")
+	flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
 	
 	// viscript options
 	// flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")

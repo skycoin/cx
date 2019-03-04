@@ -216,6 +216,7 @@ import (
 	. "github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	// "github.com/skycoin/cx/src/interpreted"
+	"github.com/skycoin/fiber-init/cmd/fiber-init"
 )
 
 const VERSION = "0.6.0"
@@ -720,6 +721,23 @@ func main () {
 		return
 	}
 
+	if options.transactionMode {
+		resp, err := http.Get("http://127.0.0.1:6421/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+
+		var sPrgrm []byte
+		if err := json.Unmarshal(body, &sPrgrm); err != nil {
+			panic(err)
+		}
+
+		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
+		PRGRM = Deserialize(sPrgrm)
+	}
+
 	cxgo0.PRGRM0 = PRGRM
 
 	// setting project's working directory
@@ -1035,9 +1053,10 @@ func main () {
 				repl()
 			}
 		} else {
-			if options.smartContractMode {
-				// PRGRM.RunCompiled(0, cxArgs)
-				println(Serialize(PRGRM))
+			if options.blockchainMode {
+				PRGRM.RunCompiled(0, cxArgs)
+				s := Serialize(PRGRM)
+				fiberInit.StartCXCoin(s)
 			} else {
 				err := PRGRM.RunCompiled(0, cxArgs)
 				if err != nil {

@@ -633,10 +633,6 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
-	Debug("hmm", len(prgrm.Memory))
-	Debug("hmm", PROGRAM.HeapStartsAt)
-	Debug("hmm", PROGRAM.HeapPointer)
-
 	s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
 
 	var numStrcts int
@@ -1160,6 +1156,7 @@ func dsIntegers(off int32, size int32, s *sAll) []int {
 func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
+	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
 
 	dsPackages(s, prgrm)
 }
