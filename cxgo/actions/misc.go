@@ -371,8 +371,41 @@ func DefineNewScope (exprs []*CXExpression) {
 }
 
 // Recompile focuses on re-assigning
-func Recompile (prgrm *CXProgram) {
-	for _, pkg := range prgrm.Packages {
-		
+func (prgrm *CXProgram) Recompile () {
+	
+}
+
+// MergePrograms merges `prgrm1` and `prgrm2`, favoring `prgrm1` (if both have a package with the same name, `prgrm1`'s is used).
+func MergePrograms (prgrm1, prgrm2 *CXProgram) *CXProgram {
+	var prgrm3 CXProgram
+	
+	DataOffset := prgrm1.HeapStartsAt
+	for _, pkg := range prgrm1.Packages {
+		if dupPkg, err := prgrm2.GetPackage(pkg.Name); err == nil {
+			// Then it's duplicated and we need to replace it by prgrm1's
+			prgrm3.AddPackage(dupPkg)
+		} else {
+			prgrm3.AddPackage(pkg)
+		}
 	}
+
+	for _, pkg := range prgrm.Packages {
+		for _, glbl := range pkg.Globals {
+			glbl.Offset += DataOffset
+		}
+
+		for _, fn := range pkg.Functions {
+			for _, expr := range fn.Expressions {
+				for _, inp := range expr.Inputs {
+					if inp.Offset > 
+				}
+
+				for _, out := range expr.Inputs {
+					
+				}
+			}
+		}
+	}
+
+	return &prgrm3
 }
