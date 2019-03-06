@@ -161,25 +161,25 @@
 	lval.byt = byte(result)
 	return f(BYTE_LITERAL)
 }
-/[0-9]+L/ {
-	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
-	lval.i64 = int64(result)
-	return f(LONG_LITERAL)
-}
-/[0-9]+\.[0-9]*D/ {
-	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
-	lval.f64 = float64 (result)
-	return f(DOUBLE_LITERAL)
-}
 /[0-9]+/ {
 	result ,_ := strconv.Atoi(yylex.Text())
 	lval.i32 = int32(result)
 	return f(INT_LITERAL)
 }
-/[0-9]+\.[0-9]*/ {
+/[0-9]+L/ {
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	lval.i64 = int64(result)
+	return f(LONG_LITERAL)
+}
+/([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?/ {
 	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
 	lval.f32 = float32(result)
 	return f(FLOAT_LITERAL)
+}
+/([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?D/ {
+	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	lval.f64 = float64 (result)
+	return f(DOUBLE_LITERAL)
 }
 /[_a-zA-Z][_a-zA-Z0-9]*/ {
 	lval.tok = yylex.Text()
