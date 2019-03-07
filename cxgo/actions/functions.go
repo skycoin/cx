@@ -80,6 +80,15 @@ func FunctionAddParameters(fn *CXFunction, inputs, outputs []*CXArgument) {
 	}
 }
 
+// CheckUndValidTypes checks if an expression with a generic operator (operators that
+// accept `TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
+// the expression `sa + sb` is not valid if they are struct instances.
+func CheckUndValidTypes(expr *CXExpression) {
+	if expr.Operator != nil && IsUndOpBasicTypes(expr.Operator) && !IsAllArgsBasicTypes(expr) {
+		println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", OpNames[expr.Operator.OpCode]))
+	}
+}
+
 func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
 		return
@@ -127,11 +136,19 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 
 		// process short declaration
 		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral {
-			fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
-			fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+			if expr.IsMethodCall {
+				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
+				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
+			} else {
+				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Inputs[0].Type
+			}
 		}
 
+		processTestExpression(expr)
+
 		CheckTypes(expr)
+		CheckUndValidTypes(expr)
 
 		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
@@ -265,7 +282,8 @@ func isUndOpSameInputTypes(op *CXFunction) bool {
 		OP_UND_GT,
 		OP_UND_LTEQ,
 		OP_UND_GTEQ,
-		OP_UND_BITSHL, OP_UND_BITSHR:
+		OP_UND_BITSHL,
+		OP_UND_BITSHR:
 		return true
 	}
 	return false
@@ -290,6 +308,19 @@ func ProcessPointerStructs(expr *CXExpression) {
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
+		}
+	}
+}
+
+// ProcessAssertExpression checks for the special case of test calls. `assert`, `test`, `panic` are operators where
+// their first input's type needs to be the same as its second input's type. This can't be handled by
+// `checkSameNativeType` because these test functions' third input parameter is always a `str`.
+func processTestExpression (expr *CXExpression) {
+	if expr.Operator != nil {
+		opCode := expr.Operator.OpCode
+		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) &&
+			expr.Inputs[0].Type != expr.Inputs[1].Type {
+			println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call", OpNames[expr.Operator.OpCode]))
 		}
 	}
 }
@@ -432,10 +463,10 @@ func GetFormattedType(arg *CXArgument) string {
 			// base type
 			if elt.CustomType != nil {
 				// then it's custom type
-				typ = elt.CustomType.Name + typ
+				typ += elt.CustomType.Name
 			} else {
 				// then it's basic type
-				typ = TypeNames[elt.Type] + typ
+				typ += TypeNames[elt.Type]
 			}
 		}
 	}
@@ -471,6 +502,21 @@ func checkMatchParamTypes(expr *CXExpression, expected, received []*CXArgument, 
 				println(CompilationError(expr.Outputs[i].FileName, expr.Outputs[i].FileLine), fmt.Sprintf("function '%s' expected receiving variable of type '%s'; '%s' was provided", opName, expectedType, receivedType))
 			}
 
+		}
+
+		// In the case of assignment we need to check that the input's type matches the output's type.
+		// FIXME: There are some expressions added by the parser where temporary variables are used.
+		// These temporary variables' types are not properly being set. That's why we use !IsTempVar to
+		// exclude these cases for now.
+		if expr.Operator.OpCode == OP_IDENTITY && !IsTempVar(expr.Outputs[0].Name) {
+			inpType := GetFormattedType(expr.Inputs[0])
+			outType := GetFormattedType(expr.Outputs[0])
+
+			// We use `isInputs` to only print the error once.
+			// Otherwise we'd print the error twice: once for the input and again for the output
+			if inpType != outType && isInputs {
+				println(CompilationError(received[i].FileName, received[i].FileLine), fmt.Sprintf("cannot assign value of type '%s' to identifier '%s' of type '%s'", inpType, GetAssignmentElement(expr.Outputs[0]).Name, outType))
+			}
 		}
 	}
 }
@@ -815,7 +861,7 @@ func GiveOffset(symbols *[]map[string]*CXArgument, sym *CXArgument, offset *int,
 }
 
 func ProcessTempVariable(expr *CXExpression) {
-	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOp(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
+	if expr.Operator != nil && (expr.Operator == Natives[OP_IDENTITY] || IsUndOpMimicInput(expr.Operator)) && len(expr.Outputs) > 0 && len(expr.Inputs) > 0 {
 		name := expr.Outputs[0].Name
 		arg := expr.Outputs[0]
 		if IsTempVar(name) {
@@ -834,36 +880,67 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.IndirectionLevels = arg.IndirectionLevels
 
 	if sym.FileLine != arg.FileLine {
-		declSpec := make([]int, len(arg.DeclarationSpecifiers))
-		for i, spec := range arg.DeclarationSpecifiers {
-			declSpec[i] = spec
-		}
+		// FIXME Maybe we can unify this later.
+		if len(sym.Fields) > 0 {
+			elt := GetAssignmentElement(sym)
 
-		for _, spec := range sym.DeclarationSpecifiers {
-			// checking if we need to remove or add DECL_POINTERs
-			// also we could be removing
-			switch spec {
-			case DECL_INDEXING:
-				if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
-					declSpec = declSpec[:len(declSpec)-1]
-				} else {
-					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
-				}
-			case DECL_DEREF:
-				if declSpec[len(declSpec)-1] == DECL_POINTER {
-					declSpec = declSpec[:len(declSpec)-1]
-				} else {
-					println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
-				}
-			case DECL_POINTER:
-				if sym.FileLine != arg.FileLine {
-					// This function is also called so it assigns offset and other fields to signature parameters
-					//
-					declSpec = append(declSpec, DECL_POINTER)
+			declSpec := make([]int, len(elt.DeclarationSpecifiers))
+
+			for i, spec := range elt.DeclarationSpecifiers {
+				declSpec[i] = spec
+			}
+
+			for c := len(elt.DeclarationSpecifiers)-1; c >= 0; c-- {
+				switch elt.DeclarationSpecifiers[c] {
+				case DECL_INDEXING:
+					if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-2]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+					}
+				case DECL_DEREF:
+					if declSpec[len(declSpec)-2] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-2]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+					}
 				}
 			}
+
+			elt.DeclarationSpecifiers = declSpec
+		} else {
+			declSpec := make([]int, len(arg.DeclarationSpecifiers))
+
+			for i, spec := range arg.DeclarationSpecifiers {
+				declSpec[i] = spec
+			}
+			
+			for _, spec := range sym.DeclarationSpecifiers {
+				// checking if we need to remove or add DECL_POINTERs
+				// also we could be removing
+				switch spec {
+				case DECL_INDEXING:
+					if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+					}
+				case DECL_DEREF:
+					if declSpec[len(declSpec)-1] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-1]
+					} else {
+						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
+					}
+				case DECL_POINTER:
+					if sym.FileLine != arg.FileLine {
+						// This function is also called so it assigns offset and other fields to signature parameters
+						//
+						declSpec = append(declSpec, DECL_POINTER)
+					}
+				}
+			}
+			sym.DeclarationSpecifiers = declSpec
 		}
-		sym.DeclarationSpecifiers = declSpec
 	} else {
 		sym.DeclarationSpecifiers = arg.DeclarationSpecifiers
 	}
@@ -871,7 +948,13 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	sym.IsSlice = arg.IsSlice
 	sym.CustomType = arg.CustomType
 
-	sym.Lengths = arg.Lengths
+	// FIXME: In other processes like ProcessSymbolFields the symbol is assigned with lengths.
+	// If we already have some lengths, we skip this. This needs to be fixed in the redesign of the parser.
+	if len(sym.Lengths) == 0 {
+		sym.Lengths = arg.Lengths
+	}
+
+	// sym.Lengths = arg.Lengths
 	sym.Package = arg.Package
 	sym.DoesEscape = arg.DoesEscape
 	sym.Size = arg.Size
@@ -951,6 +1034,16 @@ func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
 					nameFld.IsPointer = fld.IsPointer
 					nameFld.CustomType = fld.CustomType
 
+					sym.Lengths = fld.Lengths
+
+					// nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
+					// nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
+					if len(nameFld.DeclarationSpecifiers) > 0 {
+						nameFld.DeclarationSpecifiers = append(fld.DeclarationSpecifiers, nameFld.DeclarationSpecifiers[1:]...)
+					} else {
+						nameFld.DeclarationSpecifiers = fld.DeclarationSpecifiers
+					}
+
 					// sym.DereferenceOperations = append(sym.DereferenceOperations, DEREF_FIELD)
 
 					if fld.IsSlice {
@@ -1007,11 +1100,11 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 
 func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
 	for _, op := range sym.DereferenceOperations {
+		if GetAssignmentElement(sym).IsSlice {
+			continue
+		}
 		switch op {
 		case DEREF_ARRAY:
-			if GetAssignmentElement(sym).IsSlice {
-				continue
-			}
 			var subSize int = 1
 
 			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {

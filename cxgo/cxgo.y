@@ -1018,30 +1018,35 @@ assignment_expression:
                 struct_literal_expression
 	|       unary_expression assignment_operator assignment_expression
                 {
-			if $3[0].IsArrayLiteral {
-				if $2 != "=" && $2 != ":=" {
-					panic("")
-				}
-				if $2 == ":=" {
-					for _, from := range $3 {
-						from.Outputs[0].IsShortDeclaration = true
-						from.Outputs[0].PreviouslyDeclared = true
+			if $3 == nil {
+				$$ = nil
+			}
+			if $3 != nil {
+				if $3[0].IsArrayLiteral {
+					if $2 != "=" && $2 != ":=" {
+						panic("")
 					}
-				}
-				$$ = ArrayLiteralAssignment($1, $3)
-			} else if $3[len($3) - 1].IsStructLiteral {
-				if $2 != "=" && $2 != ":=" {
-					panic("")
-				}
-				if $2 == ":=" {
-					for _, from := range $3 {
-						from.Outputs[0].IsShortDeclaration = true
-						from.Outputs[0].PreviouslyDeclared = true
+					if $2 == ":=" {
+						for _, from := range $3 {
+							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].PreviouslyDeclared = true
+						}
 					}
+					$$ = ArrayLiteralAssignment($1, $3)
+				} else if $3[len($3) - 1].IsStructLiteral {
+					if $2 != "=" && $2 != ":=" {
+						panic("")
+					}
+					if $2 == ":=" {
+						for _, from := range $3 {
+							from.Outputs[0].IsShortDeclaration = true
+							from.Outputs[0].PreviouslyDeclared = true
+						}
+					}
+					$$ = StructLiteralAssignment($1, $3)
+				} else {
+					$$ = Assignment($1, $2, $3)
 				}
-				$$ = StructLiteralAssignment($1, $3)
-			} else {
-				$$ = Assignment($1, $2, $3)
 			}
                 }
                 ;
@@ -1187,6 +1192,11 @@ selection_statement:
 			//
 			$$ = SelectionStatement($2, nil, $5, nil, SEL_ELSEIF)
                 }
+        |       IF conditional_expression LBRACE RBRACE elseif_list else_statement SEMICOLON
+                {
+			//
+			$$ = SelectionStatement($2, nil, $5, $6, SEL_ELSEIFELSE)
+                }
         |       IF conditional_expression compound_statement
                 {
 			$$ = SelectionExpressions($2, $3, nil)
@@ -1195,13 +1205,20 @@ selection_statement:
                 { $$ = nil }
                 ;
 
-elseif:         ELSE IF expression LBRACE block_item_list RBRACE
+elseif:         ELSE IF conditional_expression LBRACE block_item_list RBRACE
                 {
 			$$ = SelectStatement{
 				Condition: $3,
 				Then: $5,
 			}
                 }
+	|       ELSE IF conditional_expression LBRACE RBRACE
+		{
+			$$ = SelectStatement{
+				Condition: $3,
+				Then: nil,
+			}
+		}
                 ;
 
 elseif_list:    elseif
@@ -1219,6 +1236,10 @@ else_statement:
                 {
 			$$ = $3
                 }
+	|	ELSE LBRACE RBRACE
+		{
+			$$ = nil
+		}
         ;
 
 iteration_statement:

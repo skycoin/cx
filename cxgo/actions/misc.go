@@ -370,26 +370,137 @@ func DefineNewScope (exprs []*CXExpression) {
 	}
 }
 
-// Recompile focuses on re-assigning
-func (prgrm *CXProgram) Recompile () {
-	
+// IsArgBasicType returns true if `arg`'s type is a basic type, false otherwise.
+func IsArgBasicType(arg *CXArgument) bool {
+	switch arg.Type {
+		case TYPE_BOOL,
+		TYPE_BYTE,
+		TYPE_STR,
+		TYPE_F32,
+		TYPE_F64,
+		TYPE_I8,
+		TYPE_I16,
+		TYPE_I32,
+		TYPE_I64,
+		TYPE_UI8,
+		TYPE_UI16,
+		TYPE_UI32, TYPE_UI64:
+		return true
+	}
+	return false
 }
 
-// MergePrograms merges `prgrm1` and `prgrm2`, favoring `prgrm1` (if both have a package with the same name, `prgrm1`'s is used).
-func MergePrograms (prgrm1, prgrm2 *CXProgram) *CXProgram {
-	var prgrm3 CXProgram
+// IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
+func IsAllArgsBasicTypes(expr *CXExpression) bool {
+	for _, inp := range expr.Inputs {
+		if !IsArgBasicType(inp) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters.
+func IsUndOp(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_LEN,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
+
+// IsUndOpMimicInput returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean.
+func IsUndOpMimicInput(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_NEG,
+		OP_UND_BITSHL, OP_UND_BITSHR:
+		return true
+	}
+	return false
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters and if it's an operator that only works with basic types. For example, `sa + sb` shouldn't work with struct instances.
+func IsUndOpBasicTypes(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
+
+// // Recompile focuses on re-assigning
+// func Recompile (prgrm *CXProgram) {
 	
-	DataOffset := prgrm1.HeapStartsAt
+// }
+
+// MergePrograms merges `prgrm1` and `prgrm2`, favoring `prgrm1` (if both have a package with the same name, `prgrm1`'s is used). Note: `prgrm2` is permanently altered.
+func MergePrograms (prgrm1, prgrm2 *CXProgram) *CXProgram {
 	for _, pkg := range prgrm1.Packages {
+		// We're always going to keep prgrm2's main
+		if pkg.Name == MAIN_PKG {
+			continue
+		}
 		if dupPkg, err := prgrm2.GetPackage(pkg.Name); err == nil {
 			// Then it's duplicated and we need to replace it by prgrm1's
-			prgrm3.AddPackage(dupPkg)
+			*dupPkg = *pkg
 		} else {
-			prgrm3.AddPackage(pkg)
+			prgrm2.AddPackage(pkg)
 		}
 	}
 
-	for _, pkg := range prgrm.Packages {
+	DataOffset := prgrm1.HeapStartsAt
+	for _, pkg := range prgrm2.Packages {
 		for _, glbl := range pkg.Globals {
 			glbl.Offset += DataOffset
 		}
@@ -397,15 +508,19 @@ func MergePrograms (prgrm1, prgrm2 *CXProgram) *CXProgram {
 		for _, fn := range pkg.Functions {
 			for _, expr := range fn.Expressions {
 				for _, inp := range expr.Inputs {
-					if inp.Offset > 
+					if inp.Offset > prgrm2.StackSize {
+						inp.Offset += DataOffset
+					}
 				}
 
 				for _, out := range expr.Inputs {
-					
+					if out.Offset > prgrm2.StackSize {
+						out.Offset += DataOffset
+					}
 				}
 			}
 		}
 	}
 
-	return &prgrm3
+	return prgrm2
 }

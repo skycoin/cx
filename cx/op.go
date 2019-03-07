@@ -97,7 +97,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), finalOffset, arg.DereferenceOperations)
+		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
 	}
 
 	// elt = arg

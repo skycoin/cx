@@ -33,6 +33,7 @@ type CXProgram struct {
 	Inputs       []*CXArgument
 	Outputs      []*CXArgument
 	Memory       []byte // Used when running the program
+	StackSize    int
 	HeapStartsAt int
 	StackPointer int
 	CallStack    []CXCall
@@ -58,6 +59,7 @@ func MakeProgram() *CXProgram {
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE),
 		Memory:    make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
+		StackSize: STACK_SIZE,
 	}
 
 	return newPrgrm

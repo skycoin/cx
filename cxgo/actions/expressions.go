@@ -283,7 +283,13 @@ func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	case OP_MOD:
 		operator = Natives[OP_UND_MOD]
 	case OP_ADD:
-		operator = Natives[OP_UND_ADD]
+		// Handling special case of arguments being strings.
+		// In this case we use `str.concat`.
+		if rightExprs[len(rightExprs)-1].Outputs[0].Type == TYPE_STR {
+			operator = Natives[OP_STR_CONCAT]
+		} else {
+			operator = Natives[OP_UND_ADD]
+		}
 	case OP_SUB:
 		operator = Natives[OP_UND_SUB]
 	case OP_BITSHL:
@@ -328,6 +334,12 @@ func UnaryExpression(op string, prevExprs []*CXExpression) []*CXExpression {
 	case "&":
 		baseOut.PassBy = PASSBY_REFERENCE
 		exprOut.DeclarationSpecifiers = append(exprOut.DeclarationSpecifiers, DECL_POINTER)
+		if len(baseOut.Fields) == 0 && hasDeclSpec(baseOut, DECL_INDEXING) {
+			// If we're referencing an inner element, like an element of a slice (&slc[0])
+			// or a field of a struct (&struct.fld) we no longer need to add
+			// the OBJECT_HEADER_SIZE to the offset. The runtime uses this field to determine this.
+			baseOut.IsInnerReference = true
+		}
 	case "!":
 		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
 			expr := MakeExpression(Natives[OP_BOOL_NOT], CurrentFile, LineNo)

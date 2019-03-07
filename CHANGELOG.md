@@ -3,11 +3,23 @@
 ### v0.6.1 (NOT YET RELEASED)
 * Additions
   * Support for lexical scoping
+  * `if/elseif` and `if/elseif/else` statements now work properly.
 * Libraries
 * Fixed issues
   * #54: No compilation error when defining a struct with duplicate fields.
   * #67: No compilation error when var is accessed outside of its declaring scope.
+  * #69: glfw.GetCursorPos() throws error
+  * #82: Empty code blocks (even if they contain commented-out lines) crash like this.
+  * #99: Short variable declarations are not working with calls to methods or functions.
+  * #102: String concatenation using the + operator doesn't work.
+  * #135: No compilation error when using arithmetic operators on struct instances.
+  * #153: Panic in when assigning an empty initializer list to a []i32 variable.
+  * #169: No compilation error when assigning a i32 value to a []i32 variable.
+  * #170: No compilation error when comparing value of different types.
   * #247: No compilation error when variables are inline initialized.
+  * #244: Crash when using a constant expression in a slice literal expression.
+	* The problem actually involved the incapability of using expressions as
+	values in slice literals
 * Documentation
 * IDE (WiP)
 * Miscellaneous
@@ -64,7 +76,7 @@
   * Added a simple guide
 * CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
-### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
+### v0.5.18 [2018-11-27 Tue 21:33]
 * **Affordances**:
   * Support for `affordances-of`: argument -> argument
   * Support for `affordances-of`: argument -> program
