@@ -1,6 +1,10 @@
 # Changelog
 
-### v0.6.1 (NOT YET RELEASED)
+### v0.6.2 (NOT YET RELEASED)
+* Fixed issues
+  * #76: Using int literal 0 where 0.0 was needed gave no error.
+
+### v0.6.1
 * Additions
   * Support for lexical scoping
   * `if/elseif` and `if/elseif/else` statements now work properly.

@@ -2739,6 +2739,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT issue-76.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Using int literal 0 where 0.0 was needed gave no error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-77.cx
  COMMA 
  IDENT cx
