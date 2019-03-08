@@ -403,7 +403,7 @@ func main ()() {
 	runTest("issue-156.cx", cx.COMPILATION_ERROR, "Panic when using a function declared in another package without importing the package")
 	runTest("issue-157.cx", cx.SUCCESS, "Cx memory stomped")
 	runTest("issue-158.cx", cx.SUCCESS, "Invalid offset calculation of non literal strings when appended to a slice")
-	runTestEx("issue-166.cx", cx.SUCCESS, "Panic when calling a function from another package where the package name alias a local variable name", TEST_ISSUE, 0)
+	runTest("issue-166.cx", cx.COMPILATION_ERROR, "Panic when calling a function from another package where the package name alias a local variable name")
 	runTest("issue-167.cx", cx.SUCCESS, "Garbage memory when passing the address of slice element to a function")
 	runTest("issue-168.cx", cx.SUCCESS, "Type deduction of struct field fails")
 	runTest("issue-169.cx", cx.COMPILATION_ERROR, "No compilation error when assigning a i32 value to a []i32 variable")

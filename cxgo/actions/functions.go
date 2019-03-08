@@ -750,7 +750,8 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 				}
 				argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 				if err != nil {
-					panic("")
+					println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+					os.Exit(CX_COMPILATION_ERROR)
 				}
 				// then we found an output
 				if len(out.Fields) > 0 {
@@ -796,6 +797,11 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 
 					strct := argOut.CustomType
 
+					if strct == nil {
+						println(CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, TypeNames[argOut.Type]))
+						os.Exit(CX_COMPILATION_ERROR)
+					}
+
 					expr.Inputs = append(expr.Outputs[:1], expr.Inputs...)
 
 					expr.Outputs = expr.Outputs[:len(expr.Outputs)-1]
@@ -816,13 +822,18 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 
 			argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 			if err != nil {
-				println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("'%s.%s' not found", out.Package.Name, out.Name))
+				println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 				os.Exit(CX_COMPILATION_ERROR)
 			}
 
 			// then we found an output
 			if len(out.Fields) > 0 {
 				strct := argOut.CustomType
+
+				if strct == nil {
+					println(CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, TypeNames[argOut.Type]))
+					os.Exit(CX_COMPILATION_ERROR)
+				}
 
 				if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 					expr.Operator = fn

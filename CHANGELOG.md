@@ -1,6 +1,10 @@
 # Changelog
 
-### v0.6.1 (NOT YET RELEASED)
+### v0.6.2 (NOT YET RELEASED)
+* Fixed issues
+  * #166: Panic when calling a function from another package where the package name alias a local variable name
+
+### v0.6.1
 * Additions
   * Support for lexical scoping
   * `if/elseif` and `if/elseif/else` statements now work properly.
