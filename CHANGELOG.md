@@ -2,6 +2,7 @@
 
 ### v0.6.2 (NOT YET RELEASED)
 * Fixed issues
+  * #76: Using int literal 0 where 0.0 was needed gave no error.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
 
 ### v0.6.1

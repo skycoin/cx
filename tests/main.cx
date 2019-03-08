@@ -366,6 +366,7 @@ func main ()() {
 	runTest("issue-71.cx", cx.COMPILATION_ERROR, "No compilation error when redeclaring a variable")
 	runTestEx("issue-72.cx", cx.SUCCESS, "Multi-dimensional slices don't work", TEST_ISSUE, 0)
 	runTestEx("issue-75.cx", cx.SUCCESS, "can't prefix a (f32) variable with minus to flip it's signedness", TEST_STABLE, 0)
+	runTest("issue-76.cx", cx.COMPILATION_ERROR, "Using int literal 0 where 0.0 was needed gave no error")
 	runTest("issue-77.cx", cx.SUCCESS, "error with sending references of structs to functions")
 	runTest("issue-77b.cx", cx.SUCCESS, "error with references to struct literals")
 	runTest("issue-78.cx", cx.COMPILATION_ERROR, "struct identifier (when initializing fields) can be with or without a '&' prefix, with no CX error")
