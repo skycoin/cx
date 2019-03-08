@@ -2739,6 +2739,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT issue-76.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Using int literal 0 where 0.0 was needed gave no error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-77.cx
  COMMA 
  IDENT cx
@@ -3170,19 +3181,15 @@ PERIOD
 STRLIT Invalid offset calculation of non literal strings when appended to a slice
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-166.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when calling a function from another package where the package name alias a local variable name
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
