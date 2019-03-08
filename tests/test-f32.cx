@@ -1,5 +1,20 @@
 package main
 
+func F32Parse() () {
+	test(10.0,  10.0,   "f32 error")
+	test(10.,   10.0,   "f32 without decimal error")
+	test(0.123, 0.123,  "f32 error")
+	test(.123,  0.123,  "f32 without integer error")
+	test(100.0, 1.0E2,  "f32 exponent error")
+	test(100.0, 1.E2,   "f32 exponent error")
+	test(100.0, 1.0E+2, "f32 exponent error")
+	test(100.0, 1.E+2,  "f32 exponent error")
+	test(0.01,  1.0E-2, "f32 exponent error")
+	test(0.01,  1.E-2,  "f32 exponent error")
+	test(0.001, 0.1E-2, "f32 exponent error")
+	test(0.001, .1E-2,  "f32 exponent error")
+}
+
 func F32ArithmeticFunctions() () {
 	test(f32.add(10.0, 10.0), 20.0, "Add error")
 	test(f32.sub(10.0, 10.0), 0.0, "Subtract error")
@@ -43,6 +58,7 @@ func F32RelationalShorthand() () {
 }
 
 func main() () {
+	F32Parse()
 	F32ArithmeticFunctions()
 	F32ArithmeticShorthand()
 	F32RelationalFunctions()
