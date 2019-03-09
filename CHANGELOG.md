@@ -5,9 +5,13 @@
   * Support for exponents in floating point numbers (f32 and f64). Also
 	improved decimal point parsing
 	examples: 1.0 1. .1 1e+2 .1e-3
+  * Support for multi-dimensional slices.
 * Libraries
 * Fixed issues
+  * #72: Multi-dimensional slices don't work.
   * #76: Using int literal 0 where 0.0 was needed gave no error.
+  * #134: Panic when declaring a variable of an unknown type.
+  * #156: Panic when using a function declared in another package without importing the package.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
   * #271: CX floats cannot handle exponents
 * Documentation
