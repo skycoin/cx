@@ -964,8 +964,19 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	}
 
 	if arg.IsSlice {
-		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
-		sym.DereferenceLevels++
+		if !hasDerefOp(sym, DEREF_ARRAY) {
+			// Then we're handling the slice itself, and we need to dereference it.
+			sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+		} else {
+			for i, deref := range sym.DereferenceOperations {
+				// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+				// is a slice or an array. At this point we now know it's a slice and we need
+				// to change those dereferences to DEREF_SLICE.
+				if deref == DEREF_ARRAY {
+					sym.DereferenceOperations[i] = DEREF_SLICE
+				}
+			}
+		}
 	}
 
 	if len(sym.Fields) > 0 {
@@ -1099,18 +1110,16 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 }
 
 func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
-	for _, op := range sym.DereferenceOperations {
-		if GetAssignmentElement(sym).IsSlice {
+	idxCounter := 0
+	elt := GetAssignmentElement(sym)
+	for _, op := range elt.DereferenceOperations {
+		if elt.IsSlice {
 			continue
 		}
 		switch op {
 		case DEREF_ARRAY:
-			var subSize int = 1
-
-			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {
-				subSize *= len
-			}
-			*finalSize /= subSize
+			*finalSize /= elt.Lengths[idxCounter]
+			idxCounter++
 		case DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
 				var subSize int
