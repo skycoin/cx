@@ -1,6 +1,20 @@
 # Changelog
 
-### v0.6.1 (NOT YET RELEASED)
+### v0.6.2 (NOT YET RELEASED)
+* Additions
+  * Support for exponents in floating point numbers (f32 and f64). Also
+	improved decimal point parsing
+	examples: 1.0 1. .1 1e+2 .1e-3
+* Libraries
+* Fixed issues
+  * #76: Using int literal 0 where 0.0 was needed gave no error.
+  * #166: Panic when calling a function from another package where the package name alias a local variable name
+  * #271: CX floats cannot handle exponents
+* Documentation
+* IDE (WiP)
+* Miscellaneous
+
+### v0.6.1
 * Additions
   * Support for lexical scoping
   * `if/elseif` and `if/elseif/else` statements now work properly.
