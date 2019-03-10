@@ -20,11 +20,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 	}
 
 	elt.IsArray = false
-	pastOps := elt.DereferenceOperations
-	if len(pastOps) < 1 || pastOps[len(pastOps)-1] != DEREF_ARRAY {
-		// this way we avoid calling deref_array multiple times (one for each index)
-		elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
-	}
+	elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
 	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, DECL_INDEXING)
 
 	if !elt.IsDereferenceFirst {

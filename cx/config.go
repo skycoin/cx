@@ -120,6 +120,7 @@ const (
 	DEREF_FIELD          // 1
 	DEREF_POINTER        // 2
 	DEREF_DEREF          // 3
+	DEREF_SLICE          // 4
 )
 
 const (

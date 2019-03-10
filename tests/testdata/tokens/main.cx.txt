@@ -2707,7 +2707,7 @@ PERIOD
 STRLIT No compilation error when redeclaring a variable
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-72.cx
  COMMA 
@@ -2716,10 +2716,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Multi-dimensional slices don't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
