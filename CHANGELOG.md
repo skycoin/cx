@@ -7,6 +7,7 @@
 	examples: 1.0 1. .1 1e+2 .1e-3
 * Libraries
 * Fixed issues
+  * #70: Inline field and index "dereferences" to function calls' outputs.
   * #76: Using int literal 0 where 0.0 was needed gave no error.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
   * #271: CX floats cannot handle exponents

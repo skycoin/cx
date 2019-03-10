@@ -2681,7 +2681,7 @@ STRLIT glfw.GetCursorPos() throws error
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-70.cx
  COMMA 
@@ -2690,10 +2690,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Inline field and index 'dereferences' to function calls' outputs
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

@@ -318,9 +318,12 @@ func ProcessPointerStructs(expr *CXExpression) {
 func processTestExpression (expr *CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.OpCode
-		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) &&
-			expr.Inputs[0].Type != expr.Inputs[1].Type {
-			println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call", OpNames[expr.Operator.OpCode]))
+		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) {
+			inp1Type := GetFormattedType(expr.Inputs[0])
+			inp2Type := GetFormattedType(expr.Inputs[1])
+			if inp1Type != inp2Type {
+				println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+			}
 		}
 	}
 }
