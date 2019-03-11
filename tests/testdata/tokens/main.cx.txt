@@ -3518,6 +3518,21 @@ STRLIT Compilation error when using return value of a member method in a express
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-292.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when left hand side of an assignment expression is a struct field
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
