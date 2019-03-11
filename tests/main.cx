@@ -420,6 +420,7 @@ func main ()() {
 	runTestEx("issue-279.cx", cx.SUCCESS, "Wrong sprintf behaviour when passing increment expression as argument", TEST_ISSUE, 0)
 	runTestEx("issue-280.cx", cx.COMPILATION_ERROR, "Panic when using void return value of a function in a for loop expression", TEST_ISSUE, 0)
 	runTestEx("issue-281.cx", cx.SUCCESS, "Wrong sprintf behaviour when printing boolean values with %v", TEST_ISSUE, 0)
+	runTestEx("issue-282.cx", cx.SUCCESS, "for true {} loop scope is not executed", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
