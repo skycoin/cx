@@ -3533,6 +3533,21 @@ STRLIT Compilation error when left hand side of an assignment expression is a st
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-293.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash when INIT_HEAP_SIZE limit is reached 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
