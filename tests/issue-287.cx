@@ -1,0 +1,9 @@
+package main
+
+func foo()() {
+	printf("foo\n")
+}
+
+func main()() {
+	foo() ()
+}
