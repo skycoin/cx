@@ -2681,7 +2681,7 @@ STRLIT glfw.GetCursorPos() throws error
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-70.cx
  COMMA 
@@ -2690,10 +2690,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Inline field and index 'dereferences' to function calls' outputs
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2707,7 +2703,7 @@ PERIOD
 STRLIT No compilation error when redeclaring a variable
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-72.cx
  COMMA 
@@ -2716,10 +2712,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Multi-dimensional slices don't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -2735,6 +2727,17 @@ STRLIT can't prefix a (f32) variable with minus to flip it's signedness
  IDENT TEST_STABLE
  COMMA 
 INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-76.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Using int literal 0 where 0.0 was needed gave no error
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3170,19 +3173,15 @@ PERIOD
 STRLIT Invalid offset calculation of non literal strings when appended to a slice
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-166.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when calling a function from another package where the package name alias a local variable name
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

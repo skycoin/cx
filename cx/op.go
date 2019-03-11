@@ -12,28 +12,66 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 	var baseOffset int
 	var sizeofElement int
 
+	idxCounter := 0
 	for _, op := range arg.DereferenceOperations {
 		switch op {
-		case DEREF_ARRAY:
-			for i, idxArg := range arg.Indexes {
-				var subSize = int(1)
-				for _, len := range arg.Lengths[i+1:] {
-					subSize *= len
-				}
-
-				var sizeToUse int
-				if arg.CustomType != nil {
-					sizeToUse = arg.CustomType.Size
-				} else if arg.IsSlice {
-					sizeToUse = arg.TotalSize
-				} else {
-					sizeToUse = arg.Size
-				}
-
-				baseOffset = *finalOffset
-				sizeofElement = subSize * sizeToUse
-				*finalOffset += int(ReadI32(fp, idxArg)) * sizeofElement
+		case DEREF_SLICE:
+			if len(arg.Indexes) == 0 {
+				continue
 			}
+
+			isPointer = false
+			var offset int32
+			var byts []byte
+
+			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
+
+			encoder.DeserializeAtomic(byts, &offset)
+			*finalOffset = int(offset)
+
+			baseOffset = *finalOffset
+
+			*finalOffset += OBJECT_HEADER_SIZE
+			*finalOffset += SLICE_HEADER_SIZE
+
+			var sizeToUse int
+			if arg.CustomType != nil {
+				sizeToUse = arg.CustomType.Size
+			} else if arg.IsSlice {
+				sizeToUse = arg.TotalSize
+			} else {
+				sizeToUse = arg.Size
+			}
+
+			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
+
+			if IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) == false {
+				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
+			}
+
+			idxCounter++
+		case DEREF_ARRAY:
+			if len(arg.Indexes) == 0 {
+				continue
+			}
+			var subSize = int(1)
+			for _, len := range arg.Lengths[idxCounter+1:] {
+				subSize *= len
+			}
+
+			var sizeToUse int
+			if arg.CustomType != nil {
+				sizeToUse = arg.CustomType.Size
+			} else if arg.IsSlice {
+				sizeToUse = arg.TotalSize
+			} else {
+				sizeToUse = arg.Size
+			}
+
+			baseOffset = *finalOffset
+			sizeofElement = subSize * sizeToUse
+			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeofElement
+			idxCounter++
 		case DEREF_POINTER:
 			isPointer = true
 			var offset int32

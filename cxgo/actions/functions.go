@@ -318,9 +318,12 @@ func ProcessPointerStructs(expr *CXExpression) {
 func processTestExpression (expr *CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.OpCode
-		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) &&
-			expr.Inputs[0].Type != expr.Inputs[1].Type {
-			println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call", OpNames[expr.Operator.OpCode]))
+		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) {
+			inp1Type := GetFormattedType(expr.Inputs[0])
+			inp2Type := GetFormattedType(expr.Inputs[1])
+			if inp1Type != inp2Type {
+				println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("first and second input arguments' types are not equal in '%s' call ('%s' != '%s')", OpNames[expr.Operator.OpCode], inp1Type, inp2Type))
+			}
 		}
 	}
 }
@@ -750,7 +753,8 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 				}
 				argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 				if err != nil {
-					panic("")
+					println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
+					os.Exit(CX_COMPILATION_ERROR)
 				}
 				// then we found an output
 				if len(out.Fields) > 0 {
@@ -796,6 +800,11 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 
 					strct := argOut.CustomType
 
+					if strct == nil {
+						println(CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, TypeNames[argOut.Type]))
+						os.Exit(CX_COMPILATION_ERROR)
+					}
+
 					expr.Inputs = append(expr.Outputs[:1], expr.Inputs...)
 
 					expr.Outputs = expr.Outputs[:len(expr.Outputs)-1]
@@ -816,13 +825,18 @@ func ProcessMethodCall(expr *CXExpression, symbols *[]map[string]*CXArgument, of
 
 			argOut, err := lookupSymbol(out.Package.Name, out.Name, symbols)
 			if err != nil {
-				println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("'%s.%s' not found", out.Package.Name, out.Name))
+				println(CompilationError(out.FileName, out.FileLine), fmt.Sprintf("identifier '%s' does not exist", out.Name))
 				os.Exit(CX_COMPILATION_ERROR)
 			}
 
 			// then we found an output
 			if len(out.Fields) > 0 {
 				strct := argOut.CustomType
+
+				if strct == nil {
+					println(CompilationError(argOut.FileName, argOut.FileLine), fmt.Sprintf("illegal method call or field access on identifier '%s' of primitive type '%s'", argOut.Name, TypeNames[argOut.Type]))
+					os.Exit(CX_COMPILATION_ERROR)
+				}
 
 				if fn, err := strct.Package.GetMethod(strct.Name+"."+out.Fields[len(out.Fields)-1].Name, strct.Name); err == nil {
 					expr.Operator = fn
@@ -964,8 +978,19 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 	}
 
 	if arg.IsSlice {
-		sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
-		sym.DereferenceLevels++
+		if !hasDerefOp(sym, DEREF_ARRAY) {
+			// Then we're handling the slice itself, and we need to dereference it.
+			sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)
+		} else {
+			for i, deref := range sym.DereferenceOperations {
+				// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+				// is a slice or an array. At this point we now know it's a slice and we need
+				// to change those dereferences to DEREF_SLICE.
+				if deref == DEREF_ARRAY {
+					sym.DereferenceOperations[i] = DEREF_SLICE
+				}
+			}
+		}
 	}
 
 	if len(sym.Fields) > 0 {
@@ -1099,18 +1124,16 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 }
 
 func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
-	for _, op := range sym.DereferenceOperations {
-		if GetAssignmentElement(sym).IsSlice {
+	idxCounter := 0
+	elt := GetAssignmentElement(sym)
+	for _, op := range elt.DereferenceOperations {
+		if elt.IsSlice {
 			continue
 		}
 		switch op {
 		case DEREF_ARRAY:
-			var subSize int = 1
-
-			for _, len := range GetAssignmentElement(sym).Lengths[:len(GetAssignmentElement(sym).Indexes)] {
-				subSize *= len
-			}
-			*finalSize /= subSize
+			*finalSize /= elt.Lengths[idxCounter]
+			idxCounter++
 		case DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
 				var subSize int

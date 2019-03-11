@@ -171,6 +171,17 @@ func hasDeclSpec(arg *CXArgument, spec int) bool {
 	return found
 }
 
+// hasDerefOp determines if an argument has certain dereference operation
+func hasDerefOp(arg *CXArgument, spec int) bool {
+	found := false
+	for _, s := range arg.DereferenceOperations {
+		if s == spec {
+			found = true
+		}
+	}
+	return found
+}
+
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {

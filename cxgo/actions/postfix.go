@@ -13,18 +13,50 @@ import (
 //
 func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	var elt *CXArgument
-	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
-		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
+	prevExpr := prevExprs[len(prevExprs)-1]
+	
+	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
+		genName := MakeGenSym(LOCAL_PREFIX)
+		
+		out := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
+
+		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
+		out.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		out.Size = prevExpr.Operator.Outputs[0].Size
+		out.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
+		out.Lengths = prevExpr.Operator.Outputs[0].Lengths
+		out.IsSlice = prevExpr.Operator.Outputs[0].IsSlice
+		out.PreviouslyDeclared = true
+
+		prevExpr.AddOutput(out)
+
+		inp := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
+
+		inp.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
+		inp.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		inp.Size = prevExpr.Operator.Outputs[0].Size
+		inp.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
+		inp.Lengths = prevExpr.Operator.Outputs[0].Lengths
+		inp.IsSlice = prevExpr.Operator.Outputs[0].IsSlice
+		inp.PreviouslyDeclared = true
+
+		useExpr := MakeExpression(nil, prevExpr.FileName, prevExpr.FileLine)
+		useExpr.Package = prevExpr.Package
+		useExpr.AddOutput(inp)
+
+		prevExprs = append(prevExprs, useExpr)
+	}
+
+	prevExpr = prevExprs[len(prevExprs)-1]
+	
+	if len(prevExpr.Outputs[0].Fields) > 0 {
+		elt = prevExpr.Outputs[0].Fields[len(prevExpr.Outputs[0].Fields)-1]
 	} else {
-		elt = prevExprs[len(prevExprs)-1].Outputs[0]
+		elt = prevExpr.Outputs[0]
 	}
 
 	elt.IsArray = false
-	pastOps := elt.DereferenceOperations
-	if len(pastOps) < 1 || pastOps[len(pastOps)-1] != DEREF_ARRAY {
-		// this way we avoid calling deref_array multiple times (one for each index)
-		elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
-	}
+	elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
 	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, DECL_INDEXING)
 
 	if !elt.IsDereferenceFirst {
@@ -171,28 +203,12 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
-	// THEN it's a function call, e.g. foo().fld
+	// Then it's a function call, e.g. foo().fld
 	// and we need to create some auxiliary variables to hold the result from
 	// the function call
 	if lastExpr.Operator != nil {
 		opOut := lastExpr.Operator.Outputs[0]
 		symName := MakeGenSym(LOCAL_PREFIX)
-
-		// we need to declare an aux variable, e.g. `var *lcl_10 i32`
-		// that will hold the result of the function call
-		aux := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
-		aux.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		aux.CustomType = opOut.CustomType
-		aux.Size = opOut.Size
-		aux.TotalSize = opOut.TotalSize
-		aux.PreviouslyDeclared = true
-		aux.Package = lastExpr.Package
-
-		declExpr := MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
-		declExpr.Package = lastExpr.Package
-		declExpr.AddOutput(aux)
-
-		prevExprs = append([]*CXExpression{declExpr}, prevExprs...)
 
 		// we associate the result of the function call to the aux variable
 		out := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
