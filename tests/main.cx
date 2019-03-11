@@ -418,6 +418,7 @@ func main ()() {
 	runTest("issue-247-b.cx", cx.COMPILATION_ERROR, "Can redeclare variables if they are inline initialized")
 	runTest("issue-264.cx", cx.SUCCESS, "Trying to determine the length of a slice of struct instances throws an error.")
 	runTestEx("issue-279.cx", cx.SUCCESS, "Wrong sprintf behaviour when passing increment expression as argument", TEST_ISSUE, 0)
+	runTestEx("issue-280.cx", cx.COMPILATION_ERROR, "Panic when using void return value of a function in a for loop expression", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()

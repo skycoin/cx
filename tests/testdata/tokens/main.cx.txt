@@ -3323,6 +3323,21 @@ STRLIT Wrong sprintf behaviour when passing increment expression as argument
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-280.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when using void return value of a function in a for loop expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
