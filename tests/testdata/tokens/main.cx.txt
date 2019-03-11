@@ -2528,7 +2528,7 @@ PERIOD
 STRLIT Struct field stomped
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-58.cx
  COMMA 
@@ -2537,10 +2537,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when indexing an array with a non integral var.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2714,7 +2710,7 @@ PERIOD
 STRLIT Multi-dimensional slices don't work
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-75.cx
  COMMA 
@@ -2723,10 +2719,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT can't prefix a (f32) variable with minus to flip it's signedness
- COMMA 
- IDENT TEST_STABLE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest

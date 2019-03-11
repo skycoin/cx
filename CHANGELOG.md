@@ -8,6 +8,7 @@
   * Support for multi-dimensional slices.
 * Libraries
 * Fixed issues
+  * #58: No compilation error when indexing an array with a non integral var.
   * #70: Inline field and index "dereferences" to function calls' outputs.
   * #72: Multi-dimensional slices don't work.
   * #76: Using int literal 0 where 0.0 was needed gave no error.
