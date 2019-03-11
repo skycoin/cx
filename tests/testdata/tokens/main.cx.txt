@@ -3548,6 +3548,36 @@ STRLIT Crash when INIT_HEAP_SIZE limit is reached
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-294-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash in garbage collector when heap is resized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-294-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash in garbage collector when heap is resized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
