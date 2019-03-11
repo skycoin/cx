@@ -429,6 +429,8 @@ func main ()() {
 	runTestEx("issue-288.cx", cx.COMPILATION_ERROR, "No compilation error when using float value in place of boolean expression", TEST_ISSUE, 0)
 	runTestEx("issue-289.cx", cx.COMPILATION_ERROR, "Panic when package contains duplicate function signature", TEST_ISSUE, 0)
 	runTestEx("issue-290.cx", cx.COMPILATION_ERROR, "Left hand side of , is not compiled", TEST_ISSUE, 0)
+	runTestEx("issue-291-a.cx", cx.SUCCESS, "Compilation error when using return value of a member method in a expression", TEST_ISSUE, 0)
+	runTestEx("issue-291-b.cx", cx.SUCCESS, "Compilation error when using return value of a member method in a expression", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
