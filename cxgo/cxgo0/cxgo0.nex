@@ -128,8 +128,7 @@
 /"([^"]*)"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
-		println(yylex.Text())
-		panic(err)
+	        println(actions.CompilationError(CurrentFileName, yylex.Line()), "Illegal characters in string", yylex.Text())
 	}
 	tokVal := str
 	tokVal = strings.TrimPrefix(tokVal, "\"")
@@ -192,6 +191,7 @@ package cxgo0
 import (
 	"fmt"
 	"strconv"
+	"github.com/skycoin/cx/cxgo/actions"
 )
 
 var CurrentFileName string
