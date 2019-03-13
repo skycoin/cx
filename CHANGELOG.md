@@ -20,6 +20,8 @@
 * Documentation
 * IDE (WiP)
 * Miscellaneous
+  * CXFX, the game development toolkit, has been moved to its own
+	repository at https://github.com/skycoin/FIXME
 
 ### v0.6.1
 * Additions
