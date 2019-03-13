@@ -1,0 +1,8 @@
+package main
+
+func main()() {
+	var i i32 = 4
+	var s str = sprintf("%d", i++)
+	printf("'%s'\n", s)
+	test(s, "4", "")
+}

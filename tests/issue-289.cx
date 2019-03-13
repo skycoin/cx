@@ -1,0 +1,13 @@
+package main
+
+func foo(i i32){
+}
+
+func foo(i i32){
+}
+
+func main()() {
+	foo(0)
+}
+
+

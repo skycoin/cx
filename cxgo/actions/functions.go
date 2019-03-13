@@ -328,6 +328,14 @@ func processTestExpression (expr *CXExpression) {
 	}
 }
 
+// checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
+func checkIndexType (idx *CXArgument) {
+	typ := GetFormattedType(idx)
+	if typ != "i32" && typ != "i64" {
+		println(CompilationError(idx.FileName, idx.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
+	}
+}
+
 // ProcessExpressionArguments performs a series of checks and processes to an expresion's inputs and outputs.
 // Some of these checks are: checking if a an input has not been declared, assign a relative offset to the argument,
 // and calculate the correct size of the argument.
@@ -360,6 +368,7 @@ func ProcessExpressionArguments(symbols *[]map[string]*CXArgument, symbolsScope 
 		for _, idx := range arg.Indexes {
 			UpdateSymbolsTable(symbols, idx, offset, true)
 			GiveOffset(symbols, idx, offset, true)
+			checkIndexType(idx)
 		}
 		for _, fld := range arg.Fields {
 			for _, idx := range fld.Indexes {

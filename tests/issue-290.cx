@@ -1,0 +1,15 @@
+package main
+
+func fooA() {
+	printf("fooA\n")
+}
+func fooB()() {
+	printf("fooB\n")
+}
+
+func main()() {
+	var i i32
+	fooA(&i),
+	fooB()
+	panic(true, false, "must not compile")
+}
