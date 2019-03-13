@@ -124,7 +124,7 @@
 /"([^"]*)"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
-		panic(err)
+	        println(CompilationError(cxgo0.CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
 	tokVal := str
 	tokVal = strings.TrimPrefix(tokVal, "\"")

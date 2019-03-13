@@ -3043,19 +3043,26 @@ PERIOD
 STRLIT Panic when using the return value of a function in a short declaration
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
-STRLIT issue-133.cx
+STRLIT issue-133a.cx
  COMMA 
  IDENT cx
 PERIOD 
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when inserting a new line in a string literal
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-133b.cx
  COMMA 
- IDENT TEST_ISSUE
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
  COMMA 
-INTLIT 0
+STRLIT Panic when inserting a new line in a string literal
 RPAREN 
 SCOLON 
  IDENT runTest
