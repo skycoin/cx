@@ -96,6 +96,15 @@ func CheckUndValidTypes(expr *CXExpression) {
 	}
 }
 
+// CheckConcatStr checks if `expr`'s operator is OP_UND_ADD and if its operands are of type str.
+// If this is the case, the operator is changed to OP_STR_CONCAT to concatenate the strings.
+func CheckConcatStr (expr *CXExpression) {
+	if expr.Operator != nil && expr.Operator.OpCode == OP_UND_ADD &&
+		expr.Inputs[0].Type == TYPE_STR && expr.Inputs[1].Type == TYPE_STR {
+		expr.Operator = Natives[OP_STR_CONCAT]
+	}
+}
+
 func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []*CXExpression) {
 	if FoundCompileErrors {
 		return
@@ -156,6 +165,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
+		CheckConcatStr(expr)
 
 		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]

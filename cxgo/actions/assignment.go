@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"os"
+	
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -103,84 +105,93 @@ func getOutputType(expr *CXExpression) *CXArgument {
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
+func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {	
 	idx := len(from) - 1
 
-	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
+	// Checking if we're trying to assign stuff from a function call
+	// And if that function call actually returns something. If not, throw an error.
+	if from[idx].Operator != nil && len(from[idx].Operator.Outputs) == 0 {
+		println(CompilationError(to[0].Outputs[0].FileName, to[0].Outputs[0].FileLine), "trying to use an outputless operator in an assignment")
+		os.Exit(CX_COMPILATION_ERROR)
+	}
 
-		var expr *CXExpression
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
 
-		switch assignOp {
-		case ":=":
-			expr = MakeExpression(nil, CurrentFile, LineNo)
-			expr.Package = pkg
+	var expr *CXExpression
 
-			var sym *CXArgument
-			
-			if from[idx].Operator == nil {
-				// then it's a literal
-				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
-			} else {
-				outTypeArg := getOutputType(from[idx])
+	switch assignOp {
+	case ":=":
+		expr = MakeExpression(nil, CurrentFile, LineNo)
+		expr.Package = pkg
 
-				sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[outTypeArg.Type])
+		var sym *CXArgument
+		
+		if from[idx].Operator == nil {
+			// then it's a literal
+			sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
+		} else {
+			outTypeArg := getOutputType(from[idx])
 
-				if from[idx].IsArrayLiteral {
-					sym.Size = from[idx].Inputs[0].Size
-					sym.TotalSize = from[idx].Inputs[0].TotalSize
-					sym.Lengths = from[idx].Inputs[0].Lengths
-				}
-				if outTypeArg.IsSlice {
-					// if from[idx].Operator.Outputs[0].IsSlice {
-					sym.Lengths = append([]int{0}, sym.Lengths...)
-				}
+			sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[outTypeArg.Type])
 
-				sym.IsSlice = outTypeArg.IsSlice
-				// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
+			if from[idx].IsArrayLiteral {
+				sym.Size = from[idx].Inputs[0].Size
+				sym.TotalSize = from[idx].Inputs[0].TotalSize
+				sym.Lengths = from[idx].Inputs[0].Lengths
 			}
-			sym.Package = pkg
-			sym.PreviouslyDeclared = true
-			sym.IsShortDeclaration = true
-
-			expr.AddOutput(sym)
-
-			for _, toExpr := range to {
-				toExpr.Outputs[0].PreviouslyDeclared = true
-				toExpr.Outputs[0].IsShortDeclaration = true
+			if outTypeArg.IsSlice {
+				// if from[idx].Operator.Outputs[0].IsSlice {
+				sym.Lengths = append([]int{0}, sym.Lengths...)
 			}
 
-			to = append([]*CXExpression{expr}, to...)
-		case ">>=":
-			expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "<<=":
-			expr = MakeExpression(Natives[OP_UND_BITSHL], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "+=":
-			expr = MakeExpression(Natives[OP_UND_ADD], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "-=":
-			expr = MakeExpression(Natives[OP_UND_SUB], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "*=":
-			expr = MakeExpression(Natives[OP_UND_MUL], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "/=":
-			expr = MakeExpression(Natives[OP_UND_DIV], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "%=":
-			expr = MakeExpression(Natives[OP_UND_MOD], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "&=":
-			expr = MakeExpression(Natives[OP_UND_BITAND], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "^=":
-			expr = MakeExpression(Natives[OP_UND_BITXOR], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
-		case "|=":
-			expr = MakeExpression(Natives[OP_UND_BITOR], CurrentFile, LineNo)
-			return ShortAssignment(expr, to, from, pkg, idx)
+			sym.IsSlice = outTypeArg.IsSlice
+			// sym.IsSlice = from[idx].Operator.Outputs[0].IsSlice
 		}
+		sym.Package = pkg
+		sym.PreviouslyDeclared = true
+		sym.IsShortDeclaration = true
+
+		expr.AddOutput(sym)
+
+		for _, toExpr := range to {
+			toExpr.Outputs[0].PreviouslyDeclared = true
+			toExpr.Outputs[0].IsShortDeclaration = true
+		}
+
+		to = append([]*CXExpression{expr}, to...)
+	case ">>=":
+		expr = MakeExpression(Natives[OP_UND_BITSHR], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "<<=":
+		expr = MakeExpression(Natives[OP_UND_BITSHL], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "+=":
+		expr = MakeExpression(Natives[OP_UND_ADD], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "-=":
+		expr = MakeExpression(Natives[OP_UND_SUB], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "*=":
+		expr = MakeExpression(Natives[OP_UND_MUL], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "/=":
+		expr = MakeExpression(Natives[OP_UND_DIV], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "%=":
+		expr = MakeExpression(Natives[OP_UND_MOD], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "&=":
+		expr = MakeExpression(Natives[OP_UND_BITAND], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "^=":
+		expr = MakeExpression(Natives[OP_UND_BITXOR], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
+	case "|=":
+		expr = MakeExpression(Natives[OP_UND_BITOR], CurrentFile, LineNo)
+		return ShortAssignment(expr, to, from, pkg, idx)
 	}
 
 	if from[idx].Operator == nil {
