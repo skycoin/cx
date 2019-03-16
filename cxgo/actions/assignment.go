@@ -238,7 +238,7 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
-
+			
 			to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 			to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths

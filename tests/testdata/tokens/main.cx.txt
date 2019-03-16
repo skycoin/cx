@@ -3397,7 +3397,7 @@ PERIOD
 STRLIT Concatenation of str variables with + operator doesn't work
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-285.cx
  COMMA 
@@ -3406,10 +3406,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Short declaration doesn't compile with opcode return value
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
