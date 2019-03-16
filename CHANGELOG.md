@@ -12,11 +12,14 @@
   * #70: Inline field and index "dereferences" to function calls' outputs.
   * #72: Multi-dimensional slices don't work.
   * #76: Using int literal 0 where 0.0 was needed gave no error.
-  * #133: Panic when inserting a newline into a string literal
+  * #133: Panic when inserting a newline into a string literal.
   * #134: Panic when declaring a variable of an unknown type.
+  * #155: Panic when trying to assign return value of a function returning void.
   * #156: Panic when using a function declared in another package without importing the package.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
   * #271: CX floats cannot handle exponents
+  * #284: Concatenation of str variables with + operator doesn't work.
+  * #285: Short declaration doesn't compile with opcode return value.
   * #288: No compilation error when using float value in place of boolean expression.
 * Documentation
 * IDE (WiP)

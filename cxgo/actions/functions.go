@@ -80,12 +80,28 @@ func FunctionAddParameters(fn *CXFunction, inputs, outputs []*CXArgument) {
 	}
 }
 
+func isParseOp (expr *CXExpression) bool {
+	if expr.Operator != nil && expr.Operator.OpCode > START_PARSE_OPS && expr.Operator.OpCode < END_PARSE_OPS {
+		return true
+	}
+	return false
+}
+
 // CheckUndValidTypes checks if an expression with a generic operator (operators that
 // accept `TYPE_UNDEFINED` arguments) is receiving arguments of valid types. For example,
 // the expression `sa + sb` is not valid if they are struct instances.
 func CheckUndValidTypes(expr *CXExpression) {
 	if expr.Operator != nil && IsUndOpBasicTypes(expr.Operator) && !IsAllArgsBasicTypes(expr) {
 		println(CompilationError(CurrentFile, LineNo), fmt.Sprintf("invalid argument types for '%s' operator", OpNames[expr.Operator.OpCode]))
+	}
+}
+
+// CheckConcatStr checks if `expr`'s operator is OP_UND_ADD and if its operands are of type str.
+// If this is the case, the operator is changed to OP_STR_CONCAT to concatenate the strings.
+func CheckConcatStr (expr *CXExpression) {
+	if expr.Operator != nil && expr.Operator.OpCode == OP_UND_ADD &&
+		expr.Inputs[0].Type == TYPE_STR && expr.Inputs[1].Type == TYPE_STR {
+		expr.Operator = Natives[OP_STR_CONCAT]
 	}
 }
 
@@ -135,7 +151,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 		ProcessReferenceAssignment(expr)
 
 		// process short declaration
-		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral {
+		if len(expr.Outputs) > 0 && len(expr.Inputs) > 0 && expr.Outputs[0].IsShortDeclaration && !expr.IsStructLiteral && !isParseOp(expr) {
 			if expr.IsMethodCall {
 				fn.Expressions[i-1].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
 				fn.Expressions[i].Outputs[0].Type = fn.Expressions[i].Operator.Outputs[0].Type
@@ -149,6 +165,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 
 		CheckTypes(expr)
 		CheckUndValidTypes(expr)
+		CheckConcatStr(expr)
 
 		if expr.ScopeOperation == SCOPE_REM {
 			*symbols = (*symbols)[:len(*symbols)-1]
