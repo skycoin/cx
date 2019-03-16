@@ -4,6 +4,9 @@ import (
 	"os"
 )
 
+var InREPL bool = false
+var FoundCompileErrors bool
+
 const DBG_GOLANG_STACK_TRACE = true
 
 // global reference to our program

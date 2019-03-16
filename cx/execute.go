@@ -55,7 +55,7 @@ func (cxt *CXProgram) ToCall() *CXExpression {
 		// prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
 	}
 	// error
-	return &CXExpression{Operator: MakeFunction("")}
+	return &CXExpression{Operator: MakeFunction("", "", -1)}
 	// panic("")
 }
 
