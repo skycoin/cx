@@ -253,6 +253,14 @@ header > .buttons-container, header > .icon-container {
 	height: 40px;
 }
 
+.CodeMirror-scroll {
+	overflow: scroll !important;
+	margin-right: -30px;
+	height: 100%;
+	outline: none;
+	position: relative;
+}
+
 .CodeMirror {
 	font-size: 1.2em;
 	height: auto;
@@ -358,17 +366,17 @@ header > .buttons-container, header > .icon-container {
 	
 }
 
+
 #editor2 {
 	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 2;
 	grid-row-end: 3;
-	position: absolute;
+	position: relative;
 	height: 50%;
 	width: 100%;
 	overflow: auto;
-	left: 0px;
-    top: 293px;
+    top: 50%;
 	background-color: #000000
 }
 
