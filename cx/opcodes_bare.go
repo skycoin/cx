@@ -296,7 +296,7 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
 	AddOpCode(OP_JMP, "jmp",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
 		[]*CXArgument{}) // newOpPar(TYPE_UNDEFINED, false) to allow 0 inputs (goto)
 	AddOpCode(OP_DEBUG, "debug",
 		[]*CXArgument{},
