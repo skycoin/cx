@@ -718,6 +718,9 @@ func main () {
 		return
 	}
 
+	Debug("meow")
+	// var bcPrgrm *CXProgram
+	var sPrgrm []byte
 	if options.transactionMode {
 		resp, err := http.Get("http://127.0.0.1:6421/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
 		if err != nil {
@@ -726,13 +729,18 @@ func main () {
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 
-		var sPrgrm []byte
 		if err := json.Unmarshal(body, &sPrgrm); err != nil {
 			panic(err)
 		}
 
 		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
+		// bcPrgrm = Deserialize(sPrgrm)
+		prevMemSize := len(PRGRM.Memory)
+		Debug("nooo")
 		PRGRM = Deserialize(sPrgrm)
+		Debug("howmany", len(PRGRM.Packages))
+		PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
+		DataOffset = PRGRM.HeapStartsAt
 	}
 
 	cxgo0.PRGRM0 = PRGRM
@@ -1046,13 +1054,25 @@ func main () {
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
 		if options.blockchainMode {
 			PRGRM.RunCompiled(0, cxArgs)
-			s := Serialize(PRGRM)
+			PRGRM.RemovePackage(MAIN_FUNC)
+			
+			s := Serialize(PRGRM, 1)
 			fiberInit.StartCXCoin(s)
 		} else {
 			err := PRGRM.RunCompiled(0, cxArgs)
 			if err != nil {
 				panic(err)
 			}
+			s := Serialize(PRGRM, 1)
+			_ = s
+
+			ExtractTransactionProgram(sPrgrm, s)
+			// CopyProgramState(&s, &sPrgrm)
+			// tst := Deserialize(sPrgrm)
+			// err = tst.RunCompiled(0, cxArgs)
+			// if err != nil {
+			// 	panic(err)
+			// }
 		}
 		if AssertFailed() {
 			os.Exit(CX_ASSERT)

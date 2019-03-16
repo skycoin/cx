@@ -274,6 +274,9 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 			} else {
 				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
 			}
+			if mod == cxt.CurrentPackage {
+				cxt.CurrentPackage = cxt.Packages[len(cxt.Packages)-1]
+			}
 			break
 		}
 	}
