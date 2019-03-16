@@ -14,6 +14,7 @@
   * #76: Using int literal 0 where 0.0 was needed gave no error.
   * #133: Panic when inserting a newline into a string literal
   * #134: Panic when declaring a variable of an unknown type.
+  * #155: Panic when trying to assign return value of a function returning void.
   * #156: Panic when using a function declared in another package without importing the package.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
   * #271: CX floats cannot handle exponents
