@@ -17,6 +17,7 @@
   * #156: Panic when using a function declared in another package without importing the package.
   * #166: Panic when calling a function from another package where the package name alias a local variable name
   * #271: CX floats cannot handle exponents
+  * #284: Concatenation of str variables with + operator doesn't work.
 * Documentation
 * IDE (WiP)
 * Miscellaneous
