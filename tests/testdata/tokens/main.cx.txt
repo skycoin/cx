@@ -3124,7 +3124,7 @@ PERIOD
 STRLIT Cx stack overflow when appending to a slice passed by address
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-155.cx
  COMMA 
@@ -3133,10 +3133,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when trying to assign return value of a function returning void
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
