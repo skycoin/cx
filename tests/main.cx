@@ -424,7 +424,7 @@ func main ()() {
 	runTestEx("issue-282.cx", cx.SUCCESS, "for true {} loop scope is not executed", TEST_ISSUE, 0)
 	runTestEx("issue-283.cx", cx.SUCCESS, "for loop using boolean value is not compiling", TEST_ISSUE, 0)
 	runTestEx("issue-284.cx", cx.SUCCESS, "Concatenation of str variables with + operator doesn't work", TEST_ISSUE, 0)
-	runTestEx("issue-285.cx", cx.SUCCESS, "Short declaration doesn't compile with opcode return value", TEST_ISSUE, 0)
+	runTest("issue-285.cx", cx.SUCCESS, "Short declaration doesn't compile with opcode return value")
 	runTestEx("issue-286.cx", cx.SUCCESS, "Compilation error when struct field is named 'input' or 'output'", TEST_ISSUE, 0)
 	runTestEx("issue-287.cx", cx.COMPILATION_ERROR, "No compilation error when using empty argument list after function call", TEST_ISSUE, 0)
 	runTestEx("issue-288.cx", cx.COMPILATION_ERROR, "No compilation error when using float value in place of boolean expression", TEST_ISSUE, 0)
