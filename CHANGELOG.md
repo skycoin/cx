@@ -20,6 +20,7 @@
   * #271: CX floats cannot handle exponents
   * #284: Concatenation of str variables with + operator doesn't work.
   * #285: Short declaration doesn't compile with opcode return value.
+  * #288: No compilation error when using float value in place of boolean expression.
 * Documentation
 * IDE (WiP)
 * Miscellaneous

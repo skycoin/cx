@@ -427,7 +427,7 @@ func main ()() {
 	runTest("issue-285.cx", cx.SUCCESS, "Short declaration doesn't compile with opcode return value")
 	runTestEx("issue-286.cx", cx.SUCCESS, "Compilation error when struct field is named 'input' or 'output'", TEST_ISSUE, 0)
 	runTestEx("issue-287.cx", cx.COMPILATION_ERROR, "No compilation error when using empty argument list after function call", TEST_ISSUE, 0)
-	runTestEx("issue-288.cx", cx.COMPILATION_ERROR, "No compilation error when using float value in place of boolean expression", TEST_ISSUE, 0)
+	runTest("issue-288.cx", cx.COMPILATION_ERROR, "No compilation error when using float value in place of boolean expression")
 	runTestEx("issue-289.cx", cx.COMPILATION_ERROR, "Panic when package contains duplicate function signature", TEST_ISSUE, 0)
 	runTestEx("issue-290.cx", cx.COMPILATION_ERROR, "Left hand side of , is not compiled", TEST_ISSUE, 0)
 	runTestEx("issue-291-a.cx", cx.SUCCESS, "Compilation error when using return value of a member method in a expression", TEST_ISSUE, 0)
