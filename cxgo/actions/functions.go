@@ -28,7 +28,7 @@ func FunctionHeader(ident string, receiver []*CXArgument, isMethod bool) *CXFunc
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
-				fn := MakeFunction(fnName)
+				fn := MakeFunction(fnName, CurrentFile, LineNo)
 				pkg.AddFunction(fn)
 				fn.AddInput(receiver[0])
 				return fn
@@ -42,7 +42,7 @@ func FunctionHeader(ident string, receiver []*CXArgument, isMethod bool) *CXFunc
 				pkg.CurrentFunction = fn
 				return fn
 			} else {
-				fn := MakeFunction(ident)
+				fn := MakeFunction(ident, CurrentFile, LineNo)
 				pkg.AddFunction(fn)
 				return fn
 			}

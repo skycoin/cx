@@ -309,7 +309,7 @@ function_header:
                 FUNC IDENTIFIER
                 {
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				fn := MakeFunction($2)
+				fn := MakeFunction($2, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
                                 $$ = fn
@@ -326,7 +326,7 @@ function_header:
 			fnName := $3[0].CustomType.Name + "." + $5
 
 			if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-				fn := MakeFunction(fnName)
+				fn := MakeFunction(fnName, CurrentFileName, lineNo)
 				pkg.AddFunction(fn)
 
                                 fn.AddInput($3[0])

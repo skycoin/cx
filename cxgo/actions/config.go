@@ -20,10 +20,6 @@ var ReplTargetFn string = ""
 var ReplTargetStrct string = ""
 var ReplTargetMod string = ""
 
-var FoundCompileErrors bool
-
-var InREPL bool = false
-
 var SysInitExprs []*CXExpression
 
 var dStack bool = false
