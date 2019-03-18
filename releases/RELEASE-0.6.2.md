@@ -1,10 +1,10 @@
 # CX version 0.6.2
 
-2019-03-xx
+2019-03-17
 
 Today the Skycoin development team releases the CX programming language
 version 0.6.2. This is the second bugfix release of the CX 0.6 series and it
-fixes all known language bugs for CX 0.6.
+fixes a number of language bugs for CX 0.6.
 
 The focus of this release is to improve the quality of the language compiler
 and interpreter, although a few language enhancements have also been added.
@@ -42,13 +42,20 @@ There are a few language improvement over 0.6.1:
 
 ### Fixed issues
 
+  * \#58: No compilation error when indexing an array with a non integral var.
   * \#70: Inline field and index "dereferences" to function calls' outputs.
   * \#72: Multi-dimensional slices don't work.
   * \#76: Using int literal 0 where 0.0 was needed gave no error.
+  * \#133: Panic when inserting a newline into a string literal.
   * \#134: Panic when declaring a variable of an unknown type.
+  * \#155: Panic when trying to assign return value of a function returning void.
   * \#156: Panic when using a function declared in another package without importing the package.
-  * \#166: Panic when calling a function from another package where the package name alias a local variable name
+  * \#166: Panic when calling a function from another package where the package name alias a local varia\ble name
   * \#271: CX floats cannot handle exponents
+  * \#284: Concatenation of str variables with + operator doesn't work.
+  * \#285: Short declaration doesn't compile with opcode return value.
+  * \#288: No compilation error when using float value in place of boolean expression.
+  * \#289: Panic when package contains duplicate function signature.
 
 ### Documentation
 
@@ -61,7 +68,7 @@ There are a few language improvement over 0.6.1:
 
 ## About CX
 
-CX is the programming language for smart contracts on the
+CX is the blockchain programming language on the
 [Skycoin](https://www.skycoin.net/) blockchain. CX is a general purpose,
 interpreted and compiled programming language, with a very strict type system
 and a syntax similar to Golang's. CX provides a new programming paradigm based
