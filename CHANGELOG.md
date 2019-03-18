@@ -1,6 +1,6 @@
 # Changelog
 
-### v0.6.2 (NOT YET RELEASED)
+### v0.6.2
 * Additions
   * Support for exponents in floating point numbers (f32 and f64). Also
 	improved decimal point parsing
