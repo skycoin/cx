@@ -39,6 +39,12 @@
 			"revisionTime": "2018-12-23T07:50:48Z"
 		},
 		{
+			"checksumSHA1": "hwP33wiDepynCd6vI+0WTcBLW+g=",
+			"path": "github.com/Jeffail/leaps/lib/binder",
+			"revision": "b534e67dd32f74ba330bb78d8879508e6a6171cc",
+			"revisionTime": "2018-12-23T07:50:48Z"
+		},
+		{
 			"checksumSHA1": "raqO1B4P9Bq0+o63X74nN+KxJGw=",
 			"path": "github.com/Jeffail/leaps/lib/curator",
 			"revision": "b534e67dd32f74ba330bb78d8879508e6a6171cc",
@@ -85,6 +91,33 @@
 			"path": "github.com/amir/raidman/proto",
 			"revision": "1ccc43bfb9c93cb401a4025e49c64ba71e5e668b",
 			"revisionTime": "2017-04-15T20:35:53Z"
+		},
+		{
+			"checksumSHA1": "OT4XN9z5k69e2RsMSpwW74B+yk4=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/blang/semver",
+			"path": "github.com/blang/semver",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "R1Q34Pfnt197F/nCOO9kG8c+Z90=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/boltdb/bolt",
+			"path": "github.com/boltdb/bolt",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "hFFFYFqtS10h1arNtLUo2MmkYZE=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/cenkalti/backoff",
+			"path": "github.com/cenkalti/backoff",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "YImPVNZRCKOaaReWnFEH+AaP8NM=",
+			"path": "github.com/fsnotify/fsnotify",
+			"revision": "1485a34d5d5723fea214f5710708e19a831720e4",
+			"revisionTime": "2019-03-12T18:14:46Z"
 		},
 		{
 			"checksumSHA1": "2UmMbNHc8FBr98mJFN1k8ISOIHk=",
@@ -159,34 +192,64 @@
 			"revisionTime": "2018-12-06T07:02:39Z"
 		},
 		{
-			"checksumSHA1": "7+/D5YODUawT41sZqMjEMwN7uxI=",
-			"path": "github.com/gotk3/gotk3/cairo",
-			"revision": "91e754d8cb73c9f13d3ce7be9cfa6bf7069f009b",
-			"revisionTime": "2018-12-29T17:34:52Z"
+			"checksumSHA1": "bWGI7DqWg6IdhfamV96OD+Esa+8=",
+			"path": "github.com/hashicorp/hcl",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
 		},
 		{
-			"checksumSHA1": "HHiEELLuQSDZW6TXXKbxgkOGudY=",
-			"path": "github.com/gotk3/gotk3/gdk",
-			"revision": "91e754d8cb73c9f13d3ce7be9cfa6bf7069f009b",
-			"revisionTime": "2018-12-29T17:34:52Z"
+			"checksumSHA1": "XQmjDva9JCGGkIecOgwtBEMCJhU=",
+			"path": "github.com/hashicorp/hcl/hcl/ast",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
 		},
 		{
-			"checksumSHA1": "vRQh4576VvL//dlWY49UEp/EUoo=",
-			"path": "github.com/gotk3/gotk3/glib",
-			"revision": "91e754d8cb73c9f13d3ce7be9cfa6bf7069f009b",
-			"revisionTime": "2018-12-29T17:34:52Z"
+			"checksumSHA1": "1GmX7G0Pgf5XprOh+T3zXMXX0dc=",
+			"path": "github.com/hashicorp/hcl/hcl/parser",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
 		},
 		{
-			"checksumSHA1": "XEPWX+4sm4jeObAXDu+2kQQMKkY=",
-			"path": "github.com/gotk3/gotk3/gtk",
-			"revision": "91e754d8cb73c9f13d3ce7be9cfa6bf7069f009b",
-			"revisionTime": "2018-12-29T17:34:52Z"
+			"checksumSHA1": "encY+ZtDf4nJaMvsVL2c+EJ2r3Q=",
+			"path": "github.com/hashicorp/hcl/hcl/printer",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
 		},
 		{
-			"checksumSHA1": "LpE7wOJYo0DqKB6YqeohQLutbi4=",
-			"path": "github.com/gotk3/gotk3/pango",
-			"revision": "91e754d8cb73c9f13d3ce7be9cfa6bf7069f009b",
-			"revisionTime": "2018-12-29T17:34:52Z"
+			"checksumSHA1": "+qJTCxhkwC7r+VZlPlZz8S74KmU=",
+			"path": "github.com/hashicorp/hcl/hcl/scanner",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
+		},
+		{
+			"checksumSHA1": "oS3SCN9Wd6D8/LG0Yx1fu84a7gI=",
+			"path": "github.com/hashicorp/hcl/hcl/strconv",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
+		},
+		{
+			"checksumSHA1": "c6yprzj06ASwCo18TtbbNNBHljA=",
+			"path": "github.com/hashicorp/hcl/hcl/token",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
+		},
+		{
+			"checksumSHA1": "PwlfXt7mFS8UYzWxOK5DOq0yxS0=",
+			"path": "github.com/hashicorp/hcl/json/parser",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
+		},
+		{
+			"checksumSHA1": "afrZ8VmAwfTdDAYVgNSXbxa4GsA=",
+			"path": "github.com/hashicorp/hcl/json/scanner",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
+		},
+		{
+			"checksumSHA1": "fNlXQCQEnb+B3k5UDL/r15xtSJY=",
+			"path": "github.com/hashicorp/hcl/json/token",
+			"revision": "65a6292f0157eff210d03ed1bf6c59b190b8b906",
+			"revisionTime": "2018-09-06T18:38:39Z"
 		},
 		{
 			"checksumSHA1": "gEjGS03N1eysvpQ+FCHTxPcbxXc=",
@@ -207,16 +270,340 @@
 			"revisionTime": "2018-10-16T16:26:27Z"
 		},
 		{
+			"checksumSHA1": "9CxtAyVNPsScpfghpxfapxMPniU=",
+			"path": "github.com/magiconair/properties",
+			"revision": "7757cc9fdb852f7579b24170bcacda2c7471bb6a",
+			"revisionTime": "2019-01-10T14:24:58Z"
+		},
+		{
+			"checksumSHA1": "XEV3BI3nHA/rNa/tIgB7fVCrDww=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/mattn/go-colorable",
+			"path": "github.com/mattn/go-colorable",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "y/A5iuvwjytQE2CqVuphQRXR2nI=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/mattn/go-isatty",
+			"path": "github.com/mattn/go-isatty",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "CIK3BBNX3nuUQCmNqTQydNfMNKI=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/mgutz/ansi",
+			"path": "github.com/mgutz/ansi",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "J+g0oZePWp2zSIISD2dZZKTxmgg=",
+			"path": "github.com/mitchellh/mapstructure",
+			"revision": "3536a929edddb9a5b34bd6861dc4a9647cb459fe",
+			"revisionTime": "2018-10-05T04:51:35Z"
+		},
+		{
+			"checksumSHA1": "CccIv6EVewleaGMEMCbTteInjW8=",
+			"path": "github.com/pelletier/go-toml",
+			"revision": "f9070d3b400d7bf7c9b4e4e05916f92fd0b79e0c",
+			"revisionTime": "2019-03-22T00:22:05Z"
+		},
+		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
 			"path": "github.com/satori/go.uuid",
 			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
 			"revisionTime": "2017-03-21T23:07:31Z"
 		},
 		{
+			"checksumSHA1": "dhcoAs6YFyvXiG55mx5WDxg+/4g=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/shopspring/decimal",
+			"path": "github.com/shopspring/decimal",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "GWtDi0sYbtCQzF/ZaVhaHvCMvuk=",
+			"origin": "github.com/skycoin/skycoin/vendor/github.com/sirupsen/logrus",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "ssP71jQXXWthd9Ue7QTDQN0BKWg=",
+			"path": "github.com/skycoin/skycoin/src/api",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "xtsTTofQspBNQueoLeZuArefvUc=",
+			"path": "github.com/skycoin/skycoin/src/api/webrpc",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "JCwmTbQxU3eBXB/nTY60qWfEtAM=",
+			"path": "github.com/skycoin/skycoin/src/cipher",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "bfyCblgbl6jvvz61+pmQn2pRu8s=",
+			"path": "github.com/skycoin/skycoin/src/cipher/base58",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "49FGlAEgdzx52sMHAGZ86/mrYQY=",
+			"path": "github.com/skycoin/skycoin/src/cipher/chacha20poly1305",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "otDKg6Tb4vyl5pUv5ECNLxsd2f4=",
+			"path": "github.com/skycoin/skycoin/src/cipher/chacha20poly1305/internal/chacha20",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
 			"checksumSHA1": "MdTdMqLHRC2Hm5OnV4ao3f9O7D4=",
 			"path": "github.com/skycoin/skycoin/src/cipher/encoder",
 			"revision": "943c61fdf38f5b785ad6bb5af052b08a2438a84c",
 			"revisionTime": "2018-12-29T03:45:21Z"
+		},
+		{
+			"checksumSHA1": "SMEt7uKoie9UcWr3gbwV/YDMgpA=",
+			"path": "github.com/skycoin/skycoin/src/cipher/encrypt",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "K6bbJ0xL5d1fLO2JR4YWRuXsiuA=",
+			"path": "github.com/skycoin/skycoin/src/cipher/go-bip39",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "ACJtchaAt6C/h4rNMpaC2ayL2y4=",
+			"path": "github.com/skycoin/skycoin/src/cipher/pbkdf2",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "EFgRBF7HzszdvB+O687pPn3CPL8=",
+			"path": "github.com/skycoin/skycoin/src/cipher/poly1305",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "Ojb0je198cJYbyxk7jO22yHH1Qo=",
+			"path": "github.com/skycoin/skycoin/src/cipher/ripemd160",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "aOeI5KE2/wjJePtIrgD7muKSFUc=",
+			"path": "github.com/skycoin/skycoin/src/cipher/scrypt",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "QHp5Vv1d6BeILBTV0Dp+60aDURA=",
+			"path": "github.com/skycoin/skycoin/src/cipher/secp256k1-go",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "J/9D0hZgXj6qW0NODxb5reCEUR4=",
+			"path": "github.com/skycoin/skycoin/src/cipher/secp256k1-go/secp256k1-go2",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "jYZSGqyp0DqKDmgl1KqKW6Op+sg=",
+			"path": "github.com/skycoin/skycoin/src/coin",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "WYbnDwREPGCFyvmbxJA+6Tvf3Mc=",
+			"path": "github.com/skycoin/skycoin/src/daemon",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "gFs80aDd2Qa6do8SY8Q3jiuf7Q0=",
+			"path": "github.com/skycoin/skycoin/src/daemon/gnet",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "THW7qfkNvBH81A2W0iVp7EhSgzo=",
+			"path": "github.com/skycoin/skycoin/src/daemon/pex",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "NbB8jA7RxXCKcw1uKaaSfWZukV0=",
+			"path": "github.com/skycoin/skycoin/src/daemon/strand",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "tS2E0uR9Pk+nwlKGu0OI7tEPhF4=",
+			"path": "github.com/skycoin/skycoin/src/params",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "h9CSlTbmglcPSLHGSJuHkkOOGeo=",
+			"path": "github.com/skycoin/skycoin/src/readable",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "HgeWJP+DCvKTskajQegl4sQbJOI=",
+			"path": "github.com/skycoin/skycoin/src/skycoin",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "q8iI7393VJeZSUNuNLUDj8raXCE=",
+			"path": "github.com/skycoin/skycoin/src/util/apputil",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "0fUCau2uMppUxyya/HDyqzp9sKQ=",
+			"path": "github.com/skycoin/skycoin/src/util/certutil",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "x9jtFkhJS4kYBp1deQRFsODM3bc=",
+			"path": "github.com/skycoin/skycoin/src/util/droplet",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "1Z7u4VWE5WMNhVijaIhlpnENNfU=",
+			"path": "github.com/skycoin/skycoin/src/util/elapse",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "Yqsj26qQ+Pol6V94PECKVtYmKRs=",
+			"path": "github.com/skycoin/skycoin/src/util/fee",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "09bS93Xyq0WTnqxOK1TE+GBLeIM=",
+			"path": "github.com/skycoin/skycoin/src/util/file",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "a+IkHNKs/Bwgn3d+AC0geovVD5g=",
+			"path": "github.com/skycoin/skycoin/src/util/http",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "+kDUDc72TDp0hcn/igAK+VzXNMI=",
+			"path": "github.com/skycoin/skycoin/src/util/iputil",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "KAha7Cpi2FDGDvoq/U8jM/I+Uwc=",
+			"path": "github.com/skycoin/skycoin/src/util/logging",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "slol1US8vTOOroRac5VpVnd/x+4=",
+			"path": "github.com/skycoin/skycoin/src/util/timeutil",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "SDHyISWc8i17Nc5XYtlpuxoL9yY=",
+			"path": "github.com/skycoin/skycoin/src/util/useragent",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "GiIBik2evoHihVDdhsufcZXJ86Q=",
+			"path": "github.com/skycoin/skycoin/src/visor",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "Esz3HIO/pFWHNcEcsL0pUPNbb+0=",
+			"path": "github.com/skycoin/skycoin/src/visor/blockdb",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "xaDCauzwK6QZNzPuxk9CLClfisg=",
+			"path": "github.com/skycoin/skycoin/src/visor/dbutil",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "QHlSHVM9zArDET79u7iKUZQZZzw=",
+			"path": "github.com/skycoin/skycoin/src/visor/historydb",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "3j2oAjOSANAWRVgEBF0pJKjawa8=",
+			"path": "github.com/skycoin/skycoin/src/wallet",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "2d0rR/VhqllUdrcH6kwHHrhqJ2E=",
+			"path": "github.com/spf13/afero",
+			"revision": "588a75ec4f32903aa5e39a2619ba6a4631e28424",
+			"revisionTime": "2019-03-02T02:18:57Z"
+		},
+		{
+			"checksumSHA1": "HcOjO9+cwl+xYnkiGuIeesqwBs8=",
+			"path": "github.com/spf13/afero/mem",
+			"revision": "588a75ec4f32903aa5e39a2619ba6a4631e28424",
+			"revisionTime": "2019-03-02T02:18:57Z"
+		},
+		{
+			"checksumSHA1": "So+ok+Fp2ztieiuZXD/wp8UJhS0=",
+			"path": "github.com/spf13/cast",
+			"revision": "8c9545af88b134710ab1cd196795e7f2388358d7",
+			"revisionTime": "2018-10-24T22:49:29Z"
+		},
+		{
+			"checksumSHA1": "kmcWtDErtMPA3+o7+B4MDC3z+T0=",
+			"path": "github.com/spf13/jwalterweatherman",
+			"revision": "94f6ae3ed3bceceafa716478c5fbf8d29ca601a1",
+			"revisionTime": "2018-10-28T14:53:47Z"
+		},
+		{
+			"checksumSHA1": "VK+UsykzUMkaKl2ankiyutolraE=",
+			"path": "github.com/spf13/pflag",
+			"revision": "24fa6976df40757dce6aea913e7b81ade90530e1",
+			"revisionTime": "2018-12-23T18:29:23Z"
+		},
+		{
+			"checksumSHA1": "eGGR9Zmlt7YQ0YEZFzz+qIDa2to=",
+			"path": "github.com/theherk/viper",
+			"revision": "e0502e82247dc662b1e65f76039989bda914cfad",
+			"revisionTime": "2017-12-02T03:12:28Z"
+		},
+		{
+			"checksumSHA1": "BGm8lKZmvJbf/YOJLeL1rw2WVjA=",
+			"origin": "github.com/skycoin/skycoin/vendor/golang.org/x/crypto/ssh/terminal",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
 		},
 		{
 			"checksumSHA1": "+U1IB5N4LDS74y4fXjARb4/S4IE=",
@@ -231,6 +618,13 @@
 			"revisionTime": "2018-07-06T05:06:37Z"
 		},
 		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"origin": "github.com/skycoin/skycoin/vendor/golang.org/x/net/context",
+			"path": "golang.org/x/net/context",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
 			"checksumSHA1": "f3Y7JIZH61oMmp8nphqe8Mg+XoU=",
 			"path": "golang.org/x/net/internal/socks",
 			"revision": "927f97764cc334a6575f4b7a1584a147864d5723",
@@ -241,6 +635,31 @@
 			"path": "golang.org/x/net/proxy",
 			"revision": "927f97764cc334a6575f4b7a1584a147864d5723",
 			"revisionTime": "2018-12-19T06:27:23Z"
+		},
+		{
+			"checksumSHA1": "FTkoGvVhAkxcWH5P4Own0Te9sg4=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "b294cbcfc56d2a65a30c02c78722b5df061e99b8",
+			"revisionTime": "2019-03-06T21:35:55Z"
+		},
+		{
+			"checksumSHA1": "Dfz4tGItokMvHZENCsBmPPB8FGQ=",
+			"origin": "github.com/skycoin/skycoin/vendor/golang.org/x/sys/windows",
+			"path": "golang.org/x/sys/windows",
+			"revision": "60d7108b772ec589dd310d9ca288a2d62176c4fa",
+			"revisionTime": "2019-03-28T02:37:36Z"
+		},
+		{
+			"checksumSHA1": "o3YChxWLvyCmkAn/ZNBj9HC9zKw=",
+			"path": "golang.org/x/text/transform",
+			"revision": "e3703dcdd614d2d7488fff034c75c551ea25da95",
+			"revisionTime": "2018-12-15T16:57:46Z"
+		},
+		{
+			"checksumSHA1": "lBB8oUHgIK0RUuDchkQVfMXJQh0=",
+			"path": "golang.org/x/text/unicode/norm",
+			"revision": "e3703dcdd614d2d7488fff034c75c551ea25da95",
+			"revisionTime": "2018-12-15T16:57:46Z"
 		},
 		{
 			"checksumSHA1": "o5Skl9YjZqmvEEqWie3f3oY0Kow=",

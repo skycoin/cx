@@ -2,14 +2,14 @@
 
 ### v0.6.3 (NOT YET RELEASED)
 * Additions
-  * ...
+  * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
 * Fixed issues
   * #xx: ...
 * Documentation
 * IDE (WiP)
 * Miscellaneous
-  * ...
+  * Vendored all external packages
 
 ### v0.6.2
 * Additions
