@@ -1552,8 +1552,6 @@ func main () {
 			// s := Serialize(PRGRM, 1)
 			// _ = s
 
-			// Debug("dbg", PRGRM.Memory[PRGRM.StackSize:PRGRM.HeapStartsAt])
-
 			// Deserialize(ExtractBlockchainProgram(sPrgrm, s))
 
 			// Deserialize(MergeTransactionAndBlockchain(
