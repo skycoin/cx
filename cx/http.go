@@ -1,63 +1,61 @@
 package cx
 
-import (
-	// "fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
+// import (
+// 	// "fmt"
+// 	"io/ioutil"
+// 	"net/http"
+// 	"time"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
-)
+// 	"github.com/skycoin/skycoin/src/cipher/encoder"
+// )
 
-const (
-	// StatusCode = 4
-	// Body 4
-	RESPONSE_SIZE = 8
-)
+// const (
+// 	RESPONSE_SIZE = 8
+// )
 
-func op_http_get(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+// func op_http_get(expr *CXExpression, fp int) {
+// 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+// 	out1Offset := GetFinalOffset(fp, out1)
 
-	var err error
-	var resp *http.Response
-	var contents []byte
+// 	var err error
+// 	var resp *http.Response
+// 	var contents []byte
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 10,
-	}
-	resp, err = netClient.Get(ReadStr(fp, inp1))
+// 	var netClient = &http.Client{
+// 		Timeout: time.Second * 10,
+// 	}
+// 	resp, err = netClient.Get(ReadStr(fp, inp1))
 
-	// resp, err = http.Get(ReadStr(mem, fp, inp1))
+// 	// resp, err = http.Get(ReadStr(mem, fp, inp1))
 
-	if err != nil {
-		panic(err)
-	}
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	defer resp.Body.Close()
-	contents, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
+// 	defer resp.Body.Close()
+// 	contents, err = ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	byts := encoder.Serialize(string(contents))
-	length := len(byts)
-	heapOffset := AllocateSeq(length + OBJECT_HEADER_SIZE)
-	size := encoder.Serialize(int32(len(byts)))
+// 	byts := encoder.Serialize(string(contents))
+// 	length := len(byts)
+// 	heapOffset := AllocateSeq(length + OBJECT_HEADER_SIZE)
+// 	size := encoder.Serialize(int32(len(byts)))
 
-	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
-	}
+// 	var header []byte = make([]byte, OBJECT_HEADER_SIZE, OBJECT_HEADER_SIZE)
+// 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+// 		header[c] = size[c-5]
+// 	}
 
-	obj := append(header, byts...)
+// 	obj := append(header, byts...)
 
-	WriteMemory(heapOffset, obj)
+// 	WriteMemory(heapOffset, obj)
 
-	off := encoder.SerializeAtomic(int32(heapOffset))
+// 	off := encoder.SerializeAtomic(int32(heapOffset))
 
-	WriteMemory(out1Offset, off)
-}
+// 	WriteMemory(out1Offset, off)
+// }
 
 // type Response struct {
 //         Status     string // e.g. "200 OK"
