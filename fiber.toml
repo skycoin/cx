@@ -1,0 +1,24 @@
+
+[node]
+  blockchain_pubkey_str = "02583e5ebbf85522474e0f17e681e62ca37910db6b8792763af4e97663c31a7984"
+  blockchain_seckey_str = ""
+  create_block_burn_factor = 2
+  create_block_max_transaction_size = 65535
+  default_connections = []
+  genesis_address_str = "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E"
+  genesis_coin_volume = 100000000376832.0
+  genesis_signature_str = "ffb85fc0ead08b482d64e0c0d559b8c85c401407eb05233da0f1df11c724350a44cba867b442c2d82a89661a7782baa4271b67240cc2bd42036e1b80e568dfc901"
+  genesis_timestamp = 1426562704
+  max_block_size = 65535
+  peer_list_url = "https://127.0.0.1/peers.txt"
+  port = 6000
+  unconfirmed_burn_factor = 2
+  unconfirmed_max_transaction_size = 65535
+  web_interface_port = 6420
+
+[params]
+  distribution_addresses = ["TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX"]
+  distribution_addresses_total = 1
+  initial_unlocked_count = 100
+  max_coin_supply = 100000000.0
+  user_burn_factor = 2
