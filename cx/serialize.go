@@ -651,7 +651,7 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 }
 
 // SplitSerialize ...
-func splitSerialize (prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
+func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
 		indexPackage(pkg, s)
@@ -684,7 +684,7 @@ func splitSerialize (prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, 
 	for _, pkg := range prgrm.Packages[from:to] {
 		sPackageGlobals(pkg, s)
 	}
-	
+
 	// functions
 	for _, pkg := range prgrm.Packages[from:to] {
 		for _, fn := range pkg.Functions {
@@ -761,8 +761,6 @@ func splitSerialize (prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, 
 		}
 	}
 }
-
-
 
 // Serialize ...
 func Serialize(prgrm *CXProgram, split int) (byts []byte) {
@@ -903,12 +901,12 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset - fnCounter]
+			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
 		}
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[i].CurrentStruct = prgrm.Packages[i].Structs[sPkg.CurrentStructOffset - strctCounter]
+			prgrm.Packages[i].CurrentStruct = prgrm.Packages[i].Structs[sPkg.CurrentStructOffset-strctCounter]
 		}
 
 		fnCounter += sPkg.FunctionsSize
@@ -1205,9 +1203,9 @@ func Deserialize(byts []byte) (prgrm *CXProgram) {
 }
 
 // CopyProgramState copies the program state from `prgrm1` to `prgrm2`.
-func CopyProgramState (sPrgrm1, sPrgrm2 *[]byte) {
+func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	idxSize, _ := encoder.Size(sIndex{})
-	
+
 	var index1 sIndex
 	var index2 sIndex
 
@@ -1219,19 +1217,19 @@ func CopyProgramState (sPrgrm1, sPrgrm2 *[]byte) {
 
 	var prgrm2Info sProgram
 	encoder.DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
-	
+
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
 	prgrmState = append(prgrmState, make([]byte, prgrm2Info.StackSize)...)
 	// We are only interested on extracting the data segment
-	prgrmState = append(prgrmState, (*sPrgrm1)[index1.NamesOffset + prgrm1Info.StackSize:index1.NamesOffset + prgrm1Info.StackSize + (prgrm2Info.HeapStartsAt - prgrm2Info.StackSize)]...)
+	prgrmState = append(prgrmState, (*sPrgrm1)[index1.NamesOffset+prgrm1Info.StackSize:index1.NamesOffset+prgrm1Info.StackSize+(prgrm2Info.HeapStartsAt-prgrm2Info.StackSize)]...)
 
 	for i, byt := range prgrmState {
 		(*sPrgrm2)[i+int(index2.MemoryOffset)] = byt
 	}
 }
 
-func eqPrgrmSegment (prgrmSeg1, prgrmSeg2 []byte) bool {
+func eqPrgrmSegment(prgrmSeg1, prgrmSeg2 []byte) bool {
 	if len(prgrmSeg1) != len(prgrmSeg2) {
 		return false
 	}
@@ -1243,7 +1241,7 @@ func eqPrgrmSegment (prgrmSeg1, prgrmSeg2 []byte) bool {
 	return true
 }
 
-func correctSerializedSize (byts *[]byte, off1, off2 int32, n int) {
+func correctSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	if len((*byts)[off1:off2]) == 0 {
 		return
 	}
@@ -1252,7 +1250,7 @@ func correctSerializedSize (byts *[]byte, off1, off2 int32, n int) {
 	}
 }
 
-func mustSize (obj interface{}) int {
+func mustSize(obj interface{}) int {
 	s, err := encoder.Size(obj)
 	if err != nil {
 		panic(err)
@@ -1261,7 +1259,7 @@ func mustSize (obj interface{}) int {
 }
 
 // ExtractBlockchainProgram extracts the transaction program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
-func ExtractBlockchainProgram (sPrgrm1, sPrgrm2 []byte) []byte {
+func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var index1 sIndex
@@ -1269,7 +1267,7 @@ func ExtractBlockchainProgram (sPrgrm1, sPrgrm2 []byte) []byte {
 
 	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
 	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
-	
+
 	var prgrm1Info sProgram
 	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
@@ -1281,18 +1279,18 @@ func ExtractBlockchainProgram (sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm1[:index1.ProgramOffset]...)
 	// extracted = append(extracted, sPrgrm2[index2.ProgramOffset:index2.ProgramOffset + (index1.CallsOffset - index1.ProgramOffset)]...)
 	extracted = append(extracted, sPrgrm1[index1.ProgramOffset:index1.CallsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset + (index1.PackagesOffset - index1.CallsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset + (index1.StructsOffset - index1.PackagesOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.StructsOffset:index2.StructsOffset + (index1.FunctionsOffset - index1.StructsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset:index2.FunctionsOffset + (index1.ExpressionsOffset - index1.FunctionsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset:index2.ExpressionsOffset + (index1.ArgumentsOffset - index1.ExpressionsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset:index2.ArgumentsOffset + (index1.IntegersOffset - index1.ArgumentsOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset + (index1.NamesOffset - index1.IntegersOffset)]...)
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset + (index1.MemoryOffset - index1.NamesOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.StructsOffset:index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset:index2.FunctionsOffset+(index1.ExpressionsOffset-index1.FunctionsOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset:index2.ExpressionsOffset+(index1.ArgumentsOffset-index1.ExpressionsOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset:index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset)]...)
+	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset)]...)
 	// the stack segment should be 0 for prgrm1, but just in case
 	extracted = append(extracted, make([]byte, prgrm1Info.StackSize)...)
 	// We are only interested on extracting the data segment
-	extracted = append(extracted, sPrgrm2[index2.MemoryOffset + prgrm2Info.StackSize:index2.MemoryOffset + prgrm2Info.StackSize + (prgrm1Info.HeapStartsAt - prgrm1Info.StackSize)]...)
+	extracted = append(extracted, sPrgrm2[index2.MemoryOffset+prgrm2Info.StackSize:index2.MemoryOffset+prgrm2Info.StackSize+(prgrm1Info.HeapStartsAt-prgrm1Info.StackSize)]...)
 
 	// correcting sizes
 	correctSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
@@ -1307,7 +1305,7 @@ func ExtractBlockchainProgram (sPrgrm1, sPrgrm2 []byte) []byte {
 }
 
 // ExtractTransactionProgram
-func ExtractTransactionProgram (sPrgrm1, sPrgrm2 []byte) []byte {
+func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var index1 sIndex
@@ -1315,7 +1313,7 @@ func ExtractTransactionProgram (sPrgrm1, sPrgrm2 []byte) []byte {
 
 	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
 	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
-	
+
 	var prgrm1Info sProgram
 	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
@@ -1326,26 +1324,26 @@ func ExtractTransactionProgram (sPrgrm1, sPrgrm2 []byte) []byte {
 	// must match the index from sPrgrm2
 	extracted = append(extracted, sPrgrm2[:index2.ProgramOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.ProgramOffset:index2.CallsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.CallsOffset + (index1.PackagesOffset - index1.CallsOffset):index2.PackagesOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.PackagesOffset + (index1.StructsOffset - index1.PackagesOffset):index2.StructsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.StructsOffset + (index1.FunctionsOffset - index1.StructsOffset):index2.FunctionsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset + (index1.ExpressionsOffset - index1.FunctionsOffset):index2.ExpressionsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset + (index1.ArgumentsOffset - index1.ExpressionsOffset):index2.ArgumentsOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset + (index1.IntegersOffset - index1.ArgumentsOffset):index2.IntegersOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.IntegersOffset + (index1.NamesOffset - index1.IntegersOffset):index2.NamesOffset]...)
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset + (index1.MemoryOffset - index1.NamesOffset):index2.MemoryOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset):index2.PackagesOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset):index2.StructsOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset):index2.FunctionsOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.FunctionsOffset+(index1.ExpressionsOffset-index1.FunctionsOffset):index2.ExpressionsOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.ExpressionsOffset+(index1.ArgumentsOffset-index1.ExpressionsOffset):index2.ArgumentsOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset):index2.IntegersOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
+	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
 	// the stack segment should be 0 for prgrm1, but just in case
 	extracted = append(extracted, make([]byte, prgrm2Info.StackSize)...)
 	// We are only interested on extracting the data segment
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset + prgrm2Info.StackSize + (prgrm1Info.HeapStartsAt - prgrm1Info.StackSize):]...)
-	
+	extracted = append(extracted, sPrgrm2[index2.NamesOffset+prgrm2Info.StackSize+(prgrm1Info.HeapStartsAt-prgrm1Info.StackSize):]...)
+
 	return extracted
 }
 
 // func mergeNextChunk(merged *[]byte, sPrgrm1 []byte, sPrgrm2 []byte, idx1From, idx2)
 
-// MergeTransactionAndBlockchain merges 
-func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
+// MergeTransactionAndBlockchain merges
+func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize, _ := encoder.Size(sIndex{})
 
 	var index1 sIndex
@@ -1353,7 +1351,7 @@ func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
 
 	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
 	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
-	
+
 	var prgrm1Info sProgram
 	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
@@ -1370,8 +1368,8 @@ func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
 
 	// Program
 	merged = append(merged, sPrgrm2[index2.ProgramOffset:index2.CallsOffset]...)
-	acc += index2.CallsOffset - index2.ProgramOffset 
-	
+	acc += index2.CallsOffset - index2.ProgramOffset
+
 	// Calls
 	s = (index2.PackagesOffset - index2.CallsOffset) - (index1.PackagesOffset - index1.CallsOffset)
 	merged = append(merged, sPrgrm1[index1.CallsOffset:index1.PackagesOffset]...)
@@ -1383,7 +1381,7 @@ func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, sPrgrm1[index1.PackagesOffset:index1.StructsOffset]...)
 	merged = append(merged, sPrgrm2[acc:acc+s]...)
 	acc += s
-	
+
 	// Structs
 	s = (index2.FunctionsOffset - index2.StructsOffset) - (index1.FunctionsOffset - index1.StructsOffset)
 	merged = append(merged, sPrgrm1[index1.StructsOffset:index1.FunctionsOffset]...)
@@ -1395,7 +1393,7 @@ func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, sPrgrm1[index1.FunctionsOffset:index1.ExpressionsOffset]...)
 	merged = append(merged, sPrgrm2[acc:acc+s]...)
 	acc += s
-	
+
 	// Expressions
 	s = (index2.ArgumentsOffset - index2.ExpressionsOffset) - (index1.ArgumentsOffset - index1.ExpressionsOffset)
 	merged = append(merged, sPrgrm1[index1.ExpressionsOffset:index1.ArgumentsOffset]...)
@@ -1438,7 +1436,7 @@ func MergeTransactionAndBlockchain (sPrgrm1, sPrgrm2 []byte) []byte {
 }
 
 // MergePrograms merges `prgrm1` and `prgrm2`, favoring `prgrm1` (if both have a package with the same name, `prgrm1`'s is used). Note: `prgrm2` is permanently altered.
-func MergePrograms (prgrm1, prgrm2 *CXProgram) *CXProgram {
+func MergePrograms(prgrm1, prgrm2 *CXProgram) *CXProgram {
 	for _, pkg := range prgrm1.Packages {
 		// We're always going to keep prgrm2's main
 		if pkg.Name == MAIN_PKG {
