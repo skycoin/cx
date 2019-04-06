@@ -21,8 +21,12 @@ that string with the actual version number, e.g. `0.6.1`.
 At this point, everything should be working and the code is ready to actually
 be released.
 
+ * Change the CHANGELOG.md file:
+   - remove the `(NOT YET RELEASED)` note from the current version, and create
+     a new version with this note.
+
  * Merge the `develop` branch in git to the `master` branch.  This is done by
-   using this command:
+   using these commands:
    ```
    git checkout master
    git merge develop

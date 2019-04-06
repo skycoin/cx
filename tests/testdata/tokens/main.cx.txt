@@ -3043,19 +3043,26 @@ PERIOD
 STRLIT Panic when using the return value of a function in a short declaration
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
-STRLIT issue-133.cx
+STRLIT issue-133a.cx
  COMMA 
  IDENT cx
 PERIOD 
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when inserting a new line in a string literal
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-133b.cx
  COMMA 
- IDENT TEST_ISSUE
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
  COMMA 
-INTLIT 0
+STRLIT Panic when inserting a new line in a string literal
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3117,7 +3124,7 @@ PERIOD
 STRLIT Cx stack overflow when appending to a slice passed by address
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-155.cx
  COMMA 
@@ -3126,10 +3133,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when trying to assign return value of a function returning void
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3383,7 +3386,7 @@ STRLIT for loop using boolean value is not compiling
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-284.cx
  COMMA 
@@ -3392,13 +3395,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Concatenation of str variables with + operator doesn't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-285.cx
  COMMA 
@@ -3407,10 +3406,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Short declaration doesn't compile with opcode return value
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -3443,7 +3438,7 @@ STRLIT No compilation error when using empty argument list after function call
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-288.cx
  COMMA 
@@ -3452,13 +3447,9 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when using float value in place of boolean expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-289.cx
  COMMA 
@@ -3467,10 +3458,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when package contains duplicate function signature
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx

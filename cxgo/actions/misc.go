@@ -220,11 +220,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	}
 }
 
-func CompilationError(currentFile string, lineNo int) string {
-	FoundCompileErrors = true
-	return ErrorHeader(currentFile, lineNo)
-}
-
 func TotalLength(lengths []int) int {
 	var total int = 1
 	for _, i := range lengths {

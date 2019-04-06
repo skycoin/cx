@@ -785,6 +785,12 @@ func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
 }
 
+// CompilationError is a helper function that concatenates the `currentFile` and `lineNo` data to a error header and returns the full error string.
+func CompilationError(currentFile string, lineNo int) string {
+	FoundCompileErrors = true
+	return ErrorHeader(currentFile, lineNo)
+}
+
 // ErrorString ...
 func ErrorString(code int) string {
 	if str, found := ErrorStrings[code]; found {

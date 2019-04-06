@@ -24,6 +24,10 @@ type CXFunction struct {
 	Length      int             // number of expressions, pre-computed for performance
 	Size        int             // automatic memory size
 
+	// Debugging
+	FileName string
+	FileLine int
+
 	// Used by the GC
 	ListOfPointers []*CXArgument // Root pointers for the GC algorithm
 
@@ -35,10 +39,12 @@ type CXFunction struct {
 //
 // Later, parameters and contents can be added.
 //
-func MakeFunction(name string) *CXFunction {
+func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
 		ElementID: MakeElementID(),
 		Name:      name,
+		FileName:  fileName,
+		FileLine:  fileLine,
 	}
 }
 

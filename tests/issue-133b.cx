@@ -1,0 +1,7 @@
+package main
+
+func main()() {
+	var multiLineString str = `1st line
+2nd line`
+	str.print(multiLineString)
+}

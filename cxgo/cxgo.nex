@@ -124,7 +124,7 @@
 /"([^"]*)"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
-		panic(err)
+	        println(CompilationError(cxgo0.CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
 	tokVal := str
 	tokVal = strings.TrimPrefix(tokVal, "\"")
@@ -570,7 +570,7 @@ func checkCXPathSet () {
 
 func addInitFunction (PRGRM *CXProgram) {
 	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
-		initFn := MakeFunction(SYS_INIT_FUNC)
+		initFn := MakeFunction(SYS_INIT_FUNC, CurrentFile, LineNo)
 		main.AddFunction(initFn)
 
 		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
@@ -1338,7 +1338,7 @@ func main () {
 	if len(sourceCode) == 0 {
 		mod := MakePackage(MAIN_PKG)
 		PRGRM.AddPackage(mod)
-		fn := MakeFunction(MAIN_FUNC)
+		fn := MakeFunction(MAIN_FUNC, CurrentFile, LineNo)
 		mod.AddFunction(fn)
 
 		ReplTargetFn = MAIN_FUNC
