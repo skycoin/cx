@@ -23,7 +23,18 @@ type cxCmdFlags struct {
 	maxHeap             string
 	stackSize           string
 	blockchainMode      bool
-	transactionMode      bool
+	publisherMode       bool
+	peerMode            bool
+	transactionMode     bool
+	broadcastMode       bool
+	walletMode          bool
+	port                int
+	walletSeed          string
+	programName         string
+	secKey              string
+	pubKey              string
+	genesisAddress      string
+	genesisSignature    string
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -38,6 +49,15 @@ func defaultCmdFlags() cxCmdFlags {
 		webPersistentMode:   false,
 		printHelp:           false,
 		printVersion:        false,
+		blockchainMode:      false,
+		transactionMode:     false,
+		broadcastMode:       false,
+		port:                6001,
+		programName:         "cxcoin",
+		secKey:              "1414535274594b23ca0090cdc01e6b7b31702525583eb01c8650a650d4a8c99d",
+		pubKey:              "02583e5ebbf85522474e0f17e681e62ca37910db6b8792763af4e97663c31a7984",
+		genesisAddress:      "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E",
+		genesisSignature:    "",
 	}
 }
 
@@ -73,15 +93,28 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
 
-	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain project")
-	flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
-	flag.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Start a CX blockchain transaction")
-	flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
 	
-	// viscript options
-	// flag.BoolVar(&options.signalClientMode, "signal-client", options.signalClientMode, "Run signal client")
-	// flag.IntVar(&options.signalClientID, "signal-client-id", options.signalClientID, "Id of signal client (default 1)")
-	// flag.StringVar(&options.signalServerAddress, "signal-client-address", options.signalServerAddress, "Address of signal server (default 'localhost:7999')")
+
+	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
+	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
+	flag.BoolVar(&options.publisherMode, "publisher", options.publisherMode, "Start a CX blockchain program block publisher")
+	// flag.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")
+	flag.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Test a CX blockchain transaction")
+	// flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
+	flag.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
+	flag.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
+	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
+	// flag.BoolVar(&options.broadcastMode, "bt", options.broadcastMode, "alias for -broadcast")
+	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
+	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
+	flag.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
+	// flag.StringVar(&options.programName, "bcn", options.programName, "alias for -bc-program-name")
+	flag.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
+	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
+	// flag.StringVar(&options.secKey, "seckey", options.secKey, "alias for -bc-sec-key")
+	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
+	// flag.StringVar(&options.genesisAddress, "bcgenaddr", options.genesisAddress, "alias for -bc-sec-key")
+	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
 }
 
 func printHelp() {

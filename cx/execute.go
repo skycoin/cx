@@ -1,4 +1,4 @@
-package base
+package cx
 
 import (
 	"fmt"
@@ -209,9 +209,9 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 			}
 
 			// debugging memory
-			if len(cxt.Memory) < 2000 {
-				fmt.Println("prgrm.Memory", cxt.Memory)
-			}
+			// if len(cxt.Memory) < 2000 {
+			// 	fmt.Println("prgrm.Memory", cxt.Memory)
+			// }
 
 			return err
 		}

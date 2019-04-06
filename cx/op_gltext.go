@@ -1,6 +1,6 @@
 // +build extra full
 
-package base
+package cx
 
 import (
 	"unicode/utf8"

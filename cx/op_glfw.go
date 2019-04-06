@@ -1,6 +1,6 @@
 // +build extra full
 
-package base
+package cx
 
 import (
 	"github.com/go-gl/glfw/v3.2/glfw"

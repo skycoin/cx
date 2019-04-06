@@ -1,6 +1,4 @@
-// +build base extra full
-
-package base
+package cx
 
 import (
 	"time"

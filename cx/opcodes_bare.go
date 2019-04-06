@@ -1,4 +1,4 @@
-package base
+package cx
 
 // CorePackages ...
 var CorePackages = []string{
