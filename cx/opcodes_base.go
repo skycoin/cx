@@ -1,3 +1,5 @@
+// +build base extra full
+
 package cx
 
 // op codes

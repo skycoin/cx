@@ -1304,7 +1304,7 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	return extracted
 }
 
-// ExtractTransactionProgram
+// ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program
 func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize, _ := encoder.Size(sIndex{})
 
@@ -1416,7 +1416,6 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	s = (index2.MemoryOffset - index2.NamesOffset) - (index1.MemoryOffset - index1.NamesOffset)
 	merged = append(merged, sPrgrm1[index1.NamesOffset:index1.MemoryOffset]...)
 	merged = append(merged, sPrgrm2[acc:acc+s]...)
-	acc += s
 
 	// Memory
 	merged = append(merged, make([]byte, prgrm2Info.StackSize)...)
