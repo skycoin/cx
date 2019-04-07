@@ -5,7 +5,7 @@
   * ...
 * Libraries
 * Fixed issues
-  * #xx: ...
+  * #292: Compilation error when left hand side of an assignment expression is a struct field.
 * Documentation
 * IDE (WiP)
 * Miscellaneous
