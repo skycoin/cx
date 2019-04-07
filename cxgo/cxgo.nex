@@ -651,36 +651,6 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-func createDistributionTransaction(UxID string, genesisSecKey cipher.SecKey, visorParams skycoin.ParamsParameters, initPrgrm []byte) coin.Transaction {
-	var tx coin.Transaction
-
-	output := cipher.MustSHA256FromHex(UxID)
-	tx.PushInput(output)
-
-	if len(visorParams.DistributionAddresses) != int(visorParams.DistributionAddressesTotal) {
-		log.Panic(fmt.Sprintf("Should have %d distribution addresses", visorParams.DistributionAddressesTotal))
-	}
-
-	for i := range visorParams.DistributionAddresses {
-		addr := cipher.MustDecodeBase58Address(visorParams.DistributionAddresses[i])
-		tx.PushOutput(addr, visorParams.MaxCoinSupply/visorParams.DistributionAddressesTotal*1e6, 10000000000, initPrgrm)
-	}
-	seckeys := make([]cipher.SecKey, 1)
-	seckey := genesisSecKey.Hex()
-	seckeys[0] = cipher.MustSecKeyFromHex(seckey)
-	tx.SignInputs(seckeys)
-
-	tx.UpdateHeader()
-
-	err := tx.Verify()
-
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return tx
-}
-
 func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 	var err error
 	
@@ -832,14 +802,31 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 			log.Error("Error with HeadBkSeq")
 			return err
 		} else if headSeq == 0 {
-			log.Infof("Distributing coins to distribution wallet")
 			if len(genesisBlock.Body.Transactions) != 0 {
-				genesisUxID := genesisBlock.Body.Transactions[0].Out[0].Hash
-				tx := createDistributionTransaction(genesisUxID, genesisSecKey, params.Params, initPrgrm)
+				var tx coin.Transaction
+
+				UxID := genesisBlock.Body.Transactions[0].Out[0].Hash
+				output := cipher.MustSHA256FromHex(UxID)
+				tx.PushInput(output)
+
+				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
+				tx.PushOutput(addr, uint64(1e14), 10000, initPrgrm)
+
+				seckeys := make([]cipher.SecKey, 1)
+				seckey := genesisSecKey.Hex()
+				seckeys[0] = cipher.MustSecKeyFromHex(seckey)
+				tx.SignInputs(seckeys)
+
+				tx.UpdateHeader()
+				err = tx.Verify()
+
+				if err != nil {
+					log.Panic(err)
+				}
+
 				_, err := vs.InjectUserTransaction(tx)
 				if err != nil {
-					log.Error("Error injecting Transaction")
-					log.Error(err)
+					panic(err)
 				}
 			} else {
 				log.Error("ERROR: len genesis block was zero")
@@ -1375,7 +1362,7 @@ func main () {
 			
 			
 			
-			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/skycoin/"
+			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
 			exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
