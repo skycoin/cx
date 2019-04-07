@@ -5,7 +5,13 @@
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
 * Fixed issues
-  * #xx: ...
+  * #309: Serialization is not taking into account non-default stack sizes.
+  * #310: Splitting a serialized program into its blockchain and transaction
+    parts.
+  * #311: `CurrentFunction` and `CurrentStruct` are causing errors in programs
+    with more than 1 package.
+  * #312: Deserialization is not setting correctly the sizes for the CallStack,
+    HeapStartsAt and StackSize fields of the CXProgram structure.
 * Documentation
 * IDE (WiP)
 * Miscellaneous
