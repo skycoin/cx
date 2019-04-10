@@ -1,6 +1,6 @@
 // +build extra full
 
-package base
+package cxcore
 
 import (
 	"unicode/utf8"

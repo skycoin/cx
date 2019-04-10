@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 // constant codes
 // nolint golint
