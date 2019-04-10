@@ -5,6 +5,7 @@
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
 * Fixed issues
+  * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
   * #310: Splitting a serialized program into its blockchain and transaction
     parts.

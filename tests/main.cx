@@ -432,7 +432,7 @@ func main ()() {
 	runTestEx("issue-290.cx", cx.COMPILATION_ERROR, "Left hand side of , is not compiled", TEST_ISSUE, 0)
 	runTestEx("issue-291-a.cx", cx.SUCCESS, "Compilation error when using return value of a member method in a expression", TEST_ISSUE, 0)
 	runTestEx("issue-291-b.cx", cx.SUCCESS, "Compilation error when using return value of a member method in a expression", TEST_ISSUE, 0)
-	runTestEx("issue-292.cx", cx.SUCCESS, "Compilation error when left hand side of an assignment expression is a struct field", TEST_ISSUE, 0)
+	runTest("issue-292.cx", cx.SUCCESS, "Compilation error when left hand side of an assignment expression is a struct field")
 	runTestEx("issue-293.cx", cx.SUCCESS, "Crash when INIT_HEAP_SIZE limit is reached ", TEST_ISSUE, 0)
 	runTestEx("issue-294-a.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
 	runTestEx("issue-294-b.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
