@@ -1,6 +1,6 @@
 // +build base extra full
 
-package base
+package cxcore
 
 // op codes
 const (

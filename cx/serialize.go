@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
