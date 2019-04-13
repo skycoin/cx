@@ -21,10 +21,6 @@ type Font struct {
 	maxGlyphHeight int         // Largest glyph height.
 }
 
-func (f *Font) Texture() uint32 {
-	return f.texture
-}
-
 // loadFont loads the given font data. This does not deal with font scaling.
 // Scaling should be handled by the independent Bitmap/Truetype loaders.
 // We therefore expect the supplied image and charset to already be adjusted
@@ -146,22 +142,6 @@ func (f *Font) Metrics(text string) (int, int) {
 	}
 
 	return f.advanceSize(text), gh
-}
-
-// GlyphMetrics returns the pixel width and height for the given glyph index.
-// This takes the scale and rendering direction of the font into account.
-//
-// Unknown runes will be counted as having the maximum glyph bounds as
-// defined by Font.GlyphBounds().
-func (f *Font) GlyphMetrics(index uint32) (int, int) {
-
-	gw, gh := f.GlyphBounds()
-	advance := f.config.Glyphs[index].Advance
-	if f.config.Dir == TopToBottom {
-		return gw, advance
-	}
-
-	return advance, gh
 }
 
 // advanceSize computes the pixel width or height for the given single-line
