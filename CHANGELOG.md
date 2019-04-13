@@ -7,7 +7,9 @@
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
 * Documentation
-* IDE (WiP)
+* IDE
+  * Removed the current version of the IDE. We'll move to a textmate-based
+    solution in the future.
 * Miscellaneous
   * ...
 
