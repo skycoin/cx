@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func tokenize(r io.Reader, w io.Writer) {
+func Tokenize(r io.Reader, w io.Writer) {
 	var sym yySymType
 
 	lex := NewLexer(r)
