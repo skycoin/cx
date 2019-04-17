@@ -1,5 +1,5 @@
 %{
-	package main
+	package parser
 	import (
 		// "fmt"
 		"strconv"
@@ -10,6 +10,9 @@
 
 	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
 	
+	func Parse (lexer *Lexer) int {
+		return yyParse(lexer)
+	}
 %}
 
 %union{

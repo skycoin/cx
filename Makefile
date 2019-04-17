@@ -42,8 +42,8 @@ configure-workspace: ## Configure CX workspace environment
 build-parser: configure ## Generate lexer and parser for CX grammar
 	nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	nex -e cxgo/cxgo.nex
-	goyacc -o cxgo/cxgo.go cxgo/cxgo.y
+	nex -e cxgo/parser/cxgo.nex
+	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
 	go build -tags full -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
