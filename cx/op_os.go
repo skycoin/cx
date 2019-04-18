@@ -1,5 +1,3 @@
-// +build base extra full
-
 package cx
 
 import (
