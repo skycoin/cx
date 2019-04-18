@@ -6,8 +6,8 @@
   create_block_max_transaction_size = 65535
   default_connections = []
   genesis_address_str = "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E"
-  genesis_coin_volume = 100000000376832.0
-  genesis_signature_str = "755bb8e3f38cca63258d48b8f6d6e0cc65c5882b89d6fd8909335f5ba7a558115f7bd4a97d18055fd6b76ea13552bb37f3db560720d3e31302b3ba2b7a106d1601"
+  genesis_coin_volume = 10000000000.0
+  genesis_signature_str = "fd215b71cbfd0d41c33a7d246d922179654cae9f2664258382fc54e623075b346d57ee585b87cebe1aa2337e880f688e436e1a70faedefc31897271a9340bbb500"
   genesis_timestamp = 1426562704
   max_block_size = 65535
   peer_list_url = "https://127.0.0.1/peers.txt"
@@ -17,8 +17,8 @@
   web_interface_port = 6420
 
 [params]
-  distribution_addresses = ["TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX"]
-  distribution_addresses_total = 1
-  initial_unlocked_count = 100
+  distribution_addresses = ["TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX","2PBcLADETphmqWV7sujRZdh3UcabssgKAEB"]
+  distribution_addresses_total = 2
+  initial_unlocked_count = 2
   max_coin_supply = 100000000.0
   user_burn_factor = 2
