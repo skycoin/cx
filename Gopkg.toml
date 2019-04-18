@@ -24,38 +24,32 @@
 #   go-tests = true
 #   unused-packages = true
 
+ignored = ["github.com/go-gl/*"]
 
-# [prune]
+# [[constraint]]
 #   branch = "master"
 #   name = "github.com/go-gl/gl"
 
-# [prune]
+# [[constraint]]
 #   branch = "master"
 #   name = "github.com/go-gl/glfw"
 
-# [prune]
-#   branch = "master"
-#   name = "github.com/go-gl/gltext"
-
-ignored = ["github.com/go-gl/gl"]
-
-# [[constraint]]
-#   name = "github.com/satori/go.uuid"
-#   version = "1.2.0"
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+  version = "1.2.0"
 
 [[constraint]]
-  name = "github.com/skycoin/skycoin"
-  version = "0.25.1"
+  branch = "master"
+  name = "github.com/skycoin/gltext"
 
-# [[constraint]]
-#   branch = "master"
-#   name = "github.com/theherk/viper"
+[[constraint]]
+  branch = "cxcoin"
+  name = "github.com/skycoin/skycoin"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/theherk/viper"
 
 [prune]
   go-tests = true
   unused-packages = true
-  
-  # [[prune.project]]
-  #   name = "github.com/go-gl/glfw"
-  #   non-go = false
-  #   unused-packages = false
