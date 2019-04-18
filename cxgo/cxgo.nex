@@ -810,7 +810,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 				tx.PushInput(output)
 
 				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
-				tx.PushOutput(addr, uint64(1e14), 10000, initPrgrm)
+				tx.PushOutput(addr, uint64(1e10), 10000, initPrgrm)
 
 				seckeys := make([]cipher.SecKey, 1)
 				seckey := genesisSecKey.Hex()
@@ -1359,9 +1359,6 @@ func main () {
 			
 			s := Serialize(PRGRM, 1)
 
-			
-			
-			
 			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
 			exec.Command("newcoin", "createcoin",
@@ -1391,20 +1388,13 @@ func main () {
 			exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
 				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
-				"--config-file=fiber.toml",
-				fmt.Sprintf("--config-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/"),
+				"--config-file=" + configFile + ".toml",
+				"--config-dir=" + configDir,
 			).Start()
 			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
 		} else if options.broadcastMode {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
-
-
-			// genesisUxID := genesisBlock.Body.Transactions[0].Out[0].Hash
-			// var txn coin.Transaction
-			// output := cipher.MustSHA256FromHex(UxID)
-			// tx.PushInput(output)
-
 
 			// getting csrf token
 			csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", options.port + 420))
@@ -1418,8 +1408,6 @@ func main () {
 			if err := json.Unmarshal(csrfBody, &csrf); err != nil {
 				panic(err)
 			}
-
-
 
 			url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port + 420)
 
@@ -1457,62 +1445,6 @@ func main () {
 				panic(err)
 			}
 
-
-
-
-
-
-			
-			// b, err := hex.DecodeString(respBody["encoded_transaction"].(string))
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// txn, err := coin.TransactionDeserialize(b)
-
-			// // get fiber params
-			// configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
-			// configFile := "fiber.toml"
-			// params, err := skycoin.NewParameters(configFile, configDir)
-
-			// // get node config
-			// params.Node.DataDirectory = fmt.Sprintf("$HOME/.%s", options.programName)
-			// nodeConfig := skycoin.NewNodeConfig("", params.Node)
-		
-			// newcoin := skycoin.NewCoin(
-			// 	skycoin.Config{
-			// 		Node: nodeConfig,
-			// 	},
-			// 	log,
-			// )
-
-			// newcoin.ParseConfig()
-			// dconf := newcoin.ConfigureDaemon()
-			// log.Infof("opening visor db: %s", dconf.Visor.DBPath)
-
-			// db, err := visor.OpenDB(dconf.Visor.DBPath, false)
-			// if err != nil {
-			// 	log.Error("Error opening DB")
-			// 	panic(err)
-			// }
-			// defer db.Close()
-
-			// vs, err := visor.NewVisor(dconf.Visor, db)
-			// if err != nil {
-			// 	log.Error("Error with NewVisor")
-			// 	panic(err)
-			// }
-
-			// _ = vs
-
-			// _, err = vs.InjectUserTransaction(txn)
-			// if err != nil {
-			// 	log.Error("Error injecting Transaction")
-			// 	log.Error(err)
-			// }
-
-
-
-		
 			url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["rawtx"] = respBody["encoded_transaction"]
@@ -1536,27 +1468,6 @@ func main () {
 				panic(err)
 			}
 		} else {
-			// s := Serialize(PRGRM, 1)
-			// _ = s
-
-			// Deserialize(ExtractBlockchainProgram(sPrgrm, s))
-
-			// Deserialize(MergeTransactionAndBlockchain(
-			// 	ExtractBlockchainProgram(sPrgrm, s),
-			// 	// sPrgrm,
-			// 	ExtractTransactionProgram(sPrgrm, s))).RunCompiled(0, cxArgs)
-
-			// Deserialize(sPrgrm)
-
-			// Deserialize(s)
-			
-			// ExtractTransactionProgram(sPrgrm, s)
-			// CopyProgramState(&s, &sPrgrm)
-			// tst := Deserialize(sPrgrm)
-			// err = tst.RunCompiled(0, cxArgs)
-			// if err != nil {
-			// 	panic(err)
-			// }
 			if AssertFailed() {
 				os.Exit(CX_ASSERT)
 			}
