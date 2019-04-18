@@ -1,0 +1,9 @@
+<div class="-header">
+  {{ headline }}
+  <img src="../../../../../assets/img/close-grey.png" (click)="closePopup()" *ngIf="!disableDismiss">
+</div>
+<div class="-body">
+  <mat-dialog-content>
+    <ng-content></ng-content>
+  </mat-dialog-content>
+</div>
