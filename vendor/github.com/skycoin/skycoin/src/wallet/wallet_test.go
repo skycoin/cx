@@ -1,0 +1,2705 @@
+package wallet
+
+import (
+	"bytes"
+	"encoding/hex"
+	"errors"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"math"
+	"math/rand"
+	"testing"
+	"time"
+
+	"github.com/shopspring/decimal"
+	"github.com/stretchr/testify/require"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/skycoin/skycoin/src/cipher/encrypt"
+	"github.com/skycoin/skycoin/src/coin"
+	"github.com/skycoin/skycoin/src/params"
+	"github.com/skycoin/skycoin/src/testutil"
+	"github.com/skycoin/skycoin/src/util/fee"
+	"github.com/skycoin/skycoin/src/util/logging"
+)
+
+var (
+	log = logging.MustGetLogger("wallet_test")
+)
+
+// set rand seed.
+var _ = func() int64 {
+	t := time.Now().Unix()
+	rand.Seed(t)
+	return t
+}()
+
+var u = flag.Bool("u", false, "update test wallet file in ./testdata")
+
+func init() {
+	// Change the scrypt N value in cryptoTable to make test faster, otherwise
+	// it would take more than 200 seconds to finish.
+	cryptoTable[CryptoTypeScryptChacha20poly1305] = encrypt.ScryptChacha20poly1305{
+		N:      1 << 15,
+		R:      encrypt.ScryptR,
+		P:      encrypt.ScryptP,
+		KeyLen: encrypt.ScryptKeyLen,
+	}
+
+	// When -u flag is specified, update the following wallet files:
+	//     - ./testdata/scrypt-chacha20poly1305-encrypted.wlt
+	//     - ./testdata/sha256xor-encrypted.wlt
+	if *u {
+		// Update ./testdata/scrypt-chacha20poly1305-encrypted.wlt
+		//     - Create an unencrypted wallet
+		//     - Generate an address
+		//     - Lock the wallet with scrypt-chacha20poly1305 crypto type and password of "pwd".
+		w, err := NewWallet("scrypt-chacha20poly1305-encrypted.wlt", Options{
+			Seed:  "seed",
+			Label: "scrypt-chacha20poly1305",
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if _, err := w.GenerateAddresses(1); err != nil {
+			log.Panic(err)
+		}
+
+		if err := w.Lock([]byte("pwd"), CryptoTypeScryptChacha20poly1305); err != nil {
+			log.Panic(err)
+		}
+
+		if err := w.Save("./testdata"); err != nil {
+			log.Panic(err)
+		}
+
+		// Update ./testdata/sha256xor-encrypted.wlt
+		//     - Create an sha256xor encrypted wallet with password: "pwd".
+		w1, err := NewWallet("sha256xor-encrypted.wlt", Options{
+			Seed:       "seed",
+			Label:      "sha256xor",
+			Encrypt:    true,
+			Password:   []byte("pwd"),
+			CryptoType: CryptoTypeSha256Xor,
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if err := w1.Save("./testdata"); err != nil {
+			log.Panic(err)
+		}
+	}
+}
+
+type mockBalanceGetter map[cipher.Address]BalancePair
+
+func (mb mockBalanceGetter) GetBalanceOfAddrs(addrs []cipher.Address) ([]BalancePair, error) {
+	var bals []BalancePair
+	for _, addr := range addrs {
+		bal := mb[addr]
+		bals = append(bals, bal)
+	}
+	return bals, nil
+}
+
+func TestNewWallet(t *testing.T) {
+	type expect struct {
+		meta map[string]string
+		err  error
+	}
+
+	tt := []struct {
+		name    string
+		wltName string
+		ops     Options
+		expect  expect
+	}{
+		{
+			"ok with seed set",
+			"test.wlt",
+			Options{
+				Seed: "testseed123",
+			},
+			expect{
+				meta: map[string]string{
+					"label":    "",
+					"filename": "test.wlt",
+					"coin":     string(CoinTypeSkycoin),
+					"type":     WalletTypeDeterministic,
+					"seed":     "testseed123",
+					"version":  Version,
+				},
+				err: nil,
+			},
+		},
+		{
+			"ok with label and seed set",
+			"test.wlt",
+			Options{
+				Label: "wallet1",
+				Seed:  "testseed123",
+			},
+			expect{
+				meta: map[string]string{
+					"label":    "wallet1",
+					"filename": "test.wlt",
+					"coin":     string(CoinTypeSkycoin),
+					"type":     WalletTypeDeterministic,
+					"seed":     "testseed123",
+					"version":  Version,
+				},
+				err: nil,
+			},
+		},
+		{
+			"ok with label, seed and coin set",
+			"test.wlt",
+			Options{
+				Label: "wallet1",
+				Coin:  CoinTypeBitcoin,
+				Seed:  "testseed123",
+			},
+			expect{
+				meta: map[string]string{
+					"label":    "wallet1",
+					"filename": "test.wlt",
+					"coin":     string(CoinTypeBitcoin),
+					"type":     WalletTypeDeterministic,
+					"seed":     "testseed123",
+				},
+				err: nil,
+			},
+		},
+		{
+			"ok default crypto type",
+			"test.wlt",
+			Options{
+				Label:    "wallet1",
+				Coin:     CoinTypeSkycoin,
+				Seed:     "testseed123",
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			expect{
+				meta: map[string]string{
+					"label":     "wallet1",
+					"coin":      string(CoinTypeSkycoin),
+					"type":      WalletTypeDeterministic,
+					"encrypted": "true",
+				},
+				err: nil,
+			},
+		},
+		{
+			"encrypt without password",
+			"test.wlt",
+			Options{
+				Label:   "wallet1",
+				Coin:    CoinTypeSkycoin,
+				Seed:    "testseed123",
+				Encrypt: true,
+			},
+			expect{
+				meta: map[string]string{
+					"label":     "wallet1",
+					"coin":      string(CoinTypeSkycoin),
+					"type":      WalletTypeDeterministic,
+					"encrypted": "true",
+				},
+				err: ErrMissingPassword,
+			},
+		},
+		{
+			"create with no seed",
+			"test.wlt",
+			Options{
+				Label:    "wallet1",
+				Coin:     CoinTypeSkycoin,
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			expect{
+				meta: map[string]string{
+					"label":     "wallet1",
+					"coin":      string(CoinTypeSkycoin),
+					"type":      WalletTypeDeterministic,
+					"encrypted": "true",
+				},
+				err: ErrMissingSeed,
+			},
+		},
+		{
+			"password=pwd encrypt=false",
+			"test.wlt",
+			Options{
+				Label:    "wallet1",
+				Coin:     CoinTypeSkycoin,
+				Encrypt:  false,
+				Seed:     "seed",
+				Password: []byte("pwd"),
+			},
+			expect{
+				err: ErrMissingEncrypt,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		// test all supported crypto types
+		for ct := range cryptoTable {
+			name := fmt.Sprintf("%v crypto=%v", tc.name, ct)
+			if tc.ops.Encrypt {
+				tc.ops.CryptoType = ct
+			}
+			t.Run(name, func(t *testing.T) {
+				w, err := NewWallet(tc.wltName, tc.ops)
+				require.Equal(t, tc.expect.err, err)
+				if err != nil {
+					return
+				}
+
+				require.Equal(t, tc.ops.Encrypt, w.IsEncrypted())
+
+				if w.IsEncrypted() {
+					// Confirms the seeds and entry secrets are all empty
+					require.Equal(t, "", w.seed())
+					require.Equal(t, "", w.lastSeed())
+
+					for _, e := range w.Entries {
+						require.True(t, e.Secret.Null())
+					}
+
+					// Confirms that secrets field is not empty
+					require.NotEmpty(t, w.secrets())
+				}
+			})
+		}
+	}
+}
+
+func TestWalletLock(t *testing.T) {
+	tt := []struct {
+		name    string
+		opts    Options
+		lockPwd []byte
+		err     error
+	}{
+		{
+			"ok",
+			Options{
+				Seed: "seed",
+			},
+			[]byte("pwd"),
+			nil,
+		},
+		{
+			"password is nil",
+			Options{
+				Seed: "seed",
+			},
+			nil,
+			ErrMissingPassword,
+		},
+		{
+			"wallet already encrypted",
+			Options{
+				Seed:     "seed",
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			[]byte("pwd"),
+			ErrWalletEncrypted,
+		},
+	}
+
+	for _, tc := range tt {
+		for ct := range cryptoTable {
+			name := fmt.Sprintf("%v crypto=%v", tc.name, ct)
+			if tc.opts.Encrypt {
+				tc.opts.CryptoType = ct
+			}
+			t.Run(name, func(t *testing.T) {
+				wltName := NewWalletFilename()
+				w, err := NewWallet(wltName, tc.opts)
+				require.NoError(t, err)
+
+				if !w.IsEncrypted() {
+					// Generates 2 addresses
+					_, err = w.GenerateAddresses(2)
+					require.NoError(t, err)
+				}
+
+				err = w.Lock(tc.lockPwd, ct)
+				require.Equal(t, tc.err, err)
+				if err != nil {
+					return
+				}
+
+				require.True(t, w.IsEncrypted())
+
+				// Checks if the seeds are wiped
+				require.Empty(t, w.seed())
+				require.Empty(t, w.lastSeed())
+
+				// Checks if the entries are encrypted
+				for i := range w.Entries {
+					require.Equal(t, cipher.SecKey{}, w.Entries[i].Secret)
+				}
+			})
+
+		}
+	}
+
+}
+
+func TestWalletUnlock(t *testing.T) {
+	tt := []struct {
+		name      string
+		opts      Options
+		unlockPwd []byte
+		err       error
+	}{
+		{
+			"ok",
+			Options{
+				Seed:     "seed",
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			[]byte("pwd"),
+			nil,
+		},
+		{
+			"unlock with nil password",
+			Options{
+				Seed:     "seed",
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			nil,
+			ErrMissingPassword,
+		},
+		{
+			"unlock undecrypted wallet",
+			Options{
+				Seed:    "seed",
+				Encrypt: false,
+			},
+			[]byte("pwd"),
+			ErrWalletNotEncrypted,
+		},
+	}
+
+	for _, tc := range tt {
+		for ct := range cryptoTable {
+			name := fmt.Sprintf("%v crypto=%v", tc.name, ct)
+			if tc.opts.Encrypt {
+				tc.opts.CryptoType = ct
+			}
+			t.Run(name, func(t *testing.T) {
+				w := makeWallet(t, tc.opts, 1)
+				// Tests the unlock method
+				wlt, err := w.Unlock(tc.unlockPwd)
+				require.Equal(t, tc.err, err)
+				if err != nil {
+					return
+				}
+
+				require.False(t, wlt.IsEncrypted())
+
+				// Checks the seeds
+				require.Equal(t, tc.opts.Seed, wlt.seed())
+
+				// Checks the generated addresses
+				sd, sks := cipher.MustGenerateDeterministicKeyPairsSeed([]byte(wlt.seed()), 1)
+				require.Equal(t, uint64(1), uint64(len(wlt.Entries)))
+
+				// Checks the last seed
+				require.Equal(t, hex.EncodeToString(sd), wlt.lastSeed())
+
+				for i := range wlt.Entries {
+					addr := cipher.MustAddressFromSecKey(sks[i])
+					require.Equal(t, addr, wlt.Entries[i].Address)
+				}
+
+				// Checks the original seeds
+				require.NotEqual(t, tc.opts.Seed, w.seed())
+
+				// Checks if the seckeys in entries of original wallet are empty
+				for i := range w.Entries {
+					require.Equal(t, cipher.SecKey{}, w.Entries[i].Secret)
+				}
+
+				// Checks if the seed and lastSeed in original wallet are sitll empty
+				require.Empty(t, w.seed())
+				require.Empty(t, w.lastSeed())
+			})
+		}
+	}
+}
+
+func TestLockAndUnLock(t *testing.T) {
+	for ct := range cryptoTable {
+		t.Run(fmt.Sprintf("crypto=%v", ct), func(t *testing.T) {
+			w, err := NewWallet("wallet", Options{
+				Label: "wallet",
+				Seed:  "seed",
+			})
+			require.NoError(t, err)
+			_, err = w.GenerateAddresses(9)
+			require.NoError(t, err)
+			require.Len(t, w.Entries, 10)
+
+			// clone the wallet
+			cw := w.clone()
+			require.Equal(t, w, cw)
+
+			// lock the cloned wallet
+			err = cw.Lock([]byte("pwd"), ct)
+			require.NoError(t, err)
+
+			// unlock the cloned wallet
+			ucw, err := cw.Unlock([]byte("pwd"))
+			require.NoError(t, err)
+
+			require.Equal(t, w, ucw)
+		})
+	}
+}
+
+func makeWallet(t *testing.T, opts Options, addrNum uint64) *Wallet { // nolint: unparam
+	// Create an unlocked wallet, then generate addresses, lock if the options.Encrypt is true.
+	preOpts := opts
+	opts.Encrypt = false
+	opts.Password = nil
+	w, err := NewWallet("t.wlt", opts)
+	require.NoError(t, err)
+
+	if addrNum > 1 {
+		_, err = w.GenerateAddresses(addrNum - 1)
+		require.NoError(t, err)
+	}
+	if preOpts.Encrypt {
+		err = w.Lock(preOpts.Password, preOpts.CryptoType)
+		require.NoError(t, err)
+	}
+	return w
+}
+
+func TestLoadWallet(t *testing.T) {
+	type expect struct {
+		meta map[string]string
+		err  error
+	}
+
+	tt := []struct {
+		name   string
+		file   string
+		expect expect
+	}{
+		{
+			"ok",
+			"./testdata/test1.wlt",
+			expect{
+				meta: map[string]string{
+					"coin":     string(CoinTypeSkycoin),
+					"filename": "test1.wlt",
+					"label":    "test3",
+					"lastSeed": "9182b02c0004217ba9a55593f8cf0abecc30d041e094b266dbb5103e1919adaf",
+					"seed":     "buddy fossil side modify turtle door label grunt baby worth brush master",
+					"tm":       "1503458909",
+					"type":     WalletTypeDeterministic,
+					"version":  "0.1",
+				},
+				err: nil,
+			},
+		},
+		{
+			"wallet file doesn't exist",
+			"not_exist_file.wlt",
+			expect{
+				meta: map[string]string{},
+				err:  fmt.Errorf("wallet not_exist_file.wlt doesn't exist"),
+			},
+		},
+		{
+			"invalid wallet: no type",
+			"./testdata/invalid_wallets/no_type.wlt",
+			expect{
+				meta: map[string]string{},
+				err:  fmt.Errorf("invalid wallet no_type.wlt: type field not set"),
+			},
+		},
+		{
+			"invalid wallet: invalid type",
+			"./testdata/invalid_wallets/err_type.wlt",
+			expect{
+				meta: map[string]string{},
+				err:  fmt.Errorf("invalid wallet err_type.wlt: wallet type invalid"),
+			},
+		},
+		{
+			"invalid wallet: no coin",
+			"./testdata/invalid_wallets/no_coin.wlt",
+			expect{
+				meta: map[string]string{},
+				err:  fmt.Errorf("invalid wallet no_coin.wlt: coin field not set"),
+			},
+		},
+		{
+			"invalid wallet: no seed",
+			"./testdata/invalid_wallets/no_seed.wlt",
+			expect{
+				meta: map[string]string{},
+				err:  fmt.Errorf("invalid wallet no_seed.wlt: seed missing in unencrypted wallet"),
+			},
+		},
+		{
+			"version=0.2 encrypted=true crypto=scrypt-chacha20poly1305",
+			"./testdata/scrypt-chacha20poly1305-encrypted.wlt",
+			expect{
+				meta: map[string]string{
+					"coin":       string(CoinTypeSkycoin),
+					"cryptoType": "scrypt-chacha20poly1305",
+					"encrypted":  "true",
+					"filename":   "scrypt-chacha20poly1305-encrypted.wlt",
+					"label":      "scrypt-chacha20poly1305",
+					"lastSeed":   "",
+					"seed":       "",
+					"type":       WalletTypeDeterministic,
+					"version":    "0.2",
+				},
+				err: nil,
+			},
+		},
+		{
+			"version=0.2 encrypted=true crypto=sha256xor",
+			"./testdata/sha256xor-encrypted.wlt",
+			expect{
+				meta: map[string]string{
+					"coin":       string(CoinTypeSkycoin),
+					"cryptoType": "sha256-xor",
+					"encrypted":  "true",
+					"filename":   "sha256xor-encrypted.wlt",
+					"label":      "sha256xor",
+					"lastSeed":   "",
+					"seed":       "",
+					"type":       WalletTypeDeterministic,
+					"version":    "0.2",
+				},
+				err: nil,
+			},
+		},
+		{
+			"version=0.2 encrypted=false",
+			"./testdata/v2_no_encrypt.wlt",
+			expect{
+				meta: map[string]string{
+					"coin":       string(CoinTypeSkycoin),
+					"cryptoType": "scrypt-chacha20poly1305",
+					"encrypted":  "false",
+					"filename":   "v2_no_encrypt.wlt",
+					"label":      "v2_no_encrypt",
+					"lastSeed":   "c79454cf362b3f55e5effce09f664311650a44b9c189b3c8eed1ae9bd696cd9e",
+					"secrets":    "",
+					"seed":       "seed",
+					"type":       WalletTypeDeterministic,
+					"version":    "0.2",
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w, err := Load(tc.file)
+			require.Equal(t, tc.expect.err, err)
+			if err != nil {
+				return
+			}
+
+			for k, v := range tc.expect.meta {
+				vv := w.Meta[k]
+				require.Equal(t, v, vv)
+			}
+
+			if w.IsEncrypted() {
+				require.NotEmpty(t, w.Meta[metaSecrets])
+			}
+		})
+	}
+}
+
+func TestWalletGenerateAddress(t *testing.T) {
+	tt := []struct {
+		name               string
+		opts               Options
+		num                uint64
+		oneAddressEachTime bool
+		err                error
+	}{
+		{
+			"ok with one address",
+			Options{
+				Seed: "seed",
+			},
+			1,
+			false,
+			nil,
+		},
+		{
+			"ok with two address",
+			Options{
+				Seed: "seed",
+			},
+			2,
+			false,
+			nil,
+		},
+		{
+			"ok with three address and generate one address each time",
+			Options{
+				Seed: "seed",
+			},
+			2,
+			true,
+			nil,
+		},
+		{
+			"wallet is encrypted",
+			Options{
+				Seed:     "seed",
+				Encrypt:  true,
+				Password: []byte("pwd"),
+			},
+			2,
+			true,
+			ErrWalletEncrypted,
+		},
+	}
+
+	for _, tc := range tt {
+		for ct := range cryptoTable {
+			name := fmt.Sprintf("crypto=%v %v", ct, tc.name)
+			if tc.opts.Encrypt {
+				tc.opts.CryptoType = ct
+			}
+
+			t.Run(name, func(t *testing.T) {
+				// create wallet
+				w, err := NewWallet("test.wlt", tc.opts)
+				require.NoError(t, err)
+
+				// generate addresses
+				if tc.oneAddressEachTime {
+					_, err = w.GenerateAddresses(tc.num - 1)
+					require.Equal(t, tc.err, err)
+					if err != nil {
+						return
+					}
+				} else {
+					for i := uint64(0); i < tc.num-1; i++ {
+						_, err := w.GenerateAddresses(1)
+						require.Equal(t, tc.err, err)
+						if err != nil {
+							return
+						}
+					}
+				}
+
+				// check the entry number
+				require.Equal(t, int(tc.num), len(w.Entries))
+
+				addrs := w.GetAddresses()
+
+				_, keys := cipher.MustGenerateDeterministicKeyPairsSeed([]byte(tc.opts.Seed), int(tc.num))
+				for i, k := range keys {
+					a := cipher.MustAddressFromSecKey(k)
+					require.Equal(t, a.String(), addrs[i].String())
+				}
+			})
+		}
+	}
+}
+
+func TestWalletGetEntry(t *testing.T) {
+	tt := []struct {
+		name    string
+		wltFile string
+		address string
+		find    bool
+	}{
+		{
+			"ok",
+			"./testdata/test1.wlt",
+			"JUdRuTiqD1mGcw358twMg3VPpXpzbkdRvJ",
+			true,
+		},
+		{
+			"entry not exist",
+			"./testdata/test1.wlt",
+			"2ULfxDUuenUY5V4Pr8whmoAwFdUseXNyjXC",
+			false,
+		},
+		{
+			"scrypt-chacha20poly1305 encrytped wallet",
+			"./testdata/scrypt-chacha20poly1305-encrypted.wlt",
+			"2EVNa4CK9SKosT4j1GEn8SuuUUEAXaHAMbM",
+			true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w, err := Load(tc.wltFile)
+			require.NoError(t, err)
+			a, err := cipher.DecodeBase58Address(tc.address)
+			require.NoError(t, err)
+			e, ok := w.GetEntry(a)
+			require.Equal(t, tc.find, ok)
+			if ok {
+				require.Equal(t, tc.address, e.Address.String())
+			}
+		})
+	}
+}
+
+func TestWalletAddEntry(t *testing.T) {
+	test1SecKey, err := cipher.SecKeyFromHex("1fc5396e91e60b9fc613d004ea5bd2ccea17053a12127301b3857ead76fdb93e")
+	require.NoError(t, err)
+
+	_, s := cipher.GenerateKeyPair()
+	seckeys := []cipher.SecKey{
+		test1SecKey,
+		s,
+	}
+
+	tt := []struct {
+		name    string
+		wltFile string
+		secKey  cipher.SecKey
+		err     error
+	}{
+		{
+			"ok",
+			"./testdata/test1.wlt",
+			seckeys[1],
+			nil,
+		},
+		{
+			"dup entry",
+			"./testdata/test1.wlt",
+			seckeys[0],
+			errors.New("duplicate address entry"),
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w, err := Load(tc.wltFile)
+			require.NoError(t, err)
+			a := cipher.MustAddressFromSecKey(tc.secKey)
+			p := cipher.MustPubKeyFromSecKey(tc.secKey)
+			require.Equal(t, tc.err, w.AddEntry(Entry{
+				Address: a,
+				Public:  p,
+				Secret:  s,
+			}))
+		})
+	}
+}
+
+func TestWalletGuard(t *testing.T) {
+	for ct := range cryptoTable {
+		t.Run(fmt.Sprintf("crypto=%v", ct), func(t *testing.T) {
+			validate := func(w *Wallet) {
+				require.Equal(t, "", w.seed())
+				require.Equal(t, "", w.lastSeed())
+				for _, e := range w.Entries {
+					require.Equal(t, cipher.SecKey{}, e.Secret)
+				}
+			}
+
+			w, err := NewWallet("t.wlt", Options{
+				Seed:       "seed",
+				Encrypt:    true,
+				Password:   []byte("pwd"),
+				CryptoType: ct,
+			})
+			require.NoError(t, err)
+
+			err = w.GuardUpdate([]byte("pwd"), func(w *Wallet) error {
+				require.Equal(t, "seed", w.seed())
+				w.setLabel("label")
+				return nil
+			})
+			require.NoError(t, err)
+			require.Equal(t, "label", w.Label())
+			validate(w)
+
+			err = w.GuardView([]byte("pwd"), func(w *Wallet) error {
+				require.Equal(t, "label", w.Label())
+				w.setLabel("new label")
+				return nil
+			})
+			require.NoError(t, err)
+
+			require.Equal(t, "label", w.Label())
+			validate(w)
+
+		})
+	}
+}
+
+type distributeSpendHoursTestCase struct {
+	name              string
+	inputHours        uint64
+	nAddrs            uint64
+	haveChange        bool
+	expectChangeHours uint64
+	expectAddrHours   []uint64
+}
+
+var burnFactor2TestCases = []distributeSpendHoursTestCase{
+	{
+		name:            "no input hours, one addr, no change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "no input hours, two addrs, no change",
+		inputHours:      0,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{0, 0},
+	},
+	{
+		name:            "no input hours, one addr, change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      true,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "one input hour, one addr, no change",
+		inputHours:      1,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "two input hours, one addr, no change",
+		inputHours:      2,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{1},
+	},
+	{
+		name:              "two input hours, one addr, change",
+		inputHours:        2,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{0},
+	},
+	{
+		name:              "three input hours, one addr, change",
+		inputHours:        3,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{0},
+	},
+	{
+		name:            "three input hours, one addr, no change",
+		inputHours:      3,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{1},
+	},
+	{
+		name:            "three input hours, two addrs, no change",
+		inputHours:      3,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{1, 0},
+	},
+	{
+		name:            "four input hours, one addr, no change",
+		inputHours:      4,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{2},
+	},
+	{
+		name:              "four input hours, one addr, change",
+		inputHours:        4,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:              "four input hours, two addr, change",
+		inputHours:        4,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{1, 0},
+	},
+	{
+		name:              "30 (divided by 2, odd number) input hours, two addr, change",
+		inputHours:        30,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 8,
+		expectAddrHours:   []uint64{4, 3},
+	},
+	{
+		name:              "33 (odd number) input hours, two addr, change",
+		inputHours:        33,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 8,
+		expectAddrHours:   []uint64{4, 4},
+	},
+	{
+		name:              "33 (odd number) input hours, three addr, change",
+		inputHours:        33,
+		nAddrs:            3,
+		haveChange:        true,
+		expectChangeHours: 8,
+		expectAddrHours:   []uint64{3, 3, 2},
+	},
+}
+
+var burnFactor3TestCases = []distributeSpendHoursTestCase{
+	{
+		name:            "no input hours, one addr, no change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "no input hours, two addrs, no change",
+		inputHours:      0,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{0, 0},
+	},
+	{
+		name:            "no input hours, one addr, change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      true,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "one input hour, one addr, no change",
+		inputHours:      1,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "two input hours, one addr, no change",
+		inputHours:      2,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{1},
+	},
+	{
+		name:            "three input hours, one addr, no change",
+		inputHours:      3,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{2},
+	},
+	{
+		name:              "two input hours, one addr, change",
+		inputHours:        2,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{0},
+	},
+	{
+		name:              "three input hours, one addr, change",
+		inputHours:        3,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:              "four input hours, one addr, change",
+		inputHours:        4,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:            "four input hours, one addr, no change",
+		inputHours:      4,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{2},
+	},
+	{
+		name:            "four input hours, two addrs, no change",
+		inputHours:      4,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{1, 1},
+	},
+	{
+		name:            "five input hours, one addr, no change",
+		inputHours:      5,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{3},
+	},
+	{
+		name:              "five input hours, one addr, change",
+		inputHours:        5,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 2,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:              "five input hours, two addr, change",
+		inputHours:        5,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 2,
+		expectAddrHours:   []uint64{1, 0},
+	},
+	{
+		name:              "32 input hours, two addr, change",
+		inputHours:        32,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 11,
+		expectAddrHours:   []uint64{5, 5},
+	},
+	{
+		name:              "35 input hours, two addr, change",
+		inputHours:        35,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 12,
+		expectAddrHours:   []uint64{6, 5},
+	},
+	{
+		name:              "32 input hours, three addr, change",
+		inputHours:        32,
+		nAddrs:            3,
+		haveChange:        true,
+		expectChangeHours: 11,
+		expectAddrHours:   []uint64{4, 3, 3},
+	},
+}
+
+var burnFactor10TestCases = []distributeSpendHoursTestCase{
+	{
+		name:            "no input hours, one addr, no change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "no input hours, two addrs, no change",
+		inputHours:      0,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{0, 0},
+	},
+	{
+		name:            "no input hours, one addr, change",
+		inputHours:      0,
+		nAddrs:          1,
+		haveChange:      true,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "one input hour, one addr, no change",
+		inputHours:      1,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{0},
+	},
+	{
+		name:            "two input hours, one addr, no change",
+		inputHours:      2,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{1},
+	},
+	{
+		name:            "three input hours, one addr, no change",
+		inputHours:      3,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{2},
+	},
+	{
+		name:              "two input hours, one addr, change",
+		inputHours:        2,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{0},
+	},
+	{
+		name:              "three input hours, one addr, change",
+		inputHours:        3,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 1,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:              "four input hours, one addr, change",
+		inputHours:        4,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 2,
+		expectAddrHours:   []uint64{1},
+	},
+	{
+		name:            "four input hours, one addr, no change",
+		inputHours:      4,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{3},
+	},
+	{
+		name:            "four input hours, two addrs, no change",
+		inputHours:      4,
+		nAddrs:          2,
+		haveChange:      false,
+		expectAddrHours: []uint64{2, 1},
+	},
+	{
+		name:            "five input hours, one addr, no change",
+		inputHours:      5,
+		nAddrs:          1,
+		haveChange:      false,
+		expectAddrHours: []uint64{4},
+	},
+	{
+		name:              "five input hours, one addr, change",
+		inputHours:        5,
+		nAddrs:            1,
+		haveChange:        true,
+		expectChangeHours: 2,
+		expectAddrHours:   []uint64{2},
+	},
+	{
+		name:              "five input hours, two addr, change",
+		inputHours:        5,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 2,
+		expectAddrHours:   []uint64{1, 1},
+	},
+	{
+		name:              "32 input hours, two addr, change",
+		inputHours:        32,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 14,
+		expectAddrHours:   []uint64{7, 7},
+	},
+	{
+		name:              "35 input hours, two addr, change",
+		inputHours:        35,
+		nAddrs:            2,
+		haveChange:        true,
+		expectChangeHours: 16,
+		expectAddrHours:   []uint64{8, 7},
+	},
+	{
+		name:              "32 input hours, three addr, change",
+		inputHours:        32,
+		nAddrs:            3,
+		haveChange:        true,
+		expectChangeHours: 14,
+		expectAddrHours:   []uint64{5, 5, 4},
+	},
+}
+
+func TestWalletDistributeSpendHours(t *testing.T) {
+	originalBurnFactor := params.UserVerifyTxn.BurnFactor
+
+	cases := []struct {
+		burnFactor uint32
+		cases      []distributeSpendHoursTestCase
+	}{
+		{2, burnFactor2TestCases},
+		{3, burnFactor3TestCases},
+		{10, burnFactor10TestCases},
+	}
+
+	tested := false
+	for _, tcc := range cases {
+		if tcc.burnFactor == params.UserVerifyTxn.BurnFactor {
+			tested = true
+		}
+
+		for _, tc := range tcc.cases {
+			t.Run(tc.name, func(t *testing.T) {
+				params.UserVerifyTxn.BurnFactor = tcc.burnFactor
+				defer func() {
+					params.UserVerifyTxn.BurnFactor = originalBurnFactor
+				}()
+
+				changeHours, addrHours, totalHours := DistributeSpendHours(tc.inputHours, tc.nAddrs, tc.haveChange)
+				require.Equal(t, tc.expectChangeHours, changeHours)
+				require.Equal(t, tc.expectAddrHours, addrHours)
+				require.Equal(t, tc.nAddrs, uint64(len(addrHours)))
+
+				outputHours := changeHours
+				for _, h := range addrHours {
+					outputHours += h
+				}
+				require.True(t, tc.inputHours >= outputHours)
+				require.Equal(t, outputHours, totalHours)
+
+				if tc.inputHours != 0 {
+					err := fee.VerifyTransactionFeeForHours(outputHours, tc.inputHours-outputHours, params.UserVerifyTxn.BurnFactor)
+					require.NoError(t, err)
+				}
+			})
+		}
+
+		t.Run(fmt.Sprintf("burn-factor-%d-range", tcc.burnFactor), func(t *testing.T) {
+			params.UserVerifyTxn.BurnFactor = tcc.burnFactor
+			defer func() {
+				params.UserVerifyTxn.BurnFactor = originalBurnFactor
+			}()
+
+			// Tests over range of values
+			for inputHours := uint64(0); inputHours <= 1e3; inputHours++ {
+				for nAddrs := uint64(1); nAddrs < 16; nAddrs++ {
+					for _, haveChange := range []bool{true, false} {
+						name := fmt.Sprintf("inputHours=%d nAddrs=%d haveChange=%v", inputHours, nAddrs, haveChange)
+						t.Run(name, func(t *testing.T) {
+							changeHours, addrHours, totalHours := DistributeSpendHours(inputHours, nAddrs, haveChange)
+							require.Equal(t, nAddrs, uint64(len(addrHours)))
+
+							var sumAddrHours uint64
+							for _, h := range addrHours {
+								sumAddrHours += h
+							}
+
+							if haveChange {
+								remainingHours := (inputHours - fee.RequiredFee(inputHours, params.UserVerifyTxn.BurnFactor))
+								splitRemainingHours := remainingHours / 2
+								require.True(t, changeHours == splitRemainingHours || changeHours == splitRemainingHours+1)
+								require.Equal(t, splitRemainingHours, sumAddrHours)
+							} else {
+								require.Equal(t, uint64(0), changeHours)
+								require.Equal(t, inputHours-fee.RequiredFee(inputHours, params.UserVerifyTxn.BurnFactor), sumAddrHours)
+							}
+
+							outputHours := sumAddrHours + changeHours
+							require.True(t, inputHours >= outputHours)
+							require.Equal(t, outputHours, totalHours)
+
+							if inputHours != 0 {
+								err := fee.VerifyTransactionFeeForHours(outputHours, inputHours-outputHours, params.UserVerifyTxn.BurnFactor)
+								require.NoError(t, err)
+							}
+
+							// addrHours at the beginning and end of the array should not differ by more than one
+							max := addrHours[0]
+							min := addrHours[len(addrHours)-1]
+							require.True(t, max-min <= 1)
+						})
+					}
+				}
+			}
+		})
+	}
+
+	require.True(t, tested, "configured BurnFactor=%d has not been tested", params.UserVerifyTxn.BurnFactor)
+}
+
+func uxBalancesEqual(a, b []UxBalance) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i, x := range a {
+		if x != b[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestWalletSortSpendsLowToHigh(t *testing.T) {
+	// UxBalances are sorted with Coins lowest, then following other order rules
+	orderedUxb := []UxBalance{
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 5,
+			Coins: 1,
+			Hours: 0,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 3,
+			Coins: 10,
+			Hours: 1,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 1,
+			Coins: 10,
+			Hours: 10,
+		},
+		{
+			Hash:  cipher.MustSHA256FromHex("bddf0aaf80f96c144f33ac8a27764a868d37e1c11e568063ebeb1367de859566"),
+			BkSeq: 2,
+			Coins: 10,
+			Hours: 10,
+		},
+		{
+			Hash:  cipher.MustSHA256FromHex("f569461182b0efe9a5c666e9a35c6602b351021c1803cc740aca548cf6db4cb2"),
+			BkSeq: 2,
+			Coins: 10,
+			Hours: 10,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 4,
+			Coins: 100,
+			Hours: 100,
+		},
+	}
+
+	shuffleWorked := false
+	nShuffle := 20
+	for i := 0; i < nShuffle; i++ {
+		// Shuffle the list
+		uxb := make([]UxBalance, len(orderedUxb))
+		copy(uxb, orderedUxb)
+
+		for i := range uxb {
+			j := rand.Intn(i + 1)
+			uxb[i], uxb[j] = uxb[j], uxb[i]
+		}
+
+		// Sanity check that shuffling produces a new result
+		if !uxBalancesEqual(uxb, orderedUxb) {
+			shuffleWorked = true
+		}
+
+		sortSpendsCoinsLowToHigh(uxb)
+
+		for i, ux := range uxb {
+			require.Equal(t, orderedUxb[i], ux, "index %d", i)
+		}
+
+		verifySortedCoinsLowToHigh(t, uxb)
+	}
+
+	require.True(t, shuffleWorked)
+
+	nRand := 1000
+	for i := 0; i < nRand; i++ {
+		uxb := makeRandomUxBalances(t)
+
+		sortSpendsCoinsHighToLow(uxb)
+		verifySortedCoinsHighToLow(t, uxb)
+	}
+}
+
+func TestWalletSortSpendsHighToLow(t *testing.T) {
+	// UxBalances are sorted with Coins highest, then following other order rules
+	orderedUxb := []UxBalance{
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 4,
+			Coins: 10000,
+			Hours: 0,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 10,
+			Coins: 1000,
+			Hours: 1,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 4,
+			Coins: 100,
+			Hours: 100,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 3,
+			Coins: 10,
+			Hours: 1,
+		},
+		{
+			Hash:  testutil.RandSHA256(t),
+			BkSeq: 1,
+			Coins: 10,
+			Hours: 10,
+		},
+		{
+			Hash:  cipher.MustSHA256FromHex("bddf0aaf80f96c144f33ac8a27764a868d37e1c11e568063ebeb1367de859566"),
+			BkSeq: 2,
+			Coins: 10,
+			Hours: 10,
+		},
+		{
+			Hash:  cipher.MustSHA256FromHex("f569461182b0efe9a5c666e9a35c6602b351021c1803cc740aca548cf6db4cb2"),
+			BkSeq: 2,
+			Coins: 10,
+			Hours: 10,
+		},
+	}
+
+	shuffleWorked := false
+	nShuffle := 20
+	for i := 0; i < nShuffle; i++ {
+		// Shuffle the list
+		uxb := make([]UxBalance, len(orderedUxb))
+		copy(uxb, orderedUxb)
+
+		rand.Shuffle(len(uxb), func(i, j int) {
+			uxb[i], uxb[j] = uxb[j], uxb[i]
+		})
+
+		if !uxBalancesEqual(uxb, orderedUxb) {
+			shuffleWorked = true
+		}
+
+		sortSpendsCoinsHighToLow(uxb)
+
+		for i, ux := range uxb {
+			require.Equal(t, orderedUxb[i], ux, "index %d", i)
+		}
+
+		verifySortedCoinsHighToLow(t, uxb)
+	}
+
+	require.True(t, shuffleWorked)
+
+	nRand := 1000
+	for i := 0; i < nRand; i++ {
+		uxb := makeRandomUxBalances(t)
+
+		sortSpendsCoinsHighToLow(uxb)
+		verifySortedCoinsHighToLow(t, uxb)
+	}
+}
+
+func TestWalletChooseSpendsMaximizeUxOuts(t *testing.T) {
+	nRand := 10000
+	for i := 0; i < nRand; i++ {
+		coins := uint64((rand.Intn(3)+1)*10 + rand.Intn(3)) // 10,20,30 + 0,1,2
+		uxb := makeRandomUxBalances(t)
+
+		verifyChosenCoins(t, uxb, coins, ChooseSpendsMaximizeUxOuts, func(a, b UxBalance) bool {
+			return a.Coins <= b.Coins
+		})
+	}
+}
+
+func TestWalletChooseSpendsMinimizeUxOutsRandom(t *testing.T) {
+	nRand := 10000
+	for i := 0; i < nRand; i++ {
+		coins := uint64((rand.Intn(3)+1)*10 + rand.Intn(3)) // 10,20,30 + 0,1,2
+		uxb := makeRandomUxBalances(t)
+
+		verifyChosenCoins(t, uxb, coins, ChooseSpendsMinimizeUxOuts, func(a, b UxBalance) bool {
+			return a.Coins >= b.Coins
+		})
+	}
+}
+
+func TestRemoveBackupFiles(t *testing.T) {
+	type wltInfo struct {
+		wltName string
+		version string
+	}
+
+	tt := []struct {
+		name                   string
+		initFiles              []wltInfo
+		expectedRemainingFiles map[string]struct{}
+	}{
+		{
+			"no file",
+			[]wltInfo{},
+			map[string]struct{}{},
+		},
+		{
+			"wlt v0.1=1 bak v0.1=1 delete 1 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t1.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=2 bak v0.1=1 delete 1 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt": struct{}{},
+				"t2.wlt": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=3 bak v0.1=1 delete 1 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.1",
+				},
+				{
+					"t3.wlt",
+					"0.1",
+				},
+				{
+					"t3.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt": struct{}{},
+				"t2.wlt": struct{}{},
+				"t3.wlt": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=3 bak v0.1=2 delete 2 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt.bak",
+					"0.1",
+				},
+				{
+					"t3.wlt",
+					"0.1",
+				},
+				{
+					"t3.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt": struct{}{},
+				"t2.wlt": struct{}{},
+				"t3.wlt": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=3 bak v0.1=3 delete 3 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t1.wlt.bak",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt.bak",
+					"0.1",
+				},
+				{
+					"t3.wlt",
+					"0.1",
+				},
+				{
+					"t3.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt": struct{}{},
+				"t2.wlt": struct{}{},
+				"t3.wlt": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=3 bak v0.1=1 no delete",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.1",
+				},
+				{
+					"t3.wlt",
+					"0.1",
+				},
+				{
+					"t4.wlt.bak",
+					"0.1",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt":     struct{}{},
+				"t2.wlt":     struct{}{},
+				"t3.wlt":     struct{}{},
+				"t4.wlt.bak": struct{}{},
+			},
+		},
+		{
+			"wlt v0.2=3 bak v0.2=1 no delete",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.2",
+				},
+				{
+					"t2.wlt",
+					"0.2",
+				},
+				{
+					"t3.wlt",
+					"0.2",
+				},
+				{
+					"t3.wlt.bak",
+					"0.2",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt":     struct{}{},
+				"t2.wlt":     struct{}{},
+				"t3.wlt":     struct{}{},
+				"t3.wlt.bak": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=1 bak v0.1=1 wlt v0.2=2 bak v0.2=2 delete 1 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t1.wlt.bak",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.2",
+				},
+				{
+					"t2.wlt.bak",
+					"0.2",
+				},
+				{
+					"t3.wlt",
+					"0.2",
+				},
+				{
+					"t3.wlt.bak",
+					"0.2",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt":     struct{}{},
+				"t2.wlt":     struct{}{},
+				"t2.wlt.bak": struct{}{},
+				"t3.wlt":     struct{}{},
+				"t3.wlt.bak": struct{}{},
+			},
+		},
+		{
+			"wlt v0.1=1 bak v0.1=2 wlt v0.2=2 bak v0.2=1 delete 1 bak",
+			[]wltInfo{
+				{
+					"t1.wlt",
+					"0.1",
+				},
+				{
+					"t1.wlt.bak",
+					"0.1",
+				},
+				{
+					"t2.wlt",
+					"0.2",
+				},
+				{
+					"t2.wlt.bak",
+					"0.1",
+				},
+				{
+					"t3.wlt",
+					"0.2",
+				},
+				{
+					"t3.wlt.bak",
+					"0.2",
+				},
+			},
+			map[string]struct{}{
+				"t1.wlt":     struct{}{},
+				"t2.wlt":     struct{}{},
+				"t2.wlt.bak": struct{}{},
+				"t3.wlt":     struct{}{},
+				"t3.wlt.bak": struct{}{},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := prepareWltDir()
+			// Initialize files
+			for _, f := range tc.initFiles {
+				w, err := NewWallet(f.wltName, Options{
+					Seed: "s1",
+				})
+				require.NoError(t, err)
+				w.setVersion(f.version)
+
+				require.NoError(t, w.Save(dir))
+			}
+
+			require.NoError(t, removeBackupFiles(dir))
+
+			// Get all remaining files
+			fs, err := ioutil.ReadDir(dir)
+			require.NoError(t, err)
+			require.Len(t, fs, len(tc.expectedRemainingFiles))
+			for _, f := range fs {
+				_, ok := tc.expectedRemainingFiles[f.Name()]
+				require.True(t, ok)
+			}
+		})
+	}
+}
+
+func makeRandomUxBalances(t *testing.T) []UxBalance {
+	// Generate random 0-100 UxBalances
+	// Coins 1-10 (must be >0)
+	// Hours 0-10
+	// BkSeq 0-10
+	// Hash random
+	// Small ranges are used for Coins, Hours, BkSeq to increase likelihood
+	// that they collide and test deeper sorting comparisons
+
+	n := rand.Intn(101)
+	uxb := make([]UxBalance, n)
+
+	// Use a random max range for the hours' rand range to ensure enough
+	// balances have zero hours
+	hasZeroHoursRange := rand.Intn(3) + 1
+
+	for i := 0; i < n; i++ {
+		ux := UxBalance{
+			Coins: uint64(rand.Intn(10) + 1), // 1-10
+			Hours: uint64(rand.Intn(hasZeroHoursRange)),
+			BkSeq: uint64(rand.Intn(11)), // 0-10
+			Hash:  testutil.RandSHA256(t),
+		}
+
+		uxb[i] = ux
+	}
+
+	return uxb
+}
+
+func verifyChosenCoins(t *testing.T, uxb []UxBalance, coins uint64, chooseSpends func([]UxBalance, uint64, uint64) ([]UxBalance, error), cmpCoins func(i, j UxBalance) bool) {
+	var haveZero, haveNonzero int
+	for _, ux := range uxb {
+		if ux.Hours == 0 {
+			haveZero++
+		} else {
+			haveNonzero++
+		}
+	}
+
+	var totalCoins, totalHours uint64
+	for _, ux := range uxb {
+		totalCoins += ux.Coins
+		totalHours += ux.Hours
+	}
+
+	chosen, err := chooseSpends(uxb, coins, 0)
+
+	if coins == 0 {
+		testutil.RequireError(t, err, ErrZeroSpend.Error())
+		return
+	}
+
+	if len(uxb) == 0 {
+		testutil.RequireError(t, err, ErrNoUnspents.Error())
+		return
+	}
+
+	if totalHours == 0 {
+		testutil.RequireError(t, err, fee.ErrTxnNoFee.Error())
+		return
+	}
+
+	if coins > totalCoins {
+		testutil.RequireError(t, err, ErrInsufficientBalance.Error())
+		return
+	}
+
+	require.NoError(t, err)
+	require.NotEqual(t, 0, len(chosen))
+
+	// Check that there are no duplicated spends chosen
+	uxMap := make(map[UxBalance]struct{}, len(chosen))
+	for _, ux := range chosen {
+		_, ok := uxMap[ux]
+		require.False(t, ok)
+		uxMap[ux] = struct{}{}
+	}
+
+	// The first chosen spend should have non-zero coin hours
+	require.NotEqual(t, uint64(0), chosen[0].Hours)
+
+	// Outputs with zero hours should come before any outputs with non-zero hours,
+	// except for the first output
+	for i := range chosen {
+		if i <= 1 {
+			continue
+		}
+
+		a := chosen[i-1]
+		b := chosen[i]
+
+		if b.Hours == 0 {
+			require.Equal(t, uint64(0), a.Hours)
+		}
+	}
+
+	// The initial UxBalance with hours should have more or equal coins than any other UxBalance with hours
+	// If it has equal coins, it should have less hours
+	for _, ux := range chosen[1:] {
+		if ux.Hours != 0 {
+			require.True(t, chosen[0].Coins >= ux.Coins)
+
+			if chosen[0].Coins == ux.Coins {
+				require.True(t, chosen[0].Hours <= ux.Hours)
+			}
+		}
+	}
+
+	var zeroBalances, nonzeroBalances []UxBalance
+	for _, ux := range chosen[1:] {
+		if ux.Hours == 0 {
+			zeroBalances = append(zeroBalances, ux)
+		} else {
+			nonzeroBalances = append(nonzeroBalances, ux)
+		}
+	}
+
+	// Amongst the UxBalances with zero hours, they should be sorted as specified
+	verifySortedCoins(t, zeroBalances, cmpCoins)
+
+	// Amongst the UxBalances with non-zero hours, they should be sorted as specified
+	verifySortedCoins(t, nonzeroBalances, cmpCoins)
+
+	// If there are any extra UxBalances with non-zero hours, all of the zeros should have been chosen
+	if len(nonzeroBalances) > 0 {
+		require.Equal(t, haveZero, len(zeroBalances))
+	}
+
+	// Excessive UxBalances to satisfy the amount requested should not be included
+	var haveCoins uint64
+	for i, ux := range chosen {
+		haveCoins += ux.Coins
+		if haveCoins >= coins {
+			require.Equal(t, len(chosen)-1, i)
+		}
+	}
+}
+
+func verifySortedCoins(t *testing.T, uxb []UxBalance, cmpCoins func(a, b UxBalance) bool) {
+	if len(uxb) <= 1 {
+		return
+	}
+
+	for i := range uxb {
+		if i == 0 {
+			continue
+		}
+
+		a := uxb[i-1]
+		b := uxb[i]
+
+		require.True(t, cmpCoins(a, b))
+
+		if a.Coins == b.Coins {
+			require.True(t, a.Hours <= b.Hours)
+
+			if a.Hours == b.Hours {
+				require.True(t, a.BkSeq <= b.BkSeq)
+
+				if a.BkSeq == b.BkSeq {
+					cmp := bytes.Compare(a.Hash[:], b.Hash[:])
+					require.True(t, cmp < 0)
+				}
+			}
+		}
+	}
+}
+
+func verifySortedCoinsLowToHigh(t *testing.T, uxb []UxBalance) {
+	verifySortedCoins(t, uxb, func(a, b UxBalance) bool {
+		return a.Coins <= b.Coins
+	})
+}
+
+func verifySortedCoinsHighToLow(t *testing.T, uxb []UxBalance) {
+	verifySortedCoins(t, uxb, func(a, b UxBalance) bool {
+		return a.Coins >= b.Coins
+	})
+}
+
+func TestCreateWalletParamsVerify(t *testing.T) {
+	changeAddress := testutil.MakeAddress()
+
+	toManual := []coin.TransactionOutput{
+		{
+			Address: testutil.MakeAddress(),
+			Coins:   1e6,
+			Hours:   1,
+		},
+		{
+			Address: testutil.MakeAddress(),
+			Coins:   5e6,
+			Hours:   0,
+		},
+	}
+
+	toAuto := []coin.TransactionOutput{
+		{
+			Address: testutil.MakeAddress(),
+			Coins:   1e6,
+		},
+		{
+			Address: testutil.MakeAddress(),
+			Coins:   5e6,
+		},
+	}
+
+	one := decimal.New(1, 0)
+	negativeOne := decimal.New(-1, 0)
+	onePointOne := decimal.New(11, -1)
+	pointOneOne := decimal.New(11, -2)
+
+	uxoutHash := testutil.RandSHA256(t)
+
+	cases := []struct {
+		name   string
+		params CreateTransactionParams
+		err    string
+	}{
+		{
+			name: "null change address",
+			params: CreateTransactionParams{
+				ChangeAddress: &cipher.Address{},
+			},
+			err: "ChangeAddress must not be the null address",
+		},
+
+		{
+			name: "no to destinations",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+			},
+			err: "To is required",
+		},
+
+		{
+			name: "missing to coins",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To: []coin.TransactionOutput{
+					{
+						Address: testutil.MakeAddress(),
+						Hours:   1,
+					},
+				},
+			},
+			err: "To.Coins must not be zero",
+		},
+
+		{
+			name: "missing to address",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To: []coin.TransactionOutput{
+					{
+						Coins: 5,
+						Hours: 1,
+					},
+				},
+			},
+			err: "To.Address must not be the null address",
+		},
+
+		{
+			name: "missing wallet id",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+			},
+			err: "Wallet.ID is required",
+		},
+
+		{
+			name: "wallet addresses contains empty value",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{cipher.Address{}},
+				},
+			},
+			err: "Wallet.Addresses must not contain the null address",
+		},
+
+		{
+			name: "nonzero to hours for auto selection",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeAuto,
+				},
+			},
+			err: "To.Hours must be zero for auto type hours selection",
+		},
+
+		{
+			name: "mode missing for auto selection",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeAuto,
+				},
+			},
+			err: "HoursSelection.Mode is required for auto type hours selection",
+		},
+
+		{
+			name: "mode set for manual selection",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+					Mode: HoursSelectionModeShare,
+				},
+			},
+			err: "HoursSelection.Mode cannot be used for manual type hours selection",
+		},
+
+		{
+			name: "missing hours selection type",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: "",
+				},
+			},
+			err: "Invalid HoursSelection.Type",
+		},
+
+		{
+			name: "invalid hours selection type",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: "invalid",
+				},
+			},
+			err: "Invalid HoursSelection.Type",
+		},
+
+		{
+			name: "invalid hours selection mode",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeAuto,
+					Mode: "invalid",
+				},
+			},
+			err: "Invalid HoursSelection.Mode",
+		},
+
+		{
+			name: "share factor not set for split even mode",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeAuto,
+					Mode: HoursSelectionModeShare,
+				},
+			},
+			err: "HoursSelection.ShareFactor must be set for share mode",
+		},
+
+		{
+			name: "share factor set but not split even mode",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type:        HoursSelectionTypeManual,
+					ShareFactor: &one,
+				},
+			},
+			err: "HoursSelection.ShareFactor can only be used for share mode",
+		},
+
+		{
+			name: "share factor less than 0",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type:        HoursSelectionTypeAuto,
+					Mode:        HoursSelectionModeShare,
+					ShareFactor: &negativeOne,
+				},
+			},
+			err: "HoursSelection.ShareFactor must be >= 0 and <= 1",
+		},
+
+		{
+			name: "share factor greater than 1",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type:        HoursSelectionTypeAuto,
+					Mode:        HoursSelectionModeShare,
+					ShareFactor: &onePointOne,
+				},
+			},
+			err: "HoursSelection.ShareFactor must be >= 0 and <= 1",
+		},
+
+		{
+			name: "duplicate output when manual",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            []coin.TransactionOutput{toManual[0], toManual[0]},
+				Wallet: CreateTransactionWalletParams{
+					ID: "foo.wlt",
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+				},
+			},
+			err: "To contains duplicate values",
+		},
+
+		{
+			name: "duplicate output when auto",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            []coin.TransactionOutput{toAuto[0], toAuto[0]},
+				Wallet: CreateTransactionWalletParams{
+					ID: "foo.wlt",
+				},
+				HoursSelection: HoursSelection{
+					Type:        HoursSelectionTypeAuto,
+					Mode:        HoursSelectionModeShare,
+					ShareFactor: &pointOneOne,
+				},
+			},
+			err: "To contains duplicate values",
+		},
+
+		{
+			name: "both uxouts and addresses specified",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{changeAddress},
+					UxOuts:    []cipher.SHA256{uxoutHash},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+				},
+			},
+			err: "Wallet.UxOuts and Wallet.Addresses cannot be combined",
+		},
+
+		{
+			name: "duplicate uxouts",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:     "foo.wlt",
+					UxOuts: []cipher.SHA256{uxoutHash, uxoutHash},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+				},
+			},
+			err: "Wallet.UxOuts contains duplicate values",
+		},
+
+		{
+			name: "duplicate addresses",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{changeAddress, changeAddress},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+				},
+			},
+			err: "Wallet.Addresses contains duplicate values",
+		},
+
+		{
+			name: "valid auto split even share factor",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toAuto,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type:        HoursSelectionTypeAuto,
+					Mode:        HoursSelectionModeShare,
+					ShareFactor: &pointOneOne,
+				},
+			},
+		},
+
+		{
+			name: "valid manual",
+			params: CreateTransactionParams{
+				ChangeAddress: &changeAddress,
+				To:            toManual,
+				Wallet: CreateTransactionWalletParams{
+					ID:        "foo.wlt",
+					Addresses: []cipher.Address{},
+				},
+				HoursSelection: HoursSelection{
+					Type: HoursSelectionTypeManual,
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.params.Validate()
+			if tc.err != "" {
+				require.Equal(t, NewError(errors.New(tc.err)), err, err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestDistributeCoinHoursProportional(t *testing.T) {
+	cases := []struct {
+		name   string
+		coins  []uint64
+		hours  uint64
+		output []uint64
+		err    error
+	}{
+		{
+			name:  "no coins",
+			hours: 1,
+			err:   errors.New("DistributeCoinHoursProportional coins array must not be empty"),
+		},
+		{
+			name:  "coins have 0 in them",
+			coins: []uint64{1, 2, 0, 3},
+			hours: 1,
+			err:   errors.New("DistributeCoinHoursProportional coins array has a zero value"),
+		},
+		{
+			name:  "total coins too large while adding",
+			coins: []uint64{10, math.MaxUint64 - 9},
+			hours: 1,
+			err:   coin.ErrUint64AddOverflow,
+		},
+		{
+			name:  "total coins too large after adding",
+			coins: []uint64{10, math.MaxInt64},
+			hours: 1,
+			err:   coin.ErrUint64OverflowsInt64,
+		},
+		{
+			name:  "single coin too large",
+			coins: []uint64{10, math.MaxInt64 + 1},
+			hours: 1,
+			err:   coin.ErrUint64OverflowsInt64,
+		},
+		{
+			name:  "hours too large",
+			coins: []uint64{10},
+			hours: math.MaxInt64 + 1,
+			err:   coin.ErrUint64OverflowsInt64,
+		},
+
+		{
+			name:   "valid, one input",
+			coins:  []uint64{1},
+			hours:  1,
+			output: []uint64{1},
+		},
+
+		{
+			name:   "zero hours",
+			coins:  []uint64{1},
+			hours:  0,
+			output: []uint64{0},
+		},
+
+		{
+			name:   "valid, multiple inputs, all equal",
+			coins:  []uint64{2, 4, 8, 16},
+			hours:  30,
+			output: []uint64{2, 4, 8, 16},
+		},
+
+		{
+			name:   "valid, multiple inputs, rational division in coins and hours",
+			coins:  []uint64{2, 4, 8, 16},
+			hours:  30,
+			output: []uint64{2, 4, 8, 16},
+		},
+
+		{
+			name:   "valid, multiple inputs, rational division in coins, irrational in hours",
+			coins:  []uint64{2, 4, 8, 16},
+			hours:  31,
+			output: []uint64{3, 4, 8, 16},
+		},
+
+		{
+			name:   "valid, multiple inputs, irrational division in coins, rational in hours",
+			coins:  []uint64{2, 3, 5, 7, 11, 13},
+			hours:  41,
+			output: []uint64{2, 3, 5, 7, 11, 13},
+		},
+
+		{
+			name:   "valid, multiple inputs, irrational division in coins and hours",
+			coins:  []uint64{2, 3, 5, 7, 11, 13},
+			hours:  50,
+			output: []uint64{3, 4, 7, 8, 13, 15},
+		},
+
+		{
+			name:   "valid, multiple inputs that would receive 0 hours but get compensated from remainder as priority",
+			coins:  []uint64{16, 8, 4, 2, 1, 1},
+			hours:  14,
+			output: []uint64{7, 3, 1, 1, 1, 1},
+		},
+
+		{
+			name:   "not enough hours for everyone",
+			coins:  []uint64{1, 1, 1, 1, 1},
+			hours:  1,
+			output: []uint64{1, 0, 0, 0, 0},
+		},
+
+		{
+			name:   "not enough hours for everyone 2",
+			coins:  []uint64{1, 1, 1, 1, 1},
+			hours:  3,
+			output: []uint64{1, 1, 1, 0, 0},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			hours, err := DistributeCoinHoursProportional(tc.coins, tc.hours)
+			if tc.err != nil {
+				require.Equal(t, tc.err, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.output, hours)
+			}
+		})
+	}
+
+	// Randomized tests
+	iterations := 10000
+	maxCoinsLen := 300
+	maxMaxCoins := 100000
+	maxHours := 15000000
+	coins := make([]uint64, maxCoinsLen)
+	for i := 0; i < iterations; i++ {
+		coinsLen := rand.Intn(maxCoinsLen) + 1
+
+		maxCoins := rand.Intn(maxMaxCoins) + 1
+
+		var totalCoins uint64
+		for i := 0; i < coinsLen; i++ {
+			coins[i] = uint64(rand.Intn(maxCoins) + 1)
+
+			var err error
+			totalCoins, err = coin.AddUint64(totalCoins, coins[i])
+			require.NoError(t, err)
+		}
+
+		hours := uint64(rand.Intn(maxHours))
+
+		output, err := DistributeCoinHoursProportional(coins[:coinsLen], hours)
+		require.NoError(t, err)
+
+		require.Equal(t, coinsLen, len(output))
+
+		var totalHours uint64
+		for _, h := range output {
+			if hours >= totalCoins {
+				require.NotEqual(t, uint64(0), h)
+			}
+
+			var err error
+			totalHours, err = coin.AddUint64(totalHours, h)
+			require.NoError(t, err)
+		}
+
+		require.Equal(t, hours, totalHours)
+	}
+}
+
+func TestWalletValidate(t *testing.T) {
+	goodMetaUnencrypted := map[string]string{
+		"filename":  "foo.wlt",
+		"type":      WalletTypeDeterministic,
+		"coin":      string(CoinTypeSkycoin),
+		"encrypted": "false",
+		"seed":      "fooseed",
+		"lastSeed":  "foolastseed",
+	}
+
+	goodMetaEncrypted := map[string]string{
+		"filename":   "foo.wlt",
+		"type":       WalletTypeDeterministic,
+		"coin":       string(CoinTypeSkycoin),
+		"encrypted":  "true",
+		"cryptoType": "scrypt-chacha20poly1305",
+		"seed":       "",
+		"lastSeed":   "",
+		"secrets":    "xacsdasdasdasd",
+	}
+
+	copyMap := func(m map[string]string) map[string]string {
+		n := make(map[string]string, len(m))
+		for k, v := range m {
+			n[k] = v
+		}
+		return n
+	}
+
+	delField := func(m map[string]string, f string) map[string]string {
+		n := copyMap(m)
+		delete(n, f)
+		return n
+	}
+
+	setField := func(m map[string]string, f, g string) map[string]string {
+		n := copyMap(m)
+		n[f] = g
+		return n
+	}
+
+	cases := []struct {
+		name string
+		meta map[string]string
+		err  error
+	}{
+		{
+			name: "missing filename",
+			meta: delField(goodMetaUnencrypted, metaFilename),
+			err:  errors.New("filename not set"),
+		},
+		{
+			name: "wallet type missing",
+			meta: delField(goodMetaUnencrypted, metaType),
+			err:  errors.New("type field not set"),
+		},
+		{
+			name: "wallet type invalid",
+			meta: setField(goodMetaUnencrypted, metaType, "footype"),
+			err:  errors.New("wallet type invalid"),
+		},
+		{
+			name: "coin field missing",
+			meta: delField(goodMetaUnencrypted, metaCoin),
+			err:  errors.New("coin field not set"),
+		},
+		{
+			name: "encrypted field invalid",
+			meta: setField(goodMetaUnencrypted, metaEncrypted, "foo"),
+			err:  errors.New("encrypted field is not a valid bool"),
+		},
+		{
+			name: "unencrypted missing seed",
+			meta: delField(goodMetaUnencrypted, metaSeed),
+			err:  errors.New("seed missing in unencrypted wallet"),
+		},
+		{
+			name: "unencrypted missing last seed",
+			meta: delField(goodMetaUnencrypted, metaLastSeed),
+			err:  errors.New("lastSeed missing in unencrypted wallet"),
+		},
+		{
+			name: "crypto type missing",
+			meta: delField(goodMetaEncrypted, metaCryptoType),
+			err:  errors.New("crypto type field not set"),
+		},
+		{
+			name: "crypto type invalid",
+			meta: setField(goodMetaEncrypted, metaCryptoType, "foocryptotype"),
+			err:  errors.New("unknown crypto type"),
+		},
+		{
+			name: "secrets missing",
+			meta: delField(goodMetaEncrypted, metaSecrets),
+			err:  errors.New("wallet is encrypted, but secrets field not set"),
+		},
+		{
+			name: "secrets empty",
+			meta: setField(goodMetaEncrypted, metaSecrets, ""),
+			err:  errors.New("wallet is encrypted, but secrets field not set"),
+		},
+		{
+			name: "valid unencrypted",
+			meta: goodMetaUnencrypted,
+		},
+		{
+			name: "valid encrypted",
+			meta: goodMetaEncrypted,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := &Wallet{
+				Meta: tc.meta,
+			}
+			err := w.Validate()
+			require.Equal(t, tc.err, err)
+		})
+	}
+}

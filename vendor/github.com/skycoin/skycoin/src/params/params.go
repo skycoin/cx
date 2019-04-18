@@ -9,7 +9,7 @@ const (
 	// Distribution locking parameteres
 
 	// MaxCoinSupply is the maximum supply of coins
-	MaxCoinSupply uint64 = 100000000
+	MaxCoinSupply uint64 = 100
 	// DistributionAddressesTotal is the number of distribution addresses
 	DistributionAddressesTotal uint64 = 100
 	// DistributionAddressInitialBalance is the initial balance of each distribution address
