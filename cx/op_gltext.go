@@ -5,7 +5,7 @@ package cx
 import (
 	"unicode/utf8"
 
-	"github.com/go-gl/gltext"
+	"github.com/skycoin/gltext"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
