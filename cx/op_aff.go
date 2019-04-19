@@ -89,7 +89,10 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		call.ccall(PROGRAM)
+		err := call.ccall(PROGRAM)
+		if err != nil {
+			panic(err)
+		}
 		if PROGRAM.CallCounter < prevCC {
 			break
 		}
@@ -243,7 +246,7 @@ func getSignatureSlice(params []*CXArgument) int {
 }
 
 // Helper function for QueryStructure. Used to query all the structs in a particular package
-func queryStructsInPackage(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
+func queryStructsInPackage(fn *CXFunction, strctOffsetB []byte, affOffset *int, pkg *CXPackage) {
 	for _, f := range pkg.Structs {
 		strctNameB := encoder.Serialize(f.Name)
 
@@ -265,9 +268,9 @@ func queryStructsInPackage(fn *CXFunction, expr *CXExpression, strctOffsetB []by
 
 // QueryStructure ...
 func QueryStructure(fn *CXFunction, expr *CXExpression, strctOffsetB []byte, affOffset *int) {
-	queryStructsInPackage(fn, expr, strctOffsetB, affOffset, expr.Package)
+	queryStructsInPackage(fn, strctOffsetB, affOffset, expr.Package)
 	for _, imp := range expr.Package.Imports {
-		queryStructsInPackage(fn, expr, strctOffsetB, affOffset, imp)
+		queryStructsInPackage(fn, strctOffsetB, affOffset, imp)
 	}
 }
 
@@ -383,7 +386,7 @@ func QueryProgram(fn *CXFunction, expr *CXExpression, prgrmOffsetB []byte, affOf
 }
 
 func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgtArgIndex *int,
-	tgtPkg *CXPackage, tgtStrct *CXStruct, tgtFn *CXFunction, tgtExpr *CXExpression) {
+	tgtPkg *CXPackage, tgtFn *CXFunction, tgtExpr *CXExpression) {
 	for _, aff := range GetInferActions(inp2, fp) {
 		switch aff {
 		case "prgrm":
@@ -449,7 +452,7 @@ func getTarget(inp2 *CXArgument, fp int, tgtElt *string, tgtArgType *string, tgt
 
 func getAffordances(inp1 *CXArgument, fp int,
 	tgtElt string, tgtArgType string, tgtArgIndex int,
-	tgtPkg *CXPackage, tgtStrct *CXStruct, tgtFn *CXFunction, tgtExpr *CXExpression,
+	tgtPkg *CXPackage, tgtFn *CXFunction, tgtExpr *CXExpression,
 	affMsgs map[string]string,
 	affs *[]string) {
 	var fltrElt string
@@ -578,15 +581,10 @@ func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
-	prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	var tgtStrct CXStruct
-	if prevStrct != nil {
-		tgtStrct = *prevStrct
-	}
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -595,7 +593,7 @@ func opAffOn(expr *CXExpression, fp int) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr)
+	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// var affPkg *CXPackage = prevPkg
 	// var affFn *CXFunction = prevFn
@@ -603,7 +601,7 @@ func opAffOn(expr *CXExpression, fp int) {
 
 	// processing the affordances
 	var affs []string
-	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr, onMessages, &affs)
+	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, onMessages, &affs)
 
 	// returning to previous state
 	PROGRAM.CurrentPackage = prevPkg
@@ -619,15 +617,10 @@ func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
-	prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*expr.Package)
-	var tgtStrct CXStruct
-	if prevStrct != nil {
-		tgtStrct = *prevStrct
-	}
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -636,11 +629,11 @@ func opAffOf(expr *CXExpression, fp int) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr)
+	getTarget(inp2, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// processing the affordances
 	var affs []string
-	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr, ofMessages, &affs)
+	getAffordances(inp1, fp, tgtElt, tgtArgType, tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr, ofMessages, &affs)
 
 	// returning to previous state
 	PROGRAM.CurrentPackage = prevPkg
@@ -722,15 +715,10 @@ func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
-	prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	var tgtStrct CXStruct
-	if prevStrct != nil {
-		tgtStrct = *prevStrct
-	}
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -739,7 +727,7 @@ func opAffInform(expr *CXExpression, fp int) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr)
+	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	elts := GetInferActions(inp1, fp)
 	eltIdx := ReadI32(fp, inp2)
@@ -826,15 +814,10 @@ func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
-	prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	var tgtStrct CXStruct
-	if prevStrct != nil {
-		tgtStrct = *prevStrct
-	}
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -843,7 +826,7 @@ func opAffRequest(expr *CXExpression, fp int) {
 	var tgtArgType string
 	var tgtArgIndex int
 
-	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtStrct, &tgtFn, &tgtExpr)
+	getTarget(inp3, fp, &tgtElt, &tgtArgType, &tgtArgIndex, &tgtPkg, &tgtFn, &tgtExpr)
 
 	// var affs []string
 
