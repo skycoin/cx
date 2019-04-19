@@ -1,10 +1,4 @@
-package cx
-
-// import (
-// 	// "fmt"
-// 	"io/ioutil"
-// 	"net/http"
-// 	"time"
+package cxcore
 
 // 	"github.com/skycoin/skycoin/src/cipher/encoder"
 // )

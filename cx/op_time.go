@@ -1,6 +1,6 @@
 // +build base extra full
 
-package cx
+package cxcore
 
 import (
 	"time"

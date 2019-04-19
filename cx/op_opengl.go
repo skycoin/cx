@@ -1,6 +1,6 @@
 // +build extra full
 
-package cx
+package cxcore
 
 import (
 	"bufio"

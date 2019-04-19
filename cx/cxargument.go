@@ -1,4 +1,4 @@
-package cx
+package cxcore
 
 import (
 	. "github.com/satori/go.uuid" //nolint golint

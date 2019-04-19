@@ -14,7 +14,9 @@
   * #312: Deserialization is not setting correctly the sizes for the CallStack,
     HeapStartsAt and StackSize fields of the CXProgram structure.
 * Documentation
-* IDE (WiP)
+* IDE
+  * Removed the current version of the IDE. We'll move to a textmate-based
+    solution in the future.
 * Miscellaneous
   * Vendored all external packages
 

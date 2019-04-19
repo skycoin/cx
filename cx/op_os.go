@@ -1,4 +1,6 @@
-package cx
+// +build base extra full
+
+package cxcore
 
 import (
 	"bytes"

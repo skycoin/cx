@@ -2,7 +2,7 @@
 }
 /(\r\n|\r|\n)/ {
 	lval.line++
-	lineNo++
+	LineNo++
 	token := f(NEWLINE)
 	if token != NEWLINE {
 		return token
@@ -15,9 +15,9 @@
 	/* skip comments */
 	noLines := countNewLines([]byte(yylex.Text()))
 	lval.line += noLines
-        lineNo += noLines
+        LineNo += noLines
 }
-/aff/                     { lval.tok = yylex.Text(); return f(AFF)  }
+/aff/                     { lval.tok = yylex.Text(); return f(AFF) }
 /bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
 /byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
 /break/                   { return f(BREAK) }
@@ -46,34 +46,34 @@
 /ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
 /ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
 /ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
-/union/                   { return f(UNION) }
-/#/                      { return f(INFER)      }
+/union/                   { return f(UNION)      }
+/#/                       { return f(INFER)      }
 /&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
 /\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
 /-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
 /\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
 /\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
 /%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
-/>/                       { return f(GT_OP) }
-/</                       { return f(LT_OP) }
-/>=/                      { return f(GTEQ_OP) }
-/<=/                      { return f(LTEQ_OP) }
-/>>=/                     { return f(RIGHT_ASSIGN)}
-/<<=/                     { return f(LEFT_ASSIGN)}
-/\+=/                     { return f(ADD_ASSIGN)}
-/-=/                      { return f(SUB_ASSIGN)}
-/\*=/                     { return f(MUL_ASSIGN)}
-/\/=/                     { return f(DIV_ASSIGN)}
-/%=/                      { return f(MOD_ASSIGN)}
-/&=/                      { return f(AND_ASSIGN)}
-/\^=/                     { return f(XOR_ASSIGN)}
-/\|=/                     { return f(OR_ASSIGN)}
+/>/                       { lval.tok = yylex.Text(); return f(GT_OP) }
+/</                       { lval.tok = yylex.Text(); return f(LT_OP) }
+/>=/                      { lval.tok = yylex.Text(); return f(GTEQ_OP) }
+/<=/                      { lval.tok = yylex.Text(); return f(LTEQ_OP) }
+/>>=/                     { lval.tok = yylex.Text(); return f(RIGHT_ASSIGN)}
+/<<=/                     { lval.tok = yylex.Text(); return f(LEFT_ASSIGN)}
+/\+=/                     { lval.tok = yylex.Text(); return f(ADD_ASSIGN)}
+/-=/                      { lval.tok = yylex.Text(); return f(SUB_ASSIGN)}
+/\*=/                     { lval.tok = yylex.Text(); return f(MUL_ASSIGN)}
+/\/=/                     { lval.tok = yylex.Text(); return f(DIV_ASSIGN)}
+/%=/                      { lval.tok = yylex.Text(); return f(MOD_ASSIGN)}
+/&=/                      { lval.tok = yylex.Text(); return f(AND_ASSIGN)}
+/\^=/                     { lval.tok = yylex.Text(); return f(XOR_ASSIGN)}
+/\|=/                     { lval.tok = yylex.Text(); return f(OR_ASSIGN)}
 />>/                      { return f(RIGHT_OP)}
 /<</                      { return f(LEFT_OP)}
 /\+\+/                    { return f(INC_OP)}
 /--/                      { return f(DEC_OP)}
 /&&/                      { return f(AND_OP)}
-/\|\|/                      { return f(OR_OP)}
+/\|\|/                    { return f(OR_OP)}
 /<=/                      { return f(LE_OP)}
 />=/                      { return f(GE_OP)}
 /==/                      { return f(EQ_OP)}
@@ -92,16 +92,12 @@
 /\}/                      { return f(RBRACE) }
 /\./                      { return f(PERIOD) }
 /,/                       { return f(COMMA) }
-/=/                       { return f(ASSIGN) }
-/:=/                      { return f(CASSIGN) }
+/=/                       { lval.tok = yylex.Text(); return f(ASSIGN) }
+/:=/                      { lval.tok = yylex.Text(); return f(CASSIGN) }
 /(:dl)|(:dLocals)/        { return f(DSTATE)     }
 /(:ds)|(:dStack)/         { return f(DSTACK)     }
 /(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
-/:package/                {
-	lval.line = 0
-	yylex.stack[len(yylex.stack) - 1].line = 0
-	return f(SPACKAGE)
-}
+/:package/                { return f(SPACKAGE)   }
 /:struct/                 { return f(SSTRUCT)    }
 /:func/                   { return f(SFUNC)      }
 /:rem/                    { return f(REM)        }
@@ -128,13 +124,17 @@
 /"([^"]*)"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
-	        println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
+	        println(cxcore.CompilationError(cxgo0.CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
 	tokVal := str
 	tokVal = strings.TrimPrefix(tokVal, "\"")
 	tokVal = strings.TrimSuffix(tokVal, "\"")
 	lval.tok = tokVal
-	lval.line = lval.line + countNewLines([]byte(lval.tok))
+
+	noLines := countNewLines([]byte(lval.tok))
+	lval.line += noLines
+	LineNo += noLines
+	
 	return f(STRING_LITERAL)
 }
 /\`([^\`]*)\`/ { /* ` */
@@ -146,17 +146,15 @@
 	return f(STRING_LITERAL)
 }
 /true/ {
-	// lval.i32 = int32(1)
 	lval.bool = true
 	return f(BOOLEAN_LITERAL)
 }
 /false/ {
-	// lval.i32 = int32(0)
 	lval.bool = false
 	return f(BOOLEAN_LITERAL)
 }
 /[0-9]+B/ {
-	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 32)
 	lval.byt = byte(result)
 	return f(BYTE_LITERAL)
 }
@@ -177,7 +175,7 @@
 }
 /([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?D/ {
 	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
-	lval.f64 = float64 (result)
+	lval.f64 = float64(result)
 	return f(DOUBLE_LITERAL)
 }
 /[_a-zA-Z][_a-zA-Z0-9]*/ {
@@ -187,15 +185,15 @@
 >      {
 }
 //
-package cxgo0
-import (
-	"fmt"
-	"strconv"
-	
-	"github.com/skycoin/cx/cx"
-)
+package parser
 
-var CurrentFileName string
+import (
+       "strconv"
+	"github.com/skycoin/cx/cx"
+	. "github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/cxgo0")    // Only for CurrentFilename
+
+
 var insert bool
 
 func f (token int) int {
@@ -204,7 +202,7 @@ func f (token int) int {
 		return SEMICOLON
 	} else {
 		switch token {
-		case IDENTIFIER,
+			case IDENTIFIER,
 			
 			BOOL, BYTE, STR,
 			I8, I16, I32, I64,
@@ -215,7 +213,7 @@ func f (token int) int {
 			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
 			RETURN, BREAK, CONTINUE,
 			INC_OP, DEC_OP,
-
+			
 			RPAREN, RBRACE, RBRACK:
 			insert = true
 		default: insert = false
@@ -227,23 +225,26 @@ func f (token int) int {
 func countNewLines (s []byte) int {
 	count := 0
 	for i := 0; i < len(s); i++ {
+		// if s[i] == '\r' && len(s) > i && s[i + 1] == '\n' {
+		// 	count++
+		// 	i++
+		// 	continue
+		// }
 		if s[i] == '\n' {
 			count++
+			continue
 		}
 	}
 	return count
 }
 
 func (yylex Lexer) Error (e string) {
-	if inREPL {
-		fmt.Printf("syntax error: %s\n", e)
-	} else {
-		fmt.Printf("%s:%d: syntax error: %s\n", CurrentFileName, yylex.Line() + 1, e)
-	}
+	// if InREPL {
+	// 	fmt.Printf("syntax error: %s\n", e)
+	// } else {
+	// 	fmt.Printf("%s:%d: syntax error: %s\n", currentFileName, yylex.Line() + 1, e)
+	// }
 	
 	yylex.Stop()
 }
 
-func main () {
-	
-}
