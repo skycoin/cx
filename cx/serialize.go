@@ -244,16 +244,11 @@ func indexFunction(fn *CXFunction, s *sAll) {
 	}
 }
 
-func indexExpression(expr *CXExpression, s *sAll) {
-
-}
-
 func serializeBoolean(val bool) int32 {
 	if val {
 		return 1
 	}
 	return 0
-
 }
 
 func serializeIntegers(ints []int, s *sAll) (int32, int32) {
@@ -625,10 +620,10 @@ func sFunctionIntegers(fn *CXFunction, s *sAll) {
 }
 
 func initSerialization(prgrm *CXProgram, s *sAll) {
-	s.PackagesMap = make(map[string]int, 0)
-	s.StructsMap = make(map[string]int, 0)
-	s.FunctionsMap = make(map[string]int, 0)
-	s.NamesMap = make(map[string]int, 0)
+	s.PackagesMap = make(map[string]int)
+	s.StructsMap = make(map[string]int)
+	s.FunctionsMap = make(map[string]int)
+	s.NamesMap = make(map[string]int)
 
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
@@ -774,15 +769,42 @@ func Serialize(prgrm *CXProgram) (byts []byte) {
 
 	// assigning relative offset
 
-	idxSize, _ := encoder.Size(s.Index)
-	prgrmSize, _ := encoder.Size(s.Program)
-	callSize, _ := encoder.Size(s.Calls)
-	pkgSize, _ := encoder.Size(s.Packages)
-	strctSize, _ := encoder.Size(s.Structs)
-	fnSize, _ := encoder.Size(s.Functions)
-	exprSize, _ := encoder.Size(s.Expressions)
-	argSize, _ := encoder.Size(s.Arguments)
-	intSize, _ := encoder.Size(s.Integers)
+	idxSize, err := encoder.Size(s.Index)
+	if err != nil {
+		panic(err)
+	}
+	prgrmSize, err := encoder.Size(s.Program)
+	if err != nil {
+		panic(err)
+	}
+	callSize, err := encoder.Size(s.Calls)
+	if err != nil {
+		panic(err)
+	}
+	pkgSize, err := encoder.Size(s.Packages)
+	if err != nil {
+		panic(err)
+	}
+	strctSize, err := encoder.Size(s.Structs)
+	if err != nil {
+		panic(err)
+	}
+	fnSize, err := encoder.Size(s.Functions)
+	if err != nil {
+		panic(err)
+	}
+	exprSize, err := encoder.Size(s.Expressions)
+	if err != nil {
+		panic(err)
+	}
+	argSize, err := encoder.Size(s.Arguments)
+	if err != nil {
+		panic(err)
+	}
+	intSize, err := encoder.Size(s.Integers)
+	if err != nil {
+		panic(err)
+	}
 
 	// assigning absolute offset
 	sIdx.ProgramOffset += int32(idxSize)
@@ -1133,11 +1155,7 @@ func dsFunction(sFn *sFunction, fn *CXFunction, s *sAll, prgrm *CXProgram) {
 }
 
 func dsBool(val int32) bool {
-	if val == 1 {
-		return true
-	}
-	return false
-
+	return val == 1
 }
 
 func dsIntegers(off int32, size int32, s *sAll) []int {
@@ -1163,7 +1181,10 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 // Deserialize ...
 func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	idxSize, _ := encoder.Size(sIndex{})
+	idxSize, err := encoder.Size(sIndex{})
+	if err != nil {
+		panic(err)
+	}
 
 	var s sAll
 
