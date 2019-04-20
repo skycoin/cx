@@ -389,7 +389,7 @@ func opResize(expr *CXExpression, fp int) {
 func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
-	if inp1.Type != inp3.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice || GetAssignmentElement(out1).IsSlice {
+	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
