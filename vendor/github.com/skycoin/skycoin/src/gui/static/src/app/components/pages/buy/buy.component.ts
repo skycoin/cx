@@ -1,0 +1,112 @@
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { PurchaseService } from '../../../services/purchase.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { WalletService } from '../../../services/wallet.service';
+import { Address, PurchaseOrder, Wallet } from '../../../app.datatypes';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ButtonComponent } from '../../layout/button/button.component';
+import { Subscription } from 'rxjs/Subscription';
+
+@Component({
+  selector: 'app-buy',
+  templateUrl: './buy.component.html',
+  styleUrls: ['./buy.component.scss'],
+})
+export class BuyComponent implements OnInit, OnDestroy {
+  @ViewChild('button') button: ButtonComponent;
+
+  address: Address;
+  config: any;
+  form: FormGroup;
+  order: PurchaseOrder;
+  wallets: Wallet[];
+
+  private subscription: Subscription;
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private purchaseService: PurchaseService,
+    private snackBar: MatSnackBar,
+    private walletService: WalletService,
+  ) {}
+
+  ngOnInit() {
+    this.initForm();
+    this.loadData();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  checkStatus() {
+    this.button.setLoading();
+    this.purchaseService.scan(this.order.recipient_address).subscribe(
+      response => {
+        this.button.setSuccess();
+        this.order.status = response.status;
+      },
+      error => this.button.setError(error),
+    );
+  }
+
+  removeOrder() {
+    window.localStorage.removeItem('purchaseOrder');
+    this.order = null;
+  }
+
+  private initForm() {
+    this.form = this.formBuilder.group({
+      wallet: ['', Validators.required],
+    });
+
+    this.subscription = this.form.get('wallet').valueChanges.subscribe(filename => {
+      const wallet = this.wallets.find(wlt => wlt.filename === filename);
+      console.log('changing wallet value', filename);
+      this.purchaseService.generate(wallet).subscribe(
+        order => this.saveData(order),
+        error => this.snackBar.open(error.toString()),
+      );
+    });
+  }
+
+  private loadConfig() {
+    this.purchaseService.config()
+      .filter(config => !!config && !!config.sky_btc_exchange_rate)
+      .first()
+      .subscribe(config => this.config = config);
+  }
+
+  private loadData() {
+    this.loadConfig();
+    this.loadOrder();
+
+    this.subscription.add(this.walletService.all().subscribe(wallets => {
+      this.wallets = wallets;
+
+      if (this.order) {
+        this.form.get('wallet').setValue(this.order.filename, { emitEvent: false });
+      }
+    }));
+  }
+
+  private loadOrder() {
+    const order: PurchaseOrder = JSON.parse(window.localStorage.getItem('purchaseOrder'));
+    if (order) {
+      this.order = order;
+      this.updateOrder();
+    }
+  }
+
+  private saveData(order: PurchaseOrder) {
+    this.order = order;
+    window.localStorage.setItem('purchaseOrder', JSON.stringify(order));
+  }
+
+  private updateOrder() {
+    this.purchaseService.scan(this.order.recipient_address).first().subscribe(
+      response => this.order.status = response.status,
+      error => console.log(error),
+    );
+  }
+}

@@ -1,0 +1,33 @@
+<div class="onboarding-container">
+  <div class="row justify-content-center">
+    <div class="row-container">
+      <div class="-header">
+        <span>{{ 'wallet.new.create-title' | translate }}</span>
+      </div>
+      <div class="-description">
+        <p>{{ 'wizard.wallet-desc' | translate }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="row-container -toggle-container">
+      <app-double-button
+        [leftButtonText]="'common.new' | translate"
+        [rightButtonText]="'common.load' | translate"
+        [activeButton]="doubleButtonActive"
+        (onStateChange)="changeForm($event)"
+      ></app-double-button>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="row-container">
+      <app-create-wallet-form #formControl [create]="showNewForm" whiteText="true" [onboarding]="true"></app-create-wallet-form>
+    </div>
+  </div>
+  <div class="row -buttons-footer">
+    <app-button class="dark -button-min-margin" [disabled]="!formControl.isValid"
+                (action)="showNewForm?createWallet():loadWallet()">
+      {{ 'wallet.new.create-button' | translate }}
+    </app-button>
+  </div>
+</div>

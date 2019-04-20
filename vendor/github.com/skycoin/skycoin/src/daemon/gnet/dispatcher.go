@@ -1,0 +1,154 @@
+package gnet
+
+import (
+	"errors"
+	"fmt"
+	"net"
+	"reflect"
+	"time"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+)
+
+// SendResult result of a single message send
+type SendResult struct {
+	Addr    string
+	Message Message
+	Error   error
+}
+
+func newSendResult(addr string, m Message, err error) SendResult {
+	return SendResult{
+		Addr:    addr,
+		Message: m,
+		Error:   err,
+	}
+}
+
+// Serializes a Message over a net.Conn
+func sendMessage(conn net.Conn, msg Message, timeout time.Duration) error {
+	m := EncodeMessage(msg)
+	return sendByteMessage(conn, m, timeout)
+}
+
+// msgIDStringSafe formats msgID bytes to a string that is safe for logging (e.g. not impacted by ascii control chars)
+func msgIDStringSafe(msgID [4]byte) string {
+	x := fmt.Sprintf("%q", msgID)
+	return x[1 : len(x)-1] // trim quotes that are added by %q formatting
+}
+
+// Event handler that is called after a Connection sends a complete message
+func convertToMessage(id uint64, msg []byte, debugPrint bool) (Message, error) {
+	msgID := [4]byte{}
+	if len(msg) < len(msgID) {
+		logger.WithError(ErrDisconnectTruncatedMessageID).WithField("connID", id).Warning()
+		return nil, ErrDisconnectTruncatedMessageID
+	}
+
+	copy(msgID[:], msg[:len(msgID)])
+
+	if debugPrint {
+		logger.WithField("msgID", msgIDStringSafe(msgID)).Debug("Received message")
+	}
+
+	msg = msg[len(msgID):]
+	t, ok := MessageIDReverseMap[msgID]
+	if !ok {
+		logger.WithError(ErrDisconnectUnknownMessage).WithFields(logrus.Fields{
+			"msgID":  msgIDStringSafe(msgID),
+			"connID": id,
+		}).Warning()
+		return nil, ErrDisconnectUnknownMessage
+	}
+
+	if debugPrint {
+		logger.WithFields(logrus.Fields{
+			"connID":      id,
+			"messageType": fmt.Sprintf("%v", t),
+		}).Debugf("convertToMessage")
+	}
+
+	v := reflect.New(t)
+	used, err := deserializeMessage(msg, v)
+	if err != nil {
+		logger.Critical().WithError(err).WithFields(logrus.Fields{
+			"connID":      id,
+			"messageType": fmt.Sprintf("%v", t),
+		}).Warning("deserializeMessage failed")
+		return nil, ErrDisconnectMalformedMessage
+	}
+
+	if used != len(msg) {
+		logger.WithError(ErrDisconnectMessageDecodeUnderflow).WithFields(logrus.Fields{
+			"connID":      id,
+			"messageType": fmt.Sprintf("%v", t),
+		}).Warning()
+		return nil, ErrDisconnectMessageDecodeUnderflow
+	}
+
+	m, ok := (v.Interface()).(Message)
+	if !ok {
+		// This occurs only when the user registers an interface that does not
+		// match the Message interface.  They should have known about this
+		// earlier via a call to VerifyMessages
+		logger.Panic("Message obtained from map does not match Message interface")
+		return nil, errors.New("MessageIdMaps contain non-Message")
+	}
+	return m, nil
+}
+
+// Wraps encoder.DeserializeRawToValue and traps panics as an error
+func deserializeMessage(msg []byte, v reflect.Value) (n int, e error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Debugf("Recovering from deserializer panic: %v", r)
+			switch x := r.(type) {
+			case string:
+				e = errors.New(x)
+			case error:
+				e = x
+			default:
+				e = errors.New("Message deserialization failed")
+			}
+		}
+	}()
+	n, e = encoder.DeserializeRawToValue(msg, v)
+	return
+}
+
+// EncodeMessage packs a Message into []byte containing length, id and data
+func EncodeMessage(msg Message) []byte {
+	t := reflect.ValueOf(msg).Elem().Type()
+	msgID, succ := MessageIDMap[t]
+	if !succ {
+		logger.Panicf("Attempted to serialize message struct not in MessageIdMap: %v", msg)
+	}
+	bMsg := encoder.Serialize(msg)
+
+	// message length
+	bLen := encoder.SerializeAtomic(uint32(len(bMsg) + len(msgID)))
+	m := make([]byte, 0)
+	m = append(m, bLen...)     // length prefix
+	m = append(m, msgID[:]...) // message id
+	m = append(m, bMsg...)     // message bytes
+	return m
+}
+
+// Sends []byte over a net.Conn
+var sendByteMessage = func(conn net.Conn, msg []byte, timeout time.Duration) error {
+	deadline := time.Time{}
+	if timeout != 0 {
+		deadline = time.Now().Add(timeout)
+	}
+	if err := conn.SetWriteDeadline(deadline); err != nil {
+		return err
+	}
+	if _, err := conn.Write(msg); err != nil {
+		return &WriteError{
+			Err: err,
+		}
+	}
+	return nil
+}
