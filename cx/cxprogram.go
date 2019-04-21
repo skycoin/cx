@@ -373,7 +373,10 @@ func (cxt *CXProgram) PrintAllObjects() {
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			encoder.DeserializeAtomic(cxt.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			_, err := encoder.DeserializeAtomic(cxt.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			if err != nil {
+				panic(err)
+			}
 
 			var byts []byte
 
@@ -385,10 +388,6 @@ func (cxt *CXProgram) PrintAllObjects() {
 				// }
 
 				byts = cxt.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
-			}
-
-			if len(ptr.Lengths) > 0 {
-
 			}
 
 			// var currLengths []int

@@ -1,8 +1,5 @@
 package cxcore
 
-// 	"github.com/skycoin/skycoin/src/cipher/encoder"
-// )
-
 // const (
 // 	RESPONSE_SIZE = 8
 // )

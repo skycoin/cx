@@ -89,7 +89,10 @@ func CallAffPredicate(fn *CXFunction, predValue []byte) byte {
 	prevCC := PROGRAM.CallCounter
 	for {
 		call := &PROGRAM.CallStack[PROGRAM.CallCounter]
-		call.ccall(PROGRAM)
+		err := call.ccall(PROGRAM)
+		if err != nil {
+			panic(err)
+		}
 		if PROGRAM.CallCounter < prevCC {
 			break
 		}
@@ -578,15 +581,10 @@ func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
-	// prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	// var tgtStrct CXStruct
-	// if prevStrct != nil {
-	// 	tgtStrct = *prevStrct
-	// }
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -619,15 +617,10 @@ func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
-	// prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*expr.Package)
-	// var tgtStrct CXStruct
-	// if prevStrct != nil {
-	// 	tgtStrct = *prevStrct
-	// }
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -722,15 +715,10 @@ func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
-	// prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	// var tgtStrct CXStruct
-	// if prevStrct != nil {
-	// 	tgtStrct = *prevStrct
-	// }
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 
@@ -826,15 +814,10 @@ func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
-	// prevStrct := prevPkg.CurrentStruct
 	prevFn := prevPkg.CurrentFunction
 	prevExpr := prevFn.CurrentExpression
 
 	var tgtPkg = CXPackage(*prevPkg)
-	// var tgtStrct CXStruct
-	// if prevStrct != nil {
-	// 	tgtStrct = *prevStrct
-	// }
 	var tgtFn = CXFunction(*expr.Function)
 	var tgtExpr = CXExpression(*prevExpr)
 

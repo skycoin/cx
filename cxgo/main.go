@@ -1253,4 +1253,3 @@ func isJSON(str string) bool {
 	err := json.Unmarshal([]byte(str), &js)
 	return err == nil
 }
-

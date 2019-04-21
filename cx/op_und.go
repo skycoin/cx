@@ -351,7 +351,7 @@ func opLen(expr *CXExpression, fp int) {
 func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != inp2.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -373,7 +373,7 @@ func opAppend(expr *CXExpression, fp int) {
 func opResize(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -389,7 +389,7 @@ func opResize(expr *CXExpression, fp int) {
 func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
-	if inp1.Type != inp3.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -412,7 +412,7 @@ func opInsert(expr *CXExpression, fp int) {
 func opRemove(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -434,7 +434,7 @@ func opCopy(expr *CXExpression, fp int) {
 	dstElem := GetAssignmentElement(dstInput)
 	srcElem := GetAssignmentElement(srcInput)
 
-	if dstInput.Type != srcInput.Type || dstElem.IsSlice == false || srcElem.IsSlice == false || dstElem.TotalSize != srcElem.TotalSize {
+	if dstInput.Type != srcInput.Type || !dstElem.IsSlice || !srcElem.IsSlice || dstElem.TotalSize != srcElem.TotalSize {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 

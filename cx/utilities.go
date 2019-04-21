@@ -194,7 +194,10 @@ func (prgrm *CXProgram) PrintProgram() {
 
 		j = 0
 		for _, fn := range mod.Functions {
-			mod.SelectFunction(fn.Name)
+			_, err := mod.SelectFunction(fn.Name)
+			if err != nil {
+				panic(err)
+			}
 
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
@@ -472,10 +475,16 @@ func (prgrm *CXProgram) PrintProgram() {
 	}
 
 	if currentPackage != nil {
-		prgrm.SelectPackage(currentPackage.Name)
+		_, err := prgrm.SelectPackage(currentPackage.Name)
+		if err != nil {
+			panic(err)
+		}
 	}
 	if currentFunction != nil {
-		prgrm.SelectFunction(currentFunction.Name)
+		_, err := prgrm.SelectFunction(currentFunction.Name)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	prgrm.CurrentPackage = currentPackage
