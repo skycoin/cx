@@ -1,3 +1,5 @@
+// +build base extra full
+
 package cxcore
 
 import (
@@ -15,12 +17,12 @@ import (
 )
 
 const (
-	OS_RUN_SUCCESS = iota
-	OS_RUN_EMPTY_CMD
-	OS_RUN_PANIC // 2
-	OS_RUN_START_FAILED
-	OS_RUN_WAIT_FAILED
-	OS_RUN_TIMEOUT
+	osRunSuccess = iota
+	osRunEmptyCmd
+	osRunPanic
+	osRunStartFailed
+	osRunWaitFailed
+	osRunTimeout
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
@@ -75,13 +77,13 @@ func op_os_Exit(expr *CXExpression, fp int) {
 
 func op_os_Run(expr *CXExpression, fp int) {
 	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
-	var runError int32 = OS_RUN_SUCCESS
+	var runError int32 = osRunSuccess
 
 	command := ReadStr(fp, inp0)
 	dir := ReadStr(fp, inp3)
 	args := strings.Split(command, " ")
 	if len(args) <= 0 {
-		runError = OS_RUN_EMPTY_CMD
+		runError = osRunEmptyCmd
 	}
 
 	name := args[0]
@@ -107,7 +109,7 @@ func op_os_Run(expr *CXExpression, fp int) {
 	}
 
 	if err := cmd.Start(); err != nil {
-		runError = OS_RUN_START_FAILED
+		runError = osRunStartFailed
 	} else {
 		done := make(chan error)
 		go func() { done <- cmd.Wait() }()
@@ -115,7 +117,7 @@ func op_os_Run(expr *CXExpression, fp int) {
 		select {
 		case <-time.After(timeout):
 			cmd.Process.Kill()
-			runError = OS_RUN_TIMEOUT
+			runError = osRunTimeout
 		case err := <-done:
 			if err != nil {
 				if exiterr, ok := err.(*exec.ExitError); ok {
@@ -129,7 +131,7 @@ func op_os_Run(expr *CXExpression, fp int) {
 						cmdError = int32(status.ExitStatus())
 					}
 				} else {
-					runError = OS_RUN_WAIT_FAILED
+					runError = osRunWaitFailed
 				}
 			}
 		}
