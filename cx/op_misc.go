@@ -63,7 +63,7 @@ func opJmp(expr *CXExpression, fp int, call *CXCall) {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
 		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+inp1.Size]
-		encoder.DeserializeAtomic(predicateB, &predicate)
+		mustDeserializeAtomic(predicateB, &predicate)
 
 		if predicate {
 			call.Line = call.Line + expr.ThenLines
