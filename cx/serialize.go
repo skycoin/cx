@@ -198,14 +198,8 @@ func serializeName(name string, s *sAll) (int32, int32) {
 		return int32(-1), int32(-1)
 	}
 
-	var size int
-	var err error
+	size := mustSerializeSize(name)
 
-	size, err = encoder.Size(name)
-
-	if err != nil {
-		panic(err)
-	}
 	off, found := s.NamesMap[name]
 	if found {
 		return int32(off), int32(size)
@@ -769,42 +763,15 @@ func Serialize(prgrm *CXProgram) (byts []byte) {
 
 	// assigning relative offset
 
-	idxSize, err := encoder.Size(s.Index)
-	if err != nil {
-		panic(err)
-	}
-	prgrmSize, err := encoder.Size(s.Program)
-	if err != nil {
-		panic(err)
-	}
-	callSize, err := encoder.Size(s.Calls)
-	if err != nil {
-		panic(err)
-	}
-	pkgSize, err := encoder.Size(s.Packages)
-	if err != nil {
-		panic(err)
-	}
-	strctSize, err := encoder.Size(s.Structs)
-	if err != nil {
-		panic(err)
-	}
-	fnSize, err := encoder.Size(s.Functions)
-	if err != nil {
-		panic(err)
-	}
-	exprSize, err := encoder.Size(s.Expressions)
-	if err != nil {
-		panic(err)
-	}
-	argSize, err := encoder.Size(s.Arguments)
-	if err != nil {
-		panic(err)
-	}
-	intSize, err := encoder.Size(s.Integers)
-	if err != nil {
-		panic(err)
-	}
+	idxSize := mustSerializeSize(s.Index)
+	prgrmSize := mustSerializeSize(s.Program)
+	callSize := mustSerializeSize(s.Calls)
+	pkgSize := mustSerializeSize(s.Packages)
+	strctSize := mustSerializeSize(s.Structs)
+	fnSize := mustSerializeSize(s.Functions)
+	exprSize := mustSerializeSize(s.Expressions)
+	argSize := mustSerializeSize(s.Arguments)
+	intSize := mustSerializeSize(s.Integers)
 
 	// assigning absolute offset
 	sIdx.ProgramOffset += int32(idxSize)
@@ -855,11 +822,11 @@ func opDeserialize(expr *CXExpression, fp int) {
 	inpOffset := GetFinalOffset(fp, inp)
 
 	var off int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
+	mustDeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
 
 	var l int32
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	encoder.DeserializeAtomic(_l[4:8], &l)
+	mustDeserializeAtomic(_l[4:8], &l)
 
 	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
@@ -868,8 +835,10 @@ func dsName(off int32, size int32, s *sAll) string {
 	if size < 1 {
 		return ""
 	}
+
 	var name string
-	encoder.DeserializeRaw(s.Names[off:off+size], &name)
+	mustDeserializeRaw(s.Names[off:off+size], &name)
+
 	return name
 }
 
@@ -1181,22 +1150,19 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 // Deserialize ...
 func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	idxSize, err := encoder.Size(sIndex{})
-	if err != nil {
-		panic(err)
-	}
+	idxSize := mustSerializeSize(sIndex{})
 
 	var s sAll
 
-	encoder.DeserializeRaw(byts[:idxSize], &s.Index)
-	encoder.DeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
-	encoder.DeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
-	encoder.DeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
-	encoder.DeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
-	encoder.DeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
-	encoder.DeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
-	encoder.DeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
-	encoder.DeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
+	mustDeserializeRaw(byts[:idxSize], &s.Index)
+	mustDeserializeRaw(byts[s.Index.ProgramOffset:s.Index.CallsOffset], &s.Program)
+	mustDeserializeRaw(byts[s.Index.CallsOffset:s.Index.PackagesOffset], &s.Calls)
+	mustDeserializeRaw(byts[s.Index.PackagesOffset:s.Index.StructsOffset], &s.Packages)
+	mustDeserializeRaw(byts[s.Index.StructsOffset:s.Index.FunctionsOffset], &s.Structs)
+	mustDeserializeRaw(byts[s.Index.FunctionsOffset:s.Index.ExpressionsOffset], &s.Functions)
+	mustDeserializeRaw(byts[s.Index.ExpressionsOffset:s.Index.ArgumentsOffset], &s.Expressions)
+	mustDeserializeRaw(byts[s.Index.ArgumentsOffset:s.Index.IntegersOffset], &s.Arguments)
+	mustDeserializeRaw(byts[s.Index.IntegersOffset:s.Index.NamesOffset], &s.Integers)
 	s.Names = byts[s.Index.NamesOffset:s.Index.MemoryOffset]
 	s.Memory = byts[s.Index.MemoryOffset:]
 
