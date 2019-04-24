@@ -67,7 +67,9 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	// 	  with the same name as another field?
 	if !found {
 		strct.Fields = append(strct.Fields, fld)
-		strct.Size += fld.TotalSize
+		strct.Size += GetSize(fld)
+	} else {
+		panic("duplicate field")
 	}
 	return strct
 }

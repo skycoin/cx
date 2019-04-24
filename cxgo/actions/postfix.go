@@ -86,7 +86,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// we create a gensym for it
 			idxSym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			idxSym.Size = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
-			idxSym.TotalSize = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
+			idxSym.TotalSize = GetSize(postExprs[len(postExprs)-1].Operator.Outputs[0])
 
 			idxSym.Package = postExprs[len(postExprs)-1].Package
 			idxSym.PreviouslyDeclared = true

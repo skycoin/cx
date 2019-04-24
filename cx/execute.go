@@ -270,7 +270,8 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// wiping this declaration's memory (removing garbage)
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			newFP := newCall.FramePointer
-			for c := 0; c < expr.Outputs[0].Size; c++ {
+			size := GetSize(expr.Outputs[0])
+			for c := 0; c < size; c++ {
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
 			call.Line++
@@ -327,7 +328,8 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 					}
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
-					byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]
+					size := GetSize(inp)
+					byts = prgrm.Memory[finalOffset : finalOffset+size]
 				}
 
 				// writing inputs to new stack frame

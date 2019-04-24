@@ -80,7 +80,7 @@ func FunctionAddParameters(fn *CXFunction, inputs, outputs []*CXArgument) {
 	}
 }
 
-func isParseOp (expr *CXExpression) bool {
+func isParseOp(expr *CXExpression) bool {
 	if expr.Operator != nil && expr.Operator.OpCode > START_PARSE_OPS && expr.Operator.OpCode < END_PARSE_OPS {
 		return true
 	}
@@ -98,7 +98,7 @@ func CheckUndValidTypes(expr *CXExpression) {
 
 // CheckConcatStr checks if `expr`'s operator is OP_UND_ADD and if its operands are of type str.
 // If this is the case, the operator is changed to OP_STR_CONCAT to concatenate the strings.
-func CheckConcatStr (expr *CXExpression) {
+func CheckConcatStr(expr *CXExpression) {
 	if expr.Operator != nil && expr.Operator.OpCode == OP_UND_ADD &&
 		expr.Inputs[0].Type == TYPE_STR && expr.Inputs[1].Type == TYPE_STR {
 		expr.Operator = Natives[OP_STR_CONCAT]
@@ -125,7 +125,7 @@ func FunctionDeclaration(fn *CXFunction, inputs, outputs []*CXArgument, exprs []
 	tmp := make([]map[string]*CXArgument, 0)
 	symbols = &tmp
 	*symbols = append(*symbols, make(map[string]*CXArgument, 0))
-	
+
 	// this variable only handles the difference between local and global scopes
 	// local being function constrained variables, and global being global variables
 	var symbolsScope map[string]bool = make(map[string]bool, 0)
@@ -213,7 +213,7 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 					out.CustomType = inpExpr.Inputs[0].CustomType
 
 					out.Size = inpExpr.Inputs[0].Size
-					out.TotalSize = inpExpr.Inputs[0].Size
+					out.TotalSize = GetSize(inpExpr.Inputs[0])
 
 					out.Type = inpExpr.Inputs[0].Type
 					out.PreviouslyDeclared = true
@@ -230,7 +230,7 @@ func FunctionCall(exprs []*CXExpression, args []*CXExpression) []*CXExpression {
 						}
 					} else {
 						out.Size = inpExpr.Operator.Outputs[0].Size
-						out.TotalSize = inpExpr.Operator.Outputs[0].Size
+						out.TotalSize = GetSize(inpExpr.Operator.Outputs[0])
 					}
 
 					out.Type = inpExpr.Operator.Outputs[0].Type
@@ -258,7 +258,7 @@ func undOutputSize(expr *CXExpression) int {
 		// the result is a Boolean for any of these
 		return 1
 	default:
-		return GetAssignmentElement(expr.Inputs[0]).Size
+		return GetSize(GetAssignmentElement(expr.Inputs[0]))
 	}
 }
 
@@ -332,10 +332,10 @@ func ProcessPointerStructs(expr *CXExpression) {
 // ProcessAssertExpression checks for the special case of test calls. `assert`, `test`, `panic` are operators where
 // their first input's type needs to be the same as its second input's type. This can't be handled by
 // `checkSameNativeType` because these test functions' third input parameter is always a `str`.
-func processTestExpression (expr *CXExpression) {
+func processTestExpression(expr *CXExpression) {
 	if expr.Operator != nil {
 		opCode := expr.Operator.OpCode
-		if (opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC) {
+		if opCode == OP_ASSERT || opCode == OP_TEST || opCode == OP_PANIC {
 			inp1Type := GetFormattedType(expr.Inputs[0])
 			inp2Type := GetFormattedType(expr.Inputs[1])
 			if inp1Type != inp2Type {
@@ -346,7 +346,7 @@ func processTestExpression (expr *CXExpression) {
 }
 
 // checkIndexType throws an error if the type of `idx` is not `i32` or `i64`.
-func checkIndexType (idx *CXArgument) {
+func checkIndexType(idx *CXArgument) {
 	typ := GetFormattedType(idx)
 	if typ != "i32" && typ != "i64" {
 		println(CompilationError(idx.FileName, idx.FileLine), fmt.Sprintf("wrong index type; expected either 'i32' or 'i64', got '%s'", typ))
@@ -420,8 +420,8 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 // instance of that variable has already been declared.
 func CheckRedeclared(symbols *[]map[string]*CXArgument, expr *CXExpression, sym *CXArgument) {
 	if expr.Operator == nil && len(expr.Outputs) > 0 && len(expr.Inputs) == 0 {
-		lastIdx := len(*symbols)-1
-		
+		lastIdx := len(*symbols) - 1
+
 		_, found := (*symbols)[lastIdx][sym.Package.Name+"."+sym.Name]
 		if found {
 			println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("'%s' redeclared", sym.Name))
@@ -709,14 +709,14 @@ func ProcessSliceAssignment(expr *CXExpression) {
 }
 
 // lookupSymbol searches for `ident` in `symbols`, starting from the innermost scope.
-func lookupSymbol (pkgName, ident string, symbols *[]map[string]*CXArgument) (*CXArgument, error) {
-	fullName := pkgName+"."+ident
+func lookupSymbol(pkgName, ident string, symbols *[]map[string]*CXArgument) (*CXArgument, error) {
+	fullName := pkgName + "." + ident
 	for c := len(*symbols) - 1; c >= 0; c-- {
 		if sym, found := (*symbols)[c][fullName]; found {
 			return sym, nil
 		}
 	}
-	
+
 	return nil, errors.New("identifier '" + ident + "' does not exist")
 }
 
@@ -727,8 +727,8 @@ func UpdateSymbolsTable(symbols *[]map[string]*CXArgument, sym *CXArgument, offs
 			GetGlobalSymbol(symbols, sym.Package, sym.Name)
 		}
 
-		lastIdx := len(*symbols)-1
-		fullName := sym.Package.Name+"."+sym.Name
+		lastIdx := len(*symbols) - 1
+		fullName := sym.Package.Name + "." + sym.Name
 
 		// outerSym, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
 		_, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
@@ -736,9 +736,9 @@ func UpdateSymbolsTable(symbols *[]map[string]*CXArgument, sym *CXArgument, offs
 
 		// then it wasn't found in any scope
 		if err != nil && shouldExist {
-			println(CompilationError(sym.FileName, sym.FileLine), "identifier '" + sym.Name + "' does not exist")
+			println(CompilationError(sym.FileName, sym.FileLine), "identifier '"+sym.Name+"' does not exist")
 		}
-		
+
 		// then it was already added in the innermost scope
 		if found {
 			return
@@ -749,12 +749,7 @@ func UpdateSymbolsTable(symbols *[]map[string]*CXArgument, sym *CXArgument, offs
 			// then it was declared in an outer scope
 			sym.Offset = *offset
 			(*symbols)[lastIdx][fullName] = sym
-
-			if sym.IsSlice {
-				*offset += sym.Size
-			} else {
-				*offset += sym.TotalSize
-			}
+			*offset += GetSize(sym)
 		}
 	}
 }
@@ -930,7 +925,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 				declSpec[i] = spec
 			}
 
-			for c := len(elt.DeclarationSpecifiers)-1; c >= 0; c-- {
+			for c := len(elt.DeclarationSpecifiers) - 1; c >= 0; c-- {
 				switch elt.DeclarationSpecifiers[c] {
 				case DECL_INDEXING:
 					if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
@@ -954,7 +949,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 			for i, spec := range arg.DeclarationSpecifiers {
 				declSpec[i] = spec
 			}
-			
+
 			for _, spec := range sym.DeclarationSpecifiers {
 				// checking if we need to remove or add DECL_POINTERs
 				// also we could be removing
@@ -1021,7 +1016,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields)-1].Type
-		sym.IsSlice = sym.Fields[len(sym.Fields) - 1].IsSlice
+		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
 	} else {
 		sym.Type = arg.Type
 	}
@@ -1117,25 +1112,27 @@ func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
 					break
 				}
 
-				nameFld.Offset += fld.TotalSize
+				nameFld.Offset += GetSize(fld)
 			}
 		}
 	}
 }
 
 func SetFinalSize(symbols *[]map[string]*CXArgument, sym *CXArgument) {
-	var finalSize int = sym.TotalSize
-
+	var totalSize int = sym.TotalSize
+	var size int = sym.Size
 	arg, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
 	if err == nil {
-		PreFinalSize(&finalSize, sym, arg)
+		PreFinalSize(&totalSize, &size, sym, arg)
 		for _, fld := range sym.Fields {
-			finalSize = fld.TotalSize
-			PreFinalSize(&finalSize, fld, arg)
+			totalSize = fld.TotalSize
+			size = fld.Size
+			PreFinalSize(&totalSize, &size, fld, arg)
 		}
 	}
 
-	sym.TotalSize = finalSize
+	sym.TotalSize = totalSize
+	sym.Size = size
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
@@ -1143,13 +1140,13 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 	_, err := lookupSymbol(symPkg.Name, ident, symbols)
 	if err != nil {
 		if glbl, err := symPkg.GetGlobal(ident); err == nil {
-			lastIdx := len(*symbols)-1
+			lastIdx := len(*symbols) - 1
 			(*symbols)[lastIdx][symPkg.Name+"."+ident] = glbl
 		}
 	}
 }
 
-func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
+func PreFinalSize(totalSize *int, size *int, sym *CXArgument, arg *CXArgument) {
 	idxCounter := 0
 	elt := GetAssignmentElement(sym)
 	for _, op := range elt.DereferenceOperations {
@@ -1158,28 +1155,34 @@ func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
 		}
 		switch op {
 		case DEREF_ARRAY:
-			*finalSize /= elt.Lengths[idxCounter]
+			*totalSize /= sym.Lengths[idxCounter]
+			*size = sym.Size
 			idxCounter++
 		case DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
-				var subSize int
-				subSize = 1
+				var subTotalSize int = 0
+				var subSize int = 0
 				for _, decl := range arg.DeclarationSpecifiers {
 					switch decl {
 					case DECL_ARRAY:
+						subTotalSize = 1
 						for _, len := range arg.Lengths {
-							subSize *= len
+							subTotalSize *= len
 						}
+						subSize = arg.Size
 					// case DECL_SLICE:
 					// 	subSize = TYPE_POINTER_SIZE
 					case DECL_BASIC:
-						subSize = GetArgSize(sym.Type)
+						subTotalSize = GetArgSize(sym.Type)
+						subSize = subTotalSize
 					case DECL_STRUCT:
-						subSize = arg.CustomType.Size
+						subTotalSize = arg.CustomType.Size
+						subSize = subTotalSize
 					}
 				}
 
-				*finalSize = subSize
+				*totalSize = subTotalSize
+				*size = subSize
 			}
 		}
 	}

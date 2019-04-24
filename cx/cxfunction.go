@@ -62,7 +62,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 		// for _, typCode := range inputs {
 		// inp := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		inp.Offset = offset
-		offset += inp.Size
+		offset += GetSize(inp)
 		fn.Inputs = append(fn.Inputs, inp)
 	}
 	for _, out := range outputs {
@@ -71,7 +71,7 @@ func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument)
 		// out := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 		fn.Outputs = append(fn.Outputs, out)
 		out.Offset = offset
-		offset += out.Size
+		offset += GetSize(out)
 	}
 
 	return fn
