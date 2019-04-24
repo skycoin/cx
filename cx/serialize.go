@@ -1191,19 +1191,19 @@ func Deserialize(byts []byte) (prgrm *CXProgram) {
 
 // CopyProgramState copies the program state from `prgrm1` to `prgrm2`.
 func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
-	idxSize, _ := encoder.Size(sIndex{})
+	idxSize := mustSerializeSize(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
 
-	encoder.DeserializeRaw((*sPrgrm1)[:idxSize], &index1)
-	encoder.DeserializeRaw((*sPrgrm2)[:idxSize], &index2)
+	mustDeserializeRaw((*sPrgrm1)[:idxSize], &index1)
+	mustDeserializeRaw((*sPrgrm2)[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	encoder.DeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	mustDeserializeRaw((*sPrgrm1)[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	encoder.DeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	mustDeserializeRaw((*sPrgrm2)[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	// the stack segment should be 0 for prgrm1, but just in case
 	var prgrmState []byte
@@ -1214,18 +1214,6 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 	for i, byt := range prgrmState {
 		(*sPrgrm2)[i+int(index2.MemoryOffset)] = byt
 	}
-}
-
-func eqPrgrmSegment(prgrmSeg1, prgrmSeg2 []byte) bool {
-	if len(prgrmSeg1) != len(prgrmSeg2) {
-		return false
-	}
-	for i, byt := range prgrmSeg1 {
-		if byt != prgrmSeg2[i] {
-			return false
-		}
-	}
-	return true
 }
 
 func correctSerializedSize(byts *[]byte, off1, off2 int32, n int) {
@@ -1247,19 +1235,19 @@ func mustSize(obj interface{}) int {
 
 // ExtractBlockchainProgram extracts the transaction program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
 func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize, _ := encoder.Size(sIndex{})
+	idxSize := mustSerializeSize(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
 
-	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
-	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
+	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
+	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	encoder.DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	var extracted []byte
 	// must match the index from sPrgrm1
@@ -1293,19 +1281,19 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 // ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program
 func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize, _ := encoder.Size(sIndex{})
+	idxSize := mustSerializeSize(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
 
-	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
-	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
+	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
+	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	encoder.DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	var extracted []byte
 	// must match the index from sPrgrm2
@@ -1331,19 +1319,19 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 // MergeTransactionAndBlockchain merges
 func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize, _ := encoder.Size(sIndex{})
+	idxSize := mustSerializeSize(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
 
-	encoder.DeserializeRaw(sPrgrm1[:idxSize], &index1)
-	encoder.DeserializeRaw(sPrgrm2[:idxSize], &index2)
+	mustDeserializeRaw(sPrgrm1[:idxSize], &index1)
+	mustDeserializeRaw(sPrgrm2[:idxSize], &index2)
 
 	var prgrm1Info sProgram
-	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
+	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &prgrm1Info)
 
 	var prgrm2Info sProgram
-	encoder.DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
+	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
 
 	var acc int32
 	var s int32

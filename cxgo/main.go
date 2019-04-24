@@ -778,12 +778,14 @@ func main () {
 
 			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
-			exec.Command("newcoin", "createcoin",
+			cmd := exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
 				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
-			).Start()
+			)
+			cmd.Start()
+			cmd.Wait()
 			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
 			
 			err := initCXBlockchain(s, options.programName, options.secKey)
@@ -802,13 +804,17 @@ func main () {
 			viper.Set("node.genesis_signature_str", genesisSignature)
 			viper.WriteConfig()
 		
-			exec.Command("newcoin", "createcoin",
+			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
 				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
-			).Start()
-			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
+			)
+			cmd.Start()
+			cmd.Wait()
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
 		} else if options.broadcastMode {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
