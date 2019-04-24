@@ -285,31 +285,31 @@ func (prgrm *CXProgram) PrintProgram() {
 					if dat != nil {
 						switch TypeNames[arg.Type] {
 						case "str":
-							encoder.DeserializeRaw(dat, &name)
+							mustDeserializeRaw(dat, &name)
 							name = "\"" + name + "\""
 						case "i32":
 							var i32 int32
-							encoder.DeserializeAtomic(dat, &i32)
+							mustDeserializeAtomic(dat, &i32)
 							name = fmt.Sprintf("%v", i32)
 						case "i64":
 							var i64 int64
-							encoder.DeserializeRaw(dat, &i64)
+							mustDeserializeRaw(dat, &i64)
 							name = fmt.Sprintf("%v", i64)
 						case "f32":
 							var f32 float32
-							encoder.DeserializeRaw(dat, &f32)
+							mustDeserializeRaw(dat, &f32)
 							name = fmt.Sprintf("%v", f32)
 						case "f64":
 							var f64 float64
-							encoder.DeserializeRaw(dat, &f64)
+							mustDeserializeRaw(dat, &f64)
 							name = fmt.Sprintf("%v", f64)
 						case "bool":
 							var b bool
-							encoder.DeserializeRaw(dat, &b)
+							mustDeserializeRaw(dat, &b)
 							name = fmt.Sprintf("%v", b)
 						case "byte":
 							var b bool
-							encoder.DeserializeRaw(dat, &b)
+							mustDeserializeRaw(dat, &b)
 							name = fmt.Sprintf("%v", b)
 						}
 					}
@@ -593,7 +593,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
 	var offset int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
+	mustDeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
 	return offset
 }
 
@@ -621,7 +621,7 @@ func GetSliceHeader(offset int32) []byte {
 func GetSliceLen(offset int32) int32 {
 	var sliceLen int32
 	sliceHeader := GetSliceHeader(offset)
-	encoder.DeserializeAtomic(sliceHeader[4:8], &sliceLen)
+	mustDeserializeAtomic(sliceHeader[4:8], &sliceLen)
 	return sliceLen
 }
 
@@ -656,7 +656,7 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	var outputSliceHeader []byte
@@ -665,8 +665,8 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 
 	if outputSliceOffset > 0 {
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		encoder.DeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
-		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
+		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
 	}
 
 	var newLen = count
@@ -703,7 +703,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte)
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	sizeofElement := len(object)
@@ -976,4 +976,27 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 	}
 
 	return getNonCollectionValue(fp, arg, elt, typ)
+}
+
+func mustDeserializeAtomic(byts []byte, item interface{}) int {
+	bytsRead, err := encoder.DeserializeAtomic(byts, item)
+	if err != nil {
+		panic(err)
+	}
+	return bytsRead
+}
+
+func mustDeserializeRaw(byts []byte, item interface{}) {
+	err := encoder.DeserializeRaw(byts, item)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func mustSerializeSize(item interface{}) int {
+	size, err := encoder.Size(item)
+	if err != nil {
+		panic(err)
+	}
+	return size
 }
