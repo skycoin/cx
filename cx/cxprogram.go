@@ -24,7 +24,7 @@ import (
 type CXProgram struct {
 	// Metadata
 	Path      string // Path to the CX project in the filesystem
-	ElementID UUID // Was supposed to be used for blockchain integration. Needs to be removed.
+	ElementID UUID   // Was supposed to be used for blockchain integration. Needs to be removed.
 
 	// Contents
 	Packages []*CXPackage // Packages in a CX program
@@ -32,14 +32,14 @@ type CXProgram struct {
 	// Runtime information
 	Inputs       []*CXArgument // OS input arguments
 	Outputs      []*CXArgument // outputs to the OS
-	Memory       []byte // Used when running the program
-	StackSize    int // This field stores the size of a CX program's stack
-	HeapStartsAt int // Offset at which the heap starts in a CX program's memory
-	StackPointer int // At what byte the current stack frame is
-	CallStack    []CXCall // Collection of function calls
-	CallCounter  int // What function call is the currently being executed in the CallStack
-	HeapPointer  int // At what offset a CX program can insert a new object to the heap
-	Terminated   bool // Utility field for the runtime. Indicates if a CX program has already finished or not.
+	Memory       []byte        // Used when running the program
+	StackSize    int           // This field stores the size of a CX program's stack
+	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
+	StackPointer int           // At what byte the current stack frame is
+	CallStack    []CXCall      // Collection of function calls
+	CallCounter  int           // What function call is the currently being executed in the CallStack
+	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 
 	// Used by the REPL and parser
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
@@ -48,8 +48,8 @@ type CXProgram struct {
 // CXCall ...
 type CXCall struct {
 	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
-	Line         int // What line in the CX function is currently being executed
-	FramePointer int // Where in the stack is this function call's local variables stored
+	Line         int         // What line in the CX function is currently being executed
+	FramePointer int         // Where in the stack is this function call's local variables stored
 }
 
 // MakeProgram ...
