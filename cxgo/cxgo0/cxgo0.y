@@ -16,46 +16,14 @@
 	var inFn bool = false
 	var fileName string
 
-	// var DataOffset0 int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil pointers
+	// Parse() is the function that is called from main().
+	// It is needed because yyParse is not exported.
+	func Parse(code string) int {
+		codeBuf := bytes.NewBufferString(code)
+		return yyParse(NewLexer(codeBuf))
+	}
 
-	// func WritePrimary0 (typ int, byts []byte, isGlobal bool) []*CXExpression {
-	// 	if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-	// 		arg := MakeArgument("", CurrentFile, LineNo)
-	// 		arg.AddType(TypeNames[typ])
-	// 		arg.Package = pkg
-	// 		arg.Program = PRGRM0
-			
-	// 		var size int
-
-	// 		size = len(byts)
-			
-	// 		arg.Size = GetArgSize(typ)
-	// 		arg.TotalSize = size
-	// 		arg.Offset = DataOffset0
-
-	// 		if arg.Type == TYPE_STR {
-	// 			arg.PassBy = PASSBY_REFERENCE
-	// 			arg.Size = TYPE_POINTER_SIZE
-	// 			arg.TotalSize = TYPE_POINTER_SIZE
-	// 		}
-
-	// 		for i, byt := range byts {
-	// 			PRGRM0.Memory[DataOffset0 + i] = byt
-	// 		}
-	// 		DataOffset0 += size
-			
-	// 		arg.PointeeSize = size
-
-	// 		expr := MakeExpression(nil, CurrentFile, LineNo)
-	// 		expr.Package = pkg
-	// 		expr.Outputs = append(expr.Outputs, arg)
-	// 		return []*CXExpression{expr}
-	// 	} else {
-	// 		panic(err)
-	// 	}
-	// }
-
-	func PreFunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument, exprs []*CXExpression) {
+	func PreFunctionDeclaration (fn *CXFunction, inputs []*CXArgument, outputs []*CXArgument) {
 		// adding inputs, outputs
 		for _, inp := range inputs {
 			fn.AddInput(inp)
@@ -65,10 +33,6 @@
 		}
 	}
 	
-	func Parse (code string) int {
-		codeBuf := bytes.NewBufferString(code)
-		return yyParse(NewLexer(codeBuf))
-	}
 %}
 
 %union {
@@ -190,46 +154,10 @@ global_declaration:
                 VAR declarator declaration_specifiers SEMICOLON
                 {
 			DeclareGlobal($2, $3, nil, false)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	var expr []*CXExpression
-			// 	if $3.IsSlice {
-			// 		expr = WritePrimary($3.Type, make([]byte, $3.Size), true)
-			// 	} else {
-			// 		expr = WritePrimary($3.Type, make([]byte, $3.TotalSize), true)
-			// 	}
-
-			// 	exprOut := expr[0].Outputs[0]
-			// 	$3.Name = $2.Name
-			// 	$3.Offset = exprOut.Offset
-
-			// 	$3.Size = exprOut.Size
-			// 	$3.TotalSize = exprOut.TotalSize
-			// 	$3.Package = exprOut.Package
-
-			// 	pkg.AddGlobal($3)
-			// } else {
-			// 	panic(err)
-			// }
-			// DeclareGlobal($2, $3, nil, false)
                 }
         |       VAR declarator declaration_specifiers ASSIGN initializer SEMICOLON
                 {
-			// DeclareGlobal($2, $2, $5, true)
 			DeclareGlobal($2, $3, nil, false)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	expr := WritePrimary($3.Type, make([]byte, $3.Size), true)
-			// 	exprOut := expr[0].Outputs[0]
-			// 	$3.Name = $2.Name
-			// 	// $3.Value = $5[0].Outputs[0].Value
-			// 	$3.Offset = exprOut.Offset
-			// 	$3.Size = exprOut.Size
-			// 	$3.TotalSize = exprOut.TotalSize
-			// 	$3.Package = exprOut.Package
-			// 	pkg.AddGlobal($3)
-			// } else {
-			// 	panic(err)
-			// }
-			// DeclareGlobal($2, $2, $5, true)
                 }
                 ;
 
@@ -260,19 +188,7 @@ fields:         parameter_declaration SEMICOLON
 package_declaration:
                 PACKAGE IDENTIFIER SEMICOLON
                 {
-			// yyS[yypt-0].line = 0
-
-			// if pkg, err := PRGRM0.GetPackage($2); err == nil {
-			// 	pkg.AddImport(pkg)
-			// } else {
-			// 	panic(err)
-			// }
-
 			DeclarePackage($2)
-			
-			// pkg := MakePackage($2)
-			// pkg.AddImport(pkg)
-			// PRGRM0.AddPackage(pkg)
                 }
                 ;
 
@@ -280,28 +196,6 @@ import_declaration:
                 IMPORT STRING_LITERAL SEMICOLON
                 {
 			DeclareImport($2, CurrentFileName, lineNo)
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	if _, err := pkg.GetImport($2); err != nil {
-			// 		if imp, err := PRGRM0.GetPackage($2); err == nil {
-			// 			pkg.AddImport(imp)
-			// 		} else {
-			// 			// checking if core package
-			// 			isCore = false
-			// 			for _, core := range CorePackages {
-			// 				if core == $2 {
-			// 					isCore = true
-			// 				}
-			// 			}
-			// 			// TODO look in the workspace
-			// 			if !isCore {
-			// 				panic(err)
-			// 			}
-						
-			// 		}
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
                 }
                 ;
 
@@ -348,15 +242,14 @@ function_parameters:
 function_declaration:
                 function_header function_parameters compound_statement
                 {
-			PreFunctionDeclaration($1, $2, nil, nil)
+			PreFunctionDeclaration($1, $2, nil)
                 }
         |       function_header function_parameters function_parameters compound_statement
                 {
-			PreFunctionDeclaration($1, $2, $3, nil)
+			PreFunctionDeclaration($1, $2, $3)
                 }
         ;
 
-// parameter_type_list
 parameter_type_list:
                 //parameter_list COMMA ELLIPSIS
 		parameter_list
@@ -365,22 +258,10 @@ parameter_type_list:
 parameter_list:
                 parameter_declaration
                 {
-			// if $1.IsArray {
-			// 	$1.TotalSize = $1.Size * TotalLength($1.Lengths)
-			// } else {
-			// 	$1.TotalSize = $1.Size
-			// }
 			$$ = []*CXArgument{$1}
                 }
 	|       parameter_list COMMA parameter_declaration
                 {
-			// if $3.IsArray {
-			// 	$3.TotalSize = $3.Size * TotalLength($3.Lengths)
-			// } else {
-			// 	$3.TotalSize = $3.Size
-			// }
-			// lastPar := $1[len($1) - 1]
-			// $3.Offset = lastPar.Offset + lastPar.TotalSize
 			$$ = append($1, $3)
                 }
                 ;
@@ -424,147 +305,27 @@ declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($2, 0, DECL_POINTER)
-			// $2.DeclarationSpecifiers = append($2.DeclarationSpecifiers, DECL_POINTER)
-			// if !$2.IsPointer {
-			// 	$2.IsPointer = true
-			// 	$2.PointeeSize = $2.Size
-			// 	$2.Size = TYPE_POINTER_SIZE
-			// 	$2.TotalSize = TYPE_POINTER_SIZE
-			// 	$2.IndirectionLevels++
-			// } else {
-			// 	pointer := $2
-
-			// 	for c := $2.IndirectionLevels - 1; c > 0 ; c-- {
-			// 		pointer = pointer.Pointee
-			// 		pointer.IndirectionLevels = c
-			// 		pointer.IsPointer = true
-			// 	}
-
-			// 	pointee := MakeArgument("", CurrentFile, LineNo)
-			// 	pointee.AddType(TypeNames[pointer.Type])
-			// 	// pointee.Size = pointer.Size
-			// 	// pointee.TotalSize = pointer.TotalSize
-			// 	pointee.IsPointer = true
-
-			// 	$2.IndirectionLevels++
-
-			// 	// pointer.Type = TYPE_POINTER
-			// 	pointer.Size = TYPE_POINTER_SIZE
-			// 	pointer.TotalSize = TYPE_POINTER_SIZE
-			// 	pointer.Pointee = pointee
-			// }
-
-			// $$ = $2
                 }
         |       LBRACK INT_LITERAL RBRACK declaration_specifiers
                 {
 			
 			$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-			// $3.DeclarationSpecifiers = append($3.DeclarationSpecifiers, DECL_SLICE)
-			// arg := $3
-                        // arg.IsArray = true
-			// arg.IsSlice = true
-			// arg.IsReference = true
-			// arg.PassBy = PASSBY_REFERENCE
-			// arg.Lengths = append([]int{0}, arg.Lengths...)
-			// arg.TotalSize = arg.Size
-			// arg.Size = TYPE_POINTER_SIZE
-			// $$ = arg
                 }
         |       LBRACK RBRACK declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($3, 0, DECL_SLICE)
-			// $4.DeclarationSpecifiers = append($4.DeclarationSpecifiers, DECL_ARRAY)
-			// arg := $4
-                        // arg.IsArray = true
-			// arg.Lengths = append([]int{int($2)}, arg.Lengths...)
-			// arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
-			// $$ = arg
                 }
         |       type_specifier
                 {
 			$$ = DeclarationSpecifiersBasic($1)
-			// arg := MakeArgument("", CurrentFile, LineNo)
-			// arg.AddType(TypeNames[$1])
-			// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
-
-			// arg.Type = $1
-			// arg.Size = GetArgSize($1)
-			// arg.TotalSize = arg.Size
-
-			// if $1 == TYPE_STR {
-			// 	fld := DeclarationSpecifiers(arg, 0, DECL_POINTER)
-			// 	$$ = fld
-			// } else {
-			// 	$$ = arg
-			// }
                 }
         |       IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFileName, lineNo)
-			// // custom type in the current package
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	if strct, err := PRGRM0.GetStruct($1, pkg.Name); err == nil {
-			// 		arg := MakeArgument("", CurrentFile, LineNo)
-			// 		arg.AddType(TypeNames[TYPE_CUSTOM])
-			// 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
-			// 		arg.CustomType = strct
-			// 		arg.Size = strct.Size
-			// 		arg.TotalSize = strct.Size
-
-			// 		$$ = arg
-			// 	} else {
-			// 		println(ErrorHeader(CurrentFileName, lineNo), err.Error())
-			// 		os.Exit(3)
-			// 		// return nil
-			// 		// panic("type '" + $1 + "' does not exist")
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($3, $1, true, CurrentFileName, lineNo)
-			// // custom type in an imported package
-			// if pkg, err := PRGRM0.GetCurrentPackage(); err == nil {
-			// 	if imp, err := pkg.GetImport($1); err == nil {
-			// 		if strct, err := PRGRM0.GetStruct($3, imp.Name); err == nil {
-			// 			arg := MakeArgument("", CurrentFile, LineNo)
-			// 			arg.AddType(TypeNames[TYPE_CUSTOM])
-			// 			arg.CustomType = strct
-			// 			arg.Size = strct.Size
-			// 			arg.TotalSize = strct.Size
-
-			// 			arg.Package = pkg
-
-			// 			arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
-
-			// 			$$ = arg
-			// 		} else {
-			// 			panic("type '" + $1 + "' does not exist")
-			// 		}
-			// 	} else {
-			// 		panic(err)
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
-			
-			// if pkg, err := PRGRM0.GetPackage($1); err == nil {
-			// 	if strct, err := PRGRM0.GetStruct($3, pkg.Name); err == nil {
-			// 		arg := MakeArgument(TYPE_CUSTOM, CurrentFile, LineNo)
-			// 		arg.CustomType = strct
-			// 		arg.Size = strct.Size
-			// 		arg.TotalSize = strct.Size
-
-			// 		$$ = arg
-			// 	} else {
-			// 		panic("type '" + $1 + "' does not exist")
-			// 	}
-			// } else {
-			// 	panic(err)
-			// }
                 }
 	|       type_specifier PERIOD IDENTIFIER
 		{
@@ -840,12 +601,6 @@ expression:     assignment_expression
 constant_expression:
                 conditional_expression
                 ;
-
-
-
-
-
-
 
 declaration:
                 VAR declarator declaration_specifiers SEMICOLON
