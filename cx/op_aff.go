@@ -28,11 +28,17 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	inpOffset := GetFinalOffset(fp, inp)
 
 	var off int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
+	_, err := encoder.DeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
+	if err != nil {
+		panic(err)
+	}
 
 	var l int32
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	encoder.DeserializeAtomic(_l[4:], &l)
+	_, err = encoder.DeserializeAtomic(_l[4:], &l)
+	if err != nil {
+		panic(err)
+	}
 
 	result := make([]string, l)
 
@@ -40,13 +46,22 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	for c := 0; c < int(l); c++ {
 		var elOff int32
 		// encoder.DeserializeAtomic(PROGRAM.Memory[int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + (c - 1) * TYPE_POINTER_SIZE : int(off) + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + c * STR_HEADER_SIZE], &elOff)
-		encoder.DeserializeAtomic(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE:int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE], &elOff)
+		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+c*TYPE_POINTER_SIZE:int(off)+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+(c+1)*STR_HEADER_SIZE], &elOff)
+		if err != nil {
+			panic(err)
+		}
 
 		var size int32
-		encoder.DeserializeAtomic(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE], &size)
+		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE], &size)
+		if err != nil {
+			panic(err)
+		}
 
 		var res string
-		encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
+		err = encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
+		if err != nil {
+			panic(err)
+		}
 
 		// result[int(l) - c] = res
 		result[c] = res
