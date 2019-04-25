@@ -436,6 +436,9 @@ func main ()() {
 	runTestEx("issue-293.cx", cx.SUCCESS, "Crash when INIT_HEAP_SIZE limit is reached ", TEST_ISSUE, 0)
 	runTestEx("issue-294-a.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
 	runTestEx("issue-294-b.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
+	runTestEx("issue-338-a.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
+	runTestEx("issue-338-b.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
+	runTestEx("issue-338-c.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
 
 	var end i64
 	end = time.UnixMilli()
