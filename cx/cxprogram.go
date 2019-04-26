@@ -23,32 +23,33 @@ import (
 //
 type CXProgram struct {
 	// Metadata
-	Path      string
-	ElementID UUID
+	Path      string // Path to the CX project in the filesystem
+	ElementID UUID   // Was supposed to be used for blockchain integration. Needs to be removed.
 
 	// Contents
-	Packages []*CXPackage
+	Packages []*CXPackage // Packages in a CX program
 
 	// Runtime information
-	Inputs       []*CXArgument
-	Outputs      []*CXArgument
-	Memory       []byte // Used when running the program
-	HeapStartsAt int
-	StackPointer int
-	CallStack    []CXCall
-	CallCounter  int
-	HeapPointer  int
-	Terminated   bool
+	Inputs       []*CXArgument // OS input arguments
+	Outputs      []*CXArgument // outputs to the OS
+	Memory       []byte        // Used when running the program
+	StackSize    int           // This field stores the size of a CX program's stack
+	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
+	StackPointer int           // At what byte the current stack frame is
+	CallStack    []CXCall      // Collection of function calls
+	CallCounter  int           // What function call is the currently being executed in the CallStack
+	HeapPointer  int           // At what offset a CX program can insert a new object to the heap
+	Terminated   bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
 
 	// Used by the REPL and parser
-	CurrentPackage *CXPackage
+	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
 }
 
 // CXCall ...
 type CXCall struct {
-	Operator     *CXFunction
-	Line         int
-	FramePointer int
+	Operator     *CXFunction // What CX function will be called when running this CXCall in the runtime
+	Line         int         // What line in the CX function is currently being executed
+	FramePointer int         // Where in the stack is this function call's local variables stored
 }
 
 // MakeProgram ...
@@ -58,6 +59,7 @@ func MakeProgram() *CXProgram {
 		Packages:  make([]*CXPackage, 0),
 		CallStack: make([]CXCall, CALLSTACK_SIZE),
 		Memory:    make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
+		StackSize: STACK_SIZE,
 	}
 
 	return newPrgrm
@@ -271,6 +273,14 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 				cxt.Packages = cxt.Packages[:len(cxt.Packages)-1]
 			} else {
 				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
+			}
+
+			// This means that we're removing the package set to be the CurrentPackage.
+			// If it is removed from the program's list of packages, cxt.CurrentPackage
+			// would be pointing to a package meant to be collected by the GC.
+			// We fix this by pointing to the last package in the program's list of packages.
+			if mod == cxt.CurrentPackage {
+				cxt.CurrentPackage = cxt.Packages[len(cxt.Packages)-1]
 			}
 			break
 		}
