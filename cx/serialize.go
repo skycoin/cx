@@ -1143,6 +1143,8 @@ func dsIntegers(off int32, size int32, s *sAll) []int {
 func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
+	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
+	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 
 	dsPackages(s, prgrm)
 }

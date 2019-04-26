@@ -6,6 +6,7 @@
 * Libraries
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
+  * #312: Deserialization is not setting correctly the sizes for the CallStack, HeapStartsAt and StackSize fields of the CXProgram structure.
 * Documentation
 * IDE
   * Removed the current version of the IDE. We'll move to a textmate-based
