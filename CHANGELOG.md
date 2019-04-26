@@ -6,6 +6,7 @@
 * Libraries
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
+  * #311: `CurrentFunction` and `CurrentStruct` are causing errors in programs with more than 1 package.
 * Documentation
 * IDE
   * Removed the current version of the IDE. We'll move to a textmate-based
