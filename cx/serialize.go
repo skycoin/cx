@@ -38,6 +38,7 @@ type sProgram struct {
 
 	HeapPointer  int32
 	StackPointer int32
+	StackSize    int32
 	HeapStartsAt int32
 
 	Terminated int32
@@ -452,6 +453,7 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int32(prgrm.StackPointer)
+	sPrgrm.StackSize = int32(prgrm.StackSize)
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
@@ -1143,7 +1145,8 @@ func dsIntegers(off int32, size int32, s *sAll) []int {
 func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
-	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
+	prgrm.StackSize = int(s.Program.StackSize)
+  prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 
 	dsPackages(s, prgrm)
