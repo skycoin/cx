@@ -1146,7 +1146,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 	prgrm.StackSize = int(s.Program.StackSize)
-  prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
+	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 
 	dsPackages(s, prgrm)
