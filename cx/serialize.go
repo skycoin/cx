@@ -845,6 +845,8 @@ func dsName(off int32, size int32, s *sAll) string {
 }
 
 func dsPackages(s *sAll, prgrm *CXProgram) {
+	var fnCounter int32
+	var strctCounter int32
 	for i, sPkg := range s.Packages {
 		// initializing packages with their names,
 		// empty functions, structs, imports and globals
@@ -884,13 +886,16 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 
 		// CurrentFunction
 		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset]
+			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
 		}
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
-			prgrm.Packages[i].CurrentStruct = prgrm.Packages[i].Structs[sPkg.CurrentStructOffset]
+			prgrm.Packages[i].CurrentStruct = prgrm.Packages[i].Structs[sPkg.CurrentStructOffset-strctCounter]
 		}
+
+		fnCounter += sPkg.FunctionsSize
+		strctCounter += sPkg.StructsSize
 	}
 
 	// imports
