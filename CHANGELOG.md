@@ -7,6 +7,7 @@
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
+  * #310: Splitting a serialized program into its blockchain and transaction parts.
   * #312: Deserialization is not setting correctly the sizes for the CallStack, HeapStartsAt and StackSize fields of the CXProgram structure.
 * Documentation
 * IDE
