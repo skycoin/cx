@@ -19,20 +19,26 @@ func Tokenize(r io.Reader, w io.Writer) {
 
 func tokenValue(token int, sym *yySymType) interface{} {
 	switch token {
-	case BYTE_LITERAL:
-		return sym.byt
 	case BOOLEAN_LITERAL:
 		return sym.bool
 	case INT_LITERAL:
 		return sym.i32
 	case LONG_LITERAL:
 		return sym.i64
+	case BYTE_LITERAL:
+		return sym.byt
+	case UNSIGNED_SHORT_LITERAL:
+		return sym.ui16
+	case UNSIGNED_INT_LITERAL:
+		return sym.ui32
+	case UNSIGNED_LONG_LITERAL:
+		return sym.ui64
 	case FLOAT_LITERAL:
 		return sym.f32
 	case DOUBLE_LITERAL:
 		return sym.f64
-	case AFF, BOOL, BYTE, F32, F64, I8, I16, I32, I64,
-		UI8, UI16, UI32, UI64, REF_OP, ADD_OP, SUB_OP, MUL_OP, DIV_OP, MOD_OP,
+	case AFF, BOOL, F32, F64, I8, I16, I32, I64,
+		BYTE, UI8, UI16, UI32, UI64, REF_OP, ADD_OP, SUB_OP, MUL_OP, DIV_OP, MOD_OP,
 		GT_OP, LT_OP, GTEQ_OP, LTEQ_OP, RIGHT_ASSIGN, LEFT_ASSIGN, ADD_ASSIGN,
 		SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, AND_ASSIGN, XOR_ASSIGN,
 		OR_ASSIGN, NEG_OP, ASSIGN, CASSIGN, STRING_LITERAL, IDENTIFIER:
@@ -327,6 +333,12 @@ func tokenName(token int) string {
 		return "  UNEQ"
 	case UNION:
 		return " UNION"
+	case UNSIGNED_SHORT_LITERAL:
+		return " USLIT"
+	case UNSIGNED_INT_LITERAL:
+		return " UILIT"
+	case UNSIGNED_LONG_LITERAL:
+		return " ULLIT"
 	case VALUE:
 		return " VALUE"
 	case VAR:

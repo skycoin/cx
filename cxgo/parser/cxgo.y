@@ -17,9 +17,12 @@
 
 %union{
 	i int
-	byt byte
 	i32 int32
 	i64 int64
+	byt byte
+	ui16 uint16
+	ui32 uint32
+	ui64 uint64
 	f32 float32
 	f64 float64
 	tok string
@@ -45,10 +48,13 @@
         function *CXFunction
 }
 
-%token  <byt>           BYTE_LITERAL
 %token  <bool>          BOOLEAN_LITERAL
 %token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
+%token  <byt>           BYTE_LITERAL
+%token  <ui16>          UNSIGNED_SHORT_LITERAL
+%token  <ui32>          UNSIGNED_INT_LITERAL
+%token  <ui64>          UNSIGNED_LONG_LITERAL
 %token  <f32>           FLOAT_LITERAL
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
@@ -776,13 +782,29 @@ primary_expression:
 			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
+        |       INT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
+                }
+        |       LONG_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
+                }
         |       BYTE_LITERAL
                 {
 			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1), false)
                 }
-        |       INT_LITERAL
+        |       UNSIGNED_SHORT_LITERAL
                 {
-			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
+			$$ = WritePrimary(TYPE_UI16, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_INT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI32, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_LONG_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
@@ -791,10 +813,6 @@ primary_expression:
         |       DOUBLE_LITERAL
                 {
 			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1), false)
-                }
-        |       LONG_LITERAL
-                {
-			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }

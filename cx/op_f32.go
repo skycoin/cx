@@ -4,27 +4,36 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
-func opF32F32(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+func opF32Cast(expr *CXExpression, fp int) {
+	inpV0 := ReadF32(fp, expr.Inputs[0])
+	out0 := expr.Outputs[0]
+	outOffset0 := GetFinalOffset(fp, out0)
 
-	switch out1.Type {
+	switch out0.Type {
 	case TYPE_STR:
-		WriteObject(out1Offset, encoder.Serialize(strconv.FormatFloat(float64(ReadF32(fp, inp1)), 'f', -1, 32)))
-	case TYPE_BYTE:
-		WriteMemory(out1Offset, FromByte(byte(ReadF32(fp, inp1))))
+		WriteObject(outOffset0, FromStr(strconv.FormatFloat(float64(inpV0), 'f', -1, 32)))
 	case TYPE_I32:
-		WriteMemory(out1Offset, FromI32(int32(ReadF32(fp, inp1))))
+		WriteMemory(outOffset0, FromI32(int32(inpV0)))
 	case TYPE_I64:
-		WriteMemory(out1Offset, FromI64(int64(ReadF32(fp, inp1))))
+		WriteMemory(outOffset0, FromI64(int64(inpV0)))
+	case TYPE_BYTE:
+		WriteMemory(outOffset0, FromByte(byte(inpV0)))
+	case TYPE_UI8:
+		WriteMemory(outOffset0, FromUI8(uint8(inpV0)))
+	case TYPE_UI16:
+		WriteMemory(outOffset0, FromUI16(uint16(inpV0)))
+	case TYPE_UI32:
+		WriteMemory(outOffset0, FromUI32(uint32(inpV0)))
+	case TYPE_UI64:
+		WriteMemory(outOffset0, FromUI64(uint64(inpV0)))
 	case TYPE_F32:
-		WriteMemory(out1Offset, FromF32(float32(ReadF32(fp, inp1))))
+		WriteMemory(outOffset0, FromF32(inpV0))
 	case TYPE_F64:
-		WriteMemory(out1Offset, FromF64(float64(ReadF32(fp, inp1))))
+		WriteMemory(outOffset0, FromF64(float64(inpV0)))
+	default:
+		panic("unhandled operation")
 	}
 }
 

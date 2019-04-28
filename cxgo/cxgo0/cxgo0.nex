@@ -19,7 +19,6 @@
 }
 /aff/                     { lval.tok = yylex.Text(); return f(AFF)  }
 /bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
-/byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
 /break/                   { return f(BREAK) }
 /case/                    { return f(CASE) }
 /const/                   { return f(CONST) }
@@ -42,6 +41,7 @@
 /struct/                  { return f(STRUCT)}
 /switch/                  { return f(SWITCH)}
 /type/                    { return f(TYPE)}
+/byte/                    { lval.tok = yylex.Text(); return f(BYTE) }
 /ui8/                     { lval.tok = yylex.Text(); return f(UI8)}
 /ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
 /ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
@@ -155,28 +155,67 @@
 	lval.bool = false
 	return f(BOOLEAN_LITERAL)
 }
-/[0-9]+B/ {
-	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
-	lval.byt = byte(result)
-	return f(BYTE_LITERAL)
-}
 /[0-9]+/ {
-	result ,_ := strconv.Atoi(yylex.Text())
+	result, err := strconv.Atoi(yylex.Text())
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid i32 literal", yylex.Text())
+	}
 	lval.i32 = int32(result)
 	return f(INT_LITERAL)
 }
 /[0-9]+L/ {
-	result ,_ := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	result, err := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid i64 literal", yylex.Text())
+	}
 	lval.i64 = int64(result)
 	return f(LONG_LITERAL)
 }
+/[0-9]+B/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid byte literal", yylex.Text())
+	}
+	lval.byt = byte(result)
+	return f(BYTE_LITERAL)
+}
+/[0-9]+US/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 1], 10, 16)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid ui16 literal", yylex.Text())
+	}
+	lval.ui16 = uint16(result)
+	return f(UNSIGNED_SHORT_LITERAL)
+}
+/[0-9]+U/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 1], 10, 32)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid ui32 literal", yylex.Text())
+	}
+	lval.ui32 = uint32(result)
+	return f(UNSIGNED_INT_LITERAL)
+}
+/[0-9]+UL/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid ui64 literal", yylex.Text())
+	}
+	lval.ui64 = result
+	return f(UNSIGNED_LONG_LITERAL)
+}
 /([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?/ {
-	result ,_ := strconv.ParseFloat(yylex.Text(), 32)
+	result, err := strconv.ParseFloat(yylex.Text(), 32)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid f32 literal", yylex.Text())
+	}
 	lval.f32 = float32(result)
 	return f(FLOAT_LITERAL)
 }
 /([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?D/ {
-	result ,_ := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	result, err := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	if err != nil {
+		println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "invalid f64 literal", yylex.Text())
+	}
 	lval.f64 = float64 (result)
 	return f(DOUBLE_LITERAL)
 }
@@ -205,14 +244,17 @@ func f (token int) int {
 	} else {
 		switch token {
 		case IDENTIFIER,
-			
-			BOOL, BYTE, STR,
+
+			BOOL, STR,
 			I8, I16, I32, I64,
-			UI8, UI16, UI32, UI64,
+			BYTE, UI8, UI16, UI32, UI64,
 			F32, F64, AFF,
-			
-			BOOLEAN_LITERAL, BYTE_LITERAL, STRING_LITERAL,
-			INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, LONG_LITERAL,
+
+			BOOLEAN_LITERAL, STRING_LITERAL,
+			INT_LITERAL, LONG_LITERAL,
+			BYTE_LITERAL, UNSIGNED_SHORT_LITERAL, UNSIGNED_INT_LITERAL, UNSIGNED_LONG_LITERAL,
+			FLOAT_LITERAL, DOUBLE_LITERAL,
+
 			RETURN, BREAK, CONTINUE,
 			INC_OP, DEC_OP,
 

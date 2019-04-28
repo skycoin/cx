@@ -284,6 +284,10 @@ func (prgrm *CXProgram) PrintProgram() {
 
 					if dat != nil {
 						switch TypeNames[arg.Type] {
+						case "bool":
+							var b bool
+							mustDeserializeRaw(dat, &b)
+							name = fmt.Sprintf("%v", b)
 						case "str":
 							mustDeserializeRaw(dat, &name)
 							name = "\"" + name + "\""
@@ -295,6 +299,22 @@ func (prgrm *CXProgram) PrintProgram() {
 							var i64 int64
 							mustDeserializeRaw(dat, &i64)
 							name = fmt.Sprintf("%v", i64)
+						case "ui8", "byte":
+							var b byte
+							mustDeserializeRaw(dat, &b)
+							name = fmt.Sprintf("%v", b)
+						case "ui16":
+							var ui16 uint16
+							mustDeserializeAtomic(dat, &ui16)
+							name = fmt.Sprintf("%v", ui16)
+						case "ui32":
+							var ui32 uint32
+							mustDeserializeAtomic(dat, &ui32)
+							name = fmt.Sprintf("%v", ui32)
+						case "ui64":
+							var ui64 uint64
+							mustDeserializeAtomic(dat, &ui64)
+							name = fmt.Sprintf("%v", ui64)
 						case "f32":
 							var f32 float32
 							mustDeserializeRaw(dat, &f32)
@@ -303,14 +323,6 @@ func (prgrm *CXProgram) PrintProgram() {
 							var f64 float64
 							mustDeserializeRaw(dat, &f64)
 							name = fmt.Sprintf("%v", f64)
-						case "bool":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
-						case "byte":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
 						}
 					}
 
@@ -526,11 +538,13 @@ func IsTempVar(name string) bool {
 // GetArgSize ...
 func GetArgSize(typ int) int {
 	switch typ {
-	case TYPE_BOOL, TYPE_BYTE:
+	case TYPE_BOOL, TYPE_BYTE, TYPE_UI8:
 		return 1
-	case TYPE_STR, TYPE_I32, TYPE_F32, TYPE_AFF:
+	case TYPE_UI16:
+		return 2
+	case TYPE_STR, TYPE_I32, TYPE_F32, TYPE_AFF, TYPE_UI32:
 		return 4
-	case TYPE_I64, TYPE_F64:
+	case TYPE_I64, TYPE_UI64, TYPE_F64:
 		return 8
 	default:
 		return 4

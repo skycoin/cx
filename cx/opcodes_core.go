@@ -46,45 +46,106 @@ const (
 
 	START_PARSE_OPS
 
-	OP_BYTE_BYTE
-	OP_BYTE_STR
-	OP_BYTE_I32
-	OP_BYTE_I64
-	OP_BYTE_F32
-	OP_BYTE_F64
-
-	OP_I32_BYTE
 	OP_I32_STR
 	OP_I32_I32
 	OP_I32_I64
+	OP_I32_BYTE
+	OP_I32_UI8
+	OP_I32_UI16
+	OP_I32_UI32
+	OP_I32_UI64
 	OP_I32_F32
 	OP_I32_F64
 
-	OP_I64_BYTE
 	OP_I64_STR
 	OP_I64_I32
 	OP_I64_I64
+	OP_I64_BYTE
+	OP_I64_UI8
+	OP_I64_UI16
+	OP_I64_UI32
+	OP_I64_UI64
 	OP_I64_F32
 	OP_I64_F64
 
-	OP_F32_BYTE
+	OP_BYTE_STR
+	OP_BYTE_I32
+	OP_BYTE_I64
+	OP_BYTE_BYTE
+	OP_BYTE_UI8
+	OP_BYTE_UI16
+	OP_BYTE_UI32
+	OP_BYTE_UI64
+	OP_BYTE_F32
+	OP_BYTE_F64
+	OP_BYTE_PRINT
+
+	OP_UI8_STR
+	OP_UI8_I32
+	OP_UI8_I64
+	OP_UI8_UI16
+	OP_UI8_UI32
+	OP_UI8_UI64
+	OP_UI8_F32
+	OP_UI8_F64
+
+	OP_UI16_STR
+	OP_UI16_I32
+	OP_UI16_I64
+	OP_UI16_UI8
+	OP_UI16_UI32
+	OP_UI16_UI64
+	OP_UI16_F32
+	OP_UI16_F64
+
+	OP_UI32_STR
+	OP_UI32_I32
+	OP_UI32_I64
+	OP_UI32_UI8
+	OP_UI32_UI16
+	OP_UI32_UI64
+	OP_UI32_F32
+	OP_UI32_F64
+
+	OP_UI64_STR
+	OP_UI64_I32
+	OP_UI64_I64
+	OP_UI64_UI8
+	OP_UI64_UI16
+	OP_UI64_UI32
+	OP_UI64_F32
+	OP_UI64_F64
+
 	OP_F32_STR
 	OP_F32_I32
 	OP_F32_I64
+	OP_F32_BYTE
+	OP_F32_UI8
+	OP_F32_UI16
+	OP_F32_UI32
+	OP_F32_UI64
 	OP_F32_F32
 	OP_F32_F64
 
-	OP_F64_BYTE
 	OP_F64_STR
 	OP_F64_I32
 	OP_F64_I64
+	OP_F64_BYTE
+	OP_F64_UI8
+	OP_F64_UI16
+	OP_F64_UI32
+	OP_F64_UI64
 	OP_F64_F32
 	OP_F64_F64
 
-	OP_STR_BYTE
 	OP_STR_STR
 	OP_STR_I32
 	OP_STR_I64
+	OP_STR_BYTE
+	OP_STR_UI8
+	OP_STR_UI16
+	OP_STR_UI32
+	OP_STR_UI64
 	OP_STR_F32
 	OP_STR_F64
 
@@ -97,8 +158,6 @@ const (
 	OP_BOOL_NOT
 	OP_BOOL_OR
 	OP_BOOL_AND
-
-	OP_BYTE_PRINT
 
 	OP_I32_PRINT
 	OP_I32_ADD
@@ -156,7 +215,89 @@ const (
 	OP_I64_MAX
 	OP_I64_MIN
 
-	OP_F32_IS_NAN
+	OP_UI8_ADD
+	OP_UI8_SUB
+	OP_UI8_MUL
+	OP_UI8_DIV
+	OP_UI8_GT
+	OP_UI8_GTEQ
+	OP_UI8_LT
+	OP_UI8_LTEQ
+	OP_UI8_EQ
+	OP_UI8_UNEQ
+	OP_UI8_MOD
+	OP_UI8_RAND
+	OP_UI8_BITAND
+	OP_UI8_BITOR
+	OP_UI8_BITXOR
+	OP_UI8_BITCLEAR
+	OP_UI8_BITSHL
+	OP_UI8_BITSHR
+	OP_UI8_MAX
+	OP_UI8_MIN
+
+	OP_UI16_ADD
+	OP_UI16_SUB
+	OP_UI16_MUL
+	OP_UI16_DIV
+	OP_UI16_GT
+	OP_UI16_GTEQ
+	OP_UI16_LT
+	OP_UI16_LTEQ
+	OP_UI16_EQ
+	OP_UI16_UNEQ
+	OP_UI16_MOD
+	OP_UI16_RAND
+	OP_UI16_BITAND
+	OP_UI16_BITOR
+	OP_UI16_BITXOR
+	OP_UI16_BITCLEAR
+	OP_UI16_BITSHL
+	OP_UI16_BITSHR
+	OP_UI16_MAX
+	OP_UI16_MIN
+
+	OP_UI32_ADD
+	OP_UI32_SUB
+	OP_UI32_MUL
+	OP_UI32_DIV
+	OP_UI32_GT
+	OP_UI32_GTEQ
+	OP_UI32_LT
+	OP_UI32_LTEQ
+	OP_UI32_EQ
+	OP_UI32_UNEQ
+	OP_UI32_MOD
+	OP_UI32_RAND
+	OP_UI32_BITAND
+	OP_UI32_BITOR
+	OP_UI32_BITXOR
+	OP_UI32_BITCLEAR
+	OP_UI32_BITSHL
+	OP_UI32_BITSHR
+	OP_UI32_MAX
+	OP_UI32_MIN
+
+	OP_UI64_ADD
+	OP_UI64_SUB
+	OP_UI64_MUL
+	OP_UI64_DIV
+	OP_UI64_GT
+	OP_UI64_GTEQ
+	OP_UI64_LT
+	OP_UI64_LTEQ
+	OP_UI64_EQ
+	OP_UI64_UNEQ
+	OP_UI64_MOD
+	OP_UI64_RAND
+	OP_UI64_BITAND
+	OP_UI64_BITOR
+	OP_UI64_BITXOR
+	OP_UI64_BITCLEAR
+	OP_UI64_BITSHL
+	OP_UI64_BITSHR
+	OP_UI64_MAX
+	OP_UI64_MIN
 
 	OP_F32_PRINT
 	OP_F32_ADD
@@ -179,6 +320,7 @@ const (
 	OP_F32_LOG10
 	OP_F32_MAX
 	OP_F32_MIN
+	OP_F32_IS_NAN
 
 	OP_F64_PRINT
 	OP_F64_ADD
@@ -195,7 +337,6 @@ const (
 	OP_F64_UNEQ
 	OP_F64_COS
 	OP_F64_SIN
-
 	OP_F64_SQRT
 	OP_F64_LOG
 	OP_F64_LOG2
@@ -387,29 +528,6 @@ func init() {
 		[]*CXArgument{},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
-	AddOpCode(OP_BYTE_BYTE, "byte.byte",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
-	AddOpCode(OP_BYTE_STR, "byte.str",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
-	AddOpCode(OP_BYTE_I32, "byte.i32",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
-	AddOpCode(OP_BYTE_I64, "byte.i64",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
-	AddOpCode(OP_BYTE_F32, "byte.f32",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
-	AddOpCode(OP_BYTE_F64, "byte.f64",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
-
-	AddOpCode(OP_BYTE_PRINT, "byte.print",
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
-		[]*CXArgument{})
-
 	AddOpCode(OP_BOOL_PRINT, "bool.print",
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
 		[]*CXArgument{})
@@ -429,9 +547,6 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
 
-	AddOpCode(OP_I32_BYTE, "i32.byte",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
 	AddOpCode(OP_I32_STR, "i32.str",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
@@ -441,13 +556,27 @@ func init() {
 	AddOpCode(OP_I32_I64, "i32.i64",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_I32_BYTE, "i32.byte",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_I32_UI8, "i32.ui8",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_I32_UI16, "i32.ui16",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_I32_UI32, "i32.ui32",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_I32_UI64, "i32.ui64",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
 	AddOpCode(OP_I32_F32, "i32.f32",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
 	AddOpCode(OP_I32_F64, "i32.f64",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-
 	AddOpCode(OP_I32_PRINT, "i32.print",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -533,9 +662,6 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
 
-	AddOpCode(OP_I64_BYTE, "i64.byte",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
 	AddOpCode(OP_I64_STR, "i64.str",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
@@ -545,13 +671,27 @@ func init() {
 	AddOpCode(OP_I64_I64, "i64.i64",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_I64_BYTE, "i64.byte",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_I64_UI8, "i64.ui8",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_I64_UI16, "i64.ui16",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_I64_UI32, "i64.ui32",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_I64_UI64, "i64.ui64",
+		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
 	AddOpCode(OP_I64_F32, "i64.f32",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
 	AddOpCode(OP_I64_F64, "i64.f64",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-
 	AddOpCode(OP_I64_PRINT, "i64.print",
 		[]*CXArgument{newOpPar(TYPE_I64, false)},
 		[]*CXArgument{})
@@ -637,12 +777,380 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 
-	AddOpCode(OP_F32_IS_NAN, "f32.isnan",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
-	AddOpCode(OP_F32_BYTE, "f32.byte",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
+	AddOpCode(OP_BYTE_STR, "byte.str",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_BYTE_I32, "byte.i32",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_BYTE_I64, "byte.i64",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_BYTE_BYTE, "byte.byte",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_BYTE_UI8, "byte.ui8",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_BYTE_UI16, "byte.ui16",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_BYTE_UI32, "byte.ui32",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_BYTE_UI64, "byte.ui64",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_BYTE_F32, "byte.f32",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_BYTE_F64, "byte.f64",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_BYTE_PRINT, "byte.print",
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)},
+		[]*CXArgument{})
+
+	AddOpCode(OP_UI8_STR, "ui8.str",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_UI8_I32, "ui8.i32",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_UI8_I64, "ui8.i64",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_UI8_UI16, "ui8.ui16",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI8_UI32, "ui8.ui32",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI8_UI64, "ui8.ui64",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI8_F32, "ui8.f32",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_UI8_F64, "ui8.f64",
+		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_UI8_ADD, "ui8.add",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_SUB, "ui8.sub",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_MUL, "ui8.mul",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_DIV, "ui8.div",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_GT, "ui8.gt",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_GTEQ, "ui8.gteq",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_LT, "ui8.lt",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_LTEQ, "ui8.lteq",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_EQ, "ui8.eq",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_UNEQ, "ui8.uneq",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI8_MOD, "ui8.mod",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_RAND, "ui8.rand",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITAND, "ui8.bitand",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITOR, "ui8.bitor",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITXOR, "ui8.bitxor",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITCLEAR, "ui8.bitclear",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITSHL, "ui8.bitshl",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_BITSHR, "ui8.bitshr",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_MAX, "ui8.max",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI8_MIN, "ui8.min",
+		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+
+	AddOpCode(OP_UI16_STR, "ui16.str",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_UI16_I32, "ui16.i32",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_UI16_I64, "ui16.i64",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_UI16_UI8, "ui16.ui8",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI16_UI32, "ui16.ui32",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI16_UI64, "ui16.ui64",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI16_F32, "ui16.f32",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_UI16_F64, "ui16.f64",
+		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_UI16_ADD, "ui16.add",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_SUB, "ui16.sub",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_MUL, "ui16.mul",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_DIV, "ui16.div",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_GT, "ui16.gt",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_GTEQ, "ui16.gteq",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_LT, "ui16.lt",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_LTEQ, "ui16.lteq",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_EQ, "ui16.eq",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_UNEQ, "ui16.uneq",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI16_MOD, "ui16.mod",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_RAND, "ui16.rand",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITAND, "ui16.bitand",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITOR, "ui16.bitor",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITXOR, "ui16.bitxor",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITCLEAR, "ui16.bitclear",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITSHL, "ui16.bitshl",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_BITSHR, "ui16.bitshr",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_MAX, "ui16.max",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI16_MIN, "ui16.min",
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+
+	AddOpCode(OP_UI32_STR, "ui32.str",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_UI32_I32, "ui32.i32",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_UI32_I64, "ui32.i64",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_UI32_UI8, "ui32.ui8",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI32_UI16, "ui32.ui16",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI32_UI64, "ui32.ui64",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI32_F32, "ui32.f32",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_UI32_F64, "ui32.f64",
+		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_UI32_ADD, "ui32.add",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_SUB, "ui32.sub",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_MUL, "ui32.mul",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_DIV, "ui32.div",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_GT, "ui32.gt",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_GTEQ, "ui32.gteq",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_LT, "ui32.lt",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_LTEQ, "ui32.lteq",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_EQ, "ui32.eq",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_UNEQ, "ui32.uneq",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI32_MOD, "ui32.mod",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_RAND, "ui32.rand",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITAND, "ui32.bitand",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITOR, "ui32.bitor",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITXOR, "ui32.bitxor",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITCLEAR, "ui32.bitclear",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITSHL, "ui32.bitshl",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_BITSHR, "ui32.bitshr",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_MAX, "ui32.max",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI32_MIN, "ui32.min",
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+
+	AddOpCode(OP_UI64_STR, "ui64.str",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_UI64_I32, "ui64.i32",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_UI64_I64, "ui64.i64",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_UI64_UI8, "ui64.ui8",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_UI64_UI16, "ui64.ui16",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_UI64_UI32, "ui64.ui32",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_UI64_F32, "ui64.f32",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_UI64_F64, "ui64.f64",
+		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_UI64_ADD, "ui64.add",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_SUB, "ui64.sub",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_MUL, "ui64.mul",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_DIV, "ui64.div",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_GT, "ui64.gt",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_GTEQ, "ui64.gteq",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_LT, "ui64.lt",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_LTEQ, "ui64.lteq",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_EQ, "ui64.eq",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_UNEQ, "ui64.uneq",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_UI64_MOD, "ui64.mod",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_RAND, "ui64.rand",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITAND, "ui64.bitand",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITOR, "ui64.bitor",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITXOR, "ui64.bitxor",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITCLEAR, "ui64.bitclear",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITSHL, "ui64.bitshl",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_BITSHR, "ui64.bitshr",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_MAX, "ui64.max",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+	AddOpCode(OP_UI64_MIN, "ui64.min",
+		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+
 	AddOpCode(OP_F32_STR, "f32.str",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
@@ -652,6 +1160,21 @@ func init() {
 	AddOpCode(OP_F32_I64, "f32.i64",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_F32_BYTE, "f32.byte",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_F32_UI8, "f32.ui8",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_F32_UI16, "f32.ui16",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_F32_UI32, "f32.ui32",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_F32_UI64, "f32.ui64",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
 	AddOpCode(OP_F32_F32, "f32.f32",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
@@ -724,10 +1247,10 @@ func init() {
 	AddOpCode(OP_F32_MIN, "f32.min",
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_F32_IS_NAN, "f32.isnan",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
 
-	AddOpCode(OP_F64_BYTE, "f64.byte",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
 	AddOpCode(OP_F64_STR, "f64.str",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
@@ -737,13 +1260,27 @@ func init() {
 	AddOpCode(OP_F64_I64, "f64.i64",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_F64_BYTE, "f64.byte",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_F64_UI8, "f64.ui8",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_F64_UI16, "f64.ui16",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_F64_UI32, "f64.ui32",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_F64_UI64, "f64.ui64",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
 	AddOpCode(OP_F64_F32, "f64.f32",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
 	AddOpCode(OP_F64_F64, "f64.f64",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
-
 	AddOpCode(OP_F64_PRINT, "f64.print",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{})
@@ -830,9 +1367,6 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
 
-	AddOpCode(OP_STR_BYTE, "str.byte",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
 	AddOpCode(OP_STR_STR, "str.str",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
@@ -842,6 +1376,21 @@ func init() {
 	AddOpCode(OP_STR_I64, "str.i64",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_STR_BYTE, "str.byte",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
+	AddOpCode(OP_STR_UI8, "str.ui8",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+	AddOpCode(OP_STR_UI16, "str.ui16",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_STR_UI32, "str.ui32",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_STR_UI64, "str.ui64",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI64, false)})
 	AddOpCode(OP_STR_F32, "str.f32",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
@@ -961,22 +1510,6 @@ func init() {
 		case OP_UND_READ:
 			opRead(expr, fp)
 
-		case OP_BYTE_BYTE:
-			opByteByte(expr, fp)
-		case OP_BYTE_STR:
-			opByteByte(expr, fp)
-		case OP_BYTE_I32:
-			opByteByte(expr, fp)
-		case OP_BYTE_I64:
-			opByteByte(expr, fp)
-		case OP_BYTE_F32:
-			opByteByte(expr, fp)
-		case OP_BYTE_F64:
-			opByteByte(expr, fp)
-
-		case OP_BYTE_PRINT:
-			opBytePrint(expr, fp)
-
 		case OP_BOOL_PRINT:
 			opBoolPrint(expr, fp)
 		case OP_BOOL_EQUAL:
@@ -990,19 +1523,26 @@ func init() {
 		case OP_BOOL_AND:
 			opBoolAnd(expr, fp)
 
-		case OP_I32_BYTE:
-			opI32I32(expr, fp)
 		case OP_I32_STR:
-			opI32I32(expr, fp)
+			opI32Cast(expr, fp)
 		case OP_I32_I32:
-			opI32I32(expr, fp)
+			opI32Cast(expr, fp)
 		case OP_I32_I64:
-			opI32I32(expr, fp)
+			opI32Cast(expr, fp)
+		case OP_I32_BYTE:
+			opI32Cast(expr, fp)
+		case OP_I32_UI8:
+			opI32Cast(expr, fp)
+		case OP_I32_UI16:
+			opI32Cast(expr, fp)
+		case OP_I32_UI32:
+			opI32Cast(expr, fp)
+		case OP_I32_UI64:
+			opI32Cast(expr, fp)
 		case OP_I32_F32:
-			opI32I32(expr, fp)
+			opI32Cast(expr, fp)
 		case OP_I32_F64:
-			opI32I32(expr, fp)
-
+			opI32Cast(expr, fp)
 		case OP_I32_PRINT:
 			opI32Print(expr, fp)
 		case OP_I32_ADD:
@@ -1053,25 +1593,31 @@ func init() {
 			opI32Log2(expr, fp)
 		case OP_I32_LOG10:
 			opI32Log10(expr, fp)
-
 		case OP_I32_MAX:
 			opI32Max(expr, fp)
 		case OP_I32_MIN:
 			opI32Min(expr, fp)
 
-		case OP_I64_BYTE:
-			opI64I64(expr, fp)
 		case OP_I64_STR:
-			opI64I64(expr, fp)
+			opI64Cast(expr, fp)
 		case OP_I64_I32:
-			opI64I64(expr, fp)
+			opI64Cast(expr, fp)
 		case OP_I64_I64:
-			opI64I64(expr, fp)
+			opI64Cast(expr, fp)
+		case OP_I64_BYTE:
+			opI64Cast(expr, fp)
+		case OP_I64_UI8:
+			opI64Cast(expr, fp)
+		case OP_I64_UI16:
+			opI64Cast(expr, fp)
+		case OP_I64_UI32:
+			opI64Cast(expr, fp)
+		case OP_I64_UI64:
+			opI64Cast(expr, fp)
 		case OP_I64_F32:
-			opI64I64(expr, fp)
+			opI64Cast(expr, fp)
 		case OP_I64_F64:
-			opI64I64(expr, fp)
-
+			opI64Cast(expr, fp)
 		case OP_I64_PRINT:
 			opI64Print(expr, fp)
 		case OP_I64_ADD:
@@ -1127,20 +1673,277 @@ func init() {
 		case OP_I64_MIN:
 			opI64Min(expr, fp)
 
-		case OP_F32_IS_NAN:
-			opF32Isnan(expr, fp)
-		case OP_F32_BYTE:
-			opF32F32(expr, fp)
+		case OP_BYTE_STR:
+			opByteByte(expr, fp)
+		case OP_BYTE_I32:
+			opByteByte(expr, fp)
+		case OP_BYTE_I64:
+			opByteByte(expr, fp)
+		case OP_BYTE_BYTE:
+			opByteByte(expr, fp)
+		case OP_BYTE_UI8:
+			opByteByte(expr, fp)
+		case OP_BYTE_UI16:
+			opByteByte(expr, fp)
+		case OP_BYTE_UI32:
+			opByteByte(expr, fp)
+		case OP_BYTE_UI64:
+			opByteByte(expr, fp)
+		case OP_BYTE_F32:
+			opByteByte(expr, fp)
+		case OP_BYTE_F64:
+			opByteByte(expr, fp)
+		case OP_BYTE_PRINT:
+			opBytePrint(expr, fp)
+
+		case OP_UI8_STR:
+			opUI8ToStr(expr, fp)
+		case OP_UI8_I32:
+			opUI8ToI32(expr, fp)
+		case OP_UI8_I64:
+			opUI8ToI64(expr, fp)
+		case OP_UI8_UI16:
+			opUI8ToUI16(expr, fp)
+		case OP_UI8_UI32:
+			opUI8ToUI32(expr, fp)
+		case OP_UI8_UI64:
+			opUI8ToUI64(expr, fp)
+		case OP_UI8_F32:
+			opUI8ToF32(expr, fp)
+		case OP_UI8_F64:
+			opUI8ToF64(expr, fp)
+		case OP_UI8_ADD:
+			opUI8Add(expr, fp)
+		case OP_UI8_SUB:
+			opUI8Sub(expr, fp)
+		case OP_UI8_MUL:
+			opUI8Mul(expr, fp)
+		case OP_UI8_DIV:
+			opUI8Div(expr, fp)
+		case OP_UI8_GT:
+			opUI8Gt(expr, fp)
+		case OP_UI8_GTEQ:
+			opUI8Gteq(expr, fp)
+		case OP_UI8_LT:
+			opUI8Lt(expr, fp)
+		case OP_UI8_LTEQ:
+			opUI8Lteq(expr, fp)
+		case OP_UI8_EQ:
+			opUI8Eq(expr, fp)
+		case OP_UI8_UNEQ:
+			opUI8Uneq(expr, fp)
+		case OP_UI8_MOD:
+			opUI8Mod(expr, fp)
+		case OP_UI8_RAND:
+			opUI8Rand(expr, fp)
+		case OP_UI8_BITAND:
+			opUI8Bitand(expr, fp)
+		case OP_UI8_BITOR:
+			opUI8Bitor(expr, fp)
+		case OP_UI8_BITXOR:
+			opUI8Bitxor(expr, fp)
+		case OP_UI8_BITCLEAR:
+			opUI8Bitclear(expr, fp)
+		case OP_UI8_BITSHL:
+			opUI8Bitshl(expr, fp)
+		case OP_UI8_BITSHR:
+			opUI8Bitshr(expr, fp)
+		case OP_UI8_MAX:
+			opUI8Max(expr, fp)
+		case OP_UI8_MIN:
+			opUI8Min(expr, fp)
+
+		case OP_UI16_STR:
+			opUI16ToStr(expr, fp)
+		case OP_UI16_I32:
+			opUI16ToI32(expr, fp)
+		case OP_UI16_I64:
+			opUI16ToI64(expr, fp)
+		case OP_UI16_UI8:
+			opUI16ToUI8(expr, fp)
+		case OP_UI16_UI32:
+			opUI16ToUI32(expr, fp)
+		case OP_UI16_UI64:
+			opUI16ToUI64(expr, fp)
+		case OP_UI16_F32:
+			opUI16ToF32(expr, fp)
+		case OP_UI16_F64:
+			opUI16ToF64(expr, fp)
+		case OP_UI16_ADD:
+			opUI16Add(expr, fp)
+		case OP_UI16_SUB:
+			opUI16Sub(expr, fp)
+		case OP_UI16_MUL:
+			opUI16Mul(expr, fp)
+		case OP_UI16_DIV:
+			opUI16Div(expr, fp)
+		case OP_UI16_GT:
+			opUI16Gt(expr, fp)
+		case OP_UI16_GTEQ:
+			opUI16Gteq(expr, fp)
+		case OP_UI16_LT:
+			opUI16Lt(expr, fp)
+		case OP_UI16_LTEQ:
+			opUI16Lteq(expr, fp)
+		case OP_UI16_EQ:
+			opUI16Eq(expr, fp)
+		case OP_UI16_UNEQ:
+			opUI16Uneq(expr, fp)
+		case OP_UI16_MOD:
+			opUI16Mod(expr, fp)
+		case OP_UI16_RAND:
+			opUI16Rand(expr, fp)
+		case OP_UI16_BITAND:
+			opUI16Bitand(expr, fp)
+		case OP_UI16_BITOR:
+			opUI16Bitor(expr, fp)
+		case OP_UI16_BITXOR:
+			opUI16Bitxor(expr, fp)
+		case OP_UI16_BITCLEAR:
+			opUI16Bitclear(expr, fp)
+		case OP_UI16_BITSHL:
+			opUI16Bitshl(expr, fp)
+		case OP_UI16_BITSHR:
+			opUI16Bitshr(expr, fp)
+		case OP_UI16_MAX:
+			opUI16Max(expr, fp)
+		case OP_UI16_MIN:
+			opUI16Min(expr, fp)
+
+		case OP_UI32_STR:
+			opUI32ToStr(expr, fp)
+		case OP_UI32_I32:
+			opUI32ToI32(expr, fp)
+		case OP_UI32_I64:
+			opUI32ToI64(expr, fp)
+		case OP_UI32_UI8:
+			opUI32ToUI8(expr, fp)
+		case OP_UI32_UI16:
+			opUI32ToUI16(expr, fp)
+		case OP_UI32_UI64:
+			opUI32ToUI64(expr, fp)
+		case OP_UI32_F32:
+			opUI32ToF32(expr, fp)
+		case OP_UI32_F64:
+			opUI32ToF64(expr, fp)
+		case OP_UI32_ADD:
+			opUI32Add(expr, fp)
+		case OP_UI32_SUB:
+			opUI32Sub(expr, fp)
+		case OP_UI32_MUL:
+			opUI32Mul(expr, fp)
+		case OP_UI32_DIV:
+			opUI32Div(expr, fp)
+		case OP_UI32_GT:
+			opUI32Gt(expr, fp)
+		case OP_UI32_GTEQ:
+			opUI32Gteq(expr, fp)
+		case OP_UI32_LT:
+			opUI32Lt(expr, fp)
+		case OP_UI32_LTEQ:
+			opUI32Lteq(expr, fp)
+		case OP_UI32_EQ:
+			opUI32Eq(expr, fp)
+		case OP_UI32_UNEQ:
+			opUI32Uneq(expr, fp)
+		case OP_UI32_MOD:
+			opUI32Mod(expr, fp)
+		case OP_UI32_RAND:
+			opUI32Rand(expr, fp)
+		case OP_UI32_BITAND:
+			opUI32Bitand(expr, fp)
+		case OP_UI32_BITOR:
+			opUI32Bitor(expr, fp)
+		case OP_UI32_BITXOR:
+			opUI32Bitxor(expr, fp)
+		case OP_UI32_BITCLEAR:
+			opUI32Bitclear(expr, fp)
+		case OP_UI32_BITSHL:
+			opUI32Bitshl(expr, fp)
+		case OP_UI32_BITSHR:
+			opUI32Bitshr(expr, fp)
+		case OP_UI32_MAX:
+			opUI32Max(expr, fp)
+		case OP_UI32_MIN:
+			opUI32Min(expr, fp)
+
+		case OP_UI64_STR:
+			opUI64ToStr(expr, fp)
+		case OP_UI64_I32:
+			opUI64ToI32(expr, fp)
+		case OP_UI64_I64:
+			opUI64ToI64(expr, fp)
+		case OP_UI64_UI8:
+			opUI64ToUI8(expr, fp)
+		case OP_UI64_UI16:
+			opUI64ToUI16(expr, fp)
+		case OP_UI64_UI32:
+			opUI64ToUI32(expr, fp)
+		case OP_UI64_F32:
+			opUI64ToF32(expr, fp)
+		case OP_UI64_F64:
+			opUI64ToF64(expr, fp)
+		case OP_UI64_ADD:
+			opUI64Add(expr, fp)
+		case OP_UI64_SUB:
+			opUI64Sub(expr, fp)
+		case OP_UI64_MUL:
+			opUI64Mul(expr, fp)
+		case OP_UI64_DIV:
+			opUI64Div(expr, fp)
+		case OP_UI64_GT:
+			opUI64Gt(expr, fp)
+		case OP_UI64_GTEQ:
+			opUI64Gteq(expr, fp)
+		case OP_UI64_LT:
+			opUI64Lt(expr, fp)
+		case OP_UI64_LTEQ:
+			opUI64Lteq(expr, fp)
+		case OP_UI64_EQ:
+			opUI64Eq(expr, fp)
+		case OP_UI64_UNEQ:
+			opUI64Uneq(expr, fp)
+		case OP_UI64_MOD:
+			opUI64Mod(expr, fp)
+		case OP_UI64_RAND:
+			opUI64Rand(expr, fp)
+		case OP_UI64_BITAND:
+			opUI64Bitand(expr, fp)
+		case OP_UI64_BITOR:
+			opUI64Bitor(expr, fp)
+		case OP_UI64_BITXOR:
+			opUI64Bitxor(expr, fp)
+		case OP_UI64_BITCLEAR:
+			opUI64Bitclear(expr, fp)
+		case OP_UI64_BITSHL:
+			opUI64Bitshl(expr, fp)
+		case OP_UI64_BITSHR:
+			opUI64Bitshr(expr, fp)
+		case OP_UI64_MAX:
+			opUI64Max(expr, fp)
+		case OP_UI64_MIN:
+			opUI64Min(expr, fp)
+
 		case OP_F32_STR:
-			opF32F32(expr, fp)
+			opF32Cast(expr, fp)
 		case OP_F32_I32:
-			opF32F32(expr, fp)
+			opF32Cast(expr, fp)
 		case OP_F32_I64:
-			opF32F32(expr, fp)
+			opF32Cast(expr, fp)
+		case OP_F32_BYTE:
+			opF32Cast(expr, fp)
+		case OP_F32_UI8:
+			opF32Cast(expr, fp)
+		case OP_F32_UI16:
+			opF32Cast(expr, fp)
+		case OP_F32_UI32:
+			opF32Cast(expr, fp)
+		case OP_F32_UI64:
+			opF32Cast(expr, fp)
 		case OP_F32_F32:
-			opF32F32(expr, fp)
+			opF32Cast(expr, fp)
 		case OP_F32_F64:
-			opF32F32(expr, fp)
+			opF32Cast(expr, fp)
 		case OP_F32_PRINT:
 			opF32Print(expr, fp)
 		case OP_F32_ADD:
@@ -1183,20 +1986,29 @@ func init() {
 			opF32Max(expr, fp)
 		case OP_F32_MIN:
 			opF32Min(expr, fp)
+		case OP_F32_IS_NAN:
+			opF32Isnan(expr, fp)
 
-		case OP_F64_BYTE:
-			opF64F64(expr, fp)
 		case OP_F64_STR:
-			opF64F64(expr, fp)
+			opF64Cast(expr, fp)
 		case OP_F64_I32:
-			opF64F64(expr, fp)
+			opF64Cast(expr, fp)
 		case OP_F64_I64:
-			opF64F64(expr, fp)
+			opF64Cast(expr, fp)
+		case OP_F64_BYTE:
+			opF64Cast(expr, fp)
+		case OP_F64_UI8:
+			opF64Cast(expr, fp)
+		case OP_F64_UI16:
+			opF64Cast(expr, fp)
+		case OP_F64_UI32:
+			opF64Cast(expr, fp)
+		case OP_F64_UI64:
+			opF64Cast(expr, fp)
 		case OP_F64_F32:
-			opF64F64(expr, fp)
+			opF64Cast(expr, fp)
 		case OP_F64_F64:
-			opF64F64(expr, fp)
-
+			opF64Cast(expr, fp)
 		case OP_F64_PRINT:
 			opF64Print(expr, fp)
 		case OP_F64_ADD:
@@ -1240,6 +2052,26 @@ func init() {
 		case OP_F64_MIN:
 			opF64Min(expr, fp)
 
+		case OP_STR_STR:
+			opStrStr(expr, fp)
+		case OP_STR_I32:
+			opStrStr(expr, fp)
+		case OP_STR_I64:
+			opStrStr(expr, fp)
+		case OP_STR_BYTE:
+			opStrStr(expr, fp)
+		case OP_STR_UI8:
+			opStrStr(expr, fp)
+		case OP_STR_UI16:
+			opStrStr(expr, fp)
+		case OP_STR_UI32:
+			opStrStr(expr, fp)
+		case OP_STR_UI64:
+			opStrStr(expr, fp)
+		case OP_STR_F32:
+			opStrStr(expr, fp)
+		case OP_STR_F64:
+			opStrStr(expr, fp)
 		case OP_STR_PRINT:
 			opStrPrint(expr, fp)
 		case OP_STR_EQ:
@@ -1252,19 +2084,6 @@ func init() {
 			opStrIndex(expr, fp)
 		case OP_STR_TRIM_SPACE:
 			opStrTrimSpace(expr, fp)
-
-		case OP_STR_BYTE:
-			opStrStr(expr, fp)
-		case OP_STR_STR:
-			opStrStr(expr, fp)
-		case OP_STR_I32:
-			opStrStr(expr, fp)
-		case OP_STR_I64:
-			opStrStr(expr, fp)
-		case OP_STR_F32:
-			opStrStr(expr, fp)
-		case OP_STR_F64:
-			opStrStr(expr, fp)
 
 		case OP_APPEND:
 			opAppend(expr, fp)

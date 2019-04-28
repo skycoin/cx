@@ -497,6 +497,14 @@ func buildString(expr *CXExpression, fp int) []byte {
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(fp, inp)), 10))...)
 				case TYPE_I64:
 					res = append(res, []byte(strconv.FormatInt(ReadI64(fp, inp), 10))...)
+				case TYPE_BYTE, TYPE_UI8:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI8(fp, inp)), 10))...)
+				case TYPE_UI16:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI16(fp, inp)), 10))...)
+				case TYPE_UI32:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI32(fp, inp)), 10))...)
+				case TYPE_UI64:
+					res = append(res, []byte(strconv.FormatUint(ReadUI64(fp, inp), 10))...)
 				}
 			case 'f':
 				switch inp.Type {

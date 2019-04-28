@@ -344,14 +344,29 @@ func FromI32(in int32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromI64 ...
+func FromI64(in int64) []byte {
+	return encoder.Serialize(in)
+}
+
+// FromUI8 ...
+func FromUI8(in uint8) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
+// FromUI16 ...
+func FromUI16(in uint16) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
 // FromUI32 ...
 func FromUI32(in uint32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
-// FromI64 ...
-func FromI64(in int64) []byte {
-	return encoder.Serialize(in)
+// FromUI64 ...
+func FromUI64(in uint64) []byte {
+	return encoder.SerializeAtomic(in)
 }
 
 // FromF32 ...
@@ -377,51 +392,105 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
-// ReadF32Data ...
-func ReadF32Data(fp int, inp *CXArgument) interface{} {
-	var data interface{}
+// ReadData ...
+func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 	elt := GetAssignmentElement(inp)
-	var dataF32 []float32
 	if elt.IsSlice {
-		dataF32 = ReadF32Slice(fp, inp)
+		return ReadSlice(fp, inp, dataType)
 	} else if elt.IsArray {
-		dataF32 = ReadF32A(fp, inp)
+		return ReadArray(fp, inp, dataType)
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	if len(dataF32) > 0 {
-		data = dataF32
-	}
-	return data
 }
 
-// ReadF32Slice ...
-func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {
+func readData(inp *CXArgument, bytes []byte) interface{} {
+	switch inp.Type {
+	case TYPE_I32:
+		var data []int32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_I64:
+		var data []int64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_BYTE:
+		var data []byte
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_UI8:
+		var data []uint8
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_UI16:
+		var data []uint16
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_UI32:
+		var data []uint32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_UI64:
+		var data []uint64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_F32:
+		var data []float32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_F64:
+		var data []float64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	default:
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	return interface{}(nil)
+}
+
+// ReadSlice ...
+func ReadSlice(fp int, inp *CXArgument, dataType int) interface{} {
 	sliceOffset := GetSliceOffset(fp, inp)
-	if sliceOffset >= 0 && inp.Type == TYPE_F32 {
-		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).TotalSize)
+	if sliceOffset >= 0 && (dataType < 0 || inp.Type == dataType) {
+		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).Size)
 		if slice != nil {
-			err := encoder.DeserializeRaw(slice, &out)
-			if err != nil {
-				panic(err)
-			}
+			return readData(inp, slice)
 		}
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	return
+
+	return interface{}(nil)
 }
 
-// ReadF32A ...
-func ReadF32A(fp int, inp *CXArgument) (out []float32) {
-	offset := GetFinalOffset(fp, inp)
-	byts := ReadMemory(offset, inp)
-	byts = append(encoder.SerializeAtomic(int32(len(byts)/4)), byts...)
-	err := encoder.DeserializeRaw(byts, &out)
-	if err != nil {
-		panic(err)
+// ReadArray ...
+func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
+	arrayOffset := GetFinalOffset(fp, inp)
+	if dataType < 0 || inp.Type == dataType {
+		array := ReadMemory(arrayOffset, inp)
+		array = append(encoder.SerializeAtomic(int32(len(array)/4)), array...) // TODO : refactor using a DesereializeRaw which takes the size as parameter.
+		return readData(inp, array)
 	}
-	return
+	panic(CX_RUNTIME_INVALID_ARGUMENT)
 }
 
 // ReadBool ...
@@ -506,6 +575,34 @@ func ReadI64(fp int, inp *CXArgument) (out int64) {
 	if err != nil {
 		panic(err)
 	}
+	return
+}
+
+// ReadUI8 ...
+func ReadUI8(fp int, inp *CXArgument) (out uint8) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI16 ...
+func ReadUI16(fp int, inp *CXArgument) (out uint16) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI32 ...
+func ReadUI32(fp int, inp *CXArgument) (out uint32) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI64 ...
+func ReadUI64(fp int, inp *CXArgument) (out uint64) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 

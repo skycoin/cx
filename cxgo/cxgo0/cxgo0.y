@@ -37,9 +37,12 @@
 
 %union {
 	i int
-	byt byte
 	i32 int32
 	i64 int64
+	byt byte
+	ui16 uint16
+	ui32 uint32
+	ui64 uint64
 	f32 float32
 	f64 float64
 	tok string
@@ -58,14 +61,20 @@
         function *CXFunction
 }
 
-%token  <byt>           BYTENUM
 %token  <i32>           INT BOOLEAN
 %token  <i64>           LONG
+%token  <byt>           BYTENUM
+%token  <ui16>          UNSIGNED_SHORT
+%token  <ui32>          UNSIGNED_INT
+%token  <ui64>          UNSIGNED_LONG
 %token  <f32>           FLOAT
 %token  <f64>           DOUBLE
-%token  <byt>           BYTE_LITERAL
 %token  <i32>           INT_LITERAL BOOLEAN_LITERAL
 %token  <i64>           LONG_LITERAL
+%token  <byt>           BYTE_LITERAL
+%token  <ui16>          UNSIGNED_SHORT_LITERAL
+%token  <ui32>          UNSIGNED_INT_LITERAL
+%token  <ui64>          UNSIGNED_LONG_LITERAL
 %token  <f32>           FLOAT_LITERAL
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
@@ -457,11 +466,14 @@ primary_expression:
         |       INFER LBRACE infer_clauses RBRACE
         |       STRING_LITERAL
         |       BOOLEAN_LITERAL
-        |       BYTE_LITERAL
         |       INT_LITERAL
+        |       LONG_LITERAL
+        |       BYTE_LITERAL
+        |       UNSIGNED_SHORT_LITERAL
+        |       UNSIGNED_INT_LITERAL
+        |       UNSIGNED_LONG_LITERAL
         |       FLOAT_LITERAL
         |       DOUBLE_LITERAL
-        |       LONG_LITERAL
         |       LPAREN expression RPAREN
         |       array_literal_expression
         |       slice_literal_expression
