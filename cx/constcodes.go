@@ -217,6 +217,9 @@ const (
 	CONST_OS_RUN_START_FAILED
 	CONST_OS_RUN_WAIT_FAILED
 	CONST_OS_RUN_TIMEOUT
+	CONST_OS_SEEK_SET
+	CONST_OS_SEEK_CUR
+	CONST_OS_SEEK_END
 
 	// os.FileModes (FIXME: these are uint32 in Go, with _DIR & _TYPE exceeding math.MaxInt32)
 	//CONST_OS_FILEMODE_DIR
@@ -477,6 +480,9 @@ func init() {
 	AddConstCode(CONST_OS_RUN_START_FAILED, "os.RUN_START_FAILED", TYPE_I32, FromI32(OS_RUN_START_FAILED))
 	AddConstCode(CONST_OS_RUN_WAIT_FAILED, "os.RUN_WAIT_FAILED", TYPE_I32, FromI32(OS_RUN_WAIT_FAILED))
 	AddConstCode(CONST_OS_RUN_TIMEOUT, "os.RUN_TIMEOUT", TYPE_I32, FromI32(OS_RUN_TIMEOUT))
+	AddConstCode(CONST_OS_SEEK_SET, "os.SEEK_SET", TYPE_I32, FromI32(OS_SEEK_SET))
+	AddConstCode(CONST_OS_SEEK_CUR, "os.SEEK_CUR", TYPE_I32, FromI32(OS_SEEK_CUR))
+	AddConstCode(CONST_OS_SEEK_END, "os.SEEK_END", TYPE_I32, FromI32(OS_SEEK_END))
 
 	// os.FileModes (FIXME: these are uint32 in Go, with _DIR & _TYPE exceeding math.MaxInt32)
 	//AddConstCode( CONST_OS_FILEMODE_DIR                , "os.ModeDir"                    , TYPE_I32, FromI32(2147483648))

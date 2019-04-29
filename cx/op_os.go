@@ -4,6 +4,7 @@ package cxcore
 
 import (
 	"bytes"
+	"encoding/binary"
 	//"fmt"
 	"io/ioutil"
 	"math"
@@ -25,17 +26,17 @@ const (
 	OS_RUN_TIMEOUT
 )
 
+const (
+	OS_SEEK_SET = iota
+	OS_SEEK_CUR
+	OS_SEEK_END
+)
+
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
-func op_os_ReadFile(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-
-	_ = out1
-
-	if byts, err := ioutil.ReadFile(ReadStr(fp, inp1)); err == nil {
-		_ = byts
-		// sByts := encoder.Serialize(byts)
-		// assignOutput(0, sByts, "[]byte", expr, call)
+func op_os_ReadAllText(expr *CXExpression, fp int) {
+	if byts, err := ioutil.ReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
+		WriteObject(GetFinalOffset(fp, expr.Outputs[0]), encoder.Serialize(string(byts)))
 	} else {
 		panic(err)
 	}
@@ -59,6 +60,44 @@ func op_os_Close(expr *CXExpression, fp int) {
 			panic(err)
 		}
 	}
+}
+
+func op_os_Seek(expr *CXExpression, fp int) {
+	file := openFiles[ReadStr(fp, expr.Inputs[0])]
+	file.Seek(ReadI64(fp, expr.Inputs[1]), int(ReadI32(fp, expr.Inputs[2])))
+}
+
+func op_os_ReadF32(expr *CXExpression, fp int) {
+	file := openFiles[ReadStr(fp, expr.Inputs[0])]
+	var value float32
+	err := binary.Read(file, binary.LittleEndian, &value)
+	if err != nil {
+		panic(err)
+	}
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF32(value))
+}
+
+func op_os_ReadUI32(expr *CXExpression, fp int) {
+	file := openFiles[ReadStr(fp, expr.Inputs[0])]
+	var value uint32
+	err := binary.Read(file, binary.LittleEndian, &value)
+	if err != nil {
+		panic(err)
+	}
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI32(value))
+}
+
+func op_os_ReadUI16(expr *CXExpression, fp int) {
+	file := openFiles[ReadStr(fp, expr.Inputs[0])]
+	var value uint16
+	err := binary.Read(file, binary.LittleEndian, &value)
+	if err != nil {
+		panic(err)
+	}
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI16(value))
 }
 
 func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
