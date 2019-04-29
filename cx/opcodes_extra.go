@@ -7,12 +7,17 @@ package cxcore
 const (
 	// gogl
 	OP_GL_INIT = iota + END_OF_BASE_OPS
+	OP_GL_DESTROY
 	OP_GL_STRS
 	OP_GL_FREE
 	OP_GL_NEW_TEXTURE
+	OP_GL_NEW_TEXTURE_CUBE
 	OP_GL_NEW_GIF
 	OP_GL_FREE_GIF
 	OP_GL_GIF_FRAME_TO_TEXTURE
+	OP_GL_APPEND_F32
+	OP_GL_APPEND_UI32
+	OP_GL_APPEND_UI16
 
 	// gl_0_0
 	OP_GL_MATRIX_MODE
@@ -63,6 +68,7 @@ const (
 
 	// gl_1_1
 	OP_GL_DRAW_ARRAYS
+	OP_GL_DRAW_ELEMENTS
 	OP_GL_BIND_TEXTURE
 	OP_GL_DELETE_TEXTURES
 	OP_GL_GEN_TEXTURES
@@ -97,7 +103,24 @@ const (
 	OP_GL_SHADER_SOURCE
 	OP_GL_USE_PROGRAM
 	OP_GL_UNIFORM_1F
+	OP_GL_UNIFORM_2F
+	OP_GL_UNIFORM_3F
+	OP_GL_UNIFORM_4F
 	OP_GL_UNIFORM_1I
+	OP_GL_UNIFORM_2I
+	OP_GL_UNIFORM_3I
+	OP_GL_UNIFORM_4I
+	OP_GL_UNIFORM_1FV
+	OP_GL_UNIFORM_2FV
+	OP_GL_UNIFORM_3FV
+	OP_GL_UNIFORM_4FV
+	OP_GL_UNIFORM_1IV
+	OP_GL_UNIFORM_2IV
+	OP_GL_UNIFORM_3IV
+	OP_GL_UNIFORM_4IV
+	OP_GL_UNIFORM_MATRIX_2FV
+	OP_GL_UNIFORM_MATRIX_3FV
+	OP_GL_UNIFORM_MATRIX_4FV
 	OP_GL_VERTEX_ATTRIB_POINTER
 	OP_GL_VERTEX_ATTRIB_POINTER_I32
 
@@ -112,6 +135,7 @@ const (
 	OP_GL_CHECK_FRAMEBUFFER_STATUS
 	OP_GL_FRAMEBUFFER_TEXTURE_2D
 	OP_GL_FRAMEBUFFER_RENDERBUFFER
+	OP_GL_GENERATE_MIPMAP
 	OP_GL_BIND_VERTEX_ARRAY
 	OP_GL_DELETE_VERTEX_ARRAYS
 	OP_GL_GEN_VERTEX_ARRAYS
@@ -160,6 +184,9 @@ func init() {
 	AddOpCode(OP_GL_INIT, "gl.Init",
 		[]*CXArgument{},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_DESTROY, "gl.Destroy",
+		[]*CXArgument{},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_STRS, "gl.Strs",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
@@ -168,6 +195,9 @@ func init() {
 		[]*CXArgument{})
 	AddOpCode(OP_GL_NEW_TEXTURE, "gl.NewTexture",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_NEW_TEXTURE_CUBE, "gl.NewTextureCube",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_GL_NEW_GIF, "gl.NewGIF",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
@@ -178,6 +208,15 @@ func init() {
 	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_APPEND_F32, "gl.AppendF32",
+		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
+	AddOpCode(OP_GL_APPEND_UI16, "gl.AppendUI16",
+		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
+	AddOpCode(OP_GL_APPEND_UI32, "gl.AppendUI32",
+		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
 
 	// gl_0.0
 	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode",
@@ -258,7 +297,7 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_TEX_IMAGE_2D, "gl.TexImage2D",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, true)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_CLEAR, "gl.Clear",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
@@ -316,6 +355,9 @@ func init() {
 	AddOpCode(OP_GL_DRAW_ARRAYS, "gl.DrawArrays",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_DRAW_ELEMENTS, "gl.DrawElements",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_BIND_TEXTURE, "gl.BindTexture",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -342,10 +384,10 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_GL_BUFFER_DATA, "gl.BufferData",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_BUFFER_SUB_DATA, "gl.BufferSubData",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, false)},
 		[]*CXArgument{})
 
 	//gl_2_0
@@ -406,8 +448,59 @@ func init() {
 	AddOpCode(OP_GL_UNIFORM_1F, "gl.Uniform1f",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_2F, "gl.Uniform2f",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_3F, "gl.Uniform3f",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_4F, "gl.Uniform4f",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_1I, "gl.Uniform1i",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_2I, "gl.Uniform2i",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_3I, "gl.Uniform3i",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_4I, "gl.Uniform4i",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_1FV, "gl.Uniform1fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_2FV, "gl.Uniform2fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_3FV, "gl.Uniform3fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_4FV, "gl.Uniform4fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_1IV, "gl.Uniform1iv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_2IV, "gl.Uniform2iv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_3IV, "gl.Uniform3iv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_4IV, "gl.Uniform4iv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_MATRIX_2FV, "gl.UniformMatrix2fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_MATRIX_3FV, "gl.UniformMatrix3fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_MATRIX_4FV, "gl.UniformMatrix4fv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false)},
@@ -446,6 +539,9 @@ func init() {
 		[]*CXArgument{})
 	AddOpCode(OP_GL_FRAMEBUFFER_RENDERBUFFER, "gl.FramebufferRenderbuffer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_GENERATE_MIPMAP, "gl.GenerateMipmap",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_BIND_VERTEX_ARRAY, "gl.BindVertexArray",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
@@ -571,18 +667,28 @@ func init() {
 			// gogl
 			case OP_GL_INIT:
 				op_gl_Init()
+			case OP_GL_DESTROY:
+				op_gl_Destroy()
 			case OP_GL_STRS:
 				op_gl_Strs(expr, fp)
 			case OP_GL_FREE:
 				op_gl_Free(expr, fp)
 			case OP_GL_NEW_TEXTURE:
 				op_gl_NewTexture(expr, fp)
+			case OP_GL_NEW_TEXTURE_CUBE:
+				op_gl_NewTextureCube(expr, fp)
 			case OP_GL_NEW_GIF:
 				op_gl_NewGIF(expr, fp)
 			case OP_GL_FREE_GIF:
 				op_gl_FreeGIF(expr, fp)
 			case OP_GL_GIF_FRAME_TO_TEXTURE:
 				op_gl_GIFFrameToTexture(expr, fp)
+			case OP_GL_APPEND_F32:
+				opGlAppend(expr, fp)
+			case OP_GL_APPEND_UI16:
+				opGlAppend(expr, fp)
+			case OP_GL_APPEND_UI32:
+				opGlAppend(expr, fp)
 
 			// gl_0_0
 			case OP_GL_MATRIX_MODE:
@@ -677,6 +783,8 @@ func init() {
 			// gl_1_1
 			case OP_GL_DRAW_ARRAYS:
 				op_gl_DrawArrays(expr, fp)
+			case OP_GL_DRAW_ELEMENTS:
+				op_gl_DrawElements(expr, fp)
 			case OP_GL_BIND_TEXTURE:
 				op_gl_BindTexture(expr, fp)
 			case OP_GL_DELETE_TEXTURES:
@@ -739,8 +847,42 @@ func init() {
 				op_gl_UseProgram(expr, fp)
 			case OP_GL_UNIFORM_1F:
 				op_gl_Uniform1f(expr, fp)
+			case OP_GL_UNIFORM_2F:
+				op_gl_Uniform2f(expr, fp)
+			case OP_GL_UNIFORM_3F:
+				op_gl_Uniform3f(expr, fp)
+			case OP_GL_UNIFORM_4F:
+				op_gl_Uniform4f(expr, fp)
 			case OP_GL_UNIFORM_1I:
 				op_gl_Uniform1i(expr, fp)
+			case OP_GL_UNIFORM_2I:
+				op_gl_Uniform2i(expr, fp)
+			case OP_GL_UNIFORM_3I:
+				op_gl_Uniform3i(expr, fp)
+			case OP_GL_UNIFORM_4I:
+				op_gl_Uniform4i(expr, fp)
+			case OP_GL_UNIFORM_1FV:
+				op_gl_Uniform1fv(expr, fp)
+			case OP_GL_UNIFORM_2FV:
+				op_gl_Uniform2fv(expr, fp)
+			case OP_GL_UNIFORM_3FV:
+				op_gl_Uniform3fv(expr, fp)
+			case OP_GL_UNIFORM_4FV:
+				op_gl_Uniform4fv(expr, fp)
+			case OP_GL_UNIFORM_1IV:
+				op_gl_Uniform1iv(expr, fp)
+			case OP_GL_UNIFORM_2IV:
+				op_gl_Uniform2iv(expr, fp)
+			case OP_GL_UNIFORM_3IV:
+				op_gl_Uniform3iv(expr, fp)
+			case OP_GL_UNIFORM_4IV:
+				op_gl_Uniform4iv(expr, fp)
+			case OP_GL_UNIFORM_MATRIX_2FV:
+				op_gl_UniformMatrix2fv(expr, fp)
+			case OP_GL_UNIFORM_MATRIX_3FV:
+				op_gl_UniformMatrix3fv(expr, fp)
+			case OP_GL_UNIFORM_MATRIX_4FV:
+				op_gl_UniformMatrix4fv(expr, fp)
 			case OP_GL_VERTEX_ATTRIB_POINTER:
 				op_gl_VertexAttribPointer(expr, fp)
 			case OP_GL_VERTEX_ATTRIB_POINTER_I32:
@@ -767,6 +909,8 @@ func init() {
 				op_gl_FramebufferTexture2D(expr, fp)
 			case OP_GL_FRAMEBUFFER_RENDERBUFFER:
 				op_gl_FramebufferRenderbuffer(expr, fp)
+			case OP_GL_GENERATE_MIPMAP:
+				op_gl_GenerateMipmap(expr, fp)
 			case OP_GL_BIND_VERTEX_ARRAY:
 				op_gl_BindVertexArray(expr, fp)
 			case OP_GL_DELETE_VERTEX_ARRAYS:

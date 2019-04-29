@@ -23,36 +23,32 @@ var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
 
-// gogl
-func op_gl_Init() {
-	gl.Init()
+func getCString(key string, value string) **uint8 {
+	if cstrings, ok := cSources[key]; ok {
+		return cstrings
+	} else {
+		cstrings, free := gl.Strs(value + string('\000'))
+		freeFns[key] = &free
+		cSources[key] = cstrings
+		return cstrings
+	}
 }
 
-func op_gl_Strs(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	dsSource := ReadStr(fp, inp1)
-	fnName := ReadStr(fp, inp2)
-
-	csources, free := gl.Strs(dsSource + string('\000'))
-
-	freeFns[fnName] = &free
-	cSources[fnName] = csources
+func freeCString(key string) {
+	(*freeFns[key])()
+	delete(freeFns, key)
+	delete(cSources, key)
 }
 
-func op_gl_Free(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	fnName := ReadStr(fp, inp1)
-
-	(*freeFns[fnName])()
-	delete(freeFns, fnName)
-	delete(cSources, fnName)
+func readF32Ptr(fp int, inp *CXArgument) *float32 {
+	return (*float32)(gl.Ptr(ReadData(fp, inp, TYPE_F32)))
 }
 
-func op_gl_NewTexture(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
+func readI32Ptr(fp int, inp *CXArgument) *int32 {
+	return (*int32)(gl.Ptr(ReadData(fp, inp, TYPE_I32)))
+}
 
-	file := ReadStr(fp, inp1)
+func uploadTexture(file string, target uint32) {
 
 	imgFile, err := os.Open(file)
 	if err != nil {
@@ -71,6 +67,39 @@ func op_gl_NewTexture(expr *CXExpression, fp int) {
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
+	gl.TexImage2D(
+		target,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+}
+
+// gogl
+func op_gl_Init() {
+	gl.Init()
+}
+
+func op_gl_Destroy() {
+	for k, _ := range cSources {
+		freeCString(k)
+	}
+}
+
+func op_gl_Strs(expr *CXExpression, fp int) {
+	getCString(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))
+}
+
+func op_gl_Free(expr *CXExpression, fp int) {
+	freeCString(ReadStr(fp, expr.Inputs[0]))
+}
+
+func op_gl_NewTexture(expr *CXExpression, fp int) {
+
 	var texture uint32
 	gl.Enable(gl.TEXTURE_2D)
 	gl.GenTextures(1, &texture)
@@ -80,19 +109,30 @@ func op_gl_NewTexture(expr *CXExpression, fp int) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
-		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		gl.RGBA,
-		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
+	uploadTexture(ReadStr(fp, expr.Inputs[0]), gl.TEXTURE_2D)
 
-	outB1 := encoder.SerializeAtomic(int32(texture))
-	WriteMemory(out1Offset, outB1)
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
+}
+
+func op_gl_NewTextureCube(expr *CXExpression, fp int) {
+
+	var texture uint32
+	gl.Enable(gl.TEXTURE_CUBE_MAP)
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, texture)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+
+	var faces []string = []string{"posx", "negx", "posy", "negy", "posz", "negz"}
+	var pattern string = ReadStr(fp, expr.Inputs[0])
+	var extension string = ReadStr(fp, expr.Inputs[1])
+	for i := 0; i < 6; i++ {
+		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i))
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
 }
 
 func op_gl_NewGIF(expr *CXExpression, fp int) {
@@ -149,6 +189,18 @@ func op_gl_GIFFrameToTexture(expr *CXExpression, fp int) {
 
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(delay))
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(disposal))
+}
+
+func opGlAppend(expr *CXExpression, fp int) {
+	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	inputSliceOffset := GetSliceOffset(fp, inp1)
+	obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
+
+	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, int32(inp1.Size), obj))
+	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
 // gl_0_0
@@ -275,8 +327,10 @@ func op_gl_TexParameteri(expr *CXExpression, fp int) {
 }
 
 func op_gl_TexImage2D(expr *CXExpression, fp int) {
-	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7]
-	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)), nil)
+	gl.TexImage2D(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]),
+		ReadI32(fp, expr.Inputs[3]), ReadI32(fp, expr.Inputs[4]), ReadI32(fp, expr.Inputs[5]),
+		uint32(ReadI32(fp, expr.Inputs[6])), uint32(ReadI32(fp, expr.Inputs[7])),
+		gl.Ptr(ReadData(fp, expr.Inputs[8], -1)))
 }
 
 func op_gl_Clear(expr *CXExpression, fp int) {
@@ -373,6 +427,10 @@ func op_gl_DrawArrays(expr *CXExpression, fp int) {
 	gl.DrawArrays(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3))
 }
 
+func op_gl_DrawElements(expr *CXExpression, fp int) {
+	gl.DrawElements(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), uint32(ReadI32(fp, expr.Inputs[2])), gl.Ptr(ReadData(fp, expr.Inputs[3], TYPE_I32)))
+}
+
 func op_gl_BindTexture(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.BindTexture(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
@@ -420,12 +478,12 @@ func op_gl_GenBuffers(expr *CXExpression, fp int) {
 
 func op_gl_BufferData(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.BufferData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), gl.Ptr(ReadF32Data(fp, inp3)), uint32(ReadI32(fp, inp4)))
+	gl.BufferData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), gl.Ptr(ReadData(fp, inp3, -1)), uint32(ReadI32(fp, inp4)))
 }
 
 func op_gl_BufferSubData(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadF32Data(fp, inp4)))
+	gl.BufferSubData(uint32(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), gl.Ptr(ReadData(fp, inp4, -1)))
 }
 
 // gl_2_0
@@ -450,9 +508,8 @@ func op_gl_AttachShader(expr *CXExpression, fp int) {
 }
 
 func op_gl_BindAttribLocation(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	xstr := cSources[ReadStr(fp, inp3)]
-	gl.BindAttribLocation(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), *xstr)
+	name := ReadStr(fp, expr.Inputs[2])
+	gl.BindAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), uint32(ReadI32(fp, expr.Inputs[1])), *getCString(name, name))
 }
 
 func op_gl_CompileShader(expr *CXExpression, fp int) {
@@ -469,7 +526,7 @@ func op_gl_CompileShader(expr *CXExpression, fp int) {
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetShaderInfoLog(shad, logLength, nil, gl.Str(log))
 
-		fmt.Printf("failed to compile: %v", log)
+		fmt.Printf("failed to compile: %v\n", log)
 	}
 }
 
@@ -506,10 +563,9 @@ func op_gl_EnableVertexAttribArray(expr *CXExpression, fp int) {
 }
 
 func op_gl_GetAttribLocation(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	name := ReadStr(fp, expr.Inputs[1])
+	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_GetShaderiv(expr *CXExpression, fp int) {
@@ -518,21 +574,31 @@ func op_gl_GetShaderiv(expr *CXExpression, fp int) {
 }
 
 func op_gl_GetUniformLocation(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	name := ReadStr(fp, expr.Inputs[1])
+	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_LinkProgram(expr *CXExpression, fp int) {
-	inp1 := expr.Inputs[0]
-	gl.LinkProgram(uint32(ReadI32(fp, inp1)))
+	program := uint32(ReadI32(fp, expr.Inputs[0]))
+	gl.LinkProgram(program)
+
+	var status int32
+	gl.GetProgramiv(program, gl.LINK_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetProgramiv(program, gl.INFO_LOG_LENGTH, &logLength)
+
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
+
+		fmt.Printf("failed to link: %v\n", log)
+	}
 }
 
 func op_gl_ShaderSource(expr *CXExpression, fp int) {
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	xstr := cSources[ReadStr(fp, inp3)]
-	gl.ShaderSource(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), xstr, nil)
+	name := ReadStr(fp, expr.Inputs[2])
+	gl.ShaderSource(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), getCString(name, name), nil)
 }
 
 func op_gl_UseProgram(expr *CXExpression, fp int) {
@@ -541,13 +607,79 @@ func op_gl_UseProgram(expr *CXExpression, fp int) {
 }
 
 func op_gl_Uniform1f(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Uniform1f(ReadI32(fp, inp1), ReadF32(fp, inp2))
+	gl.Uniform1f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]))
+}
+
+func op_gl_Uniform2f(expr *CXExpression, fp int) {
+	gl.Uniform2f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3f(expr *CXExpression, fp int) {
+	gl.Uniform3f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]), ReadF32(fp, expr.Inputs[3]))
+}
+
+func op_gl_Uniform4f(expr *CXExpression, fp int) {
+	gl.Uniform4f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]), ReadF32(fp, expr.Inputs[3]), ReadF32(fp, expr.Inputs[4]))
 }
 
 func op_gl_Uniform1i(expr *CXExpression, fp int) {
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Uniform1i(ReadI32(fp, inp1), ReadI32(fp, inp2))
+	gl.Uniform1i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]))
+}
+
+func op_gl_Uniform2i(expr *CXExpression, fp int) {
+	gl.Uniform2i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3i(expr *CXExpression, fp int) {
+	gl.Uniform3i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]), ReadI32(fp, expr.Inputs[3]))
+}
+
+func op_gl_Uniform4i(expr *CXExpression, fp int) {
+	gl.Uniform4i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]), ReadI32(fp, expr.Inputs[3]), ReadI32(fp, expr.Inputs[4]))
+}
+
+func op_gl_Uniform1fv(expr *CXExpression, fp int) {
+	gl.Uniform1fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform2fv(expr *CXExpression, fp int) {
+	gl.Uniform2fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3fv(expr *CXExpression, fp int) {
+	gl.Uniform3fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform4fv(expr *CXExpression, fp int) {
+	gl.Uniform4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform1iv(expr *CXExpression, fp int) {
+	gl.Uniform1iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform2iv(expr *CXExpression, fp int) {
+	gl.Uniform2iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3iv(expr *CXExpression, fp int) {
+	gl.Uniform3iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform4iv(expr *CXExpression, fp int) {
+	gl.Uniform4iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_UniformMatrix2fv(expr *CXExpression, fp int) {
+	gl.UniformMatrix2fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
+}
+
+func op_gl_UniformMatrix3fv(expr *CXExpression, fp int) {
+	gl.UniformMatrix3fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
+}
+
+func op_gl_UniformMatrix4fv(expr *CXExpression, fp int) {
+	gl.UniformMatrix4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
 }
 
 func op_gl_VertexAttribPointer(expr *CXExpression, fp int) {
@@ -618,6 +750,10 @@ func op_gl_FramebufferTexture2D(expr *CXExpression, fp int) {
 func op_gl_FramebufferRenderbuffer(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 	gl.FramebufferRenderbuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)), uint32(ReadI32(fp, inp4)))
+}
+
+func op_gl_GenerateMipmap(expr *CXExpression, fp int) {
+	gl.GenerateMipmap(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
 func op_gl_BindVertexArray(expr *CXExpression, fp int) {
