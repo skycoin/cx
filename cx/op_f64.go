@@ -3,6 +3,7 @@ package cxcore
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"strconv"
 
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -136,6 +137,20 @@ func opF64Eq(expr *CXExpression, fp int) {
 func opF64Uneq(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) != ReadF64(fp, inp2))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+// The built-in rand function returns a pseudo-random number in [0.0,1.0) from the default Source
+//
+func opF64Rand(expr *CXExpression, fp int) {
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(rand.Float64()))
+}
+
+// The built-in acos function returns the arc cosine of the operand.
+//
+func opF64Acos(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromF64(math.Acos(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
