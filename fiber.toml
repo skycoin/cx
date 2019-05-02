@@ -3,17 +3,17 @@
   blockchain_pubkey_str = "02583e5ebbf85522474e0f17e681e62ca37910db6b8792763af4e97663c31a7984"
   blockchain_seckey_str = ""
   create_block_burn_factor = 2
-  create_block_max_transaction_size = 65535
+  create_block_max_transaction_size = 5000000
   default_connections = []
   genesis_address_str = "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E"
   genesis_coin_volume = 10000000000.0
-  genesis_signature_str = "8c046c69fdc662eefe66ffb7368e77cf9d63af1fb930d015650ea50419554eea46f0e62a2ee3935dee3a01810d5c675d575107f351a25a8ba41680a4444be54300"
+  genesis_signature_str = "fa6e1602d0ad7248fe37cefd0bfd556062d86283ac6aec6deddf67714f1d386d674c4e06f456581f9b83a283c6c6a8a727c5de6c392e044cd697cf6b9135317f00"
   genesis_timestamp = 1426562704
-  max_block_size = 65535
+  max_block_size = 5000000
   peer_list_url = "https://127.0.0.1/peers.txt"
   port = 6000
   unconfirmed_burn_factor = 2
-  unconfirmed_max_transaction_size = 65535
+  unconfirmed_max_transaction_size = 5000000
   web_interface_port = 6420
 
 [params]
