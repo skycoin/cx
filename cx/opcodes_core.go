@@ -257,7 +257,7 @@ const (
 	OP_I64_NEG
 	OP_F32_NEG
 	OP_F64_NEG
-	END_OF_BARE_OPS
+	END_OF_CORE_OPS
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -265,7 +265,7 @@ var (
 	OpNames        = map[int]string{}
 	OpCodes        = map[string]int{}
 	Natives        = map[int]*CXFunction{}
-	execNativeBare func(*CXProgram)
+	execNativeCore func(*CXProgram)
 	execNative     func(*CXProgram)
 )
 
@@ -898,7 +898,7 @@ func init() {
 		[]*CXArgument{})
 
 	// exec
-	execNativeBare = func(prgrm *CXProgram) {
+	execNativeCore = func(prgrm *CXProgram) {
 		defer RuntimeError()
 		call := &prgrm.CallStack[prgrm.CallCounter]
 		expr := call.Operator.Expressions[call.Line]
@@ -1326,5 +1326,5 @@ func init() {
 		}
 	}
 
-	execNative = execNativeBare
+	execNative = execNativeCore
 }

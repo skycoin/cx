@@ -5,7 +5,7 @@ package cxcore
 // op codes
 const (
 	// time
-	OP_TIME_SLEEP = iota + END_OF_BARE_OPS
+	OP_TIME_SLEEP = iota + END_OF_CORE_OPS
 	OP_TIME_UNIX
 	OP_TIME_UNIX_MILLI
 	OP_TIME_UNIX_NANO
@@ -73,8 +73,8 @@ func init() {
 		opCode := expr.Operator.OpCode
 		fp := call.FramePointer
 
-		if opCode < END_OF_BARE_OPS {
-			execNativeBare(prgrm)
+		if opCode < END_OF_CORE_OPS {
+			execNativeCore(prgrm)
 		} else {
 			switch opCode {
 			// time

@@ -1218,7 +1218,6 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 		(*sPrgrm2)[i+int(index2.MemoryOffset)] = byt
 	}
 }
-
 func correctSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	if len((*byts)[off1:off2]) == 0 {
 		return

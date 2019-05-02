@@ -562,8 +562,8 @@ func init() {
 		opCode := expr.Operator.OpCode
 		fp := call.FramePointer
 
-		if opCode < END_OF_BARE_OPS {
-			execNativeBare(prgrm)
+		if opCode < END_OF_CORE_OPS {
+			execNativeCore(prgrm)
 		} else if opCode < END_OF_BASE_OPS {
 			execNativeBase(prgrm)
 		} else {

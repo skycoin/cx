@@ -474,17 +474,28 @@ func main () {
 	var prePkg *CXPackage
 	parseErrors := 0
 	
+	// We need to traverse the elements by hierarchy first add all the
+	// packages and structs at the same time then add globals, as these
+	// can be of a custom type (and it could be imported) the signatures
+	// of functions and methods are added in the cxgo0.y pass
 	if len(sourceCode) > 0 {
-		// we need to traverse the elements by hierarchy
-		// first add all the packages and structs at the same time
-		// then add globals, as these can be of a custom type (and it could be imported)
-		// the signatures of functions and methods are added in the cxgo0.y pass
 		
-		// identifying all the packages and structs first
-
-		reMultiCommentOpen := regexp.MustCompile(`/\*`)
+		reMultiCommentOpen  := regexp.MustCompile(`/\*`)
 		reMultiCommentClose := regexp.MustCompile(`\*/`)
-		
+		reComment := regexp.MustCompile("//")
+
+		rePkg       := regexp.MustCompile("package")
+		rePkgName   := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
+		reStrct     := regexp.MustCompile("type")
+		reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
+
+		reGlbl     := regexp.MustCompile("var")
+		reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
+
+		reBodyOpen  := regexp.MustCompile("{")
+		reBodyClose := regexp.MustCompile("}")
+
+		// 1. Identify all the packages and structs
 		for _, source := range sourceCodeCopy {
 			reader := strings.NewReader(source)
 			scanner := bufio.NewScanner(reader)
@@ -492,28 +503,23 @@ func main () {
 			for scanner.Scan() {
 				line := scanner.Bytes()
 				
-				rePkg := regexp.MustCompile("package")
-				reStrct := regexp.MustCompile("type")
-				
-				reComment := regexp.MustCompile("//")
+				// Identify whether we are in a comment or not.
 				commentLoc := reComment.FindIndex(line)
-				
 				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
 				multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
 				if commentedCode && multiCommentCloseLoc != nil {
 					commentedCode = false
 				}
-
 				if commentedCode {
 					continue
 				}
-
 				if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
 					commentedCode = true
 					continue
 				}
 
+				// At this point we know that we are *not* in a comment
+				// 1a. Identify all the packages
 				if loc := rePkg.FindIndex(line); loc != nil {
 					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
 						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
@@ -521,9 +527,6 @@ func main () {
 						// then it's commented out
 						continue
 					}
-
-					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
 
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
@@ -536,6 +539,8 @@ func main () {
 						}
 					}
 				}
+
+				// 1b. Identify all the structs
 				if loc := reStrct.FindIndex(line); loc != nil {
 					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
 						(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
@@ -543,8 +548,6 @@ func main () {
 						// then it's commented out
 						continue
 					}
-
-					reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
 
 					if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 						if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
@@ -555,32 +558,25 @@ func main () {
 					}
 				}
 			}
-		}
+		} // for range sourceCodeCopy
 
-		// then we add globals. we also identify packages again,
-		// so we know to what package we're going to add the struct declaration to
+		// 2. Identify all global variables
+		//    We also identify packages again, so we know to what
+		//    package we're going to add the struct declaration to.
 		for _, source := range sourceCodeCopy {
-			scanner := bufio.NewScanner(strings.NewReader(source))
 			// inBlock needs to be 0 to guarantee that we're in the global scope
 			var inBlock int
-
 			var commentedCode bool
 
+			scanner := bufio.NewScanner(strings.NewReader(source))
 			for scanner.Scan() {
 				line := scanner.Bytes()
 				
-				rePkg := regexp.MustCompile("package")
-				reGlbl := regexp.MustCompile("var")
-
 				// we need to ignore function bodies
 				// it'll also ignore struct declaration's bodies, but this doesn't matter
-				reBodyOpen := regexp.MustCompile("{")
-				reBodyClose := regexp.MustCompile("}")
-				
-				reComment := regexp.MustCompile("//")
 				commentLoc := reComment.FindIndex(line)
 				
-				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+				multiCommentOpenLoc  := reMultiCommentOpen.FindIndex(line)
 				multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
 
 				if commentedCode && multiCommentCloseLoc != nil {
@@ -605,8 +601,6 @@ func main () {
 						continue
 					}
 					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
-
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
 							// then it hasn't been added
@@ -658,9 +652,6 @@ func main () {
 						continue
 					}
 					
-					rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
-
-
 					if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
 						if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
 							// it should be already present
@@ -680,8 +671,6 @@ func main () {
 						// then it's commented out or inside a block
 						continue
 					}
-
-					reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
 
 					if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
 						if _, err := prePkg.GetGlobal(match[len(match) - 1]); err != nil {
@@ -724,7 +713,7 @@ func main () {
 		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 	}
 
-	// parsing all source code files
+	// The last pass of parsing that generates the actual output.
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
 		LineNo = 1
