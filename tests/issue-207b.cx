@@ -12,7 +12,9 @@ func foo () {
 
 func main () {
 	var foo []i32
-	foo = append(foo, 1)
-	foo = append(foo, 1)
+	// First we call, so we fill heap with trash
 	foo()
+	// Garbage collector should be called and wipe dead objects
+	foo = append(foo, 1)
+	foo = append(foo, 1)
 }
