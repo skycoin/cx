@@ -448,7 +448,8 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.MemoryOffset = int32(0)
 	// we need to call GC to compress memory usage
 	MarkAndCompact()
-	sPrgrm.MemorySize = int32(PROGRAM.HeapStartsAt + PROGRAM.HeapPointer)
+	// sPrgrm.MemorySize = int32(PROGRAM.HeapStartsAt + PROGRAM.HeapPointer)
+	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
 
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int32(prgrm.StackPointer)
@@ -624,7 +625,8 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 	s.Calls = make([]sCall, prgrm.CallCounter)
 	s.Packages = make([]sPackage, len(prgrm.Packages))
 
-	s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+	// s.Memory = prgrm.Memory[:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer]
+	s.Memory = prgrm.Memory
 
 	var numStrcts int
 	var numFns int
@@ -1158,6 +1160,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
 	prgrm.CallStack = make([]CXCall, CALLSTACK_SIZE)
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
+	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
 
 	dsPackages(s, prgrm)
@@ -1233,7 +1236,7 @@ func mustSize(obj interface{}) int {
 	return s
 }
 
-// ExtractBlockchainProgram extracts the transaction program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
+// ExtractBlockchainProgram extracts the blockchain program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
 func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize := mustSerializeSize(sIndex{})
 
@@ -1262,6 +1265,9 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset:index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset)]...)
+
+	// Trying to extract ALL the memory instead of just the data segment
+	// extracted = append(extracted, sPrgrm2[index2.MemoryOffset:]...)
 	// the stack segment should be 0 for prgrm1, but just in case
 	extracted = append(extracted, make([]byte, prgrm1Info.StackSize)...)
 	// We are only interested on extracting the data segment
@@ -1307,6 +1313,8 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.ArgumentsOffset+(index1.IntegersOffset-index1.ArgumentsOffset):index2.IntegersOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
+
+	// extracted = append(extracted, sPrgrm1[index1.MemoryOffset:]...)
 	// the stack segment should be 0 for prgrm1, but just in case
 	extracted = append(extracted, make([]byte, prgrm2Info.StackSize)...)
 	// We are only interested on extracting the data segment
@@ -1393,6 +1401,7 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, sPrgrm2[acc:acc+s]...)
 
 	// Memory
+	// merged = append(merged, sPrgrm1[index1.MemoryOffset:]...)
 	merged = append(merged, make([]byte, prgrm2Info.StackSize)...)
 	merged = append(merged, sPrgrm1[index1.MemoryOffset+prgrm1Info.StackSize:index1.MemoryOffset+prgrm1Info.HeapStartsAt]...)
 	merged = append(merged, make([]byte, INIT_HEAP_SIZE)...)
