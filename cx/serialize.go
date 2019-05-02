@@ -1155,6 +1155,7 @@ func dsIntegers(off int32, size int32, s *sAll) []int {
 	return res
 }
 
+// initDeserialization initializes the CXProgram fields that represent a CX program. This should be refactored, as the names Deserialize and initDeserialization create some naming conflict.
 func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.Memory = s.Memory
 	prgrm.Packages = make([]*CXPackage, len(s.Packages))
@@ -1166,7 +1167,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	dsPackages(s, prgrm)
 }
 
-// Deserialize ...
+// Deserialize deserializes a serialized CX program back to its golang struct representation.
 func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
 	idxSize := mustSerializeSize(sIndex{})
@@ -1218,7 +1219,9 @@ func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
 		(*sPrgrm2)[i+int(index2.MemoryOffset)] = byt
 	}
 }
-func correctSerializedSize(byts *[]byte, off1, off2 int32, n int) {
+
+// updateSerializedSize updates the header of each of the serialized parts of a CX program. For example, if in a full CX program there were 5 packages and after extracting the transaction or blockchain parts of it, there are now 3 packages, updateSerializedSize updates this size in the header of the serialization.
+func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	if len((*byts)[off1:off2]) == 0 {
 		return
 	}
@@ -1227,6 +1230,7 @@ func correctSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	}
 }
 
+// mustSize is a wrapper for encoder.Size which will always panic if there's an error when calling it.
 func mustSize(obj interface{}) int {
 	s, err := encoder.Size(obj)
 	if err != nil {
@@ -1273,18 +1277,18 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.MemoryOffset+prgrm2Info.StackSize:index2.MemoryOffset+prgrm2Info.StackSize+(prgrm1Info.HeapStartsAt-prgrm1Info.StackSize)]...)
 
 	// correcting sizes
-	correctSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
-	correctSerializedSize(&extracted, index1.PackagesOffset, index1.StructsOffset, mustSize(sPackage{}))
-	correctSerializedSize(&extracted, index1.StructsOffset, index1.FunctionsOffset, mustSize(sStruct{}))
-	correctSerializedSize(&extracted, index1.FunctionsOffset, index1.ExpressionsOffset, mustSize(sFunction{}))
-	correctSerializedSize(&extracted, index1.ExpressionsOffset, index1.ArgumentsOffset, mustSize(sExpression{}))
-	correctSerializedSize(&extracted, index1.ArgumentsOffset, index1.IntegersOffset, mustSize(sArgument{}))
-	correctSerializedSize(&extracted, index1.IntegersOffset, index1.NamesOffset, mustSize(int32(0)))
+	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
+	updateSerializedSize(&extracted, index1.PackagesOffset, index1.StructsOffset, mustSize(sPackage{}))
+	updateSerializedSize(&extracted, index1.StructsOffset, index1.FunctionsOffset, mustSize(sStruct{}))
+	updateSerializedSize(&extracted, index1.FunctionsOffset, index1.ExpressionsOffset, mustSize(sFunction{}))
+	updateSerializedSize(&extracted, index1.ExpressionsOffset, index1.ArgumentsOffset, mustSize(sExpression{}))
+	updateSerializedSize(&extracted, index1.ArgumentsOffset, index1.IntegersOffset, mustSize(sArgument{}))
+	updateSerializedSize(&extracted, index1.IntegersOffset, index1.NamesOffset, mustSize(int32(0)))
 
 	return extracted
 }
 
-// ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program
+// ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program.
 func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize := mustSerializeSize(sIndex{})
 
@@ -1322,9 +1326,7 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	return extracted
 }
 
-// func mergeNextChunk(merged *[]byte, sPrgrm1 []byte, sPrgrm2 []byte, idx1From, idx2)
-
-// MergeTransactionAndBlockchain merges
+// MergeTransactionAndBlockchain merges the serialized CX programs that represent a transaction and the program state stored on the blockchain.
 func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	idxSize := mustSerializeSize(sIndex{})
 
@@ -1406,13 +1408,13 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, make([]byte, INIT_HEAP_SIZE)...)
 
 	// correcting sizes
-	correctSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, mustSize(sCall{}))
-	correctSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, mustSize(sPackage{}))
-	correctSerializedSize(&merged, index2.StructsOffset, index2.FunctionsOffset, mustSize(sStruct{}))
-	correctSerializedSize(&merged, index2.FunctionsOffset, index2.ExpressionsOffset, mustSize(sFunction{}))
-	correctSerializedSize(&merged, index2.ExpressionsOffset, index2.ArgumentsOffset, mustSize(sExpression{}))
-	correctSerializedSize(&merged, index2.ArgumentsOffset, index2.IntegersOffset, mustSize(sArgument{}))
-	correctSerializedSize(&merged, index2.IntegersOffset, index2.NamesOffset, mustSize(int32(0)))
+	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, mustSize(sCall{}))
+	updateSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, mustSize(sPackage{}))
+	updateSerializedSize(&merged, index2.StructsOffset, index2.FunctionsOffset, mustSize(sStruct{}))
+	updateSerializedSize(&merged, index2.FunctionsOffset, index2.ExpressionsOffset, mustSize(sFunction{}))
+	updateSerializedSize(&merged, index2.ExpressionsOffset, index2.ArgumentsOffset, mustSize(sExpression{}))
+	updateSerializedSize(&merged, index2.ArgumentsOffset, index2.IntegersOffset, mustSize(sArgument{}))
+	updateSerializedSize(&merged, index2.IntegersOffset, index2.NamesOffset, mustSize(int32(0)))
 
 	return merged
 }
