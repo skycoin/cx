@@ -157,7 +157,6 @@ const (
 	OP_I64_MIN
 
 	OP_F32_IS_NAN
-
 	OP_F32_PRINT
 	OP_F32_ADD
 	OP_F32_SUB
@@ -174,6 +173,7 @@ const (
 	OP_F32_RAND
 	OP_F32_ACOS
 	OP_F32_COS
+	OP_F32_ASIN
 	OP_F32_SIN
 	OP_F32_SQRT
 	OP_F32_LOG
@@ -182,6 +182,7 @@ const (
 	OP_F32_MAX
 	OP_F32_MIN
 
+	OP_F64_IS_NAN
 	OP_F64_PRINT
 	OP_F64_ADD
 	OP_F64_SUB
@@ -198,6 +199,7 @@ const (
 	OP_F64_RAND
 	OP_F64_ACOS
 	OP_F64_COS
+	OP_F64_ASIN
 	OP_F64_SIN
 
 	OP_F64_SQRT
@@ -713,6 +715,9 @@ func init() {
 	AddOpCode(OP_F32_COS, "f32.cos",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_F32_ASIN, "f32.asin",
+		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
 	AddOpCode(OP_F32_SIN, "f32.sin",
 		[]*CXArgument{newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
@@ -735,6 +740,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_F32, false)})
 
+	AddOpCode(OP_F64_IS_NAN, "f64.isnan",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_F64_BYTE, "f64.byte",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_BYTE, false)})
@@ -803,6 +811,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 	AddOpCode(OP_F64_COS, "f64.cos",
+		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false)})
+	AddOpCode(OP_F64_ASIN, "f64.asin",
 		[]*CXArgument{newOpPar(TYPE_F64, false)},
 		[]*CXArgument{newOpPar(TYPE_F64, false)})
 	AddOpCode(OP_F64_SIN, "f64.sin",
@@ -1189,6 +1200,8 @@ func init() {
 			opF32Acos(expr, fp)
 		case OP_F32_COS:
 			opF32Cos(expr, fp)
+		case OP_F32_ASIN:
+			opF32Asin(expr, fp)
 		case OP_F32_SIN:
 			opF32Sin(expr, fp)
 		case OP_F32_SQRT:
@@ -1204,6 +1217,8 @@ func init() {
 		case OP_F32_MIN:
 			opF32Min(expr, fp)
 
+		case OP_F64_IS_NAN:
+			opF64Isnan(expr, fp)
 		case OP_F64_BYTE:
 			opF64F64(expr, fp)
 		case OP_F64_STR:
@@ -1249,6 +1264,8 @@ func init() {
 			opF64Acos(expr, fp)
 		case OP_F64_COS:
 			opF64Cos(expr, fp)
+		case OP_F64_ASIN:
+			opF64Asin(expr, fp)
 		case OP_F64_SIN:
 			opF64Sin(expr, fp)
 		case OP_F64_SQRT:

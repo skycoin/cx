@@ -29,6 +29,12 @@ func opF64F64(expr *CXExpression, fp int) {
 	}
 }
 
+// The built-in isnan function returns true if operand is nan value.
+func opF64Isnan(expr *CXExpression, fp int) {
+	outB0 := FromBool(math.IsNaN(ReadF64(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
 // The print built-in function formats its arguments and prints them.
 //
 func opF64Print(expr *CXExpression, fp int) {
@@ -159,6 +165,14 @@ func opF64Acos(expr *CXExpression, fp int) {
 func opF64Cos(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Cos(ReadF64(fp, inp1)))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+// The built-in asin function returns the arc sine of the operand.
+//
+func opF64Asin(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromF64(math.Asin(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 

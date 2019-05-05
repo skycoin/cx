@@ -29,10 +29,11 @@ func opF32F32(expr *CXExpression, fp int) {
 	}
 }
 
+// The built-in isnan function returns true if operand is nan value.
+//
 func opF32Isnan(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromBool(math.IsNaN(float64(ReadF32(fp, inp1))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB0 := FromBool(math.IsNaN(float64(ReadF32(fp, expr.Inputs[0]))))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opF32Print(expr *CXExpression, fp int) {
@@ -163,6 +164,14 @@ func opF32Acos(expr *CXExpression, fp int) {
 func opF32Cos(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF32(float32(math.Cos(float64(ReadF32(fp, inp1)))))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+// The built-in asin function returns the arc sine of the operand.
+//
+func opF32Asin(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromF32(float32(math.Asin(float64(ReadF32(fp, inp1)))))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
