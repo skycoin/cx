@@ -2,7 +2,7 @@
 
 ### v0.6.3 (NOT YET RELEASED)
 * Additions
-  * ...
+  * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
@@ -15,7 +15,7 @@
   * Removed the current version of the IDE. We'll move to a textmate-based
     solution in the future.
 * Miscellaneous
-  * ...
+  * Vendored all external packages
 
 ### v0.6.2
 * Additions

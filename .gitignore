@@ -1,7 +1,6 @@
 _
 _ast.go
 lexer
-parser
 generator
 .DS_Store
 bin*

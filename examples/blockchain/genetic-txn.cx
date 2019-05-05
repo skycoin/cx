@@ -1,0 +1,38 @@
+package main
+import "bc"
+
+// var counter i32
+
+func main() {
+	// i32.print(bc.score(bc.population[2]))
+	// i32.print(bc.score(bc.population[1]))
+	// i32.print(bc.score(bc.population[2]))
+	bc.reproduce(10)
+	// bc.initPopulation()
+	// i32.print(len(bc.objective))
+	// i32.print(len(bc.population))
+	// bc.totalIterations = 10
+	// counter++
+	// i32.print(counter)
+	// bc.incIterations()
+	// i32.print(1)
+	// bc.reproduce(3131)
+	// bc.reproduce(10)
+	
+	
+// 	var coco []str = []str{
+// "|", "\\", "-", "-", "-", "/", "|", "\n",
+// "|", " ", "o", "_", "o", " ", "|", "\n",
+// " ", "\\", "_", "^", "_", "/", " ", "\n"}
+	
+	// str.print(bc.objective[0])
+	// str.print(bc.joinChars(bc.objective))
+	// bc.initPopulation()
+
+	// var result str
+	// for c := 0; c < 11; c++ {
+	// 	result = str.concat(result, coco[c])
+	// 	// str.print(bc.objective[c])
+	// }
+	// str.print(result)
+}
