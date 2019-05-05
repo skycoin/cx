@@ -4,7 +4,7 @@
 
 PWD := $(shell pwd)
 # PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev
+PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev
 # PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
 UNAME_S := $(shell uname -s)
 INSTALL_DEPS := install-deps-$(UNAME_S)
@@ -70,6 +70,8 @@ install-deps: configure $(INSTALL_DEPS)
 	go get github.com/go-gl/gl/v2.1/gl
 	go get github.com/go-gl/glfw/v3.2/glfw
 	go get github.com/go-gl/gltext
+	go get golang.org/x/mobile/exp/audio/al
+	go get github.com/mjibson/go-dsp/wav
 	go get github.com/blynn/nex
 	go get github.com/cznic/goyacc
 #	go get github.com/skycoin/cx/...
