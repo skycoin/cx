@@ -235,7 +235,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 			AffordanceStructs(imp, currentFile, lineNo)
 		}
 	} else {
-		println(CompilationError(currentFile, lineNo), err.Error())
+		println(CompilationError(currentFile, lineNo), "")
 	}
 }
 

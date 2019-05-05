@@ -55,11 +55,12 @@ type CXCall struct {
 // MakeProgram ...
 func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
-		ElementID: MakeElementID(),
-		Packages:  make([]*CXPackage, 0),
-		CallStack: make([]CXCall, CALLSTACK_SIZE),
-		Memory:    make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
-		StackSize: STACK_SIZE,
+		ElementID:   MakeElementID(),
+		Packages:    make([]*CXPackage, 0),
+		CallStack:   make([]CXCall, CALLSTACK_SIZE),
+		Memory:      make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
+		StackSize:   STACK_SIZE,
+		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes
 	}
 
 	return newPrgrm
@@ -274,7 +275,6 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 			} else {
 				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
 			}
-
 			// This means that we're removing the package set to be the CurrentPackage.
 			// If it is removed from the program's list of packages, cxt.CurrentPackage
 			// would be pointing to a package meant to be collected by the GC.
