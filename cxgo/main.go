@@ -16,7 +16,7 @@ import (
 	// "encoding/hex"
 
 	"runtime"
-
+	"runtime/pprof"
 	"regexp"
 	
 	"flag"
@@ -300,6 +300,22 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 	}
 }
 
+var profile bool
+var profiles map[string]int64 = map[string]int64{}
+
+func StartProfile(name string) {
+	if profile {
+		profiles[name] = time.Now().UnixNano()
+	}
+}
+
+func StopProfile(name string) {
+	if profile {
+		t := time.Now().UnixNano()
+		deltaTime := t - profiles[name]
+		fmt.Printf("%s : %dms\n", name, deltaTime/(int64(time.Millisecond)/int64(time.Nanosecond)))
+	}
+}
 func main () {
 	checkCXPathSet()
 
@@ -311,6 +327,21 @@ func main () {
 
 	registerFlags(&options)
 	flag.Parse()
+
+	if options.profile {
+		profile = options.profile
+		f, err := os.Create(os.Args[0] + ".pprof")
+		if err != nil {
+			fmt.Println("Failed to create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			fmt.Println("Failed to start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+
+	StartProfile("Compilation")
+	StartProfile("Initialisation")
 
 	if options.publisherMode || options.peerMode {
 		var cmd *exec.Cmd
@@ -473,7 +504,9 @@ func main () {
 
 	var prePkg *CXPackage
 	parseErrors := 0
-	
+
+	StopProfile("Initialisation")
+
 	// We need to traverse the elements by hierarchy first add all the
 	// packages and structs at the same time then add globals, as these
 	// can be of a custom type (and it could be imported) the signatures
@@ -495,8 +528,10 @@ func main () {
 		reBodyOpen  := regexp.MustCompile("{")
 		reBodyClose := regexp.MustCompile("}")
 
+		StartProfile("1. packages/structs")
 		// 1. Identify all the packages and structs
-		for _, source := range sourceCodeCopy {
+		for i, source := range sourceCodeCopy {
+			StartProfile(fileNames[i])
 			reader := strings.NewReader(source)
 			scanner := bufio.NewScanner(reader)
 			var commentedCode bool
@@ -558,12 +593,16 @@ func main () {
 					}
 				}
 			}
+			StopProfile(fileNames[i])
 		} // for range sourceCodeCopy
+		StopProfile("1. packages/structs")
 
+		StartProfile("2. globals")
 		// 2. Identify all global variables
 		//    We also identify packages again, so we know to what
 		//    package we're going to add the struct declaration to.
-		for _, source := range sourceCodeCopy {
+		for i, source := range sourceCodeCopy {
+			StartProfile(fileNames[i])
 			// inBlock needs to be 0 to guarantee that we're in the global scope
 			var inBlock int
 			var commentedCode bool
@@ -683,16 +722,22 @@ func main () {
 					}
 				}
 			}
+			StopProfile(fileNames[i])
 		}
+		StopProfile("2. globals")
 
+		StartProfile("3. cxgo0")
 		// cxgo0.Parse(allSC)
 		for i, source := range sourceCodeCopy {
+			StartProfile(fileNames[i])
 			source = source + "\n"
 			if len(fileNames) > 0 {
 				cxgo0.CurrentFileName = fileNames[i]
 			}
 			parseErrors += cxgo0.Parse(source)
+			StopProfile(fileNames[i])
 		}
+		StopProfile("3. cxgo0")
 	}
 
 	PRGRM = cxgo0.PRGRM0
@@ -713,6 +758,7 @@ func main () {
 		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 	}
 
+	StartProfile("4. parse")
 	// The last pass of parsing that generates the actual output.
 	for i, source := range sourceCodeCopy {
 		source = source + "\n"
@@ -721,8 +767,11 @@ func main () {
 		if len(fileNames) > 0 {
 			CurrentFile = fileNames[i]
 		}
+		StartProfile(CurrentFile)
 		parseErrors += Parse(NewLexer(b))
+		StopProfile(CurrentFile)
 	}
+	StopProfile("4. parse")
 
 	if FoundCompileErrors || parseErrors > 0 {
 		os.Exit(CX_COMPILATION_ERROR)
@@ -751,6 +800,8 @@ func main () {
 	if FoundCompileErrors {
 		os.Exit(CX_COMPILATION_ERROR)
 	}
+
+	StopProfile("Compilation")
 
 	if options.replMode || len(sourceCode) == 0 {
 		repl()

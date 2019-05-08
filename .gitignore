@@ -34,6 +34,7 @@ o
 o.go
 cpu.prof
 mem.prof
+*.pprof
 fibonacci.cx
 fib.py
 pointers.cx

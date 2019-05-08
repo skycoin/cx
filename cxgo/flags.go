@@ -22,6 +22,7 @@ type cxCmdFlags struct {
 	initialHeap         string
 	maxHeap             string
 	stackSize           string
+	profile             bool
 	blockchainMode      bool
 	publisherMode       bool
 	peerMode            bool
@@ -49,6 +50,7 @@ func defaultCmdFlags() cxCmdFlags {
 		webPersistentMode:   false,
 		printHelp:           false,
 		printVersion:        false,
+		profile:             false,
 		blockchainMode:      false,
 		transactionMode:     false,
 		broadcastMode:       false,
@@ -92,8 +94,8 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
-
-	
+	flag.BoolVar(&options.profile, "profile", options.profile, "Profile compilation and runtime")
+	flag.BoolVar(&options.profile, "p", options.profile, "alias for -profile")
 
 	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
 	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
@@ -129,7 +131,7 @@ CX options:
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
 -ide, --ide						            Start CX as a web service, and Leaps service start also.
-
+-p, --profile                     Start CX in profiling mode"
 Notes:
 * Options --compile and --repl are mutually exclusive.
 * Option --web makes every other flag to be ignored.
