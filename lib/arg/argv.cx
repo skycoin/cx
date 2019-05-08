@@ -1,0 +1,108 @@
+package arg
+
+import "cx"
+import "os"
+
+// Match ...
+func Match(arg str, pattern str, match *bool) (out bool) {
+	out = false
+	var argLen i32 = len(arg)
+	var patternLen i32 = len(pattern)
+	if (argLen >= patternLen) {
+		name := str.substr(arg, 0, patternLen)
+		if (name == pattern) {
+			if *match {
+				printf("duplicate arg %s\n", arg)
+				os.Exit(cx.PANIC)
+			}
+			*match = true
+			out = true
+		}
+	}
+}
+
+// GetValueStr ...
+func GetValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
+	if Match(arg, pattern, match) {
+		var argLen i32 = len(arg)
+		var patternLen i32 = len(pattern)
+		if argLen > patternLen {
+			*value = str.substr(arg, patternLen, argLen)
+			out = true
+		}
+	}
+}
+
+// GetValueStrSlice ...
+func GetValueStrSlice(arg str, pattern str, match *bool) (out []str) {
+	var filterList str = ""
+	var filterMatch bool = false
+	var slice []str
+	if GetValueStr(arg, pattern, &filterList, &filterMatch) {
+		var index i32 = 0
+		for index >= 0 {
+			index = str.index(filterList, ",")
+			var filter str = filterList
+			if index >= 0 {
+				filter = str.substr(filterList, 0, index)
+				filterList = str.substr(filterList, index + 1, len(filterList))
+			} else {
+				filterList = ""
+			}
+			filter = str.trimspace(filter)
+			slice = append(slice, filter)
+		}
+	}
+	out = slice
+}
+
+// GetValueI32 ...
+func GetValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
+	var strValue str = ""
+	out = GetValueStr(arg, pattern, &strValue, match)
+	if out {
+		var i32Value i32 = str.i32(strValue)
+		*value = i32Value
+	}
+}
+
+// GetFlags ...
+func GetFlags(arg str, pattern str, flags *i32, match *bool, names []str, values[]i32) (success bool) {
+	panic(len(names), len(values), "invalid flags")
+	success = false
+	var list str = ""
+	var slice []str = GetValueStrSlice(arg, pattern, match)
+	for i := 0; i < len(slice); i++ {
+		var value i32 = 0
+		for k := 0; k < len(names); k++ {
+			if slice[i] == names[k] {
+				value = values[k]
+			}
+		}
+
+		if value != 0 {
+			*flags = *flags | value
+			success = true
+		} else {
+			printf("invalid option value %s\n", arg)
+			os.Exit(cx.PANIC)
+		}
+	}
+}
+
+// PrintFlags ...
+func PrintFlags(name str, flags i32, names []str, values[]i32) {
+	panic(len(names), len(values), "invalid flags")
+	printf("%s : %d : ", name, flags)
+	var count i32 = len(values)
+	for i := 0; i < count && flags > 0; i++ {
+		var flag i32 = values[i]
+		if (flags & flag) == flag {
+			printf("%s, ", names[i])
+			flags = flags & (-1 ^ flag)
+		}
+	}
+	printf("\n")
+	panic(flags, 0, "invalid flags")
+}
+
