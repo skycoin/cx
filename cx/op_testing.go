@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	"fmt"
-	"os"
 	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -70,8 +69,26 @@ func opTest(expr *CXExpression, fp int) {
 
 func opPanic(expr *CXExpression, fp int) {
 	if !assert(expr, fp) {
-		os.Exit(CX_ASSERT)
+		panic(CX_ASSERT)
 	}
+}
+
+// panicIf/panicIfNot implementation
+func panicIf(expr *CXExpression, fp int, condition bool) {
+	if ReadBool(fp, expr.Inputs[0]) == condition {
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
+		panic(CX_ASSERT)
+	}
+}
+
+// panic with CX_ASSERT exit code if condition is true
+func opPanicIf(expr *CXExpression, fp int) {
+	panicIf(expr, fp, true)
+}
+
+// panic with CX_ASSERT exit code if conditions is false
+func opPanicIfNot(expr *CXExpression, fp int) {
+	panicIf(expr, fp, false)
 }
 
 func opStrError(expr *CXExpression, fp int) {
