@@ -4,6 +4,7 @@
 * Additions
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
+  * Add math bindings for f32 and f64 types : isnan, rand, acos, asin.
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
