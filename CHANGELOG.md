@@ -4,6 +4,7 @@
 * Additions
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
 * Libraries
+  * Add glfw bindings : Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
