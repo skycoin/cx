@@ -2,6 +2,9 @@ PACKAG
  IDENT main
 SCOLON 
 IMPORT 
+STRLIT arg
+SCOLON 
+IMPORT 
 STRLIT os
 SCOLON 
 IMPORT 
@@ -9,710 +12,6 @@ STRLIT cx
 SCOLON 
 IMPORT 
 STRLIT time
-SCOLON 
-  FUNC 
- IDENT matchArg
-LPAREN 
- IDENT arg
-   STR 
- COMMA 
- IDENT pattern
-   STR 
- COMMA 
- IDENT match
- MULOP *
-  BOOL bool
-RPAREN 
-LPAREN 
- IDENT out
-  BOOL bool
-RPAREN 
-LBRACE 
- IDENT out
-  ASGN =
-BOOLLT false
-SCOLON 
-   VAR 
- IDENT argLen
-   I32 i32
-  ASGN =
- IDENT len
-LPAREN 
- IDENT arg
-RPAREN 
-SCOLON 
-   VAR 
- IDENT patternLen
-   I32 i32
-  ASGN =
- IDENT len
-LPAREN 
- IDENT pattern
-RPAREN 
-SCOLON 
-    IF 
-LPAREN 
- IDENT argLen
-GTEQOP >=
- IDENT patternLen
-RPAREN 
-LBRACE 
- IDENT name
-CASSGN :=
-   STR 
-PERIOD 
- IDENT substr
-LPAREN 
- IDENT arg
- COMMA 
-INTLIT 0
- COMMA 
- IDENT patternLen
-RPAREN 
-SCOLON 
-    IF 
-LPAREN 
- IDENT name
-  EQOP 
- IDENT pattern
-RPAREN 
-LBRACE 
-    IF 
- MULOP *
- IDENT match
-LBRACE 
- IDENT printf
-LPAREN 
-STRLIT duplicate arg %s
-
- COMMA 
- IDENT arg
-RPAREN 
-SCOLON 
- IDENT os
-PERIOD 
- IDENT Exit
-LPAREN 
- IDENT cx
-PERIOD 
- IDENT PANIC
-RPAREN 
-SCOLON 
-RBRACE 
-SCOLON 
- MULOP *
- IDENT match
-  ASGN =
-BOOLLT true
-SCOLON 
- IDENT out
-  ASGN =
-BOOLLT true
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
- IDENT getArgValueStr
-LPAREN 
- IDENT arg
-   STR 
- COMMA 
- IDENT pattern
-   STR 
- COMMA 
- IDENT value
- MULOP *
-   STR 
- COMMA 
- IDENT match
- MULOP *
-  BOOL bool
-RPAREN 
-LPAREN 
- IDENT out
-  BOOL bool
-RPAREN 
-LBRACE 
-    IF 
- IDENT matchArg
-LPAREN 
- IDENT arg
- COMMA 
- IDENT pattern
- COMMA 
- IDENT match
-RPAREN 
-LBRACE 
-   VAR 
- IDENT argLen
-   I32 i32
-  ASGN =
- IDENT len
-LPAREN 
- IDENT arg
-RPAREN 
-SCOLON 
-   VAR 
- IDENT patternLen
-   I32 i32
-  ASGN =
- IDENT len
-LPAREN 
- IDENT pattern
-RPAREN 
-SCOLON 
-    IF 
- IDENT argLen
-  GTOP >
- IDENT patternLen
-LBRACE 
- MULOP *
- IDENT value
-  ASGN =
-   STR 
-PERIOD 
- IDENT substr
-LPAREN 
- IDENT arg
- COMMA 
- IDENT patternLen
- COMMA 
- IDENT argLen
-RPAREN 
-SCOLON 
- IDENT out
-  ASGN =
-BOOLLT true
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
- IDENT getArgValueStrSlice
-LPAREN 
- IDENT arg
-   STR 
- COMMA 
- IDENT pattern
-   STR 
- COMMA 
- IDENT match
- MULOP *
-  BOOL bool
-RPAREN 
-LPAREN 
- IDENT out
-LBRACK 
-RBRACK 
-   STR 
-RPAREN 
-LBRACE 
-   VAR 
- IDENT filterList
-   STR 
-  ASGN =
-STRLIT 
-SCOLON 
-   VAR 
- IDENT filterMatch
-  BOOL bool
-  ASGN =
-BOOLLT false
-SCOLON 
-   VAR 
- IDENT slice
-LBRACK 
-RBRACK 
-   STR 
-SCOLON 
-    IF 
- IDENT getArgValueStr
-LPAREN 
- IDENT arg
- COMMA 
- IDENT pattern
- COMMA 
- REFOP &
- IDENT filterList
- COMMA 
- REFOP &
- IDENT filterMatch
-RPAREN 
-LBRACE 
-   VAR 
- IDENT index
-   I32 i32
-  ASGN =
-INTLIT 0
-SCOLON 
-   FOR 
- IDENT index
-GTEQOP >=
-INTLIT 0
-LBRACE 
- IDENT index
-  ASGN =
-   STR 
-PERIOD 
- IDENT index
-LPAREN 
- IDENT filterList
- COMMA 
-STRLIT ,
-RPAREN 
-SCOLON 
-   VAR 
- IDENT filter
-   STR 
-  ASGN =
- IDENT filterList
-SCOLON 
-    IF 
- IDENT index
-GTEQOP >=
-INTLIT 0
-LBRACE 
- IDENT filter
-  ASGN =
-   STR 
-PERIOD 
- IDENT substr
-LPAREN 
- IDENT filterList
- COMMA 
-INTLIT 0
- COMMA 
- IDENT index
-RPAREN 
-SCOLON 
- IDENT filterList
-  ASGN =
-   STR 
-PERIOD 
- IDENT substr
-LPAREN 
- IDENT filterList
- COMMA 
- IDENT index
- ADDOP +
-INTLIT 1
- COMMA 
- IDENT len
-LPAREN 
- IDENT filterList
-RPAREN 
-RPAREN 
-SCOLON 
-RBRACE 
-  ELSE 
-LBRACE 
- IDENT filterList
-  ASGN =
-STRLIT 
-SCOLON 
-RBRACE 
-SCOLON 
- IDENT filter
-  ASGN =
-   STR 
-PERIOD 
- IDENT trimspace
-LPAREN 
- IDENT filter
-RPAREN 
-SCOLON 
- IDENT slice
-  ASGN =
- IDENT append
-LPAREN 
- IDENT slice
- COMMA 
- IDENT filter
-RPAREN 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
- IDENT out
-  ASGN =
- IDENT slice
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
- IDENT getArgValueI32
-LPAREN 
- IDENT arg
-   STR 
- COMMA 
- IDENT pattern
-   STR 
- COMMA 
- IDENT value
- MULOP *
-   I32 i32
- COMMA 
- IDENT match
- MULOP *
-  BOOL bool
-RPAREN 
-LPAREN 
- IDENT out
-  BOOL bool
-RPAREN 
-LBRACE 
-   VAR 
- IDENT strValue
-   STR 
-  ASGN =
-STRLIT 
-SCOLON 
- IDENT out
-  ASGN =
- IDENT getArgValueStr
-LPAREN 
- IDENT arg
- COMMA 
- IDENT pattern
- COMMA 
- REFOP &
- IDENT strValue
- COMMA 
- IDENT match
-RPAREN 
-SCOLON 
-    IF 
- IDENT out
-LBRACE 
-   VAR 
- IDENT i32Value
-   I32 i32
-  ASGN =
-   STR 
-PERIOD 
-   I32 i32
-LPAREN 
- IDENT strValue
-RPAREN 
-SCOLON 
- MULOP *
- IDENT value
-  ASGN =
- IDENT i32Value
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
- IDENT getFlags
-LPAREN 
- IDENT arg
-   STR 
- COMMA 
- IDENT pattern
-   STR 
- COMMA 
- IDENT flags
- MULOP *
-   I32 i32
- COMMA 
- IDENT match
- MULOP *
-  BOOL bool
- COMMA 
- IDENT names
-LBRACK 
-RBRACK 
-   STR 
- COMMA 
- IDENT values
-LBRACK 
-RBRACK 
-   I32 i32
-RPAREN 
-LPAREN 
- IDENT success
-  BOOL bool
-RPAREN 
-LBRACE 
- IDENT panic
-LPAREN 
- IDENT len
-LPAREN 
- IDENT names
-RPAREN 
- COMMA 
- IDENT len
-LPAREN 
- IDENT values
-RPAREN 
- COMMA 
-STRLIT invalid flags
-RPAREN 
-SCOLON 
- IDENT success
-  ASGN =
-BOOLLT false
-SCOLON 
-   VAR 
- IDENT list
-   STR 
-  ASGN =
-STRLIT 
-SCOLON 
-   VAR 
- IDENT slice
-LBRACK 
-RBRACK 
-   STR 
-  ASGN =
- IDENT getArgValueStrSlice
-LPAREN 
- IDENT arg
- COMMA 
- IDENT pattern
- COMMA 
- IDENT match
-RPAREN 
-SCOLON 
-   FOR 
- IDENT i
-CASSGN :=
-INTLIT 0
-SCOLON 
- IDENT i
-  LTOP <
- IDENT len
-LPAREN 
- IDENT slice
-RPAREN 
-SCOLON 
- IDENT i
- INCOP 
-LBRACE 
-   VAR 
- IDENT value
-   I32 i32
-  ASGN =
-INTLIT 0
-SCOLON 
-   FOR 
- IDENT k
-CASSGN :=
-INTLIT 0
-SCOLON 
- IDENT k
-  LTOP <
- IDENT len
-LPAREN 
- IDENT names
-RPAREN 
-SCOLON 
- IDENT k
- INCOP 
-LBRACE 
-    IF 
- IDENT slice
-LBRACK 
- IDENT i
-RBRACK 
-  EQOP 
- IDENT names
-LBRACK 
- IDENT k
-RBRACK 
-LBRACE 
- IDENT value
-  ASGN =
- IDENT values
-LBRACK 
- IDENT k
-RBRACK 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-    IF 
- IDENT value
-  NEOP 
-INTLIT 0
-LBRACE 
- MULOP *
- IDENT flags
-  ASGN =
- MULOP *
- IDENT flags
- BOROP 
- IDENT value
-SCOLON 
- IDENT success
-  ASGN =
-BOOLLT true
-SCOLON 
-RBRACE 
-  ELSE 
-LBRACE 
- IDENT printf
-LPAREN 
-STRLIT invalid option value %s
-
- COMMA 
- IDENT arg
-RPAREN 
-SCOLON 
- IDENT os
-PERIOD 
- IDENT Exit
-LPAREN 
- IDENT cx
-PERIOD 
- IDENT PANIC
-RPAREN 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
-  FUNC 
- IDENT printFlags
-LPAREN 
- IDENT name
-   STR 
- COMMA 
- IDENT flags
-   I32 i32
- COMMA 
- IDENT names
-LBRACK 
-RBRACK 
-   STR 
- COMMA 
- IDENT values
-LBRACK 
-RBRACK 
-   I32 i32
-RPAREN 
-LBRACE 
- IDENT panic
-LPAREN 
- IDENT len
-LPAREN 
- IDENT names
-RPAREN 
- COMMA 
- IDENT len
-LPAREN 
- IDENT values
-RPAREN 
- COMMA 
-STRLIT invalid flags
-RPAREN 
-SCOLON 
- IDENT printf
-LPAREN 
-STRLIT %s : %d : 
- COMMA 
- IDENT name
- COMMA 
- IDENT flags
-RPAREN 
-SCOLON 
-   VAR 
- IDENT count
-   I32 i32
-  ASGN =
- IDENT len
-LPAREN 
- IDENT values
-RPAREN 
-SCOLON 
-   FOR 
- IDENT i
-CASSGN :=
-INTLIT 0
-SCOLON 
- IDENT i
-  LTOP <
- IDENT count
- ANDOP 
- IDENT flags
-  GTOP >
-INTLIT 0
-SCOLON 
- IDENT i
- INCOP 
-LBRACE 
-   VAR 
- IDENT flag
-   I32 i32
-  ASGN =
- IDENT values
-LBRACK 
- IDENT i
-RBRACK 
-SCOLON 
-    IF 
-LPAREN 
- IDENT flags
- REFOP &
- IDENT flag
-RPAREN 
-  EQOP 
- IDENT flag
-LBRACE 
- IDENT printf
-LPAREN 
-STRLIT %s, 
- COMMA 
- IDENT names
-LBRACK 
- IDENT i
-RBRACK 
-RPAREN 
-SCOLON 
- IDENT flags
-  ASGN =
- IDENT flags
- REFOP &
-LPAREN 
- SUBOP -
-INTLIT 1
-BXOROP 
- IDENT flag
-RPAREN 
-SCOLON 
-RBRACE 
-SCOLON 
-RBRACE 
-SCOLON 
- IDENT printf
-LPAREN 
-STRLIT 
-
-RPAREN 
-SCOLON 
- IDENT panic
-LPAREN 
- IDENT flags
- COMMA 
-INTLIT 0
- COMMA 
-STRLIT invalid flags
-RPAREN 
-SCOLON 
-RBRACE 
 SCOLON 
    VAR 
  IDENT TEST_NONE
@@ -1613,7 +912,9 @@ LBRACK
 RBRACK 
 SCOLON 
     IF 
- IDENT getArgValueStr
+ IDENT arg
+PERIOD 
+ IDENT GetValueStr
 LPAREN 
  IDENT arg
  COMMA 
@@ -1631,7 +932,9 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT getArgValueStr
+ IDENT arg
+PERIOD 
+ IDENT GetValueStr
 LPAREN 
  IDENT arg
  COMMA 
@@ -1649,7 +952,9 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT getFlags
+ IDENT arg
+PERIOD 
+ IDENT GetFlags
 LPAREN 
  IDENT arg
  COMMA 
@@ -1671,7 +976,9 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT getFlags
+ IDENT arg
+PERIOD 
+ IDENT GetFlags
 LPAREN 
  IDENT arg
  COMMA 
@@ -1693,7 +1000,9 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT getFlags
+ IDENT arg
+PERIOD 
+ IDENT GetFlags
 LPAREN 
  IDENT arg
  COMMA 
@@ -1715,7 +1024,9 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT matchArg
+ IDENT arg
+PERIOD 
+ IDENT Match
 LPAREN 
  IDENT arg
  COMMA 
@@ -1772,7 +1083,9 @@ STRLIT Invalid test combination :
 
 RPAREN 
 SCOLON 
- IDENT printFlags
+ IDENT arg
+PERIOD 
+ IDENT PrintFlags
 LPAREN 
 STRLIT ++enabled-test=
  COMMA 
@@ -1783,7 +1096,9 @@ STRLIT ++enabled-test=
  IDENT testValues
 RPAREN 
 SCOLON 
- IDENT printFlags
+ IDENT arg
+PERIOD 
+ IDENT PrintFlags
 LPAREN 
 STRLIT ++disabled-tests=
  COMMA 
@@ -1854,7 +1169,9 @@ Running CX tests in dir : '%s'
  IDENT g_workingDir
 RPAREN 
 SCOLON 
- IDENT printFlags
+ IDENT arg
+PERIOD 
+ IDENT PrintFlags
 LPAREN 
 STRLIT Enabled tests
  COMMA 
@@ -1865,7 +1182,9 @@ STRLIT Enabled tests
  IDENT testValues
 RPAREN 
 SCOLON 
- IDENT printFlags
+ IDENT arg
+PERIOD 
+ IDENT PrintFlags
 LPAREN 
 STRLIT Enabled log
  COMMA 

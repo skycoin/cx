@@ -1,105 +1,9 @@
 package main
 
+import "arg"
 import "os"
 import "cx"
 import "time"
-
-func matchArg(arg str, pattern str, match *bool) (out bool) {
-	out = false
-	var argLen i32 = len(arg)
-	var patternLen i32 = len(pattern)
-	if (argLen >= patternLen) {
-		name := str.substr(arg, 0, patternLen)
-		if (name == pattern) {
-			if *match {
-				printf("duplicate arg %s\n", arg)
-				os.Exit(cx.PANIC)
-			}
-			*match = true
-			out = true
-		}
-	}
-}
-
-func getArgValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
-	if matchArg(arg, pattern, match) {
-		var argLen i32 = len(arg)
-		var patternLen i32 = len(pattern)
-		if argLen > patternLen {
-			*value = str.substr(arg, patternLen, argLen)
-			out = true
-		}
-	}
-}
-
-func getArgValueStrSlice(arg str, pattern str, match *bool) (out []str) {
-	var filterList str = ""
-	var filterMatch bool = false
-	var slice []str
-	if getArgValueStr(arg, pattern, &filterList, &filterMatch) {
-		var index i32 = 0
-		for index >= 0 {
-			index = str.index(filterList, ",")
-			var filter str = filterList
-			if index >= 0 {
-				filter = str.substr(filterList, 0, index)
-				filterList = str.substr(filterList, index + 1, len(filterList))
-			} else {
-				filterList = ""
-			}
-			filter = str.trimspace(filter)
-			slice = append(slice, filter)
-		}
-	}
-	out = slice
-}
-
-func getArgValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
-	var strValue str = ""
-	out = getArgValueStr(arg, pattern, &strValue, match)
-	if out {
-		var i32Value i32 = str.i32(strValue)
-		*value = i32Value
-	}
-}
-
-func getFlags(arg str, pattern str, flags *i32, match *bool, names []str, values[]i32) (success bool) {
-	panic(len(names), len(values), "invalid flags")
-	success = false
-	var list str = ""
-	var slice []str = getArgValueStrSlice(arg, pattern, match)
-	for i := 0; i < len(slice); i++ {
-		var value i32 = 0
-		for k := 0; k < len(names); k++ {
-			if slice[i] == names[k] {
-				value = values[k]
-			}
-		}
-
-		if value != 0 {
-			*flags = *flags | value
-			success = true
-		} else {
-			printf("invalid option value %s\n", arg)
-			os.Exit(cx.PANIC)
-		}
-	}
-}
-
-func printFlags(name str, flags i32, names []str, values[]i32) {
-	panic(len(names), len(values), "invalid flags")
-	printf("%s : %d : ", name, flags)
-	var count i32 = len(values)
-	for i := 0; i < count && flags > 0; i++ {
-		var flag i32 = values[i]
-		if (flags & flag) == flag {
-			printf("%s, ", names[i])
-			flags = flags & (-1 ^ flag)
-		}
-	}
-	printf("\n")
-	panic(flags, 0, "invalid flags")
-}
 
 var TEST_NONE   i32 = 0
 var TEST_STABLE i32 = 1
@@ -238,27 +142,27 @@ func main ()() {
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
 
-		if getArgValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
+		if arg.GetValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
 			continue
 		}
 
-		if getArgValueStr(arg, "++cxpath=", &g_cxPath, &cxPathMatch) {
+		if arg.GetValueStr(arg, "++cxpath=", &g_cxPath, &cxPathMatch) {
 			continue
 		}
 
-		if getFlags(arg, "++log=", &log, &logMatch, logNames, logValues) {
+		if arg.GetFlags(arg, "++log=", &log, &logMatch, logNames, logValues) {
 			continue
 		}
 
-		if getFlags(arg, "++enable-tests=", &enabledTests, &enabledTestMatch, testNames, testValues) {
+		if arg.GetFlags(arg, "++enable-tests=", &enabledTests, &enabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if getFlags(arg, "++disable-tests=", &disabledTests, &disabledTestMatch, testNames, testValues) {
+		if arg.GetFlags(arg, "++disable-tests=", &disabledTests, &disabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if matchArg(arg, "++help", &helpMatch) {
+		if arg.Match(arg, "++help", &helpMatch) {
 			help()
 			os.Exit(0)
 		}
@@ -269,8 +173,8 @@ func main ()() {
 
 	if enabledTests == TEST_ALL && disabledTests == TEST_ALL {
 		printf("Invalid test combination :\n")
-		printFlags("++enabled-test=", enabledTests, testNames, testValues)
-		printFlags("++disabled-tests=", disabledTests, testNames, testValues)
+		arg.PrintFlags("++enabled-test=", enabledTests, testNames, testValues)
+		arg.PrintFlags("++disabled-tests=", disabledTests, testNames, testValues)
 		os.Exit(cx.PANIC)
 	} else if disabledTests == TEST_ALL {
 		g_enabledTests = enabledTests
@@ -283,8 +187,8 @@ func main ()() {
 	}
 
 	printf("\nRunning CX tests in dir : '%s'\n", g_workingDir)
-	printFlags("Enabled tests", g_enabledTests, testNames, testValues)
-	printFlags("Enabled log", g_log, logNames, logValues)
+	arg.PrintFlags("Enabled tests", g_enabledTests, testNames, testValues)
+	arg.PrintFlags("Enabled log", g_log, logNames, logValues)
 	printf("\n")
 
 	var start i64
