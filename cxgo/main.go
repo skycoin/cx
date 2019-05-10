@@ -273,9 +273,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=200000",
-		 	"-max-txn-size-create-block=200000",
-			"-max-block-size=200000",
+			"-max-txn-size-unconfirmed=5000000",
+		 	"-max-txn-size-create-block=5000000",
+			"-max-block-size=5000000",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -291,9 +291,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=200000",
-		"-max-txn-size-create-block=200000",
-		"-max-block-size=200000",
+		"-max-txn-size-unconfirmed=5000000",
+		"-max-txn-size-create-block=5000000",
+		"-max-block-size=5000000",
 	)
 	default:
 		return nil
