@@ -764,19 +764,28 @@ func main () {
 			PRGRM.RemovePackage(MAIN_FUNC)
 			
 			s := Serialize(PRGRM, 1)
+			s = ExtractBlockchainProgram(s, s)
 
 			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
-			cmd := exec.Command("newcoin", "createcoin",
+			
+			cmd := exec.Command("go", "install", "./cmd/newcoin/...")
+			cmd.Start()
+			cmd.Wait()
+			
+			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
 			cmd.Start()
 			cmd.Wait()
-			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
 			
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
+
 			err := initCXBlockchain(s, options.programName, options.secKey)
 			if err != nil {
 				panic(err)
@@ -795,7 +804,7 @@ func main () {
 		
 			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
