@@ -273,9 +273,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=200000",
-		 	"-max-txn-size-create-block=200000",
-			"-max-block-size=200000",
+			"-max-txn-size-unconfirmed=5000000",
+		 	"-max-txn-size-create-block=5000000",
+			"-max-block-size=5000000",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -291,9 +291,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=200000",
-		"-max-txn-size-create-block=200000",
-		"-max-block-size=200000",
+		"-max-txn-size-unconfirmed=5000000",
+		"-max-txn-size-create-block=5000000",
+		"-max-block-size=5000000",
 	)
 	default:
 		return nil
@@ -764,19 +764,28 @@ func main () {
 			PRGRM.RemovePackage(MAIN_FUNC)
 			
 			s := Serialize(PRGRM, 1)
+			s = ExtractBlockchainProgram(s, s)
 
 			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
-			cmd := exec.Command("newcoin", "createcoin",
+			
+			cmd := exec.Command("go", "install", "./cmd/newcoin/...")
+			cmd.Start()
+			cmd.Wait()
+			
+			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
 			cmd.Start()
 			cmd.Wait()
-			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
 			
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
+
 			err := initCXBlockchain(s, options.programName, options.secKey)
 			if err != nil {
 				panic(err)
@@ -795,7 +804,7 @@ func main () {
 		
 			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
