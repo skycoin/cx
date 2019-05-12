@@ -10,22 +10,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  branch = "cxcoin"
-  digest = "1:3133ec7abb4f2f74ee027d1fee58c96e6af0aa3fb5a0af50b16325beb01c931e"
-  name = "github.com/amherag/skycoin"
-  packages = [
-    "src/cipher",
-    "src/cipher/encoder",
-    "src/coin",
-    "src/readable",
-    "src/skycoin",
-    "src/util/logging",
-    "src/visor",
-  ]
-  pruneopts = "UT"
-  revision = "7f3e224ff11a2a9c37be941bcc20670676870171"
-
-[[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -105,6 +89,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -161,12 +153,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:e0f50a07c0def90588d69f77178712c6fdc67eb6576365f551cce98b44b501bf"
+  digest = "1:93131d8002d7025da13582877c32d1fc302486775a1b06f62241741006428c5e"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = "UT"
-  revision = "63909f0a90ab0f36909e8e044e46ace10cf13ba2"
-  version = "v1.3.0"
+  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:d14a5f4bfecf017cb780bdde1b6483e5deb87e12c332544d2c430eda58734bcb"
@@ -196,16 +188,19 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "a82f4c12f983cc2649298185f296632953e50d3e"
-  version = "v0.3.0"
+  revision = "1ba88736f028e37bc17328369e94a537ae9e0234"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:49b09905e781d7775c086604cc00083e1832d0783f1f421b79f42657c457d029"
+  digest = "1:9d62e12429921bbbdc2d1e3c81c6a2c128cc07046633ff92fb6d17376f74261d"
   name = "github.com/prometheus/procfs"
-  packages = ["."]
+  packages = [
+    ".",
+    "internal/fs",
+  ]
   pruneopts = "UT"
-  revision = "8368d24ba045f26503eb745b624d930cbe214c79"
+  revision = "5867b95ac084bbfee6ea16595c4e05ab009021da"
 
 [[projects]]
   digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
@@ -248,7 +243,7 @@
   revision = "b86a26479c3e25ac0f13e195bd2c0554bcf2f837"
 
 [[projects]]
-  digest = "1:6fb1326f6aa3bcb6add8eb3dc96d3b5371df725783b7183bbb6a3087ccabfe6a"
+  digest = "1:3bda3eff5522052c45a9187a153c3774353953cd05bd5ef148986af320ee1753"
   name = "github.com/skycoin/skycoin"
   packages = [
     "src/api",
@@ -266,6 +261,7 @@
     "src/cipher/scrypt",
     "src/cipher/secp256k1-go",
     "src/cipher/secp256k1-go/secp256k1-go2",
+    "src/cli",
     "src/coin",
     "src/daemon",
     "src/daemon/gnet",
@@ -315,6 +311,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
+  version = "v0.0.3"
+
+[[projects]]
   digest = "1:1b753ec16506f5864d26a28b43703c58831255059644351bbcb019b843950900"
   name = "github.com/spf13/jwalterweatherman"
   packages = ["."]
@@ -355,12 +359,20 @@
   version = "v1.1"
 
 [[projects]]
+  digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
+  name = "github.com/urfave/cli"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
+
+[[projects]]
   branch = "master"
   digest = "1:bbe51412d9915d64ffaa96b51d409e070665efc5194fcf145c4a27d4133107a4"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "f416ebab96af27ca70b6e5c23d6a0747530da626"
+  revision = "e1dfcc566284e143ba8f9afbb3fa563f2a0d212b"
 
 [[projects]]
   branch = "master"
@@ -371,7 +383,7 @@
     "math/fixed",
   ]
   pruneopts = "UT"
-  revision = "4e30a6eb7d9a7fbd8f97e1d47806f810d86cfc6e"
+  revision = "e4e5bf290fec812cbe38d879ea41d6ebb2c40ff5"
 
 [[projects]]
   branch = "master"
@@ -379,21 +391,21 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "1da14a5a36f220ea3f03470682b737b1dfd5de22"
+  revision = "a4d6f7feada510cc50e69a37b484cb0fdc6b7876"
 
 [[projects]]
   branch = "master"
-  digest = "1:32a91fdcb8f4ae0b2376129fe0091963fa1bbf42d4c1826ad41f7b6410f385c0"
+  digest = "1:646036a04e163f383d101f40e36fd3354676c7dcccc226d825200a6b9509727a"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "12500544f89f9420afe9529ba8940bf72d294972"
+  revision = "a5b02f93d862f065920dd6a40dddc66b60d0dec4"
 
 [[projects]]
-  digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"
+  digest = "1:1093f2eb4b344996604f7d8b29a16c5b22ab9e1b25652140d3fede39f640d5cd"
   name = "golang.org/x/text"
   packages = [
     "internal/gen",
@@ -404,8 +416,8 @@
     "unicode/norm",
   ]
   pruneopts = "UT"
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
+  version = "v0.3.2"
 
 [[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
@@ -419,20 +431,19 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/amherag/skycoin/src/cipher",
-    "github.com/amherag/skycoin/src/cipher/encoder",
-    "github.com/amherag/skycoin/src/coin",
-    "github.com/amherag/skycoin/src/readable",
-    "github.com/amherag/skycoin/src/skycoin",
-    "github.com/amherag/skycoin/src/util/logging",
-    "github.com/amherag/skycoin/src/visor",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
+    "github.com/skycoin/skycoin/src/cipher",
     "github.com/skycoin/skycoin/src/cipher/encoder",
+    "github.com/skycoin/skycoin/src/cli",
+    "github.com/skycoin/skycoin/src/coin",
     "github.com/skycoin/skycoin/src/readable",
     "github.com/skycoin/skycoin/src/skycoin",
     "github.com/skycoin/skycoin/src/util/logging",
+    "github.com/skycoin/skycoin/src/util/useragent",
+    "github.com/skycoin/skycoin/src/visor",
     "github.com/theherk/viper",
+    "github.com/urfave/cli",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

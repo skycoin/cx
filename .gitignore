@@ -16,6 +16,7 @@ ansi-c-yacc-grammar.y
 ansi_c-lex.l
 golang-empty-grammar.y
 golang-grammar.y
+cxcoin/
 cx.nn.go
 cx.go
 cxgo.go
