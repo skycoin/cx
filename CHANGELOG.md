@@ -3,7 +3,10 @@
 ### v0.6.3 (NOT YET RELEASED)
 * Additions
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
+  * Added/forked the newcoin and skycoin-cli commands to the CX repository.
 * Libraries
+  * Add math bindings for f32 and f64 types: isnan, rand, acos, asin.
+  * Add glfw bindings: Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
