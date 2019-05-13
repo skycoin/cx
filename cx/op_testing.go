@@ -86,7 +86,7 @@ func opPanicIf(expr *CXExpression, fp int) {
 	panicIf(expr, fp, true)
 }
 
-// panic with CX_ASSERT exit code if conditions is false
+// panic with CX_ASSERT exit code if condition is false
 func opPanicIfNot(expr *CXExpression, fp int) {
 	panicIf(expr, fp, false)
 }
