@@ -488,7 +488,9 @@ func (prgrm *CXProgram) PrintProgram() {
 	}
 
 	prgrm.CurrentPackage = currentPackage
-	currentPackage.CurrentFunction = currentFunction
+	if currentPackage != nil {
+		currentPackage.CurrentFunction = currentFunction
+	}
 }
 
 // CheckArithmeticOp ...
