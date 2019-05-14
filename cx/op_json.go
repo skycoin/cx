@@ -5,7 +5,6 @@ package cxcore
 import (
 	//"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,6 +19,10 @@ const (
 	JSON_TOKEN_F64
 	JSON_TOKEN_NUMBER
 	JSON_TOKEN_STR
+	JSON_DELIM_SQUARE_LEFT  = 91
+	JSON_DELIM_SQUARE_RIGHT = 93
+	JSON_DELIM_CURLY_LEFT   = 123
+	JSON_DELIM_CURLY_RIGHT  = 125
 )
 
 type JSONFile struct {
@@ -40,7 +43,6 @@ var jsons []JSONFile
 
 func opJSONOpen(expr *CXExpression, fp int) {
 	path := ReadStr(fp, expr.Inputs[0])
-	fmt.Printf("PATH %s\n", path)
 	/*file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
 	if err != nil {
 		panic(err)

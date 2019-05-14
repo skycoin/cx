@@ -1,0 +1,233 @@
+package json
+
+import "json"
+
+func Debug(file i32, t i32) {
+	printf("DEBUG_JSON_TYPE %d\n", t)
+	if t == json.TOKEN_DELIM {
+		printf("DEBUG_JSON_DELIM\n")
+		var value i32 = json.Delim(file)
+		if value == json.DELIM_CURLY_LEFT {
+			printf("{\n")
+		} else if value == json.DELIM_CURLY_RIGHT {
+			printf("}\n")
+		} else if value == json.DELIM_SQUARE_LEFT {
+			printf("[\n")
+		} else if value == json.DELIM_SQUARE_RIGHT {
+			printf("]\n")
+		}
+	} else if t == json.TOKEN_BOOL {
+		printf("DEBUG_JSON_BOOL\n")
+		var value bool = json.Bool(file)
+		if value {
+			printf("true\n")
+		} else {
+			printf("false\n")
+		}
+	} else if t == json.TOKEN_F64 {
+		printf("DEBUG_JSON_F64\n")
+		var value f64 = json.Float64(file)
+		printf("%f\n", value)
+	} else if t == json.TOKEN_NUMBER {
+		printf("DEBUG_JSON_NUMBER\n")
+		var value f64 = json.Float64(file)
+		printf("%f\n", value)
+	} else if t == json.TOKEN_STR {
+		printf("DEBUG_JSON_STR\n")
+		var value str = json.Str(file)
+		printf("%s\n", value)
+	} else {
+		panic(true, false, sprintf("invalid token type : %d", t))
+	}
+}
+
+func GetStr(file i32, value *str) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_STR {
+		*value = json.Str(file)
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetBool(file i32, value *bool) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_BOOL {
+		*value = json.Bool(file)
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetI64(file i32, value *i64) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_NUMBER {
+		*value = json.Int64(file)
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetF64(file i32, value *f64) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_NUMBER || t == json.TOKEN_F64 {
+		*value = json.Float64(file)
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetI32(file i32, value *i32) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_NUMBER {
+		*value = i64.i32(json.Int64(file))
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetF32(file i32, value *f32) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_NUMBER || t == json.TOKEN_F64 {
+		*value = f64.f32(json.Float64(file))
+		success = true
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetDelim(file i32, delim i32) (success bool) {
+	t := json.Type(file)
+	if t == json.TOKEN_DELIM {
+		if json.Delim(file) == delim {
+			success = true
+		} else {
+			Debug(file, t)
+		}
+	} else {
+		Debug(file, t)
+	}
+}
+
+func GetF32Vec4(file i32, array *[4]f32) (success bool) {
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var i i32
+	for json.More(file) {
+		json.Next(file)
+		var value f32
+		if GetF32(file, &value) == false {
+			return
+		}
+		(*array)[i] = value
+		i++
+	}
+
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_RIGHT) {
+		success = true
+		return
+	}
+}
+
+func GetF32Vec3(file i32, array *[3]f32) (success bool) {
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var i i32
+	for json.More(file) {
+		json.Next(file)
+		var value f32
+		if GetF32(file, &value) == false {
+			return
+		}
+		(*array)[i] = value
+		i++
+	}
+
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_RIGHT) {
+		success = true
+		return
+	}
+}
+
+func GetStrArray(file i32) (success bool, array []str) {
+	success = false
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	for json.More(file) {
+		json.Next(file)
+		var value str
+		if GetStr(file, &value) == false {
+			return
+		}
+		array = append(array, value)
+	}
+
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_RIGHT) {
+		success = true
+		return
+	}
+}
+
+func GetI32Array(file i32) (success bool, array []i32) {
+	success = false
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	for json.More(file) {
+		json.Next(file)
+		var value i32
+		if GetI32(file, &value) == false {
+			return
+		}
+		array = append(array, value)
+	}
+
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_RIGHT) {
+		success = true
+		return
+	}
+}
+
+func GetF32Array(file i32) (success bool, array []f32) {
+	success = false
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	for json.More(file) {
+		json.Next(file)
+		var value f32
+		if GetF32(file, &value) == false {
+			return
+		}
+		array = append(array, value)
+	}
+
+	json.Next(file)
+	if GetDelim(file, json.DELIM_SQUARE_RIGHT) {
+		success = true
+		return
+	}
+}
+

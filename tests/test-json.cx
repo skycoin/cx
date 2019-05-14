@@ -1,0 +1,92 @@
+package main
+
+import "json"
+
+func testDelim(file i32, d i32) {
+	json.Next(file)
+	panic(json.GetDelim(file, d), true, "failed to match delimiter")
+}
+
+ func testStr(file i32, s str) {
+	json.Next(file)
+	var value str
+	panic(json.GetStr(file, &value), true, "failed to read str value")
+	panic(s, value, "str values don't match")
+}
+
+func testI64(file i32, i i64) {
+	json.Next(file)
+	var value i64
+	panic(json.GetI64(file, &value), true, "failed to read i64 value")
+	panic(i, value, "i64 values don't match")
+}
+
+func testF64(file i32, f f64) {
+	json.Next(file)
+	var value f64
+	panic(json.GetF64(file, &value), true, "failed to read f64 value")
+	panic(f, value, "f64 values don't match")
+}
+
+func testKeyValueF64(file i32, s str, f f64) {
+	testStr(file, s)
+	testF64(file, f)
+}
+
+func testKeyValueI64(file i32, s str, f i64) {
+	testStr(file, s)
+	testI64(file, f)
+}
+
+/*func testStrArray(file i32, s []str) {
+	var success bool
+	var values []str
+	success, values = json.GetStrArray(file)
+	panic(success, true, "")
+	panic(len(s), len(values), "")
+	var count i32 = len(s)
+	for i := 0; i < count; i++ {
+		panic(s[i], values[i], "")
+	}
+}*/
+
+func main() {
+
+	var file i32 = json.Open("testdata/json/test-0.json")
+
+	panic(json.More(file), true, "")
+	testDelim(file, json.DELIM_CURLY_LEFT)
+
+	panic(json.More(file), true, "")
+	testKeyValueF64(file, "current_supply", 7187500.000000D)
+	testKeyValueF64(file, "total_supply", 25000000.000000D)
+	testKeyValueF64(file, "max_supply", 100000000.000000D)
+
+	testKeyValueI64(file, "current_coinhour_supply", 23499025077L)
+	testKeyValueI64(file, "total_coinhour_supply", 93679828577L)
+
+	var success bool
+	var values []str
+
+	testStr(file, "unlocked_distribution_addresses")
+	{
+		success, values = json.GetStrArray(file)
+		panic(success, true, "")
+		panic(len(values), 3, "")
+		panic(values[0], "R6aHqKWSQfvpdo2fGSrq4F1RYXkBWR9HHJ", "")
+		panic(values[1], "2EYM4WFHe4Dgz6kjAdUkM6Etep7ruz2ia6h", "")
+		panic(values[2], "25aGyzypSA3T9K6rgPUv1ouR13efNPtWP5m", "")
+	}
+
+	testStr(file, "locked_distribution_addresses")
+	{
+		success, values = json.GetStrArray(file)
+		panic(success, true, "")
+		panic(len(values), 3, "")
+		panic(values[0], "gpqsFSuMCZmsjPc6Rtgy1FmLx424tH86My", "")
+		panic(values[1], "2EUF3GPEUmfocnUc1w6YPtqXVCy3UZA4rAq", "")
+		panic(values[2], "TtAaxB3qGz5zEAhhiGkBY9VPV7cekhvRYS", "")
+	}
+
+	testDelim(file, json.DELIM_CURLY_RIGHT)
+}

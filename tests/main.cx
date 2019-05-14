@@ -316,6 +316,7 @@ func main ()() {
 	runTest("test-parse.cx", cx.SUCCESS, "parse")
 	runTest("test-collection-functions.cx", cx.SUCCESS, "collection functions")
 	runTest("test-scopes.cx", cx.SUCCESS, "Error in scopes.")
+	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
 
 	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
