@@ -3,13 +3,10 @@
 package cxcore
 
 import (
-	//"bufio"
+	"bufio"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"os"
-	//"reflect"
-	"strings"
 )
 
 const (
@@ -26,9 +23,8 @@ const (
 )
 
 type JSONFile struct {
-	file *os.File
-	//reader     *bufio.Reader
-	reader      *strings.Reader
+	file        *os.File
+	reader      *bufio.Reader
 	decoder     *json.Decoder
 	token       interface{}
 	tokenType   int32
@@ -42,17 +38,15 @@ type JSONFile struct {
 var jsons []JSONFile
 
 func opJSONOpen(expr *CXExpression, fp int) {
-	path := ReadStr(fp, expr.Inputs[0])
-	/*file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
+	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
 	if err != nil {
 		panic(err)
-	}*/
+	}
 
-	text, _ := ioutil.ReadFile(path)
-	reader := strings.NewReader(string(text))
-	///reader := bufio.NewReader(file)
+	reader := bufio.NewReader(file)
+
 	var jsonFile JSONFile
-	//jsonFile.file = file
+	jsonFile.file = file
 	jsonFile.reader = reader
 	jsonFile.decoder = json.NewDecoder(jsonFile.reader)
 	jsonFile.decoder.UseNumber()
@@ -61,8 +55,8 @@ func opJSONOpen(expr *CXExpression, fp int) {
 }
 
 func opJSONClose(expr *CXExpression, fp int) {
-	//jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	//jsonFile.file.Close()
+	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
+	jsonFile.file.Close()
 }
 
 func opJSONTokenMore(expr *CXExpression, fp int) {
