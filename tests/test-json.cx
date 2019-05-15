@@ -2,9 +2,17 @@ package main
 
 import "json"
 
+var debug bool
+func debugOutput(s str) {
+	if debug {
+		printf(s);
+	}
+}
+
 func testDelim(file i32, d i32) {
 	json.Next(file)
 	panic(json.GetDelim(file, d), true, "failed to match delimiter")
+	debugOutput(sprintf("DELIM %d\n", d))
 }
 
  func testStr(file i32, s str) {
@@ -12,6 +20,7 @@ func testDelim(file i32, d i32) {
 	var value str
 	panic(json.GetStr(file, &value), true, "failed to read str value")
 	panic(s, value, "str values don't match")
+	debugOutput(sprintf("STR %s\n", value))
 }
 
 func testI64(file i32, i i64) {
@@ -19,6 +28,7 @@ func testI64(file i32, i i64) {
 	var value i64
 	panic(json.GetI64(file, &value), true, "failed to read i64 value")
 	panic(i, value, "i64 values don't match")
+	debugOutput(sprintf("I64 %d\n", value))
 }
 
 func testF64(file i32, f f64) {
@@ -26,6 +36,7 @@ func testF64(file i32, f f64) {
 	var value f64
 	panic(json.GetF64(file, &value), true, "failed to read f64 value")
 	panic(f, value, "f64 values don't match")
+	debugOutput(sprintf("F64 %f\n", value))
 }
 
 func testKeyValueF64(file i32, s str, f f64) {
@@ -38,20 +49,21 @@ func testKeyValueI64(file i32, s str, f i64) {
 	testI64(file, f)
 }
 
-/*func testStrArray(file i32, s []str) {
+func testStrArray(file i32, s []str) {
 	var success bool
 	var values []str
 	success, values = json.GetStrArray(file)
-	panic(success, true, "")
-	panic(len(s), len(values), "")
+	panic(success, true, "failed to read str slice")
+	panic(len(s), len(values), sprintf("failed to read str slice : lens don't match, %d != %d", len(s), len(values)))
 	var count i32 = len(s)
 	for i := 0; i < count; i++ {
-		panic(s[i], values[i], "")
+		panic(s[i], values[i], sprintf("failed to read str slice : value don't match : `%s` != `%s`", s[i], values[i]))
+		debugOutput(sprintf("STR %d/%d, %s\n", i, len(values), values[i]))
 	}
-}*/
+}
 
 func main() {
-
+	//debug = true
 	var file i32 = json.Open("testdata/json/test-0.json")
 
 	panic(json.More(file), true, "")
@@ -65,28 +77,21 @@ func main() {
 	testKeyValueI64(file, "current_coinhour_supply", 23499025077L)
 	testKeyValueI64(file, "total_coinhour_supply", 93679828577L)
 
-	var success bool
 	var values []str
 
-	testStr(file, "unlocked_distribution_addresses")
 	{
-		success, values = json.GetStrArray(file)
-		panic(success, true, "")
-		panic(len(values), 3, "")
-		panic(values[0], "R6aHqKWSQfvpdo2fGSrq4F1RYXkBWR9HHJ", "")
-		panic(values[1], "2EYM4WFHe4Dgz6kjAdUkM6Etep7ruz2ia6h", "")
-		panic(values[2], "25aGyzypSA3T9K6rgPUv1ouR13efNPtWP5m", "")
+		values = []str { "R6aHqKWSQfvpdo2fGSrq4F1RYXkBWR9HHJ", "2EYM4WFHe4Dgz6kjAdUkM6Etep7ruz2ia6h", "25aGyzypSA3T9K6rgPUv1ouR13efNPtWP5m" }
+		testStr(file, "unlocked_distribution_addresses")
+		testStrArray(file, values)
 	}
 
-	testStr(file, "locked_distribution_addresses")
 	{
-		success, values = json.GetStrArray(file)
-		panic(success, true, "")
-		panic(len(values), 3, "")
-		panic(values[0], "gpqsFSuMCZmsjPc6Rtgy1FmLx424tH86My", "")
-		panic(values[1], "2EUF3GPEUmfocnUc1w6YPtqXVCy3UZA4rAq", "")
-		panic(values[2], "TtAaxB3qGz5zEAhhiGkBY9VPV7cekhvRYS", "")
+		values = []str { "gpqsFSuMCZmsjPc6Rtgy1FmLx424tH86My", "2EUF3GPEUmfocnUc1w6YPtqXVCy3UZA4rAq", "TtAaxB3qGz5zEAhhiGkBY9VPV7cekhvRYS" }
+		testStr(file, "locked_distribution_addresses")
+		testStrArray(file, values)
 	}
 
 	testDelim(file, json.DELIM_CURLY_RIGHT)
+
+	json.Close(file)
 }

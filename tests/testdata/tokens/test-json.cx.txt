@@ -1,0 +1,639 @@
+PACKAG 
+ IDENT main
+SCOLON 
+IMPORT 
+STRLIT json
+SCOLON 
+   VAR 
+ IDENT debug
+  BOOL bool
+SCOLON 
+  FUNC 
+ IDENT debugOutput
+LPAREN 
+ IDENT s
+   STR 
+RPAREN 
+LBRACE 
+    IF 
+ IDENT debug
+LBRACE 
+ IDENT printf
+LPAREN 
+ IDENT s
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testDelim
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT d
+   I32 i32
+RPAREN 
+LBRACE 
+ IDENT json
+PERIOD 
+ IDENT Next
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT GetDelim
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT d
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to match delimiter
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT DELIM %d
+
+ COMMA 
+ IDENT d
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testStr
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+   STR 
+RPAREN 
+LBRACE 
+ IDENT json
+PERIOD 
+ IDENT Next
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT value
+   STR 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT GetStr
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT value
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read str value
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT s
+ COMMA 
+ IDENT value
+ COMMA 
+STRLIT str values don't match
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT STR %s
+
+ COMMA 
+ IDENT value
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testI64
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT i
+   I64 i64
+RPAREN 
+LBRACE 
+ IDENT json
+PERIOD 
+ IDENT Next
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT value
+   I64 i64
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT GetI64
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT value
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read i64 value
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT i
+ COMMA 
+ IDENT value
+ COMMA 
+STRLIT i64 values don't match
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT I64 %d
+
+ COMMA 
+ IDENT value
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testF64
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT f
+   F64 f64
+RPAREN 
+LBRACE 
+ IDENT json
+PERIOD 
+ IDENT Next
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT value
+   F64 f64
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT GetF64
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT value
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read f64 value
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT f
+ COMMA 
+ IDENT value
+ COMMA 
+STRLIT f64 values don't match
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT F64 %f
+
+ COMMA 
+ IDENT value
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testKeyValueF64
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+   STR 
+ COMMA 
+ IDENT f
+   F64 f64
+RPAREN 
+LBRACE 
+ IDENT testStr
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT s
+RPAREN 
+SCOLON 
+ IDENT testF64
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT f
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testKeyValueI64
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+   STR 
+ COMMA 
+ IDENT f
+   I64 i64
+RPAREN 
+LBRACE 
+ IDENT testStr
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT s
+RPAREN 
+SCOLON 
+ IDENT testI64
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT f
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testStrArray
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+LBRACK 
+RBRACK 
+   STR 
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT success
+  BOOL bool
+SCOLON 
+   VAR 
+ IDENT values
+LBRACK 
+RBRACK 
+   STR 
+SCOLON 
+ IDENT success
+ COMMA 
+ IDENT values
+  ASGN =
+ IDENT json
+PERIOD 
+ IDENT GetStrArray
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT success
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read str slice
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read str slice : lens don't match, %d != %d
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+RPAREN 
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT count
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+SCOLON 
+   FOR 
+ IDENT i
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT i
+  LTOP <
+ IDENT count
+SCOLON 
+ IDENT i
+ INCOP 
+LBRACE 
+ IDENT panic
+LPAREN 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read str slice : value don't match : `%s` != `%s`
+ COMMA 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT STR %d/%d, %s
+
+ COMMA 
+ IDENT i
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT main
+LPAREN 
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT file
+   I32 i32
+  ASGN =
+ IDENT json
+PERIOD 
+ IDENT Open
+LPAREN 
+STRLIT testdata/json/test-0.json
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT More
+LPAREN 
+ IDENT file
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT 
+RPAREN 
+SCOLON 
+ IDENT testDelim
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT json
+PERIOD 
+ IDENT DELIM_CURLY_LEFT
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT More
+LPAREN 
+ IDENT file
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT 
+RPAREN 
+SCOLON 
+ IDENT testKeyValueF64
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT current_supply
+ COMMA 
+DBLLIT 7.1875e+06
+RPAREN 
+SCOLON 
+ IDENT testKeyValueF64
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT total_supply
+ COMMA 
+DBLLIT 2.5e+07
+RPAREN 
+SCOLON 
+ IDENT testKeyValueF64
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT max_supply
+ COMMA 
+DBLLIT 1e+08
+RPAREN 
+SCOLON 
+ IDENT testKeyValueI64
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT current_coinhour_supply
+ COMMA 
+LONGLT 23499025077
+RPAREN 
+SCOLON 
+ IDENT testKeyValueI64
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT total_coinhour_supply
+ COMMA 
+LONGLT 93679828577
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT values
+LBRACK 
+RBRACK 
+   STR 
+SCOLON 
+LBRACE 
+ IDENT values
+  ASGN =
+LBRACK 
+RBRACK 
+   STR 
+LBRACE 
+STRLIT R6aHqKWSQfvpdo2fGSrq4F1RYXkBWR9HHJ
+ COMMA 
+STRLIT 2EYM4WFHe4Dgz6kjAdUkM6Etep7ruz2ia6h
+ COMMA 
+STRLIT 25aGyzypSA3T9K6rgPUv1ouR13efNPtWP5m
+RBRACE 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT unlocked_distribution_addresses
+RPAREN 
+SCOLON 
+ IDENT testStrArray
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT values
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+LBRACE 
+ IDENT values
+  ASGN =
+LBRACK 
+RBRACK 
+   STR 
+LBRACE 
+STRLIT gpqsFSuMCZmsjPc6Rtgy1FmLx424tH86My
+ COMMA 
+STRLIT 2EUF3GPEUmfocnUc1w6YPtqXVCy3UZA4rAq
+ COMMA 
+STRLIT TtAaxB3qGz5zEAhhiGkBY9VPV7cekhvRYS
+RBRACE 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file
+ COMMA 
+STRLIT locked_distribution_addresses
+RPAREN 
+SCOLON 
+ IDENT testStrArray
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT values
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+ IDENT testDelim
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT json
+PERIOD 
+ IDENT DELIM_CURLY_RIGHT
+RPAREN 
+SCOLON 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ IDENT file
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
