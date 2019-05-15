@@ -37,6 +37,7 @@ type JSONFile struct {
 
 var jsons []JSONFile
 
+// Open the named json file for reading, returns an i32 identifying the json parser.
 func opJSONOpen(expr *CXExpression, fp int) {
 	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
 	if err != nil {
@@ -54,17 +55,20 @@ func opJSONOpen(expr *CXExpression, fp int) {
 	jsons = append(jsons, jsonFile)
 }
 
+// Close json parser (and all underlying resources) idendified by it's i32 handle.
 func opJSONClose(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	jsonFile.file.Close()
 }
 
+// More return true if there is another element in the current array or object being parsed.
 func opJSONTokenMore(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	more := jsonFile.decoder.More()
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(more))
 }
 
+// Token parses the next token.
 func opJSONTokenNext(expr *CXExpression, fp int) {
 	index := ReadI32(fp, expr.Inputs[0])
 	var tokenType int32 = JSON_TOKEN_NULL
@@ -98,11 +102,14 @@ func opJSONTokenNext(expr *CXExpression, fp int) {
 	jsons[index].tokenType = tokenType
 }
 
+// Type returns the type of the current token.
 func opJSONTokenType(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(jsonFile.tokenType))
 }
 
+// Delim returns current token as an int32 delimiter.
+// Panics if token type is not JSON_TOKEN_DELIM.
 func opJSONTokenDelim(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	if jsonFile.tokenType != JSON_TOKEN_DELIM {
@@ -111,6 +118,8 @@ func opJSONTokenDelim(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(jsonFile.tokenDelim)))
 }
 
+// Bool returns current token as a bool value.
+// Panics if token type is not JSON_TOKEN_BOOL.
 func opJSONTokenBool(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	if jsonFile.tokenType != JSON_TOKEN_BOOL {
@@ -119,6 +128,8 @@ func opJSONTokenBool(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(jsonFile.tokenBool))
 }
 
+// Float64 returns current token as float64 value.
+// Panics if token can't be interpreted as float64 value.
 func opJSONTokenF64(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	var value float64
@@ -136,6 +147,8 @@ func opJSONTokenF64(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(value))
 }
 
+// Int64 returns current token as int64 value.
+// Panics if  token can't be interpreted as int64 value.
 func opJSONTokenI64(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	var value int64
@@ -151,6 +164,8 @@ func opJSONTokenI64(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(value))
 }
 
+// Str returns current token as string value.
+// Panics if token type is not JSON_TOKEN_STR.
 func opJSONTokenStr(expr *CXExpression, fp int) {
 	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
 	if jsonFile.tokenType != JSON_TOKEN_STR {
