@@ -80,34 +80,34 @@ func init() {
 	// json
 	AddOpCode(OP_JSON_OPEN, "json.Open",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_CLOSE, "json.Close",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_MORE, "json.More",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_NEXT, "json.Next",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_TYPE, "json.Type",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_DELIM, "json.Delim",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_BOOL, "json.Bool",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_F64, "json.Float64",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_I64, "json.Int64",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_JSON_TOKEN_STR, "json.Str",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
 
 	// exec
 	execNativeBase = func(prgrm *CXProgram) {

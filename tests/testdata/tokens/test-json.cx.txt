@@ -37,18 +37,11 @@ LPAREN
    I32 i32
 RPAREN 
 LBRACE 
- IDENT json
-PERIOD 
- IDENT Next
-LPAREN 
- IDENT file
-RPAREN 
-SCOLON 
  IDENT panic
 LPAREN 
  IDENT json
 PERIOD 
- IDENT GetDelim
+ IDENT MatchDelim
 LPAREN 
  IDENT file
  COMMA 
@@ -83,13 +76,6 @@ LPAREN
    STR 
 RPAREN 
 LBRACE 
- IDENT json
-PERIOD 
- IDENT Next
-LPAREN 
- IDENT file
-RPAREN 
-SCOLON 
    VAR 
  IDENT value
    STR 
@@ -98,7 +84,7 @@ SCOLON
 LPAREN 
  IDENT json
 PERIOD 
- IDENT GetStr
+ IDENT ReadStr
 LPAREN 
  IDENT file
  COMMA 
@@ -143,13 +129,6 @@ LPAREN
    I64 i64
 RPAREN 
 LBRACE 
- IDENT json
-PERIOD 
- IDENT Next
-LPAREN 
- IDENT file
-RPAREN 
-SCOLON 
    VAR 
  IDENT value
    I64 i64
@@ -158,7 +137,7 @@ SCOLON
 LPAREN 
  IDENT json
 PERIOD 
- IDENT GetI64
+ IDENT ReadI64
 LPAREN 
  IDENT file
  COMMA 
@@ -203,13 +182,6 @@ LPAREN
    F64 f64
 RPAREN 
 LBRACE 
- IDENT json
-PERIOD 
- IDENT Next
-LPAREN 
- IDENT file
-RPAREN 
-SCOLON 
    VAR 
  IDENT value
    F64 f64
@@ -218,7 +190,7 @@ SCOLON
 LPAREN 
  IDENT json
 PERIOD 
- IDENT GetF64
+ IDENT ReadF64
 LPAREN 
  IDENT file
  COMMA 
@@ -324,29 +296,22 @@ RBRACK
 RPAREN 
 LBRACE 
    VAR 
- IDENT success
-  BOOL bool
-SCOLON 
-   VAR 
  IDENT values
 LBRACK 
 RBRACK 
    STR 
 SCOLON 
- IDENT success
- COMMA 
- IDENT values
-  ASGN =
- IDENT json
-PERIOD 
- IDENT GetStrArray
-LPAREN 
- IDENT file
-RPAREN 
-SCOLON 
  IDENT panic
 LPAREN 
- IDENT success
+ IDENT json
+PERIOD 
+ IDENT ReadStrArray
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT values
+RPAREN 
  COMMA 
 BOOLLT true
  COMMA 
@@ -463,6 +428,14 @@ LBRACE
    VAR 
  IDENT file
    I32 i32
+SCOLON 
+   VAR 
+ IDENT success
+  BOOL bool
+SCOLON 
+ IDENT file
+ COMMA 
+ IDENT success
   ASGN =
  IDENT json
 PERIOD 
@@ -473,16 +446,11 @@ RPAREN
 SCOLON 
  IDENT panic
 LPAREN 
- IDENT json
-PERIOD 
- IDENT More
-LPAREN 
- IDENT file
-RPAREN 
+ IDENT success
  COMMA 
 BOOLLT true
  COMMA 
-STRLIT 
+STRLIT failed to open json file
 RPAREN 
 SCOLON 
  IDENT testDelim
@@ -492,20 +460,6 @@ LPAREN
  IDENT json
 PERIOD 
  IDENT DELIM_CURLY_LEFT
-RPAREN 
-SCOLON 
- IDENT panic
-LPAREN 
- IDENT json
-PERIOD 
- IDENT More
-LPAREN 
- IDENT file
-RPAREN 
- COMMA 
-BOOLLT true
- COMMA 
-STRLIT 
 RPAREN 
 SCOLON 
  IDENT testKeyValueF64
@@ -628,11 +582,18 @@ PERIOD
  IDENT DELIM_CURLY_RIGHT
 RPAREN 
 SCOLON 
+ IDENT panic
+LPAREN 
  IDENT json
 PERIOD 
  IDENT Close
 LPAREN 
  IDENT file
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to close json file
 RPAREN 
 SCOLON 
 RBRACE 

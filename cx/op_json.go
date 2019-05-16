@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	JSON_TOKEN_NULL = iota
+	JSON_TOKEN_INVALID = -1
+	JSON_TOKEN_NULL    = iota
 	JSON_TOKEN_DELIM
 	JSON_TOKEN_BOOL
 	JSON_TOKEN_F64
@@ -39,137 +40,210 @@ var jsons []JSONFile
 
 // Open the named json file for reading, returns an i32 identifying the json parser.
 func opJSONOpen(expr *CXExpression, fp int) {
+	handle := -1
+	success := false
+
 	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
-	if err != nil {
-		panic(err)
+	if err == nil {
+		reader := bufio.NewReader(file)
+		var jsonFile JSONFile
+		jsonFile.file = file
+		jsonFile.reader = reader
+		jsonFile.decoder = json.NewDecoder(jsonFile.reader)
+		jsonFile.decoder.UseNumber()
+		handle = len(jsons)
+		success = true
+		jsons = append(jsons, jsonFile)
 	}
 
-	reader := bufio.NewReader(file)
-
-	var jsonFile JSONFile
-	jsonFile.file = file
-	jsonFile.reader = reader
-	jsonFile.decoder = json.NewDecoder(jsonFile.reader)
-	jsonFile.decoder.UseNumber()
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(len(jsons))))
-	jsons = append(jsons, jsonFile)
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(handle)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Close json parser (and all underlying resources) idendified by it's i32 handle.
 func opJSONClose(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	jsonFile.file.Close()
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		jsonFile.file.Close()
+		success = true
+	}
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(success))
 }
 
 // More return true if there is another element in the current array or object being parsed.
 func opJSONTokenMore(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	more := jsonFile.decoder.More()
+	more := false
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		more = jsonFile.decoder.More()
+		success = true
+	}
+
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(more))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Token parses the next token.
 func opJSONTokenNext(expr *CXExpression, fp int) {
-	index := ReadI32(fp, expr.Inputs[0])
-	var tokenType int32 = JSON_TOKEN_NULL
+	tokenType := int32(JSON_TOKEN_INVALID)
+	success := false
 
-	token, err := jsons[index].decoder.Token()
-	if err == io.EOF {
-	} else if err != nil {
-		panic(err)
-	} else {
-		jsons[index].token = token
-		switch value := token.(type) {
-		case json.Delim:
-			tokenType = JSON_TOKEN_DELIM
-			jsons[index].tokenDelim = value
-		case bool:
-			tokenType = JSON_TOKEN_BOOL
-			jsons[index].tokenBool = value
-		case float64:
-			tokenType = JSON_TOKEN_F64
-			jsons[index].tokenF64 = value
-		case json.Number:
-			tokenType = JSON_TOKEN_NUMBER
-			jsons[index].tokenNumber = value
-		case string:
-			tokenType = JSON_TOKEN_STR
-			jsons[index].tokenStr = value
-		default:
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		token, err := jsonFile.decoder.Token()
+		if err == io.EOF {
 			tokenType = JSON_TOKEN_NULL
+			success = true
+		} else if err == nil {
+			jsonFile.token = token
+			switch value := token.(type) {
+			case json.Delim:
+				tokenType = JSON_TOKEN_DELIM
+				jsonFile.tokenDelim = value
+				success = true
+			case bool:
+				tokenType = JSON_TOKEN_BOOL
+				jsonFile.tokenBool = value
+				success = true
+			case float64:
+				tokenType = JSON_TOKEN_F64
+				jsonFile.tokenF64 = value
+				success = true
+			case json.Number:
+				tokenType = JSON_TOKEN_NUMBER
+				jsonFile.tokenNumber = value
+				success = true
+			case string:
+				tokenType = JSON_TOKEN_STR
+				jsonFile.tokenStr = value
+				success = true
+			default:
+				if value == nil {
+					tokenType = JSON_TOKEN_NULL
+					success = true
+				}
+			}
 		}
+		jsonFile.tokenType = tokenType
 	}
-	jsons[index].tokenType = tokenType
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenType))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Type returns the type of the current token.
 func opJSONTokenType(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(jsonFile.tokenType))
+	tokenType := int32(JSON_TOKEN_INVALID)
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		tokenType = jsonFile.tokenType
+		success = true
+	}
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenType))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Delim returns current token as an int32 delimiter.
 // Panics if token type is not JSON_TOKEN_DELIM.
 func opJSONTokenDelim(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	if jsonFile.tokenType != JSON_TOKEN_DELIM {
-		panic("json : not a delim value")
+	tokenDelim := int32(JSON_TOKEN_INVALID)
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		if jsonFile.tokenType == JSON_TOKEN_DELIM {
+			tokenDelim = int32(jsonFile.tokenDelim)
+			success = true
+		}
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(jsonFile.tokenDelim)))
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenDelim))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Bool returns current token as a bool value.
 // Panics if token type is not JSON_TOKEN_BOOL.
 func opJSONTokenBool(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	if jsonFile.tokenType != JSON_TOKEN_BOOL {
-		panic("json : not a bool value")
+	tokenBool := false
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		if jsonFile.tokenType == JSON_TOKEN_BOOL {
+			tokenBool = jsonFile.tokenBool
+			success = true
+		}
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(jsonFile.tokenBool))
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(tokenBool))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Float64 returns current token as float64 value.
 // Panics if token can't be interpreted as float64 value.
 func opJSONTokenF64(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	var value float64
-	if jsonFile.tokenType == JSON_TOKEN_F64 {
-		value = jsonFile.tokenF64
-	} else if jsonFile.tokenType == JSON_TOKEN_NUMBER {
-		var err error
-		value, err = jsonFile.tokenNumber.Float64()
-		if err != nil {
-			panic(err)
+	var tokenF64 float64
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		if jsonFile.tokenType == JSON_TOKEN_F64 {
+			tokenF64 = jsonFile.tokenF64
+			success = true
+		} else if jsonFile.tokenType == JSON_TOKEN_NUMBER {
+			var err error
+			if tokenF64, err = jsonFile.tokenNumber.Float64(); err == nil {
+				success = true
+			}
 		}
-	} else {
-		panic("json : not a f64 value")
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(value))
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(tokenF64))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Int64 returns current token as int64 value.
 // Panics if  token can't be interpreted as int64 value.
 func opJSONTokenI64(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	var value int64
-	if jsonFile.tokenType == JSON_TOKEN_NUMBER {
-		var err error
-		value, err = jsonFile.tokenNumber.Int64()
-		if err != nil {
-			panic(err)
+	var tokenI64 int64
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		if jsonFile.tokenType == JSON_TOKEN_NUMBER {
+			var err error
+			if tokenI64, err = jsonFile.tokenNumber.Int64(); err == nil {
+				success = true
+			}
 		}
-	} else {
-		panic("json : not an int64 value")
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(value))
+
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(tokenI64))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Str returns current token as string value.
 // Panics if token type is not JSON_TOKEN_STR.
 func opJSONTokenStr(expr *CXExpression, fp int) {
-	jsonFile := jsons[ReadI32(fp, expr.Inputs[0])]
-	if jsonFile.tokenType != JSON_TOKEN_STR {
-		panic("json : not a string value")
+	var tokenStr string
+	success := false
+
+	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+		if jsonFile.tokenType == JSON_TOKEN_STR {
+			tokenStr = jsonFile.tokenStr
+			success = true
+		}
 	}
-	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(jsonFile.tokenStr))
+
+	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(tokenStr))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+}
+
+// helper function used to validate json handle
+func validJsonFile(expr *CXExpression, fp int) *JSONFile {
+	handle := int(ReadI32(fp, expr.Inputs[0]))
+	if handle >= 0 && handle < len(jsons) {
+		return &jsons[handle]
+	}
+	return nil
 }
