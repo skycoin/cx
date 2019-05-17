@@ -25,6 +25,7 @@ import (
 
 	"net"
 	"net/http"
+	"net/url"
 	
 	. "github.com/skycoin/cx/cx"
 	. "github.com/skycoin/cx/cxgo/parser"
@@ -300,6 +301,53 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 	}
 }
 
+func createWallet(csrfToken string, port int, seed string) {
+	sURL := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/create", port + 420)
+
+	data := url.Values{}
+	data.Set("seed", seed)
+	data.Add("coin", "cxcoin")
+	data.Add("label", "cxcoin")
+
+	req, err := http.NewRequest("POST", sURL, strings.NewReader(data.Encode()))
+	req.Header.Set("X-CSRF-Token", csrfToken)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	
+	var respBody map[string]interface{}
+	_ = json.Unmarshal(body, &respBody)
+
+	// Printing JSON object describing the new wallet or the error returned by the Skycoin API.
+	fmt.Println(string(body))
+}
+
+func getCSRFToken(port int) string {
+	csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", port + 420))
+	if err != nil {
+		panic(err)
+	}
+	defer csrfResp.Body.Close()
+	csrfBody, err := ioutil.ReadAll(csrfResp.Body)
+
+	var csrf map[string]string
+	if err := json.Unmarshal(csrfBody, &csrf); err != nil {
+		panic(err)
+	}
+
+	return string(csrf["csrf_token"])
+}
+
 func main () {
 	checkCXPathSet()
 
@@ -345,6 +393,18 @@ func main () {
 	
 	}
 
+	if options.walletMode {
+		if options.walletSeed == "" {
+			fmt.Println("creating a wallet requires a seed")
+			return
+		}
+
+		csrfToken := getCSRFToken(options.port)
+		createWallet(csrfToken, options.port, options.walletSeed)
+
+		return
+	}
+	
 	if options.printHelp {
 		printHelp()
 		return
@@ -817,18 +877,7 @@ func main () {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
-			// getting csrf token
-			csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", options.port + 420))
-			if err != nil {
-				panic(err)
-			}
-			defer csrfResp.Body.Close()
-			csrfBody, err := ioutil.ReadAll(csrfResp.Body)
-
-			var csrf map[string]string
-			if err := json.Unmarshal(csrfBody, &csrf); err != nil {
-				panic(err)
-			}
+			csrfToken := getCSRFToken(options.port)
 
 			url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port + 420)
 
@@ -846,7 +895,7 @@ func main () {
 			}
 
 			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			client := &http.Client{}
@@ -876,7 +925,7 @@ func main () {
 			}
 
 			req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err = client.Do(req)
