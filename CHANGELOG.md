@@ -4,6 +4,7 @@
 * Additions
   * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
   * Added/forked the newcoin and skycoin-cli commands to the CX repository.
+  * CX can now create a wallet by running `cx --create-wallet --wallet-seed $WALLET_SEED`
 * Libraries
   * Add math bindings for f32 and f64 types: isnan, rand, acos, asin.
   * Add glfw bindings: Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
