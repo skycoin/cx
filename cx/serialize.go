@@ -1459,3 +1459,23 @@ func MergePrograms(prgrm1, prgrm2 *CXProgram) *CXProgram {
 
 	return prgrm2
 }
+
+// GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
+func GetSerializedMemoryOffset(sPrgrm []byte) int {
+	idxSize := mustSerializeSize(sIndex{})
+	var index sIndex
+	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	return int(index.MemoryOffset)
+}
+
+// GetSerializedStackSize returns the stack size of a serialized CX program starts.
+func GetSerializedStackSize(sPrgrm []byte) int {
+	idxSize := mustSerializeSize(sIndex{})
+	var index sIndex
+	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+
+	var prgrmInfo sProgram
+	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+
+	return int(prgrmInfo.StackSize)
+}
