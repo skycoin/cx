@@ -39,6 +39,7 @@ type sProgram struct {
 	HeapPointer  int32
 	StackPointer int32
 	StackSize    int32
+	HeapSize     int32
 	HeapStartsAt int32
 
 	Terminated int32
@@ -454,6 +455,7 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
 	sPrgrm.StackPointer = int32(prgrm.StackPointer)
 	sPrgrm.StackSize = int32(prgrm.StackSize)
+	sPrgrm.HeapSize = int32(prgrm.HeapSize)
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
@@ -1163,6 +1165,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.HeapStartsAt = int(s.Program.HeapStartsAt)
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
+	prgrm.HeapSize = int(s.Program.HeapSize)
 
 	dsPackages(s, prgrm)
 }
@@ -1269,12 +1272,14 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset)]...)
 
-	// Trying to extract ALL the memory instead of just the data segment
-	// extracted = append(extracted, sPrgrm2[index2.MemoryOffset:]...)
-	// the stack segment should be 0 for prgrm1, but just in case
-	extracted = append(extracted, make([]byte, prgrm1Info.StackSize)...)
-	// We are only interested on extracting the data segment
-	extracted = append(extracted, sPrgrm2[index2.MemoryOffset+prgrm2Info.StackSize:index2.MemoryOffset+prgrm2Info.StackSize+(prgrm1Info.HeapStartsAt-prgrm1Info.StackSize)]...)
+
+	// We were also simulating an empty stack, but it doesn't make sense now.
+	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
+	// We are only interested on extracting the data segment for now.
+	prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
+	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
+	
+	extracted = append(extracted, sPrgrm2[prgrm2DataStart : prgrm2DataStart + prgrm1DataSize]...)
 
 	// correcting sizes
 	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
@@ -1317,11 +1322,15 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
 
-	// extracted = append(extracted, sPrgrm1[index1.MemoryOffset:]...)
-	// the stack segment should be 0 for prgrm1, but just in case
-	extracted = append(extracted, make([]byte, prgrm2Info.StackSize)...)
-	// We are only interested on extracting the data segment
-	extracted = append(extracted, sPrgrm2[index2.NamesOffset+prgrm2Info.StackSize+(prgrm1Info.HeapStartsAt-prgrm1Info.StackSize):]...)
+	// We were also simulating an empty stack, but it doesn't make sense now.
+	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
+	// We are only interested on extracting the data segment for now.
+
+	prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
+	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
+	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
+
+	extracted = append(extracted, sPrgrm2[prgrm2DataStart+prgrm1DataSize:prgrm2DataStart+prgrm1DataSize+(prgrm2DataSize - prgrm1DataSize)]...)
 
 	return extracted
 }
@@ -1400,12 +1409,31 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	s = (index2.MemoryOffset - index2.NamesOffset) - (index1.MemoryOffset - index1.NamesOffset)
 	merged = append(merged, sPrgrm1[index1.NamesOffset:index1.MemoryOffset]...)
 	merged = append(merged, sPrgrm2[acc:acc+s]...)
+	acc += s
 
 	// Memory
-	// merged = append(merged, sPrgrm1[index1.MemoryOffset:]...)
+	// For now we need to create an empty stack so we can run the merged blockchain and transaction codes.
 	merged = append(merged, make([]byte, prgrm2Info.StackSize)...)
-	merged = append(merged, sPrgrm1[index1.MemoryOffset+prgrm1Info.StackSize:index1.MemoryOffset+prgrm1Info.HeapStartsAt]...)
-	merged = append(merged, make([]byte, INIT_HEAP_SIZE)...)
+	// We're not incrementing `acc` with stack size because we're ignoring that memory segment for now.
+	// acc += prgrm2Info.StackSize
+
+	// prgrm1DataStart := index1.MemoryOffset+prgrm1Info.StackSize
+	prgrm1DataStart := index1.MemoryOffset
+	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
+
+	// prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
+	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
+
+	s = prgrm2DataSize - prgrm1DataSize
+
+	bcDataSegment := sPrgrm1[prgrm1DataStart:prgrm1DataStart+prgrm1DataSize]
+	txnDataSegment := sPrgrm2[acc:acc+s]
+
+	// Data segments from blockchain and transaction codes.
+	merged = append(merged, bcDataSegment...)
+	merged = append(merged, txnDataSegment...)
+	
+	merged = append(merged, make([]byte, int(prgrm1Info.HeapSize) - (len(bcDataSegment) + len(txnDataSegment)))...)
 
 	// correcting sizes
 	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, mustSize(sCall{}))
@@ -1458,4 +1486,24 @@ func MergePrograms(prgrm1, prgrm2 *CXProgram) *CXProgram {
 	}
 
 	return prgrm2
+}
+
+// GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
+func GetSerializedMemoryOffset(sPrgrm []byte) int {
+	idxSize := mustSerializeSize(sIndex{})
+	var index sIndex
+	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+	return int(index.MemoryOffset)
+}
+
+// GetSerializedStackSize returns the stack size of a serialized CX program starts.
+func GetSerializedStackSize(sPrgrm []byte) int {
+	idxSize := mustSerializeSize(sIndex{})
+	var index sIndex
+	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+
+	var prgrmInfo sProgram
+	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+	
+	return int(prgrmInfo.StackSize)
 }
