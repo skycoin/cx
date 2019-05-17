@@ -1272,14 +1272,13 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset:index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset:index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset)]...)
 
-
 	// We were also simulating an empty stack, but it doesn't make sense now.
 	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
 	// We are only interested on extracting the data segment for now.
-	prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
+	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
-	
-	extracted = append(extracted, sPrgrm2[prgrm2DataStart : prgrm2DataStart + prgrm1DataSize]...)
+
+	extracted = append(extracted, sPrgrm2[prgrm2DataStart:prgrm2DataStart+prgrm1DataSize]...)
 
 	// correcting sizes
 	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
@@ -1326,11 +1325,11 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
 	// We are only interested on extracting the data segment for now.
 
-	prgrm2DataStart := index2.MemoryOffset+prgrm2Info.StackSize
+	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
 	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
 
-	extracted = append(extracted, sPrgrm2[prgrm2DataStart+prgrm1DataSize:prgrm2DataStart+prgrm1DataSize+(prgrm2DataSize - prgrm1DataSize)]...)
+	extracted = append(extracted, sPrgrm2[prgrm2DataStart+prgrm1DataSize:prgrm2DataStart+prgrm1DataSize+(prgrm2DataSize-prgrm1DataSize)]...)
 
 	return extracted
 }
@@ -1426,14 +1425,14 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	s = prgrm2DataSize - prgrm1DataSize
 
-	bcDataSegment := sPrgrm1[prgrm1DataStart:prgrm1DataStart+prgrm1DataSize]
-	txnDataSegment := sPrgrm2[acc:acc+s]
+	bcDataSegment := sPrgrm1[prgrm1DataStart : prgrm1DataStart+prgrm1DataSize]
+	txnDataSegment := sPrgrm2[acc : acc+s]
 
 	// Data segments from blockchain and transaction codes.
 	merged = append(merged, bcDataSegment...)
 	merged = append(merged, txnDataSegment...)
-	
-	merged = append(merged, make([]byte, int(prgrm1Info.HeapSize) - (len(bcDataSegment) + len(txnDataSegment)))...)
+
+	merged = append(merged, make([]byte, int(prgrm1Info.HeapSize)-(len(bcDataSegment)+len(txnDataSegment)))...)
 
 	// correcting sizes
 	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, mustSize(sCall{}))
@@ -1504,6 +1503,6 @@ func GetSerializedStackSize(sPrgrm []byte) int {
 
 	var prgrmInfo sProgram
 	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
-	
+
 	return int(prgrmInfo.StackSize)
 }
