@@ -306,7 +306,6 @@ func createWallet(csrfToken string, port int, seed string) {
 
 	data := url.Values{}
 	data.Set("seed", seed)
-	data.Add("coin", "cxcoin")
 	data.Add("label", "cxcoin")
 
 	req, err := http.NewRequest("POST", sURL, strings.NewReader(data.Encode()))
