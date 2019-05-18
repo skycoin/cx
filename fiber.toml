@@ -7,7 +7,7 @@
   default_connections = []
   genesis_address_str = "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E"
   genesis_coin_volume = 10000000000.0
-  genesis_signature_str = "6603a15c23bd49bbe7c217e824cd35c296e0a4e87a2ed54d4faa114bf0d617383c4d2bd8c130e07909972279b213a3dc7ce625afe7faa3fc9dd4ce2955b2a7b200"
+  genesis_signature_str = "2b9a398b6c57ecb92ca94ee9b7b8756b1567be4515090df2c38b850be0e80e801d4809114f6b5d042f6bcb5753570362126a33aed39d56fd1771322dbfa5140200"
   genesis_timestamp = 1426562704
   max_block_size = 5242880
   peer_list_url = "https://127.0.0.1/peers.txt"
