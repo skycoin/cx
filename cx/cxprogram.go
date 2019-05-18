@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/amherag/skycoin/src/cipher/encoder"
 	. "github.com/satori/go.uuid" // nolint golint
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 /*

@@ -32,14 +32,14 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
-	"github.com/skycoin/skycoin/src/cipher"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/skycoin/skycoin/src/coin"
-	"github.com/skycoin/skycoin/src/readable"
-	"github.com/skycoin/skycoin/src/skycoin"
-	"github.com/skycoin/skycoin/src/util/logging"
-	"github.com/skycoin/skycoin/src/visor"
-	"github.com/skycoin/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cipher"
+	// "github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/coin"
+	"github.com/amherag/skycoin/src/readable"
+	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/util/logging"
+	"github.com/amherag/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/api"
 
 	"errors"
 )
