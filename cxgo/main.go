@@ -40,6 +40,8 @@ import (
 	"github.com/amherag/skycoin/src/util/logging"
 	"github.com/amherag/skycoin/src/visor"
 	"github.com/amherag/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cli"
+	"github.com/amherag/skycoin/src/wallet"
 
 	"errors"
 )
@@ -348,26 +350,38 @@ func main () {
 
 	if options.walletMode {
 		if options.walletSeed == "" {
-			fmt.Println("creating a wallet requires a seed")
+			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+			return
+		}
+		if options.walletId == "" {
+			// Although there is a default walletId.
+			// This error should only occur if the user intentionally provides an empty id.
+			fmt.Println("creating a wallet requires an id provided with --wallet-id")
 			return
 		}
 
-		addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
-		skycoinClient := api.NewClient(addr)	
-		resp, err := skycoinClient.CreateUnencryptedWallet(options.walletSeed, "cxcoin", 1)
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: options.walletSeed,
+		}
+		
+		wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
 		if err != nil {
-			fmt.Println(err)
-			return
+			panic(err)
+		}
+		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+		err = wlt.Save("/tmp/6001/wallets/")
+		if err != nil {
+			panic(err)
 		}
 
-		// Encoding response to JSON with indentation
-		wlt, err := json.MarshalIndent(resp, "", "\t")
+		wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
 		if err != nil {
 			panic(err)
 		}
 
 		// Printing JSON with wallet information
-		fmt.Println(wlt)
+		fmt.Println(string(wltJSON))
 		
 		return
 	}
@@ -863,6 +877,8 @@ func main () {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
+			// All these HTTP requests need to be dropped in favor of calls to calls to functions
+			// from the `cli` or `api` Skycoin packages
 			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port)
 			skycoinClient := api.NewClient(addr)
 			csrfToken, err := skycoinClient.CSRF()
@@ -876,8 +892,7 @@ func main () {
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["mainExprs"] = txnCode
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
-			dataMap["wallet"] = map[string]string{"id": os.Getenv("WALLET")}
-			dataMap["change_address"] = os.Getenv("ADDRESS")
+			dataMap["wallet"] = map[string]string{"id": options.walletId}
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
 			
 			jsonStr, err := json.Marshal(dataMap)
