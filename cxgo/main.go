@@ -25,7 +25,6 @@ import (
 
 	"net"
 	"net/http"
-	"net/url"
 	
 	. "github.com/skycoin/cx/cx"
 	. "github.com/skycoin/cx/cxgo/parser"
@@ -40,6 +39,7 @@ import (
 	"github.com/skycoin/skycoin/src/skycoin"
 	"github.com/skycoin/skycoin/src/util/logging"
 	"github.com/skycoin/skycoin/src/visor"
+	"github.com/skycoin/skycoin/src/api"
 
 	"errors"
 )
@@ -274,9 +274,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=5000000",
-		 	"-max-txn-size-create-block=5000000",
-			"-max-block-size=5000000",
+			"-max-txn-size-unconfirmed=5242880",
+		 	"-max-txn-size-create-block=5242880",
+			"-max-block-size=5242880",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -292,59 +292,13 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=5000000",
-		"-max-txn-size-create-block=5000000",
-		"-max-block-size=5000000",
+		"-max-txn-size-unconfirmed=5242880",
+		"-max-txn-size-create-block=5242880",
+		"-max-block-size=5242880",
 	)
 	default:
 		return nil
 	}
-}
-
-func createWallet(csrfToken string, port int, seed string) {
-	sURL := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/create", port + 420)
-
-	data := url.Values{}
-	data.Set("seed", seed)
-	data.Add("label", "cxcoin")
-
-	req, err := http.NewRequest("POST", sURL, strings.NewReader(data.Encode()))
-	req.Header.Set("X-CSRF-Token", csrfToken)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	
-	var respBody map[string]interface{}
-	_ = json.Unmarshal(body, &respBody)
-
-	// Printing JSON object describing the new wallet or the error returned by the Skycoin API.
-	fmt.Println(string(body))
-}
-
-func getCSRFToken(port int) string {
-	csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", port + 420))
-	if err != nil {
-		panic(err)
-	}
-	defer csrfResp.Body.Close()
-	csrfBody, err := ioutil.ReadAll(csrfResp.Body)
-
-	var csrf map[string]string
-	if err := json.Unmarshal(csrfBody, &csrf); err != nil {
-		panic(err)
-	}
-
-	return string(csrf["csrf_token"])
 }
 
 func main () {
@@ -398,9 +352,23 @@ func main () {
 			return
 		}
 
-		csrfToken := getCSRFToken(options.port)
-		createWallet(csrfToken, options.port, options.walletSeed)
+		addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
+		skycoinClient := api.NewClient(addr)	
+		resp, err := skycoinClient.CreateUnencryptedWallet(options.walletSeed, "cxcoin", 1)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
+		// Encoding response to JSON with indentation
+		wlt, err := json.MarshalIndent(resp, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		// Printing JSON with wallet information
+		fmt.Println(wlt)
+		
 		return
 	}
 	
@@ -895,7 +863,12 @@ func main () {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
-			csrfToken := getCSRFToken(options.port)
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port)
+			skycoinClient := api.NewClient(addr)
+			csrfToken, err := skycoinClient.CSRF()
+			if err != nil {
+				panic(err)
+			}
 
 			url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port + 420)
 
