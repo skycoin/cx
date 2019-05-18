@@ -1,7 +1,7 @@
 package cxcore
 
 import (
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 type sIndex struct {

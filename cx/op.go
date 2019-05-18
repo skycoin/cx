@@ -3,7 +3,7 @@ package cxcore
 import (
 	"fmt"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // CalculateDereferences ...
