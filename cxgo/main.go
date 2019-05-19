@@ -32,13 +32,13 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
-	"github.com/skycoin/skycoin/src/cipher"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/skycoin/skycoin/src/coin"
-	"github.com/skycoin/skycoin/src/readable"
-	"github.com/skycoin/skycoin/src/skycoin"
-	"github.com/skycoin/skycoin/src/util/logging"
-	"github.com/skycoin/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/cipher"
+	// "github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/coin"
+	"github.com/amherag/skycoin/src/readable"
+	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/util/logging"
+	"github.com/amherag/skycoin/src/visor"
 
 	"errors"
 )
@@ -449,11 +449,25 @@ func main () {
 			panic(err)
 		}
 
+		memOff := GetSerializedMemoryOffset(sPrgrm)
+		stackSize := GetSerializedStackSize(sPrgrm)
+		// sPrgrm with Stack and Heap
+		sPrgrmSH := sPrgrm[:memOff]
+		// Appending new stack
+		sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
+		// Appending data segment
+		sPrgrmSH = append(sPrgrmSH, sPrgrm[memOff:]...)
+		// Appending new heap
+		sPrgrmSH = append(sPrgrmSH, make([]byte, INIT_HEAP_SIZE)...)
+		
 		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
 		// bcPrgrm = Deserialize(sPrgrm)
-		prevMemSize := len(PRGRM.Memory)
-		PRGRM = Deserialize(sPrgrm)
-		PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
+		// prevMemSize := len(PRGRM.Memory)
+		PRGRM = Deserialize(sPrgrmSH)
+		// // Adding 
+		// PRGRM.Memory = append(make([]byte, STACK_SIZE), PRGRM.Memory...)
+		// PRGRM.Memory
+		// PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
 		DataOffset = PRGRM.HeapStartsAt
 	}
 
@@ -814,6 +828,11 @@ func main () {
 			cmd.Start()
 			cmd.Wait()
 		} else if options.broadcastMode {
+			// Resetting memory
+			dsPrgrm := Deserialize(sPrgrm)
+			PRGRM.StackPointer = 0
+			PRGRM.HeapPointer = dsPrgrm.HeapPointer
+			
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 

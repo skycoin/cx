@@ -10,6 +10,55 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "cxchains"
+  digest = "1:8d92cd9e633462dbec3b45770da58c1c1727ba54f7fa090e027a4f15883a8f09"
+  name = "github.com/amherag/skycoin"
+  packages = [
+    "src/api",
+    "src/api/webrpc",
+    "src/cipher",
+    "src/cipher/base58",
+    "src/cipher/chacha20poly1305",
+    "src/cipher/chacha20poly1305/internal/chacha20",
+    "src/cipher/encoder",
+    "src/cipher/encrypt",
+    "src/cipher/go-bip39",
+    "src/cipher/pbkdf2",
+    "src/cipher/poly1305",
+    "src/cipher/ripemd160",
+    "src/cipher/scrypt",
+    "src/cipher/secp256k1-go",
+    "src/cipher/secp256k1-go/secp256k1-go2",
+    "src/cli",
+    "src/coin",
+    "src/daemon",
+    "src/daemon/gnet",
+    "src/daemon/pex",
+    "src/daemon/strand",
+    "src/params",
+    "src/readable",
+    "src/skycoin",
+    "src/util/apputil",
+    "src/util/certutil",
+    "src/util/droplet",
+    "src/util/elapse",
+    "src/util/fee",
+    "src/util/file",
+    "src/util/http",
+    "src/util/iputil",
+    "src/util/logging",
+    "src/util/timeutil",
+    "src/util/useragent",
+    "src/visor",
+    "src/visor/blockdb",
+    "src/visor/dbutil",
+    "src/visor/historydb",
+    "src/wallet",
+  ]
+  pruneopts = "UT"
+  revision = "68cae7567fa8008851da6d2867fbd1d19a061a04"
+
+[[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -87,14 +136,6 @@
   pruneopts = "UT"
   revision = "8cb6e5b959231cc1119e43259c4a608f9c51a241"
   version = "v1.0.0"
-
-[[projects]]
-  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
-  name = "github.com/inconshreveable/mousetrap"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-  version = "v1.0"
 
 [[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
@@ -243,55 +284,6 @@
   revision = "b86a26479c3e25ac0f13e195bd2c0554bcf2f837"
 
 [[projects]]
-  digest = "1:3bda3eff5522052c45a9187a153c3774353953cd05bd5ef148986af320ee1753"
-  name = "github.com/skycoin/skycoin"
-  packages = [
-    "src/api",
-    "src/api/webrpc",
-    "src/cipher",
-    "src/cipher/base58",
-    "src/cipher/chacha20poly1305",
-    "src/cipher/chacha20poly1305/internal/chacha20",
-    "src/cipher/encoder",
-    "src/cipher/encrypt",
-    "src/cipher/go-bip39",
-    "src/cipher/pbkdf2",
-    "src/cipher/poly1305",
-    "src/cipher/ripemd160",
-    "src/cipher/scrypt",
-    "src/cipher/secp256k1-go",
-    "src/cipher/secp256k1-go/secp256k1-go2",
-    "src/cli",
-    "src/coin",
-    "src/daemon",
-    "src/daemon/gnet",
-    "src/daemon/pex",
-    "src/daemon/strand",
-    "src/params",
-    "src/readable",
-    "src/skycoin",
-    "src/util/apputil",
-    "src/util/certutil",
-    "src/util/droplet",
-    "src/util/elapse",
-    "src/util/fee",
-    "src/util/file",
-    "src/util/http",
-    "src/util/iputil",
-    "src/util/logging",
-    "src/util/timeutil",
-    "src/util/useragent",
-    "src/visor",
-    "src/visor/blockdb",
-    "src/visor/dbutil",
-    "src/visor/historydb",
-    "src/wallet",
-  ]
-  pruneopts = "UT"
-  revision = "9b5f9f9715910798b0fa918819c27b362a47a0a4"
-  version = "v0.25.1"
-
-[[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
   name = "github.com/spf13/afero"
   packages = [
@@ -309,14 +301,6 @@
   pruneopts = "UT"
   revision = "8c9545af88b134710ab1cd196795e7f2388358d7"
   version = "v1.3.0"
-
-[[projects]]
-  digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
-  name = "github.com/spf13/cobra"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
-  version = "v0.0.3"
 
 [[projects]]
   digest = "1:1b753ec16506f5864d26a28b43703c58831255059644351bbcb019b843950900"
@@ -431,17 +415,17 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/amherag/skycoin/src/cipher",
+    "github.com/amherag/skycoin/src/cipher/encoder",
+    "github.com/amherag/skycoin/src/cli",
+    "github.com/amherag/skycoin/src/coin",
+    "github.com/amherag/skycoin/src/readable",
+    "github.com/amherag/skycoin/src/skycoin",
+    "github.com/amherag/skycoin/src/util/logging",
+    "github.com/amherag/skycoin/src/util/useragent",
+    "github.com/amherag/skycoin/src/visor",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
-    "github.com/skycoin/skycoin/src/cipher",
-    "github.com/skycoin/skycoin/src/cipher/encoder",
-    "github.com/skycoin/skycoin/src/cli",
-    "github.com/skycoin/skycoin/src/coin",
-    "github.com/skycoin/skycoin/src/readable",
-    "github.com/skycoin/skycoin/src/skycoin",
-    "github.com/skycoin/skycoin/src/util/logging",
-    "github.com/skycoin/skycoin/src/util/useragent",
-    "github.com/skycoin/skycoin/src/visor",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
   ]
