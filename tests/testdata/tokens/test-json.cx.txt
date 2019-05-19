@@ -94,7 +94,12 @@ RPAREN
  COMMA 
 BOOLLT true
  COMMA 
-STRLIT failed to read str value
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read str value '%s'
+ COMMA 
+ IDENT s
+RPAREN 
 RPAREN 
 SCOLON 
  IDENT panic
@@ -226,6 +231,59 @@ SCOLON
 RBRACE 
 SCOLON 
   FUNC 
+ IDENT testBool
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT b
+  BOOL bool
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT value
+  BOOL bool
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadBool
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT value
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read bool value
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT b
+ COMMA 
+ IDENT value
+ COMMA 
+STRLIT bool values don't match
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT Bool %b
+
+ COMMA 
+ IDENT value
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
  IDENT testKeyValueF64
 LPAREN 
  IDENT file
@@ -284,7 +342,36 @@ SCOLON
 RBRACE 
 SCOLON 
   FUNC 
- IDENT testStrArray
+ IDENT testKeyValueBool
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+   STR 
+ COMMA 
+ IDENT b
+  BOOL bool
+RPAREN 
+LBRACE 
+ IDENT testStr
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT s
+RPAREN 
+SCOLON 
+ IDENT testBool
+LPAREN 
+ IDENT file
+ COMMA 
+ IDENT b
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testStrSlice
 LPAREN 
  IDENT file
    I32 i32
@@ -305,7 +392,7 @@ SCOLON
 LPAREN 
  IDENT json
 PERIOD 
- IDENT ReadStrArray
+ IDENT ReadStrSlice
 LPAREN 
  IDENT file
  COMMA 
@@ -315,7 +402,7 @@ RPAREN
  COMMA 
 BOOLLT true
  COMMA 
-STRLIT failed to read str slice
+STRLIT failed to read []str
 RPAREN 
 SCOLON 
  IDENT panic
@@ -332,7 +419,7 @@ RPAREN
  COMMA 
  IDENT sprintf
 LPAREN 
-STRLIT failed to read str slice : lens don't match, %d != %d
+STRLIT failed to read []str: lens don't match, %d != %d
  COMMA 
  IDENT len
 LPAREN 
@@ -381,7 +468,7 @@ RBRACK
  COMMA 
  IDENT sprintf
 LPAREN 
-STRLIT failed to read str slice : value don't match : `%s` != `%s`
+STRLIT failed to read []str: value don't match, `%s` != `%s`
  COMMA 
  IDENT s
 LBRACK 
@@ -421,21 +508,287 @@ SCOLON
 RBRACE 
 SCOLON 
   FUNC 
+ IDENT testF32Slice
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+LBRACK 
+RBRACK 
+   F32 f32
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT values
+LBRACK 
+RBRACK 
+   F32 f32
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadF32Slice
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT values
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read []f32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read []f32:  lens don't match, %d != %d
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+RPAREN 
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT count
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+SCOLON 
+   FOR 
+ IDENT i
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT i
+  LTOP <
+ IDENT count
+SCOLON 
+ IDENT i
+ INCOP 
+LBRACE 
+ IDENT panic
+LPAREN 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read []f32: value don't match, %d != %d
+ COMMA 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT F32 %d/%d, %d
+
+ COMMA 
+ IDENT i
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
+ IDENT testI32Slice
+LPAREN 
+ IDENT file
+   I32 i32
+ COMMA 
+ IDENT s
+LBRACK 
+RBRACK 
+   I32 i32
+RPAREN 
+LBRACE 
+   VAR 
+ IDENT values
+LBRACK 
+RBRACK 
+   I32 i32
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadI32Slice
+LPAREN 
+ IDENT file
+ COMMA 
+ REFOP &
+ IDENT values
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read []i32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read []i32: lens don't match, %d != %d
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+RPAREN 
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT count
+   I32 i32
+  ASGN =
+ IDENT len
+LPAREN 
+ IDENT s
+RPAREN 
+SCOLON 
+   FOR 
+ IDENT i
+CASSGN :=
+INTLIT 0
+SCOLON 
+ IDENT i
+  LTOP <
+ IDENT count
+SCOLON 
+ IDENT i
+ INCOP 
+LBRACE 
+ IDENT panic
+LPAREN 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT sprintf
+LPAREN 
+STRLIT failed to read []i32: value don't match, %d != %d
+ COMMA 
+ IDENT s
+LBRACK 
+ IDENT i
+RBRACK 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+ IDENT debugOutput
+LPAREN 
+ IDENT sprintf
+LPAREN 
+STRLIT I32 %d/%d, %d
+
+ COMMA 
+ IDENT i
+ COMMA 
+ IDENT len
+LPAREN 
+ IDENT values
+RPAREN 
+ COMMA 
+ IDENT values
+LBRACK 
+ IDENT i
+RBRACK 
+RPAREN 
+RPAREN 
+SCOLON 
+RBRACE 
+SCOLON 
+RBRACE 
+SCOLON 
+  FUNC 
  IDENT main
 LPAREN 
 RPAREN 
 LBRACE 
    VAR 
- IDENT file
+ IDENT file_0
    I32 i32
-SCOLON 
-   VAR 
- IDENT success
-  BOOL bool
-SCOLON 
- IDENT file
- COMMA 
- IDENT success
   ASGN =
  IDENT json
 PERIOD 
@@ -446,16 +799,105 @@ RPAREN
 SCOLON 
  IDENT panic
 LPAREN 
- IDENT success
+ IDENT file_0
+ COMMA 
+INTLIT 0
+ COMMA 
+STRLIT failed to open json file_0
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT file_1
+   I32 i32
+  ASGN =
+ IDENT json
+PERIOD 
+ IDENT Open
+LPAREN 
+STRLIT testdata/json/test-0.json
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT file_1
+ COMMA 
+INTLIT 1
+ COMMA 
+STRLIT failed to reopen json file_0
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ IDENT file_1
+RPAREN 
  COMMA 
 BOOLLT true
  COMMA 
-STRLIT failed to open json file
+STRLIT failed to close json file_1
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT file_2
+   I32 i32
+  ASGN =
+ IDENT json
+PERIOD 
+ IDENT Open
+LPAREN 
+STRLIT invalidfile
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT file_2
+ COMMA 
+ SUBOP -
+INTLIT 1
+ COMMA 
+STRLIT open succeed
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT file_3
+   I32 i32
+  ASGN =
+ IDENT json
+PERIOD 
+ IDENT Open
+LPAREN 
+STRLIT testdata/json/test-0.json
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT file_3
+ COMMA 
+INTLIT 1
+ COMMA 
+STRLIT handle must be 1
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ IDENT file_3
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to close json file_3
 RPAREN 
 SCOLON 
  IDENT testDelim
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
  IDENT json
 PERIOD 
@@ -464,7 +906,7 @@ RPAREN
 SCOLON 
  IDENT testKeyValueF64
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT current_supply
  COMMA 
@@ -473,7 +915,7 @@ RPAREN
 SCOLON 
  IDENT testKeyValueF64
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT total_supply
  COMMA 
@@ -482,7 +924,7 @@ RPAREN
 SCOLON 
  IDENT testKeyValueF64
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT max_supply
  COMMA 
@@ -491,7 +933,7 @@ RPAREN
 SCOLON 
  IDENT testKeyValueI64
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT current_coinhour_supply
  COMMA 
@@ -500,7 +942,7 @@ RPAREN
 SCOLON 
  IDENT testKeyValueI64
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT total_coinhour_supply
  COMMA 
@@ -529,14 +971,14 @@ RBRACE
 SCOLON 
  IDENT testStr
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT unlocked_distribution_addresses
 RPAREN 
 SCOLON 
- IDENT testStrArray
+ IDENT testStrSlice
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
  IDENT values
 RPAREN 
@@ -559,23 +1001,312 @@ RBRACE
 SCOLON 
  IDENT testStr
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
 STRLIT locked_distribution_addresses
 RPAREN 
 SCOLON 
- IDENT testStrArray
+ IDENT testStrSlice
 LPAREN 
- IDENT file
+ IDENT file_0
  COMMA 
  IDENT values
 RPAREN 
 SCOLON 
 RBRACE 
 SCOLON 
+ IDENT testKeyValueBool
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT true
+ COMMA 
+BOOLLT true
+RPAREN 
+SCOLON 
+ IDENT testKeyValueBool
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT false
+ COMMA 
+BOOLLT false
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT vec3
+LBRACK 
+INTLIT 3
+RBRACK 
+   F32 f32
+SCOLON 
+   VAR 
+ IDENT vec4
+LBRACK 
+INTLIT 4
+RBRACK 
+   F32 f32
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT [2]f32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadF32Vec3
+LPAREN 
+ IDENT file_0
+ COMMA 
+ REFOP &
+ IDENT vec3
+RPAREN 
+ COMMA 
+BOOLLT false
+ COMMA 
+STRLIT must return an error
+RPAREN 
+SCOLON 
  IDENT testDelim
 LPAREN 
- IDENT file
+ IDENT file_0
+ COMMA 
+ IDENT json
+PERIOD 
+ IDENT DELIM_SQUARE_RIGHT
+RPAREN 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT [3]f32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadF32Vec3
+LPAREN 
+ IDENT file_0
+ COMMA 
+ REFOP &
+ IDENT vec3
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read [3]f32
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT testv3f32
+LBRACK 
+INTLIT 3
+RBRACK 
+   F32 f32
+  ASGN =
+LBRACK 
+INTLIT 3
+RBRACK 
+   F32 f32
+LBRACE 
+FLOATL 4
+ COMMA 
+FLOATL 5
+ COMMA 
+FLOATL 6
+RBRACE 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT vec3
+ COMMA 
+ IDENT testv3f32
+ COMMA 
+STRLIT vec3 don't match
+RPAREN 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT [4]f32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadF32Vec4
+LPAREN 
+ IDENT file_0
+ COMMA 
+ REFOP &
+ IDENT vec4
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to read [4]f32
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT testv4f32
+LBRACK 
+INTLIT 4
+RBRACK 
+   F32 f32
+  ASGN =
+LBRACK 
+INTLIT 4
+RBRACK 
+   F32 f32
+LBRACE 
+FLOATL 7
+ COMMA 
+FLOATL 8
+ COMMA 
+FLOATL 9
+ COMMA 
+FLOATL 10
+RBRACE 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT vec4
+ COMMA 
+ IDENT testv4f32
+ COMMA 
+STRLIT vec4 don't match
+RPAREN 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT [5]f32
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT ReadF32Vec4
+LPAREN 
+ IDENT file_0
+ COMMA 
+ REFOP &
+ IDENT vec4
+RPAREN 
+ COMMA 
+BOOLLT false
+ COMMA 
+STRLIT must return an error
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT MatchDelim
+LPAREN 
+ IDENT file_0
+ COMMA 
+ IDENT json
+PERIOD 
+ IDENT DELIM_SQUARE_RIGHT
+RPAREN 
+ COMMA 
+BOOLLT true
+ COMMA 
+STRLIT failed to match delim
+RPAREN 
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT []f32
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT testvf32
+LBRACK 
+RBRACK 
+   F32 f32
+  ASGN =
+LBRACK 
+RBRACK 
+   F32 f32
+LBRACE 
+FLOATL 16
+ COMMA 
+FLOATL 17
+ COMMA 
+FLOATL 18
+ COMMA 
+FLOATL 19
+ COMMA 
+FLOATL 20
+RBRACE 
+SCOLON 
+ IDENT testF32Slice
+LPAREN 
+ IDENT file_0
+ COMMA 
+ IDENT testvf32
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT veci32
+LBRACK 
+RBRACK 
+   I32 i32
+SCOLON 
+ IDENT testStr
+LPAREN 
+ IDENT file_0
+ COMMA 
+STRLIT []i32
+RPAREN 
+SCOLON 
+   VAR 
+ IDENT testvi32
+LBRACK 
+RBRACK 
+   I32 i32
+  ASGN =
+LBRACK 
+RBRACK 
+   I32 i32
+LBRACE 
+INTLIT 21
+ COMMA 
+INTLIT 22
+ COMMA 
+INTLIT 23
+ COMMA 
+INTLIT 24
+ COMMA 
+INTLIT 25
+RBRACE 
+SCOLON 
+ IDENT testI32Slice
+LPAREN 
+ IDENT file_0
+ COMMA 
+ IDENT testvi32
+RPAREN 
+SCOLON 
+ IDENT testDelim
+LPAREN 
+ IDENT file_0
  COMMA 
  IDENT json
 PERIOD 
@@ -588,12 +1319,55 @@ LPAREN
 PERIOD 
  IDENT Close
 LPAREN 
- IDENT file
+INTLIT 1
+RPAREN 
+ COMMA 
+BOOLLT false
+ COMMA 
+STRLIT succeed to close invalid json 1
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ IDENT file_0
 RPAREN 
  COMMA 
 BOOLLT true
  COMMA 
-STRLIT failed to close json file
+STRLIT failed to close json file_0
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ IDENT file_0
+RPAREN 
+ COMMA 
+BOOLLT false
+ COMMA 
+STRLIT succeed to close json file_0 twice
+RPAREN 
+SCOLON 
+ IDENT panic
+LPAREN 
+ IDENT json
+PERIOD 
+ IDENT Close
+LPAREN 
+ SUBOP -
+INTLIT 1
+RPAREN 
+ COMMA 
+BOOLLT false
+ COMMA 
+STRLIT succeed to close invalid json -1
 RPAREN 
 SCOLON 
 RBRACE 

@@ -37,35 +37,49 @@ type JSONFile struct {
 }
 
 var jsons []JSONFile
+var freeJsons []int32
 
 // Open the named json file for reading, returns an i32 identifying the json parser.
 func opJSONOpen(expr *CXExpression, fp int) {
-	handle := -1
-	success := false
+	handle := int32(-1)
 
 	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
 	if err == nil {
-		reader := bufio.NewReader(file)
+		freeCount := len(freeJsons)
+		if freeCount > 0 {
+			freeCount--
+			handle = int32(freeJsons[freeCount])
+			freeJsons = freeJsons[:freeCount]
+		} else {
+			handle = int32(len(jsons))
+			jsons = append(jsons, JSONFile{})
+		}
+
+		if handle < 0 || handle >= int32(len(jsons)) {
+			panic("internal error")
+		}
+
 		var jsonFile JSONFile
 		jsonFile.file = file
-		jsonFile.reader = reader
+		jsonFile.reader = bufio.NewReader(file)
 		jsonFile.decoder = json.NewDecoder(jsonFile.reader)
 		jsonFile.decoder.UseNumber()
-		handle = len(jsons)
-		success = true
-		jsons = append(jsons, jsonFile)
+
+		jsons[handle] = jsonFile
 	}
 
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(handle)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
 // Close json parser (and all underlying resources) idendified by it's i32 handle.
 func opJSONClose(expr *CXExpression, fp int) {
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	handle := ReadI32(fp, expr.Inputs[0])
+	if jsonFile := validJsonFile(handle); jsonFile != nil {
 		jsonFile.file.Close()
+		jsons[handle] = JSONFile{}
+		freeJsons = append(freeJsons, handle)
 		success = true
 	}
 
@@ -77,7 +91,7 @@ func opJSONTokenMore(expr *CXExpression, fp int) {
 	more := false
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		more = jsonFile.decoder.More()
 		success = true
 	}
@@ -91,7 +105,7 @@ func opJSONTokenNext(expr *CXExpression, fp int) {
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		token, err := jsonFile.decoder.Token()
 		if err == io.EOF {
 			tokenType = JSON_TOKEN_NULL
@@ -138,7 +152,7 @@ func opJSONTokenType(expr *CXExpression, fp int) {
 	tokenType := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		tokenType = jsonFile.tokenType
 		success = true
 	}
@@ -153,7 +167,7 @@ func opJSONTokenDelim(expr *CXExpression, fp int) {
 	tokenDelim := int32(JSON_TOKEN_INVALID)
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_DELIM {
 			tokenDelim = int32(jsonFile.tokenDelim)
 			success = true
@@ -170,7 +184,7 @@ func opJSONTokenBool(expr *CXExpression, fp int) {
 	tokenBool := false
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_BOOL {
 			tokenBool = jsonFile.tokenBool
 			success = true
@@ -187,7 +201,7 @@ func opJSONTokenF64(expr *CXExpression, fp int) {
 	var tokenF64 float64
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_F64 {
 			tokenF64 = jsonFile.tokenF64
 			success = true
@@ -209,7 +223,7 @@ func opJSONTokenI64(expr *CXExpression, fp int) {
 	var tokenI64 int64
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_NUMBER {
 			var err error
 			if tokenI64, err = jsonFile.tokenNumber.Int64(); err == nil {
@@ -228,7 +242,7 @@ func opJSONTokenStr(expr *CXExpression, fp int) {
 	var tokenStr string
 	success := false
 
-	if jsonFile := validJsonFile(expr, fp); jsonFile != nil {
+	if jsonFile := validJsonFileExpr(expr, fp); jsonFile != nil {
 		if jsonFile.tokenType == JSON_TOKEN_STR {
 			tokenStr = jsonFile.tokenStr
 			success = true
@@ -239,10 +253,15 @@ func opJSONTokenStr(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
 }
 
-// helper function used to validate json handle
-func validJsonFile(expr *CXExpression, fp int) *JSONFile {
-	handle := int(ReadI32(fp, expr.Inputs[0]))
-	if handle >= 0 && handle < len(jsons) {
+// helper function used to validate json handle from expr
+func validJsonFileExpr(expr *CXExpression, fp int) *JSONFile {
+	handle := ReadI32(fp, expr.Inputs[0])
+	return validJsonFile(handle)
+}
+
+// helper function used to valid json handle from i32
+func validJsonFile(handle int32) *JSONFile {
+	if handle >= 0 && handle < int32(len(jsons)) && jsons[handle].file != nil {
 		return &jsons[handle]
 	}
 	return nil

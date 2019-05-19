@@ -116,7 +116,7 @@ func ReadF32(file i32, value *f32) (success bool) {
 // Read and interpret next array in json file as [3]f32, returns true on success
 // This function move the current token
 func ReadF32Vec3(file i32, array *[3]f32) (success bool) {
-	if MatchDelim(file, json.DELIM_SQUARE_LEFT) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
 		return
 	}
 
@@ -169,7 +169,7 @@ func ReadF32Vec4(file i32, array *[4]f32) (success bool) {
 
 // Read next array in json file as []i32, returns true on success
 // This function move the current token
-func ReadI32Array(file i32, array *[]i32) (success bool) {
+func ReadI32Slice(file i32, array *[]i32) (success bool) {
 	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
 		return
 	}
@@ -186,7 +186,7 @@ func ReadI32Array(file i32, array *[]i32) (success bool) {
 				success = false
 				return
 			}
-			array = append(array, value)
+			*array = append(*array, value)
 		}
 	}
 
@@ -195,7 +195,7 @@ func ReadI32Array(file i32, array *[]i32) (success bool) {
 
 // Read next array in json file as []f32, returns true on success
 // This function move the current token
-func ReadF32Array(file i32, array *[]f32) (success bool) {
+func ReadF32Slice(file i32, array *[]f32) (success bool) {
 	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
 		return
 	}
@@ -212,7 +212,7 @@ func ReadF32Array(file i32, array *[]f32) (success bool) {
 				success = false
 				return
 			}
-			array = append(array, value)
+			*array = append(*array, value)
 		}
 	}
 
@@ -221,7 +221,7 @@ func ReadF32Array(file i32, array *[]f32) (success bool) {
 
 // Read next array in json file as []str, returns true on success
 // This function move the current token
-func ReadStrArray(file i32, array *[]str) (success bool) {
+func ReadStrSlice(file i32, array *[]str) (success bool) {
 	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
 		return
 	}

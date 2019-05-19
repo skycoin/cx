@@ -80,7 +80,7 @@ func init() {
 	// json
 	AddOpCode(OP_JSON_OPEN, "json.Open",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_JSON_CLOSE, "json.Close",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
