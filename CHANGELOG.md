@@ -1,9 +1,18 @@
 # Changelog
 
-### v0.6.3 (NOT YET RELEASED)
+### v0.7.0 (NOT YET RELEASED)
 * Additions
-  * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
-  * Added/forked the newcoin and skycoin-cli commands to the CX repository.
+* Changes
+* Libraries
+* Fixed issues
+* Documentation
+* Miscellaneous
+
+### v0.7beta released 2019-05-19
+* Additions
+  * First release of CX chains, i.e. CX programs stored on a Skycoin fiber blockchain
+  * Added/forked the newcoin and skycoin-cli commands to the CX
+    repositoryand adapted it to CX chains.
 * Changes
   * Transaction and block default sizes for CX chains changed from 32 Kb to 5 Mb.
 * Libraries
