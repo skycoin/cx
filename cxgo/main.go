@@ -39,6 +39,9 @@ import (
 	"github.com/amherag/skycoin/src/skycoin"
 	"github.com/amherag/skycoin/src/util/logging"
 	"github.com/amherag/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cli"
+	"github.com/amherag/skycoin/src/wallet"
 
 	"errors"
 )
@@ -273,9 +276,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=5000000",
-		 	"-max-txn-size-create-block=5000000",
-			"-max-block-size=5000000",
+			"-max-txn-size-unconfirmed=5242880",
+		 	"-max-txn-size-create-block=5242880",
+			"-max-block-size=5242880",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -291,9 +294,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=5000000",
-		"-max-txn-size-create-block=5000000",
-		"-max-block-size=5000000",
+		"-max-txn-size-unconfirmed=5242880",
+		"-max-txn-size-create-block=5242880",
+		"-max-block-size=5242880",
 	)
 	default:
 		return nil
@@ -345,6 +348,44 @@ func main () {
 	
 	}
 
+	if options.walletMode {
+		if options.walletSeed == "" {
+			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+			return
+		}
+		if options.walletId == "" {
+			// Although there is a default walletId.
+			// This error should only occur if the user intentionally provides an empty id.
+			fmt.Println("creating a wallet requires an id provided with --wallet-id")
+			return
+		}
+
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: options.walletSeed,
+		}
+		
+		wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+		err = wlt.Save("/tmp/6001/wallets/")
+		if err != nil {
+			panic(err)
+		}
+
+		wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		// Printing JSON with wallet information
+		fmt.Println(string(wltJSON))
+		
+		return
+	}
+	
 	if options.printHelp {
 		printHelp()
 		return
@@ -836,16 +877,12 @@ func main () {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
-			// getting csrf token
-			csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", options.port + 420))
+			// All these HTTP requests need to be dropped in favor of calls to calls to functions
+			// from the `cli` or `api` Skycoin packages
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port)
+			skycoinClient := api.NewClient(addr)
+			csrfToken, err := skycoinClient.CSRF()
 			if err != nil {
-				panic(err)
-			}
-			defer csrfResp.Body.Close()
-			csrfBody, err := ioutil.ReadAll(csrfResp.Body)
-
-			var csrf map[string]string
-			if err := json.Unmarshal(csrfBody, &csrf); err != nil {
 				panic(err)
 			}
 
@@ -855,8 +892,7 @@ func main () {
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["mainExprs"] = txnCode
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
-			dataMap["wallet"] = map[string]string{"id": os.Getenv("WALLET")}
-			dataMap["change_address"] = os.Getenv("ADDRESS")
+			dataMap["wallet"] = map[string]string{"id": options.walletId}
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
 			
 			jsonStr, err := json.Marshal(dataMap)
@@ -865,7 +901,7 @@ func main () {
 			}
 
 			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			client := &http.Client{}
@@ -895,7 +931,7 @@ func main () {
 			}
 
 			req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err = client.Do(req)

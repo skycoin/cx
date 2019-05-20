@@ -29,6 +29,7 @@ type cxCmdFlags struct {
 	broadcastMode       bool
 	walletMode          bool
 	port                int
+	walletId            string
 	walletSeed          string
 	programName         string
 	secKey              string
@@ -54,6 +55,7 @@ func defaultCmdFlags() cxCmdFlags {
 		broadcastMode:       false,
 		port:                6001,
 		programName:         "cxcoin",
+		walletId:            "cxcoin_cli.wlt",
 		secKey:              "",
 		pubKey:              "",
 		genesisAddress:      "",
@@ -106,6 +108,7 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
 	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
 	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
+	flag.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
 	flag.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
 	flag.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")

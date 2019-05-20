@@ -13,6 +13,8 @@
   * First release of CX chains, i.e. CX programs stored on a Skycoin fiber blockchain
   * Added/forked the newcoin and skycoin-cli commands to the CX
     repositoryand adapted it to CX chains.
+  * CX can now create a wallet by running `cx --create-wallet --wallet-seed $WALLET_SEED`
+  * Added --wallet-id flag. This parameter replaces having to set the WALLET environment variable for CX chains.
 * Changes
   * Transaction and block default sizes for CX chains changed from 32 Kb to 5 Mb.
 * Libraries
