@@ -2,7 +2,7 @@ PACKAG
  IDENT main
 SCOLON 
 IMPORT 
-STRLIT arg
+STRLIT args
 SCOLON 
 IMPORT 
 STRLIT os
@@ -678,12 +678,19 @@ SCOLON
   FUNC 
  IDENT help
 LPAREN 
+ IDENT message
+   STR 
+ COMMA 
+ IDENT exitCode
+   I32 i32
 RPAREN 
 LBRACE 
  IDENT printf
 LPAREN 
-STRLIT Options:
+STRLIT %sOptions:
 
+ COMMA 
+ IDENT message
 RPAREN 
 SCOLON 
  IDENT printf
@@ -720,6 +727,13 @@ SCOLON
 LPAREN 
 STRLIT ++wdir          : Set working directory
 
+RPAREN 
+SCOLON 
+ IDENT os
+PERIOD 
+ IDENT Exit
+LPAREN 
+ IDENT exitCode
 RPAREN 
 SCOLON 
 RBRACE 
@@ -888,6 +902,10 @@ SCOLON
   ASGN =
 INTLIT 0
 SCOLON 
+   VAR 
+ IDENT help
+  BOOL bool
+SCOLON 
    FOR 
  IDENT a
 CASSGN :=
@@ -912,13 +930,13 @@ LBRACK
 RBRACK 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT GetValueStr
+ IDENT Str
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++wdir=
+STRLIT wdir
  COMMA 
  REFOP &
  IDENT g_workingDir
@@ -932,13 +950,13 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT GetValueStr
+ IDENT Str
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++cxpath=
+STRLIT cxpath
  COMMA 
  REFOP &
  IDENT g_cxPath
@@ -952,13 +970,13 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT GetFlags
+ IDENT Flags
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++log=
+STRLIT log
  COMMA 
  REFOP &
  IDENT log
@@ -976,13 +994,13 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT GetFlags
+ IDENT Flags
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++enable-tests=
+STRLIT enable-tests
  COMMA 
  REFOP &
  IDENT enabledTests
@@ -1000,13 +1018,13 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT GetFlags
+ IDENT Flags
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++disable-tests=
+STRLIT disable-tests
  COMMA 
  REFOP &
  IDENT disabledTests
@@ -1024,43 +1042,45 @@ SCOLON
 RBRACE 
 SCOLON 
     IF 
- IDENT arg
+ IDENT args
 PERIOD 
- IDENT Match
+ IDENT Bool
 LPAREN 
  IDENT arg
  COMMA 
-STRLIT ++help
+STRLIT help
+ COMMA 
+ REFOP &
+ IDENT help
  COMMA 
  REFOP &
  IDENT helpMatch
 RPAREN 
 LBRACE 
+    IF 
+ IDENT help
+LBRACE 
  IDENT help
 LPAREN 
-RPAREN 
-SCOLON 
- IDENT os
-PERIOD 
- IDENT Exit
-LPAREN 
+STRLIT 
+ COMMA 
 INTLIT 0
 RPAREN 
 SCOLON 
 RBRACE 
 SCOLON 
- IDENT printf
+RBRACE 
+SCOLON 
+ IDENT help
 LPAREN 
-STRLIT invalid argument : %s
+ IDENT sprintf
+LPAREN 
+STRLIT Invalid argument : %s
 
  COMMA 
  IDENT arg
 RPAREN 
-SCOLON 
- IDENT os
-PERIOD 
- IDENT Exit
-LPAREN 
+ COMMA 
  IDENT cx
 PERIOD 
  IDENT PANIC
@@ -1077,17 +1097,12 @@ SCOLON
   EQOP 
  IDENT TEST_ALL
 LBRACE 
- IDENT printf
-LPAREN 
-STRLIT Invalid test combination :
-
-RPAREN 
-SCOLON 
- IDENT arg
+    IF 
+ IDENT args
 PERIOD 
  IDENT PrintFlags
 LPAREN 
-STRLIT ++enabled-test=
+STRLIT ++enable-test=
  COMMA 
  IDENT enabledTests
  COMMA 
@@ -1095,12 +1110,15 @@ STRLIT ++enabled-test=
  COMMA 
  IDENT testValues
 RPAREN 
+LBRACE 
+RBRACE 
 SCOLON 
- IDENT arg
+    IF 
+ IDENT args
 PERIOD 
  IDENT PrintFlags
 LPAREN 
-STRLIT ++disabled-tests=
+STRLIT ++disable-tests=
  COMMA 
  IDENT disabledTests
  COMMA 
@@ -1108,11 +1126,14 @@ STRLIT ++disabled-tests=
  COMMA 
  IDENT testValues
 RPAREN 
+LBRACE 
+RBRACE 
 SCOLON 
- IDENT os
-PERIOD 
- IDENT Exit
+ IDENT help
 LPAREN 
+STRLIT Invalid test combination :
+
+ COMMA 
  IDENT cx
 PERIOD 
  IDENT PANIC
@@ -1169,7 +1190,8 @@ Running CX tests in dir : '%s'
  IDENT g_workingDir
 RPAREN 
 SCOLON 
- IDENT arg
+    IF 
+ IDENT args
 PERIOD 
  IDENT PrintFlags
 LPAREN 
@@ -1181,8 +1203,23 @@ STRLIT Enabled tests
  COMMA 
  IDENT testValues
 RPAREN 
+  EQOP 
+BOOLLT false
+LBRACE 
+ IDENT help
+LPAREN 
+STRLIT Invalid enabled test
+
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
 SCOLON 
- IDENT arg
+RBRACE 
+SCOLON 
+    IF 
+ IDENT args
 PERIOD 
  IDENT PrintFlags
 LPAREN 
@@ -1194,6 +1231,20 @@ STRLIT Enabled log
  COMMA 
  IDENT logValues
 RPAREN 
+  EQOP 
+BOOLLT false
+LBRACE 
+ IDENT help
+LPAREN 
+STRLIT Invalid enabled log
+
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT PANIC
+RPAREN 
+SCOLON 
+RBRACE 
 SCOLON 
  IDENT printf
 LPAREN 

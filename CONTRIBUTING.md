@@ -202,7 +202,7 @@ to run the test suite is running the following command in the top directory of
 the repository:
 
 ```
-cx lib/arg/argv.cx tests/main.cx ++wdir=tests
+cx lib/args.cx tests/main.cx ++wdir=tests
 ```
 
 When you do that, you will get a list of tests that fail, looking something
@@ -218,7 +218,7 @@ are to many or taking to long to run, you can disable some of the tests with
 the `++disable-tests` option like this:
 
 ```
-cx lib/arg/argv.cx tests/main.cx ++wdir=tests ++disable-tests=issue
+cx lib/args.cx tests/main.cx ++wdir=tests ++disable-tests=issue
 ```
 
 The available types of tests are `stable`, `issue` and `gui`.
@@ -227,7 +227,7 @@ If you are using the tests while debugging, you can add more information by
 adding the `++log` option.
 
 ```
-cx lib/arg/argv.cx tests/main.cx ++wdir=tests ++log=fail,skip
+cx lib/args.cx tests/main.cx ++wdir=tests ++log=fail,skip
 ```
 
 The available types of extra logging are `success`, `stderr`, `fail` and

@@ -90,7 +90,7 @@ lint: ## Run linters. Use make install-linters first.
 
 test: build ## Run CX test suite.
 	go test -race -tags full github.com/skycoin/cx/cxgo/
-	cx ./lib/arg/argv.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done

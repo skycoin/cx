@@ -1,6 +1,6 @@
 package main
 
-import "arg"
+import "args"
 import "os"
 import "cx"
 import "time"
@@ -105,14 +105,15 @@ func runTest(cmd str, exitCode i32, desc str) {
 	runTestEx(cmd, exitCode, desc, TEST_STABLE, 0)
 }
 
-func help () {
-	printf("Options:\n")
+func help (message str, exitCode i32) {
+	printf("%sOptions:\n", message)
 	printf("++help          : Prints this message.\n")
 	printf("++enable-tests  : Enable test set (all, stable, issue, gui).\n")
 	printf("++disable-tests : Disable test set (all, stable, issue, gui).\n")
 	printf("++log           : Enable log set (all, success, stderr, fail, skip, time).\n")
 	printf("++cxpath        : Set cx directory\n")
 	printf("++wdir          : Set working directory\n")
+	os.Exit(exitCode)
 }
 
 func main ()() {
@@ -138,46 +139,46 @@ func main ()() {
 	var enabledTests i32 = 0
 	var disabledTests i32 = 0
 	var log i32 = 0
+	var help bool
 
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
 
-		if arg.GetValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
+		if args.Str(arg, "wdir", &g_workingDir, &workingDirMatch) {
 			continue
 		}
 
-		if arg.GetValueStr(arg, "++cxpath=", &g_cxPath, &cxPathMatch) {
+		if args.Str(arg, "cxpath", &g_cxPath, &cxPathMatch) {
 			continue
 		}
 
-		if arg.GetFlags(arg, "++log=", &log, &logMatch, logNames, logValues) {
+		if args.Flags(arg, "log", &log, &logMatch, logNames, logValues) {
 			continue
 		}
 
-		if arg.GetFlags(arg, "++enable-tests=", &enabledTests, &enabledTestMatch, testNames, testValues) {
+		if args.Flags(arg, "enable-tests", &enabledTests, &enabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if arg.GetFlags(arg, "++disable-tests=", &disabledTests, &disabledTestMatch, testNames, testValues) {
+		if args.Flags(arg, "disable-tests", &disabledTests, &disabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if arg.Match(arg, "++help", &helpMatch) {
-			help()
-			os.Exit(0)
+		if args.Bool(arg, "help", &help, &helpMatch) {
+			if help {
+				help("", 0)
+			}
 		}
 
-		printf("invalid argument : %s\n", arg)
-		os.Exit(cx.PANIC)
+		help(sprintf("Invalid argument : %s\n", arg), cx.PANIC)
 	}
 
 	if enabledTests == TEST_ALL && disabledTests == TEST_ALL {
-		printf("Invalid test combination :\n")
-		arg.PrintFlags("++enabled-test=", enabledTests, testNames, testValues)
-		arg.PrintFlags("++disabled-tests=", disabledTests, testNames, testValues)
-		os.Exit(cx.PANIC)
+		if args.PrintFlags("++enable-test=", enabledTests, testNames, testValues) {}
+		if args.PrintFlags("++disable-tests=", disabledTests, testNames, testValues) {}
+		help("Invalid test combination :\n", cx.PANIC)
 	} else if disabledTests == TEST_ALL {
-		g_enabledTests = enabledTests
+		g_enabledTests= enabledTests
 	} else {
 		g_enabledTests = (g_enabledTests | enabledTests) & (-1 ^ disabledTests)
 	}
@@ -187,8 +188,13 @@ func main ()() {
 	}
 
 	printf("\nRunning CX tests in dir : '%s'\n", g_workingDir)
-	arg.PrintFlags("Enabled tests", g_enabledTests, testNames, testValues)
-	arg.PrintFlags("Enabled log", g_log, logNames, logValues)
+	if args.PrintFlags("Enabled tests", g_enabledTests, testNames, testValues) == false {
+		help("Invalid enabled test\n", cx.PANIC)
+	}
+
+	if args.PrintFlags("Enabled log", g_log, logNames, logValues) == false {
+		help("Invalid enabled log\n", cx.PANIC)
+	}
 	printf("\n")
 
 	var start i64
