@@ -5,6 +5,7 @@
 * Changes
 * Libraries
 * Fixed issues
+  * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
 * Documentation
 * Miscellaneous
 
