@@ -337,6 +337,7 @@ func main () {
 		if err != nil {
 			fmt.Println("Failed to create CPU profile: ", err)
 		}
+		defer f.Close()
 		if err := pprof.StartCPUProfile(f); err != nil {
 			fmt.Println("Failed to start CPU profile: ", err)
 		}
