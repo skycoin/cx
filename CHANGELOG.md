@@ -4,6 +4,7 @@
 * Additions
 * Changes
 * Libraries
+  * Add cx arg parsing library
 * Fixed issues
 * Documentation
 * Miscellaneous
