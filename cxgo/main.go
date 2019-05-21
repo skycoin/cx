@@ -879,7 +879,7 @@ func main () {
 
 			// All these HTTP requests need to be dropped in favor of calls to calls to functions
 			// from the `cli` or `api` Skycoin packages
-			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port)
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
 			skycoinClient := api.NewClient(addr)
 			csrfToken, err := skycoinClient.CSRF()
 			if err != nil {
@@ -894,6 +894,7 @@ func main () {
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
 			dataMap["wallet"] = map[string]string{"id": options.walletId}
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
+
 			
 			jsonStr, err := json.Marshal(dataMap)
 			if err != nil {
@@ -918,7 +919,9 @@ func main () {
 
 			var respBody map[string]interface{}
 			if err := json.Unmarshal(body, &respBody); err != nil {
-				panic(err)
+				// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
+				fmt.Println(string(body))
+				return
 			}
 
 			url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
