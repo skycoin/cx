@@ -32,18 +32,21 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
-	"github.com/skycoin/skycoin/src/cipher"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/skycoin/skycoin/src/coin"
-	"github.com/skycoin/skycoin/src/readable"
-	"github.com/skycoin/skycoin/src/skycoin"
-	"github.com/skycoin/skycoin/src/util/logging"
-	"github.com/skycoin/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/cipher"
+	// "github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/coin"
+	"github.com/amherag/skycoin/src/readable"
+	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/util/logging"
+	"github.com/amherag/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cli"
+	"github.com/amherag/skycoin/src/wallet"
 
 	"errors"
 )
 
-const VERSION = "0.6.2"
+const VERSION = "0.7beta"
 
 var (
 	log             = logging.MustGetLogger("newcoin")
@@ -273,9 +276,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=200000",
-		 	"-max-txn-size-create-block=200000",
-			"-max-block-size=200000",
+			"-max-txn-size-unconfirmed=5242880",
+		 	"-max-txn-size-create-block=5242880",
+			"-max-block-size=5242880",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -291,9 +294,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=200000",
-		"-max-txn-size-create-block=200000",
-		"-max-block-size=200000",
+		"-max-txn-size-unconfirmed=5242880",
+		"-max-txn-size-create-block=5242880",
+		"-max-block-size=5242880",
 	)
 	default:
 		return nil
@@ -376,6 +379,44 @@ func main () {
 	
 	}
 
+	if options.walletMode {
+		if options.walletSeed == "" {
+			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+			return
+		}
+		if options.walletId == "" {
+			// Although there is a default walletId.
+			// This error should only occur if the user intentionally provides an empty id.
+			fmt.Println("creating a wallet requires an id provided with --wallet-id")
+			return
+		}
+
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: options.walletSeed,
+		}
+		
+		wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+		err = wlt.Save("/tmp/6001/wallets/")
+		if err != nil {
+			panic(err)
+		}
+
+		wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		// Printing JSON with wallet information
+		fmt.Println(string(wltJSON))
+		
+		return
+	}
+	
 	if options.printHelp {
 		printHelp()
 		return
@@ -480,11 +521,25 @@ func main () {
 			panic(err)
 		}
 
+		memOff := GetSerializedMemoryOffset(sPrgrm)
+		stackSize := GetSerializedStackSize(sPrgrm)
+		// sPrgrm with Stack and Heap
+		sPrgrmSH := sPrgrm[:memOff]
+		// Appending new stack
+		sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
+		// Appending data segment
+		sPrgrmSH = append(sPrgrmSH, sPrgrm[memOff:]...)
+		// Appending new heap
+		sPrgrmSH = append(sPrgrmSH, make([]byte, INIT_HEAP_SIZE)...)
+		
 		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
 		// bcPrgrm = Deserialize(sPrgrm)
-		prevMemSize := len(PRGRM.Memory)
-		PRGRM = Deserialize(sPrgrm)
-		PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
+		// prevMemSize := len(PRGRM.Memory)
+		PRGRM = Deserialize(sPrgrmSH)
+		// // Adding 
+		// PRGRM.Memory = append(make([]byte, STACK_SIZE), PRGRM.Memory...)
+		// PRGRM.Memory
+		// PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
 		DataOffset = PRGRM.HeapStartsAt
 	}
 
@@ -815,19 +870,28 @@ func main () {
 			PRGRM.RemovePackage(MAIN_FUNC)
 			
 			s := Serialize(PRGRM, 1)
+			s = ExtractBlockchainProgram(s, s)
 
 			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
 			configFile := "fiber"
-			cmd := exec.Command("newcoin", "createcoin",
+			
+			cmd := exec.Command("go", "install", "./cmd/newcoin/...")
+			cmd.Start()
+			cmd.Wait()
+			
+			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
 			cmd.Start()
 			cmd.Wait()
-			exec.Command("go", "install", "./cmd/cxcoin/...").Start()
 			
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
+
 			err := initCXBlockchain(s, options.programName, options.secKey)
 			if err != nil {
 				panic(err)
@@ -846,7 +910,7 @@ func main () {
 		
 			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
-				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/skycoin/template"),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
 				"--config-file=" + configFile + ".toml",
 				"--config-dir=" + configDir,
 			)
@@ -856,19 +920,20 @@ func main () {
 			cmd.Start()
 			cmd.Wait()
 		} else if options.broadcastMode {
+			// Resetting memory
+			dsPrgrm := Deserialize(sPrgrm)
+			PRGRM.StackPointer = 0
+			PRGRM.HeapPointer = dsPrgrm.HeapPointer
+			
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
-			// getting csrf token
-			csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", options.port + 420))
+			// All these HTTP requests need to be dropped in favor of calls to calls to functions
+			// from the `cli` or `api` Skycoin packages
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
+			skycoinClient := api.NewClient(addr)
+			csrfToken, err := skycoinClient.CSRF()
 			if err != nil {
-				panic(err)
-			}
-			defer csrfResp.Body.Close()
-			csrfBody, err := ioutil.ReadAll(csrfResp.Body)
-
-			var csrf map[string]string
-			if err := json.Unmarshal(csrfBody, &csrf); err != nil {
 				panic(err)
 			}
 
@@ -878,9 +943,9 @@ func main () {
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["mainExprs"] = txnCode
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
-			dataMap["wallet"] = map[string]string{"id": os.Getenv("WALLET")}
-			dataMap["change_address"] = os.Getenv("ADDRESS")
+			dataMap["wallet"] = map[string]string{"id": options.walletId}
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
+
 			
 			jsonStr, err := json.Marshal(dataMap)
 			if err != nil {
@@ -888,7 +953,7 @@ func main () {
 			}
 
 			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			client := &http.Client{}
@@ -905,7 +970,9 @@ func main () {
 
 			var respBody map[string]interface{}
 			if err := json.Unmarshal(body, &respBody); err != nil {
-				panic(err)
+				// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
+				fmt.Println(string(body))
+				return
 			}
 
 			url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
@@ -918,7 +985,7 @@ func main () {
 			}
 
 			req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err = client.Do(req)

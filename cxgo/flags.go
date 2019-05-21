@@ -30,6 +30,7 @@ type cxCmdFlags struct {
 	broadcastMode       bool
 	walletMode          bool
 	port                int
+	walletId            string
 	walletSeed          string
 	programName         string
 	secKey              string
@@ -56,9 +57,10 @@ func defaultCmdFlags() cxCmdFlags {
 		broadcastMode:       false,
 		port:                6001,
 		programName:         "cxcoin",
-		secKey:              "1414535274594b23ca0090cdc01e6b7b31702525583eb01c8650a650d4a8c99d",
-		pubKey:              "02583e5ebbf85522474e0f17e681e62ca37910db6b8792763af4e97663c31a7984",
-		genesisAddress:      "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E",
+		walletId:            "cxcoin_cli.wlt",
+		secKey:              "",
+		pubKey:              "",
+		genesisAddress:      "",
 		genesisSignature:    "",
 	}
 }
@@ -106,16 +108,13 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
 	flag.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
 	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
-	// flag.BoolVar(&options.broadcastMode, "bt", options.broadcastMode, "alias for -broadcast")
 	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
 	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
+	flag.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
 	flag.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
-	// flag.StringVar(&options.programName, "bcn", options.programName, "alias for -bc-program-name")
 	flag.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
-	// flag.StringVar(&options.secKey, "seckey", options.secKey, "alias for -bc-sec-key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
-	// flag.StringVar(&options.genesisAddress, "bcgenaddr", options.genesisAddress, "alias for -bc-sec-key")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
 }
 
