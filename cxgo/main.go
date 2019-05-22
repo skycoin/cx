@@ -16,7 +16,6 @@ import (
 	// "encoding/hex"
 
 	"runtime"
-	"runtime/pprof"
 	"regexp"
 	
 	"flag"
@@ -303,22 +302,6 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 	}
 }
 
-var profile bool
-var profiles map[string]int64 = map[string]int64{}
-
-func StartProfile(name string) {
-	if profile {
-		profiles[name] = time.Now().UnixNano()
-	}
-}
-
-func StopProfile(name string) {
-	if profile {
-		t := time.Now().UnixNano()
-		deltaTime := t - profiles[name]
-		fmt.Printf("%s : %dms\n", name, deltaTime/(int64(time.Millisecond)/int64(time.Nanosecond)))
-	}
-}
 func main () {
 	checkCXPathSet()
 
@@ -331,18 +314,10 @@ func main () {
 	registerFlags(&options)
 	flag.Parse()
 
-	if options.profile {
-		profile = options.profile
-		f, err := os.Create(os.Args[0] + ".pprof")
-		if err != nil {
-			fmt.Println("Failed to create CPU profile: ", err)
-		}
-		defer f.Close()
-		if err := pprof.StartCPUProfile(f); err != nil {
-			fmt.Println("Failed to start CPU profile: ", err)
-		}
-		defer pprof.StopCPUProfile()
-	}
+	profile = options.profile
+	file := StartCPUProfile()
+	defer StopCPUProfile(file)
+	defer DumpMEMProfile()
 
 	StartProfile("Compilation")
 	StartProfile("Initialisation")
