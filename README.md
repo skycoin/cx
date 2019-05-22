@@ -150,6 +150,12 @@ core language) associated to
 
 ![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
 
+# CX Chains (CX + Skycoin Blockchain)
+
+CX Chains are Skycoin's solution for the creation of blockchain-based
+programs. You can read more about them in the [CX
+wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial).
+
 # Video Games in CX
 
 In order to test out the language, programmers from the Skycoin
