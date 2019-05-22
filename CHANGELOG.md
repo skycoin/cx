@@ -2,6 +2,7 @@
 
 ### v0.7.0 (NOT YET RELEASED)
 * Additions
+  * CX can now generate addresses to be used by CX chains.
 * Changes
 * Libraries
 * Fixed issues
