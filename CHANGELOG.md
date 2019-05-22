@@ -4,6 +4,7 @@
 * Additions
   * CX can now generate addresses to be used by CX chains.
 * Changes
+  * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
 * Libraries
 * Fixed issues
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
