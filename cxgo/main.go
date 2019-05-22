@@ -262,7 +262,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 	return err
 }
 
-func runNode (mode string, options cxCmdFlags) *exec.Cmd {
+func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 	switch mode {
 	case "publisher":
 		return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -303,7 +303,7 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 	}
 }
 
-func main () {
+func main() {
 	checkCXPathSet()
 
 	runtime.LockOSThread()
@@ -345,9 +345,36 @@ func main () {
 				log.Error(scanner.Text())
 			}
 		}()
-	
 	}
 
+	// Generate a CX chain address.
+	if options.genAddress {
+		// Create a random seed to create a temporary wallet.
+		seed := cli.MakeAlphanumericSeed()
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: seed,
+		}
+
+		// Generate temporary wallet.
+		wlt, err := cli.GenerateWallet(wallet.NewWalletFilename(), wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+
+		rw := wallet.NewReadableWallet(wlt)
+
+		output, err := json.MarshalIndent(rw, "", "    ")
+		if err != nil {
+			panic(err)
+		}
+
+		// Print all the wallet data.
+		fmt.Println(string(output))
+
+		return
+	}
+	
 	if options.walletMode {
 		if options.walletSeed == "" {
 			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
