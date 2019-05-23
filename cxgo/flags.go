@@ -29,6 +29,7 @@ type cxCmdFlags struct {
 	transactionMode     bool
 	broadcastMode       bool
 	walletMode          bool
+	genAddress          bool
 	port                int
 	walletId            string
 	walletSeed          string
@@ -107,6 +108,7 @@ func registerFlags(options *cxCmdFlags) {
 	// flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
 	flag.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
 	flag.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
+	flag.BoolVar(&options.genAddress, "generate-address", options.genAddress, "Generate a CX chain address")
 	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
 	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
 	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
