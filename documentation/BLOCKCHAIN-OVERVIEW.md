@@ -3,10 +3,12 @@ Table of Contents
 
    * [CX Chains Overview](#cx-chains-overview)
       * [Introduction](#introduction)
-      * [newcoin and cxcoin](#newcoin-and-cxcoin)
+      * [Public and Secret Keys Generation](#public-and-secret-keys-generation)
       * [In order to initialize a new CX chain, secret and public keys need to be generated.](#in-order-to-initialize-a-new-cx-chain-secret-and-public-keys-need-to-be-generated)
+      * [newcoin and cxcoin](#newcoin-and-cxcoin)
       * [Wallet](#wallet)
          * [Seed](#seed)
+      * [fiber.toml](#fibertoml)
       * [Blockchain Code](#blockchain-code)
          * [Program State](#program-state)
       * [Transaction Code](#transaction-code)
@@ -26,26 +28,32 @@ Table of Contents
 
 ## Introduction
 
-This document has the purpose of dissecting CX chains into its different parts and to describe the processes that involve these parts.
+This document has the purpose of dissecting CX chains into its different parts and to describe the processes that involve these parts. As the CX chains feature is still in a prototype/alpha stage, the descriptions contained in this file are subject to change. Changes can be expected after a new release of CX is created and after Github pull requests are merged into the `develop` branch. 
+
+## Public and Secret Keys Generation
+
+In order to initialize a new CX chain, secret and public keys need to be generated.
+- 
+
 
 ## `newcoin` and `cxcoin`
 
-Currently, CX has the `newcoin` command as a dependency (located in `cmd/newcoin`). In order to initialize a new CX chain, `newcoin` needs to create the `cxcoin` command (located in `cmd/cxcoin`) using the parameters defined in `./fiber.toml`.
+Currently, CX has the `newcoin` command as a dependency (located in `cmd/newcoin`). In order to initialize a new CX chain, `newcoin` needs to create the `cxcoin` command (located in `cmd/cxcoin`) using the parameters defined in `./fiber.toml`. This process should be simplified by mimicking the process defined by `cmd/cxcoin/cxcoin.go` in `cxgo/main.go`. In other words, instead of having to call the process defined by `cxcoin`, we can embed the process in CX to eliminate the `newcoin` and `cxcoin` dependencies.
 
 The workflow -- which occurs when running, for example, `cx --blockchain --secret-key $SECRET_KEY --public-key $PUBLIC_KEY examples/blockchain/counter-bc.cx` -- is as follows:
 
 1. `newcoin` is installed by running `go install ./cmd/newcoin/...`
 2. `newcoin` is run in order to create `cxcoin`
-
-[//]: # "UPDATE POINT"
-  - It is worthy to note that the name `cxcoin` could be changed to something else by using the `--program-name` flag, but this behavior has not been tested yet.
+> It is worthy to note that the name `cxcoin` could be changed to something else by using the `--program-name` flag, but this behavior has not been tested yet.
 3. `cxcoin` is installed by running `go install ./cmd/cxcoin/...`
-4. 
+4. `cxcoin` is run to initialize the CX chain. This process involves:
+    1. Running `go run ./cmd/cxcoin/cxcoin.go --block-publisher=true --blockchain-secret-key=$SECRET_KEY`.
 
-The data directory for the publisher node is stored in `$HOME/.cxcoin/`. Everytime a new CX chain is initialized, its data directory is deleted first. The name of this directory can change, depending on the value of `--program-name`.
-
-In order to initialize a new CX chain, secret and public keys need to be generated.
-- 
+    > The data directory for the publisher node is stored in `$HOME/.cxcoin/`. Every time a new CX chain is initialized, its data directory is deleted first. The name of this directory can change, depending on the value of `--program-name`.
+    2. As this is a new blockchain, the genesis block will be created and a genesis signature is generated. This genesis signature will be different for every blockchain, even if the blockchain private and public keys are the same.
+    3. Using the genesis signature and the secret key, a CX chain creates the first transaction in the genesis block, which is a transaction without a transaction code and with an unspent output storing the initial program state, defined by running the blockchain code.
+    4. `fiber.toml`'s field `genesis_signature_str` is updated automatically with the new genesis signature.
+    5. The genesis signature is printed to standard output, so the user can take note of it.
 
 
 ## Wallet
@@ -65,6 +73,8 @@ $ cx --create-wallet --wallet-seed "museum nothing practice weird wheel dignity 
 Any transaction that occurs in a CX chain can be seen as a transaction between two accounts, which are represented by two addresses.  At the moment, these addresses involved in the transactions are hardcoded in CX. As a consequent, in order to run any transaction in a CX chain, a wallet created from the seed `"museum nothing practice weird wheel dignity economy attend mask recipe minor dress"` needs to be created.
 
 The two addresses involved in any CX chain transaction are `TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX` and `2PBcLADETphmqWV7sujRZdh3UcabssgKAEB`. If this was a transaction involving the transfer of SKY from one address to another, the former would be the address that is sending SKY to the latter.
+
+## `fiber.toml`
 
 ## Blockchain Code
 
