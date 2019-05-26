@@ -1,8 +1,8 @@
-package base
+package cxcore
 
 import (
 	// "fmt"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // EscapeAnalysis ...
@@ -63,7 +63,7 @@ func opJmp(expr *CXExpression, fp int, call *CXCall) {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
 		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+inp1.Size]
-		encoder.DeserializeAtomic(predicateB, &predicate)
+		mustDeserializeAtomic(predicateB, &predicate)
 
 		if predicate {
 			call.Line = call.Line + expr.ThenLines

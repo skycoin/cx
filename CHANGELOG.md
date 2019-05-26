@@ -1,6 +1,104 @@
 # Changelog
 
-### v0.6 (NOT YET RELEASED)
+### v0.7.0 (NOT YET RELEASED)
+* Additions
+  * CX can now generate addresses to be used by CX chains.
+  * New debug option --debug-lexer or -Dl to see which tokens that are
+	returned by the lexer.
+* Changes
+  * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+* Libraries
+  * ...
+* Fixed issues
+  * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+* Documentation
+  * The blockchain tutorial
+	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	will be used to reflect the state in the CX source code (`develop` branch)
+  * The blockchain tutorial in the
+	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
+	be used as a tutorial for the latest CX release. 
+* Miscellaneous
+  * ...
+
+### v0.7beta released 2019-05-19
+* Additions
+  * First release of CX chains, i.e. CX programs stored on a Skycoin fiber blockchain
+  * Added/forked the newcoin and skycoin-cli commands to the CX
+    repositoryand adapted it to CX chains.
+  * CX can now create a wallet by running `cx --create-wallet --wallet-seed $WALLET_SEED`
+  * Added --wallet-id flag. This parameter replaces having to set the WALLET environment variable for CX chains.
+* Changes
+  * Transaction and block default sizes for CX chains changed from 32 Kb to 5 Mb.
+* Libraries
+  * Add math bindings for f32 and f64 types: isnan, rand, acos, asin.
+  * Add glfw bindings: Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
+* Fixed issues
+  * #292: Compilation error when left hand side of an assignment expression is a struct field.
+  * #309: Serialization is not taking into account non-default stack sizes.
+  * #310: Splitting a serialized program into its blockchain and transaction parts.
+  * #311: `CurrentFunction` and `CurrentStruct` are causing errors in programs with more than 1 package.
+  * #312: Deserialization is not setting correctly the sizes for the CallStack, HeapStartsAt and StackSize fields of the CXProgram structure.
+* Documentation
+* IDE
+  * Removed the current version of the IDE. We'll move to a textmate-based
+    solution in the future.
+* Miscellaneous
+  * Vendored all external packages
+
+### v0.6.2
+* Additions
+  * Support for exponents in floating point numbers (f32 and f64). Also
+	improved decimal point parsing
+	examples: 1.0 1. .1 1e+2 .1e-3
+  * Support for multi-dimensional slices.
+* Libraries
+* Fixed issues
+  * #58: No compilation error when indexing an array with a non integral var.
+  * #70: Inline field and index "dereferences" to function calls' outputs.
+  * #72: Multi-dimensional slices don't work.
+  * #76: Using int literal 0 where 0.0 was needed gave no error.
+  * #133: Panic when inserting a newline into a string literal.
+  * #134: Panic when declaring a variable of an unknown type.
+  * #155: Panic when trying to assign return value of a function returning void.
+  * #156: Panic when using a function declared in another package without importing the package.
+  * #166: Panic when calling a function from another package where the package name alias a local variable name
+  * #271: CX floats cannot handle exponents
+  * #284: Concatenation of str variables with + operator doesn't work.
+  * #285: Short declaration doesn't compile with opcode return value.
+  * #288: No compilation error when using float value in place of boolean expression.
+  * #289: Panic when package contains duplicate function signature.
+* Documentation
+* IDE (WiP)
+* Miscellaneous
+  * CXFX, the game development toolkit, has been moved to its own
+	repository at https://github.com/skycoin/FIXME
+
+### v0.6.1
+* Additions
+  * Support for lexical scoping
+  * `if/elseif` and `if/elseif/else` statements now work properly.
+* Libraries
+* Fixed issues
+  * #54: No compilation error when defining a struct with duplicate fields.
+  * #67: No compilation error when var is accessed outside of its declaring scope.
+  * #69: glfw.GetCursorPos() throws error
+  * #82: Empty code blocks (even if they contain commented-out lines) crash like this.
+  * #99: Short variable declarations are not working with calls to methods or functions.
+  * #102: String concatenation using the + operator doesn't work.
+  * #135: No compilation error when using arithmetic operators on struct instances.
+  * #153: Panic in when assigning an empty initializer list to a []i32 variable.
+  * #169: No compilation error when assigning a i32 value to a []i32 variable.
+  * #170: No compilation error when comparing value of different types.
+  * #247: No compilation error when variables are inline initialized.
+  * #244: Crash when using a constant expression in a slice literal expression.
+	* The problem actually involved the incapability of using expressions as
+	values in slice literals
+* Documentation
+* IDE (WiP)
+* Miscellaneous
+
+### v0.6
 * Additions
   * Serialization and deserialization
   * Functions as first-class objects
@@ -28,8 +126,23 @@
   * #53: CX was not catching an error involving invalid indirections
   * #55: Single character declarations are now allowed
   * #59: Fields of a struct returned by a function call can now be accessed
+  * #61: No compilation error when passing *i32 as an i32 arg and conversely
+  * #62: No compilation error when dereferencing an i32 var
   * #63: Fixed a problem where inline initializations didn't work with dereferences
+  * #65: Return statements now work in CX, with and without return arguments
+  * #77: Fixed errors related to sending references of structs to functions and
+        assigning references to struct literals
+  * #101: Using different types in shorthands now throws an error
+  * #104: Dubious error message when indexing an array with a substraction expression
+  * #105: Dubious error message when inline initializing a slice
+  * #108: Solved a bug that occured when two functions were named the same in
+    different packages
   * #131: Problem with struct literals in short variable declarations
+  * #132: Short declarations can now be assigned values coming from function calls
+  * #154: Sending pointers to slices to functions is now possible
+  * #167: Passing the address of a slice element is now possible
+  * #199: Trying to call an undefined function no longer throws a segfault
+  * #214: Fixed an error related to type deduction in references to struct fields
   * #218: Type checking now works with receiving variables of unexpected types
 * Documentation
   * CONTRIBUTING.md: Information about how to contribute to CX
@@ -37,7 +150,7 @@
   * Added a simple guide
 * CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
-### v0.5.18 (CURRENT VERSION) [2018-11-27 Tue 21:33]
+### v0.5.18 [2018-11-27 Tue 21:33]
 * **Affordances**:
   * Support for `affordances-of`: argument -> argument
   * Support for `affordances-of`: argument -> program

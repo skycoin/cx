@@ -1,0 +1,11 @@
+package main
+
+func bar (in i32) (out1 i32, out2 i32) {
+	return in
+}
+
+func main()() {
+	var num1 i32
+	var num2 i32
+	num1, num2 = bar(5)
+}

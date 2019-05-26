@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"github.com/amherag/skycoin/src/cipher/encoder"
+
 	. "github.com/skycoin/cx/cx"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+// SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
 func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
@@ -40,9 +42,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 			symOut := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symOut.Package = pkg
 
-			// symOut.IsSlice = true
-			// symInp.IsSlice = true
-
 			endPointsCounter++
 
 			symExpr := MakeExpression(nil, CurrentFile, LineNo)
@@ -58,14 +57,30 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
 				symExpr.Inputs = append(symExpr.Inputs, expr.Outputs...)
 			} else {
-				symExpr.Operator = expr.Operator
+				// We need to create a temporary variable to hold the result of the
+				// nested expressions. Then use that variable as part of the slice literal.
+				out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
+				outArg := getOutputType(expr)
+				out.AddType(TypeNames[outArg.Type])
+				out.CustomType = outArg.CustomType
+				out.Size = outArg.Size
+				out.TotalSize = outArg.Size
+				out.PreviouslyDeclared = true
+
+				expr.Outputs = nil
+				expr.AddOutput(out)
+				result = append(result, expr)
+				
+				// symExpr.Operator = expr.Operator
+				symExpr.Operator = Natives[OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
-				symExpr.Inputs = append(symExpr.Inputs, expr.Inputs...)
+				// symExpr.Inputs = append(symExpr.Inputs, expr.Inputs...)
+				symExpr.Inputs = append(symExpr.Inputs, out)
 
 				// hack to get the correct lengths below
-				expr.Outputs = append(expr.Outputs, symInp)
+				// expr.Outputs = append(expr.Outputs, symInp)
 			}
 
 			// result = append(result, expr)

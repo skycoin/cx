@@ -2160,6 +2160,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT test-scopes.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in scopes.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx
@@ -2473,7 +2484,7 @@ PERIOD
 STRLIT Panic when using +* in an expression
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-54.cx
  COMMA 
@@ -2482,10 +2493,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when defining a struct with duplicate fields.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2521,7 +2528,7 @@ PERIOD
 STRLIT Struct field stomped
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-58.cx
  COMMA 
@@ -2530,10 +2537,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when indexing an array with a non integral var.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2580,7 +2583,7 @@ PERIOD
 STRLIT No compilation error when passing *i32 as an i32 arg and conversely
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-61a.cx
  COMMA 
@@ -2589,13 +2592,9 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when passing *i32 as an i32 arg and conversely
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-62.cx
  COMMA 
@@ -2604,10 +2603,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when dereferencing an i32 var.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2621,7 +2616,7 @@ PERIOD
 STRLIT Wrong pointer behaviour.
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-65.cx
  COMMA 
@@ -2630,13 +2625,20 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Return from a function doesnt work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
+LPAREN 
+STRLIT issue-65b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Mismatched number of returning arguments is not throwing an error
+RPAREN 
+SCOLON 
+ IDENT runTest
 LPAREN 
 STRLIT issue-67.cx
  COMMA 
@@ -2645,10 +2647,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when var is accessed outside of its declaring scope
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2664,6 +2662,23 @@ RPAREN
 SCOLON 
  IDENT runTestEx
 LPAREN 
+STRLIT issue-69.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT glfw.GetCursorPos() throws error
+ COMMA 
+ IDENT TEST_GUI
+ BOROP 
+ IDENT TEST_STABLE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-70.cx
  COMMA 
  IDENT cx
@@ -2671,10 +2686,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Inline field and index 'dereferences' to function calls' outputs
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2688,7 +2699,7 @@ PERIOD
 STRLIT No compilation error when redeclaring a variable
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-72.cx
  COMMA 
@@ -2697,13 +2708,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Multi-dimensional slices don't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-75.cx
  COMMA 
@@ -2712,10 +2719,39 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT can't prefix a (f32) variable with minus to flip it's signedness
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-76.cx
  COMMA 
- IDENT TEST_STABLE
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
  COMMA 
-INTLIT 0
+STRLIT Using int literal 0 where 0.0 was needed gave no error
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-77.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT error with sending references of structs to functions
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-77b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT error with references to struct literals
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2740,7 +2776,7 @@ PERIOD
 STRLIT can assign to previously undeclared vars with just '='
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-82.cx
  COMMA 
@@ -2749,10 +2785,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT empty code blocks (even if they contain commented-out lines) crash like this
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2849,7 +2881,7 @@ PERIOD
 STRLIT Variable redeclaration should not be allowed
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-99.cx
  COMMA 
@@ -2858,28 +2890,20 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Short variable declarations are not working with calls to methods or functions
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-101.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when using equality operator between a bool and an i32
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-102.cx
  COMMA 
@@ -2888,10 +2912,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT String concatenation using the + operator doesn't work
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2905,7 +2925,7 @@ PERIOD
 STRLIT Argument list is not parsed correctly
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-104.cx
  COMMA 
@@ -2914,13 +2934,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Dubious error message when indexing an array with a substraction expression
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-105.cx
  COMMA 
@@ -2929,10 +2945,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Dubious error message when inline initializing a slice
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2946,7 +2958,7 @@ PERIOD
 STRLIT Troubles when accessing a global var from another package
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-108.cx
  COMMA 
@@ -2955,10 +2967,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT same func names (but in different packages) collide
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3024,7 +3032,7 @@ PERIOD
 STRLIT Problem with struct literals in short variable declarations
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-132.cx
  COMMA 
@@ -3033,25 +3041,28 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic when using the return value of a function in a short declaration
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
-STRLIT issue-133.cx
+STRLIT issue-133a.cx
  COMMA 
  IDENT cx
 PERIOD 
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when inserting a new line in a string literal
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-133b.cx
  COMMA 
- IDENT TEST_ISSUE
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
  COMMA 
-INTLIT 0
+STRLIT Panic when inserting a new line in a string literal
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3065,7 +3076,7 @@ PERIOD
 STRLIT Panic when declaring a variable of an unknown type
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-135.cx
  COMMA 
@@ -3074,10 +3085,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when using arithmetic operators on struct instances
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -3095,7 +3102,7 @@ STRLIT Parser gets confused with `2 -2`
 INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-153.cx
  COMMA 
@@ -3104,13 +3111,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Panic in when assigning an empty initializer list to a []i32 variable
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-154.cx
  COMMA 
@@ -3119,13 +3122,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Cx stack overflow when appending to a slice passed by address
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-155.cx
  COMMA 
@@ -3134,10 +3133,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when trying to assign return value of a function returning void
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3173,22 +3168,18 @@ PERIOD
 STRLIT Invalid offset calculation of non literal strings when appended to a slice
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-166.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT SUCCESS
+ IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Panic when calling a function from another package where the package name alias a local variable name
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-167.cx
  COMMA 
@@ -3197,13 +3188,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Garbage memory when passing the address of slice element to a function
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-168.cx
  COMMA 
@@ -3212,13 +3199,9 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Type deduction of struct field fails
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-169.cx
  COMMA 
@@ -3227,13 +3210,9 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when assigning a i32 value to a []i32 variable
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-170.cx
  COMMA 
@@ -3242,10 +3221,6 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT No compilation error when comparing value of different types
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3270,7 +3245,7 @@ PERIOD
 STRLIT No heap exhausted error
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-214.cx
  COMMA 
@@ -3279,10 +3254,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Argument type deduction failed when passing address of an i32 struct field to a function accepting *i32 argument.
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -3294,6 +3265,420 @@ PERIOD
  IDENT COMPILATION_ERROR
  COMMA 
 STRLIT Type checking is not working with receiving variables of unexpected types
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-244.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash when using a constant expression in a slice literal expression
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-247-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Can redeclare variables if they are inline initialized
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-247-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Can redeclare variables if they are inline initialized
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-264.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Trying to determine the length of a slice of struct instances throws an error.
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-279.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Wrong sprintf behaviour when passing increment expression as argument
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-280.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when using void return value of a function in a for loop expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-281.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Wrong sprintf behaviour when printing boolean values with %v
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-282.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT for true {} loop scope is not executed
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-283.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT for loop using boolean value is not compiling
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-284.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Concatenation of str variables with + operator doesn't work
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-285.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Short declaration doesn't compile with opcode return value
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-286.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when struct field is named 'input' or 'output'
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-287.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when using empty argument list after function call
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-288.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when using float value in place of boolean expression
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-289.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when package contains duplicate function signature
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-290.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Left hand side of , is not compiled
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-291-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when using return value of a member method in a expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-291-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when using return value of a member method in a expression
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-292.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when left hand side of an assignment expression is a struct field
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-293.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash when INIT_HEAP_SIZE limit is reached 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-294-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash in garbage collector when heap is resized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-294-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Crash in garbage collector when heap is resized
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-c.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-358.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when global variable is redeclared at local scope
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-359.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when using return value of a method call in an inline initialization
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-360.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when package keyword is misspelled
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-361.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when assigning an literal which overflow the receiving type
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-362.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Cx is not supporting short-circuit evaluation
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
 RPAREN 
 SCOLON 
    VAR 

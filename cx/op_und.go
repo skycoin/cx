@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 func opLt(expr *CXExpression, fp int) {
@@ -339,7 +339,8 @@ func opLen(expr *CXExpression, fp int) {
 		}
 
 		WriteMemory(GetFinalOffset(fp, out1), sliceLen)
-	} else if elt.Type == TYPE_STR {
+		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
+	} else if elt.Type == TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
@@ -351,7 +352,7 @@ func opLen(expr *CXExpression, fp int) {
 func opAppend(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != inp2.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != inp2.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -373,7 +374,7 @@ func opAppend(expr *CXExpression, fp int) {
 func opResize(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -389,7 +390,7 @@ func opResize(expr *CXExpression, fp int) {
 func opInsert(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
-	if inp1.Type != inp3.Type || inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -412,7 +413,7 @@ func opInsert(expr *CXExpression, fp int) {
 func opRemove(expr *CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != out1.Type || GetAssignmentElement(inp1).IsSlice == false || GetAssignmentElement(out1).IsSlice == false {
+	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -434,7 +435,7 @@ func opCopy(expr *CXExpression, fp int) {
 	dstElem := GetAssignmentElement(dstInput)
 	srcElem := GetAssignmentElement(srcInput)
 
-	if dstInput.Type != srcInput.Type || dstElem.IsSlice == false || srcElem.IsSlice == false || dstElem.TotalSize != srcElem.TotalSize {
+	if dstInput.Type != srcInput.Type || !dstElem.IsSlice || !srcElem.IsSlice || dstElem.TotalSize != srcElem.TotalSize {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
@@ -544,10 +545,6 @@ func buildString(expr *CXExpression, fp int) []byte {
 
 		res = append(res, []byte(extra)...)
 	}
-
-	// if specifiersCounter != len(expr.Inputs) - 1 {
-	// 	panic("meow")
-	// }
 
 	return res
 }

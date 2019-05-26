@@ -12,86 +12,87 @@ the concept of affordances.
 Table of Contents
 =================
 
-   * [Table of Contents](#table-of-contents)
-   * [CX Programming Language](#cx-programming-language)
-      * [Strict Type System](#strict-type-system)
-   * [CX Roadmap](#cx-roadmap)
-   * [Video Games in CX](#video-games-in-cx)
-   * [CX Playground](#cx-playground)
-   * [Changelog](#changelog)
-   * [Installation](#installation)
-      * [Binary Releases](#binary-releases)
-	    * [MacOS Homebrew Install](#macos-homebrew-install)
-      * [Compiling from Source](#compiling-from-source)
-      * [Installing Go](#installing-go)
-   * [Additional Notes Before the Actual Installation](#additional-notes-before-the-actual-installation)
-      * [Linux: Installing OpenGL and GLFW Dependencies](#linux-installing-opengl-and-glfw-dependencies)
-         * [Debian-based Linux Distributions](#debian-based-linux-distributions)
-      * [Windows: Installing GCC](#windows-installing-gcc)
-      * [Installing CX](#installing-cx)
-         * [Windows](#windows)
-      * [Updating CX](#updating-cx)
-   * [Running CX](#running-cx)
-      * [CX REPL](#cx-repl)
-         * [Running CX Programs](#running-cx-programs)
-         * [Other Options](#other-options)
-         * [Hello World](#hello-world)
-   * [Syntax](#syntax)
-      * [Comments](#comments)
-      * [Declarations](#declarations)
-         * [Allowed Names](#allowed-names)
-         * [Strict Type System](#strict-type-system-1)
-         * [Primitive Types](#primitive-types)
-         * [Global variables](#global-variables)
-         * [Local variables](#local-variables)
-         * [Arrays](#arrays)
-         * [Slices](#slices)
-         * [Literals](#literals)
-         * [Functions](#functions)
-         * [Custom Types](#custom-types)
-         * [Methods](#methods)
-         * [Packages](#packages)
-      * [Statements](#statements)
-         * [If and if/else](#if-and-ifelse)
-         * [For loop](#for-loop)
-         * [Goto](#goto)
-      * [Expressions](#expressions)
-      * [Assignments and Initializations](#assignments-and-initializations)
-   * [Runtime](#runtime)
-      * [Packages](#packages-1)
-      * [Data Structures](#data-structures)
-         * [Literals](#literals-1)
-         * [Variables](#variables)
-         * [Primitive types](#primitive-types-1)
-         * [Arrays](#arrays-1)
-         * [Slices](#slices-1)
-         * [Structures](#structures)
-         * [Pointers](#pointers)
-         * [Escape Analysis](#escape-analysis)
-      * [Control Flow](#control-flow)
-         * [Functions](#functions-1)
-         * [Methods](#methods-1)
-         * [If and if/else](#if-and-ifelse-1)
-         * [For loop](#for-loop-1)
-         * [Go-to](#go-to)
-      * [Affordances](#affordances)
-   * [Native Functions](#native-functions)
-      * [Type-inferenced Functions](#type-inferenced-functions)
-      * [Slice Functions](#slice-functions)
-      * [Input/Output Functions](#inputoutput-functions)
-      * [Parse Functions](#parse-functions)
-      * [Unit Testing](#unit-testing)
-      * [bool Type Functions](#bool-type-functions)
-      * [str Type Functions](#str-type-functions)
-      * [i32 Type Functions](#i32-type-functions)
-      * [i64 Type Functions](#i64-type-functions)
-      * [f32 Type Functions](#f32-type-functions)
-      * [f64 Type Functions](#f64-type-functions)
-      * [time Package Functions](#time-package-functions)
-      * [os Package Functions](#os-package-functions)
-      * [gl Package Functions](#gl-package-functions)
-      * [glfw Package Functions](#glfw-package-functions)
-      * [gltext Package Functions](#gltext-package-functions)
+<!-- toc -->
+
+- [CX Programming Language](#cx-programming-language)
+  * [Strict Type System](#strict-type-system)
+- [CX Roadmap](#cx-roadmap)
+- [CX Chains (CX + Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
+- [Video Games in CX](#video-games-in-cx)
+- [CX Playground](#cx-playground)
+- [Changelog](#changelog)
+- [Installation](#installation)
+  * [Binary Releases](#binary-releases)
+    + [MacOS Homebrew Install](#macos-homebrew-install)
+  * [Compiling from Source](#compiling-from-source)
+    + [Installing Go](#installing-go)
+    + [Compiling CX on *nix](#compiling-cx-on-nix)
+    + [Compiling CX on Windows](#compiling-cx-on-windows)
+  * [Updating CX](#updating-cx)
+- [Running CX](#running-cx)
+  * [CX REPL](#cx-repl)
+    + [Running CX Programs](#running-cx-programs)
+    + [Other Options](#other-options)
+    + [Hello World](#hello-world)
+- [Syntax](#syntax)
+  * [Comments](#comments)
+  * [Declarations](#declarations)
+    + [Allowed Names](#allowed-names)
+    + [Strict Type System](#strict-type-system-1)
+    + [Primitive Types](#primitive-types)
+    + [Global variables](#global-variables)
+    + [Local variables](#local-variables)
+    + [Arrays](#arrays)
+    + [Slices](#slices)
+    + [Literals](#literals)
+    + [Functions](#functions)
+    + [Custom Types](#custom-types)
+    + [Methods](#methods)
+    + [Packages](#packages)
+  * [Statements](#statements)
+    + [If and if/else](#if-and-ifelse)
+    + [For loop](#for-loop)
+    + [Goto](#goto)
+  * [Expressions](#expressions)
+  * [Assignments and Initializations](#assignments-and-initializations)
+  * [Affordances](#affordances)
+- [Runtime](#runtime)
+  * [Packages](#packages-1)
+  * [Data Structures](#data-structures)
+    + [Literals](#literals-1)
+    + [Variables](#variables)
+    + [Primitive types](#primitive-types)
+    + [Arrays](#arrays-1)
+    + [Slices](#slices-1)
+    + [Structures](#structures)
+    + [Pointers](#pointers)
+    + [Escape Analysis](#escape-analysis)
+  * [Control Flow](#control-flow)
+    + [Functions](#functions-1)
+    + [Methods](#methods-1)
+    + [If and if/else](#if-and-ifelse-1)
+    + [For loop](#for-loop-1)
+    + [Go-to](#go-to)
+  * [Affordances](#affordances-1)
+- [Native Functions](#native-functions)
+  * [Type-inferenced Functions](#type-inferenced-functions)
+  * [Slice Functions](#slice-functions)
+  * [Input/Output Functions](#inputoutput-functions)
+  * [Parse Functions](#parse-functions)
+  * [Unit Testing](#unit-testing)
+  * [`bool` Type Functions](#bool-type-functions)
+  * [`str` Type Functions](#str-type-functions)
+  * [`i32` Type Functions](#i32-type-functions)
+  * [`i64` Type Functions](#i64-type-functions)
+  * [`f32` Type Functions](#f32-type-functions)
+  * [`f64` Type Functions](#f64-type-functions)
+  * [`time` Package Functions](#time-package-functions)
+  * [`os` Package Functions](#os-package-functions)
+  * [`gl` Package Functions](#gl-package-functions)
+  * [`glfw` Package Functions](#glfw-package-functions)
+  * [`gltext` Package Functions](#gltext-package-functions)
+
+<!-- tocstop -->
 
 # CX Programming Language
 
@@ -149,6 +150,12 @@ core language) associated to
 # CX Roadmap
 
 ![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
+
+# CX Chains (CX + Skycoin Blockchain)
+
+CX Chains are Skycoin's solution for the creation of blockchain-based
+programs. You can read more about them in the [CX
+wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) for the latest release or in [`documentation/BLOCKCHAIN.md`](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md) for the `develop` branch of CX (the bleeding edge version of CX).
 
 # Video Games in CX
 
@@ -209,7 +216,7 @@ The simplest way to install CX on MacOS is to use the Homebrew package manager t
 Once Homebrew is installed, use the following commands to setup the Tap and then install CX.
 
 ```sh
-brew tap BigOokie/skycoin-cx-macos
+brew tap skycoin/homebrew-skycoin
 brew install skycoin-cx
 ```
 
@@ -219,8 +226,6 @@ To update use the following command:
 brew update skycoin-cx
 ```
 
-Note: The Homebrew formule is currently hosted in GitHub by BigOokie - this will likely change in the near future.
-
 ## Compiling from Source
 
 If a binary release is not currently available for your platfrom or if
@@ -229,125 +234,57 @@ source. If you're not familiarized with Go, Git, your OS's terminal or
 your OS's package manager (to name a few), we *strongly* recommend you
 to try out a binary release. If you find any bugs or problems with the
 binary release, submit an issue here:
-https://github.com/skycoin/cx/issues, and we'll fix it for the next
-week's release.
+https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
 
-## Installing Go
+### Installing Go
 
-In order to compile CX from source, first make sure that you have Go
-installed by running `go version`. It should output something similar to:
+CX supports go1.10+.
 
-```
-go version go1.8.3 darwin/amd64
-```
+[Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
 
-**You need a version greater than 1.8, and >1.10 is recommended**
+### Compiling CX on *nix
 
-Some linux distros' package managers install very old versions of
-Go. You can try first with a binary from your favorite package
-manager, but if the installation starts showing errors, try with the
-latest version before creating an issue.
-
-Go should also be properly configured (you can read the installation
-instructions by clicking [here](https://golang.org/doc/install). Particularly:
-
-* Make sure that you have added the Go binary to your `$PATH`.
-  * If you installed Go using a package manager, the Go binary is most
-    likely already in your `$PATH` variable.
-  * If you already installed Go, but running "go" in a terminal throws
-    a "command not found" error, this is most likely the problem.
-* Make sure that you have configured your `$GOPATH` environment
-variable.
-* Make sure that you have added `$GOPATH/bin` to you `$PATH`.
-  * If you have binaries installed in `$GOPATH/bin` but you can't use
-    them by just typing their name wherever you are in the file system
-    in a terminal, then this will solve the problem.
-
-As an example configuration, considering you're using *bash* in
-*Ubuntu*, you would append to your `~/.bashrc` file this:
+Download CX's repository using Go:
 
 ```
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin/
+go get github.com/skycoin/cx/cx/...
 ```
 
-Don't just copy/paste that; think on what you're doing!
-
-# Additional Notes Before the Actual Installation
-
-## Linux: Installing OpenGL and GLFW Dependencies
-
-### Debian-based Linux Distributions
-
-\* Based on instructions from [Viscript](https://github.com/skycoin/viscript)'s repository.
-
-CX comes with OpenGL and GLFW APIs. In order to use them, you need to
-install some dependencies. If you're using a Debian based Linux
-distro, such as Ubuntu, you can run these commands:
+Navigate to CX's repository, and run:
 
 ```
-sudo apt-get install libxi-dev
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install libxrandr-dev
-sudo apt-get install libxcursor-dev
-sudo apt-get install libxinerama-dev
+make install
 ```
 
-and you should be ready to go.
-
-## Windows: Installing GCC
-
-You might need to install GCC. Try installing everything first
-without installing GCC, and if an error similar to "gcc: command not
-found" is shown, you can fix this by installing MinGW.
-
-Don't get GCC through Cygwin; apparently, [Cygwin has compatibility
-issues with Go](https://github.com/golang/go/issues/7265#issuecomment-66091041).
-
-Users have reported that using either [MingW](http://www.mingw.org/)
-or [tdm-gcc](tdm-gcc.tdragon.net(), where tdm-gcc seems to be the
-easiest way.
-
-## Installing CX
-
-Make sure that you have `curl` and `git` installed. Run this command in a terminal:
+You should test your installation by running:
 
 ```
-sh <(curl -s https://raw.githubusercontent.com/skycoin/cx/master/cx.sh)
+make test
 ```
 
-If you're skeptical about what this command does, you can check the
-source code in this project. Basically, this script checks if you have
-all the necessary Golang packages and tries to install them for
-you. The script even downloads this repository and installs CX for
-you. This means that you can run `cx` after running the script and see
-the REPL right away (if the script worked). To exit the REPL, you can press `Ctrl-D`.
+### Compiling CX on Windows
 
-You should test your installation by running `cx
-$GOPATH/src/github.com/skycoin/cx/tests`.
+An installation script is also provided for Windows named `cx-setup.bat`. You can compile CX on Windows by running:
 
-As an alternative, you could clone into this repository and run cx.sh
-in a terminal.
+```
+cx-setup.bat
+```
 
-### Windows
+You should test your installation by running:
 
-An installation script is also provided for Windows named `cx-setup.bat`.
-The Windows version of this method would be to manually
-download the provided [batch script](https://github.com/skycoin/cx/blob/master/cx-setup.bat) (which is similar to the bash script for *nix systems described above), and run it in a terminal.
-
-You should test your installation by running `cx
-%GOPATH%\src\github.com\skycoin\cx\tests`.
+```
+cx tests\main.cx ++wdir=tests ++disable-tests=issue
+```
 
 ## Updating CX
 
-Now you can update CX by simply running the installation script
-again:
+You can update your CX installation by running:
 
 ```
-./cx.sh
+make install
 ```
 
-or, in Windows:
+Or on Windows:
 
 ```
 cx-setup.bat
@@ -976,6 +913,32 @@ Lastly, the example above shows how to write an *if/else* statement in CX.
 
 As a note about its syntax, the predicates or conditions don't need to
 be enclosed in parentheses, just like in Go.
+
+### Else if
+
+Instead of simply adding one alternative path, you can string together a series
+of *else if* blocks, which check for as many different conditions as you like.
+Giving you similar functionality as Go's *switch*/*select* blocks (containing
+various conditions/cases).
+
+```
+package main
+
+func main () {
+   var i i32
+   i = 0
+   
+   if i == 0 {
+     str.print("i is 0")
+   } else if i == 1 {
+     str.print("i is 1")
+   } else if i == 2 {
+     str.print("i is 2")
+   } else {
+     str.print("i is NOT 0, 1 or 2")
+   }
+}
+```
 
 ### For loop
 

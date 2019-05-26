@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 import (
 	"errors"
@@ -30,6 +30,9 @@ type CXExpression struct {
 	// used for jmp statements
 	ThenLines int
 	ElseLines int
+
+	// 1 = start new scope; -1 = end scope; 0 = just regular expression
+	ScopeOperation int
 
 	IsMethodCall    bool
 	IsStructLiteral bool

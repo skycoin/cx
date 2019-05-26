@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 import (
 	"bytes"
@@ -7,34 +7,12 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
 func Debug(args ...interface{}) {
 	fmt.Println(args...)
-}
-
-// IsUndOp It returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean
-func IsUndOp(fn *CXFunction) bool {
-	res := false
-	switch fn.OpCode {
-	case
-		OP_UND_BITAND,
-		OP_UND_BITXOR,
-		OP_UND_BITOR,
-		OP_UND_BITCLEAR,
-		OP_UND_MUL,
-		OP_UND_DIV,
-		OP_UND_MOD,
-		OP_UND_ADD,
-		OP_UND_SUB,
-		OP_UND_NEG,
-		OP_UND_BITSHL, OP_UND_BITSHR:
-		res = true
-	}
-
-	return res
 }
 
 // ExprOpName ...
@@ -216,7 +194,10 @@ func (prgrm *CXProgram) PrintProgram() {
 
 		j = 0
 		for _, fn := range mod.Functions {
-			mod.SelectFunction(fn.Name)
+			_, err := mod.SelectFunction(fn.Name)
+			if err != nil {
+				panic(err)
+			}
 
 			var inps bytes.Buffer
 			for i, inp := range fn.Inputs {
@@ -304,31 +285,31 @@ func (prgrm *CXProgram) PrintProgram() {
 					if dat != nil {
 						switch TypeNames[arg.Type] {
 						case "str":
-							encoder.DeserializeRaw(dat, &name)
+							mustDeserializeRaw(dat, &name)
 							name = "\"" + name + "\""
 						case "i32":
 							var i32 int32
-							encoder.DeserializeAtomic(dat, &i32)
+							mustDeserializeAtomic(dat, &i32)
 							name = fmt.Sprintf("%v", i32)
 						case "i64":
 							var i64 int64
-							encoder.DeserializeRaw(dat, &i64)
+							mustDeserializeRaw(dat, &i64)
 							name = fmt.Sprintf("%v", i64)
 						case "f32":
 							var f32 float32
-							encoder.DeserializeRaw(dat, &f32)
+							mustDeserializeRaw(dat, &f32)
 							name = fmt.Sprintf("%v", f32)
 						case "f64":
 							var f64 float64
-							encoder.DeserializeRaw(dat, &f64)
+							mustDeserializeRaw(dat, &f64)
 							name = fmt.Sprintf("%v", f64)
 						case "bool":
 							var b bool
-							encoder.DeserializeRaw(dat, &b)
+							mustDeserializeRaw(dat, &b)
 							name = fmt.Sprintf("%v", b)
 						case "byte":
 							var b bool
-							encoder.DeserializeRaw(dat, &b)
+							mustDeserializeRaw(dat, &b)
 							name = fmt.Sprintf("%v", b)
 						}
 					}
@@ -443,27 +424,30 @@ func (prgrm *CXProgram) PrintProgram() {
 						)
 					} else {
 						if len(expr.Outputs) > 0 {
-							var typs string
+							var typ string
 
-							for i, out := range expr.Outputs {
-								if GetAssignmentElement(out).CustomType != nil {
-									// then it's custom type
-									typs += GetAssignmentElement(out).CustomType.Name
-								} else {
-									// then it's native type
-									typs += TypeNames[GetAssignmentElement(out).Type]
-								}
+							out := expr.Outputs[len(expr.Outputs)-1]
 
-								if i != len(expr.Outputs) {
-									typs += ", "
-								}
+							// NOTE: this only adds a single *, regardless of how many
+							// dereferences we have. won't be fixed atm, as the whole
+							// PrintProgram needs to be refactored soon.
+							if out.IsPointer {
+								typ = "*"
+							}
+
+							if GetAssignmentElement(out).CustomType != nil {
+								// then it's custom type
+								typ += GetAssignmentElement(out).CustomType.Name
+							} else {
+								// then it's native type
+								typ += TypeNames[GetAssignmentElement(out).Type]
 							}
 
 							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
 								k,
 								lbl,
 								expr.Outputs[0].Name,
-								typs)
+								typ)
 						}
 					}
 
@@ -491,14 +475,22 @@ func (prgrm *CXProgram) PrintProgram() {
 	}
 
 	if currentPackage != nil {
-		prgrm.SelectPackage(currentPackage.Name)
+		_, err := prgrm.SelectPackage(currentPackage.Name)
+		if err != nil {
+			panic(err)
+		}
 	}
 	if currentFunction != nil {
-		prgrm.SelectFunction(currentFunction.Name)
+		_, err := prgrm.SelectFunction(currentFunction.Name)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	prgrm.CurrentPackage = currentPackage
-	currentPackage.CurrentFunction = currentFunction
+	if currentPackage != nil {
+		currentPackage.CurrentFunction = currentFunction
+	}
 }
 
 // CheckArithmeticOp ...
@@ -593,6 +585,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 	sliceLen := GetSliceLen(int32(offset))
 	bytesLen := sliceLen * int32(sizeofElement)
 	index -= OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + offset
+
 	if index >= 0 && index < int(bytesLen) && (index%sizeofElement) == 0 {
 		return true
 	}
@@ -602,7 +595,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
 	var offset int32
-	encoder.DeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
+	mustDeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
 	return offset
 }
 
@@ -630,7 +623,7 @@ func GetSliceHeader(offset int32) []byte {
 func GetSliceLen(offset int32) int32 {
 	var sliceLen int32
 	sliceHeader := GetSliceHeader(offset)
-	encoder.DeserializeAtomic(sliceHeader[4:8], &sliceLen)
+	mustDeserializeAtomic(sliceHeader[4:8], &sliceLen)
 	return sliceLen
 }
 
@@ -665,7 +658,7 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	var outputSliceHeader []byte
@@ -674,8 +667,8 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 
 	if outputSliceOffset > 0 {
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		encoder.DeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
-		encoder.DeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
+		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
 	}
 
 	var newLen = count
@@ -712,7 +705,7 @@ func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte)
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//encoder.DeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
+		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	sizeofElement := len(object)
@@ -799,6 +792,12 @@ func WriteObjectRetOff(obj []byte) int {
 // ErrorHeader ...
 func ErrorHeader(currentFile string, lineNo int) string {
 	return "error: " + currentFile + ":" + strconv.FormatInt(int64(lineNo), 10)
+}
+
+// CompilationError is a helper function that concatenates the `currentFile` and `lineNo` data to a error header and returns the full error string.
+func CompilationError(currentFile string, lineNo int) string {
+	FoundCompileErrors = true
+	return ErrorHeader(currentFile, lineNo)
 }
 
 // ErrorString ...
@@ -979,4 +978,27 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 	}
 
 	return getNonCollectionValue(fp, arg, elt, typ)
+}
+
+func mustDeserializeAtomic(byts []byte, item interface{}) int {
+	bytsRead, err := encoder.DeserializeAtomic(byts, item)
+	if err != nil {
+		panic(err)
+	}
+	return bytsRead
+}
+
+func mustDeserializeRaw(byts []byte, item interface{}) {
+	err := encoder.DeserializeRaw(byts, item)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func mustSerializeSize(item interface{}) int {
+	size, err := encoder.Size(item)
+	if err != nil {
+		panic(err)
+	}
+	return size
 }

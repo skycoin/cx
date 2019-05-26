@@ -1,5 +1,9 @@
 package main
 
+type test struct {
+	x i32
+}
+
 func printSliceI32(msg str, a []i32) {
 	printf("%s : {", msg)
 	for i := 0; i < len(a); i++ {
@@ -264,7 +268,7 @@ func testCopy() {
 	var id []i32
 	id = resize(id, 4)
 	count = copy(id, ic)
-	test(count, 4, "fuck")
+	test(count, 4, "PG-13")
 	testSliceI32(id, ic, "")
 
 	var ie []i32
@@ -375,6 +379,14 @@ func testInsert() {
 	testSliceStr(se, sg, "")
 }
 
+func retI32() (out i32) {
+	out = 55
+}
+
+func retStr() (out str) {
+	out = "meow"
+}
+
 func testRemove() {
 	var testi []i32
 	testi = []i32{1, 2, 3}
@@ -422,6 +434,39 @@ func testRemove() {
 	sd = []str {"bb", "ccc", "dddd", "a"}
 	sd = remove(sd, 3)
 	testSliceStr(sd, tests, "")
+
+	// expressions inside slice literal
+	var sExprsI32 []i32
+	sExprsI32 = []i32{ i32.add(i32.add(20, 20), 10), retI32() }
+	test(sExprsI32[0], 50, "")
+	test(sExprsI32[1], 55, "")
+
+	var sExprsStr []str
+	sExprsStr = []str{ retStr(), str.concat("tweet ", "woof") }
+	test(sExprsStr[0], "meow", "")
+	test(sExprsStr[1], "tweet woof", "")
+}
+
+func testLen() {
+	var nums []i32
+	
+	test(len(nums), 0, "")
+
+	nums = append(nums, 1)
+	nums = append(nums, 2)
+	nums = append(nums, 3)
+
+	test(len(nums), 3, "")
+	
+	var ts []test
+	var test test
+
+	test(len(ts), 0, "")
+	
+	ts = append(ts, test)
+	ts = append(ts, test)
+
+	test(len(ts), 2, "")
 }
 
 func main () {
@@ -430,4 +475,5 @@ func main () {
 	testCopy()
 	testInsert()
 	testRemove()
+	testLen()
 }

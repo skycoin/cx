@@ -1,11 +1,11 @@
-package base
+package cxcore
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 func opStrStr(expr *CXExpression, fp int) {
@@ -59,7 +59,7 @@ func opStrEq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
+func writeString(fp int, str string, out *CXArgument) {
 
 	byts := encoder.Serialize(str)
 	size := encoder.Serialize(int32(len(byts)))
@@ -80,7 +80,7 @@ func writeString(expr *CXExpression, fp int, str string, out *CXArgument) {
 }
 
 func opStrConcat(expr *CXExpression, fp int) {
-	writeString(expr, fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+	writeString(fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
 }
 
 func opStrSubstr(expr *CXExpression, fp int) {
@@ -88,7 +88,7 @@ func opStrSubstr(expr *CXExpression, fp int) {
 	begin := ReadI32(fp, expr.Inputs[1])
 	end := ReadI32(fp, expr.Inputs[2])
 
-	writeString(expr, fp, str[begin:end], expr.Outputs[0])
+	writeString(fp, str[begin:end], expr.Outputs[0])
 }
 
 func opStrIndex(expr *CXExpression, fp int) {
@@ -98,5 +98,5 @@ func opStrIndex(expr *CXExpression, fp int) {
 }
 
 func opStrTrimSpace(expr *CXExpression, fp int) {
-	writeString(expr, fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
+	writeString(fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
 }

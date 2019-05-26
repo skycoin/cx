@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"os"
+	"runtime"
+	
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -160,6 +163,28 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 	}
 }
 
+// hasDeclSpec determines if an argument has certain declaration specifier
+func hasDeclSpec(arg *CXArgument, spec int) bool {
+	found := false
+	for _, s := range arg.DeclarationSpecifiers {
+		if s == spec {
+			found = true
+		}
+	}
+	return found
+}
+
+// hasDerefOp determines if an argument has certain dereference operation
+func hasDerefOp(arg *CXArgument, spec int) bool {
+	found := false
+	for _, s := range arg.DereferenceOperations {
+		if s == spec {
+			found = true
+		}
+	}
+	return found
+}
+
 // This function writes those bytes to PRGRM.Data
 func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
@@ -193,11 +218,6 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 	} else {
 		panic(err)
 	}
-}
-
-func CompilationError(currentFile string, lineNo int) string {
-	FoundCompileErrors = true
-	return ErrorHeader(currentFile, lineNo)
 }
 
 func TotalLength(lengths []int) int {
@@ -347,4 +367,142 @@ func PrimaryIdentifier(ident string) []*CXExpression {
 	} else {
 		panic(err)
 	}
+}
+
+// DefineNewScope marks the first and last expressions to define the boundaries of a scope.
+func DefineNewScope (exprs []*CXExpression) {
+	if len(exprs) > 1 {
+		// initialize new scope
+		exprs[0].ScopeOperation = SCOPE_NEW
+		// remove last scope
+		exprs[len(exprs)-1].ScopeOperation = SCOPE_REM
+	}
+}
+
+// IsArgBasicType returns true if `arg`'s type is a basic type, false otherwise.
+func IsArgBasicType(arg *CXArgument) bool {
+	switch arg.Type {
+		case TYPE_BOOL,
+		TYPE_BYTE,
+		TYPE_STR,
+		TYPE_F32,
+		TYPE_F64,
+		TYPE_I8,
+		TYPE_I16,
+		TYPE_I32,
+		TYPE_I64,
+		TYPE_UI8,
+		TYPE_UI16,
+		TYPE_UI32, TYPE_UI64:
+		return true
+	}
+	return false
+}
+
+// IsAllArgsBasicTypes checks if all the input arguments in an expressions are of basic type.
+func IsAllArgsBasicTypes(expr *CXExpression) bool {
+	for _, inp := range expr.Inputs {
+		if !IsArgBasicType(inp) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters.
+func IsUndOp(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_LEN,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
+
+// IsUndOpMimicInput returns true if the operator receives undefined types as input parameters but also an operator that needs to mimic its input's type. For example, == should not return its input type, as it is always going to return a boolean.
+func IsUndOpMimicInput(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_NEG,
+		OP_UND_BITSHL, OP_UND_BITSHR:
+		return true
+	}
+	return false
+}
+
+// IsUndOp returns true if the operator receives undefined types as input parameters and if it's an operator that only works with basic types. For example, `sa + sb` shouldn't work with struct instances.
+func IsUndOpBasicTypes(fn *CXFunction) bool {
+	switch fn.OpCode {
+	case
+		OP_UND_EQUAL,
+		OP_UND_UNEQUAL,
+		OP_UND_BITAND,
+		OP_UND_BITXOR,
+		OP_UND_BITOR,
+		OP_UND_BITCLEAR,
+		OP_UND_MUL,
+		OP_UND_DIV,
+		OP_UND_MOD,
+		OP_UND_ADD,
+		OP_UND_SUB,
+		OP_UND_BITSHL,
+		OP_UND_BITSHR,
+		OP_UND_LT,
+		OP_UND_GT,
+		OP_UND_LTEQ,
+		OP_UND_GTEQ,
+		OP_UND_PRINTF,
+		OP_UND_SPRINTF,
+		OP_UND_READ:
+		return true
+	}
+	return false
+}
+
+// UserHome returns the current user home path. Code taken from fiber-init.
+func UserHome() string {
+	// os/user relies on cgo which is disabled when cross compiling
+	// use fallbacks for various OSes instead
+	// usr, err := user.Current()
+	// if err == nil {
+	// 	return usr.HomeDir
+	// }
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+
+	return os.Getenv("HOME")
 }

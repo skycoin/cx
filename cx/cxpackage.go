@@ -1,4 +1,4 @@
-package base
+package cxcore
 
 import (
 	"errors"
@@ -212,6 +212,9 @@ func (pkg *CXPackage) AddFunction(fn *CXFunction) *CXPackage {
 			found = true
 			break
 		}
+	}
+	if found && !InREPL {
+		println(CompilationError(fn.FileName, fn.FileLine), "function redeclaration")
 	}
 	if !found {
 		pkg.Functions = append(pkg.Functions, fn)

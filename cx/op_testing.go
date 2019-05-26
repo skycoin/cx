@@ -1,16 +1,16 @@
-package base
+package cxcore
 
 import (
 	"fmt"
 	"os"
-	// "github.com/skycoin/skycoin/src/cipher/encoder"
+	// "github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 var assertSuccess = true
 
 // AssertFailed ...
 func AssertFailed() bool {
-	return assertSuccess == false
+	return !assertSuccess
 }
 
 func assert(expr *CXExpression, fp int) (same bool) {
@@ -69,7 +69,7 @@ func opTest(expr *CXExpression, fp int) {
 }
 
 func opPanic(expr *CXExpression, fp int) {
-	if assert(expr, fp) == false {
+	if !assert(expr, fp) {
 		os.Exit(CX_ASSERT)
 	}
 }

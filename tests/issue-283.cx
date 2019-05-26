@@ -1,0 +1,8 @@
+package main
+
+func main()() {
+	var b bool = true
+	for b {
+		printf("true\n")
+	}
+}

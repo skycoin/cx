@@ -7,7 +7,7 @@ type event struct {
 var events []event
 
 func foo(e *event) {
-	test(*e.index, 33, "")
+	test((*e).index, 33, "")
 }
 
 func main()(){

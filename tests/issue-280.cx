@@ -1,0 +1,9 @@
+package main
+func foo()() {
+}
+
+func main() {
+	for foo() {
+		printf("true\n")
+	}
+}

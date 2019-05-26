@@ -1,6 +1,6 @@
 // +build base extra full
 
-package base
+package cxcore
 
 import (
 	"bytes"
@@ -13,16 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
-)
-
-const (
-	OS_RUN_SUCCESS = iota
-	OS_RUN_EMPTY_CMD
-	OS_RUN_PANIC // 2
-	OS_RUN_START_FAILED
-	OS_RUN_WAIT_FAILED
-	OS_RUN_TIMEOUT
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)

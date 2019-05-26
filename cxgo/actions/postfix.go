@@ -2,25 +2,61 @@ package actions
 
 import (
 	"fmt"
-	. "github.com/skycoin/cx/cx"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"os"
+
+	"github.com/amherag/skycoin/src/cipher/encoder"
+
+	. "github.com/skycoin/cx/cx"
 )
 
+// PostfixExpressionArray...
+//
 func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	var elt *CXArgument
-	if len(prevExprs[len(prevExprs)-1].Outputs[0].Fields) > 0 {
-		elt = prevExprs[len(prevExprs)-1].Outputs[0].Fields[len(prevExprs[len(prevExprs)-1].Outputs[0].Fields)-1]
+	prevExpr := prevExprs[len(prevExprs)-1]
+	
+	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
+		genName := MakeGenSym(LOCAL_PREFIX)
+		
+		out := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
+
+		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
+		out.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		out.Size = prevExpr.Operator.Outputs[0].Size
+		out.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
+		out.Lengths = prevExpr.Operator.Outputs[0].Lengths
+		out.IsSlice = prevExpr.Operator.Outputs[0].IsSlice
+		out.PreviouslyDeclared = true
+
+		prevExpr.AddOutput(out)
+
+		inp := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
+
+		inp.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
+		inp.CustomType = prevExpr.Operator.Outputs[0].CustomType
+		inp.Size = prevExpr.Operator.Outputs[0].Size
+		inp.TotalSize = prevExpr.Operator.Outputs[0].TotalSize
+		inp.Lengths = prevExpr.Operator.Outputs[0].Lengths
+		inp.IsSlice = prevExpr.Operator.Outputs[0].IsSlice
+		inp.PreviouslyDeclared = true
+
+		useExpr := MakeExpression(nil, prevExpr.FileName, prevExpr.FileLine)
+		useExpr.Package = prevExpr.Package
+		useExpr.AddOutput(inp)
+
+		prevExprs = append(prevExprs, useExpr)
+	}
+
+	prevExpr = prevExprs[len(prevExprs)-1]
+	
+	if len(prevExpr.Outputs[0].Fields) > 0 {
+		elt = prevExpr.Outputs[0].Fields[len(prevExpr.Outputs[0].Fields)-1]
 	} else {
-		elt = prevExprs[len(prevExprs)-1].Outputs[0]
+		elt = prevExpr.Outputs[0]
 	}
 
 	elt.IsArray = false
-	pastOps := elt.DereferenceOperations
-	if len(pastOps) < 1 || pastOps[len(pastOps)-1] != DEREF_ARRAY {
-		// this way we avoid calling deref_array multiple times (one for each index)
-		elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
-	}
+	elt.DereferenceOperations = append(elt.DereferenceOperations, DEREF_ARRAY)
 	elt.DeclarationSpecifiers = append(elt.DeclarationSpecifiers, DECL_INDEXING)
 
 	if !elt.IsDereferenceFirst {
@@ -70,20 +106,22 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 
 func PostfixExpressionNative(typCode int, opStrCode string) []*CXExpression {
 	// these will always be native functions
-	if opCode, ok := OpCodes[TypeNames[typCode]+"."+opStrCode]; ok {
-		expr := MakeExpression(Natives[opCode], CurrentFile, LineNo)
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			expr.Package = pkg
-		} else {
-			panic(err)
-		}
-
-		return []*CXExpression{expr}
-	} else {
-		println(CompilationError(CurrentFile, LineNo) + " function '" + TypeNames[typCode] + "." + opStrCode + "' does not exist")
+	opCode, ok := OpCodes[TypeNames[typCode]+"."+opStrCode]
+	if !ok {
+		println(CompilationError(CurrentFile, LineNo) + " function '" +
+			TypeNames[typCode] + "." + opStrCode + "' does not exist")
 		return nil
 		// panic(ok)
 	}
+
+	expr := MakeExpression(Natives[opCode], CurrentFile, LineNo)
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
+	expr.Package = pkg
+
+	return []*CXExpression{expr}
 }
 
 func PostfixExpressionEmptyFunCall(prevExprs []*CXExpression) []*CXExpression {
@@ -162,31 +200,15 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 
 // PostfixExpressionField handles the dot notation that can follow an identifier.
 // Examples are: `foo.bar`, `foo().bar`, `pkg.foo`
-func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpression {
+func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpression {
 	lastExpr := prevExprs[len(prevExprs)-1]
 
-	// THEN it's a function call, e.g. foo().fld
+	// Then it's a function call, e.g. foo().fld
 	// and we need to create some auxiliary variables to hold the result from
 	// the function call
 	if lastExpr.Operator != nil {
 		opOut := lastExpr.Operator.Outputs[0]
 		symName := MakeGenSym(LOCAL_PREFIX)
-
-		// we need to declare an aux variable, e.g. `var *lcl_10 i32`
-		// that will hold the result of the function call
-		aux := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
-		aux.DeclarationSpecifiers = opOut.DeclarationSpecifiers
-		aux.CustomType = opOut.CustomType
-		aux.Size = opOut.Size
-		aux.TotalSize = opOut.TotalSize
-		aux.PreviouslyDeclared = true
-		aux.Package = lastExpr.Package
-
-		declExpr := MakeExpression(nil, lastExpr.FileName, lastExpr.FileLine)
-		declExpr.Package = lastExpr.Package
-		declExpr.AddOutput(aux)
-
-		prevExprs = append([]*CXExpression{declExpr}, prevExprs...)
 
 		// we associate the result of the function call to the aux variable
 		out := MakeArgument(symName, lastExpr.FileName, lastExpr.FileLine).AddType(TypeNames[opOut.Type])
@@ -218,15 +240,16 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		expr.AddOutput(inp)
 
 		prevExprs = append(prevExprs, expr)
-		
+
 		lastExpr = prevExprs[len(prevExprs)-1]
 	}
 
 	left := lastExpr.Outputs[0]
 
+	// If the left already is a rest (e.g. "var" in "pkg.var"), then
+	// it can't be a package name and we propagate the property to
+	//  the right side.
 	if left.IsRest {
-		// then it can't be a package name
-		// and we propagate the property to the right expression
 		// right.IsRest = true
 		// left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 		left.IsStruct = true
@@ -234,72 +257,74 @@ func PostfixExpressionField (prevExprs []*CXExpression, ident string) []*CXExpre
 		fld.AddType(TypeNames[TYPE_IDENTIFIER])
 		left.Fields = append(left.Fields, fld)
 		return prevExprs
-	} else {
-		left.IsRest = true
-		// then left is a first (e.g first.rest) and right is a rest
-		// let's check if left is a package
-		if pkg, err := PRGRM.GetCurrentPackage(); err == nil {
-			if imp, err := pkg.GetImport(left.Name); err == nil {
-				// the external property will be propagated to the following arguments
-				// this way we avoid considering these arguments as module names
+	}
 
-				if IsCorePackage(left.Name) {
-					if code, ok := ConstCodes[left.Name+"."+ident]; ok {
-						constant := Constants[code]
-						val := WritePrimary(constant.Type, constant.Value, false)
-						prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
-						return prevExprs
-					} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
-						// then it's a native
-						// TODO: we'd be referring to the function itself, not a function call
-						// (functions as first-class objects)
-						left.Name = left.Name + "." + ident
-						return prevExprs
-					}
-				}
+	left.IsRest = true
+	// then left is a first (e.g first.rest) and right is a rest
+	// let's check if left is a package
+	pkg, err := PRGRM.GetCurrentPackage()
+	if err != nil {
+		panic(err)
+	}
 
-				left.Package = imp
+	if imp, err := pkg.GetImport(left.Name); err == nil {
+		// the external property will be propagated to the following arguments
+		// this way we avoid considering these arguments as module names
 
-				if glbl, err := imp.GetGlobal(ident); err == nil {
-					// then it's a global
-					// prevExprs[len(prevExprs)-1].Outputs[0] = glbl
-					prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name
-					prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
-					prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType
-					prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
-					prevExprs[len(prevExprs)-1].Outputs[0].TotalSize = glbl.TotalSize
-					prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
-					prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
-					prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
-					prevExprs[len(prevExprs)-1].Outputs[0].Package = glbl.Package
-				} else if fn, err := PRGRM.GetFunction(ident, imp.Name); err == nil {
-					// then it's a function
-					// not sure about this next line
-					prevExprs[len(prevExprs)-1].Outputs = nil
-					prevExprs[len(prevExprs)-1].Operator = fn
-				} else if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
-					prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
-				} else {
-					panic(err)
-				}
-			} else {
-				// then left is not a package name
-				if IsCorePackage(left.Name) {
-					println(CompilationError(left.FileName, left.FileLine), fmt.Sprintf("identifier '%s' does not exist", left.Name))
-					os.Exit(CX_COMPILATION_ERROR)
-				}
-
-				// then it's a struct
-				left.IsStruct = true
-
-				fld := MakeArgument(ident, CurrentFile, LineNo)
-				fld.AddType(TypeNames[TYPE_IDENTIFIER])
-				
-				left.Fields = append(left.Fields, fld)
+		if IsCorePackage(left.Name) {
+			if code, ok := ConstCodes[left.Name+"."+ident]; ok {
+				constant := Constants[code]
+				val := WritePrimary(constant.Type, constant.Value, false)
+				prevExprs[len(prevExprs)-1].Outputs[0] = val[0].Outputs[0]
+				return prevExprs
+			} else if _, ok := OpCodes[left.Name+"."+ident]; ok {
+				// then it's a native
+				// TODO: we'd be referring to the function itself, not a function call
+				// (functions as first-class objects)
+				left.Name = left.Name + "." + ident
+				return prevExprs
 			}
+		}
+
+		left.Package = imp
+
+		if glbl, err := imp.GetGlobal(ident); err == nil {
+			// then it's a global
+			// prevExprs[len(prevExprs)-1].Outputs[0] = glbl
+			prevExprs[len(prevExprs)-1].Outputs[0].Name = glbl.Name
+			prevExprs[len(prevExprs)-1].Outputs[0].Type = glbl.Type
+			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = glbl.CustomType
+			prevExprs[len(prevExprs)-1].Outputs[0].Size = glbl.Size
+			prevExprs[len(prevExprs)-1].Outputs[0].TotalSize = glbl.TotalSize
+			prevExprs[len(prevExprs)-1].Outputs[0].IsPointer = glbl.IsPointer
+			prevExprs[len(prevExprs)-1].Outputs[0].IsSlice = glbl.IsSlice
+			prevExprs[len(prevExprs)-1].Outputs[0].IsStruct = glbl.IsStruct
+			prevExprs[len(prevExprs)-1].Outputs[0].Package = glbl.Package
+		} else if fn, err := imp.GetFunction(ident); err == nil {
+			// then it's a function
+			// not sure about this next line
+			prevExprs[len(prevExprs)-1].Outputs = nil
+			prevExprs[len(prevExprs)-1].Operator = fn
+		} else if strct, err := PRGRM.GetStruct(ident, imp.Name); err == nil {
+			prevExprs[len(prevExprs)-1].Outputs[0].CustomType = strct
 		} else {
 			panic(err)
 		}
+	} else {
+		// then left is not a package name
+		if IsCorePackage(left.Name) {
+			println(CompilationError(left.FileName, left.FileLine),
+				fmt.Sprintf("identifier '%s' does not exist",
+					left.Name))
+			os.Exit(CX_COMPILATION_ERROR)
+		}
+		// then it's a struct
+		left.IsStruct = true
+
+		fld := MakeArgument(ident, CurrentFile, LineNo)
+		fld.AddType(TypeNames[TYPE_IDENTIFIER])
+
+		left.Fields = append(left.Fields, fld)
 	}
 
 	return prevExprs

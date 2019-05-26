@@ -1,10 +1,10 @@
-package base
+package cxcore
 
 // import (
 // 	"fmt"
 // 	"regexp"
 // 	"bytes"
-// 	"github.com/skycoin/skycoin/src/cipher/encoder"
+// 	"github.com/amherag/skycoin/src/cipher/encoder"
 // )
 
 // // This method removes 1 or more expressions

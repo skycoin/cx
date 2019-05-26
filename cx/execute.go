@@ -1,12 +1,11 @@
-package base
+package cxcore
 
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program
@@ -55,7 +54,7 @@ func (cxt *CXProgram) ToCall() *CXExpression {
 		// prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
 	}
 	// error
-	return &CXExpression{Operator: MakeFunction("")}
+	return &CXExpression{Operator: MakeFunction("", "", -1)}
 	// panic("")
 }
 
@@ -209,9 +208,9 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 			}
 
 			// debugging memory
-			if len(cxt.Memory) < 2000 {
-				fmt.Println("prgrm.Memory", cxt.Memory)
-			}
+			// if len(cxt.Memory) < 2000 {
+			// 	fmt.Println("prgrm.Memory", cxt.Memory)
+			// }
 
 			return err
 		}
@@ -220,37 +219,6 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 	}
 	return err
 
-}
-
-func (cxt *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
-	if fn, err := cxt.GetFunction(functionName, packageName); err == nil {
-		line := cxt.CallStack[cxt.CallCounter].Line
-		previousCall := cxt.CallCounter
-		cxt.CallCounter++
-		newCall := &cxt.CallStack[cxt.CallCounter]
-		newCall.Operator = fn
-		newCall.Line = 0
-		newCall.FramePointer = cxt.StackPointer
-		cxt.StackPointer += newCall.Operator.Size
-		newFP := newCall.FramePointer
-
-		// wiping next mem frame (removing garbage)
-		for c := 0; c < expr.Operator.Size; c++ {
-			cxt.Memory[newFP+c] = 0
-		}
-
-		for i, inp := range inputs {
-			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
-		}
-
-		var nCalls = 0
-		if err := cxt.Run(true, &nCalls, previousCall); err != nil {
-			os.Exit(CX_INTERNAL_ERROR)
-		}
-
-		cxt.CallCounter = previousCall
-		cxt.CallStack[cxt.CallCounter].Line = line
-	}
 }
 
 func (call *CXCall) ccall(prgrm *CXProgram) error {
@@ -316,6 +284,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			*/
 			// we're going to use the next call in the callstack
 			prgrm.CallCounter++
+			if prgrm.CallCounter >= CALLSTACK_SIZE {
+				panic(STACK_OVERFLOW_ERROR)
+			}
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			// setting the new call
 			newCall.Operator = expr.Operator
@@ -348,6 +319,12 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 				// 	finalOffset = GetFinalOffset(&prgrm.Stacks[0], fp, inp)
 				// }
 				if inp.PassBy == PASSBY_REFERENCE {
+					// If we're referencing an inner element, like an element of a slice (&slc[0])
+					// or a field of a struct (&struct.fld) we no longer need to add
+					// the OBJECT_HEADER_SIZE to the offset
+					if inp.IsInnerReference {
+						finalOffset -= OBJECT_HEADER_SIZE
+					}
 					byts = encoder.Serialize(int32(finalOffset))
 				} else {
 					byts = prgrm.Memory[finalOffset : finalOffset+inp.TotalSize]

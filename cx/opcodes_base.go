@@ -1,11 +1,11 @@
 // +build base extra full
 
-package base
+package cxcore
 
 // op codes
 const (
 	// time
-	OP_TIME_SLEEP = iota + END_OF_BARE_OPS
+	OP_TIME_SLEEP = iota + END_OF_CORE_OPS
 	OP_TIME_UNIX
 	OP_TIME_UNIX_MILLI
 	OP_TIME_UNIX_NANO
@@ -21,7 +21,7 @@ const (
 	OP_OS_EXIT
 
 	// http
-	OP_HTTP_GET
+	// OP_HTTP_GET
 
 	// object explorer
 	OP_OBJ_QUERY
@@ -44,9 +44,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 
 	// http
-	AddOpCode(OP_HTTP_GET, "http.Get",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	// AddOpCode(OP_HTTP_GET, "http.Get",
+	// 	[]*CXArgument{newOpPar(TYPE_STR, false)},
+	// 	[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
@@ -73,8 +73,8 @@ func init() {
 		opCode := expr.Operator.OpCode
 		fp := call.FramePointer
 
-		if opCode < END_OF_BARE_OPS {
-			execNativeBare(prgrm)
+		if opCode < END_OF_CORE_OPS {
+			execNativeCore(prgrm)
 		} else {
 			switch opCode {
 			// time
@@ -87,8 +87,8 @@ func init() {
 				op_time_UnixNano(expr, fp)
 
 			// http
-			case OP_HTTP_GET:
-				op_http_get(expr, fp)
+			// case OP_HTTP_GET:
+			// 	op_http_get(expr, fp)
 
 			// os
 			case OP_OS_GET_WORKING_DIRECTORY:

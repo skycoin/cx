@@ -1,9 +1,0 @@
-node_modules
-vendor
-bin
-releases
-./leaps
-certificate.key
-certificate.cert
-.htpasswd
-.leaps_cot.json

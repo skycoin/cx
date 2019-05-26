@@ -15,15 +15,10 @@ var WebPersistantMode bool
 var BaseOutput bool
 var ReplMode bool
 var HelpMode bool
-var InterpretMode bool
 var CompileMode bool
 var ReplTargetFn string = ""
 var ReplTargetStrct string = ""
 var ReplTargetMod string = ""
-
-var FoundCompileErrors bool
-
-var InREPL bool = false
 
 var SysInitExprs []*CXExpression
 

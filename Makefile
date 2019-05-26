@@ -42,8 +42,8 @@ configure-workspace: ## Configure CX workspace environment
 build-parser: configure ## Generate lexer and parser for CX grammar
 	nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	nex -e cxgo/cxgo.nex
-	goyacc -o cxgo/cxgo.go cxgo/cxgo.y
+	nex -e cxgo/parser/cxgo.nex
+	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
 	go build -tags full -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
@@ -102,6 +102,7 @@ check: check-golden-files test ## Perform self-tests
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/cx ./cx
+	goimports -w -local github.com/skycoin/cx ./cxgo/actions
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
