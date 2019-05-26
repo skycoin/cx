@@ -3,14 +3,23 @@
 ### v0.7.0 (NOT YET RELEASED)
 * Additions
   * CX can now generate addresses to be used by CX chains.
+  * New debug option --debug-lexer or -Dl to see which tokens that are
+	returned by the lexer.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
-  * The tutorial in [documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md) is now updated and will be used to reflect the latest changes in the CX source code (`develop` branch), while the tutorial in the [wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will be used as a tutorial for the latest CX release.
 * Libraries
+  * ...
 * Fixed issues
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
 * Documentation
+  * The blockchain tutorial
+	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	will be used to reflect the state in the CX source code (`develop` branch)
+  * The blockchain tutorial in the
+	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
+	be used as a tutorial for the latest CX release. 
 * Miscellaneous
+  * ...
 
 ### v0.7beta released 2019-05-19
 * Additions
