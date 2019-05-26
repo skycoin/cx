@@ -23,7 +23,7 @@ be released.
 
  * Change the CHANGELOG.md file:
    - remove the `(NOT YET RELEASED)` note from the current version, and create
-     a new version with this note.
+     a new version with the same note.
 
  * Merge the `develop` branch in git to the `master` branch.  This is done by
    using these commands:
@@ -31,12 +31,13 @@ be released.
    git checkout master
    git merge develop
    ```
+
  * Tag the release in git using the following command:
    `git tag v<x.y.z>`. Note that `x`, `y` and `z` must be replaced, but the `v`
    should be an actual 'v'.  This command should also be performed in the
    `master` branch.
 
-## Uploading
+## Uploading the binary packages
 
 **FIXME**: Amaury, please update this section to include the actual commands that
 you perform to build the releases.
@@ -48,5 +49,11 @@ you perform to build the releases.
    draft page.
  * FIXME: Check and tell how to create the source packages.
 
+## Upload the online documentation
 
+ * Take the file `documentation/BLOCKCHAIN.md`which contains the user-targeted
+   documentation on how to run CX programs on the blockchain.  This should be
+   uploaded to https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
+
+   NOTE: Before uploading, remove the comment in the beginning about copying to the wiki.
 
