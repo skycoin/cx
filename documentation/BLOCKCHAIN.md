@@ -1,4 +1,7 @@
 > This tutorial is valid for the CX `develop` branch
+> When a release is done, it should be copied to the CX wiki
+>   https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial 
+
 
 Table of Contents
 =================

@@ -37,6 +37,9 @@ type cxCmdFlags struct {
 	pubKey              string
 	genesisAddress      string
 	genesisSignature    string
+
+	// Debug flags for the CX developers
+	debugLexer          bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -61,6 +64,8 @@ func defaultCmdFlags() cxCmdFlags {
 		pubKey:              "",
 		genesisAddress:      "",
 		genesisSignature:    "",
+
+		debugLexer:          false,
 	}
 }
 
@@ -116,6 +121,10 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+
+	// Debug flags
+	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
+	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
 }
 
 func printHelp() {
@@ -129,7 +138,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide						            Start CX as a web service, and Leaps service start also.
+-ide, --ide                       Start CX as a web service, and Leaps service start also.
 
 Notes:
 * Options --compile and --repl are mutually exclusive.
