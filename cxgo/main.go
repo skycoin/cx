@@ -13,6 +13,9 @@ import (
 	"strconv"
 	"bufio"
 	"encoding/json"
+	// "encoding/hex"
+
+	"runtime"
 
 	"regexp"
 	
@@ -23,18 +26,284 @@ import (
 	"net"
 	"net/http"
 	
-	"runtime"
-
 	. "github.com/skycoin/cx/cx"
 	. "github.com/skycoin/cx/cxgo/parser"
 	. "github.com/skycoin/cx/cxgo/actions"
 	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/theherk/viper"
+
+	"github.com/amherag/skycoin/src/cipher"
+	// "github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/coin"
+	"github.com/amherag/skycoin/src/readable"
+	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/util/logging"
+	"github.com/amherag/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cli"
+	"github.com/amherag/skycoin/src/wallet"
+
+	"errors"
 )
 
-const VERSION = "0.6.2"
+const VERSION = "0.7beta"
 
+var (
+	log             = logging.MustGetLogger("newcoin")
+	apiClient       = &http.Client{Timeout: 10 * time.Second}
+	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
+)
 
-func main () {
+var (
+	// ErrMissingProjectRoot is returned when the project root parameter is missing
+	ErrMissingProjectRoot = errors.New("missing project root")
+	// ErrMissingSecretKey is returned when genesis secret is missing when distributing coins
+	ErrMissingSecretKey = errors.New("missing genesis secret key")
+
+	genesisSignature = ""
+)
+
+func getJSON(url string, target interface{}) error {
+	r, err := apiClient.Get(url)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	return json.NewDecoder(r.Body).Decode(target)
+}
+
+func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
+	var err error
+	
+	// check that data.db does not exist
+	// if it does, delete it
+	userHome := UserHome()
+	dbPath := filepath.Join(userHome, "."+coinname, "data.db")
+	if _, err := os.Stat(dbPath); err == nil {
+		log.Infof("deleting %s", dbPath)
+		err = os.Remove(dbPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	if seckey == "" {
+		return ErrMissingSecretKey
+	}
+
+	genesisSecKey, err := cipher.SecKeyFromHex(seckey)
+	if err != nil {
+		return err
+	}
+
+	configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+	configFile := "fiber.toml"
+	configFilepath := filepath.Join(configDir, configFile)
+	// check that the config file exists
+	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
+		return err
+	}
+
+	projectRoot := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx"
+	if projectRoot == "" {
+		return ErrMissingProjectRoot
+	}
+	if _, err := os.Stat(projectRoot); os.IsNotExist(err) {
+		return err
+	}
+
+	coinFile := filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname))
+	if _, err := os.Stat(coinFile); os.IsNotExist(err) {
+		return err
+	}
+
+	// get fiber params
+	params, err := skycoin.NewParameters(configFile, configDir)
+
+	cmd := exec.Command("go", "run", filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname)), "-block-publisher=true", fmt.Sprintf("-blockchain-secret-key=%s", seckey),
+		"-disable-incoming")
+
+	var genesisSig string
+	var genesisBlock readable.Block
+
+	stdoutIn, _ := cmd.StdoutPipe()
+	stderrIn, _ := cmd.StderrPipe()
+	cmd.Start()
+
+	// fetch gensisSig and gensisBlock
+	go func() {
+		defer cmd.Process.Kill()
+
+		genesisSigRegex, err := regexp.Compile(`Genesis block signature=([0-9a-zA-Z]+)`)
+		if err != nil {
+			log.Error("error in regexp for genesis block signature")
+			log.Error(err)
+			return
+		}
+
+		scanner := bufio.NewScanner(stdoutIn)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+
+			m := scanner.Text()
+			log.Info("Scanner: " + m)
+			if genesisSigRegex.MatchString(m) {
+				genesisSigSubString := genesisSigRegex.FindStringSubmatch(m)
+				genesisSig = genesisSigSubString[1]
+
+				// get genesis block
+				err = getJSON(fmt.Sprintf(genesisBlockURL, params.Node.WebInterfacePort), &genesisBlock)
+			
+				return
+			}
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderrIn)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			log.Error(scanner.Text())
+		}
+	}()
+
+	cmd.Wait()
+
+	// check that we were able to get genesisSig and genesisUxID
+
+	if genesisSig != "" && len(genesisBlock.Body.Transactions) != 0 {
+		genesisSignature = genesisSig
+		log.Infof("genesis sig: %s", genesisSig)
+
+		// -- create new skycoin daemon to inject distribution transaction -- //
+		if err != nil {
+			log.Error("error getting fiber parameters")
+			return err
+		}
+
+		// check that balance can be equally divided into distribution addresses
+		if params.Params.MaxCoinSupply%params.Params.DistributionAddressesTotal != 0 {
+			return fmt.Errorf("coin supply of %d cannot be equally divided into %d distribution addresses",
+				params.Params.MaxCoinSupply, params.Params.DistributionAddressesTotal)
+		}
+
+		// get node config
+		params.Node.DataDirectory = fmt.Sprintf("$HOME/.%s", coinname)
+		nodeConfig := skycoin.NewNodeConfig("", params.Node)
+
+		// create a new fiber coin instance
+		newcoin := skycoin.NewCoin(
+			skycoin.Config{
+				Node: nodeConfig,
+			},
+			log,
+		)
+
+		// parse config values
+		newcoin.ParseConfig()
+
+		dconf := newcoin.ConfigureDaemon()
+
+		log.Infof("opening visor db: %s", dconf.Visor.DBPath)
+		db, err := visor.OpenDB(dconf.Visor.DBPath, false)
+		if err != nil {
+			log.Error("Error opening DB")
+			return err
+		}
+		defer db.Close()
+
+		vs, err := visor.NewVisor(dconf.Visor, db)
+		if err != nil {
+			log.Error("Error with NewVisor")
+			return err
+		}
+
+		headSeq, _, err := vs.HeadBkSeq()
+		if err != nil {
+			log.Error("Error with HeadBkSeq")
+			return err
+		} else if headSeq == 0 {
+			if len(genesisBlock.Body.Transactions) != 0 {
+				var tx coin.Transaction
+
+				UxID := genesisBlock.Body.Transactions[0].Out[0].Hash
+				output := cipher.MustSHA256FromHex(UxID)
+				tx.PushInput(output)
+
+				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
+				tx.PushOutput(addr, uint64(1e10), 10000, initPrgrm)
+
+				seckeys := make([]cipher.SecKey, 1)
+				seckey := genesisSecKey.Hex()
+				seckeys[0] = cipher.MustSecKeyFromHex(seckey)
+				tx.SignInputs(seckeys)
+
+				tx.UpdateHeader()
+				err = tx.Verify()
+
+				if err != nil {
+					log.Panic(err)
+				}
+
+				_, err := vs.InjectUserTransaction(tx)
+				if err != nil {
+					panic(err)
+				}
+			} else {
+				log.Error("ERROR: len genesis block was zero")
+			}
+		} else {
+			log.Error("ERROR: headSeq not zero")
+		}
+	} else {
+		log.Error("error getting genesis block")
+	}
+	return err
+}
+
+func runNode(mode string, options cxCmdFlags) *exec.Cmd {
+	switch mode {
+	case "publisher":
+		return exec.Command("cxcoin", "-enable-all-api-sets",
+		"-block-publisher=true",
+			"-localhost-only",
+			"-disable-default-peers",
+			"-custom-peers-file=localhost-peers.txt",
+			"-download-peerlist=false",
+			"-launch-browser=false",
+			fmt.Sprintf("-blockchain-secret-key=%s", options.secKey),
+			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
+			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
+			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
+			"-max-txn-size-unconfirmed=5242880",
+		 	"-max-txn-size-create-block=5242880",
+			"-max-block-size=5242880",
+		)
+	case "peer":
+	return exec.Command("cxcoin", "-enable-all-api-sets",
+		"-localhost-only",
+		"-disable-default-peers",
+		"-custom-peers-file=localhost-peers.txt",
+		"-download-peerlist=false",
+		"-launch-browser=false",
+		fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
+		fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
+		fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
+		// "-web-interface-port=$(expr $2 + 420)",
+		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
+		fmt.Sprintf("-port=%d", options.port),
+		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
+		"-max-txn-size-unconfirmed=5242880",
+		"-max-txn-size-create-block=5242880",
+		"-max-block-size=5242880",
+	)
+	default:
+		return nil
+	}
+}
+
+func main() {
 	checkCXPathSet()
 
 	runtime.LockOSThread()
@@ -46,6 +315,104 @@ func main () {
 	registerFlags(&options)
 	flag.Parse()
 
+	if options.publisherMode || options.peerMode {
+		var cmd *exec.Cmd
+		if options.publisherMode {
+			cmd = runNode("publisher", options)
+		} else if options.peerMode {
+			cmd = runNode("peer", options)
+		}
+
+		stdoutIn, _ := cmd.StdoutPipe()
+		stderrIn, _ := cmd.StderrPipe()
+		cmd.Start()
+
+		go func() {
+			defer cmd.Process.Kill()
+
+			scanner := bufio.NewScanner(stdoutIn)
+			scanner.Split(bufio.ScanLines)
+			for scanner.Scan() {
+				m := scanner.Text()
+				log.Info("Scanner: " + m)
+			}
+		}()
+
+		go func() {
+			scanner := bufio.NewScanner(stderrIn)
+			scanner.Split(bufio.ScanLines)
+			for scanner.Scan() {
+				log.Error(scanner.Text())
+			}
+		}()
+	}
+
+	// Generate a CX chain address.
+	if options.genAddress {
+		// Create a random seed to create a temporary wallet.
+		seed := cli.MakeAlphanumericSeed()
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: seed,
+		}
+
+		// Generate temporary wallet.
+		wlt, err := cli.GenerateWallet(wallet.NewWalletFilename(), wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+
+		rw := wallet.NewReadableWallet(wlt)
+
+		output, err := json.MarshalIndent(rw, "", "    ")
+		if err != nil {
+			panic(err)
+		}
+
+		// Print all the wallet data.
+		fmt.Println(string(output))
+
+		return
+	}
+	
+	if options.walletMode {
+		if options.walletSeed == "" {
+			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+			return
+		}
+		if options.walletId == "" {
+			// Although there is a default walletId.
+			// This error should only occur if the user intentionally provides an empty id.
+			fmt.Println("creating a wallet requires an id provided with --wallet-id")
+			return
+		}
+
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: options.walletSeed,
+		}
+		
+		wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+		err = wlt.Save("/tmp/6001/wallets/")
+		if err != nil {
+			panic(err)
+		}
+
+		wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		// Printing JSON with wallet information
+		fmt.Println(string(wltJSON))
+		
+		return
+	}
+	
 	if options.printHelp {
 		printHelp()
 		return
@@ -134,6 +501,42 @@ func main () {
 
 		Tokenize(r, w)
 		return
+	}
+
+	// var bcPrgrm *CXProgram
+	var sPrgrm []byte
+	if options.transactionMode || options.broadcastMode {
+		resp, err := http.Get("http://127.0.0.1:6420/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+
+		if err := json.Unmarshal(body, &sPrgrm); err != nil {
+			panic(err)
+		}
+
+		memOff := GetSerializedMemoryOffset(sPrgrm)
+		stackSize := GetSerializedStackSize(sPrgrm)
+		// sPrgrm with Stack and Heap
+		sPrgrmSH := sPrgrm[:memOff]
+		// Appending new stack
+		sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
+		// Appending data segment
+		sPrgrmSH = append(sPrgrmSH, sPrgrm[memOff:]...)
+		// Appending new heap
+		sPrgrmSH = append(sPrgrmSH, make([]byte, INIT_HEAP_SIZE)...)
+		
+		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
+		// bcPrgrm = Deserialize(sPrgrm)
+		// prevMemSize := len(PRGRM.Memory)
+		PRGRM = Deserialize(sPrgrmSH)
+		// // Adding 
+		// PRGRM.Memory = append(make([]byte, STACK_SIZE), PRGRM.Memory...)
+		// PRGRM.Memory
+		// PRGRM.Memory = append(PRGRM.Memory, make([]byte, prevMemSize - len(PRGRM.Memory))...)
+		DataOffset = PRGRM.HeapStartsAt
 	}
 
 	cxgo0.PRGRM0 = PRGRM
@@ -434,23 +837,158 @@ func main () {
 	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
-		if err := PRGRM.RunCompiled(0, cxArgs); err != nil {
+		err := PRGRM.RunCompiled(0, cxArgs)
+		if err != nil {
 			panic(err)
 		}
-		if AssertFailed() {
-			os.Exit(CX_ASSERT)
+
+		if options.blockchainMode {
+			PRGRM.RemovePackage(MAIN_FUNC)
+			
+			s := Serialize(PRGRM, 1)
+			s = ExtractBlockchainProgram(s, s)
+
+			configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+			configFile := "fiber"
+			
+			cmd := exec.Command("go", "install", "./cmd/newcoin/...")
+			cmd.Start()
+			cmd.Wait()
+			
+			cmd = exec.Command("newcoin", "createcoin",
+				fmt.Sprintf("--coin=%s", options.programName),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+				"--config-file=" + configFile + ".toml",
+				"--config-dir=" + configDir,
+			)
+			cmd.Start()
+			cmd.Wait()
+			
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
+
+			err := initCXBlockchain(s, options.programName, options.secKey)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("\ngenesis signature:", genesisSignature)
+
+			viper.SetConfigName(configFile) // name of config file (without extension)
+			viper.AddConfigPath(".")      // optionally look for config in the working directory
+			err = viper.ReadInConfig()   // Find and read the config file
+			if err != nil { // Handle errors reading the config file
+				panic(err)
+			}
+
+			viper.Set("node.genesis_signature_str", genesisSignature)
+			viper.WriteConfig()
+		
+			cmd = exec.Command("newcoin", "createcoin",
+				fmt.Sprintf("--coin=%s", options.programName),
+				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+				"--config-file=" + configFile + ".toml",
+				"--config-dir=" + configDir,
+			)
+			cmd.Start()
+			cmd.Wait()
+			cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+			cmd.Start()
+			cmd.Wait()
+		} else if options.broadcastMode {
+			// Resetting memory
+			dsPrgrm := Deserialize(sPrgrm)
+			PRGRM.StackPointer = 0
+			PRGRM.HeapPointer = dsPrgrm.HeapPointer
+			
+			s := Serialize(PRGRM, 1)
+			txnCode := ExtractTransactionProgram(sPrgrm, s)
+
+			// All these HTTP requests need to be dropped in favor of calls to calls to functions
+			// from the `cli` or `api` Skycoin packages
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
+			skycoinClient := api.NewClient(addr)
+			csrfToken, err := skycoinClient.CSRF()
+			if err != nil {
+				panic(err)
+			}
+
+			url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port + 420)
+
+			var dataMap map[string]interface{}
+			dataMap = make(map[string]interface{}, 0)
+			dataMap["mainExprs"] = txnCode
+			dataMap["hours_selection"] = map[string]string{"type": "manual"}
+			dataMap["wallet"] = map[string]string{"id": options.walletId}
+			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
+
+			
+			jsonStr, err := json.Marshal(dataMap)
+			if err != nil {
+				panic(err)
+			}
+
+			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+			req.Header.Set("X-CSRF-Token", csrfToken)
+			req.Header.Set("Content-Type", "application/json")
+
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				panic(err)
+			}
+
+			var respBody map[string]interface{}
+			if err := json.Unmarshal(body, &respBody); err != nil {
+				// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
+				fmt.Println(string(body))
+				return
+			}
+
+			url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
+			dataMap = make(map[string]interface{}, 0)
+			dataMap["rawtx"] = respBody["encoded_transaction"]
+
+			jsonStr, err = json.Marshal(dataMap)
+			if err != nil {
+				panic(err)
+			}
+
+			req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+			req.Header.Set("X-CSRF-Token", csrfToken)
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, err = client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+
+			body, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			if AssertFailed() {
+				os.Exit(CX_ASSERT)
+			}
 		}
-	}
-	
-	if BaseOutput {
-		//PRGRM.Compile(true)
-	}
-	if CompileMode {
-		baseFilename := fmt.Sprintf("%s.go", compileOutput)
-		build := exec.Command("go", "build", baseFilename)
-		build.Run()
-		removeBase := exec.Command("rm", baseFilename)
-		removeBase.Run()
+		
+		if BaseOutput {
+			//PRGRM.Compile(true)
+		}
+		if CompileMode {
+			baseFilename := fmt.Sprintf("%s.go", compileOutput)
+			build := exec.Command("go", "build", baseFilename)
+			build.Run()
+			removeBase := exec.Command("rm", baseFilename)
+			removeBase.Run()
+		}
 	}
 }
 
@@ -493,7 +1031,6 @@ func parseMemoryString (s string) int {
 		}
 	}
 }
-
 
 // var PRGRM *CXProgram
 
@@ -780,7 +1317,6 @@ func addInitFunction (PRGRM *CXProgram) {
 // ----------------------------------------------------------------
 //                     Utility functions
 
-
 func readline (fi *bufio.Reader) (string, bool) {
 	s, err := fi.ReadString('\n')
 
@@ -806,4 +1342,3 @@ func isJSON(str string) bool {
 	err := json.Unmarshal([]byte(str), &js)
 	return err == nil
 }
-

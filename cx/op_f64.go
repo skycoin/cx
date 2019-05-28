@@ -3,6 +3,7 @@ package cxcore
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"strconv"
 )
 
@@ -35,6 +36,12 @@ func opF64Cast(expr *CXExpression, fp int) {
 	default:
 		panic("unhandled operation")
 	}
+}
+
+// The built-in isnan function returns true if operand is nan value.
+func opF64Isnan(expr *CXExpression, fp int) {
+	outB0 := FromBool(math.IsNaN(ReadF64(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 // The print built-in function formats its arguments and prints them.
@@ -148,11 +155,33 @@ func opF64Uneq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in rand function returns a pseudo-random number in [0.0,1.0) from the default Source
+//
+func opF64Rand(expr *CXExpression, fp int) {
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(rand.Float64()))
+}
+
+// The built-in acos function returns the arc cosine of the operand.
+//
+func opF64Acos(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromF64(math.Acos(ReadF64(fp, inp1)))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
 // The built-in cos function returns the cosine of the operand.
 //
 func opF64Cos(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Cos(ReadF64(fp, inp1)))
+	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+// The built-in asin function returns the arc sine of the operand.
+//
+func opF64Asin(expr *CXExpression, fp int) {
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	outB1 := FromF64(math.Asin(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 

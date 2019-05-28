@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -500,7 +500,9 @@ func (prgrm *CXProgram) PrintProgram() {
 	}
 
 	prgrm.CurrentPackage = currentPackage
-	currentPackage.CurrentFunction = currentFunction
+	if currentPackage != nil {
+		currentPackage.CurrentFunction = currentFunction
+	}
 }
 
 // CheckArithmeticOp ...

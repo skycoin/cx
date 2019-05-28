@@ -1,3 +1,5 @@
+// +build base extra full
+
 package cxcore
 
 // constant codes
@@ -246,6 +248,15 @@ const (
 	CONST_CX_RUNTIME_HEAP_EXHAUSTED_ERROR
 	CONST_CX_RUNTIME_INVALID_ARGUMENT
 	CONST_CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+)
+
+const (
+	OS_RUN_SUCCESS = iota
+	OS_RUN_EMPTY_CMD
+	OS_RUN_PANIC // 2
+	OS_RUN_START_FAILED
+	OS_RUN_WAIT_FAILED
+	OS_RUN_TIMEOUT
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons

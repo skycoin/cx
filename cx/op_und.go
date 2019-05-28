@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 func opLt(expr *CXExpression, fp int) {
@@ -339,7 +339,8 @@ func opLen(expr *CXExpression, fp int) {
 		}
 
 		WriteMemory(GetFinalOffset(fp, out1), sliceLen)
-	} else if elt.Type == TYPE_STR {
+		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
+	} else if elt.Type == TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {

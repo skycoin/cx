@@ -1,0 +1,19 @@
+package bc
+
+
+
+var addresses []str = []str{
+	"UEUEUE",
+	"ueououeuoeu"}
+
+func addAddress () {
+	
+}
+
+package main
+import "bc"
+
+func main() {
+	str.print(bc.addresses[0])
+	str.print(bc.addresses[1])
+}

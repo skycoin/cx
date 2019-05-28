@@ -1,9 +1,29 @@
 # Changelog
 
-### v0.6.3 (NOT YET RELEASED)
+### v0.7.0 (NOT YET RELEASED)
 * Additions
-  * ...
+  * CX can now generate addresses to be used by CX chains.
+* Changes
+  * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+  * The tutorial in [documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md) is now updated and will be used to reflect the latest changes in the CX source code (`develop` branch), while the tutorial in the [wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will be used as a tutorial for the latest CX release.
 * Libraries
+* Fixed issues
+  * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+* Documentation
+* Miscellaneous
+
+### v0.7beta released 2019-05-19
+* Additions
+  * First release of CX chains, i.e. CX programs stored on a Skycoin fiber blockchain
+  * Added/forked the newcoin and skycoin-cli commands to the CX
+    repositoryand adapted it to CX chains.
+  * CX can now create a wallet by running `cx --create-wallet --wallet-seed $WALLET_SEED`
+  * Added --wallet-id flag. This parameter replaces having to set the WALLET environment variable for CX chains.
+* Changes
+  * Transaction and block default sizes for CX chains changed from 32 Kb to 5 Mb.
+* Libraries
+  * Add math bindings for f32 and f64 types: isnan, rand, acos, asin.
+  * Add glfw bindings: Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
@@ -15,7 +35,7 @@
   * Removed the current version of the IDE. We'll move to a textmate-based
     solution in the future.
 * Miscellaneous
-  * ...
+  * Vendored all external packages
 
 ### v0.6.2
 * Additions

@@ -22,6 +22,21 @@ type cxCmdFlags struct {
 	initialHeap         string
 	maxHeap             string
 	stackSize           string
+	blockchainMode      bool
+	publisherMode       bool
+	peerMode            bool
+	transactionMode     bool
+	broadcastMode       bool
+	walletMode          bool
+	genAddress          bool
+	port                int
+	walletId            string
+	walletSeed          string
+	programName         string
+	secKey              string
+	pubKey              string
+	genesisAddress      string
+	genesisSignature    string
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -36,6 +51,16 @@ func defaultCmdFlags() cxCmdFlags {
 		webPersistentMode:   false,
 		printHelp:           false,
 		printVersion:        false,
+		blockchainMode:      false,
+		transactionMode:     false,
+		broadcastMode:       false,
+		port:                6001,
+		programName:         "cxcoin",
+		walletId:            "cxcoin_cli.wlt",
+		secKey:              "",
+		pubKey:              "",
+		genesisAddress:      "",
+		genesisSignature:    "",
 	}
 }
 
@@ -70,6 +95,27 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
+
+	
+
+	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
+	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
+	flag.BoolVar(&options.publisherMode, "publisher", options.publisherMode, "Start a CX blockchain program block publisher")
+	// flag.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")
+	flag.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Test a CX blockchain transaction")
+	// flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
+	flag.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
+	flag.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
+	flag.BoolVar(&options.genAddress, "generate-address", options.genAddress, "Generate a CX chain address")
+	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
+	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
+	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
+	flag.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
+	flag.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
+	flag.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
+	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
+	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
+	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
 }
 
 func printHelp() {

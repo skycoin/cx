@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/amherag/skycoin/src/cipher/encoder"
 	. "github.com/satori/go.uuid" // nolint golint
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 /*
@@ -34,6 +34,7 @@ type CXProgram struct {
 	Outputs      []*CXArgument // outputs to the OS
 	Memory       []byte        // Used when running the program
 	StackSize    int           // This field stores the size of a CX program's stack
+	HeapSize     int           // This field stores the size of a CX program's heap
 	HeapStartsAt int           // Offset at which the heap starts in a CX program's memory
 	StackPointer int           // At what byte the current stack frame is
 	CallStack    []CXCall      // Collection of function calls
@@ -55,11 +56,13 @@ type CXCall struct {
 // MakeProgram ...
 func MakeProgram() *CXProgram {
 	newPrgrm := &CXProgram{
-		ElementID: MakeElementID(),
-		Packages:  make([]*CXPackage, 0),
-		CallStack: make([]CXCall, CALLSTACK_SIZE),
-		Memory:    make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
-		StackSize: STACK_SIZE,
+		ElementID:   MakeElementID(),
+		Packages:    make([]*CXPackage, 0),
+		CallStack:   make([]CXCall, CALLSTACK_SIZE),
+		Memory:      make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
+		StackSize:   STACK_SIZE,
+		HeapSize:    INIT_HEAP_SIZE,
+		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes
 	}
 
 	return newPrgrm
@@ -274,7 +277,6 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 			} else {
 				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
 			}
-
 			// This means that we're removing the package set to be the CurrentPackage.
 			// If it is removed from the program's list of packages, cxt.CurrentPackage
 			// would be pointing to a package meant to be collected by the GC.
