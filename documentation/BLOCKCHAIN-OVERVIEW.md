@@ -48,7 +48,8 @@ The entirety of the program state can be queried or mutated. As is described in 
 
 The program state of a CX chain is equivalent to the serialization of the initialized blockchain code, minus its `main` function. The structure of this serialization is composed of four memory segments: code, stack, data and heap. The code segment represents the source code in the blockchain code; the stack segment represents the CX program's stack, which stores the local variables of the different function calls that are performed when running a CX program; the data segment stores any global variable and primitive literals found in the source code (for example, in the function call `foo(5)`, the value 5 is stored in the data segment); lastly, the heap segment stores objects that can shrink or expand in size (strings and slices) and objects that are being pointed to by pointers and that escape their function call scope (see [Escape Analysis](https://en.wikipedia.org/wiki/Escape_analysis)). A diagram of this structure is shown below:
 
-[![memory-segments.png](https://i.postimg.cc/zvfXL3Lb/memory-segments.png)](https://postimg.cc/dkzKpsjw)
+
+[![memory-segments.png](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/memory-segments.png)](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/memory-segments.png)
 
 It must be noted that the stack and heap segments are not being included at the moment, but this can/should change in the future versions of CX chains. Despite this limitation, the role of these segments in a CX chain are also described in this document.
 
@@ -135,7 +136,7 @@ In the case above, `i32.print(number.Num)` will print `11`, because the previous
 
 Both the program state and the transactions that are run against this program state are stored as serializations of CX programs. In order to run a transaction against the program state, a merging of both serializations needs to be performed. This merging – although not so trivial – results in a structure similar to the one depicted in the diagram below:
 
-[![merging.png](https://i.postimg.cc/zfR8cG2K/merging.png)](https://postimg.cc/wtHCtgpj)
+[![merging.png](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/merging.png)](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/merging.png)
 
 As can be seen, each of the memory segments of the serialization of the transaction code is appended at the end of each of the memory segments of the serialization of the blockchain code. The merging of both serializations results in a serialization representing a CX program that both includes the blockchain and the transaction code.
 
@@ -238,7 +239,7 @@ The workflow – which occurs when running, for example, `cx --blockchain --secr
 
 The diagram below illustrates how the different parts and processes that have been reviewed until now interact among them in order to generate the initial program state.
 
-[![init-stage.png](https://i.postimg.cc/brXF6zDC/init-stage.png)](https://postimg.cc/bDTTrfRk)
+[![init-stage.png](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/init-stage.png)](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/init-stage.png)
 
 # Publisher and Peer Nodes
 
@@ -309,4 +310,4 @@ If the transaction code in the second snippet is run using the `--transaction` f
 
 The diagram below depicts the workflow of a CX chain after its initialization. It can be seen how blockchain codes are used to form a transaction that will be changing the current program state in order to generate a new program state to be used by future transactions.
 
-[![mutating-querying-stage.png](https://i.postimg.cc/KjnpwdtZ/mutating-querying-stage.png)](https://postimg.cc/9wQBqgxS)
+[![mutating-querying-stage.png](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/mutating-querying-stage.png)](https://raw.githubusercontent.com/skycoin/cx/develop/documentation/images/mutating-querying-stage.png)
