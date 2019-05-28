@@ -12,6 +12,7 @@
 * Fixed issues
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
 * Documentation
+  * Added file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial
 	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
 	will be used to reflect the state in the CX source code (`develop` branch)
