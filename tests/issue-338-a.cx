@@ -2,7 +2,7 @@ package main
 
 type Too struct {
 	a i32
-	sb []byte
+	sb []i8
 	b i32
 }
 

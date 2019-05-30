@@ -540,16 +540,18 @@ func IsTempVar(name string) bool {
 // GetArgSize ...
 func GetArgSize(typ int) int {
 	switch typ {
-	case TYPE_BOOL, TYPE_BYTE, TYPE_UI8:
+	case TYPE_BOOL, TYPE_I8, TYPE_UI8:
 		return 1
-	case TYPE_UI16:
+	case TYPE_I16, TYPE_UI16:
 		return 2
-	case TYPE_STR, TYPE_I32, TYPE_F32, TYPE_AFF, TYPE_UI32:
+	case TYPE_STR, TYPE_I32, TYPE_UI32, TYPE_F32, TYPE_AFF:
 		return 4
 	case TYPE_I64, TYPE_UI64, TYPE_F64:
 		return 8
 	default:
 		return 4
+		//return -1 // should be panic
+		//panic(CX_INTERNAL_ERROR)
 	}
 }
 
@@ -878,14 +880,24 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))
-	case "byte":
-		return fmt.Sprintf("%v", ReadByte(fp, elt))
 	case "str":
 		return fmt.Sprintf("%v", ReadStr(fp, elt))
+	case "i8":
+		return fmt.Sprintf("%v", ReadI8(fp, elt))
+	case "i16":
+		return fmt.Sprintf("%v", ReadI16(fp, elt))
 	case "i32":
 		return fmt.Sprintf("%v", ReadI32(fp, elt))
 	case "i64":
 		return fmt.Sprintf("%v", ReadI64(fp, elt))
+	case "ui8":
+		return fmt.Sprintf("%v", ReadUI8(fp, elt))
+	case "ui16":
+		return fmt.Sprintf("%v", ReadUI16(fp, elt))
+	case "ui32":
+		return fmt.Sprintf("%v", ReadUI32(fp, elt))
+	case "ui64":
+		return fmt.Sprintf("%v", ReadUI64(fp, elt))
 	case "f32":
 		return fmt.Sprintf("%v", ReadF32(fp, elt))
 	case "f64":

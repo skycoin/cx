@@ -8,7 +8,7 @@ func main() {
 		float: 32.0,
 		decimal: 64.0D,
 		boolean: true,
-		byt: 255B,
+		byt: 127B,
 		string: "Foo bar"}
 		// anotherStruct: miniStruct{
 	// 		mInt: 32,
@@ -34,7 +34,7 @@ func main() {
 	test(mytest.boolean, true, "Struct bool properties error")
 	// test((mytest.boolean && mytest.anotherStruct.boolean), true, "Struct in a Struct bool properties error")
 
-	test(mytest.byt, 255B, "Struct byte properties error")
+	test(mytest.byt, 127B, "Struct byte properties error")
 	// test(mytest.byt, mytest.anotherStruct.byt, "Struct in a Struct byte properties error")
 
 	test(mytest.string, "Foo bar", "error")

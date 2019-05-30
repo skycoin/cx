@@ -4,7 +4,7 @@ var intArray [5]i32
 var longArray [5]i64
 var floatArray [5]f32
 var doubleArray [5]f64
-var byteArray [5]byte
+var byteArray [5]i8
 var boolArray [5]bool
 // var stringArray [5]str
 
@@ -185,7 +185,7 @@ func main () () {
 	longArray = [5]i64{20L, 30L, 90L, 1L, 5L}
 	floatArray = [5]f32{3.9, 6.7, 1.2, 5.3, 9.102}
 	doubleArray = [5]f64{5.0D, 70.0D, 8.5D, 0.289D, 99999.999D}
-	byteArray = [5]byte{70B, 1B, 123B, 0B, 255B}
+	byteArray = [5]i8{70B, 1B, 123B, 0B, 127B}
 	boolArray = [5]bool{ true, false, true, true, false}
 
 	// stringArray = []str{ "foo", "Foo!", "bar?", "Bar!!", "Hello there!"}

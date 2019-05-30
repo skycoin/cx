@@ -11,316 +11,473 @@ import (
 )
 
 func opLt(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) < ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) < ReadStr(fp, inp2))
+		opStrLt(expr, fp)
+	case TYPE_I8:
+		opI8Lt(expr, fp)
+	case TYPE_I16:
+		opI16Lt(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) < ReadI32(fp, inp2))
+		opI32Lt(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) < ReadI64(fp, inp2))
+		opI64Lt(expr, fp)
+	case TYPE_UI8:
+		opUI8Lt(expr, fp)
+	case TYPE_UI16:
+		opUI16Lt(expr, fp)
+	case TYPE_UI32:
+		opUI32Lt(expr, fp)
+	case TYPE_UI64:
+		opUI64Lt(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) < ReadF32(fp, inp2))
+		opF32Lt(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) < ReadF64(fp, inp2))
+		opF64Lt(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opGt(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) > ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) > ReadStr(fp, inp2))
+		opStrGt(expr, fp)
+	case TYPE_I8:
+		opI8Gt(expr, fp)
+	case TYPE_I16:
+		opI16Gt(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) > ReadI32(fp, inp2))
+		opI32Gt(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) > ReadI64(fp, inp2))
+		opI64Gt(expr, fp)
+	case TYPE_UI8:
+		opUI8Gt(expr, fp)
+	case TYPE_UI16:
+		opUI16Gt(expr, fp)
+	case TYPE_UI32:
+		opUI32Gt(expr, fp)
+	case TYPE_UI64:
+		opUI64Gt(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) > ReadF32(fp, inp2))
+		opF32Gt(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) > ReadF64(fp, inp2))
+		opF64Gt(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opLteq(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) <= ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) <= ReadStr(fp, inp2))
+		opStrLteq(expr, fp)
+	case TYPE_I8:
+		opI8Lteq(expr, fp)
+	case TYPE_I16:
+		opI16Lteq(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) <= ReadI32(fp, inp2))
+		opI32Lteq(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) <= ReadI64(fp, inp2))
+		opI64Lteq(expr, fp)
+	case TYPE_UI8:
+		opUI8Lteq(expr, fp)
+	case TYPE_UI16:
+		opUI16Lteq(expr, fp)
+	case TYPE_UI32:
+		opUI32Lteq(expr, fp)
+	case TYPE_UI64:
+		opUI64Lteq(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) <= ReadF32(fp, inp2))
+		opF32Lteq(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) <= ReadF64(fp, inp2))
+		opF64Lteq(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opGteq(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) >= ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) >= ReadStr(fp, inp2))
+		opStrGteq(expr, fp)
+	case TYPE_I8:
+		opI8Gteq(expr, fp)
+	case TYPE_I16:
+		opI16Gteq(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) >= ReadI32(fp, inp2))
+		opI32Gteq(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) >= ReadI64(fp, inp2))
+		opI64Gteq(expr, fp)
+	case TYPE_UI8:
+		opUI8Gteq(expr, fp)
+	case TYPE_UI16:
+		opUI16Gteq(expr, fp)
+	case TYPE_UI32:
+		opUI32Gteq(expr, fp)
+	case TYPE_UI64:
+		opUI64Gteq(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) >= ReadF32(fp, inp2))
+		opF32Gteq(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) >= ReadF64(fp, inp2))
+		opF64Gteq(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opEqual(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) == ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_BOOL:
-		outB1 = FromBool(ReadBool(fp, inp1) == ReadBool(fp, inp2))
+		opBoolEqual(expr, fp)
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) == ReadStr(fp, inp2))
+		opStrEq(expr, fp)
+	case TYPE_I8:
+		opI8Eq(expr, fp)
+	case TYPE_I16:
+		opI16Eq(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) == ReadI32(fp, inp2))
+		opI32Eq(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) == ReadI64(fp, inp2))
+		opI64Eq(expr, fp)
+	case TYPE_UI8:
+		opUI8Eq(expr, fp)
+	case TYPE_UI16:
+		opUI16Eq(expr, fp)
+	case TYPE_UI32:
+		opUI32Eq(expr, fp)
+	case TYPE_UI64:
+		opUI64Eq(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) == ReadF32(fp, inp2))
+		opF32Eq(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) == ReadF64(fp, inp2))
+		opF64Eq(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opUnequal(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) != ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
 	case TYPE_BOOL:
-		outB1 = FromBool(ReadBool(fp, inp1) != ReadBool(fp, inp2))
+		opBoolUnequal(expr, fp)
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) != ReadStr(fp, inp2))
+		opStrUneq(expr, fp)
+	case TYPE_I8:
+		opI8Uneq(expr, fp)
+	case TYPE_I16:
+		opI16Uneq(expr, fp)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) != ReadI32(fp, inp2))
+		opI32Uneq(expr, fp)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) != ReadI64(fp, inp2))
+		opI64Uneq(expr, fp)
+	case TYPE_UI8:
+		opUI8Uneq(expr, fp)
+	case TYPE_UI16:
+		opUI16Uneq(expr, fp)
+	case TYPE_UI32:
+		opUI32Uneq(expr, fp)
+	case TYPE_UI64:
+		opUI64Uneq(expr, fp)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) != ReadF32(fp, inp2))
+		opF32Uneq(expr, fp)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) != ReadF64(fp, inp2))
+		opF64Uneq(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opBitand(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitand(expr, fp)
+	case TYPE_I16:
+		opI16Bitand(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) & ReadI32(fp, inp2))
+		opI32Bitand(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) & ReadI64(fp, inp2))
+		opI64Bitand(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitand(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitand(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitand(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitand(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opBitor(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitor(expr, fp)
+	case TYPE_I16:
+		opI16Bitor(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) | ReadI32(fp, inp2))
+		opI32Bitor(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) | ReadI64(fp, inp2))
+		opI64Bitor(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitor(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitor(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitor(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitor(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opBitxor(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitxor(expr, fp)
+	case TYPE_I16:
+		opI16Bitxor(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) ^ ReadI32(fp, inp2))
+		opI32Bitxor(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) ^ ReadI64(fp, inp2))
+		opI64Bitxor(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitxor(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitxor(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitxor(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitxor(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opMul(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) * ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Mul(expr, fp)
+	case TYPE_I16:
+		opI16Mul(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) * ReadI32(fp, inp2))
+		opI32Mul(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) * ReadI64(fp, inp2))
+		opI64Mul(expr, fp)
+	case TYPE_UI8:
+		opUI8Mul(expr, fp)
+	case TYPE_UI16:
+		opUI16Mul(expr, fp)
+	case TYPE_UI32:
+		opUI32Mul(expr, fp)
+	case TYPE_UI64:
+		opUI64Mul(expr, fp)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) * ReadF32(fp, inp2))
+		opF32Mul(expr, fp)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) * ReadF64(fp, inp2))
+		opF64Mul(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opDiv(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) / ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Div(expr, fp)
+	case TYPE_I16:
+		opI16Div(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) / ReadI32(fp, inp2))
+		opI32Div(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) / ReadI64(fp, inp2))
+		opI64Div(expr, fp)
+	case TYPE_UI8:
+		opUI8Div(expr, fp)
+	case TYPE_UI16:
+		opUI16Div(expr, fp)
+	case TYPE_UI32:
+		opUI32Div(expr, fp)
+	case TYPE_UI64:
+		opUI64Div(expr, fp)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) / ReadF32(fp, inp2))
+		opF32Div(expr, fp)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) / ReadF64(fp, inp2))
+		opF64Div(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opMod(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) % ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Mod(expr, fp)
+	case TYPE_I16:
+		opI16Mod(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) % ReadI32(fp, inp2))
+		opI32Mod(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) % ReadI64(fp, inp2))
+		opI64Mod(expr, fp)
+	case TYPE_UI8:
+		opUI8Mod(expr, fp)
+	case TYPE_UI16:
+		opUI16Mod(expr, fp)
+	case TYPE_UI32:
+		opUI32Mod(expr, fp)
+	case TYPE_UI64:
+		opUI64Mod(expr, fp)
+	case TYPE_F32:
+		opF32Mod(expr, fp)
+	case TYPE_F64:
+		opF64Mod(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opAdd(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) + ReadByte(fp, inp2))
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Add(expr, fp)
+	case TYPE_I16:
+		opI16Add(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) + ReadI32(fp, inp2))
+		opI32Add(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) + ReadI64(fp, inp2))
+		opI64Add(expr, fp)
+	case TYPE_UI8:
+		opUI8Add(expr, fp)
+	case TYPE_UI16:
+		opUI16Add(expr, fp)
+	case TYPE_UI32:
+		opUI32Add(expr, fp)
+	case TYPE_UI64:
+		opUI64Add(expr, fp)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) + ReadF32(fp, inp2))
+		opF32Add(expr, fp)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) + ReadF64(fp, inp2))
+		opF64Add(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opSub(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	var outB1 []byte
-	if len(expr.Inputs) == 2 {
-		inp2 := expr.Inputs[1]
-		switch inp1.Type {
-		case TYPE_BYTE:
-			outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))
-		case TYPE_I32:
-			outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
-		case TYPE_I64:
-			outB1 = FromI64(ReadI64(fp, inp1) - ReadI64(fp, inp2))
-		case TYPE_F32:
-			outB1 = FromF32(ReadF32(fp, inp1) - ReadF32(fp, inp2))
-		case TYPE_F64:
-			outB1 = FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
-		}
-	} else {
-		switch inp1.Type {
-		case TYPE_BYTE:
-			outB1 = FromByte(-ReadByte(fp, inp1))
-		case TYPE_I32:
-			outB1 = FromI32(-ReadI32(fp, inp1))
-		case TYPE_I64:
-			outB1 = FromI64(-ReadI64(fp, inp1))
-		case TYPE_F32:
-			outB1 = FromF32(-ReadF32(fp, inp1))
-		case TYPE_F64:
-			outB1 = FromF64(-ReadF64(fp, inp1))
-		}
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Sub(expr, fp)
+	case TYPE_I16:
+		opI16Sub(expr, fp)
+	case TYPE_I32:
+		opI32Sub(expr, fp)
+	case TYPE_I64:
+		opI64Sub(expr, fp)
+	case TYPE_UI8:
+		opUI8Sub(expr, fp)
+	case TYPE_UI16:
+		opUI16Sub(expr, fp)
+	case TYPE_UI32:
+		opUI32Sub(expr, fp)
+	case TYPE_UI64:
+		opUI64Sub(expr, fp)
+	case TYPE_F32:
+		opF32Sub(expr, fp)
+	case TYPE_F64:
+		opF64Sub(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+}
+
+func opNeg(expr *CXExpression, fp int) {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Neg(expr, fp)
+	case TYPE_I16:
+		opI16Neg(expr, fp)
+	case TYPE_I32:
+		opI32Neg(expr, fp)
+	case TYPE_I64:
+		opI64Neg(expr, fp)
+	case TYPE_F32:
+		opF32Neg(expr, fp)
+	case TYPE_F64:
+		opF64Neg(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
+	}
 }
 
 func opBitshl(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitshl(expr, fp)
+	case TYPE_I16:
+		opI16Bitshl(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) << uint32(ReadI32(fp, inp2))))
+		opI32Bitshl(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint64(ReadI64(fp, inp1)) << uint64(ReadI64(fp, inp2))))
+		opI64Bitshl(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitshl(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitshl(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitshl(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitshl(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opBitshr(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitshr(expr, fp)
+	case TYPE_I16:
+		opI16Bitshr(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) >> uint32(ReadI32(fp, inp2))))
+		opI32Bitshr(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint32(ReadI64(fp, inp1)) >> uint32(ReadI64(fp, inp2))))
+		opI64Bitshr(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitshr(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitshr(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitshr(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitshr(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opBitclear(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+	switch expr.Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitclear(expr, fp)
+	case TYPE_I16:
+		opI16Bitclear(expr, fp)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) &^ uint32(ReadI32(fp, inp2))))
+		opI32Bitclear(expr, fp)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint32(ReadI64(fp, inp1)) &^ uint32(ReadI64(fp, inp2))))
+		opI64Bitclear(expr, fp)
+	case TYPE_UI8:
+		opUI8Bitclear(expr, fp)
+	case TYPE_UI16:
+		opUI16Bitclear(expr, fp)
+	case TYPE_UI32:
+		opUI32Bitclear(expr, fp)
+	case TYPE_UI64:
+		opUI64Bitclear(expr, fp)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
 func opLen(expr *CXExpression, fp int) {
@@ -494,11 +651,15 @@ func buildString(expr *CXExpression, fp int) []byte {
 				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
+				case TYPE_I8:
+					res = append(res, []byte(strconv.FormatInt(int64(ReadI8(fp, inp)), 10))...)
+				case TYPE_I16:
+					res = append(res, []byte(strconv.FormatInt(int64(ReadI16(fp, inp)), 10))...)
 				case TYPE_I32:
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(fp, inp)), 10))...)
 				case TYPE_I64:
 					res = append(res, []byte(strconv.FormatInt(ReadI64(fp, inp), 10))...)
-				case TYPE_BYTE, TYPE_UI8:
+				case TYPE_UI8:
 					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI8(fp, inp)), 10))...)
 				case TYPE_UI16:
 					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI16(fp, inp)), 10))...)

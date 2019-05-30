@@ -291,8 +291,14 @@ func main ()() {
 	start = time.UnixMilli()
 
 	// tests
+	runTest("test-i8.cx", cx.SUCCESS, "i32")
+	runTest("test-i16.cx", cx.SUCCESS, "i32")
 	runTest("test-i32.cx", cx.SUCCESS, "i32")
 	runTest("test-i64.cx", cx.SUCCESS, "i64")
+	runTest("test-ui8.cx", cx.SUCCESS, "i32")
+	runTest("test-ui16.cx", cx.SUCCESS, "i32")
+	runTest("test-ui32.cx", cx.SUCCESS, "i32")
+	runTest("test-ui64.cx", cx.SUCCESS, "i64")
 	runTest("test-f32.cx", cx.SUCCESS, "f32")
 	runTest("test-f64.cx", cx.SUCCESS, "f64")
 	runTest("test-bool.cx", cx.SUCCESS, "bool")

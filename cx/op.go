@@ -26,10 +26,8 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			_, err := encoder.DeserializeAtomic(byts, &offset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(byts, &offset)
+
 			*finalOffset = int(offset)
 
 			baseOffset = *finalOffset
@@ -82,10 +80,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			_, err := encoder.DeserializeAtomic(byts, &offset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(byts, &offset)
 			*finalOffset = int(offset)
 		}
 		if dbg {
@@ -115,10 +110,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 	if arg.Name != "" {
 		// then it's not a literal
 		var offset = int32(0)
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
 		strOffset = int(offset)
 	}
 	return strOffset
@@ -175,10 +167,7 @@ func Mark(prgrm *CXProgram) {
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			_, err := encoder.DeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
 
 			prgrm.Memory[heapOffset] = 1
 		}
@@ -202,10 +191,7 @@ func MarkAndCompact() {
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(PROGRAM.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
 
 			if heapOffset == NULL_HEAP_ADDRESS {
 				continue
@@ -222,10 +208,7 @@ func MarkAndCompact() {
 			}
 
 			var objSize int32
-			_, err = encoder.DeserializeAtomic(PROGRAM.Memory[int(heapOffset)+MARK_SIZE+TYPE_POINTER_SIZE:int(heapOffset)+MARK_SIZE+TYPE_POINTER_SIZE+OBJECT_SIZE], &objSize)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(PROGRAM.Memory[int(heapOffset)+MARK_SIZE+TYPE_POINTER_SIZE:int(heapOffset)+MARK_SIZE+TYPE_POINTER_SIZE+OBJECT_SIZE], &objSize)
 
 			faddr += int32(OBJECT_HEADER_SIZE) + objSize
 		}
@@ -237,16 +220,10 @@ func MarkAndCompact() {
 	newHeapPointer := NULL_HEAP_ADDRESS_OFFSET
 	for c := NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapPointer; {
 		var forwardingAddress int32
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
 
 		var objSize int32
-		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:PROGRAM.HeapStartsAt+c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
 
 		if PROGRAM.Memory[c] == 1 {
 			// setting the mark back to 0
@@ -328,11 +305,6 @@ func FromBool(in bool) []byte {
 
 }
 
-// FromByte ...
-func FromByte(in byte) []byte {
-	return encoder.SerializeAtomic(in)
-}
-
 // FromStr ...
 func FromStr(in string) []byte {
 	return encoder.Serialize(in)
@@ -343,6 +315,11 @@ func FromI8(in int8) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromI16 ...
+func FromI16(in int16) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
 // FromI32 ...
 func FromI32(in int32) []byte {
 	return encoder.SerializeAtomic(in)
@@ -350,7 +327,7 @@ func FromI32(in int32) []byte {
 
 // FromI64 ...
 func FromI64(in int64) []byte {
-	return encoder.Serialize(in)
+	return encoder.SerializeAtomic(in)
 }
 
 // FromUI8 ...
@@ -410,6 +387,18 @@ func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 
 func readData(inp *CXArgument, bytes []byte) interface{} {
 	switch inp.Type {
+	case TYPE_I8:
+		var data []int8
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
+	case TYPE_I16:
+		var data []int16
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(nil)
+		}
 	case TYPE_I32:
 		var data []int32
 		mustDeserializeRaw(bytes, &data)
@@ -418,12 +407,6 @@ func readData(inp *CXArgument, bytes []byte) interface{} {
 		}
 	case TYPE_I64:
 		var data []int64
-		mustDeserializeRaw(bytes, &data)
-		if len(data) > 0 {
-			return interface{}(nil)
-		}
-	case TYPE_BYTE:
-		var data []byte
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
 			return interface{}(nil)
@@ -500,20 +483,7 @@ func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
 // ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-// ReadByte ...
-func ReadByte(fp int, inp *CXArgument) (out byte) {
-	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
@@ -525,10 +495,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		// then it's a literal
 		offset = int32(off)
 	} else {
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
 	}
 
 	if offset == 0 {
@@ -540,14 +507,8 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	var size int32
 	sizeB := PROGRAM.Memory[offset : offset+STR_HEADER_SIZE]
 
-	_, err := encoder.DeserializeAtomic(sizeB, &size)
-	if err != nil {
-		panic(err)
-	}
-	err = encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeAtomic(sizeB, &size)
+	mustDeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 
 	return out
 }
@@ -555,30 +516,28 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 // ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) (out int8) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadI16 ...
+func ReadI16(fp int, inp *CXArgument) (out int16) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) (out int32) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadI64 ...
 func ReadI64(fp int, inp *CXArgument) (out int64) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
@@ -613,19 +572,13 @@ func ReadUI64(fp int, inp *CXArgument) (out uint64) {
 // ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) (out float32) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) (out float64) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }

@@ -68,7 +68,7 @@ func main () {
 		float: 32.0,
 		decimal: 64.0D,
 		boolean: true,
-		byt: 255B,
+		byt: 127B,
 		string: "Foo bar"}
 
 	strct2 = TestStruct{
@@ -105,7 +105,7 @@ func main () {
 	test((*pStrct1).float, 32.0, "")
 	test((*pStrct1).decimal, 64.0D, "")
 	test((*pStrct1).boolean, true, "")
-	test((*pStrct1).byt, 255B, "")
+	test((*pStrct1).byt, 127B, "")
 	test((*pStrct1).string, "Foo bar", "")
 
 	test((*pStrct2).int, 33, "")

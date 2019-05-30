@@ -37,9 +37,11 @@
 
 %union {
 	i int
+	i8 int8
+	i16 int16
 	i32 int32
 	i64 int64
-	byt byte
+	ui8 uint8
 	ui16 uint16
 	ui32 uint32
 	ui64 uint64
@@ -61,17 +63,12 @@
         function *CXFunction
 }
 
-%token  <i32>           INT BOOLEAN
-%token  <i64>           LONG
-%token  <byt>           BYTENUM
-%token  <ui16>          UNSIGNED_SHORT
-%token  <ui32>          UNSIGNED_INT
-%token  <ui64>          UNSIGNED_LONG
-%token  <f32>           FLOAT
-%token  <f64>           DOUBLE
-%token  <i32>           INT_LITERAL BOOLEAN_LITERAL
+%token  <bool>          BOOLEAN_LITERAL
+%token  <i8>            BYTE_LITERAL
+%token  <i16>           SHORT_LITERAL
+%token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
-%token  <byt>           BYTE_LITERAL
+%token  <ui8>           UNSIGNED_BYTE_LITERAL
 %token  <ui16>          UNSIGNED_SHORT_LITERAL
 %token  <ui32>          UNSIGNED_INT_LITERAL
 %token  <ui64>          UNSIGNED_LONG_LITERAL
@@ -95,7 +92,7 @@
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
                         MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
                         SUB_ASSIGN XOR_ASSIGN
-                        BOOL BYTE F32 F64
+                        BOOL F32 F64
                         I8 I16 I32 I64
                         STR
                         UI8 UI16 UI32 UI64
@@ -351,8 +348,6 @@ type_specifier:
                 { $$ = TYPE_AFF }
         |       BOOL
                 { $$ = TYPE_BOOL }
-        |       BYTE
-                { $$ = TYPE_BYTE }
         |       STR
                 { $$ = TYPE_STR }
         |       F32
@@ -466,9 +461,11 @@ primary_expression:
         |       INFER LBRACE infer_clauses RBRACE
         |       STRING_LITERAL
         |       BOOLEAN_LITERAL
+        |       BYTE_LITERAL
+        |       SHORT_LITERAL
         |       INT_LITERAL
         |       LONG_LITERAL
-        |       BYTE_LITERAL
+        |       UNSIGNED_BYTE_LITERAL
         |       UNSIGNED_SHORT_LITERAL
         |       UNSIGNED_INT_LITERAL
         |       UNSIGNED_LONG_LITERAL

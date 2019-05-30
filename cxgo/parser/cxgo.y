@@ -17,9 +17,11 @@
 
 %union{
 	i int
+	i8 int8
+	i16 int16
 	i32 int32
 	i64 int64
-	byt byte
+	ui8 uint8
 	ui16 uint16
 	ui32 uint32
 	ui64 uint64
@@ -49,9 +51,11 @@
 }
 
 %token  <bool>          BOOLEAN_LITERAL
+%token  <i8>            BYTE_LITERAL
+%token  <i16>           SHORT_LITERAL
 %token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
-%token  <byt>           BYTE_LITERAL
+%token  <ui8>           UNSIGNED_BYTE_LITERAL
 %token  <ui16>          UNSIGNED_SHORT_LITERAL
 %token  <ui32>          UNSIGNED_INT_LITERAL
 %token  <ui64>          UNSIGNED_LONG_LITERAL
@@ -75,7 +79,7 @@
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
                         MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
                         SUB_ASSIGN XOR_ASSIGN
-                        BOOL BYTE F32 F64
+                        BOOL F32 F64
                         I8 I16 I32 I64
                         STR
                         UI8 UI16 UI32 UI64
@@ -484,8 +488,6 @@ type_specifier:
                 { $$ = TYPE_AFF }
         |       BOOL
                 { $$ = TYPE_BOOL }
-        |       BYTE
-                { $$ = TYPE_BYTE }
         |       STR
                 { $$ = TYPE_STR }
         |       F32
@@ -781,6 +783,14 @@ primary_expression:
 			exprs := WritePrimary(TYPE_BOOL, encoder.Serialize($1), false)
 			$$ = exprs
                 }
+        |       BYTE_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I8, encoder.Serialize($1), false)
+                }
+        |       SHORT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I16, encoder.Serialize($1), false)
+                }
         |       INT_LITERAL
                 {
 			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
@@ -789,9 +799,9 @@ primary_expression:
                 {
 			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
                 }
-        |       BYTE_LITERAL
+        |       UNSIGNED_BYTE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1), false)
+			$$ = WritePrimary(TYPE_UI8, encoder.Serialize($1), false)
                 }
         |       UNSIGNED_SHORT_LITERAL
                 {

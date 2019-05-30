@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 	"runtime"
-	
+
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -18,6 +18,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 		switch op.OpCode {
 		case OP_I32_MUL:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_MUL]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_MUL]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_MUL]
@@ -36,6 +40,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			}
 		case OP_I32_DIV:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_DIV]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_DIV]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_DIV]
@@ -54,6 +62,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			}
 		case OP_I32_MOD:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_MOD]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_MOD]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_MOD]
@@ -65,10 +77,18 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 				expr.Operator = Natives[OP_UI32_MOD]
 			case TYPE_UI64:
 				expr.Operator = Natives[OP_UI64_MOD]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_MOD]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_MOD]
 			}
 
 		case OP_I32_ADD:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_ADD]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_ADD]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_ADD]
@@ -85,11 +105,16 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_F64:
 				expr.Operator = Natives[OP_F64_ADD]
 			}
+
 		case OP_I32_SUB:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_SUB]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_SUB]
 			case TYPE_I32:
 			case TYPE_I64:
-				expr.Operator = Natives[OP_I64_ADD]
+				expr.Operator = Natives[OP_I64_SUB]
 			case TYPE_UI8:
 				expr.Operator = Natives[OP_UI8_SUB]
 			case TYPE_UI16:
@@ -99,13 +124,32 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_UI64:
 				expr.Operator = Natives[OP_UI64_SUB]
 			case TYPE_F32:
-				expr.Operator = Natives[OP_F32_ADD]
+				expr.Operator = Natives[OP_F32_SUB]
 			case TYPE_F64:
-				expr.Operator = Natives[OP_F64_ADD]
+				expr.Operator = Natives[OP_F64_SUB]
+			}
+
+		case OP_I32_NEG:
+			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_NEG]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_NEG]
+			case TYPE_I32:
+			case TYPE_I64:
+				expr.Operator = Natives[OP_I64_NEG]
+			case TYPE_F32:
+				expr.Operator = Natives[OP_F32_NEG]
+			case TYPE_F64:
+				expr.Operator = Natives[OP_F64_NEG]
 			}
 
 		case OP_I32_BITSHL:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_BITSHL]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_BITSHL]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_BITSHL]
@@ -118,8 +162,13 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_UI64:
 				expr.Operator = Natives[OP_UI64_BITSHL]
 			}
+
 		case OP_I32_BITSHR:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_BITSHR]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_BITSHR]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_BITSHR]
@@ -135,6 +184,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 
 		case OP_I32_LT:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_LT]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_LT]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_LT]
@@ -151,8 +204,13 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_F64:
 				expr.Operator = Natives[OP_F64_LT]
 			}
+
 		case OP_I32_GT:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_GT]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_GT]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_GT]
@@ -169,8 +227,13 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_F64:
 				expr.Operator = Natives[OP_F64_GT]
 			}
+
 		case OP_I32_LTEQ:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_LTEQ]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_LTEQ]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_LTEQ]
@@ -187,8 +250,13 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_F64:
 				expr.Operator = Natives[OP_F64_LTEQ]
 			}
+
 		case OP_I32_GTEQ:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_GTEQ]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_GTEQ]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_GTEQ]
@@ -208,6 +276,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 
 		case OP_I32_EQ:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_EQ]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_EQ]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_EQ]
@@ -224,8 +296,13 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 			case TYPE_F64:
 				expr.Operator = Natives[OP_F64_EQ]
 			}
+
 		case OP_I32_UNEQ:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_UNEQ]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_UNEQ]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_UNEQ]
@@ -245,6 +322,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 
 		case OP_I32_BITAND:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_BITAND]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_BITAND]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_BITAND]
@@ -260,6 +341,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 
 		case OP_I32_BITXOR:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_BITXOR]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_BITXOR]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_BITXOR]
@@ -275,6 +360,10 @@ func SetCorrectArithmeticOp(expr *CXExpression) {
 
 		case OP_I32_BITOR:
 			switch typ {
+			case TYPE_I8:
+				expr.Operator = Natives[OP_I8_BITOR]
+			case TYPE_I16:
+				expr.Operator = Natives[OP_I16_BITOR]
 			case TYPE_I32:
 			case TYPE_I64:
 				expr.Operator = Natives[OP_I64_BITOR]
@@ -518,7 +607,6 @@ func IsArgBasicType(arg *CXArgument) bool {
 		TYPE_I16,
 		TYPE_I32,
 		TYPE_I64,
-		TYPE_BYTE,
 		TYPE_UI8,
 		TYPE_UI16,
 		TYPE_UI32,
@@ -603,6 +691,7 @@ func IsUndOpBasicTypes(fn *CXFunction) bool {
 		OP_UND_MOD,
 		OP_UND_ADD,
 		OP_UND_SUB,
+		OP_UND_NEG,
 		OP_UND_BITSHL,
 		OP_UND_BITSHR,
 		OP_UND_LT,
