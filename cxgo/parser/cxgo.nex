@@ -421,7 +421,6 @@ var tokenNames = map[int]string {
 	SUB_ASSIGN: "SUB_ASSIGN",
 	XOR_ASSIGN: "XOR_ASSIGN",
 	BOOL: "BOOL",
-	BYTE: "BYTE",
 	F32: "F32",
 	F64: "F64",
 	I8: "I8",
