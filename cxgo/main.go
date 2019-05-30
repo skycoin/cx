@@ -315,6 +315,9 @@ func main() {
 	registerFlags(&options)
 	flag.Parse()
 
+	// Propagate some options out to other packages
+	DebugLexer = options.debugLexer   // in package parser
+
 	if options.publisherMode || options.peerMode {
 		var cmd *exec.Cmd
 		if options.publisherMode {
