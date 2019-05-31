@@ -444,6 +444,7 @@ func main() {
 
 	MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
 
+	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
 
 	PRGRM = MakeProgram()
@@ -549,6 +550,8 @@ func main() {
 		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 
+	// Copy the contents of the file pointers containing the CX source
+	// code into sourceCodeCopy
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
@@ -581,13 +584,17 @@ func main() {
 		reBodyClose := regexp.MustCompile("}")
 
 		// 1. Identify all the packages and structs
-		for _, source := range sourceCodeCopy {
+		for ix, source := range sourceCodeCopy {
+			filename := fileNames[ix]
+
 			reader := strings.NewReader(source)
 			scanner := bufio.NewScanner(reader)
 			var commentedCode bool
+			var lineno = 0
 			for scanner.Scan() {
 				line := scanner.Bytes()
-				
+				lineno++
+
 				// Identify whether we are in a comment or not.
 				commentLoc := reComment.FindIndex(line)
 				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
@@ -604,6 +611,7 @@ func main() {
 				}
 
 				// At this point we know that we are *not* in a comment
+
 				// 1a. Identify all the packages
 				if loc := rePkg.FindIndex(line); loc != nil {
 					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
@@ -635,7 +643,10 @@ func main() {
 					}
 
 					if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-						if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
+						if prePkg == nil {
+							println(CompilationError(filename, lineno),
+							        "No package defined")
+						} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
 							// then it hasn't been added
 							strct := MakeStruct(match[len(match) - 1])
 							prePkg.AddStruct(strct)
@@ -647,7 +658,7 @@ func main() {
 
 		// 2. Identify all global variables
 		//    We also identify packages again, so we know to what
-		//    package we're going to add the struct declaration to.
+		//    package we're going to add the variable declaration to.
 		for _, source := range sourceCodeCopy {
 			// inBlock needs to be 0 to guarantee that we're in the global scope
 			var inBlock int
