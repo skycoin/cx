@@ -146,6 +146,10 @@ Notes:
 `)
 }
 
+// parseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
 func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
 		if len(arg) > 2 && arg[:2] == "++" {
