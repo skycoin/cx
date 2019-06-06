@@ -614,7 +614,7 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
 			newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
-			newOpPar(TYPE_I32, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_BYTE, true)})
+			newOpPar(TYPE_I32, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_UI8, true)})
 
 	// openal
 	AddOpCode(OP_AL_CLOSE_DEVICE, "al.CloseDevice",
