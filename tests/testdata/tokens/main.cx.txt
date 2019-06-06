@@ -3561,6 +3561,126 @@ STRLIT Crash in garbage collector when heap is resized
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-338-c.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Issues with slice of type T where sizeof T is different than 4 
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-358.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when global variable is redeclared at local scope
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-359.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when using return value of a method call in an inline initialization
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-360.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Panic when package keyword is misspelled
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-361.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT No compilation error when assigning an literal which overflow the receiving type
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-362.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Cx is not supporting short-circuit evaluation
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64

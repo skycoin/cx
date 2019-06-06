@@ -1,5 +1,17 @@
 package main
 
+func clampF64(a f64, min f64, max f64) (out f64) {
+	out = f64.max(f64.min(a, max), min)
+}
+
+func testF64(a f64, b f64, e f64, m str) {
+	test(f64.abs(a - b) < e, true, m)//sprintf("%s, abs(%f - %f) < %f", m, a, b, e))
+}
+
+func testNanF64(a f64, m str) {
+	test(f64.isnan(a), true, m)
+}
+
 func F64Parse() () {
 	test(10.0D,  10.0D,   "f32 error")
 	test(10.D,   10.0D,   "f32 without decimal error")
@@ -28,8 +40,23 @@ func F64ArithmeticFunctions() () {
 	test(f64.log10(10.0D), 1.0D, "Log10 error")
 	test(f64.max(3.0D, 1.0D), 3.0D, "MAX error")
 	test(f64.min(3.0D, 1.0D), 1.0D, "MIN error")
-	test(f64.sin(0.0D), 0.0D, "Sin error")
-	test(f64.cos(0.0D), 1.0D, "Cos error")
+	test(f64.sin(0.0D), 0.0D, "Sin error") // TODO : test Inf/NaN
+	test(f64.cos(0.0D), 1.0D, "Cos error") // TODO : test Inf/NaN
+	test(f64.asin(0.0D), 0.0D, "Asin error")
+	testNanF64(f64.asin(-1.1D), "Asin error")
+	testNanF64(f64.asin(1.1D), "Asin error")
+	test(f64.acos(1.0D), 0.0D, "Acos error")
+	testNanF64(f64.acos(-1.1D), "Acos error")
+	testNanF64(f64.acos(1.1D), "Acos error")
+
+	epsilon := 1e-8D
+	errorCount := 0
+	count := 1000
+	for i := 0; i < count; i++ {
+		f := clampF64(f64.rand() * 2.0D - 1.0D, -1.0D, 1.0D)
+		testF64(f64.sin(f64.asin(f)), f, epsilon, "sin/asin error")
+		testF64(f64.cos(f64.acos(f)), f, epsilon, "cos/acos error")
+	}
 }
 
 func F64ArithmeticShorthand() () {

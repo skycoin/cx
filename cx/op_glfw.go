@@ -4,7 +4,7 @@ package cxcore
 
 import (
 	"os"
-	
+
 	"github.com/go-gl/glfw/v3.2/glfw"
 )
 
@@ -41,6 +41,25 @@ func (cxt *CXProgram) ccallback(expr *CXExpression, functionName string, package
 
 // declared in func_glfw.go
 var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)
+
+func op_glfw_Fullscreen(expr *CXExpression, fp int) {
+	window := windows[ReadStr(fp, expr.Inputs[0])]
+	fullscreen := ReadBool(fp, expr.Inputs[1])
+	x := ReadI32(fp, expr.Inputs[2])
+	y := ReadI32(fp, expr.Inputs[3])
+	w := ReadI32(fp, expr.Inputs[4])
+	h := ReadI32(fp, expr.Inputs[5])
+
+	monitor := glfw.GetPrimaryMonitor()
+	mode := monitor.GetVideoMode()
+
+	if fullscreen {
+		window.SetMonitor(monitor, 0, 0, mode.Width, mode.Height, mode.RefreshRate)
+	} else {
+		window.SetMonitor(nil, int(x), int(y), int(w), int(h), mode.RefreshRate)
+	}
+	window.MakeContextCurrent()
+}
 
 func op_glfw_Init(expr *CXExpression, fp int) {
 	glfw.Init()
@@ -105,6 +124,18 @@ func op_glfw_GetFramebufferSize(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
 }
 
+func op_glfw_GetWindowPos(expr *CXExpression, fp int) {
+	x, y := windows[ReadStr(fp, expr.Inputs[0])].GetPos()
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(x)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(y)))
+}
+
+func op_glfw_GetWindowSize(expr *CXExpression, fp int) {
+	width, height := windows[ReadStr(fp, expr.Inputs[0])].GetSize()
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(width)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(height)))
+}
+
 func op_glfw_SwapInterval(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	glfw.SwapInterval(int(ReadI32(fp, inp1)))
@@ -151,7 +182,7 @@ func op_glfw_SetKeyCallbackEx(expr *CXExpression, fp int) {
 func GetWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return FromStr(key)
+			return FromI32(int32(writeObj(FromStr(key))))
 		}
 	}
 
@@ -178,6 +209,48 @@ func op_glfw_SetCursorPosCallback(expr *CXExpression, fp int) {
 func op_glfw_SetCursorPosCallbackEx(expr *CXExpression, fp int) {
 	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	glfw_SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+}
+
+func op_glfw_SetFramebufferSizeCallback(expr *CXExpression, fp int) {
+	functionName := ReadStr(fp, expr.Inputs[1])
+	packageName := ReadStr(fp, expr.Inputs[2])
+	callback := func(w *glfw.Window, width int, height int) {
+		var inps [][]byte = make([][]byte, 3)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromI32(int32(width))
+		inps[2] = FromI32(int32(height))
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
+	window := ReadStr(fp, expr.Inputs[0])
+	windows[window].SetFramebufferSizeCallback(callback)
+}
+
+func op_glfw_SetWindowPosCallback(expr *CXExpression, fp int) {
+	functionName := ReadStr(fp, expr.Inputs[1])
+	packageName := ReadStr(fp, expr.Inputs[2])
+	callback := func(w *glfw.Window, x int, y int) {
+		var inps [][]byte = make([][]byte, 3)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromI32(int32(x))
+		inps[2] = FromI32(int32(y))
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
+	window := ReadStr(fp, expr.Inputs[0])
+	windows[window].SetPosCallback(callback)
+}
+
+func op_glfw_SetWindowSizeCallback(expr *CXExpression, fp int) {
+	functionName := ReadStr(fp, expr.Inputs[1])
+	packageName := ReadStr(fp, expr.Inputs[2])
+	callback := func(w *glfw.Window, width int, height int) {
+		var inps [][]byte = make([][]byte, 3)
+		inps[0] = GetWindowName(w)
+		inps[1] = FromI32(int32(width))
+		inps[2] = FromI32(int32(height))
+		PROGRAM.ccallback(expr, functionName, packageName, inps)
+	}
+	window := ReadStr(fp, expr.Inputs[0])
+	windows[window].SetSizeCallback(callback)
 }
 
 func op_glfw_SetShouldClose(expr *CXExpression, fp int) {

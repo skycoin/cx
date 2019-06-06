@@ -3,7 +3,7 @@ package cxcore
 import (
 	"fmt"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // GetSize ...
@@ -216,6 +216,10 @@ func MarkAndCompact() {
 	// marking, setting forward addresses and updating references
 	for c := 0; c <= PROGRAM.CallCounter; c++ {
 		op := PROGRAM.CallStack[c].Operator
+
+		if op == nil {
+			continue
+		}
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
