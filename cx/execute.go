@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program
@@ -208,9 +208,9 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 			}
 
 			// debugging memory
-			if len(cxt.Memory) < 2000 {
-				fmt.Println("prgrm.Memory", cxt.Memory)
-			}
+			// if len(cxt.Memory) < 2000 {
+			// 	fmt.Println("prgrm.Memory", cxt.Memory)
+			// }
 
 			return err
 		}

@@ -1,0 +1,174 @@
+package bc
+
+var padding i32
+
+var objective [10]i32 = [10]i32{0, 1, 1, 0, 0, 1, 1, 1, 0, 1}
+
+var population [20][10]i32
+var popSize i32 = 20
+var objSize i32 = len(objective)
+
+var totalIterations i32
+
+func genSolution() (solution [10]i32) {
+	for c := 0; c < objSize; c++ {
+		solution[c] = i32.rand(0, 2)
+	}
+}
+
+func concNums(nums [10]i32) (result str) {
+	for c := 0; c < len(nums); c++ {
+		result = str.concat(result, i32.str(nums[c]))
+	}
+}
+
+func score(chars [10]i32) (score i32) {
+	for c := 0; c < objSize; c++ {
+		if i32.eq(chars[c], objective[c]) {
+			score++
+		}
+	}
+}
+
+func crossover(sol1 [10]i32, sol2 [10]i32) (newSol1 [10]i32, newSol2 [10]i32) {
+	var cut i32
+	cut = i32.rand(0, objSize)
+
+	var c i32
+	for c = 0; c < cut; c++ {
+		newSol1[c] = sol1[c]
+	}
+	for c = 0; c < cut; c++ {
+		newSol2[c] = sol2[c]
+	}
+	
+	for c = cut; c < objSize; c++ {
+		newSol1[c] = sol2[c]
+	}
+	for c = cut; c < objSize; c++ {
+		newSol2[c] = sol1[c]
+	}
+}
+
+func mutate(sol [10]i32) (mutatedSol [10]i32) {
+	var randIdx1 i32
+	var randIdx2 i32
+	randIdx1 = i32.rand(0, len(sol))
+	randIdx2 = i32.rand(0, len(sol))
+
+	sol[randIdx1] = sol[randIdx2]
+	mutatedSol = sol
+}
+
+func selectOne(population [20][10]i32, isGetBest bool) (selectedIdx i32) {
+	var k f32
+	k = i32.f32(len(population)) * 0.30 // get 30% of population
+
+	var bestIdx i32
+	var bestScore i32
+	for c := 0; c < f32.i32(k); c++ {
+		var sol [10]i32
+		var solIdx i32
+		var solScore i32
+		solIdx = i32.rand(0, popSize)
+		sol = population[solIdx]
+		solScore = score(sol)
+		if isGetBest {
+			if solScore > bestScore {
+				bestIdx = solIdx
+				bestScore = solScore
+			}
+		} else {
+			if solScore < bestScore {
+				bestIdx = solIdx
+				bestScore = solScore
+			}
+		}
+	}
+	selectedIdx = bestIdx
+}
+
+func selectGood(population [20][10]i32) (selectedIdx i32) {
+	selectedIdx = selectOne(population, true)
+}
+
+func selectBad(population [20][10]i32) (selectedIdx i32) {
+	selectedIdx = selectOne(population, false)
+}
+
+func selectBest(population [20][10]i32) (selectedIdx i32) {
+	var k i32
+	k = len(population)
+
+	var bestScore i32
+	for c := 0; c < k; c++ {
+		var sol [10]i32
+		var solScore i32
+		solScore = score(population[c])
+		if solScore > bestScore {
+			selectedIdx = c
+			bestScore = solScore
+		}
+	}
+}
+
+func reproduce(iterations i32) {
+	var goodIdx1 i32
+	var goodIdx2 i32
+
+	var newSol1 [10]i32
+	var newSol2 [10]i32
+
+	for c := 0; c < iterations; c++ {
+		totalIterations++
+		
+		goodIdx1 = selectGood(population)
+		goodIdx2 = selectGood(population)
+
+		newSol1, newSol2 = crossover(population[goodIdx1], population[goodIdx2])
+
+		var badSolIdx1 i32
+		var badSolIdx2 i32
+		badSolIdx1 = selectBad(population)
+		badSolIdx2 = selectBad(population)
+		population[badSolIdx1] = newSol1
+		population[badSolIdx2] = newSol2
+
+		// Mutate a random solution
+		var solIdxToMutate i32
+		solIdxToMutate = i32.rand(0, popSize)
+		// var mutatedSol []i32
+		population[solIdxToMutate] = mutate(population[solIdxToMutate])
+
+		// Print the best solution so far
+		var bestSoFar i32
+		var bestScore i32
+		bestSoFar = selectBest(population)
+		bestScore = score(population[bestSoFar])
+		printf("==== Iteration %d, Accuracy %d/%d ====\n", totalIterations, bestScore, objSize)
+
+		// Then all are correct and we stop.
+		if bestScore == objSize {
+			printf("Solution found at iteration %d\n", totalIterations)
+			printf("Solution: %s\n", concNums(population[bestSoFar]))
+			break
+		}
+	}
+}
+
+func initPopulation() {
+	for c := 0; c < popSize; c++ {
+		var uniqueChars []str
+		var sol [10]i32
+		sol = genSolution()
+		population[c] = sol
+	}
+}
+
+package main
+import "bc"
+
+func main() {
+	bc.initPopulation()
+	// bc.reproduce(3000)
+}
