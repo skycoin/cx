@@ -26,7 +26,7 @@ const (
 	OP_OS_EXIT
 
 	// http
-	OP_HTTP_GET
+	// OP_HTTP_GET
 
 	// object explorer
 	OP_OBJ_QUERY
@@ -49,9 +49,9 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 
 	// http
-	AddOpCode(OP_HTTP_GET, "http.Get",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	// AddOpCode(OP_HTTP_GET, "http.Get",
+	// 	[]*CXArgument{newOpPar(TYPE_STR, false)},
+	// 	[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
@@ -107,8 +107,8 @@ func init() {
 				op_time_UnixNano(expr, fp)
 
 			// http
-			case OP_HTTP_GET:
-				op_http_get(expr, fp)
+			// case OP_HTTP_GET:
+			// 	op_http_get(expr, fp)
 
 			// os
 			case OP_OS_GET_WORKING_DIRECTORY:
