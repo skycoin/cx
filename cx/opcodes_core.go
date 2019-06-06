@@ -3,7 +3,7 @@ package cxcore
 // CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
+	"al" "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
 }
 
 // op codes
