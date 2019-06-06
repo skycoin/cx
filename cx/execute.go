@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program

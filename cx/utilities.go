@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // Debug ...

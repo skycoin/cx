@@ -43,8 +43,8 @@ ignored = ["github.com/go-gl/*"]
   name = "github.com/skycoin/gltext"
 
 [[constraint]]
-  name = "github.com/skycoin/skycoin"
-  version = "0.25.1"
+  branch = "cxchains"
+  name = "github.com/amherag/skycoin"
 
 [[constraint]]
   branch = "master"
