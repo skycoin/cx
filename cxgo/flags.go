@@ -22,7 +22,6 @@ type cxCmdFlags struct {
 	initialHeap         string
 	maxHeap             string
 	stackSize           string
-	profile             bool
 	blockchainMode      bool
 	publisherMode       bool
 	peerMode            bool
@@ -38,6 +37,10 @@ type cxCmdFlags struct {
 	pubKey              string
 	genesisAddress      string
 	genesisSignature    string
+
+	// Debug flags for the CX developers
+	debugLexer          bool
+	profile             bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -52,7 +55,6 @@ func defaultCmdFlags() cxCmdFlags {
 		webPersistentMode:   false,
 		printHelp:           false,
 		printVersion:        false,
-		profile:             false,
 		blockchainMode:      false,
 		transactionMode:     false,
 		broadcastMode:       false,
@@ -63,6 +65,9 @@ func defaultCmdFlags() cxCmdFlags {
 		pubKey:              "",
 		genesisAddress:      "",
 		genesisSignature:    "",
+
+		debugLexer:          false,
+		profile:             false,
 	}
 }
 
@@ -97,8 +102,6 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
 	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
-	flag.BoolVar(&options.profile, "profile", options.profile, "Profile compilation and runtime")
-	flag.BoolVar(&options.profile, "p", options.profile, "alias for -profile")
 
 	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
 	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
@@ -118,6 +121,12 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+
+	// Debug flags
+	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
+	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
+	flag.BoolVar(&options.profile, "profile", options.profile, "Profile compilation and runtime")
+	flag.BoolVar(&options.profile, "p", options.profile, "alias for -profile")
 }
 
 func printHelp() {
@@ -131,7 +140,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide						            Start CX as a web service, and Leaps service start also.
+-ide, --ide                       Start CX as a web service, and Leaps service start also.
 -p, --profile                     Start CX in profiling mode"
 Notes:
 * Options --compile and --repl are mutually exclusive.
@@ -139,6 +148,10 @@ Notes:
 `)
 }
 
+// parseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
 func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
 		if len(arg) > 2 && arg[:2] == "++" {

@@ -117,7 +117,6 @@
 %type   <expressions>   exclusive_or_expression
 %type   <expressions>   inclusive_or_expression
 %type   <expressions>   and_expression
-%type   <expressions>   equality_expression
 %type   <expressions>   relational_expression
 %type   <expressions>   shift_expression
 %type   <expressions>   additive_expression
@@ -927,6 +926,14 @@ shift_expression:
 
 relational_expression:
                 shift_expression
+        |       relational_expression EQ_OP shift_expression
+                {
+			$$ = ShorthandExpression($1, $3, OP_EQUAL)
+                }
+        |       relational_expression NE_OP shift_expression
+                {
+			$$ = ShorthandExpression($1, $3, OP_UNEQUAL)
+                }
         |       relational_expression LT_OP shift_expression
                 {
 			$$ = ShorthandExpression($1, $3, OP_LT)
@@ -945,20 +952,8 @@ relational_expression:
                 }
                 ;
 
-equality_expression:
-                relational_expression
-        |       equality_expression EQ_OP relational_expression
-                {
-			$$ = ShorthandExpression($1, $3, OP_EQUAL)
-                }
-        |       equality_expression NE_OP relational_expression
-                {
-			$$ = ShorthandExpression($1, $3, OP_UNEQUAL)
-                }
-                ;
-
-and_expression: equality_expression
-        |       and_expression REF_OP equality_expression
+and_expression: relational_expression
+        |       and_expression REF_OP relational_expression
                 {
 			$$ = ShorthandExpression($1, $3, OP_BITAND)
                 }
