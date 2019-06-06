@@ -317,7 +317,7 @@ func main() {
 	// Propagate some options out to other packages
 	DebugLexer = options.debugLexer   // in package parser
 	
-	profile = options.profile
+	DebugProfile = options.debugProfile
 	file := StartCPUProfile()
 	defer StopCPUProfile(file)
 	defer DumpMEMProfile()

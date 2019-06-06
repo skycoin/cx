@@ -40,7 +40,7 @@ type cxCmdFlags struct {
 
 	// Debug flags for the CX developers
 	debugLexer          bool
-	profile             bool
+	debugProfile        bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -67,7 +67,7 @@ func defaultCmdFlags() cxCmdFlags {
 		genesisSignature:    "",
 
 		debugLexer:          false,
-		profile:             false,
+		debugProfile:        false,
 	}
 }
 
@@ -125,8 +125,8 @@ func registerFlags(options *cxCmdFlags) {
 	// Debug flags
 	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
 	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
-	flag.BoolVar(&options.profile, "profile", options.profile, "Profile compilation and runtime")
-	flag.BoolVar(&options.profile, "p", options.profile, "alias for -profile")
+	flag.BoolVar(&options.debugProfile, "debug-profile", options.debugProfile, "Print timing information and dump cpu/mem profiles during compilation")
+	flag.BoolVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 }
 
 func printHelp() {
@@ -141,7 +141,6 @@ CX options:
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
 -ide, --ide                       Start CX as a web service, and Leaps service start also.
--p, --profile                     Start CX in profiling mode"
 Notes:
 * Options --compile and --repl are mutually exclusive.
 * Option --web makes every other flag to be ignored.

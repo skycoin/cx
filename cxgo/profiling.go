@@ -8,17 +8,17 @@ import (
 	"time"
 )
 
-var profile bool
+var DebugProfile bool
 var profiles map[string]int64 = map[string]int64{}
 
 func StartProfile(name string) {
-	if profile {
+	if DebugProfile {
 		profiles[name] = time.Now().UnixNano()
 	}
 }
 
 func StopProfile(name string) {
-	if profile {
+	if DebugProfile {
 		t := time.Now().UnixNano()
 		deltaTime := t - profiles[name]
 		fmt.Printf("%s : %dms\n", name, deltaTime/(int64(time.Millisecond)/int64(time.Nanosecond)))
@@ -26,7 +26,7 @@ func StopProfile(name string) {
 }
 
 func StartCPUProfile() *os.File {
-	if profile {
+	if DebugProfile {
 		f, err := os.Create(os.Args[0] + "_cpu.pprof")
 		if err != nil {
 			fmt.Println("Failed to create CPU profile: ", err)
@@ -40,7 +40,7 @@ func StartCPUProfile() *os.File {
 }
 
 func StopCPUProfile(f *os.File) {
-	if profile {
+	if DebugProfile {
 		if f != nil {
 			defer f.Close()
 		}
@@ -49,7 +49,7 @@ func StopCPUProfile(f *os.File) {
 }
 
 func DumpMEMProfile() {
-	if profile {
+	if DebugProfile {
 		f, err := os.Create(os.Args[0] + "_mem.pprof")
 		if err != nil {
 			fmt.Println("Failed to create MEM profile: ", err)
