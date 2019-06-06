@@ -8,7 +8,8 @@
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
 * Libraries
-  * ...
+  * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
+  * Add json cx library to ease json parsing in cx.
 * Fixed issues
   * #360: Panic when package keyword is misspelled
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
@@ -35,8 +36,6 @@
 * Libraries
   * Add math bindings for f32 and f64 types: isnan, rand, acos, asin.
   * Add glfw bindings: Fullscreen, GetWindowPos, GetWindowSize, SetFramebufferSizeCallback, SetWindowPosCallback, SetWindowSizeCallback.
-  * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
-  * Add json cx library to ease json parsing in cx.
 * Fixed issues
   * #292: Compilation error when left hand side of an assignment expression is a struct field.
   * #309: Serialization is not taking into account non-default stack sizes.
