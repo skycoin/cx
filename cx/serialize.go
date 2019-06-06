@@ -43,6 +43,9 @@ type sProgram struct {
 	HeapStartsAt int32
 
 	Terminated int32
+
+	VersionOffset int32
+	VersionSize   int32
 }
 
 type sCall struct {
@@ -459,6 +462,7 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
+	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
 }
 
 func sStructArguments(strct *CXStruct, s *sAll) {
@@ -1166,6 +1170,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
 	prgrm.HeapSize = int(s.Program.HeapSize)
+	prgrm.Version = dsName(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	dsPackages(s, prgrm)
 }

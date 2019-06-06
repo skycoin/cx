@@ -28,13 +28,18 @@ type cxCmdFlags struct {
 	transactionMode     bool
 	broadcastMode       bool
 	walletMode          bool
+	genAddress          bool
 	port                int
+	walletId            string
 	walletSeed          string
 	programName         string
 	secKey              string
 	pubKey              string
 	genesisAddress      string
 	genesisSignature    string
+
+	// Debug flags for the CX developers
+	debugLexer          bool
 }
 
 func defaultCmdFlags() cxCmdFlags {
@@ -54,10 +59,13 @@ func defaultCmdFlags() cxCmdFlags {
 		broadcastMode:       false,
 		port:                6001,
 		programName:         "cxcoin",
+		walletId:            "cxcoin_cli.wlt",
 		secKey:              "",
 		pubKey:              "",
 		genesisAddress:      "",
 		genesisSignature:    "",
+
+		debugLexer:          false,
 	}
 }
 
@@ -103,14 +111,20 @@ func registerFlags(options *cxCmdFlags) {
 	// flag.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
 	flag.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
 	flag.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
+	flag.BoolVar(&options.genAddress, "generate-address", options.genAddress, "Generate a CX chain address")
 	flag.BoolVar(&options.peerMode, "peer", options.peerMode, "Run a CX chain peer node")
 	flag.IntVar(&options.port, "port", options.port, "Port used when running a CX chain peer node")
 	flag.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
+	flag.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
 	flag.StringVar(&options.programName, "program-name", options.programName, "Name of the initial CX program on the blockchain")
 	flag.StringVar(&options.secKey, "secret-key", options.secKey, "CX program blockchain security key")
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+
+	// Debug flags
+	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
+	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
 }
 
 func printHelp() {
@@ -124,7 +138,7 @@ CX options:
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide						            Start CX as a web service, and Leaps service start also.
+-ide, --ide                       Start CX as a web service, and Leaps service start also.
 
 Notes:
 * Options --compile and --repl are mutually exclusive.
@@ -132,6 +146,10 @@ Notes:
 `)
 }
 
+// parseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
 func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
 		if len(arg) > 2 && arg[:2] == "++" {

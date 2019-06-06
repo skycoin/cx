@@ -39,11 +39,14 @@ import (
 	"github.com/amherag/skycoin/src/skycoin"
 	"github.com/amherag/skycoin/src/util/logging"
 	"github.com/amherag/skycoin/src/visor"
+	"github.com/amherag/skycoin/src/api"
+	"github.com/amherag/skycoin/src/cli"
+	"github.com/amherag/skycoin/src/wallet"
 
 	"errors"
 )
 
-const VERSION = "0.6.2"
+const VERSION = "0.7beta"
 
 var (
 	log             = logging.MustGetLogger("newcoin")
@@ -259,7 +262,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 	return err
 }
 
-func runNode (mode string, options cxCmdFlags) *exec.Cmd {
+func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 	switch mode {
 	case "publisher":
 		return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -273,9 +276,9 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=5000000",
-		 	"-max-txn-size-create-block=5000000",
-			"-max-block-size=5000000",
+			"-max-txn-size-unconfirmed=5242880",
+		 	"-max-txn-size-create-block=5242880",
+			"-max-block-size=5242880",
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -291,16 +294,16 @@ func runNode (mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=5000000",
-		"-max-txn-size-create-block=5000000",
-		"-max-block-size=5000000",
+		"-max-txn-size-unconfirmed=5242880",
+		"-max-txn-size-create-block=5242880",
+		"-max-block-size=5242880",
 	)
 	default:
 		return nil
 	}
 }
 
-func main () {
+func main() {
 	checkCXPathSet()
 
 	runtime.LockOSThread()
@@ -311,6 +314,9 @@ func main () {
 
 	registerFlags(&options)
 	flag.Parse()
+
+	// Propagate some options out to other packages
+	DebugLexer = options.debugLexer   // in package parser
 
 	if options.publisherMode || options.peerMode {
 		var cmd *exec.Cmd
@@ -342,9 +348,74 @@ func main () {
 				log.Error(scanner.Text())
 			}
 		}()
-	
 	}
 
+	// Generate a CX chain address.
+	if options.genAddress {
+		// Create a random seed to create a temporary wallet.
+		seed := cli.MakeAlphanumericSeed()
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: seed,
+		}
+
+		// Generate temporary wallet.
+		wlt, err := cli.GenerateWallet(wallet.NewWalletFilename(), wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+
+		rw := wallet.NewReadableWallet(wlt)
+
+		output, err := json.MarshalIndent(rw, "", "    ")
+		if err != nil {
+			panic(err)
+		}
+
+		// Print all the wallet data.
+		fmt.Println(string(output))
+
+		return
+	}
+	
+	if options.walletMode {
+		if options.walletSeed == "" {
+			fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+			return
+		}
+		if options.walletId == "" {
+			// Although there is a default walletId.
+			// This error should only occur if the user intentionally provides an empty id.
+			fmt.Println("creating a wallet requires an id provided with --wallet-id")
+			return
+		}
+
+		wltOpts := wallet.Options{
+			Label: "cxcoin",
+			Seed: options.walletSeed,
+		}
+		
+		wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
+		if err != nil {
+			panic(err)
+		}
+		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+		err = wlt.Save("/tmp/6001/wallets/")
+		if err != nil {
+			panic(err)
+		}
+
+		wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		// Printing JSON with wallet information
+		fmt.Println(string(wltJSON))
+		
+		return
+	}
+	
 	if options.printHelp {
 		printHelp()
 		return
@@ -373,6 +444,7 @@ func main () {
 
 	MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
 
+	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
 
 	PRGRM = MakeProgram()
@@ -478,6 +550,8 @@ func main () {
 		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
 	}
 
+	// Copy the contents of the file pointers containing the CX source
+	// code into sourceCodeCopy
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
@@ -510,13 +584,17 @@ func main () {
 		reBodyClose := regexp.MustCompile("}")
 
 		// 1. Identify all the packages and structs
-		for _, source := range sourceCodeCopy {
+		for ix, source := range sourceCodeCopy {
+			filename := fileNames[ix]
+
 			reader := strings.NewReader(source)
 			scanner := bufio.NewScanner(reader)
 			var commentedCode bool
+			var lineno = 0
 			for scanner.Scan() {
 				line := scanner.Bytes()
-				
+				lineno++
+
 				// Identify whether we are in a comment or not.
 				commentLoc := reComment.FindIndex(line)
 				multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
@@ -533,6 +611,7 @@ func main () {
 				}
 
 				// At this point we know that we are *not* in a comment
+
 				// 1a. Identify all the packages
 				if loc := rePkg.FindIndex(line); loc != nil {
 					if (commentLoc != nil && commentLoc[0] < loc[0]) ||
@@ -564,7 +643,10 @@ func main () {
 					}
 
 					if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-						if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
+						if prePkg == nil {
+							println(CompilationError(filename, lineno),
+							        "No package defined")
+						} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
 							// then it hasn't been added
 							strct := MakeStruct(match[len(match) - 1])
 							prePkg.AddStruct(strct)
@@ -576,7 +658,7 @@ func main () {
 
 		// 2. Identify all global variables
 		//    We also identify packages again, so we know to what
-		//    package we're going to add the struct declaration to.
+		//    package we're going to add the variable declaration to.
 		for _, source := range sourceCodeCopy {
 			// inBlock needs to be 0 to guarantee that we're in the global scope
 			var inBlock int
@@ -836,16 +918,12 @@ func main () {
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
 
-			// getting csrf token
-			csrfResp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/api/v1/csrf", options.port + 420))
+			// All these HTTP requests need to be dropped in favor of calls to calls to functions
+			// from the `cli` or `api` Skycoin packages
+			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
+			skycoinClient := api.NewClient(addr)
+			csrfToken, err := skycoinClient.CSRF()
 			if err != nil {
-				panic(err)
-			}
-			defer csrfResp.Body.Close()
-			csrfBody, err := ioutil.ReadAll(csrfResp.Body)
-
-			var csrf map[string]string
-			if err := json.Unmarshal(csrfBody, &csrf); err != nil {
 				panic(err)
 			}
 
@@ -855,9 +933,9 @@ func main () {
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["mainExprs"] = txnCode
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
-			dataMap["wallet"] = map[string]string{"id": os.Getenv("WALLET")}
-			dataMap["change_address"] = os.Getenv("ADDRESS")
+			dataMap["wallet"] = map[string]string{"id": options.walletId}
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
+
 			
 			jsonStr, err := json.Marshal(dataMap)
 			if err != nil {
@@ -865,7 +943,7 @@ func main () {
 			}
 
 			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			client := &http.Client{}
@@ -882,7 +960,9 @@ func main () {
 
 			var respBody map[string]interface{}
 			if err := json.Unmarshal(body, &respBody); err != nil {
-				panic(err)
+				// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
+				fmt.Println(string(body))
+				return
 			}
 
 			url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
@@ -895,7 +975,7 @@ func main () {
 			}
 
 			req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-			req.Header.Set("X-CSRF-Token", string(csrf["csrf_token"]))
+			req.Header.Set("X-CSRF-Token", csrfToken)
 			req.Header.Set("Content-Type", "application/json")
 
 			resp, err = client.Do(req)

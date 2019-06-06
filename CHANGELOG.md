@@ -1,9 +1,35 @@
 # Changelog
 
-### v0.6.3 (NOT YET RELEASED)
+### v0.7.0 (NOT YET RELEASED)
 * Additions
-  * Prototype for CX chains (CX programs stored on the Skycoin blockchain)
-  * Added/forked the newcoin and skycoin-cli commands to the CX repository.
+  * CX can now generate addresses to be used by CX chains.
+  * New debug option --debug-lexer or -Dl to see which tokens that are
+	returned by the lexer.
+* Changes
+  * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+* Libraries
+  * ...
+* Fixed issues
+  * #360: Panic when package keyword is misspelled
+  * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+* Documentation
+  * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
+  * The blockchain tutorial
+	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	will be used to reflect the state in the CX source code (`develop` branch)
+  * The blockchain tutorial in the
+	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
+	be used as a tutorial for the latest CX release. 
+* Miscellaneous
+  * ...
+
+### v0.7beta released 2019-05-19
+* Additions
+  * First release of CX chains, i.e. CX programs stored on a Skycoin fiber blockchain
+  * Added/forked the newcoin and skycoin-cli commands to the CX
+    repositoryand adapted it to CX chains.
+  * CX can now create a wallet by running `cx --create-wallet --wallet-seed $WALLET_SEED`
+  * Added --wallet-id flag. This parameter replaces having to set the WALLET environment variable for CX chains.
 * Changes
   * Transaction and block default sizes for CX chains changed from 32 Kb to 5 Mb.
 * Libraries
