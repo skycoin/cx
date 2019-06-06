@@ -391,61 +391,61 @@ func readData(inp *CXArgument, bytes []byte) interface{} {
 		var data []int8
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_I16:
 		var data []int16
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_I32:
 		var data []int32
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_I64:
 		var data []int64
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_UI8:
 		var data []uint8
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_UI16:
 		var data []uint16
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_UI32:
 		var data []uint32
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_UI64:
 		var data []uint64
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_F32:
 		var data []float32
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	case TYPE_F64:
 		var data []float64
 		mustDeserializeRaw(bytes, &data)
 		if len(data) > 0 {
-			return interface{}(nil)
+			return interface{}(data)
 		}
 	default:
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
