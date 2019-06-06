@@ -5,6 +5,8 @@
   * CX can now generate addresses to be used by CX chains.
   * New debug option --debug-lexer or -Dl to see which tokens that are
 	returned by the lexer.
+  * New debug option --debug-profile or -Dp to print timings information and dump cpu/mem
+	profiles during compilation.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
 * Libraries
