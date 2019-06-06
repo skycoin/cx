@@ -7,6 +7,7 @@
 	returned by the lexer.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+  * Added i8/16/ui8/ui16/ui32/ui64 types.
 * Libraries
   * ...
 * Fixed issues
