@@ -217,14 +217,14 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_GL_APPEND_F32, "gl.AppendF32",
-		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
+		[]*CXArgument{newOpPar(TYPE_UI8, true), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, true)})
 	AddOpCode(OP_GL_APPEND_UI16, "gl.AppendUI16",
-		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
+		[]*CXArgument{newOpPar(TYPE_UI8, true), newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, true)})
 	AddOpCode(OP_GL_APPEND_UI32, "gl.AppendUI32",
-		[]*CXArgument{newOpPar(TYPE_BYTE, true), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BYTE, true)})
+		[]*CXArgument{newOpPar(TYPE_UI8, true), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI8, true)})
 
 	// gl_0.0
 	AddOpCode(OP_GL_MATRIX_MODE, "gl.MatrixMode",
