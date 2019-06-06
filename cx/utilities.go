@@ -284,13 +284,21 @@ func (prgrm *CXProgram) PrintProgram() {
 
 					if dat != nil {
 						switch TypeNames[arg.Type] {
+						case "str":
+							mustDeserializeRaw(dat, &name)
+							name = "\"" + name + "\""
 						case "bool":
 							var b bool
 							mustDeserializeRaw(dat, &b)
 							name = fmt.Sprintf("%v", b)
-						case "str":
-							mustDeserializeRaw(dat, &name)
-							name = "\"" + name + "\""
+						case "i8":
+							var i8 int8
+							mustDeserializeRaw(dat, &i8)
+							name = fmt.Sprintf("%v", i8)
+						case "i16":
+							var i16 int16
+							mustDeserializeRaw(dat, &i16)
+							name = fmt.Sprintf("%v", i16)
 						case "i32":
 							var i32 int32
 							mustDeserializeAtomic(dat, &i32)
@@ -299,10 +307,10 @@ func (prgrm *CXProgram) PrintProgram() {
 							var i64 int64
 							mustDeserializeRaw(dat, &i64)
 							name = fmt.Sprintf("%v", i64)
-						case "ui8", "byte":
-							var b byte
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
+						case "ui8":
+							var ui8 uint8
+							mustDeserializeRaw(dat, &ui8)
+							name = fmt.Sprintf("%v", ui8)
 						case "ui16":
 							var ui16 uint16
 							mustDeserializeAtomic(dat, &ui16)
@@ -535,6 +543,24 @@ func IsTempVar(name string) bool {
 		return true
 	}
 	return false
+}
+
+// GetArgSizeFromTypeName ...
+func GetArgSizeFromTypeName(typeName string) int {
+	switch typeName {
+	case "bool", "i8", "ui8":
+		return 1
+	case "i16", "ui16":
+		return 2
+	case "str", "i32", "ui32", "f32", "aff":
+		return 4
+	case "i64", "ui64", "f64":
+		return 8
+	default:
+		return 4
+		// return -1
+		// panic(CX_INTERNAL_ERROR)
+	}
 }
 
 // GetArgSize ...

@@ -27,17 +27,8 @@ func MakeGenSym(name string) string {
 }
 
 // MakeDefaultValue Used only for native types
-func MakeDefaultValue(typName string) *[]byte {
-	var zeroVal []byte
-	switch typName {
-	case "byte":
-		zeroVal = make([]byte, 1)
-	case "i64", "f64":
-		zeroVal = make([]byte, 8)
-	default:
-		zeroVal = make([]byte, 4)
-	}
-	return &zeroVal
+func MakeDefaultValue(typName string) []byte {
+	return make([]byte, GetArgSizeFromTypeName(typName))
 }
 
 // MakeValue ...
@@ -64,26 +55,48 @@ func MakeIdentityOpName(typeName string) string {
 		return "str.id"
 	case "bool":
 		return "bool.id"
-	case "byte":
-		return "byte.id"
+	case "i8":
+		return "i8.id"
+	case "i16":
+		return "i16.id"
 	case "i32":
 		return "i32.id"
 	case "i64":
 		return "i64.id"
+	case "ui8":
+		return "ui8.id"
+	case "ui16":
+		return "ui16.id"
+	case "ui32":
+		return "ui32.id"
+	case "ui64":
+		return "ui64.id"
 	case "f32":
 		return "f32.id"
 	case "f64":
 		return "f64.id"
+	case "[]str":
+		return "[]str.id"
 	case "[]bool":
 		return "[]bool.id"
 	case "[]byte":
 		return "[]byte.id"
-	case "[]str":
-		return "[]str.id"
+	case "[]i8":
+		return "[]i8.id"
+	case "[]i16":
+		return "[]i16.id"
 	case "[]i32":
 		return "[]i32.id"
 	case "[]i64":
 		return "[]i64.id"
+	case "[]ui8":
+		return "[]ui8.id"
+	case "[]ui16":
+		return "[]ui16.id"
+	case "[]ui32":
+		return "[]ui32.id"
+	case "[]ui64":
+		return "[]ui64.id"
 	case "[]f32":
 		return "[]f32.id"
 	case "[]f64":
