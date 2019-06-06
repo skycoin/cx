@@ -1,0 +1,13 @@
+package bc
+
+func helloWorld() {
+	str.print("Hello, World!")
+}
+
+package main
+
+// the whole main package is discarded if run in --blockchain mode
+
+func main() {
+	
+}

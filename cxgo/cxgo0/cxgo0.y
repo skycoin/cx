@@ -525,20 +525,16 @@ shift_expression:
 
 relational_expression:
                 shift_expression
+	|       relational_expression EQ_OP shift_expression
+	|       relational_expression NE_OP shift_expression
 	|       relational_expression LT_OP shift_expression
 	|       relational_expression GT_OP shift_expression
 	|       relational_expression LTEQ_OP shift_expression
 	|       relational_expression GTEQ_OP shift_expression
                 ;
 
-equality_expression:
-                relational_expression
-	|       equality_expression EQ_OP relational_expression
-	|       equality_expression NE_OP relational_expression
-                ;
-
-and_expression: equality_expression
-	|       and_expression REF_OP equality_expression
+and_expression: relational_expression
+	|       and_expression REF_OP relational_expression
                 ;
 
 exclusive_or_expression:

@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"os"
+	"runtime"
+	
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -483,4 +486,23 @@ func IsUndOpBasicTypes(fn *CXFunction) bool {
 		return true
 	}
 	return false
+}
+
+// UserHome returns the current user home path. Code taken from fiber-init.
+func UserHome() string {
+	// os/user relies on cgo which is disabled when cross compiling
+	// use fallbacks for various OSes instead
+	// usr, err := user.Current()
+	// if err == nil {
+	// 	return usr.HomeDir
+	// }
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+
+	return os.Getenv("HOME")
 }

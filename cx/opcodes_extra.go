@@ -140,6 +140,9 @@ const (
 	OP_GL_DELETE_VERTEX_ARRAYS
 	OP_GL_GEN_VERTEX_ARRAYS
 
+	// goglfw
+	OP_GLFW_FULLSCREEN
+
 	// glfw
 	OP_GLFW_INIT
 	OP_GLFW_WINDOW_HINT
@@ -150,6 +153,8 @@ const (
 	OP_GLFW_POLL_EVENTS
 	OP_GLFW_SWAP_BUFFERS
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
+	OP_GLFW_GET_WINDOW_POS
+	OP_GLFW_GET_WINDOW_SIZE
 	OP_GLFW_SWAP_INTERVAL
 	OP_GLFW_SET_KEY_CALLBACK
 	OP_GLFW_SET_KEY_CALLBACK_EX
@@ -158,6 +163,9 @@ const (
 	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX
 	OP_GLFW_SET_CURSOR_POS_CALLBACK
 	OP_GLFW_SET_CURSOR_POS_CALLBACK_EX
+	OP_GLFW_SET_FRAMEBUFFER_SIZE_CALLBACK
+	OP_GLFW_SET_WINDOW_POS_CALLBACK
+	OP_GLFW_SET_WINDOW_SIZE_CALLBACK
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
@@ -553,6 +561,11 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
 
+	// goglfw
+	AddOpCode(OP_GLFW_FULLSCREEN, "glfw.Fullscreen",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+
 	// glfw
 	AddOpCode(OP_GLFW_INIT, "glfw.Init",
 		[]*CXArgument{},
@@ -581,6 +594,12 @@ func init() {
 	AddOpCode(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLFW_GET_WINDOW_POS, "glfw.GetWindowPos",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GLFW_GET_WINDOW_SIZE, "glfw.GetWindowSize",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -603,6 +622,15 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_FRAMEBUFFER_SIZE_CALLBACK, "glfw.SetFramebufferSizeCallback",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_WINDOW_POS_CALLBACK, "glfw.SetWindowPosCallback",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLFW_SET_WINDOW_SIZE_CALLBACK, "glfw.SetWindowSizeCallback",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos",
@@ -918,6 +946,10 @@ func init() {
 			case OP_GL_GEN_VERTEX_ARRAYS:
 				op_gl_GenVertexArrays(expr, fp)
 
+			// goglfw
+			case OP_GLFW_FULLSCREEN:
+				op_glfw_Fullscreen(expr, fp)
+
 			// glfw
 			case OP_GLFW_INIT:
 				op_glfw_Init(expr, fp)
@@ -937,6 +969,10 @@ func init() {
 				op_glfw_SwapBuffers(expr, fp)
 			case OP_GLFW_GET_FRAMEBUFFER_SIZE:
 				op_glfw_GetFramebufferSize(expr, fp)
+			case OP_GLFW_GET_WINDOW_POS:
+				op_glfw_GetWindowPos(expr, fp)
+			case OP_GLFW_GET_WINDOW_SIZE:
+				op_glfw_GetWindowSize(expr, fp)
 			case OP_GLFW_SWAP_INTERVAL:
 				op_glfw_SwapInterval(expr, fp)
 			case OP_GLFW_SET_KEY_CALLBACK:
@@ -953,6 +989,12 @@ func init() {
 				op_glfw_SetCursorPosCallback(expr, fp)
 			case OP_GLFW_SET_CURSOR_POS_CALLBACK_EX:
 				op_glfw_SetCursorPosCallbackEx(expr, fp)
+			case OP_GLFW_SET_FRAMEBUFFER_SIZE_CALLBACK:
+				op_glfw_SetFramebufferSizeCallback(expr, fp)
+			case OP_GLFW_SET_WINDOW_POS_CALLBACK:
+				op_glfw_SetWindowPosCallback(expr, fp)
+			case OP_GLFW_SET_WINDOW_SIZE_CALLBACK:
+				op_glfw_SetWindowSizeCallback(expr, fp)
 			case OP_GLFW_GET_CURSOR_POS:
 				op_glfw_GetCursorPos(expr, fp)
 			case OP_GLFW_SET_INPUT_MODE:
