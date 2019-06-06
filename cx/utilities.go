@@ -742,18 +742,16 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 }
 
 // SliceAppend ...
-func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte) int {
+func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, sizeofBase int32, object []byte) int {
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
-		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
-	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
-	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
+	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen+int32(sizeofElement)/sizeofBase, sizeofElement))
+	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofBase))
+	copy(outputSliceData[int(inputSliceLen*sizeofBase):], object)
 	return int(outputSliceOffset)
 }
 
@@ -796,7 +794,7 @@ func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, s
 
 // WriteToSlice ...
 func WriteToSlice(off int, inp []byte) int {
-	return SliceAppend(int32(off), int32(off), inp)
+	return SliceAppend(int32(off), int32(off), int32(len(inp)), inp)
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff

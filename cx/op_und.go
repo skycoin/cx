@@ -524,7 +524,7 @@ func opAppend(expr *CXExpression, fp int) {
 		obj = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj))
+	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, int32(len(obj)), obj))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
