@@ -147,7 +147,8 @@ func opAlGenBuffers(expr *CXExpression, fp int) {
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, b := range buffers { // REFACTOR append with copy ?
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(outputSlice.Size), FromI32(int32(b))))
+		obj := FromI32(int32(b))
+		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
@@ -155,7 +156,7 @@ func opAlGenBuffers(expr *CXExpression, fp int) {
 func opAlBufferData(expr *CXExpression, fp int) {
 	buffer := al.Buffer(ReadI32(fp, expr.Inputs[0]))
 	format := ReadI32(fp, expr.Inputs[1])
-	data := toBytes(ReadData(fp, expr.Inputs[2], TYPE_BYTE))
+	data := toBytes(ReadData(fp, expr.Inputs[2], TYPE_UI8))
 	frequency := ReadI32(fp, expr.Inputs[3])
 	buffer.BufferData(uint32(format), data, frequency)
 }
@@ -166,7 +167,8 @@ func opAlGenSources(expr *CXExpression, fp int) {
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, s := range sources { // REFACTOR append with copy ?
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(outputSlice.Size), FromI32(int32(s))))
+		obj := FromI32(int32(s))
+		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
