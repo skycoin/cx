@@ -12,6 +12,7 @@
 * Fixed issues
   * #360: Panic when package keyword is misspelled
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+  * #338: Issues with slice of type T where sizeof T is different than 4.
 * Documentation
   * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial

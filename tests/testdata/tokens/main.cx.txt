@@ -3571,7 +3571,7 @@ PERIOD
  COMMA 
 STRLIT Issues with slice of type T where sizeof T is different than 4 
  COMMA 
- IDENT TEST_ISSUE
+ IDENT TEST_STABLE
  COMMA 
 INTLIT 0
 RPAREN 
@@ -3586,7 +3586,7 @@ PERIOD
  COMMA 
 STRLIT Issues with slice of type T where sizeof T is different than 4 
  COMMA 
- IDENT TEST_ISSUE
+ IDENT TEST_STABLE
  COMMA 
 INTLIT 0
 RPAREN 
@@ -3601,7 +3601,7 @@ PERIOD
  COMMA 
 STRLIT Issues with slice of type T where sizeof T is different than 4 
  COMMA 
- IDENT TEST_ISSUE
+ IDENT TEST_STABLE
  COMMA 
 INTLIT 0
 RPAREN 
