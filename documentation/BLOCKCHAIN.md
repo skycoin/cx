@@ -171,6 +171,8 @@ func PrintMatrix() {
 func FlipBit(x i32, y i32) {
 	if matrix[x][y] == 1 {
 		matrix[x][y] = 0
+	} else {
+		matrix[x][y] = 1
 	}
 }
 
