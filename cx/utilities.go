@@ -985,20 +985,12 @@ func mustDeserializeAtomic(byts []byte, item interface{}) int {
 	if err != nil {
 		panic(err)
 	}
-	return bytsRead
+	return int(bytsRead)
 }
 
 func mustDeserializeRaw(byts []byte, item interface{}) {
-	err := encoder.DeserializeRaw(byts, item)
+	_, err := encoder.DeserializeRaw(byts, item)
 	if err != nil {
 		panic(err)
 	}
-}
-
-func mustSerializeSize(item interface{}) int {
-	size, err := encoder.Size(item)
-	if err != nil {
-		panic(err)
-	}
-	return size
 }

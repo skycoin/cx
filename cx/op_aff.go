@@ -58,7 +58,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 		}
 
 		var res string
-		err = encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
+		_, err = encoder.DeserializeRaw(PROGRAM.Memory[elOff:elOff+STR_HEADER_SIZE+size], &res)
 		if err != nil {
 			panic(err)
 		}
