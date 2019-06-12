@@ -44,6 +44,7 @@ const (
 
 	// gl_1_0
 	OP_GL_CULL_FACE
+	OP_GL_FRONT_FACE
 	OP_GL_HINT
 	OP_GL_SCISSOR
 	OP_GL_TEX_PARAMETERI
@@ -293,6 +294,9 @@ func init() {
 
 	// gl_1_0
 	AddOpCode(OP_GL_CULL_FACE, "gl.CullFace",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_FRONT_FACE, "gl.FrontFace",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_HINT, "gl.Hint",
@@ -765,6 +769,8 @@ func init() {
 			// gl_1_0
 			case OP_GL_CULL_FACE:
 				op_gl_CullFace(expr, fp)
+			case OP_GL_FRONT_FACE:
+				op_gl_FrontFace(expr, fp)
 			case OP_GL_HINT:
 				op_gl_Hint(expr, fp)
 			case OP_GL_SCISSOR:

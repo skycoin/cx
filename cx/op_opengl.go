@@ -311,6 +311,10 @@ func op_gl_CullFace(expr *CXExpression, fp int) {
 	gl.CullFace(uint32(ReadI32(fp, inp1)))
 }
 
+func op_gl_FrontFace(expr *CXExpression, fp int) {
+	gl.FrontFace(uint32(ReadI32(fp, expr.Inputs[0])))
+}
+
 func op_gl_Hint(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.Hint(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)))
