@@ -405,7 +405,7 @@ func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {
 	if sliceOffset >= 0 && inp.Type == TYPE_F32 {
 		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).TotalSize)
 		if slice != nil {
-			err := encoder.DeserializeRaw(slice, &out)
+			_, err := encoder.DeserializeRaw(slice, &out)
 			if err != nil {
 				panic(err)
 			}
@@ -421,7 +421,7 @@ func ReadF32A(fp int, inp *CXArgument) (out []float32) {
 	offset := GetFinalOffset(fp, inp)
 	byts := ReadMemory(offset, inp)
 	byts = append(encoder.SerializeAtomic(int32(len(byts)/4)), byts...)
-	err := encoder.DeserializeRaw(byts, &out)
+	_, err := encoder.DeserializeRaw(byts, &out)
 	if err != nil {
 		panic(err)
 	}
@@ -431,7 +431,7 @@ func ReadF32A(fp int, inp *CXArgument) (out []float32) {
 // ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
+	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	if err != nil {
 		panic(err)
 	}
@@ -475,7 +475,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	if err != nil {
 		panic(err)
 	}
-	err = encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
+	_, err = encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 	if err != nil {
 		panic(err)
 	}
@@ -506,7 +506,7 @@ func ReadI32(fp int, inp *CXArgument) (out int32) {
 // ReadI64 ...
 func ReadI64(fp int, inp *CXArgument) (out int64) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
+	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	if err != nil {
 		panic(err)
 	}
@@ -516,7 +516,7 @@ func ReadI64(fp int, inp *CXArgument) (out int64) {
 // ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) (out float32) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
+	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	if err != nil {
 		panic(err)
 	}
@@ -526,7 +526,7 @@ func ReadF32(fp int, inp *CXArgument) (out float32) {
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) (out float64) {
 	offset := GetFinalOffset(fp, inp)
-	err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
+	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
 	if err != nil {
 		panic(err)
 	}

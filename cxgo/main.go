@@ -37,6 +37,7 @@ import (
 	"github.com/amherag/skycoin/src/coin"
 	"github.com/amherag/skycoin/src/readable"
 	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/fiber"
 	"github.com/amherag/skycoin/src/util/logging"
 	"github.com/amherag/skycoin/src/visor"
 	"github.com/amherag/skycoin/src/api"
@@ -119,10 +120,10 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 	}
 
 	// get fiber params
-	params, err := skycoin.NewParameters(configFile, configDir)
+	params, err := fiber.NewConfig(configFile, configDir)
 
 	cmd := exec.Command("go", "run", filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname)), "-block-publisher=true", fmt.Sprintf("-blockchain-secret-key=%s", seckey),
-		"-disable-incoming")
+		"-disable-incoming", "-max-out-msg-len=5243081")
 
 	var genesisSig string
 	var genesisBlock readable.Block
@@ -182,12 +183,6 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 			return err
 		}
 
-		// check that balance can be equally divided into distribution addresses
-		if params.Params.MaxCoinSupply%params.Params.DistributionAddressesTotal != 0 {
-			return fmt.Errorf("coin supply of %d cannot be equally divided into %d distribution addresses",
-				params.Params.MaxCoinSupply, params.Params.DistributionAddressesTotal)
-		}
-
 		// get node config
 		params.Node.DataDirectory = fmt.Sprintf("$HOME/.%s", coinname)
 		nodeConfig := skycoin.NewNodeConfig("", params.Node)
@@ -203,17 +198,22 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 		// parse config values
 		newcoin.ParseConfig()
 
-		dconf := newcoin.ConfigureDaemon()
+		// dconf := newcoin.ConfigureDaemon()
+		vconf := newcoin.ConfigureVisor()
 
-		log.Infof("opening visor db: %s", dconf.Visor.DBPath)
-		db, err := visor.OpenDB(dconf.Visor.DBPath, false)
+		userHome := UserHome()
+		dbPath := filepath.Join(userHome, "."+coinname, "data.db")
+
+		// log.Infof("opening visor db: %s", dconf.Visor.DBPath)
+		log.Infof("opening visor db: %s", dbPath)
+		db, err := visor.OpenDB(dbPath, false)
 		if err != nil {
 			log.Error("Error opening DB")
 			return err
 		}
 		defer db.Close()
 
-		vs, err := visor.NewVisor(dconf.Visor, db)
+		vs, err := visor.New(vconf, db, nil)
 		if err != nil {
 			log.Error("Error with NewVisor")
 			return err
@@ -246,7 +246,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 					log.Panic(err)
 				}
 
-				_, err := vs.InjectUserTransaction(tx)
+				_, _, _, err := vs.InjectUserTransaction(tx)
 				if err != nil {
 					panic(err)
 				}
@@ -279,6 +279,7 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 			"-max-txn-size-unconfirmed=5242880",
 		 	"-max-txn-size-create-block=5242880",
 			"-max-block-size=5242880",
+			"-max-out-msg-len=5243081", // I don't know why this value, but the logger stated a value >= than this is needed
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -297,6 +298,7 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 		"-max-txn-size-unconfirmed=5242880",
 		"-max-txn-size-create-block=5242880",
 		"-max-block-size=5242880",
+		"-max-out-msg-len=5243081", // I don't know why this value, but the logger stated a value >= than this is needed
 	)
 	default:
 		return nil
@@ -512,13 +514,15 @@ func main() {
 	if options.transactionMode || options.broadcastMode {
 		resp, err := http.Get("http://127.0.0.1:6420/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 
 		if err := json.Unmarshal(body, &sPrgrm); err != nil {
-			panic(err)
+			fmt.Println(string(body))
+			return
 		}
 
 		memOff := GetSerializedMemoryOffset(sPrgrm)
@@ -933,7 +937,8 @@ func main() {
 			dataMap = make(map[string]interface{}, 0)
 			dataMap["mainExprs"] = txnCode
 			dataMap["hours_selection"] = map[string]string{"type": "manual"}
-			dataMap["wallet"] = map[string]string{"id": options.walletId}
+			// dataMap["wallet_id"] = map[string]string{"id": options.walletId}
+			dataMap["wallet_id"] = string(options.walletId)
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
 
 			
