@@ -10,10 +10,11 @@
 * Libraries
   * ...
 * Fixed issues
-  * #389: CX chains errors with big programs.
+  * #360: Panic when package keyword is misspelled
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+  * #389: CX chains errors with big programs.
 * Documentation
-  * Added file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
+  * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial
 	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
 	will be used to reflect the state in the CX source code (`develop` branch)
