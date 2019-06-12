@@ -172,14 +172,6 @@ func FlipBit(x i32, y i32) {
 	if matrix[x][y] == 1 {
 		matrix[x][y] = 0
 	}
-	IW: Missing an else branch here?
-	IW: Why not call PrintMatrix instead of using inline code?
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 10; j++ {
-			printf("%d", matrix[i][j])
-		}
-		printf("\n")
-	}
 }
 
 package main
