@@ -10,6 +10,7 @@
 * Libraries
   * ...
 * Fixed issues
+  * #389: CX chains errors with big programs.
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
 * Documentation
   * Added file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
