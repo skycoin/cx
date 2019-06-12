@@ -203,7 +203,7 @@ func serializeName(name string, s *sAll) (int32, int32) {
 		return int32(-1), int32(-1)
 	}
 
-	size := mustSerializeSize(name)
+	size := encoder.Size(name)
 
 	off, found := s.NamesMap[name]
 	if found {
@@ -779,15 +779,15 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 
 	// assigning relative offset
 
-	idxSize := mustSerializeSize(s.Index)
-	prgrmSize := mustSerializeSize(s.Program)
-	callSize := mustSerializeSize(s.Calls)
-	pkgSize := mustSerializeSize(s.Packages)
-	strctSize := mustSerializeSize(s.Structs)
-	fnSize := mustSerializeSize(s.Functions)
-	exprSize := mustSerializeSize(s.Expressions)
-	argSize := mustSerializeSize(s.Arguments)
-	intSize := mustSerializeSize(s.Integers)
+	idxSize := encoder.Size(s.Index)
+	prgrmSize := encoder.Size(s.Program)
+	callSize := encoder.Size(s.Calls)
+	pkgSize := encoder.Size(s.Packages)
+	strctSize := encoder.Size(s.Structs)
+	fnSize := encoder.Size(s.Functions)
+	exprSize := encoder.Size(s.Expressions)
+	argSize := encoder.Size(s.Arguments)
+	intSize := encoder.Size(s.Integers)
 
 	// assigning absolute offset
 	sIdx.ProgramOffset += int32(idxSize)
@@ -1178,7 +1178,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 // Deserialize deserializes a serialized CX program back to its golang struct representation.
 func Deserialize(byts []byte) (prgrm *CXProgram) {
 	prgrm = &CXProgram{}
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 
 	var s sAll
 
@@ -1203,7 +1203,7 @@ func Deserialize(byts []byte) (prgrm *CXProgram) {
 
 // CopyProgramState copies the program state from `prgrm1` to `prgrm2`.
 func CopyProgramState(sPrgrm1, sPrgrm2 *[]byte) {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
@@ -1238,18 +1238,9 @@ func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	}
 }
 
-// mustSize is a wrapper for encoder.Size which will always panic if there's an error when calling it.
-func mustSize(obj interface{}) int {
-	s, err := encoder.Size(obj)
-	if err != nil {
-		panic(err)
-	}
-	return s
-}
-
 // ExtractBlockchainProgram extracts the blockchain program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.
 func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
@@ -1286,20 +1277,20 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[prgrm2DataStart:prgrm2DataStart+prgrm1DataSize]...)
 
 	// correcting sizes
-	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, mustSize(sCall{}))
-	updateSerializedSize(&extracted, index1.PackagesOffset, index1.StructsOffset, mustSize(sPackage{}))
-	updateSerializedSize(&extracted, index1.StructsOffset, index1.FunctionsOffset, mustSize(sStruct{}))
-	updateSerializedSize(&extracted, index1.FunctionsOffset, index1.ExpressionsOffset, mustSize(sFunction{}))
-	updateSerializedSize(&extracted, index1.ExpressionsOffset, index1.ArgumentsOffset, mustSize(sExpression{}))
-	updateSerializedSize(&extracted, index1.ArgumentsOffset, index1.IntegersOffset, mustSize(sArgument{}))
-	updateSerializedSize(&extracted, index1.IntegersOffset, index1.NamesOffset, mustSize(int32(0)))
+	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, int(encoder.Size(sCall{})))
+	updateSerializedSize(&extracted, index1.PackagesOffset, index1.StructsOffset, int(encoder.Size(sPackage{})))
+	updateSerializedSize(&extracted, index1.StructsOffset, index1.FunctionsOffset, int(encoder.Size(sStruct{})))
+	updateSerializedSize(&extracted, index1.FunctionsOffset, index1.ExpressionsOffset, int(encoder.Size(sFunction{})))
+	updateSerializedSize(&extracted, index1.ExpressionsOffset, index1.ArgumentsOffset, int(encoder.Size(sExpression{})))
+	updateSerializedSize(&extracted, index1.ArgumentsOffset, index1.IntegersOffset, int(encoder.Size(sArgument{})))
+	updateSerializedSize(&extracted, index1.IntegersOffset, index1.NamesOffset, int(encoder.Size(int32(0))))
 
 	return extracted
 }
 
 // ExtractTransactionProgram extracts the transaction code (serialized) from a full CX program.
 func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
@@ -1341,7 +1332,7 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 // MergeTransactionAndBlockchain merges the serialized CX programs that represent a transaction and the program state stored on the blockchain.
 func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 
 	var index1 sIndex
 	var index2 sIndex
@@ -1440,13 +1431,13 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, make([]byte, int(prgrm1Info.HeapSize)-(len(bcDataSegment)+len(txnDataSegment)))...)
 
 	// correcting sizes
-	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, mustSize(sCall{}))
-	updateSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, mustSize(sPackage{}))
-	updateSerializedSize(&merged, index2.StructsOffset, index2.FunctionsOffset, mustSize(sStruct{}))
-	updateSerializedSize(&merged, index2.FunctionsOffset, index2.ExpressionsOffset, mustSize(sFunction{}))
-	updateSerializedSize(&merged, index2.ExpressionsOffset, index2.ArgumentsOffset, mustSize(sExpression{}))
-	updateSerializedSize(&merged, index2.ArgumentsOffset, index2.IntegersOffset, mustSize(sArgument{}))
-	updateSerializedSize(&merged, index2.IntegersOffset, index2.NamesOffset, mustSize(int32(0)))
+	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, int(encoder.Size(sCall{})))
+	updateSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, int(encoder.Size(sPackage{})))
+	updateSerializedSize(&merged, index2.StructsOffset, index2.FunctionsOffset, int(encoder.Size(sStruct{})))
+	updateSerializedSize(&merged, index2.FunctionsOffset, index2.ExpressionsOffset, int(encoder.Size(sFunction{})))
+	updateSerializedSize(&merged, index2.ExpressionsOffset, index2.ArgumentsOffset, int(encoder.Size(sExpression{})))
+	updateSerializedSize(&merged, index2.ArgumentsOffset, index2.IntegersOffset, int(encoder.Size(sArgument{})))
+	updateSerializedSize(&merged, index2.IntegersOffset, index2.NamesOffset, int(encoder.Size(int32(0))))
 
 	return merged
 }
@@ -1494,7 +1485,7 @@ func MergePrograms(prgrm1, prgrm2 *CXProgram) *CXProgram {
 
 // GetSerializedMemoryOffset returns the offset at which the memory of a serialized CX program starts.
 func GetSerializedMemoryOffset(sPrgrm []byte) int {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 	var index sIndex
 	mustDeserializeRaw(sPrgrm[:idxSize], &index)
 	return int(index.MemoryOffset)
@@ -1502,7 +1493,7 @@ func GetSerializedMemoryOffset(sPrgrm []byte) int {
 
 // GetSerializedStackSize returns the stack size of a serialized CX program starts.
 func GetSerializedStackSize(sPrgrm []byte) int {
-	idxSize := mustSerializeSize(sIndex{})
+	idxSize := encoder.Size(sIndex{})
 	var index sIndex
 	mustDeserializeRaw(sPrgrm[:idxSize], &index)
 
