@@ -232,7 +232,6 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 				tx.PushInput(output)
 
 				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
-				Debug("initPrgrm", len(initPrgrm))
 				tx.PushOutput(addr, uint64(1e10), 10000, initPrgrm)
 
 				seckeys := make([]cipher.SecKey, 1)
@@ -242,8 +241,6 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 
 				tx.UpdateHeader()
 				err = tx.Verify()
-
-				Debug("txOutput", len(tx.Out), len(tx.Out[0].ProgramState))
 
 				if err != nil {
 					log.Panic(err)
