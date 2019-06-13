@@ -1,0 +1,28 @@
+package main
+
+func main() {
+	var doors [100]bool
+	var pass i32
+	var door i32
+
+	for pass = 1; pass <= 100; pass++ {
+		for door = pass - 1; door < 100; door = door + pass {
+			doors[door] = !doors[door]
+		}
+	}
+
+	var i i32
+	for i = 0; i < 100; i++ {
+		if doors[i] {
+			str.print("1")
+		} else {
+			str.print("0")
+		}
+
+		if i%10 == 9 {
+			str.print("\n")
+		} else {
+			str.print(" ")
+		}
+	}
+}

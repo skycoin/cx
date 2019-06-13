@@ -1,0 +1,36 @@
+package main
+
+type Pos struct {
+	x f64
+	y f64
+}
+
+var PI f32 = 3.14159
+var rEarth f32 = 6372.8
+
+func haversine(f f64) (out f64) {
+	out = 0.5D * (1.0D - f64.cos(f))
+}
+
+func degPos(lat f64, lon f64) (out Pos) {
+	var p Pos
+	p.x = f64.mul(lat, f32.f64(f32.div(PI, 180.0)))
+	p.y = f64.mul(lon, f32.f64(f32.div(PI, 180.0)))
+
+	out = p
+}
+
+func hsDist(p1 Pos, p2 Pos) (dist f64) {
+	var hSine1 f64 = haversine(p2.x - p1.x)
+	var hSine2 f64 = haversine(p2.y - p1.y)
+
+	var cos1 f64 = f64.cos(p1.x)
+	var cos2 f64 = f64.cos(p2.x)
+
+	dist = 1.0D // HARCODE: Due can't exec the f64.asin from CX
+	//dist = 2 * rEarth * f64.asin(f64.sqrt(hSine1 + cos1 * cos2 * hSine2))
+}
+
+func main() {
+	f64.print(hsDist(degPos(36.12D, -86.67D), degPos(33.94D, -118.40D)))
+}

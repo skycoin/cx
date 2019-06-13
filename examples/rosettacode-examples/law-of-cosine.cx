@@ -1,0 +1,101 @@
+package main
+
+type triple struct {
+	a i32
+	b i32
+	c i32
+}
+
+var squares13 [13]i32
+var squares10000 [10000]i32
+
+func init() {
+	for i := 1; i <= 13; i++ {
+		squares13[i*i] = i
+	}
+
+	for j := 1; j <= 10000; j++ {
+		squares10000[j*j] = j
+	}
+}
+
+func solve(angle i32, maxLen i32, allowSame bool) (outs []triple) {
+	var solutions []triple
+    for a := 1; a <= maxLen; a++ {
+        for b := a; b <= maxLen; b++ {
+            lhs := a*a + b*b
+            if i32.uneq(angle, 90) {
+				if i32.eq(angle, 60) {
+					lhs = lhs - (a*b)
+				} else if i32.eq(angle, 120) {
+					lhs = lhs + (a*b)
+				} else {
+					str.print("Crash here!!!")
+				}
+            }
+
+			if i32.eq(maxLen, 13) {
+				c := squares13[lhs]
+				ok := squares13[lhs]
+
+				if ok {
+					if bool.not(allowSame) && i32.eq(a, b) && i32.eq(b, c) {
+						continue
+					}
+					var entry triple;
+					entry.a = a
+					entry.b = b
+					entry.c = c
+					
+					solutions = append(solutions, entry)
+				}
+			} else if i32.eq(maxLen, 10000) {
+				c := squares10000[lhs]
+				ok := squares10000[lhs]
+
+				if ok {
+					if bool.not(allowSame) && i32.eq(a, b) && i32.eq(b, c) {
+						continue
+					}
+					var entry triple;
+					entry.a = a
+					entry.b = b
+					entry.c = c
+
+					solutions = append(solutions, entry)
+				}
+			} else {
+				str.print("Maximum length must be either 13 or 10000")
+			}
+        }
+    }
+    outs = solutions
+}
+
+func main() {
+	str.print("For sides in the range [1, 13] ")
+    str.print("where they can all be of the same length:-\n")
+	init()
+	
+    var angles [3]i32
+	angles[0] = 90
+	angles[1] = 60
+	angles[2] = 120
+	
+    var solutions []triple
+    for i := 0; i < 3; i++ {
+        solutions = solve(angles[i], 13, true)
+        str.print("  For an angle of" + i32.str(angle[i]) + "  degrees")
+        str.print(" there are" + i32.str(len(solutions)) + "solutions, namely:")
+
+		for j := 0; j < len(solutions); j++ {
+			str.print("a = " + i32.str(solutions[j].a) + " b = " + i32.str(solutions[j].b) + " c = " + i32.str(solutions[j].c))
+		}
+		str.print("")
+    }
+    str.print("For sides in the range [1, 10000] ")
+    str.print("where they cannot ALL be of the same length:-\n")
+    solutions = solve(60, 10000, false)
+    str.print("  For an angle of 60 degrees")
+	str.print(" there are" + i32.str(len(solutions)) + "solutions.")
+}

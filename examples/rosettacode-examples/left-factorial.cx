@@ -1,0 +1,58 @@
+package main
+
+func main() {
+    str.print("!0 through !10: 0")
+    one := 1L
+    n := 1L
+    f := 1L
+    l := 1L
+
+    for true {
+        f = i64.mul(f, n)
+	l = i64.add(l, f)
+	n = i64.add(n, one)
+		
+        i64.print(l)
+
+        if i64.eq(n, 10L) {
+            break
+        }
+    }
+
+    str.print("")
+    for true {
+        for i := 0; i < 10; i++ {
+            f = i64.mul(f, n)
+	    l = i64.add(l, f)
+	    n = i64.add(n, one)
+        }
+		
+        //str.print("!" + n + ": " + l + "\n")
+
+        if i64.eq(n, 110L) {
+            break
+        }
+    }
+
+    str.print("Lengths of !1000 through !10000 by thousands:")
+    for i := 110; i < 1000; i++ {
+        f = i64.mul(f, n)
+	l = i64.add(l, f)
+	n = i64.add(n, one)
+    }
+	
+    for true {
+        //str.print(" " + len(i64.str(l)))
+        
+if i64.eq(n, 10000L) {
+            break
+        }
+
+        for i := 0; i < 1000; i++ {
+            f = i64.mul(f, n)
+	    l = i64.add(l, f)
+	    n = i64.add(n, one)
+        }
+    }
+    str.print("")
+}

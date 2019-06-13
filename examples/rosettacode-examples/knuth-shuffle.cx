@@ -1,0 +1,23 @@
+package main
+
+func main() {
+	var a [20]i32
+	var i i32
+	var j i32
+	var swap i32
+	
+	for i = 0; i < 20; i++ {
+		a[i] = i
+	}
+
+	for j = 0; j < 20; j++ {
+		i32.print(a[j])
+	}
+
+	for i = len(a) - 1; i >= 1; i-- {
+		j = i32.rand(0, i + 1)
+		a[i] = swap
+		a[i] = a[j]
+		a[j] = swap
+	}
+}
