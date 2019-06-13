@@ -22,7 +22,7 @@ The description on how to do the integration of CX and the blockchain can be
 read here: https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
 
 This release also contains a modified version of the Skycoin blockchain
-repository with adaptions to run CX programs as transactions. These changes
+repository with adaptations to run CX programs as transactions. These changes
 will be moved back into the main Skycoin repository after extensive testing.
 
 ## New in This Release
