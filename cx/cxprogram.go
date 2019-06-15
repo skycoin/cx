@@ -293,6 +293,16 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 // ----------------------------------------------------------------
 //                             Selectors
 
+// SelectProgram sets `PROGRAM` to the the receiver `prgrm`. This is a utility function used mainly
+// by CX chains. `PROGRAM` is used in multiple parts of the CX runtime as a convenience; instead of having
+// to pass around a parameter of type CXProgram, the CX program currently being run is accessible through
+// `PROGRAM`.
+func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
+	PROGRAM = prgrm
+
+	return PROGRAM, nil
+}
+
 // SelectPackage ...
 func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{

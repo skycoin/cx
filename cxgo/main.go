@@ -855,12 +855,13 @@ func main() {
 	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
-		err := PRGRM.RunCompiled(0, cxArgs)
-		if err != nil {
-			panic(err)
-		}
-
 		if options.blockchainMode {
+			// Initializing the CX chain.
+			err := PRGRM.RunCompiled(0, cxArgs)
+			if err != nil {
+				panic(err)
+			}
+			
 			PRGRM.RemovePackage(MAIN_FUNC)
 			
 			s := Serialize(PRGRM, 1)
@@ -886,7 +887,7 @@ func main() {
 			cmd.Start()
 			cmd.Wait()
 
-			err := initCXBlockchain(s, options.programName, options.secKey)
+			err = initCXBlockchain(s, options.programName, options.secKey)
 			if err != nil {
 				panic(err)
 			}
@@ -914,6 +915,9 @@ func main() {
 			cmd.Start()
 			cmd.Wait()
 		} else if options.broadcastMode {
+			// Setting the CX runtime to run `PRGRM`.
+			PRGRM.SelectProgram()
+
 			// Resetting memory
 			dsPrgrm := Deserialize(sPrgrm)
 			PRGRM.StackPointer = 0
@@ -993,6 +997,12 @@ func main() {
 				panic(err)
 			}
 		} else {
+			// Normal run of a CX program.
+			err := PRGRM.RunCompiled(0, cxArgs)
+			if err != nil {
+				panic(err)
+			}
+			
 			if AssertFailed() {
 				os.Exit(CX_ASSERT)
 			}
