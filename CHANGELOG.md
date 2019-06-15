@@ -7,6 +7,9 @@
 	returned by the lexer.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+  * Running a CX chain with the --broadcast flag no longer runs the transaction code locally; it simply
+	broadcasts the transaction code and it is run in the peer node to update the program state. If the user
+	wants to test transaction code, the --transaction flag must be used.
   * Updated the style of the CX roadmap.
 * Libraries
   * ...

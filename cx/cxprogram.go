@@ -73,19 +73,19 @@ func MakeProgram() *CXProgram {
 //                             Getters
 
 // GetCurrentPackage ...
-func (cxt *CXProgram) GetCurrentPackage() (*CXPackage, error) {
-	if cxt.CurrentPackage != nil {
-		return cxt.CurrentPackage, nil
+func (prgrm *CXProgram) GetCurrentPackage() (*CXPackage, error) {
+	if prgrm.CurrentPackage != nil {
+		return prgrm.CurrentPackage, nil
 	}
 	return nil, errors.New("current package is nil")
 
 }
 
 // GetCurrentStruct ...
-func (cxt *CXProgram) GetCurrentStruct() (*CXStruct, error) {
-	if cxt.CurrentPackage != nil {
-		if cxt.CurrentPackage.CurrentStruct != nil {
-			return cxt.CurrentPackage.CurrentStruct, nil
+func (prgrm *CXProgram) GetCurrentStruct() (*CXStruct, error) {
+	if prgrm.CurrentPackage != nil {
+		if prgrm.CurrentPackage.CurrentStruct != nil {
+			return prgrm.CurrentPackage.CurrentStruct, nil
 		}
 		return nil, errors.New("current struct is nil")
 
@@ -95,10 +95,10 @@ func (cxt *CXProgram) GetCurrentStruct() (*CXStruct, error) {
 }
 
 // GetCurrentFunction ...
-func (cxt *CXProgram) GetCurrentFunction() (*CXFunction, error) {
-	if cxt.CurrentPackage != nil {
-		if cxt.CurrentPackage.CurrentFunction != nil {
-			return cxt.CurrentPackage.CurrentFunction, nil
+func (prgrm *CXProgram) GetCurrentFunction() (*CXFunction, error) {
+	if prgrm.CurrentPackage != nil {
+		if prgrm.CurrentPackage.CurrentFunction != nil {
+			return prgrm.CurrentPackage.CurrentFunction, nil
 		}
 		return nil, errors.New("current function is nil")
 
@@ -108,19 +108,19 @@ func (cxt *CXProgram) GetCurrentFunction() (*CXFunction, error) {
 }
 
 // GetCurrentExpression ...
-func (cxt *CXProgram) GetCurrentExpression() (*CXExpression, error) {
-	if cxt.CurrentPackage != nil &&
-		cxt.CurrentPackage.CurrentFunction != nil &&
-		cxt.CurrentPackage.CurrentFunction.CurrentExpression != nil {
-		return cxt.CurrentPackage.CurrentFunction.CurrentExpression, nil
+func (prgrm *CXProgram) GetCurrentExpression() (*CXExpression, error) {
+	if prgrm.CurrentPackage != nil &&
+		prgrm.CurrentPackage.CurrentFunction != nil &&
+		prgrm.CurrentPackage.CurrentFunction.CurrentExpression != nil {
+		return prgrm.CurrentPackage.CurrentFunction.CurrentExpression, nil
 	}
 	return nil, errors.New("current package, function or expression is nil")
 
 }
 
 // GetGlobal ...
-func (cxt *CXProgram) GetGlobal(name string) (*CXArgument, error) {
-	mod, err := cxt.GetCurrentPackage()
+func (prgrm *CXProgram) GetGlobal(name string) (*CXArgument, error) {
+	mod, err := prgrm.GetCurrentPackage()
 	if err != nil {
 		return nil, err
 	}
@@ -149,10 +149,10 @@ func (cxt *CXProgram) GetGlobal(name string) (*CXArgument, error) {
 }
 
 // GetPackage ...
-func (cxt *CXProgram) GetPackage(modName string) (*CXPackage, error) {
-	if cxt.Packages != nil {
+func (prgrm *CXProgram) GetPackage(modName string) (*CXPackage, error) {
+	if prgrm.Packages != nil {
 		var found *CXPackage
-		for _, mod := range cxt.Packages {
+		for _, mod := range prgrm.Packages {
 			if modName == mod.Name {
 				found = mod
 				break
@@ -169,9 +169,9 @@ func (cxt *CXProgram) GetPackage(modName string) (*CXPackage, error) {
 }
 
 // GetStruct ...
-func (cxt *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
+func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, error) {
 	var foundPkg *CXPackage
-	for _, mod := range cxt.Packages {
+	for _, mod := range prgrm.Packages {
 		if modName == mod.Name {
 			foundPkg = mod
 			break
@@ -191,7 +191,7 @@ func (cxt *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, er
 		//looking in imports
 		typParts := strings.Split(strctName, ".")
 
-		if mod, err := cxt.GetPackage(modName); err == nil {
+		if mod, err := prgrm.GetPackage(modName); err == nil {
 			for _, imp := range mod.Imports {
 				for _, strct := range imp.Structs {
 					if strct.Name == typParts[0] {
@@ -211,9 +211,9 @@ func (cxt *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, er
 }
 
 // GetFunction ...
-func (cxt *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, error) {
+func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, error) {
 	// I need to first look for the function in the current package
-	if pkg, err := cxt.GetCurrentPackage(); err == nil {
+	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		for _, fn := range pkg.Functions {
 			if fn.Name == fnName {
 				return fn, nil
@@ -222,7 +222,7 @@ func (cxt *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, e
 	}
 
 	var foundPkg *CXPackage
-	for _, pkg := range cxt.Packages {
+	for _, pkg := range prgrm.Packages {
 		if pkgName == pkg.Name {
 			foundPkg = pkg
 			break
@@ -252,38 +252,38 @@ func (cxt *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction, e
 //                         Package handling
 
 // AddPackage ...
-func (cxt *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
+func (prgrm *CXProgram) AddPackage(mod *CXPackage) *CXProgram {
 	found := false
-	for _, md := range cxt.Packages {
+	for _, md := range prgrm.Packages {
 		if md.Name == mod.Name {
-			cxt.CurrentPackage = md
+			prgrm.CurrentPackage = md
 			found = true
 			break
 		}
 	}
 	if !found {
-		cxt.Packages = append(cxt.Packages, mod)
-		cxt.CurrentPackage = mod
+		prgrm.Packages = append(prgrm.Packages, mod)
+		prgrm.CurrentPackage = mod
 	}
-	return cxt
+	return prgrm
 }
 
 // RemovePackage ...
-func (cxt *CXProgram) RemovePackage(modName string) {
-	lenMods := len(cxt.Packages)
-	for i, mod := range cxt.Packages {
+func (prgrm *CXProgram) RemovePackage(modName string) {
+	lenMods := len(prgrm.Packages)
+	for i, mod := range prgrm.Packages {
 		if mod.Name == modName {
 			if i == lenMods-1 {
-				cxt.Packages = cxt.Packages[:len(cxt.Packages)-1]
+				prgrm.Packages = prgrm.Packages[:len(prgrm.Packages)-1]
 			} else {
-				cxt.Packages = append(cxt.Packages[:i], cxt.Packages[i+1:]...)
+				prgrm.Packages = append(prgrm.Packages[:i], prgrm.Packages[i+1:]...)
 			}
 			// This means that we're removing the package set to be the CurrentPackage.
-			// If it is removed from the program's list of packages, cxt.CurrentPackage
+			// If it is removed from the program's list of packages, prgrm.CurrentPackage
 			// would be pointing to a package meant to be collected by the GC.
 			// We fix this by pointing to the last package in the program's list of packages.
-			if mod == cxt.CurrentPackage {
-				cxt.CurrentPackage = cxt.Packages[len(cxt.Packages)-1]
+			if mod == prgrm.CurrentPackage {
+				prgrm.CurrentPackage = prgrm.Packages[len(prgrm.Packages)-1]
 			}
 			break
 		}
@@ -293,19 +293,29 @@ func (cxt *CXProgram) RemovePackage(modName string) {
 // ----------------------------------------------------------------
 //                             Selectors
 
+// SelectProgram sets `PROGRAM` to the the receiver `prgrm`. This is a utility function used mainly
+// by CX chains. `PROGRAM` is used in multiple parts of the CX runtime as a convenience; instead of having
+// to pass around a parameter of type CXProgram, the CX program currently being run is accessible through
+// `PROGRAM`.
+func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
+	PROGRAM = prgrm
+
+	return PROGRAM, nil
+}
+
 // SelectPackage ...
-func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
+func (prgrm *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectPackage(name)
+	// 	Action: func(prgrm *CXProgram) {
+	// 		prgrm.SelectPackage(name)
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, cxt)
+	// saveProgramStep(prgrmStep, prgrm)
 
 	var found *CXPackage
-	for _, mod := range cxt.Packages {
+	for _, mod := range prgrm.Packages {
 		if mod.Name == name {
-			cxt.CurrentPackage = mod
+			prgrm.CurrentPackage = mod
 			found = mod
 		}
 	}
@@ -318,15 +328,15 @@ func (cxt *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 }
 
 // SelectFunction ...
-func (cxt *CXProgram) SelectFunction(name string) (*CXFunction, error) {
+func (prgrm *CXProgram) SelectFunction(name string) (*CXFunction, error) {
 	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectFunction(name)
+	// 	Action: func(prgrm *CXProgram) {
+	// 		prgrm.SelectFunction(name)
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, cxt)
+	// saveProgramStep(prgrmStep, prgrm)
 
-	mod, err := cxt.GetCurrentPackage()
+	mod, err := prgrm.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectFunction(name)
 	}
@@ -335,15 +345,15 @@ func (cxt *CXProgram) SelectFunction(name string) (*CXFunction, error) {
 }
 
 // SelectStruct ...
-func (cxt *CXProgram) SelectStruct(name string) (*CXStruct, error) {
+func (prgrm *CXProgram) SelectStruct(name string) (*CXStruct, error) {
 	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectStruct(name)
+	// 	Action: func(prgrm *CXProgram) {
+	// 		prgrm.SelectStruct(name)
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, cxt)
+	// saveProgramStep(prgrmStep, prgrm)
 
-	mod, err := cxt.GetCurrentPackage()
+	mod, err := prgrm.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectStruct(name)
 	}
@@ -352,15 +362,15 @@ func (cxt *CXProgram) SelectStruct(name string) (*CXStruct, error) {
 }
 
 // SelectExpression ...
-func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
+func (prgrm *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 	// prgrmStep := &CXProgramStep{
-	// 	Action: func(cxt *CXProgram) {
-	// 		cxt.SelectExpression(line)
+	// 	Action: func(prgrm *CXProgram) {
+	// 		prgrm.SelectExpression(line)
 	// 	},
 	// }
-	// saveProgramStep(prgrmStep, cxt)
+	// saveProgramStep(prgrmStep, prgrm)
 
-	mod, err := cxt.GetCurrentPackage()
+	mod, err := prgrm.GetCurrentPackage()
 	if err == nil {
 		return mod.SelectExpression(line)
 	}
@@ -373,15 +383,15 @@ func (cxt *CXProgram) SelectExpression(line int) (*CXExpression, error) {
 
 // PrintAllObjects prints all objects in a program
 //
-func (cxt *CXProgram) PrintAllObjects() {
+func (prgrm *CXProgram) PrintAllObjects() {
 	fp := 0
 
-	for c := 0; c <= cxt.CallCounter; c++ {
-		op := cxt.CallStack[c].Operator
+	for c := 0; c <= prgrm.CallCounter; c++ {
+		op := prgrm.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			_, err := encoder.DeserializeAtomic(cxt.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			_, err := encoder.DeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
 			if err != nil {
 				panic(err)
 			}
@@ -395,7 +405,7 @@ func (cxt *CXProgram) PrintAllObjects() {
 
 				// }
 
-				byts = cxt.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
+				byts = prgrm.Memory[int(heapOffset)+OBJECT_HEADER_SIZE : int(heapOffset)+OBJECT_HEADER_SIZE+ptr.CustomType.Size]
 			}
 
 			// var currLengths []int
@@ -426,7 +436,7 @@ func (cxt *CXProgram) PrintAllObjects() {
 
 			fmt.Println("declarat", ptr.DeclarationSpecifiers)
 
-			fmt.Println("obj", ptr.Name, ptr.CustomType, cxt.Memory[heapOffset:int(heapOffset)+op.Size], byts)
+			fmt.Println("obj", ptr.Name, ptr.CustomType, prgrm.Memory[heapOffset:int(heapOffset)+op.Size], byts)
 		}
 
 		fp += op.Size
