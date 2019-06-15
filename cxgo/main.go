@@ -123,7 +123,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 	params, err := fiber.NewConfig(configFile, configDir)
 
 	cmd := exec.Command("go", "run", filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname)), "-block-publisher=true", fmt.Sprintf("-blockchain-secret-key=%s", seckey),
-		"-disable-incoming", "-max-out-msg-len=5243081")
+		"-disable-incoming", "-max-out-msg-len=134217929")
 
 	var genesisSig string
 	var genesisBlock readable.Block
@@ -276,10 +276,11 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 			fmt.Sprintf("-genesis-address=%s", options.genesisAddress),
 			fmt.Sprintf("-genesis-signature=%s", options.genesisSignature),
 			fmt.Sprintf("-blockchain-public-key=%s", options.pubKey),
-			"-max-txn-size-unconfirmed=5242880",
-		 	"-max-txn-size-create-block=5242880",
-			"-max-block-size=5242880",
-			"-max-out-msg-len=5243081", // I don't know why this value, but the logger stated a value >= than this is needed
+			"-max-txn-size-unconfirmed=134217728",
+		 	"-max-txn-size-create-block=134217728",
+			"-max-block-size=134217728",
+			"-max-in-msg-len=134217728",
+			"-max-out-msg-len=134217929", // I don't know why this value, but the logger stated a value >= than this is needed
 		)
 	case "peer":
 	return exec.Command("cxcoin", "-enable-all-api-sets",
@@ -295,10 +296,11 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 		fmt.Sprintf("-web-interface-port=%d", options.port + 420),
 		fmt.Sprintf("-port=%d", options.port),
 		fmt.Sprintf("-data-dir=/tmp/%d", options.port),
-		"-max-txn-size-unconfirmed=5242880",
-		"-max-txn-size-create-block=5242880",
-		"-max-block-size=5242880",
-		"-max-out-msg-len=5243081", // I don't know why this value, but the logger stated a value >= than this is needed
+		"-max-txn-size-unconfirmed=134217728",
+		"-max-txn-size-create-block=134217728",
+		"-max-block-size=134217728",
+		"-max-in-msg-len=134217728",
+		"-max-out-msg-len=134217929", // I don't know why this value, but the logger stated a value >= than this is needed
 	)
 	default:
 		return nil
