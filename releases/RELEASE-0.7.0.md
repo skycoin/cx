@@ -14,9 +14,12 @@ itself that is affected by CX chain, but a new blockchain using the same
 technology.
 
 Due to the importance of getting the blockchain programming language right,
-there was a previous public beta of CX 0.7. This public release fixes a number
-of important issues with that beta. The most important one is that we
-increased the size of the biggest possible language from 32 KB to 500 MB
+there was a previous public beta of CX 0.7. This public release fixes all
+known issues with the CX integration with the blockchain from the beta. The
+most important one is that we increased the size of the biggest possible
+program from 32 KB to 64 MB. Note that there are still a number of issues
+with CX, but they are generic rather than related to the blockchain
+integration.
 
 The description on how to do the integration of CX and the blockchain can be
 read here: https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
@@ -54,8 +57,10 @@ There are no library improvements in CX 0.7.0
 
 ### Fixed issues
 
+* \#357: Error running cx in blockchain broadcast mode.
 * \#360: Panic when package keyword is misspelled
 * \#373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+* \#388: Array fail on cx --blockchain.
 * \#389: CX chains errors with big programs.
 
 ### Documentation

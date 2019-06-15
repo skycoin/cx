@@ -1,6 +1,20 @@
 # Changelog
 
-### v0.7.0 (NOT YET RELEASED)
+### v0.7.1 (NOT YET RELEASED)
+* Additions
+  * ...
+* Changes
+  * ...
+* Libraries
+  * ...
+* Fixed issues
+  * ...
+* Documentation
+  * ...
+* Miscellaneous
+  * ...
+
+### v0.7.0 released 2019-06-15
 * Additions
   * CX can now generate addresses to be used by CX chains.
   * New debug option --debug-lexer or -Dl to see which tokens that are
