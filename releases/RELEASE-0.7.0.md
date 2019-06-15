@@ -16,9 +16,9 @@ technology.
 Due to the importance of getting the blockchain programming language right,
 there was a previous public beta of CX 0.7. This public release fixes all
 known issues with the CX integration with the blockchain from the beta. The
-most important one is that we increased the size of the biggest possible
-program from 32 KB to 64 MB. Note that there are still a number of issues
-with CX, but they are generic rather than related to the blockchain
+most important one is that we increased the size of the biggest possible CX
+chain program from 32 KB to 64 MB. Note that there are still a number of
+issues with CX, but they are generic rather than related to the blockchain
 integration.
 
 The description on how to do the integration of CX and the blockchain can be
