@@ -1,4 +1,4 @@
-# CX version 0.7beta
+# CX version 0.7.0
 
 2019-06-15
 
