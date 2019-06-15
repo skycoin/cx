@@ -279,7 +279,7 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 			"-max-txn-size-unconfirmed=134217728",
 		 	"-max-txn-size-create-block=134217728",
 			"-max-block-size=134217728",
-			"-max-in-msg-len=134217728",
+			"-max-in-msg-len=134217929",
 			"-max-out-msg-len=134217929", // I don't know why this value, but the logger stated a value >= than this is needed
 		)
 	case "peer":
@@ -299,7 +299,7 @@ func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 		"-max-txn-size-unconfirmed=134217728",
 		"-max-txn-size-create-block=134217728",
 		"-max-block-size=134217728",
-		"-max-in-msg-len=134217728",
+		"-max-in-msg-len=134217929",
 		"-max-out-msg-len=134217929", // I don't know why this value, but the logger stated a value >= than this is needed
 	)
 	default:
