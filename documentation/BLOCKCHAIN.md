@@ -296,7 +296,6 @@ At the time of writing, the CXChain implementation suffers from a number of limi
 * You need to wait a few seconds before creating and broadcasting a new transaction.
 * We don't have any security mechanism to prevent someone from calling or accessing certain parts of a CX chain's program state.  If you need security at this point, you should set up a firewall to your development workstation or work offline.
 * The wallet's address that is sending transactions is hard coded at the moment.
-* When broadcasting a transaction, it is also run locally. This is a problem if the transaction takes a considerable amount of time as it would be run locally and then the node would run it again.
 * We need a way to set a seed for random numbers for the initial program state. This way we ensure determinism in subsequent transactions. Also, this seed should not be able to be changed by any transaction.
 
 # More examples
