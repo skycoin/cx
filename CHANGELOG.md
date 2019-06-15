@@ -7,6 +7,7 @@
 	returned by the lexer.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+  * Updated the style of the CX roadmap.
 * Libraries
   * ...
 * Fixed issues
