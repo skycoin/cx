@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "cxchains"
-  digest = "1:9eb0124ab99c6c3494e1cea070366509ae076aa5db752ce53e906d20208c7f1c"
+  digest = "1:8004bafe1c0dddff9010f6f9361a66949fc1bb6f3716af15f66d08402f09afb4"
   name = "github.com/amherag/skycoin"
   packages = [
     "src/api",
@@ -60,7 +60,7 @@
     "src/wallet",
   ]
   pruneopts = "UT"
-  revision = "e221ff34a9f881c228890306ab0c1fe6dddb5b79"
+  revision = "e48f9c9f33464348e2209cbe0ce55999bd5fb0ac"
 
 [[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
@@ -387,7 +387,7 @@
     "math/fixed",
   ]
   pruneopts = "UT"
-  revision = "f03afa92d3ffad9e5ff762aa549908afe674f01e"
+  revision = "33659d3de4f578c2f0c64af782d17fa8688d643f"
 
 [[projects]]
   branch = "master"
@@ -395,18 +395,18 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "3f473d35a33aa6fdd203e306dc439b797820e3f1"
+  revision = "d28f0bde5980168871434b95cfc858db9f2a7a99"
 
 [[projects]]
   branch = "master"
-  digest = "1:2a96b14fed8617c9e499777c03ec21f35dfd5b396f0b05fcdd7eff9e6c67f196"
+  digest = "1:3398992b8f4b00ce4a6a5f9770008cf66dcff8f128b51eeab8c1f657096cac8f"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "93c9922d18aeb82498a065f07aec7ad7fa60dfb7"
+  revision = "15dcb6c0061f497a3f66e3ea034b629c6dd4d99e"
 
 [[projects]]
   digest = "1:1093f2eb4b344996604f7d8b29a16c5b22ab9e1b25652140d3fede39f640d5cd"
