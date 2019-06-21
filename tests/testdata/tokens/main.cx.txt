@@ -3417,10 +3417,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Compilation error when struct field is named 'input' or 'output'
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
