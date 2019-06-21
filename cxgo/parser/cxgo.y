@@ -81,7 +81,7 @@
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
-                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
+                        REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */

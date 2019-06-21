@@ -121,8 +121,6 @@
 /clauses/                 { return f(CLAUSES)    }
 /def/                     { return f(DEF)        }
 /field/                   { return f(FIELD)      }
-/input/                   { return f(INPUT)      }
-/output/                  { return f(OUTPUT)     }
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
