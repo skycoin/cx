@@ -235,10 +235,10 @@ exit /b
   %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\cxgo0.go %CXGO_PATH%\cxgo0\cxgo0.y
   call :showResults "goyacc cxgo0" "1st pass -" "ERROR in 1st pass -"
 
-  %BIN_PATH%\nex -e %CXGO_PATH%\cxgo.nex
+  %BIN_PATH%\nex -e %CXGO_PATH%\parser\cxgo.nex
   call :showResults "nex    cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo.go %CXGO_PATH%\cxgo.y
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\cxgo.go %CXGO_PATH%\cxgo.y
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
