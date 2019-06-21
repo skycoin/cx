@@ -3408,7 +3408,7 @@ PERIOD
 STRLIT Short declaration doesn't compile with opcode return value
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-286.cx
  COMMA 
