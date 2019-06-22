@@ -3685,7 +3685,7 @@ STRLIT issue-415.cx
 PERIOD 
  IDENT SUCCESS
  COMMA 
-STRLIT Cx is not supporting short-circuit evaluation
+STRLIT func defined with no arguments, called WITH arguments causes PANIC
  COMMA 
  IDENT TEST_ISSUE
  COMMA 
