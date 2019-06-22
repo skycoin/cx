@@ -154,13 +154,13 @@ if [ ! $? -eq 0 ]; then
     exit 0
 fi
 
-$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.nex
+$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo.y
+$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0

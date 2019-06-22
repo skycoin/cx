@@ -9,6 +9,7 @@
   * ...
 * Fixed issues
   * #286: Compilation error when struct field is named 'input' or 'output'
+  * #323: Installation issues on Windows after merging #320
 * Documentation
   * ...
 * Miscellaneous

@@ -109,7 +109,7 @@ if %ERRORLEVEL% neq 0 (
 
 
 rem run CX tests
-%BIN_PATH%\cx.exe %SKYCOIN_PATH%\cx\tests
+%BIN_PATH%\cx.exe %SKYCOIN_PATH%\cx\tests\main.cx ++wdir=tests\ ++disable-tests=gui,issue
 call :showResults cx\tests "Tested" "ERROR while testing"
 
 call :echoWithColor yellow "You can re-run CX tests with:"
@@ -235,10 +235,10 @@ exit /b
   %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\cxgo0.go %CXGO_PATH%\cxgo0\cxgo0.y
   call :showResults "goyacc cxgo0" "1st pass -" "ERROR in 1st pass -"
 
-  %BIN_PATH%\nex -e %CXGO_PATH%\cxgo.nex
+  %BIN_PATH%\nex -e %CXGO_PATH%\parser\cxgo.nex
   call :showResults "nex    cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
-  %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo.go %CXGO_PATH%\cxgo.y
+  %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\cxgo.go %CXGO_PATH%\parser\cxgo.y
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
