@@ -444,6 +444,7 @@ func main ()() {
 	runTestEx("issue-360.cx", cx.COMPILATION_ERROR, "Panic when package keyword is misspelled", TEST_ISSUE, 0)
 	runTestEx("issue-361.cx", cx.COMPILATION_ERROR, "No compilation error when assigning an literal which overflow the receiving type", TEST_ISSUE, 0)
 	runTestEx("issue-362.cx", cx.SUCCESS, "Cx is not supporting short-circuit evaluation", TEST_ISSUE, 0)
+	runTestEx("issue-415.cx", cx.SUCCESS, "func defined with no arguments, called WITH arguments causes PANIC", TEST_ISSUE, 0)
 
 	// We need to fix serialization and deserialization as user-callable functions
 	// runTestEx("issue-309.cx", cx.SUCCESS, "Serialization is not taking into account non-default stack sizes.", TEST_ISSUE, 0)
