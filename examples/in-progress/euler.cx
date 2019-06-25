@@ -1,4 +1,45 @@
 package main
 
+func deltaTemp(f f64, d f64) (r f64) {
+	r = -f * d
+}
+
+func newCoolingRateDy(k f32, ambientTemp f32) (fdy f32) {
+	fdy = 1.0
+}
+
 func main() {
+	var deltaTimes [3]f64
+	deltaTimes[0] = 2.0D
+	deltaTimes[1] = 5.0D
+	deltaTimes[2] = 10.0D
+
+	var i i32
+	var time f32
+	var temp f32
+
+	k := 0.07
+	tempRoom := 20.0
+	tempObject := 100.0
+
+	f64.print(deltaTimes[0])
+	f64.print(deltaTimes[1])
+	f64.print(deltaTimes[2])
+	
+	for i = 0; i < 3; i++ {
+		f64.print(deltaTimes[i])
+		str.print(" Time Euler's Analytic")
+
+		temp = tempObject
+		for time = 0.0; f32.lteq(time, 100.0);  {
+			//str.print(time + "5.1f " + temp + "7.3f " + "analytic(time)" + "7.3f\n")
+
+			// euler steps
+			//temp = temp + deltaTimes[i]*newCoolingRateDy(time, temp)
+			var tmp f32
+			tmp = f64.f32(deltaTimes[i])
+			time = time + tmp
+		}
+		str.print("\n")
+	}
 }
