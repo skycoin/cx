@@ -1,0 +1,46 @@
+package main
+
+var primes []i64 = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
+    53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127}
+
+var mersennes []i64 = {521, 607, 1279, 2203, 2281, 3217, 4253, 4423, 9689,
+    9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503, 132049, 216091,
+    756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
+    20996011, 24036583}
+
+func llTest(ps []i64) {
+	var s i64
+	var m i64
+
+	one := 1L
+	two := 2L
+
+	psLength := len(ps)
+
+	for i := 0 ; i < psLength; i++ {
+		m = i64.bitshl(one, ps[i])
+		m = i64.sub(m, one)
+		//m.Sub(m.Lsh(one, p), one)
+		s = 4L
+
+		for j := 2L; j < ps[i]; {
+			s = i64.mul(s, s)
+			s = i64.sub(s, two)
+			s = i64.mod(s, m)
+			j += 1L
+		}
+
+		// Temp code block
+		/*
+		if i64.bitlen(s) == 0 {
+			str.print(ps[i])
+		}
+        */
+	}
+}
+
+func main() {
+	llTest(primes)
+	str.print()
+	llTest(mersennes)
+}
