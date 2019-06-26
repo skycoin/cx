@@ -2,7 +2,7 @@
 
 ### v0.7.1 (NOT YET RELEASED)
 * Additions
-  * ...
+  * Added a function that prints information about the heap for debugging purposes (`debugHeap` in cx/utilities.go).
 * Changes
   * ...
 * Libraries
