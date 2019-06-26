@@ -996,17 +996,20 @@ func mustDeserializeRaw(byts []byte, item interface{}) {
 	}
 }
 
-// debugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
-func debugHeap() {
+// DebugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
+func DebugHeap() {
 	// symsToAddrs will hold a list of symbols that are pointing to an address.
-	symsToAddrs := make(map[int32][]string, 0)
+	symsToAddrs := make(map[int32][]string)
 
 	// Processing global variables. Adding the address they are pointing to.
 	for _, pkg := range PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
 				var heapOffset int32
-				encoder.DeserializeAtomic(PROGRAM.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -1031,7 +1034,10 @@ func debugHeap() {
 
 		for _, ptr := range op.ListOfPointers {
 			var heapOffset int32
-			encoder.DeserializeAtomic(PROGRAM.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
+			if err != nil {
+				panic(err)
+			}
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], ptr.Name)
 		}
@@ -1052,7 +1058,7 @@ func debugHeap() {
 	w.Flush()
 
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
-	
+
 	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
 		var objSize int32
 		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
@@ -1062,8 +1068,8 @@ func debugHeap() {
 
 		addrB := encoder.Serialize(int32(c))
 
-		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c + int(objSize)], "\tPtrs:", symsToAddrs[int32(c)])
-		
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c+int(objSize)], "\tPtrs:", symsToAddrs[int32(c)])
+
 		c += int(objSize)
 	}
 
