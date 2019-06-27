@@ -1,0 +1,39 @@
+package main
+
+var powers [10]i32
+
+func isMunchausen(n i32) (r bool) {
+	if i32.lt(n,0) {
+		return false
+	}
+
+	var nn i32 = n
+	var sum i32 = 0
+	var index i32 = 0
+	for i32.gt(nn, 0) {
+		index = i32.mod(nn,10)
+		sum = i32.add(sum, powers[index])
+
+		if i32.gt(sum, n) {
+			return false
+		}
+
+		nn = i32.div(nn,10)
+	}
+
+	return i32.eq(sum, n)
+}
+
+func main() {
+    for i := 1; i <= 9; i++ {
+        powers[i] = i32.pow(i, i)
+    }
+ 
+    // check numbers 0 to 500 million
+    str.print("The Munchausen numbers between 0 and 500 million are:")
+    for i := 0; i <= 500000000; i++ {
+        if isMunchausen(i) {
+			i32.print(i)
+		}
+    }
+}
