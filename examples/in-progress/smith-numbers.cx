@@ -1,0 +1,106 @@
+package main
+
+
+func numPrimeFactors(x i32) (i i32) {
+	var p i32 = 2
+	var pf i32 = 0
+
+	if i32.eq(x, 1) {
+		i = 1
+		return
+	}
+
+	var h i32
+	for true {
+		h = i32.mod(x, p)
+
+		if i32.eq(h, 0) {
+			pf++
+			x = i32.div(x, p)
+
+			if i32.eq(x, 1) {
+				i = pf
+				return
+			}
+		} else {
+			p++
+		}
+	}
+}
+
+
+func primeFactors(x i32, arr []i32) {
+	var p i32 = 2
+	var pf i32 = 0
+
+	if i32.eq(x,1) {
+		arr[pf] = 1
+	}
+
+	var h i32
+	for true {
+		h = i32.mod(x, p)
+
+		if i32.eq(h, 0) {
+			arr[pf] = p
+			pf++
+			x = i32.div(x, p)
+
+			if i32.eq(x, 1) {
+				return
+			}
+		} else {
+			p++
+		}
+	}
+}
+
+func sumDigits(x i32) (r i32) {
+	var sum i32
+	var m i32
+
+	for ; i32.uneq(x, 0); {
+		m = i32.mod(x, 10)
+		sum += m
+		x = i32.div(x, 10)
+	}
+
+	r = sum
+}
+
+
+func sumFactors(arr []i32, size i32) (r i32) {
+	var sum i32
+
+	for a := 0; a < size; a++ {
+		sum += sumDigits(arr[a])
+	}
+
+	r = sum
+}
+
+
+func listAllSmithNumbers(max i32) {
+	var arr []i32
+	var a i32
+	for a = 4; a < max; a++ {
+		numfactors := numPrimeFactors(a)
+		if i32.gt(numfactors, 2) {
+			primeFactors(a, arr)
+
+			sumDigit := sumDigits(a)
+			sumFactor := sumFactors(arr, numfactors)
+
+			if i32.eq(sumDigit, sumFactor) {
+				i32.print(a)
+			}
+		}
+	}
+}
+
+
+func main() {
+	var maxSmith i32 = 10000
+	i32.str(maxSmith)
+	listAllSmithNumbers(maxSmith)
+}
