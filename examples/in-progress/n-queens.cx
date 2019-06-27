@@ -1,0 +1,57 @@
+package main
+
+var i i32
+var q bool
+var a [9]bool
+var b [17]bool
+var c [15]bool // offset by 7 relative to the Pascal version
+var x [9]i32
+
+
+func try(i i32) {
+	var j i32 = 1
+	for true {
+        q = false
+        if a[j] == true && b[i+j] == true && c[i-j+7] == true {
+            x[i] = j
+            a[j] = false
+            b[i+j] = false
+            c[i-j+7] = false
+            if i < 8 {
+                try(i + 1)
+                if !q {
+                    a[j] = true
+                    b[i+j] = true
+                    c[i-j+7] = true
+                }
+            } else {
+                q = true
+            }
+        }
+
+        if q || j == 8 {
+            return
+        }
+
+		j++
+    }
+}
+
+
+func main() {
+	for i := 1; i <= 8; i++ {
+        a[i] = true
+    }
+    for i := 2; i <= 16; i++ {
+        b[i] = true
+    }
+    for i := 0; i <= 14; i++ {
+        c[i] = true
+    }
+    try(1)
+    if q == true {
+        for i := 1; i <= 8; i++ {
+            str.print(str.concat(i32.str(i) + " = ", i32.str(x[i])))
+        }
+    }
+}
