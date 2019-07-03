@@ -1,7 +1,7 @@
 package main
 
 func ludic(n i32, max i32) (out []i32) {
-	const max_i32 = i32.bitshl(31) - 1
+	var max_i32 i32 = i32.bitshl(31) - 1
 
 	if max > 0 && n < 0 {
 		n = max_i32
