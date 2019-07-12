@@ -1,12 +1,7 @@
 package main
 
-var primes []i64 = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
-    53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127}
-
-var mersennes []i64 = {521, 607, 1279, 2203, 2281, 3217, 4253, 4423, 9689,
-    9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503, 132049, 216091,
-    756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
-    20996011, 24036583}
+var primes []i64
+var mersennes []i64
 
 func llTest(ps []i64) {
 	var s i64
@@ -31,15 +26,79 @@ func llTest(ps []i64) {
 		}
 
 		// Temp code block
-		/*
 		if i64.bitlen(s) == 0 {
 			str.print(ps[i])
 		}
-        */
 	}
 }
 
+func intial() {
+    // setup values for arrays
+    primes[0] = 3L
+    primes[1] = 5L
+    primes[2] = 7L
+    primes[3] = 11L
+    primes[4] = 13L
+    primes[5] = 17L
+    primes[6] = 19L
+    primes[7] = 23L
+    primes[8] = 29L
+    primes[9] = 31L
+    primes[10] = 37L
+    primes[11] = 41L
+    primes[12] = 43L
+    primes[13] = 47L
+    primes[14] = 53L
+    primes[15] = 59L
+    primes[16] = 61L
+    primes[17] = 67L
+    primes[18] = 71L
+    primes[19] = 73L
+    primes[20] = 79L
+    primes[21] = 83L
+    primes[22] = 89L
+    primes[23] = 97L
+    primes[24] = 101L
+    primes[25] = 103L
+    primes[26] = 107L
+    primes[27] = 109L
+    primes[28] = 113L
+    primes[29] = 127L
+
+    mersennes[0] = 521L
+    mersennes[1] = 607L
+    mersennes[2] = 1279L
+    mersennes[3] = 2203L
+    mersennes[4] = 2281L
+    mersennes[5] = 3217L
+    mersennes[6] = 4253L
+    mersennes[7] = 4423L
+    mersennes[8] = 9689L
+    mersennes[9] = 9941
+    mersennes[10] = 11213L
+    mersennes[11] = 19937L
+    mersennes[12] = 21701L
+    mersennes[13] = 23209L
+    mersennes[14] = 44497L
+    mersennes[15] = 86243L
+    mersennes[16] = 110503L
+    mersennes[17] = 132049L
+    mersennes[18] = 216091L
+    mersennes[19] = 756839
+    mersennes[20] = 859433L
+    mersennes[21] = 1257787L
+    mersennes[22] = 1398269L
+    mersennes[23] = 2976221L
+    mersennes[24] = 3021377L
+    mersennes[25] = 6972593L
+    mersennes[26] = 13466917L
+    mersennes[27] = 20996011
+    mersennes[28] = 24036583L
+}
+
+
 func main() {
+	initial()
 	llTest(primes)
 	str.print()
 	llTest(mersennes)

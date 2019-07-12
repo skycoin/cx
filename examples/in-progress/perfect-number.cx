@@ -1,0 +1,50 @@
+package main
+
+func computePerfect(n i64) (result bool) {
+    var sum i64
+	var m i64
+    for i := 1L; i < n; i++ {
+		m = i64.mod(n, i)
+		if i64.eq(m, 0L) {
+            sum += i
+        }
+    }
+	
+    return i64.eq(sum, n)
+	result = true
+}
+
+
+func isPerfect(n i64) (result bool) {
+	if i64.eq(n, 6L) || i64.eq(n, 28L) || i64.eq(n, 496L) || i64.eq(n, 8128L) || i64.eq(n, 33550336L) || i64.eq(n, 8589869056L) || i64.eq(n, 137438691328L) || i64.eq(n, 2305843008139952128L) {
+		result = true
+		return
+	}
+
+	result = false
+}
+
+
+func main() {
+	var n i64 = 1L
+	var m i64
+	var perfect bool
+	var compute bool
+	
+	for true {
+		perfect = isPerfect(n)
+		compute = computePerfect(n)
+        if perfect != compute {
+            str.print("Bug")
+        }
+
+		m = i64.mod(n, 1000L)
+		
+        if i64.eq(m, 0L) {
+            //str.print(str.concat("tested", i64.str(n)))
+			i64.print(n)
+        }
+
+		n += 1L
+    }
+}
