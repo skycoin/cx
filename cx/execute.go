@@ -216,8 +216,17 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 					if osGbl, err := osPkg.GetGlobal(OS_ARGS); err == nil {
 						for _, arg := range args {
 							argBytes := encoder.Serialize(arg)
-							argOffset := AllocateSeq(len(argBytes))
-							WriteMemory(argOffset, argBytes)
+							argOffset := AllocateSeq(len(argBytes) + OBJECT_HEADER_SIZE)
+							size := encoder.SerializeAtomic(encoder.Size(arg) + OBJECT_HEADER_SIZE)
+
+							var header = make([]byte, OBJECT_HEADER_SIZE)
+							for c := 5; c < OBJECT_HEADER_SIZE; c++ {
+								header[c] = size[c-5]
+							}
+
+							obj := append(header, argBytes...)
+
+							WriteMemory(argOffset, obj)
 							argOffsetBytes := encoder.SerializeAtomic(int32(argOffset))
 							argsOffset = WriteToSlice(argsOffset, argOffsetBytes)
 						}

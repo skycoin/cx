@@ -440,13 +440,21 @@ func main() {
 	}
 	if options.maxHeap != "" {
 		MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+		if MAX_HEAP_SIZE < INIT_HEAP_SIZE {
+			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
+			INIT_HEAP_SIZE = MAX_HEAP_SIZE
+		}
 	}
 	if options.stackSize != "" {
 		STACK_SIZE = parseMemoryString(options.stackSize)
-		DataOffset = STACK_SIZE + TYPE_POINTER_SIZE
+		DataOffset = STACK_SIZE
 	}
-
-	MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
+	if options.minHeapFreeRatio != float64(0) {
+		MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+	}
+	if options.maxHeapFreeRatio != float64(0) {
+		MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+	}
 
 	// options, file pointers, filenames
 	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
@@ -1049,13 +1057,14 @@ func parseMemoryString (s string) int {
 			// malformed size
 			return -1
 		}
-		
+
+		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
 		switch suffix {
-		case 'G':
+		case 'G', 'g':
 			return int(num * 1073741824)
-		case 'M':
+		case 'M', 'm':
 			return int(num * 1048576)
-		case 'K':
+		case 'K', 'k':
 			return int(num * 1024)
 		default:
 			return -1
