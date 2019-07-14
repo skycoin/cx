@@ -124,10 +124,40 @@ func (cxt *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	return nil
 }
 
+// minHeapSize determines what's the minimum heap size that a CX program
+// needs to have based on INIT_HEAP_SIZE, MAX_HEAP_SIZE and NULL_HEAP_ADDRESS_OFFSET.
+func minHeapSize() int {
+	minHeapSize := INIT_HEAP_SIZE
+	if MAX_HEAP_SIZE < INIT_HEAP_SIZE {
+		// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
+		minHeapSize = MAX_HEAP_SIZE
+	}
+	if minHeapSize < NULL_HEAP_ADDRESS_OFFSET {
+		// Then the user is trying to allocate too little heap memory.
+		// We need at least NULL_HEAP_ADDRESS_OFFSET bytes for `nil`.
+		minHeapSize = NULL_HEAP_ADDRESS_OFFSET
+	}
+
+	return minHeapSize
+}
+
+// EnsureHeap ensures that `cxt` has `minHeapSize()`
+// bytes allocated after the data segment.
+func (cxt *CXProgram) EnsureHeap() {
+	currHeapSize := len(cxt.Memory) - cxt.HeapStartsAt
+	minHeapSize := minHeapSize()
+	if currHeapSize < minHeapSize {
+		cxt.Memory = append(cxt.Memory, make([]byte, minHeapSize-currHeapSize)...)
+	}
+}
+
 // RunCompiled ...
 func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
-	PROGRAM = cxt
-	// prgrm.PrintProgram()
+	_, err := cxt.SelectProgram()
+	if err != nil {
+		panic(err)
+	}
+	cxt.EnsureHeap()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var untilEnd bool
