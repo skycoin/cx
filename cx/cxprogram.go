@@ -56,14 +56,15 @@ type CXCall struct {
 
 // MakeProgram ...
 func MakeProgram() *CXProgram {
+	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
 		ElementID:   MakeElementID(),
 		Packages:    make([]*CXPackage, 0),
 		CallStack:   make([]CXCall, CALLSTACK_SIZE),
-		Memory:      make([]byte, STACK_SIZE+TYPE_POINTER_SIZE+INIT_HEAP_SIZE),
+		Memory:      make([]byte, STACK_SIZE+minHeapSize),
 		StackSize:   STACK_SIZE,
-		HeapSize:    INIT_HEAP_SIZE,
-		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes
+		HeapSize:    minHeapSize,
+		HeapPointer: NULL_HEAP_ADDRESS_OFFSET, // We can start adding objects to the heap after the NULL (nil) bytes.
 	}
 
 	return newPrgrm

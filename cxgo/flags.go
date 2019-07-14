@@ -37,6 +37,8 @@ type cxCmdFlags struct {
 	pubKey              string
 	genesisAddress      string
 	genesisSignature    string
+	minHeapFreeRatio    float64
+	maxHeapFreeRatio    float64
 
 	// Debug flags for the CX developers
 	debugLexer          bool
@@ -94,14 +96,14 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
 	flag.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
-	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine")
+	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	flag.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
-	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine")
+	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed. Note that this parameter overrides --heap-initial if --heap-max is equal to a lesser value than --heap-max's.")
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
-	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
+	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
-
-	
+	flag.Float64Var(&options.minHeapFreeRatio, "--min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
+	flag.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 
 	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
 	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
