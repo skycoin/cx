@@ -296,6 +296,17 @@
   revision = "b86a26479c3e25ac0f13e195bd2c0554bcf2f837"
 
 [[projects]]
+  branch = "master"
+  digest = "1:1bd295f44eb9a9679ce8f45f4411db238cf8d5eb98c1b663fa2050ab4073ef56"
+  name = "github.com/sn-srdjan/cx-tracker-cli"
+  packages = [
+    "src/api",
+    "src/cli/provider",
+  ]
+  pruneopts = "UT"
+  revision = "db30af762006418f196940d50c11043be6895d33"
+
+[[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
   name = "github.com/spf13/afero"
   packages = [
@@ -449,6 +460,7 @@
     "github.com/amherag/skycoin/src/wallet",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
+    "github.com/sn-srdjan/cx-tracker-cli/src/cli/provider",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
   ]

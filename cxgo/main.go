@@ -44,14 +44,19 @@ import (
 	"github.com/amherag/skycoin/src/cli"
 	"github.com/amherag/skycoin/src/wallet"
 
+	"github.com/sn-srdjan/cx-tracker-cli/src/cli/provider"
+
 	"errors"
 )
 
 const VERSION = "0.7.0"
 
+const configPath = "./cx-config.json"
+
 var (
 	log             = logging.MustGetLogger("newcoin")
 	apiClient       = &http.Client{Timeout: 10 * time.Second}
+	cxTracker       = provider.TrackerProvider{}
 	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
 )
 
@@ -353,6 +358,9 @@ func main() {
 			}
 		}()
 
+		//TODO use startup flag instead of file existence here
+		if _, err := os.Stat(configPath); err == nil {
+			log.Info("Initiating up CX Tracker ping")
 		pingTracker() // TODO should we ping on startup or after first period of 5 min is over and we're sure instance is running correctly?
 		trackerTicker := time.NewTicker(5 * time.Minute)
 		go func() {
@@ -364,8 +372,8 @@ func main() {
 					pingTracker()
 	}
 			}
-
 		}()
+	}
 	}
 
 	// Generate a CX chain address.
@@ -1389,9 +1397,7 @@ func isJSON(str string) bool {
 }
 
 func pingTracker() {
-	// runError, cmdError, stdOut := os.Run("cx-tracker persist config.json", 2048, 100, "./")
-	cmd := exec.Command("cx-tracker", "persist", "cx-config.json")
-	if err := cmd.Run(); err != nil {
+	if err := cxTracker.SaveToTrackerService(configPath); err != nil {
 		log.Error("Unable to ping CX Tracker due to error", err)
 	}
 }
