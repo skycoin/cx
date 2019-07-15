@@ -66,7 +66,14 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	// FIXME: Shouldn't it be a compilation error if we define a new field
 	// 	  with the same name as another field?
 	if !found {
+		numFlds := len(strct.Fields)
 		strct.Fields = append(strct.Fields, fld)
+		if numFlds != 0 {
+			// Pre-compiling the offset of the field.
+			// TODO: I think this would cause conflicts with affordances. For instance, affordances could remove a field and we'd need to re-calculate the offsets. We need to check this.
+			lastFld := strct.Fields[numFlds-1]
+			fld.Offset = lastFld.Offset + lastFld.TotalSize
+		}
 		strct.Size += fld.TotalSize
 	}
 	return strct
