@@ -168,34 +168,34 @@ func ReadMemory(offset int, arg *CXArgument) []byte {
 }
 
 // Mark marks the object located at `heapOffset` as alive and sets the object's referencing address to `heapOffset`.
-func Mark(heapOffset int32) {
+func Mark(prgrm *CXProgram, heapOffset int32) {
 	// Marking as alive.
-	PROGRAM.Memory[heapOffset] = 1
+	prgrm.Memory[heapOffset] = 1
 
 	for i, byt := range encoder.SerializeAtomic(heapOffset) {
 		// Setting forwarding address. This address is used to know where the object used to live on the heap. With it we can know what symbols were pointing to that dead object and then update their address.
-		PROGRAM.Memory[int(heapOffset)+MARK_SIZE+i] = byt
+		prgrm.Memory[int(heapOffset)+MARK_SIZE+i] = byt
 	}
 }
 
 // MarkObjectsTree traverses and marks a possible tree of heap objects (slices of slices, slices of pointers, etc.).
-func MarkObjectsTree(offset int, baseType int, declSpecs []int) {
+func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int) {
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
 	var heapOffset int32
-	_, err := encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+	_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
 	if err != nil {
 		panic(err)
 	}
 
 	// Then it's a pointer to an object in the stack and it should not be marked.
-	if heapOffset <= int32(PROGRAM.HeapStartsAt) {
+	if heapOffset <= int32(prgrm.HeapStartsAt) {
 		return
 	}
 
 	// marking the root object
-	Mark(heapOffset)
+	Mark(prgrm, heapOffset)
 
 	if numDeclSpecs == 0 {
 		return
@@ -218,49 +218,49 @@ func MarkObjectsTree(offset int, baseType int, declSpecs []int) {
 			for c := int32(0); c < sliceLen; c++ {
 				offsetToElements := OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
 				var cHeapOffset int32
-				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
 				if err != nil {
 					panic(err)
 				}
 
-				if cHeapOffset <= int32(PROGRAM.HeapStartsAt) {
+				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
 					// Then it's pointing to null or data segment
 					continue
 				}
 
-				MarkObjectsTree(int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE), baseType, declSpecs[1:])
+				MarkObjectsTree(prgrm, int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE), baseType, declSpecs[1:])
 			}
 		}
 	}
 }
 
 // updatePointer changes the address of the pointer located at `atOffset` to `newAddress`.
-func updatePointer(atOffset int, toAddress int32) {
+func updatePointer(prgrm *CXProgram, atOffset int, toAddress int32) {
 	addrB := encoder.SerializeAtomic(toAddress)
 	for i := 0; i < TYPE_POINTER_SIZE; i++ {
-		PROGRAM.Memory[atOffset+i] = addrB[i]
+		prgrm.Memory[atOffset+i] = addrB[i]
 	}
 }
 
 // updatePointerTree changes the address of the pointer located at `atOffset` to `newAddress` and checks if it is the
 // root of a tree of objects, such as a slice or the instance of a struct where some of its fields are pointers.
-func updatePointerTree(atOffset int, oldAddr, newAddr int32, baseType int, declSpecs []int) {
+func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, baseType int, declSpecs []int) {
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
 	var heapOffset int32
-	_, err := encoder.DeserializeAtomic(PROGRAM.Memory[atOffset:atOffset+TYPE_POINTER_SIZE], &heapOffset)
+	_, err := encoder.DeserializeAtomic(prgrm.Memory[atOffset:atOffset+TYPE_POINTER_SIZE], &heapOffset)
 	if err != nil {
 		panic(err)
 	}
 
 	if heapOffset == oldAddr {
 		// Updating the root pointer.
-		updatePointer(atOffset, newAddr)
+		updatePointer(prgrm, atOffset, newAddr)
 	}
 
 	// It can't be a tree of objects.
-	if numDeclSpecs == 0 || int(heapOffset) <= PROGRAM.HeapStartsAt {
+	if numDeclSpecs == 0 || int(heapOffset) <= prgrm.HeapStartsAt {
 		return
 	}
 
@@ -283,7 +283,7 @@ func updatePointerTree(atOffset int, oldAddr, newAddr int32, baseType int, declS
 
 			for c := int32(0); c < sliceLen; c++ {
 				var cHeapOffset int32
-				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
 				if err != nil {
 					panic(err)
 				}
@@ -291,7 +291,7 @@ func updatePointerTree(atOffset int, oldAddr, newAddr int32, baseType int, declS
 				// Then it's not pointing to the object moved by the GC or it's pointing to
 				// an object in the stack segment or nil.
 				if cHeapOffset == oldAddr {
-					updatePointerTree(int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE), oldAddr, newAddr, baseType, declSpecs[1:])
+					updatePointerTree(prgrm, int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE), oldAddr, newAddr, baseType, declSpecs[1:])
 				}
 			}
 		}
@@ -302,20 +302,20 @@ func updatePointerTree(atOffset int, oldAddr, newAddr int32, baseType int, declS
 // For example, if `foo` was pointing to an object located at address 5151 and after calling the garbage collector it was
 // moved to address 4141, every symbol in a `CXProgram`'s `CallStack` and in its global variables need to be updated to point now to
 // 4141 instead of 5151.
-func updatePointers(oldAddr, newAddr int32) {
+func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 	// TODO: `oldAddr` could be received as a slice of bytes that represent the old address of the object,
 	// as it needs to be converted to bytes later on anyways. However, I'm sticking to an int32
 	// for a bit more of clarity.
-	for _, pkg := range PROGRAM.Packages {
+	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				updatePointerTree(glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
+				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
 					if fld.IsPointer || fld.IsSlice {
-						updatePointerTree(glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+						updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -324,8 +324,8 @@ func updatePointers(oldAddr, newAddr int32) {
 
 	var fp int
 
-	for c := 0; c <= PROGRAM.CallCounter; c++ {
-		op := PROGRAM.CallStack[c].Operator
+	for c := 0; c <= prgrm.CallCounter; c++ {
+		op := prgrm.CallStack[c].Operator
 
 		// TODO: Some standard library functions "manually" add a function
 		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
@@ -346,9 +346,9 @@ func updatePointers(oldAddr, newAddr int32) {
 			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
 			if len(ptr.Fields) > 0 {
 				fld := ptr.Fields[len(ptr.Fields)-1]
-				updatePointerTree(offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+				updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 			} else {
-				updatePointerTree(offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+				updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
 			}
 
 		}
@@ -358,21 +358,21 @@ func updatePointers(oldAddr, newAddr int32) {
 }
 
 // MarkAndCompact ...
-func MarkAndCompact() {
+func MarkAndCompact(prgrm *CXProgram) {
 	var fp int
 	var faddr = int32(NULL_HEAP_ADDRESS_OFFSET)
 
 	// marking, setting forward addresses and updating references
 	// global variables
-	for _, pkg := range PROGRAM.Packages {
+	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				MarkObjectsTree(glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
 					if fld.IsPointer || fld.IsSlice {
-						MarkObjectsTree(glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+						MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -381,8 +381,8 @@ func MarkAndCompact() {
 
 	// marking, setting forward addresses and updating references
 	// local variables
-	for c := 0; c <= PROGRAM.CallCounter; c++ {
-		op := PROGRAM.CallStack[c].Operator
+	for c := 0; c <= prgrm.CallCounter; c++ {
+		op := prgrm.CallStack[c].Operator
 
 		// TODO: Some standard library functions "manually" add a function
 		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
@@ -403,9 +403,9 @@ func MarkAndCompact() {
 			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
 			if len(ptr.Fields) > 0 {
 				fld := ptr.Fields[len(ptr.Fields)-1]
-				MarkObjectsTree(offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			} else {
-				MarkObjectsTree(offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
 			}
 		}
 
@@ -413,28 +413,28 @@ func MarkAndCompact() {
 	}
 
 	// relocation of live objects
-	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
+	for c := prgrm.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
 		var objSize int32
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
+		_, err := encoder.DeserializeAtomic(prgrm.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
 		if err != nil {
 			panic(err)
 		}
 
-		if PROGRAM.Memory[c] == 1 {
+		if prgrm.Memory[c] == 1 {
 			var forwardingAddress int32
-			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
+			_, err := encoder.DeserializeAtomic(prgrm.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], &forwardingAddress)
 			if err != nil {
 				panic(err)
 			}
 
 			// We update the pointers that are pointing to the just moved object.
-			updatePointers(forwardingAddress, int32(PROGRAM.HeapStartsAt)+faddr)
+			updatePointers(prgrm, forwardingAddress, int32(prgrm.HeapStartsAt)+faddr)
 
 			// setting the mark back to 0
-			PROGRAM.Memory[c] = 0
+			prgrm.Memory[c] = 0
 			// then it's alive and we'll relocate the object
 			for i := int32(0); i < objSize; i++ {
-				PROGRAM.Memory[faddr+int32(PROGRAM.HeapStartsAt)+i] = PROGRAM.Memory[int32(c)+i]
+				prgrm.Memory[faddr+int32(prgrm.HeapStartsAt)+i] = prgrm.Memory[int32(c)+i]
 			}
 
 			faddr += objSize
@@ -443,17 +443,17 @@ func MarkAndCompact() {
 		c += int(objSize)
 	}
 
-	PROGRAM.HeapPointer = int(faddr)
+	prgrm.HeapPointer = int(faddr)
 }
 
 // ResizeMemory ...
-func ResizeMemory(newMemSize int, isExpand bool) {
+func ResizeMemory(prgrm *CXProgram, newMemSize int, isExpand bool) {
 	// We can't expand memory to a value greater than `memLimit`.
 	if newMemSize > MAX_HEAP_SIZE {
 		newMemSize = MAX_HEAP_SIZE
 	}
 
-	if newMemSize == PROGRAM.HeapSize {
+	if newMemSize == prgrm.HeapSize {
 		// Then we're at the limit; we can't expand anymore.
 		// We can only hope that the free memory is enough for the CX program to continue running.
 		return
@@ -461,12 +461,12 @@ func ResizeMemory(newMemSize int, isExpand bool) {
 
 	if isExpand {
 		// Adding bytes to reach a heap equal to `newMemSize`.
-		PROGRAM.Memory = append(PROGRAM.Memory, make([]byte, newMemSize-PROGRAM.HeapSize)...)
-		PROGRAM.HeapSize = newMemSize
+		prgrm.Memory = append(prgrm.Memory, make([]byte, newMemSize-prgrm.HeapSize)...)
+		prgrm.HeapSize = newMemSize
 	} else {
 		// Removing bytes to reach a heap equal to `newMemSize`.
-		PROGRAM.Memory = append([]byte(nil), PROGRAM.Memory[:PROGRAM.HeapStartsAt+newMemSize]...)
-		PROGRAM.HeapSize = newMemSize
+		prgrm.Memory = append([]byte(nil), prgrm.Memory[:prgrm.HeapStartsAt+newMemSize]...)
+		prgrm.HeapSize = newMemSize
 	}
 }
 
@@ -480,7 +480,7 @@ func AllocateSeq(size int) (offset int) {
 	// Checking if we can allocate the entirety of the object in the current heap.
 	if newFree > PROGRAM.HeapSize {
 		// It does not fit, so calling garbage collector.
-		MarkAndCompact()
+		MarkAndCompact(PROGRAM)
 		// Heap pointer got moved by GC and recalculate these variables based on the new pointer.
 		addr = PROGRAM.HeapPointer
 		newFree = addr + size
@@ -504,7 +504,7 @@ func AllocateSeq(size int) (offset int) {
 		if freeMemPerc < MIN_HEAP_FREE_RATIO {
 			// Calculating new heap size in order to reach MIN_HEAP_FREE_RATIO.
 			newMemSize := int(float32(newFree) / (1.0 - MIN_HEAP_FREE_RATIO))
-			ResizeMemory(newMemSize, true)
+			ResizeMemory(PROGRAM, newMemSize, true)
 		}
 
 		// Then we have more than MAX_HEAP_FREE_RATIO memory left. Shrink!
@@ -515,7 +515,7 @@ func AllocateSeq(size int) (offset int) {
 			// This check guarantees that the CX program has always at least INIT_HEAP_SIZE bytes to work with.
 			// A flag could be added later to remove this, as in some cases this mechanism could not be desired.
 			if newMemSize > INIT_HEAP_SIZE {
-				ResizeMemory(newMemSize, false)
+				ResizeMemory(PROGRAM, newMemSize, false)
 			}
 		}
 	}
