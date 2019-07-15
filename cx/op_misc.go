@@ -12,7 +12,7 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
-	size := encoder.SerializeAtomic(int32(len(byts)))
+	size := encoder.SerializeAtomic(int32(len(byts)) + OBJECT_HEADER_SIZE)
 
 	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
