@@ -451,7 +451,7 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 
 	sPrgrm.MemoryOffset = int32(0)
 	// we need to call GC to compress memory usage
-	MarkAndCompact()
+	MarkAndCompact(prgrm)
 	// sPrgrm.MemorySize = int32(PROGRAM.HeapStartsAt + PROGRAM.HeapPointer)
 	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
 

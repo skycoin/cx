@@ -5,7 +5,7 @@ import (
 )
 
 var PRGRM *CXProgram
-var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil pointers
+var DataOffset int = STACK_SIZE
 
 var CurrentFile string
 var LineNo int

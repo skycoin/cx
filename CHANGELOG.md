@@ -6,6 +6,7 @@
 * Changes
   * Redesign of CX's garbage collector.
   * Changes to several functions that relied on allocating objects on the heap.
+  * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
 * Libraries
   * ...
 * Fixed issues
