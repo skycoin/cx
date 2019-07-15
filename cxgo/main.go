@@ -352,6 +352,20 @@ func main() {
 				log.Error(scanner.Text())
 			}
 		}()
+
+		pingTracker() // TODO should we ping on startup or after first period of 5 min is over and we're sure instance is running correctly?
+		trackerTicker := time.NewTicker(5 * time.Minute)
+		go func() {
+			defer trackerTicker.Stop()
+
+			for {
+				select {
+				case <-trackerTicker.C:
+					pingTracker()
+	}
+			}
+
+		}()
 	}
 
 	// Generate a CX chain address.
@@ -1372,4 +1386,12 @@ func isJSON(str string) bool {
 	var js map[string]interface{}
 	err := json.Unmarshal([]byte(str), &js)
 	return err == nil
+}
+
+func pingTracker() {
+	// runError, cmdError, stdOut := os.Run("cx-tracker persist config.json", 2048, 100, "./")
+	cmd := exec.Command("cx-tracker", "persist", "cx-config.json")
+	if err := cmd.Run(); err != nil {
+		log.Error("Unable to ping CX Tracker due to error", err)
+	}
 }
