@@ -1,0 +1,67 @@
+package main
+
+var a [8]i32
+
+func cocktailSort() {
+	var swapVal i32
+	var swapped bool
+	var last i32
+    last = i32.sub(len(a), 1)
+
+	for true {
+        swapped = false
+		
+        for i := 0; i < last; i++ {
+            if i32.gt(a[i], a[i+1]) {
+				swapVal = a[i]
+                a[i] = a[i+1]
+				a[i+1] = swapVal
+				
+                swapped = true
+            }
+        }
+        if swapped == false {
+            return
+        }
+		
+        swapped = false
+        for i := last - 1; i >= 0; i-- {
+            if i32.gt(a[i], a[i+1]) {
+                swapVal = a[i]
+				a[i] = a[i+1]
+				a[i+1] = swapVal
+				
+                swapped = true
+            }
+        }
+        if swapped == false {
+            return
+        }
+    }
+}
+
+func printA() {
+	var display str
+	for i := 0; i < len(a); i++ {
+		display = str.concat(display, i32.str(a[i]))
+		display = str.concat(display, "  ")
+	}
+
+	str.print(display)
+}
+
+func main() {
+    // initial array
+	a[0] = 170
+	a[1] = 45
+	a[2] = 75
+	a[3] = -90
+	a[4] = -802
+	a[5] = 24
+	a[6] = 2
+	a[7] = 66
+
+	printA() // before
+    cocktailSort()
+	printA() // after
+}

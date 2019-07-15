@@ -1,0 +1,44 @@
+package main
+
+var a [10]i32
+
+func insertionSort() {
+	for i := 1; i < len(a); i++ {
+        value := a[i]
+        j := i - 1
+		
+        for ; j >= 0 && a[j] > value; {
+            a[j+1] = a[j]
+            j = j - 1
+        }
+        a[j+1] = value
+    }
+}
+
+func printA() {
+	var display str
+	for i := 0; i < len(a); i++ {
+		display = str.concat(display, i32.str(a[i]))
+		display = str.concat(display, "  ")
+	}
+
+	str.print(display)
+}
+
+func main() {
+    // initial array
+	a[0] = 31
+	a[1] = 41
+	a[2] = 59
+	a[3] = 26
+	a[4] = 53
+	a[5] = 58
+	a[6] = 97
+	a[7] = 93
+	a[8] = 23
+	a[9] = 84
+
+    printA() // before
+    insertionSort()
+    printA() // after
+}

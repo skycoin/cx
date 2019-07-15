@@ -1,0 +1,84 @@
+package main
+
+func chowla(n i32) (out i32) {
+    if n < 1 {
+        out = -1
+		return
+    }
+	
+    var sum i32 = 0
+	var c i32
+	var i i32
+	var j i32
+    for i = 2; i*i <= n; i++ {
+		c = i32.mod(n, i)
+        if i32.eq(c, 0) {
+            j = i32.div(n, i)
+			
+            if i32.eq(i, j){
+                sum += i
+            } else {
+                sum += i + j
+            }
+        }
+    }
+	out = sum
+}
+
+ 
+func sieve(limit i32) (out []bool) {
+    // True denotes composite, false denotes prime.
+    // Only interested in odd numbers >= 3
+    var c [limit]bool
+	var i i32
+	var j i32
+	var ch i32
+    for i = 3; i*3 < limit; i += 2 {
+		ch = chowla(i)
+        if c[i] == false && i32.eq(ch, 0) {
+            for j = 3 * i; j < limit; j += 2 * i {
+                c[j] = true
+            }
+        }
+    }
+	out = c
+}
+
+ 
+func commatize(n i32) (out str) {
+    var s str = i32.str(n)
+    var le i32 = len(s)
+	var i i32
+    for i = le - 3; i >= 1; i -= 3 {
+        //s = s[0:i] + "," + s[i:]
+    }
+
+	out = s
+}
+
+
+func main() {
+	var i i32
+	var ch i32
+	for i = 1; i <= 37; i++ {
+		ch = chowla(i)
+		s := str.concat("chowla(", i32.str(i))
+		str.print(str.concat(s, str.concat(") = ", i32.str(ch))))
+    }
+ 
+    count := 1
+	limit := 10000
+    c := sieve(limit)
+    power := 100
+	
+    for i = 3; i < limit; i += 2 {
+        if c[i] == false {
+            count++
+        }
+		
+        if i32.eq(i, power-1) {
+            str.print("Count of primes up to "+ commatize(power) + "10s = " + commatize(count))
+            power *= 10
+        }
+    }
+}

@@ -1,0 +1,44 @@
+package main
+
+func ord(n i32) (out str) {
+	var c i32
+	var s str
+	
+	s = "th"
+
+	c = i32.mod(n, 10)
+
+	if i32.eq(c, 1) || i32.eq(c, 2) || i32.eq(c, 3) {
+		var m i32
+		m = i32.mod(n, 100)
+
+		if i32.eq(m, 1) {
+			return
+		}
+
+		if i32.eq(c, 1) {
+			s = "st"
+		} else if i32.eq(c, 2) {
+			s = "nd"
+		} else if i32.eq(c, 3) {
+			s = "rd"
+		}
+	}
+
+	out = str.concat(i32.str(n), s)
+}
+
+
+func main() {
+	for n := 0; n <= 25; n++ {
+        str.print(ord(n))
+    }
+
+	for n := 250; n <= 265; n++ {
+        str.print(ord(n))
+    }
+
+    for n := 1000; n <= 1025; n++ {
+        str.print(ord(n))
+    }
+}
