@@ -2171,6 +2171,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT -heap-initial 0 test-gc.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Stress-testing the garbage collector
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx
