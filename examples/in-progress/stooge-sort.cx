@@ -1,0 +1,46 @@
+package main
+
+var a [8]i32
+
+func stoogeSort() {
+	var swap i32
+	last := i32.sub(len(a), 1)
+	
+    if a[last] < a[0] {
+		swap = a[0]
+        a[0] = a[last]
+		a[last] = swap
+    }
+    if last > 1 {
+        t := i32.div(len(a), 3)
+        //stoogesort(a[:len(a)-t])
+        //stoogesort(a[t:])
+        //stoogesort(a[:len(a)-t])
+    }
+}
+
+func printA() {
+	var display str
+	for i := 0; i < len(a); i++ {
+		display = str.concat(display, i32.str(a[i]))
+		display = str.concat(display, "  ")
+	}
+
+	str.print(display)
+}
+
+func main() {
+    // initial array
+	a[0] = 170
+	a[1] = 45
+	a[2] = 75
+	a[3] = -90
+	a[4] = -802
+	a[5] = 24
+	a[6] = 2
+	a[7] = 66
+
+	printA() // before
+    stoogeSort()
+	printA() // after
+}
