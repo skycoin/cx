@@ -62,7 +62,7 @@ git fetch && git checkout develop && git reset --hard origin/develop
 ```
 * Build the new version of CX:
 ```bash
-make build
+make build-full
 ```
 * Check that the version of the built CX binary corresponds to the one that the release is being built for:
 ```
@@ -91,7 +91,7 @@ git fetch && git checkout develop && git reset --hard origin/develop
 ```
 * Build the new version of CX:
 ```bash
-make build
+make build-full
 ```
 * Check that the version of the built CX binary corresponds to the one that the release is being built for:
 ```

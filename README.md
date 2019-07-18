@@ -26,7 +26,7 @@ Table of Contents
     + [MacOS Homebrew Install](#macos-homebrew-install)
   * [Compiling from Source](#compiling-from-source)
     + [Installing Go](#installing-go)
-    + [Compiling CX on *nix](#compiling-cx-on-nix)
+    + [Compiling CX on \*nix](#compiling-cx-on-nix)
     + [Compiling CX on Windows](#compiling-cx-on-windows)
   * [Updating CX](#updating-cx)
 - [Running CX](#running-cx)
@@ -242,7 +242,7 @@ CX supports go1.10+.
 
 [Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
 
-### Compiling CX on *nix
+### Compiling CX on \*nix
 
 Download CX's repository using Go:
 
@@ -260,6 +260,12 @@ You should test your installation by running:
 
 ```
 make test
+```
+
+If you intend to develop games with CX, then run:
+
+```
+make test-full
 ```
 
 ### Compiling CX on Windows
@@ -300,7 +306,7 @@ this in your terminal:
 CX 0.5.13
 More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
 :func main {...
-	* 
+	*
 ```
 
 This is the CX REPL
@@ -336,8 +342,8 @@ have changed indentation, and the REPL now shouldn't print `:func main
 
 ```
 :func main {...
-	* 
-* 
+	*
+*
 ```
 
 Now, let's enter a function prototype (an empty function which only
@@ -345,7 +351,7 @@ specifies the name, the inputs and the outputs):
 
 ```
 * func sum (num1 i32, num2 i32) (num3 i32) {}
-* 
+*
 ```
 
 You can check that the function was indeed added by issuing a `:dp`
@@ -355,7 +361,7 @@ command. If we want to add expressions to `sum`, we have to select it:
 * :func sum
 
 :func sum {...
-	* 
+	*
 ```
 
 Notice that there's a semicolon before `func sum`. Now we can add an expression to it:
@@ -674,7 +680,7 @@ func main () {
     var a Point
     var b [5]i32
     var c []i32
-    
+
     a = Point{x: 10, y: 20}
     b = [5]i32{1, 2, 3, 4, 5}
     c = []i32{100, 200, 300}
@@ -792,7 +798,7 @@ func main () {
 	var l Line
 	var p1 Point
 	var p2 Point
-	
+
 	p1.x = 10
 	p1.y = 20
 	p2.x = 11
@@ -927,7 +933,7 @@ package main
 func main () {
    var i i32
    i = 0
-   
+
    if i == 0 {
      str.print("i is 0")
    } else if i == 1 {
@@ -1127,10 +1133,10 @@ func prgrmPredicate (prgrm Program) () {
 func main () {
 	num1 := 5
 	num2 := 10
-	
+
 targetExpr:
 	sum := i32.add(0, 0)
-	
+
 	tgt := ->{
 		pkg(main)
 		fn(main)
@@ -1146,7 +1152,7 @@ targetExpr:
 	aff.print(fltrs)
 
 	affs := aff.query(fltrs, tgt)
-	
+
 	aff.on(affs, tgt)
 	aff.of(affs, tgt)
 
@@ -1241,7 +1247,7 @@ func main () {
 	slc1 = append(slc1, 1)
 	slc1 = append(slc1, 2)
 	slc1 = append(slc1, 3)
-	
+
 	slc2 := []i32{10, 20, 30}
 }
 ```
@@ -1512,7 +1518,7 @@ package main
 func main () {
     var arr1 [1]i32
     arr1[0] = 1 // add the first value
-    
+
     var arr2 [2]i32 // double the size
     arr2[0] = arr1[0] // copy previous array
     arr2[1] = 2 // add the second value
@@ -1520,7 +1526,7 @@ func main () {
     var arr3 [4]i32 // double the size
     arr3[0] = arr2[0] // copy previous array
     arr3[1] = arr2[1] // copy previous array
-    
+
     arr3[2] = 3 // add the third value
     arr3[3] = 4 // add the fourth value
 }
@@ -1610,7 +1616,7 @@ func main () {
 	var nums [100][100]i32
 
 	start = time.UnixMilli()
-	
+
 	for c := 0; c < 10000; c++ {
 		foo(nums)
 	}
@@ -1640,7 +1646,7 @@ func main () {
 	var nums [100][100]i32
 
 	start = time.UnixMilli()
-	
+
 	for c := 0; c < 10000; c++ {
 		foo(&nums)
 	}
@@ -1725,7 +1731,7 @@ func main () {
 	pNum = foo()
 
 	stackDestroyer()
-	
+
 	i32.print(*pNum)
 }
 ```
@@ -1930,7 +1936,7 @@ func main () {
 	player.HP = 10
 	player.Mana = 10
 	player.Lives = 3
-	
+
 	player.draw()
 
 	var monster Monster
@@ -2010,7 +2016,7 @@ func main () {
 	player.HP = 10
 	player.Mana = 10
 	player.Lives = 3
-	
+
 	var monster Monster
 	monster.Name = "Domo-kun"
 	monster.HP = 7
@@ -2182,12 +2188,12 @@ func main () {
 
 	player.draw()
 	monster.draw()
-	
+
 	for true {
 		if player.HP < 1 || monster.HP < 1 {
 			return
 		}
-		
+
 		printf("Command? (M)agic; (P)hysical; (E)xit\t")
 		var cmd str
 		cmd = read()
@@ -2224,7 +2230,7 @@ beginning:
 
 	var cmd str
 	cmd = read()
-	
+
 	if cmd == "C" || cmd == "c" {
 		goto cat
 	}
@@ -2290,7 +2296,7 @@ package main
 func main () {
 	bool.print(eq(5, 5))
 	bool.print(5 == 5) // alternative
-	
+
 	bool.print(uneq("hihi", "byebye"))
 	bool.print("hihi" != "byebye") // alternative
 }
@@ -2422,7 +2428,7 @@ func main () {
 	string = "this should print 20"
 	array = [5]i32{1, 2, 3, 4, 5}
 	slice = []i32{10, 20, 30}
-	
+
 	i32.print(len(string)) // prints 20
 	i32.print(len(array)) // prints 5
 	i32.print(len(slice)) // prints 3
