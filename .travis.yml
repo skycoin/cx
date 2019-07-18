@@ -33,7 +33,7 @@ install:
 script:
   - if [[ $TRAVIS_PULL_REQUEST != "false" ]] ; then make check-golden-files ; fi
   - make build
-  - make test
+  - make test-full
   - make lint
 
 # Notifications to Telegram channel
