@@ -249,6 +249,27 @@ func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction,
 
 }
 
+// GetCall returns the current CXCall
+func (prgrm *CXProgram) GetCall() *CXCall {
+	return &prgrm.CallStack[prgrm.CallCounter]
+}
+
+// GetExpr returns the current CXExpression
+func (prgrm *CXProgram) GetExpr() *CXExpression {
+	call := prgrm.GetCall()
+	return call.Operator.Expressions[call.Line]
+}
+
+// GetOpCode returns the current OpCode
+func (prgrm *CXProgram) GetOpCode() int {
+	return prgrm.GetExpr().Operator.OpCode
+}
+
+// GetFramePointer returns the current frame pointer
+func (prgrm *CXProgram) GetFramePointer() int {
+	return prgrm.GetCall().FramePointer
+}
+
 // ----------------------------------------------------------------
 //                         Package handling
 

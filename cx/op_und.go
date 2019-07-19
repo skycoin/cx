@@ -10,7 +10,10 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
-func opLt(expr *CXExpression, fp int) {
+func opLt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -31,7 +34,10 @@ func opLt(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opGt(expr *CXExpression, fp int) {
+func opGt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -51,7 +57,10 @@ func opGt(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opLteq(expr *CXExpression, fp int) {
+func opLteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -72,7 +81,10 @@ func opLteq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opGteq(expr *CXExpression, fp int) {
+func opGteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -93,7 +105,10 @@ func opGteq(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opEqual(expr *CXExpression, fp int) {
+func opEqual(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -116,7 +131,10 @@ func opEqual(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opUnequal(expr *CXExpression, fp int) {
+func opUnequal(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -139,7 +157,10 @@ func opUnequal(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitand(expr *CXExpression, fp int) {
+func opBitand(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -152,7 +173,10 @@ func opBitand(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitor(expr *CXExpression, fp int) {
+func opBitor(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -165,7 +189,10 @@ func opBitor(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitxor(expr *CXExpression, fp int) {
+func opBitxor(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -178,7 +205,10 @@ func opBitxor(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opMul(expr *CXExpression, fp int) {
+func opMul(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -197,7 +227,10 @@ func opMul(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opDiv(expr *CXExpression, fp int) {
+func opDiv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -216,7 +249,10 @@ func opDiv(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opMod(expr *CXExpression, fp int) {
+func opMod(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -231,7 +267,10 @@ func opMod(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opAdd(expr *CXExpression, fp int) {
+func opAdd(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -250,7 +289,10 @@ func opAdd(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opSub(expr *CXExpression, fp int) {
+func opSub(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var outB1 []byte
 	if len(expr.Inputs) == 2 {
@@ -284,7 +326,10 @@ func opSub(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitshl(expr *CXExpression, fp int) {
+func opBitshl(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -297,7 +342,10 @@ func opBitshl(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitshr(expr *CXExpression, fp int) {
+func opBitshr(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -310,7 +358,10 @@ func opBitshr(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitclear(expr *CXExpression, fp int) {
+func opBitclear(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	var outB1 []byte
 	switch inp1.Type {
@@ -323,7 +374,10 @@ func opBitclear(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opLen(expr *CXExpression, fp int) {
+func opLen(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -356,7 +410,10 @@ func opLen(expr *CXExpression, fp int) {
 	}
 }
 
-func opAppend(expr *CXExpression, fp int) {
+func opAppend(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	eltInp1 := GetAssignmentElement(inp1)
@@ -395,7 +452,10 @@ func opAppend(expr *CXExpression, fp int) {
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opResize(expr *CXExpression, fp int) {
+func opResize(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -409,7 +469,10 @@ func opResize(expr *CXExpression, fp int) {
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opInsert(expr *CXExpression, fp int) {
+func opInsert(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -430,7 +493,10 @@ func opInsert(expr *CXExpression, fp int) {
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opRemove(expr *CXExpression, fp int) {
+func opRemove(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -444,7 +510,10 @@ func opRemove(expr *CXExpression, fp int) {
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opCopy(expr *CXExpression, fp int) {
+func opCopy(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -567,7 +636,10 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(expr *CXExpression, fp int) {
+func opSprintf(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -575,11 +647,17 @@ func opSprintf(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func opPrintf(expr *CXExpression, fp int) {
+func opPrintf(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(expr *CXExpression, fp int) {
+func opRead(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
