@@ -65,9 +65,6 @@ func op_glfw_Fullscreen(prgrm *CXProgram) {
 }
 
 func op_glfw_Init(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
 	glfw.Init()
 }
 

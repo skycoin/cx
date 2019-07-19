@@ -266,10 +266,7 @@ func op_gl_Vertex3f(prgrm *CXProgram) {
 	gl.Vertex3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func op_gl_Lightfv(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func op_gl_Lightfv(_ *CXProgram) {
 	// pointers
 	panic("gl.Lightfv")
 }
@@ -716,10 +713,7 @@ func op_gl_GetAttribLocation(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func op_gl_GetShaderiv(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func op_gl_GetShaderiv(_ *CXProgram) {
 	// pointers
 	panic("gl.GetShaderiv")
 }
