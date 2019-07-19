@@ -183,10 +183,7 @@ func op_glfw_SwapInterval(prgrm *CXProgram) {
 	glfw.SwapInterval(int(ReadI32(fp, inp1)))
 }
 
-func op_glfw_PollEvents() {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func op_glfw_PollEvents(_ *CXProgram) {
 	glfw.PollEvents()
 }
 
