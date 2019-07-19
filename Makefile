@@ -46,11 +46,11 @@ build-parser: configure install-deps ## Generate lexer and parser for CX grammar
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
+	go build -tags base -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
-build-full: configure build-parser ## Build CX from sources with the "full" build tag
-	go build -tags full -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
+build-full: configure build-parser ## Build CX from sources with all build tags
+	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
 install-gfx-deps-Linux:
@@ -93,11 +93,11 @@ lint: ## Run linters. Use make install-linters first.
 	golangci-lint run -c .golangci.yml ./cx
 
 test: build ## Run CX test suite.
-	go test -race github.com/skycoin/cx/cxgo/
+	go test -race -tags base github.com/skycoin/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
-test-full: build ## Run CX test suite with "full" build tag
-	go test -race -tags full github.com/skycoin/cx/cxgo/
+test-full: build ## Run CX test suite with all build tags
+	go test -race -tags="base opengl" github.com/skycoin/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite

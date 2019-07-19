@@ -3,7 +3,7 @@
 
 
 
-rem start banner 
+rem start banner
 call :setColorVarsIfOnWin10OrLater
 rem either insert vars like %COLOR_RED% into normal echo commands or do like:
 rem '
@@ -23,7 +23,7 @@ echo %COLOR_YELLOW%
 echo Checking your environment variables
 
 
-rem set GI_PATH [go installation path] 
+rem set GI_PATH [go installation path]
 if defined GOPATH (
     set GI_PATH=%GOPATH%
     call :echoWithColor green "OK:     GOPATH:"
@@ -31,11 +31,11 @@ if defined GOPATH (
 ) else (
     set GI_PATH=%USERPROFILE%\go
     call :echoWithColor red "ERROR:  GOPATH not set^^^!  FIX IT^^^!"
-    rem GI_PATH doesn't seem to ACTUALLY be set, until we exit this code block 
+    rem GI_PATH doesn't seem to ACTUALLY be set, until we exit this code block
     call :echoWithColor red "     ....so we'll use %USERPROFILE%\go for Go's install path"
 )
 
-rem set CI_PATH [CX installation path] 
+rem set CI_PATH [CX installation path]
 if defined CXPATH (
     set CI_PATH=%CXPATH%
     call :echoWithColor green "OK:     CXPATH, CX's workspace:"
@@ -53,7 +53,7 @@ set SKYCOIN_PATH=%GH_PATH%\skycoin
 set CXGO_PATH=%SKYCOIN_PATH%\cx\cxgo
 rem attempt to replace %BIN_PATH% text with nothing...
 call set COMPARISON_PATH=%%PATH:%BIN_PATH%=%%
-rem ...if found/replaced %BIN_PATH%, below vars aren't equal 
+rem ...if found/replaced %BIN_PATH%, below vars aren't equal
 
 if "%PATH%"=="%COMPARISON_PATH%" (
    call :echoWithColor red "ERROR:  Your PATH var needs %BIN_PATH%"
@@ -70,15 +70,15 @@ call :checkVersions
 call :echoWithColor yellow "Checking your hard disk"
 
 
-rem ensure CX workspace exists 
+rem ensure CX workspace exists
 call :echoWithColor yellow "     Ensuring that we have CX workspace folders....."
 call :setupCXWorkspaceDir %CI_PATH%
 call :setupCXWorkspaceDir %CI_PATH%\src
 call :setupCXWorkspaceDir %CI_PATH%\bin
 call :setupCXWorkspaceDir %CI_PATH%\pkg
 
-rem get repositories that don't change often. 
-rem user will need to manually rebuild these when they DO change 
+rem get repositories that don't change often.
+rem user will need to manually rebuild these when they DO change
 call :echoWithColor yellow "     Ensuring that we have local repositories....."
 call :getRepo go-gl\gl\v2.1\gl
 call :getRepo go-gl\glfw\v3.2\glfw
@@ -96,10 +96,10 @@ rem always build latest cx.exe
 call :cloneOrPullLatest skycoin CX
 call :buildCX
 
-rem show CX version 
-echo %COLOR_YELLOW% 
+rem show CX version
+echo %COLOR_YELLOW%
 %BIN_PATH%\cx.exe -v
-echo %COLOR_RESET% 
+echo %COLOR_RESET%
 if %ERRORLEVEL% neq 0 (
    call :echoWithColor red "ERROR:  %BIN_PATH% needs to be in your PATH environment variable"
    call :echoWithColor red "AND cx.exe must be accessible"
@@ -117,7 +117,7 @@ call :echoWithColor yellow "     'cx.exe %%%%GOPATH%%%%\src\github.com\skycoin\c
 
 
 
-rem final report 
+rem final report
 call :echoWithColor cyan "FINISHED CX SETUP^^^!"
 call :echoWithColor cyan "     Make sure to set any NEEDED environment variables."
 call :echoWithColor cyan "     Which MAY have been shown as ERRORs, at the start of CX Setup."
@@ -134,11 +134,11 @@ goto :EOF
 
 
 
-rem SUBROUTINES/FUNCTIONS will return to the next line after their call [upon 'exit /b'] 
+rem SUBROUTINES/FUNCTIONS will return to the next line after their call [upon 'exit /b']
 
 :setColorVarsIfOnWin10OrLater
-  rem Windows versions prior to 10, had no easy way to do colors in batch files. 
-  rem YES, this will probably show color code gibberish if you are running Windows 1.x 
+  rem Windows versions prior to 10, had no easy way to do colors in batch files.
+  rem YES, this will probably show color code gibberish if you are running Windows 1.x
 
   ver | find "Version 1" > nul
   if %ERRORLEVEL% neq 0 (echo Running Windows 8.x or earlier, won't use text colors)
@@ -165,7 +165,7 @@ exit /b
   set VERSION=%VERSION: windows/amd64=%
   call :echoWithColor yellow "Go version is: %VERSION%"
 
-  rem check against old versions 
+  rem check against old versions
   for %%v IN (%UNSUPPORTED%) DO (
       echo Checking for UNSUPPORTED version: %%v
       if %VERSION% equ %%v (
@@ -200,17 +200,17 @@ exit /b
   set CLONE_CMD=git clone https://github.com/%1/%2.git %GH_PATH%\%1\%2
 
   if exist %GH_PATH%\%1\%2\ (
-    rem -------- PULL 
+    rem -------- PULL
     call :echoWithColor white "  Already got %1\%2"
     call :echoWithColor yellow "            Pulling %2"
 
-    rem cx path 
+    rem cx path
     cd %SKYCOIN_PATH%\%2
     call :showResults %SKYCOIN_PATH%\%2 "Changed DIR to" "Couldn't change DIR to"
 
-    rem pull 
-    git pull 
-    rem someone recommended 'git pull origin master' 
+    rem pull
+    git pull
+    rem someone recommended 'git pull origin master'
     call :showResults %1\%2 "Pulled" "ERROR WHILE PULLING"
 
     call :echoWithColor yellow "            Re-building %2"
@@ -219,7 +219,7 @@ exit /b
     call :echoWithColor white "NEED Repository %1\%2"
     call :echoWithColor white "  Issuing command: '%CLONE_CMD%'"
 
-    rem clone 
+    rem clone
     %CLONE_CMD%
     call :showResults %1\%2 "Cloned" "ERROR Cloning"
 
@@ -228,7 +228,7 @@ exit /b
 exit /b
 
 
-:buildCX   
+:buildCX
   %BIN_PATH%\nex -e %CXGO_PATH%\cxgo0\cxgo0.nex
   call :showResults "nex    cxgo0" "1st pass -" "ERROR in 1st pass -"
 
@@ -242,7 +242,7 @@ exit /b
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
-  go build -tags full -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
+  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
   call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 
@@ -269,18 +269,18 @@ exit /b
   ) else if "%1"=="cyan"    ( echo %COLOR_CYAN%%~2%COLOR_RESET%
   ) else if "%1"=="white"   ( echo %COLOR_WHITE%%~2%COLOR_RESET%
   ) else (
-    rem invalid color string... 
+    rem invalid color string...
     echo %COLOR_RED% ERROR... :echoWithColor was passed an UNRECOGNIZED COLOR: %1
     echo %COLOR_DEFAULT% %~2
   )
 exit /b
 
 
-rem parameters 
-rem 1st - most relevant target of the command; usually a path 
-rem      put texts below in double quotes: 
-rem 2nd - successful operation text 
-rem 3rd - ERROR/FAILURE text 
+rem parameters
+rem 1st - most relevant target of the command; usually a path
+rem      put texts below in double quotes:
+rem 2nd - successful operation text
+rem 3rd - ERROR/FAILURE text
 :showResults
   if %ERRORLEVEL% equ 0 (
      call :echoWithColor green "%~2 %~1"

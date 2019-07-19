@@ -1,4 +1,4 @@
-// +build base extra full
+// +build base opengl
 
 package cxcore
 
@@ -28,8 +28,6 @@ const (
 
 	END_OF_BASE_OPS
 )
-
-var execNativeBase func(*CXProgram)
 
 func init() {
 	// time
@@ -66,48 +64,36 @@ func init() {
 		[]*CXArgument{})
 
 	// exec
-	execNativeBase = func(prgrm *CXProgram) {
-		defer RuntimeError()
-		call := &prgrm.CallStack[prgrm.CallCounter]
-		expr := call.Operator.Expressions[call.Line]
-		opCode := expr.Operator.OpCode
-		fp := call.FramePointer
+	handleOpcode := func(opCode int) opcodeHandler {
+		switch opCode {
+		// time
+		case OP_TIME_SLEEP:
+			return op_time_Sleep
+		case OP_TIME_UNIX:
+		case OP_TIME_UNIX_MILLI:
+			return op_time_UnixMilli
+		case OP_TIME_UNIX_NANO:
+			return op_time_UnixNano
 
-		if opCode < END_OF_CORE_OPS {
-			execNativeCore(prgrm)
-		} else {
-			switch opCode {
-			// time
-			case OP_TIME_SLEEP:
-				op_time_Sleep(expr, fp)
-			case OP_TIME_UNIX:
-			case OP_TIME_UNIX_MILLI:
-				op_time_UnixMilli(expr, fp)
-			case OP_TIME_UNIX_NANO:
-				op_time_UnixNano(expr, fp)
+		// http
+		// case OP_HTTP_GET:
+		// 	return op_http_get
 
-			// http
-			// case OP_HTTP_GET:
-			// 	op_http_get(expr, fp)
-
-			// os
-			case OP_OS_GET_WORKING_DIRECTORY:
-				op_os_GetWorkingDirectory(expr, fp)
-			case OP_OS_OPEN:
-				op_os_Open(expr, fp)
-			case OP_OS_CLOSE:
-				op_os_Close(expr, fp)
-			case OP_OS_RUN:
-				op_os_Run(expr, fp)
-			case OP_OS_EXIT:
-				op_os_Exit(expr, fp)
-
-			default:
-				// DumpOpCodes(opCode)
-				panic("invalid base opcode")
-			}
+		// os
+		case OP_OS_GET_WORKING_DIRECTORY:
+			return op_os_GetWorkingDirectory
+		case OP_OS_OPEN:
+			return op_os_Open
+		case OP_OS_CLOSE:
+			return op_os_Close
+		case OP_OS_RUN:
+			return op_os_Run
+		case OP_OS_EXIT:
+			return op_os_Exit
 		}
+
+		return nil
 	}
 
-	execNative = execNativeBase
+	opcodeHandlerFinders = append(opcodeHandlerFinders, handleOpcode)
 }

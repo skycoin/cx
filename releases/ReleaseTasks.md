@@ -122,7 +122,7 @@ git fetch && git checkout develop && git reset --hard origin/develop
 %GOPATH%\bin\goyacc -v '' -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
 %GOPATH%\bin\nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\parser\cxgo.nex
 %GOPATH%\bin\goyacc -v '' -o %GOPATH%\src\github.com\skycoin\cx\cxgo\parser\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\parser\cxgo.y
-go build -tags full -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxgo\
+go build -tags="base opengl" -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxgo\
 ```
 * Check that the version of the built CX binary corresponds to the one that the release is being built for:
 ```
