@@ -38,6 +38,10 @@ type cxCmdFlags struct {
 	genesisAddress      string
 	genesisSignature    string
 
+	configHash      string
+	configPath      string
+	skipTrackerPing bool
+
 	// Debug flags for the CX developers
 	debugLexer          bool
 }
@@ -65,7 +69,11 @@ func defaultCmdFlags() cxCmdFlags {
 		genesisAddress:      "",
 		genesisSignature:    "",
 
-		debugLexer:          false,
+		configHash:      "",
+		configPath:      "",
+		skipTrackerPing: false,
+
+		debugLexer: false,
 	}
 }
 
@@ -121,6 +129,11 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+
+	// CX Tracker flags
+	flag.StringVar(&options.configHash, "config-hash", options.configHash, "CX Tracker service config genesis hash")
+	flag.StringVar(&options.configPath, "config-path", options.configPath, "CX Tracker service JSON config local path")
+	flag.BoolVar(&options.skipTrackerPing, "skip-tracker-ping", options.skipTrackerPing, "Ping CX Tracker service while running with config")
 
 	// Debug flags
 	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")

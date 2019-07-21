@@ -44,19 +44,17 @@ import (
 	"github.com/amherag/skycoin/src/cli"
 	"github.com/amherag/skycoin/src/wallet"
 
-	"github.com/sn-srdjan/cx-tracker-cli/src/cli/provider"
+	"github.com/sn-srdjan/cx-tracker-cli/src/cli/cxtracker"
 
 	"errors"
 )
 
 const VERSION = "0.7.0"
 
-const configPath = "./cx-config.json"
-
 var (
 	log             = logging.MustGetLogger("newcoin")
 	apiClient       = &http.Client{Timeout: 10 * time.Second}
-	cxTracker       = provider.TrackerProvider{}
+	cxTracker       = cxtracker.Provider{}
 	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
 )
 
@@ -324,6 +322,35 @@ func main() {
 	registerFlags(&options)
 	flag.Parse()
 
+	if len(options.configPath) > 0 {
+		if !strings.HasSuffix(options.configPath, ".json") {
+			panic(errors.New("config file path is not pointing to json file"))
+		}
+		if len(options.configHash) > 0 {
+			if err := cxTracker.GetConfigFromTrackerService(options.configHash, options.configPath); err != nil {
+				panic(errors.New(fmt.Sprintln("unable to fetch config from remote service locally due to error %v", err)))
+			}
+		}
+
+		file, err := ioutil.ReadFile(options.configPath)
+		if err != nil {
+			panic(errors.New(fmt.Sprintln("config file can't be read from path %v due to error %v", options.configPath, err)))
+		}
+		configFromFile := cxtracker.CXApplicationConfig{}
+		if err := json.Unmarshal([]byte(file), &configFromFile); err != nil {
+			panic(errors.New(fmt.Sprintln("config from path %v can't be unmarshalled to JSON struct due to error %v", options.configPath, err)))
+		}
+
+		// TODO we probably need to do few more steps here like creating the wallet and
+		// changing fiber.toml values for genesis_address_str and blockchain_pubkey_str
+
+		// TODO confirm that cx --blockchain... should not be run, since chain should already be created since config exists on CX Tracker
+		options.genesisAddress = configFromFile.GenesisAddress
+		options.pubKey = configFromFile.PublicKey
+		options.secKey = configFromFile.SecretKey
+		options.genesisSignature = configFromFile.GenesisHash //TODO confirm these two represent the same thing
+	}
+
 	// Propagate some options out to other packages
 	DebugLexer = options.debugLexer   // in package parser
 
@@ -358,10 +385,11 @@ func main() {
 			}
 		}()
 
-		//TODO use startup flag instead of file existence here
-		if _, err := os.Stat(configPath); err == nil {
+		if options.skipTrackerPing {
+			log.Info("Pinging CX Tracker is disabled")
+		} else {
 			log.Info("Initiating up CX Tracker ping")
-		pingTracker() // TODO should we ping on startup or after first period of 5 min is over and we're sure instance is running correctly?
+			pingTracker(options.configPath) // TODO should we ping on startup or after first period of 5 min is over and we're sure instance is running correctly?
 		trackerTicker := time.NewTicker(5 * time.Minute)
 		go func() {
 			defer trackerTicker.Stop()
@@ -369,7 +397,7 @@ func main() {
 			for {
 				select {
 				case <-trackerTicker.C:
-					pingTracker()
+						pingTracker(options.configPath)
 	}
 			}
 		}()
@@ -1396,8 +1424,8 @@ func isJSON(str string) bool {
 	return err == nil
 }
 
-func pingTracker() {
+func pingTracker(configPath string) {
 	if err := cxTracker.SaveToTrackerService(configPath); err != nil {
-		log.Error("Unable to ping CX Tracker due to error", err)
+		log.Warn("Unable to ping CX Tracker due to error ", err)
 	}
 }
