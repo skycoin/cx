@@ -274,6 +274,12 @@ You should test your installation by running:
 make test
 ```
 
+If you intend to develop games with CX, then run:	
+
+```	
+make test-full	
+```	
+
 ### Compiling CX on Windows
 
 An installation script is also provided for Windows named `cx-setup.bat`. You can compile CX on Windows by running:
