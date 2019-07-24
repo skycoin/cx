@@ -254,7 +254,7 @@ CX supports go1.10+.
 
 [Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
 
-### Compiling CX on *nix
+### Compiling CX on \*nix
 
 Download CX's repository using Go:
 
@@ -1139,7 +1139,7 @@ func prgrmPredicate (prgrm Program) () {
 func main () {
 	num1 := 5
 	num2 := 10
-	
+
 targetExpr:
 	sum := i32.add(0, 0)
 
