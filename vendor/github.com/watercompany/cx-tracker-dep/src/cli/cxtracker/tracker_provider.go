@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/sn-srdjan/cx-tracker-cli/src/api"
+	"github.com/watercompany/cx-tracker-dep/src/api"
 )
 
 // Provider - provider object
@@ -18,11 +18,6 @@ type Provider struct {
 
 // CXApplicationConfig holds config describing CX Application instance
 type CXApplicationConfig struct {
-	//TODO confirm should config contain genesis hash and work based on it (alternative needing to use config file content hash), and
-	// is genesis hash actually the same thing as genesis signature (hash for the first element in chain)
-
-	// Pro is having Genesis hash clearly displayed for user and using content hash just to uniquelly identify the app, and not having to highlight computed hash to user
-	// Con is potentially having duplicate genesis hashes (if other app related config changes - depends what's left to be added to the config)
 	GenesisHash    string `json:"genesisHash"`
 	GenesisAddress string `json:"genesisAddress"`
 	PublicKey      string `json:"publicKey"`

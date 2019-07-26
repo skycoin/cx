@@ -56,4 +56,4 @@ ignored = ["github.com/go-gl/*"]
 
 [[constraint]]
   branch = "master"
-  name = "github.com/sn-srdjan/cx-tracker-cli"
+  name = "github.com/watercompany/cx-tracker-dep"

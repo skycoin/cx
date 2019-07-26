@@ -296,17 +296,6 @@
   revision = "b86a26479c3e25ac0f13e195bd2c0554bcf2f837"
 
 [[projects]]
-  branch = "master"
-  digest = "1:77add80170e78a3baefa67e0d6b6d6e211718bbd28aba7ae7cfa282bca98c188"
-  name = "github.com/sn-srdjan/cx-tracker-cli"
-  packages = [
-    "src/api",
-    "src/cli/cxtracker",
-  ]
-  pruneopts = "UT"
-  revision = "2fbc39d1a5e9d233669320c86f05536cd6c5bc57"
-
-[[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
   name = "github.com/spf13/afero"
   packages = [
@@ -380,6 +369,17 @@
   pruneopts = "UT"
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:07c5ab7d8166b080180f9ba50aacefce4fb1be8f0e11562598db87b2f273a68d"
+  name = "github.com/watercompany/cx-tracker-dep"
+  packages = [
+    "src/api",
+    "src/cli/cxtracker",
+  ]
+  pruneopts = "UT"
+  revision = "2136286b00a5bc2f8fcb68fb2d923131981e0136"
 
 [[projects]]
   branch = "master"
@@ -460,9 +460,9 @@
     "github.com/amherag/skycoin/src/wallet",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
-    "github.com/sn-srdjan/cx-tracker-cli/src/cli/cxtracker",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
+    "github.com/watercompany/cx-tracker-dep/src/cli/cxtracker",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

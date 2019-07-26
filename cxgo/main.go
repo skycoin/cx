@@ -44,7 +44,7 @@ import (
 	"github.com/amherag/skycoin/src/cli"
 	"github.com/amherag/skycoin/src/wallet"
 
-	"github.com/sn-srdjan/cx-tracker-cli/src/cli/cxtracker"
+	"github.com/watercompany/cx-tracker-dep/src/cli/cxtracker"
 
 	"errors"
 )
