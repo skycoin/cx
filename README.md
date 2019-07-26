@@ -16,6 +16,7 @@ Table of Contents
    * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language-1)
       * [Strict Type System](#strict-type-system)
+   * [CX Book](#cx-book)
    * [CX Projects, Libraries and other Resources](#cx-projects-libraries-and-other-resources)
       * [CX Chains:](#cx-chains)
       * [CX Examples:](#cx-examples)
