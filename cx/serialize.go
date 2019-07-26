@@ -1276,7 +1276,6 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	// We were also simulating an empty stack, but it doesn't make sense now.
 	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
-	// We are only interested on extracting the data segment for now.
 	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
 	prgrm2HeapStart := index2.MemoryOffset + prgrm2Info.HeapStartsAt
