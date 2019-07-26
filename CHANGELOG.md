@@ -7,6 +7,8 @@
   * Redesign of CX's garbage collector.
   * Changes to several functions that relied on allocating objects on the heap.
   * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
+  * Moved CX book sources to github.com/skycoin/cx-book. The releases and any code updates will be pushed to that repository.
+    * The README file notifies the users about this change.
 * Libraries
   * ...
 * Fixed issues
