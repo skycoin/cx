@@ -327,28 +327,31 @@ func main() {
 			panic(errors.New("config file path is not pointing to json file"))
 		}
 		if len(options.configHash) > 0 {
+			log.Info("Fetching new config file based on provided genesis hash")
 			if err := cxTracker.GetConfigFromTrackerService(options.configHash, options.configPath); err != nil {
-				panic(errors.New(fmt.Sprintln("unable to fetch config from remote service locally due to error %v", err)))
+				panic(fmt.Errorf("unable to fetch config from remote service locally due to error %v", err))
 			}
 		}
 
 		file, err := ioutil.ReadFile(options.configPath)
 		if err != nil {
-			panic(errors.New(fmt.Sprintln("config file can't be read from path %v due to error %v", options.configPath, err)))
+			panic(fmt.Errorf("config file can't be read from path %v due to error %v", options.configPath, err))
 		}
 		configFromFile := cxtracker.CXApplicationConfig{}
 		if err := json.Unmarshal([]byte(file), &configFromFile); err != nil {
-			panic(errors.New(fmt.Sprintln("config from path %v can't be unmarshalled to JSON struct due to error %v", options.configPath, err)))
+			panic(fmt.Errorf("config from path %v can't be unmarshalled to JSON struct due to error %v", options.configPath, err))
 		}
 
-		// TODO we probably need to do few more steps here like creating the wallet and
-		// changing fiber.toml values for genesis_address_str and blockchain_pubkey_str
+		// TODO consider creating the wallet for cxcoin if one doesn't alerady exist.
+		// As for now, it's mandatory manual step in setting up the environment to create this wallet
 
-		// TODO confirm that cx --blockchain... should not be run, since chain should already be created since config exists on CX Tracker
-		options.genesisAddress = configFromFile.GenesisAddress
-		options.pubKey = configFromFile.PublicKey
-		options.secKey = configFromFile.SecretKey
-		options.genesisSignature = configFromFile.GenesisHash //TODO confirm these two represent the same thing
+		// TODO change fiber.toml values for genesis_address_str, genesis_signature_str and blockchain_pubkey_str
+		// Also, check the switch between two apps locally. Config will be fetched correctly but new app will not run
+
+		applyConfigValue(&options.genesisAddress, configFromFile.GenesisAddress)
+		applyConfigValue(&options.genesisSignature, configFromFile.GenesisHash)
+		applyConfigValue(&options.pubKey, configFromFile.PublicKey)
+		applyConfigValue(&options.secKey, configFromFile.SecretKey)
 	}
 
 	// Propagate some options out to other packages
@@ -385,23 +388,23 @@ func main() {
 			}
 		}()
 
-		if options.skipTrackerPing {
+		if options.skipTrackerPing || len(options.configPath) == 0 {
 			log.Info("Pinging CX Tracker is disabled")
 		} else {
 			log.Info("Initiating up CX Tracker ping")
-			pingTracker(options.configPath) // TODO should we ping on startup or after first period of 5 min is over and we're sure instance is running correctly?
-		trackerTicker := time.NewTicker(5 * time.Minute)
-		go func() {
-			defer trackerTicker.Stop()
+			pingTracker(options.configPath)
+			trackerTicker := time.NewTicker(5 * time.Minute)
+			go func() {
+				defer trackerTicker.Stop()
 
-			for {
-				select {
-				case <-trackerTicker.C:
+				for {
+					select {
+					case <-trackerTicker.C:
 						pingTracker(options.configPath)
-	}
-			}
-		}()
-	}
+					}
+				}
+			}()
+		}
 	}
 
 	// Generate a CX chain address.
@@ -1428,4 +1431,11 @@ func pingTracker(configPath string) {
 	if err := cxTracker.SaveToTrackerService(configPath); err != nil {
 		log.Warn("Unable to ping CX Tracker due to error ", err)
 	}
+}
+
+func applyConfigValue(cliArgument *string, configValue string) {
+	if len(*cliArgument) > 0 {
+		log.Warnf("Provided CLI value %v will be replaced with one from the config file %v", *cliArgument, configValue)
+	}
+	*cliArgument = configValue
 }
