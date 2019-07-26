@@ -293,7 +293,6 @@ func serializeArgument(arg *CXArgument, s *sAll) int {
 	s.Arguments[argOff].Offset = int32(arg.Offset)
 	s.Arguments[argOff].IndirectionLevels = int32(arg.IndirectionLevels)
 	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
-	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
 
 	s.Arguments[argOff].DereferenceOperationsOffset,
 		s.Arguments[argOff].DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
