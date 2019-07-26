@@ -110,16 +110,16 @@ of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
 purpose programming.
 
-In the following sections, the reader can find a short tutorial on how
-to use the main features of the language. In previous versions of this
-README file, the tutorial was written in a *book-ish* style and was
-targetted to a beginner audience. We're going to
-be making a transition from that style to a more technical style,
-without falling into a pure documentation style. The reason behind
-this is that a CX book is now going to be published, which is going to
-be targetted to a more beginner audience. Thus, this README now has
-the purpose of quickly demonstrating the capabilities of the language,
-how to install it, etc.
+In the following sections, the reader can find a short tutorial on how to use
+the main features of the language. In previous versions of this README file, the
+tutorial was written in a *book-ish* style and was targetted to a beginner
+audience. We're going to be making a transition from that style to a more
+technical style, without falling into a pure documentation style. The reason
+behind this is that a CX book is going to be published, which is targetted to a
+more beginner audience.  Thus, this README now has the purpose of quickly
+demonstrating the capabilities of the language, how to install it, etc. You can
+find the book source code and its releases in its [CX book Github
+repository](https://github.com/skycoin/cx-book).
 
 This tutorial/documentation is divided into four parts, which can
 broadly be described as *introduction*, *syntax*, *runtime* and
@@ -149,6 +149,11 @@ versions of `print` for each of the primitive types, such as
 
 There are native functions in CX (the functions in the
 core language) associated to
+
+# CX Book
+
+You can find the book source code and its releases in its [CX book Github
+repository](https://github.com/skycoin/cx-book).
 
 # CX Projects, Libraries and other Resources
 
