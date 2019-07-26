@@ -521,6 +521,9 @@ func main() {
 
 	// var bcPrgrm *CXProgram
 	var sPrgrm []byte
+	// In case of a CX chain, we need to temporarily store the blockchain code heap elsewhere,
+	// so we can then add it after the transaction code's data segment.
+	var bcHeap []byte
 	if options.transactionMode || options.broadcastMode {
 		resp, err := http.Get("http://127.0.0.1:6420/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
 		if err != nil {
@@ -541,10 +544,9 @@ func main() {
 		sPrgrmSH := sPrgrm[:memOff]
 		// Appending new stack
 		sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
-		// Appending data segment
+		// Appending data and heap segment
 		sPrgrmSH = append(sPrgrmSH, sPrgrm[memOff:]...)
-		// Appending new heap
-		sPrgrmSH = append(sPrgrmSH, make([]byte, INIT_HEAP_SIZE)...)
+		bcHeap = sPrgrm[memOff+GetSerializedDataSize(sPrgrm):]
 		
 		// Deserialize(sPrgrm).RunCompiled(0, cxArgs)
 		// bcPrgrm = Deserialize(sPrgrm)
@@ -865,6 +867,39 @@ func main() {
 	if options.replMode || len(sourceCode) == 0 {
 		repl()
 	} else if !CompileMode && !BaseOutput && len(sourceCode) > 0 {
+		// If it's a CX chain transaction, we need to add the heap extracted
+		// from the retrieved CX chain program state.
+		if options.transactionMode || options.broadcastMode {
+			// Setting the CX runtime to run `PRGRM`.
+			PRGRM.SelectProgram()
+			
+			bcHeapLen := len(bcHeap)
+			remHeapSpace := len(PRGRM.Memory[PRGRM.HeapStartsAt:])
+			fullDataSegSize := PRGRM.HeapStartsAt - PRGRM.StackSize
+			// Copying blockchain code heap.
+			if bcHeapLen > remHeapSpace {
+				// We don't have enough space. We're using the available bytes...
+				for c := 0; c < remHeapSpace; c++ {
+					PRGRM.Memory[PRGRM.HeapStartsAt+c] = bcHeap[c]
+				}
+				// ...and then we append the remaining bytes.
+				PRGRM.Memory = append(PRGRM.Memory, bcHeap[remHeapSpace:]...)
+			} else {
+				// We have enough space and we simply write the bytes.
+				for c := 0; c < bcHeapLen; c++ {
+					PRGRM.Memory[PRGRM.HeapStartsAt+c] = bcHeap[c]
+				}
+			}
+			// Recalculating the heap size.
+			PRGRM.HeapSize = len(PRGRM.Memory) - PRGRM.HeapStartsAt
+			txnDataLen := fullDataSegSize - GetSerializedDataSize(sPrgrm)
+			// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
+			// Displacing the references to heap objects by `txnDataLen`.
+			// This needs to be done as the addresses to the heap objects are displaced
+			// by the addition of the transaction code's data segment.
+			DisplaceReferences(PRGRM, txnDataLen, 1)
+		}
+		
 		if options.blockchainMode {
 			// Initializing the CX chain.
 			err := PRGRM.RunCompiled(0, cxArgs)
@@ -873,7 +908,12 @@ func main() {
 			}
 			
 			PRGRM.RemovePackage(MAIN_FUNC)
-			
+
+			// Removing garbage from the heap. Only the global variables should be left
+			// as these are independent from function calls.
+			MarkAndCompact(PRGRM)
+			PRGRM.HeapSize = PRGRM.HeapPointer
+
 			s := Serialize(PRGRM, 1)
 			s = ExtractBlockchainProgram(s, s)
 
@@ -883,7 +923,7 @@ func main() {
 			cmd := exec.Command("go", "install", "./cmd/newcoin/...")
 			cmd.Start()
 			cmd.Wait()
-			
+
 			cmd = exec.Command("newcoin", "createcoin",
 				fmt.Sprintf("--coin=%s", options.programName),
 				fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
@@ -927,15 +967,12 @@ func main() {
 		} else if options.broadcastMode {
 			// Setting the CX runtime to run `PRGRM`.
 			PRGRM.SelectProgram()
+			MarkAndCompact(PRGRM)
 
-			// Resetting memory
-			dsPrgrm := Deserialize(sPrgrm)
-			PRGRM.StackPointer = 0
-			PRGRM.HeapPointer = dsPrgrm.HeapPointer
-			
+			// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 			s := Serialize(PRGRM, 1)
 			txnCode := ExtractTransactionProgram(sPrgrm, s)
-
+			
 			// All these HTTP requests need to be dropped in favor of calls to calls to functions
 			// from the `cli` or `api` Skycoin packages
 			addr := fmt.Sprintf("http://127.0.0.1:%d", options.port + 420)
@@ -954,7 +991,6 @@ func main() {
 			// dataMap["wallet_id"] = map[string]string{"id": options.walletId}
 			dataMap["wallet_id"] = string(options.walletId)
 			dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
-
 			
 			jsonStr, err := json.Marshal(dataMap)
 			if err != nil {

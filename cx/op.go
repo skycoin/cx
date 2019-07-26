@@ -167,6 +167,128 @@ func ReadMemory(offset int, arg *CXArgument) []byte {
 	return PROGRAM.Memory[offset : offset+arg.TotalSize]
 }
 
+// updateDisplaceReference performs the actual addition or subtraction of `plusOff` to the address being pointed by the element at `atOffset`.
+func updateDisplaceReference(prgrm *CXProgram, updated *map[int]int, atOffset, plusOff int) {
+	// Checking if it was already updated.
+	if _, found := (*updated)[atOffset]; found {
+		return
+	}
+
+	// Extracting the address being pointed by element at `atOffset`
+	sCurrAddr := prgrm.Memory[atOffset : atOffset+TYPE_POINTER_SIZE]
+	var dsCurrAddr int32
+	_, err := encoder.DeserializeAtomic(sCurrAddr, &dsCurrAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	// Adding `plusOff` to the address and updating the address pointed by
+	// element at `atOffset`.
+	addrB := encoder.SerializeAtomic(int32(int(dsCurrAddr) + plusOff))
+	for i := 0; i < TYPE_POINTER_SIZE; i++ {
+		prgrm.Memory[atOffset+i] = addrB[i]
+	}
+
+	// Keeping a record of this address. We don't want to displace the object twice.
+	// We're using a map to speed things up a tiny bit.
+	(*updated)[atOffset] = atOffset
+}
+
+// doDisplaceReferences checks if the element at `atOffset` is pointing to an object on the heap and, if this is the case, it displaces it by `plusOff`. `updated` keeps a record of all the offsets that have already been updated.
+func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, plusOff int, baseType int, declSpecs []int) {
+	var numDeclSpecs = len(declSpecs)
+
+	// Getting the offset to the object in the heap.
+	var heapOffset int32
+	_, err := encoder.DeserializeAtomic(prgrm.Memory[atOffset:atOffset+TYPE_POINTER_SIZE], &heapOffset)
+	if err != nil {
+		panic(err)
+	}
+
+	// The whole displacement process is needed because the objects on the heap were
+	// displaced by additional data segment bytes. These additional bytes need to be
+	// considered if we want to read the objects on the heap. We need to check if the
+	// displacement is positive or negative; if it is positive then this means a data
+	// segment was added; if it is negative it means that we're done with any CX chains
+	// process involving the addition of a data segment, and in some code snippets we can ignore the displacement.
+	// TODO: Maybe this condition can be avoided by refactoring the code?
+	var condPlusOff int
+	if plusOff > 0 {
+		condPlusOff = plusOff
+	}
+
+	// Displace the address pointed by element at `atOffset`.
+	updateDisplaceReference(prgrm, updated, atOffset, plusOff)
+
+	// It can't be a tree of objects.
+	if numDeclSpecs == 0 || int(heapOffset) <= prgrm.HeapStartsAt+condPlusOff {
+		return
+	}
+
+	// Checking if it's a tree of objects.
+	// TODO: We're not considering struct instances with pointer fields.
+	if declSpecs[0] == DECL_SLICE {
+		if (numDeclSpecs > 1 &&
+			(declSpecs[1] == DECL_SLICE ||
+				declSpecs[1] == DECL_POINTER)) ||
+			(numDeclSpecs == 1 && baseType == TYPE_STR) {
+			// Then we need to iterate each of the slice objects
+			// and check if we need to update their address.
+			var sliceLen int32
+			_, err := encoder.DeserializeAtomic(GetSliceHeader(heapOffset + int32(condPlusOff))[4:8], &sliceLen)
+			if err != nil {
+				panic(err)
+			}
+
+			offsetToElements := OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
+
+			for c := int32(0); c < sliceLen; c++ {
+				var cHeapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[int(heapOffset)+condPlusOff+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+condPlusOff+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(cHeapOffset) <= prgrm.HeapStartsAt+condPlusOff {
+					// Then it's pointing to null or data segment
+					continue
+				}
+
+				// Displacing this child element.
+				updateDisplaceReference(prgrm, updated, int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE), plusOff)
+			}
+		}
+	}
+}
+
+// DisplaceReferences displaces all the pointer-like variables, slice elements or field structures by `off`. `numPkgs` tells us the number of packages to consider for the reference desplacement (this number should equal to the number of packages that represent the blockchain code in a CX chain).
+func DisplaceReferences(prgrm *CXProgram, off int, numPkgs int) {
+	// We're going to keep a record of all the references that were already updated.
+	updated := make(map[int]int)
+
+	for c := 0; c < numPkgs; c++ {
+		pkg := prgrm.Packages[c]
+
+		// In a CX chain we're only interested on considering global variables,
+		// as any other object should be destroyed, as the program finished its
+		// execution.
+		for _, glbl := range pkg.Globals {
+			if glbl.IsPointer || glbl.IsSlice {
+				doDisplaceReferences(prgrm, &updated, glbl.Offset, off, glbl.Type, glbl.DeclarationSpecifiers[1:])
+			}
+
+			// If it's a struct instance we need to displace each of its fields.
+			if glbl.CustomType != nil {
+				for _, fld := range glbl.CustomType.Fields {
+					if fld.IsPointer || fld.IsSlice {
+						doDisplaceReferences(prgrm, &updated, glbl.Offset+fld.Offset, off, fld.Type, fld.DeclarationSpecifiers[1:])
+					}
+				}
+			}
+		}
+	}
+}
+
 // Mark marks the object located at `heapOffset` as alive and sets the object's referencing address to `heapOffset`.
 func Mark(prgrm *CXProgram, heapOffset int32) {
 	// Marking as alive.
@@ -180,6 +302,14 @@ func Mark(prgrm *CXProgram, heapOffset int32) {
 
 // MarkObjectsTree traverses and marks a possible tree of heap objects (slices of slices, slices of pointers, etc.).
 func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int) {
+	lenMem := len(prgrm.Memory)
+	// Checking if it's a valid heap address. An invalid address
+	// usually occurs in CX chains, with the split of blockchain
+	// and transaction codes in a CX chain program state.
+	if offset > lenMem || offset+TYPE_POINTER_SIZE > lenMem {
+		return
+	}
+
 	var numDeclSpecs = len(declSpecs)
 
 	// Getting the offset to the object in the heap
