@@ -1265,7 +1265,6 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	sPrgrm.HeapPointer = prgrm2Info.HeapPointer
 	extracted = append(extracted, encoder.Serialize(sPrgrm)...)
 
-	// extracted = append(extracted, sPrgrm1[index1.ProgramOffset:index1.CallsOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.StructsOffset:index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset)]...)
