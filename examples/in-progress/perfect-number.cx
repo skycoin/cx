@@ -1,17 +1,24 @@
 package main
 
+
 func computePerfect(n i64) (result bool) {
     var sum i64
 	var m i64
-    for i := 1L; i < n; i++ {
+	i := 1L
+	
+    for ; i64.lt(i, n); {
 		m = i64.mod(n, i)
 		if i64.eq(m, 0L) {
-            sum += i
+            sum = sum + i
         }
+		i = i + 1L
     }
 	
-    return i64.eq(sum, n)
-	result = true
+    if i64.eq(sum, n) {
+		result = true
+	} else {
+		result = false
+	}
 }
 
 
@@ -26,12 +33,15 @@ func isPerfect(n i64) (result bool) {
 
 
 func main() {
-	var n i64 = 1L
+	var n i64
 	var m i64
 	var perfect bool
 	var compute bool
+
+	//  hard code to by-pass issue of permanent loop
+	limit := 100000
 	
-	for true {
+	for ; limit > 0; limit-- {
 		perfect = isPerfect(n)
 		compute = computePerfect(n)
         if perfect != compute {
@@ -41,10 +51,9 @@ func main() {
 		m = i64.mod(n, 1000L)
 		
         if i64.eq(m, 0L) {
-            //str.print(str.concat("tested", i64.str(n)))
 			i64.print(n)
         }
 
-		n += 1L
+		n = n + 1L
     }
 }

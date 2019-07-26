@@ -1,7 +1,8 @@
 package main
 
 func ludic(n i32, max i32) (out []i32) {
-	var max_i32 i32 = i32.bitshl(31) - 1
+	var max_i32 i32
+	max_i32 = i32.bitshl(31, 1) - 1
 
 	if max > 0 && n < 0 {
 		n = max_i32
@@ -20,18 +21,16 @@ func ludic(n i32, max i32) (out []i32) {
 	sieve[1] = 2
 
 	if n > 2 {
-		var i i32 = 2
-		var j i32 = 3
+		j := 3
 
 		// start with even numbers already removed
-		for ; i < len(sieve); {
+		for i := 2; i < len(sieve); i++ {
 			sieve[i] = j
-			i+=1
 			j+=2
 		}
 
 		// k is the index of the next Ludic
-		for k := 2; k < n; k++ {
+		/*for k := 2; k < n; k++ {
 			l := sieve[k]
 			if l >= max {
 				n = k
@@ -54,7 +53,7 @@ func ludic(n i32, max i32) (out []i32) {
 				i+=1
 				j+=1
 			}
-		}
+		}*/
 
 		out = sieve
 	}

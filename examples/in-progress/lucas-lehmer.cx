@@ -26,9 +26,9 @@ func llTest(ps []i64) {
 		}
 
 		// Temp code block
-		if i64.bitlen(s) == 0 {
+		/*if i64.bitlen(s) == 0 {
 			str.print(ps[i])
-		}
+		}*/
 	}
 }
 
