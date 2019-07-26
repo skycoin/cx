@@ -1,39 +1,89 @@
 package main
 
-func quickselect(list []i32, k i32) (out i32) {
-    for true {
+// hard to to provide arary with 10 elements
+func quickselect(list [10]i32, k i32) (out i32) {
+	var px i32
+	var pv i32
+	var last i32
+	
+    for true == true {
         // partition
-        px := len(list) / 2
-        pv := list[px]
-        last := len(list) - 1
-        list[px], list[last] = list[last], list[px]
+		printf("Len = %d", len(list))
+        px = i32.div(len(list), 2)
+		printf("%d", px)
+		i32.print(list[px])
+		printf("----------------------------------------------")
+		return
+        //pv = list[px]
+        /*last = i32.sub(len(list), 1)
+
+		swap := list[px]
+        list[px] = list[last]
+		list[last] = swap
         i := 0
-        for j := 0; j < last; j++ {
+		j := 0
+		
+        for ;i32.lt(j, last); j++ {
             if list[j] < pv {
-                list[i], list[j] = list[j], list[i]
+				swap = list[i]
+                list[i] = list[j]
+				list[j] = swap
                 i++
             }
         }
+		
         // select
         if i == k {
             return pv
         }
+		
         if k < i {
-            list = list[:i]
+			// update the list
+			var tmp []i32
+			for n := 0; n <= i; n++ {
+				tmp = append(tmp, list[n])
+			}
+			list = tmp
+			printf(list)
         } else {
-            list[i], list[last] = list[last], list[i]
-            list = list[i+1:]
-            k -= i + 1
-        }
+            swap = list[i]
+			list[i] = list[last]
+			list[last] = swap
+
+			// update the list
+			var tmp []i32
+			length := len(list)
+			for n := i+1; i32.lt(n, length); n++ {
+				tmp = append(tmp, list[n])
+			}
+			list = tmp
+			printf(list)
+
+			// last thing set next value for k variable
+            k = i32.sub(k, i32.add(i, 1))
+        }*/
     }
 }
  
 func main() {
-    for i := 0; ; i++ {
-        v := []i32 = { 9, 8, 7, 6, 5, 0, 1, 2, 3, 4 }
+	var v [10]i32
+	v[0] = 9
+	v[1] = 8
+	v[2] = 7
+	v[3] = 6
+	v[4] = 5
+	v[5] = 0
+	v[6] = 1
+	v[7] = 2
+	v[8] = 3
+	v[9] = 4
+	
+	i := 0
+    for true == true {
         if i32.eq(i, len(v)) {
             return
         }
         i32.print(quickselect(v, i))
+		i++
     }
 }

@@ -3,29 +3,47 @@ package main
 var total i64
 var prim i64
 var maxPeri i64
- 
+
 func newTri(s0 i64, s1 i64, s2 i64) {
 	var p i64
+	var param1 i64
+	var param2 i64
+	var param3 i64
+	
 	p = s0 + s1 + s2
     if i64.lteq(p, maxPeri) {
-        prim++
-        total += maxPeri / p
-        newTri(+1*s0-2*s1+2*s2, +2*s0-1*s1+2*s2, +2*s0-2*s1+3*s2)
-        newTri(+1*s0+2*s1+2*s2, +2*s0+1*s1+2*s2, +2*s0+2*s1+3*s2)
-        newTri(-1*s0+2*s1+2*s2, -2*s0+1*s1+2*s2, -2*s0+2*s1+3*s2)
+        prim = prim + 1L
+        total = i64.add(total, i64.div(maxPeri, p))
+
+		param1 = i64.sub(i64.mul(s0, 1L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 2L)))
+		param2 = i64.sub(i64.mul(s0, 2L), i64.add(i64.mul(s1, 1L), i64.mul(s2, 2L)))
+		param3 = i64.sub(i64.mul(s0, 2L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 3L)))
+		//printf("%d | %d | %d", param1, param2, param3)
+		newTri(param1, param2, param3)
+        //newTri(+1L*s0-2L*s1+2L*s2, +2L*s0-1L*s1+2L*s2, +2L*s0-2L*s1+3L*s2)
+
+		param1 = i64.add(i64.mul(s0, 1L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 2L)))
+		param2 = i64.add(i64.mul(s0, 2L), i64.add(i64.mul(s1, 1L), i64.mul(s2, 2L)))
+		param3 = i64.add(i64.mul(s0, 2L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 3L)))
+		//newTri(param1, param2, param3)
+        //newTri(+1L*s0+2L*s1+2L*s2, +2L*s0+1L*s1+2L*s2, +2L*s0+2L*s1+3L*s2)
+
+		param1 = i64.add(i64.mul(s0, -1L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 2L)))
+		param2 = i64.add(i64.mul(s0, -2L), i64.add(i64.mul(s1, 1L), i64.mul(s2, 2L)))
+		param3 = i64.add(i64.mul(s0, -2L), i64.add(i64.mul(s1, 2L), i64.mul(s2, 3L)))
+		//printf("%d, %d, %d", param1, param2, param3)
+		//newTri(param1, param2, param3)
+        //newTri(-1L*s0+2L*s1+2L*s2, -2L*s0+1L*s1+2L*s2, -2L*s0+2L*s1+3L*s2)
     }
 }
  
 func main() {
-    for maxPeri = 100; maxPeri <= 100000000000L; {
-		maxPeri *= 10L
-        prim = 0
-        total = 0
-        newTri(3, 4, 5)
-        //fmt.Printf("Up to %d:  %d triples, %d primitives\n", maxPeri, total, prim)
-		str.print("------------------------------------")
-		str.print(str.concat("Up to ", i64.str(maxPeri)))
-		str.print(str.concat(i64.str(total), "triples"))
-		str.print(str.concat(i64.str(prim), "primitives"))
+	maxPeri := 100L
+    for ; maxPeri <= 100000L; {
+		maxPeri = maxPeri * 10L
+        prim = 0L
+        total = 0L
+        newTri(3L, 4L, 5L)
+        printf("Up to %d:  %d triples, %d primitives\n", maxPeri, total, prim)
     }
 }
