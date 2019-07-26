@@ -175,7 +175,7 @@ func updateDisplaceReference(prgrm *CXProgram, updated *map[int]int, atOffset, p
 	}
 
 	// Extracting the address being pointed by element at `atOffset`
-	sCurrAddr := prgrm.Memory[atOffset:atOffset+TYPE_POINTER_SIZE]
+	sCurrAddr := prgrm.Memory[atOffset : atOffset+TYPE_POINTER_SIZE]
 	var dsCurrAddr int32
 	_, err := encoder.DeserializeAtomic(sCurrAddr, &dsCurrAddr)
 	if err != nil {
@@ -184,11 +184,11 @@ func updateDisplaceReference(prgrm *CXProgram, updated *map[int]int, atOffset, p
 
 	// Adding `plusOff` to the address and updating the address pointed by
 	// element at `atOffset`.
-	addrB := encoder.SerializeAtomic(int32(int(dsCurrAddr)+plusOff))
+	addrB := encoder.SerializeAtomic(int32(int(dsCurrAddr) + plusOff))
 	for i := 0; i < TYPE_POINTER_SIZE; i++ {
 		prgrm.Memory[atOffset+i] = addrB[i]
 	}
-	
+
 	// Keeping a record of this address. We don't want to displace the object twice.
 	// We're using a map to speed things up a tiny bit.
 	(*updated)[atOffset] = atOffset
@@ -219,9 +219,9 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, 
 
 	// Displace the address pointed by element at `atOffset`.
 	updateDisplaceReference(prgrm, updated, atOffset, plusOff)
-	
+
 	// It can't be a tree of objects.
-	if numDeclSpecs == 0 || int(heapOffset) <= prgrm.HeapStartsAt + condPlusOff {
+	if numDeclSpecs == 0 || int(heapOffset) <= prgrm.HeapStartsAt+condPlusOff {
 		return
 	}
 
@@ -230,12 +230,12 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, 
 	if declSpecs[0] == DECL_SLICE {
 		if (numDeclSpecs > 1 &&
 			(declSpecs[1] == DECL_SLICE ||
-			declSpecs[1] == DECL_POINTER)) ||
+				declSpecs[1] == DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
 			var sliceLen int32
-			_, err := encoder.DeserializeAtomic(GetSliceHeader(heapOffset+int32(condPlusOff))[4:8], &sliceLen)
+			_, err := encoder.DeserializeAtomic(GetSliceHeader(heapOffset + int32(condPlusOff))[4:8], &sliceLen)
 			if err != nil {
 				panic(err)
 			}
@@ -249,7 +249,7 @@ func doDisplaceReferences(prgrm *CXProgram, updated *map[int]int, atOffset int, 
 					panic(err)
 				}
 
-				if int(cHeapOffset) <= prgrm.HeapStartsAt + condPlusOff {
+				if int(cHeapOffset) <= prgrm.HeapStartsAt+condPlusOff {
 					// Then it's pointing to null or data segment
 					continue
 				}
@@ -306,7 +306,7 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 	// Checking if it's a valid heap address. An invalid address
 	// usually occurs in CX chains, with the split of blockchain
 	// and transaction codes in a CX chain program state.
-	if offset > lenMem || offset + TYPE_POINTER_SIZE > lenMem {
+	if offset > lenMem || offset+TYPE_POINTER_SIZE > lenMem {
 		return
 	}
 

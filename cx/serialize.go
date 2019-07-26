@@ -1023,7 +1023,7 @@ func dsArgument(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	arg.IsShortDeclaration = dsBool(sArg.IsShortDeclaration)
 	arg.PreviouslyDeclared = dsBool(sArg.PreviouslyDeclared)
 	arg.DoesEscape = dsBool(sArg.DoesEscape)
-	
+
 	arg.Lengths = dsIntegers(sArg.LengthsOffset, sArg.LengthsSize, s)
 	arg.Indexes = dsArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
 	arg.Fields = dsArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
@@ -1253,19 +1253,19 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	var prgrm2Info sProgram
 	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &prgrm2Info)
-	
+
 	var extracted []byte
 	// must match the index from sPrgrm1
 	extracted = append(extracted, sPrgrm1[:index1.ProgramOffset]...)
 
 	// Program
 	var sPrgrm sProgram
-	encoder.DeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
+	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
 	// We need the heap pointer calculated after running the program, which is
 	// present in `sPrgrm2`.
-	sPrgrm.HeapPointer = prgrm2Info.HeapPointer 
+	sPrgrm.HeapPointer = prgrm2Info.HeapPointer
 	extracted = append(extracted, encoder.Serialize(sPrgrm)...)
-	
+
 	// extracted = append(extracted, sPrgrm1[index1.ProgramOffset:index1.CallsOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset)]...)
@@ -1369,7 +1369,7 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	// Program
 	var sPrgrm sProgram
-	encoder.DeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &sPrgrm)
+	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &sPrgrm)
 	// We need to use the heap pointer from the CX chain program state, which is
 	// represented by `sPrgrm1`.
 	sPrgrm.HeapPointer = prgrm1Info.HeapPointer
@@ -1447,9 +1447,9 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, txnDataSegment...)
 
 	// Adding heap segment.
-	bcHeapSegment := sPrgrm1[index1.MemoryOffset+prgrm1DataSize:index1.MemoryOffset+prgrm1DataSize+prgrm1Info.HeapPointer]
+	bcHeapSegment := sPrgrm1[index1.MemoryOffset+prgrm1DataSize : index1.MemoryOffset+prgrm1DataSize+prgrm1Info.HeapPointer]
 	merged = append(merged, bcHeapSegment...)
- 
+
 	// correcting sizes
 	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, int(encoder.Size(sCall{})))
 	updateSerializedSize(&merged, index2.PackagesOffset, index2.StructsOffset, int(encoder.Size(sPackage{})))
