@@ -1327,10 +1327,10 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
 
-	// We were also simulating an empty stack, but it doesn't make sense now.
-	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
-	// We are only interested on extracting the data segment for now.
-
+	// Calculating where the data segment starts and its sizes in `sPrgrm1` and `sPrgrm2`.
+	// In this case, the heap segment of the transaction code should not be appended.
+	// The transaction code heap should only be auxiliary in the process of updating
+	// the CX chain program state.
 	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
 	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
