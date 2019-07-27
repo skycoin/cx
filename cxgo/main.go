@@ -47,7 +47,7 @@ import (
 	"errors"
 )
 
-const VERSION = "0.7.0"
+const VERSION = "0.7.1"
 
 var (
 	log             = logging.MustGetLogger("newcoin")
