@@ -1,9 +1,23 @@
 # Changelog
 
-### v0.7.1 (NOT YET RELEASED)
+### v0.7.2 (NOT YET RELEASED)
 * Additions
-  * Added a function that prints information about the heap for debugging purposes (`debugHeap` in cx/utilities.go).
+  * ...
+* Changes
+  * ...
+* Libraries
+  * ...
+* Fixed issues
+  * ...
+* Documentation
+  * ...
+* Miscellaneous
+  * ...
+
+### v0.7.1 released 2019-07-26
+* Additions
   * Added capability of storing heap objects in a CX chain's program state.
+  * Added a function that prints information about the heap for debugging purposes (`debugHeap` in cx/utilities.go).
 * Changes
   * Redesign of CX's garbage collector.
   * Changes to several functions that relied on allocating objects on the heap.
