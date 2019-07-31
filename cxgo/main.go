@@ -49,7 +49,12 @@ import (
 	"errors"
 )
 
-const VERSION = "0.7.0"
+const (
+	VERSION        = "0.7.0"
+	walletPath     = "/tmp/6001/wallets/"
+	walletSeed     = "museum nothing practice weird wheel dignity economy attend mask recipe minor dress"
+	lastRunAppPath = "/tmp/6001/lastRunApp.txt"
+)
 
 var (
 	log             = logging.MustGetLogger("newcoin")
@@ -268,6 +273,8 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 	switch mode {
 	case "publisher":
+		confirmSameUpIsRunning(options.genesisSignature)
+		confirmWalletExists()
 		return exec.Command("cxcoin", "-enable-all-api-sets",
 		"-block-publisher=true",
 			"-localhost-only",
@@ -342,17 +349,13 @@ func main() {
 			panic(fmt.Errorf("config from path %v can't be unmarshalled to JSON struct due to error %v", options.configPath, err))
 		}
 
-		// TODO consider creating the wallet for cxcoin if one doesn't alerady exist.
-		// As for now, it's mandatory manual step in setting up the environment to create this wallet
-
-		// TODO change fiber.toml values for genesis_address_str, genesis_signature_str and blockchain_pubkey_str
-		// Also, check the switch between two apps locally. Config will be fetched correctly but new app will not run
-
 		applyConfigValue(&options.genesisAddress, configFromFile.GenesisAddress)
 		applyConfigValue(&options.genesisSignature, configFromFile.GenesisHash)
 		applyConfigValue(&options.pubKey, configFromFile.PublicKey)
 		applyConfigValue(&options.secKey, configFromFile.SecretKey)
 	}
+
+	// TODO change fiber.toml values for genesis_address_str, genesis_signature_str and blockchain_pubkey_str
 
 	// Propagate some options out to other packages
 	DebugLexer = options.debugLexer   // in package parser
@@ -457,7 +460,7 @@ func main() {
 			panic(err)
 		}
 		// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
-		err = wlt.Save("/tmp/6001/wallets/")
+		err = wlt.Save(walletPath)
 		if err != nil {
 			panic(err)
 		}
@@ -1438,4 +1441,67 @@ func applyConfigValue(cliArgument *string, configValue string) {
 		log.Warnf("Provided CLI value %v will be replaced with one from the config file %v", *cliArgument, configValue)
 	}
 	*cliArgument = configValue
+}
+
+func confirmWalletExists() {
+	if _, err := os.Stat(walletPath + "cxcoin_cli.wlt"); os.IsNotExist(err) {
+		log.Info("Wallet doesn't exist, creating new one...")
+		cmd := exec.Command("cx", "--create-wallet", "--wallet-seed", walletSeed)
+		cmd.Start()
+		cmd.Wait()
+		log.Info("... Wallet succesfully created")
+	} else {
+		log.Debug("Wallet already exists")
+	}
+}
+
+func confirmSameUpIsRunning(runningGenesisSignature string) {
+	var (
+		file             *os.File
+		errCreateAppHash error
+	)
+	if _, err := os.Stat(lastRunAppPath); os.IsNotExist(err) {
+		file, errCreateAppHash = os.Create(lastRunAppPath)
+		if errCreateAppHash != nil {
+			log.Errorf("can't create genesis hash record on path %v due to error %v", lastRunAppPath, errCreateAppHash)
+		}
+		defer file.Close()
+	} else {
+		content := ""
+		fileBuffer, errLastRun := ioutil.ReadFile(lastRunAppPath)
+		if errLastRun != nil {
+			log.Errorf("can't read genesis hash from path %v due to error %v", lastRunAppPath, errLastRun)
+		} else {
+			content = string(fileBuffer)
+		}
+
+		if content != runningGenesisSignature {
+			cmd := exec.Command("rm", "-R", "~/.cxcoin/")
+			cmd.Start()
+			cmd.Wait()
+
+			cmd2 := exec.Command("rm", "-R", "/tmp/6001/")
+			cmd2.Start()
+			cmd2.Wait()
+
+			cmd3 := exec.Command("mkdir", "-p", "/tmp/6001/")
+			cmd3.Start()
+			cmd3.Wait()
+
+			file, errCreateAppHash = os.Create(lastRunAppPath)
+			if errCreateAppHash != nil {
+				log.Errorf("can't create genesis hash record on path %v due to error %v", lastRunAppPath, errCreateAppHash)
+			}
+			defer file.Close()
+		}
+	}
+
+	if _, err := file.Stat(); err == nil {
+		log.Info("Storing new content to last run app path")
+		if _, err := file.WriteAt([]byte(runningGenesisSignature), 0); err != nil {
+			log.Errorf("can't write genesis hash file from path %v due to error %v", lastRunAppPath, err)
+		}
+	} else {
+		log.Debug("Not storing new content, running based on the same app genesis hash")
+	}
 }
