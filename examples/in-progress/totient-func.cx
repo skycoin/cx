@@ -1,0 +1,75 @@
+package main
+ 
+func gcd(n i32, k i32) (out i32) {
+    if i32.lt(n, k) || i32.lt(k, 1) {
+        out = 0
+		return
+    }
+ 
+    s := 1
+    for ; i32.eq(i32.bitand(n,1), 0) && i32.eq(i32.bitand(k,1), 0); {
+    	n = i32.bitshr(n,1)
+		k = i32.bitshr(k,1)
+		s = i32.bitshl(s,1)
+    }
+ 
+    t := n
+    if i32.uneq(i32.bitand(n,1), 0) {
+        t = -k
+    }
+    
+    for ; i32.uneq(t,0); {
+        for ; i32.eq(i32.bitand(t,1), 0); {
+            t = i32.bitshr(t,1)
+        }
+	
+        if i32.lt(t,0) {
+            n = t
+        } else {
+            k = -t
+        }
+		
+        t = n - k
+    }
+    out = i32.mul(n,s)
+}
+ 
+func totient(n i32) (out i32) {
+    tot := 0
+    for k := 1; i32.lteq(k,n); k++ {
+    	g := gcd(n,k)
+        if i32.eq(g,1) {
+            tot = i32.add(tot,1)
+        }
+    }
+    out = tot
+}
+ 
+func main() {
+    count := 0
+    for n := 1; i32.lteq(n,25); n++ {
+		
+        tot := totient(n)
+        isPrime := i32.eq(i32.sub(n,1), tot)
+		
+        if isPrime == true {
+            i32.add(count,1)
+        }
+		
+        printf("%d  %d  %t\n", n, tot, isPrime)
+    }
+    
+    printf("\nNumber of primes up to 25 = %d", count)
+    for n := 26; i32.lteq(n,100000); n++ {
+		
+        tot := totient(n)
+		
+        if i32.eq(tot, i32.sub(n,1)) {
+            i32.add(count,1)
+        }
+	
+        if i32.eq(n,100) || i32.eq(n,1000) || i32.eq(i32.mod(n,10000),0) {
+            printf("\nNumber of primes up to %-6d = %d\n", n, count)
+        }
+    }
+}
