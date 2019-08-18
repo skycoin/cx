@@ -1,0 +1,20 @@
+package main
+ 
+func v2(n i32) (r f64) {
+    p := 0.5D
+    for ;n > 0; {
+        if i32.bitand(n,1) == 1 {
+            r = f64.add(r,p)
+        }
+        p = f64.mul(p, 0.5D)
+        n = i32.bitshr(n,1)
+    }
+    return
+}
+
+func main() {
+    printf("Base 2:")
+    for i := 0; i < 10; i++ {
+        printf("%d, %f\n", i, v2(i))
+    }
+}
