@@ -1,0 +1,37 @@
+package main
+
+var max i32
+
+func main() {
+    max = 1000
+    var a []i32
+
+	// all zero as default
+	for i := 0; i < max; i++ {
+		a = append(a,0)
+	}
+
+	n := 0
+    for ; i32.lt(n, i32.sub(max,1)); {
+		m := i32.sub(n,1)
+		for ; m >= 0; m-- {
+            if i32.eq(a[m],a[n]) {
+                a[n+1] = i32.sub(n,m)
+				goto next
+            }    
+        }
+next:
+		n = i32.add(n,1)
+    }
+	
+	printf("The first ten terms of the Van Eck sequence are:\n")
+	for i := 0; i < 10; i++ {
+		printf("%d ", a[i])
+	}
+
+    printf("\nTerms 991 to 1000 of the sequence are:\n")
+	for i := 990; i < 1000; i++ {
+		printf("%d ", a[i])
+	}
+	printf("\n")
+}
