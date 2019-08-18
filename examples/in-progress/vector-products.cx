@@ -1,0 +1,58 @@
+package main
+ 
+type vector struct {
+    x f64
+	y f64
+	z f64
+}
+ 
+var a vector
+var b vector
+var c vector
+ 
+func dot(a vector, b vector) (out f64) {
+	out = f64.add(f64.add(f64.mul(a.x, b.x),f64.mul(a.y,b.y)), f64.mul(a.z,b.z))
+}
+ 
+func cross(a vector, b vector) (out vector) {
+	out.x = f64.sub(f64.mul(a.y,b.z), f64.mul(a.z,b.y))
+	out.y = f64.sub(f64.mul(a.z,b.x), f64.mul(a.x,b.z))
+	out.z = f64.sub(f64.mul(a.x,b.y), f64.mul(a.y,b.x))
+}
+ 
+func s3(a vector, b vector, c vector) (out f64) {
+	cr := cross(b, c)
+	out = dot(a,cr)
+}
+ 
+func v3(a vector, b vector, c vector) (out vector) {
+	cr := cross(b,c)
+	out = cross(a,cr)
+}
+ 
+func main() {
+	// initialize
+	a.x = 3.0D
+	a.y = 4.0D
+	a.z = 5.0D
+
+	b.x = 4.0D
+	b.y = 3.0D
+	b.z = 5.0D
+
+	c.x = -5.0D
+	c.y = -12.0D
+	c.z = -13.0D
+	
+	d := dot(a,b)
+    printf("%f\n", d)
+
+	cr := cross(a,b)
+	printf("(%f, %f, %f)\n", cr.x, cr.y, cr.z)
+
+	s := s3(a,b,c)
+    printf("%f\n", s)
+
+	v := v3(a,b,c)
+	printf("(%f, %f, %f)\n", v.x, v.y, v.z)
+}
