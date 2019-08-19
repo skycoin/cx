@@ -1,0 +1,95 @@
+package main
+ 
+func divisors(n i32) (out []i32) {
+    var divs []i32
+	var divs2 []i32
+	divs = append(divs,1)
+	
+    for i := 2; i32.lteq(i32.mul(i,i),n); i++ {
+		
+        if i32.eq(i32.mod(n,i), 0) {
+            j := i32.div(n,i)
+            divs = append(divs, i)
+            if i != j {
+                divs2 = append(divs2, j)
+            }
+        }
+    }
+	
+    for i := i32.sub(len(divs),1); i >= 0; i-- {
+        divs2 = append(divs2, divs[i])
+    }
+    out = divs2
+}
+ 
+func abundant(n i32, divs []i32) (out bool) {
+    sum := 0
+    for i := 0; i < len(divs); i++{
+        sum = i32.add(sum, divs[i])
+    }
+    out = i32.lt(sum,n)
+}
+ 
+func semiperfect(n i32, divs []i32) (out bool) {
+	var t []i32
+    le := len(divs)
+    if le > 0 {
+        h := divs[0]
+
+		for i := 1; i < len(divs); i++ {
+			t = append(t, divs[i])
+		}
+		
+        if n < h {
+            out = semiperfect(n, t)
+			return
+        } else {
+			out = n == h || semiperfect(n-h, t) || semiperfect(n, t)
+			return
+        }
+    } else {
+        out = false
+    }
+} 
+ 
+func sieve(limit i32) (out []bool) {
+    // false denotes abundant and not semi-perfect.
+    // Only interested in even numbers >= 2
+	var w []bool
+	for i := 0; i < limit; i++ {
+		w = append(w,false)
+	}
+
+    for i := 2; i < limit;  {
+        if w[i] == true {
+            goto next
+        }
+		
+        divs := divisors(i)
+        if abundant(i, divs) == false {
+            w[i] = true
+        } else if semiperfect(i, divs) == true {
+            for j := i; j < limit; {
+                w[j] = true
+				j = i32.add(j,i)
+            }
+        }
+next:
+		i = i32.add(i,2)
+    }
+    return w
+}
+ 
+func main() {
+    w := sieve(17000)
+    count := 0
+    max := 25
+    printf("The first 25 weird numbers are:")
+    for n := 2; count < max; n += 2 {
+        if w[n] == false {
+            printf("%d ", n)
+            count++
+        }
+		n = i32.add(n,2)
+    }
+}
