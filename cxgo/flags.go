@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type cxCmdFlags struct {
@@ -133,66 +132,6 @@ CX options:
 Notes:
 * Option --web makes every other flag to be ignored.
 `)
-}
-
-// parseArgsForCX parses the arguments and returns:
-//  - []arguments
-//  - []file pointers	open files
-//  - []sting		filenames
-func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
-	for _, arg := range args {
-		if len(arg) > 2 && arg[:2] == "++" {
-			cxArgs = append(cxArgs, arg)
-			continue
-		}
-		fi, err := os.Stat(arg)
-		_ = err
-
-		if err != nil {
-			panic(err)
-		}
-
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			var fileList []string
-
-			err := filepath.Walk(arg, func(path string, f os.FileInfo, err error) error {
-				fileList = append(fileList, path)
-				return nil
-			})
-
-			if err != nil {
-				panic(err)
-			}
-
-			for _, path := range fileList {
-				file, err := os.Open(path)
-
-				if err != nil {
-					panic(err)
-				}
-
-				fiName := file.Name()
-				fiNameLen := len(fiName)
-
-				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
-					// only loading .cx files
-					sourceCode = append(sourceCode, file)
-					fileNames = append(fileNames, fiName)
-				}
-			}
-		case mode.IsRegular():
-			file, err := os.Open(arg)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fileNames = append(fileNames, file.Name())
-			sourceCode = append(sourceCode, file)
-		}
-	}
-	return
 }
 
 func printVersion() {
