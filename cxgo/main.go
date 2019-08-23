@@ -444,6 +444,68 @@ func optionRunNode(options cxCmdFlags) {
 	}()
 }
 
+// ParseSourceCode takes a group of files representing CX `sourceCode` and
+// parses it into CX program structures for `PRGRM`.
+func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+	cxgo0.PRGRM0 = PRGRM
+
+	// Copy the contents of the file pointers containing the CX source
+	// code into sourceCodeCopy
+	sourceCodeCopy := make([]string, len(sourceCode))
+	for i, source := range sourceCode {
+		tmp := bytes.NewBuffer(nil)
+		io.Copy(tmp, source)
+		sourceCodeCopy[i] = string(tmp.Bytes())
+	}
+
+	// We need to traverse the elements by hierarchy first add all the
+	// packages and structs at the same time then add globals, as these
+	// can be of a custom type (and it could be imported) the signatures
+	// of functions and methods are added in the cxgo0.y pass
+	parseErrors := 0
+	if len(sourceCode) > 0 {
+		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
+	}
+
+	PRGRM = cxgo0.PRGRM0
+	if FoundCompileErrors || parseErrors > 0 {
+		os.Exit(CX_COMPILATION_ERROR)
+	}
+
+	// Adding global variables `OS_ARGS` to the `os` (operating system)
+	// package.
+	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
+		if _, err := osPkg.GetGlobal(OS_ARGS); err != nil {
+			arg0 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_UNDEFINED])
+			arg0.Package = osPkg
+
+			arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
+			arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
+			arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
+
+			DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
+		}
+	}
+
+	// The last pass of parsing that generates the actual output.
+	for i, source := range sourceCodeCopy {
+		// Because of an unkown reason, sometimes some CX programs
+		// throw an error related to a premature EOF (particularly in Windows).
+		// Adding a newline character solves this.
+		source = source + "\n"
+		LineNo = 1
+		b := bytes.NewBufferString(source)
+		if len(fileNames) > 0 {
+			CurrentFile = fileNames[i]
+		}
+		parseErrors += Parse(NewLexer(b))
+	}
+
+	if FoundCompileErrors || parseErrors > 0 {
+		os.Exit(CX_COMPILATION_ERROR)
+	}
+}
+
 func main() {
 	checkCXPathSet()
 
@@ -504,7 +566,7 @@ func main() {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := parseArgsForCX(flag.Args())
+	cxArgs, sourceCode, fileNames := ParseArgsForCX(flag.Args())
 
 	// Propagate some options out to other packages.
 	DebugLexer = options.debugLexer   // in package parser
@@ -542,65 +604,12 @@ func main() {
 		chainStatePrelude(&sPrgrm, &bcHeap, PRGRM)
 	}
 
-	cxgo0.PRGRM0 = PRGRM
+	// Parsing all the source code files sent as CLI arguments to CX.
+	ParseSourceCode(sourceCode, fileNames)
 
 	// setting project's working directory
 	if !options.replMode && len(sourceCode) > 0 {
 		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
-	}
-
-	// Copy the contents of the file pointers containing the CX source
-	// code into sourceCodeCopy
-	sourceCodeCopy := make([]string, len(sourceCode))
-	for i, source := range sourceCode {
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
-		sourceCodeCopy[i] = string(tmp.Bytes())
-	}
-	
-	// We need to traverse the elements by hierarchy first add all the
-	// packages and structs at the same time then add globals, as these
-	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxgo0.y pass
-	parseErrors := 0
-	if len(sourceCode) > 0 {
-		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
-	}
-
-	PRGRM = cxgo0.PRGRM0
-	if FoundCompileErrors || parseErrors > 0 {
-		os.Exit(CX_COMPILATION_ERROR)
-	}
-
-	// Adding global variables `OS_ARGS` to the `os` (operating system)
-	// package.
-	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
-		arg0 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_UNDEFINED])
-		arg0.Package = osPkg
-
-		arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
-		arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
-		arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
-
-		DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
-	}
-
-	// The last pass of parsing that generates the actual output.
-	for i, source := range sourceCodeCopy {
-		// Because of an unkown reason, sometimes some CX programs
-		// throw an error related to a premature EOF (particularly in Windows).
-		// Adding a newline character solves this.
-		source = source + "\n"
-		LineNo = 1
-		b := bytes.NewBufferString(source)
-		if len(fileNames) > 0 {
-			CurrentFile = fileNames[i]
-		}
-		parseErrors += Parse(NewLexer(b))
-	}
-
-	if FoundCompileErrors || parseErrors > 0 {
-		os.Exit(CX_COMPILATION_ERROR)
 	}
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
