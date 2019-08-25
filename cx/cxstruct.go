@@ -1,20 +1,16 @@
 package cxcore
 
 import (
-	// "errors"
 	"fmt"
-
-	. "github.com/satori/go.uuid" //nolint golint
 )
 
 // CXStruct is used to represent a CX struct.
 //
 type CXStruct struct {
 	// Metadata
-	Name      string     // Name of the struct
-	Package   *CXPackage // The package this struct belongs to
-	Size      int        // The size in memory that this struct takes.
-	ElementID UUID
+	Name    string     // Name of the struct
+	Package *CXPackage // The package this struct belongs to
+	Size    int        // The size in memory that this struct takes.
 
 	// Contents
 	Fields []*CXArgument // The fields of the struct
@@ -23,8 +19,7 @@ type CXStruct struct {
 // MakeStruct ...
 func MakeStruct(name string) *CXStruct {
 	return &CXStruct{
-		ElementID: MakeElementID(),
-		Name:      name,
+		Name: name,
 	}
 }
 

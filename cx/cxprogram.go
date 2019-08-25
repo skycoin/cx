@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
-	. "github.com/satori/go.uuid" // nolint golint
 )
 
 /*
@@ -23,8 +22,7 @@ import (
 //
 type CXProgram struct {
 	// Metadata
-	Path      string // Path to the CX project in the filesystem
-	ElementID UUID   // Was supposed to be used for blockchain integration. Needs to be removed.
+	Path string // Path to the CX project in the filesystem
 
 	// Contents
 	Packages []*CXPackage // Packages in a CX program
@@ -58,7 +56,6 @@ type CXCall struct {
 func MakeProgram() *CXProgram {
 	minHeapSize := minHeapSize()
 	newPrgrm := &CXProgram{
-		ElementID:   MakeElementID(),
 		Packages:    make([]*CXPackage, 0),
 		CallStack:   make([]CXCall, CALLSTACK_SIZE),
 		Memory:      make([]byte, STACK_SIZE+minHeapSize),
