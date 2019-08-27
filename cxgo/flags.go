@@ -4,12 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type cxCmdFlags struct {
 	baseOutput          bool
-	compileMode         bool
 	compileOutput       string
 	newProject          bool
 	replMode            bool
@@ -47,7 +45,6 @@ type cxCmdFlags struct {
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
 		baseOutput:          false,
-		compileMode:         false,
 		compileOutput:       "",
 		newProject:          false,
 		replMode:            false,
@@ -79,14 +76,8 @@ func registerFlags(options *cxCmdFlags) {
 
 	flag.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	flag.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
-	// flag.BoolVar(&options.printHelp, "help", options.printHelp, "Print CX version")
-	// flag.BoolVar(&options.printHelp, "h", options.printHelp, "alias for -help")
-	flag.BoolVar(&options.baseOutput, "base", options.baseOutput, "generate a 'out.cx.go' file with the transcompiled CX base source code.")
-	flag.BoolVar(&options.baseOutput, "b", options.baseOutput, "alias for -base")
 	flag.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	flag.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
-	flag.BoolVar(&options.compileMode, "compile", options.compileMode, "generate a 'out' executable file of the program")
-	flag.BoolVar(&options.compileMode, "c", options.compileMode, "alias for -compile")
 	flag.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
 	flag.BoolVar(&options.newProject, "new", options.newProject, "Creates a new project located at $CXPATH/src")
 	flag.BoolVar(&options.newProject, "n", options.newProject, "alias for -new")
@@ -133,79 +124,14 @@ func printHelp() {
 	fmt.Printf(`Usage: cx [options] [source-files]
 
 CX options:
--b, --base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
--c, --compile                     Generate a "out" executable file of the program.
--co, --compile-output FILENAME    Specifies the filename for the generated executable.
 -h, --help                        Prints this message.
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide                       Start CX as a web service, and Leaps service start also.
 
 Notes:
-* Options --compile and --repl are mutually exclusive.
 * Option --web makes every other flag to be ignored.
 `)
-}
-
-// parseArgsForCX parses the arguments and returns:
-//  - []arguments
-//  - []file pointers	open files
-//  - []sting		filenames
-func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
-	for _, arg := range args {
-		if len(arg) > 2 && arg[:2] == "++" {
-			cxArgs = append(cxArgs, arg)
-			continue
-		}
-		fi, err := os.Stat(arg)
-		_ = err
-
-		if err != nil {
-			panic(err)
-		}
-
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			var fileList []string
-
-			err := filepath.Walk(arg, func(path string, f os.FileInfo, err error) error {
-				fileList = append(fileList, path)
-				return nil
-			})
-
-			if err != nil {
-				panic(err)
-			}
-
-			for _, path := range fileList {
-				file, err := os.Open(path)
-
-				if err != nil {
-					panic(err)
-				}
-
-				fiName := file.Name()
-				fiNameLen := len(fiName)
-
-				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
-					// only loading .cx files
-					sourceCode = append(sourceCode, file)
-					fileNames = append(fileNames, fiName)
-				}
-			}
-		case mode.IsRegular():
-			file, err := os.Open(arg)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fileNames = append(fileNames, file.Name())
-			sourceCode = append(sourceCode, file)
-		}
-	}
-	return
 }
 
 func printVersion() {

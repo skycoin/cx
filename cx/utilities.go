@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"text/tabwriter"
@@ -1157,4 +1158,69 @@ func DebugHeap() {
 	// Just a newline.
 	fmt.Fprintln(w)
 	w.Flush()
+}
+
+// ParseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
+func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	for _, arg := range args {
+		if len(arg) > 2 && arg[:2] == "++" {
+			cxArgs = append(cxArgs, arg)
+			continue
+		}
+
+		fi, err := os.Stat(arg)
+		_ = err
+
+		if err != nil {
+			panic(err)
+		}
+
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			var fileList []string
+
+			err := filepath.Walk(arg, func(path string, _ os.FileInfo, err error) error {
+				fileList = append(fileList, path)
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+
+			if err != nil {
+				panic(err)
+			}
+
+			for _, path := range fileList {
+				file, err := os.Open(path)
+
+				if err != nil {
+					panic(err)
+				}
+
+				fiName := file.Name()
+				fiNameLen := len(fiName)
+
+				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
+					// only loading .cx files
+					sourceCode = append(sourceCode, file)
+					fileNames = append(fileNames, fiName)
+				}
+			}
+		case mode.IsRegular():
+			file, err := os.Open(arg)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fileNames = append(fileNames, file.Name())
+			sourceCode = append(sourceCode, file)
+		}
+	}
+
+	return cxArgs, sourceCode, fileNames
 }
