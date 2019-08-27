@@ -177,7 +177,6 @@ func opJSONTokenType(prgrm *CXProgram) {
 }
 
 // Delim returns current token as an int32 delimiter.
-// Panics if token type is not JSON_TOKEN_DELIM.
 func opJSONTokenDelim(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -197,7 +196,6 @@ func opJSONTokenDelim(prgrm *CXProgram) {
 }
 
 // Bool returns current token as a bool value.
-// Panics if token type is not JSON_TOKEN_BOOL.
 func opJSONTokenBool(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -217,7 +215,6 @@ func opJSONTokenBool(prgrm *CXProgram) {
 }
 
 // Float64 returns current token as float64 value.
-// Panics if token can't be interpreted as float64 value.
 func opJSONTokenF64(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -242,7 +239,6 @@ func opJSONTokenF64(prgrm *CXProgram) {
 }
 
 // Int64 returns current token as int64 value.
-// Panics if  token can't be interpreted as int64 value.
 func opJSONTokenI64(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -264,7 +260,6 @@ func opJSONTokenI64(prgrm *CXProgram) {
 }
 
 // Str returns current token as string value.
-// Panics if token type is not JSON_TOKEN_STR.
 func opJSONTokenStr(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
