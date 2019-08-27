@@ -2171,6 +2171,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT -heap-initial 0 test-gc.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Stress-testing the garbage collector
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT ../lib/json.cx test-json.cx
  COMMA 
  IDENT cx
@@ -3419,7 +3430,7 @@ PERIOD
 STRLIT Short declaration doesn't compile with opcode return value
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-286.cx
  COMMA 
@@ -3428,10 +3439,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Compilation error when struct field is named 'input' or 'output'
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -3686,6 +3693,21 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Cx is not supporting short-circuit evaluation
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-415.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT func defined with no arguments, called WITH arguments causes PANIC
  COMMA 
  IDENT TEST_ISSUE
  COMMA 

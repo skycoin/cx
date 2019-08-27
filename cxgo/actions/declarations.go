@@ -216,7 +216,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 	}
 
 	// If the package is already defined in the program, just add it to
-	// the program.
+	// the importing package.
 	if imp, err := PRGRM.GetPackage(ident); err == nil {
 		pkg.AddImport(imp)
 		return

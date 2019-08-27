@@ -400,14 +400,47 @@ func ProcessExpressionArguments(symbols *[]map[string]*CXArgument, symbolsScope 
 	}
 }
 
-// this function adds the roots (pointers) for some GC algorithms
+// isPointer checks if `sym` is a candidate for the garbage collector to check.
+// For example, if `sym` is a slice, the garbage collector will need to check
+// if the slice on the heap needs to be relocated.
+func isPointer(sym *CXArgument) bool {
+	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
+	// TODO: We could still pre-compute a list of candidates for globals.
+	if sym.Offset >= PRGRM.StackSize && sym.Name != "" {
+		return false
+	}
+	// NOTE: Strings are considered as `IsPointer`s by the runtime.
+	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+		return true
+	}
+	// If `sym` is a structure instance, we need to check if the last field
+	// being access is a pointer candidate
+	if len(sym.Fields) > 0 {
+		return isPointer(sym.Fields[len(sym.Fields)-1])
+	}
+	return false
+}
+
+// AddPointer checks if `sym` or its last field, if a struct, behaves like a pointer (slice, pointer, string). If this is the case, `sym` is added to `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *CXFunction, sym *CXArgument) {
-	if sym.IsPointer && sym.Name != "" {
+	// Checking if it is a pointer candidate.
+	if isPointer(sym) {
+		// Checking if it was already added to the list.
 		var found bool
 		for _, ptr := range fn.ListOfPointers {
 			if sym.Name == ptr.Name {
-				found = true
-				break
+				if len(sym.Fields) == 0 && len(ptr.Fields) == 0 {
+					found = true
+					break
+				}
+
+				// Checking if we're referring to the same symbol and same fields being accessed. For instance, `foo.bar` != `foo.car` as these will have different memory offset to be considered by the garbage collector.
+				if len(sym.Fields) > 0 &&
+					len(sym.Fields) == len(ptr.Fields) &&
+					sym.Fields[len(sym.Fields)-1].Name == ptr.Fields[len(ptr.Fields)-1].Name {
+					found = true
+					break
+				}
 			}
 		}
 		if !found {

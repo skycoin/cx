@@ -19,7 +19,7 @@ The informational files are:
 The tools and installation scripts are:
 
 * **cx-setup.bat** The setup and installation script for CX on Windows
-* **cx.sh** The setup and installation script for CX on Linux
+* **cx.sh** The setup and installation script for CX on Linux/MacOS
 * **Makefile** The standard way of building CX, using the `make` tool.
 
 ### CX Source Code
@@ -43,18 +43,18 @@ details about the tests.
 * **benchmark/** This directory contains various benchmarks vs other languages
 such as Go and Python.
 
-### Documentation 
+### Documentation
 
 * **documentation/** contains documentation about the internals
                      of the CX codebase. This file (OVERVIEW.md) is in that
-                     directory. 
+                     directory.
 * **book/** This directory contains a full CX tutorial book written in the
             LaTeX typesetting system.  Please note that the contents of the
             book is created on a site called Overleaf, which provides a good
             authoring environment for LaTeX files.  Only occasionally are
             snapshots taken from Overleaf and stored into git as a backup.
             If you want to help out with the book, please ask the team for
-            access to Overleaf. 
+            access to Overleaf.
 * **README-images/** stores images used in the `README.md` file.
 
 ### Tools
@@ -70,13 +70,13 @@ such as Go and Python.
 ### Example Code
 
 * **examples/** contains many small and smallish exemples of how to write CX
-programs. 
+programs.
 * **cx-games/** contains a number of games written in CX. These games can be
 used for testing CX or as templates for other CX programs.
 
 ## Parser Workflow
 
-The CX parser analyzes the source code of a CX program and 
+The CX parser analyzes the source code of a CX program and
  works in two passes:
 
 1. The first pass (in `cxgo/cxg0`) reads all the types, global variables and
@@ -95,7 +95,7 @@ computer compilers.
 
 The interpreter interprets the internal representation of the program. This
 representation is created by a tree of the data structures in the following
-subsections. 
+subsections.
 
 ### CXProgram
 

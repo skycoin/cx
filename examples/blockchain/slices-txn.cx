@@ -1,0 +1,20 @@
+package main
+import "bc"
+
+func main () {
+	bc.numbers = append(bc.numbers, 5)
+	bc.numbers = append(bc.numbers, 6)
+
+	// Print all the numbers that have been added in transactions.
+	for c := 0; c < len(bc.numbers); c++ {
+		i32.print(bc.numbers[c])
+	}
+
+	bc.texts = append(bc.texts, "in")
+	bc.texts = append(bc.texts, "Wonderland")
+
+	// Print all the texts that have been added in transactions.
+	for d := 0; d < len(bc.texts); d++ {
+		str.print(bc.texts[d])
+	}
+}

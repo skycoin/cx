@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
@@ -648,17 +650,10 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceResize ...
-func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
+// sliceResize does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
-	}
-
-	var inputSliceLen int32
-	if inputSliceOffset != 0 {
-		inputSliceLen = GetSliceLen(inputSliceOffset)
-		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	var outputSliceHeader []byte
@@ -687,36 +682,84 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
 	}
 
+	return int(outputSliceOffset)
+}
+
+// SliceResize ...
+func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
+	outputSliceOffset := GetSliceOffset(fp, out)
+
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, count, sizeofElement))
+
+	SliceCopy(fp, outputSliceOffset, inp, count, sizeofElement)
+
+	return int(outputSliceOffset)
+}
+
+// sliceCopy does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func sliceCopy(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
+	if count < 0 {
+		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
+	}
+
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	var outputSliceHeader []byte
+	var outputSliceLen int32
+	var outputSliceCap int32
+
 	if outputSliceOffset > 0 {
-		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
+		outputSliceHeader = GetSliceHeader(outputSliceOffset)
+		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
+		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+	}
+
+	if outputSliceOffset > 0 {
+		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(count))
 		outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
 		}
 	}
-
-	return int(outputSliceOffset)
 }
 
-// SliceAppend ...
-func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte) int {
+// SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
+func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	sliceCopy(outputSliceOffset, inputSliceOffset, count, sizeofElement)
+}
+
+// SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
+func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	// outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
-		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
+	// TODO: Are we limited then to only one element for now? (because of that +1)
+	outputSliceOffset := int32(SliceResize(fp, out, inp, inputSliceLen+1, sizeofElement))
+	return outputSliceOffset
+}
+
+// SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+func SliceAppendWrite(outputSliceOffset int32, inputSliceOffset int32, object []byte, index int32) {
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
-	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
-	return int(outputSliceOffset)
+	copy(outputSliceData[int(index)*sizeofElement:], object)
 }
 
 // SliceInsert ...
-func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, object []byte) int {
+func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	// outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -728,7 +771,7 @@ func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, o
 
 	var newLen = inputSliceLen + 1
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, newLen, sizeofElement))
+	outputSliceOffset := int32(SliceResize(fp, out, inp, newLen, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index+1)*sizeofElement:], outputSliceData[int(index)*sizeofElement:])
 	copy(outputSliceData[int(index)*sizeofElement:], object)
@@ -736,7 +779,10 @@ func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, o
 }
 
 // SliceRemove ...
-func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, sizeofElement int32) int {
+func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofElement int32) int {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -748,20 +794,38 @@ func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, s
 
 	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen-1, int(sizeofElement)))
+	outputSliceOffset = int32(SliceResize(fp, out, inp, inputSliceLen-1, int(sizeofElement)))
 	return int(outputSliceOffset)
 }
 
-// WriteToSlice ...
+// WriteToSlice is used to create slices in the backend, i.e. not by calling `append`
+// in a CX program, but rather by the CX code itself. This function is used by
+// affordances, serialization and to store OS input arguments.
 func WriteToSlice(off int, inp []byte) int {
-	return SliceAppend(int32(off), int32(off), inp)
+	// TODO: Check all these parses from/to int32/int.
+	var inputSliceLen int32
+	if off != 0 {
+		inputSliceLen = GetSliceLen(int32(off))
+	}
+
+	inpLen := len(inp)
+	// We first check if a resize is needed. If a resize occurred
+	// the address of the new slice will be stored in `newOff` and will
+	// be different to `off`.
+	newOff := sliceResize(int32(off), inputSliceLen+1, inpLen)
+
+	// Copy the data from the old slice at `off` to `newOff`.
+	sliceCopy(int32(newOff), int32(off), inputSliceLen+1, inpLen)
+
+	// Write the new slice element `inp` to the slice located at `newOff`.
+	SliceAppendWrite(int32(newOff), int32(off), inp, inputSliceLen)
+	return newOff
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
 func writeObj(obj []byte) int {
 	size := len(obj)
 	sizeB := encoder.SerializeAtomic(int32(size))
-	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
 	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
 
 	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
@@ -774,7 +838,7 @@ func writeObj(obj []byte) int {
 	}
 
 	WriteMemory(heapOffset, finalObj)
-	return heapOffset + OBJECT_HEADER_SIZE
+	return heapOffset
 }
 
 // WriteObject ...
@@ -993,4 +1057,170 @@ func mustDeserializeRaw(byts []byte, item interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// DebugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
+func DebugHeap() {
+	// symsToAddrs will hold a list of symbols that are pointing to an address.
+	symsToAddrs := make(map[int32][]string)
+
+	// Processing global variables. Adding the address they are pointing to.
+	for _, pkg := range PROGRAM.Packages {
+		for _, glbl := range pkg.Globals {
+			if glbl.IsPointer || glbl.IsSlice {
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
+			}
+		}
+	}
+
+	// Processing local variables in every active function call in the `CallStack`.
+	// Adding the address they are pointing to.
+	var fp int
+	for c := 0; c <= PROGRAM.CallCounter; c++ {
+		op := PROGRAM.CallStack[c].Operator
+
+		// TODO: Some standard library functions "manually" add a function
+		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
+		// operator associated to them. This can be considered as a bug or as an
+		// undesirable mechanic.
+		// [2019-06-24 Mon 22:39] Actually, if the GC is triggered in the middle
+		// of a callback, things will certainly break.
+		if op == nil {
+			continue
+		}
+
+		for _, ptr := range op.ListOfPointers {
+			offset := ptr.Offset
+			symName := ptr.Name
+			if len(ptr.Fields) > 0 {
+				fld := ptr.Fields[len(ptr.Fields)-1]
+				offset += fld.Offset
+				symName += "." + fld.Name
+			}
+
+			if ptr.Offset < PROGRAM.StackSize {
+				offset += fp
+			}
+
+			var heapOffset int32
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+			if err != nil {
+				panic(err)
+			}
+
+			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
+		}
+
+		fp += op.Size
+	}
+
+	// Printing all the details.
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
+
+	for off, symNames := range symsToAddrs {
+		addrB := encoder.Serialize(off)
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tPtr:\t", symNames)
+	}
+
+	// Just a newline.
+	fmt.Fprintln(w)
+	w.Flush()
+
+	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
+
+	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
+		var objSize int32
+		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
+		if err != nil {
+			panic(err)
+		}
+
+		// Setting a limit size for the object to be printed if the object is too large.
+		// We don't want to print obscenely large objects to standard output.
+		printObjSize := objSize
+		if objSize > 50 {
+			printObjSize = 50
+		}
+
+		addrB := encoder.Serialize(int32(c))
+
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
+
+		c += int(objSize)
+	}
+
+	// Just a newline.
+	fmt.Fprintln(w)
+	w.Flush()
+}
+
+// ParseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
+func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	for _, arg := range args {
+		if len(arg) > 2 && arg[:2] == "++" {
+			cxArgs = append(cxArgs, arg)
+			continue
+		}
+
+		fi, err := os.Stat(arg)
+		_ = err
+
+		if err != nil {
+			panic(err)
+		}
+
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			var fileList []string
+
+			err := filepath.Walk(arg, func(path string, _ os.FileInfo, err error) error {
+				fileList = append(fileList, path)
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+
+			if err != nil {
+				panic(err)
+			}
+
+			for _, path := range fileList {
+				file, err := os.Open(path)
+
+				if err != nil {
+					panic(err)
+				}
+
+				fiName := file.Name()
+				fiNameLen := len(fiName)
+
+				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
+					// only loading .cx files
+					sourceCode = append(sourceCode, file)
+					fileNames = append(fileNames, fiName)
+				}
+			}
+		case mode.IsRegular():
+			file, err := os.Open(arg)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fileNames = append(fileNames, file.Name())
+			sourceCode = append(sourceCode, file)
+		}
+	}
+
+	return cxArgs, sourceCode, fileNames
 }

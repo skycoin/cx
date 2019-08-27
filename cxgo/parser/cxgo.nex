@@ -117,8 +117,6 @@
 /clauses/                 { return f(CLAUSES)    }
 /def/                     { return f(DEF)        }
 /field/                   { return f(FIELD)      }
-/input/                   { return f(INPUT)      }
-/output/                  { return f(OUTPUT)     }
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
 /"([^"]*)"/ { /* " */
@@ -397,8 +395,6 @@ var tokenNames = map[int]string {
 	DEF: "DEF",
 	EXPR: "EXPR",
 	FIELD: "FIELD",
-	INPUT: "INPUT",
-	OUTPUT: "OUTPUT",
 	CLAUSES: "CLAUSES",
 	OBJECT: "OBJECT",
 	OBJECTS: "OBJECTS",

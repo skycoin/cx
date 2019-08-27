@@ -9,7 +9,10 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
-func opF64F64(expr *CXExpression, fp int) {
+func opF64F64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -30,21 +33,30 @@ func opF64F64(expr *CXExpression, fp int) {
 }
 
 // The built-in isnan function returns true if operand is nan value.
-func opF64Isnan(expr *CXExpression, fp int) {
+func opF64Isnan(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	outB0 := FromBool(math.IsNaN(ReadF64(fp, expr.Inputs[0])))
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 // The print built-in function formats its arguments and prints them.
 //
-func opF64Print(expr *CXExpression, fp int) {
+func opF64Print(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	fmt.Println(ReadF64(fp, inp1))
 }
 
 // The built-in add function returns the sum of the two operands.
 //
-func opF64Add(expr *CXExpression, fp int) {
+func opF64Add(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(ReadF64(fp, inp1) + ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -52,7 +64,10 @@ func opF64Add(expr *CXExpression, fp int) {
 
 // The built-in sub function returns the difference between the two operands.
 //
-func opF64Sub(expr *CXExpression, fp int) {
+func opF64Sub(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	var outB1 []byte
 	if len(expr.Inputs) == 2 {
@@ -66,7 +81,10 @@ func opF64Sub(expr *CXExpression, fp int) {
 
 // The built-in mul function returns the product of the two operands.
 //
-func opF64Mul(expr *CXExpression, fp int) {
+func opF64Mul(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(ReadF64(fp, inp1) * ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -74,7 +92,10 @@ func opF64Mul(expr *CXExpression, fp int) {
 
 // The built-in div function returns the quotient between the two operands.
 //
-func opF64Div(expr *CXExpression, fp int) {
+func opF64Div(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(ReadF64(fp, inp1) / ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -82,7 +103,10 @@ func opF64Div(expr *CXExpression, fp int) {
 
 // The built-in abs function returns the absolute value of the operand.
 //
-func opF64Abs(expr *CXExpression, fp int) {
+func opF64Abs(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Abs(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -90,7 +114,10 @@ func opF64Abs(expr *CXExpression, fp int) {
 
 // The built-in pow function returns x**n for n>0 otherwise 1
 //
-func opF64Pow(expr *CXExpression, fp int) {
+func opF64Pow(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(math.Pow(ReadF64(fp, inp1), ReadF64(fp, inp2)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -98,7 +125,10 @@ func opF64Pow(expr *CXExpression, fp int) {
 
 // The built-in gt function returns true if operand 1 is larger than operand 2.
 //
-func opF64Gt(expr *CXExpression, fp int) {
+func opF64Gt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) > ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -107,7 +137,10 @@ func opF64Gt(expr *CXExpression, fp int) {
 // The built-in gteq function returns true if operand 1 is greater than or
 // equal to operand 2.
 //
-func opF64Gteq(expr *CXExpression, fp int) {
+func opF64Gteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) >= ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -115,7 +148,10 @@ func opF64Gteq(expr *CXExpression, fp int) {
 
 // The built-in lt function returns true if operand 1 is less than operand 2.
 //
-func opF64Lt(expr *CXExpression, fp int) {
+func opF64Lt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) < ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -124,7 +160,10 @@ func opF64Lt(expr *CXExpression, fp int) {
 // The built-in lteq function returns true if operand 1 is less than or equal
 // to operand 2.
 //
-func opF64Lteq(expr *CXExpression, fp int) {
+func opF64Lteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) <= ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -132,7 +171,10 @@ func opF64Lteq(expr *CXExpression, fp int) {
 
 // The built-in eq function returns true if operand 1 is equal to operand 2.
 //
-func opF64Eq(expr *CXExpression, fp int) {
+func opF64Eq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) == ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -140,7 +182,10 @@ func opF64Eq(expr *CXExpression, fp int) {
 
 // The built-in uneq function returns true if operand 1 is different from operand 2.
 //
-func opF64Uneq(expr *CXExpression, fp int) {
+func opF64Uneq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromBool(ReadF64(fp, inp1) != ReadF64(fp, inp2))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -148,13 +193,19 @@ func opF64Uneq(expr *CXExpression, fp int) {
 
 // The built-in rand function returns a pseudo-random number in [0.0,1.0) from the default Source
 //
-func opF64Rand(expr *CXExpression, fp int) {
+func opF64Rand(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(rand.Float64()))
 }
 
 // The built-in acos function returns the arc cosine of the operand.
 //
-func opF64Acos(expr *CXExpression, fp int) {
+func opF64Acos(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Acos(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -162,7 +213,10 @@ func opF64Acos(expr *CXExpression, fp int) {
 
 // The built-in cos function returns the cosine of the operand.
 //
-func opF64Cos(expr *CXExpression, fp int) {
+func opF64Cos(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Cos(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -170,7 +224,10 @@ func opF64Cos(expr *CXExpression, fp int) {
 
 // The built-in asin function returns the arc sine of the operand.
 //
-func opF64Asin(expr *CXExpression, fp int) {
+func opF64Asin(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Asin(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -178,7 +235,10 @@ func opF64Asin(expr *CXExpression, fp int) {
 
 // The built-in sin function returns the sine of the operand.
 //
-func opF64Sin(expr *CXExpression, fp int) {
+func opF64Sin(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Sin(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -186,7 +246,10 @@ func opF64Sin(expr *CXExpression, fp int) {
 
 // The built-in sqrt function returns the square root of the operand.
 //
-func opF64Sqrt(expr *CXExpression, fp int) {
+func opF64Sqrt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Sqrt(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -194,7 +257,10 @@ func opF64Sqrt(expr *CXExpression, fp int) {
 
 // The built-in log function returns the natural logarithm of the operand.
 //
-func opF64Log(expr *CXExpression, fp int) {
+func opF64Log(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Log(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -202,7 +268,10 @@ func opF64Log(expr *CXExpression, fp int) {
 
 // The built-in log2 function returns the 2-logarithm of the operand.
 //
-func opF64Log2(expr *CXExpression, fp int) {
+func opF64Log2(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Log2(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -210,7 +279,10 @@ func opF64Log2(expr *CXExpression, fp int) {
 
 // The built-in log10 function returns the 10-logarithm of the operand.
 //
-func opF64Log10(expr *CXExpression, fp int) {
+func opF64Log10(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	outB1 := FromF64(math.Log10(ReadF64(fp, inp1)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -218,7 +290,10 @@ func opF64Log10(expr *CXExpression, fp int) {
 
 // The built-in max function returns the largest value of the two operands.
 //
-func opF64Max(expr *CXExpression, fp int) {
+func opF64Max(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(math.Max(ReadF64(fp, inp1), ReadF64(fp, inp2)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
@@ -226,7 +301,10 @@ func opF64Max(expr *CXExpression, fp int) {
 
 // The built-in min function returns the smallest value of the two operands.
 //
-func opF64Min(expr *CXExpression, fp int) {
+func opF64Min(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	outB1 := FromF64(math.Min(ReadF64(fp, inp1), ReadF64(fp, inp2)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)

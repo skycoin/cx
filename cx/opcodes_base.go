@@ -1,4 +1,4 @@
-// +build base extra full
+// +build base opengl
 
 package cxcore
 
@@ -40,8 +40,6 @@ const (
 
 	END_OF_BASE_OPS
 )
-
-var execNativeBase func(*CXProgram)
 
 func init() {
 	// time
@@ -110,69 +108,58 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
 
 	// exec
-	execNativeBase = func(prgrm *CXProgram) {
-		defer RuntimeError()
-		call := &prgrm.CallStack[prgrm.CallCounter]
-		expr := call.Operator.Expressions[call.Line]
-		opCode := expr.Operator.OpCode
-		fp := call.FramePointer
+	handleOpcode := func(opCode int) opcodeHandler {
+		switch opCode {
+		// time
+		case OP_TIME_SLEEP:
+			return op_time_Sleep
+		case OP_TIME_UNIX:
+		case OP_TIME_UNIX_MILLI:
+			return op_time_UnixMilli
+		case OP_TIME_UNIX_NANO:
+			return op_time_UnixNano
 
-		if opCode < END_OF_CORE_OPS {
-			execNativeCore(prgrm)
-		} else {
-			switch opCode {
-			// time
-			case OP_TIME_SLEEP:
-				op_time_Sleep(expr, fp)
-			case OP_TIME_UNIX:
-			case OP_TIME_UNIX_MILLI:
-				op_time_UnixMilli(expr, fp)
-			case OP_TIME_UNIX_NANO:
-				op_time_UnixNano(expr, fp)
+		// http
+		// case OP_HTTP_GET:
+		// 	return op_http_get
 
-			// http
-			// case OP_HTTP_GET:
-			// 	op_http_get(expr, fp)
+		// os
+		case OP_OS_GET_WORKING_DIRECTORY:
+			return op_os_GetWorkingDirectory
+		case OP_OS_OPEN:
+			return op_os_Open
+		case OP_OS_CLOSE:
+			return op_os_Close
+		case OP_OS_RUN:
+			return op_os_Run
+		case OP_OS_EXIT:
+			return op_os_Exit
 
-			// os
-			case OP_OS_GET_WORKING_DIRECTORY:
-				op_os_GetWorkingDirectory(expr, fp)
-			case OP_OS_OPEN:
-				op_os_Open(expr, fp)
-			case OP_OS_CLOSE:
-				op_os_Close(expr, fp)
-			case OP_OS_RUN:
-				op_os_Run(expr, fp)
-			case OP_OS_EXIT:
-				op_os_Exit(expr, fp)
-
-				// json
-			case OP_JSON_OPEN:
-				opJSONOpen(expr, fp)
-			case OP_JSON_CLOSE:
-				opJSONClose(expr, fp)
-			case OP_JSON_TOKEN_MORE:
-				opJSONTokenMore(expr, fp)
-			case OP_JSON_TOKEN_NEXT:
-				opJSONTokenNext(expr, fp)
-			case OP_JSON_TOKEN_TYPE:
-				opJSONTokenType(expr, fp)
-			case OP_JSON_TOKEN_DELIM:
-				opJSONTokenDelim(expr, fp)
-			case OP_JSON_TOKEN_BOOL:
-				opJSONTokenBool(expr, fp)
-			case OP_JSON_TOKEN_F64:
-				opJSONTokenF64(expr, fp)
-			case OP_JSON_TOKEN_I64:
-				opJSONTokenI64(expr, fp)
-			case OP_JSON_TOKEN_STR:
-				opJSONTokenStr(expr, fp)
-			default:
-				// DumpOpCodes(opCode)
-				panic("invalid base opcode")
-			}
+		// json
+		case OP_JSON_OPEN:
+			return opJSONOpen
+		case OP_JSON_CLOSE:
+			return opJSONClose
+		case OP_JSON_TOKEN_MORE:
+			return opJSONTokenMore
+		case OP_JSON_TOKEN_NEXT:
+			return opJSONTokenNext
+		case OP_JSON_TOKEN_TYPE:
+			return opJSONTokenType
+		case OP_JSON_TOKEN_DELIM:
+			return opJSONTokenDelim
+		case OP_JSON_TOKEN_BOOL:
+			return opJSONTokenBool
+		case OP_JSON_TOKEN_F64:
+			return opJSONTokenF64
+		case OP_JSON_TOKEN_I64:
+			return opJSONTokenI64
+		case OP_JSON_TOKEN_STR:
+			return opJSONTokenStr
 		}
+
+		return nil
 	}
 
-	execNative = execNativeBase
+	opcodeHandlerFinders = append(opcodeHandlerFinders, handleOpcode)
 }
