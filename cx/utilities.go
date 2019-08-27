@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"text/tabwriter"
-	"path/filepath"
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
@@ -1182,8 +1182,11 @@ func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, file
 		case mode.IsDir():
 			var fileList []string
 
-			err := filepath.Walk(arg, func(path string, f os.FileInfo, err error) error {
+			err := filepath.Walk(arg, func(path string, _ os.FileInfo, err error) error {
 				fileList = append(fileList, path)
+				if err != nil {
+					return err
+				}
 				return nil
 			})
 
@@ -1218,5 +1221,6 @@ func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, file
 			sourceCode = append(sourceCode, file)
 		}
 	}
-	return
+
+	return cxArgs, sourceCode, fileNames
 }
