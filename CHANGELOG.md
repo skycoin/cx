@@ -4,7 +4,9 @@
 * Additions
   * ...
 * Changes
-  * ...
+  * Removed cx-games as a module. It was just confusing as users would be
+    redirected to an outdated version of the repo and the games are already
+    mentioned in the README.
 * Libraries
   * ...
 * Fixed issues
