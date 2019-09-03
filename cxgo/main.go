@@ -1401,6 +1401,19 @@ func checkCXPathSet () {
 		BINPATH = CXPATH + "bin/"
 		PKGPATH = CXPATH + "pkg/"
 		SRCPATH = CXPATH + "src/"
+
+		if _, err := os.Stat(CXPATH); !os.IsNotExist(err) {
+			os.MkdirAll(CXPATH, 755)
+		}
+		if _, err := os.Stat(BINPATH); !os.IsNotExist(err) {
+			os.MkdirAll(BINPATH, 755)
+		}
+		if _, err := os.Stat(PKGPATH); !os.IsNotExist(err) {
+			os.MkdirAll(PKGPATH, 755)
+		}
+		if _, err := os.Stat(SRCPATH); !os.IsNotExist(err) {
+			os.MkdirAll(SRCPATH, 755)
+		}
 	}
 
 	ex, err := os.Executable()

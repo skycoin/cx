@@ -37,6 +37,7 @@ type cxCmdFlags struct {
 	genesisSignature    string
 	minHeapFreeRatio    float64
 	maxHeapFreeRatio    float64
+	cxpath              string
 
 	// Debug flags for the CX developers
 	debugLexer          bool
@@ -114,6 +115,7 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+	flag.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
 
 	// Debug flags
 	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
