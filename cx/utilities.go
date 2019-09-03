@@ -3,6 +3,7 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -1160,11 +1161,41 @@ func DebugHeap() {
 	w.Flush()
 }
 
+// filePathWalkDir scans all the files in a directory. It will automatically
+// scan each sub-directories in the directory. Code obtained from manigandand's
+// post in https://stackoverflow.com/questions/14668850/list-directory-in-go.
+func filePathWalkDir(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return err
+	})
+	return files, err
+}
+
+// ioReadDir reads the directory named by dirname and returns a list of
+// directory entries sorted by filename. Code obtained from manigandand's
+// post in https://stackoverflow.com/questions/14668850/list-directory-in-go.
+func ioReadDir(root string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(root)
+	if err != nil {
+		return files, err
+	}
+
+	for _, file := range fileInfo {
+		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
+	}
+	return files, nil
+}
+
 // ParseArgsForCX parses the arguments and returns:
 //  - []arguments
 //  - []file pointers	open files
 //  - []sting		filenames
-func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
 		if len(arg) > 2 && arg[:2] == "++" {
 			cxArgs = append(cxArgs, arg)
@@ -1175,20 +1206,22 @@ func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, file
 		_ = err
 
 		if err != nil {
-			panic(err)
+			println(fmt.Sprintf("%s: source file or library not found", arg))
+			os.Exit(CX_COMPILATION_ERROR)
 		}
 
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
 			var fileList []string
+			var err error
 
-			err := filepath.Walk(arg, func(path string, _ os.FileInfo, err error) error {
-				fileList = append(fileList, path)
-				if err != nil {
-					return err
-				}
-				return nil
-			})
+			// Checking if we want to check all subdirectories.
+			if alsoSubdirs {
+				fileList, err = filePathWalkDir(arg)
+			} else {
+				fileList, err = ioReadDir(arg)
+				// fileList, err = filePathWalkDir(arg)
+			}
 
 			if err != nil {
 				panic(err)
@@ -1198,7 +1231,8 @@ func ParseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, file
 				file, err := os.Open(path)
 
 				if err != nil {
-					panic(err)
+					println(fmt.Sprintf("%s: source file or library not found", arg))
+					os.Exit(CX_COMPILATION_ERROR)
 				}
 
 				fiName := file.Name()
