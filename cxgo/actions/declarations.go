@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"fmt"
+	"os"
 	. "github.com/skycoin/cx/cx"
 )
 
@@ -202,12 +204,32 @@ func DeclarePackage(ident string) {
 
 // DeclareImport()
 //
-func DeclareImport(ident string, currentFile string, lineNo int) {
+func DeclareImport(name string, currentFile string, lineNo int) {
 	// Make sure we are inside a package
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
+	}
+
+	// Checking if it's a package in the CX workspace by trying to find a
+	// slash (/) in the name.
+	// We start backwards and we stop if we find a slash.
+	hasSlash := false
+	c := len(name)-1
+	for ; c >= 0; c-- {
+		if name[c] == '/' {
+			hasSlash = true
+			break
+		}
+	}
+	ident := ""
+	// If the `name` has a slash, then we need to strip
+	// everything behind the slash and the slash itself.
+	if hasSlash {
+		ident = name[c+1:]
+	} else {
+		ident = name
 	}
 
 	// If the package is already imported, then there is nothing more to be done.
@@ -224,7 +246,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
-	// something is wrong.
+	// something is panic-level wrong.
 	if IsCorePackage(ident) {
 		imp := MakePackage(ident)
 		pkg.AddImport(imp)
@@ -235,7 +257,9 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 			AffordanceStructs(imp, currentFile, lineNo)
 		}
 	} else {
-		println(CompilationError(currentFile, lineNo), "")
+		// This should never happen.
+		println(CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 }
 
