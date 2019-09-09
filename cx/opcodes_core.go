@@ -264,6 +264,10 @@ const (
 	OP_F32_NEG
 	OP_F64_NEG
 	END_OF_CORE_OPS
+
+	// http
+	OP_HTTP_SERVE
+	OP_HTTP_NEW_REQUEST
 )
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
@@ -949,6 +953,13 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_AFF, false)},
 		[]*CXArgument{})
 
+	AddOpCode(OP_HTTP_SERVE, "http.serve",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_HTTP_NEW_REQUEST, "http.newRequest",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
 		switch opCode {
@@ -1382,6 +1393,12 @@ func init() {
 			return opAffInform
 		case OP_AFF_REQUEST:
 			return opAffRequest
+
+		// http
+		case OP_HTTP_SERVE:
+			return opHTTPServe
+		case OP_HTTP_NEW_REQUEST:
+			return opHTTPNewRequest
 		}
 
 		return nil
