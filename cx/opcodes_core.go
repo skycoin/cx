@@ -265,6 +265,8 @@ const (
 	OP_F64_NEG
 	END_OF_CORE_OPS
 
+	// http
+	OP_HTTP_SERVE
 	OP_HTTP_NEW_REQUEST
 )
 
@@ -951,9 +953,11 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_AFF, false)},
 		[]*CXArgument{})
 
-	//FIXME - check what type should be used for body param. Should be byte or undefined or something else...
-	AddOpCode(OP_AFF_REQUEST, "http.newRequest",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_BYTE, false)},
+	AddOpCode(OP_HTTP_SERVE, "http.serve",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_HTTP_NEW_REQUEST, "http.newRequest",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
 
 	// exec
@@ -1390,6 +1394,9 @@ func init() {
 		case OP_AFF_REQUEST:
 			return opAffRequest
 
+		// http
+		case OP_HTTP_SERVE:
+			return opHTTPServe
 		case OP_HTTP_NEW_REQUEST:
 			return opHTTPNewRequest
 		}

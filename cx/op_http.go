@@ -1,8 +1,9 @@
 package cxcore
 
 import (
-	"bytes"
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
@@ -12,11 +13,14 @@ func opHTTPServe(prgrm *CXProgram) {
 
 	fp := prgrm.GetFramePointer()
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	_ = ReadMemory(fp, inp1)
+	url := ReadStr(fp, inp1)
 
-	// FIXME - need to extract net.Listener from input...
-	// FIXME - figure out what to do with handler...
-	err := http.Serve(nil, nil)
+	l, err := net.Listen("tcp", url)
+	if err != nil {
+		writeString(fp, err.Error(), out1)
+	}
+
+	err = http.Serve(l, nil)
 	if err != nil {
 		writeString(fp, err.Error(), out1)
 	}
@@ -30,9 +34,9 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 
 	method := ReadStr(fp, inp1)
 	url := ReadStr(fp, inp2)
-	body := ReadMemory(fp, inp3)
+	body := ReadStr(fp, inp3)
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
 
 	if err != nil {
 		writeString(fp, err.Error(), out1)
