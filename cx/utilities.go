@@ -309,7 +309,7 @@ func printFunctions(pkg *CXPackage) {
 		var outs bytes.Buffer
 		getFormattedParam(fn.Inputs, pkg, &inps)
 		getFormattedParam(fn.Outputs, pkg, &outs)
-		
+
 		fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
 			j, fn.Name, inps.String(), outs.String())
 
@@ -365,7 +365,7 @@ func printFunctions(pkg *CXPackage) {
 				}
 			}
 		}
-		
+
 		j++
 	}
 }
