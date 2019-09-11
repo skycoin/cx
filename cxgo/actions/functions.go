@@ -501,41 +501,6 @@ func ProcessGoTos(fn *CXFunction, exprs []*CXExpression) {
 	}
 }
 
-func GetFormattedType(arg *CXArgument) string {
-	typ := ""
-	elt := GetAssignmentElement(arg)
-
-	// this is used to know what arg.Lengths index to use
-	// used for cases like [5]*[3]i32, where we jump to another decl spec
-	arrDeclCount := len(arg.Lengths) - 1
-	// looping declaration specifiers
-	for _, spec := range elt.DeclarationSpecifiers {
-		switch spec {
-		case DECL_POINTER:
-			typ = "*" + typ
-		case DECL_DEREF:
-			typ = typ[1:]
-		case DECL_ARRAY:
-			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
-			arrDeclCount--
-		case DECL_SLICE:
-			typ = "[]" + typ
-		case DECL_INDEXING:
-		default:
-			// base type
-			if elt.CustomType != nil {
-				// then it's custom type
-				typ += elt.CustomType.Name
-			} else {
-				// then it's basic type
-				typ += TypeNames[elt.Type]
-			}
-		}
-	}
-
-	return typ
-}
-
 func checkMatchParamTypes(expr *CXExpression, expected, received []*CXArgument, isInputs bool) {
 	for i, inp := range expected {
 		expectedType := GetFormattedType(expected[i])
