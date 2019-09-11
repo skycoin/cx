@@ -154,7 +154,10 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		if idx.Offset > PROGRAM.StackSize {
 			// Then it's a literal.
 			var idxI32 int32
-			encoder.DeserializeAtomic(PROGRAM.Memory[idx.Offset:idx.Offset+TYPE_POINTER_SIZE], &idxI32)
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[idx.Offset:idx.Offset+TYPE_POINTER_SIZE], &idxI32)
+			if err != nil {
+				panic(err)
+			}
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -188,6 +191,7 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 	return name
 }
 
+// GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(arg *CXArgument) string {
 	typ := ""
 	elt := GetAssignmentElement(arg)
