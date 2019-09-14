@@ -1,10 +1,35 @@
 # Changelog
 
-### v0.7.1 (NOT YET RELEASED)
+### v0.7.2 (NOT YET RELEASED)
 * Additions
+  * CX package manager:
+    - Added a flag for setting a CX workspace. This flag overrides the environment variable .
+	- Import statements are now aware of the possibility of importing libraries that are defined in a CX workspace.
+	- If the user has not set a CXPATH through an environment variable or --cxpath flag, CX will use by default `~/cx` and create all the necessary subdirectories.
+	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
+* Changes
+  * Removed cx-games as a module. It was just confusing as users would be
+    redirected to an outdated version of the repo and the games are already
+    mentioned in the README.
+* Libraries
+  * ...
+* Fixed issues
+  * ...
+* Documentation
+  * ...
+* Miscellaneous
+  * ...
+
+### v0.7.1 released 2019-07-26
+* Additions
+  * Added capability of storing heap objects in a CX chain's program state.
   * Added a function that prints information about the heap for debugging purposes (`debugHeap` in cx/utilities.go).
 * Changes
-  * ...
+  * Redesign of CX's garbage collector.
+  * Changes to several functions that relied on allocating objects on the heap.
+  * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
+  * Moved CX book sources to github.com/skycoin/cx-book. The releases and any code updates will be pushed to that repository.
+    * The README file notifies the users about this change.
 * Libraries
   * ...
 * Fixed issues

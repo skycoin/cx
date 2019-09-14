@@ -14,10 +14,10 @@ import (
 func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	var elt *CXArgument
 	prevExpr := prevExprs[len(prevExprs)-1]
-	
+
 	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
 		genName := MakeGenSym(LOCAL_PREFIX)
-		
+
 		out := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
 
 		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
@@ -48,7 +48,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 	}
 
 	prevExpr = prevExprs[len(prevExprs)-1]
-	
+
 	if len(prevExpr.Outputs[0].Fields) > 0 {
 		elt = prevExpr.Outputs[0].Fields[len(prevExpr.Outputs[0].Fields)-1]
 	} else {

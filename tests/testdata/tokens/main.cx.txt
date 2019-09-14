@@ -2028,6 +2028,39 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT --cxpath test-workspace test-workspace-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if CX can set a workspace and then import a library, taking that workspace as the new relative path.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT --cxpath test-workspace test-workspace-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if CX can set a workspace and then import a nested library, taking that workspace as the new relative path.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT --cxpath test-workspace test-workspace-c.cx test-workspace-d.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if files supplied to the CLI override libraries in the workspace.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT test-slices-index-out-of-range-a.cx
  COMMA 
  IDENT cx
@@ -2167,6 +2200,17 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Error in scopes.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -heap-initial 0 test-gc.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Stress-testing the garbage collector
 RPAREN 
 SCOLON 
  IDENT runTest
