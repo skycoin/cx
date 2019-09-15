@@ -12,10 +12,12 @@
     redirected to an outdated version of the repo and the games are already
     mentioned in the README.
   * Multidimensional array literals are now working properly.
+  * Multidimensional slice literals are now working properly.
 * Libraries
   * ...
 * Fixed issues
   * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
+  * #482: Slice literals: Problem with temporary variables in multi-dimensional slices.
 * Documentation
   * ...
 * Miscellaneous
