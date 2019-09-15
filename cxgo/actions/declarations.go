@@ -348,13 +348,13 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 //
 // It is called repeatedly while the type is parsed.
 //
-//   declSpec:  The incoming type
-//   arraySize: The size of the array if `opTyp` = DECL_ARRAY
-//   opTyp:     The type of modification to `declSpec` (array of, pointer to, ...)
+//   declSpec:     The incoming type
+//   arrayLengths: The lengths of the array if `opTyp` = DECL_ARRAY
+//   opTyp:        The type of modification to `declSpec` (array of, pointer to, ...)
 //
 // Returns the new type build from `declSpec` and `opTyp`.
 //
-func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXArgument {
+func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) *CXArgument {
 	switch opTyp {
 	case DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_POINTER)
@@ -379,15 +379,19 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 
 		return declSpec
 	case DECL_ARRAY:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_ARRAY)
+		for range arrayLengths {
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_ARRAY)
+		}
 		arg := declSpec
 		arg.IsArray = true
-		arg.Lengths = append([]int{arraySize}, arg.Lengths...)
+		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
 	case DECL_SLICE:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		for range arrayLengths {
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		}
 
 		arg := declSpec
 		arg.IsSlice = true
@@ -395,7 +399,8 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		arg.IsArray = true
 		arg.PassBy = PASSBY_REFERENCE
 
-		arg.Lengths = append([]int{0}, arg.Lengths...)
+		// arg.Lengths = append([]int{0}, arg.Lengths...)
+		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size
 		arg.Size = TYPE_POINTER_SIZE
 
@@ -421,10 +426,10 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 
 	if typ == TYPE_AFF {
 		// equivalent to slice of strings
-		return DeclarationSpecifiers(arg, 0, DECL_SLICE)
+		return DeclarationSpecifiers(arg, []int{0}, DECL_SLICE)
 	}
 
-	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
+	return DeclarationSpecifiers(arg, []int{0}, DECL_BASIC)
 }
 
 // DeclarationSpecifiersStruct() declares a struct
