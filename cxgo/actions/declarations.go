@@ -55,7 +55,11 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 			// glbl.Package = offExpr[0].Outputs[0].Package
 		}
 
-		if doesInitialize {
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
 			// then we just re-assign offsets
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
@@ -107,7 +111,11 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 		} else {
 			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
 		}
-		if doesInitialize {
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
 
