@@ -1,20 +1,21 @@
 package main
 
-var inputs [4]i64 = {49927398716, 49927398717, 1234567812345678, 1234567812345670}
+var inputs [4]i64
  
-var t [10]i32{0, 2, 4, 6, 8, 1, 3, 5, 7, 9}
+var t [10]i32
  
-func luhn(s i64) bool {
-    odd := len(s) & 1
+func luhn(s i64) (out bool) {
+	count := len(s)
+    odd := i32.bitand(count, 1)
     var sum i32
-    for i, c := range s {
-        if c < '0' || c > '9' {
+	for i:=0; i < count; i++ {
+        if s[i] < '0' || s[i] > '9' {
             return false
         }
         if i&1 == odd {
-            sum += t[c-'0']
+            sum += t[s[i]-'0']
         } else {
-            sum += int(c - '0')
+            sum += i32(s[i] - '0')
         }
     }
     return sum%10 == 0
