@@ -44,14 +44,22 @@ import (
 	"github.com/amherag/skycoin/src/cli"
 	"github.com/amherag/skycoin/src/wallet"
 
+	"github.com/skycoinpro/cx-tracker-dep/src/cli/cxtracker"
+
 	"errors"
 )
 
-const VERSION = "0.7.1"
+const (
+	VERSION        = "0.7.1"
+	walletPath     = "/tmp/6001/wallets/"
+	walletSeed     = "museum nothing practice weird wheel dignity economy attend mask recipe minor dress"
+	lastRunAppPath = "/tmp/6001/lastRunApp.txt"
+)
 
 var (
 	log             = logging.MustGetLogger("newcoin")
 	apiClient       = &http.Client{Timeout: 10 * time.Second}
+	cxTracker       = cxtracker.Provider{}
 	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
 )
 
@@ -265,6 +273,8 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 	switch mode {
 	case "publisher":
+		confirmSameUpIsRunning(options.genesisSignature)
+		confirmWalletExists()
 		return exec.Command("cxcoin", "-enable-all-api-sets",
 		"-block-publisher=true",
 			"-localhost-only",
@@ -367,7 +377,7 @@ func optionGenWallet(options cxCmdFlags) {
 		panic(err)
 	}
 	// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
-	err = wlt.Save("/tmp/6001/wallets/")
+	err = wlt.Save(walletPath)
 	if err != nil {
 		panic(err)
 	}
@@ -442,6 +452,24 @@ func optionRunNode(options cxCmdFlags) {
 			log.Error(scanner.Text())
 		}
 	}()
+
+	if options.skipTrackerPing || len(options.configPath) == 0 {
+		log.Info("Pinging CX Tracker is disabled")
+	} else {
+		log.Info("Initiating CX Tracker ping")
+		pingTracker(options.configPath)
+		trackerTicker := time.NewTicker(5 * time.Minute)
+		go func() {
+			defer trackerTicker.Stop()
+
+			for {
+				select {
+				case <-trackerTicker.C:
+					pingTracker(options.configPath)
+				}
+			}
+		}()
+	}
 }
 
 // lexerStep0 performs a first pass for the CX parser. Globals, packages and
@@ -760,6 +788,34 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	}
 }
 
+// optionRunFromConfig allows to run a CX app based on a config file
+// This config file can be pulled from the CX tracker
+func optionRunFromConfig(options cxCmdFlags) {
+	if !strings.HasSuffix(options.configPath, ".json") {
+		panic(errors.New("config file path is not pointing to json file"))
+	}
+	if len(options.configHash) > 0 {
+		log.Info("Fetching new config file based on provided genesis hash")
+		if err := cxTracker.GetConfigFromTrackerService(options.configHash, options.configPath); err != nil {
+			panic(fmt.Errorf("unable to fetch config from remote service locally due to error %v", err))
+		}
+	}
+
+	file, err := ioutil.ReadFile(options.configPath)
+	if err != nil {
+		panic(fmt.Errorf("config file can't be read from path %v due to error %v", options.configPath, err))
+	}
+	configFromFile := cxtracker.CXApplicationConfig{}
+	if err := json.Unmarshal([]byte(file), &configFromFile); err != nil {
+		panic(fmt.Errorf("config from path %v can't be unmarshalled to JSON struct due to error %v", options.configPath, err))
+	}
+
+	applyConfigValue(&options.genesisAddress, configFromFile.GenesisAddress)
+	applyConfigValue(&options.genesisSignature, configFromFile.GenesisHash)
+	applyConfigValue(&options.pubKey, configFromFile.PublicKey)
+	applyConfigValue(&options.secKey, configFromFile.SecretKey)
+}
+
 func main() {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
@@ -772,6 +828,10 @@ func main() {
 	// Checking if CXPATH is set, either by setting an environment variable
 	// or by setting the `--cxpath` flag.
 	checkCXPathSet(options)
+
+	if len(options.configPath) > 0 {
+		optionRunFromConfig(options)
+	}
 
 	// Does the user want to run a CX publisher or peer node?
 	if options.publisherMode || options.peerMode {
@@ -1504,3 +1564,80 @@ func isJSON(str string) bool {
 	err := json.Unmarshal([]byte(str), &js)
 	return err == nil
 }
+
+func pingTracker(configPath string) {
+	if err := cxTracker.SaveToTrackerService(configPath); err != nil {
+		log.Warn("Unable to ping CX Tracker due to error ", err)
+	}
+}
+
+func applyConfigValue(cliArgument *string, configValue string) {
+	if len(*cliArgument) > 0 {
+		log.Warnf("Provided CLI value %v will be replaced with one from the config file %v", *cliArgument, configValue)
+	}
+	*cliArgument = configValue
+}
+
+func confirmWalletExists() {
+	if _, err := os.Stat(walletPath + "cxcoin_cli.wlt"); os.IsNotExist(err) {
+		log.Info("Wallet doesn't exist, creating new one...")
+		cmd := exec.Command("cx", "--create-wallet", "--wallet-seed", walletSeed)
+		cmd.Start()
+		cmd.Wait()
+		log.Info("... Wallet succesfully created")
+	} else {
+		log.Debug("Wallet already exists")
+	}
+}
+
+func confirmSameUpIsRunning(runningGenesisSignature string) {
+	var (
+		file             *os.File
+		errCreateAppHash error
+	)
+	if _, err := os.Stat(lastRunAppPath); os.IsNotExist(err) {
+		file, errCreateAppHash = os.Create(lastRunAppPath)
+		if errCreateAppHash != nil {
+			log.Errorf("Can't create genesis hash record on path %v due to error %v", lastRunAppPath, errCreateAppHash)
+		}
+		defer file.Close()
+	} else {
+		content := ""
+		fileBuffer, errLastRun := ioutil.ReadFile(lastRunAppPath)
+		if errLastRun != nil {
+			log.Errorf("Can't read genesis hash from path %v due to error %v", lastRunAppPath, errLastRun)
+		} else {
+			content = string(fileBuffer)
+		}
+
+		if content != runningGenesisSignature {
+			cmd := exec.Command("rm", "-R", "~/.cxcoin/")
+			cmd.Start()
+			cmd.Wait()
+
+			cmd2 := exec.Command("rm", "-R", "/tmp/6001/")
+			cmd2.Start()
+			cmd2.Wait()
+
+			cmd3 := exec.Command("mkdir", "-p", "/tmp/6001/")
+			cmd3.Start()
+			cmd3.Wait()
+
+			file, errCreateAppHash = os.Create(lastRunAppPath)
+			if errCreateAppHash != nil {
+				log.Errorf("can't create genesis hash record on path %v due to error %v", lastRunAppPath, errCreateAppHash)
+			}
+			defer file.Close()
+		}
+	}
+
+	if _, err := file.Stat(); err == nil {
+		log.Info("Storing new content to last run app path")
+		if _, err := file.WriteAt([]byte(runningGenesisSignature), 0); err != nil {
+			log.Errorf("can't write genesis hash file from path %v due to error %v", lastRunAppPath, err)
+		}
+	} else {
+		log.Debug("Not storing new content, running based on the same app genesis hash")
+	}
+}
+

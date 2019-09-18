@@ -372,6 +372,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:07c5ab7d8166b080180f9ba50aacefce4fb1be8f0e11562598db87b2f273a68d"
+  name = "github.com/watercompany/cx-tracker-dep"
+  packages = [
+    "src/api",
+    "src/cli/cxtracker",
+  ]
+  pruneopts = "UT"
+  revision = "2136286b00a5bc2f8fcb68fb2d923131981e0136"
+
+[[projects]]
+  branch = "master"
   digest = "1:bbe51412d9915d64ffaa96b51d409e070665efc5194fcf145c4a27d4133107a4"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -451,6 +462,7 @@
     "github.com/skycoin/gltext",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
+    "github.com/watercompany/cx-tracker-dep/src/cli/cxtracker",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
