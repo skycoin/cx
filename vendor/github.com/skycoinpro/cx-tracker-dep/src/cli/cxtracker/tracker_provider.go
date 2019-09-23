@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/watercompany/cx-tracker-dep/src/api"
+	"github.com/skycoinpro/cx-tracker-dep/src/api"
 )
 
 // Provider - provider object
@@ -25,7 +25,7 @@ type CXApplicationConfig struct {
 }
 
 // DefaultCxTrackerURL - default cx tracker url
-const DefaultCxTrackerURL = "https://cx-tracker.skycoin.net/api/v1/config"
+const DefaultCxTrackerURL = "https://cx-tracker.skycoin.com/api/v1/config"
 
 // SaveToTrackerService - persist config on tracker service
 func (t *Provider) SaveToTrackerService(configFilePath string) error {
