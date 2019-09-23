@@ -955,10 +955,10 @@ func init() {
 
 	AddOpCode(OP_HTTP_SERVE, "http.serve",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_HTTP_NEW_REQUEST, "http.newRequest",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
