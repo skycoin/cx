@@ -11,10 +11,12 @@
   * Removed cx-games as a module. It was just confusing as users would be
     redirected to an outdated version of the repo and the games are already
     mentioned in the README.
+  * Multidimensional array literals are now working properly.
 * Libraries
   * ...
 * Fixed issues
   * #419: Initializing array or slice with values equivalent to nil.
+  * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
 * Documentation
   * ...
 * Miscellaneous
