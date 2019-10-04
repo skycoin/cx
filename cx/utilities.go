@@ -1045,12 +1045,11 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 	return getNonCollectionValue(fp, arg, elt, typ)
 }
 
-func mustDeserializeAtomic(byts []byte, item interface{}) int {
-	bytsRead, err := encoder.DeserializeAtomic(byts, item)
+func mustDeserializeAtomic(byts []byte, item interface{}) {
+	_, err := encoder.DeserializeAtomic(byts, item)
 	if err != nil {
 		panic(err)
 	}
-	return int(bytsRead)
 }
 
 func mustDeserializeRaw(byts []byte, item interface{}) {
