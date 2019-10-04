@@ -1,0 +1,31 @@
+package main
+
+func dot(x []i32, y []i32) (r i32) {
+	if i32.uneq(len(x), len(y)) {
+		r = 0
+		return
+	}
+
+	var tmp i32
+	l := len(x)
+	printf("%d\n", l)
+	for i := 0; i < l; i++ {
+		tmp = i32.mul(x[i], y[i])
+		r = i32.add(r, tmp)
+	}
+}
+
+func main() {
+	var v1 []i32
+	v1 = append(v1, 1)
+	v1 = append(v1, 3)
+	v1 = append(v1, -5)
+	
+	var v2 []i32
+	v2 = append(v2, 4)
+	v2 = append(v2, -2)
+	v2 = append(v2, -1)
+
+	d := dot(v1, v2)
+	printf("%d\n", d) // 3 is result for this test
+}

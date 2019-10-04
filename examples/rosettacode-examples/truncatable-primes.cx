@@ -1,0 +1,116 @@
+package main
+
+var c []bool
+ 
+func sieve(ss i32) {
+	// initial values for slices
+	for i := 0; i32.lt(i, ss); i++ {
+		c = append(c,false)
+	}
+	c[1] = true
+
+	var p i32
+	var p2 i32
+
+	p = 2
+    for ; true == true; {
+        p2 = p * p
+
+		if i32.lt(p2,ss) {
+            for i := p2; i32.lt(i,ss); {
+				i = i32.add(i,p)
+			}
+        }
+		
+        for i := p2; i < ss; {
+            c[i] = true
+			i = i32.add(i,p)
+        }
+		
+        for ; true == true; {
+            p++
+            if c[p] == false {
+                return
+            }
+        }
+    }
+}
+
+func searchLeft(digits i32, pot i32) (out bool) {
+	n := pot - 1
+    pot = i32.div(pot,10)
+	
+
+    for ; i32.gteq(n,pot);  {
+
+		n = i32.sub(n,2)
+
+		tn := n
+		tp := pot
+        for ; i32.gt(tp,0); {
+			
+            if tn < tp || c[tn] {
+                continue
+            }
+            tn = i32.mod(tn,tp)
+			tp = i32.div(tp,10)
+        }
+		
+        printf("max left truncatable = %d\n", n)
+        out = true
+		return
+    }
+	
+    if i32.gt(digits, 1) {
+        out = searchLeft(digits-1, pot)
+		return
+    }
+	
+    out = false
+}
+
+func searchRight(digits i32, pot i32) (out bool) {
+	n := pot - 1
+	pot = i32.div(pot,10)
+
+    for ; i32.gteq(n,pot);  {
+		n = i32.sub(n,2)
+        tn := n
+        tp := pot
+        for ; i32.gt(tp,0); {
+
+            if tn < tp || c[tn] {
+                continue
+            }
+            tn = i32.div(tn,tp)
+            tp = i32.div(tp,10)
+        }
+
+        printf("max right truncatable = %d\n", n)
+        out = true
+        return
+    }
+
+    if i32.gt(digits, 1) {
+        out = searchRight(digits-1, pot)
+        return
+    }
+
+    out = false
+}
+
+func main() {
+    sieve(1000000)
+	var left bool
+	left = searchLeft(6,1000000)
+	
+    if left == false {
+        printf("997?\n")
+    }
+
+	var right bool
+	right = searchRight(6,1000000)
+    if right == false {
+        printf("7393?\n")
+    }
+}

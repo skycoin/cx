@@ -1,0 +1,59 @@
+package main
+
+var a [8]i32
+
+func recurse(last i32) (out bool) {
+    if last <= 0 {
+        // bottom of recursion
+		var l i32
+		l = len(a)
+        for i := i32.sub(l, 1); i32.gteq(a[i], a[i-1]); i-- {
+            if i == 1 {
+				out = true
+                return
+            }
+        }
+		out = false
+        return
+    }
+
+	var swap i32
+    for i := 0; i <= last; i++ {
+        swap = a[i]
+		a[i] = a[last]
+		a[last] = swap
+        if recurse(last - 1) {
+			out = true
+            return
+        }
+        swap = a[i]
+		a[i] = a[last]
+		a[last] = swap
+    }
+	out = false
+}
+
+func printA() {
+	var display str
+	for i := 0; i < len(a); i++ {
+		printf("%d\t", a[i])
+	}
+	printf("\n")
+}
+
+func main() {
+	// initial array values
+	a[0] = 170
+	a[1] = 45
+	a[2] = 75
+	a[3] = -90
+	a[4] = -802
+	a[5] = 24
+	a[6] = 2
+	a[7] = 66
+	
+	printA() // before
+	var rs bool
+    rs = recurse(len(a) - 1)
+    printA() // after
+}

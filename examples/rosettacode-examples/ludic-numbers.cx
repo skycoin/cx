@@ -1,0 +1,89 @@
+package main
+
+func ludic(n i32, max i32) (out []i32) {
+	var max_i32 i32
+	max_i32 = i32.bitshl(31, 1) - 1
+
+	if max > 0 && n < 0 {
+		n = max_i32
+	}
+
+	if n < 1 {
+		return
+	}
+
+	if max < 0 {
+		max = max_i32
+	}
+
+	var count i32
+	count = 10760
+	
+	var sieve []i32
+	sieve = append(sieve, 1)
+	sieve = append(sieve, 2)
+
+	if n > 2 {
+		j := 3
+
+		// start with even numbers already removed
+		for i := 2; i < count; i++ {
+			sieve = append(sieve, j)
+			j = i32.add(j, 2)
+		}
+
+		// k is the index of the next Ludic
+		for k := 2; k < n; k++ {
+			l := sieve[k]
+			if i32.gteq(l, max) {
+				n = k
+				break
+			}
+
+			i := l
+			l = i32.sub(l, 1)
+
+			// last is the last valid index
+			var last i32
+			last = i32.add(i32.add(k, i), 1)
+			
+			var j i32
+			j = i32.add(i32.add(k, i), 1)
+			
+			for ; j < count; {
+				last = k + i
+				sieve[last] = sieve[j]
+
+				if i32.mod(i,l) == 0 {
+					j = i32.add(j,1)
+				}
+				
+				i = i32.add(i, 1)
+				j = i32.add(j, 1)
+			}
+		}
+
+		out = sieve
+	}
+}
+
+func main() {
+	var ludic1 []i32
+	ludic1 = ludic(25, -1)
+	for i := 0; i < len(ludic1); i++ {
+		printf("%d\t", ludic1[i])
+	}
+
+	var ludic2 []i32
+	ludic2 = ludic(-1, 1000)
+	for i := 0; i < len(ludic2); i++ {
+		printf("%d\t", ludic2[i])
+	}
+	
+
+	var ludic3 []i32
+	ludic3 = ludic(2005, -1)
+	for i := 0; i < len(ludic3); i++ {
+		printf("%d\t", ludic3[i])
+	}
+}

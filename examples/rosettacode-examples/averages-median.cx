@@ -1,0 +1,32 @@
+package main
+
+
+func median(a [4]f64) (out f64) {
+	var l i32
+	l = len(a)
+
+	var half i32
+	half = i32.div(l,2)
+
+	var m f64
+	m = a[half]
+	
+    if i32.mod(l, 2) == 0 {
+		t := i32.add(f64.i32(m), f64.i32(a[half-1]))
+        m = i32.f64(i32.div(t, 2))
+    }
+	out = m 
+}
+
+func main() {
+	var inputs [4]f64
+	inputs[0] = 3D
+	inputs[1] = 1D
+	inputs[2] = 4D
+	inputs[3] = 1D
+
+	var median f64
+	median = median(inputs)
+
+	printf("median = %d\n", f64.i32(median))
+}

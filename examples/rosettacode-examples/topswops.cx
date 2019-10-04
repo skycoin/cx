@@ -1,0 +1,63 @@
+package main
+ 
+var maxn i32 = 9 // max cards
+var maxl i32 = 50 // steps
+  
+func steps(n i32) (out i32) {
+    var a [50][10]i32
+	var b [50][10]i32
+    var x [50]i32
+    var m i32
+	var l i32
+	var k i32
+	a[0][0] = 1
+	l = 0
+	
+    for true = true {
+        x[l] = i32.add(x[l], 1)
+        k = x[l]
+		
+        if i32.gteq(k, n) {
+            if i32.lteq(l, 0) {
+				break
+            }
+			
+            l = i32.sub(l,1)
+            continue
+        }
+
+		
+        if i32.eq(a[l][k], 0) {
+            if i32.uneq(b[l][k+1], 0) {
+                continue
+            }
+        } else if i32.uneq(a[l][k], k+1) {
+            continue
+        }
+        
+        a[l+1] = a[l]
+        for j := 1; j <= k; j++ {
+            a[l+1][j] = a[l][k-j]
+        }
+        
+        b[l+1] = b[l]
+        a[l+1][0] = k + 1
+        b[l+1][k+1] = 1
+        
+        if i32.gteq(l, m-1) {
+            m = l + 1
+        }
+        
+        l++
+        x[l] = 0
+    }
+    out = m
+}
+
+
+func main() {
+	for i := 1; i <= maxn; i++ {
+        printf("%d: %d\n", i, steps(i))
+    }
+}
+

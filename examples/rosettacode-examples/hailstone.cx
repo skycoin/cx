@@ -1,0 +1,19 @@
+package main
+
+func hs(n i32) (out []i32) {
+	for ;n > 1; {
+		if i32.bitand(n,1) == 0 {
+			n = i32.div(n, 2)
+		} else {
+			n = i32.add(i32.mul(3,n), 1)
+		}
+		out = append(out, n)
+	}
+}
+
+func main() {
+	var seq []i32
+	seq = hs(27)
+	l := len(seq)
+	printf("hs(27): %d elements: [%d %d %d %d ... %d %d %d %d]\n", l, seq[0], seq[1], seq[2], seq[3], seq[l-4], seq[l-3], seq[l-2], seq[l-1])
+}

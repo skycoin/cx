@@ -1,0 +1,57 @@
+package main
+
+func hamming(n i32) (out []i64) {
+	if (i32.lt(n, 0)) {
+		return
+	}
+
+	var h []i64
+	h = append(h, 1L)
+
+	two := 2L
+	three := 3L
+	five := 5L
+
+	next2 := 2L
+	next3 := 3L
+	next5 := 5L
+
+	i := 0
+	j := 0
+	k := 0
+	var m i32
+	var val i64
+
+	for m = 1; m < n; m++ {
+		val = i64.min(next2, i64.min(next3,next5))
+		h = append(h, val)
+		if i64.eq(h[m], next2){
+			i++
+			next2 = i64.mul(two, h[i])
+		}
+
+		if i64.eq(h[m], next3) {
+			j++
+			next3 = i64.mul(three, h[j])
+		}
+
+		if i64.eq(h[m], next5) {
+			k++
+			next5 = i64.mul(five, h[k])
+		}
+	}
+	out = h
+}
+
+func main() {
+	var h []i64
+	h = hamming(1000000) // testing with: ie6
+
+	var i i32
+	for i = 0; i < 20; i++ {
+		printf("%s \n", i64.str(h[i]))
+	}
+	
+	//i64.print(h[1691-1])
+	//i64.print(h[len(h)-1])
+}

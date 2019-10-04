@@ -1,0 +1,52 @@
+package main
+
+
+func firstDenomination(kindsOfCoins i32) (r i32) {
+	if kindsOfCoins == 1 {
+		r = 1
+		return
+	} else if kindsOfCoins == 2 {
+		r = 5
+		return
+	} else if kindsOfCoins == 3 {
+		r = 10
+		return
+	} else if kindsOfCoins == 4 {
+		r = 25
+		return
+	}
+
+	// error here
+}
+
+
+func cc(amount i32, kindsOfCoints i32) (out i64) {
+	if i32.eq(amount, 0) {
+		out = 1L
+		return
+	}
+
+	if i32.lt(amount, 0) || i32.eq(kindsOfCoints, 0) {
+		out = 0L
+		return
+	}
+
+	var cc1 i64
+	var cc2 i64
+	cc1 = cc(amount, i32.sub(kindsOfCoints,1))
+	cc2 = cc(i32.sub(amount, firstDenomination(kindsOfCoints)), kindsOfCoints)
+	out = i64.add(cc1, cc2)
+}
+
+
+func countChange(amount i32) (out i64) {
+	out = cc(amount, 4)
+	return
+}
+
+
+func main() {
+	var amount i32
+	amount = 100
+	printf("Amount = %d\n", countChange(amount))
+}
