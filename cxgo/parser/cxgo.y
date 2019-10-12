@@ -26,6 +26,7 @@
 	bool bool
 	string string
 	stringA []string
+	ints    []int
 
 	line int
 
@@ -166,6 +167,8 @@
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
+
+%type   <ints>          indexing_literal
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
@@ -437,15 +440,15 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($2, 0, DECL_POINTER)
+			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
-        |       LBRACK INT_LITERAL RBRACK declaration_specifiers
-                {
-			$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-                }
+        // |       LBRACK INT_LITERAL RBRACK declaration_specifiers
+        //         {
+	// 		$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
+        //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, 0, DECL_SLICE)
+			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -454,6 +457,16 @@ declaration_specifiers:
         |       IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+                }
+        |       indexing_literal type_specifier
+                {
+			basic := DeclarationSpecifiersBasic($2)
+			$$ = DeclarationSpecifiers(basic, $1, DECL_ARRAY)
+                }
+        |       indexing_literal IDENTIFIER
+                {
+			strct := DeclarationSpecifiersStruct($2, "", false, CurrentFile, LineNo)
+			$$ = DeclarationSpecifiers(strct, $1, DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -539,35 +552,46 @@ array_literal_expression_list:
                 }
                 ;
 
+indexing_literal:
+		LBRACK INT_LITERAL RBRACK
+		{
+			$$ = []int{int($2)}
+		}
+        |       indexing_literal LBRACK INT_LITERAL RBRACK
+		{
+			$$ = append($1, int($3))
+		}
+		;
+
 // expressions
 array_literal_expression:
-                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE array_literal_expression_list RBRACE
+                indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = $6
-                }
-        |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE array_literal_expression_list RBRACE
-                {
-			$$ = ArrayLiteralExpression(int($2), $4, $6)
-                }
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK INT_LITERAL RBRACK array_literal_expression
-                {
-			for _, expr := range $4 {
-				if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
-					expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
-					expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
-				}
-			}
-
 			$$ = $4
                 }
+        |       indexing_literal IDENTIFIER LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
+                {
+			$$ = ArrayLiteralExpression($1, $2, $4)
+                }
+        |       indexing_literal type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        // |       indexing_literal array_literal_expression
+        //         {
+	// 		for _, expr := range $4 {
+	// 			if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
+	// 				expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
+	// 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
+	// 			}
+	// 		}
+
+	// 		$$ = $4
+        //         }
                 ;
 
 

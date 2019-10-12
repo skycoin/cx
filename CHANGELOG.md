@@ -12,10 +12,12 @@
     redirected to an outdated version of the repo and the games are already
     mentioned in the README.
   * Improvements to `PrintProgram` (the function associated to the meta-command `:dp` in the REPL); the types printed to input/output parameters now print indexes, dereferences to fields and if they come from an external package.
+  * Multidimensional array literals are now working properly.
 * Libraries
   * ...
 * Fixed issues
-  * ...
+  * #419: Initializing array or slice with values equivalent to nil.
+  * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
 * Documentation
   * ...
 * Miscellaneous
