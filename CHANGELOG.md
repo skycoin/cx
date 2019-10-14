@@ -16,6 +16,7 @@
 * Libraries
   * ...
 * Fixed issues
+  * #306: Can't print double quotes.
   * #419: Initializing array or slice with values equivalent to nil.
   * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
 * Documentation

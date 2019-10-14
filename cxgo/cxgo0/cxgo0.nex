@@ -123,15 +123,12 @@
 /field/                   { return f(FIELD)      }
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
-/"([^"]*)"/ { /* " */
+/"([^"\\]|\\.)*"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
 	        println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
-	tokVal := str
-	tokVal = strings.TrimPrefix(tokVal, "\"")
-	tokVal = strings.TrimSuffix(tokVal, "\"")
-	lval.tok = tokVal
+	lval.tok = str
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return f(STRING_LITERAL)
 }
