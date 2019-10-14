@@ -121,17 +121,293 @@ func (prgrm *CXProgram) PrintStack() {
 	}
 }
 
-// PrintProgram ...
+// getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
+// function formats indexing and pointer dereferences associated to `arg`.
+func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+	name := ""
+	// Checking if we should include `arg`'s package name.
+	if includePkg {
+		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
+	} else {
+		name = arg.Name
+	}
+
+	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+	if arg.Name == "" {
+		name = LITERAL_PLACEHOLDER
+	}
+
+	// Checking if we got dereferences, e.g. **foo
+	derefLevels := ""
+	if arg.DereferenceLevels > 0 {
+		for c := 0; c < arg.DereferenceLevels; c++ {
+			derefLevels += "*"
+		}
+	}
+	name = derefLevels + name
+
+	// Checking if we have indexing operations, e.g. foo[2][1]
+	for _, idx := range arg.Indexes {
+		// Checking if the value is in data segment.
+		// If this is the case, we can safely display it.
+		idxValue := ""
+		if idx.Offset > PROGRAM.StackSize {
+			// Then it's a literal.
+			var idxI32 int32
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[idx.Offset:idx.Offset+TYPE_POINTER_SIZE], &idxI32)
+			if err != nil {
+				panic(err)
+			}
+			idxValue = fmt.Sprintf("%d", idxI32)
+		} else {
+			// Then let's just print the variable name.
+			idxValue = idx.Name
+		}
+
+		name = fmt.Sprintf("%s[%s]", name, idxValue)
+	}
+
+	return name
+}
+
+// GetFormattedName reads `arg.DereferenceOperations` and builds a string that
+// depicts how an argument is being accessed. Example outputs: "foo[3]",
+// "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
+// include the package name that contains it, such as in "pkg.foo".
+func GetFormattedName(arg *CXArgument, includePkg bool) string {
+	// Getting formatted name which does not include fields.
+	name := getFormattedDerefs(arg, includePkg)
+
+	// Adding as suffixes all the fields.
+	for _, fld := range arg.Fields {
+		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(fld, includePkg))
+	}
+
+	// Checking if we're referencing `arg`.
+	if arg.PassBy == PASSBY_REFERENCE {
+		name = "&" + name
+	}
+
+	return name
+}
+
+// GetFormattedType builds a string with the CXGO type representation of `arg`.
+func GetFormattedType(arg *CXArgument) string {
+	typ := ""
+	elt := GetAssignmentElement(arg)
+
+	// this is used to know what arg.Lengths index to use
+	// used for cases like [5]*[3]i32, where we jump to another decl spec
+	arrDeclCount := len(arg.Lengths) - 1
+	// looping declaration specifiers
+	for _, spec := range elt.DeclarationSpecifiers {
+		switch spec {
+		case DECL_POINTER:
+			typ = "*" + typ
+		case DECL_DEREF:
+			typ = typ[1:]
+		case DECL_ARRAY:
+			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
+			arrDeclCount--
+		case DECL_SLICE:
+			typ = "[]" + typ
+		case DECL_INDEXING:
+		default:
+			// base type
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ += elt.CustomType.Name
+			} else {
+				// then it's basic type
+				typ += TypeNames[elt.Type]
+			}
+		}
+	}
+
+	return typ
+}
+
+// getFormattedParam is an auxiliary function for `PrintProgram`. It formats the
+// name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
+// of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
+// `buf`.
+func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
+	for i, param := range params {
+		elt := GetAssignmentElement(param)
+
+		// Checking if this argument comes from an imported package.
+		externalPkg := false
+		if pkg != param.Package {
+			externalPkg = true
+		}
+
+		if i == len(params)-1 {
+			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+		} else {
+			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+		}
+	}
+}
+
+// printImports is an auxiliary function for `printProgram`. It prints all the
+// imported packages of `pkg`.
+func printImports(pkg *CXPackage) {
+	if len(pkg.Imports) > 0 {
+		fmt.Println("\tImports")
+	}
+
+	for j, imp := range pkg.Imports {
+		fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
+	}
+}
+
+// printGlobals is an auxiliary function for `printProgram`. It prints all the
+// global variables of `pkg`.
+func printGlobals(pkg *CXPackage) {
+	if len(pkg.Globals) > 0 {
+		fmt.Println("\tGlobals")
+	}
+
+	for j, v := range pkg.Globals {
+		fmt.Printf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
+	}
+}
+
+// printStructs is an auxiliary function for `printProgram`. It prints all the
+// structures defined in `pkg`.
+func printStructs(pkg *CXPackage) {
+	if len(pkg.Structs) > 0 {
+		fmt.Println("\tStructs")
+	}
+
+	for j, strct := range pkg.Structs {
+		fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
+
+		for k, fld := range strct.Fields {
+			fmt.Printf("\t\t\t%d.- Field: %s %s\n",
+				k, fld.Name, GetFormattedType(fld))
+		}
+	}
+}
+
+// printFunctions is an auxiliary function for `printProgram`. It prints all the
+// functions defined in `pkg`.
+func printFunctions(pkg *CXPackage) {
+	if len(pkg.Functions) > 0 {
+		fmt.Println("\tFunctions")
+	}
+
+	// We need to declare the counter outside so we can
+	// ignore the increment from the `*init` function.
+	var j int
+	for _, fn := range pkg.Functions {
+		if fn.Name == SYS_INIT_FUNC {
+			continue
+		}
+		_, err := pkg.SelectFunction(fn.Name)
+		if err != nil {
+			panic(err)
+		}
+
+		var inps bytes.Buffer
+		var outs bytes.Buffer
+		getFormattedParam(fn.Inputs, pkg, &inps)
+		getFormattedParam(fn.Outputs, pkg, &outs)
+
+		fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
+			j, fn.Name, inps.String(), outs.String())
+
+		for k, expr := range fn.Expressions {
+			var inps bytes.Buffer
+			var outs bytes.Buffer
+			var opName string
+			var lbl string
+
+			// Adding label in case a `goto` statement was used for the expression.
+			if expr.Label != "" {
+				lbl = " <<" + expr.Label + ">>"
+			} else {
+				lbl = ""
+			}
+
+			// Determining operator's name.
+			if expr.Operator != nil {
+				if expr.Operator.IsNative {
+					opName = OpNames[expr.Operator.OpCode]
+				} else {
+					opName = expr.Operator.Name
+				}
+			}
+
+			getFormattedParam(expr.Inputs, pkg, &inps)
+			getFormattedParam(expr.Outputs, pkg, &outs)
+
+			if expr.Operator != nil {
+				assignOp := ""
+				if outs.Len() > 0 {
+					assignOp = " = "
+				}
+				fmt.Printf("\t\t\t%d.- Expression%s: %s%s%s(%s)\n",
+					k,
+					lbl,
+					outs.String(),
+					assignOp,
+					opName,
+					inps.String(),
+				)
+			} else {
+				// Then it's a variable declaration. These are represented
+				// by expressions without operators that only have outputs.
+				if len(expr.Outputs) > 0 {
+					out := expr.Outputs[len(expr.Outputs)-1]
+
+					fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
+						k,
+						lbl,
+						expr.Outputs[0].Name,
+						GetFormattedType(out))
+				}
+			}
+		}
+
+		j++
+	}
+}
+
+// printPackages is an auxiliary function for `PrintProgram`. It starts the
+// process of printing the abstract syntax tree of a CX program.
+func printPackages(prgrm *CXProgram) {
+	// We need to declare the counter outside so we can
+	// ignore the increments from core or stdlib packages.
+	var i int
+	for _, pkg := range prgrm.Packages {
+		if IsCorePackage(pkg.Name) {
+			continue
+		}
+
+		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
+
+		printImports(pkg)
+		printGlobals(pkg)
+		printStructs(pkg)
+		printFunctions(pkg)
+
+		i++
+	}
+}
+
+// PrintProgram prints the abstract syntax tree of a CX program in a
+// human-readable format.
 func (prgrm *CXProgram) PrintProgram() {
 	fmt.Println("Program")
 
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
 
-	_ = currentFunction
-	_ = currentPackage
-
-	// saving current program state because PrintProgram uses SelectXXX
+	// Saving current program state because PrintProgram uses SelectXXX.
+	// If we don't do this, calling `:dp` in a REPL will always switch the
+	// user to the last function in the last package in the `CXProgram`
+	// structure.
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
 	}
@@ -140,343 +416,10 @@ func (prgrm *CXProgram) PrintProgram() {
 		currentFunction = fn
 	}
 
-	i := 0
+	printPackages(prgrm)
 
-	for _, mod := range prgrm.Packages {
-		if IsCorePackage(mod.Name) {
-			continue
-		}
-
-		fmt.Printf("%d.- Package: %s\n", i, mod.Name)
-
-		if len(mod.Imports) > 0 {
-			fmt.Println("\tImports")
-		}
-
-		j := 0
-		for _, imp := range mod.Imports {
-			fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
-			j++
-		}
-
-		if len(mod.Globals) > 0 {
-			fmt.Println("\tGlobals")
-		}
-
-		j = 0
-		for _, v := range mod.Globals {
-			var arrayStr string
-			if v.IsArray {
-				for _, l := range v.Lengths {
-					arrayStr += fmt.Sprintf("[%d]", l)
-				}
-			}
-			fmt.Printf("\t\t%d.- Global: %s %s%s\n", j, v.Name, arrayStr, TypeNames[v.Type])
-			j++
-		}
-
-		if len(mod.Structs) > 0 {
-			fmt.Println("\tStructs")
-		}
-
-		j = 0
-		for _, strct := range mod.Structs {
-			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
-
-			for k, fld := range strct.Fields {
-				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
-					k, fld.Name, TypeNames[fld.Type])
-			}
-
-			j++
-		}
-
-		if len(mod.Functions) > 0 {
-			fmt.Println("\tFunctions")
-		}
-
-		j = 0
-		for _, fn := range mod.Functions {
-			_, err := mod.SelectFunction(fn.Name)
-			if err != nil {
-				panic(err)
-			}
-
-			var inps bytes.Buffer
-			for i, inp := range fn.Inputs {
-				var isPointer string
-				if inp.IsPointer {
-					isPointer = "*"
-				}
-
-				var arrayStr string
-				if inp.IsArray {
-					for _, l := range inp.Lengths {
-						arrayStr += fmt.Sprintf("[%d]", l)
-					}
-				}
-
-				var typeName string
-				elt := GetAssignmentElement(inp)
-				if elt.CustomType != nil {
-					// then it's custom type
-					typeName = elt.CustomType.Name
-				} else {
-					// then it's native type
-					typeName = TypeNames[elt.Type]
-				}
-
-				if i == len(fn.Inputs)-1 {
-					inps.WriteString(fmt.Sprintf("%s %s%s%s", inp.Name, isPointer, arrayStr, typeName))
-				} else {
-					inps.WriteString(fmt.Sprintf("%s %s%s%s, ", inp.Name, isPointer, arrayStr, typeName))
-				}
-			}
-
-			var outs bytes.Buffer
-			for i, out := range fn.Outputs {
-				var isPointer string
-				if out.IsPointer {
-					isPointer = "*"
-				}
-
-				var arrayStr string
-				if out.IsArray {
-					for _, l := range out.Lengths {
-						arrayStr += fmt.Sprintf("[%d]", l)
-					}
-				}
-
-				var typeName string
-				elt := GetAssignmentElement(out)
-				if elt.CustomType != nil {
-					// then it's custom type
-					typeName = elt.CustomType.Name
-				} else {
-					// then it's native type
-					typeName = TypeNames[elt.Type]
-				}
-
-				if i == len(fn.Outputs)-1 {
-					outs.WriteString(fmt.Sprintf("%s %s%s%s", out.Name, isPointer, arrayStr, typeName))
-				} else {
-					outs.WriteString(fmt.Sprintf("%s %s%s%s, ", out.Name, isPointer, arrayStr, typeName))
-				}
-			}
-
-			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
-				j, fn.Name, inps.String(), outs.String())
-
-			k := 0
-			for _, expr := range fn.Expressions {
-				// if expr.Operator == nil {
-				//      continue
-				// }
-				//Arguments
-				var args bytes.Buffer
-
-				for i, arg := range expr.Inputs {
-					var name string
-					var dat []byte
-
-					if arg.Offset > STACK_SIZE {
-						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
-					} else {
-						name = arg.Name
-					}
-
-					if dat != nil {
-						switch TypeNames[arg.Type] {
-						case "str":
-							mustDeserializeRaw(dat, &name)
-							name = "\"" + name + "\""
-						case "i32":
-							var i32 int32
-							mustDeserializeAtomic(dat, &i32)
-							name = fmt.Sprintf("%v", i32)
-						case "i64":
-							var i64 int64
-							mustDeserializeRaw(dat, &i64)
-							name = fmt.Sprintf("%v", i64)
-						case "f32":
-							var f32 float32
-							mustDeserializeRaw(dat, &f32)
-							name = fmt.Sprintf("%v", f32)
-						case "f64":
-							var f64 float64
-							mustDeserializeRaw(dat, &f64)
-							name = fmt.Sprintf("%v", f64)
-						case "bool":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
-						case "byte":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
-						}
-					}
-
-					if arg.Name != "" {
-						name = arg.Name
-						for _, fld := range arg.Fields {
-							name += "." + fld.Name
-						}
-					}
-
-					var derefLevels string
-					if arg.DereferenceLevels > 0 {
-						for c := 0; c < arg.DereferenceLevels; c++ {
-							derefLevels += "*"
-						}
-					}
-
-					var isReference string
-					if arg.PassBy == PASSBY_REFERENCE {
-						isReference = "&"
-					}
-
-					var arrayStr string
-					if arg.IsArray {
-						for _, l := range arg.Lengths {
-							arrayStr += fmt.Sprintf("[%d]", l)
-						}
-					}
-
-					var typeName string
-					elt := GetAssignmentElement(arg)
-					if elt.CustomType != nil {
-						// then it's custom type
-						typeName = elt.CustomType.Name
-					} else {
-						// then it's native type
-						typeName = TypeNames[elt.Type]
-					}
-
-					if i == len(expr.Inputs)-1 {
-						args.WriteString(fmt.Sprintf("%s%s%s %s%s", isReference, derefLevels, name, arrayStr, typeName))
-					} else {
-						args.WriteString(fmt.Sprintf("%s%s%s %s%s, ", isReference, derefLevels, name, arrayStr, typeName))
-					}
-				}
-
-				var opName string
-				if expr.Operator != nil {
-					if expr.Operator.IsNative {
-						opName = OpNames[expr.Operator.OpCode]
-					} else {
-						opName = expr.Operator.Name
-					}
-				}
-
-				if len(expr.Outputs) > 0 {
-					var outNames bytes.Buffer
-					for i, outName := range expr.Outputs {
-						out := GetAssignmentElement(outName)
-
-						var derefLevels string
-						if outName.DereferenceLevels > 0 {
-							for c := 0; c < outName.DereferenceLevels; c++ {
-								derefLevels += "*"
-							}
-						}
-
-						var arrayStr string
-						if outName.IsArray {
-							for _, l := range outName.Lengths {
-								arrayStr += fmt.Sprintf("[%d]", l)
-							}
-						}
-
-						var typeName string
-						if out.CustomType != nil {
-							// then it's custom type
-							typeName = out.CustomType.Name
-						} else {
-							// then it's native type
-							typeName = TypeNames[out.Type]
-						}
-
-						fullName := outName.Name
-
-						for _, fld := range outName.Fields {
-							fullName += "." + fld.Name
-						}
-
-						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
-						} else {
-							outNames.WriteString(fmt.Sprintf("%s%s%s %s, ", derefLevels, fullName, arrayStr, typeName))
-						}
-					}
-
-					var lbl string
-					if expr.Label != "" {
-						lbl = " <<" + expr.Label + ">>"
-					} else {
-						lbl = ""
-					}
-
-					if expr.Operator != nil {
-						fmt.Printf("\t\t\t%d.- Expression%s: %s = %s(%s)\n",
-							k,
-							lbl,
-							outNames.String(),
-							opName,
-							args.String(),
-						)
-					} else {
-						if len(expr.Outputs) > 0 {
-							var typ string
-
-							out := expr.Outputs[len(expr.Outputs)-1]
-
-							// NOTE: this only adds a single *, regardless of how many
-							// dereferences we have. won't be fixed atm, as the whole
-							// PrintProgram needs to be refactored soon.
-							if out.IsPointer {
-								typ = "*"
-							}
-
-							if GetAssignmentElement(out).CustomType != nil {
-								// then it's custom type
-								typ += GetAssignmentElement(out).CustomType.Name
-							} else {
-								// then it's native type
-								typ += TypeNames[GetAssignmentElement(out).Type]
-							}
-
-							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
-								k,
-								lbl,
-								expr.Outputs[0].Name,
-								typ)
-						}
-					}
-
-				} else {
-					var lbl string
-
-					if expr.Label != "" {
-						lbl = " <<" + expr.Label + ">>"
-					} else {
-						lbl = ""
-					}
-
-					fmt.Printf("\t\t\t%d.- Expression%s: %s(%s)\n",
-						k,
-						lbl,
-						opName,
-						args.String(),
-					)
-				}
-				k++
-			}
-			j++
-		}
-		i++
-	}
-
+	// Restoring a program's state (what package and function were
+	// selected.)
 	if currentPackage != nil {
 		_, err := prgrm.SelectPackage(currentPackage.Name)
 		if err != nil {
