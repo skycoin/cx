@@ -21,7 +21,7 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	slcVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	slcVarExpr.Package = pkg
 	slcVar := MakeArgument(symName, CurrentFile, LineNo)
-	slcVar = DeclarationSpecifiers(slcVar, 0, DECL_SLICE)
+	slcVar = DeclarationSpecifiers(slcVar, []int{0}, DECL_SLICE)
 	slcVar.AddType(TypeNames[typSpec])
 
 	// slcVar.IsSlice = true
@@ -200,7 +200,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*CXE
 	return result
 }
 
-func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*CXExpression {
+func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -213,7 +213,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	arrVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	arrVarExpr.Package = pkg
 	arrVar := MakeArgument(symName, CurrentFile, LineNo)
-	arrVar = DeclarationSpecifiers(arrVar, arrSize, DECL_ARRAY)
+	arrVar = DeclarationSpecifiers(arrVar, arrSizes, DECL_ARRAY)
 	arrVar.AddType(TypeNames[typSpec])
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 
@@ -259,7 +259,8 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 			result = append(result, symExpr)
 
-			sym.Lengths = append(expr.Outputs[0].Lengths, arrSize)
+			// sym.Lengths = append(expr.Outputs[0].Lengths, arrSizes[len(arrSizes)-1])
+			sym.Lengths = arrSizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 		} else {
 			result = append(result, expr)
@@ -269,13 +270,15 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	symNameOutput := MakeGenSym(LOCAL_PREFIX)
 
 	symOutput := MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	symOutput.Lengths = append(symOutput.Lengths, arrSize)
+	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
+	symOutput.Lengths = arrSizes
 	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	symInput := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	symInput.Lengths = append(symInput.Lengths, arrSize)
+	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
+	symInput.Lengths = arrSizes
 	symInput.Package = pkg
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)
