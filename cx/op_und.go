@@ -405,7 +405,7 @@ func opLen(prgrm *CXProgram) {
 
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
-		outB1 := FromI32(int32(elt.Lengths[0]))
+		outB1 := FromI32(int32(elt.Lengths[len(elt.Indexes)]))
 		WriteMemory(GetFinalOffset(fp, out1), outB1)
 	}
 }
