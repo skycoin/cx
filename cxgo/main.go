@@ -734,8 +734,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			arg0.Package = osPkg
 
 			arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
-			arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
-			arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
+			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_BASIC)
+			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_SLICE)
 
 			DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
@@ -886,6 +886,7 @@ func main() {
 	}
 
 	if options.replMode || len(sourceCode) == 0 {
+		PRGRM.SelectProgram()
 		repl()
 		return
 	}
