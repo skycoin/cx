@@ -1,7 +1,7 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 var PRGRM *CXProgram

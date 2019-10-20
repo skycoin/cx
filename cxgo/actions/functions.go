@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the

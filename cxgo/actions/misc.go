@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime"
 	
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 func SetCorrectArithmeticOp(expr *CXExpression) {
