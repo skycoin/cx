@@ -185,9 +185,9 @@ package parser
 import (
        "fmt"
        "strconv"
-	"github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"    // Only for CurrentFilename
+	"github.com/SkycoinProject/cx/cx"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxgo0"    // Only for CurrentFilename
 )
 
 

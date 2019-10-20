@@ -3,7 +3,7 @@ package actions
 import (
 	"fmt"
 	"os"
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // DeclareGlobal() creates a global variable in the current package.

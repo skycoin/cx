@@ -26,10 +26,10 @@ import (
 	"net"
 	"net/http"
 	
-	. "github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cxgo/parser"
-	. "github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
+	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/SkycoinProject/cx/cxgo/parser"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
 	"github.com/amherag/skycoin/src/cipher"
@@ -98,7 +98,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 		return err
 	}
 
-	configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+	configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
 	configFile := "fiber.toml"
 	configFilepath := filepath.Join(configDir, configFile)
 	// check that the config file exists
@@ -106,7 +106,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 		return err
 	}
 
-	projectRoot := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx"
+	projectRoot := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx"
 	if projectRoot == "" {
 		return ErrMissingProjectRoot
 	}
@@ -914,7 +914,7 @@ func main() {
 		s := Serialize(PRGRM, 1)
 		s = ExtractBlockchainProgram(s, s)
 
-		configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+		configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
 		configFile := "fiber"
 		
 		cmd := exec.Command("go", "install", "./cmd/newcoin/...")
@@ -923,7 +923,7 @@ func main() {
 
 		cmd = exec.Command("newcoin", "createcoin",
 			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
 			"--config-file=" + configFile + ".toml",
 			"--config-dir=" + configDir,
 		)
@@ -952,7 +952,7 @@ func main() {
 		
 		cmd = exec.Command("newcoin", "createcoin",
 			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
 			"--config-file=" + configFile + ".toml",
 			"--config-dir=" + configDir,
 		)
@@ -1240,7 +1240,7 @@ func IdeServiceMode() {
 	ideHost := "localhost:5335"
 
 	// Working directory for ide
-	sharedPath := fmt.Sprintf("%s/src/github.com/skycoin/cx", os.Getenv("GOPATH"))
+	sharedPath := fmt.Sprintf("%s/src/github.com/SkycoinProject/cx", os.Getenv("GOPATH"))
 
 	// Start Leaps
 	// cmd = `leaps -address localhost:5335 $GOPATH/src/skycoin/cx`
@@ -1311,7 +1311,7 @@ func printPrompt () {
 
 func repl () {
 	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/")
 
 	InREPL = true
 
