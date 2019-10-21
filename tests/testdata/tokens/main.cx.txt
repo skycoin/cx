@@ -3736,6 +3736,28 @@ STRLIT func defined with no arguments, called WITH arguments causes PANIC
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-481.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT multi-dimensional arrays are not working
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-482.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT multi-dimensional slices are not working
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64
