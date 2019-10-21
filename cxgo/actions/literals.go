@@ -3,7 +3,7 @@ package actions
 import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
