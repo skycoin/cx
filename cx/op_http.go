@@ -110,7 +110,7 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// Debug("OpaqueOffset", opaqueFld.Offset) // prints 4
 	// Debug("HostOffset", hostFld.Offset) // prints 8
 	///////
-	
+
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
