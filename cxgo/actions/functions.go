@@ -653,10 +653,11 @@ func ProcessStringAssignment(expr *CXExpression) {
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
 func ProcessReferenceAssignment(expr *CXExpression) {
 	for _, out := range expr.Outputs {
-		if out.PassBy == PASSBY_REFERENCE &&
-			!hasDeclSpec(out, DECL_POINTER) &&
-			out.Type != TYPE_STR && !out.IsSlice {
-			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", out.Name)
+		elt := GetAssignmentElement(out)
+		if elt.PassBy == PASSBY_REFERENCE &&
+			!hasDeclSpec(elt, DECL_POINTER) &&
+			elt.Type != TYPE_STR && !elt.IsSlice {
+			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
 		}
 	}
 

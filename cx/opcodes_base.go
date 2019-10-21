@@ -20,11 +20,12 @@ const (
 	OP_OS_RUN
 	OP_OS_EXIT
 
-	// http
-	// OP_HTTP_GET
-
 	// object explorer
 	OP_OBJ_QUERY
+
+	// http
+	OP_HTTP_SERVE
+	OP_HTTP_NEW_REQUEST
 
 	END_OF_BASE_OPS
 )
@@ -42,9 +43,12 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I64, false)})
 
 	// http
-	// AddOpCode(OP_HTTP_GET, "http.Get",
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)},
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_HTTP_SERVE, "http.Serve",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_HTTP_NEW_REQUEST, "http.NewRequest",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
@@ -76,8 +80,10 @@ func init() {
 			return op_time_UnixNano
 
 		// http
-		// case OP_HTTP_GET:
-		// 	return op_http_get
+		case OP_HTTP_SERVE:
+			return opHTTPServe
+		case OP_HTTP_NEW_REQUEST:
+			return opHTTPNewRequest
 
 		// os
 		case OP_OS_GET_WORKING_DIRECTORY:

@@ -4,6 +4,13 @@ import (
 	"os"
 )
 
+// Initializing `CXProgram` structure where packages, structs, functions and
+// global variables that belong to core packages are stored.
+func init() {
+	prgrm := CXProgram{Packages: make([]*CXPackage, 0)}
+	PROGRAM = &prgrm
+}
+
 var InREPL bool = false
 var FoundCompileErrors bool
 

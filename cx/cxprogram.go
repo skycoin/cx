@@ -322,6 +322,13 @@ func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
 	return PROGRAM, nil
 }
 
+func GetProgram() (*CXProgram, error) {
+	if PROGRAM == nil {
+		return nil, fmt.Errorf("a CX program has not been loaded")
+	}
+	return PROGRAM, nil
+}
+
 // SelectPackage ...
 func (prgrm *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{

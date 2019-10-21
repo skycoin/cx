@@ -829,6 +829,11 @@ func main() {
 	DebugLexer = options.debugLexer   // in package parser
 
 	PRGRM = MakeProgram()
+	corePkgsPrgrm, err := GetProgram()
+	if err != nil {
+		panic(err)
+	}
+	PRGRM.Packages = corePkgsPrgrm.Packages
 
 	if options.webMode {
 		ServiceMode()
