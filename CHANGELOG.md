@@ -17,6 +17,7 @@
 * Libraries
   * ...
 * Fixed issues
+  * #110: `read()` is not working.
   * #306: Can't print double quotes.
   * #321: Can't do math inside 2nd square brackets (indexer) of an expression.
   * #419: Initializing array or slice with values equivalent to nil.
