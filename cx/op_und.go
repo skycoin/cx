@@ -659,31 +659,14 @@ func opRead(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
 
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
-	// text = strings.Trim(text, " \n")
-	text = strings.Replace(text, "\n", "", -1)
-	text = strings.Replace(text, "\r", "", -1)
-
 	if err != nil {
 		panic("")
 	}
-	byts := encoder.Serialize(text)
-	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
-	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
+	text = strings.Replace(text, "\n", "", -1)
+	text = strings.Replace(text, "\r", "", -1)
 
-	var header = make([]byte, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
-	}
-
-	obj := append(header, byts...)
-
-	WriteMemory(heapOffset, obj)
-
-	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
-
-	WriteMemory(out1Offset, off)
+	writeString(fp, text, out1)
 }
