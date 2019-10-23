@@ -663,7 +663,7 @@ func opRead(prgrm *CXProgram) {
 	reader := bufio.NewReader(os.Stdin)
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		panic("")
+		panic(err)
 	}
 	text = strings.Replace(text, "\n", "", -1)
 	text = strings.Replace(text, "\r", "", -1)
