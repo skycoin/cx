@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
@@ -14,7 +15,7 @@ func init() {
 	// In this case we're adding the `URL` type to the `http` package.
 	httpPkg := MakePackage("http")
 	urlStrct := MakeStruct("URL")
-	
+
 	urlStrct.AddField(MakeArgument("Scheme", "", 0).AddType(TypeNames[TYPE_STR]))
 	urlStrct.AddField(MakeArgument("Opaque", "", 0).AddType(TypeNames[TYPE_STR]))
 	urlStrct.AddField(MakeArgument("Host", "", 0).AddType(TypeNames[TYPE_STR]))
@@ -23,14 +24,14 @@ func init() {
 	urlStrct.AddField(MakeArgument("ForceQuery", "", 0).AddType(TypeNames[TYPE_BOOL]))
 	urlStrct.AddField(MakeArgument("RawQuery", "", 0).AddType(TypeNames[TYPE_STR]))
 	urlStrct.AddField(MakeArgument("Fragment", "", 0).AddType(TypeNames[TYPE_STR]))
-	
+
 	httpPkg.AddStruct(urlStrct)
 
 	// 95% sure that you will also need Golang's `net/http`'s `Request` struct.
 	// If this is the case, you can add that structure like this:
 
 	requestStrct := MakeStruct("Request")
-	
+
 	requestStrct.AddField(MakeArgument("Method", "", 0).AddType(TypeNames[TYPE_STR]))
 	urlFld := MakeArgument("URL", "", 0).AddType(TypeNames[TYPE_CUSTOM])
 	// Golang declares this one as a pointer. It can be done in CX using
@@ -63,7 +64,7 @@ func init() {
 	// parser. These files are part of the `cxcore` package, where, until now, we didn't have
 	// the need to add structs like this. So for now we have to do it manually.
 	// For reference, check `cxgo/actions/declarations.go`, in particular `DeclarationSpecifiers()`.
-	
+
 	PROGRAM.AddPackage(httpPkg)
 }
 
@@ -93,7 +94,7 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// (which is obtained below) + the offset of `out1` + the offset
 	// of the field that you want to access.
 	// In the case of a URL input, you'd do the same, actually, but `inp1`.
-	
+
 	// httpPkg, err := PROGRAM.GetPackage("http")
 	// if err != nil {
 	// 	panic(err)
@@ -121,12 +122,93 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	body := ReadStr(fp, inp3)
 
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
+	if err != nil {
+		writeString(fp, err.Error(), out1)
+	}
+	// req.Header["Timestamp"] := time.Now().UnixNano()
 
+	// place this on response once handler is supported
+	// req.Header["Blockchain"] :=
+	// req.Header["NodeID"] :=
+	// req.Header["BlockHeight"] :=
+	// req.Header["HeadBlockHash"] :=
+	// req.Header["HeadBlockSeq"] :=
+	// req.Header["HeadBlockTime"] :=
+	// req.Header["RequestId"] :=
+	// req.Header["ResponseError"] :=
+
+	// url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
+	// dataMap = make(map[string]interface{}, 0)
+	// dataMap["rawtx"] = respBody["encoded_transaction"]
+
+	// jsonStr, err = json.Marshal(dataMap)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	// req.Header.Set("X-CSRF-Token", csrfToken)
+	// req.Header.Set("Content-Type", "application/json")
+
+	// resp, err = client.Do(req)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// body, err = ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	out1Offset := GetFinalOffset(fp, out1)
+	byts := encoder.Serialize(req)
+	WriteObject(out1Offset, byts)
+}
+
+func opHTTPDo(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	//TODO read req from the inputs
+	var req http.Request
+	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+	err := encoder.DeserializeRawExact(byts1, &req)
+	if err != nil {
+		writeString(fp, err.Error(), out1)
+	}
+	writeString(fp, req.URL.Path, out1) // This is just for testing, confirming if request is red correctly should be removed
+	return
+
+	var netClient = &http.Client{
+		Timeout: time.Second * 30,
+	}
+	resp, err := netClient.Do(&req)
 	if err != nil {
 		writeString(fp, err.Error(), out1)
 	}
 
 	out1Offset := GetFinalOffset(fp, out1)
-	byts := encoder.Serialize(req)
+	byts := encoder.Serialize(resp)
 	WriteObject(out1Offset, byts)
+}
+
+func opDMSGDo(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	var req http.Request
+	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+	err := encoder.DeserializeRawExact(byts1, &req)
+	if err != nil {
+		writeString(fp, err.Error(), out1)
+	}
+
+	// c := dmsghttp.DMSGClient(dmsgD, cPK, cSK) // TODO get discovery and pub/sec pair
+
+	// resp, err := c.Do(req)
+	// if err != nil {
+	// 	writeString(fp, err.Error(), out1)
+	// }
 }

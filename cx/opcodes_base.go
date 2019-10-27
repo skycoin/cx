@@ -26,6 +26,7 @@ const (
 	// http
 	OP_HTTP_SERVE
 	OP_HTTP_NEW_REQUEST
+	OP_HTTP_DO
 
 	END_OF_BASE_OPS
 )
@@ -49,6 +50,9 @@ func init() {
 	AddOpCode(OP_HTTP_NEW_REQUEST, "http.NewRequest",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)})
+	AddOpCode(OP_HTTP_DO, "http.Do",
+		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
@@ -84,6 +88,8 @@ func init() {
 			return opHTTPServe
 		case OP_HTTP_NEW_REQUEST:
 			return opHTTPNewRequest
+		case OP_HTTP_DO:
+			return opHTTPDo
 
 		// os
 		case OP_OS_GET_WORKING_DIRECTORY:
