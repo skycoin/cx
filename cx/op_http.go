@@ -3,9 +3,10 @@
 package cxcore
 
 import (
+	"bytes"
+	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
@@ -118,13 +119,93 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	method := ReadStr(fp, inp1)
-	url := ReadStr(fp, inp2)
+	urlString := ReadStr(fp, inp2)
 	body := ReadStr(fp, inp3)
 
-	req, err := http.NewRequest(method, url, strings.NewReader(body))
+	// workaround for http.NewRequest starts here
+	// schemeIndex := strings.Index(urlString, "://")
+
+	// scheme := urlString[:schemeIndex]
+	// schemeIndex += 3
+	// noSchemeURL := urlString[schemeIndex:]
+	// fmt.Println(scheme)
+	// fmt.Println(noSchemeURL)
+	// path := ""
+	// pathIndex := strings.Index(noSchemeURL, "/")
+	// if pathIndex > -1 {
+	// 	path = noSchemeURL[pathIndex:]
+	// 	noSchemeURL = noSchemeURL[:pathIndex]
+	// }
+	// fmt.Println(path)
+
+	// u := &url.URL{
+	// 	Scheme: scheme,
+	// 	Host:   noSchemeURL,
+	// 	Path:   path,
+	// }
+	// fmt.Println("url done")
+	// fmt.Println(u)
+	// // u, err := url.Parse(urlString)
+	// // if err != nil {
+	// // 	writeString(fp, err.Error(), out1)
+	// // }
+
+	// var br io.Reader
+	// br = bytes.NewBuffer([]byte(body))
+	// fmt.Println("buffer done")
+	// rc, ok := br.(io.ReadCloser)
+	// if !ok && br != nil {
+	// 	rc = ioutil.NopCloser(br)
+	// }
+
+	// req := &http.Request{
+	// 	Method:     method,
+	// 	URL:        u,
+	// 	Proto:      "HTTP/1.1",
+	// 	ProtoMajor: 1,
+	// 	ProtoMinor: 1,
+	// 	// Header:     make(Header),
+	// 	Body: rc,
+	// 	Host: u.Host,
+	// }
+	// fmt.Println("req done")
+	// req.WithContext(context.Background())
+	// fmt.Println("req with ctx done")
+
+	//above is an alternative for following 3 lines of code that fail due to URL
+	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		writeString(fp, err.Error(), out1)
 	}
+
+	// // new request ends with the following, bellow is just a workaround
+	// out1Offset := GetFinalOffset(fp, out1)
+	// byts := encoder.Serialize(req)
+	// WriteObject(out1Offset, byts)
+
+	var netClient = &http.Client{
+		Timeout: time.Second * 30,
+	}
+	fmt.Println("client done")
+	resp, err := netClient.Do(req)
+	if err != nil {
+		fmt.Println("err on do")
+		fmt.Println(err)
+		writeString(fp, err.Error(), out1)
+	}
+	fmt.Println("do done")
+	fmt.Println(resp)
+
+	// TODO issue with returning response line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding two previous lines for context:
+	//do done
+	//&{404 Not Found 404 HTTP/1.1 1 1 map[Content-Length:[19] Content-Type:[text/plain; charset=utf-8] Date:[Sun, 27 Oct 2019 22:10:14 GMT] X-Content-Type-Options:[nosniff]] 0xc0000c8700 19 [] false false map[] 0xc000175400 <nil>}
+	// 2019/10/27 23:10:14 invalid type int
+	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
+
+	out1Offset := GetFinalOffset(fp, out1)
+	byts := encoder.Serialize(resp)
+	WriteObject(out1Offset, byts)
+
 	// req.Header["Timestamp"] := time.Now().UnixNano()
 
 	// place this on response once handler is supported
@@ -160,9 +241,6 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// 	panic(err)
 	// }
 
-	out1Offset := GetFinalOffset(fp, out1)
-	byts := encoder.Serialize(req)
-	WriteObject(out1Offset, byts)
 }
 
 func opHTTPDo(prgrm *CXProgram) {
