@@ -9,6 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/skycoin/dmsg/cipher"
+	"github.com/skycoin/dmsg/disc"
+
+	dmsghttp "github.com/SkycoinProject/dmsg-http"
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
@@ -283,10 +287,12 @@ func opDMSGDo(prgrm *CXProgram) {
 		writeString(fp, err.Error(), out1)
 	}
 
-	// c := dmsghttp.DMSGClient(dmsgD, cPK, cSK) // TODO get discovery and pub/sec pair
+	cPK, cSK := cipher.GenerateKeyPair()
+	dmsgD := disc.NewHTTP("http://dmsg.discovery.skywire.skycoin.com")
+	c := dmsghttp.DMSGClient(dmsgD, cPK, cSK)
 
-	// resp, err := c.Do(req)
-	// if err != nil {
-	// 	writeString(fp, err.Error(), out1)
-	// }
+	resp, err := c.Do(req)
+	if err != nil {
+		writeString(fp, err.Error(), out1)
+	}
 }
