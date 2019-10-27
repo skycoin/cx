@@ -10,6 +10,22 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:417caa0eed2ee3d07913adf4935d658c6d147a257e4732cdf047ae7a084a6628"
+  name = "github.com/SkycoinProject/dmsg-http"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6272659103c9d6b67b6a0e3140867f143062fe02"
+
+[[projects]]
+  digest = "1:ab7fbf4ca87b2a949b0dc81485d7090b7e05780d2112afafe0f9145370060d0c"
+  name = "github.com/SkycoinProject/skycoin"
+  packages = ["src/cipher/encoder"]
+  pruneopts = "UT"
+  revision = "ff754084df0912bc0d151529e2893ca86618fb3f"
+  version = "v0.26.0"
+
+[[projects]]
   branch = "cxchains"
   digest = "1:c1cb1c1e5f7f78cca28cad22abff80fa9e0d38fc7c589f51c398c40bd02d699b"
   name = "github.com/amherag/skycoin"
@@ -93,6 +109,22 @@
   pruneopts = "UT"
   revision = "61153c768f31ee5f130071d08fc82b85208528de"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:f2f806cf86ec4291da63d9ffa88af9b4be3c4ee4bbfb9ec2b1109f8ba2d38d1b"
+  name = "github.com/flynn/noise"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2492fe189ae688d7edbeae0fd575de2f1c5fec8e"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -214,6 +246,14 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "UT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:d14a5f4bfecf017cb780bdde1b6483e5deb87e12c332544d2c430eda58734bcb"
   name = "github.com/prometheus/client_golang"
   packages = [
@@ -288,12 +328,49 @@
   version = "v1.4.2"
 
 [[projects]]
+  digest = "1:0b02b30f8514311e09f46f75b7d698c28be617f3f15725706672768236ffa659"
+  name = "github.com/skycoin/cx"
+  packages = ["cx"]
+  pruneopts = "UT"
+  revision = "031a2f361510bda79e4f7fb43bc939bb6fd5c426"
+  version = "v0.7.1"
+
+[[projects]]
+  branch = "mainnet-milestone1"
+  digest = "1:b56e4d43a931e2f2d0861a9c364ea502c167e6cb60217a92074ecb431158270d"
+  name = "github.com/skycoin/dmsg"
+  packages = [
+    ".",
+    "cipher",
+    "disc",
+    "ioutil",
+    "noise",
+  ]
+  pruneopts = "UT"
+  revision = "d6e96b044ed6c622f883cfdde8209b141132233c"
+
+[[projects]]
   branch = "master"
   digest = "1:067f0ed830568eae456ab9dbadf174c9d77eceb66a9f1a30eb00dd5be4aac115"
   name = "github.com/skycoin/gltext"
   packages = ["."]
   pruneopts = "UT"
   revision = "b86a26479c3e25ac0f13e195bd2c0554bcf2f837"
+
+[[projects]]
+  digest = "1:aa75c1e257fe73048a5c6a69bda15876f90905e662c06e6e4ba2520b65c69b66"
+  name = "github.com/skycoin/skycoin"
+  packages = [
+    "src/cipher",
+    "src/cipher/base58",
+    "src/cipher/ripemd160",
+    "src/cipher/secp256k1-go",
+    "src/cipher/secp256k1-go/secp256k1-go2",
+    "src/util/logging",
+  ]
+  pruneopts = "UT"
+  revision = "ff754084df0912bc0d151529e2893ca86618fb3f"
+  version = "v0.26.0"
 
 [[projects]]
   digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
@@ -347,6 +424,17 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:99d32780e5238c2621fff621123997c3e3cca96db8be13179013aea77dfab551"
+  name = "github.com/stretchr/testify"
+  packages = [
+    "assert",
+    "require",
+  ]
+  pruneopts = "UT"
+  revision = "221dbe5ed46703ee255b1da0dec05086f5035f62"
+  version = "v1.4.0"
+
+[[projects]]
   branch = "master"
   digest = "1:d0f38989d9912584151e0cf70aa6e182a9be1a4c8118c3ecf52742c1fc0572bb"
   name = "github.com/theherk/viper"
@@ -372,9 +460,18 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bbe51412d9915d64ffaa96b51d409e070665efc5194fcf145c4a27d4133107a4"
+  digest = "1:faefd4ecd7e2eeab3c0ac657e79b1f7a71a2bc9c4f18be75634e59fb474a31b1"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "blake2b",
+    "blake2s",
+    "chacha20poly1305",
+    "curve25519",
+    "internal/chacha20",
+    "internal/subtle",
+    "poly1305",
+    "ssh/terminal",
+  ]
   pruneopts = "UT"
   revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
 
@@ -399,9 +496,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f99b0e9035cf86cdc14cb2848308e831193d5e19ab9a23a8493cd925bdc3952b"
+  digest = "1:592884773baa2f2871cfce60531595d30690c5afdd4fde35773204e2b625020e"
   name = "golang.org/x/sys"
   packages = [
+    "cpu",
     "unix",
     "windows",
   ]
@@ -435,6 +533,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/SkycoinProject/dmsg-http",
+    "github.com/SkycoinProject/skycoin/src/cipher/encoder",
     "github.com/amherag/skycoin/src/api",
     "github.com/amherag/skycoin/src/cipher",
     "github.com/amherag/skycoin/src/cipher/encoder",
