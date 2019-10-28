@@ -70,6 +70,32 @@ func init() {
 	// the need to add structs like this. So for now we have to do it manually.
 	// For reference, check `cxgo/actions/declarations.go`, in particular `DeclarationSpecifiers()`.
 
+	// Mapping http.Response struct
+	responseStruct := MakeStruct("Response")
+	responseStruct.AddField(MakeArgument("Status", "", 0).AddType(TypeNames[TYPE_STR]))
+	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(TypeNames[TYPE_I16]))
+	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(TypeNames[TYPE_STR]))
+	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(TypeNames[TYPE_I16]))
+	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(TypeNames[TYPE_I16]))
+	//TODO Header Header - not sure if headerFld used for http.Request can be used here
+	//TODO Body io.ReadCloser
+	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(TypeNames[TYPE_I64]))
+	transferEncodingFld := MakeArgument("TransferEncoding", "", 0).AddType(TypeNames[TYPE_STR])
+	transferEncodingFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
+	transferEncodingFld.IsSlice = true
+	transferEncodingFld.IsReference = true
+	transferEncodingFld.IsArray = true
+	transferEncodingFld.PassBy = PASSBY_REFERENCE
+	transferEncodingFld.Lengths = []int{0}
+	responseStruct.AddField(transferEncodingFld)
+	urlStrct.AddField(MakeArgument("Close", "", 0).AddType(TypeNames[TYPE_BOOL]))
+	urlStrct.AddField(MakeArgument("Uncompressed", "", 0).AddType(TypeNames[TYPE_BOOL]))
+	//TODO Trailer Header
+	//TODO Request *Request
+	//TODO TLS *tls.ConnectionState
+
+	httpPkg.AddStruct(responseStruct)
+
 	PROGRAM.AddPackage(httpPkg)
 }
 
@@ -197,17 +223,17 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 		fmt.Println(err)
 		writeString(fp, err.Error(), out1)
 	}
-	fmt.Println("do done")
-	fmt.Println(resp)
+	resp1 := *resp // dereference to exclude pointer issue
+	fmt.Println(resp1)
 
-	// TODO issue with returning response line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding two previous lines for context:
-	//do done
-	//&{404 Not Found 404 HTTP/1.1 1 1 map[Content-Length:[19] Content-Type:[text/plain; charset=utf-8] Date:[Sun, 27 Oct 2019 22:10:14 GMT] X-Content-Type-Options:[nosniff]] 0xc0000c8700 19 [] false false map[] 0xc000175400 <nil>}
+	// TODO issue with returning response,
+	// the line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding response object content for context:
+	// &{404 Not Found 404 HTTP/1.1 1 1 map[Content-Length:[19] Content-Type:[text/plain; charset=utf-8] Date:[Sun, 27 Oct 2019 22:10:14 GMT] X-Content-Type-Options:[nosniff]] 0xc0000c8700 19 [] false false map[] 0xc000175400 <nil>}
 	// 2019/10/27 23:10:14 invalid type int
 	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
 
 	out1Offset := GetFinalOffset(fp, out1)
-	byts := encoder.Serialize(resp)
+	byts := encoder.Serialize(resp1)
 	WriteObject(out1Offset, byts)
 
 	// req.Header["Timestamp"] := time.Now().UnixNano()
