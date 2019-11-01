@@ -796,20 +796,8 @@ func ReadByte(fp int, inp *CXArgument) (out byte) {
 	return
 }
 
-// ReadStr ...
-func ReadStr(fp int, inp *CXArgument) (out string) {
-	var offset int32
-	off := GetFinalOffset(fp, inp)
-	if inp.Name == "" {
-		// Then it's a literal.
-		offset = int32(off)
-	} else {
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
-		if err != nil {
-			panic(err)
-		}
-	}
-
+// ReadStrOffset gets the string in heap pointed out by `offset`.
+func ReadStrOffset(offset int32) (out string) {
 	if offset == 0 {
 		// Then it's nil string.
 		out = ""
@@ -844,6 +832,23 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	}
 
 	return out
+}
+
+// ReadStr ...
+func ReadStr(fp int, inp *CXArgument) (out string) {
+	var offset int32
+	off := GetFinalOffset(fp, inp)
+	if inp.Name == "" {
+		// Then it's a literal.
+		offset = int32(off)
+	} else {
+		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return ReadStrOffset(offset)
 }
 
 // ReadI8 ...

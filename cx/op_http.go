@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/skycoin/dmsg/cipher"
-	"github.com/skycoin/dmsg/disc"
+	// "github.com/skycoin/dmsg/cipher"
+	// "github.com/skycoin/dmsg/disc"
 
-	dmsghttp "github.com/SkycoinProject/dmsg-http"
+	// dmsghttp "github.com/SkycoinProject/dmsg-http"
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
@@ -58,12 +58,18 @@ func init() {
 	headerFld.IsArray = true
 	headerFld.PassBy = PASSBY_REFERENCE
 	headerFld.Lengths = []int{0} // 1D slice. If it was a 2D slice it'd be []int{0, 0}
+	headerFld.Size = 4
+	headerFld.TotalSize = 4
 
 	// Then we add the field
 	requestStrct.AddField(headerFld)
 
+	Debug("strctSize", requestStrct.Size)
+
 	// And adding the `Request` structure to the `http` package.
 	httpPkg.AddStruct(requestStrct)
+
+	// Debug("urlOffset", methodFld.Offset)
 
 	// Sorry, there ARE functions that handle all of these operations, but they're part of the
 	// parser. These files are part of the `cxcore` package, where, until now, we didn't have
@@ -270,7 +276,6 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// if err != nil {
 	// 	panic(err)
 	// }
-
 }
 
 func opHTTPDo(prgrm *CXProgram) {
@@ -279,26 +284,47 @@ func opHTTPDo(prgrm *CXProgram) {
 
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	//TODO read req from the inputs
-	var req http.Request
-	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)
-	err := encoder.DeserializeRawExact(byts1, &req)
-	if err != nil {
-		writeString(fp, err.Error(), out1)
-	}
-	writeString(fp, req.URL.Path, out1) // This is just for testing, confirming if request is red correctly should be removed
-	return
+	// var req http.Request
+	reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 30,
-	}
-	resp, err := netClient.Do(&req)
-	if err != nil {
-		writeString(fp, err.Error(), out1)
-	}
+	_ = out1
 
-	out1Offset := GetFinalOffset(fp, out1)
-	byts := encoder.Serialize(resp)
-	WriteObject(out1Offset, byts)
+	var methodOffset int32
+	encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
+	
+	Debug("method", ReadStrOffset(methodOffset))
+
+	// var urlStrctOffset int32
+	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
+
+	// urlByts := PROGRAM.Memory[urlStrctOffset:urlStrctOffset+TYPE_POINTER_SIZE]
+
+	// var schemeOffset int32
+	// encoder.DeserializeAtomic(urlByts[:TYPE_POINTER_SIZE], &schemeOffset)
+
+	// Debug("url.scheme", urlByts)
+	// Debug("url.scheme", ReadStrOffset(schemeOffset))
+	
+	// err := encoder.DeserializeRawExact(byts1, &req)
+	// if err != nil {
+	// 	writeString(fp, err.Error(), out1)
+	// }
+	// Debug("path", req.URL.Path)%
+	// fmt.Printf("%+v\n", req)
+	// writeString(fp, req.URL.Path, out1) // This is just for testing, confirming if request is red correctly should be removed
+	// return
+
+	// var netClient = &http.Client{
+	// 	Timeout: time.Second * 30,
+	// }
+	// resp, err := netClient.Do(&req)
+	// if err != nil {
+	// 	writeString(fp, err.Error(), out1)
+	// }
+
+	// out1Offset := GetFinalOffset(fp, out1)
+	// byts := encoder.Serialize(resp)
+	// WriteObject(out1Offset, byts)
 }
 
 func opDMSGDo(prgrm *CXProgram) {
@@ -313,12 +339,12 @@ func opDMSGDo(prgrm *CXProgram) {
 		writeString(fp, err.Error(), out1)
 	}
 
-	cPK, cSK := cipher.GenerateKeyPair()
-	dmsgD := disc.NewHTTP("http://dmsg.discovery.skywire.skycoin.com")
-	c := dmsghttp.DMSGClient(dmsgD, cPK, cSK)
+	// cPK, cSK := cipher.GenerateKeyPair()
+	// dmsgD := disc.NewHTTP("http://dmsg.discovery.skywire.skycoin.com")
+	// c := dmsghttp.DMSGClient(dmsgD, cPK, cSK)
 
-	resp, err := c.Do(req)
-	if err != nil {
-		writeString(fp, err.Error(), out1)
-	}
+	// resp, err := c.Do(&req)
+	// if err != nil {
+	// 	writeString(fp, err.Error(), out1)
+	// }
 }

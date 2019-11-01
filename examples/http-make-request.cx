@@ -3,30 +3,38 @@ import "http"
 import "os"
 
 func main() {
-  // var err str
-  // err = http.Serve("127.0.0.1:8000")
+	// var err str
+	// err = http.Serve("127.0.0.1:8000")
 
-  var url http.URL
-  url.Host = "127.0.0.1:9079"
-  url.Path = "/some/path"
-  url.RawPath = "/some/raw/path"
-  url.ForceQuery = true
+	var url http.URL
+	url.Scheme = "http"
+	url.Host = "127.0.0.1:9079"
+	url.Path = "/some/path"
+	url.RawPath = "/some/raw/path"
+	url.ForceQuery = true
 
-  var req http.Request
-  req.Method = "POST"
-  req.URL = &url
+	var req http.Request
+	req.Method = "POST"
+	req.URL = &url
 
-  req.Header = append(req.Header, "one")
-  req.Header = append(req.Header, "two")
+	// var headerStuff []str
+	// headerStuff = append(headerStuff, "one")
+	// headerStuff = append(headerStuff, "two")
 
-  str.print(req.Header[0])
-  str.print(req.Header[1])
+	// req.Header = headerStuff
 
-  str.print(req.URL.Host) // prints 127.0.0.1:8000
-  str.print(req.URL.Path) // prints /some/path
+	req.Header = append(req.Header, "one")
+	// req.Header = append(req.Header, "two")
 
-  works := http.Do(req)
-  str.print("Works?")
-  str.print(works)
-  
+	// str.print(req.Header[0])
+	// str.print(req.Header[1])
+
+	// str.print(req.URL.Host) // prints 127.0.0.1:8000
+	// str.print(req.URL.Path) // prints /some/path
+
+	// var works str
+	// works = http.Do(req)
+	// // str.print("Works?")
+	// // str.print(works)
+	
 }
