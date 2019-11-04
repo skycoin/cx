@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	// "github.com/skycoin/dmsg/cipher"
@@ -14,6 +15,8 @@ import (
 
 	// dmsghttp "github.com/SkycoinProject/dmsg-http"
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+
+	"github.com/jinzhu/copier"
 )
 
 func init() {
@@ -44,32 +47,35 @@ func init() {
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, DECL_STRUCT)
 	urlFld.DeclarationSpecifiers = append(urlFld.DeclarationSpecifiers, DECL_POINTER)
 	urlFld.IsPointer = true
+	urlFld.Size = TYPE_POINTER_SIZE
+	urlFld.TotalSize = TYPE_POINTER_SIZE
 	// urlFld.PassBy = PASSBY_REFERENCE
 	urlFld.CustomType = urlStrct
 	requestStrct.AddField(urlFld)
+
+
+
 	// If `Request` is indeed needed, add the other fields. If you *need* `Header`,
 	// you'll be in trouble (maybe), as `Header` is of type `map[string][]string`
 	// and CX doesn't have maps. If you need this, implement it as an array (or a slice), where
 	// the first element is X datum, the second element is Y datum, etc. For example:
 	headerFld := MakeArgument("Header", "", 0).AddType(TypeNames[TYPE_STR]) // will be a slice of strings
 	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
+	headerFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
 	headerFld.IsSlice = true
 	headerFld.IsReference = true
 	headerFld.IsArray = true
 	headerFld.PassBy = PASSBY_REFERENCE
-	headerFld.Lengths = []int{0} // 1D slice. If it was a 2D slice it'd be []int{0, 0}
-	headerFld.Size = 4
-	headerFld.TotalSize = 4
+	headerFld.Lengths = []int{0, 0} // 1D slice. If it was a 2D slice it'd be []int{0, 0}
 
 	// Then we add the field
 	requestStrct.AddField(headerFld)
 
-	Debug("strctSize", requestStrct.Size)
+
+
 
 	// And adding the `Request` structure to the `http` package.
 	httpPkg.AddStruct(requestStrct)
-
-	// Debug("urlOffset", methodFld.Offset)
 
 	// Sorry, there ARE functions that handle all of these operations, but they're part of the
 	// parser. These files are part of the `cxcore` package, where, until now, we didn't have
@@ -79,15 +85,15 @@ func init() {
 	// Mapping http.Response struct
 	responseStruct := MakeStruct("Response")
 	responseStruct.AddField(MakeArgument("Status", "", 0).AddType(TypeNames[TYPE_STR]))
-	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(TypeNames[TYPE_I16]))
+	responseStruct.AddField(MakeArgument("StatusCode", "", 0).AddType(TypeNames[TYPE_I32]))
 	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(TypeNames[TYPE_STR]))
-	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(TypeNames[TYPE_I16]))
-	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(TypeNames[TYPE_I16]))
+	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(TypeNames[TYPE_I32]))
+	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(TypeNames[TYPE_I32]))
 	//TODO Header Header - not sure if headerFld used for http.Request can be used here
 	//TODO Body io.ReadCloser
 	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(TypeNames[TYPE_I64]))
 	transferEncodingFld := MakeArgument("TransferEncoding", "", 0).AddType(TypeNames[TYPE_STR])
-	transferEncodingFld.DeclarationSpecifiers = append(headerFld.DeclarationSpecifiers, DECL_SLICE)
+	transferEncodingFld.DeclarationSpecifiers = append(transferEncodingFld.DeclarationSpecifiers, DECL_SLICE)
 	transferEncodingFld.IsSlice = true
 	transferEncodingFld.IsReference = true
 	transferEncodingFld.IsArray = true
@@ -284,35 +290,92 @@ func opHTTPDo(prgrm *CXProgram) {
 
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	//TODO read req from the inputs
-	// var req http.Request
-	reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	_ = out1
 
-	var methodOffset int32
-	encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
+	// var methodOffset int32
+	// encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
 	
-	Debug("method", ReadStrOffset(methodOffset))
+	// Debug("method", ReadStrOffset(methodOffset))
 
 	// var urlStrctOffset int32
 	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
 
-	// urlByts := PROGRAM.Memory[urlStrctOffset:urlStrctOffset+TYPE_POINTER_SIZE]
+	req := CXArgument{}
+	copier.Copy(&req, inp1)
 
-	// var schemeOffset int32
-	// encoder.DeserializeAtomic(urlByts[:TYPE_POINTER_SIZE], &schemeOffset)
+	httpPkg, err := PROGRAM.GetPackage("http")
+	if err != nil {
+		panic(err)
+	}
+	urlType, err := httpPkg.GetStruct("URL")
+	if err != nil {
+		panic(err)
+	}
+	requestType, err := httpPkg.GetStruct("Request")
+	if err != nil {
+		panic(err)
+	}
 
-	// Debug("url.scheme", urlByts)
-	// Debug("url.scheme", ReadStrOffset(schemeOffset))
+	methodFld, err := requestType.GetField("Method")
+	if err != nil {
+		panic(err)
+	}
 	
-	// err := encoder.DeserializeRawExact(byts1, &req)
-	// if err != nil {
-	// 	writeString(fp, err.Error(), out1)
-	// }
-	// Debug("path", req.URL.Path)%
-	// fmt.Printf("%+v\n", req)
-	// writeString(fp, req.URL.Path, out1) // This is just for testing, confirming if request is red correctly should be removed
-	// return
+	urlFld, err := requestType.GetField("URL")
+	if err != nil {
+		panic(err)
+	}
+
+	derefUrlFld := CXArgument{}
+	copier.Copy(&derefUrlFld, urlFld)
+	
+	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
+	schemeFld, err := urlType.GetField("Scheme")
+	if err != nil {
+		panic(err)
+	}
+	hostFld, err := urlType.GetField("Host")
+	if err != nil {
+		panic(err)
+	}
+	pathFld, err := urlType.GetField("Path")
+	if err != nil {
+		panic(err)
+	}
+	rawPathFld, err := urlType.GetField("RawPath")
+	if err != nil {
+		panic(err)
+	}
+	forceQueryFld, err := urlType.GetField("ForceQuery")
+	if err != nil {
+		panic(err)
+	}
+
+	accessMethod := []*CXArgument{methodFld}
+	accessURLScheme := []*CXArgument{&derefUrlFld, schemeFld}
+	accessURLHost := []*CXArgument{&derefUrlFld, hostFld}
+	accessURLPath := []*CXArgument{&derefUrlFld, pathFld}
+	accessURLRawPath := []*CXArgument{&derefUrlFld, rawPathFld}
+	accessURLForceQuery := []*CXArgument{&derefUrlFld, forceQueryFld}
+
+	request := http.Request{}
+	url := url.URL{}
+	request.URL = &url
+	
+	req.Fields = accessMethod
+	request.Method = ReadStr(fp, &req)
+	req.Fields = accessURLScheme
+	url.Scheme = ReadStr(fp, &req)
+	req.Fields = accessURLHost
+	url.Host = ReadStr(fp, &req)
+	req.Fields = accessURLPath
+	url.Path = ReadStr(fp, &req)
+	req.Fields = accessURLRawPath
+	url.RawPath = ReadStr(fp, &req)
+	req.Fields = accessURLForceQuery
+	url.ForceQuery = ReadBool(fp, &req)
 
 	// var netClient = &http.Client{
 	// 	Timeout: time.Second * 30,

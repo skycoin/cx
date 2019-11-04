@@ -27,6 +27,8 @@ const (
 	OP_HTTP_SERVE
 	OP_HTTP_NEW_REQUEST
 	OP_HTTP_DO
+
+	// dmsg
 	OP_DMSG_DO
 
 	END_OF_BASE_OPS

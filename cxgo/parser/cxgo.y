@@ -169,6 +169,7 @@
 %type   <expressions>   infer_clauses
 
 %type   <ints>          indexing_literal
+%type   <ints>          indexing_slice_literal
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
@@ -448,7 +449,7 @@ declaration_specifiers:
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
+                  $$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -560,6 +561,17 @@ indexing_literal:
         |       indexing_literal LBRACK INT_LITERAL RBRACK
 		{
 			$$ = append($1, int($3))
+		}
+		;
+
+indexing_slice_literal:
+		LBRACK RBRACK
+		{
+			$$ = []int{0}
+		}
+        |       indexing_slice_literal LBRACK RBRACK
+		{
+			$$ = append($1, 0)
 		}
 		;
 

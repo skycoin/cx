@@ -923,20 +923,33 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		if len(sym.Fields) > 0 {
 			elt := GetAssignmentElement(sym)
 
-			declSpec := make([]int, len(elt.DeclarationSpecifiers))
+			fld, err := arg.CustomType.GetField(elt.Name)
+			if err != nil {
+				panic(err)
+			}
 
-			for i, spec := range elt.DeclarationSpecifiers {
+			// declSpec := make([]int, len(elt.DeclarationSpecifiers))
+			// for i, spec := range elt.DeclarationSpecifiers {
+			// 	declSpec[i] = spec
+			// }
+			declSpec := make([]int, len(fld.DeclarationSpecifiers))
+			for i, spec := range fld.DeclarationSpecifiers {
 				declSpec[i] = spec
 			}
 
 			for c := len(elt.DeclarationSpecifiers)-1; c >= 0; c-- {
 				switch elt.DeclarationSpecifiers[c] {
 				case DECL_INDEXING:
-					if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
-						declSpec = declSpec[:len(declSpec)-2]
+					if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
 					}
+					// if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
+					// 	declSpec = declSpec[:len(declSpec)-2]
+					// } else {
+					// 	println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
+					// }
 				case DECL_DEREF:
 					if declSpec[len(declSpec)-2] == DECL_POINTER {
 						declSpec = declSpec[:len(declSpec)-2]
@@ -978,6 +991,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 					}
 				}
 			}
+
 			sym.DeclarationSpecifiers = declSpec
 		}
 	} else {
@@ -1002,7 +1016,10 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		sym.IsPointer = true
 	}
 
+	Debug("ah", arg.Name, GetAssignmentElement(sym).IsSlice, sym.DereferenceOperations)
+
 	if arg.IsSlice {
+		Debug("hm", arg.Name)
 		if !hasDerefOp(sym, DEREF_ARRAY) {
 			// Then we're handling the slice itself, and we need to dereference it.
 			sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)

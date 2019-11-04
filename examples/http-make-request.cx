@@ -2,6 +2,10 @@ package main
 import "http"
 import "os"
 
+type coco struct {
+	names [][]str
+}
+
 func main() {
 	// var err str
 	// err = http.Serve("127.0.0.1:8000")
@@ -23,8 +27,31 @@ func main() {
 
 	// req.Header = headerStuff
 
-	req.Header = append(req.Header, "one")
-	// req.Header = append(req.Header, "two")
+	var contentType []str
+	contentType = []str{"Content-Type", "application/json"}
+	var accept []str
+	accept = []str{"Accept", "text/html"}
+	req.Header = append(req.Header, contentType)
+	req.Header = append(req.Header, accept)
+
+	var meow coco
+	meow.names = append(meow.names, contentType)
+	meow.names = append(meow.names, accept)
+
+	str.print(meow.names[1][1])
+
+	// var meow [][]str
+	// meow = append(meow, contentType)
+	// meow = append(meow, accept)
+
+	// str.print(meow[0][0])
+
+
+	
+	// str.print(req.Header[0][0])
+
+	// req.Header = append(req.Header, []str{"Content-Type", "application/json"})
+	// req.Header = append(req.Header, []str{"Accept", "text/html"})
 
 	// str.print(req.Header[0])
 	// str.print(req.Header[1])
@@ -34,7 +61,7 @@ func main() {
 
 	// var works str
 	// works = http.Do(req)
-	// // str.print("Works?")
-	// // str.print(works)
+	// str.print("Works?")
+	// str.print(works)
 	
 }

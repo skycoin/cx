@@ -58,6 +58,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 				continue
 			}
 			var subSize = int(1)
+			Debug("rrrr", arg.Name, arg.Lengths)
 			for _, len := range arg.Lengths[idxCounter+1:] {
 				subSize *= len
 			}
