@@ -715,8 +715,27 @@ func lookupSymbol (pkgName, ident string, symbols *[]map[string]*CXArgument) (*C
 			return sym, nil
 		}
 	}
-	
 	return nil, errors.New("identifier '" + ident + "' does not exist")
+
+	// // Checking if `ident` refers to a function.
+	// pkg, err := PRGRM.GetPackage(pkgName)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// notFound := errors.New("identifier '" + ident + "' does not exist")
+	
+	// // We're not checking for that error
+	// fn, err := pkg.GetFunction(ident)
+	// if err != nil {
+	// 	return nil, notFound
+	// }
+	// // Then we found a function by that name. Let's create a `CXArgument` of
+	// // type `func` with that name.
+	// fnArg := MakeArgument(ident, fn.FileName, fn.FileLine).AddType("func")
+	// fnArg.Package = pkg
+
+	// return fnArg, nil
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
