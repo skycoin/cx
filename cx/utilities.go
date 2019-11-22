@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"text/tabwriter"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -423,9 +423,9 @@ func printPackages(prgrm *CXProgram) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		if IsCorePackage(pkg.Name) {
-			continue
-		}
+		// if IsCorePackage(pkg.Name) {
+		// 	continue
+		// }
 
 		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
 

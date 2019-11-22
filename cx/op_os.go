@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)

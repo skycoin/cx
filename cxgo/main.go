@@ -32,17 +32,17 @@ import (
 	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
-	"github.com/amherag/skycoin/src/cipher"
-	// "github.com/amherag/skycoin/src/cipher/encoder"
-	"github.com/amherag/skycoin/src/coin"
-	"github.com/amherag/skycoin/src/readable"
-	"github.com/amherag/skycoin/src/skycoin"
-	"github.com/amherag/skycoin/src/fiber"
-	"github.com/amherag/skycoin/src/util/logging"
-	"github.com/amherag/skycoin/src/visor"
-	"github.com/amherag/skycoin/src/api"
-	"github.com/amherag/skycoin/src/cli"
-	"github.com/amherag/skycoin/src/wallet"
+	"github.com/SkycoinProject/cx-chains/src/cipher"
+	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
+	"github.com/SkycoinProject/cx-chains/src/coin"
+	"github.com/SkycoinProject/cx-chains/src/readable"
+	"github.com/SkycoinProject/cx-chains/src/skycoin"
+	"github.com/SkycoinProject/cx-chains/src/fiber"
+	"github.com/SkycoinProject/cx-chains/src/util/logging"
+	"github.com/SkycoinProject/cx-chains/src/visor"
+	"github.com/SkycoinProject/cx-chains/src/api"
+	"github.com/SkycoinProject/cx-chains/src/cli"
+	"github.com/SkycoinProject/cx-chains/src/wallet"
 
 	"errors"
 )
@@ -720,6 +720,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	if len(sourceCode) > 0 {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
 	}
+
+	PRGRM.SelectProgram()
 
 	PRGRM = cxgo0.PRGRM0
 	if FoundCompileErrors || parseErrors > 0 {

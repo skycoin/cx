@@ -122,6 +122,8 @@
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
+%type   <arguments>     id_list
+%type   <arguments>     types_list
                                                 
 %type   <function>      function_header
 
@@ -275,6 +277,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
+			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
                 ;
@@ -304,9 +307,48 @@ direct_declarator:
                 { $$ = $2 }
                 ;
 
+id_list:	IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+			$$ = []*CXArgument{arg}
+		}
+	|	type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($1)			 
+			$$ = []*CXArgument{arg}
+		}
+	|	id_list COMMA IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($3, "", false, CurrentFile, LineNo)
+			$$ = append($1, arg)
+		}
+	|	id_list COMMA type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($3)
+			$$ = append($1, arg)
+		}
+	;
+
+types_list:
+		LPAREN id_list RPAREN
+		{
+			$$ = $2
+		}
+	|	LPAREN RPAREN
+		{
+			$$ = nil
+		}
+	;
 
 declaration_specifiers:
-                MUL_OP declaration_specifiers
+		FUNC types_list types_list
+		{
+			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg.Inputs = $2
+			arg.Outputs = $3
+			$$ = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+		}
+        |       MUL_OP declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }

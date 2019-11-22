@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 func opF64F64(prgrm *CXProgram) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 var onMessages = map[string]string{

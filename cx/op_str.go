@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 func opStrStr(prgrm *CXProgram) {
@@ -84,6 +84,8 @@ func writeString(fp int, str string, out *CXArgument) {
 	WriteMemory(heapOffset, obj)
 
 	off := encoder.SerializeAtomic(int32(heapOffset))
+
+	Debug("off", off)
 
 	WriteMemory(GetFinalOffset(fp, out), off)
 }

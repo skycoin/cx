@@ -322,6 +322,12 @@ func ProcessUndExpression(expr *CXExpression) {
 
 func ProcessPointerStructs(expr *CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
+		for _, fld := range arg.Fields {
+			if fld.IsPointer && fld.DereferenceLevels == 0 {
+				fld.DereferenceLevels++
+				fld.DereferenceOperations = append(fld.DereferenceOperations, DEREF_POINTER)
+			}
+		}
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
@@ -715,27 +721,26 @@ func lookupSymbol (pkgName, ident string, symbols *[]map[string]*CXArgument) (*C
 			return sym, nil
 		}
 	}
-	return nil, errors.New("identifier '" + ident + "' does not exist")
 
-	// // Checking if `ident` refers to a function.
-	// pkg, err := PRGRM.GetPackage(pkgName)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// notFound := errors.New("identifier '" + ident + "' does not exist")
+	// Checking if `ident` refers to a function.
+	pkg, err := PRGRM.GetPackage(pkgName)
+	if err != nil {
+		return nil, err
+	}
 	
-	// // We're not checking for that error
-	// fn, err := pkg.GetFunction(ident)
-	// if err != nil {
-	// 	return nil, notFound
-	// }
-	// // Then we found a function by that name. Let's create a `CXArgument` of
-	// // type `func` with that name.
-	// fnArg := MakeArgument(ident, fn.FileName, fn.FileLine).AddType("func")
-	// fnArg.Package = pkg
+	notFound := errors.New("identifier '" + ident + "' does not exist")
+	
+	// We're not checking for that error
+	fn, err := pkg.GetFunction(ident)
+	if err != nil {
+		return nil, notFound
+	}
+	// Then we found a function by that name. Let's create a `CXArgument` of
+	// type `func` with that name.
+	fnArg := MakeArgument(ident, fn.FileName, fn.FileLine).AddType(TypeNames[TYPE_FUNC])
+	fnArg.Package = pkg
 
-	// return fnArg, nil
+	return fnArg, nil
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
@@ -942,21 +947,8 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		if len(sym.Fields) > 0 {
 			elt := GetAssignmentElement(sym)
 
-			fld, err := arg.CustomType.GetField(elt.Name)
-			if err != nil {
-				panic(err)
-			}
-
-			// declSpec := make([]int, len(elt.DeclarationSpecifiers))
-			// for i, spec := range elt.DeclarationSpecifiers {
-			// 	declSpec[i] = spec
-			// }
-			declSpec := make([]int, len(fld.DeclarationSpecifiers))
-			for i, spec := range fld.DeclarationSpecifiers {
-				declSpec[i] = spec
-			}
-
-			for c := len(elt.DeclarationSpecifiers)-1; c >= 0; c-- {
+			declSpec := []int{}
+			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
 				switch elt.DeclarationSpecifiers[c] {
 				case DECL_INDEXING:
 					if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
@@ -964,17 +956,14 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 					} else {
 						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
 					}
-					// if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
-					// 	declSpec = declSpec[:len(declSpec)-2]
-					// } else {
-					// 	println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
-					// }
 				case DECL_DEREF:
-					if declSpec[len(declSpec)-2] == DECL_POINTER {
-						declSpec = declSpec[:len(declSpec)-2]
+					if declSpec[len(declSpec)-1] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
 					}
+				default:
+					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
 				}
 			}
 
@@ -1035,10 +1024,26 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		sym.IsPointer = true
 	}
 
-	Debug("ah", arg.Name, GetAssignmentElement(sym).IsSlice, sym.DereferenceOperations)
+	// Checking if it's a slice struct field. We'll do the same process as
+	// below (as in the `arg.IsSlice` check), but the process differs in the
+	// case of a slice struct field.
+	elt := GetAssignmentElement(sym)
+	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
+		// elt.DereferenceOperations = []int{4, 4}
+		for i, deref := range elt.DereferenceOperations {
+			// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+			// is a slice or an array. At this point we now know it's a slice and we need
+			// to change those dereferences to DEREF_SLICE.
+			if deref == DEREF_ARRAY {
+				elt.DereferenceOperations[i] = DEREF_SLICE
+			}
+		}
+		if elt.DereferenceOperations[0] == DEREF_POINTER {
+			elt.DereferenceOperations = elt.DereferenceOperations[1:]
+		}
+	}
 
 	if arg.IsSlice {
-		Debug("hm", arg.Name)
 		if !hasDerefOp(sym, DEREF_ARRAY) {
 			// Then we're handling the slice itself, and we need to dereference it.
 			sym.DereferenceOperations = append([]int{DEREF_POINTER}, sym.DereferenceOperations...)

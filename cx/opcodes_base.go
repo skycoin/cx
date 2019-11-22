@@ -23,58 +23,36 @@ const (
 	// object explorer
 	OP_OBJ_QUERY
 
-	// http
-	OP_HTTP_SERVE
-	OP_HTTP_NEW_REQUEST
-	OP_HTTP_DO
-
-	// dmsg
-	OP_DMSG_DO
-
 	END_OF_BASE_OPS
 )
 
 func init() {
 	// time
 	AddOpCode(OP_TIME_SLEEP, "time.Sleep",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
-
-	// http
-	AddOpCode(OP_HTTP_SERVE, "http.Serve",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
-	AddOpCode(OP_HTTP_NEW_REQUEST, "http.NewRequest",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)})
-	AddOpCode(OP_HTTP_DO, "http.Do",
-		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)},
-		[]*CXArgument{newOpPar(TYPE_CUSTOM, false), newOpPar(TYPE_STR, false)})
-	AddOpCode(OP_DMSG_DO, "http.DmsgDo",
-		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_OPEN, "os.Open",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_CLOSE, "os.Close",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_RUN, "os.Run",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_EXIT, "os.Exit",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 
 	// exec
@@ -88,16 +66,6 @@ func init() {
 			return op_time_UnixMilli
 		case OP_TIME_UNIX_NANO:
 			return op_time_UnixNano
-
-		// http
-		case OP_HTTP_SERVE:
-			return opHTTPServe
-		case OP_HTTP_NEW_REQUEST:
-			return opHTTPNewRequest
-		case OP_HTTP_DO:
-			return opHTTPDo
-		case OP_DMSG_DO:
-			return opDMSGDo
 
 		// os
 		case OP_OS_GET_WORKING_DIRECTORY:

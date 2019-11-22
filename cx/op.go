@@ -3,7 +3,7 @@ package cxcore
 import (
 	"fmt"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // CalculateDereferences ...
@@ -135,7 +135,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	var dbg bool
 	if arg.Name != "" {
-		dbg = false
+		dbg = true
 	}
 
 	if finalOffset < PROGRAM.StackSize {

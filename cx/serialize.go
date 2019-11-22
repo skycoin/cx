@@ -1,7 +1,7 @@
 package cxcore
 
 import (
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 type sIndex struct {
@@ -218,7 +218,6 @@ func serializeName(name string, s *sAll) (int32, int32) {
 	s.NamesMap[name] = off
 
 	return int32(off), int32(size)
-
 }
 
 func indexPackage(pkg *CXPackage, s *sAll) {
@@ -767,8 +766,8 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 
 	var fnCounter int32
 	var strctCounter int32
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, split)
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, split, len(prgrm.Packages))
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 2)
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 2, len(prgrm.Packages))
 
 	// program
 	serializeProgram(prgrm, &s)
@@ -866,6 +865,7 @@ func dsName(off int32, size int32, s *sAll) string {
 func dsPackages(s *sAll, prgrm *CXProgram) {
 	var fnCounter int32
 	var strctCounter int32
+
 	for i, sPkg := range s.Packages {
 		// initializing packages with their names,
 		// empty functions, structs, imports and globals
@@ -903,10 +903,13 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 			prgrm.Packages[i].Globals = make([]*CXArgument, sPkg.GlobalsSize)
 		}
 
-		// CurrentFunction
-		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
-		}
+		// // CurrentFunction
+		// if sPkg.FunctionsSize > 0 {
+		// 	Debug("hmmm", prgrm.Packages)
+		// 	prgrm.Packages[i].CurrentFunction =
+		// 		prgrm.Packages[i].
+		// 		Functions[sPkg.CurrentFunctionOffset-fnCounter]
+		// }
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
