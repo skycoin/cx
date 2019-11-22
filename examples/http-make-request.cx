@@ -12,13 +12,13 @@ func main() {
 
 	var url http.URL
 	url.Scheme = "http"
-	url.Host = "127.0.0.1:9079"
-	url.Path = "/some/path"
-	url.RawPath = "/some/raw/path"
+	url.Host = "google.com"
+	url.Path = "/"
+	url.RawPath = "/"
 	url.ForceQuery = true
 
 	var req http.Request
-	req.Method = "POST"
+	req.Method = "GET"
 	req.URL = &url
 
 	// var headerStuff []str
@@ -34,17 +34,37 @@ func main() {
 	req.Header = append(req.Header, contentType)
 	req.Header = append(req.Header, accept)
 
-	var meow coco
-	meow.names = append(meow.names, contentType)
-	meow.names = append(meow.names, accept)
+	var resp http.Response
+	var err str
+	resp, err = http.Do(req)
+	// str.print("Works?")
+	// str.print(err)
+	str.print(resp.Status)
+	i32.print(resp.StatusCode)
 
-	str.print(meow.names[1][1])
+	// str.print(req.Header[0][0])
+	// str.print(req.Header[0][1])
+	// str.print(req.Header[1][0])
+	// str.print(req.Header[1][1])
+
+	// var meow coco
+	// meow.names = append(meow.names, contentType)
+	// meow.names = append(meow.names, accept)
+
+	// str.print(meow.names[0][0])
+	// str.print(meow.names[0][1])
+	// str.print(meow.names[1][0])
+	// str.print(meow.names[1][1])
+
 
 	// var meow [][]str
 	// meow = append(meow, contentType)
 	// meow = append(meow, accept)
 
 	// str.print(meow[0][0])
+	// str.print(meow[0][1])
+	// str.print(meow[1][0])
+	// str.print(meow[1][1])
 
 
 	
@@ -58,10 +78,5 @@ func main() {
 
 	// str.print(req.URL.Host) // prints 127.0.0.1:8000
 	// str.print(req.URL.Path) // prints /some/path
-
-	// var works str
-	// works = http.Do(req)
-	// str.print("Works?")
-	// str.print(works)
 	
 }
