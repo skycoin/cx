@@ -53,8 +53,6 @@ func init() {
 	urlFld.CustomType = urlStrct
 	requestStrct.AddField(urlFld)
 
-
-
 	// If `Request` is indeed needed, add the other fields. If you *need* `Header`,
 	// you'll be in trouble (maybe), as `Header` is of type `map[string][]string`
 	// and CX doesn't have maps. If you need this, implement it as an array (or a slice), where
@@ -288,17 +286,16 @@ func opHTTPDo(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
+	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	_ = out1
+	_ = out2
 
 	// var methodOffset int32
 	// encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
 	
-	// Debug("method", ReadStrOffset(methodOffset))
-
 	// var urlStrctOffset int32
 	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
 
@@ -332,6 +329,12 @@ func opHTTPDo(prgrm *CXProgram) {
 	copier.Copy(&derefUrlFld, urlFld)
 	
 	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
+	// derefUrlFld.DeclarationSpecifiers = append(derefUrlFld.DeclarationSpecifiers, DECL_DEREF)
+	// derefUrlFld.DeclarationSpecifiers = []int{4, 1, 0}
+	// derefUrlFld.DereferenceLevels++
+	// derefUrlFld.IsDereferenceFirst = true
+	// derefUrlFld.IsReference = false
+
 	schemeFld, err := urlType.GetField("Scheme")
 	if err != nil {
 		panic(err)
@@ -377,13 +380,72 @@ func opHTTPDo(prgrm *CXProgram) {
 	req.Fields = accessURLForceQuery
 	url.ForceQuery = ReadBool(fp, &req)
 
-	// var netClient = &http.Client{
-	// 	Timeout: time.Second * 30,
-	// }
-	// resp, err := netClient.Do(&req)
+	var netClient = &http.Client{
+		Timeout: time.Second * 30,
+	}
+	response, err := netClient.Do(&request)
+	if err != nil {
+		writeString(fp, err.Error(), out2)
+		return
+	}
+
+	resp := CXArgument{}
+	copier.Copy(&resp, out1)
+
+	responseType, err := httpPkg.GetStruct("Response")
+	if err != nil {
+		panic(err)
+	}
+
+	statusFld, err := responseType.GetField("Status")
+	if err != nil {
+		panic(err)
+	}
+	statusCodeFld, err := responseType.GetField("StatusCode")
+	if err != nil {
+		panic(err)
+	}
+	protoFld, err := responseType.GetField("Proto")
+	if err != nil {
+		panic(err)
+	}
+	protoMajorFld, err := responseType.GetField("ProtoMajor")
+	if err != nil {
+		panic(err)
+	}
+	protoMinorFld, err := responseType.GetField("ProtoMinor")
+	if err != nil {
+		panic(err)
+	}
+	contentLengthFld, err := responseType.GetField("ContentLength")
+	if err != nil {
+		panic(err)
+	}
+	// transferEncodingFld, err := responseType.GetField("TransferEncoding")
 	// if err != nil {
-	// 	writeString(fp, err.Error(), out1)
+	// 	panic(err)
 	// }
+
+	accessStatus := []*CXArgument{statusFld}
+	accessStatusCode := []*CXArgument{statusCodeFld}
+	accessProto := []*CXArgument{protoFld}
+	accessProtoMajor := []*CXArgument{protoMajorFld}
+	accessProtoMinor := []*CXArgument{protoMinorFld}
+	accessContentLength := []*CXArgument{contentLengthFld}
+	// accessTransferEncoding := []*CXArgument{transferEncodingFld}
+
+	resp.Fields = accessStatus
+	writeString(fp, response.Status, &resp)
+	resp.Fields = accessStatusCode
+	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.StatusCode)))
+	resp.Fields = accessProto
+	writeString(fp, response.Proto, &resp)
+	resp.Fields = accessProtoMajor
+	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMajor)))
+	resp.Fields = accessProtoMinor
+	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMinor)))
+	resp.Fields = accessContentLength
+	WriteMemory(GetFinalOffset(fp, &resp), FromI64(int64(response.ContentLength)))
 
 	// out1Offset := GetFinalOffset(fp, out1)
 	// byts := encoder.Serialize(resp)

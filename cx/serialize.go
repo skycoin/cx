@@ -166,14 +166,18 @@ type sArgument struct {
 	PassBy     int32
 	DoesEscape int32
 
-	LengthsOffset int32
-	LengthsSize   int32
-	IndexesOffset int32
-	IndexesSize   int32
-	FieldsOffset  int32
-	FieldsSize    int32
+	LengthsOffset  int32
+	LengthsSize    int32
+	IndexesOffset  int32
+	IndexesSize    int32
+	FieldsOffset   int32
+	FieldsSize     int32
+	InputsOffset   int32
+	InputsSize     int32
+	OutputsOffset  int32
+	OutputsSize    int32
 
-	PackageOffset int32
+	PackageOffset  int32
 }
 
 type sAll struct {
@@ -319,6 +323,8 @@ func serializeArgument(arg *CXArgument, s *sAll) int {
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializeIntegers(arg.Lengths, s)
 	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
 	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(arg.Fields, s)
+	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(arg.Inputs, s)
+	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(arg.Outputs, s)
 
 	if pkgOff, found := s.PackagesMap[arg.Package.Name]; found {
 		s.Arguments[argOff].PackageOffset = int32(pkgOff)
@@ -1026,6 +1032,8 @@ func dsArgument(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	arg.Lengths = dsIntegers(sArg.LengthsOffset, sArg.LengthsSize, s)
 	arg.Indexes = dsArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
 	arg.Fields = dsArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
+	arg.Inputs = dsArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
+	arg.Outputs = dsArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
 
 	arg.Package = prgrm.Packages[sArg.PackageOffset]
 

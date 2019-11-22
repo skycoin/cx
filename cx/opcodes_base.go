@@ -55,7 +55,7 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)})
 	AddOpCode(OP_HTTP_DO, "http.Do",
 		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(TYPE_CUSTOM, false), newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_DMSG_DO, "http.DmsgDo",
 		[]*CXArgument{newOpPar(TYPE_CUSTOM, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})

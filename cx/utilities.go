@@ -191,6 +191,22 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 	return name
 }
 
+// formatParameters returns a string containing a list of the formatted types of
+// each of `params`, enclosed in parethesis. This function is used only when
+// formatting functions as first-class objects.
+func formatParameters(params []*CXArgument) string {
+	types := "("
+	for i, param := range params {
+		types += GetFormattedType(param)
+		if i != len(params)-1 {
+			types += ", "
+		}
+	}
+	types += ")"
+
+	return types
+}
+
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(arg *CXArgument) string {
 	typ := ""
@@ -220,6 +236,32 @@ func GetFormattedType(arg *CXArgument) string {
 			} else {
 				// then it's basic type
 				typ += TypeNames[elt.Type]
+
+				// If it's a function, let's add the inputs and outputs.
+				if elt.Type == TYPE_FUNC {
+					if elt.IsLocalDeclaration {
+						// Then it's a local variable, which can be assigned to a
+						// lambda function, for example.
+						typ += formatParameters(elt.Inputs)
+						typ += formatParameters(elt.Outputs)
+					} else {
+						// Then it refers to a named function defined in a package.
+						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
+						if err != nil {
+							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							os.Exit(CX_COMPILATION_ERROR)
+						}
+
+						fn, err := pkg.GetFunction(elt.Name)
+						if err == nil {
+							// println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							// os.Exit(CX_COMPILATION_ERROR)
+							// Adding list of inputs and outputs types.
+							typ += formatParameters(fn.Inputs)
+							typ += formatParameters(fn.Outputs)
+						}
+					}
+				}
 			}
 		}
 	}

@@ -10,6 +10,8 @@ type CXArgument struct {
 	DeclarationSpecifiers []int // used to determine finalSize
 	Indexes               []*CXArgument
 	Fields                []*CXArgument // strct.fld1.fld2().fld3
+	Inputs                []*CXArgument // Input parameters in case `CXArgument` is of type TYPE_FUNC
+	Outputs               []*CXArgument // Output parameters in case `CXArgument` is of type TYPE_FUNC
 	Name                  string
 	FileName              string
 	Type                  int

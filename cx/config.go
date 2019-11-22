@@ -110,6 +110,7 @@ const (
 	DECL_STRUCT          // 4
 	DECL_INDEXING        // 5
 	DECL_BASIC           // 6
+	DECL_FUNC            // 7
 )
 
 // create a new scope or return to the previous scope
@@ -148,6 +149,7 @@ const (
 	TYPE_UI16
 	TYPE_UI32
 	TYPE_UI64
+	TYPE_FUNC
 
 	TYPE_CUSTOM
 	TYPE_POINTER
@@ -174,6 +176,7 @@ var TypeCodes map[string]int = map[string]int{
 	"ui32":  TYPE_UI32,
 	"ui64":  TYPE_UI64,
 	"und":   TYPE_UNDEFINED,
+	"func":  TYPE_FUNC,
 }
 
 var TypeNames map[int]string = map[int]string{
@@ -192,6 +195,7 @@ var TypeNames map[int]string = map[int]string{
 	TYPE_UI16:       "ui16",
 	TYPE_UI32:       "ui32",
 	TYPE_UI64:       "ui64",
+	TYPE_FUNC:       "func",
 	TYPE_UNDEFINED:  "und",
 }
 
