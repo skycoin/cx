@@ -98,7 +98,7 @@ test: build ## Run CX test suite.
 
 test-full: build ## Run CX test suite with all build tags
 	go test -race -tags="base opengl" github.com/SkycoinProject/cx/cxgo/
-	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
