@@ -196,7 +196,7 @@ exit /b
 
 
 :cloneOrPullLatest
-  rem git clone https://github.com/skycoin/cx.git %GOPATH%\src\github.com\skycoin\cx
+  rem git clone https://github.com/SkycoinProject/cx.git %GOPATH%\src\github.com\skycoin\cx
   set CLONE_CMD=git clone https://github.com/%1/%2.git %GH_PATH%\%1\%2
 
   if exist %GH_PATH%\%1\%2\ (
@@ -242,7 +242,7 @@ exit /b
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
-  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
+  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/SkycoinProject/cx/cxgo/
   call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 

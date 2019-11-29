@@ -1,7 +1,7 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // used for selection_statement to layout its outputs

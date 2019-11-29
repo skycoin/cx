@@ -18,7 +18,7 @@ import (
 	"runtime"
 
 	"regexp"
-	
+
 	"flag"
 
 	"path/filepath"
@@ -26,10 +26,10 @@ import (
 	"net"
 	"net/http"
 	
-	. "github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cxgo/parser"
-	. "github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"
+	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/SkycoinProject/cx/cxgo/parser"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	"github.com/theherk/viper"
 
 	"github.com/amherag/skycoin/src/cipher"
@@ -98,7 +98,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 		return err
 	}
 
-	configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+	configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
 	configFile := "fiber.toml"
 	configFilepath := filepath.Join(configDir, configFile)
 	// check that the config file exists
@@ -106,7 +106,7 @@ func initCXBlockchain (initPrgrm []byte, coinname, seckey string) error {
 		return err
 	}
 
-	projectRoot := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx"
+	projectRoot := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx"
 	if projectRoot == "" {
 		return ErrMissingProjectRoot
 	}
@@ -444,6 +444,260 @@ func optionRunNode(options cxCmdFlags) {
 	}()
 }
 
+// lexerStep0 performs a first pass for the CX parser. Globals, packages and
+// custom types are added to `cxgo0.PRGRM0`.
+func lexerStep0(sourceCodeCopy, fileNames []string) int {
+	var prePkg *CXPackage
+	parseErrors := 0
+	
+	reMultiCommentOpen  := regexp.MustCompile(`/\*`)
+	reMultiCommentClose := regexp.MustCompile(`\*/`)
+	reComment := regexp.MustCompile("//")
+
+	rePkg       := regexp.MustCompile("package")
+	rePkgName   := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
+	reStrct     := regexp.MustCompile("type")
+	reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
+
+	reGlbl     := regexp.MustCompile("var")
+	reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
+
+	reBodyOpen  := regexp.MustCompile("{")
+	reBodyClose := regexp.MustCompile("}")
+
+	reImp       := regexp.MustCompile("import")
+	reImpName   := regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\"")
+
+	// 1. Identify all the packages and structs
+	for ix, source := range sourceCodeCopy {
+		filename := fileNames[ix]
+
+		reader := strings.NewReader(source)
+		scanner := bufio.NewScanner(reader)
+		var commentedCode bool
+		var lineno = 0
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			lineno++
+
+			// Identify whether we are in a comment or not.
+			commentLoc := reComment.FindIndex(line)
+			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
+			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+			if commentedCode && multiCommentCloseLoc != nil {
+				commentedCode = false
+			}
+			if commentedCode {
+				continue
+			}
+			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+				commentedCode = true
+				continue
+			}
+
+			// At this point we know that we are *not* in a comment
+
+			// 1a. Identify all the packages
+			if loc := rePkg.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
+				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+						// then it hasn't been added
+						newPkg := MakePackage(match[len(match) - 1])
+						cxgo0.PRGRM0.AddPackage(newPkg)
+						prePkg = newPkg
+					} else {
+						prePkg = pkg
+					}
+				}
+			}
+
+			// 1b. Identify all the structs
+			if loc := reStrct.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
+				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
+					if prePkg == nil {
+						println(CompilationError(filename, lineno),
+							"No package defined")
+					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
+						// then it hasn't been added
+						strct := MakeStruct(match[len(match) - 1])
+						prePkg.AddStruct(strct)
+					}
+				}
+			}
+		}
+	} // for range sourceCodeCopy
+
+	// 2. Identify all global variables
+	//    We also identify packages again, so we know to what
+	//    package we're going to add the variable declaration to.
+	for _, source := range sourceCodeCopy {
+		// inBlock needs to be 0 to guarantee that we're in the global scope
+		var inBlock int
+		var commentedCode bool
+
+		scanner := bufio.NewScanner(strings.NewReader(source))
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			
+			// we need to ignore function bodies
+			// it'll also ignore struct declaration's bodies, but this doesn't matter
+			commentLoc := reComment.FindIndex(line)
+			
+			multiCommentOpenLoc  := reMultiCommentOpen.FindIndex(line)
+			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
+
+			if commentedCode && multiCommentCloseLoc != nil {
+				commentedCode = false
+			}
+
+			if commentedCode {
+				continue
+			}
+
+			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
+				commentedCode = true
+				// continue
+			}
+
+			// Identify all the package imports.
+			if loc := reImp.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+
+				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
+					pkgName := match[len(match) - 1]
+					// Checking if `pkgName` already exists and if it's not a standard library package.
+					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !IsCorePackage(pkgName) {
+						// _, sourceCode, fileNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
+						_, sourceCode, fileNames := ParseArgsForCX([]string{filepath.Join(SRCPATH, pkgName)}, false)
+						ParseSourceCode(sourceCode, fileNames)
+					}
+				}
+			}
+
+			// we search for packages at the same time, so we can know to what package to add the global
+			if loc := rePkg.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+				
+				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+						// then it hasn't been added
+						prePkg = MakePackage(match[len(match) - 1])
+						cxgo0.PRGRM0.AddPackage(prePkg)
+					} else {
+						prePkg = pkg
+					}
+				}
+			}
+			
+			if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
+				for _, loc := range locs {
+					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+						// then it's outside of a */, e.g. `*/ }`
+						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+							(commentLoc != nil && commentLoc[0] > loc[0]) ||
+							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+							// then we have an uncommented opening bracket
+							inBlock++
+						}
+					}
+				}
+			}
+
+			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
+				for _, loc := range locs {
+					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
+							(commentLoc != nil && commentLoc[0] > loc[0]) ||
+							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
+							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
+							// then we have an uncommented closing bracket
+							inBlock--
+						}
+					}
+				}
+			}
+
+			// we could have this situation: {var local i32}
+			// but we don't care about this, as the later passes will throw an error as it's invalid syntax
+			
+			if loc := rePkg.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
+					// then it's commented out
+					continue
+				}
+				
+				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
+					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
+						// it should be already present
+						panic(err)
+					} else {
+						prePkg = pkg
+					}
+				}
+			}
+
+			// finally, if we read a "var" and we're in global scope, we add the global without any type
+			// the type will be determined later on
+			if loc := reGlbl.FindIndex(line); loc != nil {
+				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
+					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
+					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
+					// then it's commented out or inside a block
+					continue
+				}
+
+				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
+					if _, err := prePkg.GetGlobal(match[len(match) - 1]); err != nil {
+						// then it hasn't been added
+						arg := MakeArgument(match[len(match) - 1], "", 0)
+						arg.Offset = -1
+						arg.Package = prePkg
+						prePkg.AddGlobal(arg)
+					}
+				}
+			}
+		}
+	}
+
+	// cxgo0.Parse(allSC)
+	for i, source := range sourceCodeCopy {
+		source = source + "\n"
+		if len(fileNames) > 0 {
+			cxgo0.CurrentFileName = fileNames[i]
+		}
+		parseErrors += cxgo0.Parse(source)
+	}
+
+	return parseErrors
+}
+
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
 // parses it into CX program structures for `PRGRM`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
@@ -480,8 +734,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 			arg0.Package = osPkg
 
 			arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
-			arg1 = DeclarationSpecifiers(arg1, 0, DECL_BASIC)
-			arg1 = DeclarationSpecifiers(arg1, 0, DECL_SLICE)
+			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_BASIC)
+			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_SLICE)
 
 			DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
 		}
@@ -507,8 +761,6 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 }
 
 func main() {
-	checkCXPathSet()
-
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
@@ -516,6 +768,11 @@ func main() {
 
 	registerFlags(&options)
 	flag.Parse()
+
+	// Checking if CXPATH is set, either by setting an environment variable
+	// or by setting the `--cxpath` flag.
+	checkCXPathSet(options)
+
 	// Does the user want to run a CX publisher or peer node?
 	if options.publisherMode || options.peerMode {
 		optionRunNode(options)
@@ -566,7 +823,7 @@ func main() {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := ParseArgsForCX(flag.Args())
+	cxArgs, sourceCode, fileNames := ParseArgsForCX(flag.Args(), true)
 
 	// Propagate some options out to other packages.
 	DebugLexer = options.debugLexer   // in package parser
@@ -629,6 +886,7 @@ func main() {
 	}
 
 	if options.replMode || len(sourceCode) == 0 {
+		PRGRM.SelectProgram()
 		repl()
 		return
 	}
@@ -656,7 +914,7 @@ func main() {
 		s := Serialize(PRGRM, 1)
 		s = ExtractBlockchainProgram(s, s)
 
-		configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+		configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
 		configFile := "fiber"
 		
 		cmd := exec.Command("go", "install", "./cmd/newcoin/...")
@@ -665,7 +923,7 @@ func main() {
 
 		cmd = exec.Command("newcoin", "createcoin",
 			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
 			"--config-file=" + configFile + ".toml",
 			"--config-dir=" + configDir,
 		)
@@ -694,7 +952,7 @@ func main() {
 		
 		cmd = exec.Command("newcoin", "createcoin",
 			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
 			"--config-file=" + configFile + ".toml",
 			"--config-dir=" + configDir,
 		)
@@ -982,7 +1240,7 @@ func IdeServiceMode() {
 	ideHost := "localhost:5335"
 
 	// Working directory for ide
-	sharedPath := fmt.Sprintf("%s/src/github.com/skycoin/cx", os.Getenv("GOPATH"))
+	sharedPath := fmt.Sprintf("%s/src/github.com/SkycoinProject/cx", os.Getenv("GOPATH"))
 
 	// Start Leaps
 	// cmd = `leaps -address localhost:5335 $GOPATH/src/skycoin/cx`
@@ -1053,7 +1311,7 @@ func printPrompt () {
 
 func repl () {
 	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/")
 
 	InREPL = true
 
@@ -1156,259 +1414,55 @@ func initMainPkg(prgrm *CXProgram) {
 	mod.AddFunction(fn)
 }
 
-// lexerStep0 performs a first pass for the CX parser. Globals, packages and
-// custom types are added to `cxgo0.PRGRM0`.
-func lexerStep0(sourceCodeCopy, fileNames []string) int {
-	var prePkg *CXPackage
-	parseErrors := 0
-	
-	reMultiCommentOpen  := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
-
-	rePkg       := regexp.MustCompile("package")
-	rePkgName   := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
-	reStrct     := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
-
-	reGlbl     := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
-
-	reBodyOpen  := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
-
-	// 1. Identify all the packages and structs
-	for ix, source := range sourceCodeCopy {
-		filename := fileNames[ix]
-
-		reader := strings.NewReader(source)
-		scanner := bufio.NewScanner(reader)
-		var commentedCode bool
-		var lineno = 0
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			lineno++
-
-			// Identify whether we are in a comment or not.
-			commentLoc := reComment.FindIndex(line)
-			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-			if commentedCode {
-				continue
-			}
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				continue
-			}
-
-			// At this point we know that we are *not* in a comment
-
-			// 1a. Identify all the packages
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
-						// then it hasn't been added
-						newPkg := MakePackage(match[len(match) - 1])
-						cxgo0.PRGRM0.AddPackage(newPkg)
-						prePkg = newPkg
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			// 1b. Identify all the structs
-			if loc := reStrct.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-					if prePkg == nil {
-						println(CompilationError(filename, lineno),
-							"No package defined")
-					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match) - 1], prePkg.Name); err != nil {
-						// then it hasn't been added
-						strct := MakeStruct(match[len(match) - 1])
-						prePkg.AddStruct(strct)
-					}
-				}
-			}
-		}
-	} // for range sourceCodeCopy
-
-	// 2. Identify all global variables
-	//    We also identify packages again, so we know to what
-	//    package we're going to add the variable declaration to.
-	for _, source := range sourceCodeCopy {
-		// inBlock needs to be 0 to guarantee that we're in the global scope
-		var inBlock int
-		var commentedCode bool
-
-		scanner := bufio.NewScanner(strings.NewReader(source))
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			
-			// we need to ignore function bodies
-			// it'll also ignore struct declaration's bodies, but this doesn't matter
-			commentLoc := reComment.FindIndex(line)
-			
-			multiCommentOpenLoc  := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-
-			if commentedCode {
-				continue
-			}
-
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				// continue
-			}
-
-			// we search for packages at the same time, so we can know to what package to add the global
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-				
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
-						// then it hasn't been added
-						prePkg = MakePackage(match[len(match) - 1])
-						cxgo0.PRGRM0.AddPackage(prePkg)
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-			
-			if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						// then it's outside of a */, e.g. `*/ }`
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented opening bracket
-							inBlock++
-						}
-					}
-				}
-			}
-
-			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented closing bracket
-							inBlock--
-						}
-					}
-				}
-			}
-
-			// we could have this situation: {var local i32}
-			// but we don't care about this, as the later passes will throw an error as it's invalid syntax
-			
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-				
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match) - 1]); err != nil {
-						// it should be already present
-						panic(err)
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			// finally, if we read a "var" and we're in global scope, we add the global without any type
-			// the type will be determined later on
-			if loc := reGlbl.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
-					// then it's commented out or inside a block
-					continue
-				}
-
-				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := prePkg.GetGlobal(match[len(match) - 1]); err != nil {
-						// then it hasn't been added
-						arg := MakeArgument(match[len(match) - 1], "", 0)
-						arg.Offset = -1
-						arg.Package = prePkg
-						prePkg.AddGlobal(arg)
-					}
-				}
-			}
-		}
-	}
-
-	// cxgo0.Parse(allSC)
-	for i, source := range sourceCodeCopy {
-		source = source + "\n"
-		if len(fileNames) > 0 {
-			cxgo0.CurrentFileName = fileNames[i]
-		}
-		parseErrors += cxgo0.Parse(source)
-	}
-
-	return parseErrors
-}
-
 // checkCXPathSet checks if the user has set the environment variable
 // `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
 // $HOME/cx/pkg and $HOME/cx/src
-func checkCXPathSet () {
-	if os.Getenv("CXPATH") == "" {
-		usr, err := user.Current()
-		if err != nil { 
-			panic(err)
-		}
-
-		CXPATH = usr.HomeDir + "/cx/"
-		BINPATH = CXPATH + "bin/"
-		PKGPATH = CXPATH + "pkg/"
-		SRCPATH = CXPATH + "src/"
-	}
-
+func checkCXPathSet(options cxCmdFlags) {
+	// Determining the filepath of the directory where the user
+	// started the `cx` command.
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
-
 	COREPATH = filepath.Dir(ex)
+	
+	CXPATH := ""
+	if os.Getenv("CXPATH") != "" {
+		CXPATH = os.Getenv("CXPATH")
+	}
+	// `options.cxpath` overrides `os.Getenv("CXPATH")`
+	if options.cxpath != "" {
+		CXPATH, err = filepath.Abs(options.cxpath)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if os.Getenv("CXPATH") == "" && options.cxpath == "" {
+		usr, err := user.Current()
+		if err != nil {
+			panic(err)
+		}
+
+		CXPATH = usr.HomeDir + "/cx/"
+	}
+
+	BINPATH = filepath.Join(CXPATH, "bin/")
+	PKGPATH = filepath.Join(CXPATH, "pkg/")
+	SRCPATH = filepath.Join(CXPATH, "src/")
+
+	// Creating directories in case they do not exist.
+	if _, err := os.Stat(CXPATH); os.IsNotExist(err) {
+		os.MkdirAll(CXPATH, 0755)
+	}
+	if _, err := os.Stat(BINPATH); os.IsNotExist(err) {
+		os.MkdirAll(BINPATH, 0755)
+	}
+	if _, err := os.Stat(PKGPATH); os.IsNotExist(err) {
+		os.MkdirAll(PKGPATH, 0755)
+	}
+	if _, err := os.Stat(SRCPATH); os.IsNotExist(err) {
+		os.MkdirAll(SRCPATH, 0755)
+	}
 }
 
 func addInitFunction (PRGRM *CXProgram) {

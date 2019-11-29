@@ -32,8 +32,8 @@ endif
 configure: ## Configure the system to build and run CX
 	@if [ -z "$(GLOBAL_GOPATH)" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="$(LOCAL_GOPATH)"; export PATH="$(LOCAL_GOPATH)/bin:${PATH}" ; fi
 	@echo "GOPATH=$(GOPATH)"
-	@mkdir -p $(GOPATH)/src/github.com/skycoin
-	@if [ ! -e $(GOPATH)/src/github.com/skycoin/cx ]; then mkdir -p $(GOPATH)/src/github.com/skycoin ; ln -s $(PWD) $(GOPATH)/src/github.com/skycoin/cx ; fi
+	@mkdir -p $(GOPATH)/src/github.com/SkycoinProject
+	@if [ ! -e $(GOPATH)/src/github.com/SkycoinProject/cx ]; then mkdir -p $(GOPATH)/src/github.com/SkycoinProject ; ln -s $(PWD) $(GOPATH)/src/github.com/SkycoinProject/cx ; fi
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/{,src,bin,pkg}
@@ -46,11 +46,11 @@ build-parser: configure install-deps ## Generate lexer and parser for CX grammar
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -tags base -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
+	go build -tags base -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
 build-full: configure build-parser ## Build CX from sources with all build tags
-	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/skycoin/cx/cxgo/
+	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
 install-gfx-deps-Linux:
@@ -79,7 +79,7 @@ install-gfx-deps: configure $(INSTALL_GFX_DEPS)
 	go get github.com/go-gl/gltext
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
-	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/skycoin/cx/tests"'
+	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/SkycoinProject/cx/tests"'
 	cx -v
 
 install-linters: ## Install linters
@@ -93,11 +93,11 @@ lint: ## Run linters. Use make install-linters first.
 	golangci-lint run -c .golangci.yml ./cx
 
 test: build ## Run CX test suite.
-	go test -race -tags base github.com/skycoin/cx/cxgo/
+	go test -race -tags base github.com/SkycoinProject/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 test-full: build ## Run CX test suite with all build tags
-	go test -race -tags="base opengl" github.com/skycoin/cx/cxgo/
+	go test -race -tags="base opengl" github.com/SkycoinProject/cx/cxgo/
 	cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
@@ -109,8 +109,8 @@ check-golden-files: update-golden-files ## Ensure golden files are up to date
 check: check-golden-files test ## Perform self-tests
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
-	goimports -w -local github.com/skycoin/cx ./cx
-	goimports -w -local github.com/skycoin/cx ./cxgo/actions
+	goimports -w -local github.com/SkycoinProject/cx ./cx
+	goimports -w -local github.com/SkycoinProject/cx ./cxgo/actions
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
