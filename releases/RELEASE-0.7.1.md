@@ -24,7 +24,7 @@ Note that there are still a number of issues with CX, but they are generic
 rather than related to the blockchain integration.
 
 The description on how to do the integration of CX and the blockchain can be
-read here: https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
+read here: https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial.
 
 This release also contains a modified version of the Skycoin blockchain
 repository with adaptations to run CX programs as transactions. These changes
@@ -64,7 +64,7 @@ There are no library improvements in CX 0.7.1.
 ### Documentation
 
 * The documentation for the CX chains has been slightly improved. It can be
-  found on the CX wiki here: https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
+  found on the CX wiki here: https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial.
 
 ## About CX
 

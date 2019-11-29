@@ -6,7 +6,7 @@ import (
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // PostfixExpressionArray...
@@ -70,7 +70,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// expr.AddInput(postExprs[len(postExprs)-1].Outputs[0])
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
-			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Inputs[0].Type])
+			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			sym.Package = postExprs[len(postExprs)-1].Package
 			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
@@ -97,7 +97,9 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
-			prevExprs[len(prevExprs)-1].Outputs[0].Indexes = append(prevExprs[len(prevExprs)-1].Outputs[0].Indexes, postExprs[len(postExprs)-1].Outputs[0])
+			prevOuts := prevExprs[len(prevExprs)-1].Outputs
+			postOuts := postExprs[len(postExprs)-1].Outputs
+			prevOuts[0].Indexes = append(prevOuts[0].Indexes, postOuts[0])
 		}
 	}
 

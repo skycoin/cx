@@ -71,6 +71,9 @@ func testSTRFunctions () () {
 
 	test("meow " + "woof", "meow woof", "")
 	test("meow " + "woof " + "tweet", "meow woof tweet", "")
+
+	// Just testing that the parser is able to recognize escaped double quotes.
+	test("\"hello\"", "\"hello\"", "")
 }
 
 func main () () {

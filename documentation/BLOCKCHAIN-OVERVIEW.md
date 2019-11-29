@@ -6,7 +6,7 @@ Each of the following sections describe either a process or a module that is par
 
 In order to create a CX chain, a number of parameters need to be set first in different files by using different methods. First, it is described how a [Coin Template](#coin-template) file is used to generate a program that can be used to run something similar to a cryptocurrency. Then, a process to generate a [Genesis Address and Genesis Private and Public Keys](#genesis-address-and-genesis-private-and-public-keys) is described, which outputs data that will be used to populate a [fiber.toml Configuration File](#fibertoml-configuration-file) that is used for [Initializing a CX Chain](#initializing-a-cx-chain). After this initialization process completes, it is explained how a [Wallet](#wallet) is created using a [Seed](#seed) and how we can start [Testing and Injecting Transactions](#testing-and-injecting-transactions).
 
-For any encountered bug or feature request, we encourage the reader to [create a Github issue](https://github.com/skycoin/cx/issues/new/choose) with the inquiry.
+For any encountered bug or feature request, we encourage the reader to [create a Github issue](https://github.com/SkycoinProject/cx/issues/new/choose) with the inquiry.
 
 Table of Contents
 =================

@@ -119,16 +119,16 @@ if [ ! -d "$INSTALLATION_PATH/src/github.com/cznic/goyacc" ]; then
     fi
 fi
 
-if [ ! -d "$INSTALLATION_PATH/src/github.com/skycoin/cx/" ]; then
-    echo "NOTE:\tRepository github.com/skycoin/cx is not present in $GOPATH"
-    echo "NOTE:\tDownloading the repository and installing the package via 'go get github.com/skycoin/cx/...'"
+if [ ! -d "$INSTALLATION_PATH/src/github.com/SkycoinProject/cx/" ]; then
+    echo "NOTE:\tRepository github.com/SkycoinProject/cx is not present in $GOPATH"
+    echo "NOTE:\tDownloading the repository and installing the package via 'go get github.com/SkycoinProject/cx/...'"
 
-    go get github.com/skycoin/cx/...
+    go get github.com/SkycoinProject/cx/...
 
     if [ $? -eq 0 ]; then
-        echo "OK:\tPackage github.com/skycoin/cx was installed successfully"
+        echo "OK:\tPackage github.com/SkycoinProject/cx was installed successfully"
     else
-        echo "FAIL:\tCouldn't clone into github.com/skycoin/cx"
+        echo "FAIL:\tCouldn't clone into github.com/SkycoinProject/cx"
         exit 0
     fi
 fi
@@ -142,25 +142,25 @@ else
     echo "NOTE:\tCompiling CX"
 fi
 
-$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.nex
+$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/cxgo0/cxgo0.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer (first pass)"
     exit 0
 fi
 
-$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/cxgo0/cxgo0.y
+$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/cxgo0/cxgo0.go $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/cxgo0/cxgo0.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser (first pass)"
     exit 0
 fi
 
-$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.nex
+$INSTALLATION_PATH/bin/nex -e $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/parser/cxgo.nex
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's lexical analyzer"
     exit 0
 fi
 
-$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.go $INSTALLATION_PATH/src/github.com/skycoin/cx/cxgo/parser/cxgo.y
+$INSTALLATION_PATH/bin/goyacc -o $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/parser/cxgo.go $INSTALLATION_PATH/src/github.com/SkycoinProject/cx/cxgo/parser/cxgo.y
 if [ ! $? -eq 0 ]; then
     echo "FAIL:\tThere was a problem compiling CX's parser"
     exit 0
@@ -168,9 +168,9 @@ fi
 
 if [ $# -eq 0 ];
 then
-    go build -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+    go build -i -o $INSTALLATION_PATH/bin/cx github.com/SkycoinProject/cx/cxgo/
 else
-    go build -tags $@ -i -o $INSTALLATION_PATH/bin/cx github.com/skycoin/cx/cxgo/
+    go build -tags $@ -i -o $INSTALLATION_PATH/bin/cx github.com/SkycoinProject/cx/cxgo/
 fi
 
 if [ $? -eq 0 ]; then
@@ -181,7 +181,7 @@ else
 fi
 
 chmod +x $INSTALLATION_PATH/bin/cx
-# go install github.com/skycoin/cx/cxgo/
+# go install github.com/SkycoinProject/cx/cxgo/
 
 ## checking if $CXPATH is set
 if [ -z ${CXPATH+x} ];
@@ -209,7 +209,7 @@ if [ ! -d "$CX_PATH" ]; then
     fi
 fi
 
-echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/skycoin/cx/tests'"
+echo "NOTE:\tWe recommend you to test your CX installation by running 'cx \$GOPATH/src/github.com/SkycoinProject/cx/tests'"
 
 echo ""
 cx -v

@@ -13,7 +13,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/skycoin/cx/cx"
+	"github.com/SkycoinProject/cx/cx"
 
 	"github.com/amherag/skycoin/src/cipher"
 	"github.com/amherag/skycoin/src/coin"

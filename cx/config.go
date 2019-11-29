@@ -27,8 +27,11 @@ const OS_PKG = "os"
 const OS_ARGS = "Args"
 
 const NON_ASSIGN_PREFIX = "nonAssign"
-const LOCAL_PREFIX = "*lcl"
+const LOCAL_PREFIX = "*tmp"
 const LABEL_PREFIX = "*lbl"
+
+// Used in `PrintProgram` to represent literals (`CXArgument`s with no name).
+const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 

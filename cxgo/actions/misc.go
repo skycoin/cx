@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime"
 	
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 func SetCorrectArithmeticOp(expr *CXExpression) {
@@ -299,11 +299,11 @@ func AffordanceStructs(pkg *CXPackage, currentFile string, lineNo int) {
 
 	fnFldInpSig := MakeField("InputSignature", TYPE_STR, "", 0)
 	fnFldInpSig.Size = GetArgSize(TYPE_STR)
-	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, 0, DECL_SLICE)
+	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, []int{0}, DECL_SLICE)
 
 	fnFldOutSig := MakeField("OutputSignature", TYPE_STR, "", 0)
 	fnFldOutSig.Size = GetArgSize(TYPE_STR)
-	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, 0, DECL_SLICE)
+	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []int{0}, DECL_SLICE)
 
 	fnStrct.AddField(fnFldName)
 	fnStrct.AddField(fnFldInpSig)
