@@ -2215,6 +2215,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT ../lib/json.cx test-json.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in json lib.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx

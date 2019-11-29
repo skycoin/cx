@@ -320,6 +320,7 @@ func main ()() {
 	runTest("test-collection-functions.cx", cx.SUCCESS, "collection functions")
 	runTest("test-scopes.cx", cx.SUCCESS, "Error in scopes.")
 	runTest("-heap-initial 0 test-gc.cx", cx.SUCCESS, "Stress-testing the garbage collector")
+	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
 
 	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
