@@ -15,7 +15,8 @@
   * Multidimensional array literals are now working properly.
   * Multidimensional slice literals are now working properly.
 * Libraries
-  * ...
+  * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
+  * Add json cx library to ease json parsing in cx.
 * Fixed issues
   * #306: Can't print double quotes.
   * #321: Can't do math inside 2nd square brackets (indexer) of an expression.

@@ -20,6 +20,18 @@ const (
 	OP_OS_RUN
 	OP_OS_EXIT
 
+	// json
+	OP_JSON_OPEN
+	OP_JSON_CLOSE
+	OP_JSON_TOKEN_MORE
+	OP_JSON_TOKEN_NEXT
+	OP_JSON_TOKEN_TYPE
+	OP_JSON_TOKEN_DELIM
+	OP_JSON_TOKEN_BOOL
+	OP_JSON_TOKEN_F64
+	OP_JSON_TOKEN_I64
+	OP_JSON_TOKEN_STR
+
 	// http
 	// OP_HTTP_GET
 
@@ -63,6 +75,38 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 
+	// json
+	AddOpCode(OP_JSON_OPEN, "json.Open",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_JSON_CLOSE, "json.Close",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_MORE, "json.More",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_NEXT, "json.Next",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_TYPE, "json.Type",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_DELIM, "json.Delim",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_BOOL, "json.Bool",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_F64, "json.Float64",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_I64, "json.Int64",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_JSON_TOKEN_STR, "json.Str",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
+
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
 		switch opCode {
@@ -90,6 +134,28 @@ func init() {
 			return op_os_Run
 		case OP_OS_EXIT:
 			return op_os_Exit
+
+		// json
+		case OP_JSON_OPEN:
+			return opJSONOpen
+		case OP_JSON_CLOSE:
+			return opJSONClose
+		case OP_JSON_TOKEN_MORE:
+			return opJSONTokenMore
+		case OP_JSON_TOKEN_NEXT:
+			return opJSONTokenNext
+		case OP_JSON_TOKEN_TYPE:
+			return opJSONTokenType
+		case OP_JSON_TOKEN_DELIM:
+			return opJSONTokenDelim
+		case OP_JSON_TOKEN_BOOL:
+			return opJSONTokenBool
+		case OP_JSON_TOKEN_F64:
+			return opJSONTokenF64
+		case OP_JSON_TOKEN_I64:
+			return opJSONTokenI64
+		case OP_JSON_TOKEN_STR:
+			return opJSONTokenStr
 		}
 
 		return nil
