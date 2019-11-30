@@ -58,22 +58,34 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	return same
 }
 
-func opAssertValue(expr *CXExpression, fp int) {
+func opAssertValue(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	same := assert(expr, fp)
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }
 
-func opTest(expr *CXExpression, fp int) {
+func opTest(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	assert(expr, fp)
 }
 
-func opPanic(expr *CXExpression, fp int) {
+func opPanic(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	if !assert(expr, fp) {
 		os.Exit(CX_ASSERT)
 	}
 }
 
-func opStrError(expr *CXExpression, fp int) {
+func opStrError(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(ErrorString(int(ReadI32(fp, expr.Inputs[0])))))
 }
