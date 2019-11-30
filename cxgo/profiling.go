@@ -9,6 +9,8 @@ import (
 )
 
 var DebugProfile bool
+var DebugProfileRate int
+
 var profiles map[string]int64 = map[string]int64{}
 
 func StartProfile(name string) {
@@ -25,11 +27,14 @@ func StopProfile(name string) {
 	}
 }
 
-func StartCPUProfile() *os.File {
+func StartCPUProfile(name string) *os.File {
 	if DebugProfile {
-		f, err := os.Create(os.Args[0] + "_cpu.pprof")
+		f, err := os.Create(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create CPU profile: ", err)
+		}
+		if DebugProfileRate != 100 { // test against default value to avoid warning
+			runtime.SetCPUProfileRate(DebugProfileRate)
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
 			fmt.Println("Failed to start CPU profile: ", err)
@@ -48,9 +53,9 @@ func StopCPUProfile(f *os.File) {
 	}
 }
 
-func DumpMEMProfile() {
+func DumpMEMProfile(name string) {
 	if DebugProfile {
-		f, err := os.Create(os.Args[0] + "_mem.pprof")
+		f, err := os.Create(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create MEM profile: ", err)
 		}

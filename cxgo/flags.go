@@ -7,67 +7,67 @@ import (
 )
 
 type cxCmdFlags struct {
-	baseOutput          bool
-	compileOutput       string
-	newProject          bool
-	replMode            bool
-	webMode             bool
-	ideMode             bool
-	webPersistentMode   bool
-	printHelp           bool
-	printVersion        bool
-	tokenizeMode        bool
-	initialHeap         string
-	maxHeap             string
-	stackSize           string
-	blockchainMode      bool
-	publisherMode       bool
-	peerMode            bool
-	transactionMode     bool
-	broadcastMode       bool
-	walletMode          bool
-	genAddress          bool
-	port                int
-	walletId            string
-	walletSeed          string
-	programName         string
-	secKey              string
-	pubKey              string
-	genesisAddress      string
-	genesisSignature    string
-	minHeapFreeRatio    float64
-	maxHeapFreeRatio    float64
-	cxpath              string
+	baseOutput        bool
+	compileOutput     string
+	newProject        bool
+	replMode          bool
+	webMode           bool
+	ideMode           bool
+	webPersistentMode bool
+	printHelp         bool
+	printVersion      bool
+	tokenizeMode      bool
+	initialHeap       string
+	maxHeap           string
+	stackSize         string
+	blockchainMode    bool
+	publisherMode     bool
+	peerMode          bool
+	transactionMode   bool
+	broadcastMode     bool
+	walletMode        bool
+	genAddress        bool
+	port              int
+	walletId          string
+	walletSeed        string
+	programName       string
+	secKey            string
+	pubKey            string
+	genesisAddress    string
+	genesisSignature  string
+	minHeapFreeRatio  float64
+	maxHeapFreeRatio  float64
+	cxpath            string
 
 	// Debug flags for the CX developers
-	debugLexer          bool
-	debugProfile        bool
+	debugLexer   bool
+	debugProfile int
 }
 
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
-		baseOutput:          false,
-		compileOutput:       "",
-		newProject:          false,
-		replMode:            false,
-		webMode:             false,
-		ideMode:             false,
-		webPersistentMode:   false,
-		printHelp:           false,
-		printVersion:        false,
-		blockchainMode:      false,
-		transactionMode:     false,
-		broadcastMode:       false,
-		port:                6001,
-		programName:         "cxcoin",
-		walletId:            "cxcoin_cli.wlt",
-		secKey:              "",
-		pubKey:              "",
-		genesisAddress:      "",
-		genesisSignature:    "",
+		baseOutput:        false,
+		compileOutput:     "",
+		newProject:        false,
+		replMode:          false,
+		webMode:           false,
+		ideMode:           false,
+		webPersistentMode: false,
+		printHelp:         false,
+		printVersion:      false,
+		blockchainMode:    false,
+		transactionMode:   false,
+		broadcastMode:     false,
+		port:              6001,
+		programName:       "cxcoin",
+		walletId:          "cxcoin_cli.wlt",
+		secKey:            "",
+		pubKey:            "",
+		genesisAddress:    "",
+		genesisSignature:  "",
 
-		debugLexer:          false,
-		debugProfile:        false,
+		debugLexer:   false,
+		debugProfile: 0,
 	}
 }
 
@@ -121,9 +121,9 @@ func registerFlags(options *cxCmdFlags) {
 
 	// Debug flags
 	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
-	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
-	flag.BoolVar(&options.debugProfile, "debug-profile", options.debugProfile, "Print timing information and dump cpu/mem profiles during compilation")
-	flag.BoolVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
+	flag.BoolVar(&options.debugLexer, "Dl", options.debugLexer, "alias for -debug-lexer")
+	flag.IntVar(&options.debugProfile, "debug-profile", options.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with \"go get github.com/google/pprof\" and \"pprof -http=:8080 file.pprof\"")
+	flag.IntVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 }
 
 func printHelp() {
