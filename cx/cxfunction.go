@@ -3,19 +3,16 @@ package cxcore
 import (
 	"errors"
 	"fmt"
-
-	. "github.com/satori/go.uuid" //nolint golint
 )
 
 // CXFunction is used to represent a CX function.
 //
 type CXFunction struct {
 	// Metadata
-	Name      string     // Name of the function
-	Package   *CXPackage // The package it's a member of
-	ElementID UUID
-	IsNative  bool // True if the function is native to CX, e.g. int32.add()
-	OpCode    int  // opcode if IsNative = true
+	Name     string     // Name of the function
+	Package  *CXPackage // The package it's a member of
+	IsNative bool       // True if the function is native to CX, e.g. int32.add()
+	OpCode   int        // opcode if IsNative = true
 
 	// Contents
 	Inputs      []*CXArgument   // Input parameters to the function
@@ -41,10 +38,9 @@ type CXFunction struct {
 //
 func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 	return &CXFunction{
-		ElementID: MakeElementID(),
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine,
+		Name:     name,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
 }
 
@@ -52,9 +48,8 @@ func MakeFunction(name string, fileName string, fileLine int) *CXFunction {
 //
 func MakeNativeFunction(opCode int, inputs []*CXArgument, outputs []*CXArgument) *CXFunction {
 	fn := &CXFunction{
-		ElementID: MakeElementID(),
-		IsNative:  true,
-		OpCode:    opCode,
+		IsNative: true,
+		OpCode:   opCode,
 	}
 
 	offset := 0
