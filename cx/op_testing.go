@@ -57,24 +57,35 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	return same
 }
 
-func opAssertValue(expr *CXExpression, fp int) {
+func opAssertValue(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	same := assert(expr, fp)
 	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
 }
 
-func opTest(expr *CXExpression, fp int) {
+func opTest(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	assert(expr, fp)
 }
 
-func opPanic(expr *CXExpression, fp int) {
+func opPanic(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	if !assert(expr, fp) {
 		panic(CX_ASSERT)
 	}
 }
 
 // panicIf/panicIfNot implementation
-func panicIf(expr *CXExpression, fp int, condition bool) {
+func panicIf(prgrm *CXProgram, condition bool) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
 	if ReadBool(fp, expr.Inputs[0]) == condition {
 		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
 		panic(CX_ASSERT)
@@ -82,15 +93,18 @@ func panicIf(expr *CXExpression, fp int, condition bool) {
 }
 
 // panic with CX_ASSERT exit code if condition is true
-func opPanicIf(expr *CXExpression, fp int) {
-	panicIf(expr, fp, true)
+func opPanicIf(prgrm *CXProgram) {
+	panicIf(prgrm, true)
 }
 
 // panic with CX_ASSERT exit code if condition is false
-func opPanicIfNot(expr *CXExpression, fp int) {
-	panicIf(expr, fp, false)
+func opPanicIfNot(prgrm *CXProgram) {
+	panicIf(prgrm, false)
 }
 
-func opStrError(expr *CXExpression, fp int) {
+func opStrError(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(ErrorString(int(ReadI32(fp, expr.Inputs[0])))))
 }

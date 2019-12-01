@@ -1,0 +1,9 @@
+package main
+// This library must import the `math` package that is
+// inside the `tests/` directory (test-workspace-d.cx),
+// i.e. it must override the one in `test-workspace`.
+import "math"
+
+func main() {
+	test(math.triple(10.0), 30.0, "")
+}

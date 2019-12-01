@@ -3,16 +3,13 @@ package cxcore
 import (
 	"errors"
 	"fmt"
-
-	. "github.com/satori/go.uuid" //nolint golint
 )
 
 // CXPackage is used to represent a CX package.
 //
 type CXPackage struct {
 	// Metadata
-	Name      string // Name of the package
-	ElementID UUID
+	Name string // Name of the package
 
 	// Contents
 	Imports   []*CXPackage  // imported packages
@@ -31,7 +28,6 @@ type CXPackage struct {
 //
 func MakePackage(name string) *CXPackage {
 	return &CXPackage{
-		ElementID: MakeElementID(),
 		Name:      name,
 		Globals:   make([]*CXArgument, 0, 10),
 		Imports:   make([]*CXPackage, 0),

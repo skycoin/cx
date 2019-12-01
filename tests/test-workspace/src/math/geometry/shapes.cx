@@ -1,0 +1,10 @@
+package geometry
+
+type Circle struct {
+	radius f32
+}
+
+type Rectangle struct {
+	sideA f32
+	sideB f32
+}

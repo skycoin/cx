@@ -3,11 +3,11 @@ package actions
 import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
-func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression {
+func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -21,7 +21,7 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	slcVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	slcVarExpr.Package = pkg
 	slcVar := MakeArgument(symName, CurrentFile, LineNo)
-	slcVar = DeclarationSpecifiers(slcVar, 0, DECL_SLICE)
+	slcVar = DeclarationSpecifiers(slcVar, sliceDim, DECL_SLICE)
 	slcVar.AddType(TypeNames[typSpec])
 
 	// slcVar.IsSlice = true
@@ -39,14 +39,15 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 		if expr.IsArrayLiteral {
 			symInp := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symInp.Package = pkg
+			symInp.Lengths = sliceDim
 			symOut := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symOut.Package = pkg
+			symOut.Lengths = sliceDim
 
 			endPointsCounter++
 
 			symExpr := MakeExpression(nil, CurrentFile, LineNo)
 			symExpr.Package = pkg
-			// symExpr.Outputs = append(symExpr.Outputs, symOut)
 			symExpr.AddOutput(symOut)
 
 			if expr.Operator == nil {
@@ -60,12 +61,21 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
+				out = DeclarationSpecifiers(out, sliceDim[:len(sliceDim)-1], DECL_SLICE)
+				expr.IsArrayLiteral = false
 				outArg := getOutputType(expr)
 				out.AddType(TypeNames[outArg.Type])
 				out.CustomType = outArg.CustomType
 				out.Size = outArg.Size
 				out.TotalSize = outArg.Size
+				out.Lengths = sliceDim
 				out.PreviouslyDeclared = true
+
+				// Declaring `out`
+				declExpr := MakeExpression(nil, CurrentFile, LineNo)
+				declExpr.Package = pkg
+				declExpr.AddOutput(out)
+				result = append(result, declExpr)
 
 				expr.Outputs = nil
 				expr.AddOutput(out)
@@ -110,7 +120,9 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	// symInput.PassBy = PASSBY_REFERENCE
 
 	symInput.TotalSize = TYPE_POINTER_SIZE
+	symInput.Lengths = sliceDim
 	symOutput.TotalSize = TYPE_POINTER_SIZE
+	symOutput.Lengths = sliceDim
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg
@@ -200,7 +212,7 @@ func PrimaryStructLiteralExternal(impName string, ident string, strctFlds []*CXE
 	return result
 }
 
-func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*CXExpression {
+func ArrayLiteralExpression(arrSizes []int, typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -213,7 +225,7 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	arrVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	arrVarExpr.Package = pkg
 	arrVar := MakeArgument(symName, CurrentFile, LineNo)
-	arrVar = DeclarationSpecifiers(arrVar, arrSize, DECL_ARRAY)
+	arrVar = DeclarationSpecifiers(arrVar, arrSizes, DECL_ARRAY)
 	arrVar.AddType(TypeNames[typSpec])
 	arrVar.TotalSize = arrVar.Size * TotalLength(arrVar.Lengths)
 
@@ -259,7 +271,8 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 
 			result = append(result, symExpr)
 
-			sym.Lengths = append(expr.Outputs[0].Lengths, arrSize)
+			// sym.Lengths = append(expr.Outputs[0].Lengths, arrSizes[len(arrSizes)-1])
+			sym.Lengths = arrSizes
 			sym.TotalSize = sym.Size * TotalLength(sym.Lengths)
 		} else {
 			result = append(result, expr)
@@ -269,13 +282,15 @@ func ArrayLiteralExpression(arrSize int, typSpec int, exprs []*CXExpression) []*
 	symNameOutput := MakeGenSym(LOCAL_PREFIX)
 
 	symOutput := MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	symOutput.Lengths = append(symOutput.Lengths, arrSize)
+	// symOutput.Lengths = append(symOutput.Lengths, arrSizes[len(arrSizes)-1])
+	symOutput.Lengths = arrSizes
 	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 	symOutput.TotalSize = symOutput.Size * TotalLength(symOutput.Lengths)
 
 	symInput := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	symInput.Lengths = append(symInput.Lengths, arrSize)
+	// symInput.Lengths = append(symInput.Lengths, arrSizes[len(arrSizes)-1])
+	symInput.Lengths = arrSizes
 	symInput.Package = pkg
 	symInput.PreviouslyDeclared = true
 	symInput.TotalSize = symInput.Size * TotalLength(symInput.Lengths)

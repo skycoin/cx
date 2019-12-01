@@ -1,4 +1,4 @@
-// +build extra full
+// +build opengl
 
 package cxcore
 
@@ -10,7 +10,10 @@ import (
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
-func op_gltext_LoadTrueType(expr *CXExpression, fp int) {
+func op_gltext_LoadTrueType(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
 
 	if theFont, err := gltext.LoadTruetype(openFiles[ReadStr(fp, inp2)], ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6))); err == nil {
@@ -20,7 +23,10 @@ func op_gltext_LoadTrueType(expr *CXExpression, fp int) {
 	}
 }
 
-func op_gltext_Printf(expr *CXExpression, fp int) {
+func op_gltext_Printf(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 
 	if err := fonts[ReadStr(fp, inp1)].Printf(ReadF32(fp, inp2), ReadF32(fp, inp3), ReadStr(fp, inp4)); err != nil {
@@ -28,7 +34,10 @@ func op_gltext_Printf(expr *CXExpression, fp int) {
 	}
 }
 
-func op_gltext_Metrics(expr *CXExpression, fp int) {
+func op_gltext_Metrics(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1]
 
 	width, height := fonts[ReadStr(fp, inp1)].Metrics(ReadStr(fp, inp2))
@@ -37,12 +46,18 @@ func op_gltext_Metrics(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
 }
 
-func op_gltext_Texture(expr *CXExpression, fp int) {
+func op_gltext_Texture(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(fonts[ReadStr(fp, inp1)].Texture())))
 }
 
-func op_gltext_NextGlyph(expr *CXExpression, fp int) { // refactor
+func op_gltext_NextGlyph(prgrm *CXProgram) { // refactor
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	out1, out2, out3, out4, out5, out6, out7 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4], expr.Outputs[5], expr.Outputs[6]
 	font := fonts[ReadStr(fp, inp1)]
@@ -74,7 +89,10 @@ func op_gltext_NextGlyph(expr *CXExpression, fp int) { // refactor
 	WriteMemory(GetFinalOffset(fp, out7), FromI32(int32(advance)))
 }
 
-func op_gltext_GlyphBounds(expr *CXExpression, fp int) {
+func op_gltext_GlyphBounds(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	font := fonts[ReadStr(fp, inp1)]
 	var maxGlyphWidth, maxGlyphHeight int = font.GlyphBounds()
@@ -82,7 +100,10 @@ func op_gltext_GlyphBounds(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(maxGlyphHeight)))
 }
 
-func op_gltext_GlyphMetrics(expr *CXExpression, fp int) { // refactor
+func op_gltext_GlyphMetrics(prgrm *CXProgram) { // refactor
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1]
 
 	width, height := fonts[ReadStr(fp, inp1)].GlyphMetrics(uint32(ReadI32(fp, inp2)))
@@ -91,7 +112,10 @@ func op_gltext_GlyphMetrics(expr *CXExpression, fp int) { // refactor
 	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
 }
 
-func op_gltext_GlyphInfo(expr *CXExpression, fp int) { // refactor
+func op_gltext_GlyphInfo(prgrm *CXProgram) { // refactor
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	out1, out2, out3, out4, out5 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4]
 	font := fonts[ReadStr(fp, inp1)]

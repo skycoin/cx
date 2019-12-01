@@ -27,8 +27,11 @@ const OS_PKG = "os"
 const OS_ARGS = "Args"
 
 const NON_ASSIGN_PREFIX = "nonAssign"
-const LOCAL_PREFIX = "*lcl"
+const LOCAL_PREFIX = "*tmp"
 const LABEL_PREFIX = "*lbl"
+
+// Used in `PrintProgram` to represent literals (`CXArgument`s with no name).
+const LITERAL_PLACEHOLDER = "*lit"
 const ID_FN = "identity"
 const INIT_FN = "initDef"
 
@@ -47,18 +50,14 @@ const CALLSTACK_SIZE = 1000
 var STACK_SIZE = 1048576     // 1 Mb
 var INIT_HEAP_SIZE = 2097152 // 2 Mb
 var MAX_HEAP_SIZE = 67108864 // 64 Mb
-const MIN_HEAP_FREE_RATIO = 40
-const MAX_HEAP_FREE_RATIO = 70
-
-var NULL_ADDRESS = STACK_SIZE
+var MIN_HEAP_FREE_RATIO float32 = 0.4
+var MAX_HEAP_FREE_RATIO float32 = 0.7
 
 const NULL_HEAP_ADDRESS_OFFSET = 4
 const NULL_HEAP_ADDRESS = 0
 const STR_HEADER_SIZE = 4
 const TYPE_POINTER_SIZE = 4
 const SLICE_HEADER_SIZE = 8
-
-var MEMORY_SIZE = STACK_SIZE + INIT_HEAP_SIZE + TYPE_POINTER_SIZE
 
 const MAX_UINT32 = ^uint32(0)
 const MIN_UINT32 = 0

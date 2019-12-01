@@ -1,11 +1,11 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 var PRGRM *CXProgram
-var DataOffset int = STACK_SIZE + TYPE_POINTER_SIZE // to be able to handle nil pointers
+var DataOffset int = STACK_SIZE
 
 var CurrentFile string
 var LineNo int
@@ -15,7 +15,6 @@ var WebPersistantMode bool
 var BaseOutput bool
 var ReplMode bool
 var HelpMode bool
-var CompileMode bool
 var ReplTargetFn string = ""
 var ReplTargetStrct string = ""
 var ReplTargetMod string = ""

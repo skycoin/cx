@@ -1,7 +1,9 @@
 package actions
 
 import (
-	. "github.com/skycoin/cx/cx"
+	"fmt"
+	"os"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // DeclareGlobal() creates a global variable in the current package.
@@ -53,7 +55,11 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 			// glbl.Package = offExpr[0].Outputs[0].Package
 		}
 
-		if doesInitialize {
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
 			// then we just re-assign offsets
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
@@ -105,7 +111,11 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 		} else {
 			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
 		}
-		if doesInitialize {
+		// Checking if something is supposed to be initialized
+		// and if `initializer` actually contains something.
+		// If `initializer` is `nil`, this means that an expression
+		// equivalent to nil was used, such as `[]i32{}`.
+		if doesInitialize && initializer != nil {
 			if initializer[len(initializer)-1].Operator == nil {
 				// then it's a literal
 
@@ -202,12 +212,32 @@ func DeclarePackage(ident string) {
 
 // DeclareImport()
 //
-func DeclareImport(ident string, currentFile string, lineNo int) {
+func DeclareImport(name string, currentFile string, lineNo int) {
 	// Make sure we are inside a package
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		// FIXME: Should give a relevant error message
 		panic(err)
+	}
+
+	// Checking if it's a package in the CX workspace by trying to find a
+	// slash (/) in the name.
+	// We start backwards and we stop if we find a slash.
+	hasSlash := false
+	c := len(name)-1
+	for ; c >= 0; c-- {
+		if name[c] == '/' {
+			hasSlash = true
+			break
+		}
+	}
+	ident := ""
+	// If the `name` has a slash, then we need to strip
+	// everything behind the slash and the slash itself.
+	if hasSlash {
+		ident = name[c+1:]
+	} else {
+		ident = name
 	}
 
 	// If the package is already imported, then there is nothing more to be done.
@@ -216,7 +246,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 	}
 
 	// If the package is already defined in the program, just add it to
-	// the program.
+	// the importing package.
 	if imp, err := PRGRM.GetPackage(ident); err == nil {
 		pkg.AddImport(imp)
 		return
@@ -224,7 +254,7 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 
 	// All packages are read during the first pass of the compilation.  So
 	// if we get here during the 2nd pass, it's either a core package or
-	// something is wrong.
+	// something is panic-level wrong.
 	if IsCorePackage(ident) {
 		imp := MakePackage(ident)
 		pkg.AddImport(imp)
@@ -235,7 +265,9 @@ func DeclareImport(ident string, currentFile string, lineNo int) {
 			AffordanceStructs(imp, currentFile, lineNo)
 		}
 	} else {
-		println(CompilationError(currentFile, lineNo), "")
+		// This should never happen.
+		println(CompilationError(currentFile, lineNo), fmt.Sprintf("unkown error when trying to read package '%s'", ident))
+		os.Exit(CX_COMPILATION_ERROR)
 	}
 }
 
@@ -270,7 +302,11 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 	declaration_specifiers.PreviouslyDeclared = true
 	decl.AddOutput(declaration_specifiers)
 
-	if doesInitialize {
+	// Checking if something is supposed to be initialized
+	// and if `initializer` actually contains something.
+	// If `initializer` is `nil`, this means that an expression
+	// equivalent to nil was used, such as `[]i32{}`.
+	if doesInitialize && initializer != nil {
 		// THEN it's a literal, e.g. var foo i32 = 10;
 		// ELSE it's an expression with an operator
 		if initializer[len(initializer)-1].Operator == nil {
@@ -324,13 +360,13 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 //
 // It is called repeatedly while the type is parsed.
 //
-//   declSpec:  The incoming type
-//   arraySize: The size of the array if `opTyp` = DECL_ARRAY
-//   opTyp:     The type of modification to `declSpec` (array of, pointer to, ...)
+//   declSpec:     The incoming type
+//   arrayLengths: The lengths of the array if `opTyp` = DECL_ARRAY
+//   opTyp:        The type of modification to `declSpec` (array of, pointer to, ...)
 //
 // Returns the new type build from `declSpec` and `opTyp`.
 //
-func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXArgument {
+func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) *CXArgument {
 	switch opTyp {
 	case DECL_POINTER:
 		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_POINTER)
@@ -355,15 +391,19 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 
 		return declSpec
 	case DECL_ARRAY:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_ARRAY)
+		for range arrayLengths {
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_ARRAY)
+		}
 		arg := declSpec
 		arg.IsArray = true
-		arg.Lengths = append([]int{arraySize}, arg.Lengths...)
+		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size * TotalLength(arg.Lengths)
 
 		return arg
 	case DECL_SLICE:
-		declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		for range arrayLengths {
+			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		}
 
 		arg := declSpec
 		arg.IsSlice = true
@@ -371,7 +411,8 @@ func DeclarationSpecifiers(declSpec *CXArgument, arraySize int, opTyp int) *CXAr
 		arg.IsArray = true
 		arg.PassBy = PASSBY_REFERENCE
 
-		arg.Lengths = append([]int{0}, arg.Lengths...)
+		// arg.Lengths = append([]int{0}, arg.Lengths...)
+		arg.Lengths = arrayLengths
 		arg.TotalSize = arg.Size
 		arg.Size = TYPE_POINTER_SIZE
 
@@ -397,10 +438,10 @@ func DeclarationSpecifiersBasic(typ int) *CXArgument {
 
 	if typ == TYPE_AFF {
 		// equivalent to slice of strings
-		return DeclarationSpecifiers(arg, 0, DECL_SLICE)
+		return DeclarationSpecifiers(arg, []int{0}, DECL_SLICE)
 	}
 
-	return DeclarationSpecifiers(arg, 0, DECL_BASIC)
+	return DeclarationSpecifiers(arg, []int{0}, DECL_BASIC)
 }
 
 // DeclarationSpecifiersStruct() declares a struct
