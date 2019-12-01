@@ -61,7 +61,7 @@
   * Updated the style of the CX roadmap.
   * Changed max transaction size to 128 Mb. CX chains are storing their program state in two different unspent outputs in their skycoin fork. This means that if a CX program to be stored on a CX chain needs 64 Mb, then the CX chain will need at least a max transaction size of 128 Mb. This behavior needs to be corrected immediately in the next version of CX and the user needs a way to set these parameters via flags (they're hardcoded at the moment).
 * Libraries
-  * ...
+  * Add cx arg parsing library
 * Fixed issues
   * #357: Error running cx in blockchain broadcast mode.
   * #360: Panic when package keyword is misspelled
