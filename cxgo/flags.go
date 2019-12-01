@@ -4,70 +4,70 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type cxCmdFlags struct {
-	baseOutput          bool
-	compileMode         bool
-	compileOutput       string
-	newProject          bool
-	replMode            bool
-	webMode             bool
-	ideMode             bool
-	webPersistentMode   bool
-	printHelp           bool
-	printVersion        bool
-	tokenizeMode        bool
-	initialHeap         string
-	maxHeap             string
-	stackSize           string
-	blockchainMode      bool
-	publisherMode       bool
-	peerMode            bool
-	transactionMode     bool
-	broadcastMode       bool
-	walletMode          bool
-	genAddress          bool
-	port                int
-	walletId            string
-	walletSeed          string
-	programName         string
-	secKey              string
-	pubKey              string
-	genesisAddress      string
-	genesisSignature    string
+	baseOutput        bool
+	compileOutput     string
+	newProject        bool
+	replMode          bool
+	webMode           bool
+	ideMode           bool
+	webPersistentMode bool
+	printHelp         bool
+	printVersion      bool
+	tokenizeMode      bool
+	initialHeap       string
+	maxHeap           string
+	stackSize         string
+	blockchainMode    bool
+	publisherMode     bool
+	peerMode          bool
+	transactionMode   bool
+	broadcastMode     bool
+	walletMode        bool
+	genAddress        bool
+	port              int
+	walletId          string
+	walletSeed        string
+	programName       string
+	secKey            string
+	pubKey            string
+	genesisAddress    string
+	genesisSignature  string
+	minHeapFreeRatio  float64
+	maxHeapFreeRatio  float64
+	cxpath            string
 
 	// Debug flags for the CX developers
-	debugLexer          bool
-	debugProfile        bool
+	debugLexer   bool
+	debugProfile int
 }
 
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
-		baseOutput:          false,
-		compileMode:         false,
-		compileOutput:       "",
-		newProject:          false,
-		replMode:            false,
-		webMode:             false,
-		ideMode:             false,
-		webPersistentMode:   false,
-		printHelp:           false,
-		printVersion:        false,
-		blockchainMode:      false,
-		transactionMode:     false,
-		broadcastMode:       false,
-		port:                6001,
-		programName:         "cxcoin",
-		walletId:            "cxcoin_cli.wlt",
-		secKey:              "",
-		pubKey:              "",
-		genesisAddress:      "",
-		genesisSignature:    "",
+		baseOutput:        false,
+		compileOutput:     "",
+		newProject:        false,
+		replMode:          false,
+		webMode:           false,
+		ideMode:           false,
+		webPersistentMode: false,
+		printHelp:         false,
+		printVersion:      false,
+		blockchainMode:    false,
+		transactionMode:   false,
+		broadcastMode:     false,
+		port:              6001,
+		programName:       "cxcoin",
+		walletId:          "cxcoin_cli.wlt",
+		secKey:            "",
+		pubKey:            "",
+		genesisAddress:    "",
+		genesisSignature:  "",
 
-		debugLexer:          false,
-		debugProfile:        false,
+		debugLexer:   false,
+		debugProfile: 0,
 	}
 }
 
@@ -79,14 +79,8 @@ func registerFlags(options *cxCmdFlags) {
 
 	flag.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	flag.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
-	// flag.BoolVar(&options.printHelp, "help", options.printHelp, "Print CX version")
-	// flag.BoolVar(&options.printHelp, "h", options.printHelp, "alias for -help")
-	flag.BoolVar(&options.baseOutput, "base", options.baseOutput, "generate a 'out.cx.go' file with the transcompiled CX base source code.")
-	flag.BoolVar(&options.baseOutput, "b", options.baseOutput, "alias for -base")
 	flag.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	flag.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
-	flag.BoolVar(&options.compileMode, "compile", options.compileMode, "generate a 'out' executable file of the program")
-	flag.BoolVar(&options.compileMode, "c", options.compileMode, "alias for -compile")
 	flag.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
 	flag.BoolVar(&options.newProject, "new", options.newProject, "Creates a new project located at $CXPATH/src")
 	flag.BoolVar(&options.newProject, "n", options.newProject, "alias for -new")
@@ -96,12 +90,14 @@ func registerFlags(options *cxCmdFlags) {
 	flag.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
 	flag.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
 	flag.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
-	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine")
+	flag.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	flag.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
-	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine")
+	flag.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed. Note that this parameter overrides --heap-initial if --heap-max is equal to a lesser value than --heap-max's.")
 	flag.StringVar(&options.maxHeap, "hm", options.maxHeap, "alias for -max-heap")
-	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine")
+	flag.StringVar(&options.stackSize, "stack-size", options.stackSize, "Set the stack size for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	flag.StringVar(&options.stackSize, "ss", options.stackSize, "alias for -stack-size")
+	flag.Float64Var(&options.minHeapFreeRatio, "--min-heap-free", options.minHeapFreeRatio, "Minimum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
+	flag.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 
 	flag.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
 	// flag.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
@@ -121,90 +117,27 @@ func registerFlags(options *cxCmdFlags) {
 	flag.StringVar(&options.pubKey, "public-key", options.pubKey, "CX program blockchain public key")
 	flag.StringVar(&options.genesisAddress, "genesis-address", options.genesisAddress, "CX blockchain program genesis address")
 	flag.StringVar(&options.genesisSignature, "genesis-signature", options.genesisSignature, "CX blockchain program genesis address")
+	flag.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
 
 	// Debug flags
 	flag.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
-	flag.BoolVar(&options.debugLexer, "Dl",          options.debugLexer, "alias for -debug-lexer")
-	flag.BoolVar(&options.debugProfile, "debug-profile", options.debugProfile, "Print timing information and dump cpu/mem profiles during compilation")
-	flag.BoolVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
+	flag.BoolVar(&options.debugLexer, "Dl", options.debugLexer, "alias for -debug-lexer")
+	flag.IntVar(&options.debugProfile, "debug-profile", options.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with \"go get github.com/google/pprof\" and \"pprof -http=:8080 file.pprof\"")
+	flag.IntVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 }
 
 func printHelp() {
 	fmt.Printf(`Usage: cx [options] [source-files]
 
 CX options:
--b, --base                        Generate a "out.cx.go" file with the transcompiled CX Base source code.
--c, --compile                     Generate a "out" executable file of the program.
--co, --compile-output FILENAME    Specifies the filename for the generated executable.
 -h, --help                        Prints this message.
 -n, --new                         Creates a new project located at $CXPATH/src
 -r, --repl                        Loads source files into memory and starts a read-eval-print loop.
 -w, --web                         Start CX as a web service.
--ide, --ide                       Start CX as a web service, and Leaps service start also.
+
 Notes:
-* Options --compile and --repl are mutually exclusive.
 * Option --web makes every other flag to be ignored.
 `)
-}
-
-// parseArgsForCX parses the arguments and returns:
-//  - []arguments
-//  - []file pointers	open files
-//  - []sting		filenames
-func parseArgsForCX(args []string) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
-	for _, arg := range args {
-		if len(arg) > 2 && arg[:2] == "++" {
-			cxArgs = append(cxArgs, arg)
-			continue
-		}
-		fi, err := os.Stat(arg)
-		_ = err
-
-		if err != nil {
-			panic(err)
-		}
-
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			var fileList []string
-
-			err := filepath.Walk(arg, func(path string, f os.FileInfo, err error) error {
-				fileList = append(fileList, path)
-				return nil
-			})
-
-			if err != nil {
-				panic(err)
-			}
-
-			for _, path := range fileList {
-				file, err := os.Open(path)
-
-				if err != nil {
-					panic(err)
-				}
-
-				fiName := file.Name()
-				fiNameLen := len(fiName)
-
-				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
-					// only loading .cx files
-					sourceCode = append(sourceCode, file)
-					fileNames = append(fileNames, fiName)
-				}
-			}
-		case mode.IsRegular():
-			file, err := os.Open(arg)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fileNames = append(fileNames, file.Name())
-			sourceCode = append(sourceCode, file)
-		}
-	}
-	return
 }
 
 func printVersion() {

@@ -1,0 +1,32 @@
+package bc
+
+var numbers []i32
+var texts []str
+
+package main
+import "bc"
+
+func main () {
+	// Initializing our CX chain numbers.
+	bc.numbers = append(bc.numbers, 1)
+	bc.numbers = append(bc.numbers, 2)
+	bc.numbers = append(bc.numbers, 3)
+	bc.numbers = append(bc.numbers, 4)
+
+	// Initializing our CX chain texts.
+	bc.texts = append(bc.texts, "Once")
+	bc.texts = append(bc.texts, "upon")
+	bc.texts = append(bc.texts, "a")
+	bc.texts = append(bc.texts, "time")
+
+	// Just checking that our values are there
+	i32.print(bc.numbers[0])
+	i32.print(bc.numbers[1])
+	i32.print(bc.numbers[2])
+	i32.print(bc.numbers[3])
+
+	str.print(bc.texts[0])
+	str.print(bc.texts[1])
+	str.print(bc.texts[2])
+	str.print(bc.texts[3])
+}

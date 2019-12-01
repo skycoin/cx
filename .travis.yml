@@ -8,7 +8,7 @@ go:
   - "1.11.x"
 
 # Placed source code under GOPATH
-go_import_path: github.com/skycoin/cx
+go_import_path: github.com/SkycoinProject/cx
 
 # Define global variables
 env:
@@ -23,17 +23,19 @@ matrix:
 
 # Install necessaries go packages
 install:
-  - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
-  - cd $GOPATH/src/github.com/skycoin/cx
+  - if [[ ! -d $GOPATH/src/github.com/SkycoinProject/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/SkycoinProject/cx; fi
+  - cd $GOPATH/src/github.com/SkycoinProject/cx
   - make install
+  - make install-gfx-deps
   - make install-linters
 
 # Build, test & run cx test
 # Block PR if golden files not up to date
 script:
   - if [[ $TRAVIS_PULL_REQUEST != "false" ]] ; then make check-golden-files ; fi
-  - make build
+  - make build-full
   - make test
+  - make test-full
   - make lint
 
 # Notifications to Telegram channel

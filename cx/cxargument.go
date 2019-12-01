@@ -1,9 +1,5 @@
 package cxcore
 
-import (
-	. "github.com/satori/go.uuid" //nolint golint
-)
-
 // The CXArgument struct contains a variable, i.e. a combination of a name and a type.
 //
 // It is used when declaring variables and in function parameters.
@@ -16,7 +12,6 @@ type CXArgument struct {
 	Fields                []*CXArgument // strct.fld1.fld2().fld3
 	Name                  string
 	FileName              string
-	ElementID             UUID
 	Type                  int
 	Size                  int // size of underlaying basic type
 	TotalSize             int // total size of an array, performance reasons
@@ -45,20 +40,18 @@ type CXArgument struct {
 // MakeArgument ...
 func MakeArgument(name string, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		FileName:  fileName,
-		FileLine:  fileLine}
+		Name:     name,
+		FileName: fileName,
+		FileLine: fileLine}
 }
 
 // MakeField ...
 func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument {
 	return &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Type:      typ,
-		FileName:  fileName,
-		FileLine:  fileLine,
+		Name:     name,
+		Type:     typ,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
 }
 
@@ -66,13 +59,12 @@ func MakeField(name string, typ int, fileName string, fileLine int) *CXArgument 
 func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument {
 	size := GetArgSize(typ)
 	global := &CXArgument{
-		ElementID: MakeElementID(),
-		Name:      name,
-		Type:      typ,
-		Size:      size,
-		Offset:    HeapOffset,
-		FileName:  fileName,
-		FileLine:  fileLine,
+		Name:     name,
+		Type:     typ,
+		Size:     size,
+		Offset:   HeapOffset,
+		FileName: fileName,
+		FileLine: fileLine,
 	}
 	HeapOffset += size
 	return global
