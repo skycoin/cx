@@ -1,24 +1,80 @@
 # Changelog
 
-### v0.7.0 (NOT YET RELEASED)
+### v0.7.2 (NOT YET RELEASED)
+* Additions
+  * CX package manager:
+    - Added a flag for setting a CX workspace. This flag overrides the environment variable .
+	- Import statements are now aware of the possibility of importing libraries that are defined in a CX workspace.
+	- If the user has not set a CXPATH through an environment variable or --cxpath flag, CX will use by default `~/cx` and create all the necessary subdirectories.
+	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
+* Changes
+  * Removed cx-games as a module. It was just confusing as users would be
+    redirected to an outdated version of the repo and the games are already
+    mentioned in the README.
+  * Improvements to `PrintProgram` (the function associated to the meta-command `:dp` in the REPL); the types printed to input/output parameters now print indexes, dereferences to fields and if they come from an external package.
+  * Multidimensional array literals are now working properly.
+  * Multidimensional slice literals are now working properly.
+* Libraries
+  * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
+  * Add json cx library to ease json parsing in cx.
+* Fixed issues
+  * #306: Can't print double quotes.
+  * #321: Can't do math inside 2nd square brackets (indexer) of an expression.
+  * #419: Initializing array or slice with values equivalent to nil.
+  * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
+  * #482: Slice literals: Problem with temporary variables in multi-dimensional slices.
+* Documentation
+  * ...
+* Miscellaneous
+  * ...
+
+### v0.7.1 released 2019-07-26
+* Additions
+  * Added capability of storing heap objects in a CX chain's program state.
+  * Added a function that prints information about the heap for debugging purposes (`debugHeap` in cx/utilities.go).
+* Changes
+  * Redesign of CX's garbage collector.
+  * Changes to several functions that relied on allocating objects on the heap.
+  * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
+  * Moved CX book sources to github.com/SkycoinProject/cx-book. The releases and any code updates will be pushed to that repository.
+    * The README file notifies the users about this change.
+* Libraries
+  * ...
+* Fixed issues
+  * #286: Compilation error when struct field is named 'input' or 'output'
+  * #323: Installation issues on Windows after merging #320
+* Documentation
+  * ...
+* Miscellaneous
+  * ...
+
+### v0.7.0 released 2019-06-15
 * Additions
   * CX can now generate addresses to be used by CX chains.
   * New debug option --debug-lexer or -Dl to see which tokens that are
 	returned by the lexer.
 * Changes
   * Removed `cmd/cli`. The CX executable should now be used to generate CX chain addresses.
+  * Running a CX chain with the --broadcast flag no longer runs the transaction code locally; it simply
+	broadcasts the transaction code and it is run in the peer node to update the program state. If the user
+	wants to test transaction code, the --transaction flag must be used.
+  * Updated the style of the CX roadmap.
+  * Changed max transaction size to 128 Mb. CX chains are storing their program state in two different unspent outputs in their skycoin fork. This means that if a CX program to be stored on a CX chain needs 64 Mb, then the CX chain will need at least a max transaction size of 128 Mb. This behavior needs to be corrected immediately in the next version of CX and the user needs a way to set these parameters via flags (they're hardcoded at the moment).
 * Libraries
   * Add cx arg parsing library
 * Fixed issues
+  * #357: Error running cx in blockchain broadcast mode.
   * #360: Panic when package keyword is misspelled
   * #373: Error in address used to generate a CSRF token. Port was 6001 instead of 6421.
+  * #388: Array fail on cx --blockchain.
+  * #389: CX chains errors with big programs.
 * Documentation
   * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial
-	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	[documentation/BLOCKCHAIN.md](https://github.com/SkycoinProject/cx/blob/develop/documentation/BLOCKCHAIN.md)
 	will be used to reflect the state in the CX source code (`develop` branch)
   * The blockchain tutorial in the
-	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
+	[wiki](https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial) will
 	be used as a tutorial for the latest CX release. 
 * Miscellaneous
   * ...
@@ -150,7 +206,7 @@
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
-* CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
+* CX GUI helper moved to its own repository at https://github.com/SkycoinProject/cx-gui-helper
 
 ### v0.5.18 [2018-11-27 Tue 21:33]
 * **Affordances**:

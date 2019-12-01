@@ -181,8 +181,6 @@ func tokenName(token int) string {
 		return " INCOP"
 	case INFER:
 		return " INFER"
-	case INPUT:
-		return " INPUT"
 	case INT_LITERAL:
 		return "INTLIT"
 	case LBRACE:
@@ -247,8 +245,6 @@ func tokenName(token int) string {
 		return " ORSET"
 	case OR_OP:
 		return "  OROP"
-	case OUTPUT:
-		return "OUTPUT"
 	case PACKAGE:
 		return "PACKAG"
 	case PERIOD:

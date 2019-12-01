@@ -1398,6 +1398,39 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT --cxpath test-workspace test-workspace-a.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if CX can set a workspace and then import a library, taking that workspace as the new relative path.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT --cxpath test-workspace test-workspace-b.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if CX can set a workspace and then import a nested library, taking that workspace as the new relative path.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT --cxpath test-workspace test-workspace-c.cx test-workspace-d.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Testing if files supplied to the CLI override libraries in the workspace.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT test-slices-index-out-of-range-a.cx
  COMMA 
  IDENT cx
@@ -1537,6 +1570,28 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Error in scopes.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT -heap-initial 0 test-gc.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Stress-testing the garbage collector
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT ../lib/json.cx test-json.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in json lib.
 RPAREN 
 SCOLON 
  IDENT runTest
@@ -2778,7 +2833,7 @@ PERIOD
 STRLIT Short declaration doesn't compile with opcode return value
 RPAREN 
 SCOLON 
- IDENT runTestEx
+ IDENT runTest
 LPAREN 
 STRLIT issue-286.cx
  COMMA 
@@ -2787,10 +2842,6 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT Compilation error when struct field is named 'input' or 'output'
- COMMA 
- IDENT TEST_ISSUE
- COMMA 
-INTLIT 0
 RPAREN 
 SCOLON 
  IDENT runTestEx
@@ -3049,6 +3100,43 @@ STRLIT Cx is not supporting short-circuit evaluation
  IDENT TEST_ISSUE
  COMMA 
 INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-415.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT func defined with no arguments, called WITH arguments causes PANIC
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-481.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT multi-dimensional arrays are not working
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT issue-482.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT multi-dimensional slices are not working
 RPAREN 
 SCOLON 
    VAR 
