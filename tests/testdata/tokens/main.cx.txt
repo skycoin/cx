@@ -1596,6 +1596,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT ../lib/args.cx test-args.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in args lib.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx

@@ -111,7 +111,7 @@ func main()() {
 		var matchIF bool
 		panic(args.I32("++if=-2147483648", "if", &iF, &matchIF), true, "valid i32 argument")
 		panic(matchIF, true, "if must match")
-		panic(iF, -2147483648, "values must match")
+		panic(iF, i64.i32(-2147483648L), "values must match") // ISSUE : can't use INT32_MIN
 	}
 
 	{
