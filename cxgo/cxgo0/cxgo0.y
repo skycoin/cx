@@ -4,8 +4,8 @@
 		// "fmt"
 		"bytes"
 		// "os"
-		. "github.com/skycoin/cx/cx"
-		. "github.com/skycoin/cx/cxgo/actions"
+		. "github.com/SkycoinProject/cx/cx"
+		. "github.com/SkycoinProject/cx/cxgo/actions"
 	)
 
 	var PRGRM0 *CXProgram
@@ -51,6 +51,7 @@
 	bool bool
 	string string
 	stringA []string
+	ints    []int
 
 	line int
 
@@ -104,7 +105,7 @@
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
-                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
+                        REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */
@@ -129,6 +130,8 @@
 %type   <arguments>     struct_fields
                                                 
 %type   <function>      function_header
+
+%type   <ints>          indexing_literal
 
                         // for struct literals
 %right                  IDENTIFIER LBRACE
@@ -310,16 +313,15 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($2, 0, DECL_POINTER)
+			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
-        |       LBRACK INT_LITERAL RBRACK declaration_specifiers
-                {
-			
-			$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-                }
+        // |       indexing_literal declaration_specifiers
+        //         {
+	// 		$$ = DeclarationSpecifiers($2, $1, DECL_ARRAY)
+        //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, 0, DECL_SLICE)
+			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -328,6 +330,16 @@ declaration_specifiers:
         |       IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFileName, lineNo)
+                }
+        |       indexing_literal type_specifier
+                {
+			basic := DeclarationSpecifiersBasic($2)
+			$$ = DeclarationSpecifiers(basic, $1, DECL_ARRAY)
+                }
+        |       indexing_literal IDENTIFIER
+                {
+			strct := DeclarationSpecifiersStruct($2, "", false, CurrentFile, LineNo)
+			$$ = DeclarationSpecifiers(strct, $1, DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -389,22 +401,41 @@ struct_literal_fields:
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 ;
 
+array_literal_expression_list:
+		assignment_expression
+        |       LBRACE array_literal_expression_list RBRACE
+	|       array_literal_expression_list COMMA assignment_expression
+                ;
+
+indexing_literal:
+		LBRACK INT_LITERAL RBRACK
+		{
+			$$ = []int{int($2)}
+		}
+        |       indexing_literal LBRACK INT_LITERAL RBRACK
+		{
+			$$ = append($1, int($3))
+		}
+		;
 
 // expressions
 array_literal_expression:
-                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE argument_expression_list RBRACE
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
-        |       LBRACK INT_LITERAL RBRACK array_literal_expression
+                indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
+        |       indexing_literal IDENTIFIER LBRACE RBRACE
+        |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
+        |       indexing_literal type_specifier LBRACE RBRACE
         ;
 
+indexing_slices:
+		LBRACK RBRACK
+        |       indexing_slices LBRACK RBRACK
+		;
+
 slice_literal_expression:
-                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
-        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
-        |       LBRACK RBRACK type_specifier LBRACE RBRACE
-        |       LBRACK RBRACK slice_literal_expression
+                indexing_slices IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       indexing_slices IDENTIFIER LBRACE RBRACE
+        |       indexing_slices type_specifier LBRACE argument_expression_list RBRACE
+        |       indexing_slices type_specifier LBRACE RBRACE
                 ;
 
 

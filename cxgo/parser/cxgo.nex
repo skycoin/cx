@@ -116,19 +116,14 @@
 /clauses/                 { return f(CLAUSES)    }
 /def/                     { return f(DEF)        }
 /field/                   { return f(FIELD)      }
-/input/                   { return f(INPUT)      }
-/output/                  { return f(OUTPUT)     }
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
-/"([^"]*)"/ { /* " */
+/"([^"\\]|\\.)*"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
 	        println(cxcore.CompilationError(cxgo0.CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
-	tokVal := str
-	tokVal = strings.TrimPrefix(tokVal, "\"")
-	tokVal = strings.TrimSuffix(tokVal, "\"")
-	lval.tok = tokVal
+	lval.tok = str
 
 	noLines := countNewLines([]byte(lval.tok))
 	lval.line += noLines
@@ -244,9 +239,9 @@ package parser
 import (
        "fmt"
        "strconv"
-	"github.com/skycoin/cx/cx"
-	. "github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/cxgo0"    // Only for CurrentFilename
+	"github.com/SkycoinProject/cx/cx"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxgo0"    // Only for CurrentFilename
 )
 
 
@@ -453,8 +448,6 @@ var tokenNames = map[int]string {
 	DEF: "DEF",
 	EXPR: "EXPR",
 	FIELD: "FIELD",
-	INPUT: "INPUT",
-	OUTPUT: "OUTPUT",
 	CLAUSES: "CLAUSES",
 	OBJECT: "OBJECT",
 	OBJECTS: "OBJECTS",
