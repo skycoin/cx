@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	"fmt"
-	"os"
 	// "github.com/amherag/skycoin/src/cipher/encoder"
 )
 
@@ -79,8 +78,28 @@ func opPanic(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	if !assert(expr, fp) {
-		os.Exit(CX_ASSERT)
+		panic(CX_ASSERT)
 	}
+}
+
+// panicIf/panicIfNot implementation
+func panicIf(prgrm *CXProgram, condition bool) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+	if ReadBool(fp, expr.Inputs[0]) == condition {
+		fmt.Printf("%s : %d, %s\n", expr.FileName, expr.FileLine, ReadStr(fp, expr.Inputs[1]))
+		panic(CX_ASSERT)
+	}
+}
+
+// panic with CX_ASSERT exit code if condition is true
+func opPanicIf(prgrm *CXProgram) {
+	panicIf(prgrm, true)
+}
+
+// panic with CX_ASSERT exit code if condition is false
+func opPanicIfNot(prgrm *CXProgram) {
+	panicIf(prgrm, false)
 }
 
 func opStrError(prgrm *CXProgram) {

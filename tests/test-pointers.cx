@@ -23,9 +23,9 @@ package main
 
 var gi32Ptr *i32
 var gi64Ptr *i64
+var c [2]miniStruct
 
 func returnPtrArrayStruct () (ptr *[2]miniStruct) {
-	var c [2]miniStruct
 	c[0] = miniStruct{mInt: 11, mString: "Foobar"}
 
 
