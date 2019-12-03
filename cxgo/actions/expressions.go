@@ -207,7 +207,7 @@ func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpressio
 	if len(leftExprs[len(leftExprs)-1].Outputs) < 1 {
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(leftExprs[len(leftExprs)-1])])
 		name.Size = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
-		name.TotalSize = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Size
+		name.TotalSize = GetSize(leftExprs[len(leftExprs)-1].Operator.Outputs[0])
 		name.Type = leftExprs[len(leftExprs)-1].Operator.Outputs[0].Type
 		name.Package = pkg
 		name.PreviouslyDeclared = true
@@ -219,7 +219,7 @@ func UndefinedTypeOperation(leftExprs []*CXExpression, rightExprs []*CXExpressio
 		name := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[resolveTypeForUnd(rightExprs[len(rightExprs)-1])])
 
 		name.Size = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
-		name.TotalSize = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Size
+		name.TotalSize = GetSize(rightExprs[len(rightExprs)-1].Operator.Outputs[0])
 		name.Type = rightExprs[len(rightExprs)-1].Operator.Outputs[0].Type
 		name.Package = pkg
 		name.PreviouslyDeclared = true

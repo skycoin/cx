@@ -6,6 +6,41 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
+// GetSize ...
+func GetSize(arg *CXArgument) int {
+	if len(arg.Fields) > 0 {
+		return GetSize(arg.Fields[len(arg.Fields)-1])
+	}
+
+	derefCount := len(arg.DereferenceOperations)
+	if derefCount > 0 {
+		deref := arg.DereferenceOperations[derefCount-1]
+		if deref == DEREF_SLICE || deref == DEREF_ARRAY {
+			return arg.Size
+		}
+	}
+
+	for decl := range arg.DeclarationSpecifiers {
+		if decl == DECL_POINTER {
+			return arg.TotalSize
+		}
+	}
+
+	if arg.CustomType != nil {
+		return arg.CustomType.Size
+	}
+
+	return arg.TotalSize
+}
+
+// GetDerefSize ...
+func GetDerefSize(arg *CXArgument) int {
+	if arg.CustomType != nil {
+		return arg.CustomType.Size
+	}
+	return arg.Size
+}
+
 // CalculateDereferences ...
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) {
 	var isPointer bool
@@ -37,15 +72,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 			*finalOffset += OBJECT_HEADER_SIZE
 			*finalOffset += SLICE_HEADER_SIZE
 
-			var sizeToUse int
-			if arg.CustomType != nil {
-				sizeToUse = arg.CustomType.Size
-			} else if arg.IsSlice {
-				sizeToUse = arg.TotalSize
-			} else {
-				sizeToUse = arg.Size
-			}
-
+			sizeToUse := GetDerefSize(arg)
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
 
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
@@ -62,14 +89,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 				subSize *= len
 			}
 
-			var sizeToUse int
-			if arg.CustomType != nil {
-				sizeToUse = arg.CustomType.Size
-			} else if arg.IsSlice {
-				sizeToUse = arg.TotalSize
-			} else {
-				sizeToUse = arg.Size
-			}
+			sizeToUse := GetDerefSize(arg)
 
 			baseOffset = *finalOffset
 			sizeofElement = subSize * sizeToUse
@@ -164,7 +184,8 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 // ReadMemory ...
 func ReadMemory(offset int, arg *CXArgument) []byte {
-	return PROGRAM.Memory[offset : offset+arg.TotalSize]
+	size := GetSize(arg)
+	return PROGRAM.Memory[offset : offset+size]
 }
 
 // updateDisplaceReference performs the actual addition or subtraction of `plusOff` to the address being pointed by the element at `atOffset`.
