@@ -1,20 +1,16 @@
 package cxcore
 
 import (
-	// "errors"
 	"fmt"
-
-	. "github.com/satori/go.uuid" //nolint golint
 )
 
 // CXStruct is used to represent a CX struct.
 //
 type CXStruct struct {
 	// Metadata
-	Name      string     // Name of the struct
-	Package   *CXPackage // The package this struct belongs to
-	Size      int        // The size in memory that this struct takes.
-	ElementID UUID
+	Name    string     // Name of the struct
+	Package *CXPackage // The package this struct belongs to
+	Size    int        // The size in memory that this struct takes.
 
 	// Contents
 	Fields []*CXArgument // The fields of the struct
@@ -23,8 +19,7 @@ type CXStruct struct {
 // MakeStruct ...
 func MakeStruct(name string) *CXStruct {
 	return &CXStruct{
-		ElementID: MakeElementID(),
-		Name:      name,
+		Name: name,
 	}
 }
 
@@ -66,7 +61,14 @@ func (strct *CXStruct) AddField(fld *CXArgument) *CXStruct {
 	// FIXME: Shouldn't it be a compilation error if we define a new field
 	// 	  with the same name as another field?
 	if !found {
+		numFlds := len(strct.Fields)
 		strct.Fields = append(strct.Fields, fld)
+		if numFlds != 0 {
+			// Pre-compiling the offset of the field.
+			// TODO: I think this would cause conflicts with affordances. For instance, affordances could remove a field and we'd need to re-calculate the offsets. We need to check this.
+			lastFld := strct.Fields[numFlds-1]
+			fld.Offset = lastFld.Offset + lastFld.TotalSize
+		}
 		strct.Size += GetSize(fld)
 	} else {
 		panic("duplicate field")

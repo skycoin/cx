@@ -6,7 +6,7 @@ import (
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.

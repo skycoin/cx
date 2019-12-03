@@ -1,0 +1,9 @@
+package geometry
+
+func (c Circle) Area() (area f32) {
+	area = 3.14159 * c.radius * c.radius
+}
+
+func (r Rectangle) Area() (area f32) {
+	area = r.sideA * r.sideB
+}

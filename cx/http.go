@@ -4,7 +4,10 @@ package cxcore
 // 	RESPONSE_SIZE = 8
 // )
 
-// func op_http_get(expr *CXExpression, fp int) {
+// func op_http_get(prgrm *CXProgram) {
+//	expr := prgrm.GetExpr()
+//	fp := prgrm.GetFramePointer()
+
 // 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 // 	out1Offset := GetFinalOffset(fp, out1)
 
