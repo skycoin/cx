@@ -1,105 +1,9 @@
 package main
 
+import "args"
 import "os"
 import "cx"
 import "time"
-
-func matchArg(arg str, pattern str, match *bool) (out bool) {
-	out = false
-	var argLen i32 = len(arg)
-	var patternLen i32 = len(pattern)
-	if (argLen >= patternLen) {
-		name := str.substr(arg, 0, patternLen)
-		if (name == pattern) {
-			if *match {
-				printf("duplicate arg %s\n", arg)
-				os.Exit(cx.PANIC)
-			}
-			*match = true
-			out = true
-		}
-	}
-}
-
-func getArgValueStr(arg str, pattern str, value *str, match *bool) (out bool) {
-	if matchArg(arg, pattern, match) {
-		var argLen i32 = len(arg)
-		var patternLen i32 = len(pattern)
-		if argLen > patternLen {
-			*value = str.substr(arg, patternLen, argLen)
-			out = true
-		}
-	}
-}
-
-func getArgValueStrSlice(arg str, pattern str, match *bool) (out []str) {
-	var filterList str = ""
-	var filterMatch bool = false
-	var slice []str
-	if getArgValueStr(arg, pattern, &filterList, &filterMatch) {
-		var index i32 = 0
-		for index >= 0 {
-			index = str.index(filterList, ",")
-			var filter str = filterList
-			if index >= 0 {
-				filter = str.substr(filterList, 0, index)
-				filterList = str.substr(filterList, index + 1, len(filterList))
-			} else {
-				filterList = ""
-			}
-			filter = str.trimspace(filter)
-			slice = append(slice, filter)
-		}
-	}
-	out = slice
-}
-
-func getArgValueI32(arg str, pattern str, value *i32, match *bool) (out bool) {
-	var strValue str = ""
-	out = getArgValueStr(arg, pattern, &strValue, match)
-	if out {
-		var i32Value i32 = str.i32(strValue)
-		*value = i32Value
-	}
-}
-
-func getFlags(arg str, pattern str, flags *i32, match *bool, names []str, values[]i32) (success bool) {
-	panic(len(names), len(values), "invalid flags")
-	success = false
-	var list str = ""
-	var slice []str = getArgValueStrSlice(arg, pattern, match)
-	for i := 0; i < len(slice); i++ {
-		var value i32 = 0
-		for k := 0; k < len(names); k++ {
-			if slice[i] == names[k] {
-				value = values[k]
-			}
-		}
-
-		if value != 0 {
-			*flags = *flags | value
-			success = true
-		} else {
-			printf("invalid option value %s\n", arg)
-			os.Exit(cx.PANIC)
-		}
-	}
-}
-
-func printFlags(name str, flags i32, names []str, values[]i32) {
-	panic(len(names), len(values), "invalid flags")
-	printf("%s : %d : ", name, flags)
-	var count i32 = len(values)
-	for i := 0; i < count && flags > 0; i++ {
-		var flag i32 = values[i]
-		if (flags & flag) == flag {
-			printf("%s, ", names[i])
-			flags = flags & (-1 ^ flag)
-		}
-	}
-	printf("\n")
-	panic(flags, 0, "invalid flags")
-}
 
 var TEST_NONE   i32 = 0
 var TEST_STABLE i32 = 1
@@ -201,14 +105,15 @@ func runTest(cmd str, exitCode i32, desc str) {
 	runTestEx(cmd, exitCode, desc, TEST_STABLE, 0)
 }
 
-func help () {
-	printf("Options:\n")
+func help (message str, exitCode i32) {
+	printf("%sOptions:\n", message)
 	printf("++help          : Prints this message.\n")
 	printf("++enable-tests  : Enable test set (all, stable, issue, gui).\n")
 	printf("++disable-tests : Disable test set (all, stable, issue, gui).\n")
 	printf("++log           : Enable log set (all, success, stderr, fail, skip, time).\n")
 	printf("++cxpath        : Set cx directory\n")
 	printf("++wdir          : Set working directory\n")
+	os.Exit(exitCode)
 }
 
 func main ()() {
@@ -234,46 +139,46 @@ func main ()() {
 	var enabledTests i32 = 0
 	var disabledTests i32 = 0
 	var log i32 = 0
+	var help bool
 
 	for a := 0; a < argCount; a++ {
 		var arg str = os.Args[a]
 
-		if getArgValueStr(arg, "++wdir=", &g_workingDir, &workingDirMatch) {
+		if args.Str(arg, "wdir", &g_workingDir, &workingDirMatch) {
 			continue
 		}
 
-		if getArgValueStr(arg, "++cxpath=", &g_cxPath, &cxPathMatch) {
+		if args.Str(arg, "cxpath", &g_cxPath, &cxPathMatch) {
 			continue
 		}
 
-		if getFlags(arg, "++log=", &log, &logMatch, logNames, logValues) {
+		if args.Flags(arg, "log", &log, &logMatch, logNames, logValues) {
 			continue
 		}
 
-		if getFlags(arg, "++enable-tests=", &enabledTests, &enabledTestMatch, testNames, testValues) {
+		if args.Flags(arg, "enable-tests", &enabledTests, &enabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if getFlags(arg, "++disable-tests=", &disabledTests, &disabledTestMatch, testNames, testValues) {
+		if args.Flags(arg, "disable-tests", &disabledTests, &disabledTestMatch, testNames, testValues) {
 			continue
 		}
 
-		if matchArg(arg, "++help", &helpMatch) {
-			help()
-			os.Exit(0)
+		if args.Bool(arg, "help", &help, &helpMatch) {
+			if help {
+				help("", 0)
+			}
 		}
 
-		printf("invalid argument : %s\n", arg)
-		os.Exit(cx.PANIC)
+		help(sprintf("Invalid argument : %s\n", arg), cx.PANIC)
 	}
 
 	if enabledTests == TEST_ALL && disabledTests == TEST_ALL {
-		printf("Invalid test combination :\n")
-		printFlags("++enabled-test=", enabledTests, testNames, testValues)
-		printFlags("++disabled-tests=", disabledTests, testNames, testValues)
-		os.Exit(cx.PANIC)
+		if args.PrintFlags("++enable-test=", enabledTests, testNames, testValues) {}
+		if args.PrintFlags("++disable-tests=", disabledTests, testNames, testValues) {}
+		help("Invalid test combination :\n", cx.PANIC)
 	} else if disabledTests == TEST_ALL {
-		g_enabledTests = enabledTests
+		g_enabledTests= enabledTests
 	} else {
 		g_enabledTests = (g_enabledTests | enabledTests) & (-1 ^ disabledTests)
 	}
@@ -283,8 +188,13 @@ func main ()() {
 	}
 
 	printf("\nRunning CX tests in dir : '%s'\n", g_workingDir)
-	printFlags("Enabled tests", g_enabledTests, testNames, testValues)
-	printFlags("Enabled log", g_log, logNames, logValues)
+	if args.PrintFlags("Enabled tests", g_enabledTests, testNames, testValues) == false {
+		help("Invalid enabled test\n", cx.PANIC)
+	}
+
+	if args.PrintFlags("Enabled log", g_log, logNames, logValues) == false {
+		help("Invalid enabled log\n", cx.PANIC)
+	}
 	printf("\n")
 
 	var start i64
@@ -303,6 +213,9 @@ func main ()() {
 	runTest("test-str.cx", cx.SUCCESS, "str")
 	runTest("test-utils.cx test-pointers.cx", cx.SUCCESS, "pointers")
 	runTest("test-slices.cx", cx.SUCCESS, "slices")
+	runTest("--cxpath test-workspace test-workspace-a.cx", cx.SUCCESS, "Testing if CX can set a workspace and then import a library, taking that workspace as the new relative path.")
+	runTest("--cxpath test-workspace test-workspace-b.cx", cx.SUCCESS, "Testing if CX can set a workspace and then import a nested library, taking that workspace as the new relative path.")
+	runTest("--cxpath test-workspace test-workspace-c.cx test-workspace-d.cx", cx.SUCCESS, "Testing if files supplied to the CLI override libraries in the workspace.")
 	runTest("test-slices-index-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test index < 0")
 	runTest("test-slices-index-out-of-range-b.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test index >= len")
 	runTest("test-slices-resize-out-of-range-a.cx", cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "Test out of range after resize")
@@ -316,6 +229,9 @@ func main ()() {
 	runTest("test-parse.cx", cx.SUCCESS, "parse")
 	runTest("test-collection-functions.cx", cx.SUCCESS, "collection functions")
 	runTest("test-scopes.cx", cx.SUCCESS, "Error in scopes.")
+	runTest("-heap-initial 0 test-gc.cx", cx.SUCCESS, "Stress-testing the garbage collector")
+	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
+	runTest("../lib/args.cx test-args.cx", cx.SUCCESS, "Error in args lib.")
 
 	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
@@ -425,7 +341,7 @@ func main ()() {
 	runTestEx("issue-283.cx", cx.SUCCESS, "for loop using boolean value is not compiling", TEST_ISSUE, 0)
 	runTest("issue-284.cx", cx.SUCCESS, "Concatenation of str variables with + operator doesn't work")
 	runTest("issue-285.cx", cx.SUCCESS, "Short declaration doesn't compile with opcode return value")
-	runTestEx("issue-286.cx", cx.SUCCESS, "Compilation error when struct field is named 'input' or 'output'", TEST_ISSUE, 0)
+	runTest("issue-286.cx", cx.SUCCESS, "Compilation error when struct field is named 'input' or 'output'")
 	runTestEx("issue-287.cx", cx.COMPILATION_ERROR, "No compilation error when using empty argument list after function call", TEST_ISSUE, 0)
 	runTest("issue-288.cx", cx.COMPILATION_ERROR, "No compilation error when using float value in place of boolean expression")
 	runTest("issue-289.cx", cx.COMPILATION_ERROR, "Panic when package contains duplicate function signature")
@@ -436,14 +352,17 @@ func main ()() {
 	runTestEx("issue-293.cx", cx.SUCCESS, "Crash when INIT_HEAP_SIZE limit is reached ", TEST_ISSUE, 0)
 	runTestEx("issue-294-a.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
 	runTestEx("issue-294-b.cx", cx.SUCCESS, "Crash in garbage collector when heap is resized", TEST_ISSUE, 0)
-	runTestEx("issue-338-a.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
-	runTestEx("issue-338-b.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
-	runTestEx("issue-338-c.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_ISSUE, 0)
+	runTestEx("issue-338-a.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_STABLE, 0)
+	runTestEx("issue-338-b.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_STABLE, 0)
+	runTestEx("issue-338-c.cx", cx.SUCCESS, "Issues with slice of type T where sizeof T is different than 4 ", TEST_STABLE, 0)
 	runTestEx("issue-358.cx", cx.COMPILATION_ERROR, "No compilation error when global variable is redeclared at local scope", TEST_ISSUE, 0)
 	runTestEx("issue-359.cx", cx.SUCCESS, "Compilation error when using return value of a method call in an inline initialization", TEST_ISSUE, 0)
 	runTestEx("issue-360.cx", cx.COMPILATION_ERROR, "Panic when package keyword is misspelled", TEST_ISSUE, 0)
 	runTestEx("issue-361.cx", cx.COMPILATION_ERROR, "No compilation error when assigning an literal which overflow the receiving type", TEST_ISSUE, 0)
 	runTestEx("issue-362.cx", cx.SUCCESS, "Cx is not supporting short-circuit evaluation", TEST_ISSUE, 0)
+	runTestEx("issue-415.cx", cx.SUCCESS, "func defined with no arguments, called WITH arguments causes PANIC", TEST_ISSUE, 0)
+	runTest("issue-481.cx", cx.SUCCESS, "multi-dimensional arrays are not working")
+	runTest("issue-482.cx", cx.SUCCESS, "multi-dimensional slices are not working")
 
 	// We need to fix serialization and deserialization as user-callable functions
 	// runTestEx("issue-309.cx", cx.SUCCESS, "Serialization is not taking into account non-default stack sizes.", TEST_ISSUE, 0)
