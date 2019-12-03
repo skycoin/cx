@@ -1,0 +1,8 @@
+package main
+// This library must import the `math` package.
+import "math"
+
+func main() {
+	test(math.double(10.5), 21.0, "")
+	test(math.double(math.PI), 6.28318, "")
+}

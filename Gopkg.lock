@@ -11,18 +11,18 @@
 
 [[projects]]
   branch = "cxchains"
-  digest = "1:8d92cd9e633462dbec3b45770da58c1c1727ba54f7fa090e027a4f15883a8f09"
+  digest = "1:c1cb1c1e5f7f78cca28cad22abff80fa9e0d38fc7c589f51c398c40bd02d699b"
   name = "github.com/amherag/skycoin"
   packages = [
     "src/api",
-    "src/api/webrpc",
     "src/cipher",
     "src/cipher/base58",
+    "src/cipher/bip39",
+    "src/cipher/bip39/wordlists",
     "src/cipher/chacha20poly1305",
     "src/cipher/chacha20poly1305/internal/chacha20",
     "src/cipher/encoder",
     "src/cipher/encrypt",
-    "src/cipher/go-bip39",
     "src/cipher/pbkdf2",
     "src/cipher/poly1305",
     "src/cipher/ripemd160",
@@ -35,9 +35,12 @@
     "src/daemon/gnet",
     "src/daemon/pex",
     "src/daemon/strand",
+    "src/fiber",
+    "src/kvstorage",
     "src/params",
     "src/readable",
     "src/skycoin",
+    "src/transaction",
     "src/util/apputil",
     "src/util/certutil",
     "src/util/droplet",
@@ -47,6 +50,7 @@
     "src/util/http",
     "src/util/iputil",
     "src/util/logging",
+    "src/util/mathutil",
     "src/util/timeutil",
     "src/util/useragent",
     "src/visor",
@@ -56,7 +60,7 @@
     "src/wallet",
   ]
   pruneopts = "UT"
-  revision = "68cae7567fa8008851da6d2867fbd1d19a061a04"
+  revision = "d82f04590a99961f1d3ea97043db73385412f953"
 
 [[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
@@ -111,12 +115,12 @@
   revision = "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4"
 
 [[projects]]
-  digest = "1:318f1c959a8a740366fce4b1e1eb2fd914036b4af58fbd0a003349b305f118ad"
+  digest = "1:573ca21d3669500ff845bdebee890eb7fc7f0f50c59f2132f2a0c6b03d85086a"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
-  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
-  version = "v1.3.1"
+  revision = "6c65a5562fc06764971b7c5d05c76c75e84bdbf7"
+  version = "v1.3.2"
 
 [[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
@@ -138,6 +142,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -146,28 +158,28 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:c568d7727aa262c32bdf8a3f7db83614f7af0ed661474b24588de635c20024c7"
+  digest = "1:5a0ef768465592efca0412f7e838cdc0826712f8447e70e6ccc52eb441e9ab13"
   name = "github.com/magiconair/properties"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c2353362d570a7bfa228149c62842019201cfb71"
-  version = "v1.8.0"
+  revision = "de8848e004dd33dc07a2947b3d76f618a7fc7ef1"
+  version = "v1.8.1"
 
 [[projects]]
-  digest = "1:2fa7b0155cd54479a755c629de26f888a918e13f8857a2c442205d825368e084"
+  digest = "1:7c084e0e780596dd2a7e20d25803909a9a43689c153de953520dfbc0b0e51166"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3a70a971f94a22f2fa562ffcc7a0eb45f5daf045"
-  version = "v0.1.1"
+  revision = "8029fb3788e5a4a9c00e415f586a6d033f5d38b3"
+  version = "v0.1.2"
 
 [[projects]]
-  digest = "1:e150b5fafbd7607e2d638e4e5cf43aa4100124e5593385147b0a74e2733d8b0d"
+  digest = "1:9b90c7639a41697f3d4ad12d7d67dfacc9a7a4a6e0bbfae4fc72d0da57c28871"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c2a7a6ca930a4cd0bc33a3f298eb71960732a3a7"
-  version = "v0.0.7"
+  revision = "1311e847b0cb909da63b5fecfb5370aa66236465"
+  version = "v0.0.8"
 
 [[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
@@ -221,7 +233,7 @@
   revision = "fd36f4220a901265f90734c3183c5f0c91daa0b8"
 
 [[projects]]
-  digest = "1:35cf6bdf68db765988baa9c4f10cc5d7dda1126a54bd62e252dbcd0b1fc8da90"
+  digest = "1:8dcedf2e8f06c7f94e48267dea0bc0be261fa97b377f3ae3e87843a92a549481"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -229,19 +241,19 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "1ba88736f028e37bc17328369e94a537ae9e0234"
-  version = "v0.4.0"
+  revision = "31bed53e4047fd6c510e43a941f90cb31be0972a"
+  version = "v0.6.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:9d62e12429921bbbdc2d1e3c81c6a2c128cc07046633ff92fb6d17376f74261d"
+  digest = "1:366f5aa02ff6c1e2eccce9ca03a22a6d983da89eecff8a89965401764534eb7c"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
     "internal/fs",
   ]
   pruneopts = "UT"
-  revision = "5867b95ac084bbfee6ea16595c4e05ab009021da"
+  revision = "3f98efb27840a48a7a2898ec80be07674d19f9c8"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
@@ -268,12 +280,12 @@
   version = "1.1.0"
 
 [[projects]]
-  digest = "1:fd61cf4ae1953d55df708acb6b91492d538f49c305b364a014049914495db426"
+  digest = "1:04457f9f6f3ffc5fea48e71d62f2ca256637dee0a04d710288e27e05c8b41976"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8bdbc7bcc01dcbb8ec23dc8a28e332258d25251f"
-  version = "v1.4.1"
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
 
 [[projects]]
   branch = "master"
@@ -303,6 +315,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:e096613fb7cf34743d49af87d197663cfccd61876e2219853005a57baedfa562"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f2b07da1e2c38d5f12845a4f607e2e1018cbb1f5"
+  version = "v0.0.5"
+
+[[projects]]
   digest = "1:1b753ec16506f5864d26a28b43703c58831255059644351bbcb019b843950900"
   name = "github.com/spf13/jwalterweatherman"
   packages = ["."]
@@ -319,12 +339,12 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:1b773526998f3dbde3a51a4a5881680c4d237d3600f570d900f97ac93c7ba0a8"
+  digest = "1:11118bd196646c6515fea3d6c43f66162833c6ae4939bfb229b9956d91c6cf17"
   name = "github.com/spf13/viper"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9e56dacc08fbbf8c9ee2dbc717553c758ce42bc9"
-  version = "v1.3.2"
+  revision = "b5bf975e5823809fb22c7644d008757f78a4259e"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
@@ -335,12 +355,12 @@
   revision = "e0502e82247dc662b1e65f76039989bda914cfad"
 
 [[projects]]
-  digest = "1:e1cd343b3883ced86b6873fe4d2f76799259fba3d1656df6ac0a7fa92644c049"
+  digest = "1:a7c5dd394613ae5166506781aa8176945fefb57e55658fb15569328445ec27d7"
   name = "github.com/toqueteos/webbrowser"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3232c91b8ede8ca86e8962981d881af78875542f"
-  version = "v1.1"
+  revision = "61ea02ef245a3e53cac7b95223b662592f6a7bf1"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
@@ -356,7 +376,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "e1dfcc566284e143ba8f9afbb3fa563f2a0d212b"
+  revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
 
 [[projects]]
   branch = "master"
@@ -367,7 +387,7 @@
     "math/fixed",
   ]
   pruneopts = "UT"
-  revision = "e4e5bf290fec812cbe38d879ea41d6ebb2c40ff5"
+  revision = "d6a02ce849c95fa57d9927fab7b6d9071876dfe0"
 
 [[projects]]
   branch = "master"
@@ -375,18 +395,18 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "a4d6f7feada510cc50e69a37b484cb0fdc6b7876"
+  revision = "ca1201d0de80cfde86cb01aea620983605dfe99b"
 
 [[projects]]
   branch = "master"
-  digest = "1:646036a04e163f383d101f40e36fd3354676c7dcccc226d825200a6b9509727a"
+  digest = "1:f99b0e9035cf86cdc14cb2848308e831193d5e19ab9a23a8493cd925bdc3952b"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "a5b02f93d862f065920dd6a40dddc66b60d0dec4"
+  revision = "fc99dfbffb4e5ed5758a37e31dd861afe285406b"
 
 [[projects]]
   digest = "1:1093f2eb4b344996604f7d8b29a16c5b22ab9e1b25652140d3fede39f640d5cd"
@@ -415,15 +435,18 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/amherag/skycoin/src/api",
     "github.com/amherag/skycoin/src/cipher",
     "github.com/amherag/skycoin/src/cipher/encoder",
     "github.com/amherag/skycoin/src/cli",
     "github.com/amherag/skycoin/src/coin",
+    "github.com/amherag/skycoin/src/fiber",
     "github.com/amherag/skycoin/src/readable",
     "github.com/amherag/skycoin/src/skycoin",
     "github.com/amherag/skycoin/src/util/logging",
     "github.com/amherag/skycoin/src/util/useragent",
     "github.com/amherag/skycoin/src/visor",
+    "github.com/amherag/skycoin/src/wallet",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
     "github.com/theherk/viper",

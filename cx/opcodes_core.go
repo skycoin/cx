@@ -3,7 +3,7 @@ package cxcore
 // CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx",
+	"gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json",
 }
 
 // op codes
@@ -270,12 +270,37 @@ const (
 
 // For the parser. These shouldn't be used in the runtime for performance reasons
 var (
-	OpNames        = map[int]string{}
-	OpCodes        = map[string]int{}
-	Natives        = map[int]*CXFunction{}
-	execNativeCore func(*CXProgram)
-	execNative     func(*CXProgram)
+	OpNames              = map[int]string{}
+	OpCodes              = map[string]int{}
+	Natives              = map[int]*CXFunction{}
+	opcodeHandlerFinders []opcodeHandlerFinder
 )
+
+type opcodeHandler func(prgrm *CXProgram)
+type opcodeHandlerFinder func(opCode int) opcodeHandler
+
+func execNative(prgrm *CXProgram) {
+	defer RuntimeError()
+	opCode := prgrm.GetOpCode()
+
+	var handler opcodeHandler
+	for _, f := range opcodeHandlerFinders {
+		if x := f(opCode); x != nil {
+			if handler != nil {
+				// This means 2 or more opcodeHandlerFinder functions handle
+				// the same opcode. They must handle unique opcodes only.
+				panic("multiple opcode handler finders returned an opcode handler")
+			}
+			handler = x
+		}
+	}
+
+	if handler == nil {
+		panic("invalid bare opcode")
+	}
+
+	handler(prgrm)
+}
 
 // AddOpCode ...
 func AddOpCode(code int, name string, inputs []*CXArgument, outputs []*CXArgument) {
@@ -286,7 +311,7 @@ func AddOpCode(code int, name string, inputs []*CXArgument, outputs []*CXArgumen
 
 /*
 // debug helper
-func DumpOpCodes(opCode int) () {
+func DumpOpCodes(opCode int) {
 	var keys []int
 	for k := range OpNames {
 		keys = append(keys, k)
@@ -933,398 +958,394 @@ func init() {
 		[]*CXArgument{})
 
 	// exec
-	execNativeCore = func(prgrm *CXProgram) {
-		defer RuntimeError()
-		call := &prgrm.CallStack[prgrm.CallCounter]
-		expr := call.Operator.Expressions[call.Line]
-		opCode := expr.Operator.OpCode
-		fp := call.FramePointer
-
+	handleOpcode := func(opCode int) opcodeHandler {
 		switch opCode {
 		case OP_IDENTITY:
-			opIdentity(expr, fp)
+			return opIdentity
 		case OP_JMP:
-			opJmp(expr, fp, call)
+			return opJmp
 		case OP_DEBUG:
-			prgrm.PrintStack()
+			return func(prgrm *CXProgram) {
+				prgrm.PrintStack()
+			}
 
 		case OP_SERIALIZE:
-			opSerialize(expr, fp)
+			return opSerialize
 		case OP_DESERIALIZE:
-			opDeserialize(expr, fp)
+			return opDeserialize
 
 		case OP_UND_EQUAL:
-			opEqual(expr, fp)
+			return opEqual
 		case OP_UND_UNEQUAL:
-			opUnequal(expr, fp)
+			return opUnequal
 		case OP_UND_BITAND:
-			opBitand(expr, fp)
+			return opBitand
 		case OP_UND_BITXOR:
-			opBitxor(expr, fp)
+			return opBitxor
 		case OP_UND_BITOR:
-			opBitor(expr, fp)
+			return opBitor
 		case OP_UND_BITCLEAR:
-			opBitclear(expr, fp)
+			return opBitclear
 		case OP_UND_MUL:
-			opMul(expr, fp)
+			return opMul
 		case OP_UND_DIV:
-			opDiv(expr, fp)
+			return opDiv
 		case OP_UND_MOD:
-			opMod(expr, fp)
+			return opMod
 		case OP_UND_ADD:
-			opAdd(expr, fp)
+			return opAdd
 		case OP_UND_SUB, OP_UND_NEG:
-			opSub(expr, fp)
+			return opSub
 		case OP_UND_BITSHL:
-			opBitshl(expr, fp)
+			return opBitshl
 		case OP_UND_BITSHR:
-			opBitshr(expr, fp)
+			return opBitshr
 		case OP_UND_LT:
-			opLt(expr, fp)
+			return opLt
 		case OP_UND_GT:
-			opGt(expr, fp)
+			return opGt
 		case OP_UND_LTEQ:
-			opLteq(expr, fp)
+			return opLteq
 		case OP_UND_GTEQ:
-			opGteq(expr, fp)
+			return opGteq
 		case OP_UND_LEN:
-			opLen(expr, fp)
+			return opLen
 		case OP_UND_PRINTF:
-			opPrintf(expr, fp)
+			return opPrintf
 		case OP_UND_SPRINTF:
-			opSprintf(expr, fp)
+			return opSprintf
 		case OP_UND_READ:
-			opRead(expr, fp)
+			return opRead
 
 		case OP_BYTE_BYTE:
-			opByteByte(expr, fp)
+			return opByteByte
 		case OP_BYTE_STR:
-			opByteByte(expr, fp)
+			return opByteByte
 		case OP_BYTE_I32:
-			opByteByte(expr, fp)
+			return opByteByte
 		case OP_BYTE_I64:
-			opByteByte(expr, fp)
+			return opByteByte
 		case OP_BYTE_F32:
-			opByteByte(expr, fp)
+			return opByteByte
 		case OP_BYTE_F64:
-			opByteByte(expr, fp)
+			return opByteByte
 
 		case OP_BYTE_PRINT:
-			opBytePrint(expr, fp)
+			return opBytePrint
 
 		case OP_BOOL_PRINT:
-			opBoolPrint(expr, fp)
+			return opBoolPrint
 		case OP_BOOL_EQUAL:
-			opBoolEqual(expr, fp)
+			return opBoolEqual
 		case OP_BOOL_UNEQUAL:
-			opBoolUnequal(expr, fp)
+			return opBoolUnequal
 		case OP_BOOL_NOT:
-			opBoolNot(expr, fp)
+			return opBoolNot
 		case OP_BOOL_OR:
-			opBoolOr(expr, fp)
+			return opBoolOr
 		case OP_BOOL_AND:
-			opBoolAnd(expr, fp)
+			return opBoolAnd
 
 		case OP_I32_BYTE:
-			opI32I32(expr, fp)
+			return opI32I32
 		case OP_I32_STR:
-			opI32I32(expr, fp)
+			return opI32I32
 		case OP_I32_I32:
-			opI32I32(expr, fp)
+			return opI32I32
 		case OP_I32_I64:
-			opI32I32(expr, fp)
+			return opI32I32
 		case OP_I32_F32:
-			opI32I32(expr, fp)
+			return opI32I32
 		case OP_I32_F64:
-			opI32I32(expr, fp)
+			return opI32I32
 
 		case OP_I32_PRINT:
-			opI32Print(expr, fp)
+			return opI32Print
 		case OP_I32_ADD:
-			opI32Add(expr, fp)
+			return opI32Add
 		case OP_I32_SUB, OP_I32_NEG:
-			opI32Sub(expr, fp)
+			return opI32Sub
 		case OP_I32_MUL:
-			opI32Mul(expr, fp)
+			return opI32Mul
 		case OP_I32_DIV:
-			opI32Div(expr, fp)
+			return opI32Div
 		case OP_I32_ABS:
-			opI32Abs(expr, fp)
+			return opI32Abs
 		case OP_I32_POW:
-			opI32Pow(expr, fp)
+			return opI32Pow
 		case OP_I32_GT:
-			opI32Gt(expr, fp)
+			return opI32Gt
 		case OP_I32_GTEQ:
-			opI32Gteq(expr, fp)
+			return opI32Gteq
 		case OP_I32_LT:
-			opI32Lt(expr, fp)
+			return opI32Lt
 		case OP_I32_LTEQ:
-			opI32Lteq(expr, fp)
+			return opI32Lteq
 		case OP_I32_EQ:
-			opI32Eq(expr, fp)
+			return opI32Eq
 		case OP_I32_UNEQ:
-			opI32Uneq(expr, fp)
+			return opI32Uneq
 		case OP_I32_MOD:
-			opI32Mod(expr, fp)
+			return opI32Mod
 		case OP_I32_RAND:
-			opI32Rand(expr, fp)
+			return opI32Rand
 		case OP_I32_BITAND:
-			opI32Bitand(expr, fp)
+			return opI32Bitand
 		case OP_I32_BITOR:
-			opI32Bitor(expr, fp)
+			return opI32Bitor
 		case OP_I32_BITXOR:
-			opI32Bitxor(expr, fp)
+			return opI32Bitxor
 		case OP_I32_BITCLEAR:
-			opI32Bitclear(expr, fp)
+			return opI32Bitclear
 		case OP_I32_BITSHL:
-			opI32Bitshl(expr, fp)
+			return opI32Bitshl
 		case OP_I32_BITSHR:
-			opI32Bitshr(expr, fp)
+			return opI32Bitshr
 		case OP_I32_SQRT:
-			opI32Sqrt(expr, fp)
+			return opI32Sqrt
 		case OP_I32_LOG:
-			opI32Log(expr, fp)
+			return opI32Log
 		case OP_I32_LOG2:
-			opI32Log2(expr, fp)
+			return opI32Log2
 		case OP_I32_LOG10:
-			opI32Log10(expr, fp)
+			return opI32Log10
 
 		case OP_I32_MAX:
-			opI32Max(expr, fp)
+			return opI32Max
 		case OP_I32_MIN:
-			opI32Min(expr, fp)
+			return opI32Min
 
 		case OP_I64_BYTE:
-			opI64I64(expr, fp)
+			return opI64I64
 		case OP_I64_STR:
-			opI64I64(expr, fp)
+			return opI64I64
 		case OP_I64_I32:
-			opI64I64(expr, fp)
+			return opI64I64
 		case OP_I64_I64:
-			opI64I64(expr, fp)
+			return opI64I64
 		case OP_I64_F32:
-			opI64I64(expr, fp)
+			return opI64I64
 		case OP_I64_F64:
-			opI64I64(expr, fp)
+			return opI64I64
 
 		case OP_I64_PRINT:
-			opI64Print(expr, fp)
+			return opI64Print
 		case OP_I64_ADD:
-			opI64Add(expr, fp)
+			return opI64Add
 		case OP_I64_SUB, OP_I64_NEG:
-			opI64Sub(expr, fp)
+			return opI64Sub
 		case OP_I64_MUL:
-			opI64Mul(expr, fp)
+			return opI64Mul
 		case OP_I64_DIV:
-			opI64Div(expr, fp)
+			return opI64Div
 		case OP_I64_ABS:
-			opI64Abs(expr, fp)
+			return opI64Abs
 		case OP_I64_POW:
-			opI64Pow(expr, fp)
+			return opI64Pow
 		case OP_I64_GT:
-			opI64Gt(expr, fp)
+			return opI64Gt
 		case OP_I64_GTEQ:
-			opI64Gteq(expr, fp)
+			return opI64Gteq
 		case OP_I64_LT:
-			opI64Lt(expr, fp)
+			return opI64Lt
 		case OP_I64_LTEQ:
-			opI64Lteq(expr, fp)
+			return opI64Lteq
 		case OP_I64_EQ:
-			opI64Eq(expr, fp)
+			return opI64Eq
 		case OP_I64_UNEQ:
-			opI64Uneq(expr, fp)
+			return opI64Uneq
 		case OP_I64_MOD:
-			opI64Mod(expr, fp)
+			return opI64Mod
 		case OP_I64_RAND:
-			opI64Rand(expr, fp)
+			return opI64Rand
 		case OP_I64_BITAND:
-			opI64Bitand(expr, fp)
+			return opI64Bitand
 		case OP_I64_BITOR:
-			opI64Bitor(expr, fp)
+			return opI64Bitor
 		case OP_I64_BITXOR:
-			opI64Bitxor(expr, fp)
+			return opI64Bitxor
 		case OP_I64_BITCLEAR:
-			opI64Bitclear(expr, fp)
+			return opI64Bitclear
 		case OP_I64_BITSHL:
-			opI64Bitshl(expr, fp)
+			return opI64Bitshl
 		case OP_I64_BITSHR:
-			opI64Bitshr(expr, fp)
+			return opI64Bitshr
 		case OP_I64_SQRT:
-			opI64Sqrt(expr, fp)
+			return opI64Sqrt
 		case OP_I64_LOG:
-			opI64Log(expr, fp)
+			return opI64Log
 		case OP_I64_LOG2:
-			opI64Log2(expr, fp)
+			return opI64Log2
 		case OP_I64_LOG10:
-			opI64Log10(expr, fp)
+			return opI64Log10
 		case OP_I64_MAX:
-			opI64Max(expr, fp)
+			return opI64Max
 		case OP_I64_MIN:
-			opI64Min(expr, fp)
+			return opI64Min
 
 		case OP_F32_IS_NAN:
-			opF32Isnan(expr, fp)
+			return opF32Isnan
 		case OP_F32_BYTE:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_STR:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_I32:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_I64:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_F32:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_F64:
-			opF32F32(expr, fp)
+			return opF32F32
 		case OP_F32_PRINT:
-			opF32Print(expr, fp)
+			return opF32Print
 		case OP_F32_ADD:
-			opF32Add(expr, fp)
+			return opF32Add
 		case OP_F32_SUB, OP_F32_NEG:
-			opF32Sub(expr, fp)
+			return opF32Sub
 		case OP_F32_MUL:
-			opF32Mul(expr, fp)
+			return opF32Mul
 		case OP_F32_DIV:
-			opF32Div(expr, fp)
+			return opF32Div
 		case OP_F32_ABS:
-			opF32Abs(expr, fp)
+			return opF32Abs
 		case OP_F32_POW:
-			opF32Pow(expr, fp)
+			return opF32Pow
 		case OP_F32_GT:
-			opF32Gt(expr, fp)
+			return opF32Gt
 		case OP_F32_GTEQ:
-			opF32Gteq(expr, fp)
+			return opF32Gteq
 		case OP_F32_LT:
-			opF32Lt(expr, fp)
+			return opF32Lt
 		case OP_F32_LTEQ:
-			opF32Lteq(expr, fp)
+			return opF32Lteq
 		case OP_F32_EQ:
-			opF32Eq(expr, fp)
+			return opF32Eq
 		case OP_F32_UNEQ:
-			opF32Uneq(expr, fp)
+			return opF32Uneq
 		case OP_F32_RAND:
-			opF32Rand(expr, fp)
+			return opF32Rand
 		case OP_F32_ACOS:
-			opF32Acos(expr, fp)
+			return opF32Acos
 		case OP_F32_COS:
-			opF32Cos(expr, fp)
+			return opF32Cos
 		case OP_F32_ASIN:
-			opF32Asin(expr, fp)
+			return opF32Asin
 		case OP_F32_SIN:
-			opF32Sin(expr, fp)
+			return opF32Sin
 		case OP_F32_SQRT:
-			opF32Sqrt(expr, fp)
+			return opF32Sqrt
 		case OP_F32_LOG:
-			opF32Log(expr, fp)
+			return opF32Log
 		case OP_F32_LOG2:
-			opF32Log2(expr, fp)
+			return opF32Log2
 		case OP_F32_LOG10:
-			opF32Log10(expr, fp)
+			return opF32Log10
 		case OP_F32_MAX:
-			opF32Max(expr, fp)
+			return opF32Max
 		case OP_F32_MIN:
-			opF32Min(expr, fp)
+			return opF32Min
 
 		case OP_F64_IS_NAN:
-			opF64Isnan(expr, fp)
+			return opF64Isnan
 		case OP_F64_BYTE:
-			opF64F64(expr, fp)
+			return opF64F64
 		case OP_F64_STR:
-			opF64F64(expr, fp)
+			return opF64F64
 		case OP_F64_I32:
-			opF64F64(expr, fp)
+			return opF64F64
 		case OP_F64_I64:
-			opF64F64(expr, fp)
+			return opF64F64
 		case OP_F64_F32:
-			opF64F64(expr, fp)
+			return opF64F64
 		case OP_F64_F64:
-			opF64F64(expr, fp)
+			return opF64F64
 
 		case OP_F64_PRINT:
-			opF64Print(expr, fp)
+			return opF64Print
 		case OP_F64_ADD:
-			opF64Add(expr, fp)
+			return opF64Add
 		case OP_F64_SUB, OP_F64_NEG:
-			opF64Sub(expr, fp)
+			return opF64Sub
 		case OP_F64_MUL:
-			opF64Mul(expr, fp)
+			return opF64Mul
 		case OP_F64_DIV:
-			opF64Div(expr, fp)
+			return opF64Div
 		case OP_F64_ABS:
-			opF64Abs(expr, fp)
+			return opF64Abs
 		case OP_F64_POW:
-			opF64Pow(expr, fp)
+			return opF64Pow
 		case OP_F64_GT:
-			opF64Gt(expr, fp)
+			return opF64Gt
 		case OP_F64_GTEQ:
-			opF64Gteq(expr, fp)
+			return opF64Gteq
 		case OP_F64_LT:
-			opF64Lt(expr, fp)
+			return opF64Lt
 		case OP_F64_LTEQ:
-			opF64Lteq(expr, fp)
+			return opF64Lteq
 		case OP_F64_EQ:
-			opF64Eq(expr, fp)
+			return opF64Eq
 		case OP_F64_UNEQ:
-			opF64Uneq(expr, fp)
+			return opF64Uneq
 		case OP_F64_RAND:
-			opF64Rand(expr, fp)
+			return opF64Rand
 		case OP_F64_ACOS:
-			opF64Acos(expr, fp)
+			return opF64Acos
 		case OP_F64_COS:
-			opF64Cos(expr, fp)
+			return opF64Cos
 		case OP_F64_ASIN:
-			opF64Asin(expr, fp)
+			return opF64Asin
 		case OP_F64_SIN:
-			opF64Sin(expr, fp)
+			return opF64Sin
 		case OP_F64_SQRT:
-			opF64Sqrt(expr, fp)
+			return opF64Sqrt
 		case OP_F64_LOG:
-			opF64Log(expr, fp)
+			return opF64Log
 		case OP_F64_LOG2:
-			opF64Log2(expr, fp)
+			return opF64Log2
 		case OP_F64_LOG10:
-			opF64Log10(expr, fp)
+			return opF64Log10
 		case OP_F64_MAX:
-			opF64Max(expr, fp)
+			return opF64Max
 		case OP_F64_MIN:
-			opF64Min(expr, fp)
+			return opF64Min
 
 		case OP_STR_PRINT:
-			opStrPrint(expr, fp)
+			return opStrPrint
 		case OP_STR_EQ:
-			opStrEq(expr, fp)
+			return opStrEq
 		case OP_STR_CONCAT:
-			opStrConcat(expr, fp)
+			return opStrConcat
 		case OP_STR_SUBSTR:
-			opStrSubstr(expr, fp)
+			return opStrSubstr
 		case OP_STR_INDEX:
-			opStrIndex(expr, fp)
+			return opStrIndex
 		case OP_STR_TRIM_SPACE:
-			opStrTrimSpace(expr, fp)
+			return opStrTrimSpace
 
 		case OP_STR_BYTE:
-			opStrStr(expr, fp)
+			return opStrStr
 		case OP_STR_STR:
-			opStrStr(expr, fp)
+			return opStrStr
 		case OP_STR_I32:
-			opStrStr(expr, fp)
+			return opStrStr
 		case OP_STR_I64:
-			opStrStr(expr, fp)
+			return opStrStr
 		case OP_STR_F32:
-			opStrStr(expr, fp)
+			return opStrStr
 		case OP_STR_F64:
-			opStrStr(expr, fp)
+			return opStrStr
 
 		case OP_APPEND:
-			opAppend(expr, fp)
+			return opAppend
 		case OP_RESIZE:
-			opResize(expr, fp)
+			return opResize
 		case OP_INSERT:
-			opInsert(expr, fp)
+			return opInsert
 		case OP_REMOVE:
-			opRemove(expr, fp)
+			return opRemove
 		case OP_COPY:
-			opCopy(expr, fp)
+			return opCopy
 
 		case OP_MAKE:
 		case OP_READ:
@@ -1348,36 +1369,35 @@ func init() {
 		case OP_NAME:
 		case OP_EVOLVE:
 		case OP_ASSERT:
-			opAssertValue(expr, fp)
+			return opAssertValue
 		case OP_TEST:
-			opTest(expr, fp)
+			return opTest
 		case OP_PANIC:
-			opPanic(expr, fp)
+			return opPanic
 		case OP_PANIC_IF:
-			opPanicIf(expr, fp)
+			return opPanicIf
 		case OP_PANIC_IF_NOT:
-			opPanicIfNot(expr, fp)
+			return opPanicIfNot
 		case OP_STRERROR:
-			opStrError(expr, fp)
+			return opStrError
 
 		// affordances
 		case OP_AFF_PRINT:
-			opAffPrint(expr, fp)
+			return opAffPrint
 		case OP_AFF_QUERY:
-			opAffQuery(expr, fp)
+			return opAffQuery
 		case OP_AFF_ON:
-			opAffOn(expr, fp)
+			return opAffOn
 		case OP_AFF_OF:
-			opAffOf(expr, fp)
+			return opAffOf
 		case OP_AFF_INFORM:
-			opAffInform(expr, fp)
+			return opAffInform
 		case OP_AFF_REQUEST:
-			opAffRequest(expr, fp)
-		default:
-			// DumpOpCodes(opCode) // debug helper
-			panic("invalid bare opcode")
+			return opAffRequest
 		}
+
+		return nil
 	}
 
-	execNative = execNativeCore
+	opcodeHandlerFinders = append(opcodeHandlerFinders, handleOpcode)
 }
