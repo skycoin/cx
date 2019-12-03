@@ -15,7 +15,7 @@ itself that is affected by CX chain, but a new blockchain using the same
 technology.
 
 The description on how to do the integration of CX and the blockchain can be
-read here: https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
+read here: https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial.
 
 This release also contains a modified version of the Skycoin blockchain
 repository with adaptions to run CX programs as transactions. These changes
@@ -52,7 +52,7 @@ There are no language-specific improvements in CX 0.7beta.
 ### Documentation
 
 * The documentation for the CX chains can be found on the CX wiki here:
-  https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
+  https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial.
 
 ## About CX
 

@@ -121,19 +121,14 @@
 /clauses/                 { return f(CLAUSES)    }
 /def/                     { return f(DEF)        }
 /field/                   { return f(FIELD)      }
-/input/                   { return f(INPUT)      }
-/output/                  { return f(OUTPUT)     }
 /import/                  { return f(IMPORT)     }
 /var/                     { return f(VAR)        }
-/"([^"]*)"/ { /* " */
+/"([^"\\]|\\.)*"/ { /* " */
 	str, err := strconv.Unquote(yylex.Text())
 	if err != nil {
 	        println(cxcore.CompilationError(CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
 	}
-	tokVal := str
-	tokVal = strings.TrimPrefix(tokVal, "\"")
-	tokVal = strings.TrimSuffix(tokVal, "\"")
-	lval.tok = tokVal
+	lval.tok = str
 	lval.line = lval.line + countNewLines([]byte(lval.tok))
 	return f(STRING_LITERAL)
 }
@@ -192,7 +187,7 @@ import (
 	"fmt"
 	"strconv"
 	
-	"github.com/skycoin/cx/cx"
+	"github.com/SkycoinProject/cx/cx"
 )
 
 var CurrentFileName string

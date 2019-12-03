@@ -13,7 +13,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/skycoin/cx/cx"
+	"github.com/SkycoinProject/cx/cx"
 
 	"github.com/amherag/skycoin/src/cipher"
 	"github.com/amherag/skycoin/src/coin"
@@ -307,9 +307,34 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 		}
 
 		ux := auxs[spends[0].Address][0]
+		// Merging the transaction and blockchain codes to run them and generate a new program state.
 		prgrm := cxcore.Deserialize(cxcore.MergeTransactionAndBlockchain(ux.Body.ProgramState, p.MainExpressions))
+
+		// Telling the CX runtime to use the newly created program.
+		prgrm.SelectProgram()
+		
+		// All the heap objects need to be displaced `txnDataSize` bytes.
+		// We're adding the data segment of the transaction code, so all the
+		// heap objects in the program state need to be updated to their new addresses (old address + `txnDataSize`).
+		txnDataSize := len(prgrm.Memory[prgrm.StackSize:prgrm.HeapStartsAt]) - cxcore.GetSerializedDataSize(ux.Body.ProgramState)
+		
+		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
+		// Increasing all the references by `txnDataSize`.
+		cxcore.DisplaceReferences(prgrm, txnDataSize, 1)
+		// Running the merged program.
 		prgrm.RunCompiled(0, nil)
+		// Removing garbage from the heap. Only the global variables should be left
+		// as these are independent from function calls.
+		cxcore.MarkAndCompact(prgrm)
+		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
+		// As the data segment from the transaction code is now trash
+		// we need to displace back the references to their old addresses.
+		cxcore.DisplaceReferences(prgrm, -txnDataSize, 1)
+
+		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
+		// Serializing the terminated program.
 		s := cxcore.Serialize(prgrm, 1)
+		// Extracting only the blockchain code. This is our new program state.
 		updatedPS := cxcore.ExtractBlockchainProgram(ux.Body.ProgramState, s)
 
 		for i := range txn.Out {

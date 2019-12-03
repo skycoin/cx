@@ -16,7 +16,7 @@ process.  Without it, there can be no quality output.
 ### Register Issues
 
 If you find a bug in CX, the least you should do is to go to
-[https://github.com/skycoin/cx/issues] and register the bug.  But please try
+[https://github.com/SkycoinProject/cx/issues] and register the bug.  But please try
 to make sure that you have found a bug that is not already registered by
 browsing the headings of the already existing bugs.
 
@@ -162,7 +162,7 @@ the "Tour of Go" ([https://tour.golang.org/welcome/1]).
 
 All public Skycoin code is on GitHub, so that's where you will find CX.  If
 you are reading this guide, you probably already know this, but here is the
-link anyway: [https://github.com/skycoin/cx]
+link anyway: [https://github.com/SkycoinProject/cx]
 
 Skycoin uses the standard GitHub workflow where you fork the main repository,
 work in your own copy and then create pull requests to get your code into the
@@ -202,7 +202,7 @@ to run the test suite is running the following command in the top directory of
 the repository:
 
 ```
-cx tests/main.cx ++wdir=tests
+cx lib/args.cx tests/main.cx ++wdir=tests
 ```
 
 When you do that, you will get a list of tests that fail, looking something
@@ -218,7 +218,7 @@ are to many or taking to long to run, you can disable some of the tests with
 the `++disable-tests` option like this:
 
 ```
-cx tests/main.cx ++wdir=tests ++disable-tests=issue
+cx lib/args.cx tests/main.cx ++wdir=tests ++disable-tests=issue
 ```
 
 The available types of tests are `stable`, `issue` and `gui`.
@@ -227,7 +227,7 @@ If you are using the tests while debugging, you can add more information by
 adding the `++log` option.
 
 ```
-cx tests/main.cx ++wdir=tests ++log=fail,skip
+cx lib/args.cx tests/main.cx ++wdir=tests ++log=fail,skip
 ```
 
 The available types of extra logging are `success`, `stderr`, `fail` and

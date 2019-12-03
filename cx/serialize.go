@@ -270,62 +270,58 @@ func serializeIntegers(ints []int, s *sAll) (int32, int32) {
 func serializeArgument(arg *CXArgument, s *sAll) int {
 	s.Arguments = append(s.Arguments, sArgument{})
 	argOff := len(s.Arguments) - 1
-	sArg := &s.Arguments[argOff]
 
 	sNil := int32(-1)
 
-	sArg.NameOffset, sArg.NameSize = serializeName(arg.Name, s)
+	s.Arguments[argOff].NameOffset, s.Arguments[argOff].NameSize = serializeName(arg.Name, s)
 
-	sArg.Type = int32(arg.Type)
+	s.Arguments[argOff].Type = int32(arg.Type)
 
 	if arg.CustomType == nil {
-		sArg.CustomTypeOffset = sNil
+		s.Arguments[argOff].CustomTypeOffset = sNil
 	} else {
 		strctName := arg.CustomType.Package.Name + "." + arg.CustomType.Name
 		if strctOff, found := s.StructsMap[strctName]; found {
-			sArg.CustomTypeOffset = int32(strctOff)
+			s.Arguments[argOff].CustomTypeOffset = int32(strctOff)
 		} else {
 			panic("struct reference not found")
 		}
 	}
 
-	sArg.Size = int32(arg.Size)
-	sArg.TotalSize = int32(arg.TotalSize)
-	sArg.Offset = int32(arg.Offset)
-	sArg.IndirectionLevels = int32(arg.IndirectionLevels)
-	sArg.DereferenceLevels = int32(arg.DereferenceLevels)
-	sArg.DereferenceLevels = int32(arg.DereferenceLevels)
+	s.Arguments[argOff].Size = int32(arg.Size)
+	s.Arguments[argOff].TotalSize = int32(arg.TotalSize)
+	s.Arguments[argOff].Offset = int32(arg.Offset)
+	s.Arguments[argOff].IndirectionLevels = int32(arg.IndirectionLevels)
+	s.Arguments[argOff].DereferenceLevels = int32(arg.DereferenceLevels)
 
-	sArg.DereferenceOperationsOffset,
-		sArg.DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
+	s.Arguments[argOff].DereferenceOperationsOffset,
+		s.Arguments[argOff].DereferenceOperationsSize = serializeIntegers(arg.DereferenceOperations, s)
 
-	sArg.DeclarationSpecifiersOffset,
-		sArg.DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
+	s.Arguments[argOff].DeclarationSpecifiersOffset,
+		s.Arguments[argOff].DeclarationSpecifiersSize = serializeIntegers(arg.DeclarationSpecifiers, s)
 
-	sArg.IsSlice = serializeBoolean(arg.IsSlice)
-	sArg.IsArray = serializeBoolean(arg.IsArray)
-	sArg.IsArrayFirst = serializeBoolean(arg.IsArrayFirst)
-	sArg.IsPointer = serializeBoolean(arg.IsPointer)
-	sArg.IsReference = serializeBoolean(arg.IsReference)
+	s.Arguments[argOff].IsSlice = serializeBoolean(arg.IsSlice)
+	s.Arguments[argOff].IsArray = serializeBoolean(arg.IsArray)
+	s.Arguments[argOff].IsArrayFirst = serializeBoolean(arg.IsArrayFirst)
+	s.Arguments[argOff].IsPointer = serializeBoolean(arg.IsPointer)
+	s.Arguments[argOff].IsReference = serializeBoolean(arg.IsReference)
 
-	sArg.IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
-	sArg.IsStruct = serializeBoolean(arg.IsStruct)
-	sArg.IsRest = serializeBoolean(arg.IsRest)
-	sArg.IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
-	sArg.IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
-	sArg.PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
+	s.Arguments[argOff].IsDereferenceFirst = serializeBoolean(arg.IsDereferenceFirst)
+	s.Arguments[argOff].IsStruct = serializeBoolean(arg.IsStruct)
+	s.Arguments[argOff].IsRest = serializeBoolean(arg.IsRest)
+	s.Arguments[argOff].IsLocalDeclaration = serializeBoolean(arg.IsLocalDeclaration)
+	s.Arguments[argOff].IsShortDeclaration = serializeBoolean(arg.IsShortDeclaration)
+	s.Arguments[argOff].PreviouslyDeclared = serializeBoolean(arg.PreviouslyDeclared)
 
-	sArg.PassBy = int32(arg.PassBy)
-	sArg.DoesEscape = serializeBoolean(arg.DoesEscape)
+	s.Arguments[argOff].PassBy = int32(arg.PassBy)
+	s.Arguments[argOff].DoesEscape = serializeBoolean(arg.DoesEscape)
 
-	sArg.LengthsOffset,
-		sArg.LengthsSize = serializeIntegers(arg.Lengths, s)
-
-	sArg.IndexesOffset, sArg.IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
-	sArg.FieldsOffset, sArg.FieldsSize = serializeSliceOfArguments(arg.Fields, s)
+	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializeIntegers(arg.Lengths, s)
+	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
+	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(arg.Fields, s)
 
 	if pkgOff, found := s.PackagesMap[arg.Package.Name]; found {
-		sArg.PackageOffset = int32(pkgOff)
+		s.Arguments[argOff].PackageOffset = int32(pkgOff)
 	} else {
 		panic("package reference not found")
 	}
@@ -450,9 +446,6 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.CallCounter = int32(prgrm.CallCounter)
 
 	sPrgrm.MemoryOffset = int32(0)
-	// we need to call GC to compress memory usage
-	MarkAndCompact()
-	// sPrgrm.MemorySize = int32(PROGRAM.HeapStartsAt + PROGRAM.HeapPointer)
 	sPrgrm.MemorySize = int32(len(PROGRAM.Memory))
 
 	sPrgrm.HeapPointer = int32(prgrm.HeapPointer)
@@ -817,7 +810,10 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	return byts
 }
 
-func opSerialize(expr *CXExpression, fp int) {
+func opSerialize(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -832,7 +828,10 @@ func opSerialize(expr *CXExpression, fp int) {
 	WriteMemory(out1Offset, FromI32(int32(slcOff)))
 }
 
-func opDeserialize(expr *CXExpression, fp int) {
+func opDeserialize(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp := expr.Inputs[0]
 
 	inpOffset := GetFinalOffset(fp, inp)
@@ -1257,8 +1256,15 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	var extracted []byte
 	// must match the index from sPrgrm1
 	extracted = append(extracted, sPrgrm1[:index1.ProgramOffset]...)
-	// extracted = append(extracted, sPrgrm2[index2.ProgramOffset:index2.ProgramOffset + (index1.CallsOffset - index1.ProgramOffset)]...)
-	extracted = append(extracted, sPrgrm1[index1.ProgramOffset:index1.CallsOffset]...)
+
+	// Program
+	var sPrgrm sProgram
+	mustDeserializeRaw(sPrgrm1[index1.ProgramOffset:index1.CallsOffset], &sPrgrm)
+	// We need the heap pointer calculated after running the program, which is
+	// present in `sPrgrm2`.
+	sPrgrm.HeapPointer = prgrm2Info.HeapPointer
+	extracted = append(extracted, encoder.Serialize(sPrgrm)...)
+
 	extracted = append(extracted, sPrgrm2[index2.CallsOffset:index2.CallsOffset+(index1.PackagesOffset-index1.CallsOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.PackagesOffset:index2.PackagesOffset+(index1.StructsOffset-index1.PackagesOffset)]...)
 	extracted = append(extracted, sPrgrm2[index2.StructsOffset:index2.StructsOffset+(index1.FunctionsOffset-index1.StructsOffset)]...)
@@ -1270,11 +1276,14 @@ func ExtractBlockchainProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 
 	// We were also simulating an empty stack, but it doesn't make sense now.
 	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
-	// We are only interested on extracting the data segment for now.
 	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
+	prgrm2HeapStart := index2.MemoryOffset + prgrm2Info.HeapStartsAt
 
+	// Adding data segment.
 	extracted = append(extracted, sPrgrm2[prgrm2DataStart:prgrm2DataStart+prgrm1DataSize]...)
+	// Adding heap segment.
+	extracted = append(extracted, sPrgrm2[prgrm2HeapStart:prgrm2HeapStart+prgrm2Info.HeapPointer]...)
 
 	// correcting sizes
 	updateSerializedSize(&extracted, index1.CallsOffset, index1.PackagesOffset, int(encoder.Size(sCall{})))
@@ -1317,14 +1326,15 @@ func ExtractTransactionProgram(sPrgrm1, sPrgrm2 []byte) []byte {
 	extracted = append(extracted, sPrgrm2[index2.IntegersOffset+(index1.NamesOffset-index1.IntegersOffset):index2.NamesOffset]...)
 	extracted = append(extracted, sPrgrm2[index2.NamesOffset+(index1.MemoryOffset-index1.NamesOffset):index2.MemoryOffset]...)
 
-	// We were also simulating an empty stack, but it doesn't make sense now.
-	// We'll need to store the stack when we add the ability to pause CX chains and update the program state with the paused state.
-	// We are only interested on extracting the data segment for now.
-
+	// Calculating where the data segment starts and its sizes in `sPrgrm1` and `sPrgrm2`.
+	// In this case, the heap segment of the transaction code should not be appended.
+	// The transaction code heap should only be auxiliary in the process of updating
+	// the CX chain program state.
 	prgrm2DataStart := index2.MemoryOffset + prgrm2Info.StackSize
 	prgrm1DataSize := prgrm1Info.HeapStartsAt - prgrm1Info.StackSize
 	prgrm2DataSize := prgrm2Info.HeapStartsAt - prgrm2Info.StackSize
 
+	// Adding data segment.
 	extracted = append(extracted, sPrgrm2[prgrm2DataStart+prgrm1DataSize:prgrm2DataStart+prgrm1DataSize+(prgrm2DataSize-prgrm1DataSize)]...)
 
 	return extracted
@@ -1355,7 +1365,12 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	acc = index2.ProgramOffset
 
 	// Program
-	merged = append(merged, sPrgrm2[index2.ProgramOffset:index2.CallsOffset]...)
+	var sPrgrm sProgram
+	mustDeserializeRaw(sPrgrm2[index2.ProgramOffset:index2.CallsOffset], &sPrgrm)
+	// We need to use the heap pointer from the CX chain program state, which is
+	// represented by `sPrgrm1`.
+	sPrgrm.HeapPointer = prgrm1Info.HeapPointer
+	merged = append(merged, encoder.Serialize(sPrgrm)...)
 	acc += index2.CallsOffset - index2.ProgramOffset
 
 	// Calls
@@ -1428,7 +1443,9 @@ func MergeTransactionAndBlockchain(sPrgrm1, sPrgrm2 []byte) []byte {
 	merged = append(merged, bcDataSegment...)
 	merged = append(merged, txnDataSegment...)
 
-	merged = append(merged, make([]byte, int(prgrm1Info.HeapSize)-(len(bcDataSegment)+len(txnDataSegment)))...)
+	// Adding heap segment.
+	bcHeapSegment := sPrgrm1[index1.MemoryOffset+prgrm1DataSize : index1.MemoryOffset+prgrm1DataSize+prgrm1Info.HeapPointer]
+	merged = append(merged, bcHeapSegment...)
 
 	// correcting sizes
 	updateSerializedSize(&merged, index2.CallsOffset, index2.PackagesOffset, int(encoder.Size(sCall{})))
@@ -1501,4 +1518,16 @@ func GetSerializedStackSize(sPrgrm []byte) int {
 	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
 
 	return int(prgrmInfo.StackSize)
+}
+
+// GetSerializedDataSize returns the size of the data segment of a serialized CX program.
+func GetSerializedDataSize(sPrgrm []byte) int {
+	idxSize := encoder.Size(sIndex{})
+	var index sIndex
+	mustDeserializeRaw(sPrgrm[:idxSize], &index)
+
+	var prgrmInfo sProgram
+	mustDeserializeRaw(sPrgrm[index.ProgramOffset:index.CallsOffset], &prgrmInfo)
+
+	return int(prgrmInfo.HeapStartsAt - prgrmInfo.StackSize)
 }

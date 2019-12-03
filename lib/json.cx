@@ -1,0 +1,320 @@
+package json
+
+import "json"
+
+// Read next token in json file and checks if it's a delimiter matching the delim value, returns true on success
+func MatchDelim(file i32, delim i32) (success bool) {
+	var value i32
+	if ReadDelim(file, &value) {
+		success = value == delim
+	}
+}
+
+// Read and interpret next token in json file as delim value, returns true on success
+func ReadDelim(file i32, value *i32) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		*value, success = json.Delim(file)
+		if success {
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+
+// Read and interpret next token in json file as str value, returns true on success
+func ReadStr(file i32, value *str) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		*value, success = json.Str(file)
+		if success {
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next token in json file as i32 value, returns true on success
+func ReadBool(file i32, value *bool) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		*value, success = json.Bool(file)
+		if success {
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next token in json file as i64 value, returns true on success
+func ReadI64(file i32, value *i64) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		*value, success = json.Int64(file)
+		if success {
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next token in json file as f64 value, returns true on success
+func ReadF64(file i32, value *f64) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		*value, success = json.Float64(file)
+		if success {
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next token in json file as i32 value, returns true on success
+func ReadI32(file i32, value *i32) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		var valueI64 i64
+		valueI64, success = json.Int64(file)
+		if success {
+			*value = i64.i32(valueI64)
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next token in json file as f32 value, returns true on success
+func ReadF32(file i32, value *f32) (success bool) {
+	var tokenType i32
+	tokenType, success = json.Next(file)
+	if success {
+		var valueF64 f64
+		valueF64, success = json.Float64(file)
+		if success {
+			*value = f64.f32(valueF64)
+			return
+		}
+	}
+
+	//debugToken(file, tokenType)
+}
+
+// Read and interpret next array in json file as [3]f32, returns true on success
+// This function move the current token
+func ReadF32Vec3(file i32, array *[3]f32) (success bool) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var i i32
+	for i < 3 {
+		var more bool
+		more, success = json.More(file)
+		if more == false || success == false {
+			success = false
+			return
+		}
+		var value f32
+		if ReadF32(file, &value) == false {
+			success = false
+			return
+		}
+		(*array)[i] = value
+		i++
+	}
+
+	success = MatchDelim(file, json.DELIM_SQUARE_RIGHT)
+}
+
+// Read next array in json file as [4]f32, returns true on success
+// This function move the current token
+func ReadF32Vec4(file i32, array *[4]f32) (success bool) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var i i32
+	for i < 4 {
+		var more bool
+		more, success = json.More(file)
+		if more == false || success == false {
+			success = false
+			return
+		}
+		var value f32
+		if ReadF32(file, &value) == false {
+			success = false
+			return
+		}
+		(*array)[i] = value
+		i++
+	}
+
+	success = MatchDelim(file, json.DELIM_SQUARE_RIGHT)
+}
+
+// Read next array in json file as []i32, returns true on success
+// This function move the current token
+func ReadI32Slice(file i32, array *[]i32) (success bool) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var more bool = true
+	for more == true {
+		more, success = json.More(file)
+		if success == false {
+			return
+		}
+		if more {
+			var value i32
+			if ReadI32(file, &value) == false {
+				success = false
+				return
+			}
+			*array = append(*array, value)
+		}
+	}
+
+	success = MatchDelim(file, json.DELIM_SQUARE_RIGHT)
+}
+
+// Read next array in json file as []f32, returns true on success
+// This function move the current token
+func ReadF32Slice(file i32, array *[]f32) (success bool) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var more bool = true
+	for more == true {
+		more, success = json.More(file)
+		if success == false {
+			return
+		}
+		if more {
+			var value f32
+			if ReadF32(file, &value) == false {
+				success = false
+				return
+			}
+			*array = append(*array, value)
+		}
+	}
+
+	success = MatchDelim(file, json.DELIM_SQUARE_RIGHT)
+}
+
+// Read next array in json file as []str, returns true on success
+// This function move the current token
+func ReadStrSlice(file i32, array *[]str) (success bool) {
+	if MatchDelim(file, json.DELIM_SQUARE_LEFT) == false {
+		return
+	}
+
+	var more bool = true
+	for more == true {
+		more, success = json.More(file)
+		if success == false {
+			return
+		}
+		if more {
+			var value str
+			if ReadStr(file, &value) == false {
+				success = false
+				return
+			}
+			*array = append(*array, value)
+		}
+	}
+
+	success = MatchDelim(file, json.DELIM_SQUARE_RIGHT)
+}
+
+// debug helper
+func debugToken(file i32, t i32) {
+	printf("DEBUG_JSON_TYPE %d\n", t)
+	if t == json.TOKEN_DELIM {
+		printf("DEBUG_JSON_DELIM\n")
+		var value i32
+		var success bool
+		value, success = json.Delim(file)
+		if success {
+			if value == json.DELIM_CURLY_LEFT {
+				printf("{\n")
+			} else if value == json.DELIM_CURLY_RIGHT {
+				printf("}\n")
+			} else if value == json.DELIM_SQUARE_LEFT {
+				printf("[\n")
+			} else if value == json.DELIM_SQUARE_RIGHT {
+				printf("]\n")
+			} else {
+				printf("invalid delimiter\n")
+			}
+		} else {
+			panic(true, false, "failed to parse delimiter value")
+		}
+	} else if t == json.TOKEN_BOOL {
+		printf("DEBUG_JSON_BOOL\n")
+		var value bool
+		var success bool
+		value, success = json.Bool(file)
+		if success {
+			if value {
+				printf("true\n")
+			} else {
+				printf("false\n")
+			}
+		} else {
+			panic(true, false, "failed to parse bool value")
+		}
+	} else if t == json.TOKEN_F64 {
+		printf("DEBUG_JSON_F64\n")
+		var value f64
+		var success bool
+		value, success = json.Float64(file)
+		if success {
+			printf("%f\n", value)
+		} else {
+			panic(true, false, "failed to parse f64 value")
+		}
+	} else if t == json.TOKEN_NUMBER {
+		printf("DEBUG_JSON_NUMBER\n")
+		var value f64
+		var success bool
+		value, success = json.Float64(file)
+		if success {
+			printf("%f\n", value)
+		} else {
+			panic(true, false, "failed to parse number value")
+		}
+	} else if t == json.TOKEN_STR {
+		printf("DEBUG_JSON_STR\n")
+		var value str
+		var success bool
+		value, success = json.Str(file)
+		if success {
+			printf("%s\n", value)
+		} else {
+			panic(true, false, "failed to parse str value")
+		}
+	} else {
+		panic(true, false, sprintf("invalid token type : %d", t))
+	}
+}
+
+

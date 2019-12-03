@@ -162,5 +162,5 @@ func setDefaults() {
 	viper.SetDefault("params.unlock_time_interval", 60*60*24*365)
 	viper.SetDefault("params.user_max_decimals", 3)
 	viper.SetDefault("params.user_burn_factor", 10)
-	viper.SetDefault("params.user_max_transaction_size", 5 * 1024 * 1024)
+	viper.SetDefault("params.user_max_transaction_size", 128 * 1024 * 1024)
 }

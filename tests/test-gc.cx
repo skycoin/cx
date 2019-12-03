@@ -1,0 +1,604 @@
+package main
+
+type StrctSlcI32 struct {
+	nums []i32
+}
+
+type StrctSlcStr struct {
+	txt []str
+}
+
+var glblStrSlc []str
+var glblI32Slc []i32
+var glblStr str
+var glblStrctSlcI32 StrctSlcI32
+var glblStrctSlcStr StrctSlcStr
+var glblStrctSlcStrPtr *StrctSlcStr
+
+func fn1() {
+	// Calling this function ends allocating 4 objects.
+	// These objects will become garbage when the function finishes its execution.
+	var errMsg str
+	
+	var slc []i32
+	// Allocates slice with capacity = 1
+	slc = append(slc, 11)
+	// Allocates slice with capacity = 2
+	slc = append(slc, 21)
+	// Allocates slice with capacity = 4
+	slc = append(slc, 31)
+	slc = append(slc, 41)
+
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 11, errMsg)
+	test(slc[1], 21, errMsg)
+	test(slc[2], 31, errMsg)
+	test(slc[3], 41, errMsg)
+}
+
+func fn2() {
+	// Calling this function ends allocating 5 objects.
+	// These objects will become garbage when the function finishes its execution.
+	var errMsg str
+	
+	var slc []str
+	slc = append(slc, str.concat("2", "2"))
+	slc = append(slc, str.concat("3", "33"))
+	slc = append(slc, str.concat("44", "44"))
+	slc = append(slc, str.concat("5", "5555"))
+	slc = append(slc, "666666")
+
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], "22", errMsg)
+	test(slc[1], "333", errMsg)
+	test(slc[2], "4444", errMsg)
+	test(slc[3], "55555", errMsg)
+	test(slc[4], "666666", errMsg)
+}
+
+func fn3() {
+	var errMsg str
+
+	// Setting `glblStr` now and we'll check if it survives all the GC calls below.
+	glblStr = "Testing"
+	// Also setting a local string variable to check later.
+	var lclStr str
+	lclStr = "Local testing"
+
+	var slc []i32
+	slc = append(slc, 100)
+	slc = append(slc, 200)
+	slc = append(slc, 300)
+	slc = append(slc, 400)
+
+	// Checking if the slices created by `fn1` are collected.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	// Checking if `slc` was kept alive by the GC
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	// Testing if GC collects global variables.
+	glblStrSlc = append(glblStrSlc, "One")
+	glblStrSlc = append(glblStrSlc, "Two")
+	glblStrSlc = append(glblStrSlc, "Three")
+	glblStrSlc = append(glblStrSlc, "Four")
+
+	// Checking if calling `fn1` destroys `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+	
+	// Testing if GC collects global variables.
+	glblI32Slc = append(glblI32Slc, 133)
+	glblI32Slc = append(glblI32Slc, 233)
+	glblI32Slc = append(glblI32Slc, 333)
+	glblI32Slc = append(glblI32Slc, 433)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global slice of i32s not preserved after calling GC"
+	test(glblI32Slc[0], 133, errMsg)
+	test(glblI32Slc[1], 233, errMsg)
+	test(glblI32Slc[2], 333, errMsg)
+	test(glblI32Slc[3], 433, errMsg)
+	test(glblI32Slc[4], 133, errMsg)
+	test(glblI32Slc[5], 233, errMsg)
+	test(glblI32Slc[6], 333, errMsg)
+	test(glblI32Slc[7], 433, errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+	
+	// Checking if `slc` is still alive.
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+	
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+	test(glblStrSlc[4], "One", errMsg)
+	test(glblStrSlc[5], "Two", errMsg)
+	test(glblStrSlc[6], "Three", errMsg)
+	test(glblStrSlc[7], "Four", errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global string was collected by GC"
+	test(glblStr, "Testing", errMsg)
+
+	errMsg = "local string was collected by GC"
+	test(lclStr, "Local testing", errMsg)
+
+	errMsg = "local slice of size 1 was collected by GC"
+	var localSlc []i32
+	localSlc = append(localSlc, 13131)
+	
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 10000; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(localSlc[0], 13131, errMsg)
+	
+	errMsg = "slice of i32s in struct was collected"
+	var strctSlcI32 StrctSlcI32
+	strctSlcI32.nums = append(strctSlcI32.nums, 10)
+	strctSlcI32.nums = append(strctSlcI32.nums, 20)
+	strctSlcI32.nums = append(strctSlcI32.nums, 30)
+	strctSlcI32.nums = append(strctSlcI32.nums, 40)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(strctSlcI32.nums[0], 10, errMsg)
+	test(strctSlcI32.nums[1], 20, errMsg)
+	test(strctSlcI32.nums[2], 30, errMsg)
+	test(strctSlcI32.nums[3], 40, errMsg)
+
+	errMsg = "slice of strings in struct was collected"
+	var strctSlcStr StrctSlcStr
+	strctSlcStr.txt = append(strctSlcStr.txt, str.concat("2", "2"))
+	strctSlcStr.txt = append(strctSlcStr.txt, str.concat("3", "33"))
+	strctSlcStr.txt = append(strctSlcStr.txt, "4444")
+	strctSlcStr.txt = append(strctSlcStr.txt, "55555")
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(strctSlcStr.txt[0], "22", errMsg)
+	test(strctSlcStr.txt[1], "333", errMsg)
+	test(strctSlcStr.txt[2], "4444", errMsg)
+	test(strctSlcStr.txt[3], "55555", errMsg)
+
+	errMsg = "slice of i32s in global struct was collected"
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 101)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 102)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 103)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 104)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 105)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(glblStrctSlcI32.nums[0], 101, errMsg)
+	test(glblStrctSlcI32.nums[1], 102, errMsg)
+	test(glblStrctSlcI32.nums[2], 103, errMsg)
+	test(glblStrctSlcI32.nums[3], 104, errMsg)
+	test(glblStrctSlcI32.nums[4], 105, errMsg)
+	test(glblStrctSlcI32.nums[5], 101, errMsg)
+	test(glblStrctSlcI32.nums[6], 102, errMsg)
+	test(glblStrctSlcI32.nums[7], 103, errMsg)
+	test(glblStrctSlcI32.nums[8], 104, errMsg)
+	test(glblStrctSlcI32.nums[9], 105, errMsg)
+
+	errMsg = "slice of strings in global struct was collected"
+	
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, "OneOne")
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, "TwoTwo")
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Three", "Three"))
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Four", "Four"))
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Five", "Five"))
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(glblStrctSlcStr.txt[0], "OneOne", errMsg)
+	test(glblStrctSlcStr.txt[1], "TwoTwo", errMsg)
+	test(glblStrctSlcStr.txt[2], "ThreeThree", errMsg)
+	test(glblStrctSlcStr.txt[3], "FourFour", errMsg)
+	test(glblStrctSlcStr.txt[4], "FiveFive", errMsg)
+	test(glblStrctSlcStr.txt[5], "OneOne", errMsg) 
+	test(glblStrctSlcStr.txt[6], "TwoTwo", errMsg)
+	test(glblStrctSlcStr.txt[7], "ThreeThree", errMsg)
+	test(glblStrctSlcStr.txt[8], "FourFour", errMsg)
+	test(glblStrctSlcStr.txt[9], "FiveFive", errMsg)
+
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+
+	// Checking if `slc` was kept alive by the GC
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	errMsg = "global slice of i32s not preserved after calling GC"
+	test(glblI32Slc[0], 133, errMsg)
+	test(glblI32Slc[1], 233, errMsg)
+	test(glblI32Slc[2], 333, errMsg)
+	test(glblI32Slc[3], 433, errMsg)
+
+	errMsg = "global string was collected by GC"
+	test(glblStr, "Testing", errMsg)
+
+	errMsg = "local string was collected by GC"
+	test(lclStr, "Local testing", errMsg)
+
+	test(strctSlcI32.nums[0], 10, errMsg)
+	test(strctSlcI32.nums[1], 20, errMsg)
+	test(strctSlcI32.nums[2], 30, errMsg)
+	test(strctSlcI32.nums[3], 40, errMsg)
+
+	test(strctSlcStr.txt[0], "22", errMsg)
+	test(strctSlcStr.txt[1], "333", errMsg)
+	test(strctSlcStr.txt[2], "4444", errMsg)
+	test(strctSlcStr.txt[3], "55555", errMsg)
+
+	errMsg = "local pointer was collected by GC"
+	var num i32
+	var numPtr *i32
+	num = 5858
+	numPtr = &num
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(*numPtr, 5858, errMsg)
+
+	var strctSlcStrPtr *StrctSlcStr
+	strctSlcStrPtr = &strctSlcStr
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test((*strctSlcStrPtr).txt[0], "22", errMsg)
+	test((*strctSlcStrPtr).txt[1], "333", errMsg)
+	test((*strctSlcStrPtr).txt[2], "4444", errMsg)
+	test((*strctSlcStrPtr).txt[3], "55555", errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	// Checking if global pointer was not collected.
+	errMsg = "global pointer to struct was collected by GC"
+	test((*glblStrctSlcStrPtr).txt[0], "22", errMsg)
+	test((*glblStrctSlcStrPtr).txt[1], "333", errMsg)
+	test((*glblStrctSlcStrPtr).txt[2], "4444", errMsg)
+	test((*glblStrctSlcStrPtr).txt[3], "55555", errMsg)
+}
+
+func main() {
+	// This test should be run with --heap-max 10,000 bytes of heap memory
+	
+	var errMsg str
+
+	// Setting `glblStr` now and we'll check if it survives all the GC calls below.
+	glblStr = "Testing"
+	// Also setting a local string variable to check later.
+	var lclStr str
+	lclStr = "Local testing"
+
+	var slc []i32
+	slc = append(slc, 100)
+	slc = append(slc, 200)
+	slc = append(slc, 300)
+	slc = append(slc, 400)
+
+	// Checking if the slices created by `fn1` are collected.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	// Checking if `slc` was kept alive by the GC
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	// Testing if GC collects global variables.
+	glblStrSlc = append(glblStrSlc, "One")
+	glblStrSlc = append(glblStrSlc, "Two")
+	glblStrSlc = append(glblStrSlc, "Three")
+	glblStrSlc = append(glblStrSlc, "Four")
+
+	// Checking if calling `fn1` destroys `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+	
+	// Testing if GC collects global variables.
+	glblI32Slc = append(glblI32Slc, 133)
+	glblI32Slc = append(glblI32Slc, 233)
+	glblI32Slc = append(glblI32Slc, 333)
+	glblI32Slc = append(glblI32Slc, 433)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global slice of i32s not preserved after calling GC"
+	test(glblI32Slc[0], 133, errMsg)
+	test(glblI32Slc[1], 233, errMsg)
+	test(glblI32Slc[2], 333, errMsg)
+	test(glblI32Slc[3], 433, errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+	
+	// Checking if `slc` is still alive.
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+	
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	errMsg = "global string was collected by GC"
+	test(glblStr, "Testing", errMsg)
+
+	errMsg = "local string was collected by GC"
+	test(lclStr, "Local testing", errMsg)
+
+	errMsg = "local slice of size 1 was collected by GC"
+	var localSlc []i32
+	localSlc = append(localSlc, 13131)
+	
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 10000; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(localSlc[0], 13131, errMsg)
+	
+	errMsg = "slice of i32s in struct was collected"
+	var strctSlcI32 StrctSlcI32
+	strctSlcI32.nums = append(strctSlcI32.nums, 10)
+	strctSlcI32.nums = append(strctSlcI32.nums, 20)
+	strctSlcI32.nums = append(strctSlcI32.nums, 30)
+	strctSlcI32.nums = append(strctSlcI32.nums, 40)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(strctSlcI32.nums[0], 10, errMsg)
+	test(strctSlcI32.nums[1], 20, errMsg)
+	test(strctSlcI32.nums[2], 30, errMsg)
+	test(strctSlcI32.nums[3], 40, errMsg)
+
+	errMsg = "slice of strings in struct was collected"
+	var strctSlcStr StrctSlcStr
+	strctSlcStr.txt = append(strctSlcStr.txt, str.concat("2", "2"))
+	strctSlcStr.txt = append(strctSlcStr.txt, str.concat("3", "33"))
+	strctSlcStr.txt = append(strctSlcStr.txt, "4444")
+	strctSlcStr.txt = append(strctSlcStr.txt, "55555")
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(strctSlcStr.txt[0], "22", errMsg)
+	test(strctSlcStr.txt[1], "333", errMsg)
+	test(strctSlcStr.txt[2], "4444", errMsg)
+	test(strctSlcStr.txt[3], "55555", errMsg)
+
+
+
+
+	// bug here
+	
+	errMsg = "slice of i32s in global struct was collected"
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 101)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 102)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 103)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 104)
+	glblStrctSlcI32.nums = append(glblStrctSlcI32.nums, 105)
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(glblStrctSlcI32.nums[0], 101, errMsg)
+	test(glblStrctSlcI32.nums[1], 102, errMsg)
+	test(glblStrctSlcI32.nums[2], 103, errMsg)
+	test(glblStrctSlcI32.nums[3], 104, errMsg)
+	test(glblStrctSlcI32.nums[4], 105, errMsg)
+
+	// bug end here
+
+	errMsg = "slice of strings in global struct was collected"
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, "OneOne")
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, "TwoTwo")
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Three", "Three"))
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Four", "Four"))
+	glblStrctSlcStr.txt = append(glblStrctSlcStr.txt, str.concat("Five", "Five"))
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(glblStrctSlcStr.txt[0], "OneOne", errMsg)
+	test(glblStrctSlcStr.txt[1], "TwoTwo", errMsg)
+	test(glblStrctSlcStr.txt[2], "ThreeThree", errMsg)
+	test(glblStrctSlcStr.txt[3], "FourFour", errMsg)
+	test(glblStrctSlcStr.txt[4], "FiveFive", errMsg)
+
+	errMsg = "global slice of strings not preserved after calling GC"
+	test(glblStrSlc[0], "One", errMsg)
+	test(glblStrSlc[1], "Two", errMsg)
+	test(glblStrSlc[2], "Three", errMsg)
+	test(glblStrSlc[3], "Four", errMsg)
+
+	// Checking if `slc` was kept alive by the GC
+	errMsg = "slice not preserved after calling GC"
+	test(slc[0], 100, errMsg)
+	test(slc[1], 200, errMsg)
+	test(slc[2], 300, errMsg)
+	test(slc[3], 400, errMsg)
+
+	errMsg = "global slice of i32s not preserved after calling GC"
+	test(glblI32Slc[0], 133, errMsg)
+	test(glblI32Slc[1], 233, errMsg)
+	test(glblI32Slc[2], 333, errMsg)
+	test(glblI32Slc[3], 433, errMsg)
+
+	errMsg = "global string was collected by GC"
+	test(glblStr, "Testing", errMsg)
+
+	errMsg = "local string was collected by GC"
+	test(lclStr, "Local testing", errMsg)
+
+	test(strctSlcI32.nums[0], 10, errMsg)
+	test(strctSlcI32.nums[1], 20, errMsg)
+	test(strctSlcI32.nums[2], 30, errMsg)
+	test(strctSlcI32.nums[3], 40, errMsg)
+
+	test(strctSlcStr.txt[0], "22", errMsg)
+	test(strctSlcStr.txt[1], "333", errMsg)
+	test(strctSlcStr.txt[2], "4444", errMsg)
+	test(strctSlcStr.txt[3], "55555", errMsg)
+
+	errMsg = "local pointer was collected by GC"
+	var num i32
+	var numPtr *i32
+	num = 5858
+	numPtr = &num
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test(*numPtr, 5858, errMsg)
+
+	var strctSlcStrPtr *StrctSlcStr
+	strctSlcStrPtr = &strctSlcStr
+	// Setting global pointer variable to point to local struct instance.
+	glblStrctSlcStrPtr = &strctSlcStr
+
+	// Checking if calling `fn1` and `fn2` destroy `glblStrSlc`.
+	for c := 0; c < 100; c++ {
+		fn1()
+		fn2()
+	}
+
+	test((*strctSlcStrPtr).txt[0], "22", errMsg)
+	test((*strctSlcStrPtr).txt[1], "333", errMsg)
+	test((*strctSlcStrPtr).txt[2], "4444", errMsg)
+	test((*strctSlcStrPtr).txt[3], "55555", errMsg)
+
+	fn3()
+}

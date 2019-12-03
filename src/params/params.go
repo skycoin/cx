@@ -23,7 +23,7 @@ var (
 		// BurnFactor can be overriden with `USER_BURN_FACTOR` env var
 		BurnFactor: 100,
 		// MaxTransactionSize can be overriden with `USER_MAX_TXN_SIZE` env var
-		MaxTransactionSize: 5242880, // in bytes
+		MaxTransactionSize: 134217728, // in bytes
 		// MaxDropletPrecision can be overriden with `USER_MAX_DECIMALS` env var
 		MaxDropletPrecision: 3,
 	}
