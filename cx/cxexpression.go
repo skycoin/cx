@@ -2,8 +2,6 @@ package cxcore
 
 import (
 	"errors"
-	// "fmt"
-	. "github.com/satori/go.uuid" //nolint golint
 )
 
 // CXExpression is used represent a CX expression.
@@ -12,9 +10,6 @@ import (
 // flow.
 //
 type CXExpression struct {
-	// Metadata
-	ElementID UUID
-
 	// Contents
 	Inputs   []*CXArgument
 	Outputs  []*CXArgument
@@ -45,10 +40,9 @@ type CXExpression struct {
 // MakeExpression ...
 func MakeExpression(op *CXFunction, fileName string, fileLine int) *CXExpression {
 	return &CXExpression{
-		ElementID: MakeElementID(),
-		Operator:  op,
-		FileLine:  fileLine,
-		FileName:  fileName}
+		Operator: op,
+		FileLine: fileLine,
+		FileName: fileName}
 }
 
 // ----------------------------------------------------------------

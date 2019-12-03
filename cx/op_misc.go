@@ -12,7 +12,7 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
-	size := encoder.SerializeAtomic(int32(len(byts)))
+	size := encoder.SerializeAtomic(int32(len(byts)) + OBJECT_HEADER_SIZE)
 
 	var header = make([]byte, OBJECT_HEADER_SIZE)
 	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
@@ -28,7 +28,10 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	WriteMemory(outOffset, off)
 }
 
-func opIdentity(expr *CXExpression, fp int) {
+func opIdentity(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	inp1Offset := GetFinalOffset(fp, inp1)
 	out1Offset := GetFinalOffset(fp, out1)
@@ -52,7 +55,11 @@ func opIdentity(expr *CXExpression, fp int) {
 	}
 }
 
-func opJmp(expr *CXExpression, fp int, call *CXCall) {
+func opJmp(prgrm *CXProgram) {
+	call := prgrm.GetCall()
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	var predicate bool
 
@@ -62,7 +69,7 @@ func opJmp(expr *CXExpression, fp int, call *CXCall) {
 	} else {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
-		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+inp1.Size]
+		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
 		mustDeserializeAtomic(predicateB, &predicate)
 
 		if predicate {

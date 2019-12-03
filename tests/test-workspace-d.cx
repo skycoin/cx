@@ -1,0 +1,5 @@
+package math
+
+func triple(num f32) (res f32) {
+	res = num * 3.0
+}
