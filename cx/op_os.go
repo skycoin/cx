@@ -1,4 +1,4 @@
-// +build base extra full
+// +build base
 
 package cxcore
 
@@ -18,7 +18,10 @@ import (
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
-func op_os_ReadFile(expr *CXExpression, fp int) {
+func op_os_ReadFile(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	_ = out1
@@ -32,7 +35,10 @@ func op_os_ReadFile(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_Open(expr *CXExpression, fp int) {
+func op_os_Open(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	name := ReadStr(fp, inp1)
 	if file, err := os.Open(name); err == nil {
@@ -42,7 +48,10 @@ func op_os_Open(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_Close(expr *CXExpression, fp int) {
+func op_os_Close(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	name := ReadStr(fp, inp1)
 	if file, ok := openFiles[name]; ok {
@@ -52,7 +61,10 @@ func op_os_Close(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
+func op_os_GetWorkingDirectory(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -60,13 +72,19 @@ func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func op_os_Exit(expr *CXExpression, fp int) {
+func op_os_Exit(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp0 := expr.Inputs[0]
 	exitCode := ReadI32(fp, inp0)
 	os.Exit(int(exitCode))
 }
 
-func op_os_Run(expr *CXExpression, fp int) {
+func op_os_Run(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 

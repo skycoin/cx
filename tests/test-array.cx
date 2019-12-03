@@ -16,6 +16,36 @@ func testGetElement () {
 	test(boolArray[4], false, "BOOL Get element error")
 	test(byteArray[2], 123B, "BYTE Get element error")
 
+	// Using expressions as indexes.
+	test(intArray[i32.sub(6, 2)], 5, "")
+	var i i32
+	test(intArray[i32.add(i, 4)], 5, "")
+	test(intArray[i + 4], 5, "")
+	i = 3
+	test(intArray[i32.sub(7, i)], 5, "")
+	test(intArray[i32.add(i, 1)], 5, "")
+	test(intArray[6 - 2], 5, "")
+	test(intArray[7 - i], 5, "")
+	test(intArray[i + 1], 5, "")
+	test(intArray[i32.sub(i32.add(3, 4), i)], 5, "")
+	test(intArray[i32.sub(i32.add(3, i32.add(3, 1)), i)], 5, "")
+	test(intArray[i32.sub(i32.add(3, i32.add(3, 2)), i32.add(i, 1))], 5, "")
+	test(intArray[6 - 1 - 1], 5, "")
+	test(intArray[2 * 2], 5, "")
+	test(intArray[2 * 2 * 2 - 4], 5, "")
+	test(intArray[2 * 2 * 2 - 4], 5, "")
+	test(intArray[(2 + 1) * 2 - 2], 5, "")
+
+	var arr [2]i32
+	arr = [2]i32{1, 4}
+	test(intArray[arr[1]], 5, "")
+
+	var slc []i32
+	slc = append(slc, 1)
+	slc = append(slc, 4)
+	test(intArray[slc[1]], 5, "")
+	
+
 	// test(stringArray[4], "Hello there!", "STR Get element error")
 }
 

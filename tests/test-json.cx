@@ -1,0 +1,173 @@
+package main
+
+import "json"
+
+var debug bool
+func debugOutput(s str) {
+	if debug {
+		printf(s);
+	}
+}
+
+func testDelim(file i32, d i32) {
+	panic(json.MatchDelim(file, d), true, "failed to match delimiter")
+	debugOutput(sprintf("DELIM %d\n", d))
+}
+
+ func testStr(file i32, s str) {
+	var value str
+	panic(json.ReadStr(file, &value), true, sprintf("failed to read str value '%s'", s))
+	panic(s, value, "str values don't match")
+	debugOutput(sprintf("STR %s\n", value))
+}
+
+func testI64(file i32, i i64) {
+	var value i64
+	panic(json.ReadI64(file, &value), true, "failed to read i64 value")
+	panic(i, value, "i64 values don't match")
+	debugOutput(sprintf("I64 %d\n", value))
+}
+
+func testF64(file i32, f f64) {
+	var value f64
+	panic(json.ReadF64(file, &value), true, "failed to read f64 value")
+	panic(f, value, "f64 values don't match")
+	debugOutput(sprintf("F64 %f\n", value))
+}
+
+func testBool(file i32, b bool) {
+	var value bool
+	panic(json.ReadBool(file, &value), true, "failed to read bool value")
+	panic(b, value, "bool values don't match")
+	debugOutput(sprintf("Bool %b\n", value))
+}
+
+func testKeyValueF64(file i32, s str, f f64) {
+	testStr(file, s)
+	testF64(file, f)
+}
+
+func testKeyValueI64(file i32, s str, f i64) {
+	testStr(file, s)
+	testI64(file, f)
+}
+
+func testKeyValueBool(file i32, s str, b bool) {
+	testStr(file, s)
+	testBool(file, b)
+}
+
+func testStrSlice(file i32, s []str) {
+	var values []str
+	panic(json.ReadStrSlice(file, &values), true, "failed to read []str")
+	panic(len(s), len(values), sprintf("failed to read []str: lens don't match, %d != %d", len(s), len(values)))
+	var count i32 = len(s)
+	for i := 0; i < count; i++ {
+		panic(s[i], values[i], sprintf("failed to read []str: value don't match, `%s` != `%s`", s[i], values[i]))
+		debugOutput(sprintf("STR %d/%d, %s\n", i, len(values), values[i]))
+	}
+}
+
+func testF32Slice(file i32, s []f32) {
+	var values []f32
+	panic(json.ReadF32Slice(file, &values), true, "failed to read []f32")
+	panic(len(s), len(values), sprintf("failed to read []f32:  lens don't match, %d != %d", len(s), len(values)))
+	var count i32 = len(s)
+	for i := 0; i < count; i++ {
+		panic(s[i], values[i], sprintf("failed to read []f32: value don't match, %d != %d", s[i], values[i]))
+		debugOutput(sprintf("F32 %d/%d, %d\n", i, len(values), values[i]))
+	}
+}
+
+func testI32Slice(file i32, s []i32) {
+	var values []i32
+	panic(json.ReadI32Slice(file, &values), true, "failed to read []i32")
+	panic(len(s), len(values), sprintf("failed to read []i32: lens don't match, %d != %d", len(s), len(values)))
+	var count i32 = len(s)
+	for i := 0; i < count; i++ {
+		panic(s[i], values[i], sprintf("failed to read []i32: value don't match, %d != %d", s[i], values[i]))
+		debugOutput(sprintf("I32 %d/%d, %d\n", i, len(values), values[i]))
+	}
+}
+
+func main() {
+	//debug = true
+
+	var file_0 i32 = json.Open("testdata/json/test-0.json")
+	panic(file_0, 0, "failed to open json file_0")
+
+	var file_1 i32 = json.Open("testdata/json/test-0.json")
+	panic(file_1, 1, "failed to reopen json file_0")
+	panic(json.Close(file_1), true, "failed to close json file_1")
+
+	var file_2 i32 = json.Open("invalidfile")
+	panic(file_2, -1, "open succeed")
+
+	var file_3 i32 = json.Open("testdata/json/test-0.json")
+	panic(file_3, 1, "handle must be 1")
+	panic(json.Close(file_3), true, "failed to close json file_3")
+
+	testDelim(file_0, json.DELIM_CURLY_LEFT)
+
+	testKeyValueF64(file_0, "current_supply", 7187500.000000D)
+	testKeyValueF64(file_0, "total_supply", 25000000.000000D)
+	testKeyValueF64(file_0, "max_supply", 100000000.000000D)
+
+	testKeyValueI64(file_0, "current_coinhour_supply", 23499025077L)
+	testKeyValueI64(file_0, "total_coinhour_supply", 93679828577L)
+
+	var values []str
+
+	{
+		values = []str { "R6aHqKWSQfvpdo2fGSrq4F1RYXkBWR9HHJ", "2EYM4WFHe4Dgz6kjAdUkM6Etep7ruz2ia6h", "25aGyzypSA3T9K6rgPUv1ouR13efNPtWP5m" }
+		testStr(file_0, "unlocked_distribution_addresses")
+		testStrSlice(file_0, values)
+	}
+
+	{
+		values = []str { "gpqsFSuMCZmsjPc6Rtgy1FmLx424tH86My", "2EUF3GPEUmfocnUc1w6YPtqXVCy3UZA4rAq", "TtAaxB3qGz5zEAhhiGkBY9VPV7cekhvRYS" }
+		testStr(file_0, "locked_distribution_addresses")
+		testStrSlice(file_0, values)
+	}
+
+	testKeyValueBool(file_0, "true", true)
+	testKeyValueBool(file_0, "false", false)
+
+
+	var vec3 [3]f32
+	var vec4 [4]f32
+
+	testStr(file_0, "[2]f32")
+	panic(json.ReadF32Vec3(file_0, &vec3), false, "must return an error")
+	testDelim(file_0, json.DELIM_SQUARE_RIGHT)
+
+	testStr(file_0, "[3]f32")
+	panic(json.ReadF32Vec3(file_0, &vec3), true, "failed to read [3]f32")
+	var testv3f32 [3]f32 = [3]f32 {4.0, 5.0, 6.0}
+	panic(vec3, testv3f32, "vec3 don't match")
+
+	testStr(file_0, "[4]f32")
+	panic(json.ReadF32Vec4(file_0, &vec4), true, "failed to read [4]f32")
+	var testv4f32 [4]f32 = [4]f32 {7.0, 8.0, 9.0, 10.0}
+	panic(vec4, testv4f32, "vec4 don't match")
+
+	testStr(file_0, "[5]f32")
+	panic(json.ReadF32Vec4(file_0, &vec4), false, "must return an error")
+	panic(json.MatchDelim(file_0, json.DELIM_SQUARE_RIGHT), true, "failed to match delim")
+
+	testStr(file_0, "[]f32")
+	var testvf32 []f32 = []f32{16.0, 17.0, 18.0, 19.0, 20.0}
+	testF32Slice(file_0, testvf32)
+
+	var veci32 []i32
+	testStr(file_0, "[]i32")
+	var testvi32 []i32 = []i32{21, 22, 23, 24, 25}
+	testI32Slice(file_0, testvi32)
+
+	testDelim(file_0, json.DELIM_CURLY_RIGHT)
+
+	panic(json.Close(1), false, "succeed to close invalid json 1")
+	panic(json.Close(file_0), true, "failed to close json file_0")
+	panic(json.Close(file_0), false, "succeed to close json file_0 twice")
+	panic(json.Close(-1), false, "succeed to close invalid json -1")
+}

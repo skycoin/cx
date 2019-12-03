@@ -13,7 +13,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/amherag/skycoin/src/skycoin"
+	"github.com/amherag/skycoin/src/fiber"
 	"github.com/amherag/skycoin/src/util/logging"
 	"github.com/amherag/skycoin/src/util/useragent"
 )
@@ -130,7 +130,7 @@ func createCoinCommand() cli.Command {
 
 			// -- parse template and create new coin.go and config blockchain.go -- //
 
-			config, err := skycoin.NewParameters(configFile, configDir)
+			config, err := fiber.NewConfig(configFile, configDir)
 			if err != nil {
 				log.Errorf("failed to create new fiber coin config")
 				return err
@@ -162,7 +162,7 @@ func createCoinCommand() cli.Command {
 			}
 			defer coinTestFile.Close()
 
-			paramsFilePath := fmt.Sprintf("%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/src/params/params.go")
+			paramsFilePath := fmt.Sprintf("%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/src/params/params.go")
 			paramsFile, err := os.Create(paramsFilePath)
 			if err != nil {
 				log.Errorf("failed to create new file %s", paramsFilePath)

@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 	
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.
@@ -105,7 +105,7 @@ func getOutputType(expr *CXExpression) *CXArgument {
 }
 
 // Assignment handles assignment statements with different operators, like =, :=, +=, *=.
-func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {	
+func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CXExpression {
 	idx := len(from) - 1
 
 	// Checking if we're trying to assign stuff from a function call
@@ -223,14 +223,6 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 				to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 				to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
 			}
-
-			// to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
-			// FIXME: Duct-tape solution. I'm pretty sure this needs to be handled by another
-			// function like CopyArgFields
-			if len(from[idx].Outputs) > 0 {
-				to[0].Outputs[0].Lengths = from[idx].Outputs[0].Lengths
-			}
-			// to[0].Outputs[0].Size = Natives[from[idx].Operator.OpCode].Outputs[0].Size
 
 			to[0].Outputs[0].DoesEscape = from[idx].Operator.Outputs[0].DoesEscape
 			to[0].Outputs[0].PassBy = from[idx].Operator.Outputs[0].PassBy

@@ -3,8 +3,8 @@ package actions
 import (
 	"os"
 	"runtime"
-
-	. "github.com/skycoin/cx/cx"
+	
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 func SetCorrectArithmeticOp(expr *CXExpression) {
@@ -423,8 +423,25 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 			arg.TotalSize = TYPE_POINTER_SIZE
 		}
 
-		for i, byt := range byts {
-			PRGRM.Memory[DataOffset+i] = byt
+		// A CX program allocates min(INIT_HEAP_SIZE, MAX_HEAP_SIZE) bytes
+		// after the stack segment. These bytes are used to allocate the data segment
+		// at compile time. If the data segment is bigger than min(INIT_HEAP_SIZE, MAX_HEAP_SIZE),
+		// we'll start appending the bytes to PRGRM.Memory.
+		// After compilation, we calculate how many bytes we need to add to have a heap segment
+		// equal to `minHeapSize()` that is allocated after the data segment.
+		if size + DataOffset > len(PRGRM.Memory) {
+			var i int
+			// First we need to fill the remaining free bytes in
+			// the current `PRGRM.Memory` slice.
+			for i = 0; i < len(PRGRM.Memory) - DataOffset; i++ {
+				PRGRM.Memory[DataOffset+i] = byts[i]
+			}
+			// Then we append the bytes that didn't fit.
+			PRGRM.Memory = append(PRGRM.Memory, byts[i:]...)
+		} else {
+			for i, byt := range byts {
+				PRGRM.Memory[DataOffset+i] = byt
+			}
 		}
 		DataOffset += size
 
@@ -499,11 +516,11 @@ func AffordanceStructs(pkg *CXPackage, currentFile string, lineNo int) {
 
 	fnFldInpSig := MakeField("InputSignature", TYPE_STR, "", 0)
 	fnFldInpSig.Size = GetArgSize(TYPE_STR)
-	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, 0, DECL_SLICE)
+	fnFldInpSig = DeclarationSpecifiers(fnFldInpSig, []int{0}, DECL_SLICE)
 
 	fnFldOutSig := MakeField("OutputSignature", TYPE_STR, "", 0)
 	fnFldOutSig.Size = GetArgSize(TYPE_STR)
-	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, 0, DECL_SLICE)
+	fnFldOutSig = DeclarationSpecifiers(fnFldOutSig, []int{0}, DECL_SLICE)
 
 	fnStrct.AddField(fnFldName)
 	fnStrct.AddField(fnFldInpSig)

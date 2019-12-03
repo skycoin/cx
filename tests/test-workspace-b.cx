@@ -1,0 +1,18 @@
+package main
+// Testing nested libraries.
+// This library must import the `math` package.
+import "math/geometry"
+
+func main() {
+	var c geometry.Circle
+	var r geometry.Rectangle
+
+	c.radius = 3.5
+	r.sideA = 4.7
+	r.sideB = 7.2
+	cArea := c.Area()
+	rArea := r.Area()
+
+	test(cArea, 38.484478, "")
+	test(rArea, 33.839996, "")
+}
