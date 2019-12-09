@@ -135,7 +135,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	var dbg bool
 	if arg.Name != "" {
-		dbg = true
+		dbg = false
 	}
 
 	if finalOffset < PROGRAM.StackSize {
@@ -144,7 +144,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
+		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20])
 	}
 
 	// elt = arg
@@ -156,7 +156,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
+		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20], "...)")
 	}
 
 	return finalOffset
@@ -323,6 +323,9 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 	if heapOffset <= int32(prgrm.HeapStartsAt) {
 		return
 	}
+
+	Debug("hmmmmm", declSpecs, heapOffset, prgrm.Memory[heapOffset:heapOffset+TYPE_POINTER_SIZE])
+	Debug("mem", PROGRAM.Memory[PROGRAM.HeapStartsAt:])
 
 	// marking the root object
 	Mark(prgrm, heapOffset)
@@ -492,6 +495,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 	var fp int
 	var faddr = int32(NULL_HEAP_ADDRESS_OFFSET)
 
+	Debug("memB", PROGRAM.Memory[PROGRAM.HeapStartsAt:])
+
 	// marking, setting forward addresses and updating references
 	// global variables
 	for _, pkg := range prgrm.Packages {
@@ -533,7 +538,17 @@ func MarkAndCompact(prgrm *CXProgram) {
 			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
 			if len(ptr.Fields) > 0 {
 				fld := ptr.Fields[len(ptr.Fields)-1]
-				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				Debug(".", heapOffset, op.Name, ptr.Name, fld.Name, fld.Offset)
+				// MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+				MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
 			} else {
 				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
 			}
@@ -543,8 +558,10 @@ func MarkAndCompact(prgrm *CXProgram) {
 	}
 
 	// relocation of live objects
+	Debug("doning3", PROGRAM.Memory[PROGRAM.HeapStartsAt:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer])
 	for c := prgrm.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
 		var objSize int32
+		Debug("meow", prgrm.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE])
 		_, err := encoder.DeserializeAtomic(prgrm.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
 		if err != nil {
 			panic(err)
@@ -572,6 +589,8 @@ func MarkAndCompact(prgrm *CXProgram) {
 
 		c += int(objSize)
 	}
+
+	Debug("memA", PROGRAM.Memory[PROGRAM.HeapStartsAt:])
 
 	prgrm.HeapPointer = int(faddr)
 }
@@ -838,6 +857,7 @@ func ReadStrOffset(offset int32) (out string) {
 func ReadStr(fp int, inp *CXArgument) (out string) {
 	var offset int32
 	off := GetFinalOffset(fp, inp)
+	
 	if inp.Name == "" {
 		// Then it's a literal.
 		offset = int32(off)

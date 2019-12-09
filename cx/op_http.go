@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"io/ioutil"
 
 	// "github.com/skycoin/dmsg/cipher"
 	// "github.com/skycoin/dmsg/disc"
@@ -124,11 +125,20 @@ func opHTTPHandle(prgrm *CXProgram) {
 	}
 
 	http.HandleFunc(ReadStr(fp, inp1), func(w http.ResponseWriter, r *http.Request) {
+		Debug("entering")
 		tmpExpr := CXExpression{Operator: handlerFn}
 
 		callFP := fp + PROGRAM.CallStack[PROGRAM.CallCounter].Operator.Size
 
+		PROGRAM.CallCounter++
+		// PROGRAM.StackPointer += handlerFn.Size
+		PROGRAM.CallStack[PROGRAM.CallCounter].Operator = handlerFn
+		PROGRAM.CallStack[PROGRAM.CallCounter].Line = 0
+		PROGRAM.CallStack[PROGRAM.CallCounter].FramePointer = PROGRAM.StackPointer
 		writeHTTPRequest(callFP, handlerFn.Inputs[1], r)
+		Debug("done")
+		// PROGRAM.StackPointer -= handlerFn.Size
+		PROGRAM.CallCounter--
 
 		i1Off := callFP + handlerFn.Inputs[0].Offset
 		i1Size := handlerFn.Inputs[0].TotalSize
@@ -140,9 +150,6 @@ func opHTTPHandle(prgrm *CXProgram) {
 
 		copy(i1, PROGRAM.Memory[i1Off:i1Off+i1Size])
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
-
-		Debug("i1", i1)
-		Debug("i2", i2)
 
 		PROGRAM.ccallback(&tmpExpr, handlerFn.Name, handlerPkg.Name, [][]byte{i1, i2})
 		fmt.Fprintf(w, ReadStr(callFP, handlerFn.Inputs[0]))
@@ -336,7 +343,6 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	req := CXArgument{}
 	copier.Copy(&req, param)
-	// req.DereferenceOperations = append(req.DereferenceOperations, DEREF_POINTER)
 
 	httpPkg, err := PROGRAM.GetPackage("http")
 	if err != nil {
@@ -353,6 +359,11 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	}
 
 	methodFld, err := requestType.GetField("Method")
+	if err != nil {
+		panic(err)
+	}
+
+	bodyFld, err := requestType.GetField("Body")
 	if err != nil {
 		panic(err)
 	}
@@ -389,16 +400,35 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	}
 
 	accessMethod := []*CXArgument{methodFld}
+	accessBody := []*CXArgument{bodyFld}
+	accessURL := []*CXArgument{urlFld}
 	accessURLScheme := []*CXArgument{&derefUrlFld, schemeFld}
 	accessURLHost := []*CXArgument{&derefUrlFld, hostFld}
 	accessURLPath := []*CXArgument{&derefUrlFld, pathFld}
 	accessURLRawPath := []*CXArgument{&derefUrlFld, rawPathFld}
 	accessURLForceQuery := []*CXArgument{&derefUrlFld, forceQueryFld}
 
+	// Creating empty `http.Request` object on heap.
+	reqOff := writeObj(make([]byte, requestType.Size))
+	Debug("huh", PROGRAM.Memory[reqOff:reqOff+20])
+	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
+	WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
+
+	req.DereferenceOperations = append(req.DereferenceOperations, DEREF_POINTER)
+
+	// Creating empty `http.URL` object on heap.
+	req.Fields = accessURL
+	urlOff := writeObj(make([]byte, urlType.Size))
+	urlOffByts := encoder.SerializeAtomic(int32(urlOff))
+	WriteMemory(GetFinalOffset(fp, &req), urlOffByts)
+
 	req.Fields = accessMethod
 	writeString(fp, request.Method, &req)
-	Debug("method", request.Method, fp, req.Offset)
-	Debug("memory", PROGRAM.Memory[fp:fp+8])
+
+	req.Fields = accessBody
+	body, err := ioutil.ReadAll(request.Body)
+	writeString(fp, string(body), &req)
+
 	req.Fields = accessURLScheme
 	writeString(fp, request.URL.Scheme, &req)
 	req.Fields = accessURLHost

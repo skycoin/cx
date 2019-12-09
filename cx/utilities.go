@@ -810,16 +810,21 @@ func WriteToSlice(off int, inp []byte) int {
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
 func writeObj(obj []byte) int {
-	size := len(obj)
+	size := len(obj)+OBJECT_HEADER_SIZE
 	sizeB := encoder.SerializeAtomic(int32(size))
-	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
+	Debug("WOOO", PROGRAM.Memory[PROGRAM.HeapStartsAt:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer])
+	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(size)
+	Debug("OOOW", PROGRAM.Memory[PROGRAM.HeapStartsAt:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer])
 
-	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
+	// var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
+	var finalObj = make([]byte, size)
 
 	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
 		finalObj[c] = sizeB[c-OBJECT_GC_HEADER_SIZE]
 	}
-	for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
+	// for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
+	for c := OBJECT_HEADER_SIZE; c < size; c++ {
 		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
 	}
 

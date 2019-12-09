@@ -35,7 +35,6 @@ func (cxt *CXProgram) ccallback(expr *CXExpression, functionName string, package
 		}
 
 		for i, inp := range inputs {
-			Debug("inp", inp)
 			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
 		}
 

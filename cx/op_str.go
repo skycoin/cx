@@ -69,7 +69,6 @@ func opStrEq(prgrm *CXProgram) {
 }
 
 func writeString(fp int, str string, out *CXArgument) {
-
 	byts := encoder.Serialize(str)
 	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
@@ -84,8 +83,6 @@ func writeString(fp int, str string, out *CXArgument) {
 	WriteMemory(heapOffset, obj)
 
 	off := encoder.SerializeAtomic(int32(heapOffset))
-
-	Debug("off", off)
 
 	WriteMemory(GetFinalOffset(fp, out), off)
 }

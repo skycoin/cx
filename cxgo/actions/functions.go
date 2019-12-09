@@ -419,6 +419,9 @@ func isPointer(sym *CXArgument) bool {
 	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
 		return true
 	}
+	if (sym.Type == TYPE_STR && sym.Name != "") {
+		return true
+	}
 	// If `sym` is a structure instance, we need to check if the last field
 	// being access is a pointer candidate
 	if len(sym.Fields) > 0 {
@@ -431,6 +434,7 @@ func isPointer(sym *CXArgument) bool {
 func AddPointer(fn *CXFunction, sym *CXArgument) {
 	// Checking if it is a pointer candidate.
 	if isPointer(sym) {
+		Debug("sym", sym.Name)
 		// Checking if it was already added to the list.
 		var found bool
 		for _, ptr := range fn.ListOfPointers {
@@ -453,6 +457,10 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
+
+	// for _, fld := range sym.Fields {
+	// 	AddPointer(fn, fld)
+	// }
 }
 
 // CheckRedeclared checks if `expr` represents a variable declaration and then checks if an

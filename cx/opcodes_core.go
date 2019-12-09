@@ -1016,10 +1016,10 @@ func init() {
 	}
 	requestParam := MakeArgument("Request", "", -1).AddType(TypeNames[TYPE_CUSTOM])
 	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_STRUCT)
-	// requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_POINTER)
-	// requestParam.IsPointer = true
-	// requestParam.Size = TYPE_POINTER_SIZE
-	// requestParam.TotalSize = TYPE_POINTER_SIZE
+	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_POINTER)
+	requestParam.IsPointer = true
+	requestParam.Size = TYPE_POINTER_SIZE
+	requestParam.TotalSize = TYPE_POINTER_SIZE
 	requestParam.CustomType = httpRequestType
 
 	AddOpCode(OP_HTTP_HANDLE, "http.Handle",

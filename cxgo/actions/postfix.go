@@ -256,7 +256,7 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpres
 		// left.DereferenceOperations = append(left.DereferenceOperations, DEREF_FIELD)
 		left.IsStruct = true
 		fld := MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(TypeNames[TYPE_IDENTIFIER])
+		fld.AddType(TypeNames[TYPE_IDENTIFIER]).AddPackage(left.Package)
 		left.Fields = append(left.Fields, fld)
 		return prevExprs
 	}
@@ -324,7 +324,7 @@ func PostfixExpressionField(prevExprs []*CXExpression, ident string) []*CXExpres
 		left.IsStruct = true
 
 		fld := MakeArgument(ident, CurrentFile, LineNo)
-		fld.AddType(TypeNames[TYPE_IDENTIFIER])
+		fld.AddType(TypeNames[TYPE_IDENTIFIER]).AddPackage(left.Package)
 
 		left.Fields = append(left.Fields, fld)
 	}
