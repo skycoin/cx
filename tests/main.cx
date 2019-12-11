@@ -363,8 +363,12 @@ func main ()() {
 	runTestEx("issue-415.cx", cx.SUCCESS, "func defined with no arguments, called WITH arguments causes PANIC", TEST_ISSUE, 0)
 	runTest("issue-481.cx", cx.SUCCESS, "multi-dimensional arrays are not working")
 	runTest("issue-482.cx", cx.SUCCESS, "multi-dimensional slices are not working")
+    runTestEx("issue-120-a-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+    runTestEx("issue-120-b-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+    runTestEx("issue-120-c-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+    runTestEx("issue-121-SP.cx", cx.SUCCESS, "Compilation error when using unary negative operator on a function call", TEST_ISSUE, 0)
 
-	// We need to fix serialization and deserialization as user-callable functions
+    // We need to fix serialization and deserialization as user-callable functions
 	// runTestEx("issue-309.cx", cx.SUCCESS, "Serialization is not taking into account non-default stack sizes.", TEST_ISSUE, 0)
 	// runTestEx("issue-310.cx", cx.SUCCESS, "Splitting a serialized program into its blockchain and transaction parts.", TEST_ISSUE, 0)
 	// runTestEx("issue-311.cx", cx.SUCCESS, "`CurrentFunction` and `CurrentStruct` are causing errors in programs with more than 1 package.", TEST_ISSUE, 0)
