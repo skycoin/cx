@@ -67,7 +67,7 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 				out.AddType(TypeNames[outArg.Type])
 				out.CustomType = outArg.CustomType
 				out.Size = outArg.Size
-				out.TotalSize = outArg.Size
+				out.TotalSize = GetSize(outArg)
 				out.Lengths = sliceDim
 				out.PreviouslyDeclared = true
 
