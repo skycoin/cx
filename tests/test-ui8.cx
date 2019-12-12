@@ -1,0 +1,57 @@
+package main
+
+func UI8ArithmeticFunctions() () {
+	test(ui8.add(10UB, 10UB), 20UB, "Add error")
+	test(ui8.sub(10UB, 10UB), 0UB, "Subtract error")
+	test(ui8.mul(10UB, 10UB), 100UB, "Multiply error")
+	test(ui8.div(10UB, 10UB), 1UB, "Divide error")
+	test(ui8.mod(10UB, 3UB), 1UB, "Mod error")
+	test(ui8.bitshl(10UB, 4UB), 160UB, "Bit Shift Left error")
+	test(ui8.bitshr(10UB, 5UB), 0UB, "Bit Shift Right error")
+	test(ui8.bitand(10UB, 5UB), 0UB , "Bit AND error")
+	test(ui8.bitor(10UB, 5UB), 15UB, "Bit OR error")
+	test(ui8.bitxor(10UB, 5UB), 15UB, "Bit XOR error")
+	test(ui8.bitclear(10UB, 2UB), 8UB, "Bit CLEAR error")
+
+	test(ui8.max(2UB, 3UB), 3UB, "MAX error")
+	test(ui8.min(2UB, 3UB), 2UB, "MIN error")
+}
+
+func UI8ArithmeticShorthand() () {
+	test(10UB + 10UB, 20UB, "Add error")
+	test(10UB - 10UB, 0UB, "Subtract error")
+	test(10UB * 10UB, 100UB, "Multiply error")
+	test(10UB / 10UB, 1UB, "Divide error")
+	test(10UB % 3UB, 1UB, "Mod error")
+	test(10UB << 4UB, 160UB, "Bit Shift Left error")
+	test(10UB >> 5UB, 0UB, "Bit Shift Right error")
+	test(10UB & 5UB, 0UB,"Bit AND error")
+	test(10UB | 5UB, 15UB, "Bit OR error")
+	test(10UB ^ 5UB, 15UB, "Bit XOR error")
+	test(10UB &^ 2UB, 8UB, "Bit CLEAR error")
+}
+
+func UI8RelationalFunctions() () {
+	test(ui8.eq(5UB, 5UB), true, "UI8 Equality error")
+	test(ui8.uneq(5UB, 5UB), false, "UI8 Inequality error")
+	test(ui8.gt(5UB, 10UB), false, "UI8 Greater error")
+	test(ui8.gteq(15UB, 10UB), true, "UI8 Greater And Equal error")
+	test(ui8.lt(5UB, 10UB), true, "UI8 Lesser than error")
+	test(ui8.lteq(10UB, 6UB), false, "UI8 Lesser Or Equal error")
+}
+
+func UI8RelationalShorthand() (){
+	test(5UB == 5UB, true, "UI8 Equality Shorthand error")
+	test(5UB != 5UB, false, "UI8 Inequality Shorthand error")
+	test(5UB > 10UB, false, "UI8 Greater Shorthand error")
+	test(15UB >= 10UB, true, "UI8 Greater And Equal Shorthand error")
+	test(5UB < 10UB, true, "UI8 Lesser Shorthand error")
+	test(10UB <= 6UB, false, "UI8 Lesser Or Equal error")
+}
+
+func main() () {
+	UI8ArithmeticFunctions()
+	UI8ArithmeticShorthand()
+	UI8RelationalFunctions()
+	UI8RelationalShorthand()
+}

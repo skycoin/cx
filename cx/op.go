@@ -61,10 +61,8 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			_, err := encoder.DeserializeAtomic(byts, &offset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(byts, &offset)
+
 			*finalOffset = int(offset)
 
 			baseOffset = *finalOffset
@@ -102,10 +100,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			_, err := encoder.DeserializeAtomic(byts, &offset)
-			if err != nil {
-				panic(err)
-			}
+			mustDeserializeAtomic(byts, &offset)
 			*finalOffset = int(offset)
 		}
 		if dbg {
@@ -135,10 +130,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 	if arg.Name != "" {
 		// then it's not a literal
 		var offset = int32(0)
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
 		strOffset = int(offset)
 	}
 	return strOffset
@@ -434,10 +426,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 
 			for c := int32(0); c < sliceLen; c++ {
 				var cHeapOffset int32
-				_, err := encoder.DeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
-				if err != nil {
-					panic(err)
-				}
+				mustDeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
 
 				// Then it's not pointing to the object moved by the GC or it's pointing to
 				// an object in the stack segment or nil.
@@ -697,11 +686,6 @@ func FromBool(in bool) []byte {
 
 }
 
-// FromByte ...
-func FromByte(in byte) []byte {
-	return encoder.SerializeAtomic(in)
-}
-
 // FromStr ...
 func FromStr(in string) []byte {
 	return encoder.Serialize(in)
@@ -712,8 +696,28 @@ func FromI8(in int8) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
+// FromI16 ...
+func FromI16(in int16) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
 // FromI32 ...
 func FromI32(in int32) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
+// FromI64 ...
+func FromI64(in int64) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
+// FromUI8 ...
+func FromUI8(in uint8) []byte {
+	return encoder.SerializeAtomic(in)
+}
+
+// FromUI16 ...
+func FromUI16(in uint16) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
@@ -722,9 +726,9 @@ func FromUI32(in uint32) []byte {
 	return encoder.SerializeAtomic(in)
 }
 
-// FromI64 ...
-func FromI64(in int64) []byte {
-	return encoder.Serialize(in)
+// FromUI64 ...
+func FromUI64(in uint64) []byte {
+	return encoder.SerializeAtomic(in)
 }
 
 // FromF32 ...
@@ -750,70 +754,117 @@ func FromF64(in float64) []byte {
 // 	return offset, size
 // }
 
-// ReadF32Data ...
-func ReadF32Data(fp int, inp *CXArgument) interface{} {
-	var data interface{}
+// ReadData ...
+func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 	elt := GetAssignmentElement(inp)
-	var dataF32 []float32
 	if elt.IsSlice {
-		dataF32 = ReadF32Slice(fp, inp)
+		return ReadSlice(fp, inp, dataType)
 	} else if elt.IsArray {
-		dataF32 = ReadF32A(fp, inp)
+		return ReadArray(fp, inp, dataType)
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	if len(dataF32) > 0 {
-		data = dataF32
-	}
-	return data
 }
 
-// ReadF32Slice ...
-func ReadF32Slice(fp int, inp *CXArgument) (out []float32) {
+func readData(inp *CXArgument, bytes []byte) interface{} {
+	switch inp.Type {
+	case TYPE_I8:
+		var data []int8
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_I16:
+		var data []int16
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_I32:
+		var data []int32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_I64:
+		var data []int64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_UI8:
+		var data []uint8
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_UI16:
+		var data []uint16
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_UI32:
+		var data []uint32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_UI64:
+		var data []uint64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_F32:
+		var data []float32
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	case TYPE_F64:
+		var data []float64
+		mustDeserializeRaw(bytes, &data)
+		if len(data) > 0 {
+			return interface{}(data)
+		}
+	default:
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	return interface{}(nil)
+}
+
+// ReadSlice ...
+func ReadSlice(fp int, inp *CXArgument, dataType int) interface{} {
 	sliceOffset := GetSliceOffset(fp, inp)
-	if sliceOffset >= 0 && inp.Type == TYPE_F32 {
-		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).TotalSize)
+	if sliceOffset >= 0 && (dataType < 0 || inp.Type == dataType) {
+		slice := GetSlice(sliceOffset, GetAssignmentElement(inp).Size)
 		if slice != nil {
-			_, err := encoder.DeserializeRaw(slice, &out)
-			if err != nil {
-				panic(err)
-			}
+			return readData(inp, slice)
 		}
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	return
+
+	return interface{}(nil)
 }
 
-// ReadF32A ...
-func ReadF32A(fp int, inp *CXArgument) (out []float32) {
-	offset := GetFinalOffset(fp, inp)
-	byts := ReadMemory(offset, inp)
-	byts = append(encoder.SerializeAtomic(int32(len(byts)/4)), byts...)
-	_, err := encoder.DeserializeRaw(byts, &out)
-	if err != nil {
-		panic(err)
+// ReadArray ...
+func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
+	arrayOffset := GetFinalOffset(fp, inp)
+	if dataType < 0 || inp.Type == dataType {
+		array := ReadMemory(arrayOffset, inp)
+		array = append(encoder.SerializeAtomic(int32(len(array)/4)), array...) // TODO : refactor using a DesereializeRaw which takes the size as parameter.
+		return readData(inp, array)
 	}
-	return
+	panic(CX_RUNTIME_INVALID_ARGUMENT)
 }
 
 // ReadBool ...
 func ReadBool(fp int, inp *CXArgument) (out bool) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-// ReadByte ...
-func ReadByte(fp int, inp *CXArgument) (out byte) {
-	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
@@ -825,10 +876,7 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 		// Then it's a literal.
 		offset = int32(off)
 	} else {
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
 	}
 
 	if offset == 0 {
@@ -838,30 +886,14 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	}
 
 	var size int32
-	var err error
 	// We need to check if the string lives on the data segment or on the
 	// heap to know if we need to take into consideration the object header's size.
 	if int(offset) > PROGRAM.HeapStartsAt {
-		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE], &size)
-
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = encoder.DeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE], &size)
+		mustDeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
 	} else {
-		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE], &size)
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
-		if err != nil {
-			panic(err)
-		}
+		mustDeserializeAtomic(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE], &size)
+		mustDeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
 	}
 
 	return out
@@ -870,49 +902,69 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 // ReadI8 ...
 func ReadI8(fp int, inp *CXArgument) (out int8) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadI16 ...
+func ReadI16(fp int, inp *CXArgument) (out int16) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadI32 ...
 func ReadI32(fp int, inp *CXArgument) (out int32) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeAtomic(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadI64 ...
 func ReadI64(fp int, inp *CXArgument) (out int64) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI8 ...
+func ReadUI8(fp int, inp *CXArgument) (out uint8) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI16 ...
+func ReadUI16(fp int, inp *CXArgument) (out uint16) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI32 ...
+func ReadUI32(fp int, inp *CXArgument) (out uint32) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
+	return
+}
+
+// ReadUI64 ...
+func ReadUI64(fp int, inp *CXArgument) (out uint64) {
+	offset := GetFinalOffset(fp, inp)
+	mustDeserializeAtomic(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) (out float32) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }
 
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) (out float64) {
 	offset := GetFinalOffset(fp, inp)
-	_, err := encoder.DeserializeRaw(ReadMemory(offset, inp), &out)
-	if err != nil {
-		panic(err)
-	}
+	mustDeserializeRaw(ReadMemory(offset, inp), &out)
 	return
 }

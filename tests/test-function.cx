@@ -1,5 +1,13 @@
 package main
 
+func testI8out() (out i8) {
+	out = 1B
+}
+
+func testI16out() (out i16) {
+	out = 1H
+}
+
 func testI32out() (out i32) {
 	out = 1
 }
@@ -20,12 +28,16 @@ func testBoolout() (out bool) {
 	out = false
 }
 
-func testByteout() (out byte) {
-	out = i32.byte(255)
-}
-
 func testStringout() (out str) {
 	out = "Foo bar"
+}
+
+func testI8in(n i8, m i8, o i8) (out i8) {
+	out = i8.add(i8.add(n, m), o)
+}
+
+func testI16in(n i16, m i16, o i16) (out i16) {
+	out = i16.add(i16.add(n, m), o)
 }
 
 func testI32in(n i32, m i32, o i32) (out i32) {
@@ -48,31 +60,29 @@ func testBoolin(n bool, m bool, o bool) (out bool) {
 	out = bool.not(bool.or(bool.and(m, n), o))
 }
 
-func testBytein(n byte, m byte, o byte) (out byte) {
-	out = m
-}
-
 func testStringin(a str, b str) (out str) {
 	out = b
 }
 
 func testAllIns() () {
+	test(testI8in(1B, 2B, 3B), 6B, "function in i8 error")
+	test(testI16in(1H, 2H, 3H), 6H, "function in i16 error")
 	test(testI32in(1, 2, 3), 6, "function in i32 error")
 	test(testI64in(1L, 2L, 3L), 0L, "function in i64 error")
 	test(testF32in(1.0, 3.0, 2.0), 3.5, "function in f32 error")
 	test(testF64in(3.0D, 2.0D, 3.0D), 9.0D, "function in f64 error")
 	test(testBoolin(true, false, true), false, "function in bool error")
-	test(testBytein(2B, 80B, 26B), 80B, "function in byte error")
 	test(testStringin("Not working", "It's working!"), "It's working!", "function in str error")
 }
 
 func testAllOuts() () {
+	test(testI8out(), 1B, "function out i8 error")
+	test(testI16out(), 1H, "function out i16 error")
 	test(testI32out(), 1, "function out i32 error")
 	test(testI64out(), 1L, "function out i64 error")
 	test(testF32out(), 1.0, "function out f32 error")
 	test(testF64out(), 1.0D, "function out f64 error")
 	test(testBoolout(), false, "function out bool error")
-	test(testByteout(), i32.byte(255), "function out byte error")
 	test(testStringout(), "Foo bar", "function out str error")
 }
 
