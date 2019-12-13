@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "cxchains"
-  digest = "1:9eb0124ab99c6c3494e1cea070366509ae076aa5db752ce53e906d20208c7f1c"
+  digest = "1:c1cb1c1e5f7f78cca28cad22abff80fa9e0d38fc7c589f51c398c40bd02d699b"
   name = "github.com/amherag/skycoin"
   packages = [
     "src/api",
@@ -60,7 +60,7 @@
     "src/wallet",
   ]
   pruneopts = "UT"
-  revision = "e221ff34a9f881c228890306ab0c1fe6dddb5b79"
+  revision = "d82f04590a99961f1d3ea97043db73385412f953"
 
 [[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
@@ -115,12 +115,12 @@
   revision = "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4"
 
 [[projects]]
-  digest = "1:318f1c959a8a740366fce4b1e1eb2fd914036b4af58fbd0a003349b305f118ad"
+  digest = "1:573ca21d3669500ff845bdebee890eb7fc7f0f50c59f2132f2a0c6b03d85086a"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
-  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
-  version = "v1.3.1"
+  revision = "6c65a5562fc06764971b7c5d05c76c75e84bdbf7"
+  version = "v1.3.2"
 
 [[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
@@ -241,19 +241,19 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "17f5ca1748182ddf24fc33a5a7caaaf790a52fcc"
-  version = "v0.4.1"
+  revision = "31bed53e4047fd6c510e43a941f90cb31be0972a"
+  version = "v0.6.0"
 
 [[projects]]
-  digest = "1:403b810b43500b5b0a9a24a47347e31dc2783ccae8cf97c891b46f5b0496fa1a"
+  digest = "1:366f5aa02ff6c1e2eccce9ca03a22a6d983da89eecff8a89965401764534eb7c"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
     "internal/fs",
   ]
   pruneopts = "UT"
-  revision = "833678b5bb319f2d20a475cb165c6cc59c2cc77c"
-  version = "v0.0.2"
+  revision = "3f98efb27840a48a7a2898ec80be07674d19f9c8"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:b0c25f00bad20d783d259af2af8666969e2fc343fa0dc9efe52936bbd67fb758"
@@ -355,12 +355,12 @@
   revision = "e0502e82247dc662b1e65f76039989bda914cfad"
 
 [[projects]]
-  digest = "1:e1cd343b3883ced86b6873fe4d2f76799259fba3d1656df6ac0a7fa92644c049"
+  digest = "1:a7c5dd394613ae5166506781aa8176945fefb57e55658fb15569328445ec27d7"
   name = "github.com/toqueteos/webbrowser"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3232c91b8ede8ca86e8962981d881af78875542f"
-  version = "v1.1"
+  revision = "61ea02ef245a3e53cac7b95223b662592f6a7bf1"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
@@ -376,7 +376,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "5c40567a22f818bd14a1ea7245dad9f8ef0691aa"
+  revision = "4def268fd1a49955bfb3dda92fe3db4f924f2285"
 
 [[projects]]
   branch = "master"
@@ -387,7 +387,7 @@
     "math/fixed",
   ]
   pruneopts = "UT"
-  revision = "f03afa92d3ffad9e5ff762aa549908afe674f01e"
+  revision = "d6a02ce849c95fa57d9927fab7b6d9071876dfe0"
 
 [[projects]]
   branch = "master"
@@ -395,18 +395,18 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "3f473d35a33aa6fdd203e306dc439b797820e3f1"
+  revision = "ca1201d0de80cfde86cb01aea620983605dfe99b"
 
 [[projects]]
   branch = "master"
-  digest = "1:2a96b14fed8617c9e499777c03ec21f35dfd5b396f0b05fcdd7eff9e6c67f196"
+  digest = "1:f99b0e9035cf86cdc14cb2848308e831193d5e19ab9a23a8493cd925bdc3952b"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "93c9922d18aeb82498a065f07aec7ad7fa60dfb7"
+  revision = "fc99dfbffb4e5ed5758a37e31dd861afe285406b"
 
 [[projects]]
   digest = "1:1093f2eb4b344996604f7d8b29a16c5b22ab9e1b25652140d3fede39f640d5cd"

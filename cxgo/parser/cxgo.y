@@ -4,8 +4,8 @@
 		// "fmt"
 		"strconv"
 		"github.com/amherag/skycoin/src/cipher/encoder"
-		. "github.com/skycoin/cx/cx"
-		. "github.com/skycoin/cx/cxgo/actions"
+		. "github.com/SkycoinProject/cx/cx"
+		. "github.com/SkycoinProject/cx/cxgo/actions"
 	)
 
 	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)
@@ -17,15 +17,21 @@
 
 %union{
 	i int
-	byt byte
+	i8 int8
+	i16 int16
 	i32 int32
 	i64 int64
+	ui8 uint8
+	ui16 uint16
+	ui32 uint32
+	ui64 uint64
 	f32 float32
 	f64 float64
 	tok string
 	bool bool
 	string string
 	stringA []string
+	ints    []int
 
 	line int
 
@@ -45,10 +51,15 @@
         function *CXFunction
 }
 
-%token  <byt>           BYTE_LITERAL
 %token  <bool>          BOOLEAN_LITERAL
+%token  <i8>            BYTE_LITERAL
+%token  <i16>           SHORT_LITERAL
 %token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
+%token  <ui8>           UNSIGNED_BYTE_LITERAL
+%token  <ui16>          UNSIGNED_SHORT_LITERAL
+%token  <ui32>          UNSIGNED_INT_LITERAL
+%token  <ui64>          UNSIGNED_LONG_LITERAL
 %token  <f32>           FLOAT_LITERAL
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
@@ -69,7 +80,7 @@
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
                         MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
                         SUB_ASSIGN XOR_ASSIGN
-                        BOOL BYTE F32 F64
+                        BOOL F32 F64
                         I8 I16 I32 I64
                         STR
                         UI8 UI16 UI32 UI64
@@ -81,7 +92,7 @@
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
-                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
+                        REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */
@@ -166,6 +177,9 @@
 %type   <string>        infer_action_arg
 %type   <stringA>       infer_action, infer_actions
 %type   <expressions>   infer_clauses
+
+%type   <ints>          indexing_literal
+%type   <ints>          indexing_slices
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
@@ -437,15 +451,15 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($2, 0, DECL_POINTER)
+			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
-        |       LBRACK INT_LITERAL RBRACK declaration_specifiers
-                {
-			$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-                }
+        // |       LBRACK INT_LITERAL RBRACK declaration_specifiers
+        //         {
+	// 		$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
+        //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, 0, DECL_SLICE)
+			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -454,6 +468,16 @@ declaration_specifiers:
         |       IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+                }
+        |       indexing_literal type_specifier
+                {
+			basic := DeclarationSpecifiersBasic($2)
+			$$ = DeclarationSpecifiers(basic, $1, DECL_ARRAY)
+                }
+        |       indexing_literal IDENTIFIER
+                {
+			strct := DeclarationSpecifiersStruct($2, "", false, CurrentFile, LineNo)
+			$$ = DeclarationSpecifiers(strct, $1, DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -478,8 +502,6 @@ type_specifier:
                 { $$ = TYPE_AFF }
         |       BOOL
                 { $$ = TYPE_BOOL }
-        |       BYTE
-                { $$ = TYPE_BYTE }
         |       STR
                 { $$ = TYPE_STR }
         |       F32
@@ -539,35 +561,46 @@ array_literal_expression_list:
                 }
                 ;
 
+indexing_literal:
+		LBRACK INT_LITERAL RBRACK
+		{
+			$$ = []int{int($2)}
+		}
+        |       indexing_literal LBRACK INT_LITERAL RBRACK
+		{
+			$$ = append($1, int($3))
+		}
+		;
+
 // expressions
 array_literal_expression:
-                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE array_literal_expression_list RBRACE
+                indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
                 {
-			$$ = $6
-                }
-        |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE array_literal_expression_list RBRACE
-                {
-			$$ = ArrayLiteralExpression(int($2), $4, $6)
-                }
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK INT_LITERAL RBRACK array_literal_expression
-                {
-			for _, expr := range $4 {
-				if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
-					expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
-					expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
-				}
-			}
-
 			$$ = $4
                 }
+        |       indexing_literal IDENTIFIER LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
+                {
+			$$ = ArrayLiteralExpression($1, $2, $4)
+                }
+        |       indexing_literal type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        // |       indexing_literal array_literal_expression
+        //         {
+	// 		for _, expr := range $4 {
+	// 			if expr.Outputs[0].Name == $4[len($4) - 1].Inputs[0].Name {
+	// 				expr.Outputs[0].Lengths = append([]int{int($2)}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
+	// 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
+	// 			}
+	// 		}
+
+	// 		$$ = $4
+        //         }
                 ;
 
 
@@ -589,34 +622,45 @@ slice_literal_expression_list:
                 }
                 ;
 
-slice_literal_expression:
-                LBRACK RBRACK IDENTIFIER LBRACE slice_literal_expression_list RBRACE
-                {
-			$$ = $5
-                }
-        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
-                {
-			$$ = SliceLiteralExpression($3, $5)
-                }
-        |       LBRACK RBRACK type_specifier LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       LBRACK RBRACK slice_literal_expression
-                {
-			for _, expr := range $3 {
-				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
-					expr.Outputs[0].Lengths = append([]int{0}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...)
-					expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths)
-				}
-			}
+indexing_slices:
+		LBRACK RBRACK
+		{
+			$$ = []int{int(0)}
+		}
+        |       indexing_slices LBRACK RBRACK
+		{
+			$$ = append($1, 0)
+		}
+		;
 
-			$$ = $3
+slice_literal_expression:
+                indexing_slices IDENTIFIER LBRACE slice_literal_expression_list RBRACE
+                {
+			$$ = $4
                 }
+        |       indexing_slices IDENTIFIER LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       indexing_slices type_specifier LBRACE slice_literal_expression_list RBRACE
+                {
+			$$ = SliceLiteralExpression($1, $2, $4)
+                }
+        |       indexing_slices type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        /* |       LBRACK RBRACK slice_literal_expression */
+        /*         { */
+	/* 		for _, expr := range $3 { */
+	/* 			if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name { */
+	/* 				expr.Outputs[0].Lengths = append([]int{0}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...) */
+	/* 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths) */
+	/* 			} */
+	/* 		} */
+
+	/* 		$$ = $3 */
+        /*         } */
                 ;
 
 /* package_identifier: */
@@ -711,7 +755,7 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = SliceLiteralExpression(TYPE_AFF, nil)
+			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, nil)
                 }
         |       infer_actions
                 {
@@ -722,7 +766,7 @@ infer_clauses:
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = SliceLiteralExpression(TYPE_AFF, exprs)
+			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, exprs)
                 }
         /* |       infer_targets */
         /*         { */
@@ -777,11 +821,35 @@ primary_expression:
                 }
         |       BYTE_LITERAL
                 {
-			$$ = WritePrimary(TYPE_BYTE, encoder.Serialize($1), false)
+			$$ = WritePrimary(TYPE_I8, encoder.Serialize($1), false)
+                }
+        |       SHORT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I16, encoder.Serialize($1), false)
                 }
         |       INT_LITERAL
                 {
 			$$ = WritePrimary(TYPE_I32, encoder.Serialize($1), false)
+                }
+        |       LONG_LITERAL
+                {
+			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_BYTE_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI8, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_SHORT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI16, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_INT_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI32, encoder.Serialize($1), false)
+                }
+        |       UNSIGNED_LONG_LITERAL
+                {
+			$$ = WritePrimary(TYPE_UI64, encoder.Serialize($1), false)
                 }
         |       FLOAT_LITERAL
                 {
@@ -790,10 +858,6 @@ primary_expression:
         |       DOUBLE_LITERAL
                 {
 			$$ = WritePrimary(TYPE_F64, encoder.Serialize($1), false)
-                }
-        |       LONG_LITERAL
-                {
-			$$ = WritePrimary(TYPE_I64, encoder.Serialize($1), false)
                 }
         |       LPAREN expression RPAREN
                 { $$ = $2 }

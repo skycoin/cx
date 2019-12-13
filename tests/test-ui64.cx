@@ -1,0 +1,57 @@
+package main
+
+func UI64ArithmeticFunctions() () {
+	test(ui64.add(10UL, 10UL), 20UL, "Add error")
+	test(ui64.sub(10UL, 10UL), 0UL, "Subtract error")
+	test(ui64.mul(10UL, 10UL), 100UL, "Multiply error")
+	test(ui64.div(10UL, 10UL), 1UL, "Divide error")
+	test(ui64.mod(10UL, 3UL), 1UL, "Mod error")
+	test(ui64.bitshl(10UL, 5UL), 320UL, "Bit Shift Left error")
+	test(ui64.bitshr(10UL, 5UL), 0UL, "Bit Shift Right error")
+	test(ui64.bitand(10UL, 5UL), 0UL , "Bit AND error")
+	test(ui64.bitor(10UL, 5UL), 15UL, "Bit OR error")
+	test(ui64.bitxor(10UL, 5UL), 15UL, "Bit XOR error")
+	test(ui64.bitclear(10UL, 2UL), 8UL, "Bit CLEAR error")
+
+	test(ui64.max(2UL, 3UL), 3UL, "MAX error")
+	test(ui64.min(2UL, 3UL), 2UL, "MIN error")
+}
+
+func UI64ArithmeticShorthand() () {
+	test(10UL + 10UL, 20UL, "Add error")
+	test(10UL - 10UL, 0UL, "Subtract error")
+	test(10UL * 10UL, 100UL, "Multiply error")
+	test(10UL / 10UL, 1UL, "Divide error")
+	test(10UL % 3UL, 1UL, "Mod error")
+	test(10UL << 5UL, 320UL, "Bit Shift Left error")
+	test(10UL >> 5UL, 0UL, "Bit Shift Right error")
+	test(10UL & 5UL, 0UL,"Bit AND error")
+	test(10UL | 5UL, 15UL, "Bit OR error")
+	test(10UL ^ 5UL, 15UL, "Bit XOR error")
+	test(10UL &^ 2UL, 8UL, "Bit CLEAR error")
+}
+
+func UI64RelationalFunctions() () {
+	test(ui64.eq(5UL, 5UL), true, "UI64 Equality error")
+	test(ui64.uneq(5UL, 5UL), false, "UI64 Inequality error")
+	test(ui64.gt(5UL, 10UL), false, "UI64 Greater error")
+	test(ui64.gteq(15UL, 10UL), true, "UI64 Greater And Equal error")
+	test(ui64.lt(5UL, 10UL), true, "UI64 Lesser than error")
+	test(ui64.lteq(10UL, 6UL), false, "UI64 Lesser Or Equal error")
+}
+
+func UI64RelationalShorthand() (){
+	test(5UL == 5UL, true, "UI64 Equality Shorthand error")
+	test(5UL != 5UL, false, "UI64 Inequality Shorthand error")
+	test(5UL > 10UL, false, "UI64 Greater Shorthand error")
+	test(15UL >= 10UL, true, "UI64 Greater And Equal Shorthand error")
+	test(5UL < 10UL, true, "UI64 Lesser Shorthand error")
+	test(10UL <= 6UL, false, "UI64 Lesser Or Equal error")
+}
+
+func main() () {
+	UI64ArithmeticFunctions()
+	UI64ArithmeticShorthand()
+	UI64RelationalFunctions()
+	UI64RelationalShorthand()
+}

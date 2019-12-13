@@ -4,8 +4,8 @@
 		// "fmt"
 		"bytes"
 		// "os"
-		. "github.com/skycoin/cx/cx"
-		. "github.com/skycoin/cx/cxgo/actions"
+		. "github.com/SkycoinProject/cx/cx"
+		. "github.com/SkycoinProject/cx/cxgo/actions"
 	)
 
 	var PRGRM0 *CXProgram
@@ -37,15 +37,21 @@
 
 %union {
 	i int
-	byt byte
+	i8 int8
+	i16 int16
 	i32 int32
 	i64 int64
+	ui8 uint8
+	ui16 uint16
+	ui32 uint32
+	ui64 uint64
 	f32 float32
 	f64 float64
 	tok string
 	bool bool
 	string string
 	stringA []string
+	ints    []int
 
 	line int
 
@@ -58,14 +64,15 @@
         function *CXFunction
 }
 
-%token  <byt>           BYTENUM
-%token  <i32>           INT BOOLEAN
-%token  <i64>           LONG
-%token  <f32>           FLOAT
-%token  <f64>           DOUBLE
-%token  <byt>           BYTE_LITERAL
-%token  <i32>           INT_LITERAL BOOLEAN_LITERAL
+%token  <bool>          BOOLEAN_LITERAL
+%token  <i8>            BYTE_LITERAL
+%token  <i16>           SHORT_LITERAL
+%token  <i32>           INT_LITERAL
 %token  <i64>           LONG_LITERAL
+%token  <ui8>           UNSIGNED_BYTE_LITERAL
+%token  <ui16>          UNSIGNED_SHORT_LITERAL
+%token  <ui32>          UNSIGNED_INT_LITERAL
+%token  <ui64>          UNSIGNED_LONG_LITERAL
 %token  <f32>           FLOAT_LITERAL
 %token  <f64>           DOUBLE_LITERAL
 %token  <tok>           FUNC OP LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK IDENTIFIER
@@ -86,7 +93,7 @@
                         ADD_ASSIGN AND_ASSIGN LEFT_ASSIGN MOD_ASSIGN
                         MUL_ASSIGN DIV_ASSIGN OR_ASSIGN RIGHT_ASSIGN
                         SUB_ASSIGN XOR_ASSIGN
-                        BOOL BYTE F32 F64
+                        BOOL F32 F64
                         I8 I16 I32 I64
                         STR
                         UI8 UI16 UI32 UI64
@@ -98,7 +105,7 @@
                         /* Selectors */
                         SPACKAGE SSTRUCT SFUNC
                         /* Removers */
-                        REM DEF EXPR FIELD INPUT OUTPUT CLAUSES OBJECT OBJECTS
+                        REM DEF EXPR FIELD CLAUSES OBJECT OBJECTS
                         /* Stepping */
                         STEP PSTEP TSTEP
                         /* Debugging */
@@ -123,6 +130,8 @@
 %type   <arguments>     struct_fields
                                                 
 %type   <function>      function_header
+
+%type   <ints>          indexing_literal
 
                         // for struct literals
 %right                  IDENTIFIER LBRACE
@@ -304,16 +313,15 @@ direct_declarator:
 declaration_specifiers:
                 MUL_OP declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($2, 0, DECL_POINTER)
+			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
-        |       LBRACK INT_LITERAL RBRACK declaration_specifiers
-                {
-			
-			$$ = DeclarationSpecifiers($4, int($2), DECL_ARRAY)
-                }
+        // |       indexing_literal declaration_specifiers
+        //         {
+	// 		$$ = DeclarationSpecifiers($2, $1, DECL_ARRAY)
+        //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, 0, DECL_SLICE)
+			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -322,6 +330,16 @@ declaration_specifiers:
         |       IDENTIFIER
                 {
 			$$ = DeclarationSpecifiersStruct($1, "", false, CurrentFileName, lineNo)
+                }
+        |       indexing_literal type_specifier
+                {
+			basic := DeclarationSpecifiersBasic($2)
+			$$ = DeclarationSpecifiers(basic, $1, DECL_ARRAY)
+                }
+        |       indexing_literal IDENTIFIER
+                {
+			strct := DeclarationSpecifiersStruct($2, "", false, CurrentFile, LineNo)
+			$$ = DeclarationSpecifiers(strct, $1, DECL_ARRAY)
                 }
         |       IDENTIFIER PERIOD IDENTIFIER
                 {
@@ -342,8 +360,6 @@ type_specifier:
                 { $$ = TYPE_AFF }
         |       BOOL
                 { $$ = TYPE_BOOL }
-        |       BYTE
-                { $$ = TYPE_BYTE }
         |       STR
                 { $$ = TYPE_STR }
         |       F32
@@ -385,22 +401,41 @@ struct_literal_fields:
         |       struct_literal_fields COMMA IDENTIFIER COLON constant_expression
                 ;
 
+array_literal_expression_list:
+		assignment_expression
+        |       LBRACE array_literal_expression_list RBRACE
+	|       array_literal_expression_list COMMA assignment_expression
+                ;
+
+indexing_literal:
+		LBRACK INT_LITERAL RBRACK
+		{
+			$$ = []int{int($2)}
+		}
+        |       indexing_literal LBRACK INT_LITERAL RBRACK
+		{
+			$$ = append($1, int($3))
+		}
+		;
 
 // expressions
 array_literal_expression:
-                LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       LBRACK INT_LITERAL RBRACK IDENTIFIER LBRACE RBRACE
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE argument_expression_list RBRACE
-        |       LBRACK INT_LITERAL RBRACK type_specifier LBRACE RBRACE
-        |       LBRACK INT_LITERAL RBRACK array_literal_expression
+                indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
+        |       indexing_literal IDENTIFIER LBRACE RBRACE
+        |       indexing_literal type_specifier LBRACE array_literal_expression_list RBRACE
+        |       indexing_literal type_specifier LBRACE RBRACE
         ;
 
+indexing_slices:
+		LBRACK RBRACK
+        |       indexing_slices LBRACK RBRACK
+		;
+
 slice_literal_expression:
-                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
-        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
-        |       LBRACK RBRACK type_specifier LBRACE RBRACE
-        |       LBRACK RBRACK slice_literal_expression
+                indexing_slices IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       indexing_slices IDENTIFIER LBRACE RBRACE
+        |       indexing_slices type_specifier LBRACE argument_expression_list RBRACE
+        |       indexing_slices type_specifier LBRACE RBRACE
                 ;
 
 
@@ -458,10 +493,15 @@ primary_expression:
         |       STRING_LITERAL
         |       BOOLEAN_LITERAL
         |       BYTE_LITERAL
+        |       SHORT_LITERAL
         |       INT_LITERAL
+        |       LONG_LITERAL
+        |       UNSIGNED_BYTE_LITERAL
+        |       UNSIGNED_SHORT_LITERAL
+        |       UNSIGNED_INT_LITERAL
+        |       UNSIGNED_LONG_LITERAL
         |       FLOAT_LITERAL
         |       DOUBLE_LITERAL
-        |       LONG_LITERAL
         |       LPAREN expression RPAREN
         |       array_literal_expression
         |       slice_literal_expression

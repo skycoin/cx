@@ -12,87 +12,91 @@ the concept of affordances.
 Table of Contents
 =================
 
-<!-- toc -->
-
-- [CX Programming Language](#cx-programming-language)
-  * [Strict Type System](#strict-type-system)
-- [CX Roadmap](#cx-roadmap)
-- [CX Chains (CX + Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
-- [Video Games in CX](#video-games-in-cx)
-- [CX Playground](#cx-playground)
-- [Changelog](#changelog)
-- [Installation](#installation)
-  * [Binary Releases](#binary-releases)
-    + [MacOS Homebrew Install](#macos-homebrew-install)
-  * [Compiling from Source](#compiling-from-source)
-    + [Installing Go](#installing-go)
-    + [Compiling CX on *nix](#compiling-cx-on-nix)
-    + [Compiling CX on Windows](#compiling-cx-on-windows)
-  * [Updating CX](#updating-cx)
-- [Running CX](#running-cx)
-  * [CX REPL](#cx-repl)
-    + [Running CX Programs](#running-cx-programs)
-    + [Other Options](#other-options)
-    + [Hello World](#hello-world)
-- [Syntax](#syntax)
-  * [Comments](#comments)
-  * [Declarations](#declarations)
-    + [Allowed Names](#allowed-names)
-    + [Strict Type System](#strict-type-system-1)
-    + [Primitive Types](#primitive-types)
-    + [Global variables](#global-variables)
-    + [Local variables](#local-variables)
-    + [Arrays](#arrays)
-    + [Slices](#slices)
-    + [Literals](#literals)
-    + [Functions](#functions)
-    + [Custom Types](#custom-types)
-    + [Methods](#methods)
-    + [Packages](#packages)
-  * [Statements](#statements)
-    + [If and if/else](#if-and-ifelse)
-    + [For loop](#for-loop)
-    + [Goto](#goto)
-  * [Expressions](#expressions)
-  * [Assignments and Initializations](#assignments-and-initializations)
-  * [Affordances](#affordances)
-- [Runtime](#runtime)
-  * [Packages](#packages-1)
-  * [Data Structures](#data-structures)
-    + [Literals](#literals-1)
-    + [Variables](#variables)
-    + [Primitive types](#primitive-types)
-    + [Arrays](#arrays-1)
-    + [Slices](#slices-1)
-    + [Structures](#structures)
-    + [Pointers](#pointers)
-    + [Escape Analysis](#escape-analysis)
-  * [Control Flow](#control-flow)
-    + [Functions](#functions-1)
-    + [Methods](#methods-1)
-    + [If and if/else](#if-and-ifelse-1)
-    + [For loop](#for-loop-1)
-    + [Go-to](#go-to)
-  * [Affordances](#affordances-1)
-- [Native Functions](#native-functions)
-  * [Type-inferenced Functions](#type-inferenced-functions)
-  * [Slice Functions](#slice-functions)
-  * [Input/Output Functions](#inputoutput-functions)
-  * [Parse Functions](#parse-functions)
-  * [Unit Testing](#unit-testing)
-  * [`bool` Type Functions](#bool-type-functions)
-  * [`str` Type Functions](#str-type-functions)
-  * [`i32` Type Functions](#i32-type-functions)
-  * [`i64` Type Functions](#i64-type-functions)
-  * [`f32` Type Functions](#f32-type-functions)
-  * [`f64` Type Functions](#f64-type-functions)
-  * [`time` Package Functions](#time-package-functions)
-  * [`os` Package Functions](#os-package-functions)
-  * [`gl` Package Functions](#gl-package-functions)
-  * [`glfw` Package Functions](#glfw-package-functions)
-  * [`gltext` Package Functions](#gltext-package-functions)
-
-<!-- tocstop -->
+   * [CX Programming Language](#cx-programming-language)
+   * [Table of Contents](#table-of-contents)
+   * [CX Programming Language](#cx-programming-language-1)
+      * [Strict Type System](#strict-type-system)
+   * [CX Book](#cx-book)
+   * [CX Projects, Libraries and other Resources](#cx-projects-libraries-and-other-resources)
+      * [CX Chains:](#cx-chains)
+      * [CX Examples:](#cx-examples)
+      * [CX Libraries:](#cx-libraries)
+      * [CX Video Games:](#cx-video-games)
+      * [Miscellaneous:](#miscellaneous)
+   * [CX Roadmap](#cx-roadmap)
+   * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
+   * [Changelog](#changelog)
+   * [Installation](#installation)
+      * [Binary Releases](#binary-releases)
+         * [MacOS Homebrew Install](#macos-homebrew-install)
+      * [Compiling from Source](#compiling-from-source)
+         * [Installing Go](#installing-go)
+         * [Compiling CX on *nix](#compiling-cx-on-nix)
+         * [Compiling CX on Windows](#compiling-cx-on-windows)
+      * [Updating CX](#updating-cx)
+   * [Running CX](#running-cx)
+      * [CX REPL](#cx-repl)
+         * [Running CX Programs](#running-cx-programs)
+         * [Other Options](#other-options)
+         * [Hello World](#hello-world)
+   * [Syntax](#syntax)
+      * [Comments](#comments)
+      * [Declarations](#declarations)
+         * [Allowed Names](#allowed-names)
+         * [Strict Type System](#strict-type-system-1)
+         * [Primitive Types](#primitive-types)
+         * [Global variables](#global-variables)
+         * [Local variables](#local-variables)
+         * [Arrays](#arrays)
+         * [Slices](#slices)
+         * [Literals](#literals)
+         * [Functions](#functions)
+         * [Custom Types](#custom-types)
+         * [Methods](#methods)
+         * [Packages](#packages)
+      * [Statements](#statements)
+         * [If and if/else](#if-and-ifelse)
+         * [Else if](#else-if)
+         * [For loop](#for-loop)
+         * [Goto](#goto)
+      * [Expressions](#expressions)
+      * [Assignments and Initializations](#assignments-and-initializations)
+      * [Affordances](#affordances)
+   * [Runtime](#runtime)
+      * [Packages](#packages-1)
+      * [Data Structures](#data-structures)
+         * [Literals](#literals-1)
+         * [Variables](#variables)
+         * [Primitive types](#primitive-types-1)
+         * [Arrays](#arrays-1)
+         * [Slices](#slices-1)
+         * [Structures](#structures)
+         * [Pointers](#pointers)
+         * [Escape Analysis](#escape-analysis)
+      * [Control Flow](#control-flow)
+         * [Functions](#functions-1)
+         * [Methods](#methods-1)
+         * [If and if/else](#if-and-ifelse-1)
+         * [For loop](#for-loop-1)
+         * [Go-to](#go-to)
+      * [Affordances](#affordances-1)
+   * [Native Functions](#native-functions)
+      * [Type-inferenced Functions](#type-inferenced-functions)
+      * [Slice Functions](#slice-functions)
+      * [Input/Output Functions](#inputoutput-functions)
+      * [Parse Functions](#parse-functions)
+      * [Unit Testing](#unit-testing)
+      * [`bool` Type Functions](#bool-type-functions)
+      * [`str` Type Functions](#str-type-functions)
+      * [`i32` Type Functions](#i32-type-functions)
+      * [`i64` Type Functions](#i64-type-functions)
+      * [`f32` Type Functions](#f32-type-functions)
+      * [`f64` Type Functions](#f64-type-functions)
+      * [`time` Package Functions](#time-package-functions)
+      * [`os` Package Functions](#os-package-functions)
+      * [`gl` Package Functions](#gl-package-functions)
+      * [`glfw` Package Functions](#glfw-package-functions)
+      * [`gltext` Package Functions](#gltext-package-functions)
 
 # CX Programming Language
 
@@ -107,16 +111,16 @@ of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
 purpose programming.
 
-In the following sections, the reader can find a short tutorial on how
-to use the main features of the language. In previous versions of this
-README file, the tutorial was written in a *book-ish* style and was
-targetted to a beginner audience. We're going to
-be making a transition from that style to a more technical style,
-without falling into a pure documentation style. The reason behind
-this is that a CX book is now going to be published, which is going to
-be targetted to a more beginner audience. Thus, this README now has
-the purpose of quickly demonstrating the capabilities of the language,
-how to install it, etc.
+In the following sections, the reader can find a short tutorial on how to use
+the main features of the language. In previous versions of this README file, the
+tutorial was written in a *book-ish* style and was targetted to a beginner
+audience. We're going to be making a transition from that style to a more
+technical style, without falling into a pure documentation style. The reason
+behind this is that a CX book is going to be published, which is targetted to a
+more beginner audience.  Thus, this README now has the purpose of quickly
+demonstrating the capabilities of the language, how to install it, etc. You can
+find the book source code and its releases in its [CX book Github
+repository](https://github.com/SkycoinProject/cx-book).
 
 This tutorial/documentation is divided into four parts, which can
 broadly be described as *introduction*, *syntax*, *runtime* and
@@ -132,7 +136,7 @@ with an example.
 
 
 
-Feel free to [create an issue](https://github.com/skycoin/cx/issues)
+Feel free to [create an issue](https://github.com/SkycoinProject/cx/issues)
 requesting a better explanation of a feature.
 
 ## Strict Type System
@@ -147,6 +151,46 @@ versions of `print` for each of the primitive types, such as
 There are native functions in CX (the functions in the
 core language) associated to
 
+# CX Book
+
+You can find the book source code and its releases in its [CX book Github
+repository](https://github.com/SkycoinProject/cx-book).
+
+# CX Projects, Libraries and other Resources
+
+## CX Chains:
+
+* https://github.com/amherag/skycoin
+
+## CX Examples:
+
+* https://github.com/SkycoinProject/cx/tree/develop/examples
+
+## CX Libraries:
+
+* https://github.com/skycoin/cxfx [video game library]
+* https://github.com/ReewassSquared/cxm [math library]
+* https://github.com/ReewassSquared/CXSL [general utilities library]
+* https://github.com/ReewassSquared/CXCIPHER [crypto library]
+* https://github.com/asahi3g/pumpcx [user interface library]
+* https://github.com/ReewassSquared/CXML [machine learning library]
+
+## CX Video Games:
+
+* https://github.com/galah4d/casino-cx [slot machine]
+* https://github.com/atang152/crappyBall-cx [flappy bird clone]
+* https://github.com/galah4d/pacman-3d [pacman 3D clone]
+* https://github.com/SkycoinProject/cx-games/tree/master/Snake-by-Lunier [snake clone]
+* https://github.com/SkycoinProject/cx-games/tree/master/SynthCat-Brick-Breaker-by-RedCurse [brick breaker clone]
+* https://github.com/SkycoinProject/cx-games/tree/master/Pac-Man-CX-by-Galah4d [pacman 2D clone]
+* https://github.com/SkycoinProject/cx-games/tree/master/Whacky-Stack [tetris clone]
+* https://github.com/SkycoinProject/cx-games/tree/master/ridge-blaster [dig-n-rig clone]
+* https://github.com/taekwondouglas/space-invaders [space invaders clone dapp using CX chains]
+
+## Miscellaneous:
+
+* https://github.com/SkycoinProject/cx-website [cx.skycoin.net]
+
 # CX Roadmap
 
 ![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
@@ -155,36 +199,11 @@ core language) associated to
 
 CX Chains are Skycoin's solution for the creation of blockchain-based
 programs. You can read more about them in the [CX
-wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) for the latest release or in [`documentation/BLOCKCHAIN.md`](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md) for the `develop` branch of CX (the bleeding edge version of CX).
-
-# Video Games in CX
-
-In order to test out the language, programmers from the Skycoin
-community have already developed a number of video games, and more are
-in-coming. Below is a list of the current video games that we are
-aware of. If you are developing a video game using CX, please let us
-know in our official telegram for video game development
-https://t.me/skycoin_game_dev, or in the general CX group https://t.me/skycoin_cx.
-
-- https://github.com/Lunier/Snake
-- https://github.com/galah4d/casino-cx
-- https://github.com/redcurse/SynthCat-Brick-Breaker
-- https://github.com/atang152/crappyBall-cx
-- https://github.com/galah4d/pacman-cx
-
-# CX Playground
-
-If you want to test some CX examples, you can do it in the CX
-[Playground (http://cx.skycoin.net/)](http://cx.skycoin.net/).
+wiki](https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial) for the latest release or in [`documentation/BLOCKCHAIN.md`](https://github.com/SkycoinProject/cx/blob/develop/documentation/BLOCKCHAIN.md) for the `develop` branch of CX (the bleeding edge version of CX).
 
 # Changelog
 
-Check out the latest additions and bug fixes in the [changelog](https://github.com/skycoin/cx/blob/master/CHANGELOG.md).
-
-
-
-
-
+Check out the latest additions and bug fixes in the [changelog](https://github.com/SkycoinProject/cx/blob/master/CHANGELOG.md).
 
 # Installation
 
@@ -192,7 +211,7 @@ Check out the latest additions and bug fixes in the [changelog](https://github.c
 
 This repository provides new binary releases of the language every
 week. Check this link and download the appropriate binary release for
-your platfrom: https://github.com/skycoin/cx/releases
+your platfrom: https://github.com/SkycoinProject/cx/releases
 
 More platforms will be added in the future.
 
@@ -234,7 +253,7 @@ source. If you're not familiarized with Go, Git, your OS's terminal or
 your OS's package manager (to name a few), we *strongly* recommend you
 to try out a binary release. If you find any bugs or problems with the
 binary release, submit an issue here:
-https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
+https://github.com/SkycoinProject/cx/issues, and we'll fix it for the next release.
 
 ### Installing Go
 
@@ -242,12 +261,12 @@ CX supports go1.10+.
 
 [Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
 
-### Compiling CX on *nix
+### Compiling CX on \*nix
 
 Download CX's repository using Go:
 
 ```
-go get github.com/skycoin/cx/cx/...
+go get github.com/SkycoinProject/cx/cx/...
 ```
 
 Navigate to CX's repository, and run:
@@ -260,6 +279,12 @@ You should test your installation by running:
 
 ```
 make test
+```
+
+If you intend to develop games with CX, then run:
+
+```
+make test-full
 ```
 
 ### Compiling CX on Windows
@@ -298,9 +323,9 @@ this in your terminal:
 
 ```
 CX 0.5.13
-More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/
 :func main {...
-	* 
+	*
 ```
 
 This is the CX REPL
@@ -336,8 +361,8 @@ have changed indentation, and the REPL now shouldn't print `:func main
 
 ```
 :func main {...
-	* 
-* 
+	*
+*
 ```
 
 Now, let's enter a function prototype (an empty function which only
@@ -345,7 +370,7 @@ specifies the name, the inputs and the outputs):
 
 ```
 * func sum (num1 i32, num2 i32) (num3 i32) {}
-* 
+*
 ```
 
 You can check that the function was indeed added by issuing a `:dp`
@@ -355,7 +380,7 @@ command. If we want to add expressions to `sum`, we have to select it:
 * :func sum
 
 :func sum {...
-	* 
+	*
 ```
 
 Notice that there's a semicolon before `func sum`. Now we can add an expression to it:
@@ -382,7 +407,7 @@ the-program.cx`. Let's try to run some examples from the `examples`
 directory in this repository. In a terminal, type this:
 
 ```
-cd $GOPATH/src/github.com/skycoin/cx/
+cd $GOPATH/src/github.com/SkycoinProject/cx/
 cx examples/hello-world.cx
 ```
 
@@ -674,7 +699,7 @@ func main () {
     var a Point
     var b [5]i32
     var c []i32
-    
+
     a = Point{x: 10, y: 20}
     b = [5]i32{1, 2, 3, 4, 5}
     c = []i32{100, 200, 300}
@@ -792,7 +817,7 @@ func main () {
 	var l Line
 	var p1 Point
 	var p2 Point
-	
+
 	p1.x = 10
 	p1.y = 20
 	p2.x = 11
@@ -927,7 +952,7 @@ package main
 func main () {
    var i i32
    i = 0
-   
+
    if i == 0 {
      str.print("i is 0")
    } else if i == 1 {
@@ -1127,10 +1152,10 @@ func prgrmPredicate (prgrm Program) () {
 func main () {
 	num1 := 5
 	num2 := 10
-	
+
 targetExpr:
 	sum := i32.add(0, 0)
-	
+
 	tgt := ->{
 		pkg(main)
 		fn(main)
@@ -1146,7 +1171,7 @@ targetExpr:
 	aff.print(fltrs)
 
 	affs := aff.query(fltrs, tgt)
-	
+
 	aff.on(affs, tgt)
 	aff.of(affs, tgt)
 
@@ -1241,7 +1266,7 @@ func main () {
 	slc1 = append(slc1, 1)
 	slc1 = append(slc1, 2)
 	slc1 = append(slc1, 3)
-	
+
 	slc2 := []i32{10, 20, 30}
 }
 ```
@@ -1512,7 +1537,7 @@ package main
 func main () {
     var arr1 [1]i32
     arr1[0] = 1 // add the first value
-    
+
     var arr2 [2]i32 // double the size
     arr2[0] = arr1[0] // copy previous array
     arr2[1] = 2 // add the second value
@@ -1520,7 +1545,7 @@ func main () {
     var arr3 [4]i32 // double the size
     arr3[0] = arr2[0] // copy previous array
     arr3[1] = arr2[1] // copy previous array
-    
+
     arr3[2] = 3 // add the third value
     arr3[3] = 4 // add the fourth value
 }
@@ -1610,7 +1635,7 @@ func main () {
 	var nums [100][100]i32
 
 	start = time.UnixMilli()
-	
+
 	for c := 0; c < 10000; c++ {
 		foo(nums)
 	}
@@ -1640,7 +1665,7 @@ func main () {
 	var nums [100][100]i32
 
 	start = time.UnixMilli()
-	
+
 	for c := 0; c < 10000; c++ {
 		foo(&nums)
 	}
@@ -1725,7 +1750,7 @@ func main () {
 	pNum = foo()
 
 	stackDestroyer()
-	
+
 	i32.print(*pNum)
 }
 ```
@@ -1930,7 +1955,7 @@ func main () {
 	player.HP = 10
 	player.Mana = 10
 	player.Lives = 3
-	
+
 	player.draw()
 
 	var monster Monster
@@ -2010,7 +2035,7 @@ func main () {
 	player.HP = 10
 	player.Mana = 10
 	player.Lives = 3
-	
+
 	var monster Monster
 	monster.Name = "Domo-kun"
 	monster.HP = 7
@@ -2182,12 +2207,12 @@ func main () {
 
 	player.draw()
 	monster.draw()
-	
+
 	for true {
 		if player.HP < 1 || monster.HP < 1 {
 			return
 		}
-		
+
 		printf("Command? (M)agic; (P)hysical; (E)xit\t")
 		var cmd str
 		cmd = read()
@@ -2224,7 +2249,7 @@ beginning:
 
 	var cmd str
 	cmd = read()
-	
+
 	if cmd == "C" || cmd == "c" {
 		goto cat
 	}
@@ -2290,7 +2315,7 @@ package main
 func main () {
 	bool.print(eq(5, 5))
 	bool.print(5 == 5) // alternative
-	
+
 	bool.print(uneq("hihi", "byebye"))
 	bool.print("hihi" != "byebye") // alternative
 }
@@ -2422,7 +2447,7 @@ func main () {
 	string = "this should print 20"
 	array = [5]i32{1, 2, 3, 4, 5}
 	slice = []i32{10, 20, 30}
-	
+
 	i32.print(len(string)) // prints 20
 	i32.print(len(array)) // prints 5
 	i32.print(len(slice)) // prints 3

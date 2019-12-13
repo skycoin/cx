@@ -1,0 +1,257 @@
+package main
+
+import "args"
+
+func main()() {
+	// bool
+	{
+		var boolA bool
+		var matchBA bool
+		panic(args.Bool("++boola=", "boola", &boolA, &matchBA), false, "invalid bool argument")
+		panic(matchBA, true, "boola must match")
+	}
+
+	{
+		var boolB bool
+		var matchBB bool
+		panic(args.Bool("++boolb=too", "boolb", &boolB, &matchBB), false, "invalid bool argument")
+		panic(matchBB, true, "boolb must match")
+	}
+
+	{
+		var boolC bool
+		var matchBC bool
+		panic(args.Bool("++boolc", "boolc", &boolC, &matchBC), true, "valid bool argument")
+		panic(matchBC, true, "boolc m must match")
+		panic(boolC, true, "boolC must equal true")
+	}
+
+	{
+		var boolD bool
+		var matchBD bool
+		panic(args.Bool("++boold=true", "boold", &boolD, &matchBD), true, "valid bool argument")
+		panic(matchBD, true, "boold must match")
+		panic(boolD, true, "boolD must equal true")
+	}
+
+	{
+		var boolE bool = true
+		var matchBE bool
+		panic(args.Bool("++boole=false", "boole", &boolE, &matchBE), true, "valid bool argument")
+		panic(matchBE, true, "boole must match")
+		panic(boolE, false, "boolE mest equal false")
+	}
+
+	{
+		var boolF bool
+		var matchBF bool
+		panic(args.Bool("++boolfF", "boolf", &boolF, &matchBF), false, "invalid bool argument")
+		panic(matchBF, false, "boolf must not match")
+	}
+
+	{
+		var boolG bool
+		var matchBG bool
+		panic(args.Bool("++boolg=", "boolg=", &boolG, &matchBG), true, "valid bool argument")
+		panic(matchBG, true, "boolg= must match")
+	}
+
+	// stl
+	{
+		var strA str
+		var matchStrA bool
+		panic(args.Str("++stra", "stra", &strA, &matchStrA), false, "invalid str argument")
+		panic(matchStrA, true, "stra must match")
+	}
+
+	{
+		var strB str
+		var matchStrB bool
+		panic(args.Str("++strb=", "strb", &strB, &matchStrB), true, "valid str argument")
+		panic(matchStrB, true, "strb must match")
+		panic(str.eq(strB, ""), true, "str values must match")
+	}
+
+	{
+		var strC str
+		var matchStrC bool
+		panic(args.Str("++strc=args", "strc", &strC, &matchStrC), true, "valid str argument")
+		panic(matchStrC, true, "strc must match")
+		panic(str.eq(strC, "args"), true, "str values must match")
+	}
+
+	{
+		var strD str
+		var matchStrD bool
+		panic(args.Str("++strdD=o", "strd", &strD, &matchStrD), false, "invalid str argument")
+		panic(matchStrD, false, "strd must not match")
+	}
+
+	// i32
+	{
+		var iA i32
+		var matchIA bool
+		panic(args.I32("++ia", "ia", &iA, &matchIA), false, "invalid i32 argument")
+		panic(matchIA, true, "ia must match")
+	}
+
+	{
+		var iB i32
+		var matchIB bool
+		panic(args.I32("++ib=", "ib", &iB, &matchIB), false, "invalid i32 argument")
+		panic(matchIB, true, "ib must match")
+	}
+
+	//panic(args.I32("++ic=a, "ic", &i, &match), false, "invalid i32 argument") // CX Issue
+	//panic(args.I32("++id=-2147483649", "id", &i, &match), false, "invalid i32 argument") // CX Issue
+	//panic(args.I32("++ie=2147483648", "ie", &i, &match), false, "invalid i32 argument") // CX Issue
+
+	{
+		var iF i32
+		var matchIF bool
+		panic(args.I32("++if=-2147483648", "if", &iF, &matchIF), true, "valid i32 argument")
+		panic(matchIF, true, "if must match")
+		panic(iF, i64.i32(-2147483648L), "values must match") // ISSUE : can't use INT32_MIN
+	}
+
+	{
+		var iG i32
+		var matchIG bool
+		panic(args.I32("++ig=2147483647", "ig", &iG, &matchIG), true, "valid i32 argument")
+		panic(matchIG, true, "ig must match")
+		panic(iG, 2147483647, "values must match")
+	}
+
+	{
+		var iH i32
+		var matchIH bool
+		panic(args.I32("++ihH=", "ih", &iH, &matchIH), false, "invalid i32 argument")
+		panic(matchIH, false, "ih must not match")
+	}
+
+	// []str
+	{
+		var strSA []str
+		var matchSA bool
+		panic(args.StrSlice("++a[]str", "a[]str", &strSA, &matchSA), false, "invalid []str argument")
+		panic(matchSA, true, "a[]str must match")
+	}
+
+	{
+		var strSB []str
+		var matchSB bool
+		panic(args.StrSlice("++b[]str=", "b[]str", &strSB, &matchSB), true, "valid []str argument")
+		panic(matchSB, true, "b[]str must match")
+		panic(len(strSB), 0, "must be empty")
+	}
+
+	{
+		var strSC []str
+		var matchSC bool
+		panic(args.StrSlice("++c[]str=,", "c[]str", &strSC, &matchSC), true, "valid []str argument")
+		panic(matchSC, true, "c[]str must match")
+		panic(len(strSC), 1, "len must be 1")
+		panic(str.eq(strSC[0], ""), true, "[]str don't match")
+	}
+
+	{
+		var strSD []str
+		var matchSD bool
+		panic(args.StrSlice("++d[]str=,,", "d[]str", &strSD, &matchSD), true, "valid []str argument")
+		panic(matchSD, true, "d[]str must match")
+		panic(len(strSD), 2, "len must be 2")
+		panic(str.eq(strSD[0], ""), true, "[]str don't match")
+		panic(str.eq(strSD[1], ""), true, "[]str don't match")
+	}
+
+	{
+		var strSE []str
+		var matchSE bool
+		panic(args.StrSlice("++e[]str=,arg0,arg1,arg2", "e[]str", &strSE, &matchSE), true, "valid []str argument")
+		panic(matchSE, true, "e[]str must match")
+		panic(len(strSE), 4, "len must be 4")
+		panic(str.eq(strSE[0], ""), true, "[]str don't match")
+		panic(str.eq(strSE[1], "arg0"), true, "[]str don't match")
+		panic(str.eq(strSE[2], "arg1"), true, "[]str don't match")
+		panic(str.eq(strSE[3], "arg2"), true, "[]str don't match")
+	}
+
+	{
+		var strSF []str
+		var matchSF bool
+		panic(args.StrSlice("++f[]str=arg0,arg1,arg2,", "f[]str", &strSF, &matchSF), true, "valid []str argument")
+		panic(matchSF, true, "f[]str must match")
+		panic(len(strSF), 3, "len must be 3")
+		panic(str.eq(strSF[0], "arg0"), true, "[]str don't match")
+		panic(str.eq(strSF[1], "arg1"), true, "[]str don't match")
+		panic(str.eq(strSF[2], "arg2"), true, "[]str don't match")
+	}
+
+	{
+		var strSG []str
+		var matchSG bool
+		panic(args.StrSlice("++g[]str=arg0,arg1,arg2", "g[]str", &strSG, &matchSG), true, "valid []str argument")
+		panic(matchSG, true, "g[]str must match")
+		panic(len(strSG), 3, "len must be 3")
+		panic(str.eq(strSG[0], "arg0"), true, "[]str don't match")
+		panic(str.eq(strSG[1], "arg1"), true, "[]str don't match")
+		panic(str.eq(strSG[2], "arg2"), true, "[]str don't match")
+	}
+
+	{
+		var strSH []str
+		var matchSH bool
+		panic(args.StrSlice("++h[]strH=arg0,arg1", "h[]str", &strSH, &matchSH), false, "invalid [] argument")
+		panic(matchSH, false, "h[]str must not match")
+	}
+
+	// flags
+	var names []str
+	names = []str { "left", "right", "top", "bottom" }
+	var values []i32 = []i32{ 1, 2, 4, 8 }
+
+	{
+		var fA i32
+		var matchFA bool
+		panic(args.Flags("++flagsa", "flagsa", &fA, &matchFA, names, values), false, "invalid flags")
+		panic(matchFA, true, "flagsa must match")
+	}
+
+	{
+		var fB i32
+		var matchFB bool
+		panic(args.Flags("++flagsb=,", "flagsb", &fB, &matchFB, names, values), false, "invalid flags")
+		panic(matchFB, true, "flagsb must match")
+	}
+
+	{
+		var fC i32
+		var matchFC bool
+		panic(args.Flags("++flagsc=tup,bottom", "flagsc", &fC, &matchFC, names, values), false, "invalid flags")
+		panic(matchFC, true, "flagsc must match")
+	}
+
+	{
+		var fD i32
+		var matchFD bool
+		panic(args.Flags("++flagsd=", "flagsd", &fD, &matchFD, names, values), true, "valid flags")
+		panic(matchFD, true, "flagsd must match")
+		panic(fD, 0, "fD must equal 0")
+	}
+
+	{
+		var fE i32
+		var matchFE bool
+		panic(args.Flags("++flagse=left,right,top,bottom", "flagse", &fE, &matchFE, names, values), true, "valid flags")
+		panic(matchFE, true, "flagse must match")
+		panic(fE, 15, "fE must equal 15")
+	}
+
+	{
+		var fF i32
+		var matchFF bool
+		panic(args.Flags("++flagsfF=left", "flagsf", &fF, &matchFF, names, values), false, "invalid flags")
+		panic(matchFF, false, "flagsf must not match")
+	}
+}
+

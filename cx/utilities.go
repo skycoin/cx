@@ -3,9 +3,12 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
@@ -118,17 +121,293 @@ func (prgrm *CXProgram) PrintStack() {
 	}
 }
 
-// PrintProgram ...
+// getFormattedDerefs is an auxiliary function for `GetFormattedName`. This
+// function formats indexing and pointer dereferences associated to `arg`.
+func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
+	name := ""
+	// Checking if we should include `arg`'s package name.
+	if includePkg {
+		name = fmt.Sprintf("%s.%s", arg.Package.Name, arg.Name)
+	} else {
+		name = arg.Name
+	}
+
+	// If it's a literal, just override the name with LITERAL_PLACEHOLDER.
+	if arg.Name == "" {
+		name = LITERAL_PLACEHOLDER
+	}
+
+	// Checking if we got dereferences, e.g. **foo
+	derefLevels := ""
+	if arg.DereferenceLevels > 0 {
+		for c := 0; c < arg.DereferenceLevels; c++ {
+			derefLevels += "*"
+		}
+	}
+	name = derefLevels + name
+
+	// Checking if we have indexing operations, e.g. foo[2][1]
+	for _, idx := range arg.Indexes {
+		// Checking if the value is in data segment.
+		// If this is the case, we can safely display it.
+		idxValue := ""
+		if idx.Offset > PROGRAM.StackSize {
+			// Then it's a literal.
+			var idxI32 int32
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[idx.Offset:idx.Offset+TYPE_POINTER_SIZE], &idxI32)
+			if err != nil {
+				panic(err)
+			}
+			idxValue = fmt.Sprintf("%d", idxI32)
+		} else {
+			// Then let's just print the variable name.
+			idxValue = idx.Name
+		}
+
+		name = fmt.Sprintf("%s[%s]", name, idxValue)
+	}
+
+	return name
+}
+
+// GetFormattedName reads `arg.DereferenceOperations` and builds a string that
+// depicts how an argument is being accessed. Example outputs: "foo[3]",
+// "**bar", "foo.bar[0]". If `includePkg` is `true`, the argument name will
+// include the package name that contains it, such as in "pkg.foo".
+func GetFormattedName(arg *CXArgument, includePkg bool) string {
+	// Getting formatted name which does not include fields.
+	name := getFormattedDerefs(arg, includePkg)
+
+	// Adding as suffixes all the fields.
+	for _, fld := range arg.Fields {
+		name = fmt.Sprintf("%s.%s", name, getFormattedDerefs(fld, includePkg))
+	}
+
+	// Checking if we're referencing `arg`.
+	if arg.PassBy == PASSBY_REFERENCE {
+		name = "&" + name
+	}
+
+	return name
+}
+
+// GetFormattedType builds a string with the CXGO type representation of `arg`.
+func GetFormattedType(arg *CXArgument) string {
+	typ := ""
+	elt := GetAssignmentElement(arg)
+
+	// this is used to know what arg.Lengths index to use
+	// used for cases like [5]*[3]i32, where we jump to another decl spec
+	arrDeclCount := len(arg.Lengths) - 1
+	// looping declaration specifiers
+	for _, spec := range elt.DeclarationSpecifiers {
+		switch spec {
+		case DECL_POINTER:
+			typ = "*" + typ
+		case DECL_DEREF:
+			typ = typ[1:]
+		case DECL_ARRAY:
+			typ = fmt.Sprintf("[%d]%s", arg.Lengths[arrDeclCount], typ)
+			arrDeclCount--
+		case DECL_SLICE:
+			typ = "[]" + typ
+		case DECL_INDEXING:
+		default:
+			// base type
+			if elt.CustomType != nil {
+				// then it's custom type
+				typ += elt.CustomType.Name
+			} else {
+				// then it's basic type
+				typ += TypeNames[elt.Type]
+			}
+		}
+	}
+
+	return typ
+}
+
+// getFormattedParam is an auxiliary function for `PrintProgram`. It formats the
+// name of a `CXExpression`'s input and output parameters (`CXArgument`s). Examples
+// of these formattings are "pkg.foo[0]", "&*foo.field1". The result is written to
+// `buf`.
+func getFormattedParam(params []*CXArgument, pkg *CXPackage, buf *bytes.Buffer) {
+	for i, param := range params {
+		elt := GetAssignmentElement(param)
+
+		// Checking if this argument comes from an imported package.
+		externalPkg := false
+		if pkg != param.Package {
+			externalPkg = true
+		}
+
+		if i == len(params)-1 {
+			buf.WriteString(fmt.Sprintf("%s %s", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+		} else {
+			buf.WriteString(fmt.Sprintf("%s %s, ", GetFormattedName(param, externalPkg), GetFormattedType(elt)))
+		}
+	}
+}
+
+// printImports is an auxiliary function for `printProgram`. It prints all the
+// imported packages of `pkg`.
+func printImports(pkg *CXPackage) {
+	if len(pkg.Imports) > 0 {
+		fmt.Println("\tImports")
+	}
+
+	for j, imp := range pkg.Imports {
+		fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
+	}
+}
+
+// printGlobals is an auxiliary function for `printProgram`. It prints all the
+// global variables of `pkg`.
+func printGlobals(pkg *CXPackage) {
+	if len(pkg.Globals) > 0 {
+		fmt.Println("\tGlobals")
+	}
+
+	for j, v := range pkg.Globals {
+		fmt.Printf("\t\t%d.- Global: %s %s\n", j, v.Name, GetFormattedType(v))
+	}
+}
+
+// printStructs is an auxiliary function for `printProgram`. It prints all the
+// structures defined in `pkg`.
+func printStructs(pkg *CXPackage) {
+	if len(pkg.Structs) > 0 {
+		fmt.Println("\tStructs")
+	}
+
+	for j, strct := range pkg.Structs {
+		fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
+
+		for k, fld := range strct.Fields {
+			fmt.Printf("\t\t\t%d.- Field: %s %s\n",
+				k, fld.Name, GetFormattedType(fld))
+		}
+	}
+}
+
+// printFunctions is an auxiliary function for `printProgram`. It prints all the
+// functions defined in `pkg`.
+func printFunctions(pkg *CXPackage) {
+	if len(pkg.Functions) > 0 {
+		fmt.Println("\tFunctions")
+	}
+
+	// We need to declare the counter outside so we can
+	// ignore the increment from the `*init` function.
+	var j int
+	for _, fn := range pkg.Functions {
+		if fn.Name == SYS_INIT_FUNC {
+			continue
+		}
+		_, err := pkg.SelectFunction(fn.Name)
+		if err != nil {
+			panic(err)
+		}
+
+		var inps bytes.Buffer
+		var outs bytes.Buffer
+		getFormattedParam(fn.Inputs, pkg, &inps)
+		getFormattedParam(fn.Outputs, pkg, &outs)
+
+		fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
+			j, fn.Name, inps.String(), outs.String())
+
+		for k, expr := range fn.Expressions {
+			var inps bytes.Buffer
+			var outs bytes.Buffer
+			var opName string
+			var lbl string
+
+			// Adding label in case a `goto` statement was used for the expression.
+			if expr.Label != "" {
+				lbl = " <<" + expr.Label + ">>"
+			} else {
+				lbl = ""
+			}
+
+			// Determining operator's name.
+			if expr.Operator != nil {
+				if expr.Operator.IsNative {
+					opName = OpNames[expr.Operator.OpCode]
+				} else {
+					opName = expr.Operator.Name
+				}
+			}
+
+			getFormattedParam(expr.Inputs, pkg, &inps)
+			getFormattedParam(expr.Outputs, pkg, &outs)
+
+			if expr.Operator != nil {
+				assignOp := ""
+				if outs.Len() > 0 {
+					assignOp = " = "
+				}
+				fmt.Printf("\t\t\t%d.- Expression%s: %s%s%s(%s)\n",
+					k,
+					lbl,
+					outs.String(),
+					assignOp,
+					opName,
+					inps.String(),
+				)
+			} else {
+				// Then it's a variable declaration. These are represented
+				// by expressions without operators that only have outputs.
+				if len(expr.Outputs) > 0 {
+					out := expr.Outputs[len(expr.Outputs)-1]
+
+					fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
+						k,
+						lbl,
+						expr.Outputs[0].Name,
+						GetFormattedType(out))
+				}
+			}
+		}
+
+		j++
+	}
+}
+
+// printPackages is an auxiliary function for `PrintProgram`. It starts the
+// process of printing the abstract syntax tree of a CX program.
+func printPackages(prgrm *CXProgram) {
+	// We need to declare the counter outside so we can
+	// ignore the increments from core or stdlib packages.
+	var i int
+	for _, pkg := range prgrm.Packages {
+		if IsCorePackage(pkg.Name) {
+			continue
+		}
+
+		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
+
+		printImports(pkg)
+		printGlobals(pkg)
+		printStructs(pkg)
+		printFunctions(pkg)
+
+		i++
+	}
+}
+
+// PrintProgram prints the abstract syntax tree of a CX program in a
+// human-readable format.
 func (prgrm *CXProgram) PrintProgram() {
 	fmt.Println("Program")
 
 	var currentFunction *CXFunction
 	var currentPackage *CXPackage
 
-	_ = currentFunction
-	_ = currentPackage
-
-	// saving current program state because PrintProgram uses SelectXXX
+	// Saving current program state because PrintProgram uses SelectXXX.
+	// If we don't do this, calling `:dp` in a REPL will always switch the
+	// user to the last function in the last package in the `CXProgram`
+	// structure.
 	if pkg, err := prgrm.GetCurrentPackage(); err == nil {
 		currentPackage = pkg
 	}
@@ -137,343 +416,10 @@ func (prgrm *CXProgram) PrintProgram() {
 		currentFunction = fn
 	}
 
-	i := 0
+	printPackages(prgrm)
 
-	for _, mod := range prgrm.Packages {
-		if IsCorePackage(mod.Name) {
-			continue
-		}
-
-		fmt.Printf("%d.- Package: %s\n", i, mod.Name)
-
-		if len(mod.Imports) > 0 {
-			fmt.Println("\tImports")
-		}
-
-		j := 0
-		for _, imp := range mod.Imports {
-			fmt.Printf("\t\t%d.- Import: %s\n", j, imp.Name)
-			j++
-		}
-
-		if len(mod.Globals) > 0 {
-			fmt.Println("\tGlobals")
-		}
-
-		j = 0
-		for _, v := range mod.Globals {
-			var arrayStr string
-			if v.IsArray {
-				for _, l := range v.Lengths {
-					arrayStr += fmt.Sprintf("[%d]", l)
-				}
-			}
-			fmt.Printf("\t\t%d.- Global: %s %s%s\n", j, v.Name, arrayStr, TypeNames[v.Type])
-			j++
-		}
-
-		if len(mod.Structs) > 0 {
-			fmt.Println("\tStructs")
-		}
-
-		j = 0
-		for _, strct := range mod.Structs {
-			fmt.Printf("\t\t%d.- Struct: %s\n", j, strct.Name)
-
-			for k, fld := range strct.Fields {
-				fmt.Printf("\t\t\t%d.- Field: %s %s\n",
-					k, fld.Name, TypeNames[fld.Type])
-			}
-
-			j++
-		}
-
-		if len(mod.Functions) > 0 {
-			fmt.Println("\tFunctions")
-		}
-
-		j = 0
-		for _, fn := range mod.Functions {
-			_, err := mod.SelectFunction(fn.Name)
-			if err != nil {
-				panic(err)
-			}
-
-			var inps bytes.Buffer
-			for i, inp := range fn.Inputs {
-				var isPointer string
-				if inp.IsPointer {
-					isPointer = "*"
-				}
-
-				var arrayStr string
-				if inp.IsArray {
-					for _, l := range inp.Lengths {
-						arrayStr += fmt.Sprintf("[%d]", l)
-					}
-				}
-
-				var typeName string
-				elt := GetAssignmentElement(inp)
-				if elt.CustomType != nil {
-					// then it's custom type
-					typeName = elt.CustomType.Name
-				} else {
-					// then it's native type
-					typeName = TypeNames[elt.Type]
-				}
-
-				if i == len(fn.Inputs)-1 {
-					inps.WriteString(fmt.Sprintf("%s %s%s%s", inp.Name, isPointer, arrayStr, typeName))
-				} else {
-					inps.WriteString(fmt.Sprintf("%s %s%s%s, ", inp.Name, isPointer, arrayStr, typeName))
-				}
-			}
-
-			var outs bytes.Buffer
-			for i, out := range fn.Outputs {
-				var isPointer string
-				if out.IsPointer {
-					isPointer = "*"
-				}
-
-				var arrayStr string
-				if out.IsArray {
-					for _, l := range out.Lengths {
-						arrayStr += fmt.Sprintf("[%d]", l)
-					}
-				}
-
-				var typeName string
-				elt := GetAssignmentElement(out)
-				if elt.CustomType != nil {
-					// then it's custom type
-					typeName = elt.CustomType.Name
-				} else {
-					// then it's native type
-					typeName = TypeNames[elt.Type]
-				}
-
-				if i == len(fn.Outputs)-1 {
-					outs.WriteString(fmt.Sprintf("%s %s%s%s", out.Name, isPointer, arrayStr, typeName))
-				} else {
-					outs.WriteString(fmt.Sprintf("%s %s%s%s, ", out.Name, isPointer, arrayStr, typeName))
-				}
-			}
-
-			fmt.Printf("\t\t%d.- Function: %s (%s) (%s)\n",
-				j, fn.Name, inps.String(), outs.String())
-
-			k := 0
-			for _, expr := range fn.Expressions {
-				// if expr.Operator == nil {
-				//      continue
-				// }
-				//Arguments
-				var args bytes.Buffer
-
-				for i, arg := range expr.Inputs {
-					var name string
-					var dat []byte
-
-					if arg.Offset > STACK_SIZE {
-						dat = prgrm.Memory[arg.Offset : arg.Offset+arg.Size]
-					} else {
-						name = arg.Name
-					}
-
-					if dat != nil {
-						switch TypeNames[arg.Type] {
-						case "str":
-							mustDeserializeRaw(dat, &name)
-							name = "\"" + name + "\""
-						case "i32":
-							var i32 int32
-							mustDeserializeAtomic(dat, &i32)
-							name = fmt.Sprintf("%v", i32)
-						case "i64":
-							var i64 int64
-							mustDeserializeRaw(dat, &i64)
-							name = fmt.Sprintf("%v", i64)
-						case "f32":
-							var f32 float32
-							mustDeserializeRaw(dat, &f32)
-							name = fmt.Sprintf("%v", f32)
-						case "f64":
-							var f64 float64
-							mustDeserializeRaw(dat, &f64)
-							name = fmt.Sprintf("%v", f64)
-						case "bool":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
-						case "byte":
-							var b bool
-							mustDeserializeRaw(dat, &b)
-							name = fmt.Sprintf("%v", b)
-						}
-					}
-
-					if arg.Name != "" {
-						name = arg.Name
-						for _, fld := range arg.Fields {
-							name += "." + fld.Name
-						}
-					}
-
-					var derefLevels string
-					if arg.DereferenceLevels > 0 {
-						for c := 0; c < arg.DereferenceLevels; c++ {
-							derefLevels += "*"
-						}
-					}
-
-					var isReference string
-					if arg.PassBy == PASSBY_REFERENCE {
-						isReference = "&"
-					}
-
-					var arrayStr string
-					if arg.IsArray {
-						for _, l := range arg.Lengths {
-							arrayStr += fmt.Sprintf("[%d]", l)
-						}
-					}
-
-					var typeName string
-					elt := GetAssignmentElement(arg)
-					if elt.CustomType != nil {
-						// then it's custom type
-						typeName = elt.CustomType.Name
-					} else {
-						// then it's native type
-						typeName = TypeNames[elt.Type]
-					}
-
-					if i == len(expr.Inputs)-1 {
-						args.WriteString(fmt.Sprintf("%s%s%s %s%s", isReference, derefLevels, name, arrayStr, typeName))
-					} else {
-						args.WriteString(fmt.Sprintf("%s%s%s %s%s, ", isReference, derefLevels, name, arrayStr, typeName))
-					}
-				}
-
-				var opName string
-				if expr.Operator != nil {
-					if expr.Operator.IsNative {
-						opName = OpNames[expr.Operator.OpCode]
-					} else {
-						opName = expr.Operator.Name
-					}
-				}
-
-				if len(expr.Outputs) > 0 {
-					var outNames bytes.Buffer
-					for i, outName := range expr.Outputs {
-						out := GetAssignmentElement(outName)
-
-						var derefLevels string
-						if outName.DereferenceLevels > 0 {
-							for c := 0; c < outName.DereferenceLevels; c++ {
-								derefLevels += "*"
-							}
-						}
-
-						var arrayStr string
-						if outName.IsArray {
-							for _, l := range outName.Lengths {
-								arrayStr += fmt.Sprintf("[%d]", l)
-							}
-						}
-
-						var typeName string
-						if out.CustomType != nil {
-							// then it's custom type
-							typeName = out.CustomType.Name
-						} else {
-							// then it's native type
-							typeName = TypeNames[out.Type]
-						}
-
-						fullName := outName.Name
-
-						for _, fld := range outName.Fields {
-							fullName += "." + fld.Name
-						}
-
-						if i == len(expr.Outputs)-1 {
-							outNames.WriteString(fmt.Sprintf("%s%s%s %s", derefLevels, fullName, arrayStr, typeName))
-						} else {
-							outNames.WriteString(fmt.Sprintf("%s%s%s %s, ", derefLevels, fullName, arrayStr, typeName))
-						}
-					}
-
-					var lbl string
-					if expr.Label != "" {
-						lbl = " <<" + expr.Label + ">>"
-					} else {
-						lbl = ""
-					}
-
-					if expr.Operator != nil {
-						fmt.Printf("\t\t\t%d.- Expression%s: %s = %s(%s)\n",
-							k,
-							lbl,
-							outNames.String(),
-							opName,
-							args.String(),
-						)
-					} else {
-						if len(expr.Outputs) > 0 {
-							var typ string
-
-							out := expr.Outputs[len(expr.Outputs)-1]
-
-							// NOTE: this only adds a single *, regardless of how many
-							// dereferences we have. won't be fixed atm, as the whole
-							// PrintProgram needs to be refactored soon.
-							if out.IsPointer {
-								typ = "*"
-							}
-
-							if GetAssignmentElement(out).CustomType != nil {
-								// then it's custom type
-								typ += GetAssignmentElement(out).CustomType.Name
-							} else {
-								// then it's native type
-								typ += TypeNames[GetAssignmentElement(out).Type]
-							}
-
-							fmt.Printf("\t\t\t%d.- Declaration%s: %s %s\n",
-								k,
-								lbl,
-								expr.Outputs[0].Name,
-								typ)
-						}
-					}
-
-				} else {
-					var lbl string
-
-					if expr.Label != "" {
-						lbl = " <<" + expr.Label + ">>"
-					} else {
-						lbl = ""
-					}
-
-					fmt.Printf("\t\t\t%d.- Expression%s: %s(%s)\n",
-						k,
-						lbl,
-						opName,
-						args.String(),
-					)
-				}
-				k++
-			}
-			j++
-		}
-		i++
-	}
-
+	// Restoring a program's state (what package and function were
+	// selected.)
 	if currentPackage != nil {
 		_, err := prgrm.SelectPackage(currentPackage.Name)
 		if err != nil {
@@ -525,17 +471,39 @@ func IsTempVar(name string) bool {
 	return false
 }
 
-// GetArgSize ...
-func GetArgSize(typ int) int {
-	switch typ {
-	case TYPE_BOOL, TYPE_BYTE:
+// GetArgSizeFromTypeName ...
+func GetArgSizeFromTypeName(typeName string) int {
+	switch typeName {
+	case "bool", "i8", "ui8":
 		return 1
-	case TYPE_STR, TYPE_I32, TYPE_F32, TYPE_AFF:
+	case "i16", "ui16":
+		return 2
+	case "str", "i32", "ui32", "f32", "aff":
 		return 4
-	case TYPE_I64, TYPE_F64:
+	case "i64", "ui64", "f64":
 		return 8
 	default:
 		return 4
+		// return -1
+		// panic(CX_INTERNAL_ERROR)
+	}
+}
+
+// GetArgSize ...
+func GetArgSize(typ int) int {
+	switch typ {
+	case TYPE_BOOL, TYPE_I8, TYPE_UI8:
+		return 1
+	case TYPE_I16, TYPE_UI16:
+		return 2
+	case TYPE_STR, TYPE_I32, TYPE_UI32, TYPE_F32, TYPE_AFF:
+		return 4
+	case TYPE_I64, TYPE_UI64, TYPE_F64:
+		return 8
+	default:
+		return 4
+		//return -1 // should be panic
+		//panic(CX_INTERNAL_ERROR)
 	}
 }
 
@@ -648,17 +616,10 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceResize ...
-func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) int {
+// sliceResize does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
-	}
-
-	var inputSliceLen int32
-	if inputSliceOffset != 0 {
-		inputSliceLen = GetSliceLen(inputSliceOffset)
-		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
 	var outputSliceHeader []byte
@@ -687,36 +648,90 @@ func SliceResize(outputSliceOffset int32, inputSliceOffset int32, count int32, s
 		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
 	}
 
+	return int(outputSliceOffset)
+}
+
+// SliceResize ...
+func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
+	outputSliceOffset := GetSliceOffset(fp, out)
+
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, count, sizeofElement))
+
+	SliceCopy(fp, outputSliceOffset, inp, count, sizeofElement)
+
+	return int(outputSliceOffset)
+}
+
+// sliceCopy does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func sliceCopy(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
+	if count < 0 {
+		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
+	}
+
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	var outputSliceHeader []byte
+	var outputSliceLen int32
+	var outputSliceCap int32
+
 	if outputSliceOffset > 0 {
-		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(newLen))
+		outputSliceHeader = GetSliceHeader(outputSliceOffset)
+		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
+		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+	}
+
+	if outputSliceOffset > 0 {
+		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(count))
 		outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
 		}
 	}
-
-	return int(outputSliceOffset)
 }
 
-// SliceAppend ...
-func SliceAppend(outputSliceOffset int32, inputSliceOffset int32, object []byte) int {
+// SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
+func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	sliceCopy(outputSliceOffset, inputSliceOffset, count, sizeofElement)
+}
+
+// SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
+func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	// outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
-		//inputSliceHeader := GetSliceHeader(inputSliceOffset)
-		//mustDeserializeAtomic(inputSliceHeader[4:8], &inputSliceLen)
 	}
 
+	// TODO: Are we limited then to only one element for now? (because of that +1)
+	outputSliceOffset := int32(SliceResize(fp, out, inp, inputSliceLen+1, sizeofElement))
+	return outputSliceOffset
+}
+
+// SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+func SliceAppendWrite(outputSliceOffset int32, inputSliceOffset int32, object []byte, index int32) {
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen+1, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
-	copy(outputSliceData[int(inputSliceLen)*sizeofElement:], object)
-	return int(outputSliceOffset)
+	copy(outputSliceData[int(index)*sizeofElement:], object)
+}
+
+// SliceAppendWriteByte writes `object` to a slice of bytes that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
+	outputSliceData := GetSliceData(outputSliceOffset, 1)
+	copy(outputSliceData[int(index):], object)
 }
 
 // SliceInsert ...
-func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, object []byte) int {
+func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	// outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -728,7 +743,7 @@ func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, o
 
 	var newLen = inputSliceLen + 1
 	sizeofElement := len(object)
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, newLen, sizeofElement))
+	outputSliceOffset := int32(SliceResize(fp, out, inp, newLen, sizeofElement))
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index+1)*sizeofElement:], outputSliceData[int(index)*sizeofElement:])
 	copy(outputSliceData[int(index)*sizeofElement:], object)
@@ -736,7 +751,10 @@ func SliceInsert(outputSliceOffset int32, inputSliceOffset int32, index int32, o
 }
 
 // SliceRemove ...
-func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, sizeofElement int32) int {
+func SliceRemove(fp int, out *CXArgument, inp *CXArgument, index int32, sizeofElement int32) int {
+	inputSliceOffset := GetSliceOffset(fp, inp)
+	outputSliceOffset := GetSliceOffset(fp, out)
+
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -748,20 +766,38 @@ func SliceRemove(outputSliceOffset int32, inputSliceOffset int32, index int32, s
 
 	outputSliceData := GetSliceData(outputSliceOffset, int(sizeofElement))
 	copy(outputSliceData[index*sizeofElement:], outputSliceData[(index+1)*sizeofElement:])
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, inputSliceLen-1, int(sizeofElement)))
+	outputSliceOffset = int32(SliceResize(fp, out, inp, inputSliceLen-1, int(sizeofElement)))
 	return int(outputSliceOffset)
 }
 
-// WriteToSlice ...
+// WriteToSlice is used to create slices in the backend, i.e. not by calling `append`
+// in a CX program, but rather by the CX code itself. This function is used by
+// affordances, serialization and to store OS input arguments.
 func WriteToSlice(off int, inp []byte) int {
-	return SliceAppend(int32(off), int32(off), inp)
+	// TODO: Check all these parses from/to int32/int.
+	var inputSliceLen int32
+	if off != 0 {
+		inputSliceLen = GetSliceLen(int32(off))
+	}
+
+	inpLen := len(inp)
+	// We first check if a resize is needed. If a resize occurred
+	// the address of the new slice will be stored in `newOff` and will
+	// be different to `off`.
+	newOff := sliceResize(int32(off), inputSliceLen+1, inpLen)
+
+	// Copy the data from the old slice at `off` to `newOff`.
+	sliceCopy(int32(newOff), int32(off), inputSliceLen+1, inpLen)
+
+	// Write the new slice element `inp` to the slice located at `newOff`.
+	SliceAppendWrite(int32(newOff), int32(off), inp, inputSliceLen)
+	return newOff
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
 func writeObj(obj []byte) int {
 	size := len(obj)
 	sizeB := encoder.SerializeAtomic(int32(size))
-	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE)
 	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
 
 	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
@@ -774,7 +810,7 @@ func writeObj(obj []byte) int {
 	}
 
 	WriteMemory(heapOffset, finalObj)
-	return heapOffset + OBJECT_HEADER_SIZE
+	return heapOffset
 }
 
 // WriteObject ...
@@ -864,14 +900,24 @@ func getNonCollectionValue(fp int, arg, elt *CXArgument, typ string) string {
 	switch typ {
 	case "bool":
 		return fmt.Sprintf("%v", ReadBool(fp, elt))
-	case "byte":
-		return fmt.Sprintf("%v", ReadByte(fp, elt))
 	case "str":
 		return fmt.Sprintf("%v", ReadStr(fp, elt))
+	case "i8":
+		return fmt.Sprintf("%v", ReadI8(fp, elt))
+	case "i16":
+		return fmt.Sprintf("%v", ReadI16(fp, elt))
 	case "i32":
 		return fmt.Sprintf("%v", ReadI32(fp, elt))
 	case "i64":
 		return fmt.Sprintf("%v", ReadI64(fp, elt))
+	case "ui8":
+		return fmt.Sprintf("%v", ReadUI8(fp, elt))
+	case "ui16":
+		return fmt.Sprintf("%v", ReadUI16(fp, elt))
+	case "ui32":
+		return fmt.Sprintf("%v", ReadUI32(fp, elt))
+	case "ui64":
+		return fmt.Sprintf("%v", ReadUI64(fp, elt))
 	case "f32":
 		return fmt.Sprintf("%v", ReadF32(fp, elt))
 	case "f64":
@@ -980,12 +1026,11 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 	return getNonCollectionValue(fp, arg, elt, typ)
 }
 
-func mustDeserializeAtomic(byts []byte, item interface{}) int {
-	bytsRead, err := encoder.DeserializeAtomic(byts, item)
+func mustDeserializeAtomic(byts []byte, item interface{}) {
+	_, err := encoder.DeserializeAtomic(byts, item)
 	if err != nil {
 		panic(err)
 	}
-	return int(bytsRead)
 }
 
 func mustDeserializeRaw(byts []byte, item interface{}) {
@@ -993,4 +1038,203 @@ func mustDeserializeRaw(byts []byte, item interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// DebugHeap prints the symbols that are acting as pointers in a CX program at certain point during the execution of the program along with the addresses they are pointing. Additionally, a list of the objects in the heap is printed, which shows their address in the heap, if they are marked as alive or as dead by the garbage collector, the address where they used to live after a garbage collector call, the full size of the object, the object itself as a slice of bytes and the pointers that are pointing to that object.
+func DebugHeap() {
+	// symsToAddrs will hold a list of symbols that are pointing to an address.
+	symsToAddrs := make(map[int32][]string)
+
+	// Processing global variables. Adding the address they are pointing to.
+	for _, pkg := range PROGRAM.Packages {
+		for _, glbl := range pkg.Globals {
+			if glbl.IsPointer || glbl.IsSlice {
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
+			}
+		}
+	}
+
+	// Processing local variables in every active function call in the `CallStack`.
+	// Adding the address they are pointing to.
+	var fp int
+	for c := 0; c <= PROGRAM.CallCounter; c++ {
+		op := PROGRAM.CallStack[c].Operator
+
+		// TODO: Some standard library functions "manually" add a function
+		// call (callbacks) to `PRGRM.CallStack`. These functions do not have an
+		// operator associated to them. This can be considered as a bug or as an
+		// undesirable mechanic.
+		// [2019-06-24 Mon 22:39] Actually, if the GC is triggered in the middle
+		// of a callback, things will certainly break.
+		if op == nil {
+			continue
+		}
+
+		for _, ptr := range op.ListOfPointers {
+			offset := ptr.Offset
+			symName := ptr.Name
+			if len(ptr.Fields) > 0 {
+				fld := ptr.Fields[len(ptr.Fields)-1]
+				offset += fld.Offset
+				symName += "." + fld.Name
+			}
+
+			if ptr.Offset < PROGRAM.StackSize {
+				offset += fp
+			}
+
+			var heapOffset int32
+			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+			if err != nil {
+				panic(err)
+			}
+
+			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
+		}
+
+		fp += op.Size
+	}
+
+	// Printing all the details.
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
+
+	for off, symNames := range symsToAddrs {
+		addrB := encoder.Serialize(off)
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tPtr:\t", symNames)
+	}
+
+	// Just a newline.
+	fmt.Fprintln(w)
+	w.Flush()
+
+	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
+
+	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
+		var objSize int32
+		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
+		if err != nil {
+			panic(err)
+		}
+
+		// Setting a limit size for the object to be printed if the object is too large.
+		// We don't want to print obscenely large objects to standard output.
+		printObjSize := objSize
+		if objSize > 50 {
+			printObjSize = 50
+		}
+
+		addrB := encoder.Serialize(int32(c))
+
+		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
+
+		c += int(objSize)
+	}
+
+	// Just a newline.
+	fmt.Fprintln(w)
+	w.Flush()
+}
+
+// filePathWalkDir scans all the files in a directory. It will automatically
+// scan each sub-directories in the directory. Code obtained from manigandand's
+// post in https://stackoverflow.com/questions/14668850/list-directory-in-go.
+func filePathWalkDir(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return err
+	})
+	return files, err
+}
+
+// ioReadDir reads the directory named by dirname and returns a list of
+// directory entries sorted by filename. Code obtained from manigandand's
+// post in https://stackoverflow.com/questions/14668850/list-directory-in-go.
+func ioReadDir(root string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(root)
+	if err != nil {
+		return files, err
+	}
+
+	for _, file := range fileInfo {
+		files = append(files, fmt.Sprintf("%s/%s", root, file.Name()))
+	}
+	return files, nil
+}
+
+// ParseArgsForCX parses the arguments and returns:
+//  - []arguments
+//  - []file pointers	open files
+//  - []sting		filenames
+func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	for _, arg := range args {
+		if len(arg) > 2 && arg[:2] == "++" {
+			cxArgs = append(cxArgs, arg)
+			continue
+		}
+
+		fi, err := os.Stat(arg)
+		_ = err
+
+		if err != nil {
+			println(fmt.Sprintf("%s: source file or library not found", arg))
+			os.Exit(CX_COMPILATION_ERROR)
+		}
+
+		switch mode := fi.Mode(); {
+		case mode.IsDir():
+			var fileList []string
+			var err error
+
+			// Checking if we want to check all subdirectories.
+			if alsoSubdirs {
+				fileList, err = filePathWalkDir(arg)
+			} else {
+				fileList, err = ioReadDir(arg)
+				// fileList, err = filePathWalkDir(arg)
+			}
+
+			if err != nil {
+				panic(err)
+			}
+
+			for _, path := range fileList {
+				file, err := os.Open(path)
+
+				if err != nil {
+					println(fmt.Sprintf("%s: source file or library not found", arg))
+					os.Exit(CX_COMPILATION_ERROR)
+				}
+
+				fiName := file.Name()
+				fiNameLen := len(fiName)
+
+				if fiNameLen > 2 && fiName[fiNameLen-3:] == ".cx" {
+					// only loading .cx files
+					sourceCode = append(sourceCode, file)
+					fileNames = append(fileNames, fiName)
+				}
+			}
+		case mode.IsRegular():
+			file, err := os.Open(arg)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fileNames = append(fileNames, file.Name())
+			sourceCode = append(sourceCode, file)
+		}
+	}
+
+	return cxArgs, sourceCode, fileNames
 }

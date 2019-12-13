@@ -6,7 +6,7 @@ type miniStruct struct {
 	mFloat f32
 	mDecimal f64
 	mBoolean bool
-	mByt byte
+	mByt i8
 	mString str
 }
 
@@ -16,7 +16,7 @@ type TestStruct struct {
 	float f32
 	decimal f64
 	boolean bool
-	byt byte
+	byt i8
 	string str
 	anotherStruct miniStruct
 }

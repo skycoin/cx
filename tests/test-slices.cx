@@ -189,7 +189,7 @@ func testAppend() {
 	test(slc10[4], false, "")
 	test(slc10[5], true, "")
 
-	var slc9 []byte
+	var slc9 []i8
 	slc9 = append(slc9, 15B)
 	slc9 = append(slc9, 20B)
 	slc9 = append(slc9, 35B)
@@ -198,7 +198,7 @@ func testAppend() {
 	test(slc9[1], 20B, "")
 	test(slc9[2], 35B, "")
 
-	slc9 = []byte{90B, 95B, 100B, 105B, 110B, 115B}
+	slc9 = []i8{90B, 95B, 100B, 105B, 110B, 115B}
 
 	test(slc9[0], 90B, "")
 	test(slc9[1], 95B, "")
