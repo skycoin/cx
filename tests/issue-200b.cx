@@ -12,7 +12,7 @@ func testSlicePnts (slc [][]Point) {}
 func testArrayPointerPnts (pnums [3]*Point) {}
 func returnSlicePnts () (slc []Point) {}
 
-func testArray (byts [5][5]byte) {}
+func testArray (byts [5][5]i8) {}
 func testPointer (num *i32) {}
 func testPointerLevels (num **i32) {}
 func testSlice (slc [][]i32) {}
@@ -21,8 +21,8 @@ func testArrayPointer (pnums [3]*i32) {}
 func returnSlice () (slc [][]i32) {}
 
 func main () {
-	var bar [5]byte
-	bar = [5]byte{1B, 2B, 3B, 4B, 5B}
+	var bar [5]i8
+	bar = [5]i8{1B, 2B, 3B, 4B, 5B}
 
 	testArray(bar)
 	

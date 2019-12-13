@@ -4,7 +4,7 @@ func I32ArithmeticFunctions() () {
 	test(i32.add(10, 10), 20, "Add error")
 	test(i32.sub(10, 10), 0, "Subtract error")
 	test(i32.mul(10, 10), 100, "Multiply error")
-	test(i32.div(10, 10), 1, "Divide error")
+	test(i32.div(10, 10), 1, "Divide function error")
 	test(i32.mod(10, 3), 1, "Mod error")
 	test(i32.bitshl(10, 5), 320, "Bit Shift Left error")
 	test(i32.bitshr(10, 5), 0, "Bit Shift Right error")
@@ -13,39 +13,7 @@ func I32ArithmeticFunctions() () {
 	test(i32.bitxor(10, 5), 15, "Bit XOR error")
 	test(i32.bitclear(10, 2), 8, "Bit CLEAR error")
 
-	// Should return x**n if n>0, 1 otherwise, according to a comment in the op_i32.go
-	// This seems wrong to me.  Please look into these tests below and
-	// remove this comment.  /IW
-	test(i32.pow(10, 0), 1, "Pow(10, 0) error")
-	test(i32.pow(10, 1), 10, "Pow(10, 1) error")
-	test(i32.pow(10, 5), 100000, "Pow(10, 5) error")
-	test(i32.pow(10, -1), 0, "Pow(10, -1) error")
-	test(i32.pow(10, -2), 0, "Pow(10, -2) error")	  
-	//test(i32.pow(0, 0), 1, "Pow(0, 0) error")  What should this yield?
-	test(i32.pow(0, 1), 0, "Pow(0, 1) error")
-	test(i32.pow(0, 2), 0, "Pow(0, 2) error")
-	//test(i32.pow(0, -1), 1, "Pow(0, -1) error")  Should yield an error.  How to test for that?
-	//test(i32.pow(0, -2), 1, "Pow(0, -2) error")  Should yield an error.  How to test for that?
-	test(i32.pow(1, 0), 1, "Pow(1, 0) error")
-	test(i32.pow(1, 1), 1, "Pow(1, 1) error")
-	test(i32.pow(1, 2), 1, "Pow(1, 2) error")
-	test(i32.pow(1, -1), 1, "Pow(1, -1) error")
-	test(i32.pow(1, -2), 1, "Pow(1, -2) error")
-	test(i32.pow(-1, 0), 1, "Pow(-1, 0) error")
-	test(i32.pow(-1, 1), -1, "Pow(-1, 1) error")
-	test(i32.pow(-1, 2), 1, "Pow(-1, 2) error")
-	test(i32.pow(-1, 3), -1, "Pow(-1, 3) error")
-	test(i32.pow(-1, 4), 1, "Pow(-1, 4) error")
-	test(i32.pow(-1, -1), -1, "Pow(-1, -1) error")
-	test(i32.pow(-2, -1), 0, "Pow(-2, -1) error")
-	test(i32.pow(-2, -2), 0, "Pow(-2, -2) error")
-
-
 	test(i32.abs(-10), 10, "Absolute Value error")
-	test(i32.sqrt(4), 2, "Square Root error")
-	test(i32.log(1), 0, "Log error")
-	test(i32.log2(2), 1, "Log2 error")
-	test(i32.log10(10), 1, "Log10 error")
 	test(i32.max(2, 3), 3, "MAX error")
 	test(i32.min(2, 3), 2, "MIN error")
 }
@@ -54,7 +22,7 @@ func I32ArithmeticShorthand() () {
 	test(10 + 10, 20, "Add error")
 	test(10 - 10, 0, "Subtract error")
 	test(10 * 10, 100, "Multiply error")
-	test(10 / 10, 1, "Divide error")
+	test(10 / 10, 1, "Divide shorthand error")
 	test(10 % 3, 1, "Mod error")
 	test(10 << 5, 320, "Bit Shift Left error")
 	test(10 >> 5, 0, "Bit Shift Right error")

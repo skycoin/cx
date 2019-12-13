@@ -65,8 +65,8 @@ const MAX_INT32 = int(MAX_UINT32 >> 1)
 const MIN_INT32 = -MAX_INT32 - 1
 
 var BASIC_TYPES []string = []string{
-	"bool", "str", "byte", "i32", "i64", "f32", "f64",
-	"[]bool", "[]str", "[]byte", "[]i32", "[]i64", "[]f32", "[]f64",
+	"bool", "str", "i8", "i16", "i32", "i64", "ui8", "ui16", "ui32", "ui64", "f32", "f64",
+	"[]bool", "[]str", "[]i8", "[]i16", "[]i32", "[]i64", "[]ui8", "[]ui16", "[]ui32", "[]ui64", "[]f32", "[]f64",
 }
 
 const (
@@ -129,7 +129,6 @@ const (
 	TYPE_UNDEFINED = iota
 	TYPE_AFF
 	TYPE_BOOL
-	TYPE_BYTE
 	TYPE_STR
 	TYPE_F32
 	TYPE_F64
@@ -154,7 +153,6 @@ var TypeCodes map[string]int = map[string]int{
 	"ident": TYPE_IDENTIFIER,
 	"aff":   TYPE_AFF,
 	"bool":  TYPE_BOOL,
-	"byte":  TYPE_BYTE,
 	"str":   TYPE_STR,
 	"f32":   TYPE_F32,
 	"f64":   TYPE_F64,
@@ -173,7 +171,6 @@ var TypeNames map[int]string = map[int]string{
 	TYPE_IDENTIFIER: "ident",
 	TYPE_AFF:        "aff",
 	TYPE_BOOL:       "bool",
-	TYPE_BYTE:       "byte",
 	TYPE_STR:        "str",
 	TYPE_F32:        "f32",
 	TYPE_F64:        "f64",

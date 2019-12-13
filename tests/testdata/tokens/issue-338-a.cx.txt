@@ -11,7 +11,7 @@ SCOLON
  IDENT sb
 LBRACK 
 RBRACK 
-  BYTE byte
+    I8 i8
 SCOLON 
  IDENT b
    I32 i32
