@@ -721,6 +721,12 @@ func SliceAppendWrite(outputSliceOffset int32, inputSliceOffset int32, object []
 	copy(outputSliceData[int(index)*sizeofElement:], object)
 }
 
+// SliceAppendWriteByte writes `object` to a slice of bytes that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
+	outputSliceData := GetSliceData(outputSliceOffset, 1)
+	copy(outputSliceData[int(index):], object)
+}
+
 // SliceInsert ...
 func SliceInsert(fp int, out *CXArgument, inp *CXArgument, index int32, object []byte) int {
 	inputSliceOffset := GetSliceOffset(fp, inp)

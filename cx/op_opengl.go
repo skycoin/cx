@@ -214,15 +214,23 @@ func opGlAppend(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-
-	outputSlicePointer := GetFinalOffset(fp, out1)
+	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[0])
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-	obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
 
-	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, int32(inp1.Size), obj))
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+	inputSliceOffset := GetSliceOffset(fp, expr.Inputs[0])
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	inp1 := expr.Inputs[1]
+	obj := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+
+	objLen := int32(len(obj))
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, inputSliceLen+objLen, 1))
+	sliceCopy(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
+	WriteMemory(outputSlicePointer, FromI32(outputSliceOffset))
 }
 
 // gl_0_0
