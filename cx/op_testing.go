@@ -61,9 +61,8 @@ func opAssertValue(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	out1 := expr.Outputs[0]
 	same := assert(expr, fp)
-	WriteMemory(GetFinalOffset(fp, out1), FromBool(same))
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), same)
 }
 
 func opTest(prgrm *CXProgram) {

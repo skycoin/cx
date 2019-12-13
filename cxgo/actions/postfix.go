@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
-
 	. "github.com/SkycoinProject/cx/cx"
 )
 
@@ -187,7 +185,9 @@ func PostfixExpressionIncDec(prevExprs []*CXExpression, isInc bool) []*CXExpress
 		expr = MakeExpression(Natives[OP_I32_SUB], CurrentFile, LineNo)
 	}
 
-	val := WritePrimary(TYPE_I32, encoder.SerializeAtomic(int32(1)), false)
+	var valB [4]byte
+	WriteMemI32(valB[:], 0, int32(1))
+	val := WritePrimary(TYPE_I32, valB[:], false)
 
 	expr.Package = pkg
 

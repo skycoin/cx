@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	// "fmt"
-	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // EscapeAnalysis ...
@@ -12,20 +11,13 @@ func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {
 	byts := ReadMemory(inpOffset, arg)
 
 	// creating a header for this object
-	size := encoder.SerializeAtomic(int32(len(byts)) + OBJECT_HEADER_SIZE)
-
 	var header = make([]byte, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
-	}
+	WriteMemI32(header, 5, int32(len(byts)))
 
 	obj := append(header, byts...)
-
 	WriteMemory(heapOffset, obj)
 
-	off := encoder.SerializeAtomic(int32(heapOffset))
-
-	WriteMemory(outOffset, off)
+	WriteI32(outOffset, int32(heapOffset))
 }
 
 func opIdentity(prgrm *CXProgram) {
@@ -50,7 +42,7 @@ func opIdentity(prgrm *CXProgram) {
 		case PASSBY_VALUE:
 			WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
 		case PASSBY_REFERENCE:
-			WriteMemory(out1Offset, encoder.SerializeAtomic(int32(inp1Offset)))
+			WriteI32(out1Offset, int32(inp1Offset))
 		}
 	}
 }
@@ -70,7 +62,7 @@ func opJmp(prgrm *CXProgram) {
 		inp1Offset := GetFinalOffset(fp, inp1)
 
 		predicateB := PROGRAM.Memory[inp1Offset : inp1Offset+GetSize(inp1)]
-		mustDeserializeAtomic(predicateB, &predicate)
+		predicate = mustDeserializeBool(predicateB)
 
 		if predicate {
 			call.Line = call.Line + expr.ThenLines

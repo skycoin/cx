@@ -65,19 +65,15 @@ func op_os_GetWorkingDirectory(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
 	byts := encoder.Serialize(PROGRAM.Path)
-	WriteObject(out1Offset, byts)
+	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), byts)
 }
 
 func op_os_Exit(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0 := expr.Inputs[0]
-	exitCode := ReadI32(fp, inp0)
+	exitCode := ReadI32(fp, expr.Inputs[0])
 	os.Exit(int(exitCode))
 }
 
@@ -85,11 +81,10 @@ func op_os_Run(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
-	command := ReadStr(fp, inp0)
-	dir := ReadStr(fp, inp3)
+	command := ReadStr(fp, expr.Inputs[0])
+	dir := ReadStr(fp, expr.Inputs[3])
 	args := strings.Split(command, " ")
 	if len(args) <= 0 {
 		runError = OS_RUN_EMPTY_CMD
@@ -111,7 +106,7 @@ func op_os_Run(prgrm *CXProgram) {
 
 	var cmdError int32 = 0
 
-	timeoutMs := ReadI32(fp, inp2)
+	timeoutMs := ReadI32(fp, expr.Inputs[2])
 	timeout := time.Duration(math.MaxInt64)
 	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
@@ -147,12 +142,12 @@ func op_os_Run(prgrm *CXProgram) {
 	}
 
 	stdOutBytes := out.Bytes()
-	maxSize := ReadI32(fp, inp1)
+	maxSize := ReadI32(fp, expr.Inputs[1])
 	if (maxSize > 0) && (len(stdOutBytes) > int(maxSize)) {
 		stdOutBytes = stdOutBytes[0:maxSize]
 	}
 
-	WriteMemory(GetFinalOffset(fp, out0), FromI32(runError))
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(cmdError))
-	WriteObject(GetFinalOffset(fp, out2), FromStr(string(stdOutBytes)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), runError)
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), cmdError)
+	WriteObject(GetFinalOffset(fp, expr.Outputs[2]), FromStr(string(stdOutBytes)))
 }

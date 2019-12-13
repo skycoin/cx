@@ -9,8 +9,6 @@ import (
 	"runtime/debug"
 	"strconv"
 	"text/tabwriter"
-
-	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -153,11 +151,7 @@ func getFormattedDerefs(arg *CXArgument, includePkg bool) string {
 		idxValue := ""
 		if idx.Offset > PROGRAM.StackSize {
 			// Then it's a literal.
-			var idxI32 int32
-			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[idx.Offset:idx.Offset+TYPE_POINTER_SIZE], &idxI32)
-			if err != nil {
-				panic(err)
-			}
+			idxI32 := mustDeserializeI32(PROGRAM.Memory[idx.Offset : idx.Offset+TYPE_POINTER_SIZE])
 			idxValue = fmt.Sprintf("%d", idxI32)
 		} else {
 			// Then let's just print the variable name.
@@ -562,9 +556,7 @@ func IsValidSliceIndex(offset int, index int, sizeofElement int) bool {
 
 // GetPointerOffset ...
 func GetPointerOffset(pointer int32) int32 {
-	var offset int32
-	mustDeserializeAtomic(PROGRAM.Memory[pointer:pointer+TYPE_POINTER_SIZE], &offset)
-	return offset
+	return mustDeserializeI32(PROGRAM.Memory[pointer : pointer+TYPE_POINTER_SIZE])
 }
 
 // GetSliceOffset ...
@@ -589,10 +581,8 @@ func GetSliceHeader(offset int32) []byte {
 
 // GetSliceLen ...
 func GetSliceLen(offset int32) int32 {
-	var sliceLen int32
 	sliceHeader := GetSliceHeader(offset)
-	mustDeserializeAtomic(sliceHeader[4:8], &sliceLen)
-	return sliceLen
+	return mustDeserializeI32(sliceHeader[4:8])
 }
 
 // GetSlice ...
@@ -623,13 +613,11 @@ func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
 	}
 
 	var outputSliceHeader []byte
-	var outputSliceLen int32
 	var outputSliceCap int32
 
 	if outputSliceOffset > 0 {
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
-		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
+		outputSliceCap = mustDeserializeI32(outputSliceHeader[0:4])
 	}
 
 	var newLen = count
@@ -642,10 +630,11 @@ func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
 		}
 		var outputObjectSize = OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE + newCap*int32(sizeofElement)
 		outputSliceOffset = int32(AllocateSeq(int(outputObjectSize)))
-		copy(GetObjectHeader(outputSliceOffset)[5:9], encoder.SerializeAtomic(outputObjectSize))
+		WriteMemI32(GetObjectHeader(outputSliceOffset)[5:9], 0, outputObjectSize)
 
 		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		copy(outputSliceHeader[0:4], encoder.SerializeAtomic(newCap))
+		WriteMemI32(outputSliceHeader[0:4], 0, newCap)
+		WriteMemI32(outputSliceHeader[4:8], 0, newLen)
 	}
 
 	return int(outputSliceOffset)
@@ -673,20 +662,10 @@ func sliceCopy(outputSliceOffset int32, inputSliceOffset int32, count int32, siz
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 	}
 
-	var outputSliceHeader []byte
-	var outputSliceLen int32
-	var outputSliceCap int32
-
 	if outputSliceOffset > 0 {
-		outputSliceHeader = GetSliceHeader(outputSliceOffset)
-		mustDeserializeAtomic(outputSliceHeader[0:4], &outputSliceCap)
-		mustDeserializeAtomic(outputSliceHeader[4:8], &outputSliceLen)
-	}
-
-	if outputSliceOffset > 0 {
-		copy(outputSliceHeader[4:8], encoder.SerializeAtomic(count))
+		outputSliceHeader := GetSliceHeader(outputSliceOffset)
+		WriteMemI32(outputSliceHeader[4:8], 0, count)
 		outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
-
 		if (outputSliceOffset != inputSliceOffset) && inputSliceLen > 0 {
 			copy(outputSliceData, GetSliceData(inputSliceOffset, sizeofElement))
 		}
@@ -702,8 +681,6 @@ func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, si
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
 func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
 	inputSliceOffset := GetSliceOffset(fp, inp)
-	// outputSliceOffset := GetSliceOffset(fp, out)
-
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -715,13 +692,13 @@ func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement i
 }
 
 // SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
-func SliceAppendWrite(outputSliceOffset int32, inputSliceOffset int32, object []byte, index int32) {
+func SliceAppendWrite(outputSliceOffset int32, object []byte, index int32) {
 	sizeofElement := len(object)
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index)*sizeofElement:], object)
 }
 
-// SliceAppendWriteByte writes `object` to a slice of bytes that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+// SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
 func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 	outputSliceData := GetSliceData(outputSliceOffset, 1)
 	copy(outputSliceData[int(index):], object)
@@ -790,21 +767,18 @@ func WriteToSlice(off int, inp []byte) int {
 	sliceCopy(int32(newOff), int32(off), inputSliceLen+1, inpLen)
 
 	// Write the new slice element `inp` to the slice located at `newOff`.
-	SliceAppendWrite(int32(newOff), int32(off), inp, inputSliceLen)
+	SliceAppendWrite(int32(newOff), inp, inputSliceLen)
 	return newOff
+
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
-func writeObj(obj []byte) int {
+func newwriteObj(obj []byte) int {
 	size := len(obj)
-	sizeB := encoder.SerializeAtomic(int32(size))
 	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
-
 	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
 
-	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
-		finalObj[c] = sizeB[c-OBJECT_GC_HEADER_SIZE]
-	}
+	WriteMemI32(finalObj, OBJECT_GC_HEADER_SIZE, int32(size))
 	for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
 		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
 	}
@@ -815,14 +789,12 @@ func writeObj(obj []byte) int {
 
 // WriteObject ...
 func WriteObject(out1Offset int, obj []byte) {
-	off := encoder.SerializeAtomic(int32(writeObj(obj)))
-
-	WriteMemory(out1Offset, off)
+	WriteI32(out1Offset, int32(newwriteObj(obj)))
 }
 
 // WriteObjectRetOff ...
 func WriteObjectRetOff(obj []byte) int {
-	return writeObj(obj)
+	return newwriteObj(obj)
 }
 
 // ErrorHeader ...
@@ -1026,11 +998,53 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 	return getNonCollectionValue(fp, arg, elt, typ)
 }
 
-func mustDeserializeAtomic(byts []byte, item interface{}) {
-	_, err := encoder.DeserializeAtomic(byts, item)
-	if err != nil {
-		panic(err)
+func mustDeserializeBool(b []byte) bool {
+	if b[0] == 0 {
+		return false
 	}
+	return true
+}
+
+func mustDeserializeI8(b []byte) int8 {
+	return int8(b[0])
+}
+
+func mustDeserializeI16(b []byte) int16 {
+	return int16(b[0]) | int16(b[1])<<8
+}
+
+func mustDeserializeI32(b []byte) int32 {
+	return int32(b[0]) | int32(b[1])<<8 | int32(b[2])<<16 | int32(b[3])<<24
+}
+
+func mustDeserializeI64(b []byte) int64 {
+	return int64(b[0]) | int64(b[1])<<8 | int64(b[2])<<16 | int64(b[3])<<24 |
+		int64(b[4])<<32 | int64(b[5])<<40 | int64(b[6])<<48 | int64(b[7])<<56
+}
+
+func mustDeserializeUI8(b []byte) uint8 {
+	return uint8(b[0])
+}
+
+func mustDeserializeUI16(b []byte) uint16 {
+	return uint16(b[0]) | uint16(b[1])<<8
+}
+
+func mustDeserializeUI32(b []byte) uint32 {
+	return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24
+}
+
+func mustDeserializeUI64(b []byte) uint64 {
+	return uint64(b[0]) | uint64(b[1])<<8 | uint64(b[2])<<16 | uint64(b[3])<<24 |
+		uint64(b[4])<<32 | uint64(b[5])<<40 | uint64(b[6])<<48 | uint64(b[7])<<56
+}
+
+func mustDeserializeF32(b []byte) float32 {
+	return math.Float32frombits(mustDeserializeUI32(b))
+}
+
+func mustDeserializeF64(b []byte) float64 {
+	return math.Float64frombits(mustDeserializeUI64(b))
 }
 
 func mustDeserializeRaw(byts []byte, item interface{}) {
@@ -1049,11 +1063,7 @@ func DebugHeap() {
 	for _, pkg := range PROGRAM.Packages {
 		for _, glbl := range pkg.Globals {
 			if glbl.IsPointer || glbl.IsSlice {
-				var heapOffset int32
-				_, err := encoder.DeserializeAtomic(PROGRAM.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
-				if err != nil {
-					panic(err)
-				}
+				heapOffset := mustDeserializeI32(PROGRAM.Memory[glbl.Offset : glbl.Offset+TYPE_POINTER_SIZE])
 
 				symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], glbl.Name)
 			}
@@ -1089,11 +1099,7 @@ func DebugHeap() {
 				offset += fp
 			}
 
-			var heapOffset int32
-			_, err := encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
-			if err != nil {
-				panic(err)
-			}
+			heapOffset := mustDeserializeI32(PROGRAM.Memory[offset : offset+TYPE_POINTER_SIZE])
 
 			symsToAddrs[heapOffset] = append(symsToAddrs[heapOffset], symName)
 		}
@@ -1105,7 +1111,8 @@ func DebugHeap() {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
 	for off, symNames := range symsToAddrs {
-		addrB := encoder.Serialize(off)
+		var addrB [4]byte
+		WriteMemI32(addrB[:], 0, off)
 		fmt.Fprintln(w, "Addr:\t", addrB, "\tPtr:\t", symNames)
 	}
 
@@ -1116,11 +1123,7 @@ func DebugHeap() {
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, '.', 0)
 
 	for c := PROGRAM.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < PROGRAM.HeapStartsAt+PROGRAM.HeapPointer; {
-		var objSize int32
-		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
-		if err != nil {
-			panic(err)
-		}
+		objSize := mustDeserializeI32(PROGRAM.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE : c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE])
 
 		// Setting a limit size for the object to be printed if the object is too large.
 		// We don't want to print obscenely large objects to standard output.
@@ -1129,7 +1132,8 @@ func DebugHeap() {
 			printObjSize = 50
 		}
 
-		addrB := encoder.Serialize(int32(c))
+		var addrB [4]byte
+		WriteMemI32(addrB[:], 0, int32(c))
 
 		fmt.Fprintln(w, "Addr:\t", addrB, "\tMark:\t", PROGRAM.Memory[c:c+MARK_SIZE], "\tFwd:\t", PROGRAM.Memory[c+MARK_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE], "\tSize:\t", objSize, "\tObj:\t", PROGRAM.Memory[c+OBJECT_HEADER_SIZE:c+int(printObjSize)], "\tPtrs:", symsToAddrs[int32(c)])
 

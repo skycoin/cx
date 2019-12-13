@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 /*
@@ -409,12 +407,7 @@ func (prgrm *CXProgram) PrintAllObjects() {
 		op := prgrm.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			var heapOffset int32
-			_, err := encoder.DeserializeAtomic(prgrm.Memory[fp+ptr.Offset:fp+ptr.Offset+TYPE_POINTER_SIZE], &heapOffset)
-			if err != nil {
-				panic(err)
-			}
-
+			var heapOffset int32 = mustDeserializeI32(prgrm.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
 			var byts []byte
 
 			if ptr.CustomType != nil {
