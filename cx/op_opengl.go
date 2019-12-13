@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 	"github.com/go-gl/gl/v2.1/gl"
 )
 
