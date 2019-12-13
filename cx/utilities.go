@@ -3,7 +3,9 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime/debug"
