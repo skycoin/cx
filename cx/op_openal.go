@@ -1,16 +1,19 @@
-// +build extra full
+// +build opengl
 
 package cxcore
 
 import (
 	"bufio"
+	"github.com/amherag/skycoin/src/cipher/encoder"
 	"github.com/mjibson/go-dsp/wav"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"golang.org/x/mobile/exp/audio/al"
 	"os"
 )
 
-func opAlLoadWav(expr *CXExpression, fp int) {
+func opAlLoadWav(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
 	defer file.Close()
 	if err != nil {
@@ -41,7 +44,7 @@ func opAlLoadWav(expr *CXExpression, fp int) {
 
 	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[8])
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, outputSliceOffset, int32(len(data)), 1))
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, int32(len(data)), 1))
 	copy(GetSliceData(outputSliceOffset, 1), data)
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
@@ -71,89 +74,131 @@ func toSources(in interface{}) []al.Source { // REFACTOR : ??
 	return out
 }
 
-func opAlCloseDevice(expr *CXExpression, fp int) {
+func opAlCloseDevice(_ *CXProgram) {
 	al.CloseDevice()
 }
 
-func opAlDeleteBuffers(expr *CXExpression, fp int) {
+func opAlDeleteBuffers(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	buffers := toBuffers(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.DeleteBuffers(buffers...)
 }
 
-func opAlDeleteSources(expr *CXExpression, fp int) {
+func opAlDeleteSources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.DeleteSources(sources...)
 }
 
-func opAlDeviceError(expr *CXExpression, fp int) {
+func opAlDeviceError(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	err := al.DeviceError()
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(err))
 }
 
-func opAlError(expr *CXExpression, fp int) {
+func opAlError(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	err := al.Error()
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(err))
 }
 
-func opAlExtensions(expr *CXExpression, fp int) {
+func opAlExtensions(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	extensions := al.Extensions()
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(extensions))
 }
 
-func opAlOpenDevice(expr *CXExpression, fp int) {
+func opAlOpenDevice(_ *CXProgram) {
 	if err := al.OpenDevice(); err != nil {
 		panic(err)
 	}
 }
 
-func opAlPauseSources(expr *CXExpression, fp int) {
+func opAlPauseSources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.PauseSources(sources...)
 }
 
-func opAlPlaySources(expr *CXExpression, fp int) {
+func opAlPlaySources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.PlaySources(sources...)
 }
 
-func opAlRenderer(expr *CXExpression, fp int) {
+func opAlRenderer(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	renderer := al.Renderer()
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(renderer))
 }
 
-func opAlRewindSources(expr *CXExpression, fp int) {
+func opAlRewindSources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.RewindSources(sources...)
 }
 
-func opAlStopSources(expr *CXExpression, fp int) {
+func opAlStopSources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
 	al.StopSources(sources...)
 }
 
-func opAlVendor(expr *CXExpression, fp int) {
+func opAlVendor(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	vendor := al.Vendor()
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(vendor))
 }
 
-func opAlVersion(expr *CXExpression, fp int) {
+func opAlVersion(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	version := al.Version()
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(version))
 }
 
-func opAlGenBuffers(expr *CXExpression, fp int) {
+func opAlGenBuffers(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	buffers := al.GenBuffers(int(ReadI32(fp, expr.Inputs[0])))
 	outputSlice := expr.Outputs[0]
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, b := range buffers { // REFACTOR append with copy ?
 		obj := FromI32(int32(b))
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
+		outputSliceOffset = int32(WriteToSlice(int(outputSliceOffset), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
 
-func opAlBufferData(expr *CXExpression, fp int) {
+func opAlBufferData(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	buffer := al.Buffer(ReadI32(fp, expr.Inputs[0]))
 	format := ReadI32(fp, expr.Inputs[1])
 	data := toBytes(ReadData(fp, expr.Inputs[2], TYPE_UI8))
@@ -161,40 +206,58 @@ func opAlBufferData(expr *CXExpression, fp int) {
 	buffer.BufferData(uint32(format), data, frequency)
 }
 
-func opAlGenSources(expr *CXExpression, fp int) {
+func opAlGenSources(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	sources := al.GenSources(int(ReadI32(fp, expr.Inputs[0])))
 	outputSlice := expr.Outputs[0]
 	outputSlicePointer := GetFinalOffset(fp, outputSlice)
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, s := range sources { // REFACTOR append with copy ?
 		obj := FromI32(int32(s))
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
+		outputSliceOffset = int32(WriteToSlice(int(outputSliceOffset), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
 
-func opAlSourceBuffersProcessed(expr *CXExpression, fp int) {
+func opAlSourceBuffersProcessed(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromI32(source.BuffersProcessed()))
 }
 
-func opAlSourceBuffersQueued(expr *CXExpression, fp int) {
+func opAlSourceBuffersQueued(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromI32(source.BuffersQueued()))
 }
 
-func opAlSourceQueueBuffers(expr *CXExpression, fp int) {
+func opAlSourceQueueBuffers(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	buffers := toBuffers(ReadData(fp, expr.Inputs[1], TYPE_I32))
 	source.QueueBuffers(buffers...)
 }
 
-func opAlSourceState(expr *CXExpression, fp int) {
+func opAlSourceState(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromI32(source.State()))
 }
 
-func opAlSourceUnqueueBuffers(expr *CXExpression, fp int) {
+func opAlSourceUnqueueBuffers(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	buffers := toBuffers(ReadData(fp, expr.Inputs[1], TYPE_I32))
 	source.UnqueueBuffers(buffers...)

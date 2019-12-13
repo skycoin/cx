@@ -6,7 +6,7 @@ import (
 
 	"github.com/amherag/skycoin/src/cipher/encoder"
 
-	. "github.com/skycoin/cx/cx"
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 // PostfixExpressionArray...
@@ -14,10 +14,10 @@ import (
 func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression) []*CXExpression {
 	var elt *CXArgument
 	prevExpr := prevExprs[len(prevExprs)-1]
-	
+
 	if prevExpr.Operator != nil && len(prevExpr.Outputs) == 0 {
 		genName := MakeGenSym(LOCAL_PREFIX)
-		
+
 		out := MakeArgument(genName, prevExpr.FileName, prevExpr.FileLine-1).AddType(TypeNames[prevExpr.Operator.Outputs[0].Type])
 
 		out.DeclarationSpecifiers = prevExpr.Operator.Outputs[0].DeclarationSpecifiers
@@ -48,7 +48,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 	}
 
 	prevExpr = prevExprs[len(prevExprs)-1]
-	
+
 	if len(prevExpr.Outputs[0].Fields) > 0 {
 		elt = prevExpr.Outputs[0].Fields[len(prevExpr.Outputs[0].Fields)-1]
 	} else {
@@ -70,7 +70,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// expr.AddInput(postExprs[len(postExprs)-1].Outputs[0])
 			fld.Indexes = append(fld.Indexes, postExprs[len(postExprs)-1].Outputs[0])
 		} else {
-			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Inputs[0].Type])
+			sym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			sym.Package = postExprs[len(postExprs)-1].Package
 			sym.PreviouslyDeclared = true
 			postExprs[len(postExprs)-1].AddOutput(sym)
@@ -86,7 +86,7 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// we create a gensym for it
 			idxSym := MakeArgument(MakeGenSym(LOCAL_PREFIX), CurrentFile, LineNo).AddType(TypeNames[postExprs[len(postExprs)-1].Operator.Outputs[0].Type])
 			idxSym.Size = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
-			idxSym.TotalSize = postExprs[len(postExprs)-1].Operator.Outputs[0].Size
+			idxSym.TotalSize = GetSize(postExprs[len(postExprs)-1].Operator.Outputs[0])
 
 			idxSym.Package = postExprs[len(postExprs)-1].Package
 			idxSym.PreviouslyDeclared = true
@@ -97,7 +97,9 @@ func PostfixExpressionArray(prevExprs []*CXExpression, postExprs []*CXExpression
 			// we push the index expression
 			prevExprs = append(postExprs, prevExprs...)
 		} else {
-			prevExprs[len(prevExprs)-1].Outputs[0].Indexes = append(prevExprs[len(prevExprs)-1].Outputs[0].Indexes, postExprs[len(postExprs)-1].Outputs[0])
+			prevOuts := prevExprs[len(prevExprs)-1].Outputs
+			postOuts := postExprs[len(postExprs)-1].Outputs
+			prevOuts[0].Indexes = append(prevOuts[0].Indexes, postOuts[0])
 		}
 	}
 

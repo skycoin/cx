@@ -10,320 +10,480 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
-func opLt(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) < ReadByte(fp, inp2))
+func opLt(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) < ReadStr(fp, inp2))
+		opStrLt(prgrm)
+	case TYPE_I8:
+		opI8Lt(prgrm)
+	case TYPE_I16:
+		opI16Lt(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) < ReadI32(fp, inp2))
+		opI32Lt(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) < ReadI64(fp, inp2))
+		opI64Lt(prgrm)
+	case TYPE_UI8:
+		opUI8Lt(prgrm)
+	case TYPE_UI16:
+		opUI16Lt(prgrm)
+	case TYPE_UI32:
+		opUI32Lt(prgrm)
+	case TYPE_UI64:
+		opUI64Lt(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) < ReadF32(fp, inp2))
+		opF32Lt(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) < ReadF64(fp, inp2))
+		opF64Lt(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opGt(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) > ReadByte(fp, inp2))
+func opGt(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) > ReadStr(fp, inp2))
+		opStrGt(prgrm)
+	case TYPE_I8:
+		opI8Gt(prgrm)
+	case TYPE_I16:
+		opI16Gt(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) > ReadI32(fp, inp2))
+		opI32Gt(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) > ReadI64(fp, inp2))
+		opI64Gt(prgrm)
+	case TYPE_UI8:
+		opUI8Gt(prgrm)
+	case TYPE_UI16:
+		opUI16Gt(prgrm)
+	case TYPE_UI32:
+		opUI32Gt(prgrm)
+	case TYPE_UI64:
+		opUI64Gt(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) > ReadF32(fp, inp2))
+		opF32Gt(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) > ReadF64(fp, inp2))
+		opF64Gt(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opLteq(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) <= ReadByte(fp, inp2))
+func opLteq(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) <= ReadStr(fp, inp2))
+		opStrLteq(prgrm)
+	case TYPE_I8:
+		opI8Lteq(prgrm)
+	case TYPE_I16:
+		opI16Lteq(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) <= ReadI32(fp, inp2))
+		opI32Lteq(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) <= ReadI64(fp, inp2))
+		opI64Lteq(prgrm)
+	case TYPE_UI8:
+		opUI8Lteq(prgrm)
+	case TYPE_UI16:
+		opUI16Lteq(prgrm)
+	case TYPE_UI32:
+		opUI32Lteq(prgrm)
+	case TYPE_UI64:
+		opUI64Lteq(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) <= ReadF32(fp, inp2))
+		opF32Lteq(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) <= ReadF64(fp, inp2))
+		opF64Lteq(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opGteq(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) >= ReadByte(fp, inp2))
+func opGteq(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) >= ReadStr(fp, inp2))
+		opStrGteq(prgrm)
+	case TYPE_I8:
+		opI8Gteq(prgrm)
+	case TYPE_I16:
+		opI16Gteq(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) >= ReadI32(fp, inp2))
+		opI32Gteq(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) >= ReadI64(fp, inp2))
+		opI64Gteq(prgrm)
+	case TYPE_UI8:
+		opUI8Gteq(prgrm)
+	case TYPE_UI16:
+		opUI16Gteq(prgrm)
+	case TYPE_UI32:
+		opUI32Gteq(prgrm)
+	case TYPE_UI64:
+		opUI64Gteq(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) >= ReadF32(fp, inp2))
+		opF32Gteq(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) >= ReadF64(fp, inp2))
+		opF64Gteq(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opEqual(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) == ReadByte(fp, inp2))
+func opEqual(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_BOOL:
-		outB1 = FromBool(ReadBool(fp, inp1) == ReadBool(fp, inp2))
+		opBoolEqual(prgrm)
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) == ReadStr(fp, inp2))
+		opStrEq(prgrm)
+	case TYPE_I8:
+		opI8Eq(prgrm)
+	case TYPE_I16:
+		opI16Eq(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) == ReadI32(fp, inp2))
+		opI32Eq(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) == ReadI64(fp, inp2))
+		opI64Eq(prgrm)
+	case TYPE_UI8:
+		opUI8Eq(prgrm)
+	case TYPE_UI16:
+		opUI16Eq(prgrm)
+	case TYPE_UI32:
+		opUI32Eq(prgrm)
+	case TYPE_UI64:
+		opUI64Eq(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) == ReadF32(fp, inp2))
+		opF32Eq(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) == ReadF64(fp, inp2))
+		opF64Eq(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opUnequal(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromBool(ReadByte(fp, inp1) != ReadByte(fp, inp2))
+func opUnequal(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
 	case TYPE_BOOL:
-		outB1 = FromBool(ReadBool(fp, inp1) != ReadBool(fp, inp2))
+		opBoolUnequal(prgrm)
 	case TYPE_STR:
-		outB1 = FromBool(ReadStr(fp, inp1) != ReadStr(fp, inp2))
+		opStrUneq(prgrm)
+	case TYPE_I8:
+		opI8Uneq(prgrm)
+	case TYPE_I16:
+		opI16Uneq(prgrm)
 	case TYPE_I32:
-		outB1 = FromBool(ReadI32(fp, inp1) != ReadI32(fp, inp2))
+		opI32Uneq(prgrm)
 	case TYPE_I64:
-		outB1 = FromBool(ReadI64(fp, inp1) != ReadI64(fp, inp2))
+		opI64Uneq(prgrm)
+	case TYPE_UI8:
+		opUI8Uneq(prgrm)
+	case TYPE_UI16:
+		opUI16Uneq(prgrm)
+	case TYPE_UI32:
+		opUI32Uneq(prgrm)
+	case TYPE_UI64:
+		opUI64Uneq(prgrm)
 	case TYPE_F32:
-		outB1 = FromBool(ReadF32(fp, inp1) != ReadF32(fp, inp2))
+		opF32Uneq(prgrm)
 	case TYPE_F64:
-		outB1 = FromBool(ReadF64(fp, inp1) != ReadF64(fp, inp2))
+		opF64Uneq(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitand(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opBitand(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitand(prgrm)
+	case TYPE_I16:
+		opI16Bitand(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) & ReadI32(fp, inp2))
+		opI32Bitand(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) & ReadI64(fp, inp2))
+		opI64Bitand(prgrm)
+	case TYPE_UI8:
+		opUI8Bitand(prgrm)
+	case TYPE_UI16:
+		opUI16Bitand(prgrm)
+	case TYPE_UI32:
+		opUI32Bitand(prgrm)
+	case TYPE_UI64:
+		opUI64Bitand(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitor(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opBitor(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitor(prgrm)
+	case TYPE_I16:
+		opI16Bitor(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) | ReadI32(fp, inp2))
+		opI32Bitor(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) | ReadI64(fp, inp2))
+		opI64Bitor(prgrm)
+	case TYPE_UI8:
+		opUI8Bitor(prgrm)
+	case TYPE_UI16:
+		opUI16Bitor(prgrm)
+	case TYPE_UI32:
+		opUI32Bitor(prgrm)
+	case TYPE_UI64:
+		opUI64Bitor(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitxor(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opBitxor(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitxor(prgrm)
+	case TYPE_I16:
+		opI16Bitxor(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) ^ ReadI32(fp, inp2))
+		opI32Bitxor(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) ^ ReadI64(fp, inp2))
+		opI64Bitxor(prgrm)
+	case TYPE_UI8:
+		opUI8Bitxor(prgrm)
+	case TYPE_UI16:
+		opUI16Bitxor(prgrm)
+	case TYPE_UI32:
+		opUI32Bitxor(prgrm)
+	case TYPE_UI64:
+		opUI64Bitxor(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opMul(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) * ReadByte(fp, inp2))
+func opMul(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Mul(prgrm)
+	case TYPE_I16:
+		opI16Mul(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) * ReadI32(fp, inp2))
+		opI32Mul(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) * ReadI64(fp, inp2))
+		opI64Mul(prgrm)
+	case TYPE_UI8:
+		opUI8Mul(prgrm)
+	case TYPE_UI16:
+		opUI16Mul(prgrm)
+	case TYPE_UI32:
+		opUI32Mul(prgrm)
+	case TYPE_UI64:
+		opUI64Mul(prgrm)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) * ReadF32(fp, inp2))
+		opF32Mul(prgrm)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) * ReadF64(fp, inp2))
+		opF64Mul(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opDiv(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) / ReadByte(fp, inp2))
+func opDiv(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Div(prgrm)
+	case TYPE_I16:
+		opI16Div(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) / ReadI32(fp, inp2))
+		opI32Div(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) / ReadI64(fp, inp2))
+		opI64Div(prgrm)
+	case TYPE_UI8:
+		opUI8Div(prgrm)
+	case TYPE_UI16:
+		opUI16Div(prgrm)
+	case TYPE_UI32:
+		opUI32Div(prgrm)
+	case TYPE_UI64:
+		opUI64Div(prgrm)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) / ReadF32(fp, inp2))
+		opF32Div(prgrm)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) / ReadF64(fp, inp2))
+		opF64Div(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opMod(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) % ReadByte(fp, inp2))
+func opMod(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Mod(prgrm)
+	case TYPE_I16:
+		opI16Mod(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) % ReadI32(fp, inp2))
+		opI32Mod(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) % ReadI64(fp, inp2))
-	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-func opAdd(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
-	case TYPE_BYTE:
-		outB1 = FromByte(ReadByte(fp, inp1) + ReadByte(fp, inp2))
-	case TYPE_I32:
-		outB1 = FromI32(ReadI32(fp, inp1) + ReadI32(fp, inp2))
-	case TYPE_I64:
-		outB1 = FromI64(ReadI64(fp, inp1) + ReadI64(fp, inp2))
+		opI64Mod(prgrm)
+	case TYPE_UI8:
+		opUI8Mod(prgrm)
+	case TYPE_UI16:
+		opUI16Mod(prgrm)
+	case TYPE_UI32:
+		opUI32Mod(prgrm)
+	case TYPE_UI64:
+		opUI64Mod(prgrm)
 	case TYPE_F32:
-		outB1 = FromF32(ReadF32(fp, inp1) + ReadF32(fp, inp2))
+		opF32Mod(prgrm)
 	case TYPE_F64:
-		outB1 = FromF64(ReadF64(fp, inp1) + ReadF64(fp, inp2))
+		opF64Mod(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opSub(expr *CXExpression, fp int) {
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	var outB1 []byte
-	if len(expr.Inputs) == 2 {
-		inp2 := expr.Inputs[1]
-		switch inp1.Type {
-		case TYPE_BYTE:
-			outB1 = FromByte(ReadByte(fp, inp1) - ReadByte(fp, inp2))
-		case TYPE_I32:
-			outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
-		case TYPE_I64:
-			outB1 = FromI64(ReadI64(fp, inp1) - ReadI64(fp, inp2))
-		case TYPE_F32:
-			outB1 = FromF32(ReadF32(fp, inp1) - ReadF32(fp, inp2))
-		case TYPE_F64:
-			outB1 = FromF64(ReadF64(fp, inp1) - ReadF64(fp, inp2))
-		}
-	} else {
-		switch inp1.Type {
-		case TYPE_BYTE:
-			outB1 = FromByte(-ReadByte(fp, inp1))
-		case TYPE_I32:
-			outB1 = FromI32(-ReadI32(fp, inp1))
-		case TYPE_I64:
-			outB1 = FromI64(-ReadI64(fp, inp1))
-		case TYPE_F32:
-			outB1 = FromF32(-ReadF32(fp, inp1))
-		case TYPE_F64:
-			outB1 = FromF64(-ReadF64(fp, inp1))
-		}
-	}
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-func opBitshl(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opAdd(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Add(prgrm)
+	case TYPE_I16:
+		opI16Add(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) << uint32(ReadI32(fp, inp2))))
+		opI32Add(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint64(ReadI64(fp, inp1)) << uint64(ReadI64(fp, inp2))))
+		opI64Add(prgrm)
+	case TYPE_UI8:
+		opUI8Add(prgrm)
+	case TYPE_UI16:
+		opUI16Add(prgrm)
+	case TYPE_UI32:
+		opUI32Add(prgrm)
+	case TYPE_UI64:
+		opUI64Add(prgrm)
+	case TYPE_F32:
+		opF32Add(prgrm)
+	case TYPE_F64:
+		opF64Add(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitshr(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opSub(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Sub(prgrm)
+	case TYPE_I16:
+		opI16Sub(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) >> uint32(ReadI32(fp, inp2))))
+		opI32Sub(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint32(ReadI64(fp, inp1)) >> uint32(ReadI64(fp, inp2))))
+		opI64Sub(prgrm)
+	case TYPE_UI8:
+		opUI8Sub(prgrm)
+	case TYPE_UI16:
+		opUI16Sub(prgrm)
+	case TYPE_UI32:
+		opUI32Sub(prgrm)
+	case TYPE_UI64:
+		opUI64Sub(prgrm)
+	case TYPE_F32:
+		opF32Sub(prgrm)
+	case TYPE_F64:
+		opF64Sub(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opBitclear(expr *CXExpression, fp int) {
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	var outB1 []byte
-	switch inp1.Type {
+func opNeg(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Neg(prgrm)
+	case TYPE_I16:
+		opI16Neg(prgrm)
 	case TYPE_I32:
-		outB1 = FromI32(int32(uint32(ReadI32(fp, inp1)) &^ uint32(ReadI32(fp, inp2))))
+		opI32Neg(prgrm)
 	case TYPE_I64:
-		outB1 = FromI64(int64(uint32(ReadI64(fp, inp1)) &^ uint32(ReadI64(fp, inp2))))
+		opI64Neg(prgrm)
+	case TYPE_F32:
+		opF32Neg(prgrm)
+	case TYPE_F64:
+		opF64Neg(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
 	}
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-func opLen(expr *CXExpression, fp int) {
+func opBitshl(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitshl(prgrm)
+	case TYPE_I16:
+		opI16Bitshl(prgrm)
+	case TYPE_I32:
+		opI32Bitshl(prgrm)
+	case TYPE_I64:
+		opI64Bitshl(prgrm)
+	case TYPE_UI8:
+		opUI8Bitshl(prgrm)
+	case TYPE_UI16:
+		opUI16Bitshl(prgrm)
+	case TYPE_UI32:
+		opUI32Bitshl(prgrm)
+	case TYPE_UI64:
+		opUI64Bitshl(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
+	}
+}
+
+func opBitshr(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitshr(prgrm)
+	case TYPE_I16:
+		opI16Bitshr(prgrm)
+	case TYPE_I32:
+		opI32Bitshr(prgrm)
+	case TYPE_I64:
+		opI64Bitshr(prgrm)
+	case TYPE_UI8:
+		opUI8Bitshr(prgrm)
+	case TYPE_UI16:
+		opUI16Bitshr(prgrm)
+	case TYPE_UI32:
+		opUI32Bitshr(prgrm)
+	case TYPE_UI64:
+		opUI64Bitshr(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
+	}
+}
+
+func opBitclear(prgrm *CXProgram) {
+	switch prgrm.GetExpr().Inputs[0].Type {
+	case TYPE_I8:
+		opI8Bitclear(prgrm)
+	case TYPE_I16:
+		opI16Bitclear(prgrm)
+	case TYPE_I32:
+		opI32Bitclear(prgrm)
+	case TYPE_I64:
+		opI64Bitclear(prgrm)
+	case TYPE_UI8:
+		opUI8Bitclear(prgrm)
+	case TYPE_UI16:
+		opUI16Bitclear(prgrm)
+	case TYPE_UI32:
+		opUI32Bitclear(prgrm)
+	case TYPE_UI64:
+		opUI64Bitclear(prgrm)
+	default:
+		panic(CX_INTERNAL_ERROR)
+	}
+}
+
+func opLen(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	elt := GetAssignmentElement(inp1)
 
@@ -342,23 +502,49 @@ func opLen(expr *CXExpression, fp int) {
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 	} else if elt.Type == TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
+		// Checking if the string lives on the heap.
+		if strOffset > PROGRAM.HeapStartsAt {
+			// Then it's on the heap and we need to consider
+			// the object's header.
+			strOffset += OBJECT_HEADER_SIZE
+		}
+
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
-		outB1 := FromI32(int32(elt.Lengths[0]))
+		outB1 := FromI32(int32(elt.Lengths[len(elt.Indexes)]))
 		WriteMemory(GetFinalOffset(fp, out1), outB1)
 	}
 }
 
-func opAppend(expr *CXExpression, fp int) {
+func opAppend(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
-	if inp1.Type != inp2.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
+	eltInp1 := GetAssignmentElement(inp1)
+	eltOut1 := GetAssignmentElement(out1)
+	if inp1.Type != inp2.Type || inp1.Type != out1.Type || !eltInp1.IsSlice || !eltOut1.IsSlice {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	// outputSlicePointer := GetFinalOffset(fp, out1)
+	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	inputSliceOffset := GetSliceOffset(fp, inp1)
+
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	// Preparing slice in case more memory is needed for the new element.
+	// outputSliceOffset = SliceAppendResize(outputSliceOffset, inputSliceOffset, inp2.Size)
+	outputSliceOffset := SliceAppendResize(fp, out1, inp1, inp2.Size)
+
+	// We need to update the address of the output and input, as the final offsets
+	// could be on the heap and they could have been moved by the GC.
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	inputSliceOffset = GetSliceOffset(fp, inp1)
 
 	var obj []byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
@@ -367,11 +553,15 @@ func opAppend(expr *CXExpression, fp int) {
 		obj = ReadMemory(GetFinalOffset(fp, inp2), inp2)
 	}
 
-	outputSliceOffset = int32(SliceAppend(outputSliceOffset, inputSliceOffset, obj))
+	SliceAppendWrite(outputSliceOffset, inputSliceOffset, obj, inputSliceLen)
+
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opResize(expr *CXExpression, fp int) {
+func opResize(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -379,15 +569,16 @@ func opResize(expr *CXExpression, fp int) {
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
+	outputSliceOffset := int32(SliceResize(fp, out1, inp1, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opInsert(expr *CXExpression, fp int) {
+func opInsert(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 
 	if inp1.Type != inp3.Type || inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -395,9 +586,7 @@ func opInsert(expr *CXExpression, fp int) {
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-
-	inputSliceOffset := GetSliceOffset(fp, inp1)
+	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
 	var obj []byte
 	if inp3.Type == TYPE_STR || inp3.Type == TYPE_AFF {
@@ -406,11 +595,14 @@ func opInsert(expr *CXExpression, fp int) {
 		obj = ReadMemory(GetFinalOffset(fp, inp3), inp3)
 	}
 
-	outputSliceOffset = int32(SliceInsert(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), obj))
+	outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opRemove(expr *CXExpression, fp int) {
+func opRemove(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	if inp1.Type != out1.Type || !GetAssignmentElement(inp1).IsSlice || !GetAssignmentElement(out1).IsSlice {
@@ -418,15 +610,16 @@ func opRemove(expr *CXExpression, fp int) {
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-
-	outputSliceOffset = int32(SliceRemove(outputSliceOffset, inputSliceOffset, ReadI32(fp, inp2), int32(GetAssignmentElement(inp1).TotalSize)))
+	outputSliceOffset := int32(SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(GetAssignmentElement(inp1).TotalSize)))
 	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
-func opCopy(expr *CXExpression, fp int) {
+func opCopy(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	dstInput := expr.Inputs[0]
 	srcInput := expr.Inputs[1]
 	dstOffset := GetSliceOffset(fp, dstInput)
@@ -494,10 +687,22 @@ func buildString(expr *CXExpression, fp int) []byte {
 				res = append(res, []byte(checkForEscapedChars(ReadStr(fp, inp)))...)
 			case 'd':
 				switch inp.Type {
+				case TYPE_I8:
+					res = append(res, []byte(strconv.FormatInt(int64(ReadI8(fp, inp)), 10))...)
+				case TYPE_I16:
+					res = append(res, []byte(strconv.FormatInt(int64(ReadI16(fp, inp)), 10))...)
 				case TYPE_I32:
 					res = append(res, []byte(strconv.FormatInt(int64(ReadI32(fp, inp)), 10))...)
 				case TYPE_I64:
 					res = append(res, []byte(strconv.FormatInt(ReadI64(fp, inp), 10))...)
+				case TYPE_UI8:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI8(fp, inp)), 10))...)
+				case TYPE_UI16:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI16(fp, inp)), 10))...)
+				case TYPE_UI32:
+					res = append(res, []byte(strconv.FormatUint(uint64(ReadUI32(fp, inp)), 10))...)
+				case TYPE_UI64:
+					res = append(res, []byte(strconv.FormatUint(ReadUI64(fp, inp), 10))...)
 				}
 			case 'f':
 				switch inp.Type {
@@ -549,7 +754,10 @@ func buildString(expr *CXExpression, fp int) []byte {
 	return res
 }
 
-func opSprintf(expr *CXExpression, fp int) {
+func opSprintf(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -557,11 +765,17 @@ func opSprintf(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func opPrintf(expr *CXExpression, fp int) {
+func opPrintf(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	fmt.Print(string(buildString(expr, fp)))
 }
 
-func opRead(expr *CXExpression, fp int) {
+func opRead(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -575,7 +789,7 @@ func opRead(expr *CXExpression, fp int) {
 		panic("")
 	}
 	byts := encoder.Serialize(text)
-	size := encoder.Serialize(int32(len(byts)))
+	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 
 	var header = make([]byte, OBJECT_HEADER_SIZE)

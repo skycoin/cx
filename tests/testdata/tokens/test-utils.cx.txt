@@ -21,7 +21,7 @@ SCOLON
   BOOL bool
 SCOLON 
  IDENT mByt
-  BYTE byte
+    I8 i8
 SCOLON 
  IDENT mString
    STR 
@@ -48,7 +48,7 @@ SCOLON
   BOOL bool
 SCOLON 
  IDENT byt
-  BYTE byte
+    I8 i8
 SCOLON 
  IDENT string
    STR 
