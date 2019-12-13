@@ -23,45 +23,32 @@ var freeFns map[string]*func() = make(map[string]*func(), 0)
 var cSources map[string]**uint8 = make(map[string]**uint8, 0)
 var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
 
-// gogl
-func op_gl_Init(_ *CXProgram) {
-	gl.Init()
+func getCString(key string, value string) **uint8 {
+	if cstrings, ok := cSources[key]; ok {
+		return cstrings
+	} else {
+		cstrings, free := gl.Strs(value + string('\000'))
+		freeFns[key] = &free
+		cSources[key] = cstrings
+		return cstrings
+	}
 }
 
-func op_gl_Strs(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	dsSource := ReadStr(fp, inp1)
-	fnName := ReadStr(fp, inp2)
-
-	csources, free := gl.Strs(dsSource + string('\000'))
-
-	freeFns[fnName] = &free
-	cSources[fnName] = csources
+func freeCString(key string) {
+	(*freeFns[key])()
+	delete(freeFns, key)
+	delete(cSources, key)
 }
 
-func op_gl_Free(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1 := expr.Inputs[0]
-	fnName := ReadStr(fp, inp1)
-
-	(*freeFns[fnName])()
-	delete(freeFns, fnName)
-	delete(cSources, fnName)
+func readF32Ptr(fp int, inp *CXArgument) *float32 {
+	return (*float32)(gl.Ptr(ReadData(fp, inp, TYPE_F32)))
 }
 
-func op_gl_NewTexture(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func readI32Ptr(fp int, inp *CXArgument) *int32 {
+	return (*int32)(gl.Ptr(ReadData(fp, inp, TYPE_I32)))
+}
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
-	file := ReadStr(fp, inp1)
+func uploadTexture(file string, target uint32) {
 
 	imgFile, err := os.Open(file)
 	if err != nil {
@@ -80,6 +67,47 @@ func op_gl_NewTexture(prgrm *CXProgram) {
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
+	gl.TexImage2D(
+		target,
+		0,
+		gl.RGBA,
+		int32(rgba.Rect.Size().X),
+		int32(rgba.Rect.Size().Y),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(rgba.Pix))
+}
+
+// gogl
+func op_gl_Init(_ *CXProgram) {
+	gl.Init()
+}
+
+func op_gl_Destroy(_ *CXProgram) {
+	for k, _ := range cSources {
+		freeCString(k)
+	}
+}
+
+func op_gl_Strs(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	getCString(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))
+}
+
+func op_gl_Free(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	freeCString(ReadStr(fp, expr.Inputs[0]))
+}
+
+func op_gl_NewTexture(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	var texture uint32
 	gl.Enable(gl.TEXTURE_2D)
 	gl.GenTextures(1, &texture)
@@ -89,19 +117,32 @@ func op_gl_NewTexture(prgrm *CXProgram) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
-		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		gl.RGBA,
-		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
+	uploadTexture(ReadStr(fp, expr.Inputs[0]), gl.TEXTURE_2D)
 
-	outB1 := encoder.SerializeAtomic(int32(texture))
-	WriteMemory(out1Offset, outB1)
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
+}
+
+func op_gl_NewTextureCube(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	var texture uint32
+	gl.Enable(gl.TEXTURE_CUBE_MAP)
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_CUBE_MAP, texture)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+
+	var faces []string = []string{"posx", "negx", "posy", "negy", "posz", "negz"}
+	var pattern string = ReadStr(fp, expr.Inputs[0])
+	var extension string = ReadStr(fp, expr.Inputs[1])
+	for i := 0; i < 6; i++ {
+		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i))
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
 }
 
 func op_gl_NewGIF(prgrm *CXProgram) {
@@ -167,6 +208,29 @@ func op_gl_GIFFrameToTexture(prgrm *CXProgram) {
 
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(delay))
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(disposal))
+}
+
+func opGlAppend(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[0])
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+
+	inputSliceOffset := GetSliceOffset(fp, expr.Inputs[0])
+	var inputSliceLen int32
+	if inputSliceOffset != 0 {
+		inputSliceLen = GetSliceLen(inputSliceOffset)
+	}
+
+	inp1 := expr.Inputs[1]
+	obj := ReadMemory(GetFinalOffset(fp, inp1), inp1)
+
+	objLen := int32(len(obj))
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, inputSliceLen+objLen, 1))
+	sliceCopy(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
+	WriteMemory(outputSlicePointer, FromI32(outputSliceOffset))
 }
 
 // gl_0_0
@@ -328,6 +392,13 @@ func op_gl_CullFace(prgrm *CXProgram) {
 	gl.CullFace(uint32(ReadI32(fp, inp1)))
 }
 
+func op_gl_FrontFace(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.FrontFace(uint32(ReadI32(fp, expr.Inputs[0])))
+}
+
 func op_gl_Hint(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -356,8 +427,10 @@ func op_gl_TexImage2D(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3, inp4, inp5, inp6, inp7, inp8 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6], expr.Inputs[7]
-	gl.TexImage2D(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3), ReadI32(fp, inp4), ReadI32(fp, inp5), ReadI32(fp, inp6), uint32(ReadI32(fp, inp7)), uint32(ReadI32(fp, inp8)), nil)
+	gl.TexImage2D(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]),
+		ReadI32(fp, expr.Inputs[3]), ReadI32(fp, expr.Inputs[4]), ReadI32(fp, expr.Inputs[5]),
+		uint32(ReadI32(fp, expr.Inputs[6])), uint32(ReadI32(fp, expr.Inputs[7])),
+		gl.Ptr(ReadData(fp, expr.Inputs[8], -1)))
 }
 
 func op_gl_Clear(prgrm *CXProgram) {
@@ -508,6 +581,13 @@ func op_gl_DrawArrays(prgrm *CXProgram) {
 	gl.DrawArrays(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), ReadI32(fp, inp3))
 }
 
+func op_gl_DrawElements(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.DrawElements(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), uint32(ReadI32(fp, expr.Inputs[2])), gl.Ptr(ReadData(fp, expr.Inputs[3], TYPE_I32)))
+}
+
 func op_gl_BindTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -627,9 +707,8 @@ func op_gl_BindAttribLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	xstr := cSources[ReadStr(fp, inp3)]
-	gl.BindAttribLocation(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), *xstr)
+	name := ReadStr(fp, expr.Inputs[2])
+	gl.BindAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), uint32(ReadI32(fp, expr.Inputs[1])), *getCString(name, name))
 }
 
 func op_gl_CompileShader(prgrm *CXProgram) {
@@ -649,7 +728,7 @@ func op_gl_CompileShader(prgrm *CXProgram) {
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetShaderInfoLog(shad, logLength, nil, gl.Str(log))
 
-		fmt.Printf("failed to compile: %v", log)
+		fmt.Printf("failed to compile: %v\n", log)
 	}
 }
 
@@ -707,10 +786,9 @@ func op_gl_GetAttribLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	name := ReadStr(fp, expr.Inputs[1])
+	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_GetShaderiv(_ *CXProgram) {
@@ -722,27 +800,37 @@ func op_gl_GetUniformLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	xstr := cSources[ReadStr(fp, inp2)]
-	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, inp1)), *xstr))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	name := ReadStr(fp, expr.Inputs[1])
+	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_LinkProgram(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	gl.LinkProgram(uint32(ReadI32(fp, inp1)))
+	program := uint32(ReadI32(fp, expr.Inputs[0]))
+	gl.LinkProgram(program)
+
+	var status int32
+	gl.GetProgramiv(program, gl.LINK_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetProgramiv(program, gl.INFO_LOG_LENGTH, &logLength)
+
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
+
+		fmt.Printf("failed to link: %v\n", log)
+	}
 }
 
 func op_gl_ShaderSource(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	xstr := cSources[ReadStr(fp, inp3)]
-	gl.ShaderSource(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), xstr, nil)
+	name := ReadStr(fp, expr.Inputs[2])
+	gl.ShaderSource(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), getCString(name, name), nil)
 }
 
 func op_gl_UseProgram(prgrm *CXProgram) {
@@ -757,16 +845,133 @@ func op_gl_Uniform1f(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Uniform1f(ReadI32(fp, inp1), ReadF32(fp, inp2))
+	gl.Uniform1f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]))
+}
+
+func op_gl_Uniform2f(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform2f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3f(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform3f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]), ReadF32(fp, expr.Inputs[3]))
+}
+
+func op_gl_Uniform4f(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform4f(ReadI32(fp, expr.Inputs[0]), ReadF32(fp, expr.Inputs[1]), ReadF32(fp, expr.Inputs[2]), ReadF32(fp, expr.Inputs[3]), ReadF32(fp, expr.Inputs[4]))
 }
 
 func op_gl_Uniform1i(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	gl.Uniform1i(ReadI32(fp, inp1), ReadI32(fp, inp2))
+	gl.Uniform1i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]))
+}
+
+func op_gl_Uniform2i(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform2i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3i(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform3i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]), ReadI32(fp, expr.Inputs[3]))
+}
+
+func op_gl_Uniform4i(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform4i(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadI32(fp, expr.Inputs[2]), ReadI32(fp, expr.Inputs[3]), ReadI32(fp, expr.Inputs[4]))
+}
+
+func op_gl_Uniform1fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform1fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform2fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform2fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform3fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform4fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readF32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform1iv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform1iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform2iv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform2iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform3iv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform3iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_Uniform4iv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform4iv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), readI32Ptr(fp, expr.Inputs[2]))
+}
+
+func op_gl_UniformMatrix2fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.UniformMatrix2fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
+}
+
+func op_gl_UniformMatrix3fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.UniformMatrix3fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
+}
+
+func op_gl_UniformMatrix4fv(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.UniformMatrix4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
 }
 
 func op_gl_VertexAttribPointer(prgrm *CXProgram) {
@@ -873,6 +1078,13 @@ func op_gl_FramebufferRenderbuffer(prgrm *CXProgram) {
 
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 	gl.FramebufferRenderbuffer(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), uint32(ReadI32(fp, inp3)), uint32(ReadI32(fp, inp4)))
+}
+
+func op_gl_GenerateMipmap(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.GenerateMipmap(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
 func op_gl_BindVertexArray(prgrm *CXProgram) {
