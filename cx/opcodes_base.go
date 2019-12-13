@@ -107,59 +107,58 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
 
-	// exec
-	handleOpcode := func(opCode int) opcodeHandler {
-		switch opCode {
-		// time
-		case OP_TIME_SLEEP:
-			return op_time_Sleep
-		case OP_TIME_UNIX:
-		case OP_TIME_UNIX_MILLI:
-			return op_time_UnixMilli
-		case OP_TIME_UNIX_NANO:
-			return op_time_UnixNano
+	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
+}
 
-		// http
-		// case OP_HTTP_GET:
-		// 	return op_http_get
+func handleBaseOpcode(opCode int) opcodeHandler {
+	switch opCode {
+	// time
+	case OP_TIME_SLEEP:
+		return op_time_Sleep
+	case OP_TIME_UNIX:
+	case OP_TIME_UNIX_MILLI:
+		return op_time_UnixMilli
+	case OP_TIME_UNIX_NANO:
+		return op_time_UnixNano
 
-		// os
-		case OP_OS_GET_WORKING_DIRECTORY:
-			return op_os_GetWorkingDirectory
-		case OP_OS_OPEN:
-			return op_os_Open
-		case OP_OS_CLOSE:
-			return op_os_Close
-		case OP_OS_RUN:
-			return op_os_Run
-		case OP_OS_EXIT:
-			return op_os_Exit
+	// http
+	// case OP_HTTP_GET:
+	// 	return op_http_get
 
-		// json
-		case OP_JSON_OPEN:
-			return opJSONOpen
-		case OP_JSON_CLOSE:
-			return opJSONClose
-		case OP_JSON_TOKEN_MORE:
-			return opJSONTokenMore
-		case OP_JSON_TOKEN_NEXT:
-			return opJSONTokenNext
-		case OP_JSON_TOKEN_TYPE:
-			return opJSONTokenType
-		case OP_JSON_TOKEN_DELIM:
-			return opJSONTokenDelim
-		case OP_JSON_TOKEN_BOOL:
-			return opJSONTokenBool
-		case OP_JSON_TOKEN_F64:
-			return opJSONTokenF64
-		case OP_JSON_TOKEN_I64:
-			return opJSONTokenI64
-		case OP_JSON_TOKEN_STR:
-			return opJSONTokenStr
-		}
+	// os
+	case OP_OS_GET_WORKING_DIRECTORY:
+		return op_os_GetWorkingDirectory
+	case OP_OS_OPEN:
+		return op_os_Open
+	case OP_OS_CLOSE:
+		return op_os_Close
+	case OP_OS_RUN:
+		return op_os_Run
+	case OP_OS_EXIT:
+		return op_os_Exit
 
-		return nil
+	// json
+	case OP_JSON_OPEN:
+		return opJSONOpen
+	case OP_JSON_CLOSE:
+		return opJSONClose
+	case OP_JSON_TOKEN_MORE:
+		return opJSONTokenMore
+	case OP_JSON_TOKEN_NEXT:
+		return opJSONTokenNext
+	case OP_JSON_TOKEN_TYPE:
+		return opJSONTokenType
+	case OP_JSON_TOKEN_DELIM:
+		return opJSONTokenDelim
+	case OP_JSON_TOKEN_BOOL:
+		return opJSONTokenBool
+	case OP_JSON_TOKEN_F64:
+		return opJSONTokenF64
+	case OP_JSON_TOKEN_I64:
+		return opJSONTokenI64
+	case OP_JSON_TOKEN_STR:
+		return opJSONTokenStr
 	}
 
-	opcodeHandlerFinders = append(opcodeHandlerFinders, handleOpcode)
+	return nil
 }
