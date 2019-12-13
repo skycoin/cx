@@ -3,7 +3,6 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
-	"github.com/amherag/skycoin/src/cipher/encoder"
 	"io/ioutil"
 	"math"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"runtime/debug"
 	"strconv"
 	"text/tabwriter"
+
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -700,7 +701,7 @@ func SliceAppendWrite(outputSliceOffset int32, object []byte, index int32) {
 	copy(outputSliceData[int(index)*sizeofElement:], object)
 }
 
-// SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+// SliceAppendWriteByte writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
 func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 	outputSliceData := GetSliceData(outputSliceOffset, 1)
 	copy(outputSliceData[int(index):], object)
@@ -1001,10 +1002,15 @@ func GetPrintableValue(fp int, arg *CXArgument) string {
 }
 
 func mustDeserializeBool(b []byte) bool {
-	if b[0] == 0 {
+	switch b[0] {
+	case 0:
+		return false
+	case 1:
+		return true
+	default:
+		panic(encoder.ErrInvalidBool)
 		return false
 	}
-	return true
 }
 
 func mustDeserializeI8(b []byte) int8 {

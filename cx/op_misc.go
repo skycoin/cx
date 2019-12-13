@@ -1,8 +1,6 @@
 package cxcore
 
-import (
-	// "fmt"
-)
+// "fmt"
 
 // EscapeAnalysis ...
 func EscapeAnalysis(fp int, inpOffset, outOffset int, arg *CXArgument) {

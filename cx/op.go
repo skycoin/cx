@@ -2,8 +2,9 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/amherag/skycoin/src/cipher/encoder"
 	"math"
+
+	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // GetSize ...
@@ -622,6 +623,7 @@ func WriteMemory(offset int, byts []byte) {
 }
 
 // Utilities
+
 // WriteBool ...
 func WriteBool(offset int, b bool) {
 	v := byte(0)
@@ -830,7 +832,7 @@ func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 func readDataI8(bytes []byte) (out []int8) {
 	count := len(bytes)
 	if count > 0 {
-		out = make([]int8, count, count)
+		out = make([]int8, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeI8(bytes[i:])
 		}
@@ -841,7 +843,7 @@ func readDataI8(bytes []byte) (out []int8) {
 func readDataUI8(bytes []byte) (out []uint8) {
 	count := len(bytes)
 	if count > 0 {
-		out = make([]uint8, count, count)
+		out = make([]uint8, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeUI8(bytes[i:])
 		}
@@ -852,7 +854,7 @@ func readDataUI8(bytes []byte) (out []uint8) {
 func readDataI16(bytes []byte) (out []int16) {
 	count := len(bytes) / 2
 	if count > 0 {
-		out = make([]int16, count, count)
+		out = make([]int16, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeI16(bytes[i*2:])
 		}
@@ -863,7 +865,7 @@ func readDataI16(bytes []byte) (out []int16) {
 func readDataUI16(bytes []byte) (out []uint16) {
 	count := len(bytes) / 2
 	if count > 0 {
-		out = make([]uint16, count, count)
+		out = make([]uint16, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeUI16(bytes[i*2:])
 		}
@@ -874,7 +876,7 @@ func readDataUI16(bytes []byte) (out []uint16) {
 func readDataI32(bytes []byte) (out []int32) {
 	count := len(bytes) / 4
 	if count > 0 {
-		out = make([]int32, count, count)
+		out = make([]int32, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeI32(bytes[i*4:])
 		}
@@ -885,7 +887,7 @@ func readDataI32(bytes []byte) (out []int32) {
 func readDataUI32(bytes []byte) (out []uint32) {
 	count := len(bytes) / 4
 	if count > 0 {
-		out = make([]uint32, count, count)
+		out = make([]uint32, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeUI32(bytes[i*4:])
 		}
@@ -896,7 +898,7 @@ func readDataUI32(bytes []byte) (out []uint32) {
 func readDataI64(bytes []byte) (out []int64) {
 	count := len(bytes) / 8
 	if count > 0 {
-		out = make([]int64, count, count)
+		out = make([]int64, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeI64(bytes[i*8:])
 		}
@@ -907,7 +909,7 @@ func readDataI64(bytes []byte) (out []int64) {
 func readDataUI64(bytes []byte) (out []uint64) {
 	count := len(bytes) / 8
 	if count > 0 {
-		out = make([]uint64, count, count)
+		out = make([]uint64, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeUI64(bytes[i*8:])
 		}
@@ -918,7 +920,7 @@ func readDataUI64(bytes []byte) (out []uint64) {
 func readDataF32(bytes []byte) (out []float32) {
 	count := len(bytes) / 4
 	if count > 0 {
-		out = make([]float32, count, count)
+		out = make([]float32, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeF32(bytes[i*4:])
 		}
@@ -929,7 +931,7 @@ func readDataF32(bytes []byte) (out []float32) {
 func readDataF64(bytes []byte) (out []float64) {
 	count := len(bytes) / 8
 	if count > 0 {
-		out = make([]float64, count, count)
+		out = make([]float64, count)
 		for i := 0; i < count; i++ {
 			out[i] = mustDeserializeF64(bytes[i*8:])
 		}

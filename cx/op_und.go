@@ -545,8 +545,7 @@ func opAppend(prgrm *CXProgram) {
 		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
 		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
-		var obj []byte
-		obj = ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
 		SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 

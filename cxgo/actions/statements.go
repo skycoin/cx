@@ -34,7 +34,7 @@ func SelectionStatement(predExprs []*CXExpression, thenExprs []*CXExpression, el
 				lastElse = SelectionExpressions(elseifExprs[c].Condition, elseifExprs[c].Then, nil)
 			}
 		}
-		
+
 		return SelectionExpressions(predExprs, thenExprs, lastElse)
 	}
 
