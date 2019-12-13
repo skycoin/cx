@@ -1,8 +1,8 @@
 package cxcore
 
 import (
-	"fmt"
-	"sort"
+//"fmt"
+//"sort"
 )
 
 // CorePackages ...
@@ -522,6 +522,8 @@ func AddOpCode(code int, name string, inputs []*CXArgument, outputs []*CXArgumen
 	Natives[code] = MakeNativeFunction(code, inputs, outputs)
 }
 
+/*
+// Debug helper function used to find opcodes when they are not registered
 func dumpOpCodes(opCode int) {
 	var keys []int
 	for k := range OpNames {
@@ -533,7 +535,7 @@ func dumpOpCodes(opCode int) {
 	}
 
 	fmt.Printf("opCode : %d\n", opCode)
-}
+}*/
 
 // Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
