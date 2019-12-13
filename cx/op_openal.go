@@ -4,8 +4,8 @@ package cxcore
 
 import (
 	"bufio"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 	"github.com/mjibson/go-dsp/wav"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"golang.org/x/mobile/exp/audio/al"
 	"os"
 )
