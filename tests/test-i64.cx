@@ -12,12 +12,8 @@ func I64ArithmeticFunctions() () {
 	test(i64.bitor(10L, 5L), 15L, "Bit OR error")
 	test(i64.bitxor(10L, 5L), 15L, "Bit XOR error")
 	test(i64.bitclear(10L, 2L), 8L, "Bit CLEAR error")
-	test(i64.pow(10L, 5L), 100000L, "Pow error")
+
 	test(i64.abs(-10L), 10L, "Absolute Value error")
-	test(i64.sqrt(4L), 2L, "Square Root error")
-	test(i64.log(1L), 0L, "Log error")
-	test(i64.log2(2L), 1L, "Log2 error")
-	test(i64.log10(10L), 1L, "Log10 error")
 	test(i64.max(3L, 1L), 3L, "MAX error")
 	test(i64.min(3L, 1L), 1L, "MIN error")
 }
@@ -34,7 +30,6 @@ func I64ArithmeticShorthand() () {
 	test(10L | 5L, 15L, "Bit OR error")
 	test(10L ^ 5L, 15L, "Bit XOR error")
 	test(10L &^ 2L, 8L, "Bit CLEAR error")
-	// test(10L ** 5L, 100000L, "Pow error") // removed this syntax due to conflicts with pointer syntax
 }
 
 func I64RelationalFunctions() () {

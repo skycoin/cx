@@ -2,45 +2,109 @@ package cxcore
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"strconv"
-
-	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
-func opI32I32(prgrm *CXProgram) {
+// The built-in str function returns the base 10 string representation of operand 1.
+func opI32ToStr(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
-	switch out1.Type {
-	case TYPE_STR:
-		WriteObject(out1Offset, encoder.Serialize(strconv.Itoa(int(ReadI32(fp, inp1)))))
-	case TYPE_BYTE:
-		WriteMemory(out1Offset, FromByte(byte(ReadI32(fp, inp1))))
-	case TYPE_I32:
-		WriteMemory(out1Offset, FromI32(ReadI32(fp, inp1)))
-	case TYPE_I64:
-		WriteMemory(out1Offset, FromI64(int64(ReadI32(fp, inp1))))
-	case TYPE_F32:
-		WriteMemory(out1Offset, FromF32(float32(ReadI32(fp, inp1))))
-	case TYPE_F64:
-		WriteMemory(out1Offset, FromF64(float64(ReadI32(fp, inp1))))
-	}
+	outB0 := FromStr(strconv.FormatInt(int64(ReadI32(fp, expr.Inputs[0])), 10))
+	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
+// The built-in i8 function returns operand 1 casted from type i32 to type i8.
+func opI32ToI8(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromI8(int8(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in i16 function returns operand 1 casted from type i32 to type i16.
+func opI32ToI16(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromI16(int16(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in i64 function returns operand 1 casted from type i32 to type i64.
+func opI32ToI64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromI64(int64(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in ui8 function returns operand 1 casted from type i32 to type ui8.
+func opI32ToUI8(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromUI8(uint8(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in ui16 function returns the operand 1 casted from type i32 to type ui16.
+func opI32ToUI16(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromUI16(uint16(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in ui32 function returns the operand 1 casted from type i32 to type ui32.
+func opI32ToUI32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromUI32(uint32(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in ui64 function returns the operand 1 casted from type i32 to type ui64.
+func opI32ToUI64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromUI64(uint64(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in f32 function returns operand 1 casted from type i32 to type f32.
+func opI32ToF32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromF32(float32(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in f64 function returns operand 1 casted from type i32 to type f64.
+func opI32ToF64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromF64(float64(ReadI32(fp, expr.Inputs[0])))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The print built-in function formats its arguments and prints them.
 func opI32Print(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	fmt.Println(ReadI32(fp, inp1))
+	fmt.Println(ReadI32(fp, expr.Inputs[0]))
 }
 
-// The built-in add function returns the sum of two i32 numbers
+// The built-in add function returns the sum of two i32 numbers.
 func opI32Add(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -50,23 +114,25 @@ func opI32Add(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// The built-in sub function returns the difference of two i32 numbers
+// The built-in sub function returns the difference of two i32 numbers.
 func opI32Sub(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	var outB1 []byte
-	if len(expr.Inputs) == 2 {
-		inp2 := expr.Inputs[1]
-		outB1 = FromI32(ReadI32(fp, inp1) - ReadI32(fp, inp2))
-	} else {
-		outB1 = FromI32(-ReadI32(fp, inp1))
-	}
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB0 := FromI32(ReadI32(fp, expr.Inputs[0]) - ReadI32(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
-// The built-in mul function returns the product of two i32 numbers
+// The built-in neg function returns the opposite of operand 1.
+func opI32Neg(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromI32(-ReadI32(fp, expr.Inputs[0]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+// The built-in mul function returns the product of two i32 numbers.
 func opI32Mul(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -76,7 +142,7 @@ func opI32Mul(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// The built-in div function returns the quotient of two i32 numbers
+// The built-in div function returns the quotient of two i32 numbers.
 func opI32Div(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -86,24 +152,15 @@ func opI32Div(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
-// The built-in abs function returns the absolute number of the number
+// The built-in abs function returns the absolute number of the number.
 func opI32Abs(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Abs(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// The div built-in function returns x**n for n>0 otherwise 1
-func opI32Pow(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Pow(float64(ReadI32(fp, inp1)), float64(ReadI32(fp, inp2)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	inpV0 := ReadI32(fp, expr.Inputs[0])
+	sign := inpV0 >> 31
+	outB0 := FromI32((inpV0 ^ sign) - sign)
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 // The built-in gt function returns true if operand 1 is greater than operand 2.
@@ -168,6 +225,7 @@ func opI32Uneq(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in mod function returns the remainder of operand 1 divided by operand 2.
 func opI32Mod(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -177,20 +235,24 @@ func opI32Mod(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in rand function returns a pseudo random number in [operand 1, operand 2).
 func opI32Rand(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	minimum := ReadI32(fp, expr.Inputs[0])
+	maximum := ReadI32(fp, expr.Inputs[1])
 
-	minimum := ReadI32(fp, inp1)
-	maximum := ReadI32(fp, inp2)
+	r := int(maximum - minimum)
+	val0 := int32(0)
+	if r > 0 {
+		val0 = int32(rand.Intn(r) + int(minimum))
+	}
 
-	outB1 := FromI32(int32(rand.Intn(int(maximum-minimum)) + int(minimum)))
-
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(val0))
 }
 
+// The built-in bitand function returns the bitwise AND of 2 operands.
 func opI32Bitand(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -200,6 +262,7 @@ func opI32Bitand(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in bitor function returns the bitwise OR of 2 operands.
 func opI32Bitor(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -209,6 +272,7 @@ func opI32Bitor(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in bitxor function returns the bitwise XOR of 2 operands.
 func opI32Bitxor(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -218,6 +282,7 @@ func opI32Bitxor(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in bitclear function returns the bitwise AND NOT of 2 operands.
 func opI32Bitclear(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -227,61 +292,25 @@ func opI32Bitclear(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in bitshl function returns bits of operand 1 shifted to the left
+// by number of positions specified in operand 2.
 func opI32Bitshl(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromI32(int32(uint32(ReadI32(fp, inp1)) << uint32(ReadI32(fp, inp2))))
+	outB1 := FromI32(ReadI32(fp, inp1) << uint32(ReadI32(fp, inp2)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
+// The built-in bitshr function returns bits of operand 1 shifted to the right
+// by number of positions specified in operand 2.
 func opI32Bitshr(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromI32(int32(uint32(ReadI32(fp, inp1)) >> uint32(ReadI32(fp, inp2))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// The built-in sqrt function returns the square root of the operand.
-func opI32Sqrt(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Sqrt(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// The built-in log function returns the natural logarithm of the operand.
-func opI32Log(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Log(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// The built-in log2 function returns the 2-logarithm of the operand.
-func opI32Log2(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Log2(float64(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
-}
-
-// The built-in log10 function returns the 10-logarithm of the operand
-func opI32Log10(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Log10(float64(ReadI32(fp, inp1)))))
+	outB1 := FromI32(ReadI32(fp, inp1) >> uint32(ReadI32(fp, inp2)))
 	WriteMemory(GetFinalOffset(fp, out1), outB1)
 }
 
@@ -290,9 +319,12 @@ func opI32Max(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Max(float64(ReadI32(fp, inp1)), float64(ReadI32(fp, inp2)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	inp0 := ReadI32(fp, expr.Inputs[0])
+	inp1 := ReadI32(fp, expr.Inputs[1])
+	if inp1 > inp0 {
+		inp0 = inp1
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(inp0))
 }
 
 // The built-in min function returns the smallest of the two operands.
@@ -300,7 +332,10 @@ func opI32Min(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromI32(int32(math.Min(float64(ReadI32(fp, inp1)), float64(ReadI32(fp, inp2)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	inp0 := ReadI32(fp, expr.Inputs[0])
+	inp1 := ReadI32(fp, expr.Inputs[1])
+	if inp1 < inp0 {
+		inp0 = inp1
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(inp0))
 }

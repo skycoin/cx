@@ -1,0 +1,58 @@
+package main
+
+func I16ArithmeticFunctions() () {
+	test(i8.add(10B, 10B), 20B, "Add error")
+	test(i8.sub(10B, 10B), 0B, "Subtract error")
+	test(i8.mul(10B, 10B), 100B, "Multiply error")
+	test(i8.div(10B, 10B), 1B, "Divide error")
+	test(i8.mod(10B, 3B), 1B, "Mod error")
+	test(i8.bitshl(10B, 3B), 80B, "Bit Shift Left error")
+	test(i8.bitshr(10B, 5B), 0B, "Bit Shift Right error")
+	test(i8.bitand(10B, 5B), 0B , "Bit AND error")
+	test(i8.bitor(10B, 5B), 15B, "Bit OR error")
+	test(i8.bitxor(10B, 5B), 15B, "Bit XOR error")
+	test(i8.bitclear(10B, 2B), 8B, "Bit CLEAR error")
+
+	test(i8.abs(-10B), 10B, "Absolute Value error")
+	test(i8.max(2B, 3B), 3B, "MAX error")
+	test(i8.min(2B, 3B), 2B, "MIN error")
+}
+
+func I16ArithmeticShorthand() () {
+	test(10B + 10B, 20B, "Add error")
+	test(10B - 10B, 0B, "Subtract error")
+	test(10B * 10B, 100B, "Multiply error")
+	test(10B / 10B, 1B, "Divide error")
+	test(10B % 3B, 1B, "Mod error")
+	test(10B << 3B, 80B, "Bit Shift Left error")
+	test(10B >> 5B, 0B, "Bit Shift Right error")
+	test(10B & 5B, 0B,"Bit AND error")
+	test(10B | 5B, 15B, "Bit OR error")
+	test(10B ^ 5B, 15B, "Bit XOR error")
+	test(10B &^ 2B, 8B, "Bit CLEAR error")
+}
+
+func I16RelationalFunctions() () {
+	test(i8.eq(5B, 5B), true, "I16 Equality error")
+	test(i8.uneq(5B, 5B), false, "I16 Inequality error")
+	test(i8.gt(5B, 10B), false, "I16 Greater error")
+	test(i8.gteq(15B, 10B), true, "I16 Greater And Equal error")
+	test(i8.lt(5B, 10B), true, "I16 Lesser than error")
+	test(i8.lteq(10B, 6B), false, "I16 Lesser Or Equal error")
+}
+
+func I16RelationalShorthand() (){
+	test(5B == 5B, true, "I16 Equality Shorthand error")
+	test(5B != 5B, false, "I16 Inequality Shorthand error")
+	test(5B > 10B, false, "I16 Greater Shorthand error")
+	test(15B >= 10B, true, "I16 Greater And Equal Shorthand error")
+	test(5B < 10B, true, "I16 Lesser Shorthand error")
+	test(10B <= 6B, false, "I16 Lesser Or Equal error")
+}
+
+func main() () {
+	I16ArithmeticFunctions()
+	I16ArithmeticShorthand()
+	I16RelationalFunctions()
+	I16RelationalShorthand()
+}

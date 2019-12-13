@@ -1,0 +1,57 @@
+package main
+
+func UI16ArithmeticFunctions() () {
+	test(ui16.add(10UH, 10UH), 20UH, "Add error")
+	test(ui16.sub(10UH, 10UH), 0UH, "Subtract error")
+	test(ui16.mul(10UH, 10UH), 100UH, "Multiply error")
+	test(ui16.div(10UH, 10UH), 1UH, "Divide error")
+	test(ui16.mod(10UH, 3UH), 1UH, "Mod error")
+	test(ui16.bitshl(10UH, 5UH), 320UH, "Bit Shift Left error")
+	test(ui16.bitshr(10UH, 5UH), 0UH, "Bit Shift Right error")
+	test(ui16.bitand(10UH, 5UH), 0UH , "Bit AND error")
+	test(ui16.bitor(10UH, 5UH), 15UH, "Bit OR error")
+	test(ui16.bitxor(10UH, 5UH), 15UH, "Bit XOR error")
+	test(ui16.bitclear(10UH, 2UH), 8UH, "Bit CLEAR error")
+
+	test(ui16.max(2UH, 3UH), 3UH, "MAX error")
+	test(ui16.min(2UH, 3UH), 2UH, "MIN error")
+}
+
+func UI16ArithmeticShorthand() () {
+	test(10UH + 10UH, 20UH, "Add error")
+	test(10UH - 10UH, 0UH, "Subtract error")
+	test(10UH * 10UH, 100UH, "Multiply error")
+	test(10UH / 10UH, 1UH, "Divide error")
+	test(10UH % 3UH, 1UH, "Mod error")
+	test(10UH << 5UH, 320UH, "Bit Shift Left error")
+	test(10UH >> 5UH, 0UH, "Bit Shift Right error")
+	test(10UH & 5UH, 0UH,"Bit AND error")
+	test(10UH | 5UH, 15UH, "Bit OR error")
+	test(10UH ^ 5UH, 15UH, "Bit XOR error")
+	test(10UH &^ 2UH, 8UH, "Bit CLEAR error")
+}
+
+func UI16RelationalFunctions() () {
+	test(ui16.eq(5UH, 5UH), true, "UI16 Equality error")
+	test(ui16.uneq(5UH, 5UH), false, "UI16 Inequality error")
+	test(ui16.gt(5UH, 10UH), false, "UI16 Greater error")
+	test(ui16.gteq(15UH, 10UH), true, "UI16 Greater And Equal error")
+	test(ui16.lt(5UH, 10UH), true, "UI16 Lesser than error")
+	test(ui16.lteq(10UH, 6UH), false, "UI16 Lesser Or Equal error")
+}
+
+func UI16RelationalShorthand() (){
+	test(5UH == 5UH, true, "UI16 Equality Shorthand error")
+	test(5UH != 5UH, false, "UI16 Inequality Shorthand error")
+	test(5UH > 10UH, false, "UI16 Greater Shorthand error")
+	test(15UH >= 10UH, true, "UI16 Greater And Equal Shorthand error")
+	test(5UH < 10UH, true, "UI16 Lesser Shorthand error")
+	test(10UH <= 6UH, false, "UI16 Lesser Or Equal error")
+}
+
+func main() () {
+	UI16ArithmeticFunctions()
+	UI16ArithmeticShorthand()
+	UI16RelationalFunctions()
+	UI16RelationalShorthand()
+}

@@ -8,47 +8,114 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
-func opStrStr(prgrm *CXProgram) {
+func opStrToI8(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
-	switch out1.Type {
-	case TYPE_BYTE:
-		b, err := strconv.ParseInt(ReadStr(fp, inp1), 10, 8)
-		if err != nil {
-			panic("")
-		}
-		WriteMemory(out1Offset, encoder.Serialize(b))
-	case TYPE_STR:
-		WriteObject(out1Offset, []byte(ReadStr(fp, inp1)))
-	case TYPE_I32:
-		i, err := strconv.ParseInt(ReadStr(fp, inp1), 10, 32)
-		if err != nil {
-			panic("")
-		}
-		WriteMemory(out1Offset, encoder.SerializeAtomic(i))
-	case TYPE_I64:
-		l, err := strconv.ParseInt(ReadStr(fp, inp1), 10, 64)
-		if err != nil {
-			panic("")
-		}
-		WriteMemory(out1Offset, encoder.Serialize(l))
-	case TYPE_F32:
-		f, err := strconv.ParseFloat(ReadStr(fp, inp1), 32)
-		if err != nil {
-			panic("")
-		}
-		WriteMemory(out1Offset, encoder.Serialize(float32(f)))
-	case TYPE_F64:
-		d, err := strconv.ParseFloat(ReadStr(fp, inp1), 64)
-		if err != nil {
-			panic("")
-		}
-		WriteMemory(out1Offset, encoder.Serialize(d))
+	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 8)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
 	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI8(int8(outV0)))
+}
+
+func opStrToI16(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 16)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI16(int16(outV0)))
+}
+
+func opStrToI32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 32)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(outV0)))
+}
+
+func opStrToI64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseInt(ReadStr(fp, expr.Inputs[0]), 10, 64)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(outV0))
+}
+
+func opStrToUI8(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 8)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI8(uint8(outV0)))
+}
+
+func opStrToUI16(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 16)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI16(uint16(outV0)))
+}
+
+func opStrToUI32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 32)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI32(uint32(outV0)))
+}
+
+func opStrToUI64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseUint(ReadStr(fp, expr.Inputs[0]), 10, 64)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI64(outV0))
+}
+
+func opStrToF32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseFloat(ReadStr(fp, expr.Inputs[0]), 32)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF32(float32(outV0)))
+}
+
+func opStrToF64(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outV0, err := strconv.ParseFloat(ReadStr(fp, expr.Inputs[0]), 64)
+	if err != nil {
+		panic(CX_RUNTIME_ERROR)
+	}
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(outV0))
 }
 
 func opStrPrint(prgrm *CXProgram) {
@@ -63,9 +130,48 @@ func opStrEq(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	outB1 := FromBool(ReadStr(fp, inp1) == ReadStr(fp, inp2))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+func opStrUneq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+func opStrLt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+func opStrLteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+func opStrGt(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+}
+
+func opStrGteq(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
+	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func writeString(fp int, str string, out *CXArgument) {
