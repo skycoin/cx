@@ -1,0 +1,57 @@
+package main
+
+func UI32ArithmeticFunctions() () {
+	test(ui32.add(10U, 10U), 20U, "Add error")
+	test(ui32.sub(10U, 10U), 0U, "Subtract error")
+	test(ui32.mul(10U, 10U), 100U, "Multiply error")
+	test(ui32.div(10U, 10U), 1U, "Divide error")
+	test(ui32.mod(10U, 3U), 1U, "Mod error")
+	test(ui32.bitshl(10U, 5U), 320U, "Bit Shift Left error")
+	test(ui32.bitshr(10U, 5U), 0U, "Bit Shift Right error")
+	test(ui32.bitand(10U, 5U), 0U , "Bit AND error")
+	test(ui32.bitor(10U, 5U), 15U, "Bit OR error")
+	test(ui32.bitxor(10U, 5U), 15U, "Bit XOR error")
+	test(ui32.bitclear(10U, 2U), 8U, "Bit CLEAR error")
+
+	test(ui32.max(2U, 3U), 3U, "MAX error")
+	test(ui32.min(2U, 3U), 2U, "MIN error")
+}
+
+func UI32ArithmeticShorthand() () {
+	test(10U + 10U, 20U, "Add error")
+	test(10U - 10U, 0U, "Subtract error")
+	test(10U * 10U, 100U, "Multiply error")
+	test(10U / 10U, 1U, "Divide error")
+	test(10U % 3U, 1U, "Mod error")
+	test(10U << 5U, 320U, "Bit Shift Left error")
+	test(10U >> 5U, 0U, "Bit Shift Right error")
+	test(10U & 5U, 0U,"Bit AND error")
+	test(10U | 5U, 15U, "Bit OR error")
+	test(10U ^ 5U, 15U, "Bit XOR error")
+	test(10U &^ 2U, 8U, "Bit CLEAR error")
+}
+
+func UI32RelationalFunctions() () {
+	test(ui32.eq(5U, 5U), true, "UI32 Equality error")
+	test(ui32.uneq(5U, 5U), false, "UI32 Inequality error")
+	test(ui32.gt(5U, 10U), false, "UI32 Greater error")
+	test(ui32.gteq(15U, 10U), true, "UI32 Greater And Equal error")
+	test(ui32.lt(5U, 10U), true, "UI32 Lesser than error")
+	test(ui32.lteq(10U, 6U), false, "UI32 Lesser Or Equal error")
+}
+
+func UI32RelationalShorthand() (){
+	test(5U == 5U, true, "UI32 Equality Shorthand error")
+	test(5U != 5U, false, "UI32 Inequality Shorthand error")
+	test(5U > 10U, false, "UI32 Greater Shorthand error")
+	test(15U >= 10U, true, "UI32 Greater And Equal Shorthand error")
+	test(5U < 10U, true, "UI32 Lesser Shorthand error")
+	test(10U <= 6U, false, "UI32 Lesser Or Equal error")
+}
+
+func main() () {
+	UI32ArithmeticFunctions()
+	UI32ArithmeticShorthand()
+	UI32RelationalFunctions()
+	UI32RelationalShorthand()
+}

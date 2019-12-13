@@ -1266,6 +1266,28 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT test-i8.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-i16.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT test-i32.cx
  COMMA 
  IDENT cx
@@ -1278,6 +1300,50 @@ SCOLON
  IDENT runTest
 LPAREN 
 STRLIT test-i64.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i64
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-ui8.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-ui16.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-ui32.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT i32
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-ui64.cx
  COMMA 
  IDENT cx
 PERIOD 
@@ -3148,6 +3214,66 @@ PERIOD
  IDENT SUCCESS
  COMMA 
 STRLIT multi-dimensional slices are not working
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-120-a-SP.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Invalid implicit cast when assigning the result of a math operator to a variable.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-120-b-SP.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Invalid implicit cast when assigning the result of a math operator to a variable.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-120-c-SP.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT COMPILATION_ERROR
+ COMMA 
+STRLIT Invalid implicit cast when assigning the result of a math operator to a variable.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-121-SP.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Compilation error when using unary negative operator on a function call
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
 RPAREN 
 SCOLON 
    VAR 

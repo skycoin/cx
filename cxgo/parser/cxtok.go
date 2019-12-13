@@ -19,19 +19,29 @@ func Tokenize(r io.Reader, w io.Writer) {
 
 func tokenValue(token int, sym *yySymType) interface{} {
 	switch token {
-	case BYTE_LITERAL:
-		return sym.byt
 	case BOOLEAN_LITERAL:
 		return sym.bool
+	case BYTE_LITERAL:
+		return sym.i8
+	case SHORT_LITERAL:
+		return sym.i16
 	case INT_LITERAL:
 		return sym.i32
 	case LONG_LITERAL:
 		return sym.i64
+	case UNSIGNED_BYTE_LITERAL:
+		return sym.ui8
+	case UNSIGNED_SHORT_LITERAL:
+		return sym.ui16
+	case UNSIGNED_INT_LITERAL:
+		return sym.ui32
+	case UNSIGNED_LONG_LITERAL:
+		return sym.ui64
 	case FLOAT_LITERAL:
 		return sym.f32
 	case DOUBLE_LITERAL:
 		return sym.f64
-	case AFF, BOOL, BYTE, F32, F64, I8, I16, I32, I64,
+	case AFF, BOOL, F32, F64, I8, I16, I32, I64,
 		UI8, UI16, UI32, UI64, REF_OP, ADD_OP, SUB_OP, MUL_OP, DIV_OP, MOD_OP,
 		GT_OP, LT_OP, GTEQ_OP, LTEQ_OP, RIGHT_ASSIGN, LEFT_ASSIGN, ADD_ASSIGN,
 		SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, AND_ASSIGN, XOR_ASSIGN,
@@ -81,8 +91,6 @@ func tokenName(token int) string {
 		return "BOOLLT"
 	case BREAK:
 		return " BREAK"
-	case BYTE:
-		return "  BYTE"
 	case BYTE_LITERAL:
 		return "BYTELT"
 	case CAFF:
@@ -285,6 +293,8 @@ func tokenName(token int) string {
 		return "SCOLON"
 	case SFUNC:
 		return " SFUNC"
+	case SHORT_LITERAL:
+		return "SHRTLT"
 	case SPACKAGE:
 		return "SPACKG"
 	case SSTRUCT:
@@ -323,6 +333,14 @@ func tokenName(token int) string {
 		return "  UNEQ"
 	case UNION:
 		return " UNION"
+	case UNSIGNED_BYTE_LITERAL:
+		return " UBLIT"
+	case UNSIGNED_INT_LITERAL:
+		return " UILIT"
+	case UNSIGNED_LONG_LITERAL:
+		return " ULLIT"
+	case UNSIGNED_SHORT_LITERAL:
+		return " USLIT"
 	case VALUE:
 		return " VALUE"
 	case VAR:

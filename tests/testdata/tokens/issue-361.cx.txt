@@ -10,16 +10,16 @@ RPAREN
 LBRACE 
    VAR 
  IDENT b0
-  BYTE byte
+   UI8 ui8
   ASGN =
-BYTELT 0
+ UBLIT 255
 SCOLON 
    VAR 
  IDENT b1
-  BYTE byte
+   UI8 ui8
   ASGN =
  SUBOP -
-BYTELT 1
+ UBLIT 1
 SCOLON 
  IDENT test
 LPAREN 
