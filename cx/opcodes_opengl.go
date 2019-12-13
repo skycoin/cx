@@ -975,49 +975,49 @@ func init() {
 
 		// openal
 		case OP_AL_CLOSE_DEVICE:
-			return oopAlCloseDevice
+			return opAlCloseDevice
 		case OP_AL_DELETE_BUFFERS:
-			return oopAlDeleteBuffers
+			return opAlDeleteBuffers
 		case OP_AL_DELETE_SOURCES:
-			return oopAlDeleteSources
+			return opAlDeleteSources
 		case OP_AL_DEVICE_ERROR:
-			return oopAlDeviceError
+			return opAlDeviceError
 		case OP_AL_ERROR:
-			return oopAlError
+			return opAlError
 		case OP_AL_EXTENSIONS:
-			return oopAlExtensions
+			return opAlExtensions
 		case OP_AL_OPEN_DEVICE:
-			return oopAlOpenDevice
+			return opAlOpenDevice
 		case OP_AL_PAUSE_SOURCES:
-			return oopAlPauseSources
+			return opAlPauseSources
 		case OP_AL_PLAY_SOURCES:
-			return oopAlPlaySources
+			return opAlPlaySources
 		case OP_AL_RENDERER:
-			return oopAlRenderer
+			return opAlRenderer
 		case OP_AL_REWIND_SOURCES:
-			return oopAlRewindSources
+			return opAlRewindSources
 		case OP_AL_STOP_SOURCES:
-			return oopAlStopSources
+			return opAlStopSources
 		case OP_AL_VENDOR:
-			return oopAlVendor
+			return opAlVendor
 		case OP_AL_VERSION:
-			return oopAlVersion
+			return opAlVersion
 		case OP_AL_GEN_BUFFERS:
-			return oopAlGenBuffers
+			return opAlGenBuffers
 		case OP_AL_BUFFER_DATA:
-			return oopAlBufferData
+			return opAlBufferData
 		case OP_AL_GEN_SOURCES:
-			return oopAlGenSources
+			return opAlGenSources
 		case OP_AL_SOURCE_BUFFERS_PROCESSED:
-			return oopAlSourceBuffersProcessed
+			return opAlSourceBuffersProcessed
 		case OP_AL_SOURCE_BUFFERS_QUEUED:
-			return oopAlSourceBuffersQueued
+			return opAlSourceBuffersQueued
 		case OP_AL_SOURCE_QUEUE_BUFFERS:
-			return oopAlSourceQueueBuffers
+			return opAlSourceQueueBuffers
 		case OP_AL_SOURCE_STATE:
-			return oopAlSourceState
+			return opAlSourceState
 		case OP_AL_SOURCE_UNQUEUE_BUFFERS:
-			return oopAlSourceUnqueueBuffers
+			return opAlSourceUnqueueBuffers
 		}
 
 		return nil

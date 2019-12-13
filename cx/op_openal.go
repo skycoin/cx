@@ -44,7 +44,7 @@ func opAlLoadWav(prgrm *CXProgram) {
 
 	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[8])
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(SliceResize(outputSliceOffset, outputSliceOffset, int32(len(data)), 1))
+	outputSliceOffset = int32(sliceResize(outputSliceOffset, int32(len(data)), 1))
 	copy(GetSliceData(outputSliceOffset, 1), data)
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
@@ -118,10 +118,7 @@ func opAlExtensions(prgrm *CXProgram) {
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(extensions))
 }
 
-func opAlOpenDevice(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAlOpenDevice(_ *CXProgram) {
 	if err := al.OpenDevice(); err != nil {
 		panic(err)
 	}
@@ -193,7 +190,7 @@ func opAlGenBuffers(prgrm *CXProgram) {
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, b := range buffers { // REFACTOR append with copy ?
 		obj := FromI32(int32(b))
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
+		outputSliceOffset = int32(WriteToSlice(int(outputSliceOffset), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
@@ -219,7 +216,7 @@ func opAlGenSources(prgrm *CXProgram) {
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 	for _, s := range sources { // REFACTOR append with copy ?
 		obj := FromI32(int32(s))
-		outputSliceOffset = int32(SliceAppend(outputSliceOffset, outputSliceOffset, int32(len(obj)), obj))
+		outputSliceOffset = int32(WriteToSlice(int(outputSliceOffset), obj))
 	}
 	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
 }
