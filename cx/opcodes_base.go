@@ -37,6 +37,10 @@ const (
 	OP_JSON_TOKEN_I64
 	OP_JSON_TOKEN_STR
 
+	// profile
+	OP_START_CPU_PROFILE
+	OP_STOP_CPU_PROFILE
+
 	// http
 	// OP_HTTP_GET
 
@@ -126,6 +130,14 @@ func init() {
 	AddOpCode(OP_JSON_TOKEN_STR, "json.Str",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
+
+	// profile
+	AddOpCode(OP_START_CPU_PROFILE, "StartCPUProfile",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_STOP_CPU_PROFILE, "StopCPUProfile",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{})
 
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
