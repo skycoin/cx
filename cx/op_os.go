@@ -1,4 +1,4 @@
-// +build base extra full
+// +build base
 
 package cxcore
 
@@ -25,7 +25,10 @@ const (
 
 var openFiles map[string]*os.File = make(map[string]*os.File, 0)
 
-func op_os_ReadAllText(expr *CXExpression, fp int) {
+func op_os_ReadAllText(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	if byts, err := ioutil.ReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
 		WriteObject(GetFinalOffset(fp, expr.Outputs[0]), encoder.Serialize(string(byts)))
 	} else {
@@ -33,7 +36,10 @@ func op_os_ReadAllText(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_Open(expr *CXExpression, fp int) {
+func op_os_Open(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	name := ReadStr(fp, inp1)
 	if file, err := os.Open(name); err == nil {
@@ -43,7 +49,10 @@ func op_os_Open(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_Close(expr *CXExpression, fp int) {
+func op_os_Close(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp1 := expr.Inputs[0]
 	name := ReadStr(fp, inp1)
 	if file, ok := openFiles[name]; ok {
@@ -53,12 +62,18 @@ func op_os_Close(expr *CXExpression, fp int) {
 	}
 }
 
-func op_os_Seek(expr *CXExpression, fp int) {
+func op_os_Seek(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	file.Seek(ReadI64(fp, expr.Inputs[1]), int(ReadI32(fp, expr.Inputs[2])))
 }
 
-func op_os_ReadF32(expr *CXExpression, fp int) {
+func op_os_ReadF32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value float32
 	err := binary.Read(file, binary.LittleEndian, &value)
@@ -69,7 +84,10 @@ func op_os_ReadF32(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF32(value))
 }
 
-func op_os_ReadUI32(expr *CXExpression, fp int) {
+func op_os_ReadUI32(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value uint32
 	err := binary.Read(file, binary.LittleEndian, &value)
@@ -80,7 +98,10 @@ func op_os_ReadUI32(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI32(value))
 }
 
-func op_os_ReadUI16(expr *CXExpression, fp int) {
+func op_os_ReadUI16(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value uint16
 	err := binary.Read(file, binary.LittleEndian, &value)
@@ -91,7 +112,10 @@ func op_os_ReadUI16(expr *CXExpression, fp int) {
 	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI16(value))
 }
 
-func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
+func op_os_GetWorkingDirectory(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	out1 := expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -99,13 +123,19 @@ func op_os_GetWorkingDirectory(expr *CXExpression, fp int) {
 	WriteObject(out1Offset, byts)
 }
 
-func op_os_Exit(expr *CXExpression, fp int) {
+func op_os_Exit(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp0 := expr.Inputs[0]
 	exitCode := ReadI32(fp, inp0)
 	os.Exit(int(exitCode))
 }
 
-func op_os_Run(expr *CXExpression, fp int) {
+func op_os_Run(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
 	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 

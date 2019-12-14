@@ -1,38 +1,37 @@
 package main
 
 func main () {
-	test(byte.str(10B), "10", "")
-	test(byte.i32(10B), 10, "")
-	test(byte.i64(10B), 10L, "")
-	test(byte.f32(10B), 10.0, "")
-	test(byte.f64(10B), 10.0D, "")
+	test(i8.str(10B), "10", "")
+	test(i8.i32(10B), 10, "")
+	test(i8.i64(10B), 10L, "")
+	test(i8.f32(10B), 10.0, "")
+	test(i8.f64(10B), 10.0D, "")
 
 	test(i32.str(10), "10", "")
 	test(i32.i64(10), 10L, "")
 	test(i32.f32(10), 10.0, "")
 	test(i32.f64(10), 10.0D, "")
-	test(i32.byte(379), 123B, "")
+	test(i32.i8(379), 123B, "")
 
 	test(i64.i32(10L), 10, "")
 	test(i64.str(10L), "10", "")
-	test(i64.i64(10L), 10L, "")
 	test(i64.f32(10L), 10.0, "")
 	test(i64.f64(10L), 10.0D, "")
-	test(i64.byte(379L), 123B, "")
+	test(i64.i8(379L), 123B, "")
 
-	test(f32.byte(10.0), 10B, "")
+	test(f32.i8(10.0), 10B, "")
 	test(f32.str(10.5), "10.5", "")
 	test(f32.i32(10.0), 10, "")
 	test(f32.i64(10.0), 10L, "")
 	test(f32.f64(10.0), 10.0D, "")
 
-	test(f64.byte(10.0D), 10B, "")
+	test(f64.i8(10.0D), 10B, "")
 	test(f64.str(10.5D), "10.5", "")
 	test(f64.i32(10.0D), 10, "")
 	test(f64.i64(10.0D), 10L, "")
 	test(f64.f32(10.0D), 10.0, "")
 
-	test(str.byte("0"), 0B, "")
+	test(str.i8("0"), 0B, "")
 	test(str.i32("123"), 123, "")
 	test(str.i64("444"), 444L, "")
 	test(str.f32("333"), 333.0, "")

@@ -1,0 +1,46 @@
+package cxcore
+
+// constant codes
+// nolint golint
+const (
+	// cx
+	CONST_CX_SUCCESS = iota
+	CONST_CX_COMPILATION_ERROR
+	CONST_CX_PANIC
+	CONST_CX_INTERNAL_ERROR
+	CONST_CX_ASSERT
+	CONST_CX_RUNTIME_ERROR
+	CONST_CX_RUNTIME_STACK_OVERFLOW_ERROR
+	CONST_CX_RUNTIME_HEAP_EXHAUSTED_ERROR
+	CONST_CX_RUNTIME_INVALID_ARGUMENT
+	CONST_CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE
+)
+
+// For the parser. These shouldn't be used in the runtime for performance reasons
+var (
+	ConstNames = map[int]string{}
+	ConstCodes = map[string]int{}
+	Constants  = map[int]CXConstant{}
+)
+
+// AddConstCode ...
+func AddConstCode(code int, name string, typ int, value []byte) {
+	ConstNames[code] = name
+	ConstCodes[name] = code
+	Constants[code] = CXConstant{Type: typ, Value: value}
+}
+
+// nolint typecheck
+func init() {
+	// cx
+	AddConstCode(CONST_CX_SUCCESS, "cx.SUCCESS", TYPE_I32, FromI32(CX_SUCCESS))
+	AddConstCode(CONST_CX_COMPILATION_ERROR, "cx.COMPILATION_ERROR", TYPE_I32, FromI32(CX_COMPILATION_ERROR))
+	AddConstCode(CONST_CX_PANIC, "cx.PANIC", TYPE_I32, FromI32(CX_PANIC))
+	AddConstCode(CONST_CX_INTERNAL_ERROR, "cx.INTERNAL_ERROR", TYPE_I32, FromI32(CX_INTERNAL_ERROR))
+	AddConstCode(CONST_CX_ASSERT, "cx.ASSERT", TYPE_I32, FromI32(CX_ASSERT))
+	AddConstCode(CONST_CX_RUNTIME_ERROR, "cx.RUNTIME_ERROR", TYPE_I32, FromI32(CX_RUNTIME_ERROR))
+	AddConstCode(CONST_CX_RUNTIME_STACK_OVERFLOW_ERROR, "cx.RUNTIME_STACK_OVERFLOW_ERROR", TYPE_I32, FromI32(CX_RUNTIME_STACK_OVERFLOW_ERROR))
+	AddConstCode(CONST_CX_RUNTIME_HEAP_EXHAUSTED_ERROR, "cx.RUNTIME_HEAP_EXHAUSTED_ERROR", TYPE_I32, FromI32(CX_RUNTIME_HEAP_EXHAUSTED_ERROR))
+	AddConstCode(CONST_CX_RUNTIME_INVALID_ARGUMENT, "cx.RUNTIME_INVALID_ARGUMENT", TYPE_I32, FromI32(CX_RUNTIME_INVALID_ARGUMENT))
+	AddConstCode(CONST_CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE, "cx.RUNTIME_SLICE_INDEX_OUT_OF_RANGE", TYPE_I32, FromI32(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE))
+}

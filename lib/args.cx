@@ -1,0 +1,158 @@
+package args
+
+import "cx"
+import "os"
+
+// Str ...
+func Str(arg str, pattern str, value *str, match *bool) (success bool) {
+    success = getStr(arg, pattern, false, value, match)
+}
+
+// StrSlice ...
+func StrSlice(arg str, pattern str, value *[]str, match *bool) (success bool) {
+	var filterList str = ""
+	success = Str(arg, pattern, &filterList, match)
+    if success {
+		var index i32 = 0
+		for index >= 0 {
+			index = str.index(filterList, ",")
+			var filter str = filterList
+            var filterListLen i32 = len(filterList)
+			if index >= 0 {
+				filter = str.substr(filterList, 0, index)
+				filterList = str.substr(filterList, index + 1, filterListLen)
+			} else {
+				filterList = ""
+			}
+			filter = str.trimspace(filter)
+            if len(filter) > 0 || filterListLen > 0 {
+    			*value = append(*value, filter)
+            }
+		}
+    }
+}
+
+// I32 ...
+func I32(arg str, pattern str, value *i32, match *bool) (success bool) {
+	var strValue str = ""
+	success = getStr(arg, pattern, true, &strValue, match)
+	if success {
+		var i32Value i32 = str.i32(strValue)
+		*value = i32Value
+	}
+}
+
+// Bool ...
+func Bool(arg str, pattern str, value *bool, match *bool) (success bool) {
+    var strValue str = ""
+    success = Str(arg, pattern, &strValue, match)
+    if success {
+        if strValue == "true" {
+            *value = true
+        } else if strValue == "false" {
+            *value = false
+        } else {
+            success = false
+        }
+        return
+    }
+
+    *match = false
+    success = matchStr(arg, pattern, match)
+    if success {
+        *value = true
+    }
+}
+
+// Flags ...
+func Flags(arg str, pattern str, flags *i32, match *bool, names []str, values []i32) (success bool) {
+	success = false
+	var list str = ""
+	var slice []str
+    if StrSlice(arg, pattern, &slice, match) {
+        var nameCount i32 = len(names)
+        var valueCount i32 = len(values)
+        if nameCount == valueCount {
+            var inputCount i32 = len(slice)
+            success = true
+	        for i := 0; i < inputCount; i++ {
+	        	var value i32 = 0
+	        	for k := 0; k < nameCount; k++ {
+	        		if slice[i] == names[k] {
+	        			value = values[k]
+                        k = nameCount // CX Issue break statument
+	        		}
+	        	}
+
+	        	if value != 0 {
+	        		*flags = *flags | value
+	        	} else {
+                    success = false
+                    return
+	        	}
+	        }
+        }
+    }
+}
+
+// PrintFlags ...
+func PrintFlags(name str, flags i32, names []str, values[]i32) (success bool) {
+	printf("%s : %d : [ ", name, flags)
+    var nameCount i32 = len(names)
+	var count i32 = len(values)
+    if nameCount == count {
+	    for i := 0; i < count && flags > 0; i++ {
+	    	var flag i32 = values[i]
+	    	if (flags & flag) == flag {
+	    		printf("%s, ", names[i])
+	    		flags = flags & (-1 ^ flag)
+	    	}
+	    }
+        success = flags == 0
+    }
+    printf(" ]\n")
+}
+
+// matchStr ...
+func matchStr(arg str, pattern str, match *bool) (success bool) {
+	success = false
+    if len(arg) <= 0 {
+        return
+    }
+    pattern = sprintf("++%s", pattern)
+	var argLen i32 = len(arg)
+	var patternLen i32 = len(pattern)
+	if argLen >= patternLen {
+		name := str.substr(arg, 0, patternLen)
+		if (name == pattern) {
+            var valid bool = false
+            if argLen == patternLen {
+                valid = true
+            } else if str.substr(arg, patternLen, patternLen + 1) == "=" {
+                valid = true
+            }
+
+            if valid == true {
+			    if *match {
+                    return
+			    }
+			    *match = true
+			    success = true
+            }
+        }
+	}
+}
+
+// getStr ...
+func getStr(arg str, pattern str, strict bool, value *str, match *bool) (success bool) {
+	if matchStr(arg, pattern, match) {
+		var argLen i32 = len(arg)
+		var patternLen i32 = len(pattern) + 3 // + len("++=")
+		if argLen > patternLen || (!strict && argLen == patternLen) {
+			*value = str.substr(arg, patternLen, argLen)
+			success = true
+		}
+	}
+}
+
+

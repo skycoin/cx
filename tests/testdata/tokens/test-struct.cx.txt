@@ -36,7 +36,7 @@ BOOLLT true
  COMMA 
  IDENT byt
  COLON 
-BYTELT 255
+BYTELT 127
  COMMA 
  IDENT string
  COLON 
@@ -120,7 +120,7 @@ LPAREN
 PERIOD 
  IDENT byt
  COMMA 
-BYTELT 255
+BYTELT 127
  COMMA 
 STRLIT Struct byte properties error
 RPAREN 

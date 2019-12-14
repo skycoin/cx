@@ -1,7 +1,7 @@
 package main
 
 func main ()() {
-	var b0 byte = 256B
-	var b1 byte = -1B
+	var b0 ui8 = 256UB
+	var b1 ui8 = -1UB
 	test(false, true, "must not compile")
 }

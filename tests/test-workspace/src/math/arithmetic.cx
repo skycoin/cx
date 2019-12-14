@@ -1,0 +1,7 @@
+package math
+
+var PI f32 = 3.14159
+
+func double(num f32) (res f32) {
+	res = num * 2.0
+}

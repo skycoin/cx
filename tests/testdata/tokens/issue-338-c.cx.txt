@@ -8,7 +8,7 @@ LBRACE
  IDENT sb
 LBRACK 
 RBRACK 
-  BYTE byte
+    I8 i8
 SCOLON 
  IDENT i
    I32 i32
@@ -44,7 +44,7 @@ PERIOD
  COMMA 
    I32 i32
 PERIOD 
-  BYTE byte
+    I8 i8
 LPAREN 
 INTLIT 4
 RPAREN 
