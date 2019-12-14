@@ -17,6 +17,11 @@ const (
 	OP_OS_GET_WORKING_DIRECTORY
 	OP_OS_OPEN
 	OP_OS_CLOSE
+	OP_OS_SEEK
+	OP_OS_READ_ALL_TEXT
+	OP_OS_READ_F32
+	OP_OS_READ_UI32
+	OP_OS_READ_UI16
 	OP_OS_RUN
 	OP_OS_EXIT
 
@@ -68,6 +73,21 @@ func init() {
 	AddOpCode(OP_OS_CLOSE, "os.Close",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_OS_SEEK, "os.Seek",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_OS_READ_F32, "os.ReadF32",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_OS_READ_UI32, "os.ReadUI32",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+	AddOpCode(OP_OS_READ_UI16, "os.ReadUI16",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+	AddOpCode(OP_OS_READ_ALL_TEXT, "os.ReadAllText",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_OS_RUN, "os.Run",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
@@ -130,6 +150,16 @@ func init() {
 			return op_os_Open
 		case OP_OS_CLOSE:
 			return op_os_Close
+		case OP_OS_SEEK:
+			return op_os_Seek
+		case OP_OS_READ_F32:
+			return op_os_ReadF32
+		case OP_OS_READ_UI32:
+			return op_os_ReadUI32
+		case OP_OS_READ_UI16:
+			return op_os_ReadUI16
+		case OP_OS_READ_ALL_TEXT:
+			return op_os_ReadAllText
 		case OP_OS_RUN:
 			return op_os_Run
 		case OP_OS_EXIT:
