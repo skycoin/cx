@@ -198,6 +198,12 @@ func init() {
 			return opJSONTokenI64
 		case OP_JSON_TOKEN_STR:
 			return opJSONTokenStr
+
+		// profile
+		case OP_START_CPU_PROFILE:
+			return opStartProfile
+		case OP_STOP_CPU_PROFILE:
+			return opStopProfile
 		}
 
 		return nil
