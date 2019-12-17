@@ -182,6 +182,33 @@ const (
 	OP_GLTEXT_GLYPH_BOUNDS
 	OP_GLTEXT_GLYPH_METRICS
 	OP_GLTEXT_GLYPH_INFO
+
+	// goal
+	OP_AL_LOAD_WAV
+
+	// openal
+	OP_AL_CLOSE_DEVICE
+	OP_AL_DELETE_BUFFERS
+	OP_AL_DELETE_SOURCES
+	OP_AL_DEVICE_ERROR
+	OP_AL_ERROR
+	OP_AL_EXTENSIONS
+	OP_AL_OPEN_DEVICE
+	OP_AL_PAUSE_SOURCES
+	OP_AL_PLAY_SOURCES
+	OP_AL_RENDERER
+	OP_AL_REWIND_SOURCES
+	OP_AL_STOP_SOURCES
+	OP_AL_VENDOR
+	OP_AL_VERSION
+	OP_AL_GEN_BUFFERS
+	OP_AL_BUFFER_DATA
+	OP_AL_GEN_SOURCES
+	OP_AL_SOURCE_BUFFERS_PROCESSED
+	OP_AL_SOURCE_BUFFERS_QUEUED
+	OP_AL_SOURCE_QUEUE_BUFFERS
+	OP_AL_SOURCE_STATE
+	OP_AL_SOURCE_UNQUEUE_BUFFERS
 )
 
 func init() {
@@ -678,6 +705,81 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
 
+	// goal
+	AddOpCode(OP_AL_LOAD_WAV, "al.LoadWav",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
+			newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
+			newOpPar(TYPE_I32, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_UI8, true)})
+
+	// openal
+	AddOpCode(OP_AL_CLOSE_DEVICE, "al.CloseDevice",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_DELETE_BUFFERS, "al.DeleteBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_DELETE_SOURCES, "al.DeleteSources",
+		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_DEVICE_ERROR, "al.DeviceError",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_AL_ERROR, "al.Error",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_AL_EXTENSIONS, "al.Extensions",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_AL_OPEN_DEVICE, "al.OpenDevice",
+		[]*CXArgument{},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_PAUSE_SOURCES, "al.PauseSources",
+		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_PLAY_SOURCES, "al.PlaySources",
+		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_RENDERER, "al.Renderer",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_AL_REWIND_SOURCES, "al.RewindSources",
+		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_STOP_SOURCES, "al.StopSources",
+		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_VENDOR, "al.Vendor",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_AL_VERSION, "al.Version",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_AL_GEN_BUFFERS, "al.GenBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, true)})
+	AddOpCode(OP_AL_BUFFER_DATA, "al.BufferData",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_GEN_SOURCES, "al.GenSources",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, true)})
+	AddOpCode(OP_AL_SOURCE_BUFFERS_PROCESSED, "al.SourceBuffersProcessed",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_AL_SOURCE_BUFFERS_QUEUED, "al.SourceBuffersQueued",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_AL_SOURCE_QUEUE_BUFFERS, "al.SourceQueueBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+	AddOpCode(OP_AL_SOURCE_STATE, "al.SourceState",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_AL_SOURCE_UNQUEUE_BUFFERS, "al.SourceUnueueBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{})
+
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
 		switch opCode {
@@ -1016,6 +1118,56 @@ func init() {
 			return op_gltext_GlyphMetrics
 		case OP_GLTEXT_GLYPH_INFO:
 			return op_gltext_GlyphInfo
+
+		// goal
+		case OP_AL_LOAD_WAV:
+			return opAlLoadWav
+
+		// openal
+		case OP_AL_CLOSE_DEVICE:
+			return opAlCloseDevice
+		case OP_AL_DELETE_BUFFERS:
+			return opAlDeleteBuffers
+		case OP_AL_DELETE_SOURCES:
+			return opAlDeleteSources
+		case OP_AL_DEVICE_ERROR:
+			return opAlDeviceError
+		case OP_AL_ERROR:
+			return opAlError
+		case OP_AL_EXTENSIONS:
+			return opAlExtensions
+		case OP_AL_OPEN_DEVICE:
+			return opAlOpenDevice
+		case OP_AL_PAUSE_SOURCES:
+			return opAlPauseSources
+		case OP_AL_PLAY_SOURCES:
+			return opAlPlaySources
+		case OP_AL_RENDERER:
+			return opAlRenderer
+		case OP_AL_REWIND_SOURCES:
+			return opAlRewindSources
+		case OP_AL_STOP_SOURCES:
+			return opAlStopSources
+		case OP_AL_VENDOR:
+			return opAlVendor
+		case OP_AL_VERSION:
+			return opAlVersion
+		case OP_AL_GEN_BUFFERS:
+			return opAlGenBuffers
+		case OP_AL_BUFFER_DATA:
+			return opAlBufferData
+		case OP_AL_GEN_SOURCES:
+			return opAlGenSources
+		case OP_AL_SOURCE_BUFFERS_PROCESSED:
+			return opAlSourceBuffersProcessed
+		case OP_AL_SOURCE_BUFFERS_QUEUED:
+			return opAlSourceBuffersQueued
+		case OP_AL_SOURCE_QUEUE_BUFFERS:
+			return opAlSourceQueueBuffers
+		case OP_AL_SOURCE_STATE:
+			return opAlSourceState
+		case OP_AL_SOURCE_UNQUEUE_BUFFERS:
+			return opAlSourceUnqueueBuffers
 		}
 
 		return nil
