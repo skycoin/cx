@@ -17,6 +17,14 @@ const (
 	OP_OS_GET_WORKING_DIRECTORY
 	OP_OS_OPEN
 	OP_OS_CLOSE
+	OP_OS_SEEK
+	OP_OS_READ_ALL_TEXT
+	OP_OS_READ_F32
+	OP_OS_READ_UI32
+	OP_OS_READ_UI16
+	OP_OS_READ_F32_SLICE
+	OP_OS_READ_UI32_SLICE
+	OP_OS_READ_UI16_SLICE
 	OP_OS_RUN
 	OP_OS_EXIT
 
@@ -64,10 +72,34 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_OS_OPEN, "os.Open",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
 	AddOpCode(OP_OS_CLOSE, "os.Close",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_SEEK, "os.Seek",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I64, false)})
+	AddOpCode(OP_OS_READ_F32, "os.ReadF32",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_UI32, "os.ReadUI32",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_UI16, "os.ReadUI16",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_F32_SLICE, "os.ReadF32Slice",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, true), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_UI32_SLICE, "os.ReadUI32Slice",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI32, true), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_UI16_SLICE, "os.ReadUI16Slice",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_UI16, true), newOpPar(TYPE_BOOL, false)})
+	AddOpCode(OP_OS_READ_ALL_TEXT, "os.ReadAllText",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
 	AddOpCode(OP_OS_RUN, "os.Run",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
@@ -130,6 +162,22 @@ func init() {
 			return op_os_Open
 		case OP_OS_CLOSE:
 			return op_os_Close
+		case OP_OS_SEEK:
+			return op_os_Seek
+		case OP_OS_READ_F32:
+			return op_os_ReadF32
+		case OP_OS_READ_UI32:
+			return op_os_ReadUI32
+		case OP_OS_READ_UI16:
+			return op_os_ReadUI16
+		case OP_OS_READ_F32_SLICE:
+			return op_os_ReadF32Slice
+		case OP_OS_READ_UI32_SLICE:
+			return op_os_ReadUI32Slice
+		case OP_OS_READ_UI16_SLICE:
+			return op_os_ReadUI16Slice
+		case OP_OS_READ_ALL_TEXT:
+			return op_os_ReadAllText
 		case OP_OS_RUN:
 			return op_os_Run
 		case OP_OS_EXIT:
