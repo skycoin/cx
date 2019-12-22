@@ -125,7 +125,7 @@ func opHTTPHandle(prgrm *CXProgram) {
 	}
 
 	http.HandleFunc(ReadStr(fp, inp1), func(w http.ResponseWriter, r *http.Request) {
-		Debug("entering")
+		w.Header().Set("Content-Type", "text/html")
 		tmpExpr := CXExpression{Operator: handlerFn}
 
 		callFP := fp + PROGRAM.CallStack[PROGRAM.CallCounter].Operator.Size
@@ -136,7 +136,6 @@ func opHTTPHandle(prgrm *CXProgram) {
 		PROGRAM.CallStack[PROGRAM.CallCounter].Line = 0
 		PROGRAM.CallStack[PROGRAM.CallCounter].FramePointer = PROGRAM.StackPointer
 		writeHTTPRequest(callFP, handlerFn.Inputs[1], r)
-		Debug("done")
 		// PROGRAM.StackPointer -= handlerFn.Size
 		PROGRAM.CallCounter--
 
@@ -156,6 +155,12 @@ func opHTTPHandle(prgrm *CXProgram) {
 	})
 }
 
+var server *http.Server
+
+func opHTTPClose(prgrm *CXProgram) {
+	server.Close()
+}
+
 func opHTTPListenAndServe(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 
@@ -163,7 +168,10 @@ func opHTTPListenAndServe(prgrm *CXProgram) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	url := ReadStr(fp, inp1)
 
-	err := http.ListenAndServe(url, nil)
+	server = &http.Server{Addr: url}
+
+	// err := http.ListenAndServe(url, nil)
+	err := server.ListenAndServe()
 	writeString(fp, err.Error(), out1)
 }
 
@@ -410,7 +418,6 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 
 	// Creating empty `http.Request` object on heap.
 	reqOff := writeObj(make([]byte, requestType.Size))
-	Debug("huh", PROGRAM.Memory[reqOff:reqOff+20])
 	reqOffByts := encoder.SerializeAtomic(int32(reqOff))
 	WriteMemory(GetFinalOffset(fp, &req), reqOffByts)
 
@@ -428,7 +435,6 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	req.Fields = accessBody
 	body, err := ioutil.ReadAll(request.Body)
 	writeString(fp, string(body), &req)
-
 	req.Fields = accessURLScheme
 	writeString(fp, request.URL.Scheme, &req)
 	req.Fields = accessURLHost

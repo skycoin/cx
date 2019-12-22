@@ -270,6 +270,7 @@ const (
 	OP_HTTP_NEW_REQUEST
 	OP_HTTP_DO
 	OP_HTTP_HANDLE
+	OP_HTTP_CLOSE
 
 	// dmsg
 	OP_DMSG_DO
@@ -1032,6 +1033,10 @@ func init() {
 				}})},
 		[]*CXArgument{})
 
+	AddOpCode(OP_HTTP_CLOSE, "http.Close",
+		[]*CXArgument{},
+		[]*CXArgument{})
+
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
 		switch opCode {
@@ -1477,6 +1482,8 @@ func init() {
 			return opHTTPDo
 		case OP_HTTP_HANDLE:
 			return opHTTPHandle
+		case OP_HTTP_CLOSE:
+			return opHTTPClose
 		case OP_DMSG_DO:
 			return opDMSGDo
 		}

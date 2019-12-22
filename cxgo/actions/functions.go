@@ -6,6 +6,8 @@ import (
 	"os"
 
 	. "github.com/SkycoinProject/cx/cx"
+
+	// "github.com/jinzhu/copier"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -434,7 +436,6 @@ func isPointer(sym *CXArgument) bool {
 func AddPointer(fn *CXFunction, sym *CXArgument) {
 	// Checking if it is a pointer candidate.
 	if isPointer(sym) {
-		Debug("sym", sym.Name)
 		// Checking if it was already added to the list.
 		var found bool
 		for _, ptr := range fn.ListOfPointers {
@@ -457,10 +458,6 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
-
-	// for _, fld := range sym.Fields {
-	// 	AddPointer(fn, fld)
-	// }
 }
 
 // CheckRedeclared checks if `expr` represents a variable declaration and then checks if an

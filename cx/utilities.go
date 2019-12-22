@@ -812,10 +812,8 @@ func WriteToSlice(off int, inp []byte) int {
 func writeObj(obj []byte) int {
 	size := len(obj)+OBJECT_HEADER_SIZE
 	sizeB := encoder.SerializeAtomic(int32(size))
-	Debug("WOOO", PROGRAM.Memory[PROGRAM.HeapStartsAt:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer])
 	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
 	heapOffset := AllocateSeq(size)
-	Debug("OOOW", PROGRAM.Memory[PROGRAM.HeapStartsAt:PROGRAM.HeapStartsAt+PROGRAM.HeapPointer])
 
 	// var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
 	var finalObj = make([]byte, size)
