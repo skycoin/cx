@@ -10,10 +10,7 @@ func (a *too) foo() (b bool) {
 
 func main() {
 	var t too
-	var cond bool
-	cond = t.foo()
-	for cond == true {
-		cond = t.foo()
+	for d := t.foo(); d == true; d = t.foo() {
 		printf("true\n")
 	}
 }
