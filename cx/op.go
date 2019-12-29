@@ -335,8 +335,8 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 	// TODO: We're not considering struct instances with pointer fields.
 	if declSpecs[0] == DECL_SLICE {
 		if (numDeclSpecs > 1 &&
-			(declSpecs[1] == DECL_SLICE ||
-				declSpecs[1] == DECL_POINTER)) ||
+		   	(declSpecs[1] == DECL_SLICE ||
+		   		declSpecs[1] == DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == TYPE_STR) {
 			// Then we need to iterate each of the slice objects and mark them as alive
 			var sliceLen int32
@@ -397,9 +397,9 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 	// Checking if it's a tree of objects.
 	// TODO: We're not considering struct instances with pointer fields.
 	if declSpecs[0] == DECL_SLICE {
-		if // (numDeclSpecs > 1 &&
-		   // 	(declSpecs[1] == DECL_SLICE ||
-		   // 	declSpecs[1] == DECL_POINTER)) ||
+		if (numDeclSpecs > 1 &&
+		   	(declSpecs[1] == DECL_SLICE ||
+		   	declSpecs[1] == DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
@@ -474,8 +474,14 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			offset := ptr.Offset
 			offset += fp
 
-			if ptr.CustomType != nil {
-				for _, fld := range ptr.CustomType.Fields {
+			ptrIsPointer := IsPointer(ptr)
+
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if ptr.CustomType != nil {
 					// Getting the offset to the object in the heap
 					var heapOffset int32
 					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
@@ -483,11 +489,40 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 						panic(err)
 					}
 
-					updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range ptr.CustomType.Fields {
+							updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
+					}
 				}
 			}
 
-			updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+				fld := ptr.Fields[len(ptr.Fields)-1]
+				updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			}
+
+			// if ptr.CustomType != nil {
+			// 	for _, fld := range ptr.CustomType.Fields {
+			// 		// Getting the offset to the object in the heap
+			// 		var heapOffset int32
+			// 		_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+			// 		if err != nil {
+			// 			panic(err)
+			// 		}
+
+			// 		updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			// 	}
+			// }
+
+			// updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			
+
+
+
+
 
 			// If we're accessing to a field of that pointer, we need to
 			// take into consideration its offset.
@@ -565,8 +600,14 @@ func MarkAndCompact(prgrm *CXProgram) {
 			offset := ptr.Offset
 			offset += fp
 
-			if ptr.CustomType != nil {
-				for _, fld := range ptr.CustomType.Fields {
+			ptrIsPointer := IsPointer(ptr)
+
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
+
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if ptr.CustomType != nil {
 					// Getting the offset to the object in the heap
 					var heapOffset int32
 					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
@@ -574,11 +615,25 @@ func MarkAndCompact(prgrm *CXProgram) {
 						panic(err)
 					}
 
-					MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range ptr.CustomType.Fields {
+							MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
+					}
 				}
 			}
 
-			MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+				fld := ptr.Fields[len(ptr.Fields)-1]
+				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+			}
+
+
+			
+
+			
 
 			// If we're accessing to a field of that pointer, we need to
 			// take into consideration its offset.

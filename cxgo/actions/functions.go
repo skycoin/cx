@@ -7,7 +7,7 @@ import (
 
 	. "github.com/SkycoinProject/cx/cx"
 
-	// "github.com/jinzhu/copier"
+	"github.com/jinzhu/copier"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -408,53 +408,59 @@ func ProcessExpressionArguments(symbols *[]map[string]*CXArgument, symbolsScope 
 	}
 }
 
-// isPointer checks if `sym` is a candidate for the garbage collector to check.
-// For example, if `sym` is a slice, the garbage collector will need to check
-// if the slice on the heap needs to be relocated.
-func isPointer(sym *CXArgument) bool {
-	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
-	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PRGRM.StackSize && sym.Name != "" {
-		return false
-	}
-	// NOTE: Strings are considered as `IsPointer`s by the runtime.
-	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
-		return true
-	}
-	if (sym.Type == TYPE_STR && sym.Name != "") {
-		return true
-	}
-	// If `sym` is a structure instance, we need to check if the last field
-	// being access is a pointer candidate
-	if len(sym.Fields) > 0 {
-		return isPointer(sym.Fields[len(sym.Fields)-1])
-	}
-	return false
-}
+// isPointerAdded checks if `sym` has already been added to `fn.ListOfPointers`.
+func isPointerAdded(fn *CXFunction, sym *CXArgument) (found bool) {
+	for _, ptr := range fn.ListOfPointers {
+		if sym.Name == ptr.Name {
+			if len(sym.Fields) == 0 && len(ptr.Fields) == 0 {
+				found = true
+				break
+			}
 
-// AddPointer checks if `sym` or its last field, if a struct, behaves like a pointer (slice, pointer, string). If this is the case, `sym` is added to `fn.ListOfPointers` so the CX runtime does not have to determine this.
-func AddPointer(fn *CXFunction, sym *CXArgument) {
-	// Checking if it is a pointer candidate.
-	if isPointer(sym) {
-		// Checking if it was already added to the list.
-		var found bool
-		for _, ptr := range fn.ListOfPointers {
-			if sym.Name == ptr.Name {
-				if len(sym.Fields) == 0 && len(ptr.Fields) == 0 {
-					found = true
-					break
-				}
-
-				// Checking if we're referring to the same symbol and same fields being accessed. For instance, `foo.bar` != `foo.car` as these will have different memory offset to be considered by the garbage collector.
-				if len(sym.Fields) > 0 &&
-					len(sym.Fields) == len(ptr.Fields) &&
-					sym.Fields[len(sym.Fields)-1].Name == ptr.Fields[len(ptr.Fields)-1].Name {
-					found = true
-					break
-				}
+			// Checking if we're referring to the same symbol and
+			// same fields being accessed. For instance, `foo.bar` !=
+			// `foo.car` as these will have different memory offset to
+			// be considered by the garbage collector.
+			if len(sym.Fields) > 0 &&
+				len(sym.Fields) == len(ptr.Fields) &&
+				sym.Fields[len(sym.Fields)-1].Name == ptr.Fields[len(ptr.Fields)-1].Name {
+				found = true
+				break
 			}
 		}
-		if !found {
+	}
+	
+	return found
+}
+
+// AddPointer checks if `sym` or its last field, if a struct, behaves like a
+// pointer (slice, pointer, string). If this is the case, `sym` is added to
+// `fn.ListOfPointers` so the CX runtime does not have to determine this.
+func AddPointer(fn *CXFunction, sym *CXArgument) {
+	// We first need to check if we're going to add `sym` with fields.
+	// If `sym` has fields, then we `return` and we don't add the root `sym`.
+	// If `sym` has no fields, then we check if `sym` is a pointer and
+	// we add it if it is.
+	
+	// Field symbol:
+	// Checking if it is a pointer candidate and if it was already
+	// added to the list.
+	if len(sym.Fields) > 0 {
+		fld := sym.Fields[len(sym.Fields)-1]
+		if IsPointer(fld) && !isPointerAdded(fn, fld) {
+			fn.ListOfPointers = append(fn.ListOfPointers, sym)
+		}
+	}
+	// Root symbol:
+	// Checking if it is a pointer candidate and if it was already
+	// added to the list.
+	if IsPointer(sym) && !isPointerAdded(fn, sym) {
+		if len(sym.Fields) > 0 {
+			tmp := CXArgument{}
+			copier.Copy(&tmp, sym)
+			tmp.Fields = nil
+			fn.ListOfPointers = append(fn.ListOfPointers, &tmp)
+		} else {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
@@ -682,8 +688,6 @@ func ProcessSlice(inp *CXArgument) {
 	} else {
 		elt = inp
 	}
-
-	// elt.IsPointer = true
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]

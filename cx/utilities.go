@@ -1245,3 +1245,27 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 
 	return cxArgs, sourceCode, fileNames
 }
+
+// IsPointer checks if `sym` is a candidate for the garbage collector to check.
+// For example, if `sym` is a slice, the garbage collector will need to check
+// if the slice on the heap needs to be relocated.
+func IsPointer(sym *CXArgument) bool {
+	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
+	// TODO: We could still pre-compute a list of candidates for globals.
+	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
+		return false
+	}
+	// NOTE: Strings are considered as `IsPointer`s by the runtime.
+	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+		return true
+	}
+	if (sym.Type == TYPE_STR && sym.Name != "") {
+		return true
+	}
+	// If `sym` is a structure instance, we need to check if the last field
+	// being access is a pointer candidate
+	// if len(sym.Fields) > 0 {
+	// 	return isPointer(sym.Fields[len(sym.Fields)-1])
+	// }
+	return false
+}
