@@ -15,7 +15,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 // declared in func_opengl.go
@@ -139,7 +138,7 @@ func op_gl_NewTexture(prgrm *CXProgram) {
 
 	uploadTexture(ReadStr(fp, expr.Inputs[0]), gl.TEXTURE_2D)
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
 }
 
 func op_gl_NewTextureCube(prgrm *CXProgram) {
@@ -162,7 +161,7 @@ func op_gl_NewTextureCube(prgrm *CXProgram) {
 	for i := 0; i < 6; i++ {
 		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i))
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), encoder.SerializeAtomic(int32(texture)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
 }
 
 func op_gl_NewGIF(prgrm *CXProgram) {
@@ -185,10 +184,10 @@ func op_gl_NewGIF(prgrm *CXProgram) {
 
 	gifs[path] = gif
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(len(gif.Image))))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(gif.LoopCount)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[2]), FromI32(int32(gif.Config.Width)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[3]), FromI32(int32(gif.Config.Height)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(len(gif.Image)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), int32(gif.LoopCount))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[2]), int32(gif.Config.Width))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[3]), int32(gif.Config.Height))
 }
 
 func op_gl_FreeGIF(prgrm *CXProgram) {
@@ -226,8 +225,8 @@ func op_gl_GIFFrameToTexture(prgrm *CXProgram) {
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(rgba.Pix))
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(delay))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(disposal))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), delay)
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), disposal)
 }
 
 func opGlAppend(prgrm *CXProgram) {
@@ -250,7 +249,7 @@ func opGlAppend(prgrm *CXProgram) {
 	outputSliceOffset = int32(sliceResize(outputSliceOffset, inputSliceLen+objLen, 1))
 	sliceCopy(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
 	SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
-	WriteMemory(outputSlicePointer, FromI32(outputSliceOffset))
+	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 // gl_0_0
@@ -561,9 +560,7 @@ func op_gl_GetError(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	out1 := expr.Outputs[0]
-	outB1 := FromI32(int32(gl.GetError()))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(gl.GetError()))
 }
 
 func op_gl_GetTexLevelParameteriv(prgrm *CXProgram) {
@@ -573,7 +570,7 @@ func op_gl_GetTexLevelParameteriv(prgrm *CXProgram) {
 	inp1, inp2, inp3, out1 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Outputs[0]
 	var outValue int32 = 0
 	gl.GetTexLevelParameteriv(uint32(ReadI32(fp, inp1)), ReadI32(fp, inp2), uint32(ReadI32(fp, inp3)), &outValue)
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(outValue))
+	WriteI32(GetFinalOffset(fp, out1), outValue)
 }
 
 func op_gl_DepthRange(prgrm *CXProgram) {
@@ -605,7 +602,7 @@ func op_gl_DrawElements(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	gl.DrawElements(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), uint32(ReadI32(fp, expr.Inputs[2])), gl.Ptr(ReadData(fp, expr.Inputs[3], TYPE_I32)))
+	gl.DrawElements(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), uint32(ReadI32(fp, expr.Inputs[2])), gl.Ptr(ReadData(fp, expr.Inputs[3], -1)))
 }
 
 func op_gl_BindTexture(prgrm *CXProgram) {
@@ -632,8 +629,7 @@ func op_gl_GenTextures(prgrm *CXProgram) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
 	gl.GenTextures(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
-	outB1 := FromI32(int32(tmp))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
 }
 
 // gl_1_3
@@ -679,8 +675,7 @@ func op_gl_GenBuffers(prgrm *CXProgram) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
 	gl.GenBuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
-	outB1 := FromI32(int32(tmp))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
 }
 
 func op_gl_BufferData(prgrm *CXProgram) {
@@ -773,8 +768,8 @@ func op_gl_CreateProgram(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	out1 := expr.Outputs[0]
-	outB1 := FromI32(int32(gl.CreateProgram()))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB1 := int32(gl.CreateProgram())
+	WriteI32(GetFinalOffset(fp, out1), outB1)
 }
 
 func op_gl_CreateShader(prgrm *CXProgram) {
@@ -782,8 +777,8 @@ func op_gl_CreateShader(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(gl.CreateShader(uint32(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB1 := int32(gl.CreateShader(uint32(ReadI32(fp, inp1))))
+	WriteI32(GetFinalOffset(fp, out1), outB1)
 }
 
 func op_gl_DeleteProgram(prgrm *CXProgram) {
@@ -823,8 +818,8 @@ func op_gl_GetAttribLocation(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	name := ReadStr(fp, expr.Inputs[1])
-	outB1 := FromI32(gl.GetAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
+	outB1 := gl.GetAttribLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_GetShaderiv(_ *CXProgram) {
@@ -837,8 +832,8 @@ func op_gl_GetUniformLocation(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	name := ReadStr(fp, expr.Inputs[1])
-	outB1 := FromI32(gl.GetUniformLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB1)
+	outB1 := gl.GetUniformLocation(uint32(ReadI32(fp, expr.Inputs[0])), *getCString(name, name))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outB1)
 }
 
 func op_gl_LinkProgram(prgrm *CXProgram) {
@@ -1096,8 +1091,7 @@ func op_gl_GenRenderbuffers(prgrm *CXProgram) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
 	gl.GenRenderbuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
-	outB1 := FromI32(int32(tmp))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
 }
 
 func op_gl_RenderbufferStorage(prgrm *CXProgram) {
@@ -1132,8 +1126,7 @@ func op_gl_GenFramebuffers(prgrm *CXProgram) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	tmp := uint32(ReadI32(fp, inp2))
 	gl.GenFramebuffers(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
-	outB1 := FromI32(int32(tmp))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
 }
 
 func op_gl_CheckFramebufferStatus(prgrm *CXProgram) {
@@ -1141,8 +1134,8 @@ func op_gl_CheckFramebufferStatus(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	outB1 := FromI32(int32(gl.CheckFramebufferStatus(uint32(ReadI32(fp, inp1)))))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	outB1 := int32(gl.CheckFramebufferStatus(uint32(ReadI32(fp, inp1))))
+	WriteI32(GetFinalOffset(fp, out1), outB1)
 }
 
 func op_gl_FramebufferTexture2D(prgrm *CXProgram) {
@@ -1204,6 +1197,5 @@ func op_gl_GenVertexArrays(prgrm *CXProgram) {
 	} else {
 		gl.GenVertexArrays(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	}
-	outB1 := FromI32(int32(tmp))
-	WriteMemory(GetFinalOffset(fp, out1), outB1)
+	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
 }

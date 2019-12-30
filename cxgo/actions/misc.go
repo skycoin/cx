@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 	"runtime"
-	
+
 	. "github.com/SkycoinProject/cx/cx"
 )
 
@@ -429,11 +429,11 @@ func WritePrimary(typ int, byts []byte, isGlobal bool) []*CXExpression {
 		// we'll start appending the bytes to PRGRM.Memory.
 		// After compilation, we calculate how many bytes we need to add to have a heap segment
 		// equal to `minHeapSize()` that is allocated after the data segment.
-		if size + DataOffset > len(PRGRM.Memory) {
+		if size+DataOffset > len(PRGRM.Memory) {
 			var i int
 			// First we need to fill the remaining free bytes in
 			// the current `PRGRM.Memory` slice.
-			for i = 0; i < len(PRGRM.Memory) - DataOffset; i++ {
+			for i = 0; i < len(PRGRM.Memory)-DataOffset; i++ {
 				PRGRM.Memory[DataOffset+i] = byts[i]
 			}
 			// Then we append the bytes that didn't fit.
