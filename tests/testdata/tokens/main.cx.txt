@@ -3276,6 +3276,21 @@ STRLIT Compilation error when using unary negative operator on a function call
 INTLIT 0
 RPAREN 
 SCOLON 
+ IDENT runTestEx
+LPAREN 
+STRLIT issue-131-SP.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Panic when using arithmetic operations.
+ COMMA 
+ IDENT TEST_ISSUE
+ COMMA 
+INTLIT 0
+RPAREN 
+SCOLON 
    VAR 
  IDENT end
    I64 i64

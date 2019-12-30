@@ -75,6 +75,9 @@ const (
 	// gl_1_3
 	OP_GL_ACTIVE_TEXTURE
 
+	// gl_1_4
+	OP_GL_BLEND_FUNC_SEPARATE
+
 	// gl_1_5
 	OP_GL_BIND_BUFFER
 	OP_GL_DELETE_BUFFERS
@@ -83,6 +86,7 @@ const (
 	OP_GL_BUFFER_SUB_DATA
 
 	// gl_2_0
+	OP_GL_DRAW_BUFFERS
 	OP_GL_STENCIL_OP_SEPARATE
 	OP_GL_STENCIL_FUNC_SEPARATE
 	OP_GL_STENCIL_MASK_SEPARATE
@@ -120,10 +124,16 @@ const (
 	OP_GL_UNIFORM_MATRIX_2FV
 	OP_GL_UNIFORM_MATRIX_3FV
 	OP_GL_UNIFORM_MATRIX_4FV
+	OP_GL_UNIFORM_V4F
+	OP_GL_UNIFORM_M44F
+	OP_GL_UNIFORM_M44FV
 	OP_GL_VERTEX_ATTRIB_POINTER
 	OP_GL_VERTEX_ATTRIB_POINTER_I32
 
 	// gl_3_0
+	OP_GL_CLEAR_BUFFER_I
+	OP_GL_CLEAR_BUFFER_UI
+	OP_GL_CLEAR_BUFFER_F
 	OP_GL_BIND_RENDERBUFFER
 	OP_GL_DELETE_RENDERBUFFERS
 	OP_GL_GEN_RENDERBUFFERS
@@ -408,6 +418,11 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 
+	// gl_1_4
+	AddOpCode(OP_GL_BLEND_FUNC_SEPARATE, "gl.BlendFuncSeparate",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+
 	// gl_1_5
 	AddOpCode(OP_GL_BIND_BUFFER, "gl.BindBuffer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
@@ -426,6 +441,9 @@ func init() {
 		[]*CXArgument{})
 
 	//gl_2_0
+	AddOpCode(OP_GL_DRAW_BUFFERS, "gl.DrawBuffers",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_UI32, true)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_STENCIL_OP_SEPARATE, "gl.StencilOpSeparate",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -537,6 +555,15 @@ func init() {
 	AddOpCode(OP_GL_UNIFORM_MATRIX_4FV, "gl.UniformMatrix4fv",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_V4F, "gl.UniformV4F",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_M44F, "gl.UniformM44F",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_UNIFORM_M44FV, "gl.UniformM44FV",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_UNDEFINED, true)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -545,6 +572,18 @@ func init() {
 		[]*CXArgument{})
 
 	// gl_3_0
+	AddOpCode(OP_GL_CLEAR_BUFFER_I, "gl.ClearBufferI",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
+			newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR_BUFFER_UI, "gl.ClearBufferUI",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
+			newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GL_CLEAR_BUFFER_F, "gl.ClearBufferF",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false),
+			newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_BIND_RENDERBUFFER, "gl.BindRenderbuffer",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
@@ -917,6 +956,9 @@ func init() {
 		case OP_GL_ACTIVE_TEXTURE:
 			return op_gl_ActiveTexture
 
+		// gl_1_4
+		case OP_GL_BLEND_FUNC_SEPARATE:
+			return op_gl_BlendFuncSeparate
 		// gl_1_5
 		case OP_GL_BIND_BUFFER:
 			return op_gl_BindBuffer
@@ -929,7 +971,9 @@ func init() {
 		case OP_GL_BUFFER_SUB_DATA:
 			return op_gl_BufferSubData
 
-		// gl_2_0
+			// gl_2_0
+		case OP_GL_DRAW_BUFFERS:
+			return op_gl_DrawBuffers
 		case OP_GL_STENCIL_OP_SEPARATE:
 			return op_gl_StencilOpSeparate
 		case OP_GL_STENCIL_FUNC_SEPARATE:
@@ -1004,12 +1048,24 @@ func init() {
 			return op_gl_UniformMatrix3fv
 		case OP_GL_UNIFORM_MATRIX_4FV:
 			return op_gl_UniformMatrix4fv
+		case OP_GL_UNIFORM_V4F:
+			return op_gl_UniformV4F
+		case OP_GL_UNIFORM_M44F:
+			return op_gl_UniformM44F
+		case OP_GL_UNIFORM_M44FV:
+			return op_gl_UniformM44FV
 		case OP_GL_VERTEX_ATTRIB_POINTER:
 			return op_gl_VertexAttribPointer
 		case OP_GL_VERTEX_ATTRIB_POINTER_I32:
 			return op_gl_VertexAttribPointerI32
 
 		// gl_3_0
+		case OP_GL_CLEAR_BUFFER_I:
+			return op_gl_ClearBufferI
+		case OP_GL_CLEAR_BUFFER_UI:
+			return op_gl_ClearBufferUI
+		case OP_GL_CLEAR_BUFFER_F:
+			return op_gl_ClearBufferF
 		case OP_GL_BIND_RENDERBUFFER:
 			return op_gl_BindRenderbuffer
 		case OP_GL_DELETE_RENDERBUFFERS:

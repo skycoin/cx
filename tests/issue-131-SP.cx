@@ -1,0 +1,7 @@
+package main
+
+func main()() {
+    var f f32 = 1.0 + 1.0 * 1.0
+    test(f, 2.0, "f != 2.0")
+}
+
