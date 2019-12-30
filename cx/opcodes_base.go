@@ -151,81 +151,80 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{})
 
-	// exec
-	handleOpcode := func(opCode int) opcodeHandler {
-		switch opCode {
-		// time
-		case OP_TIME_SLEEP:
-			return op_time_Sleep
-		case OP_TIME_UNIX:
-		case OP_TIME_UNIX_MILLI:
-			return op_time_UnixMilli
-		case OP_TIME_UNIX_NANO:
-			return op_time_UnixNano
+	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
+}
 
-		// http
-		// case OP_HTTP_GET:
-		// 	return op_http_get
+func handleBaseOpcode(opCode int) opcodeHandler {
+	switch opCode {
+	// time
+	case OP_TIME_SLEEP:
+		return op_time_Sleep
+	case OP_TIME_UNIX:
+	case OP_TIME_UNIX_MILLI:
+		return op_time_UnixMilli
+	case OP_TIME_UNIX_NANO:
+		return op_time_UnixNano
 
-		// os
-		case OP_OS_GET_WORKING_DIRECTORY:
-			return op_os_GetWorkingDirectory
-		case OP_OS_OPEN:
-			return op_os_Open
-		case OP_OS_CLOSE:
-			return op_os_Close
-		case OP_OS_SEEK:
-			return op_os_Seek
-		case OP_OS_READ_F32:
-			return op_os_ReadF32
-		case OP_OS_READ_UI32:
-			return op_os_ReadUI32
-		case OP_OS_READ_UI16:
-			return op_os_ReadUI16
-		case OP_OS_READ_F32_SLICE:
-			return op_os_ReadF32Slice
-		case OP_OS_READ_UI32_SLICE:
-			return op_os_ReadUI32Slice
-		case OP_OS_READ_UI16_SLICE:
-			return op_os_ReadUI16Slice
-		case OP_OS_READ_ALL_TEXT:
-			return op_os_ReadAllText
-		case OP_OS_RUN:
-			return op_os_Run
-		case OP_OS_EXIT:
-			return op_os_Exit
+	// http
+	// case OP_HTTP_GET:
+	// 	return op_http_get
 
-		// json
-		case OP_JSON_OPEN:
-			return opJSONOpen
-		case OP_JSON_CLOSE:
-			return opJSONClose
-		case OP_JSON_TOKEN_MORE:
-			return opJSONTokenMore
-		case OP_JSON_TOKEN_NEXT:
-			return opJSONTokenNext
-		case OP_JSON_TOKEN_TYPE:
-			return opJSONTokenType
-		case OP_JSON_TOKEN_DELIM:
-			return opJSONTokenDelim
-		case OP_JSON_TOKEN_BOOL:
-			return opJSONTokenBool
-		case OP_JSON_TOKEN_F64:
-			return opJSONTokenF64
-		case OP_JSON_TOKEN_I64:
-			return opJSONTokenI64
-		case OP_JSON_TOKEN_STR:
-			return opJSONTokenStr
+	// os
+	case OP_OS_GET_WORKING_DIRECTORY:
+		return op_os_GetWorkingDirectory
+	case OP_OS_OPEN:
+		return op_os_Open
+	case OP_OS_CLOSE:
+		return op_os_Close
+	case OP_OS_SEEK:
+		return op_os_Seek
+	case OP_OS_READ_F32:
+		return op_os_ReadF32
+	case OP_OS_READ_UI32:
+		return op_os_ReadUI32
+	case OP_OS_READ_UI16:
+		return op_os_ReadUI16
+	case OP_OS_READ_F32_SLICE:
+		return op_os_ReadF32Slice
+	case OP_OS_READ_UI32_SLICE:
+		return op_os_ReadUI32Slice
+	case OP_OS_READ_UI16_SLICE:
+		return op_os_ReadUI16Slice
+	case OP_OS_READ_ALL_TEXT:
+		return op_os_ReadAllText
+	case OP_OS_RUN:
+		return op_os_Run
+	case OP_OS_EXIT:
+		return op_os_Exit
 
-		// profile
-		case OP_START_CPU_PROFILE:
-			return opStartProfile
-		case OP_STOP_CPU_PROFILE:
-			return opStopProfile
-		}
+	// json
+	case OP_JSON_OPEN:
+		return opJSONOpen
+	case OP_JSON_CLOSE:
+		return opJSONClose
+	case OP_JSON_TOKEN_MORE:
+		return opJSONTokenMore
+	case OP_JSON_TOKEN_NEXT:
+		return opJSONTokenNext
+	case OP_JSON_TOKEN_TYPE:
+		return opJSONTokenType
+	case OP_JSON_TOKEN_DELIM:
+		return opJSONTokenDelim
+	case OP_JSON_TOKEN_BOOL:
+		return opJSONTokenBool
+	case OP_JSON_TOKEN_F64:
+		return opJSONTokenF64
+	case OP_JSON_TOKEN_I64:
+		return opJSONTokenI64
+	case OP_JSON_TOKEN_STR:
+		return opJSONTokenStr
 
-		return nil
+	// profile
+	case OP_START_CPU_PROFILE:
+		return opStartProfile
+	case OP_STOP_CPU_PROFILE:
+		return opStopProfile
 	}
 
-	opcodeHandlerFinders = append(opcodeHandlerFinders, handleOpcode)
+	return nil
 }
