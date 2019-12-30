@@ -70,7 +70,7 @@ install-gfx-deps-Darwin:
 
 install-deps: configure
 	@echo "Installing go package dependencies"
-	go get github.com/blynn/nex
+	go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)

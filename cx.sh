@@ -91,16 +91,16 @@ if [ ! -d "$INSTALLATION_PATH/src/github.com/go-gl/gltext" ]; then
     fi
 fi
 
-if [ ! -d "$INSTALLATION_PATH/src/github.com/blynn/nex" ]; then
-    echo "NOTE:\tRepository github.com/blynn/nex is not present in $GOPATH"
-    echo "NOTE:\tInstalling it via 'go get github.com/blynn/nex'"
+if [ ! -d "$INSTALLATION_PATH/src/github.com/SkycoinProject/nex" ]; then
+    echo "NOTE:\tRepository github.com/SkycoinProject/nex is not present in $GOPATH"
+    echo "NOTE:\tInstalling it via 'go get github.com/SkycoinProject/nex'"
 
-    go get github.com/blynn/nex
+    go get github.com/SkycoinProject/nex
 
     if [ $? -eq 0 ]; then
-        echo "OK:\tRepository github.com/blynn/nex was installed successfully"
+        echo "OK:\tRepository github.com/SkycoinProject/nex was installed successfully"
     else
-        echo "FAIL:\tCouldn't install github.com/blynn/nex"
+        echo "FAIL:\tCouldn't install github.com/SkycoinProject/nex"
         exit 0
     fi
 fi
