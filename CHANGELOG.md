@@ -24,6 +24,8 @@
   * #419: Initializing array or slice with values equivalent to nil.
   * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
   * #482: Slice literals: Problem with temporary variables in multi-dimensional slices.
+  * #131: Panic when using arithmetic operations.
+
 * Documentation
   * ...
 * Miscellaneous

@@ -285,7 +285,8 @@ func ShorthandExpression(leftExprs []*CXExpression, rightExprs []*CXExpression, 
 	case OP_ADD:
 		// Handling special case of arguments being strings.
 		// In this case we use `str.concat`.
-		if rightExprs[len(rightExprs)-1].Outputs[0].Type == TYPE_STR {
+		rightLen := len(rightExprs) - 1
+		if rightLen >= 0 && len(rightExprs[rightLen].Outputs) > 0 && rightExprs[rightLen].Outputs[0].Type == TYPE_STR {
 			operator = Natives[OP_STR_CONCAT]
 		} else {
 			operator = Natives[OP_UND_ADD]
