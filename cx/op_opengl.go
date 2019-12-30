@@ -5,6 +5,7 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
+	"github.com/go-gl/gl/v3.2-compatibility/gl"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -14,7 +15,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/go-gl/gl/v2.1/gl"
 )
 
 // declared in func_opengl.go
@@ -641,6 +641,15 @@ func op_gl_ActiveTexture(prgrm *CXProgram) {
 	gl.ActiveTexture(uint32(ReadI32(fp, inp1)))
 }
 
+// gl_1_4
+func op_gl_BlendFuncSeparate(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.BlendFuncSeparate(uint32(ReadI32(fp, expr.Inputs[0])), uint32(ReadI32(fp, expr.Inputs[1])),
+		uint32(ReadI32(fp, expr.Inputs[2])), uint32(ReadI32(fp, expr.Inputs[3])))
+}
+
 // gl_1_5
 func op_gl_BindBuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
@@ -686,6 +695,13 @@ func op_gl_BufferSubData(prgrm *CXProgram) {
 }
 
 // gl_2_0
+func op_gl_DrawBuffers(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.DrawBuffers(ReadI32(fp, expr.Inputs[0]), readUI32Ptr(fp, expr.Inputs[1]))
+}
+
 func op_gl_StencilOpSeparate(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -989,6 +1005,27 @@ func op_gl_UniformMatrix4fv(prgrm *CXProgram) {
 	gl.UniformMatrix4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), readF32Ptr(fp, expr.Inputs[3]))
 }
 
+func op_gl_UniformV4F(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.Uniform4fv(ReadI32(fp, expr.Inputs[0]), 1, to_pf32(readPtr(fp, expr.Inputs[1], -1)))
+}
+
+func op_gl_UniformM44F(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.UniformMatrix4fv(ReadI32(fp, expr.Inputs[0]), 1, ReadBool(fp, expr.Inputs[1]), to_pf32(readPtr(fp, expr.Inputs[2], -1)))
+}
+
+func op_gl_UniformM44FV(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.UniformMatrix4fv(ReadI32(fp, expr.Inputs[0]), ReadI32(fp, expr.Inputs[1]), ReadBool(fp, expr.Inputs[2]), to_pf32(readPtr(fp, expr.Inputs[3], -1)))
+}
+
 func op_gl_VertexAttribPointer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -1006,6 +1043,30 @@ func op_gl_VertexAttribPointerI32(prgrm *CXProgram) {
 }
 
 // gl_3_0
+func op_gl_ClearBufferI(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	color := []int32{ReadI32(fp, expr.Inputs[2]), ReadI32(fp, expr.Inputs[3]), ReadI32(fp, expr.Inputs[4]), ReadI32(fp, expr.Inputs[5])}
+	gl.ClearBufferiv(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), (*int32)(gl.Ptr(&color[0])))
+}
+
+func op_gl_ClearBufferUI(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	color := []uint32{ReadUI32(fp, expr.Inputs[2]), ReadUI32(fp, expr.Inputs[3]), ReadUI32(fp, expr.Inputs[4]), ReadUI32(fp, expr.Inputs[5])}
+	gl.ClearBufferuiv(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), (*uint32)(gl.Ptr(&color[0])))
+}
+
+func op_gl_ClearBufferF(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	color := []float32{ReadF32(fp, expr.Inputs[2]), ReadF32(fp, expr.Inputs[3]), ReadF32(fp, expr.Inputs[4]), ReadF32(fp, expr.Inputs[5])}
+	gl.ClearBufferfv(uint32(ReadI32(fp, expr.Inputs[0])), ReadI32(fp, expr.Inputs[1]), (*float32)(gl.Ptr(&color[0])))
+}
+
 func op_gl_BindRenderbuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
