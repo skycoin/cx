@@ -825,7 +825,7 @@ func opSerialize(prgrm *CXProgram) {
 		slcOff = WriteToSlice(slcOff, []byte{b})
 	}
 
-	WriteMemory(out1Offset, FromI32(int32(slcOff)))
+	WriteI32(out1Offset, int32(slcOff))
 }
 
 func opDeserialize(prgrm *CXProgram) {
@@ -836,12 +836,10 @@ func opDeserialize(prgrm *CXProgram) {
 
 	inpOffset := GetFinalOffset(fp, inp)
 
-	var off int32
-	mustDeserializeAtomic(PROGRAM.Memory[inpOffset:inpOffset+TYPE_POINTER_SIZE], &off)
+	off := mustDeserializeI32(PROGRAM.Memory[inpOffset : inpOffset+TYPE_POINTER_SIZE])
 
-	var l int32
 	_l := PROGRAM.Memory[off+OBJECT_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE]
-	mustDeserializeAtomic(_l[4:8], &l)
+	l := mustDeserializeI32(_l[4:8])
 
 	Deserialize(PROGRAM.Memory[off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE : off+OBJECT_HEADER_SIZE+SLICE_HEADER_SIZE+l]) // BUG : should be l * elt.TotalSize ?
 }
@@ -1232,9 +1230,7 @@ func updateSerializedSize(byts *[]byte, off1, off2 int32, n int) {
 	if len((*byts)[off1:off2]) == 0 {
 		return
 	}
-	for i, byt := range encoder.SerializeAtomic(int32((off2 - off1 - 4) / int32(n))) {
-		(*byts)[off1+int32(i)] = byt
-	}
+	WriteMemI32(*byts, int(off1), int32((off2-off1-4)/int32(n)))
 }
 
 // ExtractBlockchainProgram extracts the blockchain program from `sPrgrm2` by removing the contents of `sPrgrm1` from `sPrgrm2`. TxnPrgrm = sPrgrm2 - sPrgrm1.

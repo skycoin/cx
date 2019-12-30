@@ -492,7 +492,7 @@ type opcodeHandler func(prgrm *CXProgram)
 type opcodeHandlerFinder func(opCode int) opcodeHandler
 
 func execNative(prgrm *CXProgram) {
-	defer RuntimeError()
+	//defer RuntimeError()
 	opCode := prgrm.GetOpCode()
 
 	var handler opcodeHandler

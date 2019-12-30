@@ -80,7 +80,7 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 				expr.Outputs = nil
 				expr.AddOutput(out)
 				result = append(result, expr)
-				
+
 				// symExpr.Operator = expr.Operator
 				symExpr.Operator = Natives[OP_APPEND]
 
