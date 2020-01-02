@@ -17,10 +17,10 @@ func assert(expr *CXExpression, fp int) (same bool) {
 	var byts1, byts2 []byte
 
 	if inp1.Type == TYPE_STR {
-		Debug("testing.root", inp1.Name, inp1.FileLine, IsPointer(inp1), inp1.DeclarationSpecifiers)
-		if len(inp1.Fields) > 0 {
-			Debug("testing.fld", IsPointer(inp1.Fields[len(inp1.Fields)-1]), inp1.Fields[len(inp1.Fields)-1].DeclarationSpecifiers)
-		}
+		// Debug("testing.root", inp1.Name, inp1.FileLine, IsPointer(inp1), inp1.DeclarationSpecifiers)
+		// if len(inp1.Fields) > 0 {
+		// 	Debug("testing.fld", IsPointer(inp1.Fields[len(inp1.Fields)-1]), inp1.Fields[len(inp1.Fields)-1].DeclarationSpecifiers)
+		// }
 		byts1 = []byte(ReadStr(fp, inp1))
 		byts2 = []byte(ReadStr(fp, inp2))
 	} else {

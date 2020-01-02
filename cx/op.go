@@ -441,17 +441,80 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 	// for a bit more of clarity.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
+			// offset := glbl.Offset
+			// ptrIsPointer := IsPointer(glbl)
+
+			// // Checking if we need to mark `ptr`.
+			// if ptrIsPointer {
+			// 	updatePointerTree(prgrm, offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
+
+			// 	// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+			// 	if glbl.CustomType != nil {
+			// 		// Getting the offset to the object in the heap
+			// 		var heapOffset int32
+			// 		_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+			// 		if err != nil {
+			// 			panic(err)
+			// 		}
+
+			// 		if int(heapOffset) >= prgrm.HeapStartsAt {
+			// 			for _, fld := range glbl.CustomType.Fields {
+			// 				updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			// 			}
+			// 		}
+			// 	}
+			// }
+
+			// // Checking if the field being accessed needs to be marked.
+			// // If the root (`ptr`) is a pointer, this step is unnecessary.
+			// if len(glbl.Fields) > 0 && !ptrIsPointer && IsPointer(glbl.Fields[len(glbl.Fields)-1]) {
+			// 	fld := glbl.Fields[len(glbl.Fields)-1]
+			// 	// if ptr.Name == "glblStrctSlcStr" {
+			// 	// 	Debug("info", ptr.Name, fld.Name, ptr.FileLine)
+			// 	// }
+			// 	updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			// }
+
+
 			if glbl.IsPointer || glbl.IsSlice {
 				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
-			}
 
-			if glbl.CustomType != nil {
-				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if glbl.CustomType != nil {
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range glbl.CustomType.Fields {
+							updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
 					}
 				}
 			}
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(glbl.Fields) > 0 && !glbl.IsPointer && !glbl.IsSlice && IsPointer(glbl.Fields[len(glbl.Fields)-1]) {
+				fld := glbl.Fields[len(glbl.Fields)-1]
+				// if ptr.Name == "glblStrctSlcStr" {
+				// 	Debug("info", ptr.Name, fld.Name, ptr.FileLine)
+				// }
+				updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			}
+			
+			// if glbl.IsPointer || glbl.IsSlice {
+			// 	updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
+			// }
+			// if glbl.CustomType != nil {
+			// 	for _, fld := range glbl.CustomType.Fields {
+			// 		if fld.IsPointer || fld.IsSlice {
+			// 			updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+			// 		}
+			// 	}
+			// }
 		}
 	}
 
@@ -501,6 +564,10 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
 			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
+				// if ptr.Name == "glblStrctSlcStr" {
+				// 	Debug("info", ptr.Name, fld.Name, ptr.FileLine)
+				// }
+				Debug("info", ptr.Name, fld.Name, ptr.FileLine)
 				updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 			}
 
@@ -568,16 +635,72 @@ func MarkAndCompact(prgrm *CXProgram) {
 	// global variables
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
+			// offset := glbl.Offset
+			
+			// MarkObjectsTree(prgrm, offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
+			
+			// // If `glbl` has fields, we need to navigate the heap and mark its fields too.
+			// if glbl.CustomType != nil {
+			// 	// Getting the offset to the object in the heap
+			// 	var heapOffset int32
+			// 	_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
+
+			// 	if int(heapOffset) >= prgrm.HeapStartsAt {
+			// 		for _, fld := range glbl.CustomType.Fields {
+			// 			MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+			// 		}
+			// 	}
+			// }
+
+			// // Checking if the field being accessed needs to be marked.
+			// // If the root (`ptr`) is a pointer, this step is unnecessary.
+			// if len(glbl.Fields) > 0 && !ptrIsPointer && IsPointer(glbl.Fields[len(glbl.Fields)-1]) {
+			// 	fld := glbl.Fields[len(glbl.Fields)-1]
+			// 	MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+			// }
+
 			if glbl.IsPointer || glbl.IsSlice {
 				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
-			}
-			if glbl.CustomType != nil {
-				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if glbl.CustomType != nil {
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range glbl.CustomType.Fields {
+							MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
 					}
 				}
 			}
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(glbl.Fields) > 0 && !glbl.IsPointer && !glbl.IsSlice && IsPointer(glbl.Fields[len(glbl.Fields)-1]) {
+				fld := glbl.Fields[len(glbl.Fields)-1]
+				MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+			}
+
+
+
+
+			// if glbl.IsPointer || glbl.IsSlice {
+			// 	MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
+			// }
+			// if glbl.CustomType != nil {
+			// 	for _, fld := range glbl.CustomType.Fields {
+			// 		if fld.IsPointer || fld.IsSlice {
+			// 			MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+			// 		}
+			// 	}
+			// }
 		}
 	}
 

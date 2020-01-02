@@ -1318,7 +1318,7 @@ func printPrompt () {
 
 func repl () {
 	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/SkycoinProject/cx/")
 
 	InREPL = true
 

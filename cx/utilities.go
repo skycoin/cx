@@ -1256,12 +1256,18 @@ func IsPointer(sym *CXArgument) bool {
 		return false
 	}
 	// NOTE: Strings are considered as `IsPointer`s by the runtime.
-	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+	// if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+	// 	return true
+	// }
+	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" && len(sym.Fields) == 0 {
 		return true
 	}
-	if (sym.Type == TYPE_STR && sym.Name != "") {
+	if (sym.Type == TYPE_STR && sym.Name != "" && len(sym.Fields) == 0) {
 		return true
 	}
+	// if (sym.Type == TYPE_STR && sym.Name != "") {
+	// 	return true
+	// }
 	// If `sym` is a structure instance, we need to check if the last field
 	// being access is a pointer candidate
 	// if len(sym.Fields) > 0 {
