@@ -905,7 +905,6 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 
 		// // CurrentFunction
 		// if sPkg.FunctionsSize > 0 {
-		// 	Debug("hmmm", prgrm.Packages)
 		// 	prgrm.Packages[i].CurrentFunction =
 		// 		prgrm.Packages[i].
 		// 		Functions[sPkg.CurrentFunctionOffset-fnCounter]

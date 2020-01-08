@@ -376,7 +376,7 @@ func main() {
 	glblStrSlc = append(glblStrSlc, "Four")
 
 	// Checking if calling `fn1` destroys `glblStrSlc`.
-	for c := 0; c < 100; c++ {
+	for c := 0; c < 100; c++ { // 
 		fn1()
 		fn2()
 	}

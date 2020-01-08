@@ -437,6 +437,10 @@ func isPointerAdded(fn *CXFunction, sym *CXArgument) (found bool) {
 // pointer (slice, pointer, string). If this is the case, `sym` is added to
 // `fn.ListOfPointers` so the CX runtime does not have to determine this.
 func AddPointer(fn *CXFunction, sym *CXArgument) {
+	// Ignore if it's a global variable.
+	if sym.Offset > PRGRM.StackSize {
+		return
+	}
 	// We first need to check if we're going to add `sym` with fields.
 	// If `sym` has fields, then we `return` and we don't add the root `sym`.
 	// If `sym` has no fields, then we check if `sym` is a pointer and
@@ -447,7 +451,7 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 	// added to the list.
 	if len(sym.Fields) > 0 {
 		fld := sym.Fields[len(sym.Fields)-1]
-		if IsPointer(fld) && !isPointerAdded(fn, fld) {
+		if IsPointer(fld) && !isPointerAdded(fn, sym) {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
