@@ -29,7 +29,14 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 
 	trueArg := WritePrimary(TYPE_BOOL, encoder.Serialize(true), false)
 
-	upLines := (len(statements) + len(incr) + len(cond) + 2) * -1
+	// is a compound condition
+	isCompoundCondition := (cond[len(cond)-1].Operator == nil && !cond[len(cond)-1].IsMethodCall)
+	var upLines int
+	if isCompoundCondition {
+		upLines = (len(statements) + len(incr) + 2) * -1
+	} else {
+		upLines = (len(statements) + len(incr) + len(cond) + 2) * -1
+	}
 	downLines := 0
 
 	upExpr.AddInput(trueArg[0].Outputs[0])
@@ -73,7 +80,10 @@ func IterationExpressions(init []*CXExpression, cond []*CXExpression, incr []*CX
 	downExpr.ElseLines = elseLines
 
 	exprs := init
-	exprs = append(exprs, cond...)
+	// ingore condition if it's a compound statement
+	if !isCompoundCondition {
+		exprs = append(exprs, cond...)
+	}
 	exprs = append(exprs, downExpr)
 	exprs = append(exprs, statements...)
 	exprs = append(exprs, incr...)
