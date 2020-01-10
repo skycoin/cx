@@ -18,11 +18,11 @@ PACKAGES := PGK_NAMES_LINUX
 DISPLAY  := :99.0
 endif
 
-#ifneq (,$(findstring Darwin, $(UNAME_S)))
-#PLATFORM := MACOS
-#SUBSYSTEM := MACOS
-#PACKAGES := PKG_NAMES_MACOS
-#endif
+ifneq (,$(findstring Darwin, $(UNAME_S)))
+PLATFORM := MACOS
+SUBSYSTEM := MACOS
+PACKAGES := PKG_NAMES_MACOS
+endif
 
 ifneq (,$(findstring MINGW, $(UNAME_S)))
 PLATFORM := WINDOWS
@@ -111,9 +111,9 @@ install-gfx-deps-MSYS:
 
 install-gfx-deps-MINGW: install-gfx-deps-MSYS
 
-#install-gfx-deps-MACOS:
-#	@echo 'Installing dependencies for $(UNAME_S)'
-#	brew install $(PKG_NAMES_MACOS)
+install-gfx-deps-MACOS:
+	@echo 'Installing dependencies for $(UNAME_S)'
+#brew install $(PKG_NAMES_MACOS)
 
 install-deps: configure
 	@echo "Installing go package dependencies"
