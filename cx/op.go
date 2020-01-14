@@ -3,7 +3,7 @@ package cxcore
 import (
 	"fmt"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // GetSize ...
@@ -156,7 +156,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
+		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20])
 	}
 
 	// elt = arg
@@ -168,7 +168,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
+		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20], "...)")
 	}
 
 	return finalOffset
@@ -308,7 +308,10 @@ func Mark(prgrm *CXProgram, heapOffset int32) {
 	prgrm.Memory[heapOffset] = 1
 
 	for i, byt := range encoder.SerializeAtomic(heapOffset) {
-		// Setting forwarding address. This address is used to know where the object used to live on the heap. With it we can know what symbols were pointing to that dead object and then update their address.
+		// Setting forwarding address. This address is used to know
+		// where the object used to live on the heap. With it we can know
+		// what symbols were pointing to that dead object and then update
+		// their address.
 		prgrm.Memory[int(heapOffset)+MARK_SIZE+i] = byt
 	}
 }
@@ -348,8 +351,8 @@ func MarkObjectsTree(prgrm *CXProgram, offset int, baseType int, declSpecs []int
 	// TODO: We're not considering struct instances with pointer fields.
 	if declSpecs[0] == DECL_SLICE {
 		if (numDeclSpecs > 1 &&
-			(declSpecs[1] == DECL_SLICE ||
-				declSpecs[1] == DECL_POINTER)) ||
+		   	(declSpecs[1] == DECL_SLICE ||
+			declSpecs[1] == DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == TYPE_STR) {
 			// Then we need to iterate each of the slice objects and mark them as alive
 			var sliceLen int32
@@ -411,13 +414,14 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 	// TODO: We're not considering struct instances with pointer fields.
 	if declSpecs[0] == DECL_SLICE {
 		if (numDeclSpecs > 1 &&
-			(declSpecs[1] == DECL_SLICE ||
-				declSpecs[1] == DECL_POINTER)) ||
+		   	(declSpecs[1] == DECL_SLICE ||
+		   	declSpecs[1] == DECL_POINTER)) ||
 			(numDeclSpecs == 1 && baseType == TYPE_STR) {
 			// Then we need to iterate each of the slice objects
 			// and check if we need to update their address.
 			var sliceLen int32
-			_, err := encoder.DeserializeAtomic(GetSliceHeader(heapOffset)[4:8], &sliceLen)
+			// _, err := encoder.DeserializeAtomic(GetSliceHeader(heapOffset)[4:8], &sliceLen)
+			_, err := encoder.DeserializeAtomic(prgrm.Memory[heapOffset+OBJECT_HEADER_SIZE:heapOffset+OBJECT_HEADER_SIZE+4], &sliceLen)
 			if err != nil {
 				panic(err)
 			}
@@ -427,6 +431,11 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 			for c := int32(0); c < sliceLen; c++ {
 				var cHeapOffset int32
 				mustDeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
+
+				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
+					// Then it's pointing to null or data segment
+					continue
+				}
 
 				// Then it's not pointing to the object moved by the GC or it's pointing to
 				// an object in the stack segment or nil.
@@ -443,19 +452,49 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 // moved to address 4141, every symbol in a `CXProgram`'s `CallStack` and in its global variables need to be updated to point now to
 // 4141 instead of 5151.
 func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
+	if oldAddr == newAddr {
+		return
+	}
 	// TODO: `oldAddr` could be received as a slice of bytes that represent the old address of the object,
 	// as it needs to be converted to bytes later on anyways. However, I'm sticking to an int32
 	// for a bit more of clarity.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == TYPE_STR) && glbl.CustomType == nil {
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) < prgrm.HeapStartsAt {
+					continue
+				}
+
 				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
+			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+					if !IsPointer(fld) {
+						continue
+					}
+					offset := glbl.Offset+fld.Offset
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) < prgrm.HeapStartsAt {
+						continue
+					}
+					
+					if (fld.IsPointer || fld.IsSlice || fld.Type == TYPE_STR) {
+						updatePointerTree(prgrm, offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -481,16 +520,52 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			offset := ptr.Offset
 			offset += fp
 
-			// If we're accessing to a field of that pointer, we need to
-			// take into consideration its offset.
-			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
-			if len(ptr.Fields) > 0 {
-				fld := ptr.Fields[len(ptr.Fields)-1]
-				updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
-			} else {
-				updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			ptrIsPointer := IsPointer(ptr)
+
+			check := true
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				check = !check
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) > prgrm.HeapStartsAt {
+					updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+
+					// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+					if ptr.CustomType != nil {
+						if int(heapOffset) >= prgrm.HeapStartsAt {
+							for _, fld := range ptr.CustomType.Fields {
+								updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+							}
+						}
+					}
+				}
 			}
 
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
+				check = !check
+				fld := ptr.Fields[len(ptr.Fields)-1]
+
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset+fld.Offset:offset+fld.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) > prgrm.HeapStartsAt {
+					updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+				}
+			}
+
+			
 		}
 
 		fp += op.Size
@@ -506,13 +581,37 @@ func MarkAndCompact(prgrm *CXProgram) {
 	// global variables
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == TYPE_STR) && glbl.CustomType == nil {
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) < prgrm.HeapStartsAt {
+					continue
+				}
 				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
+
+			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+					offset := glbl.Offset+fld.Offset
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) < prgrm.HeapStartsAt {
+						continue
+					}
+
+					if (fld.IsPointer || fld.IsSlice || fld.Type == TYPE_STR) {
+						MarkObjectsTree(prgrm, offset, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -538,21 +637,41 @@ func MarkAndCompact(prgrm *CXProgram) {
 			offset := ptr.Offset
 			offset += fp
 
-			// If we're accessing to a field of that pointer, we need to
-			// take into consideration its offset.
-			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
-			if len(ptr.Fields) > 0 {
+			ptrIsPointer := IsPointer(ptr)
+
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if ptr.CustomType != nil {
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range ptr.CustomType.Fields {
+							MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
+					}
+				}
+				
+				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			}
+
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
-			} else {
-				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
 			}
 		}
 
 		fp += op.Size
 	}
 
-	// relocation of live objects
+	// Relocation of live objects.
 	for c := prgrm.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
 		var objSize int32
 		_, err := encoder.DeserializeAtomic(prgrm.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE:c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE], &objSize)
@@ -868,17 +987,8 @@ func ReadBool(fp int, inp *CXArgument) (out bool) {
 	return
 }
 
-// ReadStr ...
-func ReadStr(fp int, inp *CXArgument) (out string) {
-	var offset int32
-	off := GetFinalOffset(fp, inp)
-	if inp.Name == "" {
-		// Then it's a literal.
-		offset = int32(off)
-	} else {
-		mustDeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
-	}
-
+// ReadStrOffset gets the string in heap pointed out by `offset`.
+func ReadStrOffset(offset int32) (out string) {
 	if offset == 0 {
 		// Then it's nil string.
 		out = ""
@@ -886,17 +996,51 @@ func ReadStr(fp int, inp *CXArgument) (out string) {
 	}
 
 	var size int32
+	var err error
 	// We need to check if the string lives on the data segment or on the
 	// heap to know if we need to take into consideration the object header's size.
 	if int(offset) > PROGRAM.HeapStartsAt {
-		mustDeserializeAtomic(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE], &size)
-		mustDeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
+		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE], &size)
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = encoder.DeserializeRaw(PROGRAM.Memory[offset+OBJECT_HEADER_SIZE:offset+OBJECT_HEADER_SIZE+STR_HEADER_SIZE+size], &out)
+		if err != nil {
+			panic(err)
+		}
 	} else {
-		mustDeserializeAtomic(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE], &size)
-		mustDeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
+		_, err = encoder.DeserializeAtomic(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE], &size)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = encoder.DeserializeRaw(PROGRAM.Memory[offset:offset+STR_HEADER_SIZE+size], &out)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return out
+}
+
+// ReadStr ...
+func ReadStr(fp int, inp *CXArgument) (out string) {
+	var offset int32
+	off := GetFinalOffset(fp, inp)
+	
+	if inp.Name == "" {
+		// Then it's a literal.
+		offset = int32(off)
+	} else {
+		_, err := encoder.DeserializeAtomic(PROGRAM.Memory[off:off+TYPE_POINTER_SIZE], &offset)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return ReadStrOffset(offset)
 }
 
 // ReadI8 ...

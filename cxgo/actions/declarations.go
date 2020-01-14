@@ -393,19 +393,23 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 
 		return arg
 	case DECL_SLICE:
-		for range arrayLengths {
-			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
-		}
+		// for range arrayLengths {
+		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		// }
 
 		arg := declSpec
+
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
+		
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true
 		arg.PassBy = PASSBY_REFERENCE
 
-		// arg.Lengths = append([]int{0}, arg.Lengths...)
-		arg.Lengths = arrayLengths
-		arg.TotalSize = TYPE_POINTER_SIZE
+		arg.Lengths = append([]int{0}, arg.Lengths...)
+		// arg.Lengths = arrayLengths
+		arg.TotalSize = arg.Size
+		arg.Size = TYPE_POINTER_SIZE
 
 		return arg
 	case DECL_BASIC:
@@ -413,6 +417,10 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 		arg.TotalSize = arg.Size
 		return arg
+	case DECL_FUNC:
+		// Creating this case if additional operations are needed in the
+		// future.
+		return declSpec
 	}
 
 	return nil

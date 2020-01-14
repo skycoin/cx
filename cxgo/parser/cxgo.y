@@ -3,7 +3,7 @@
 	import (
 		// "fmt"
 		"strconv"
-		"github.com/amherag/skycoin/src/cipher/encoder"
+		"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 		. "github.com/SkycoinProject/cx/cx"
 		. "github.com/SkycoinProject/cx/cxgo/actions"
 	)
@@ -117,6 +117,8 @@
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
+%type   <arguments>     id_list
+%type   <arguments>     types_list
 
 /* %type   <stringA>       package_identifier */
                                 
@@ -180,6 +182,7 @@
 
 %type   <ints>          indexing_literal
 %type   <ints>          indexing_slices
+%type   <ints>          indexing_slice_literal
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
@@ -392,6 +395,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
+			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
                 ;
@@ -446,10 +450,54 @@ direct_declarator:
 
 
 
+id_list:	IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+			$$ = []*CXArgument{arg}
+		}
+	|	type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($1)
+			$$ = []*CXArgument{arg}
+		}
+	|	id_list COMMA IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($3, "", false, CurrentFile, LineNo)
+			$$ = append($1, arg)
+		}
+	|	id_list COMMA type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($3)
+			$$ = append($1, arg)
+		}
+	;
 
+
+
+types_list:
+
+		LPAREN id_list RPAREN
+
+		{
+
+			$$ = $2
+
+		}
+	|	LPAREN RPAREN
+		{
+			$$ = nil
+		}
+	;
 
 declaration_specifiers:
-                MUL_OP declaration_specifiers
+                FUNC types_list types_list
+		{
+			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg.Inputs = $2
+			arg.Outputs = $3
+			$$ = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+		}
+        |       MUL_OP declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
@@ -459,7 +507,7 @@ declaration_specifiers:
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
+                  $$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -569,6 +617,17 @@ indexing_literal:
         |       indexing_literal LBRACK INT_LITERAL RBRACK
 		{
 			$$ = append($1, int($3))
+		}
+		;
+
+indexing_slice_literal:
+		LBRACK RBRACK
+		{
+			$$ = []int{0}
+		}
+        |       indexing_slice_literal LBRACK RBRACK
+		{
+			$$ = append($1, 0)
 		}
 		;
 

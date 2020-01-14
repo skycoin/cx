@@ -37,9 +37,6 @@ const (
 	OP_JSON_TOKEN_I64
 	OP_JSON_TOKEN_STR
 
-	// http
-	// OP_HTTP_GET
-
 	// object explorer
 	OP_OBJ_QUERY
 
@@ -49,29 +46,24 @@ const (
 func init() {
 	// time
 	AddOpCode(OP_TIME_SLEEP, "time.Sleep",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
-
-	// http
-	// AddOpCode(OP_HTTP_GET, "http.Get",
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)},
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_OPEN, "os.Open",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_CLOSE, "os.Close",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_SEEK, "os.Seek",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_I32, false)},
@@ -89,10 +81,10 @@ func init() {
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_OS_RUN, "os.Run",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_EXIT, "os.Exit",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 
 	// json
@@ -138,10 +130,6 @@ func init() {
 			return op_time_UnixMilli
 		case OP_TIME_UNIX_NANO:
 			return op_time_UnixNano
-
-		// http
-		// case OP_HTTP_GET:
-		// 	return op_http_get
 
 		// os
 		case OP_OS_GET_WORKING_DIRECTORY:

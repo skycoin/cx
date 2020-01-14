@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	"fmt"
-	// "github.com/amherag/skycoin/src/cipher/encoder"
 )
 
 var assertSuccess = true

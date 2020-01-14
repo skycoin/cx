@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 const (

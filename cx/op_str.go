@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 func opStrToI8(prgrm *CXProgram) {
@@ -175,7 +175,9 @@ func opStrGteq(prgrm *CXProgram) {
 }
 
 func writeString(fp int, str string, out *CXArgument) {
-
+	if str == "" {
+		return
+	}
 	byts := encoder.Serialize(str)
 	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)

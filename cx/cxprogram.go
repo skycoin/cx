@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 /*
@@ -319,6 +319,13 @@ func (prgrm *CXProgram) RemovePackage(modName string) {
 func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
 	PROGRAM = prgrm
 
+	return PROGRAM, nil
+}
+
+func GetProgram() (*CXProgram, error) {
+	if PROGRAM == nil {
+		return nil, fmt.Errorf("a CX program has not been loaded")
+	}
 	return PROGRAM, nil
 }
 

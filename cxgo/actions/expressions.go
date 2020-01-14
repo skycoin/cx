@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 
 	. "github.com/SkycoinProject/cx/cx"
 )

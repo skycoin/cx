@@ -10,9 +10,37 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "128Mb-size"
+  digest = "1:20e191cc439e62b403da3ad6323b185730d200b1976a8379cae0f0e0f917a7c7"
+  name = "github.com/SkycoinProject/cx-chains"
+  packages = [
+    "src/api",
+    "src/cipher",
+    "src/cipher/encoder",
+    "src/cli",
+    "src/coin",
+    "src/fiber",
+    "src/readable",
+    "src/skycoin",
+    "src/util/logging",
+    "src/visor",
+    "src/wallet",
+  ]
+  pruneopts = "UT"
+  revision = "fc497b1c6eb5f3fb5afc367188ab6f012f71f85c"
+
+[[projects]]
+  digest = "1:ab7fbf4ca87b2a949b0dc81485d7090b7e05780d2112afafe0f9145370060d0c"
+  name = "github.com/SkycoinProject/skycoin"
+  packages = ["src/cipher/encoder"]
+  pruneopts = "UT"
+  revision = "ff754084df0912bc0d151529e2893ca86618fb3f"
+  version = "v0.26.0"
+
+[[projects]]
   branch = "cxchains"
-  digest = "1:c1cb1c1e5f7f78cca28cad22abff80fa9e0d38fc7c589f51c398c40bd02d699b"
-  name = "github.com/amherag/skycoin"
+  digest = "1:dfe4096f9f0d60ac298c9ca7fa3d9e42edc4cc4bd1de1445a9444e0418c2c3d1"
+  name = "github.com/SkycoinProject/skycoin"
   packages = [
     "src/api",
     "src/cipher",
@@ -29,7 +57,6 @@
     "src/cipher/scrypt",
     "src/cipher/secp256k1-go",
     "src/cipher/secp256k1-go/secp256k1-go2",
-    "src/cli",
     "src/coin",
     "src/daemon",
     "src/daemon/gnet",
@@ -148,6 +175,14 @@
   pruneopts = "UT"
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ae940e9156d0d778ce1991bcc99e58fa5ca2790ddf7c5f0bc05385854416f7a6"
+  name = "github.com/jinzhu/copier"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b57f9002281ac48ed8cbc489b1e91121e1a0824c"
 
 [[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
@@ -286,6 +321,14 @@
   pruneopts = "UT"
   revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
   version = "v1.4.2"
+
+[[projects]]
+  digest = "1:0b02b30f8514311e09f46f75b7d698c28be617f3f15725706672768236ffa659"
+  name = "github.com/skycoin/cx"
+  packages = ["cx"]
+  pruneopts = "UT"
+  revision = "031a2f361510bda79e4f7fb43bc939bb6fd5c426"
+  version = "v0.7.1"
 
 [[projects]]
   branch = "master"
@@ -435,18 +478,24 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/amherag/skycoin/src/api",
-    "github.com/amherag/skycoin/src/cipher",
-    "github.com/amherag/skycoin/src/cipher/encoder",
-    "github.com/amherag/skycoin/src/cli",
-    "github.com/amherag/skycoin/src/coin",
-    "github.com/amherag/skycoin/src/fiber",
-    "github.com/amherag/skycoin/src/readable",
-    "github.com/amherag/skycoin/src/skycoin",
-    "github.com/amherag/skycoin/src/util/logging",
-    "github.com/amherag/skycoin/src/util/useragent",
-    "github.com/amherag/skycoin/src/visor",
-    "github.com/amherag/skycoin/src/wallet",
+    "github.com/SkycoinProject/cx-chains/src/api",
+    "github.com/SkycoinProject/cx-chains/src/cipher",
+    "github.com/SkycoinProject/cx-chains/src/cipher/encoder",
+    "github.com/SkycoinProject/cx-chains/src/cli",
+    "github.com/SkycoinProject/cx-chains/src/coin",
+    "github.com/SkycoinProject/cx-chains/src/fiber",
+    "github.com/SkycoinProject/cx-chains/src/readable",
+    "github.com/SkycoinProject/cx-chains/src/skycoin",
+    "github.com/SkycoinProject/cx-chains/src/util/logging",
+    "github.com/SkycoinProject/cx-chains/src/visor",
+    "github.com/SkycoinProject/cx-chains/src/wallet",
+    "github.com/SkycoinProject/skycoin/src/cipher/encoder",
+    "github.com/SkycoinProject/skycoin/src/fiber",
+    "github.com/SkycoinProject/skycoin/src/readable",
+    "github.com/SkycoinProject/skycoin/src/skycoin",
+    "github.com/SkycoinProject/skycoin/src/util/logging",
+    "github.com/SkycoinProject/skycoin/src/util/useragent",
+    "github.com/jinzhu/copier",
     "github.com/satori/go.uuid",
     "github.com/skycoin/gltext",
     "github.com/theherk/viper",
