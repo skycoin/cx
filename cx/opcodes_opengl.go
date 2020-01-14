@@ -505,37 +505,37 @@ func init() {
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_1FV, "gl.Uniform1fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_2FV, "gl.Uniform2fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_3FV, "gl.Uniform3fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_4FV, "gl.Uniform4fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_1IV, "gl.Uniform1iv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_2IV, "gl.Uniform2iv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_3IV, "gl.Uniform3iv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_4IV, "gl.Uniform4iv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_MATRIX_2FV, "gl.UniformMatrix2fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_MATRIX_3FV, "gl.UniformMatrix3fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_UNIFORM_MATRIX_4FV, "gl.UniformMatrix4fv",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(TYPE_BOOL, false), newOpPar(TYPE_F32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice), newOpPar(opParamF32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GL_VERTEX_ATTRIB_POINTER, "gl.VertexAttribPointer",
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice), newOpPar(opParamI32NotSlice)},
@@ -710,7 +710,7 @@ func init() {
 		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice),
 			newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice),
-			newOpPar(opParamI32NotSlice), newOpPar(TYPE_I64, false), newOpPar(opParamUI8Slice)})
+			newOpPar(opParamI32NotSlice), newOpPar(opParamI64NotSlice), newOpPar(opParamUI8Slice)})
 
 	// openal
 	AddOpCode(OP_AL_CLOSE_DEVICE, "al.CloseDevice",
@@ -720,7 +720,7 @@ func init() {
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_DELETE_SOURCES, "al.DeleteSources",
-		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_DEVICE_ERROR, "al.DeviceError",
 		[]*CXArgument{},
@@ -735,19 +735,19 @@ func init() {
 		[]*CXArgument{},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_PAUSE_SOURCES, "al.PauseSources",
-		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_PLAY_SOURCES, "al.PlaySources",
-		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_RENDERER, "al.Renderer",
 		[]*CXArgument{},
 		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_AL_REWIND_SOURCES, "al.RewindSources",
-		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_STOP_SOURCES, "al.StopSources",
-		[]*CXArgument{newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_VENDOR, "al.Vendor",
 		[]*CXArgument{},
@@ -757,13 +757,13 @@ func init() {
 		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_AL_GEN_BUFFERS, "al.GenBuffers",
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
-		[]*CXArgument{newOpPar(TYPE_I32, true)})
+		[]*CXArgument{newOpPar(opParamI32Slice)})
 	AddOpCode(OP_AL_BUFFER_DATA, "al.BufferData",
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamUndNotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_GEN_SOURCES, "al.GenSources",
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
-		[]*CXArgument{newOpPar(TYPE_I32, true)})
+		[]*CXArgument{newOpPar(opParamI32Slice)})
 	AddOpCode(OP_AL_SOURCE_BUFFERS_PROCESSED, "al.SourceBuffersProcessed",
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{newOpPar(opParamI32NotSlice)})
@@ -771,13 +771,13 @@ func init() {
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_AL_SOURCE_QUEUE_BUFFERS, "al.SourceQueueBuffers",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AL_SOURCE_STATE, "al.SourceState",
 		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_AL_SOURCE_UNQUEUE_BUFFERS, "al.SourceUnueueBuffers",
-		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(TYPE_I32, true)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32Slice)},
 		[]*CXArgument{})
 
 	// exec

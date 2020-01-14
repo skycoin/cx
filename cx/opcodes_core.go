@@ -571,7 +571,6 @@ var opParamUndNotSlice = opParam{typCode: TYPE_UNDEFINED, isSlice: false}
 var opParamFuncNotSlice = opParam{typCode: TYPE_FUNC, isSlice: false}
 var opParamBoolNotSlice = opParam{typCode: TYPE_BOOL, isSlice: false}
 var opParamAffNotSlice = opParam{typCode: TYPE_AFF, isSlice: false}
-var opParamByteNotSlice = opParam{typCode: TYPE_BYTE, isSlice: false}
 var opParamI8NotSlice = opParam{typCode: TYPE_I8, isSlice: false}
 var opParamI16NotSlice = opParam{typCode: TYPE_I16, isSlice: false}
 var opParamI32NotSlice = opParam{typCode: TYPE_I32, isSlice: false}
@@ -580,8 +579,6 @@ var opParamUI8NotSlice = opParam{typCode: TYPE_UI8, isSlice: false}
 var opParamUI16NotSlice = opParam{typCode: TYPE_UI16, isSlice: false}
 var opParamUI32NotSlice = opParam{typCode: TYPE_UI32, isSlice: false}
 var opParamUI64NotSlice = opParam{typCode: TYPE_UI64, isSlice: false}
-var opParamI32NotSlice = opParam{typCode: TYPE_I32, isSlice: false}
-var opParamI64NotSlice = opParam{typCode: TYPE_I64, isSlice: false}
 var opParamF32NotSlice = opParam{typCode: TYPE_F32, isSlice: false}
 var opParamF64NotSlice = opParam{typCode: TYPE_F64, isSlice: false}
 var opParamStrNotSlice = opParam{typCode: TYPE_STR, isSlice: false}
@@ -590,6 +587,7 @@ var opParamUndSlice = opParam{typCode: TYPE_UNDEFINED, isSlice: true}
 var opParamUI8Slice = opParam{typCode: TYPE_UI8, isSlice: true}
 var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
 var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
+var opParamI32Slice = opParam{typCode: TYPE_I32, isSlice: true}
 var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
 
 func init() {

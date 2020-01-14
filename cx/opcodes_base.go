@@ -66,20 +66,20 @@ func init() {
 		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_SEEK, "os.Seek",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI64NotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_OS_READ_F32, "os.ReadF32",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_OS_READ_UI32, "os.ReadUI32",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_OS_READ_UI16, "os.ReadUI16",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_OS_READ_ALL_TEXT, "os.ReadAllText",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_RUN, "os.Run",
 		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)})
@@ -89,35 +89,35 @@ func init() {
 
 	// json
 	AddOpCode(OP_JSON_OPEN, "json.Open",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_JSON_CLOSE, "json.Close",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_MORE, "json.More",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_NEXT, "json.Next",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_TYPE, "json.Type",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_DELIM, "json.Delim",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_BOOL, "json.Bool",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_F64, "json.Float64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_I64, "json.Int64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_STR, "json.Str",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamBoolNotSlice)})
 
 	// exec
 	handleOpcode := func(opCode int) opcodeHandler {
