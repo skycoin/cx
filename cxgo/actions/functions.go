@@ -982,7 +982,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 			for i, spec := range arg.DeclarationSpecifiers {
 				declSpec[i] = spec
 			}
-
+			
 			for _, spec := range sym.DeclarationSpecifiers {
 				// checking if we need to remove or add DECL_POINTERs
 				// also we could be removing
@@ -1069,7 +1069,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields)-1].Type
-		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
+		sym.IsSlice = sym.Fields[len(sym.Fields) - 1].IsSlice
 	} else {
 		sym.Type = arg.Type
 	}
@@ -1082,6 +1082,10 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		} else {
 			sym.TotalSize = arg.TotalSize
 		}
+	}
+
+	if sym.Name == "sExprsI32" {
+		Debug("decls", sym.Name, sym.DeclarationSpecifiers, sym.FileLine, GetFormattedType(sym))
 	}
 }
 
