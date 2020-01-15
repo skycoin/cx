@@ -123,7 +123,7 @@ install-deps: configure
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
 	go get github.com/SkycoinProject/gltext
 	go get github.com/go-gl/gl/v3.2-compatibility/gl
-	go get github.com/go-gl/glfw/v3.2/glfw
+	go get github.com/go-gl/glfw/v3.3/glfw
 	go get golang.org/x/mobile/exp/audio/al
 	go get github.com/mjibson/go-dsp/wav
 
