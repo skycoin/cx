@@ -4,8 +4,7 @@ package cxcore
 
 import (
 	"os"
-
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 func (cxt *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
@@ -114,6 +113,24 @@ func op_glfw_CreateWindow(prgrm *CXProgram) {
 	} else {
 		panic(err)
 	}
+}
+
+func op_glfw_GetWindowContentScale(prgrm *CXProgram) {
+    expr := prgrm.GetExpr()
+    fp := prgrm.GetFramePointer()
+
+    xscale, yscale := windows[ReadStr(fp, expr.Inputs[0])].GetContentScale()
+    WriteF32(GetFinalOffset(fp, expr.Outputs[0]), xscale)
+    WriteF32(GetFinalOffset(fp, expr.Outputs[1]), yscale)
+}
+
+func op_glfw_GetMonitorContentScale(prgrm *CXProgram) {
+    expr := prgrm.GetExpr()
+    fp := prgrm.GetFramePointer()
+
+    xscale, yscale := glfw.GetPrimaryMonitor().GetContentScale()
+    WriteF32(GetFinalOffset(fp, expr.Outputs[0]), xscale)
+    WriteF32(GetFinalOffset(fp, expr.Outputs[1]), yscale)
 }
 
 func op_glfw_SetWindowPos(prgrm *CXProgram) {

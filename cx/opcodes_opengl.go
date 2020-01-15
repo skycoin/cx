@@ -13,6 +13,7 @@ const (
 	OP_GL_NEW_GIF
 	OP_GL_FREE_GIF
 	OP_GL_GIF_FRAME_TO_TEXTURE
+	OP_GL_UPLOAD_IMAGE_TO_TEXTURE
 	OP_GL_APPEND_F32
 	OP_GL_APPEND_UI32
 	OP_GL_APPEND_UI16
@@ -146,8 +147,11 @@ const (
 	OP_GL_FRAMEBUFFER_RENDERBUFFER
 	OP_GL_GENERATE_MIPMAP
 	OP_GL_BIND_VERTEX_ARRAY
+	OP_GL_BIND_VERTEX_ARRAY_CORE
 	OP_GL_DELETE_VERTEX_ARRAYS
+	OP_GL_DELETE_VERTEX_ARRAYS_CORE
 	OP_GL_GEN_VERTEX_ARRAYS
+	OP_GL_GEN_VERTEX_ARRAYS_CORE
 
 	// goglfw
 	OP_GLFW_FULLSCREEN
@@ -181,10 +185,12 @@ const (
 	OP_GLFW_GET_KEY
 	OP_GLFW_FUNC_I32_I32
 	OP_GLFW_CALL_I32_I32
+	OP_GLFW_GET_WINDOW_CONTENT_SCALE
+	OP_GLFW_GET_MONITOR_CONTENT_SCALE
 
 	// gltext
 	OP_GLTEXT_LOAD_TRUE_TYPE
-	OP_GLTEXT_LOAD_TRUE_TYPE_EX
+	OP_GLTEXT_LOAD_TRUE_TYPE_CORE
 	OP_GLTEXT_PRINTF
 	OP_GLTEXT_METRICS
 	OP_GLTEXT_TEXTURE
@@ -250,6 +256,9 @@ func init() {
 	AddOpCode(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture",
 		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_UPLOAD_IMAGE_TO_TEXTURE, "gl.UploadImageToTexture",
+		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_APPEND_F32, "gl.AppendF32",
 		[]*CXArgument{newOpPar(TYPE_UI8, true), newOpPar(TYPE_F32, false)},
 		[]*CXArgument{newOpPar(TYPE_UI8, true)})
@@ -620,10 +629,19 @@ func init() {
 	AddOpCode(OP_GL_BIND_VERTEX_ARRAY, "gl.BindVertexArray",
 		[]*CXArgument{newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_BIND_VERTEX_ARRAY_CORE, "gl.BindVertexArrayCore",
+		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_DELETE_VERTEX_ARRAYS, "gl.DeleteVertexArrays",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_GL_DELETE_VERTEX_ARRAYS_CORE, "gl.DeleteVertexArraysCore",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS, "gl.GenVertexArrays",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GEN_VERTEX_ARRAYS_CORE, "gl.GenVertexArraysCore",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
 
@@ -717,9 +735,18 @@ func init() {
 	AddOpCode(OP_GLFW_CALL_I32_I32, "glfw.call_i32_i32",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
+	AddOpCode(OP_GLFW_GET_WINDOW_CONTENT_SCALE, "glfw.GetWindowContentScale",
+		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)})
+	AddOpCode(OP_GLFW_GET_MONITOR_CONTENT_SCALE, "glfw.GetMonitorContentScale",
+		[]*CXArgument{},
+		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)})
 
 	// gltext
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{})
+	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
 		[]*CXArgument{})
 	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf",
@@ -845,6 +872,8 @@ func handleExtraOpcode(opCode int) opcodeHandler {
 		return op_gl_FreeGIF
 	case OP_GL_GIF_FRAME_TO_TEXTURE:
 		return op_gl_GIFFrameToTexture
+	case OP_GL_UPLOAD_IMAGE_TO_TEXTURE:
+		return op_gl_UploadImageToTexture
 	case OP_GL_APPEND_F32:
 		return opGlAppend
 	case OP_GL_APPEND_UI16:
@@ -1094,10 +1123,16 @@ func handleExtraOpcode(opCode int) opcodeHandler {
 		return op_gl_GenerateMipmap
 	case OP_GL_BIND_VERTEX_ARRAY:
 		return op_gl_BindVertexArray
+	case OP_GL_BIND_VERTEX_ARRAY_CORE:
+		return op_gl_BindVertexArrayCore
 	case OP_GL_DELETE_VERTEX_ARRAYS:
 		return op_gl_DeleteVertexArrays
+	case OP_GL_DELETE_VERTEX_ARRAYS_CORE:
+		return op_gl_DeleteVertexArraysCore
 	case OP_GL_GEN_VERTEX_ARRAYS:
 		return op_gl_GenVertexArrays
+	case OP_GL_GEN_VERTEX_ARRAYS_CORE:
+		return op_gl_GenVertexArraysCore
 
 	// goglfw
 	case OP_GLFW_FULLSCREEN:
@@ -1160,10 +1195,16 @@ func handleExtraOpcode(opCode int) opcodeHandler {
 		return op_glfw_func_i32_i32
 	case OP_GLFW_CALL_I32_I32:
 		return op_glfw_call_i32_i32
+	case OP_GLFW_GET_WINDOW_CONTENT_SCALE:
+		return op_glfw_GetWindowContentScale
+	case OP_GLFW_GET_MONITOR_CONTENT_SCALE:
+		return op_glfw_GetMonitorContentScale
 
 	// gltext
 	case OP_GLTEXT_LOAD_TRUE_TYPE:
 		return op_gltext_LoadTrueType
+	case OP_GLTEXT_LOAD_TRUE_TYPE_CORE:
+		return op_gltext_LoadTrueTypeCore
 	case OP_GLTEXT_PRINTF:
 		return op_gltext_Printf
 	case OP_GLTEXT_METRICS:

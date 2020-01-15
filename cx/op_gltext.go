@@ -5,21 +5,29 @@ package cxcore
 import (
 	"unicode/utf8"
 
-	"github.com/skycoin/gltext"
+	"github.com/SkycoinProject/gltext"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
-func op_gltext_LoadTrueType(prgrm *CXProgram) {
+func loadTrueType(prgrm *CXProgram, fixedPipeline bool) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
 	if file := validFile(ReadI32(fp, inp1)); file != nil {
-		if theFont, err := gltext.LoadTruetype(file, ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6))); err == nil {
+		if theFont, err := gltext.LoadTruetype(file, ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6)), fixedPipeline); err == nil {
 			fonts[ReadStr(fp, inp2)] = theFont
 		}
 	}
+}
+
+func op_gltext_LoadTrueType(prgrm *CXProgram) {
+    loadTrueType(prgrm, true)
+}
+
+func op_gltext_LoadTrueTypeCore(prgrm *CXProgram) {
+    loadTrueType(prgrm, false)
 }
 
 func op_gltext_Printf(prgrm *CXProgram) {

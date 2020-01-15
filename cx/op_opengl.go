@@ -14,7 +14,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-
 )
 
 // declared in func_opengl.go
@@ -162,6 +161,13 @@ func op_gl_NewTextureCube(prgrm *CXProgram) {
 		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(gl.TEXTURE_CUBE_MAP_POSITIVE_X+i))
 	}
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
+}
+
+func op_gl_UploadImageToTexture(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	uploadTexture(ReadStr(fp, expr.Inputs[0]), uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
 func op_gl_NewGIF(prgrm *CXProgram) {
@@ -1173,6 +1179,13 @@ func op_gl_BindVertexArray(prgrm *CXProgram) {
 	}
 }
 
+func op_gl_BindVertexArrayCore(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	gl.BindVertexArray(uint32(ReadI32(fp, expr.Inputs[0])))
+}
+
 func op_gl_DeleteVertexArrays(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
@@ -1184,6 +1197,14 @@ func op_gl_DeleteVertexArrays(prgrm *CXProgram) {
 	} else {
 		gl.DeleteVertexArrays(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	}
+}
+
+func op_gl_DeleteVertexArraysCore(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	tmp := uint32(ReadI32(fp, expr.Inputs[1]))
+	gl.DeleteVertexArrays(ReadI32(fp, expr.Inputs[0]), &tmp) // will panic if inp1 > 1
 }
 
 func op_gl_GenVertexArrays(prgrm *CXProgram) {
@@ -1198,4 +1219,13 @@ func op_gl_GenVertexArrays(prgrm *CXProgram) {
 		gl.GenVertexArrays(ReadI32(fp, inp1), &tmp) // will panic if inp1 > 1
 	}
 	WriteI32(GetFinalOffset(fp, out1), int32(tmp))
+}
+
+func op_gl_GenVertexArraysCore(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	tmp := uint32(ReadI32(fp, expr.Inputs[1]))
+	gl.GenVertexArrays(ReadI32(fp, expr.Inputs[0]), &tmp) // will panic if inp1 > 1
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(tmp))
 }
