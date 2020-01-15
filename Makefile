@@ -95,12 +95,12 @@ install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
 	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
-	export DISPLAY=$(DISPLAY)
-	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
-	export GTK_VERSION="$(shell pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)"
-	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
-	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
-	export Pango_VERSION="$(shell pkg-config --modversion pango)"
+#	export DISPLAY=$(DISPLAY)
+#	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
+#	export GTK_VERSION="$(shell pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)"
+#	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
+#	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
+#	export Pango_VERSION="$(shell pkg-config --modversion pango)"
 
 install-gfx-deps-MSYS:
 	@echo 'Installing dependencies for $(UNAME_S)'
