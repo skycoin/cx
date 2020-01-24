@@ -1189,14 +1189,14 @@ func ioReadDir(root string) ([]string, error) {
 //  - []sting		filenames
 func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
+
 		if len(arg) > 2 && arg[:2] == "++" {
 			cxArgs = append(cxArgs, arg)
 			continue
 		}
 
-		fi, err := os.Stat(arg)
+		fi, err := CXStatFile(arg)
 		_ = err
-
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
 			os.Exit(CX_COMPILATION_ERROR)
@@ -1220,7 +1220,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 			}
 
 			for _, path := range fileList {
-				file, err := os.Open(path)
+				file, err := CXOpenFile(path)
 
 				if err != nil {
 					println(fmt.Sprintf("%s: source file or library not found", arg))
@@ -1237,7 +1237,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 				}
 			}
 		case mode.IsRegular():
-			file, err := os.Open(arg)
+			file, err := CXOpenFile(arg)
 
 			if err != nil {
 				panic(err)

@@ -91,6 +91,9 @@ build-full: configure build-parser ## Build CX from sources with all build tags
 	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
+build-android: configure build-parser
+	gomobile install -tags="base opengles android" ~/go/src/github.com/SkycoinProject/cx/cxgo
+
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
@@ -132,6 +135,9 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 	cx -v
 
 install-full: install-gfx-deps install
+
+install-mobile:
+	go get golang.org/x/mobile/gl
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck

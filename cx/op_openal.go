@@ -7,14 +7,13 @@ import (
 	"github.com/amherag/skycoin/src/cipher/encoder"
 	"github.com/mjibson/go-dsp/wav"
 	"golang.org/x/mobile/exp/audio/al"
-	"os"
 )
 
 func opAlLoadWav(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
+	file, err := CXOpenFile(ReadStr(fp, expr.Inputs[0]))
 	defer file.Close()
 	if err != nil {
 		panic(err)

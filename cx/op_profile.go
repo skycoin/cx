@@ -12,7 +12,7 @@ import (
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)
 
 func startCPUProfile(name string, rate int) *os.File {
-	f, err := os.Create(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+	f, err := CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 	if err != nil {
 		fmt.Println("Failed to create CPU profile: ", err)
 	}

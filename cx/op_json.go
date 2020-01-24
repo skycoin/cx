@@ -46,7 +46,7 @@ func opJSONOpen(prgrm *CXProgram) {
 
 	handle := int32(-1)
 
-	file, err := os.Open(ReadStr(fp, expr.Inputs[0]))
+	file, err := CXOpenFile(ReadStr(fp, expr.Inputs[0]))
 	if err == nil {
 		freeCount := len(freeJsons)
 		if freeCount > 0 {

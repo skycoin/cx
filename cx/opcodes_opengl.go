@@ -1,4 +1,4 @@
-// +build opengl
+// +build opengl opengles
 
 package cxcore
 
@@ -101,7 +101,10 @@ const (
 	OP_GL_DETACH_SHADER
 	OP_GL_ENABLE_VERTEX_ATTRIB_ARRAY
 	OP_GL_GET_ATTRIB_LOCATION
+	OP_GL_GET_PROGRAMIV
+	OP_GL_GET_PROGRAM_INFO_LOG
 	OP_GL_GET_SHADERIV
+	OP_GL_GET_SHADER_INFO_LOG
 	OP_GL_GET_UNIFORM_LOCATION
 	OP_GL_LINK_PROGRAM
 	OP_GL_SHADER_SOURCE
@@ -492,9 +495,18 @@ func init() {
 	AddOpCode(OP_GL_GET_ATTRIB_LOCATION, "gl.GetAttribLocation",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GET_PROGRAMIV, "gl.GetProgramiv",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GET_PROGRAM_INFO_LOG, "gl.GetProgramInfoLog",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_GL_GET_SHADERIV, "gl.GetShaderiv",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{})
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_I32, false)})
+	AddOpCode(OP_GL_GET_SHADER_INFO_LOG, "gl.GetShaderInfoLog",
+		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(TYPE_STR, false)})
 	AddOpCode(OP_GL_GET_UNIFORM_LOCATION, "gl.GetUniformLocation",
 		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
@@ -1033,8 +1045,14 @@ func handleExtraOpcode(opCode int) opcodeHandler {
 		return op_gl_EnableVertexAttribArray
 	case OP_GL_GET_ATTRIB_LOCATION:
 		return op_gl_GetAttribLocation
+	case OP_GL_GET_PROGRAMIV:
+		return op_gl_GetProgramiv
+	case OP_GL_GET_PROGRAM_INFO_LOG:
+		return op_gl_GetProgramInfoLog
 	case OP_GL_GET_SHADERIV:
 		return op_gl_GetShaderiv
+	case OP_GL_GET_SHADER_INFO_LOG:
+		return op_gl_GetShaderInfoLog
 	case OP_GL_GET_UNIFORM_LOCATION:
 		return op_gl_GetUniformLocation
 	case OP_GL_LINK_PROGRAM:

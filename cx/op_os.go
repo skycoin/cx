@@ -58,7 +58,7 @@ func op_os_Open(prgrm *CXProgram) {
 
 	handle := int32(-1)
 
-	if file, err := os.Open(ReadStr(fp, expr.Inputs[0])); err == nil {
+	if file, err := CXOpenFile(ReadStr(fp, expr.Inputs[0])); err == nil {
 		freeCount := len(freeFiles)
 		if freeCount > 0 {
 			freeCount--
