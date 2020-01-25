@@ -72,7 +72,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			sizeToUse := GetDerefSize(arg)
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
-
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}

@@ -7,7 +7,7 @@ import (
 )
 
 // SliceLiteralExpression handles literal expressions by converting it to a series of `append` expressions.
-func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) []*CXExpression {
+func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression {
 	var result []*CXExpression
 
 	pkg, err := PRGRM.GetCurrentPackage()
@@ -21,8 +21,8 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 	slcVarExpr := MakeExpression(nil, CurrentFile, LineNo)
 	slcVarExpr.Package = pkg
 	slcVar := MakeArgument(symName, CurrentFile, LineNo)
-	slcVar = DeclarationSpecifiers(slcVar, sliceDim, DECL_SLICE)
 	slcVar.AddType(TypeNames[typSpec])
+	slcVar = DeclarationSpecifiers(slcVar, []int{0}, DECL_SLICE)
 
 	// slcVar.IsSlice = true
 
@@ -36,13 +36,13 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 
 	var endPointsCounter int
 	for _, expr := range exprs {
+	// for i := len(exprs) - 1; i >= 0; i-- {
+		// expr := exprs[i]
 		if expr.IsArrayLiteral {
 			symInp := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symInp.Package = pkg
-			symInp.Lengths = sliceDim
 			symOut := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symOut.Package = pkg
-			symOut.Lengths = sliceDim
 
 			endPointsCounter++
 
@@ -61,26 +61,20 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 				// We need to create a temporary variable to hold the result of the
 				// nested expressions. Then use that variable as part of the slice literal.
 				out := MakeArgument(MakeGenSym(LOCAL_PREFIX), expr.FileName, expr.FileLine)
-				out = DeclarationSpecifiers(out, sliceDim[:len(sliceDim)-1], DECL_SLICE)
-				expr.IsArrayLiteral = false
 				outArg := getOutputType(expr)
 				out.AddType(TypeNames[outArg.Type])
 				out.CustomType = outArg.CustomType
 				out.Size = outArg.Size
 				out.TotalSize = GetSize(outArg)
-				out.Lengths = sliceDim
 				out.PreviouslyDeclared = true
-
-				// Declaring `out`
-				declExpr := MakeExpression(nil, CurrentFile, LineNo)
-				declExpr.Package = pkg
-				declExpr.AddOutput(out)
-				result = append(result, declExpr)
+				// for i := 0; i < len(out.Lengths) + 1; i++ {
+				// 	out = DeclarationSpecifiers(out, []int{0}, DECL_SLICE)
+				// }
 
 				expr.Outputs = nil
 				expr.AddOutput(out)
 				result = append(result, expr)
-				
+
 				// symExpr.Operator = expr.Operator
 				symExpr.Operator = Natives[OP_APPEND]
 
@@ -101,6 +95,7 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 		} else {
 			result = append(result, expr)
 		}
+		expr.IsArrayLiteral = false
 	}
 
 	symNameOutput := MakeGenSym(LOCAL_PREFIX)
@@ -120,9 +115,7 @@ func SliceLiteralExpression(sliceDim []int, typSpec int, exprs []*CXExpression) 
 	// symInput.PassBy = PASSBY_REFERENCE
 
 	symInput.TotalSize = TYPE_POINTER_SIZE
-	symInput.Lengths = sliceDim
 	symOutput.TotalSize = TYPE_POINTER_SIZE
-	symOutput.Lengths = sliceDim
 
 	symExpr := MakeExpression(Natives[OP_IDENTITY], CurrentFile, LineNo)
 	symExpr.Package = pkg

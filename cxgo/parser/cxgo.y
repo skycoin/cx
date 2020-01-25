@@ -181,7 +181,6 @@
 %type   <expressions>   infer_clauses
 
 %type   <ints>          indexing_literal
-%type   <ints>          indexing_slices
 %type   <ints>          indexing_slice_literal
                         
 			// for struct literals
@@ -507,7 +506,7 @@ declaration_specifiers:
         //         }
         |       LBRACK RBRACK declaration_specifiers
                 {
-                  $$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
+			$$ = DeclarationSpecifiers($3, []int{0}, DECL_SLICE)
                 }
         |       type_specifier
                 {
@@ -676,50 +675,41 @@ slice_literal_expression_list:
                 }
 	|       slice_literal_expression_list COMMA assignment_expression
                 {
+
 			$3[len($3) - 1].IsArrayLiteral = true
 			$$ = append($1, $3...)
                 }
                 ;
 
-indexing_slices:
-		LBRACK RBRACK
-		{
-			$$ = []int{int(0)}
-		}
-        |       indexing_slices LBRACK RBRACK
-		{
-			$$ = append($1, 0)
-		}
-		;
-
 slice_literal_expression:
-                indexing_slices IDENTIFIER LBRACE slice_literal_expression_list RBRACE
+                LBRACK RBRACK IDENTIFIER LBRACE slice_literal_expression_list RBRACE
                 {
-			$$ = $4
+			$$ = $5
                 }
-        |       indexing_slices IDENTIFIER LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       indexing_slices type_specifier LBRACE slice_literal_expression_list RBRACE
-                {
-			$$ = SliceLiteralExpression($1, $2, $4)
-                }
-        |       indexing_slices type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
                 {
 			$$ = nil
                 }
-        /* |       LBRACK RBRACK slice_literal_expression */
-        /*         { */
-	/* 		for _, expr := range $3 { */
-	/* 			if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name { */
-	/* 				expr.Outputs[0].Lengths = append([]int{0}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...) */
-	/* 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths) */
-	/* 			} */
-	/* 		} */
-
-	/* 		$$ = $3 */
-        /*         } */
+        |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
+                {
+			$$ = SliceLiteralExpression($3, $5)
+                }
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       LBRACK RBRACK slice_literal_expression
+                {
+			for _, expr := range $3 {
+				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
+					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
+					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, DECL_SLICE)
+                                    }
+			}
+	
+			$3[len($3)-1].IsArrayLiteral = true
+			$$ = $3
+                }
                 ;
 
 /* package_identifier: */
@@ -814,7 +804,7 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, nil)
+			$$ = SliceLiteralExpression(TYPE_AFF, nil)
                 }
         |       infer_actions
                 {
@@ -825,7 +815,7 @@ infer_clauses:
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, exprs)
+			$$ = SliceLiteralExpression(TYPE_AFF, exprs)
                 }
         /* |       infer_targets */
         /*         { */

@@ -480,16 +480,12 @@ array_literal_expression:
         |       indexing_literal type_specifier LBRACE RBRACE
         ;
 
-indexing_slices:
-		LBRACK RBRACK
-        |       indexing_slices LBRACK RBRACK
-		;
-
 slice_literal_expression:
-                indexing_slices IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       indexing_slices IDENTIFIER LBRACE RBRACE
-        |       indexing_slices type_specifier LBRACE argument_expression_list RBRACE
-        |       indexing_slices type_specifier LBRACE RBRACE
+                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK slice_literal_expression
                 ;
 
 

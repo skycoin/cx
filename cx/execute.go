@@ -341,7 +341,8 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// wiping this declaration's memory (removing garbage)
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			newFP := newCall.FramePointer
-			size := GetSize(expr.Outputs[0])
+			size := 3
+			GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
@@ -350,6 +351,19 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			execNative(prgrm)
 			call.Line++
 		} else {
+			
+
+
+
+
+
+
+
+
+
+
+
+
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator

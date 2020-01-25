@@ -27,6 +27,7 @@ func assert(expr *CXExpression, fp int) (same bool) {
 
 	if len(byts1) != len(byts2) {
 		same = false
+		// Debug("meow", inp1.Name, inp1.Size, inp1.TotalSize, TypeNames[inp1.Type])
 		fmt.Println("byts1", byts1)
 		fmt.Println("byts2", byts2)
 	}

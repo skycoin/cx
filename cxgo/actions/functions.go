@@ -982,7 +982,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 			for i, spec := range arg.DeclarationSpecifiers {
 				declSpec[i] = spec
 			}
-			
+
 			for _, spec := range sym.DeclarationSpecifiers {
 				// checking if we need to remove or add DECL_POINTERs
 				// also we could be removing
@@ -1083,10 +1083,6 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 			sym.TotalSize = arg.TotalSize
 		}
 	}
-
-	if sym.Name == "sExprsI32" {
-		Debug("decls", sym.Name, sym.DeclarationSpecifiers, sym.FileLine, GetFormattedType(sym))
-	}
 }
 
 func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
@@ -1176,20 +1172,18 @@ func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
 }
 
 func SetFinalSize(symbols *[]map[string]*CXArgument, sym *CXArgument) {
-	var totalSize int = sym.TotalSize
-	var size int = sym.Size
+	var finalSize int = sym.TotalSize
+
 	arg, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
 	if err == nil {
-		PreFinalSize(&totalSize, &size, sym, arg)
+		PreFinalSize(&finalSize, sym, arg)
 		for _, fld := range sym.Fields {
-			totalSize = fld.TotalSize
-			size = fld.Size
-			PreFinalSize(&totalSize, &size, fld, arg)
+			finalSize = fld.TotalSize
+			PreFinalSize(&finalSize, fld, arg)
 		}
 	}
 
-	sym.TotalSize = totalSize
-	sym.Size = size
+	sym.TotalSize = finalSize
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
@@ -1203,7 +1197,7 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 	}
 }
 
-func PreFinalSize(totalSize *int, size *int, sym *CXArgument, arg *CXArgument) {
+func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
 	idxCounter := 0
 	elt := GetAssignmentElement(sym)
 	for _, op := range elt.DereferenceOperations {
@@ -1212,34 +1206,28 @@ func PreFinalSize(totalSize *int, size *int, sym *CXArgument, arg *CXArgument) {
 		}
 		switch op {
 		case DEREF_ARRAY:
-			*totalSize /= sym.Lengths[idxCounter]
-			*size = sym.Size
+			*finalSize /= elt.Lengths[idxCounter]
 			idxCounter++
 		case DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
-				var subTotalSize int = 0
-				var subSize int = 0
+				var subSize int
+				subSize = 1
 				for _, decl := range arg.DeclarationSpecifiers {
 					switch decl {
 					case DECL_ARRAY:
-						subTotalSize = 1
 						for _, len := range arg.Lengths {
-							subTotalSize *= len
+							subSize *= len
 						}
-						subSize = arg.Size
 					// case DECL_SLICE:
 					// 	subSize = TYPE_POINTER_SIZE
 					case DECL_BASIC:
-						subTotalSize = GetArgSize(sym.Type)
-						subSize = subTotalSize
+						subSize = GetArgSize(sym.Type)
 					case DECL_STRUCT:
-						subTotalSize = arg.CustomType.Size
-						subSize = subTotalSize
+						subSize = arg.CustomType.Size
 					}
 				}
 
-				*totalSize = subTotalSize
-				*size = subSize
+				*finalSize = subSize
 			}
 		}
 	}
