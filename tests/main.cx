@@ -239,7 +239,7 @@ func main ()() {
 	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
 	// runTest("../lib/args.cx test-args.cx", cx.SUCCESS, "Error in args lib.")
 
-	// issues
+	// -issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
 	runTestEx("issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.", TEST_GUI | TEST_STABLE, 0)
 	runTest("issue-18.cx", cx.SUCCESS, "String not working across packages")
