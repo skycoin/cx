@@ -24,8 +24,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	slcVar.AddType(TypeNames[typSpec])
 	slcVar = DeclarationSpecifiers(slcVar, []int{0}, DECL_SLICE)
 
-	// slcVar.IsSlice = true
-
 	slcVar.TotalSize = TYPE_POINTER_SIZE
 
 	slcVarExpr.Outputs = append(slcVarExpr.Outputs, slcVar)
@@ -36,8 +34,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 
 	var endPointsCounter int
 	for _, expr := range exprs {
-	// for i := len(exprs) - 1; i >= 0; i-- {
-		// expr := exprs[i]
 		if expr.IsArrayLiteral {
 			symInp := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
 			symInp.Package = pkg
@@ -67,27 +63,18 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 				out.Size = outArg.Size
 				out.TotalSize = GetSize(outArg)
 				out.PreviouslyDeclared = true
-				// for i := 0; i < len(out.Lengths) + 1; i++ {
-				// 	out = DeclarationSpecifiers(out, []int{0}, DECL_SLICE)
-				// }
 
 				expr.Outputs = nil
 				expr.AddOutput(out)
 				result = append(result, expr)
 
-				// symExpr.Operator = expr.Operator
 				symExpr.Operator = Natives[OP_APPEND]
 
 				symExpr.Inputs = nil
 				symExpr.Inputs = append(symExpr.Inputs, symInp)
-				// symExpr.Inputs = append(symExpr.Inputs, expr.Inputs...)
 				symExpr.Inputs = append(symExpr.Inputs, out)
-
-				// hack to get the correct lengths below
-				// expr.Outputs = append(expr.Outputs, symInp)
 			}
 
-			// result = append(result, expr)
 			result = append(result, symExpr)
 
 			symInp.TotalSize = TYPE_POINTER_SIZE
@@ -101,18 +88,13 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	symNameOutput := MakeGenSym(LOCAL_PREFIX)
 
 	symOutput := MakeArgument(symNameOutput, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	// symOutput.PassBy = PASSBY_REFERENCE
 	symOutput.IsSlice = true
 	symOutput.Package = pkg
 	symOutput.PreviouslyDeclared = true
 
-	// symOutput.DeclarationSpecifiers = append(symOutput.DeclarationSpecifiers, DECL_ARRAY)
-
 	symInput := MakeArgument(symName, CurrentFile, LineNo).AddType(TypeNames[typSpec])
-	// symInput.DereferenceOperations = append(symInput.DereferenceOperations, DEREF_POINTER)
 	symInput.IsSlice = true
 	symInput.Package = pkg
-	// symInput.PassBy = PASSBY_REFERENCE
 
 	symInput.TotalSize = TYPE_POINTER_SIZE
 	symOutput.TotalSize = TYPE_POINTER_SIZE
@@ -121,10 +103,6 @@ func SliceLiteralExpression(typSpec int, exprs []*CXExpression) []*CXExpression 
 	symExpr.Package = pkg
 	symExpr.Outputs = append(symExpr.Outputs, symOutput)
 	symExpr.Inputs = append(symExpr.Inputs, symInput)
-
-	// symExpr.IsArrayLiteral = true
-
-	// symOutput.SynonymousTo = symInput.Name
 
 	// marking the output so multidimensional arrays identify the expressions
 	result = append(result, symExpr)

@@ -415,7 +415,7 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 		arg.IsArray = true
 		arg.PassBy = PASSBY_REFERENCE
 
-		// arg.Lengths = append([]int{0}, arg.Lengths...)
+		arg.Lengths = append([]int{0}, arg.Lengths...)
 		// arg.Lengths = arrayLengths
 		// arg.TotalSize = arg.Size
 		// arg.Size = TYPE_POINTER_SIZE

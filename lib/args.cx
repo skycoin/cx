@@ -12,12 +12,13 @@ func Str(arg str, pattern str, value *str, match *bool) (success bool) {
 func StrSlice(arg str, pattern str, value *[]str, match *bool) (success bool) {
 	var filterList str = ""
 	success = Str(arg, pattern, &filterList, match)
-    if success {
+	if success {
 		var index i32 = 0
 		for index >= 0 {
 			index = str.index(filterList, ",")
+			i32.print(index)
 			var filter str = filterList
-            var filterListLen i32 = len(filterList)
+			var filterListLen i32 = len(filterList)
 			if index >= 0 {
 				filter = str.substr(filterList, 0, index)
 				filterList = str.substr(filterList, index + 1, filterListLen)
@@ -25,11 +26,12 @@ func StrSlice(arg str, pattern str, value *[]str, match *bool) (success bool) {
 				filterList = ""
 			}
 			filter = str.trimspace(filter)
-            if len(filter) > 0 || filterListLen > 0 {
-    			*value = append(*value, filter)
-            }
+			if len(filter) > 0 || filterListLen > 0 {
+				*value = append(*value, filter)
+				str.print((*value)[0])
+			}
 		}
-    }
+	}
 }
 
 // I32 ...
