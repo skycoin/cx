@@ -12,12 +12,14 @@ import (
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
-	"log"
 	//"golang.org/x/mobile/exp/app/debug"
 	//"golang.org/x/mobile/exp/f32"
 	//"golang.org/x/mobile/exp/gl/glutil"
 	"golang.org/x/mobile/gl"
+	"log"
 )
+
+var frame int
 
 /*var (
 	images   *glutil.Images
@@ -70,44 +72,63 @@ func pushEvent(a app.App, eventType EventType, msg string) int {
 }
 
 func startCXVM() {
+	//	eventLoop(a)
+	filesDir := asset.GetFilesDir()
+	args := parseManifest(filesDir)
 	log.Printf("-----------------------------------------------------------------------------")
-	log.Printf("CXDROID N")
-	log.Printf("-----------------------------------------------------------------------------")
-	//go eventLoop(a)
-	args := parseManifest()
+	log.Printf("STARTING CXDROID N")
 	log.Printf("ARGS %v", args)
+	log.Printf("-----------------------------------------------------------------------------")
+	CXLogFile(true)
 	if CopyAssetsToFilesDir() {
 		log.Printf("All assets were copied successfuly")
-		CXSetWorkingDir(fmt.Sprintf("%s/", asset.GetFilesDir()))
+		CXSetWorkingDir(fmt.Sprintf("%s/", filesDir))
 		Run(args)
 	}
+	log.Printf("-----------------------------------------------------------------------------")
+	log.Printf("STOPPING CXDROID N")
+	log.Printf("-----------------------------------------------------------------------------")
 }
 
 func eventLoop(a app.App) {
+	var glctx gl.Context
+	//var sz size.Event
 	for e := range a.Events() {
 		switch e := a.Filter(e).(type) {
 		case lifecycle.Event:
 			switch e.Crosses(lifecycle.StageVisible) {
 			case lifecycle.CrossOn:
 				_ = pushEvent(a, APP_START, "START")
-				glctx, _ := e.DrawContext.(gl.Context)
+				glctx, _ = e.DrawContext.(gl.Context)
+				//onStart(glctx)
 				SetGLContext(glctx)
+				SetGOApp(a)
 				go startCXVM()
+				a.Send(paint.Event{})
 			case lifecycle.CrossOff:
 				_ = pushEvent(a, APP_STOP, "STOP")
+				//onStop(glctx)
+				glctx = nil
 			}
 		case size.Event:
+			//sz = e
 			i := pushEvent(a, APP_RESIZE, "RESIZE")
 			events[i].w = e.WidthPx
 			events[i].h = e.HeightPx
+			fmt.Printf("SIZE.EVENT WIDTH %d, HEIGHT %d\n", e.WidthPx, e.HeightPx)
 		case paint.Event:
-			_ = pushEvent(a, APP_PAINT, "PAINT")
-			if /*glctx == nil ||*/ e.External {
+			//_ = pushEvent(a, APP_PAINT, "PAINT")
+			if glctx == nil || e.External {
 				continue
 			}
 
-			//onPaint(glctx, size.Event)
-			//a.Publish()
+			/*if (frame % 60) == 0 {
+				glctx.ClearColor(1, 0, 1, 1)
+				glctx.Clear(gl.COLOR_BUFFER_BIT)
+			}*/
+			frame = frame + 1
+			//onPaint(glctx, sz)
+			a.Publish()
 			//a.Send(paint.Event{})
 		case touch.Event:
 			i := pushEvent(a, APP_TOUCH, "TOUCH")
@@ -117,7 +138,7 @@ func eventLoop(a app.App) {
 	}
 }
 
-func parseManifest() []string {
+func parseManifest(filesDir string) []string {
 	// TODO : extract args from manifest
 	args := []string{
 		"--stack-size=128M",
@@ -179,20 +200,21 @@ func parseManifest() []string {
 		"cxfx/src/gam/camera.cx",
 		"cxfx/src/gam/game.cx",
 		"cxfx/src/phx/physics.cx",
-		"cxfx/tutorials/0_colored_quad.cx",
-		// "cxfx/tutorials/1_textured_quad.cx",
-		// "cxfx/tutorials/2_text.cx",
-		// "cxfx/tutorials/3_perspective.cx",
-		// "cxfx/tutorials/4_camera.cx",
-		// "cxfx/tutorials/5_batch.cx",
-		// "cxfx/tutorials/6_model.cx",
-		// "cxfx/tutorials/7_menu.cx",
-		// "cxfx/tutorials/8_sound.cx",
+		//"cxfx/tutorials/0_colored_quad.cx",
+		//"cxfx/tutorials/1_textured_quad.cx",
+		//"cxfx/tutorials/2_text.cx",
+		//"cxfx/tutorials/3_perspective.cx",
+		//"cxfx/tutorials/4_camera.cx",
+		//"cxfx/tutorials/5_batch.cx",
+		"cxfx/tutorials/6_model.cx",
+		//"cxfx/tutorials/7_menu.cx",
+		//"cxfx/tutorials/8_sound.cx",
 		// "cxfx/tutorials/9_button.cx",
 		// "cxfx/tutorials/10_dialog.cx",
-		// "cxfx/game/skylight/src/skylight.cx",
-		"++data=resources/",
+		//"cxfx/games/skylight/src/skylight.cx",
+		"++data=/cxfx/resources/",
 		"++hints=resizable",
+		"++glVersion=gles31",
 		//"++fps=30"
 	}
 

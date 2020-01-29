@@ -3,8 +3,75 @@
 package cxcore
 
 import (
+	"fmt"
+	"github.com/SkycoinProject/gltext"
 	"golang.org/x/mobile/gl"
+	"reflect"
+	"unsafe"
 )
+
+func Ptr(data interface{}) (unsafe.Pointer, uintptr) {
+	if data == nil {
+		return unsafe.Pointer(nil), 0
+	}
+	var addr unsafe.Pointer
+	var size uintptr
+	v := reflect.ValueOf(data)
+	switch v.Type().Kind() {
+	case reflect.Ptr:
+		e := v.Elem()
+		size = e.Type().Size()
+		switch e.Kind() {
+		case
+			reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64:
+			addr = unsafe.Pointer(e.UnsafeAddr())
+		default:
+			panic(fmt.Errorf("unsupported pointer to type %s; must be a slice or pointer to a singular scalar value or the first element of an array or slice", e.Kind()))
+		}
+	case reflect.Uintptr:
+		addr = unsafe.Pointer(v.Pointer())
+		size = v.Type().Size()
+	case reflect.Slice:
+		addr = unsafe.Pointer(v.Index(0).UnsafeAddr())
+		size = uintptr(v.Len()) * v.Type().Elem().Size()
+	default:
+		panic(fmt.Errorf("unsupported type %s; must be a slice or pointer to a singular scalar value or the first element of an array or slice", v.Type()))
+	}
+	return addr, size
+}
+
+func ByteSlice(i interface{}) []byte {
+	ptr, size := Ptr(i)
+	//fmt.Printf("ByteSlice %d\n", size)
+	h := reflect.SliceHeader{uintptr(ptr), int(size), int(size)}
+	return *(*[]byte)(unsafe.Pointer(&h))
+}
+
+func Float32Slice(i interface{}) []float32 {
+	ptr, size := Ptr(i)
+	//fmt.Printf("ByteSlice %d\n", size)
+	floatSize := int(size / unsafe.Sizeof(float32(0)))
+	h := reflect.SliceHeader{uintptr(ptr), int(floatSize), int(floatSize)}
+	return *(*[]float32)(unsafe.Pointer(&h))
+}
+
+func Int32Slice(i interface{}) []int32 {
+	ptr, size := Ptr(i)
+	//fmt.Printf("ByteSlice %d\n", size)
+	intSize := int(size / unsafe.Sizeof(int32(0)))
+	h := reflect.SliceHeader{uintptr(ptr), int(intSize), int(intSize)}
+	return *(*[]int32)(unsafe.Pointer(&h))
+}
+
+func EnumSlice(i interface{}) []gl.Enum {
+	ptr, size := Ptr(i)
+	//fmt.Printf("EnumSlice %d\n", size)
+	enumSize := int(size / unsafe.Sizeof(gl.Enum(0)))
+	h := reflect.SliceHeader{uintptr(ptr), enumSize, enumSize}
+	return *(*[]gl.Enum)(unsafe.Pointer(&h))
+}
 
 const (
 	cxglCLAMP_TO_EDGE               = gl.CLAMP_TO_EDGE
@@ -26,6 +93,7 @@ var glctx gl.Context
 
 func SetGLContext(ctx gl.Context) {
 	glctx = ctx
+	gltext.SetGLContext(ctx)
 }
 
 // gogl
@@ -67,7 +135,9 @@ func cxglTexParameteri(target uint32, pname uint32, param int32) {
 }
 
 func cxglTexImage2D(target uint32, level int32, internalFormat int32, width int32, height int32, border int32, format uint32, gltype uint32, pixels interface{}) {
-	glctx.TexImage2D(gl.Enum(target), int(level), int(internalFormat), int(width), int(height) /*,border*/, gl.Enum(format), gl.Enum(gltype), pixels.([]byte))
+	//fmt.Printf("cxglTexImage2D : target %d, level %d, internalFormat %d, width %d, height %d, border %d, format %d, type %d, pixels %v\n",
+	//		target, level, internalFormat, width, height, border, format, gltype, pixels)
+	glctx.TexImage2D(gl.Enum(target), int(level), int(internalFormat), int(width), int(height), int(border), gl.Enum(format), gl.Enum(gltype), ByteSlice((pixels)))
 }
 
 func cxglClear(mask uint32) {
@@ -127,9 +197,7 @@ func cxglGetError() uint32 {
 }
 
 func cxglGetTexLevelParameteriv(target uint32, level int32, pname uint32, params *int32) {
-
-	panic(CX_RUNTIME_NOT_IMPLEMENTED) // can return multiple values
-	var sparams []int32
+	var sparams []int32 = make([]int32, 1)
 	glctx.(gl.Context31).GetTexLevelParameteriv(sparams, gl.Enum(target), int(level), gl.Enum(pname))
 	*params = sparams[0] // TODO : remove hardcode
 }
@@ -148,7 +216,7 @@ func cxglDrawArrays(mode uint32, first int32, count int32) {
 }
 
 func cxglDrawElements(mode uint32, count int32, gltype uint32, indices interface{}) {
-	panic(CX_RUNTIME_NOT_IMPLEMENTED) // last param can be either offset or pointer
+	//panic(CX_RUNTIME_NOT_IMPLEMENTED) // last param can be either offset or pointer
 	glctx.DrawElements(gl.Enum(mode), int(count), gl.Enum(gltype), 0)
 }
 
@@ -201,15 +269,22 @@ func cxglGenBuffers(n int32, buffers *uint32) {
 
 // cxgl_2_0
 func cxglBufferData(target uint32, size int, data interface{}, usage uint32) {
-	glctx.BufferData(gl.Enum(target), data.([]byte), gl.Enum(usage))
+	//fmt.Printf("cxglBufferData : target %d, size %d, data %v\n", target, size, data)
+	slice := ByteSlice(data)
+	if slice == nil || len(slice) == 0 {
+		glctx.BufferInit(gl.Enum(target), size, gl.Enum(usage))
+	} else {
+		glctx.BufferData(gl.Enum(target), ByteSlice(data), gl.Enum(usage))
+	}
 }
 
 func cxglBufferSubData(target uint32, offset int, size int, data interface{}) {
-	glctx.BufferSubData(gl.Enum(target), offset, data.([]byte))
+	//fmt.Printf("cxglBufferSubData : target %d, offset %d, size %d, data %v\n", target, offset, size, data)
+	glctx.BufferSubData(gl.Enum(target), offset, ByteSlice(data))
 }
 
 func cxglDrawBuffers(size int32, bufs interface{}) {
-	glctx.(gl.Context3).DrawBuffers(int(size), bufs.([]gl.Enum))
+	glctx.(gl.Context3).DrawBuffers(int(size), EnumSlice(bufs))
 }
 
 func cxglStencilOpSeparate(face uint32, sfail uint32, dpfail uint32, dppass uint32) {
@@ -237,7 +312,8 @@ func cxglCompileShader(shader uint32) {
 }
 
 func cxglCreateProgram() uint32 {
-	return glctx.CreateProgram().Value
+	program := glctx.CreateProgram()
+	return program.Value
 }
 
 func cxglCreateShader(gltype uint32) uint32 {
@@ -269,7 +345,8 @@ func cxglGetProgramiv(program uint32, pname uint32) int32 {
 }
 
 func cxglGetProgramInfoLog(program uint32, maxLen int32) string {
-	return glctx.GetProgramInfoLog(gl.Program{true, program})
+	ll := glctx.GetProgramInfoLog(gl.Program{true, program})
+	return ll
 }
 
 func cxglGetShaderiv(shader uint32, pname uint32) int32 {
@@ -332,56 +409,57 @@ func cxglUniform4i(location int32, v0 int32, v1 int32, v2 int32, v3 int32) {
 }
 
 func cxglUniform1fv(location int32, count int32, value interface{}) {
-	glctx.Uniform1fv(gl.Uniform{location}, value.([]float32))
+	glctx.Uniform1fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniform2fv(location int32, count int32, value interface{}) {
-	glctx.Uniform2fv(gl.Uniform{location}, value.([]float32))
+	glctx.Uniform2fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniform3fv(location int32, count int32, value interface{}) {
-	glctx.Uniform3fv(gl.Uniform{location}, value.([]float32))
+	glctx.Uniform3fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniform4fv(location int32, count int32, value interface{}) {
-	glctx.Uniform4fv(gl.Uniform{location}, value.([]float32))
+	glctx.Uniform4fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniform1iv(location int32, count int32, value interface{}) {
-	glctx.Uniform1iv(gl.Uniform{location}, value.([]int32))
+	glctx.Uniform1iv(gl.Uniform{location}, Int32Slice(value))
 }
 
 func cxglUniform2iv(location int32, count int32, value interface{}) {
-	glctx.Uniform2iv(gl.Uniform{location}, value.([]int32))
+	glctx.Uniform2iv(gl.Uniform{location}, Int32Slice(value))
 }
 
 func cxglUniform3iv(location int32, count int32, value interface{}) {
-	glctx.Uniform3iv(gl.Uniform{location}, value.([]int32))
+	glctx.Uniform3iv(gl.Uniform{location}, Int32Slice(value))
 }
 
 func cxglUniform4iv(location int32, count int32, value interface{}) {
-	glctx.Uniform4iv(gl.Uniform{location}, value.([]int32))
+	glctx.Uniform4iv(gl.Uniform{location}, Int32Slice(value))
 }
 
 func cxglUniformMatrix2fv(location int32, count int32, transpose bool, value interface{}) {
 	if transpose {
 		panic(CX_RUNTIME_NOT_IMPLEMENTED)
 	}
-	glctx.UniformMatrix2fv(gl.Uniform{location}, value.([]float32))
+	glctx.UniformMatrix2fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniformMatrix3fv(location int32, count int32, transpose bool, value interface{}) {
 	if transpose {
 		panic(CX_RUNTIME_NOT_IMPLEMENTED)
 	}
-	glctx.UniformMatrix3fv(gl.Uniform{location}, value.([]float32))
+	glctx.UniformMatrix3fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglUniformMatrix4fv(location int32, count int32, transpose bool, value interface{}) {
 	if transpose {
+		fmt.Printf("CXGL_UNIFORM_MATRIX_4FV transpose not supported\n")
 		panic(CX_RUNTIME_NOT_IMPLEMENTED)
 	}
-	glctx.UniformMatrix4fv(gl.Uniform{location}, value.([]float32))
+	glctx.UniformMatrix4fv(gl.Uniform{location}, Float32Slice(value))
 }
 
 func cxglVertexAttribPointer(index uint32, size int32, gltype uint32, normalized bool, stride int32, pointer int32) {

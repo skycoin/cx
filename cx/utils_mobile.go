@@ -73,7 +73,7 @@ func CopyAssetsTo(path string, dest string) bool {
 		_, err := os.Stat(destPath)
 		if os.IsNotExist(err) {
 			//fmt.Printf("MKDIR '%s', '%v'\n", destPath, err)
-			if err := os.Mkdir(destPath, 0700); err != nil {
+			if err := os.Mkdir(destPath, 0766); err != nil {
 				fmt.Printf("Error creating dir '%s'\n", destPath)
 				return false
 			}

@@ -5,9 +5,7 @@ package cxcore
 import (
 	"bytes"
 	"encoding/binary"
-	//"fmt"
 	"github.com/amherag/skycoin/src/cipher/encoder"
-	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
@@ -39,12 +37,19 @@ func validFile(handle int32) *os.File {
 	return nil
 }
 
+func op_os_LogFile(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	CXLogFile(ReadBool(fp, expr.Inputs[0]))
+}
+
 func op_os_ReadAllText(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	var success bool
-	if byts, err := ioutil.ReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
+	if byts, err := CXReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
 		WriteObject(GetFinalOffset(fp, expr.Outputs[0]), encoder.Serialize(string(byts)))
 		success = true
 	}
@@ -283,7 +288,6 @@ func op_os_Run(prgrm *CXProgram) {
 		args = []string{}
 	}
 
-	//fmt.Println("COMMAND : ", name, " ARGS : ", args)
 	cmd := exec.Command(name, args...)
 	cmd.Dir = dir
 	var out bytes.Buffer

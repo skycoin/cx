@@ -92,7 +92,15 @@ build-full: configure build-parser ## Build CX from sources with all build tags
 	chmod +x $(GOPATH)/bin/cx
 
 build-android: configure build-parser
-	gomobile install -tags="base opengles android" ~/go/src/github.com/SkycoinProject/cx/cxgo
+#go get github.com/SkycoinProject/gltext
+	go get golang.org/x/mobile/cmd/gomobile
+	cp -R ~/go/src/github.com/SkycoinProject/cxfx/resources/fonts/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/fonts/
+	cp -R ~/go/src/github.com/SkycoinProject/cxfx/resources/shaders/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/shaders/
+	cp -R ~/go/src/github.com/SkycoinProject/cxfx/tutorials/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/tutorials/
+	cp -R ~/go/src/github.com/SkycoinProject/cxfx/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/src/
+	cp -R ~/go/src/github.com/SkycoinProject/cxfx/games/skylight/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/games/skylight/src/
+	gomobile install -tags="base opengles android_gles31" -target=android ~/go/src/github.com/SkycoinProject/cx/cxgo
+#-DHOST=armv7a-linux-androideabi29
 
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'

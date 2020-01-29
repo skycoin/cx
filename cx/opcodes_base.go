@@ -15,6 +15,7 @@ const (
 
 	// os
 	OP_OS_GET_WORKING_DIRECTORY
+	OP_OS_LOG_FILE
 	OP_OS_OPEN
 	OP_OS_CLOSE
 	OP_OS_SEEK
@@ -74,6 +75,9 @@ func init() {
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
 		[]*CXArgument{},
 		[]*CXArgument{newOpPar(TYPE_STR, false)})
+	AddOpCode(OP_OS_LOG_FILE, "os.LogFile",
+		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
+		[]*CXArgument{})
 	AddOpCode(OP_OS_OPEN, "os.Open",
 		[]*CXArgument{newOpPar(TYPE_STR, false)},
 		[]*CXArgument{newOpPar(TYPE_I32, false)})
@@ -172,6 +176,8 @@ func handleBaseOpcode(opCode int) opcodeHandler {
 	// os
 	case OP_OS_GET_WORKING_DIRECTORY:
 		return op_os_GetWorkingDirectory
+	case OP_OS_LOG_FILE:
+		return op_os_LogFile
 	case OP_OS_OPEN:
 		return op_os_Open
 	case OP_OS_CLOSE:

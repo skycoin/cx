@@ -38,45 +38,44 @@ func op_glfw_WindowHint(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	glfw.WindowHint(glfw.Hint(ReadI32(fp, inp1)), int(ReadI32(fp, inp2)))
+	glfw.WindowHint(glfw.Hint(ReadI32(fp, expr.Inputs[0])), int(ReadI32(fp, expr.Inputs[1])))
 }
 
 func op_glfw_SetInputMode(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	windows[ReadStr(fp, inp1)].SetInputMode(glfw.InputMode(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
+	windows[ReadStr(fp, expr.Inputs[0])].SetInputMode(
+		glfw.InputMode(ReadI32(fp, expr.Inputs[1])),
+		int(ReadI32(fp, expr.Inputs[2])))
 }
 
 func op_glfw_GetCursorPos(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
-	x, y := windows[ReadStr(fp, inp1)].GetCursorPos()
-	WriteF64(GetFinalOffset(fp, out1), x)
-	WriteF64(GetFinalOffset(fp, out2), y)
+	x, y := windows[ReadStr(fp, expr.Inputs[0])].GetCursorPos()
+	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), x)
+	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), y)
 }
 
 func op_glfw_GetKey(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	act := int32(windows[ReadStr(fp, inp1)].GetKey(glfw.Key(ReadI32(fp, inp2))))
-
-	WriteI32(GetFinalOffset(fp, out1), act)
+	act := int32(windows[ReadStr(fp, expr.Inputs[0])].GetKey(glfw.Key(ReadI32(fp, expr.Inputs[1]))))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), act)
 }
 
 func op_glfw_CreateWindow(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
-	if win, err := glfw.CreateWindow(int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)), ReadStr(fp, inp4), nil, nil); err == nil {
-		windows[ReadStr(fp, inp1)] = win
+	if win, err := glfw.CreateWindow(
+		int(ReadI32(fp, expr.Inputs[1])),
+		int(ReadI32(fp, expr.Inputs[2])),
+		ReadStr(fp, expr.Inputs[3]), nil, nil); err == nil {
+		windows[ReadStr(fp, expr.Inputs[0])] = win
 	} else {
 		panic(err)
 	}
@@ -104,34 +103,32 @@ func op_glfw_SetWindowPos(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	windows[ReadStr(fp, inp1)].SetPos(int(ReadI32(fp, inp2)), int(ReadI32(fp, inp3)))
+	windows[ReadStr(fp, expr.Inputs[0])].SetPos(
+		int(ReadI32(fp, expr.Inputs[1])),
+		int(ReadI32(fp, expr.Inputs[2])))
 }
 
 func op_glfw_MakeContextCurrent(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	windows[ReadStr(fp, inp1)].MakeContextCurrent()
+	windows[ReadStr(fp, expr.Inputs[0])].MakeContextCurrent()
 }
 
 func op_glfw_ShouldClose(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	WriteBool(GetFinalOffset(fp, out1), windows[ReadStr(fp, inp1)].ShouldClose())
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), windows[ReadStr(fp, expr.Inputs[0])].ShouldClose())
 }
 
 func op_glfw_GetFramebufferSize(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
-	width, height := windows[ReadStr(fp, inp1)].GetFramebufferSize()
-	WriteI32(GetFinalOffset(fp, out1), int32(width))
-	WriteI32(GetFinalOffset(fp, out2), int32(height))
+	width, height := windows[ReadStr(fp, expr.Inputs[0])].GetFramebufferSize()
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(width))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), int32(height))
 }
 
 func op_glfw_GetWindowPos(prgrm *CXProgram) {
@@ -156,8 +153,7 @@ func op_glfw_SwapInterval(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	glfw.SwapInterval(int(ReadI32(fp, inp1)))
+	glfw.SwapInterval(int(ReadI32(fp, expr.Inputs[0])))
 }
 
 func op_glfw_PollEvents(_ *CXProgram) {
@@ -168,8 +164,7 @@ func op_glfw_SwapBuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	windows[ReadStr(fp, inp1)].SwapBuffers()
+	windows[ReadStr(fp, expr.Inputs[0])].SwapBuffers()
 }
 
 func op_glfw_GetTime(prgrm *CXProgram) {
@@ -198,16 +193,14 @@ func op_glfw_SetKeyCallback(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-	glfw_SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	glfw_SetKeyCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), expr.Package.Name)
 }
 
 func op_glfw_SetKeyCallbackEx(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	glfw_SetKeyCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+	glfw_SetKeyCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), ReadStr(fp, expr.Inputs[2]))
 }
 
 func GetWindowName(w *glfw.Window) []byte {
@@ -236,16 +229,14 @@ func op_glfw_SetCursorPosCallback(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-	glfw_SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	glfw_SetCursorPosCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), expr.Package.Name)
 }
 
 func op_glfw_SetCursorPosCallbackEx(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	glfw_SetCursorPosCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+	glfw_SetCursorPosCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), ReadStr(fp, expr.Inputs[2]))
 }
 
 func op_glfw_SetFramebufferSizeCallback(prgrm *CXProgram) {
@@ -303,12 +294,8 @@ func op_glfw_SetShouldClose(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
-	if ReadBool(fp, inp2) {
-		windows[ReadStr(fp, inp1)].SetShouldClose(true)
-	} else {
-		windows[ReadStr(fp, inp1)].SetShouldClose(false)
-	}
+	shouldClose := ReadBool(fp, expr.Inputs[1])
+	windows[ReadStr(fp, expr.Inputs[0])].SetShouldClose(shouldClose)
 }
 
 func glfw_SetMouseButtonCallback(expr *CXExpression, window string, functionName string, packageName string) {
@@ -328,14 +315,12 @@ func op_glfw_SetMouseButtonCallback(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1 := expr.Inputs[0], expr.Inputs[1]
-	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), expr.Package.Name)
+	glfw_SetMouseButtonCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), expr.Package.Name)
 }
 
-func op_glfw_SetMouseButtonCallbackEx(prgrm *CXProgram) {
+func op_glfw_SetMouseButtonCallbantckEx(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1, inp2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
-	glfw_SetMouseButtonCallback(expr, ReadStr(fp, inp0), ReadStr(fp, inp1), ReadStr(fp, inp2))
+	glfw_SetMouseButtonCallback(expr, ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]), ReadStr(fp, expr.Inputs[2]))
 }
