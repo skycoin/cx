@@ -65,7 +65,7 @@ func pushEvent(a app.App, eventType EventType, msg string) int {
 	} else {
 		events = append(events, Event{})
 	}
-	log.Printf("NEW_EVENT %s, INDEX %d, TYPE %d", msg, e, eventType)
+	log.Printf("*****************************************************************************\nNEW_EVENT %s, INDEX %d, TYPE %d", msg, e, eventType)
 	events[e] = Event{a: a, t: eventType, msg: msg}
 	eventCount++
 	return e
@@ -96,15 +96,17 @@ func eventLoop(a app.App) {
 	for e := range a.Events() {
 		switch e := a.Filter(e).(type) {
 		case lifecycle.Event:
-			switch e.Crosses(lifecycle.StageVisible) {
+			switch e.Crosses(lifecycle.StageFocused) {
 			case lifecycle.CrossOn:
 				_ = pushEvent(a, APP_START, "START")
 				glctx, _ = e.DrawContext.(gl.Context)
 				//onStart(glctx)
 				SetGLContext(glctx)
 				SetGOApp(a)
-				go startCXVM()
-				a.Send(paint.Event{})
+				// ASAHI
+				//go
+				startCXVM()
+				//a.Send(paint.Event{})
 			case lifecycle.CrossOff:
 				_ = pushEvent(a, APP_STOP, "STOP")
 				//onStop(glctx)
@@ -115,20 +117,15 @@ func eventLoop(a app.App) {
 			i := pushEvent(a, APP_RESIZE, "RESIZE")
 			events[i].w = e.WidthPx
 			events[i].h = e.HeightPx
-			fmt.Printf("SIZE.EVENT WIDTH %d, HEIGHT %d\n", e.WidthPx, e.HeightPx)
+			log.Printf("SIZE.EVENT WIDTH %d, HEIGHT %d\n", e.WidthPx, e.HeightPx)
 		case paint.Event:
 			//_ = pushEvent(a, APP_PAINT, "PAINT")
 			if glctx == nil || e.External {
 				continue
 			}
 
-			/*if (frame % 60) == 0 {
-				glctx.ClearColor(1, 0, 1, 1)
-				glctx.Clear(gl.COLOR_BUFFER_BIT)
-			}*/
 			frame = frame + 1
-			//onPaint(glctx, sz)
-			a.Publish()
+			//a.Publish()
 			//a.Send(paint.Event{})
 		case touch.Event:
 			i := pushEvent(a, APP_TOUCH, "TOUCH")
@@ -144,7 +141,7 @@ func parseManifest(filesDir string) []string {
 		"--stack-size=128M",
 		"--heap-initial=800M",
 		"-heap-max=800M",
-		"--debug-profile=100",
+		//"--debug-profile=100",
 		"lib/args.cx",
 		"lib/json.cx",
 		"cxfx/src/mat/math.cx",
@@ -206,12 +203,12 @@ func parseManifest(filesDir string) []string {
 		//"cxfx/tutorials/3_perspective.cx",
 		//"cxfx/tutorials/4_camera.cx",
 		//"cxfx/tutorials/5_batch.cx",
-		"cxfx/tutorials/6_model.cx",
+		//"cxfx/tutorials/6_model.cx",
 		//"cxfx/tutorials/7_menu.cx",
 		//"cxfx/tutorials/8_sound.cx",
 		// "cxfx/tutorials/9_button.cx",
 		// "cxfx/tutorials/10_dialog.cx",
-		//"cxfx/games/skylight/src/skylight.cx",
+		"cxfx/games/skylight/src/skylight.cx",
 		"++data=/cxfx/resources/",
 		"++hints=resizable",
 		"++glVersion=gles31",

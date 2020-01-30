@@ -4,7 +4,7 @@ package cxcore
 
 import (
 	"golang.org/x/mobile/app"
-	"golang.org/x/mobile/event/paint"
+	//"golang.org/x/mobile/event/paint"
 )
 
 var goapp app.App
@@ -18,7 +18,19 @@ func op_glfw_Fullscreen(prgrm *CXProgram) {
 }
 
 func op_glfw_Init(prgrm *CXProgram) {
+	goapp.CreateSurface()
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
+}
+
+func op_glfw_SwapBuffers(prgrm *CXProgram) {
+	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
+	//goapp.Publish()
+	goapp.SwapBuffers()
+}
+
+func op_glfw_MakeContextCurrent(prgrm *CXProgram) {
+	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
+	goapp.MakeCurrent()
 }
 
 func op_glfw_WindowHint(prgrm *CXProgram) {
@@ -72,10 +84,6 @@ func op_glfw_SetWindowPos(prgrm *CXProgram) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_glfw_MakeContextCurrent(prgrm *CXProgram) {
-	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-}
-
 func op_glfw_ShouldClose(prgrm *CXProgram) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 	expr := prgrm.GetExpr()
@@ -119,12 +127,6 @@ func op_glfw_SwapInterval(prgrm *CXProgram) {
 
 func op_glfw_PollEvents(prgrm *CXProgram) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-}
-
-func op_glfw_SwapBuffers(prgrm *CXProgram) {
-	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
-	//goapp.Publish()
-	goapp.Send(paint.Event{})
 }
 
 func op_glfw_GetTime(prgrm *CXProgram) {
