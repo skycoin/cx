@@ -1009,7 +1009,6 @@ func mustDeserializeBool(b []byte) bool {
 		return true
 	default:
 		panic(encoder.ErrInvalidBool)
-		return false
 	}
 }
 

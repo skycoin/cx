@@ -4,6 +4,8 @@ import (
 	. "github.com/SkycoinProject/cx/cx"
 )
 
+//TODO: ADD VERBOSE COMPILATION FLAGS, OPTIONS
+
 var PRGRM *CXProgram
 var DataOffset int = STACK_SIZE
 
