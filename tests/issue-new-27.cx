@@ -1,0 +1,15 @@
+package main
+
+func main () () {
+        var i i32 = 2
+        var j i32 = 3
+        j += i
+        test(j, 5, "")
+        i -= j
+        test(i, -3, "")
+        j += 1 + i
+        test(j, 3, "")
+        j /= i
+        test(j, -1, "")
+        test(i, -3, "")
+}
