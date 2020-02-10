@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
@@ -61,7 +62,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			mustDeserializeAtomic(byts, &offset)
+			offset = mustDeserializeI32(byts)
 
 			*finalOffset = int(offset)
 
@@ -99,7 +100,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			mustDeserializeAtomic(byts, &offset)
+			offset = mustDeserializeI32(byts)
 			*finalOffset = int(offset)
 		}
 		if dbg {
@@ -128,8 +129,7 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 	strOffset := GetFinalOffset(fp, arg)
 	if arg.Name != "" {
 		// then it's not a literal
-		var offset = int32(0)
-		mustDeserializeAtomic(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE], &offset)
+		offset := mustDeserializeI32(PROGRAM.Memory[strOffset:strOffset+TYPE_POINTER_SIZE])
 		strOffset = int(offset)
 	}
 	return strOffset
@@ -155,7 +155,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20])
+		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
 	}
 
 	// elt = arg
@@ -167,7 +167,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	if dbg {
-		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+20], "...)")
+		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
 	}
 
 	return finalOffset
@@ -424,8 +424,7 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 			offsetToElements := OBJECT_HEADER_SIZE + SLICE_HEADER_SIZE
 
 			for c := int32(0); c < sliceLen; c++ {
-				var cHeapOffset int32
-				mustDeserializeAtomic(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4], &cHeapOffset)
+				cHeapOffset := mustDeserializeI32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE):int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4])
 
 				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
 					// Then it's pointing to null or data segment
