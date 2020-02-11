@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 	"github.com/mjibson/go-dsp/wav"
 	"golang.org/x/mobile/exp/audio/al"
 )

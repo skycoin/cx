@@ -489,7 +489,6 @@ func opLen(prgrm *CXProgram) {
 
 	if elt.IsSlice || elt.Type == TYPE_AFF {
 		var sliceOffset = GetSliceOffset(fp, inp1)
-		// var sliceLen []byte
 		if sliceOffset > 0 {
 			sliceLen := GetSliceHeader(sliceOffset)[4:8]
 			WriteMemory(GetFinalOffset(fp, out1), sliceLen)
@@ -540,9 +539,7 @@ func opAppend(prgrm *CXProgram) {
 	// We need to update the address of the output and input, as the final offsets
 	// could be on the heap and they could have been moved by the GC.
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	inputSliceOffset = GetSliceOffset(fp, inp1)
 
-	var obj []byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
 		var obj [4]byte
 		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))

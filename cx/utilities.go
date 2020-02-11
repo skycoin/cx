@@ -726,8 +726,6 @@ func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, si
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
 func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement int) int32 {
 	inputSliceOffset := GetSliceOffset(fp, inp)
-	// outputSliceOffset := GetSliceOffset(fp, out)
-
 	var inputSliceLen int32
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
@@ -739,13 +737,13 @@ func SliceAppendResize(fp int, out *CXArgument, inp *CXArgument, sizeofElement i
 }
 
 // SliceAppendWrite writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
-func SliceAppendWrite(outputSliceOffset int32, inputSliceOffset int32, object []byte, index int32) {
+func SliceAppendWrite(outputSliceOffset int32, object []byte, index int32) {
 	sizeofElement := len(object)
 	outputSliceData := GetSliceData(outputSliceOffset, sizeofElement)
 	copy(outputSliceData[int(index)*sizeofElement:], object)
 }
 
-// SliceAppendWriteByte writes `object` to a slice of bytes that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
+// SliceAppendWriteByte writes `object` to a slice that is guaranteed to be able to hold `object`, i.e. it had to be checked by `SliceAppendResize` first in case it needed to be resized.
 func SliceAppendWriteByte(outputSliceOffset int32, object []byte, index int32) {
 	outputSliceData := GetSliceData(outputSliceOffset, 1)
 	copy(outputSliceData[int(index):], object)
@@ -814,7 +812,7 @@ func WriteToSlice(off int, inp []byte) int {
 	sliceCopy(int32(newOff), int32(off), inputSliceLen+1, inpLen)
 
 	// Write the new slice element `inp` to the slice located at `newOff`.
-	SliceAppendWrite(int32(newOff), int32(off), inp, inputSliceLen)
+	SliceAppendWrite(int32(newOff), inp, inputSliceLen)
 	return newOff
 }
 

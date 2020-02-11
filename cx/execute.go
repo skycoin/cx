@@ -252,7 +252,6 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 
 							var header = make([]byte, OBJECT_HEADER_SIZE)
 							WriteMemI32(header, 5, int32(encoder.Size(arg)+OBJECT_HEADER_SIZE))
-
 							obj := append(header, argBytes...)
 
 							WriteMemory(argOffset, obj)
@@ -349,7 +348,6 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			execNative(prgrm)
 			call.Line++
 		} else {
-
 			/*
 			   It was not a native, so we need to create another call
 			   with the current expression's operator
@@ -397,7 +395,9 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 					if inp.IsInnerReference {
 						finalOffset -= OBJECT_HEADER_SIZE
 					}
-					byts = encoder.Serialize(int32(finalOffset))
+					var finalOffsetB [4]byte
+					WriteMemI32(finalOffsetB[:], 0, int32(finalOffset))
+					byts = finalOffsetB[:]
 				} else {
 					size := GetSize(inp)
 					byts = prgrm.Memory[finalOffset : finalOffset+size]
