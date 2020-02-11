@@ -249,20 +249,19 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 						for _, arg := range args {
 							argBytes := encoder.Serialize(arg)
 							argOffset := AllocateSeq(len(argBytes) + OBJECT_HEADER_SIZE)
-							size := encoder.SerializeAtomic(encoder.Size(arg) + OBJECT_HEADER_SIZE)
 
 							var header = make([]byte, OBJECT_HEADER_SIZE)
-							for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-								header[c] = size[c-5]
-							}
+							WriteMemI32(header, 5, int32(encoder.Size(arg)+OBJECT_HEADER_SIZE))
 
 							obj := append(header, argBytes...)
 
 							WriteMemory(argOffset, obj)
-							argOffsetBytes := encoder.SerializeAtomic(int32(argOffset))
-							argsOffset = WriteToSlice(argsOffset, argOffsetBytes)
+
+							var argOffsetBytes [4]byte
+							WriteMemI32(argOffsetBytes[:], 0, int32(argOffset))
+							argsOffset = WriteToSlice(argsOffset, argOffsetBytes[:])
 						}
-						WriteMemory(GetFinalOffset(0, osGbl), FromI32(int32(argsOffset)))
+						WriteI32(GetFinalOffset(0, osGbl), int32(argsOffset))
 					}
 				}
 				cxt.Terminated = false
@@ -341,8 +340,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			// wiping this declaration's memory (removing garbage)
 			newCall := &prgrm.CallStack[prgrm.CallCounter]
 			newFP := newCall.FramePointer
-			size := 3
-			GetSize(expr.Outputs[0])
+			size := GetSize(expr.Outputs[0])
 			for c := 0; c < size; c++ {
 				prgrm.Memory[newFP+expr.Outputs[0].Offset+c] = 0
 			}
@@ -351,18 +349,6 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			execNative(prgrm)
 			call.Line++
 		} else {
-			
-
-
-
-
-
-
-
-
-
-
-
 
 			/*
 			   It was not a native, so we need to create another call

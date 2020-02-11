@@ -5,6 +5,7 @@ package cxcore
 import (
 	"bytes"
 	"encoding/binary"
+
 	//"fmt"
 	"io/ioutil"
 	"math"
@@ -23,112 +24,244 @@ const (
 	OS_SEEK_END
 )
 
-var openFiles map[string]*os.File = make(map[string]*os.File, 0)
+var openFiles []*os.File
+var freeFiles []int32
+
+// helper function used to validate json handle from expr
+func validFileFromExpr(expr *CXExpression, fp int) *os.File {
+	handle := ReadI32(fp, expr.Inputs[0])
+	return validFile(handle)
+}
+
+// helper function used to validate file handle from i32
+func validFile(handle int32) *os.File {
+	if handle >= 0 && handle < int32(len(openFiles)) && openFiles[handle] != nil {
+		return openFiles[handle]
+	}
+	return nil
+}
 
 func op_os_ReadAllText(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
+	var success bool
 	if byts, err := ioutil.ReadFile(ReadStr(fp, expr.Inputs[0])); err == nil {
 		WriteObject(GetFinalOffset(fp, expr.Outputs[0]), encoder.Serialize(string(byts)))
-	} else {
-		panic(err)
+		success = true
 	}
+
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 func op_os_Open(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	name := ReadStr(fp, inp1)
-	if file, err := os.Open(name); err == nil {
-		openFiles[name] = file
-	} else {
-		panic(err)
+	handle := int32(-1)
+
+	if file, err := os.Open(ReadStr(fp, expr.Inputs[0])); err == nil {
+		freeCount := len(freeFiles)
+		if freeCount > 0 {
+			freeCount--
+			handle = int32(freeFiles[freeCount])
+			freeFiles = freeFiles[:freeCount]
+		} else {
+			handle = int32(len(openFiles))
+			openFiles = append(openFiles, nil)
+		}
+
+		if handle < 0 || handle >= int32(len(openFiles)) {
+			panic("internal error")
+		}
+
+		openFiles[handle] = file
 	}
+
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(handle))
 }
 
 func op_os_Close(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1 := expr.Inputs[0]
-	name := ReadStr(fp, inp1)
-	if file, ok := openFiles[name]; ok {
-		if err := file.Close(); err != nil {
-			panic(err)
+	success := false
+
+	handle := ReadI32(fp, expr.Inputs[0])
+	if file := validFile(handle); file != nil {
+		if err := file.Close(); err == nil {
+			success = true
 		}
+
+		openFiles[handle] = nil
+		freeFiles = append(freeFiles, handle)
 	}
+
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
 }
 
 func op_os_Seek(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	file := openFiles[ReadStr(fp, expr.Inputs[0])]
-	file.Seek(ReadI64(fp, expr.Inputs[1]), int(ReadI32(fp, expr.Inputs[2])))
+	offset := int64(-1)
+	if file := validFileFromExpr(expr, fp); file != nil {
+		var err error
+		if offset, err = file.Seek(ReadI64(fp, expr.Inputs[1]), int(ReadI32(fp, expr.Inputs[2]))); err != nil {
+			offset = -1
+		}
+	}
+	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), offset)
 }
 
 func op_os_ReadF32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value float32
-	err := binary.Read(file, binary.LittleEndian, &value)
-	if err != nil {
-		panic(err)
+	var success bool
+
+	if file := validFileFromExpr(expr, fp); file != nil {
+		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
+			success = true
+		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF32(value))
+	WriteF32(GetFinalOffset(fp, expr.Outputs[0]), value)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+}
+
+func op_os_ReadF32Slice(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	var success bool
+
+	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[0])
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	count := ReadI32(fp, expr.Inputs[1])
+	if count > 0 {
+		if file := validFileFromExpr(expr, fp); file != nil {
+			values := make([]float32, count)
+			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
+				success = true
+				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 4))
+				outputSliceData := GetSliceData(outputSliceOffset, 4)
+				for i := int32(0); i < count; i++ {
+					WriteMemF32(outputSliceData, int(i*4), values[i])
+				}
+			}
+		}
+	}
+
+	WriteI32(outputSlicePointer, outputSliceOffset)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+
 }
 
 func op_os_ReadUI32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value uint32
-	err := binary.Read(file, binary.LittleEndian, &value)
-	if err != nil {
-		panic(err)
+	var success bool
+
+	if file := validFileFromExpr(expr, fp); file != nil {
+		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
+			success = true
+		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI32(value))
+	WriteUI32(GetFinalOffset(fp, expr.Outputs[0]), value)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+}
+
+func op_os_ReadUI32Slice(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	var success bool
+
+	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[0])
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	count := ReadI32(fp, expr.Inputs[1])
+	if count > 0 {
+		if file := validFileFromExpr(expr, fp); file != nil {
+			values := make([]uint32, count)
+			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
+				success = true
+				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 4))
+				outputSliceData := GetSliceData(outputSliceOffset, 4)
+				for i := int32(0); i < count; i++ {
+					WriteMemUI32(outputSliceData, int(i*4), values[i])
+				}
+			}
+		}
+	}
+
+	WriteI32(outputSlicePointer, outputSliceOffset)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+
 }
 
 func op_os_ReadUI16(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	file := openFiles[ReadStr(fp, expr.Inputs[0])]
 	var value uint16
-	err := binary.Read(file, binary.LittleEndian, &value)
-	if err != nil {
-		panic(err)
+	var success bool
+
+	if file := validFileFromExpr(expr, fp); file != nil {
+		if err := binary.Read(file, binary.LittleEndian, &value); err == nil {
+			success = true
+		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI16(value))
+	WriteUI16(GetFinalOffset(fp, expr.Outputs[0]), value)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+}
+
+func op_os_ReadUI16Slice(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	var success bool
+
+	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[0])
+	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
+	count := ReadI32(fp, expr.Inputs[1])
+	if count > 0 {
+		if file := validFileFromExpr(expr, fp); file != nil {
+			values := make([]uint16, count)
+			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
+				success = true
+				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 2))
+				outputSliceData := GetSliceData(outputSliceOffset, 2)
+				for i := int32(0); i < count; i++ {
+					WriteMemUI16(outputSliceData, int(i*2), values[i])
+				}
+			}
+		}
+	}
+
+	WriteI32(outputSlicePointer, outputSliceOffset)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
+
 }
 
 func op_os_GetWorkingDirectory(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	out1 := expr.Outputs[0]
-	out1Offset := GetFinalOffset(fp, out1)
-
 	byts := encoder.Serialize(PROGRAM.Path)
-	WriteObject(out1Offset, byts)
+	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), byts)
 }
 
 func op_os_Exit(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0 := expr.Inputs[0]
-	exitCode := ReadI32(fp, inp0)
+	exitCode := ReadI32(fp, expr.Inputs[0])
 	os.Exit(int(exitCode))
 }
 
@@ -136,11 +269,10 @@ func op_os_Run(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp0, inp1, inp2, inp3, out0, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Outputs[0], expr.Outputs[1], expr.Outputs[2]
 	var runError int32 = OS_RUN_SUCCESS
 
-	command := ReadStr(fp, inp0)
-	dir := ReadStr(fp, inp3)
+	command := ReadStr(fp, expr.Inputs[0])
+	dir := ReadStr(fp, expr.Inputs[3])
 	args := strings.Split(command, " ")
 	if len(args) <= 0 {
 		runError = OS_RUN_EMPTY_CMD
@@ -162,7 +294,7 @@ func op_os_Run(prgrm *CXProgram) {
 
 	var cmdError int32 = 0
 
-	timeoutMs := ReadI32(fp, inp2)
+	timeoutMs := ReadI32(fp, expr.Inputs[2])
 	timeout := time.Duration(math.MaxInt64)
 	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
@@ -198,12 +330,12 @@ func op_os_Run(prgrm *CXProgram) {
 	}
 
 	stdOutBytes := out.Bytes()
-	maxSize := ReadI32(fp, inp1)
+	maxSize := ReadI32(fp, expr.Inputs[1])
 	if (maxSize > 0) && (len(stdOutBytes) > int(maxSize)) {
 		stdOutBytes = stdOutBytes[0:maxSize]
 	}
 
-	WriteMemory(GetFinalOffset(fp, out0), FromI32(runError))
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(cmdError))
-	WriteObject(GetFinalOffset(fp, out2), FromStr(string(stdOutBytes)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), runError)
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), cmdError)
+	WriteObject(GetFinalOffset(fp, expr.Outputs[2]), FromStr(string(stdOutBytes)))
 }

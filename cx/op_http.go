@@ -3,11 +3,11 @@ package cxcore
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
-	"io/ioutil"
 
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 
@@ -326,7 +326,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	urlFld, err := requestType.GetField("URL")
 	if err != nil {
 		panic(err)
@@ -334,7 +334,7 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 
 	derefUrlFld := CXArgument{}
 	copier.Copy(&derefUrlFld, urlFld)
-	
+
 	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
@@ -411,7 +411,7 @@ func opHTTPDo(prgrm *CXProgram) {
 
 	// var methodOffset int32
 	// encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
-	
+
 	// var urlStrctOffset int32
 	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
 
@@ -435,7 +435,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	urlFld, err := requestType.GetField("URL")
 	if err != nil {
 		panic(err)
@@ -443,7 +443,7 @@ func opHTTPDo(prgrm *CXProgram) {
 
 	derefUrlFld := CXArgument{}
 	copier.Copy(&derefUrlFld, urlFld)
-	
+
 	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
@@ -477,7 +477,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	request := http.Request{}
 	url := url.URL{}
 	request.URL = &url
-	
+
 	req.Fields = accessMethod
 	request.Method = ReadStr(fp, &req)
 	req.Fields = accessURLScheme

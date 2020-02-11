@@ -71,7 +71,7 @@ func opJSONOpen(prgrm *CXProgram) {
 		jsons[handle] = jsonFile
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(handle)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(handle))
 }
 
 // Close json parser (and all underlying resources) idendified by it's i32 handle.
@@ -83,13 +83,16 @@ func opJSONClose(prgrm *CXProgram) {
 
 	handle := ReadI32(fp, expr.Inputs[0])
 	if jsonFile := validJsonFile(handle); jsonFile != nil {
-		jsonFile.file.Close()
+		if err := jsonFile.file.Close(); err != nil {
+			panic(err)
+		}
+
 		jsons[handle] = JSONFile{}
 		freeJsons = append(freeJsons, handle)
 		success = true
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(success))
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
 }
 
 // More return true if there is another element in the current array or object being parsed.
@@ -105,8 +108,8 @@ func opJSONTokenMore(prgrm *CXProgram) {
 		success = true
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(more))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), more)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Token parses the next token.
@@ -155,8 +158,8 @@ func opJSONTokenNext(prgrm *CXProgram) {
 		jsonFile.tokenType = tokenType
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenType))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), tokenType)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Type returns the type of the current token.
@@ -172,8 +175,8 @@ func opJSONTokenType(prgrm *CXProgram) {
 		success = true
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenType))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), tokenType)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Delim returns current token as an int32 delimiter.
@@ -191,8 +194,8 @@ func opJSONTokenDelim(prgrm *CXProgram) {
 		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(tokenDelim))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), tokenDelim)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Bool returns current token as a bool value.
@@ -210,8 +213,8 @@ func opJSONTokenBool(prgrm *CXProgram) {
 		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromBool(tokenBool))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), tokenBool)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Float64 returns current token as float64 value.
@@ -234,8 +237,8 @@ func opJSONTokenF64(prgrm *CXProgram) {
 		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(tokenF64))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), tokenF64)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Int64 returns current token as int64 value.
@@ -255,8 +258,8 @@ func opJSONTokenI64(prgrm *CXProgram) {
 		}
 	}
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(tokenI64))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), tokenI64)
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // Str returns current token as string value.
@@ -275,7 +278,7 @@ func opJSONTokenStr(prgrm *CXProgram) {
 	}
 
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(tokenStr))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromBool(success))
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 // helper function used to validate json handle from expr
@@ -284,7 +287,7 @@ func validJsonFileExpr(expr *CXExpression, fp int) *JSONFile {
 	return validJsonFile(handle)
 }
 
-// helper function used to valid json handle from i32
+// helper function used to validate json handle from i32
 func validJsonFile(handle int32) *JSONFile {
 	if handle >= 0 && handle < int32(len(jsons)) && jsons[handle].file != nil {
 		return &jsons[handle]

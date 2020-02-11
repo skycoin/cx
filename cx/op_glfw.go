@@ -57,8 +57,8 @@ func op_glfw_GetCursorPos(prgrm *CXProgram) {
 
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	x, y := windows[ReadStr(fp, inp1)].GetCursorPos()
-	WriteMemory(GetFinalOffset(fp, out1), FromF64(x))
-	WriteMemory(GetFinalOffset(fp, out2), FromF64(y))
+	WriteF64(GetFinalOffset(fp, out1), x)
+	WriteF64(GetFinalOffset(fp, out2), y)
 }
 
 func op_glfw_GetKey(prgrm *CXProgram) {
@@ -68,7 +68,7 @@ func op_glfw_GetKey(prgrm *CXProgram) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 	act := int32(windows[ReadStr(fp, inp1)].GetKey(glfw.Key(ReadI32(fp, inp2))))
 
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(act))
+	WriteI32(GetFinalOffset(fp, out1), act)
 }
 
 func op_glfw_CreateWindow(prgrm *CXProgram) {
@@ -104,11 +104,7 @@ func op_glfw_ShouldClose(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
-	if windows[ReadStr(fp, inp1)].ShouldClose() {
-		WriteMemory(GetFinalOffset(fp, out1), FromBool(true))
-	} else {
-		WriteMemory(GetFinalOffset(fp, out1), FromBool(false))
-	}
+	WriteBool(GetFinalOffset(fp, out1), windows[ReadStr(fp, inp1)].ShouldClose())
 }
 
 func op_glfw_GetFramebufferSize(prgrm *CXProgram) {
@@ -117,8 +113,8 @@ func op_glfw_GetFramebufferSize(prgrm *CXProgram) {
 
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	width, height := windows[ReadStr(fp, inp1)].GetFramebufferSize()
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(width)))
-	WriteMemory(GetFinalOffset(fp, out2), FromI32(int32(height)))
+	WriteI32(GetFinalOffset(fp, out1), int32(width))
+	WriteI32(GetFinalOffset(fp, out2), int32(height))
 }
 
 func op_glfw_GetWindowPos(prgrm *CXProgram) {
@@ -126,8 +122,8 @@ func op_glfw_GetWindowPos(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	x, y := windows[ReadStr(fp, expr.Inputs[0])].GetPos()
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(x)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(y)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(x))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), int32(y))
 }
 
 func op_glfw_GetWindowSize(prgrm *CXProgram) {
@@ -135,8 +131,8 @@ func op_glfw_GetWindowSize(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	width, height := windows[ReadStr(fp, expr.Inputs[0])].GetSize()
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(width)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(height)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(width))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), int32(height))
 }
 
 func op_glfw_SwapInterval(prgrm *CXProgram) {
@@ -164,7 +160,7 @@ func op_glfw_GetTime(prgrm *CXProgram) {
 	fp := prgrm.GetFramePointer()
 
 	out1 := expr.Outputs[0]
-	WriteMemory(GetFinalOffset(fp, out1), FromF64(glfw.GetTime()))
+	WriteF64(GetFinalOffset(fp, out1), glfw.GetTime())
 }
 
 func glfw_SetKeyCallback(expr *CXExpression, window string, functionName string, packageName string) {
@@ -200,7 +196,7 @@ func op_glfw_SetKeyCallbackEx(prgrm *CXProgram) {
 func GetWindowName(w *glfw.Window) []byte {
 	for key, win := range windows {
 		if w == win {
-			return FromI32(int32(writeObj(FromStr(key))))
+			return FromI32(int32(newwriteObj(FromStr(key))))
 		}
 	}
 
@@ -346,7 +342,7 @@ func op_glfw_func_i32_i32(prgrm *CXProgram) {
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)
-	WriteMemory(GetFinalOffset(fp, out1), FromI32(int32(len(Functions_i32_i32)-1)))
+	WriteI32(GetFinalOffset(fp, out1), int32(len(Functions_i32_i32)-1))
 }
 
 func op_glfw_call_i32_i32(prgrm *CXProgram) {

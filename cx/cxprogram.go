@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 /*

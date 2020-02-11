@@ -16,7 +16,7 @@ func opStrToI8(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI8(int8(outV0)))
+	WriteI8(GetFinalOffset(fp, expr.Outputs[0]), int8(outV0))
 }
 
 func opStrToI16(prgrm *CXProgram) {
@@ -27,7 +27,7 @@ func opStrToI16(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI16(int16(outV0)))
+	WriteI16(GetFinalOffset(fp, expr.Outputs[0]), int16(outV0))
 }
 
 func opStrToI32(prgrm *CXProgram) {
@@ -38,7 +38,7 @@ func opStrToI32(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(outV0)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(outV0))
 }
 
 func opStrToI64(prgrm *CXProgram) {
@@ -49,7 +49,7 @@ func opStrToI64(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI64(outV0))
+	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrToUI8(prgrm *CXProgram) {
@@ -60,7 +60,7 @@ func opStrToUI8(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI8(uint8(outV0)))
+	WriteUI8(GetFinalOffset(fp, expr.Outputs[0]), uint8(outV0))
 }
 
 func opStrToUI16(prgrm *CXProgram) {
@@ -71,7 +71,7 @@ func opStrToUI16(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI16(uint16(outV0)))
+	WriteUI16(GetFinalOffset(fp, expr.Outputs[0]), uint16(outV0))
 }
 
 func opStrToUI32(prgrm *CXProgram) {
@@ -82,7 +82,7 @@ func opStrToUI32(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI32(uint32(outV0)))
+	WriteUI32(GetFinalOffset(fp, expr.Outputs[0]), uint32(outV0))
 }
 
 func opStrToUI64(prgrm *CXProgram) {
@@ -93,7 +93,7 @@ func opStrToUI64(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromUI64(outV0))
+	WriteUI64(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrToF32(prgrm *CXProgram) {
@@ -104,7 +104,7 @@ func opStrToF32(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF32(float32(outV0)))
+	WriteF32(GetFinalOffset(fp, expr.Outputs[0]), float32(outV0))
 }
 
 func opStrToF64(prgrm *CXProgram) {
@@ -115,7 +115,7 @@ func opStrToF64(prgrm *CXProgram) {
 	if err != nil {
 		panic(CX_RUNTIME_ERROR)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromF64(outV0))
+	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
 func opStrPrint(prgrm *CXProgram) {
@@ -130,70 +130,62 @@ func opStrEq(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) == ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrUneq(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) != ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrLt(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) < ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrLteq(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) <= ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrGt(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func opStrGteq(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	outB0 := FromBool(ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1]))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), outB0)
+	outB0 := ReadStr(fp, expr.Inputs[0]) >= ReadStr(fp, expr.Inputs[1])
+	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
 func writeString(fp int, str string, out *CXArgument) {
-	if str == "" {
-		return
-	}
+
 	byts := encoder.Serialize(str)
-	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
-	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
+	size := len(byts) + OBJECT_HEADER_SIZE
+	heapOffset := AllocateSeq(size)
 
 	var header = make([]byte, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
-	}
-
+	WriteMemI32(header, 5, int32(size))
 	obj := append(header, byts...)
 
 	WriteMemory(heapOffset, obj)
-
-	off := encoder.SerializeAtomic(int32(heapOffset))
-
-	WriteMemory(GetFinalOffset(fp, out), off)
+	WriteI32(GetFinalOffset(fp, out), int32(heapOffset))
 }
 
 func opStrConcat(prgrm *CXProgram) {
@@ -220,7 +212,7 @@ func opStrIndex(prgrm *CXProgram) {
 
 	str := ReadStr(fp, expr.Inputs[0])
 	substr := ReadStr(fp, expr.Inputs[1])
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(strings.Index(str, substr))))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(strings.Index(str, substr)))
 }
 
 func opStrTrimSpace(prgrm *CXProgram) {

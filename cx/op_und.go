@@ -489,16 +489,16 @@ func opLen(prgrm *CXProgram) {
 
 	if elt.IsSlice || elt.Type == TYPE_AFF {
 		var sliceOffset = GetSliceOffset(fp, inp1)
-		var sliceLen []byte
+		// var sliceLen []byte
 		if sliceOffset > 0 {
-			sliceLen = GetSliceHeader(sliceOffset)[4:8]
+			sliceLen := GetSliceHeader(sliceOffset)[4:8]
+			WriteMemory(GetFinalOffset(fp, out1), sliceLen)
 		} else if sliceOffset == 0 {
-			sliceLen = FromI32(0)
+			WriteI32(GetFinalOffset(fp, out1), 0)
 		} else {
 			panic(CX_RUNTIME_ERROR)
 		}
 
-		WriteMemory(GetFinalOffset(fp, out1), sliceLen)
 		// TODO: Had to add elt.Lengths to avoid doing this for arrays, but not entirely sure why
 	} else if elt.Type == TYPE_STR && elt.Lengths == nil {
 		var strOffset = GetStrOffset(fp, inp1)
@@ -511,8 +511,8 @@ func opLen(prgrm *CXProgram) {
 
 		WriteMemory(GetFinalOffset(fp, out1), PROGRAM.Memory[strOffset:strOffset+STR_HEADER_SIZE])
 	} else {
-		outB1 := FromI32(int32(elt.Lengths[len(elt.Indexes)]))
-		WriteMemory(GetFinalOffset(fp, out1), outB1)
+		outV0 := int32(elt.Lengths[len(elt.Indexes)])
+		WriteI32(GetFinalOffset(fp, out1), outV0)
 	}
 }
 
@@ -528,17 +528,13 @@ func opAppend(prgrm *CXProgram) {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	// outputSlicePointer := GetFinalOffset(fp, out1)
-	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	inputSliceOffset := GetSliceOffset(fp, inp1)
-
 	var inputSliceLen int32
+	inputSliceOffset := GetSliceOffset(fp, inp1)
 	if inputSliceOffset != 0 {
 		inputSliceLen = GetSliceLen(inputSliceOffset)
 	}
 
 	// Preparing slice in case more memory is needed for the new element.
-	// outputSliceOffset = SliceAppendResize(outputSliceOffset, inputSliceOffset, inp2.Size)
 	outputSliceOffset := SliceAppendResize(fp, out1, inp1, inp2.Size)
 
 	// We need to update the address of the output and input, as the final offsets
@@ -548,14 +544,15 @@ func opAppend(prgrm *CXProgram) {
 
 	var obj []byte
 	if inp2.Type == TYPE_STR || inp2.Type == TYPE_AFF {
-		obj = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp2)))
+		var obj [4]byte
+		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp2)))
+		SliceAppendWrite(outputSliceOffset, obj[:], inputSliceLen)
 	} else {
-		obj = ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		obj := ReadMemory(GetFinalOffset(fp, inp2), inp2)
+		SliceAppendWrite(outputSliceOffset, obj, inputSliceLen)
 	}
 
-	SliceAppendWrite(outputSliceOffset, inputSliceOffset, obj, inputSliceLen)
-
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opResize(prgrm *CXProgram) {
@@ -568,11 +565,9 @@ func opResize(prgrm *CXProgram) {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	outputSlicePointer := GetFinalOffset(fp, out1)
-	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-
 	outputSliceOffset := int32(SliceResize(fp, out1, inp1, ReadI32(fp, inp2), GetAssignmentElement(inp1).TotalSize))
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+	outputSlicePointer := GetFinalOffset(fp, out1)
+	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opInsert(prgrm *CXProgram) {
@@ -586,17 +581,17 @@ func opInsert(prgrm *CXProgram) {
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
 
-	var obj []byte
 	if inp3.Type == TYPE_STR || inp3.Type == TYPE_AFF {
-		obj = encoder.SerializeAtomic(int32(GetStrOffset(fp, inp3)))
+		var obj [4]byte
+		WriteMemI32(obj[:], 0, int32(GetStrOffset(fp, inp3)))
+		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj[:]))
+		WriteI32(outputSlicePointer, outputSliceOffset)
 	} else {
-		obj = ReadMemory(GetFinalOffset(fp, inp3), inp3)
+		obj := ReadMemory(GetFinalOffset(fp, inp3), inp3)
+		outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
+		WriteI32(outputSlicePointer, outputSliceOffset)
 	}
-
-	outputSliceOffset := int32(SliceInsert(fp, out1, inp1, ReadI32(fp, inp2), obj))
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
 }
 
 func opRemove(prgrm *CXProgram) {
@@ -610,10 +605,8 @@ func opRemove(prgrm *CXProgram) {
 	}
 
 	outputSlicePointer := GetFinalOffset(fp, out1)
-	// outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-
 	outputSliceOffset := int32(SliceRemove(fp, out1, inp1, ReadI32(fp, inp2), int32(GetAssignmentElement(inp1).TotalSize)))
-	copy(PROGRAM.Memory[outputSlicePointer:], encoder.SerializeAtomic(outputSliceOffset))
+	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func opCopy(prgrm *CXProgram) {
@@ -641,7 +634,7 @@ func opCopy(prgrm *CXProgram) {
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(count/dstElem.TotalSize)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(count/dstElem.TotalSize))
 }
 
 func buildString(expr *CXExpression, fp int) []byte {
@@ -789,19 +782,14 @@ func opRead(prgrm *CXProgram) {
 		panic("")
 	}
 	byts := encoder.Serialize(text)
-	size := encoder.Serialize(int32(len(byts)) + OBJECT_HEADER_SIZE)
 	heapOffset := AllocateSeq(len(byts) + OBJECT_HEADER_SIZE)
 
 	var header = make([]byte, OBJECT_HEADER_SIZE)
-	for c := 5; c < OBJECT_HEADER_SIZE; c++ {
-		header[c] = size[c-5]
-	}
+	WriteMemI32(header, 5, int32(len(byts)))
 
 	obj := append(header, byts...)
 
 	WriteMemory(heapOffset, obj)
 
-	off := encoder.SerializeAtomic(int32(heapOffset + OBJECT_HEADER_SIZE))
-
-	WriteMemory(out1Offset, off)
+	WriteI32(out1Offset, int32(heapOffset+OBJECT_HEADER_SIZE))
 }
