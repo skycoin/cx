@@ -722,6 +722,9 @@ func init() {
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType",
 		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
+	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore",
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{})
 	AddOpCode(OP_GLTEXT_PRINTF, "gltext.Printf",
 		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
@@ -1162,6 +1165,8 @@ func handleExtraOpcode(opCode int) opcodeHandler {
 	// gltext
 	case OP_GLTEXT_LOAD_TRUE_TYPE:
 		return op_gltext_LoadTrueType
+	case OP_GLTEXT_LOAD_TRUE_TYPE_CORE:
+		return op_gltext_LoadTrueTypeCore
 	case OP_GLTEXT_PRINTF:
 		return op_gltext_Printf
 	case OP_GLTEXT_METRICS:
