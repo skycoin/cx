@@ -70,11 +70,11 @@ install-gfx-deps-Darwin:
 
 install-deps: configure
 	@echo "Installing go package dependencies"
-	go get github.com/blynn/nex
+	go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
-	go get github.com/go-gl/gl/v2.1/gl
+	go get github.com/go-gl/gl/v3.2-compatibility/gl
 	go get github.com/go-gl/glfw/v3.2/glfw
 	go get github.com/go-gl/gltext
 	go get golang.org/x/mobile/exp/audio/al
