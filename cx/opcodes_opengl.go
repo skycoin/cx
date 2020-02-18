@@ -720,7 +720,7 @@ func init() {
 
 	// gltext
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE, "gltext.LoadTrueType",
-		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_GLTEXT_LOAD_TRUE_TYPE_CORE, "gltext.LoadTrueTypeCore",
 		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
