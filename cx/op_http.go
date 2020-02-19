@@ -454,7 +454,10 @@ func opHTTPDo(prgrm *CXProgram) {
 	}
 
 	derefURLFld := CXArgument{}
-	copier.Copy(&derefURLFld, urlFld)
+	err = copier.Copy(&derefURLFld, urlFld)
+	if err != nil {
+		panic(err)
+	}
 
 	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, DEREF_POINTER)
 
@@ -513,7 +516,10 @@ func opHTTPDo(prgrm *CXProgram) {
 	}
 
 	resp := CXArgument{}
-	copier.Copy(&resp, out1)
+	err = copier.Copy(&resp, out1)
+	if err != nil {
+		panic(err)
+	}
 
 	responseType, err := httpPkg.GetStruct("Response")
 	if err != nil {
