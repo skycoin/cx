@@ -83,7 +83,7 @@ call :echoWithColor yellow "     Ensuring that we have local repositories....."
 call :getRepo go-gl\gl\v2.1\gl
 call :getRepo go-gl\glfw\v3.2\glfw
 call :getRepo go-gl\gltext
-call :getRepo blynn\nex
+call :getRepo SkycoinProject\nex
 call :getRepo cznic\goyacc
 call :getRepo skycoin\skycoin
 

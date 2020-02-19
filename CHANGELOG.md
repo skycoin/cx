@@ -7,6 +7,10 @@
 	- Import statements are now aware of the possibility of importing libraries that are defined in a CX workspace.
 	- If the user has not set a CXPATH through an environment variable or --cxpath flag, CX will use by default `~/cx` and create all the necessary subdirectories.
 	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
+	- Increased opengl version from 2.1 to 3.2.
+	- Added opengl bindings : glClearBufferI, glClearBufferUI, glClearBufferF, glBlendFuncSeparate, glDrawBuffers.
+	- Added opengl constants : GL_NONE, GL_RED, GL_RGBA16F, GL_HALF_FLOAT, GL_UNSIGNED_INT_24_8, GL_R8.
+	- Added opcodes for reading binary files : os.Seek, os.ReadUI16, os.ReadUI32, os.ReadF32, os.ReadUI16Slice, os.ReadUI32Slice, os.ReadF32Slice.
 * Changes
   * Removed cx-games as a module. It was just confusing as users would be
     redirected to an outdated version of the repo and the games are already
@@ -26,6 +30,8 @@
   * #419: Initializing array or slice with values equivalent to nil.
   * #481: Array literals: Problem with temporary variables in multi-dimensional arrays.
   * #482: Slice literals: Problem with temporary variables in multi-dimensional slices.
+  * #131: Panic when using arithmetic operations.
+
 * Documentation
   * ...
 * Miscellaneous

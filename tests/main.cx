@@ -239,7 +239,7 @@ func main ()() {
 	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
 	runTest("../lib/args.cx test-args.cx", cx.SUCCESS, "Error in args lib.")
 
-	// -issues
+	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
 	runTestEx("issue-15.cx", cx.COMPILATION_ERROR, "Panic if return value is not used.", TEST_GUI | TEST_STABLE, 0)
 	runTest("issue-18.cx", cx.SUCCESS, "String not working across packages")
@@ -373,6 +373,7 @@ func main ()() {
     runTestEx("issue-120-b-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
     runTestEx("issue-120-c-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
     runTestEx("issue-121-SP.cx", cx.SUCCESS, "Compilation error when using unary negative operator on a function call", TEST_ISSUE, 0)
+    runTestEx("issue-131-SP.cx", cx.SUCCESS, "Panic when using arithmetic operations.", TEST_ISSUE, 0)
 
     // We need to fix serialization and deserialization as user-callable functions
 	// runTestEx("issue-309.cx", cx.SUCCESS, "Serialization is not taking into account non-default stack sizes.", TEST_ISSUE, 0)

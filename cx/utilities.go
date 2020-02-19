@@ -814,6 +814,7 @@ func WriteToSlice(off int, inp []byte) int {
 	// Write the new slice element `inp` to the slice located at `newOff`.
 	SliceAppendWrite(int32(newOff), inp, inputSliceLen)
 	return newOff
+
 }
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
