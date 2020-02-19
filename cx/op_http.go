@@ -127,7 +127,7 @@ func opHTTPHandle(prgrm *CXProgram) {
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
 
 		PROGRAM.ccallback(&tmpExpr, handlerFn.Name, handlerPkg.Name, [][]byte{i1, i2})
-		fmt.Fprintf(w, ReadStr(callFP, handlerFn.Inputs[0]))
+		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
 
