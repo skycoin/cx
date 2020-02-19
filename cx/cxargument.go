@@ -78,7 +78,7 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 // ----------------------------------------------------------------
 //                     Member handling
 
-// AddType ...
+// AddPackage assigns CX package `pkg` to CX argument `arg`.
 func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
 	// pkg, err := PROGRAM.GetPackage(pkgName)
 	// if err != nil {
