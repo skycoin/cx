@@ -222,10 +222,7 @@ const (
 )
 
 var opParamUI8Slice = opParam{typCode: TYPE_UI8, isSlice: true}
-var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
-var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
 var opParamI32Slice = opParam{typCode: TYPE_I32, isSlice: true}
-var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
 
 func init() {
 	// gogl
