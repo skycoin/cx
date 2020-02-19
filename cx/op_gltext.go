@@ -23,11 +23,11 @@ func loadTrueType(prgrm *CXProgram, fixedPipeline bool) {
 }
 
 func op_gltext_LoadTrueType(prgrm *CXProgram) {
-    loadTrueType(prgrm, true)
+	loadTrueType(prgrm, true)
 }
 
 func op_gltext_LoadTrueTypeCore(prgrm *CXProgram) {
-    loadTrueType(prgrm, false)
+	loadTrueType(prgrm, false)
 }
 
 func op_gltext_Printf(prgrm *CXProgram) {
