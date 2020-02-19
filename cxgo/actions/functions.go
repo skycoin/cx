@@ -1069,7 +1069,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 
 	if len(sym.Fields) > 0 {
 		sym.Type = sym.Fields[len(sym.Fields)-1].Type
-		sym.IsSlice = sym.Fields[len(sym.Fields) - 1].IsSlice
+		sym.IsSlice = sym.Fields[len(sym.Fields)-1].IsSlice
 	} else {
 		sym.Type = arg.Type
 	}

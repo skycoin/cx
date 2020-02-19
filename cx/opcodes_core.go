@@ -514,8 +514,7 @@ func execNative(prgrm *CXProgram) {
 	}
 
 	if handler == nil {
-		//dumpOpCodes(opCode)
-		panic("invalid bare opcode")
+		panic("invalid core opcode")
 	}
 
 	handler(prgrm)

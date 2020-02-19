@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 	"os"
+
 	. "github.com/SkycoinProject/cx/cx"
 )
 
@@ -225,7 +226,7 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 	// slash (/) in the name.
 	// We start backwards and we stop if we find a slash.
 	hasSlash := false
-	c := len(name)-1
+	c := len(name) - 1
 	for ; c >= 0; c-- {
 		if name[c] == '/' {
 			hasSlash = true
@@ -409,7 +410,7 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 		arg := declSpec
 
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
-		
+
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true

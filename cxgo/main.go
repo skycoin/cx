@@ -53,6 +53,7 @@ var (
 	log             = logging.MustGetLogger("newcoin")
 	apiClient       = &http.Client{Timeout: 10 * time.Second}
 	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
+	profile         *os.File
 )
 
 var (
@@ -709,6 +710,11 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 	return parseErrors
 }
 
+func cleanupAndExit(exitCode int) {
+	StopCPUProfile(profile)
+	os.Exit(exitCode)
+}
+
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
 // parses it into CX program structures for `PRGRM`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
@@ -736,7 +742,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 
 	PRGRM = cxgo0.PRGRM0
 	if FoundCompileErrors || parseErrors > 0 {
-		os.Exit(CX_COMPILATION_ERROR)
+		cleanupAndExit(CX_COMPILATION_ERROR)
 	}
 
 	// Adding global variables `OS_ARGS` to the `os` (operating system)
@@ -773,7 +779,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	StopProfile("4. parse")
 
 	if FoundCompileErrors || parseErrors > 0 {
-		os.Exit(CX_COMPILATION_ERROR)
+		cleanupAndExit(CX_COMPILATION_ERROR)
 	}
 }
 
@@ -843,16 +849,13 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	LineNo = 0
 
 	if FoundCompileErrors {
-		os.Exit(CX_COMPILATION_ERROR)
+		cleanupAndExit(CX_COMPILATION_ERROR)
 	}
 
 	return true, bcHeap, sPrgrm
 }
 
 func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHeap []byte, sPrgrm []byte) {
-	profile := StartCPUProfile("run")
-	defer StopCPUProfile(profile)
-	defer DumpMEMProfile("run")
 	StartProfile("run")
 	defer StopProfile("run")
 

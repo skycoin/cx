@@ -2,7 +2,7 @@ package actions
 
 import (
 	"os"
-	
+
 	. "github.com/SkycoinProject/cx/cx"
 )
 
@@ -128,7 +128,7 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 		expr.Package = pkg
 
 		var sym *CXArgument
-		
+
 		if from[idx].Operator == nil {
 			// then it's a literal
 			sym = MakeArgument(to[0].Outputs[0].Name, CurrentFile, LineNo).AddType(TypeNames[from[idx].Outputs[0].Type])
@@ -230,7 +230,7 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 		} else {
 			// we'll delegate multiple-value returns to the 'expression' grammar rule
 			// only assigning as if the operator had only one output defined
-			
+
 			to[0].Outputs[0].Size = from[idx].Operator.Outputs[0].Size
 			to[0].Outputs[0].Type = from[idx].Operator.Outputs[0].Type
 			to[0].Outputs[0].Lengths = from[idx].Operator.Outputs[0].Lengths
