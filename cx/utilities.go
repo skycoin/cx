@@ -842,7 +842,7 @@ func writeObj(obj []byte) int {
 
 // refactoring reuse in WriteObject and WriteObjectRetOff
 func newwriteObj(obj []byte) int {
-	// 2dbug introduces this new version of `writeObj`. It is unkown to me
+	// 2dbug introduces this new version of `writeObj`. It is unknown to me
 	// (amherag) at the moment if it is safe to replace `writeObj` with
 	// this version. Leaving `writeObj` in quarentine.
 	size := len(obj)

@@ -301,7 +301,10 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 
 func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	req := CXArgument{}
-	copier.Copy(&req, param)
+	err := copier.Copy(&req, param)
+	if err != nil {
+		panic(err)
+	}
 
 	httpPkg, err := PROGRAM.GetPackage("http")
 	if err != nil {
@@ -332,10 +335,13 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 		panic(err)
 	}
 
-	derefUrlFld := CXArgument{}
-	copier.Copy(&derefUrlFld, urlFld)
+	derefURLFld := CXArgument{}
+	err = copier.Copy(&derefURLFld, urlFld)
+	if err != nil {
+		panic(err)
+	}
 
-	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
+	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
 	if err != nil {
@@ -361,11 +367,11 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	accessMethod := []*CXArgument{methodFld}
 	accessBody := []*CXArgument{bodyFld}
 	accessURL := []*CXArgument{urlFld}
-	accessURLScheme := []*CXArgument{&derefUrlFld, schemeFld}
-	accessURLHost := []*CXArgument{&derefUrlFld, hostFld}
-	accessURLPath := []*CXArgument{&derefUrlFld, pathFld}
-	accessURLRawPath := []*CXArgument{&derefUrlFld, rawPathFld}
-	accessURLForceQuery := []*CXArgument{&derefUrlFld, forceQueryFld}
+	accessURLScheme := []*CXArgument{&derefURLFld, schemeFld}
+	accessURLHost := []*CXArgument{&derefURLFld, hostFld}
+	accessURLPath := []*CXArgument{&derefURLFld, pathFld}
+	accessURLRawPath := []*CXArgument{&derefURLFld, rawPathFld}
+	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
 
 	// Creating empty `http.Request` object on heap.
 	reqOff := writeObj(make([]byte, requestType.Size))
@@ -385,6 +391,9 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 
 	req.Fields = accessBody
 	body, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		panic(err)
+	}
 	writeString(fp, string(body), &req)
 	req.Fields = accessURLScheme
 	writeString(fp, request.URL.Scheme, &req)
@@ -416,7 +425,10 @@ func opHTTPDo(prgrm *CXProgram) {
 	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
 
 	req := CXArgument{}
-	copier.Copy(&req, inp1)
+	err := copier.Copy(&req, inp1)
+	if err != nil {
+		panic(err)
+	}
 
 	httpPkg, err := PROGRAM.GetPackage("http")
 	if err != nil {
@@ -441,10 +453,10 @@ func opHTTPDo(prgrm *CXProgram) {
 		panic(err)
 	}
 
-	derefUrlFld := CXArgument{}
-	copier.Copy(&derefUrlFld, urlFld)
+	derefURLFld := CXArgument{}
+	copier.Copy(&derefURLFld, urlFld)
 
-	derefUrlFld.DereferenceOperations = append(derefUrlFld.DereferenceOperations, DEREF_POINTER)
+	derefURLFld.DereferenceOperations = append(derefURLFld.DereferenceOperations, DEREF_POINTER)
 
 	schemeFld, err := urlType.GetField("Scheme")
 	if err != nil {
@@ -468,11 +480,11 @@ func opHTTPDo(prgrm *CXProgram) {
 	}
 
 	accessMethod := []*CXArgument{methodFld}
-	accessURLScheme := []*CXArgument{&derefUrlFld, schemeFld}
-	accessURLHost := []*CXArgument{&derefUrlFld, hostFld}
-	accessURLPath := []*CXArgument{&derefUrlFld, pathFld}
-	accessURLRawPath := []*CXArgument{&derefUrlFld, rawPathFld}
-	accessURLForceQuery := []*CXArgument{&derefUrlFld, forceQueryFld}
+	accessURLScheme := []*CXArgument{&derefURLFld, schemeFld}
+	accessURLHost := []*CXArgument{&derefURLFld, hostFld}
+	accessURLPath := []*CXArgument{&derefURLFld, pathFld}
+	accessURLRawPath := []*CXArgument{&derefURLFld, rawPathFld}
+	accessURLForceQuery := []*CXArgument{&derefURLFld, forceQueryFld}
 
 	request := http.Request{}
 	url := url.URL{}

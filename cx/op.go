@@ -472,10 +472,8 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 
 			ptrIsPointer := IsPointer(ptr)
 
-			check := true
 			// Checking if we need to mark `ptr`.
 			if ptrIsPointer {
-				check = !check
 				// Getting the offset to the object in the heap
 				var heapOffset int32
 				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
@@ -500,7 +498,6 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			// Checking if the field being accessed needs to be marked.
 			// If the root (`ptr`) is a pointer, this step is unnecessary.
 			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
-				check = !check
 				fld := ptr.Fields[len(ptr.Fields)-1]
 
 				// Getting the offset to the object in the heap
@@ -1055,57 +1052,57 @@ func readDataF64(bytes []byte) (out []float64) {
 func readData(inp *CXArgument, bytes []byte) interface{} {
 	switch inp.Type {
 	case TYPE_I8:
-		var data []int8 = readDataI8(bytes)
+		data := readDataI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I16:
-		var data []int16 = readDataI16(bytes)
+		data := readDataI16(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I32:
-		var data []int32 = readDataI32(bytes)
+		data := readDataI32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I64:
-		var data []int64 = readDataI64(bytes)
+		data := readDataI64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI8:
-		var data []uint8 = readDataUI8(bytes)
+		data := readDataUI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI16:
-		var data []uint16 = readDataUI16(bytes)
+		data := readDataUI16(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI32:
-		var data []uint32 = readDataUI32(bytes)
+		data := readDataUI32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI64:
-		var data []uint64 = readDataUI64(bytes)
+		data := readDataUI64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_F32:
-		var data []float32 = readDataF32(bytes)
+		data := readDataF32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_F64:
-		var data []float64 = readDataF64(bytes)
+		data := readDataF64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	default:
-		var data []uint8 = readDataUI8(bytes)
+		data := readDataUI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
