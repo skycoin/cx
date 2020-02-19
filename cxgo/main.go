@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	// "encoding/hex"
 
 	"runtime"
@@ -34,14 +35,14 @@ import (
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
-	"github.com/SkycoinProject/cx-chains/src/coin"
-	"github.com/SkycoinProject/cx-chains/src/readable"
-	"github.com/SkycoinProject/cx-chains/src/skycoin"
-	"github.com/SkycoinProject/cx-chains/src/fiber"
-	"github.com/SkycoinProject/cx-chains/src/util/logging"
-	"github.com/SkycoinProject/cx-chains/src/visor"
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cli"
+	"github.com/SkycoinProject/cx-chains/src/coin"
+	"github.com/SkycoinProject/cx-chains/src/fiber"
+	"github.com/SkycoinProject/cx-chains/src/readable"
+	"github.com/SkycoinProject/cx-chains/src/skycoin"
+	"github.com/SkycoinProject/cx-chains/src/util/logging"
+	"github.com/SkycoinProject/cx-chains/src/visor"
 	"github.com/SkycoinProject/cx-chains/src/wallet"
 
 	"errors"

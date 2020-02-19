@@ -429,7 +429,7 @@ func isPointerAdded(fn *CXFunction, sym *CXArgument) (found bool) {
 			}
 		}
 	}
-	
+
 	return found
 }
 
@@ -445,7 +445,7 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 	// If `sym` has fields, then we `return` and we don't add the root `sym`.
 	// If `sym` has no fields, then we check if `sym` is a pointer and
 	// we add it if it is.
-	
+
 	// Field symbol:
 	// Checking if it is a pointer candidate and if it was already
 	// added to the list.
@@ -740,9 +740,9 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*CXArgument) (*CX
 	if err != nil {
 		return nil, err
 	}
-	
+
 	notFound := errors.New("identifier '" + ident + "' does not exist")
-	
+
 	// We're not checking for that error
 	fn, err := pkg.GetFunction(ident)
 	if err != nil {

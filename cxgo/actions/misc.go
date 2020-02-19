@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 	"runtime"
-	
+
 	. "github.com/SkycoinProject/cx/cx"
 )
 
