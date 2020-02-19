@@ -5,8 +5,8 @@ package cxcore
 import (
 	"bytes"
 	"encoding/binary"
+
 	//"fmt"
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 	"io/ioutil"
 	"math"
 	"os"
@@ -14,6 +14,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 const (
