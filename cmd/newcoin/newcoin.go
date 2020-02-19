@@ -13,9 +13,9 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/amherag/skycoin/src/fiber"
-	"github.com/amherag/skycoin/src/util/logging"
-	"github.com/amherag/skycoin/src/util/useragent"
+	"github.com/SkycoinProject/skycoin/src/fiber"
+	"github.com/SkycoinProject/skycoin/src/util/logging"
+	"github.com/SkycoinProject/skycoin/src/util/useragent"
 )
 
 const (

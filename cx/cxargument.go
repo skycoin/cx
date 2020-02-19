@@ -10,6 +10,8 @@ type CXArgument struct {
 	DeclarationSpecifiers []int // used to determine finalSize
 	Indexes               []*CXArgument
 	Fields                []*CXArgument // strct.fld1.fld2().fld3
+	Inputs                []*CXArgument // Input parameters in case `CXArgument` is of type TYPE_FUNC
+	Outputs               []*CXArgument // Output parameters in case `CXArgument` is of type TYPE_FUNC
 	Name                  string
 	FileName              string
 	Type                  int
@@ -76,6 +78,16 @@ func MakeGlobal(name string, typ int, fileName string, fileLine int) *CXArgument
 // ----------------------------------------------------------------
 //                     Member handling
 
+// AddPackage assigns CX package `pkg` to CX argument `arg`.
+func (arg *CXArgument) AddPackage(pkg *CXPackage) *CXArgument {
+	// pkg, err := PROGRAM.GetPackage(pkgName)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	arg.Package = pkg
+	return arg
+}
+
 // AddType ...
 func (arg *CXArgument) AddType(typ string) *CXArgument {
 	if typCode, found := TypeCodes[typ]; found {
@@ -88,5 +100,23 @@ func (arg *CXArgument) AddType(typ string) *CXArgument {
 		arg.Type = TYPE_UNDEFINED
 	}
 
+	return arg
+}
+
+// AddInput adds input parameters to `arg` in case arg is of type `TYPE_FUNC`.
+func (arg *CXArgument) AddInput(inp *CXArgument) *CXArgument {
+	arg.Inputs = append(arg.Inputs, inp)
+	if inp.Package == nil {
+		inp.Package = arg.Package
+	}
+	return arg
+}
+
+// AddOutput adds output parameters to `arg` in case arg is of type `TYPE_FUNC`.
+func (arg *CXArgument) AddOutput(out *CXArgument) *CXArgument {
+	arg.Outputs = append(arg.Outputs, out)
+	if out.Package == nil {
+		out.Package = arg.Package
+	}
 	return arg
 }

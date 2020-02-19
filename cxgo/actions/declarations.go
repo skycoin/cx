@@ -42,7 +42,14 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 
 		if glbl.Offset < 0 || glbl.Size == 0 || glbl.TotalSize == 0 {
 			// then it was only added a reference to the symbol
-			offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+			var offExpr []*CXExpression
+			if declaration_specifiers.IsSlice {
+				offExpr = WritePrimary(declaration_specifiers.Type,
+					make([]byte, declaration_specifiers.Size), true)
+			} else {
+				offExpr = WritePrimary(declaration_specifiers.Type,
+					make([]byte, declaration_specifiers.TotalSize), true)
+			}
 
 			glbl.Offset = offExpr[0].Outputs[0].Offset
 			glbl.PassBy = offExpr[0].Outputs[0].PassBy
@@ -95,14 +102,16 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 			declaration_specifiers.Offset = glbl.Offset
 			declaration_specifiers.PassBy = glbl.PassBy
 			declaration_specifiers.Package = glbl.Package
-			if declaration_specifiers.Size == 0 {
-				declaration_specifiers.Size = declarator.Size
-			}
 			*glbl = *declaration_specifiers
 		}
 	} else {
 		// then it hasn't been defined
-		offExpr := WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+		var offExpr []*CXExpression
+		if declaration_specifiers.IsSlice {
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.Size), true)
+		} else {
+			offExpr = WritePrimary(declaration_specifiers.Type, make([]byte, declaration_specifiers.TotalSize), true)
+		}
 
 		// Checking if something is supposed to be initialized
 		// and if `initializer` actually contains something.
@@ -394,18 +403,23 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 
 		return arg
 	case DECL_SLICE:
-		for range arrayLengths {
-			declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
-		}
+		// for range arrayLengths {
+		// 	declSpec.DeclarationSpecifiers = append(declSpec.DeclarationSpecifiers, DECL_SLICE)
+		// }
 
 		arg := declSpec
+
+		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
+
 		arg.IsSlice = true
 		arg.IsReference = true
 		arg.IsArray = true
 		arg.PassBy = PASSBY_REFERENCE
 
-		// arg.Lengths = append([]int{0}, arg.Lengths...)
-		arg.Lengths = arrayLengths
+		arg.Lengths = append([]int{0}, arg.Lengths...)
+		// arg.Lengths = arrayLengths
+		// arg.TotalSize = arg.Size
+		// arg.Size = TYPE_POINTER_SIZE
 		arg.TotalSize = TYPE_POINTER_SIZE
 
 		return arg
@@ -414,6 +428,10 @@ func DeclarationSpecifiers(declSpec *CXArgument, arrayLengths []int, opTyp int) 
 		// arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_BASIC)
 		arg.TotalSize = arg.Size
 		return arg
+	case DECL_FUNC:
+		// Creating this case if additional operations are needed in the
+		// future.
+		return declSpec
 	}
 
 	return nil

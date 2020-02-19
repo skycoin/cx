@@ -5,7 +5,6 @@ package cxcore
 import (
 	"bufio"
 	"fmt"
-	"github.com/go-gl/gl/v3.2-compatibility/gl"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -15,6 +14,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/go-gl/gl/v3.2-compatibility/gl"
 )
 
 // declared in func_opengl.go

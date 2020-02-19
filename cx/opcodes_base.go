@@ -44,111 +44,108 @@ const (
 	OP_START_CPU_PROFILE
 	OP_STOP_CPU_PROFILE
 
-	// http
-	// OP_HTTP_GET
-
 	// object explorer
 	OP_OBJ_QUERY
 
 	END_OF_BASE_OPS
 )
 
+var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
+var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
+var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
+
+
 func init() {
 	// time
 	AddOpCode(OP_TIME_SLEEP, "time.Sleep",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_TIME_UNIX_MILLI, "time.UnixMilli",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_TIME_UNIX_NANO, "time.UnixNano",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
-
-	// http
-	// AddOpCode(OP_HTTP_GET, "http.Get",
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)},
-	// 	[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 
 	// os
 	AddOpCode(OP_OS_GET_WORKING_DIRECTORY, "os.GetWorkingDirectory",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_OPEN, "os.Open",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_OS_CLOSE, "os.Close",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_SEEK, "os.Seek",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I64, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI64NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_OS_READ_F32, "os.ReadF32",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_UI32, "os.ReadUI32",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_UI16, "os.ReadUI16",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_F32_SLICE, "os.ReadF32Slice",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, true), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32Slice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_UI32_SLICE, "os.ReadUI32Slice",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, true), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32Slice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_UI16_SLICE, "os.ReadUI16Slice",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, true), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16Slice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_READ_ALL_TEXT, "os.ReadAllText",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_OS_RUN, "os.Run",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_OS_EXIT, "os.Exit",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 
 	// json
 	AddOpCode(OP_JSON_OPEN, "json.Open",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_JSON_CLOSE, "json.Close",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_MORE, "json.More",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_NEXT, "json.Next",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_TYPE, "json.Type",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_DELIM, "json.Delim",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_BOOL, "json.Bool",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_F64, "json.Float64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_I64, "json.Int64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_JSON_TOKEN_STR, "json.Str",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamBoolNotSlice)})
 
 	// profile
 	AddOpCode(OP_START_CPU_PROFILE, "StartCPUProfile",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_STOP_CPU_PROFILE, "StopCPUProfile",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 
 	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
@@ -164,10 +161,6 @@ func handleBaseOpcode(opCode int) opcodeHandler {
 		return op_time_UnixMilli
 	case OP_TIME_UNIX_NANO:
 		return op_time_UnixNano
-
-	// http
-	// case OP_HTTP_GET:
-	// 	return op_http_get
 
 	// os
 	case OP_OS_GET_WORKING_DIRECTORY:

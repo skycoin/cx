@@ -477,6 +477,17 @@ const (
 	OP_AFF_INFORM
 	OP_AFF_REQUEST
 
+	// http
+	OP_HTTP_SERVE
+	OP_HTTP_LISTEN_AND_SERVE
+	OP_HTTP_NEW_REQUEST
+	OP_HTTP_DO
+	OP_HTTP_HANDLE
+	OP_HTTP_CLOSE
+
+	// dmsg
+	OP_DMSG_DO
+
 	END_OF_CORE_OPS
 )
 
@@ -508,7 +519,6 @@ func execNative(prgrm *CXProgram) {
 	}
 
 	if handler == nil {
-		//dumpOpCodes(opCode)
 		panic("invalid core opcode")
 	}
 
@@ -537,1232 +547,1308 @@ func dumpOpCodes(opCode int) {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
+type opParam struct {
+	typCode int           // The type code of the parameter.
+	isSlice bool          // Is the parameter a slice.
+	pkg     *CXPackage    // To what package does this param belongs to.
+	inputs  []*CXArgument // Input parameters to a TYPE_FUNC parameter.
+	outputs []*CXArgument // Output parameters to a TYPE_FUNC parameter.
+}
+
 // Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
-func newOpPar(typCode int, isSlice bool) *CXArgument {
-	arg := MakeArgument("", "", -1).AddType(TypeNames[typCode])
-	if isSlice {
+// func newOpPar(typCode int, isSlice bool) *CXArgument {
+func newOpPar(paramData opParam) *CXArgument {
+	arg := MakeArgument("", "", -1).AddType(TypeNames[paramData.typCode])
+	arg.IsLocalDeclaration = true
+	arg.Inputs = paramData.inputs
+	arg.Outputs = paramData.outputs
+	arg.Package = paramData.pkg
+	if paramData.isSlice {
 		arg.IsSlice = true
 		arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
 	}
 	return arg
 }
 
+var opParamCustomNotSlice = opParam{typCode: TYPE_CUSTOM, isSlice: false}
+var opParamUndNotSlice = opParam{typCode: TYPE_UNDEFINED, isSlice: false}
+var opParamBoolNotSlice = opParam{typCode: TYPE_BOOL, isSlice: false}
+var opParamAffNotSlice = opParam{typCode: TYPE_AFF, isSlice: false}
+var opParamI8NotSlice = opParam{typCode: TYPE_I8, isSlice: false}
+var opParamI16NotSlice = opParam{typCode: TYPE_I16, isSlice: false}
+var opParamI32NotSlice = opParam{typCode: TYPE_I32, isSlice: false}
+var opParamI64NotSlice = opParam{typCode: TYPE_I64, isSlice: false}
+var opParamUI8NotSlice = opParam{typCode: TYPE_UI8, isSlice: false}
+var opParamUI16NotSlice = opParam{typCode: TYPE_UI16, isSlice: false}
+var opParamUI32NotSlice = opParam{typCode: TYPE_UI32, isSlice: false}
+var opParamUI64NotSlice = opParam{typCode: TYPE_UI64, isSlice: false}
+var opParamF32NotSlice = opParam{typCode: TYPE_F32, isSlice: false}
+var opParamF64NotSlice = opParam{typCode: TYPE_F64, isSlice: false}
+var opParamStrNotSlice = opParam{typCode: TYPE_STR, isSlice: false}
+var opParamUndSlice = opParam{typCode: TYPE_UNDEFINED, isSlice: true}
+
 func init() {
+	httpPkg, err := PROGRAM.GetPackage("http")
+	if err != nil {
+		panic(err)
+	}
+
 	AddOpCode(OP_IDENTITY, "identity",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_JMP, "jmp",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{}) // newOpPar(TYPE_UNDEFINED, false) to allow 0 inputs (goto)
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{}) // newOpPar(opParamUndNotSlice) to allow 0 inputs (goto)
 	AddOpCode(OP_DEBUG, "debug",
 		[]*CXArgument{},
 		[]*CXArgument{})
 
 	AddOpCode(OP_SERIALIZE, "serialize",
-		[]*CXArgument{newOpPar(TYPE_AFF, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamAffNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_DESERIALIZE, "deserialize",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
 		[]*CXArgument{})
 
 	AddOpCode(OP_UND_EQUAL, "eq",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_UNEQUAL, "uneq",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_BITAND, "bitand",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_BITXOR, "bitxor",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_BITOR, "bitor",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_BITCLEAR, "bitclear",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_MUL, "mul",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_DIV, "div",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_MOD, "mod",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_ADD, "add",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_SUB, "sub",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_NEG, "neg",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_BITSHL, "bitshl",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_BITSHR, "bitshr",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)})
 	AddOpCode(OP_UND_LT, "lt",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_GT, "gt",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_LTEQ, "lteq",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_GTEQ, "gteq",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UND_LEN, "len",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_UND_PRINTF, "printf",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_UND_SPRINTF, "sprintf",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_UND_READ, "read",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
-
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_BOOL_PRINT, "bool.print",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_BOOL_EQUAL, "bool.eq",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_BOOL_UNEQUAL, "bool.uneq",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_BOOL_NOT, "bool.not",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_BOOL_OR, "bool.or",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_BOOL_AND, "bool.and",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_BOOL, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamBoolNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 
 	AddOpCode(OP_I8_STR, "i8.str",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_I8_I16, "i8.i16",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I8_I32, "i8.i32",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I8_I64, "i8.i64",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I8_UI8, "i8.ui8",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_I8_UI16, "i8.ui16",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_I8_UI32, "i8.ui32",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_I8_UI64, "i8.ui64",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_I8_F32, "i8.f32",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_I8_F64, "i8.f64",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_I8_PRINT, "i8.print",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_I8_ADD, "i8.add",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_SUB, "i8.sub",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_NEG, "i8.neg",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_MUL, "i8.mul",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_DIV, "i8.div",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_MOD, "i8.mod",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_ABS, "i8.abs",
-		[]*CXArgument{newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_GT, "i8.gt",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_GTEQ, "i8.gteq",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_LT, "i8.lt",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_LTEQ, "i8.lteq",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_EQ, "i8.eq",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_UNEQ, "i8.uneq",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I8_BITAND, "i8.bitand",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_BITOR, "i8.bitor",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_BITXOR, "i8.bitxor",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_BITCLEAR, "i8.bitclear",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_BITSHL, "i8.bitshl",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_BITSHR, "i8.bitshr",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_MAX, "i8.max",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_MIN, "i8.min",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I8_RAND, "i8.rand",
-		[]*CXArgument{newOpPar(TYPE_I8, false), newOpPar(TYPE_I8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI8NotSlice), newOpPar(opParamI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 
 	AddOpCode(OP_I16_STR, "i16.str",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_I16_I8, "i16.i8",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I16_I32, "i16.i32",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I16_I64, "i16.i64",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I16_UI8, "i16.ui8",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_I16_UI16, "i16.ui16",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_I16_UI32, "i16.ui32",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_I16_UI64, "i16.ui64",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_I16_F32, "i16.f32",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_I16_F64, "i16.f64",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_I16_PRINT, "i16.print",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_I16_ADD, "i16.add",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_SUB, "i16.sub",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_NEG, "i16.neg",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_MUL, "i16.mul",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_DIV, "i16.div",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_MOD, "i16.mod",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_ABS, "i16.abs",
-		[]*CXArgument{newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_GT, "i16.gt",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_GTEQ, "i16.gteq",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_LT, "i16.lt",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_LTEQ, "i16.lteq",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_EQ, "i16.eq",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_UNEQ, "i16.uneq",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I16_BITAND, "i16.bitand",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_BITOR, "i16.bitor",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_BITXOR, "i16.bitxor",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_BITCLEAR, "i16.bitclear",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_BITSHL, "i16.bitshl",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_BITSHR, "i16.bitshr",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_MAX, "i16.max",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_MIN, "i16.min",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I16_RAND, "i16.rand",
-		[]*CXArgument{newOpPar(TYPE_I16, false), newOpPar(TYPE_I16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI16NotSlice), newOpPar(opParamI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 
 	AddOpCode(OP_I32_STR, "i32.str",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_I32_I8, "i32.i8",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I32_I16, "i32.i16",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I32_I64, "i32.i64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I32_UI8, "i32.ui8",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_I32_UI16, "i32.ui16",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_I32_UI32, "i32.ui32",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_I32_UI64, "i32.ui64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_I32_F32, "i32.f32",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_I32_F64, "i32.f64",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_I32_PRINT, "i32.print",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_I32_ADD, "i32.add",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_SUB, "i32.sub",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_NEG, "i32.neg",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_MUL, "i32.mul",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_DIV, "i32.div",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_MOD, "i32.mod",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_ABS, "i32.abs",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_GT, "i32.gt",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_GTEQ, "i32.gteq",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_LT, "i32.lt",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_LTEQ, "i32.lteq",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_EQ, "i32.eq",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_UNEQ, "i32.uneq",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I32_BITAND, "i32.bitand",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_BITOR, "i32.bitor",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_BITXOR, "i32.bitxor",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_BITCLEAR, "i32.bitclear",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_BITSHL, "i32.bitshl",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_BITSHR, "i32.bitshr",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_MAX, "i32.max",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_MIN, "i32.min",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I32_RAND, "i32.rand",
-		[]*CXArgument{newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 
 	AddOpCode(OP_I64_STR, "i64.str",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_I64_I8, "i64.i8",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_I64_I16, "i64.i16",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_I64_I32, "i64.i32",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_I64_UI8, "i64.ui8",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_I64_UI16, "i64.ui16",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_I64_UI32, "i64.ui32",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_I64_UI64, "i64.ui64",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_I64_F32, "i64.f32",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_I64_F64, "i64.f64",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_I64_PRINT, "i64.print",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_I64_ADD, "i64.add",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_SUB, "i64.sub",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_NEG, "i64.neg",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_MUL, "i64.mul",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_DIV, "i64.div",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_MOD, "i64.mod",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_ABS, "i64.abs",
-		[]*CXArgument{newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_GT, "i64.gt",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_GTEQ, "i64.gteq",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_LT, "i64.lt",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_LTEQ, "i64.lteq",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_EQ, "i64.eq",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_UNEQ, "i64.uneq",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_I64_BITAND, "i64.bitand",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_BITOR, "i64.bitor",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_BITXOR, "i64.bitxor",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_BITCLEAR, "i64.bitclear",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_BITSHL, "i64.bitshl",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_BITSHR, "i64.bitshr",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_MAX, "i64.max",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_MIN, "i64.min",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_I64_RAND, "i64.rand",
-		[]*CXArgument{newOpPar(TYPE_I64, false), newOpPar(TYPE_I64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamI64NotSlice), newOpPar(opParamI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 
 	AddOpCode(OP_UI8_STR, "ui8.str",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_UI8_I8, "ui8.i8",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_UI8_I16, "ui8.i16",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_UI8_I32, "ui8.i32",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_UI8_I64, "ui8.i64",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_UI8_UI16, "ui8.ui16",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI8_UI32, "ui8.ui32",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI8_UI64, "ui8.ui64",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI8_F32, "ui8.f32",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_UI8_F64, "ui8.f64",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_UI8_PRINT, "ui8.print",
-		[]*CXArgument{newOpPar(TYPE_UI8, false)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_UI8_ADD, "ui8.add",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_SUB, "ui8.sub",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_MUL, "ui8.mul",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_DIV, "ui8.div",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_MOD, "ui8.mod",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_GT, "ui8.gt",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_GTEQ, "ui8.gteq",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_LT, "ui8.lt",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_LTEQ, "ui8.lteq",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_EQ, "ui8.eq",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_UNEQ, "ui8.uneq",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI8_BITAND, "ui8.bitand",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_BITOR, "ui8.bitor",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_BITXOR, "ui8.bitxor",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_BITCLEAR, "ui8.bitclear",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_BITSHL, "ui8.bitshl",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_BITSHR, "ui8.bitshr",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_MAX, "ui8.max",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_MIN, "ui8.min",
-		[]*CXArgument{newOpPar(TYPE_UI8, false), newOpPar(TYPE_UI8, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice), newOpPar(opParamUI8NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI8_RAND, "ui8.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 
 	AddOpCode(OP_UI16_STR, "ui16.str",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_UI16_I8, "ui16.i8",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_UI16_I16, "ui16.i16",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_UI16_I32, "ui16.i32",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_UI16_I64, "ui16.i64",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_UI16_UI8, "ui16.ui8",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI16_UI32, "ui16.ui32",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI16_UI64, "ui16.ui64",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI16_F32, "ui16.f32",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_UI16_F64, "ui16.f64",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_UI16_PRINT, "ui16.print",
-		[]*CXArgument{newOpPar(TYPE_UI16, false)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_UI16_ADD, "ui16.add",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_SUB, "ui16.sub",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_MUL, "ui16.mul",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_DIV, "ui16.div",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_MOD, "ui16.mod",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_GT, "ui16.gt",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_GTEQ, "ui16.gteq",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_LT, "ui16.lt",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_LTEQ, "ui16.lteq",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_EQ, "ui16.eq",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_UNEQ, "ui16.uneq",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI16_BITAND, "ui16.bitand",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_BITOR, "ui16.bitor",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_BITXOR, "ui16.bitxor",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_BITCLEAR, "ui16.bitclear",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_BITSHL, "ui16.bitshl",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_BITSHR, "ui16.bitshr",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_MAX, "ui16.max",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_MIN, "ui16.min",
-		[]*CXArgument{newOpPar(TYPE_UI16, false), newOpPar(TYPE_UI16, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice), newOpPar(opParamUI16NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI16_RAND, "ui16.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 
 	AddOpCode(OP_UI32_STR, "ui32.str",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_UI32_I8, "ui32.i8",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_UI32_I16, "ui32.i16",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_UI32_I32, "ui32.i32",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_UI32_I64, "ui32.i64",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_UI32_UI8, "ui32.ui8",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI32_UI16, "ui32.ui16",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI32_UI64, "ui32.ui64",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI32_F32, "ui32.f32",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_UI32_F64, "ui32.f64",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_UI32_PRINT, "ui32.print",
-		[]*CXArgument{newOpPar(TYPE_UI32, false)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_UI32_ADD, "ui32.add",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_SUB, "ui32.sub",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_MUL, "ui32.mul",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_DIV, "ui32.div",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_MOD, "ui32.mod",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_GT, "ui32.gt",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_GTEQ, "ui32.gteq",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_LT, "ui32.lt",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_LTEQ, "ui32.lteq",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_EQ, "ui32.eq",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_UNEQ, "ui32.uneq",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI32_BITAND, "ui32.bitand",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_BITOR, "ui32.bitor",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_BITXOR, "ui32.bitxor",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_BITCLEAR, "ui32.bitclear",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_BITSHL, "ui32.bitshl",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_BITSHR, "ui32.bitshr",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_MAX, "ui32.max",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_MIN, "ui32.min",
-		[]*CXArgument{newOpPar(TYPE_UI32, false), newOpPar(TYPE_UI32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice), newOpPar(opParamUI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI32_RAND, "ui32.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 
 	AddOpCode(OP_UI64_STR, "ui64.str",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_UI64_I8, "ui64.i8",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_UI64_I16, "ui64.i16",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_UI64_I32, "ui64.i32",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_UI64_I64, "ui64.i64",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_UI64_UI8, "ui64.ui8",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_UI64_UI16, "ui64.ui16",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_UI64_UI32, "ui64.ui32",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_UI64_F32, "ui64.f32",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_UI64_F64, "ui64.f64",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_UI64_PRINT, "ui64.print",
-		[]*CXArgument{newOpPar(TYPE_UI64, false)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_UI64_ADD, "ui64.add",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_SUB, "ui64.sub",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_MUL, "ui64.mul",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_DIV, "ui64.div",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_MOD, "ui64.mod",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_GT, "ui64.gt",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_GTEQ, "ui64.gteq",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_LT, "ui64.lt",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_LTEQ, "ui64.lteq",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_EQ, "ui64.eq",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_UNEQ, "ui64.uneq",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_UI64_BITAND, "ui64.bitand",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_BITOR, "ui64.bitor",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_BITXOR, "ui64.bitxor",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_BITCLEAR, "ui64.bitclear",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_BITSHL, "ui64.bitshl",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_BITSHR, "ui64.bitshr",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_MAX, "ui64.max",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_MIN, "ui64.min",
-		[]*CXArgument{newOpPar(TYPE_UI64, false), newOpPar(TYPE_UI64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice), newOpPar(opParamUI64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_UI64_RAND, "ui64.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 
 	AddOpCode(OP_F32_IS_NAN, "f32.isnan",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_STR, "f32.str",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_F32_I8, "f32.i8",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_F32_I16, "f32.i16",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_F32_I32, "f32.i32",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_F32_I64, "f32.i64",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_F32_UI8, "f32.ui8",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_F32_UI16, "f32.ui16",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_F32_UI32, "f32.ui32",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_F32_UI64, "f32.ui64",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_F32_F32, "f32.f32",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_F64, "f32.f64",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F32_PRINT, "f32.print",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_F32_ADD, "f32.add",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_SUB, "f32.sub",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_NEG, "f32.neg",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_MUL, "f32.mul",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_DIV, "f32.div",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_MOD, "f32.mod",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_ABS, "f32.abs",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_POW, "f32.pow",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_GT, "f32.gt",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_GTEQ, "f32.gteq",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_LT, "f32.lt",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_LTEQ, "f32.lteq",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_EQ, "f32.eq",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_UNEQ, "f32.uneq",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F32_ACOS, "f32.acos",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_COS, "f32.cos",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_ASIN, "f32.asin",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_SIN, "f32.sin",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_SQRT, "f32.sqrt",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_LOG, "f32.log",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_LOG2, "f32.log2",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_LOG10, "f32.log10",
-		[]*CXArgument{newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_MAX, "f32.max",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_MIN, "f32.min",
-		[]*CXArgument{newOpPar(TYPE_F32, false), newOpPar(TYPE_F32, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice), newOpPar(opParamF32NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F32_RAND, "f32.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 
 	AddOpCode(OP_F64_IS_NAN, "f64.isnan",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_STR, "f64.str",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_F64_I8, "f64.i8",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_F64_I16, "f64.i16",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_F64_I32, "f64.i32",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_F64_I64, "f64.i64",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_F64_UI8, "f64.ui8",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_F64_UI16, "f64.ui16",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_F64_UI32, "f64.ui32",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_F64_UI64, "f64.ui64",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_F64_F32, "f64.f32",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_F64_F64, "f64.f64",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_PRINT, "f64.print",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_F64_ADD, "f64.add",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_SUB, "f64.sub",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_NEG, "f64.neg",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_MUL, "f64.mul",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_DIV, "f64.div",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_MOD, "f32.mod",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_ABS, "f64.abs",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_POW, "f64.pow",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_GT, "f64.gt",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_GTEQ, "f64.gteq",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_LT, "f64.lt",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_LTEQ, "f64.lteq",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_EQ, "f64.eq",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_UNEQ, "f64.uneq",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_F64_ACOS, "f64.acos",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_COS, "f64.cos",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_ASIN, "f64.asin",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_SIN, "f64.sin",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_SQRT, "f64.sqrt",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_LOG, "f64.log",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_LOG2, "f64.log2",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_LOG10, "f64.log10",
-		[]*CXArgument{newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_MAX, "f64.max",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_MIN, "f64.min",
-		[]*CXArgument{newOpPar(TYPE_F64, false), newOpPar(TYPE_F64, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamF64NotSlice), newOpPar(opParamF64NotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_F64_RAND, "f64.rand",
 		[]*CXArgument{},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
-
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 	AddOpCode(OP_STR_PRINT, "str.print",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_STR_CONCAT, "str.concat",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_STR_SUBSTR, "str.substr",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_STR_INDEX, "str.index",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_STR_TRIM_SPACE, "str.trimspace",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_STR_EQ, "str.eq",
-		[]*CXArgument{newOpPar(TYPE_STR, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 
 	AddOpCode(OP_STR_STR, "str.str",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_STR_I8, "str.i8",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I8, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI8NotSlice)})
 	AddOpCode(OP_STR_I16, "str.i16",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I16, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI16NotSlice)})
 	AddOpCode(OP_STR_I32, "str.i32",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 	AddOpCode(OP_STR_I64, "str.i64",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_I64, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamI64NotSlice)})
 	AddOpCode(OP_STR_UI8, "str.ui8",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI8, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI8NotSlice)})
 	AddOpCode(OP_STR_UI16, "str.ui16",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI16, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI16NotSlice)})
 	AddOpCode(OP_STR_UI32, "str.ui32",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI32NotSlice)})
 	AddOpCode(OP_STR_UI64, "str.ui64",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_UI64, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamUI64NotSlice)})
 	AddOpCode(OP_STR_F32, "str.f32",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_F32, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamF32NotSlice)})
 	AddOpCode(OP_STR_F64, "str.f64",
-		[]*CXArgument{newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_F64, false)})
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamF64NotSlice)})
 
 	AddOpCode(OP_APPEND, "append",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+		[]*CXArgument{newOpPar(opParamUndSlice), newOpPar(opParamUndSlice)},
+		[]*CXArgument{newOpPar(opParamUndSlice)})
 	AddOpCode(OP_RESIZE, "resize",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+		[]*CXArgument{newOpPar(opParamUndSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUndSlice)})
 	AddOpCode(OP_INSERT, "insert",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+		[]*CXArgument{newOpPar(opParamUndSlice), newOpPar(opParamUndSlice)},
+		[]*CXArgument{newOpPar(opParamUndSlice)})
 	AddOpCode(OP_REMOVE, "remove",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true)})
+		[]*CXArgument{newOpPar(opParamUndSlice), newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamUndSlice)})
 	AddOpCode(OP_COPY, "copy",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, true), newOpPar(TYPE_UNDEFINED, true)},
-		[]*CXArgument{newOpPar(TYPE_I32, false)})
+		[]*CXArgument{newOpPar(opParamUndSlice), newOpPar(opParamUndSlice)},
+		[]*CXArgument{newOpPar(opParamI32NotSlice)})
 
 	AddOpCode(OP_ASSERT, "assert",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
-		[]*CXArgument{newOpPar(TYPE_BOOL, false)})
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice)})
 	AddOpCode(OP_TEST, "test",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_PANIC, "panic",
-		[]*CXArgument{newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_UNDEFINED, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamUndNotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_PANIC_IF, "panicIf",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_PANIC_IF_NOT, "panicIfNot",
-		[]*CXArgument{newOpPar(TYPE_BOOL, false), newOpPar(TYPE_STR, false)},
+		[]*CXArgument{newOpPar(opParamBoolNotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_STRERROR, "strerror",
-		[]*CXArgument{newOpPar(TYPE_I32, false)},
-		[]*CXArgument{newOpPar(TYPE_STR, false)})
+		[]*CXArgument{newOpPar(opParamI32NotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
 	// affordances
 	AddOpCode(OP_AFF_PRINT, "aff.print",
-		[]*CXArgument{newOpPar(TYPE_AFF, false)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AFF_QUERY, "aff.query",
-		[]*CXArgument{newOpPar(TYPE_AFF, false)},
-		[]*CXArgument{newOpPar(TYPE_AFF, false)})
+		[]*CXArgument{newOpPar(opParamAffNotSlice)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice)})
 	AddOpCode(OP_AFF_ON, "aff.on",
-		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_AFF, false)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice), newOpPar(opParamAffNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AFF_OF, "aff.of",
-		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_AFF, false)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice), newOpPar(opParamAffNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AFF_INFORM, "aff.inform",
-		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_AFF, false)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamAffNotSlice)},
 		[]*CXArgument{})
 	AddOpCode(OP_AFF_REQUEST, "aff.request",
-		[]*CXArgument{newOpPar(TYPE_AFF, false), newOpPar(TYPE_I32, false), newOpPar(TYPE_AFF, false)},
+		[]*CXArgument{newOpPar(opParamAffNotSlice), newOpPar(opParamI32NotSlice), newOpPar(opParamAffNotSlice)},
+		[]*CXArgument{})
+
+	// http
+	AddOpCode(OP_HTTP_SERVE, "http.Serve",
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
+	AddOpCode(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe",
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
+	AddOpCode(OP_HTTP_NEW_REQUEST, "http.NewRequest",
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamCustomNotSlice)})
+	AddOpCode(OP_HTTP_DO, "http.Do",
+		[]*CXArgument{newOpPar(opParamCustomNotSlice)},
+		[]*CXArgument{newOpPar(opParamCustomNotSlice), newOpPar(opParamStrNotSlice)})
+	AddOpCode(OP_DMSG_DO, "http.DmsgDo",
+		[]*CXArgument{newOpPar(opParamCustomNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
+
+	httpRequestType, err := httpPkg.GetStruct("Request")
+	if err != nil {
+		panic(err)
+	}
+	requestParam := MakeArgument("Request", "", -1).AddType(TypeNames[TYPE_CUSTOM])
+	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_STRUCT)
+	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_POINTER)
+	requestParam.IsPointer = true
+	requestParam.Size = TYPE_POINTER_SIZE
+	requestParam.TotalSize = TYPE_POINTER_SIZE
+	requestParam.CustomType = httpRequestType
+
+	AddOpCode(OP_HTTP_HANDLE, "http.Handle",
+		[]*CXArgument{newOpPar(opParamStrNotSlice), newOpPar(
+			opParam{typCode: TYPE_FUNC,
+				pkg: httpPkg,
+				inputs: []*CXArgument{
+					MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]),
+					requestParam,
+				}})},
+		[]*CXArgument{})
+
+	AddOpCode(OP_HTTP_CLOSE, "http.Close",
+		[]*CXArgument{},
 		[]*CXArgument{})
 
 	opcodeHandlerFinders = append(opcodeHandlerFinders, handleCoreOpcode)
@@ -2603,6 +2689,22 @@ func handleCoreOpcode(opCode int) opcodeHandler {
 		return opAffInform
 	case OP_AFF_REQUEST:
 		return opAffRequest
+
+	// http
+	case OP_HTTP_SERVE:
+		return opHTTPServe
+	case OP_HTTP_LISTEN_AND_SERVE:
+		return opHTTPListenAndServe
+	case OP_HTTP_NEW_REQUEST:
+		return opHTTPNewRequest
+	case OP_HTTP_DO:
+		return opHTTPDo
+	case OP_HTTP_HANDLE:
+		return opHTTPHandle
+	case OP_HTTP_CLOSE:
+		return opHTTPClose
+	case OP_DMSG_DO:
+		return opDMSGDo
 	}
 
 	return nil

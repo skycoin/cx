@@ -160,7 +160,7 @@ repository](https://github.com/SkycoinProject/cx-book).
 
 ## CX Chains:
 
-* https://github.com/amherag/skycoin
+* https://github.com/SkycoinProject/cx-chains
 
 ## CX Examples:
 

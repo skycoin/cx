@@ -6,6 +6,8 @@ import (
 	"os"
 
 	. "github.com/SkycoinProject/cx/cx"
+
+	"github.com/jinzhu/copier"
 )
 
 // FunctionHeader takes a function name ('ident') and either creates the
@@ -322,6 +324,12 @@ func ProcessUndExpression(expr *CXExpression) {
 
 func ProcessPointerStructs(expr *CXExpression) {
 	for _, arg := range append(expr.Inputs, expr.Outputs...) {
+		for _, fld := range arg.Fields {
+			if fld.IsPointer && fld.DereferenceLevels == 0 {
+				fld.DereferenceLevels++
+				fld.DereferenceOperations = append(fld.DereferenceOperations, DEREF_POINTER)
+			}
+		}
 		if arg.IsStruct && arg.IsPointer && len(arg.Fields) > 0 && arg.DereferenceLevels == 0 {
 			arg.DereferenceLevels++
 			arg.DereferenceOperations = append(arg.DereferenceOperations, DEREF_POINTER)
@@ -400,50 +408,63 @@ func ProcessExpressionArguments(symbols *[]map[string]*CXArgument, symbolsScope 
 	}
 }
 
-// isPointer checks if `sym` is a candidate for the garbage collector to check.
-// For example, if `sym` is a slice, the garbage collector will need to check
-// if the slice on the heap needs to be relocated.
-func isPointer(sym *CXArgument) bool {
-	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
-	// TODO: We could still pre-compute a list of candidates for globals.
-	if sym.Offset >= PRGRM.StackSize && sym.Name != "" {
-		return false
-	}
-	// NOTE: Strings are considered as `IsPointer`s by the runtime.
-	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
-		return true
-	}
-	// If `sym` is a structure instance, we need to check if the last field
-	// being access is a pointer candidate
-	if len(sym.Fields) > 0 {
-		return isPointer(sym.Fields[len(sym.Fields)-1])
-	}
-	return false
-}
+// isPointerAdded checks if `sym` has already been added to `fn.ListOfPointers`.
+func isPointerAdded(fn *CXFunction, sym *CXArgument) (found bool) {
+	for _, ptr := range fn.ListOfPointers {
+		if sym.Name == ptr.Name {
+			if len(sym.Fields) == 0 && len(ptr.Fields) == 0 {
+				found = true
+				break
+			}
 
-// AddPointer checks if `sym` or its last field, if a struct, behaves like a pointer (slice, pointer, string). If this is the case, `sym` is added to `fn.ListOfPointers` so the CX runtime does not have to determine this.
-func AddPointer(fn *CXFunction, sym *CXArgument) {
-	// Checking if it is a pointer candidate.
-	if isPointer(sym) {
-		// Checking if it was already added to the list.
-		var found bool
-		for _, ptr := range fn.ListOfPointers {
-			if sym.Name == ptr.Name {
-				if len(sym.Fields) == 0 && len(ptr.Fields) == 0 {
-					found = true
-					break
-				}
-
-				// Checking if we're referring to the same symbol and same fields being accessed. For instance, `foo.bar` != `foo.car` as these will have different memory offset to be considered by the garbage collector.
-				if len(sym.Fields) > 0 &&
-					len(sym.Fields) == len(ptr.Fields) &&
-					sym.Fields[len(sym.Fields)-1].Name == ptr.Fields[len(ptr.Fields)-1].Name {
-					found = true
-					break
-				}
+			// Checking if we're referring to the same symbol and
+			// same fields being accessed. For instance, `foo.bar` !=
+			// `foo.car` as these will have different memory offset to
+			// be considered by the garbage collector.
+			if len(sym.Fields) > 0 &&
+				len(sym.Fields) == len(ptr.Fields) &&
+				sym.Fields[len(sym.Fields)-1].Name == ptr.Fields[len(ptr.Fields)-1].Name {
+				found = true
+				break
 			}
 		}
-		if !found {
+	}
+
+	return found
+}
+
+// AddPointer checks if `sym` or its last field, if a struct, behaves like a
+// pointer (slice, pointer, string). If this is the case, `sym` is added to
+// `fn.ListOfPointers` so the CX runtime does not have to determine this.
+func AddPointer(fn *CXFunction, sym *CXArgument) {
+	// Ignore if it's a global variable.
+	if sym.Offset > PRGRM.StackSize {
+		return
+	}
+	// We first need to check if we're going to add `sym` with fields.
+	// If `sym` has fields, then we `return` and we don't add the root `sym`.
+	// If `sym` has no fields, then we check if `sym` is a pointer and
+	// we add it if it is.
+
+	// Field symbol:
+	// Checking if it is a pointer candidate and if it was already
+	// added to the list.
+	if len(sym.Fields) > 0 {
+		fld := sym.Fields[len(sym.Fields)-1]
+		if IsPointer(fld) && !isPointerAdded(fn, sym) {
+			fn.ListOfPointers = append(fn.ListOfPointers, sym)
+		}
+	}
+	// Root symbol:
+	// Checking if it is a pointer candidate and if it was already
+	// added to the list.
+	if IsPointer(sym) && !isPointerAdded(fn, sym) {
+		if len(sym.Fields) > 0 {
+			tmp := CXArgument{}
+			copier.Copy(&tmp, sym)
+			tmp.Fields = nil
+			fn.ListOfPointers = append(fn.ListOfPointers, &tmp)
+		} else {
 			fn.ListOfPointers = append(fn.ListOfPointers, sym)
 		}
 	}
@@ -653,10 +674,11 @@ func ProcessStringAssignment(expr *CXExpression) {
 // For example: `var foo i32; var bar i32; bar = &foo` is not valid.
 func ProcessReferenceAssignment(expr *CXExpression) {
 	for _, out := range expr.Outputs {
-		if out.PassBy == PASSBY_REFERENCE &&
-			!hasDeclSpec(out, DECL_POINTER) &&
-			out.Type != TYPE_STR && !out.IsSlice {
-			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", out.Name)
+		elt := GetAssignmentElement(out)
+		if elt.PassBy == PASSBY_REFERENCE &&
+			!hasDeclSpec(elt, DECL_POINTER) &&
+			elt.Type != TYPE_STR && !elt.IsSlice {
+			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
 		}
 	}
 
@@ -670,8 +692,6 @@ func ProcessSlice(inp *CXArgument) {
 	} else {
 		elt = inp
 	}
-
-	// elt.IsPointer = true
 
 	if elt.IsSlice && len(elt.DereferenceOperations) > 0 && elt.DereferenceOperations[len(elt.DereferenceOperations)-1] == DEREF_POINTER {
 		elt.DereferenceOperations = elt.DereferenceOperations[:len(elt.DereferenceOperations)-1]
@@ -715,7 +735,25 @@ func lookupSymbol(pkgName, ident string, symbols *[]map[string]*CXArgument) (*CX
 		}
 	}
 
-	return nil, errors.New("identifier '" + ident + "' does not exist")
+	// Checking if `ident` refers to a function.
+	pkg, err := PRGRM.GetPackage(pkgName)
+	if err != nil {
+		return nil, err
+	}
+
+	notFound := errors.New("identifier '" + ident + "' does not exist")
+
+	// We're not checking for that error
+	fn, err := pkg.GetFunction(ident)
+	if err != nil {
+		return nil, notFound
+	}
+	// Then we found a function by that name. Let's create a `CXArgument` of
+	// type `func` with that name.
+	fnArg := MakeArgument(ident, fn.FileName, fn.FileLine).AddType(TypeNames[TYPE_FUNC])
+	fnArg.Package = pkg
+
+	return fnArg, nil
 }
 
 // UpdateSymbolsTable adds `sym` to the innermost scope (last element of slice) in `symbols`.
@@ -917,26 +955,23 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 		if len(sym.Fields) > 0 {
 			elt := GetAssignmentElement(sym)
 
-			declSpec := make([]int, len(elt.DeclarationSpecifiers))
-
-			for i, spec := range elt.DeclarationSpecifiers {
-				declSpec[i] = spec
-			}
-
-			for c := len(elt.DeclarationSpecifiers) - 1; c >= 0; c-- {
+			declSpec := []int{}
+			for c := 0; c < len(elt.DeclarationSpecifiers); c++ {
 				switch elt.DeclarationSpecifiers[c] {
 				case DECL_INDEXING:
-					if declSpec[len(declSpec)-2] == DECL_ARRAY || declSpec[len(declSpec)-2] == DECL_SLICE {
-						declSpec = declSpec[:len(declSpec)-2]
+					if declSpec[len(declSpec)-1] == DECL_ARRAY || declSpec[len(declSpec)-1] == DECL_SLICE {
+						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indexing"))
 					}
 				case DECL_DEREF:
-					if declSpec[len(declSpec)-2] == DECL_POINTER {
-						declSpec = declSpec[:len(declSpec)-2]
+					if declSpec[len(declSpec)-1] == DECL_POINTER {
+						declSpec = declSpec[:len(declSpec)-1]
 					} else {
 						println(CompilationError(sym.FileName, sym.FileLine), fmt.Sprintf("invalid indirection"))
 					}
+				default:
+					declSpec = append(declSpec, elt.DeclarationSpecifiers[c])
 				}
 			}
 
@@ -972,6 +1007,7 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 					}
 				}
 			}
+
 			sym.DeclarationSpecifiers = declSpec
 		}
 	} else {
@@ -994,6 +1030,25 @@ func CopyArgFields(sym *CXArgument, arg *CXArgument) {
 
 	if arg.Type == TYPE_STR {
 		sym.IsPointer = true
+	}
+
+	// Checking if it's a slice struct field. We'll do the same process as
+	// below (as in the `arg.IsSlice` check), but the process differs in the
+	// case of a slice struct field.
+	elt := GetAssignmentElement(sym)
+	if !arg.IsSlice && arg.CustomType != nil && elt.IsSlice {
+		// elt.DereferenceOperations = []int{4, 4}
+		for i, deref := range elt.DereferenceOperations {
+			// The parser when reading `foo[5]` in postfix.go does not know if `foo`
+			// is a slice or an array. At this point we now know it's a slice and we need
+			// to change those dereferences to DEREF_SLICE.
+			if deref == DEREF_ARRAY {
+				elt.DereferenceOperations[i] = DEREF_SLICE
+			}
+		}
+		if elt.DereferenceOperations[0] == DEREF_POINTER {
+			elt.DereferenceOperations = elt.DereferenceOperations[1:]
+		}
 	}
 
 	if arg.IsSlice {
@@ -1117,20 +1172,18 @@ func ProcessSymbolFields(sym *CXArgument, arg *CXArgument) {
 }
 
 func SetFinalSize(symbols *[]map[string]*CXArgument, sym *CXArgument) {
-	var totalSize int = sym.TotalSize
-	var size int = sym.Size
+	var finalSize int = sym.TotalSize
+
 	arg, err := lookupSymbol(sym.Package.Name, sym.Name, symbols)
 	if err == nil {
-		PreFinalSize(&totalSize, &size, sym, arg)
+		PreFinalSize(&finalSize, sym, arg)
 		for _, fld := range sym.Fields {
-			totalSize = fld.TotalSize
-			size = fld.Size
-			PreFinalSize(&totalSize, &size, fld, arg)
+			finalSize = fld.TotalSize
+			PreFinalSize(&finalSize, fld, arg)
 		}
 	}
 
-	sym.TotalSize = totalSize
-	sym.Size = size
+	sym.TotalSize = finalSize
 }
 
 // GetGlobalSymbol tries to retrieve `ident` from `symPkg`'s globals if `ident` is not found in the local scope.
@@ -1144,7 +1197,7 @@ func GetGlobalSymbol(symbols *[]map[string]*CXArgument, symPkg *CXPackage, ident
 	}
 }
 
-func PreFinalSize(totalSize *int, size *int, sym *CXArgument, arg *CXArgument) {
+func PreFinalSize(finalSize *int, sym *CXArgument, arg *CXArgument) {
 	idxCounter := 0
 	elt := GetAssignmentElement(sym)
 	for _, op := range elt.DereferenceOperations {
@@ -1153,34 +1206,28 @@ func PreFinalSize(totalSize *int, size *int, sym *CXArgument, arg *CXArgument) {
 		}
 		switch op {
 		case DEREF_ARRAY:
-			*totalSize /= sym.Lengths[idxCounter]
-			*size = sym.Size
+			*finalSize /= elt.Lengths[idxCounter]
 			idxCounter++
 		case DEREF_POINTER:
 			if len(arg.DeclarationSpecifiers) > 0 {
-				var subTotalSize int = 0
-				var subSize int = 0
+				var subSize int
+				subSize = 1
 				for _, decl := range arg.DeclarationSpecifiers {
 					switch decl {
 					case DECL_ARRAY:
-						subTotalSize = 1
 						for _, len := range arg.Lengths {
-							subTotalSize *= len
+							subSize *= len
 						}
-						subSize = arg.Size
 					// case DECL_SLICE:
 					// 	subSize = TYPE_POINTER_SIZE
 					case DECL_BASIC:
-						subTotalSize = GetArgSize(sym.Type)
-						subSize = subTotalSize
+						subSize = GetArgSize(sym.Type)
 					case DECL_STRUCT:
-						subTotalSize = arg.CustomType.Size
-						subSize = subTotalSize
+						subSize = arg.CustomType.Size
 					}
 				}
 
-				*totalSize = subTotalSize
-				*size = subSize
+				*finalSize = subSize
 			}
 		}
 	}

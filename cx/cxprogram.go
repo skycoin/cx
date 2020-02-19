@@ -320,6 +320,15 @@ func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
 	return PROGRAM, nil
 }
 
+// GetProgram returns the CX program assigned to global variable `PROGRAM`.
+// This function is mainly used for CX chains.
+func GetProgram() (*CXProgram, error) {
+	if PROGRAM == nil {
+		return nil, fmt.Errorf("a CX program has not been loaded")
+	}
+	return PROGRAM, nil
+}
+
 // SelectPackage ...
 func (prgrm *CXProgram) SelectPackage(name string) (*CXPackage, error) {
 	// prgrmStep := &CXProgramStep{
@@ -407,7 +416,8 @@ func (prgrm *CXProgram) PrintAllObjects() {
 		op := prgrm.CallStack[c].Operator
 
 		for _, ptr := range op.ListOfPointers {
-			var heapOffset int32 = mustDeserializeI32(prgrm.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
+			heapOffset := mustDeserializeI32(prgrm.Memory[fp+ptr.Offset : fp+ptr.Offset+TYPE_POINTER_SIZE])
+
 			var byts []byte
 
 			if ptr.CustomType != nil {

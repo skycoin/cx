@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // GetSize ...
@@ -73,7 +73,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 
 			sizeToUse := GetDerefSize(arg)
 			*finalOffset += int(ReadI32(fp, arg.Indexes[idxCounter])) * sizeToUse
-
 			if !IsValidSliceIndex(baseOffset, *finalOffset, sizeToUse) {
 				panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE)
 			}
@@ -383,6 +382,11 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 			for c := int32(0); c < sliceLen; c++ {
 				cHeapOffset := mustDeserializeI32(prgrm.Memory[int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE) : int(heapOffset)+offsetToElements+int(c*TYPE_POINTER_SIZE)+4])
 
+				if cHeapOffset <= int32(prgrm.HeapStartsAt) {
+					// Then it's pointing to null or data segment
+					continue
+				}
+
 				// Then it's not pointing to the object moved by the GC or it's pointing to
 				// an object in the stack segment or nil.
 				if cHeapOffset == oldAddr {
@@ -398,19 +402,49 @@ func updatePointerTree(prgrm *CXProgram, atOffset int, oldAddr, newAddr int32, b
 // moved to address 4141, every symbol in a `CXProgram`'s `CallStack` and in its global variables need to be updated to point now to
 // 4141 instead of 5151.
 func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
+	if oldAddr == newAddr {
+		return
+	}
 	// TODO: `oldAddr` could be received as a slice of bytes that represent the old address of the object,
 	// as it needs to be converted to bytes later on anyways. However, I'm sticking to an int32
 	// for a bit more of clarity.
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == TYPE_STR) && glbl.CustomType == nil {
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) < prgrm.HeapStartsAt {
+					continue
+				}
+
 				updatePointerTree(prgrm, glbl.Offset, oldAddr, newAddr, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
 
+			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						updatePointerTree(prgrm, glbl.Offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+					if !IsPointer(fld) {
+						continue
+					}
+					offset := glbl.Offset + fld.Offset
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) < prgrm.HeapStartsAt {
+						continue
+					}
+
+					if fld.IsPointer || fld.IsSlice || fld.Type == TYPE_STR {
+						updatePointerTree(prgrm, offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -436,14 +470,46 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 			offset := ptr.Offset
 			offset += fp
 
-			// If we're accessing to a field of that pointer, we need to
-			// take into consideration its offset.
-			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
-			if len(ptr.Fields) > 0 {
+			ptrIsPointer := IsPointer(ptr)
+
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) > prgrm.HeapStartsAt {
+					updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+
+					// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+					if ptr.CustomType != nil {
+						if int(heapOffset) >= prgrm.HeapStartsAt {
+							for _, fld := range ptr.CustomType.Fields {
+								updatePointerTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+							}
+						}
+					}
+				}
+			}
+
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
-				updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
-			} else {
-				updatePointerTree(prgrm, offset, oldAddr, newAddr, ptr.Type, ptr.DeclarationSpecifiers[1:])
+
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[offset+fld.Offset:offset+fld.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) > prgrm.HeapStartsAt {
+					updatePointerTree(prgrm, offset+fld.Offset, oldAddr, newAddr, fld.Type, fld.DeclarationSpecifiers[1:])
+				}
 			}
 
 		}
@@ -461,13 +527,37 @@ func MarkAndCompact(prgrm *CXProgram) {
 	// global variables
 	for _, pkg := range prgrm.Packages {
 		for _, glbl := range pkg.Globals {
-			if glbl.IsPointer || glbl.IsSlice {
+			if (glbl.IsPointer || glbl.IsSlice || glbl.Type == TYPE_STR) && glbl.CustomType == nil {
+				// Getting the offset to the object in the heap
+				var heapOffset int32
+				_, err := encoder.DeserializeAtomic(prgrm.Memory[glbl.Offset:glbl.Offset+TYPE_POINTER_SIZE], &heapOffset)
+				if err != nil {
+					panic(err)
+				}
+
+				if int(heapOffset) < prgrm.HeapStartsAt {
+					continue
+				}
 				MarkObjectsTree(prgrm, glbl.Offset, glbl.Type, glbl.DeclarationSpecifiers[1:])
 			}
+
+			// If `ptr` has fields, we need to navigate the heap and mark its fields too.
 			if glbl.CustomType != nil {
 				for _, fld := range glbl.CustomType.Fields {
-					if fld.IsPointer || fld.IsSlice {
-						MarkObjectsTree(prgrm, glbl.Offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+					offset := glbl.Offset + fld.Offset
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) < prgrm.HeapStartsAt {
+						continue
+					}
+
+					if fld.IsPointer || fld.IsSlice || fld.Type == TYPE_STR {
+						MarkObjectsTree(prgrm, offset, fld.Type, fld.DeclarationSpecifiers[1:])
 					}
 				}
 			}
@@ -493,21 +583,41 @@ func MarkAndCompact(prgrm *CXProgram) {
 			offset := ptr.Offset
 			offset += fp
 
-			// If we're accessing to a field of that pointer, we need to
-			// take into consideration its offset.
-			// TODO: I think this could be pre-computed at compile-time so we can just use `ptr.Offset`.
-			if len(ptr.Fields) > 0 {
+			ptrIsPointer := IsPointer(ptr)
+
+			// Checking if we need to mark `ptr`.
+			if ptrIsPointer {
+				// If `ptr` has fields, we need to navigate the heap and mark its fields too.
+				if ptr.CustomType != nil {
+					// Getting the offset to the object in the heap
+					var heapOffset int32
+					_, err := encoder.DeserializeAtomic(prgrm.Memory[offset:offset+TYPE_POINTER_SIZE], &heapOffset)
+					if err != nil {
+						panic(err)
+					}
+
+					if int(heapOffset) >= prgrm.HeapStartsAt {
+						for _, fld := range ptr.CustomType.Fields {
+							MarkObjectsTree(prgrm, int(heapOffset)+OBJECT_HEADER_SIZE+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
+						}
+					}
+				}
+
+				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
+			}
+
+			// Checking if the field being accessed needs to be marked.
+			// If the root (`ptr`) is a pointer, this step is unnecessary.
+			if len(ptr.Fields) > 0 && !ptrIsPointer && IsPointer(ptr.Fields[len(ptr.Fields)-1]) {
 				fld := ptr.Fields[len(ptr.Fields)-1]
 				MarkObjectsTree(prgrm, offset+fld.Offset, fld.Type, fld.DeclarationSpecifiers[1:])
-			} else {
-				MarkObjectsTree(prgrm, offset, ptr.Type, ptr.DeclarationSpecifiers[1:])
 			}
 		}
 
 		fp += op.Size
 	}
 
-	// relocation of live objects
+	// Relocation of live objects.
 	for c := prgrm.HeapStartsAt + NULL_HEAP_ADDRESS_OFFSET; c < prgrm.HeapStartsAt+prgrm.HeapPointer; {
 		objSize := mustDeserializeI32(prgrm.Memory[c+MARK_SIZE+FORWARDING_ADDRESS_SIZE : c+MARK_SIZE+FORWARDING_ADDRESS_SIZE+OBJECT_SIZE])
 
@@ -942,57 +1052,57 @@ func readDataF64(bytes []byte) (out []float64) {
 func readData(inp *CXArgument, bytes []byte) interface{} {
 	switch inp.Type {
 	case TYPE_I8:
-		var data []int8 = readDataI8(bytes)
+		data := readDataI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I16:
-		var data []int16 = readDataI16(bytes)
+		data := readDataI16(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I32:
-		var data []int32 = readDataI32(bytes)
+		data := readDataI32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_I64:
-		var data []int64 = readDataI64(bytes)
+		data := readDataI64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI8:
-		var data []uint8 = readDataUI8(bytes)
+		data := readDataUI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI16:
-		var data []uint16 = readDataUI16(bytes)
+		data := readDataUI16(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI32:
-		var data []uint32 = readDataUI32(bytes)
+		data := readDataUI32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_UI64:
-		var data []uint64 = readDataUI64(bytes)
+		data := readDataUI64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_F32:
-		var data []float32 = readDataF32(bytes)
+		data := readDataF32(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	case TYPE_F64:
-		var data []float64 = readDataF64(bytes)
+		data := readDataF64(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
 	default:
-		var data []uint8 = readDataUI8(bytes)
+		data := readDataUI8(bytes)
 		if len(data) > 0 {
 			return interface{}(data)
 		}
