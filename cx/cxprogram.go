@@ -320,6 +320,8 @@ func (prgrm *CXProgram) SelectProgram() (*CXProgram, error) {
 	return PROGRAM, nil
 }
 
+// GetProgram returns the CX program assigned to global variable `PROGRAM`.
+// This function is mainly used for CX chains.
 func GetProgram() (*CXProgram, error) {
 	if PROGRAM == nil {
 		return nil, fmt.Errorf("a CX program has not been loaded")
