@@ -4,7 +4,7 @@ package cxcore
 // 	RESPONSE_SIZE = 8
 // )
 
-// func op_http_get(prgrm *CXProgram) {
+// func opHttpGet(prgrm *CXProgram) {
 //	expr := prgrm.GetExpr()
 //	fp := prgrm.GetFramePointer()
 

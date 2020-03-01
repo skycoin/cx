@@ -4,6 +4,7 @@ package cxcore
 
 import (
 	"fmt"
+	. "github.com/SkycoinProject/cx/cx"
 	"os"
 	"runtime"
 	"runtime/pprof"

@@ -84,11 +84,11 @@ build-parser: configure install-deps ## Generate lexer and parser for CX grammar
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -tags base -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
+	go build -tags="base" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
 build-full: configure build-parser ## Build CX from sources with all build tags
-	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
+	go build -tags="base cxfx" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
 build-android: configure build-parser
@@ -99,7 +99,7 @@ build-android: configure build-parser
 	cp -R ~/go/src/github.com/SkycoinProject/cxfx/tutorials/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/tutorials/
 	cp -R ~/go/src/github.com/SkycoinProject/cxfx/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/src/
 	cp -R ~/go/src/github.com/SkycoinProject/cxfx/games/skylight/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/games/skylight/src/
-	gomobile install -tags="base opengles android_gles31" -target=android ~/go/src/github.com/SkycoinProject/cx/cxgo
+	gomobile install -tags="base cxfx mobile android_gles31" -target=android ~/go/src/github.com/SkycoinProject/cx/cxgo/
 #-DHOST=armv7a-linux-androideabi29
 
 install-gfx-deps-LINUX:
@@ -162,7 +162,7 @@ test: build ## Run CX test suite.
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 test-full: build ## Run CX test suite with all build tags
-	go test -race -tags="base opengl" github.com/SkycoinProject/cx/cxgo/
+	go test -race -tags="base cxfx" github.com/SkycoinProject/cx/cxgo/
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite

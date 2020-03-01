@@ -1,8 +1,10 @@
-// +build opengl opengles
+// +build cxfx
 
-package cxcore
+package cxfx
 
 import (
+	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/SkycoinProject/cx/cx/base"
 	"github.com/SkycoinProject/gltext"
 	"unicode/utf8"
 )
@@ -14,22 +16,22 @@ func loadTrueType(prgrm *CXProgram, fixedPipeline bool) {
 	fp := prgrm.GetFramePointer()
 
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
-	if file := validFile(ReadI32(fp, inp1)); file != nil {
+	if file := ValidFile(ReadI32(fp, inp1)); file != nil {
 		if theFont, err := gltext.LoadTruetype(file, ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6)), fixedPipeline); err == nil {
 			fonts[ReadStr(fp, inp2)] = theFont
 		}
 	}
 }
 
-func op_gltext_LoadTrueType(prgrm *CXProgram) {
+func opGltextLoadTrueType(prgrm *CXProgram) {
 	loadTrueType(prgrm, true)
 }
 
-func op_gltext_LoadTrueTypeCore(prgrm *CXProgram) {
+func opGltextLoadTrueTypeCore(prgrm *CXProgram) {
 	loadTrueType(prgrm, false)
 }
 
-func op_gltext_Printf(prgrm *CXProgram) {
+func opGltextPrintf(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -40,7 +42,7 @@ func op_gltext_Printf(prgrm *CXProgram) {
 	}
 }
 
-func op_gltext_Metrics(prgrm *CXProgram) {
+func opGltextMetrics(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -52,7 +54,7 @@ func op_gltext_Metrics(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, out2), int32(height))
 }
 
-func op_gltext_Texture(prgrm *CXProgram) {
+func opGltextTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -60,7 +62,7 @@ func op_gltext_Texture(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, out1), int32(fonts[ReadStr(fp, inp1)].Texture()))
 }
 
-func op_gltext_NextGlyph(prgrm *CXProgram) { // refactor
+func opGltextNextGlyph(prgrm *CXProgram) { // refactor
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -95,7 +97,7 @@ func op_gltext_NextGlyph(prgrm *CXProgram) { // refactor
 	WriteI32(GetFinalOffset(fp, out7), int32(advance))
 }
 
-func op_gltext_GlyphBounds(prgrm *CXProgram) {
+func opGltextGlyphBounds(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -106,7 +108,7 @@ func op_gltext_GlyphBounds(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, out2), int32(maxGlyphHeight))
 }
 
-func op_gltext_GlyphMetrics(prgrm *CXProgram) { // refactor
+func opGltextGlyphMetrics(prgrm *CXProgram) { // refactor
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -118,7 +120,7 @@ func op_gltext_GlyphMetrics(prgrm *CXProgram) { // refactor
 	WriteI32(GetFinalOffset(fp, out2), int32(height))
 }
 
-func op_gltext_GlyphInfo(prgrm *CXProgram) { // refactor
+func opGltextGlyphInfo(prgrm *CXProgram) { // refactor
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 

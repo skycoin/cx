@@ -1,10 +1,11 @@
-// +build base extra full
+// +build base
 
 package cxcore
 
 import (
 	"bufio"
 	"encoding/json"
+	. "github.com/SkycoinProject/cx/cx"
 	"io"
 	"os"
 )
@@ -40,7 +41,7 @@ var jsons []JSONFile
 var freeJsons []int32
 
 // Open the named json file for reading, returns an i32 identifying the json parser.
-func opJSONOpen(prgrm *CXProgram) {
+func opJsonOpen(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -75,7 +76,7 @@ func opJSONOpen(prgrm *CXProgram) {
 }
 
 // Close json parser (and all underlying resources) idendified by it's i32 handle.
-func opJSONClose(prgrm *CXProgram) {
+func opJsonClose(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -96,7 +97,7 @@ func opJSONClose(prgrm *CXProgram) {
 }
 
 // More return true if there is another element in the current array or object being parsed.
-func opJSONTokenMore(prgrm *CXProgram) {
+func opJsonTokenMore(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -113,7 +114,7 @@ func opJSONTokenMore(prgrm *CXProgram) {
 }
 
 // Token parses the next token.
-func opJSONTokenNext(prgrm *CXProgram) {
+func opJsonTokenNext(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -163,7 +164,7 @@ func opJSONTokenNext(prgrm *CXProgram) {
 }
 
 // Type returns the type of the current token.
-func opJSONTokenType(prgrm *CXProgram) {
+func opJsonTokenType(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -180,7 +181,7 @@ func opJSONTokenType(prgrm *CXProgram) {
 }
 
 // Delim returns current token as an int32 delimiter.
-func opJSONTokenDelim(prgrm *CXProgram) {
+func opJsonTokenDelim(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -199,7 +200,7 @@ func opJSONTokenDelim(prgrm *CXProgram) {
 }
 
 // Bool returns current token as a bool value.
-func opJSONTokenBool(prgrm *CXProgram) {
+func opJsonTokenBool(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -218,7 +219,7 @@ func opJSONTokenBool(prgrm *CXProgram) {
 }
 
 // Float64 returns current token as float64 value.
-func opJSONTokenF64(prgrm *CXProgram) {
+func opJsonTokenF64(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -242,7 +243,7 @@ func opJSONTokenF64(prgrm *CXProgram) {
 }
 
 // Int64 returns current token as int64 value.
-func opJSONTokenI64(prgrm *CXProgram) {
+func opJsonTokenI64(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -263,7 +264,7 @@ func opJSONTokenI64(prgrm *CXProgram) {
 }
 
 // Str returns current token as string value.
-func opJSONTokenStr(prgrm *CXProgram) {
+func opJsonTokenStr(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 

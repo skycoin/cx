@@ -1,12 +1,13 @@
-// +build opengl
+// +build cxfx
 
-package cxcore
+package cxfx
 
 import (
 	"bufio"
+	. "github.com/SkycoinProject/cx/cx"
 	"github.com/amherag/skycoin/src/cipher/encoder"
 	"github.com/mjibson/go-dsp/wav"
-	"golang.org/x/mobile/exp/audio/al"
+	//"golang.org/x/mobile/exp/audio/al"
 )
 
 func opAlLoadWav(prgrm *CXProgram) {
@@ -32,20 +33,20 @@ func opAlLoadWav(prgrm *CXProgram) {
 
 	data := encoder.Serialize(samples)
 
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[0]), FromI32(int32(wav.Header.AudioFormat)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[1]), FromI32(int32(wav.Header.NumChannels)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[2]), FromI32(int32(wav.Header.SampleRate)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[3]), FromI32(int32(wav.Header.ByteRate)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[4]), FromI32(int32(wav.Header.BlockAlign)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[5]), FromI32(int32(wav.Header.BitsPerSample)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[6]), FromI32(int32(wav.Samples)))
-	WriteMemory(GetFinalOffset(fp, expr.Outputs[7]), FromI64(int64(wav.Duration)))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(wav.Header.AudioFormat))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[1]), int32(wav.Header.NumChannels))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[2]), int32(wav.Header.SampleRate))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[3]), int32(wav.Header.ByteRate))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[4]), int32(wav.Header.BlockAlign))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[5]), int32(wav.Header.BitsPerSample))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[6]), int32(wav.Samples))
+	WriteI64(GetFinalOffset(fp, expr.Outputs[7]), int64(wav.Duration))
 
 	outputSlicePointer := GetFinalOffset(fp, expr.Outputs[8])
 	outputSliceOffset := GetPointerOffset(int32(outputSlicePointer))
-	outputSliceOffset = int32(sliceResize(outputSliceOffset, int32(len(data)), 1))
+	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, int32(len(data)), 1))
 	copy(GetSliceData(outputSliceOffset, 1), data)
-	copy(PROGRAM.Memory[outputSlicePointer:], FromI32(outputSliceOffset))
+	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 func toBytes(in interface{}) []byte { // REFACTOR : ??
@@ -55,25 +56,25 @@ func toBytes(in interface{}) []byte { // REFACTOR : ??
 	return nil
 }
 
-func toBuffers(in interface{}) []al.Buffer { // REFACTOR : ??
+/*func toBuffers(in interface{}) []al.Buffer { // REFACTOR : ??
 	var out []al.Buffer
 	var buffers []int32 = in.([]int32)
 	for _, b := range buffers {
 		out = append(out, al.Buffer(b))
 	}
 	return out
-}
+}*/
 
-func toSources(in interface{}) []al.Source { // REFACTOR : ??
+/*func toSources(in interface{}) []al.Source { // REFACTOR : ??
 	var out []al.Source
 	var sources []int32 = in.([]int32)
 	for _, s := range sources {
 		out = append(out, al.Source(s))
 	}
 	return out
-}
+}*/
 
-func opAlCloseDevice(_ *CXProgram) {
+/*func opAlCloseDevice(_ *CXProgram) {
 	al.CloseDevice()
 }
 
@@ -260,4 +261,4 @@ func opAlSourceUnqueueBuffers(prgrm *CXProgram) {
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
 	buffers := toBuffers(ReadData(fp, expr.Inputs[1], TYPE_I32))
 	source.UnqueueBuffers(buffers...)
-}
+}*/

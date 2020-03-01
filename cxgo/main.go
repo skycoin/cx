@@ -2,7 +2,9 @@
 
 package main
 
-import "os"
+import (
+	"os"
+)
 
 func main() {
 	Run(os.Args[1:])

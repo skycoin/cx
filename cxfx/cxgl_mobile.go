@@ -1,9 +1,10 @@
-// +build opengles
+// +build cxfx,mobile
 
-package cxcore
+package cxfx
 
 import (
 	"fmt"
+	. "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/gltext"
 	"golang.org/x/mobile/gl"
 	"reflect"
@@ -97,19 +98,19 @@ func SetGLContext(ctx gl.Context) {
 }
 
 // gogl
-func op_gl_Init(_ *CXProgram) {
+func opGlInit(_ *CXProgram) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Destroy(_ *CXProgram) {
+func opGlDestroy(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Strs(prgrm *CXProgram) {
+func opGlStrs(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Free(prgrm *CXProgram) {
+func opGlFree(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
@@ -575,86 +576,86 @@ func cxglGenVertexArrays(n int32, arrays *uint32) {
 }
 
 // gl_0_0
-func op_gl_MatrixMode(prgrm *CXProgram) {
+func opGlMatrixMode(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Rotatef(prgrm *CXProgram) {
+func opGlRotatef(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Translatef(prgrm *CXProgram) {
+func opGlTranslatef(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_LoadIdentity(_ *CXProgram) {
+func opGlLoadIdentity(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_PushMatrix(_ *CXProgram) {
+func opGlPushMatrix(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_PopMatrix(_ *CXProgram) {
+func opGlPopMatrix(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_EnableClientState(prgrm *CXProgram) {
+func opGlEnableClientState(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Color3f(prgrm *CXProgram) {
+func opGlColor3f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Color4f(prgrm *CXProgram) {
+func opGlColor4f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Begin(prgrm *CXProgram) {
+func opGlBegin(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_End(_ *CXProgram) {
+func opGlEnd(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Normal3f(prgrm *CXProgram) {
+func opGlNormal3f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Vertex2f(prgrm *CXProgram) {
+func opGlVertex2f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Vertex3f(prgrm *CXProgram) {
+func opGlVertex3f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Lightfv(_ *CXProgram) {
+func opGlLightfv(_ *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Frustum(prgrm *CXProgram) {
+func opGlFrustum(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_TexEnvi(prgrm *CXProgram) {
+func opGlTexEnvi(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Ortho(prgrm *CXProgram) {
+func opGlOrtho(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_Scalef(prgrm *CXProgram) {
+func opGlScalef(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_TexCoord2d(prgrm *CXProgram) {
+func opGlTexCoord2d(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func op_gl_TexCoord2f(prgrm *CXProgram) {
+func opGlTexCoord2f(prgrm *CXProgram) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }

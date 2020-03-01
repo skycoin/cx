@@ -5,6 +5,7 @@ package cxcore
 import (
 	"bytes"
 	"encoding/binary"
+	. "github.com/SkycoinProject/cx/cx"
 	"github.com/amherag/skycoin/src/cipher/encoder"
 	"math"
 	"os"
@@ -26,25 +27,25 @@ var freeFiles []int32
 // helper function used to validate json handle from expr
 func validFileFromExpr(expr *CXExpression, fp int) *os.File {
 	handle := ReadI32(fp, expr.Inputs[0])
-	return validFile(handle)
+	return ValidFile(handle)
 }
 
 // helper function used to validate file handle from i32
-func validFile(handle int32) *os.File {
+func ValidFile(handle int32) *os.File {
 	if handle >= 0 && handle < int32(len(openFiles)) && openFiles[handle] != nil {
 		return openFiles[handle]
 	}
 	return nil
 }
 
-func op_os_LogFile(prgrm *CXProgram) {
+func opOsLogFile(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	CXLogFile(ReadBool(fp, expr.Inputs[0]))
 }
 
-func op_os_ReadAllText(prgrm *CXProgram) {
+func opOsReadAllText(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -57,7 +58,7 @@ func op_os_ReadAllText(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
-func op_os_Open(prgrm *CXProgram) {
+func opOsOpen(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -84,14 +85,14 @@ func op_os_Open(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(handle))
 }
 
-func op_os_Close(prgrm *CXProgram) {
+func opOsClose(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	success := false
 
 	handle := ReadI32(fp, expr.Inputs[0])
-	if file := validFile(handle); file != nil {
+	if file := ValidFile(handle); file != nil {
 		if err := file.Close(); err == nil {
 			success = true
 		}
@@ -103,7 +104,7 @@ func op_os_Close(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), success)
 }
 
-func op_os_Seek(prgrm *CXProgram) {
+func opOsSeek(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -117,7 +118,7 @@ func op_os_Seek(prgrm *CXProgram) {
 	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), offset)
 }
 
-func op_os_ReadF32(prgrm *CXProgram) {
+func opOsReadF32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -134,7 +135,7 @@ func op_os_ReadF32(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
-func op_os_ReadF32Slice(prgrm *CXProgram) {
+func opOsReadF32Slice(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -148,7 +149,7 @@ func op_os_ReadF32Slice(prgrm *CXProgram) {
 			values := make([]float32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 4))
+				outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, 4))
 				outputSliceData := GetSliceData(outputSliceOffset, 4)
 				for i := int32(0); i < count; i++ {
 					WriteMemF32(outputSliceData, int(i*4), values[i])
@@ -162,7 +163,7 @@ func op_os_ReadF32Slice(prgrm *CXProgram) {
 
 }
 
-func op_os_ReadUI32(prgrm *CXProgram) {
+func opOsReadUI32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -179,7 +180,7 @@ func op_os_ReadUI32(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
-func op_os_ReadUI32Slice(prgrm *CXProgram) {
+func opOsReadUI32Slice(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -193,7 +194,7 @@ func op_os_ReadUI32Slice(prgrm *CXProgram) {
 			values := make([]uint32, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 4))
+				outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, 4))
 				outputSliceData := GetSliceData(outputSliceOffset, 4)
 				for i := int32(0); i < count; i++ {
 					WriteMemUI32(outputSliceData, int(i*4), values[i])
@@ -207,7 +208,7 @@ func op_os_ReadUI32Slice(prgrm *CXProgram) {
 
 }
 
-func op_os_ReadUI16(prgrm *CXProgram) {
+func opOsReadUI16(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -224,7 +225,7 @@ func op_os_ReadUI16(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
-func op_os_ReadUI16Slice(prgrm *CXProgram) {
+func opOsReadUI16Slice(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -238,7 +239,7 @@ func op_os_ReadUI16Slice(prgrm *CXProgram) {
 			values := make([]uint16, count)
 			if err := binary.Read(file, binary.LittleEndian, values); err == nil {
 				success = true
-				outputSliceOffset = int32(sliceResize(outputSliceOffset, count, 2))
+				outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, 2))
 				outputSliceData := GetSliceData(outputSliceOffset, 2)
 				for i := int32(0); i < count; i++ {
 					WriteMemUI16(outputSliceData, int(i*2), values[i])
@@ -252,7 +253,7 @@ func op_os_ReadUI16Slice(prgrm *CXProgram) {
 
 }
 
-func op_os_GetWorkingDirectory(prgrm *CXProgram) {
+func opOsGetWorkingDirectory(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -260,7 +261,7 @@ func op_os_GetWorkingDirectory(prgrm *CXProgram) {
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), byts)
 }
 
-func op_os_Exit(prgrm *CXProgram) {
+func opOsExit(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -268,7 +269,7 @@ func op_os_Exit(prgrm *CXProgram) {
 	os.Exit(int(exitCode))
 }
 
-func op_os_Run(prgrm *CXProgram) {
+func opOsRun(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 

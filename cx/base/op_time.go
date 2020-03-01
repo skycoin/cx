@@ -3,6 +3,7 @@
 package cxcore
 
 import (
+	. "github.com/SkycoinProject/cx/cx"
 	"time"
 )
 
@@ -10,21 +11,21 @@ func makeTimestamp() int64 {
 	return time.Now().UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond))
 }
 
-func op_time_UnixMilli(prgrm *CXProgram) {
+func opTimeUnixMilli(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), makeTimestamp())
 }
 
-func op_time_UnixNano(prgrm *CXProgram) {
+func opTimeUnixNano(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	WriteI64(GetFinalOffset(fp, expr.Outputs[0]), time.Now().UnixNano())
 }
 
-func op_time_Sleep(prgrm *CXProgram) {
+func opTimeSleep(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 

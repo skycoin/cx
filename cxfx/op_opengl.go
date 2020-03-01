@@ -1,10 +1,11 @@
-// +build opengl opengles
+// +build cxfx
 
-package cxcore
+package cxfx
 
 import (
 	"bufio"
 	"fmt"
+	. "github.com/SkycoinProject/cx/cx"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -47,7 +48,7 @@ func uploadTexture(file string, target uint32) {
 }
 
 // gogl
-func op_gl_NewTexture(prgrm *CXProgram) {
+func opGlNewTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -65,7 +66,7 @@ func op_gl_NewTexture(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
 }
 
-func op_gl_NewTextureCube(prgrm *CXProgram) {
+func opGlNewTextureCube(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -88,14 +89,14 @@ func op_gl_NewTextureCube(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
 }
 
-func op_gl_UploadImageToTexture(prgrm *CXProgram) {
+func opGlUploadImageToTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	uploadTexture(ReadStr(fp, expr.Inputs[0]), uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_NewGIF(prgrm *CXProgram) {
+func opGlNewGIF(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -121,14 +122,14 @@ func op_gl_NewGIF(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[3]), int32(gif.Config.Height))
 }
 
-func op_gl_FreeGIF(prgrm *CXProgram) {
+func opGlFreeGIF(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	gifs[ReadStr(fp, expr.Inputs[0])] = nil
 }
 
-func op_gl_GIFFrameToTexture(prgrm *CXProgram) {
+func opGlGIFFrameToTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -177,28 +178,28 @@ func opGlAppend(prgrm *CXProgram) {
 	obj := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 
 	objLen := int32(len(obj))
-	outputSliceOffset = int32(sliceResize(outputSliceOffset, inputSliceLen+objLen, 1))
-	sliceCopy(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
+	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, inputSliceLen+objLen, 1))
+	SliceCopyEx(outputSliceOffset, inputSliceOffset, inputSliceLen+objLen, 1)
 	SliceAppendWriteByte(outputSliceOffset, obj, inputSliceLen)
 	WriteI32(outputSlicePointer, outputSliceOffset)
 }
 
 // gl_1_0
-func op_gl_CullFace(prgrm *CXProgram) {
+func opGlCullFace(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglCullFace(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_FrontFace(prgrm *CXProgram) {
+func opGlFrontFace(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglFrontFace(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_Hint(prgrm *CXProgram) {
+func opGlHint(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -207,7 +208,7 @@ func op_gl_Hint(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_Scissor(prgrm *CXProgram) {
+func opGlScissor(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -218,7 +219,7 @@ func op_gl_Scissor(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[3]))
 }
 
-func op_gl_TexParameteri(prgrm *CXProgram) {
+func opGlTexParameteri(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -228,7 +229,7 @@ func op_gl_TexParameteri(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[2]))
 }
 
-func op_gl_TexImage2D(prgrm *CXProgram) {
+func opGlTexImage2D(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -244,14 +245,14 @@ func op_gl_TexImage2D(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[8], -1))
 }
 
-func op_gl_Clear(prgrm *CXProgram) {
+func opGlClear(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglClear(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_ClearColor(prgrm *CXProgram) {
+func opGlClearColor(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -262,28 +263,28 @@ func op_gl_ClearColor(prgrm *CXProgram) {
 		ReadF32(fp, expr.Inputs[3]))
 }
 
-func op_gl_ClearStencil(prgrm *CXProgram) {
+func opGlClearStencil(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglClearStencil(ReadI32(fp, expr.Inputs[0]))
 }
 
-func op_gl_ClearDepth(prgrm *CXProgram) {
+func opGlClearDepth(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglClearDepth(ReadF64(fp, expr.Inputs[0]))
 }
 
-func op_gl_StencilMask(prgrm *CXProgram) {
+func opGlStencilMask(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglStencilMask(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_ColorMask(prgrm *CXProgram) {
+func opGlColorMask(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -294,27 +295,27 @@ func op_gl_ColorMask(prgrm *CXProgram) {
 		ReadBool(fp, expr.Inputs[3]))
 }
 
-func op_gl_DepthMask(prgrm *CXProgram) {
+func opGlDepthMask(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglDepthMask(ReadBool(fp, expr.Inputs[0]))
 }
 
-func op_gl_Disable(prgrm *CXProgram) {
+func opGlDisable(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 	cxglDisable(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_Enable(prgrm *CXProgram) {
+func opGlEnable(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglEnable(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_BlendFunc(prgrm *CXProgram) {
+func opGlBlendFunc(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -323,7 +324,7 @@ func op_gl_BlendFunc(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_StencilFunc(prgrm *CXProgram) {
+func opGlStencilFunc(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -333,7 +334,7 @@ func op_gl_StencilFunc(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[2])))
 }
 
-func op_gl_StencilOp(prgrm *CXProgram) {
+func opGlStencilOp(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -343,21 +344,21 @@ func op_gl_StencilOp(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[2])))
 }
 
-func op_gl_DepthFunc(prgrm *CXProgram) {
+func opGlDepthFunc(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglDepthFunc(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_GetError(prgrm *CXProgram) {
+func opGlGetError(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(cxglGetError()))
 }
 
-func op_gl_GetTexLevelParameteriv(prgrm *CXProgram) {
+func opGlGetTexLevelParameteriv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -370,7 +371,7 @@ func op_gl_GetTexLevelParameteriv(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outValue)
 }
 
-func op_gl_DepthRange(prgrm *CXProgram) {
+func opGlDepthRange(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -379,7 +380,7 @@ func op_gl_DepthRange(prgrm *CXProgram) {
 		ReadF64(fp, expr.Inputs[1]))
 }
 
-func op_gl_Viewport(prgrm *CXProgram) {
+func opGlViewport(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -391,7 +392,7 @@ func op_gl_Viewport(prgrm *CXProgram) {
 }
 
 // gl_1_1
-func op_gl_DrawArrays(prgrm *CXProgram) {
+func opGlDrawArrays(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -401,7 +402,7 @@ func op_gl_DrawArrays(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[2]))
 }
 
-func op_gl_DrawElements(prgrm *CXProgram) {
+func opGlDrawElements(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -412,7 +413,7 @@ func op_gl_DrawElements(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], -1))
 }
 
-func op_gl_BindTexture(prgrm *CXProgram) {
+func opGlBindTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -421,7 +422,7 @@ func op_gl_BindTexture(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_DeleteTextures(prgrm *CXProgram) {
+func opGlDeleteTextures(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -429,7 +430,7 @@ func op_gl_DeleteTextures(prgrm *CXProgram) {
 	cxglDeleteTextures(ReadI32(fp, expr.Inputs[0]), &inpV1) // will panic if inp0 > 1
 }
 
-func op_gl_GenTextures(prgrm *CXProgram) {
+func opGlGenTextures(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -439,7 +440,7 @@ func op_gl_GenTextures(prgrm *CXProgram) {
 }
 
 // gl_1_3
-func op_gl_ActiveTexture(prgrm *CXProgram) {
+func opGlActiveTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -447,7 +448,7 @@ func op_gl_ActiveTexture(prgrm *CXProgram) {
 }
 
 // gl_1_4
-func op_gl_BlendFuncSeparate(prgrm *CXProgram) {
+func opGlBlendFuncSeparate(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -459,7 +460,7 @@ func op_gl_BlendFuncSeparate(prgrm *CXProgram) {
 }
 
 // gl_1_5
-func op_gl_BindBuffer(prgrm *CXProgram) {
+func opGlBindBuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -468,7 +469,7 @@ func op_gl_BindBuffer(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_DeleteBuffers(prgrm *CXProgram) {
+func opGlDeleteBuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -478,7 +479,7 @@ func op_gl_DeleteBuffers(prgrm *CXProgram) {
 		&inpV1) // will panic if inp0 > 1
 }
 
-func op_gl_GenBuffers(prgrm *CXProgram) {
+func opGlGenBuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -489,7 +490,7 @@ func op_gl_GenBuffers(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(inpV1))
 }
 
-func op_gl_BufferData(prgrm *CXProgram) {
+func opGlBufferData(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -500,7 +501,7 @@ func op_gl_BufferData(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[3])))
 }
 
-func op_gl_BufferSubData(prgrm *CXProgram) {
+func opGlBufferSubData(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -511,7 +512,7 @@ func op_gl_BufferSubData(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], -1))
 }
 
-func op_gl_DrawBuffers(prgrm *CXProgram) {
+func opGlDrawBuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -520,7 +521,7 @@ func op_gl_DrawBuffers(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[1], TYPE_UI32))
 }
 
-func op_gl_StencilOpSeparate(prgrm *CXProgram) {
+func opGlStencilOpSeparate(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -531,7 +532,7 @@ func op_gl_StencilOpSeparate(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[3])))
 }
 
-func op_gl_StencilFuncSeparate(prgrm *CXProgram) {
+func opGlStencilFuncSeparate(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -542,7 +543,7 @@ func op_gl_StencilFuncSeparate(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[3])))
 }
 
-func op_gl_StencilMaskSeparate(prgrm *CXProgram) {
+func opGlStencilMaskSeparate(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -551,7 +552,7 @@ func op_gl_StencilMaskSeparate(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_AttachShader(prgrm *CXProgram) {
+func opGlAttachShader(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -560,7 +561,7 @@ func op_gl_AttachShader(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_BindAttribLocation(prgrm *CXProgram) {
+func opGlBindAttribLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -570,7 +571,7 @@ func op_gl_BindAttribLocation(prgrm *CXProgram) {
 		ReadStr(fp, expr.Inputs[2]))
 }
 
-func op_gl_CompileShader(prgrm *CXProgram) {
+func opGlCompileShader(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -578,14 +579,14 @@ func op_gl_CompileShader(prgrm *CXProgram) {
 	cxglCompileShader(shader)
 }
 
-func op_gl_CreateProgram(prgrm *CXProgram) {
+func opGlCreateProgram(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(cxglCreateProgram()))
 }
 
-func op_gl_CreateShader(prgrm *CXProgram) {
+func opGlCreateShader(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -593,21 +594,21 @@ func op_gl_CreateShader(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_DeleteProgram(prgrm *CXProgram) {
+func opGlDeleteProgram(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglDeleteShader(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_DeleteShader(prgrm *CXProgram) {
+func opGlDeleteShader(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglDeleteShader(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_DetachShader(prgrm *CXProgram) {
+func opGlDetachShader(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -616,14 +617,14 @@ func op_gl_DetachShader(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_EnableVertexAttribArray(prgrm *CXProgram) {
+func opGlEnableVertexAttribArray(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglEnableVertexAttribArray(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_GetAttribLocation(prgrm *CXProgram) {
+func opGlGetAttribLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -633,7 +634,7 @@ func op_gl_GetAttribLocation(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_GetProgramiv(prgrm *CXProgram) {
+func opGlGetProgramiv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -643,7 +644,7 @@ func op_gl_GetProgramiv(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_GetProgramInfoLog(prgrm *CXProgram) {
+func opGlGetProgramInfoLog(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -653,7 +654,7 @@ func op_gl_GetProgramInfoLog(prgrm *CXProgram) {
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(outV0))
 }
 
-func op_gl_GetShaderiv(prgrm *CXProgram) {
+func opGlGetShaderiv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -663,7 +664,7 @@ func op_gl_GetShaderiv(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_GetShaderInfoLog(prgrm *CXProgram) {
+func opGlGetShaderInfoLog(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -673,7 +674,7 @@ func op_gl_GetShaderInfoLog(prgrm *CXProgram) {
 	WriteObject(GetFinalOffset(fp, expr.Outputs[0]), FromStr(outV0))
 }
 
-func op_gl_GetUniformLocation(prgrm *CXProgram) {
+func opGlGetUniformLocation(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -683,7 +684,7 @@ func op_gl_GetUniformLocation(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_LinkProgram(prgrm *CXProgram) {
+func opGlLinkProgram(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -691,7 +692,7 @@ func op_gl_LinkProgram(prgrm *CXProgram) {
 	cxglLinkProgram(program)
 }
 
-func op_gl_ShaderSource(prgrm *CXProgram) {
+func opGlShaderSource(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -701,14 +702,14 @@ func op_gl_ShaderSource(prgrm *CXProgram) {
 		ReadStr(fp, expr.Inputs[2]))
 }
 
-func op_gl_UseProgram(prgrm *CXProgram) {
+func opGlUseProgram(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglUseProgram(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_Uniform1f(prgrm *CXProgram) {
+func opGlUniform1f(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -717,7 +718,7 @@ func op_gl_Uniform1f(prgrm *CXProgram) {
 		ReadF32(fp, expr.Inputs[1]))
 }
 
-func op_gl_Uniform2f(prgrm *CXProgram) {
+func opGlUniform2f(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -727,7 +728,7 @@ func op_gl_Uniform2f(prgrm *CXProgram) {
 		ReadF32(fp, expr.Inputs[2]))
 }
 
-func op_gl_Uniform3f(prgrm *CXProgram) {
+func opGlUniform3f(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -738,7 +739,7 @@ func op_gl_Uniform3f(prgrm *CXProgram) {
 		ReadF32(fp, expr.Inputs[3]))
 }
 
-func op_gl_Uniform4f(prgrm *CXProgram) {
+func opGlUniform4f(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -750,7 +751,7 @@ func op_gl_Uniform4f(prgrm *CXProgram) {
 		ReadF32(fp, expr.Inputs[4]))
 }
 
-func op_gl_Uniform1i(prgrm *CXProgram) {
+func opGlUniform1i(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -759,7 +760,7 @@ func op_gl_Uniform1i(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[1]))
 }
 
-func op_gl_Uniform2i(prgrm *CXProgram) {
+func opGlUniform2i(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -769,7 +770,7 @@ func op_gl_Uniform2i(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[2]))
 }
 
-func op_gl_Uniform3i(prgrm *CXProgram) {
+func opGlUniform3i(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -780,7 +781,7 @@ func op_gl_Uniform3i(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[3]))
 }
 
-func op_gl_Uniform4i(prgrm *CXProgram) {
+func opGlUniform4i(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -792,7 +793,7 @@ func op_gl_Uniform4i(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[4]))
 }
 
-func op_gl_Uniform1fv(prgrm *CXProgram) {
+func opGlUniform1fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -802,7 +803,7 @@ func op_gl_Uniform1fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_F32))
 }
 
-func op_gl_Uniform2fv(prgrm *CXProgram) {
+func opGlUniform2fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -812,7 +813,7 @@ func op_gl_Uniform2fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_F32))
 }
 
-func op_gl_Uniform3fv(prgrm *CXProgram) {
+func opGlUniform3fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -822,7 +823,7 @@ func op_gl_Uniform3fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_F32))
 }
 
-func op_gl_Uniform4fv(prgrm *CXProgram) {
+func opGlUniform4fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -832,7 +833,7 @@ func op_gl_Uniform4fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_F32))
 }
 
-func op_gl_Uniform1iv(prgrm *CXProgram) {
+func opGlUniform1iv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -842,7 +843,7 @@ func op_gl_Uniform1iv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_I32))
 }
 
-func op_gl_Uniform2iv(prgrm *CXProgram) {
+func opGlUniform2iv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -852,7 +853,7 @@ func op_gl_Uniform2iv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_I32))
 }
 
-func op_gl_Uniform3iv(prgrm *CXProgram) {
+func opGlUniform3iv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -862,7 +863,7 @@ func op_gl_Uniform3iv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_I32))
 }
 
-func op_gl_Uniform4iv(prgrm *CXProgram) {
+func opGlUniform4iv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -872,7 +873,7 @@ func op_gl_Uniform4iv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], TYPE_I32))
 }
 
-func op_gl_UniformMatrix2fv(prgrm *CXProgram) {
+func opGlUniformMatrix2fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -883,7 +884,7 @@ func op_gl_UniformMatrix2fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], TYPE_F32))
 }
 
-func op_gl_UniformMatrix3fv(prgrm *CXProgram) {
+func opGlUniformMatrix3fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -894,7 +895,7 @@ func op_gl_UniformMatrix3fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], TYPE_F32))
 }
 
-func op_gl_UniformMatrix4fv(prgrm *CXProgram) {
+func opGlUniformMatrix4fv(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -905,7 +906,7 @@ func op_gl_UniformMatrix4fv(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], TYPE_F32))
 }
 
-func op_gl_UniformV4F(prgrm *CXProgram) {
+func opGlUniformV4F(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -915,7 +916,7 @@ func op_gl_UniformV4F(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[1], -1))
 }
 
-func op_gl_UniformM44F(prgrm *CXProgram) {
+func opGlUniformM44F(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -926,7 +927,7 @@ func op_gl_UniformM44F(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[2], -1))
 }
 
-func op_gl_UniformM44FV(prgrm *CXProgram) {
+func opGlUniformM44FV(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -937,7 +938,7 @@ func op_gl_UniformM44FV(prgrm *CXProgram) {
 		ReadData(fp, expr.Inputs[3], -1))
 }
 
-func op_gl_VertexAttribPointer(prgrm *CXProgram) {
+func opGlVertexAttribPointer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -949,7 +950,7 @@ func op_gl_VertexAttribPointer(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[4]), 0)
 }
 
-func op_gl_VertexAttribPointerI32(prgrm *CXProgram) {
+func opGlVertexAttribPointerI32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -962,7 +963,7 @@ func op_gl_VertexAttribPointerI32(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[5]))
 }
 
-func op_gl_ClearBufferI(prgrm *CXProgram) {
+func opGlClearBufferI(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -978,7 +979,7 @@ func op_gl_ClearBufferI(prgrm *CXProgram) {
 		color)
 }
 
-func op_gl_ClearBufferUI(prgrm *CXProgram) {
+func opGlClearBufferUI(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -994,7 +995,7 @@ func op_gl_ClearBufferUI(prgrm *CXProgram) {
 		color)
 }
 
-func op_gl_ClearBufferF(prgrm *CXProgram) {
+func opGlClearBufferF(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1010,7 +1011,7 @@ func op_gl_ClearBufferF(prgrm *CXProgram) {
 		color)
 }
 
-func op_gl_BindRenderbuffer(prgrm *CXProgram) {
+func opGlBindRenderbuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1019,7 +1020,7 @@ func op_gl_BindRenderbuffer(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_DeleteRenderbuffers(prgrm *CXProgram) {
+func opGlDeleteRenderbuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1027,7 +1028,7 @@ func op_gl_DeleteRenderbuffers(prgrm *CXProgram) {
 	cxglDeleteRenderbuffers(ReadI32(fp, expr.Inputs[0]), &inpV1) // will panic if inp0 > 1
 }
 
-func op_gl_GenRenderbuffers(prgrm *CXProgram) {
+func opGlGenRenderbuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1036,7 +1037,7 @@ func op_gl_GenRenderbuffers(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(inpV1))
 }
 
-func op_gl_RenderbufferStorage(prgrm *CXProgram) {
+func opGlRenderbufferStorage(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1047,7 +1048,7 @@ func op_gl_RenderbufferStorage(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[3]))
 }
 
-func op_gl_BindFramebuffer(prgrm *CXProgram) {
+func opGlBindFramebuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1056,7 +1057,7 @@ func op_gl_BindFramebuffer(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[1])))
 }
 
-func op_gl_DeleteFramebuffers(prgrm *CXProgram) {
+func opGlDeleteFramebuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1064,7 +1065,7 @@ func op_gl_DeleteFramebuffers(prgrm *CXProgram) {
 	cxglDeleteFramebuffers(ReadI32(fp, expr.Inputs[0]), &inpV1) // will panic if inp0 > 1
 }
 
-func op_gl_GenFramebuffers(prgrm *CXProgram) {
+func opGlGenFramebuffers(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1073,7 +1074,7 @@ func op_gl_GenFramebuffers(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(inpV1))
 }
 
-func op_gl_CheckFramebufferStatus(prgrm *CXProgram) {
+func opGlCheckFramebufferStatus(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1081,7 +1082,7 @@ func op_gl_CheckFramebufferStatus(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), outV0)
 }
 
-func op_gl_FramebufferTexture2D(prgrm *CXProgram) {
+func opGlFramebufferTexture2D(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1093,7 +1094,7 @@ func op_gl_FramebufferTexture2D(prgrm *CXProgram) {
 		ReadI32(fp, expr.Inputs[4]))
 }
 
-func op_gl_FramebufferRenderbuffer(prgrm *CXProgram) {
+func opGlFramebufferRenderbuffer(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1104,14 +1105,14 @@ func op_gl_FramebufferRenderbuffer(prgrm *CXProgram) {
 		uint32(ReadI32(fp, expr.Inputs[3])))
 }
 
-func op_gl_GenerateMipmap(prgrm *CXProgram) {
+func opGlGenerateMipmap(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglGenerateMipmap(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_BindVertexArray(prgrm *CXProgram) {
+func opGlBindVertexArray(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1123,14 +1124,14 @@ func op_gl_BindVertexArray(prgrm *CXProgram) {
 	}
 }
 
-func op_gl_BindVertexArrayCore(prgrm *CXProgram) {
+func opGlBindVertexArrayCore(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
 	cxglBindVertexArray(uint32(ReadI32(fp, expr.Inputs[0])))
 }
 
-func op_gl_DeleteVertexArrays(prgrm *CXProgram) {
+func opGlDeleteVertexArrays(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1143,7 +1144,7 @@ func op_gl_DeleteVertexArrays(prgrm *CXProgram) {
 	}
 }
 
-func op_gl_DeleteVertexArraysCore(prgrm *CXProgram) {
+func opGlDeleteVertexArraysCore(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1151,7 +1152,7 @@ func op_gl_DeleteVertexArraysCore(prgrm *CXProgram) {
 	cxglDeleteVertexArrays(ReadI32(fp, expr.Inputs[0]), &inpV1) // will panic if inp0 > 1
 }
 
-func op_gl_GenVertexArrays(prgrm *CXProgram) {
+func opGlGenVertexArrays(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -1165,7 +1166,7 @@ func op_gl_GenVertexArrays(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(inpV1))
 }
 
-func op_gl_GenVertexArraysCore(prgrm *CXProgram) {
+func opGlGenVertexArraysCore(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 

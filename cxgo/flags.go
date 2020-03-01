@@ -74,8 +74,7 @@ func defaultCmdFlags() cxCmdFlags {
 var commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 func parseFlags(options *cxCmdFlags, args []string) {
-	fmt.Printf("REGISTER_FLAGS %d\n", len(args))
-	if len(args) <= 1 {
+	if len(args) <= 0 {
 		options.replMode = true
 	}
 

@@ -1,33 +1,13 @@
-// +build base,android
+// +build base,mobile
 
 package cxcore
 
-import "golang.org/x/mobile/asset"
-import "fmt"
-import "os"
-import "io"
-
-/*type CXFile struct {
-	name string
-	impl asset.File
-}
-
-func OpenFile(path string) (CXFile, error) {
-	impl, err := asset.Open(path)
-	return CXFile{impl: impl, name: path}, err
-}
-
-func (file *CXFile) Close() error {
-	return file.impl.Close()
-}
-
-func (file *CXFile) Impl() asset.File {
-	return file.impl
-}
-
-func (file *CXFile) Name() string {
-	return file.name
-}*/
+import (
+	"fmt"
+	"golang.org/x/mobile/asset"
+	"io"
+	"os"
+)
 
 func CopyAssetsToFilesDir() bool {
 	filesDir := asset.GetFilesDir()

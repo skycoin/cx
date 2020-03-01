@@ -1,78 +1,22 @@
-// +build android
+// +build cxfx,android
 
 package main
 
 import (
-	//"encoding/binary"
 	"fmt"
 	. "github.com/SkycoinProject/cx/cx"
+	"github.com/SkycoinProject/cx/cxfx"
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/asset"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
-	//"golang.org/x/mobile/exp/app/debug"
-	//"golang.org/x/mobile/exp/f32"
-	//"golang.org/x/mobile/exp/gl/glutil"
 	"golang.org/x/mobile/gl"
 	"log"
 )
 
-var frame int
-
-/*var (
-	images   *glutil.Images
-	fps      *debug.FPS
-	program  gl.Program
-	position gl.Attrib
-	offset   gl.Uniform
-	color    gl.Uniform
-	buf      gl.Buffer
-
-	green  float32
-	touchX float32
-	touchY float32
-)*/
-
-type EventType int
-
-const (
-	APP_NONE EventType = iota
-	APP_START
-	APP_STOP
-	APP_RESIZE
-	APP_TOUCH
-	APP_PAINT
-)
-
-type Event struct {
-	a   app.App
-	t   EventType
-	msg string
-	w   int
-	h   int
-	x   float32
-	y   float32
-}
-
-var events []Event
-var eventCount int
-
-func pushEvent(a app.App, eventType EventType, msg string) int {
-	e := eventCount
-	if eventCount < len(events) {
-	} else {
-		events = append(events, Event{})
-	}
-	log.Printf("*****************************************************************************\nNEW_EVENT %s, INDEX %d, TYPE %d", msg, e, eventType)
-	events[e] = Event{a: a, t: eventType, msg: msg}
-	eventCount++
-	return e
-}
-
 func startCXVM() {
-	//	eventLoop(a)
 	filesDir := asset.GetFilesDir()
 	args := parseManifest(filesDir)
 	log.Printf("-----------------------------------------------------------------------------")
@@ -91,48 +35,35 @@ func startCXVM() {
 }
 
 func eventLoop(a app.App) {
-	var glctx gl.Context
-	//var sz size.Event
-	for e := range a.Events() {
-		switch e := a.Filter(e).(type) {
-		case lifecycle.Event:
-			switch e.Crosses(lifecycle.StageFocused) {
-			case lifecycle.CrossOn:
-				_ = pushEvent(a, APP_START, "START")
-				glctx, _ = e.DrawContext.(gl.Context)
-				//onStart(glctx)
-				SetGLContext(glctx)
-				SetGOApp(a)
-				// ASAHI
-				//go
-				startCXVM()
-				//a.Send(paint.Event{})
-			case lifecycle.CrossOff:
-				_ = pushEvent(a, APP_STOP, "STOP")
-				//onStop(glctx)
-				glctx = nil
+	go func() {
+		for e := range a.Events() {
+			switch e := a.Filter(e).(type) {
+			case lifecycle.Event:
+				switch e.Crosses(lifecycle.StageFocused) {
+				case lifecycle.CrossOn:
+					var glctx gl.Context
+					glctx, _ = e.DrawContext.(gl.Context)
+					cxfx.SetGLContext(glctx)
+					cxfx.SetGOApp(a)
+					cxfx.PushEvent(cxfx.APP_START)
+				case lifecycle.CrossOff:
+					cxfx.PushEvent(cxfx.APP_STOP)
+				}
+			case size.Event:
+				cxfx.PushFramebufferSizeEvent(int32(e.WidthPx), int32(e.HeightPx))
+				cxfx.PushWindowSizeEvent(int32(e.WidthPx), int32(e.HeightPx))
+			case paint.Event:
+				cxfx.PushEvent(cxfx.APP_PAINT)
+				//if glctx == nil || e.External {
+				//	continue
+				//}
+			case touch.Event:
+				cxfx.PushTouchEvent(int32(e.Type), int32(e.X), int32(e.Y))
 			}
-		case size.Event:
-			//sz = e
-			i := pushEvent(a, APP_RESIZE, "RESIZE")
-			events[i].w = e.WidthPx
-			events[i].h = e.HeightPx
-			log.Printf("SIZE.EVENT WIDTH %d, HEIGHT %d\n", e.WidthPx, e.HeightPx)
-		case paint.Event:
-			//_ = pushEvent(a, APP_PAINT, "PAINT")
-			if glctx == nil || e.External {
-				continue
-			}
-
-			frame = frame + 1
-			//a.Publish()
-			//a.Send(paint.Event{})
-		case touch.Event:
-			i := pushEvent(a, APP_TOUCH, "TOUCH")
-			events[i].x = e.X
-			events[i].y = e.Y
 		}
-	}
+	}()
+
+	startCXVM()
 }
 
 func parseManifest(filesDir string) []string {
@@ -195,7 +126,6 @@ func parseManifest(filesDir string) []string {
 		"cxfx/src/gui/binder.cx",
 		"cxfx/src/gui/combo.cx",
 		"cxfx/src/gam/camera.cx",
-		"cxfx/src/gam/game.cx",
 		"cxfx/src/phx/physics.cx",
 		//"cxfx/tutorials/0_colored_quad.cx",
 		//"cxfx/tutorials/1_textured_quad.cx",
@@ -203,12 +133,12 @@ func parseManifest(filesDir string) []string {
 		//"cxfx/tutorials/3_perspective.cx",
 		//"cxfx/tutorials/4_camera.cx",
 		//"cxfx/tutorials/5_batch.cx",
-		//"cxfx/tutorials/6_model.cx",
+		"cxfx/tutorials/6_model.cx",
 		//"cxfx/tutorials/7_menu.cx",
 		//"cxfx/tutorials/8_sound.cx",
 		// "cxfx/tutorials/9_button.cx",
 		// "cxfx/tutorials/10_dialog.cx",
-		"cxfx/games/skylight/src/skylight.cx",
+		//"cxfx/games/skylight/src/skylight.cx",
 		"++data=/cxfx/resources/",
 		"++hints=resizable",
 		"++glVersion=gles31",
@@ -223,81 +153,3 @@ func main() {
 		eventLoop(a)
 	})
 }
-
-/*func onStart(glctx gl.Context) {
-	var err error
-	program, err = glutil.CreateProgram(glctx, vertexShader, fragmentShader)
-	if err != nil {
-		log.Printf("error creating GL program: %v", err)
-		return
-	}
-
-	buf = glctx.CreateBuffer()
-	glctx.BindBuffer(gl.ARRAY_BUFFER, buf)
-	glctx.BufferData(gl.ARRAY_BUFFER, triangleData, gl.STATIC_DRAW)
-
-	position = glctx.GetAttribLocation(program, "position")
-	color = glctx.GetUniformLocation(program, "color")
-	offset = glctx.GetUniformLocation(program, "offset")
-
-	images = glutil.NewImages(glctx)
-	fps = debug.NewFPS(images)
-}
-
-func onStop(glctx gl.Context) {
-	glctx.DeleteProgram(program)
-	glctx.DeleteBuffer(buf)
-	fps.Release()
-	images.Release()
-}
-
-func onPaint(glctx gl.Context, sz size.Event) {
-	glctx.ClearColor(1, 0, 0, 1)
-	glctx.Clear(gl.COLOR_BUFFER_BIT)
-
-	glctx.UseProgram(program)
-
-	green += 0.01
-	if green > 1 {
-		green = 0
-	}
-	glctx.Uniform4f(color, 0, green, 0, 1)
-
-	glctx.Uniform2f(offset, touchX/float32(sz.WidthPx), touchY/float32(sz.HeightPx))
-
-	glctx.BindBuffer(gl.ARRAY_BUFFER, buf)
-	glctx.EnableVertexAttribArray(position)
-	glctx.VertexAttribPointer(position, coordsPerVertex, gl.FLOAT, false, 0, 0)
-	glctx.DrawArrays(gl.TRIANGLES, 0, vertexCount)
-	glctx.DisableVertexAttribArray(position)
-
-	fps.Draw(sz)
-}
-
-var triangleData = f32.Bytes(binary.LittleEndian,
-	0.0, 0.4, 0.0, // top left
-	0.0, 0.0, 0.0, // bottom left
-	0.4, 0.0, 0.0, // bottom right
-)
-
-const (
-	coordsPerVertex = 3
-	vertexCount     = 3
-)
-
-const vertexShader = `#version 100
-uniform vec2 offset;
-attribute vec4 position;
-void main() {
-	// offset comes in with x/y values between 0 and 1.
-	// position bounds are -1 to 1.
-	vec4 offset4 = vec4(2.0*offset.x-1.0, 1.0-2.0*offset.y, 0, 0);
-	gl_Position = position + offset4;
-}`
-
-const fragmentShader = `#version 100
-precision mediump float;
-uniform vec4 color;
-void main() {
-	gl_FragColor = color;
-}`*/
