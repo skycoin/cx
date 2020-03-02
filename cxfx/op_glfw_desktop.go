@@ -188,62 +188,55 @@ func glfwSetKeyCallback(prgrm *CXProgram) {
 	window := ReadStr(fp, expr.Inputs[0])
 	windows[window].SetKeyCallback(
 		func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-			PushKeyEvent(int32(key), int32(scancode), int32(action), int32(mods))
+			PushKeyboardEvent(ActionType(action), int32(key), int64(scancode), int32(mods))
 		})
 }
 
-func glfwSetCursorPosCallback(prgrm *CXProgram) {
+func glfwSetCursorPosCallback(prgrm *CXProgram, eventType EventType) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 	window := ReadStr(fp, expr.Inputs[0])
 	windows[window].SetCursorPosCallback(
 		func(w *glfw.Window, xpos float64, ypos float64) {
-			PushCursorPositionEvent(xpos, ypos)
+			PushMouseEvent(eventType, ACTION_MOVE, 0, -1, 0, xpos, ypos)
 		})
 }
 
-func glfwSetMouseButtonCallback(prgrm *CXProgram) {
+func glfwSetMouseButtonCallback(prgrm *CXProgram, eventType EventType) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 	window := ReadStr(fp, expr.Inputs[0])
 	windows[window].SetMouseButtonCallback(
 		func(w *glfw.Window, key glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-			PushMouseButtonEvent(int32(key), int32(action), int32(mods))
+			x, y := w.GetCursorPos()
+			PushMouseEvent(eventType, ActionType(action), int32(key), -1, int32(mods), x, y)
 		})
 }
 
-func opGlfwSetKeyCallback(prgrm *CXProgram) {
+func opGlfwSetKeyCallback(prgrm *CXProgram) { // TODO : to deprecate
 	glfwSetKeyCallback(prgrm)
-	appKeyCallback.Init(prgrm)
+	appKeyboardCallback.Init(prgrm)
 }
 
-func opGlfwSetKeyCallbackEx(prgrm *CXProgram) {
-	glfwSetKeyCallback(prgrm)
-	appKeyCallback.InitEx(prgrm)
-}
-
-func opGlfwSetCursorPosCallback(prgrm *CXProgram) {
-	glfwSetCursorPosCallback(prgrm)
+func opGlfwSetCursorPosCallback(prgrm *CXProgram) { // TODO : to deprecate
+	glfwSetCursorPosCallback(prgrm, APP_CURSOR_POS)
 	appCursorPositionCallback.Init(prgrm)
 }
 
-func opGlfwSetCursorPosCallbackEx(prgrm *CXProgram) {
-	glfwSetCursorPosCallback(prgrm)
-	appCursorPositionCallback.InitEx(prgrm)
-}
-
-func opGlfwSetMouseButtonCallback(prgrm *CXProgram) {
-	glfwSetMouseButtonCallback(prgrm)
+func opGlfwSetMouseButtonCallback(prgrm *CXProgram) { // TODO : to deprecate
+	glfwSetMouseButtonCallback(prgrm, APP_MOUSE_BUTTON)
 	appMouseButtonCallback.Init(prgrm)
 }
 
-func opGlfwSetMouseButtonCallbackEx(prgrm *CXProgram) {
-	glfwSetMouseButtonCallback(prgrm)
-	appMouseButtonCallback.InitEx(prgrm)
+func opGlfwSetKeyboardCallback(prgrm *CXProgram) {
+	glfwSetKeyCallback(prgrm)
+	appKeyboardCallback.InitEx(prgrm)
 }
 
-func opGlfwSetTouchCallback(prgrm *CXProgram) {
-	appTouchCallback.InitEx(prgrm)
+func opGlfwSetMouseCallback(prgrm *CXProgram) {
+	glfwSetCursorPosCallback(prgrm, APP_MOUSE)
+	glfwSetMouseButtonCallback(prgrm, APP_MOUSE)
+	appMouseCallback.InitEx(prgrm)
 }
 
 func opGlfwSetFramebufferSizeCallback(prgrm *CXProgram) {
@@ -253,7 +246,7 @@ func opGlfwSetFramebufferSizeCallback(prgrm *CXProgram) {
 
 	windows[window].SetFramebufferSizeCallback(
 		func(w *glfw.Window, width int, height int) {
-			PushFramebufferSizeEvent(int32(width), int32(height))
+			PushFramebufferSizeEvent(float64(width), float64(height)) // TODO : to deprecate, use float64
 		})
 	appFramebufferSizeCallback.InitEx(prgrm)
 }
@@ -265,7 +258,7 @@ func opGlfwSetWindowSizeCallback(prgrm *CXProgram) {
 
 	windows[window].SetSizeCallback(
 		func(w *glfw.Window, width int, height int) {
-			PushWindowSizeEvent(int32(width), int32(height))
+			PushWindowSizeEvent(float64(width), float64(height)) // TODO : to deprecate, use float64
 		})
 	appWindowSizeCallback.InitEx(prgrm)
 }
@@ -277,7 +270,7 @@ func opGlfwSetWindowPosCallback(prgrm *CXProgram) {
 
 	windows[window].SetPosCallback(
 		func(w *glfw.Window, x int, y int) {
-			PushWindowPositionEvent(int32(x), int32(y))
+			PushWindowPositionEvent(float64(x), float64(y)) // TODO to deprecate, use float64
 		})
 	appWindowPosCallback.InitEx(prgrm)
 }

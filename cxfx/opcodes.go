@@ -178,20 +178,18 @@ const (
 	OP_GLFW_GET_FRAMEBUFFER_SIZE
 	OP_GLFW_GET_WINDOW_POS
 	OP_GLFW_GET_WINDOW_SIZE
+	OP_GLFW_GET_TIME
 	OP_GLFW_SWAP_INTERVAL
-	OP_GLFW_SET_KEY_CALLBACK
-	OP_GLFW_SET_KEY_CALLBACK_EX
 	OP_GLFW_SET_START_CALLBACK
 	OP_GLFW_SET_STOP_CALLBACK
-	OP_GLFW_SET_TOUCH_CALLBACK
-	OP_GLFW_GET_TIME
-	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
-	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX
-	OP_GLFW_SET_CURSOR_POS_CALLBACK
-	OP_GLFW_SET_CURSOR_POS_CALLBACK_EX
+	OP_GLFW_SET_KEYBOARD_CALLBACK
+	OP_GLFW_SET_MOUSE_CALLBACK
 	OP_GLFW_SET_FRAMEBUFFER_SIZE_CALLBACK
 	OP_GLFW_SET_WINDOW_POS_CALLBACK
 	OP_GLFW_SET_WINDOW_SIZE_CALLBACK
+	OP_GLFW_SET_KEY_CALLBACK
+	OP_GLFW_SET_MOUSE_BUTTON_CALLBACK
+	OP_GLFW_SET_CURSOR_POS_CALLBACK
 	OP_GLFW_GET_CURSOR_POS
 	OP_GLFW_SET_INPUT_MODE
 	OP_GLFW_SET_WINDOW_POS
@@ -409,20 +407,18 @@ func init() {
 	Op(OP_GLFW_GET_FRAMEBUFFER_SIZE, "glfw.GetFramebufferSize", opGlfwGetFramebufferSize, In(ASTR), Out(AI32, AI32))
 	Op(OP_GLFW_GET_WINDOW_POS, "glfw.GetWindowPos", opGlfwGetWindowPos, In(ASTR), Out(AI32, AI32))
 	Op(OP_GLFW_GET_WINDOW_SIZE, "glfw.GetWindowSize", opGlfwGetWindowSize, In(ASTR), Out(AI32, AI32))
+	Op(OP_GLFW_GET_TIME, "glfw.GetTime", opGlfwGetTime, nil, Out(AF64))
 	Op(OP_GLFW_SWAP_INTERVAL, "glfw.SwapInterval", opGlfwSwapInterval, In(AI32), nil)
-	Op(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", opGlfwSetKeyCallback, In(ASTR, ASTR), nil)
-	Op(OP_GLFW_SET_KEY_CALLBACK_EX, "glfw.SetKeyCallbackEx", opGlfwSetKeyCallbackEx, In(ASTR, ASTR, ASTR), nil)
 	Op(OP_GLFW_SET_START_CALLBACK, "glfw.SetStartCallback", opGlfwSetStartCallback, In(ASTR, ASTR, ASTR), nil)
 	Op(OP_GLFW_SET_STOP_CALLBACK, "glfw.SetStopCallback", opGlfwSetStopCallback, In(ASTR, ASTR, ASTR), nil)
-	Op(OP_GLFW_SET_TOUCH_CALLBACK, "glfw.SetTouchCallback", opGlfwSetTouchCallback, In(ASTR, ASTR, ASTR), nil)
-	Op(OP_GLFW_GET_TIME, "glfw.GetTime", opGlfwGetTime, nil, Out(AF64))
-	Op(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", opGlfwSetMouseButtonCallback, In(ASTR, ASTR), nil)
-	Op(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK_EX, "glfw.SetMouseButtonCallbackEx", opGlfwSetMouseButtonCallbackEx, In(ASTR, ASTR, ASTR), nil)
-	Op(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", opGlfwSetCursorPosCallback, In(ASTR, ASTR), nil)
-	Op(OP_GLFW_SET_CURSOR_POS_CALLBACK_EX, "glfw.SetCursorPosCallbackEx", opGlfwSetCursorPosCallbackEx, In(ASTR, ASTR, ASTR), nil)
+	Op(OP_GLFW_SET_KEYBOARD_CALLBACK, "glfw.SetKeyboardCallback", opGlfwSetKeyboardCallback, In(ASTR, ASTR, ASTR), nil)
+	Op(OP_GLFW_SET_MOUSE_CALLBACK, "glfw.SetMouseCallback", opGlfwSetMouseCallback, In(ASTR, ASTR, ASTR), nil)
 	Op(OP_GLFW_SET_FRAMEBUFFER_SIZE_CALLBACK, "glfw.SetFramebufferSizeCallback", opGlfwSetFramebufferSizeCallback, In(ASTR, ASTR, ASTR), nil)
 	Op(OP_GLFW_SET_WINDOW_POS_CALLBACK, "glfw.SetWindowPosCallback", opGlfwSetWindowPosCallback, In(ASTR, ASTR, ASTR), nil)
 	Op(OP_GLFW_SET_WINDOW_SIZE_CALLBACK, "glfw.SetWindowSizeCallback", opGlfwSetWindowSizeCallback, In(ASTR, ASTR, ASTR), nil)
+	Op(OP_GLFW_SET_KEY_CALLBACK, "glfw.SetKeyCallback", opGlfwSetKeyCallback, In(ASTR, ASTR), nil)                          // TODO : to deprecate
+	Op(OP_GLFW_SET_MOUSE_BUTTON_CALLBACK, "glfw.SetMouseButtonCallback", opGlfwSetMouseButtonCallback, In(ASTR, ASTR), nil) // TODO : to deprecate
+	Op(OP_GLFW_SET_CURSOR_POS_CALLBACK, "glfw.SetCursorPosCallback", opGlfwSetCursorPosCallback, In(ASTR, ASTR), nil)       // TODO : to deprecate
 	Op(OP_GLFW_GET_CURSOR_POS, "glfw.GetCursorPos", opGlfwGetCursorPos, In(ASTR), Out(AF64, AF64))
 	Op(OP_GLFW_SET_INPUT_MODE, "glfw.SetInputMode", opGlfwSetInputMode, In(ASTR, AI32, AI32), nil)
 	Op(OP_GLFW_SET_WINDOW_POS, "glfw.SetWindowPos", opGlfwSetWindowPos, In(ASTR, AI32, AI32), nil)

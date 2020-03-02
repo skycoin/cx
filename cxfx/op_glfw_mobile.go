@@ -134,32 +134,24 @@ func opGlfwGetTime(prgrm *CXProgram) {
 	WriteF64(GetFinalOffset(fp, expr.Outputs[0]), 0.0)
 }
 
-func opGlfwSetKeyCallback(prgrm *CXProgram) {
-	appKeyCallback.Init(prgrm)
+func opGlfwSetKeyCallback(prgrm *CXProgram) { // TODO : to deprecate
+	appKeyboardCallback.Init(prgrm)
 }
 
-func opGlfwSetKeyCallbackEx(prgrm *CXProgram) {
-	appKeyCallback.InitEx(prgrm)
-}
-
-func opGlfwSetCursorPosCallback(prgrm *CXProgram) {
+func opGlfwSetCursorPosCallback(prgrm *CXProgram) { // TODO : to deprecate
 	appCursorPositionCallback.Init(prgrm)
 }
 
-func opGlfwSetCursorPosCallbackEx(prgrm *CXProgram) {
-	appCursorPositionCallback.InitEx(prgrm)
-}
-
-func opGlfwSetMouseButtonCallback(prgrm *CXProgram) {
+func opGlfwSetMouseButtonCallback(prgrm *CXProgram) { // TODO : to deprecate
 	appMouseButtonCallback.Init(prgrm)
 }
 
-func opGlfwSetMouseButtonCallbackEx(prgrm *CXProgram) {
-	appMouseButtonCallback.InitEx(prgrm)
+func opGlfwSetKeyboardCallback(prgrm *CXProgram) {
+	appKeyboardCallback.InitEx(prgrm)
 }
 
-func opGlfwSetTouchCallback(prgrm *CXProgram) {
-	appTouchCallback.InitEx(prgrm)
+func opGlfwSetMouseCallback(prgrm *CXProgram) {
+	appMouseCallback.InitEx(prgrm)
 }
 
 func opGlfwSetFramebufferSizeCallback(prgrm *CXProgram) {

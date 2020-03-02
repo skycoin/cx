@@ -3,10 +3,10 @@
 package cxfx
 
 import (
-	"bufio"
+	//	"bufio"
 	. "github.com/SkycoinProject/cx/cx"
-	"github.com/amherag/skycoin/src/cipher/encoder"
-	"github.com/mjibson/go-dsp/wav"
+	//"github.com/amherag/skycoin/src/cipher/encoder"
+	//	"github.com/mjibson/go-dsp/wav"
 	"golang.org/x/mobile/exp/audio/al"
 )
 

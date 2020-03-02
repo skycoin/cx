@@ -50,15 +50,24 @@ func eventLoop(a app.App) {
 					cxfx.PushEvent(cxfx.APP_STOP)
 				}
 			case size.Event:
-				cxfx.PushFramebufferSizeEvent(int32(e.WidthPx), int32(e.HeightPx))
-				cxfx.PushWindowSizeEvent(int32(e.WidthPx), int32(e.HeightPx))
+				cxfx.PushFramebufferSizeEvent(float64(e.WidthPx), float64(e.HeightPx))
+				cxfx.PushWindowSizeEvent(float64(e.WidthPx), float64(e.HeightPx))
 			case paint.Event:
 				cxfx.PushEvent(cxfx.APP_PAINT)
 				//if glctx == nil || e.External {
 				//	continue
 				//}
 			case touch.Event:
-				cxfx.PushTouchEvent(int32(e.Type), int32(e.X), int32(e.Y))
+				cxfxAction := cxfx.ACTION_RELEASE
+				switch e.Type {
+				case touch.TypeBegin:
+					cxfxAction = cxfx.ACTION_PRESS
+				case touch.TypeMove:
+					cxfxAction = cxfx.ACTION_MOVE
+				case touch.TypeEnd:
+					cxfxAction = cxfx.ACTION_RELEASE
+				}
+				cxfx.PushMouseEvent(cxfx.APP_MOUSE, cxfxAction, int32(e.Sequence), int64(e.Sequence), 0, float64(e.X), float64(e.Y))
 			}
 		}
 	}()
