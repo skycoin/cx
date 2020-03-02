@@ -93,13 +93,14 @@ build-full: configure build-parser ## Build CX from sources with all build tags
 
 build-android: configure build-parser
 #go get github.com/SkycoinProject/gltext
-	go get golang.org/x/mobile/cmd/gomobile
-	cp -R ~/go/src/github.com/SkycoinProject/cxfx/resources/fonts/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/fonts/
-	cp -R ~/go/src/github.com/SkycoinProject/cxfx/resources/shaders/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/shaders/
-	cp -R ~/go/src/github.com/SkycoinProject/cxfx/tutorials/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/tutorials/
-	cp -R ~/go/src/github.com/SkycoinProject/cxfx/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/src/
-	cp -R ~/go/src/github.com/SkycoinProject/cxfx/games/skylight/src/ ~/go/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/games/skylight/src/
-	gomobile install -tags="base cxfx mobile android_gles31" -target=android ~/go/src/github.com/SkycoinProject/cx/cxgo/
+	git clone https://github.com/SkycoinProject/gomobile $(GOPATH)/src/golang.org/x/mobile 2> /dev/null || true
+	cd $(GOPATH)/src/golang.org/x/mobile/; git pull origin master; go get ./cmd/gomobile
+	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/resources/fonts/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/fonts/
+	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/resources/shaders/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/shaders/
+	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/tutorials/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/tutorials/
+	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/src/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/src/
+	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/games/skylight/src/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/games/skylight/src/
+	gomobile install -tags="base cxfx mobile android_gles31" -target=android $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/
 #-DHOST=armv7a-linux-androideabi29
 
 install-gfx-deps-LINUX:
