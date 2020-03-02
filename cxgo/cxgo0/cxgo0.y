@@ -128,10 +128,13 @@
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
+%type   <arguments>     id_list
+%type   <arguments>     types_list
                                                 
 %type   <function>      function_header
 
 %type   <ints>          indexing_literal
+%type   <ints>          indexing_slice_literal
 
                         // for struct literals
 %right                  IDENTIFIER LBRACE
@@ -280,6 +283,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
+			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
                 ;
@@ -309,9 +313,48 @@ direct_declarator:
                 { $$ = $2 }
                 ;
 
+id_list:	IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+			$$ = []*CXArgument{arg}
+		}
+	|	type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($1)			 
+			$$ = []*CXArgument{arg}
+		}
+	|	id_list COMMA IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($3, "", false, CurrentFile, LineNo)
+			$$ = append($1, arg)
+		}
+	|	id_list COMMA type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($3)
+			$$ = append($1, arg)
+		}
+	;
+
+types_list:
+		LPAREN id_list RPAREN
+		{
+			$$ = $2
+		}
+	|	LPAREN RPAREN
+		{
+			$$ = nil
+		}
+	;
 
 declaration_specifiers:
-                MUL_OP declaration_specifiers
+		FUNC types_list types_list
+		{
+			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg.Inputs = $2
+			arg.Outputs = $3
+			$$ = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+		}
+        |       MUL_OP declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
@@ -418,6 +461,17 @@ indexing_literal:
 		}
 		;
 
+indexing_slice_literal:
+		LBRACK RBRACK
+		{
+			$$ = []int{0}
+		}
+        |       indexing_slice_literal LBRACK RBRACK
+		{
+			$$ = append($1, 0)
+		}
+		;
+
 // expressions
 array_literal_expression:
                 indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
@@ -426,16 +480,12 @@ array_literal_expression:
         |       indexing_literal type_specifier LBRACE RBRACE
         ;
 
-indexing_slices:
-		LBRACK RBRACK
-        |       indexing_slices LBRACK RBRACK
-		;
-
 slice_literal_expression:
-                indexing_slices IDENTIFIER LBRACE argument_expression_list RBRACE
-        |       indexing_slices IDENTIFIER LBRACE RBRACE
-        |       indexing_slices type_specifier LBRACE argument_expression_list RBRACE
-        |       indexing_slices type_specifier LBRACE RBRACE
+                LBRACK RBRACK IDENTIFIER LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE argument_expression_list RBRACE
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK slice_literal_expression
                 ;
 
 

@@ -4,7 +4,7 @@ package cxcore
 // 	"fmt"
 // 	"regexp"
 // 	"bytes"
-// 	"github.com/amherag/skycoin/src/cipher/encoder"
+// 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 // )
 
 // // This method removes 1 or more expressions

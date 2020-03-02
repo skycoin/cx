@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	// "encoding/hex"
 
 	"runtime"
@@ -30,18 +31,18 @@ import (
 	. "github.com/SkycoinProject/cx/cxgo/parser"
 	"github.com/theherk/viper"
 
-	"github.com/amherag/skycoin/src/cipher"
-	// "github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/cx-chains/src/cipher"
+	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
 	"errors"
-	"github.com/amherag/skycoin/src/api"
-	"github.com/amherag/skycoin/src/cli"
-	"github.com/amherag/skycoin/src/coin"
-	"github.com/amherag/skycoin/src/fiber"
-	"github.com/amherag/skycoin/src/readable"
-	"github.com/amherag/skycoin/src/skycoin"
-	"github.com/amherag/skycoin/src/util/logging"
-	"github.com/amherag/skycoin/src/visor"
-	"github.com/amherag/skycoin/src/wallet"
+	"github.com/SkycoinProject/cx-chains/src/api"
+	"github.com/SkycoinProject/cx-chains/src/cli"
+	"github.com/SkycoinProject/cx-chains/src/coin"
+	"github.com/SkycoinProject/cx-chains/src/fiber"
+	"github.com/SkycoinProject/cx-chains/src/readable"
+	"github.com/SkycoinProject/cx-chains/src/skycoin"
+	"github.com/SkycoinProject/cx-chains/src/util/logging"
+	"github.com/SkycoinProject/cx-chains/src/visor"
+	"github.com/SkycoinProject/cx-chains/src/wallet"
 )
 
 const VERSION = "0.7.1"
@@ -735,6 +736,8 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
 	}
 
+	PRGRM.SelectProgram()
+
 	PRGRM = cxgo0.PRGRM0
 	if FoundCompileErrors || parseErrors > 0 {
 		cleanupAndExit(CX_COMPILATION_ERROR)
@@ -786,6 +789,11 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	defer StopProfile("parse")
 
 	PRGRM = MakeProgram()
+	corePkgsPrgrm, err := GetProgram()
+	if err != nil {
+		panic(err)
+	}
+	PRGRM.Packages = corePkgsPrgrm.Packages
 
 	if options.webMode {
 		ServiceMode()
@@ -1349,7 +1357,7 @@ func printPrompt() {
 
 func repl() {
 	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/SkycoinProject/cx/")
 
 	InREPL = true
 

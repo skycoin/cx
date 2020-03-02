@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"text/tabwriter"
 
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -188,6 +188,22 @@ func GetFormattedName(arg *CXArgument, includePkg bool) string {
 	return name
 }
 
+// formatParameters returns a string containing a list of the formatted types of
+// each of `params`, enclosed in parethesis. This function is used only when
+// formatting functions as first-class objects.
+func formatParameters(params []*CXArgument) string {
+	types := "("
+	for i, param := range params {
+		types += GetFormattedType(param)
+		if i != len(params)-1 {
+			types += ", "
+		}
+	}
+	types += ")"
+
+	return types
+}
+
 // GetFormattedType builds a string with the CXGO type representation of `arg`.
 func GetFormattedType(arg *CXArgument) string {
 	typ := ""
@@ -217,6 +233,32 @@ func GetFormattedType(arg *CXArgument) string {
 			} else {
 				// then it's basic type
 				typ += TypeNames[elt.Type]
+
+				// If it's a function, let's add the inputs and outputs.
+				if elt.Type == TYPE_FUNC {
+					if elt.IsLocalDeclaration {
+						// Then it's a local variable, which can be assigned to a
+						// lambda function, for example.
+						typ += formatParameters(elt.Inputs)
+						typ += formatParameters(elt.Outputs)
+					} else {
+						// Then it refers to a named function defined in a package.
+						pkg, err := PROGRAM.GetPackage(arg.Package.Name)
+						if err != nil {
+							println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							os.Exit(CX_COMPILATION_ERROR)
+						}
+
+						fn, err := pkg.GetFunction(elt.Name)
+						if err == nil {
+							// println(CompilationError(elt.FileName, elt.FileLine), err.Error())
+							// os.Exit(CX_COMPILATION_ERROR)
+							// Adding list of inputs and outputs types.
+							typ += formatParameters(fn.Inputs)
+							typ += formatParameters(fn.Outputs)
+						}
+					}
+				}
 			}
 		}
 	}
@@ -378,9 +420,9 @@ func printPackages(prgrm *CXProgram) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		if IsCorePackage(pkg.Name) {
-			continue
-		}
+		// if IsCorePackage(pkg.Name) {
+		// 	continue
+		// }
 
 		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
 
@@ -775,9 +817,35 @@ func WriteToSlice(off int, inp []byte) int {
 
 }
 
-// NewWriteObj ...
+// refactoring reuse in WriteObject and WriteObjectRetOff
+func writeObj(obj []byte) int {
+	// QUARENTINED: Check if `newwriteObj` can supersede this `writeObj`.
+	// Especially check usage on CX chains.
+	size := len(obj) + OBJECT_HEADER_SIZE
+	sizeB := encoder.SerializeAtomic(int32(size))
+	// heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
+	heapOffset := AllocateSeq(size)
+
+	// var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
+	var finalObj = make([]byte, size)
+
+	for c := OBJECT_GC_HEADER_SIZE; c < OBJECT_HEADER_SIZE; c++ {
+		finalObj[c] = sizeB[c-OBJECT_GC_HEADER_SIZE]
+	}
+	// for c := OBJECT_HEADER_SIZE; c < size+OBJECT_HEADER_SIZE; c++ {
+	for c := OBJECT_HEADER_SIZE; c < size; c++ {
+		finalObj[c] = obj[c-OBJECT_HEADER_SIZE]
+	}
+
+	WriteMemory(heapOffset, finalObj)
+	return heapOffset
+}
+
 // refactoring reuse in WriteObject and WriteObjectRetOff
 func NewWriteObj(obj []byte) int {
+	// 2dbug introduces this new version of `writeObj`. It is unknown to me
+	// (amherag) at the moment if it is safe to replace `writeObj` with
+	// this version. Leaving `writeObj` in quarentine.
 	size := len(obj)
 	heapOffset := AllocateSeq(size + OBJECT_HEADER_SIZE)
 	var finalObj = make([]byte, OBJECT_HEADER_SIZE+size)
@@ -1250,4 +1318,34 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 	}
 
 	return cxArgs, sourceCode, fileNames
+}
+
+// IsPointer checks if `sym` is a candidate for the garbage collector to check.
+// For example, if `sym` is a slice, the garbage collector will need to check
+// if the slice on the heap needs to be relocated.
+func IsPointer(sym *CXArgument) bool {
+	// There's no need to add global variables in `fn.ListOfPointers` as we can access them easily through `CXPackage.Globals`
+	// TODO: We could still pre-compute a list of candidates for globals.
+	if sym.Offset >= PROGRAM.StackSize && sym.Name != "" {
+		return false
+	}
+	// NOTE: Strings are considered as `IsPointer`s by the runtime.
+	// if (sym.IsPointer || sym.IsSlice) && sym.Name != "" {
+	// 	return true
+	// }
+	if (sym.IsPointer || sym.IsSlice) && sym.Name != "" && len(sym.Fields) == 0 {
+		return true
+	}
+	if sym.Type == TYPE_STR && sym.Name != "" && len(sym.Fields) == 0 {
+		return true
+	}
+	// if (sym.Type == TYPE_STR && sym.Name != "") {
+	// 	return true
+	// }
+	// If `sym` is a structure instance, we need to check if the last field
+	// being access is a pointer candidate
+	// if len(sym.Fields) > 0 {
+	// 	return isPointer(sym.Fields[len(sym.Fields)-1])
+	// }
+	return false
 }

@@ -1,7 +1,7 @@
 package cxcore
 
 import (
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 type sIndex struct {
@@ -172,6 +172,10 @@ type sArgument struct {
 	IndexesSize   int32
 	FieldsOffset  int32
 	FieldsSize    int32
+	InputsOffset  int32
+	InputsSize    int32
+	OutputsOffset int32
+	OutputsSize   int32
 
 	PackageOffset int32
 }
@@ -214,7 +218,6 @@ func serializeName(name string, s *sAll) (int32, int32) {
 	s.NamesMap[name] = off
 
 	return int32(off), int32(size)
-
 }
 
 func indexPackage(pkg *CXPackage, s *sAll) {
@@ -319,6 +322,8 @@ func serializeArgument(arg *CXArgument, s *sAll) int {
 	s.Arguments[argOff].LengthsOffset, s.Arguments[argOff].LengthsSize = serializeIntegers(arg.Lengths, s)
 	s.Arguments[argOff].IndexesOffset, s.Arguments[argOff].IndexesSize = serializeSliceOfArguments(arg.Indexes, s)
 	s.Arguments[argOff].FieldsOffset, s.Arguments[argOff].FieldsSize = serializeSliceOfArguments(arg.Fields, s)
+	s.Arguments[argOff].InputsOffset, s.Arguments[argOff].InputsSize = serializeSliceOfArguments(arg.Inputs, s)
+	s.Arguments[argOff].OutputsOffset, s.Arguments[argOff].OutputsSize = serializeSliceOfArguments(arg.Outputs, s)
 
 	if pkgOff, found := s.PackagesMap[arg.Package.Name]; found {
 		s.Arguments[argOff].PackageOffset = int32(pkgOff)
@@ -761,8 +766,8 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 
 	var fnCounter int32
 	var strctCounter int32
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, split)
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, split, len(prgrm.Packages))
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 2)
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 2, len(prgrm.Packages))
 
 	// program
 	serializeProgram(prgrm, &s)
@@ -858,6 +863,7 @@ func dsName(off int32, size int32, s *sAll) string {
 func dsPackages(s *sAll, prgrm *CXProgram) {
 	var fnCounter int32
 	var strctCounter int32
+
 	for i, sPkg := range s.Packages {
 		// initializing packages with their names,
 		// empty functions, structs, imports and globals
@@ -895,10 +901,10 @@ func dsPackages(s *sAll, prgrm *CXProgram) {
 			prgrm.Packages[i].Globals = make([]*CXArgument, sPkg.GlobalsSize)
 		}
 
-		// CurrentFunction
-		if sPkg.FunctionsSize > 0 {
-			prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
-		}
+		// // CurrentFunction
+		// if sPkg.FunctionsSize > 0 {
+		// 	prgrm.Packages[i].CurrentFunction = prgrm.Packages[i].Functions[sPkg.CurrentFunctionOffset-fnCounter]
+		// }
 
 		// CurrentStruct
 		if sPkg.StructsSize > 0 {
@@ -1024,6 +1030,8 @@ func dsArgument(sArg *sArgument, s *sAll, prgrm *CXProgram) *CXArgument {
 	arg.Lengths = dsIntegers(sArg.LengthsOffset, sArg.LengthsSize, s)
 	arg.Indexes = dsArguments(sArg.IndexesOffset, sArg.IndexesSize, s, prgrm)
 	arg.Fields = dsArguments(sArg.FieldsOffset, sArg.FieldsSize, s, prgrm)
+	arg.Inputs = dsArguments(sArg.InputsOffset, sArg.InputsSize, s, prgrm)
+	arg.Outputs = dsArguments(sArg.OutputsOffset, sArg.OutputsSize, s, prgrm)
 
 	arg.Package = prgrm.Packages[sArg.PackageOffset]
 

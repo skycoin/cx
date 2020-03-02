@@ -2,7 +2,7 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/amherag/skycoin/src/cipher/encoder"
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 	"math/rand"
 	"os"
 	"time"

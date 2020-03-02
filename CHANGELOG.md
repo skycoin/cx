@@ -19,12 +19,14 @@
     redirected to an outdated version of the repo and the games are already
     mentioned in the README.
   * Improvements to `PrintProgram` (the function associated to the meta-command `:dp` in the REPL); the types printed to input/output parameters now print indexes, dereferences to fields and if they come from an external package.
+  * Improvements to memory management when dealing with CX chains.
   * Multidimensional array literals are now working properly.
   * Multidimensional slice literals are now working properly.
   * Added i8/16/ui8/ui16/ui32/ui64 types.
 * Libraries
   * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
   * Add json cx library to ease json parsing in cx.
+  * Add HTTP library.
 * Fixed issues
   * #306: Can't print double quotes.
   * #321: Can't do math inside 2nd square brackets (indexer) of an expression.

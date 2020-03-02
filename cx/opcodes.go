@@ -44,6 +44,8 @@ const (
 	OP_UND_SPRINTF
 	OP_UND_READ
 
+	START_PARSE_OPS
+
 	OP_I8_STR
 	OP_I8_I16
 	OP_I8_I32
@@ -164,6 +166,8 @@ const (
 	OP_STR_UI64
 	OP_STR_F32
 	OP_STR_F64
+
+	END_PARSE_OPS
 
 	OP_BOOL_PRINT
 	OP_BOOL_EQUAL
@@ -439,6 +443,15 @@ const (
 	OP_AFF_INFORM
 	OP_AFF_REQUEST
 
+	OP_HTTP_SERVE
+	OP_HTTP_LISTEN_AND_SERVE
+	OP_HTTP_NEW_REQUEST
+	OP_HTTP_DO
+	OP_HTTP_HANDLE
+	OP_HTTP_CLOSE
+
+	OP_DMSG_DO
+
 	END_OF_CORE_OPS
 )
 
@@ -503,7 +516,32 @@ func Slice(typCode int) *CXArgument {
 }
 
 func Param(typCode int) *CXArgument {
-	return MakeArgument("", "", -1).AddType(TypeNames[typCode])
+	arg := MakeArgument("", "", -1).AddType(TypeNames[typCode])
+	arg.IsLocalDeclaration = true
+	return arg
+}
+
+type ParamData struct {
+	typCode int           // The type code of the parameter.
+	isSlice bool          // Is the parameter a slice.
+	pkg     *CXPackage    // To what package does this param belongs to.
+	inputs  []*CXArgument // Input parameters to a TYPE_FUNC parameter.
+	outputs []*CXArgument // Output parameters to a TYPE_FUNC parameter.
+}
+
+// Helper function for creating parameters for standard library operators.
+// The current standard library only uses basic types and slices. If more options are needed, modify this function
+func ParamEx(paramData ParamData) *CXArgument {
+	var arg *CXArgument
+	if paramData.isSlice {
+		arg = Slice(paramData.typCode)
+	} else {
+		arg = Param(paramData.typCode)
+	}
+	arg.Inputs = paramData.inputs
+	arg.Outputs = paramData.outputs
+	arg.Package = paramData.pkg
+	return arg
 }
 
 var AI8 = Param(TYPE_I8)
@@ -534,6 +572,11 @@ func opDebug(prgrm *CXProgram) {
 }
 
 func init() {
+	httpPkg, err := PROGRAM.GetPackage("http")
+	if err != nil {
+		panic(err)
+	}
+
 	Op(OP_IDENTITY, "identity", opIdentity, In(AUND), Out(AUND))
 	Op(OP_JMP, "jmp", opJmp, In(ABOOL), nil) // AUND to allow 0 inputs (goto)
 	Op(OP_DEBUG, "debug", opDebug, nil, nil)
@@ -945,4 +988,30 @@ func init() {
 	Op(OP_AFF_OF, "aff.of", opAffOf, In(AAFF, AAFF), nil)
 	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(AAFF, AI32, AAFF), nil)
 	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(AAFF, AI32, AAFF), nil)
+
+	Op(OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
+	Op(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
+	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR), Out(ASTR))
+	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
+	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+
+	httpRequestType, err := httpPkg.GetStruct("Request")
+	if err != nil {
+		panic(err)
+	}
+	requestParam := MakeArgument("Request", "", -1).AddType(TypeNames[TYPE_CUSTOM])
+	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_STRUCT)
+	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_POINTER)
+	requestParam.IsPointer = true
+	requestParam.Size = TYPE_POINTER_SIZE
+	requestParam.TotalSize = TYPE_POINTER_SIZE
+	requestParam.CustomType = httpRequestType
+
+	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
+		In(
+			ASTR,
+			ParamEx(ParamData{typCode: TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), requestParam)})),
+		Out())
+
+	Op(OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)
 }

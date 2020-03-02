@@ -3,7 +3,7 @@
 	import (
 		// "fmt"
 		"strconv"
-		"github.com/amherag/skycoin/src/cipher/encoder"
+		"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 		. "github.com/SkycoinProject/cx/cx"
 		. "github.com/SkycoinProject/cx/cxgo/actions"
 	)
@@ -117,6 +117,8 @@
 %type   <arguments>     parameter_list
 %type   <arguments>     fields
 %type   <arguments>     struct_fields
+%type   <arguments>     id_list
+%type   <arguments>     types_list
 
 /* %type   <stringA>       package_identifier */
                                 
@@ -179,7 +181,7 @@
 %type   <expressions>   infer_clauses
 
 %type   <ints>          indexing_literal
-%type   <ints>          indexing_slices
+%type   <ints>          indexing_slice_literal
                         
 			// for struct literals
 %right                   IDENTIFIER LBRACE
@@ -392,6 +394,7 @@ parameter_declaration:
                 {
 			$2.Name = $1.Name
 			$2.Package = $1.Package
+			$2.IsLocalDeclaration = true
 			$$ = $2
                 }
                 ;
@@ -446,10 +449,54 @@ direct_declarator:
 
 
 
+id_list:	IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($1, "", false, CurrentFile, LineNo)
+			$$ = []*CXArgument{arg}
+		}
+	|	type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($1)
+			$$ = []*CXArgument{arg}
+		}
+	|	id_list COMMA IDENTIFIER
+		{
+			arg := DeclarationSpecifiersStruct($3, "", false, CurrentFile, LineNo)
+			$$ = append($1, arg)
+		}
+	|	id_list COMMA type_specifier
+		{
+			arg := DeclarationSpecifiersBasic($3)
+			$$ = append($1, arg)
+		}
+	;
 
+
+
+types_list:
+
+		LPAREN id_list RPAREN
+
+		{
+
+			$$ = $2
+
+		}
+	|	LPAREN RPAREN
+		{
+			$$ = nil
+		}
+	;
 
 declaration_specifiers:
-                MUL_OP declaration_specifiers
+                FUNC types_list types_list
+		{
+			arg := MakeArgument("", CurrentFile, LineNo).AddType("func")
+			arg.Inputs = $2
+			arg.Outputs = $3
+			$$ = DeclarationSpecifiers(arg, []int{0}, DECL_FUNC)
+		}
+        |       MUL_OP declaration_specifiers
                 {
 			$$ = DeclarationSpecifiers($2, []int{0}, DECL_POINTER)
                 }
@@ -572,6 +619,17 @@ indexing_literal:
 		}
 		;
 
+indexing_slice_literal:
+		LBRACK RBRACK
+		{
+			$$ = []int{0}
+		}
+        |       indexing_slice_literal LBRACK RBRACK
+		{
+			$$ = append($1, 0)
+		}
+		;
+
 // expressions
 array_literal_expression:
                 indexing_literal IDENTIFIER LBRACE array_literal_expression_list RBRACE
@@ -617,50 +675,41 @@ slice_literal_expression_list:
                 }
 	|       slice_literal_expression_list COMMA assignment_expression
                 {
+
 			$3[len($3) - 1].IsArrayLiteral = true
 			$$ = append($1, $3...)
                 }
                 ;
 
-indexing_slices:
-		LBRACK RBRACK
-		{
-			$$ = []int{int(0)}
-		}
-        |       indexing_slices LBRACK RBRACK
-		{
-			$$ = append($1, 0)
-		}
-		;
-
 slice_literal_expression:
-                indexing_slices IDENTIFIER LBRACE slice_literal_expression_list RBRACE
+                LBRACK RBRACK IDENTIFIER LBRACE slice_literal_expression_list RBRACE
                 {
-			$$ = $4
+			$$ = $5
                 }
-        |       indexing_slices IDENTIFIER LBRACE RBRACE
-                {
-			$$ = nil
-                }
-        |       indexing_slices type_specifier LBRACE slice_literal_expression_list RBRACE
-                {
-			$$ = SliceLiteralExpression($1, $2, $4)
-                }
-        |       indexing_slices type_specifier LBRACE RBRACE
+        |       LBRACK RBRACK IDENTIFIER LBRACE RBRACE
                 {
 			$$ = nil
                 }
-        /* |       LBRACK RBRACK slice_literal_expression */
-        /*         { */
-	/* 		for _, expr := range $3 { */
-	/* 			if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name { */
-	/* 				expr.Outputs[0].Lengths = append([]int{0}, expr.Outputs[0].Lengths[:len(expr.Outputs[0].Lengths) - 1]...) */
-	/* 				expr.Outputs[0].TotalSize = expr.Outputs[0].Size * TotalLength(expr.Outputs[0].Lengths) */
-	/* 			} */
-	/* 		} */
-
-	/* 		$$ = $3 */
-        /*         } */
+        |       LBRACK RBRACK type_specifier LBRACE slice_literal_expression_list RBRACE
+                {
+			$$ = SliceLiteralExpression($3, $5)
+                }
+        |       LBRACK RBRACK type_specifier LBRACE RBRACE
+                {
+			$$ = nil
+                }
+        |       LBRACK RBRACK slice_literal_expression
+                {
+			for _, expr := range $3 {
+				if expr.Outputs[0].Name == $3[len($3) - 1].Inputs[0].Name {
+					expr.Outputs[0].Lengths = append(expr.Outputs[0].Lengths, 0)
+					expr.Outputs[0].DeclarationSpecifiers = append(expr.Outputs[0].DeclarationSpecifiers, DECL_SLICE)
+                                    }
+			}
+	
+			$3[len($3)-1].IsArrayLiteral = true
+			$$ = $3
+                }
                 ;
 
 /* package_identifier: */
@@ -755,7 +804,7 @@ infer_actions:
 
 infer_clauses:
                 {
-			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, nil)
+			$$ = SliceLiteralExpression(TYPE_AFF, nil)
                 }
         |       infer_actions
                 {
@@ -766,7 +815,7 @@ infer_clauses:
 				exprs = append(exprs, expr...)
 			}
 			
-			$$ = SliceLiteralExpression([]int{0}, TYPE_AFF, exprs)
+			$$ = SliceLiteralExpression(TYPE_AFF, exprs)
                 }
         /* |       infer_targets */
         /*         { */

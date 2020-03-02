@@ -42,9 +42,9 @@ ignored = ["github.com/go-gl/*"]
   branch = "master"
   name = "github.com/SkycoinProject/gltext"
 
-[[constraint]]
-  branch = "cxchains"
-  name = "github.com/amherag/skycoin"
+# [[constraint]]
+#   branch = "cxchains"
+#   name = "github.com/SkycoinProject/skycoin"
 
 [[constraint]]
   branch = "master"
@@ -53,3 +53,11 @@ ignored = ["github.com/go-gl/*"]
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/SkycoinProject/dmsg-http"
+
+[[constraint]]
+  branch = "mainnet-milestone1"
+  name = "github.com/skycoin/dmsg"

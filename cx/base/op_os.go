@@ -5,14 +5,16 @@ package cxcore
 import (
 	"bytes"
 	"encoding/binary"
+
 	. "github.com/SkycoinProject/cx/cx"
-	"github.com/amherag/skycoin/src/cipher/encoder"
 	"math"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 const (
