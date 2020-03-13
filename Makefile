@@ -87,32 +87,20 @@ build: configure build-parser ## Build CX from sources
 	go build -tags="base" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
-build-full: configure build-parser ## Build CX from sources with all build tags
+build-full: install-full configure build-parser ## Build CX from sources with all build tags
 	go build -tags="base cxfx" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
-build-android: configure build-parser
+build-android: install-full install-mobile configure build-parser
 #go get github.com/SkycoinProject/gltext
 	git clone https://github.com/SkycoinProject/gomobile $(GOPATH)/src/golang.org/x/mobile 2> /dev/null || true
 	cd $(GOPATH)/src/golang.org/x/mobile/; git pull origin master; go get ./cmd/gomobile
-	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/resources/fonts/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/fonts/
-	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/resources/shaders/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/resources/shaders/
-	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/tutorials/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/tutorials/
-	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/src/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/src/
-	cp -R $(GOPATH)/src/github.com/SkycoinProject/cxfx/games/skylight/src/ $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/assets/cxfx/games/skylight/src/
 	gomobile install -tags="base cxfx mobile android_gles31" -target=android $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/
-#-DHOST=armv7a-linux-androideabi29
 
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
 	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
-#	export DISPLAY=$(DISPLAY)
-#	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
-#	export GTK_VERSION="$(shell pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)"
-#	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
-#	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
-#	export Pango_VERSION="$(shell pkg-config --modversion pango)"
 
 install-gfx-deps-MSYS:
 	@echo 'Installing dependencies for $(UNAME_S)'
@@ -143,7 +131,7 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx $(GOPATH)/src/github.com/SkycoinProject/cx/tests"'
 	cx -v
 
-install-full: install-gfx-deps install
+install-full: install-gfx-deps install-deps build-full configure-workspace
 
 install-mobile:
 	go get golang.org/x/mobile/gl
