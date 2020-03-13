@@ -651,7 +651,7 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// SliceResize does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+// SliceResizeEx does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
 func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
@@ -841,7 +841,7 @@ func writeObj(obj []byte) int {
 	return heapOffset
 }
 
-// refactoring reuse in WriteObject and WriteObjectRetOff
+// NewWriteObj refactoring reuse in WriteObject and WriteObjectRetOff
 func NewWriteObj(obj []byte) int {
 	// 2dbug introduces this new version of `writeObj`. It is unknown to me
 	// (amherag) at the moment if it is safe to replace `writeObj` with

@@ -383,6 +383,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 	return nil
 }
 
+// Callback ...
 func (cxt *CXProgram) Callback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
 	if fn, err := cxt.GetFunction(functionName, packageName); err == nil {
 		line := cxt.CallStack[cxt.CallCounter].Line

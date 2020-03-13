@@ -1,5 +1,3 @@
-// +build base
-
 package cxcore
 
 import (
@@ -11,14 +9,17 @@ import (
 var workingDir string
 var logFile bool
 
+// CXSetWorkingDir ...
 func CXSetWorkingDir(dir string) {
 	workingDir = dir
 }
 
+// CXLogFile ...
 func CXLogFile(enable bool) {
 	logFile = enable
 }
 
+// CXOpenFile ...
 func CXOpenFile(path string) (*os.File, error) {
 	if logFile {
 		fmt.Printf("Opening file : '%s', '%s'\n", workingDir, path)
@@ -31,6 +32,7 @@ func CXOpenFile(path string) (*os.File, error) {
 	return file, err
 }
 
+// CXCreateFile ...
 func CXCreateFile(path string) (*os.File, error) {
 	if logFile {
 		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, path)
@@ -44,6 +46,7 @@ func CXCreateFile(path string) (*os.File, error) {
 	return file, err
 }
 
+// CXRemoveFile ...
 func CXRemoveFile(path string) error {
 	if logFile {
 		fmt.Printf("Removing file : '%s', '%s'\n", workingDir, path)
@@ -58,6 +61,7 @@ func CXRemoveFile(path string) error {
 	return err
 }
 
+// CXReadFile ...
 func CXReadFile(path string) ([]byte, error) {
 	if logFile {
 		fmt.Printf("Reading file : '%s', '%s'\n", workingDir, path)
@@ -72,6 +76,7 @@ func CXReadFile(path string) ([]byte, error) {
 	return bytes, err
 }
 
+// CXStatFile ...
 func CXStatFile(path string) (os.FileInfo, error) {
 	if logFile {
 		fmt.Printf("Stating file : '%s', '%s'\n", workingDir, path)
@@ -86,6 +91,7 @@ func CXStatFile(path string) (os.FileInfo, error) {
 	return fileInfo, err
 }
 
+// CXMkdirAll ...
 func CXMkdirAll(path string, perm os.FileMode) error {
 	if logFile {
 		fmt.Printf("Creating dir : '%s'\n", path)

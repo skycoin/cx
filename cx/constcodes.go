@@ -31,6 +31,7 @@ func AddConstCode(code int, name string, typ int, value []byte) {
 	Constants[code] = CXConstant{Type: typ, Value: value}
 }
 
+// ConstI32 ...
 func ConstI32(code int, name string, value int32) {
 	AddConstCode(code, name, TYPE_I32, FromI32(value))
 }

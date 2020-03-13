@@ -455,12 +455,17 @@ const (
 	END_OF_CORE_OPS
 )
 
-// For the parser. These shouldn't be used in the runtime for performance reasons
+// OpcodeHandler ...
 type OpcodeHandler func(prgrm *CXProgram)
 
 var (
-	OpNames        = map[int]string{}
-	OpCodes        = map[string]int{}
+	// OpNames ...
+	OpNames = map[int]string{}
+
+	// OpCodes ...
+	OpCodes = map[string]int{}
+
+	// Natives ...
 	Natives        = map[int]*CXFunction{}
 	opcodeHandlers []OpcodeHandler
 )
@@ -506,7 +511,7 @@ func dumpOpCodes(opCode int) {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
-// Helper function for creating parameters for standard library operators.
+// Slice Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Slice(typCode int) *CXArgument {
 	arg := Param(typCode)
@@ -515,12 +520,14 @@ func Slice(typCode int) *CXArgument {
 	return arg
 }
 
+// Param ...
 func Param(typCode int) *CXArgument {
 	arg := MakeArgument("", "", -1).AddType(TypeNames[typCode])
 	arg.IsLocalDeclaration = true
 	return arg
 }
 
+// ParamData ...
 type ParamData struct {
 	typCode int           // The type code of the parameter.
 	isSlice bool          // Is the parameter a slice.
@@ -529,7 +536,7 @@ type ParamData struct {
 	outputs []*CXArgument // Output parameters to a TYPE_FUNC parameter.
 }
 
-// Helper function for creating parameters for standard library operators.
+// ParamEx Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func ParamEx(paramData ParamData) *CXArgument {
 	var arg *CXArgument
@@ -544,25 +551,54 @@ func ParamEx(paramData ParamData) *CXArgument {
 	return arg
 }
 
+// AI8 Default i8 parameter
 var AI8 = Param(TYPE_I8)
+
+// AI16 Default i16 parameter
 var AI16 = Param(TYPE_I16)
+
+// AI32 Default i32 parameter
 var AI32 = Param(TYPE_I32)
+
+// AI64 Default i64 parameter
 var AI64 = Param(TYPE_I64)
+
+// AUI8 Default ui8 parameter
 var AUI8 = Param(TYPE_UI8)
+
+// AUI16 Default ui16 parameter
 var AUI16 = Param(TYPE_UI16)
+
+// AUI32 Default ui32 parameter
 var AUI32 = Param(TYPE_UI32)
+
+// AUI64 Default ui64 parameter
 var AUI64 = Param(TYPE_UI64)
+
+// AF32 Default f32 parameter
 var AF32 = Param(TYPE_F32)
+
+// AF64 Default f64 parameter
 var AF64 = Param(TYPE_F64)
+
+// ASTR Default str parameter
 var ASTR = Param(TYPE_STR)
+
+// ABOOL Default bool parameter
 var ABOOL = Param(TYPE_BOOL)
+
+// AUND Default und parameter
 var AUND = Param(TYPE_UNDEFINED)
+
+// AAFF Default aff parameter
 var AAFF = Param(TYPE_AFF)
 
+// In Returns a slice of arguments from an argument list
 func In(params ...*CXArgument) []*CXArgument {
 	return params
 }
 
+// Out Returns a slice of arguments from an argument list
 func Out(params ...*CXArgument) []*CXArgument {
 	return params
 }
@@ -650,7 +686,7 @@ func init() {
 	Op(OP_I16_I8, "i16.i8", opI16ToI8, In(AI16), Out(AI8))
 	Op(OP_I16_I32, "i16.i32", opI16ToI32, In(AI16), Out(AI32))
 	Op(OP_I16_I64, "i16.i64", opI16ToI64, In(AI16), Out(AI64))
-	Op(OP_I16_UI8, "i16.ui8", opI16ToI8, In(AI16), Out(AUI8))
+	Op(OP_I16_UI8, "i16.ui8", opI16ToUI8, In(AI16), Out(AUI8))
 	Op(OP_I16_UI16, "i16.ui16", opI16ToUI16, In(AI16), Out(AUI16))
 	Op(OP_I16_UI32, "i16.ui32", opI16ToUI32, In(AI16), Out(AUI32))
 	Op(OP_I16_UI64, "i16.ui64", opI16ToUI64, In(AI16), Out(AUI64))
