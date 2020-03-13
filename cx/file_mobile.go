@@ -19,20 +19,20 @@ func CopyAssetTo(path string, dest string) bool {
 	fmt.Printf("Copy '%s' to '%s'\n", path, destPath)
 	source, err := asset.Open(path)
 	if err != nil {
-		fmt.Printf("Failed to open source asset '%s'\n", path)
+		fmt.Printf("Failed to open source asset '%s', err '%v'\n", path, err)
 		return false
 	}
 	defer source.Close()
 
 	destination, err := os.Create(destPath)
 	if err != nil {
-		fmt.Printf("Failed to create destination file '%s'\n", destPath)
+		fmt.Printf("Failed to create destination file '%s', err '%v'\n", destPath, err)
 		return false
 	}
 	defer destination.Close()
 
 	if _, err := io.Copy(destination, source); err != nil {
-		fmt.Printf("Failed to copy data from asset '%s' to '%s'\n", path, destPath)
+		fmt.Printf("Failed to copy data from asset '%s' to '%s', err '%v'\n", path, destPath, err)
 		return false
 	}
 
@@ -54,7 +54,7 @@ func CopyAssetsTo(path string, dest string) bool {
 		if os.IsNotExist(err) {
 			//fmt.Printf("MKDIR '%s', '%v'\n", destPath, err)
 			if err := os.Mkdir(destPath, 0766); err != nil {
-				fmt.Printf("Error creating dir '%s'\n", destPath)
+				fmt.Printf("Error creating dir '%s', err '%v'\n", destPath, err)
 				return false
 			}
 		} else {

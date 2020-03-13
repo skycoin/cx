@@ -26,7 +26,7 @@ func CXOpenFile(path string) (*os.File, error) {
 
 	file, err := os.Open(fmt.Sprintf("%s%s", workingDir, path))
 	if logFile && err != nil {
-		fmt.Printf("Failed to open file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to open file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 	return file, err
 }
@@ -38,7 +38,7 @@ func CXCreateFile(path string) (*os.File, error) {
 
 	file, err := os.Create(fmt.Sprintf("%s%s", workingDir, path))
 	if logFile && err != nil {
-		fmt.Printf("Failed to create file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
 	return file, err
@@ -52,7 +52,7 @@ func CXRemoveFile(path string) error {
 	err := os.Remove(fmt.Sprintf("%s%s", workingDir, path))
 
 	if logFile && err != nil {
-		fmt.Printf("Failed to remove file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to remove file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
 	return err
@@ -66,7 +66,7 @@ func CXReadFile(path string) ([]byte, error) {
 	bytes, err := ioutil.ReadFile(fmt.Sprintf("%s%s", workingDir, path))
 
 	if logFile && err != nil {
-		fmt.Printf("Failed to read file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to read file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
 	return bytes, err
@@ -80,7 +80,7 @@ func CXStatFile(path string) (os.FileInfo, error) {
 	fileInfo, err := os.Stat(fmt.Sprintf("%s%s", workingDir, path))
 
 	if logFile && err != nil {
-		fmt.Printf("Failed to stat file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to stat file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
 	return fileInfo, err
@@ -91,10 +91,10 @@ func CXMkdirAll(path string, perm os.FileMode) error {
 		fmt.Printf("Creating dir : '%s'\n", path)
 	}
 
-	err := os.MkdirAll(path, perm)
+	err := os.MkdirAll(fmt.Sprintf("%s%s", workingDir, path), perm)
 
 	if logFile && err != nil {
-		fmt.Printf("Failed to create dir : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Failed to create dir : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
 
 	return err
