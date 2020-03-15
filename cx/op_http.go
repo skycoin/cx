@@ -63,6 +63,7 @@ func init() {
 	responseStruct.AddField(MakeArgument("Proto", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
 	responseStruct.AddField(MakeArgument("ProtoMajor", "", 0).AddType(TypeNames[TYPE_I32]).AddPackage(httpPkg))
 	responseStruct.AddField(MakeArgument("ProtoMinor", "", 0).AddType(TypeNames[TYPE_I32]).AddPackage(httpPkg))
+	responseStruct.AddField(MakeArgument("Body", "", 0).AddType(TypeNames[TYPE_STR]).AddPackage(httpPkg))
 	//TODO Header Header - not sure if headerFld used for http.Request can be used here
 	//TODO Body io.ReadCloser
 	responseStruct.AddField(MakeArgument("ContentLength", "", 0).AddType(TypeNames[TYPE_I64]).AddPackage(httpPkg))
@@ -447,6 +448,10 @@ func opHTTPDo(prgrm *CXProgram) {
 	if err != nil {
 		panic(err)
 	}
+	bodyFld, err := responseType.GetField("Body")
+	if err != nil {
+		panic(err)
+	}
 
 	accessStatus := []*CXArgument{statusFld}
 	accessStatusCode := []*CXArgument{statusCodeFld}
@@ -454,6 +459,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	accessProtoMajor := []*CXArgument{protoMajorFld}
 	accessProtoMinor := []*CXArgument{protoMinorFld}
 	accessContentLength := []*CXArgument{contentLengthFld}
+	accessBody := []*CXArgument{bodyFld}
 
 	resp.Fields = accessStatus
 	writeString(fp, response.Status, &resp)
@@ -467,6 +473,12 @@ func opHTTPDo(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
 	WriteMemory(GetFinalOffset(fp, &resp), FromI64(int64(response.ContentLength)))
+	resp.Fields = accessBody
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+	writeString(fp, string(body), &resp)
 }
 
 func opDMSGDo(prgrm *CXProgram) {
