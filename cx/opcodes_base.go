@@ -54,7 +54,6 @@ var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
 var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
 var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
 
-
 func init() {
 	// time
 	AddOpCode(OP_TIME_SLEEP, "time.Sleep",

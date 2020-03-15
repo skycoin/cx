@@ -146,7 +146,6 @@ func opHTTPListenAndServe(prgrm *CXProgram) {
 
 	server = &http.Server{Addr: url}
 
-	// err := http.ListenAndServe(url, nil)
 	err := server.ListenAndServe()
 	writeString(fp, err.Error(), out1)
 }
@@ -179,75 +178,17 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	urlString := ReadStr(fp, inp2)
 	body := ReadStr(fp, inp3)
 
-	// workaround for http.NewRequest starts here
-	// schemeIndex := strings.Index(urlString, "://")
-
-	// scheme := urlString[:schemeIndex]
-	// schemeIndex += 3
-	// noSchemeURL := urlString[schemeIndex:]
-	// fmt.Println(scheme)
-	// fmt.Println(noSchemeURL)
-	// path := ""
-	// pathIndex := strings.Index(noSchemeURL, "/")
-	// if pathIndex > -1 {
-	// 	path = noSchemeURL[pathIndex:]
-	// 	noSchemeURL = noSchemeURL[:pathIndex]
-	// }
-	// fmt.Println(path)
-
-	// u := &url.URL{
-	// 	Scheme: scheme,
-	// 	Host:   noSchemeURL,
-	// 	Path:   path,
-	// }
-	// fmt.Println("url done")
-	// fmt.Println(u)
-	// // u, err := url.Parse(urlString)
-	// // if err != nil {
-	// // 	writeString(fp, err.Error(), out1)
-	// // }
-
-	// var br io.Reader
-	// br = bytes.NewBuffer([]byte(body))
-	// fmt.Println("buffer done")
-	// rc, ok := br.(io.ReadCloser)
-	// if !ok && br != nil {
-	// 	rc = ioutil.NopCloser(br)
-	// }
-
-	// req := &http.Request{
-	// 	Method:     method,
-	// 	URL:        u,
-	// 	Proto:      "HTTP/1.1",
-	// 	ProtoMajor: 1,
-	// 	ProtoMinor: 1,
-	// 	// Header:     make(Header),
-	// 	Body: rc,
-	// 	Host: u.Host,
-	// }
-	// fmt.Println("req done")
-	// req.WithContext(context.Background())
-	// fmt.Println("req with ctx done")
-
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		writeString(fp, err.Error(), out1)
 	}
 
-	// // new request ends with the following, bellow is just a workaround
-	// out1Offset := GetFinalOffset(fp, out1)
-	// byts := encoder.Serialize(req)
-	// WriteObject(out1Offset, byts)
-
 	var netClient = &http.Client{
 		Timeout: time.Second * 30,
 	}
-	fmt.Println("client done")
 	resp, err := netClient.Do(req)
 	if err != nil {
-		fmt.Println("err on do")
-		fmt.Println(err)
 		writeString(fp, err.Error(), out1)
 	}
 	resp1 := *resp // dereference to exclude pointer issue
@@ -262,41 +203,6 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	out1Offset := GetFinalOffset(fp, out1)
 	byts := encoder.Serialize(resp1)
 	WriteObject(out1Offset, byts)
-
-	// req.Header["Timestamp"] := time.Now().UnixNano()
-
-	// place this on response once handler is supported
-	// req.Header["Blockchain"] :=
-	// req.Header["NodeID"] :=
-	// req.Header["BlockHeight"] :=
-	// req.Header["HeadBlockHash"] :=
-	// req.Header["HeadBlockSeq"] :=
-	// req.Header["HeadBlockTime"] :=
-	// req.Header["RequestId"] :=
-	// req.Header["ResponseError"] :=
-
-	// url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port + 420)
-	// dataMap = make(map[string]interface{}, 0)
-	// dataMap["rawtx"] = respBody["encoded_transaction"]
-
-	// jsonStr, err = json.Marshal(dataMap)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	// req.Header.Set("X-CSRF-Token", csrfToken)
-	// req.Header.Set("Content-Type", "application/json")
-
-	// resp, err = client.Do(req)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// body, err = ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	panic(err)
-	// }
 }
 
 func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
@@ -414,15 +320,6 @@ func opHTTPDo(prgrm *CXProgram) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	//TODO read req from the inputs
 	// reqByts := ReadMemory(GetFinalOffset(fp, inp1), inp1)
-
-	_ = out1
-	_ = out2
-
-	// var methodOffset int32
-	// encoder.DeserializeAtomic(reqByts[:TYPE_POINTER_SIZE], &methodOffset)
-
-	// var urlStrctOffset int32
-	// encoder.DeserializeAtomic(reqByts[TYPE_POINTER_SIZE:TYPE_POINTER_SIZE * 2], &urlStrctOffset)
 
 	req := CXArgument{}
 	err := copier.Copy(&req, inp1)
@@ -550,10 +447,6 @@ func opHTTPDo(prgrm *CXProgram) {
 	if err != nil {
 		panic(err)
 	}
-	// transferEncodingFld, err := responseType.GetField("TransferEncoding")
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	accessStatus := []*CXArgument{statusFld}
 	accessStatusCode := []*CXArgument{statusCodeFld}
@@ -561,7 +454,6 @@ func opHTTPDo(prgrm *CXProgram) {
 	accessProtoMajor := []*CXArgument{protoMajorFld}
 	accessProtoMinor := []*CXArgument{protoMinorFld}
 	accessContentLength := []*CXArgument{contentLengthFld}
-	// accessTransferEncoding := []*CXArgument{transferEncodingFld}
 
 	resp.Fields = accessStatus
 	writeString(fp, response.Status, &resp)
@@ -575,10 +467,6 @@ func opHTTPDo(prgrm *CXProgram) {
 	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMinor)))
 	resp.Fields = accessContentLength
 	WriteMemory(GetFinalOffset(fp, &resp), FromI64(int64(response.ContentLength)))
-
-	// out1Offset := GetFinalOffset(fp, out1)
-	// byts := encoder.Serialize(resp)
-	// WriteObject(out1Offset, byts)
 }
 
 func opDMSGDo(prgrm *CXProgram) {
@@ -592,13 +480,4 @@ func opDMSGDo(prgrm *CXProgram) {
 	if err != nil {
 		writeString(fp, err.Error(), out1)
 	}
-
-	// cPK, cSK := cipher.GenerateKeyPair()
-	// dmsgD := disc.NewHTTP("http://dmsg.discovery.skywire.skycoin.com")
-	// c := dmsghttp.DMSGClient(dmsgD, cPK, cSK)
-
-	// resp, err := c.Do(&req)
-	// if err != nil {
-	// 	writeString(fp, err.Error(), out1)
-	// }
 }
