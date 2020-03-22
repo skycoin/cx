@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"regexp"
+
 	"github.com/jinzhu/copier"
 )
 
@@ -73,7 +74,7 @@ func regexpCompile(prgrm *CXProgram) error {
 // opRegexpMustCompile is a wrapper for golang's `regexp`'s `MustCompile`.
 func opRegexpMustCompile(prgrm *CXProgram) {
 	err := regexpCompile(prgrm)
-	
+
 	if err != nil {
 		println(err.Error())
 		panic(CX_RUNTIME_ERROR)
@@ -88,7 +89,7 @@ func opRegexpCompile(prgrm *CXProgram) {
 	// We're only interested in `out2`, which represents the
 	// returned error.
 	out2 := expr.Outputs[1]
-	
+
 	err := regexpCompile(prgrm)
 
 	// Writing error message to `out2`.
