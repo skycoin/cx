@@ -1,0 +1,9 @@
+package main
+
+import "regexp"
+
+func main() {
+	var r regexp.Regexp
+	// Testing invalid regexp.
+	r = regexp.MustCompile("?")
+}
