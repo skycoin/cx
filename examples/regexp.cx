@@ -1,0 +1,37 @@
+package main
+import "regexp"
+
+func main() {
+	// `regexp.Regexp` stores information about the regular expressions you want to run.
+	var r regexp.Regexp
+	
+	// You can use `regexp.MustCompile` to ensure that the regular expression is valid.
+	// If it is not valid, program will panic and stop execution.
+	r = regexp.MustCompile("world")
+
+	// If you wish to be testing if the regular expression fails or not, you can use `regexp.Compile`.
+	var err str
+	r, err = regexp.Compile("?")
+	// and then do whatever you want with the error.
+	str.print(str.concat("Not a valid regexp, you got this error: ", err))
+
+	// Let's reset our regexp to "world".
+	r = regexp.MustCompile("world")
+	
+	var string str
+	var found str
+
+	// Regexp should find "world" in `string`.
+	string = "Hello, world!"
+	found = r.Find(string)
+
+	// Should print "world", because `regexp` found the string in `string`.
+	str.print(found)
+
+	// Changing string. Regexp should not find anything.
+	string = "¡Hola, mundo!"
+	found = r.Find(string)
+
+	// Should print empty string.
+	str.print(found)
+}
