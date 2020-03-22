@@ -90,6 +90,12 @@ func (pkg *CXPackage) GetMethod(fnName string, receiverType string) (*CXFunction
 		}
 	}
 
+	// Trying to find it in `Natives`.
+	// Most likely a method from a core package.
+	if opCode, found := OpCodes[pkg.Name+"."+fnName]; found {
+		return Natives[opCode], nil
+	}
+
 	return nil, fmt.Errorf("method '%s' not found in package '%s'", fnName, pkg.Name)
 }
 
