@@ -1677,7 +1677,7 @@ STRLIT test-regexp-must-compile-fail.cx
  COMMA 
  IDENT cx
 PERIOD 
- IDENT COMPILATION_ERROR
+ IDENT RUNTIME_ERROR
  COMMA 
 STRLIT Error in regexp lib - MustCompile should have thrown an error.
 RPAREN 
