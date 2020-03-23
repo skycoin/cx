@@ -1,0 +1,14 @@
+package main
+
+import "regexp"
+
+func main() {
+	var r regexp.Regexp
+	var err str
+	// Invalid regexp.
+	r, err = regexp.Compile("?")
+
+	// But CX catches the error, so the user can handle it
+	// instead of throwing a runtime error.
+	test(err, "error parsing regexp: missing argument to repetition operator: `?`", "")
+}

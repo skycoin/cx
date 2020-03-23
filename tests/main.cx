@@ -238,6 +238,10 @@ func main ()() {
 	runTest("-heap-initial 0 test-gc.cx", cx.SUCCESS, "Stress-testing the garbage collector")
 	runTest("../lib/json.cx test-json.cx", cx.SUCCESS, "Error in json lib.")
 	runTest("../lib/args.cx test-args.cx", cx.SUCCESS, "Error in args lib.")
+	runTest("test-regexp-must-compile-fail.cx", cx.RUNTIME_ERROR, "Error in regexp lib - MustCompile should have thrown an error.")
+	runTest("test-regexp-compile-fail.cx", cx.SUCCESS, "Error in regexp lib - error thrown by regexp.Compile does not matches expected error.")
+	runTest("test-regexp.cx", cx.SUCCESS, "Error in regexp lib.")
+	// runTestEx("test-regexp.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.", TEST_GUI | TEST_STABLE, 0)
 
 	// issues
 	runTest("issue-14.cx", cx.COMPILATION_ERROR, "Type casting error not reported.")
@@ -369,11 +373,12 @@ func main ()() {
 	runTestEx("issue-415.cx", cx.SUCCESS, "func defined with no arguments, called WITH arguments causes PANIC", TEST_ISSUE, 0)
 	runTest("issue-481.cx", cx.SUCCESS, "multi-dimensional arrays are not working")
 	runTest("issue-482.cx", cx.SUCCESS, "multi-dimensional slices are not working")
-    runTestEx("issue-120-a-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
-    runTestEx("issue-120-b-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
-    runTestEx("issue-120-c-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
-    runTestEx("issue-121-SP.cx", cx.SUCCESS, "Compilation error when using unary negative operator on a function call", TEST_ISSUE, 0)
-    runTestEx("issue-131-SP.cx", cx.SUCCESS, "Panic when using arithmetic operations.", TEST_ISSUE, 0)
+	runTestEx("issue-120-a-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+	runTestEx("issue-120-b-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+	runTestEx("issue-120-c-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
+	runTestEx("issue-121-SP.cx", cx.SUCCESS, "Compilation error when using unary negative operator on a function call", TEST_ISSUE, 0)
+	runTestEx("issue-131-SP.cx", cx.SUCCESS, "Panic when using arithmetic operations.", TEST_ISSUE, 0)
+	
 
     // We need to fix serialization and deserialization as user-callable functions
 	// runTestEx("issue-309.cx", cx.SUCCESS, "Serialization is not taking into account non-default stack sizes.", TEST_ISSUE, 0)

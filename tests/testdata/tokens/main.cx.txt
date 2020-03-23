@@ -1673,6 +1673,39 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT test-regexp-must-compile-fail.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT RUNTIME_ERROR
+ COMMA 
+STRLIT Error in regexp lib - MustCompile should have thrown an error.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-regexp-compile-fail.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in regexp lib - error thrown by regexp.Compile does not matches expected error.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
+STRLIT test-regexp.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in regexp lib.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx

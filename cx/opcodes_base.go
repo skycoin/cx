@@ -47,6 +47,11 @@ const (
 	// object explorer
 	OP_OBJ_QUERY
 
+	// regexp
+	OP_REGEXP_COMPILE
+	OP_REGEXP_MUST_COMPILE
+	OP_REGEXP_FIND
+
 	END_OF_BASE_OPS
 )
 
@@ -54,6 +59,25 @@ var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
 var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
 var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
 
+func MakeRegexpArgument() *CXArgument {
+	regexpPkg, err := PROGRAM.GetPackage("regexp")
+	if err != nil {
+		panic(err)
+	}
+
+	regexpType, err := regexpPkg.GetStruct("Regexp")
+	if err != nil {
+		panic(err)
+	}
+
+	regexpParam := MakeArgument("r", "", -1).AddType(TypeNames[TYPE_CUSTOM])
+	regexpParam.DeclarationSpecifiers = append(regexpParam.DeclarationSpecifiers, DECL_STRUCT)
+	regexpParam.Size = regexpType.Size
+	regexpParam.TotalSize = regexpType.Size
+	regexpParam.CustomType = regexpType
+
+	return regexpParam
+}
 
 func init() {
 	// time
@@ -148,6 +172,17 @@ func init() {
 		[]*CXArgument{newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{})
 
+	// regexp
+	AddOpCode(OP_REGEXP_COMPILE, "regexp.Compile",
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{MakeRegexpArgument(), newOpPar(opParamStrNotSlice)})
+	AddOpCode(OP_REGEXP_MUST_COMPILE, "regexp.MustCompile",
+		[]*CXArgument{newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{MakeRegexpArgument()})
+	AddOpCode(OP_REGEXP_FIND, "regexp.Regexp.Find",
+		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamStrNotSlice)},
+		[]*CXArgument{newOpPar(opParamStrNotSlice)})
+
 	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
 }
 
@@ -217,6 +252,14 @@ func handleBaseOpcode(opCode int) opcodeHandler {
 		return opStartProfile
 	case OP_STOP_CPU_PROFILE:
 		return opStopProfile
+
+	// regexp
+	case OP_REGEXP_COMPILE:
+		return opRegexpCompile
+	case OP_REGEXP_MUST_COMPILE:
+		return opRegexpMustCompile
+	case OP_REGEXP_FIND:
+		return opRegexpFind
 	}
 
 	return nil
