@@ -16,14 +16,14 @@ func init() {
 	pubkeyFld.DeclarationSpecifiers = append(pubkeyFld.DeclarationSpecifiers, DECL_ARRAY)
 	pubkeyFld.IsArray = true
 	pubkeyFld.Lengths = []int{33} // Yes, PubKey is 33 bytes long.
-	pubkeyFld.TotalSize = 33 // 33 * 1 byte (ui8)
+	pubkeyFld.TotalSize = 33      // 33 * 1 byte (ui8)
 
 	// SecKey
 	seckeyFld := MakeArgument("SecKey", "", -1).AddType(TypeNames[TYPE_UI8]).AddPackage(cipherPkg)
 	seckeyFld.DeclarationSpecifiers = append(seckeyFld.DeclarationSpecifiers, DECL_ARRAY)
 	seckeyFld.IsArray = true
 	seckeyFld.Lengths = []int{32} // Yes, SecKey is 32 bytes long.
-	seckeyFld.TotalSize = 33 // 33 * 1 byte (ui8)
+	seckeyFld.TotalSize = 33      // 33 * 1 byte (ui8)
 
 	pubkeyStrct.AddField(pubkeyFld)
 	seckeyStrct.AddField(seckeyFld)

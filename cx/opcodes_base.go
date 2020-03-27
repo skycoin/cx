@@ -192,7 +192,6 @@ func init() {
 	AddOpCode(OP_CIPHER_GENERATE_KEY_PAIR, "cipher.GenerateKeyPair",
 		[]*CXArgument{},
 		[]*CXArgument{MakeStructParameter("cipher", "PubKey", "pub"), MakeStructParameter("cipher", "SecKey", "sec")})
-	
 
 	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
 }
