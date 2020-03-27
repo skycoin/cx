@@ -1706,6 +1706,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT test-cipher.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Error in cipher lib.
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-14.cx
  COMMA 
  IDENT cx
