@@ -241,6 +241,7 @@ func main ()() {
 	runTest("test-regexp-must-compile-fail.cx", cx.RUNTIME_ERROR, "Error in regexp lib - MustCompile should have thrown an error.")
 	runTest("test-regexp-compile-fail.cx", cx.SUCCESS, "Error in regexp lib - error thrown by regexp.Compile does not matches expected error.")
 	runTest("test-regexp.cx", cx.SUCCESS, "Error in regexp lib.")
+	runTest("test-cipher.cx", cx.SUCCESS, "Error in cipher lib.")
 	// runTestEx("test-regexp.cx", cx.COMPILATION_ERROR, "Panic when calling gl.BindBuffer with only one argument.", TEST_GUI | TEST_STABLE, 0)
 
 	// issues

@@ -52,6 +52,9 @@ const (
 	OP_REGEXP_MUST_COMPILE
 	OP_REGEXP_FIND
 
+	// cipher
+	OP_CIPHER_GENERATE_KEY_PAIR
+
 	END_OF_BASE_OPS
 )
 
@@ -59,24 +62,26 @@ var opParamF32Slice = opParam{typCode: TYPE_F32, isSlice: true}
 var opParamUI16Slice = opParam{typCode: TYPE_UI16, isSlice: true}
 var opParamUI32Slice = opParam{typCode: TYPE_UI32, isSlice: true}
 
-func MakeRegexpArgument() *CXArgument {
-	regexpPkg, err := PROGRAM.GetPackage("regexp")
+// MakeStructParameter creates a `CXArgument` named `argName`, that
+// represents a structure instane of `strctName`, from package `pkgName`.
+func MakeStructParameter(pkgName, strctName, argName string) *CXArgument {
+	pkg, err := PROGRAM.GetPackage(pkgName)
 	if err != nil {
 		panic(err)
 	}
 
-	regexpType, err := regexpPkg.GetStruct("Regexp")
+	strct, err := pkg.GetStruct(strctName)
 	if err != nil {
 		panic(err)
 	}
 
-	regexpParam := MakeArgument("r", "", -1).AddType(TypeNames[TYPE_CUSTOM])
-	regexpParam.DeclarationSpecifiers = append(regexpParam.DeclarationSpecifiers, DECL_STRUCT)
-	regexpParam.Size = regexpType.Size
-	regexpParam.TotalSize = regexpType.Size
-	regexpParam.CustomType = regexpType
+	param := MakeArgument(argName, "", -1).AddType(TypeNames[TYPE_CUSTOM])
+	param.DeclarationSpecifiers = append(param.DeclarationSpecifiers, DECL_STRUCT)
+	param.Size = strct.Size
+	param.TotalSize = strct.Size
+	param.CustomType = strct
 
-	return regexpParam
+	return param
 }
 
 func init() {
@@ -175,13 +180,18 @@ func init() {
 	// regexp
 	AddOpCode(OP_REGEXP_COMPILE, "regexp.Compile",
 		[]*CXArgument{newOpPar(opParamStrNotSlice)},
-		[]*CXArgument{MakeRegexpArgument(), newOpPar(opParamStrNotSlice)})
+		[]*CXArgument{MakeStructParameter("regexp", "Regexp", "r"), newOpPar(opParamStrNotSlice)})
 	AddOpCode(OP_REGEXP_MUST_COMPILE, "regexp.MustCompile",
 		[]*CXArgument{newOpPar(opParamStrNotSlice)},
-		[]*CXArgument{MakeRegexpArgument()})
+		[]*CXArgument{MakeStructParameter("regexp", "Regexp", "r")})
 	AddOpCode(OP_REGEXP_FIND, "regexp.Regexp.Find",
 		[]*CXArgument{newOpPar(opParamUndNotSlice), newOpPar(opParamStrNotSlice)},
 		[]*CXArgument{newOpPar(opParamStrNotSlice)})
+
+	// cipher
+	AddOpCode(OP_CIPHER_GENERATE_KEY_PAIR, "cipher.GenerateKeyPair",
+		[]*CXArgument{},
+		[]*CXArgument{MakeStructParameter("cipher", "PubKey", "pub"), MakeStructParameter("cipher", "SecKey", "sec")})
 
 	opcodeHandlerFinders = append(opcodeHandlerFinders, handleBaseOpcode)
 }
@@ -260,6 +270,10 @@ func handleBaseOpcode(opCode int) opcodeHandler {
 		return opRegexpMustCompile
 	case OP_REGEXP_FIND:
 		return opRegexpFind
+
+	// cipher
+	case OP_CIPHER_GENERATE_KEY_PAIR:
+		return opCipherGenerateKeyPair
 	}
 
 	return nil
