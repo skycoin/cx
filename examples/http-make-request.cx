@@ -41,6 +41,7 @@ func main() {
 	// str.print(err)
 	str.print(resp.Status)
 	i32.print(resp.StatusCode)
+	str.print(resp.Body)
 
 	// str.print(req.Header[0][0])
 	// str.print(req.Header[0][1])

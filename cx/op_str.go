@@ -174,7 +174,8 @@ func opStrGteq(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), outB0)
 }
 
-func writeString(fp int, str string, out *CXArgument) {
+// WriteString writes the string `str` on memory, starting at byte number `fp`.
+func WriteString(fp int, str string, out *CXArgument) {
 
 	byts := encoder.Serialize(str)
 	size := len(byts) + OBJECT_HEADER_SIZE
@@ -192,7 +193,7 @@ func opStrConcat(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	writeString(fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
+	WriteString(fp, ReadStr(fp, expr.Inputs[0])+ReadStr(fp, expr.Inputs[1]), expr.Outputs[0])
 }
 
 func opStrSubstr(prgrm *CXProgram) {
@@ -203,7 +204,7 @@ func opStrSubstr(prgrm *CXProgram) {
 	begin := ReadI32(fp, expr.Inputs[1])
 	end := ReadI32(fp, expr.Inputs[2])
 
-	writeString(fp, str[begin:end], expr.Outputs[0])
+	WriteString(fp, str[begin:end], expr.Outputs[0])
 }
 
 func opStrIndex(prgrm *CXProgram) {
@@ -219,5 +220,5 @@ func opStrTrimSpace(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	writeString(fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
+	WriteString(fp, strings.TrimSpace(ReadStr(fp, expr.Inputs[0])), expr.Outputs[0])
 }

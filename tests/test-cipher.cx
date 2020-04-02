@@ -1,0 +1,11 @@
+package main
+import "cipher"
+
+func main() {
+	var pubKey cipher.PubKey
+	var secKey cipher.SecKey
+	pubKey, secKey = cipher.GenerateKeyPair()
+
+	test(len(pubKey.PubKey), 33, "PubKey length does not match.")
+	test(len(secKey.SecKey), 32, "SecKey length does not match.")
+}

@@ -176,10 +176,12 @@ func (prgrm *CXProgram) GetStruct(strctName string, modName string) (*CXStruct, 
 
 	var foundStrct *CXStruct
 
-	for _, strct := range foundPkg.Structs {
-		if strct.Name == strctName {
-			foundStrct = strct
-			break
+	if foundPkg != nil {
+		for _, strct := range foundPkg.Structs {
+			if strct.Name == strctName {
+				foundStrct = strct
+				break
+			}
 		}
 	}
 
@@ -227,10 +229,12 @@ func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction,
 
 	var foundFn *CXFunction
 	if foundPkg != nil {
-		for _, fn := range foundPkg.Functions {
-			if fn.Name == fnName {
-				foundFn = fn
-				break
+		if foundPkg != nil {
+			for _, fn := range foundPkg.Functions {
+				if fn.Name == fnName {
+					foundFn = fn
+					break
+				}
 			}
 		}
 	} else {
