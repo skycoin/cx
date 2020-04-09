@@ -78,8 +78,8 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 
 	// check that data.db does not exist
 	// if it does, delete it
-	//userHome := UserHome()
-	dbPath := filepath.Join( /*userHome, */ "."+coinname, "data.db")
+	userHome := UserHome()
+	dbPath := filepath.Join(userHome, "."+coinname, "data.db")
 	if _, err := CXStatFile(dbPath); err == nil {
 		logger.Infof("deleting %s", dbPath)
 		err = CXRemoveFile(dbPath)
