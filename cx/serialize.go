@@ -766,8 +766,8 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 
 	var fnCounter int32
 	var strctCounter int32
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 2)
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 2, len(prgrm.Packages))
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 4)
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 4, len(prgrm.Packages))
 
 	// program
 	serializeProgram(prgrm, &s)
