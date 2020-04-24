@@ -333,7 +333,7 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 
 		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 		// Serializing the terminated program.
-		s := cxcore.Serialize(prgrm, 1)
+		s := cxcore.Serialize(prgrm, prgrm.BCPackageCount)
 		// Extracting only the blockchain code. This is our new program state.
 		updatedPS := cxcore.ExtractBlockchainProgram(ux.Body.ProgramState, s)
 

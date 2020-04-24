@@ -44,6 +44,8 @@ type sProgram struct {
 
 	Terminated int32
 
+	BCPackageCount int32
+
 	VersionOffset int32
 	VersionSize   int32
 }
@@ -460,6 +462,7 @@ func serializeProgram(prgrm *CXProgram, s *sAll) {
 	sPrgrm.HeapStartsAt = int32(prgrm.HeapStartsAt)
 
 	sPrgrm.Terminated = serializeBoolean(prgrm.Terminated)
+	sPrgrm.BCPackageCount = int32(prgrm.BCPackageCount)
 	sPrgrm.VersionOffset, sPrgrm.VersionSize = serializeName(prgrm.Version, s)
 }
 
@@ -766,8 +769,8 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 
 	var fnCounter int32
 	var strctCounter int32
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, 4)
-	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 4, len(prgrm.Packages))
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, 0, split)
+	splitSerialize(prgrm, &s, &fnCounter, &strctCounter, split, len(prgrm.Packages))
 
 	// program
 	serializeProgram(prgrm, &s)
@@ -1175,6 +1178,7 @@ func initDeserialization(prgrm *CXProgram, s *sAll) {
 	prgrm.HeapPointer = int(s.Program.HeapPointer)
 	prgrm.StackSize = int(s.Program.StackSize)
 	prgrm.HeapSize = int(s.Program.HeapSize)
+	prgrm.BCPackageCount = int(s.Program.BCPackageCount)
 	prgrm.Version = dsName(s.Program.VersionOffset, s.Program.VersionSize, s)
 
 	dsPackages(s, prgrm)

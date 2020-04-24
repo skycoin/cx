@@ -883,7 +883,10 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 		MarkAndCompact(PRGRM)
 		PRGRM.HeapSize = PRGRM.HeapPointer
 
-		s := Serialize(PRGRM, 1)
+		// We already removed the main package, so it's
+		// len(PRGRM.Packages) instead of len(PRGRM.Packages) - 1.
+		PRGRM.BCPackageCount = len(PRGRM.Packages)
+		s := Serialize(PRGRM, PRGRM.BCPackageCount)
 		s = ExtractBlockchainProgram(s, s)
 
 		configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
@@ -938,8 +941,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 		PRGRM.SelectProgram()
 		MarkAndCompact(PRGRM)
 
-		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
-		s := Serialize(PRGRM, 1)
+		s := Serialize(PRGRM, PRGRM.BCPackageCount)
 		txnCode := ExtractTransactionProgram(sPrgrm, s)
 
 		// All these HTTP requests need to be dropped in favor of calls to calls to functions

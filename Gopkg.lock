@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f186b6314c0ba136a1ec6d9d4ed20bf1916df03e8255766dd8009aaf0c09fb27"
+  digest = "1:4d8360adb0f9d82a099e1a37f66343f39ae4c26a393a83215208eecdbd7b7750"
   name = "github.com/SkycoinProject/cx-chains"
   packages = [
     "src/api",
@@ -60,7 +60,7 @@
     "src/wallet",
   ]
   pruneopts = "UT"
-  revision = "f6451defe197574f38f493c3555e55a4fa7b5ca4"
+  revision = "7696b1dfd81c1e6ab7e12c07a91d6fb262e7000f"
 
 [[projects]]
   branch = "master"
@@ -71,9 +71,10 @@
   revision = "ce66e04392e967f2cb43590aafb004a8ce688d94"
 
 [[projects]]
-  digest = "1:381a93f9631c001e2409135d5257c801aeb5fd5852c8b2c35fb1a5b12ac3341f"
+  digest = "1:9faff291786e1bed5f015ff10c38e054ec8ea5cba0b2d7b02663ca91a808c1ea"
   name = "github.com/SkycoinProject/skycoin"
   packages = [
+    "src/cipher",
     "src/cipher/base58",
     "src/cipher/bip32",
     "src/cipher/bip44",
@@ -448,10 +449,28 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6d674a768fd27ad126eb8357ebbc14cb5b000badd62d4b7cbe403abb231e099e"
+  digest = "1:bd0386f82340fd1d7aa5a0046af0c39a7de15dadcddc1688e64255aba372a600"
+  name = "golang.org/x/exp"
+  packages = [
+    "shiny/driver/gldriver",
+    "shiny/driver/internal/drawer",
+    "shiny/driver/internal/errscreen",
+    "shiny/driver/internal/event",
+    "shiny/driver/internal/lifecycler",
+    "shiny/driver/internal/win32",
+    "shiny/driver/internal/x11key",
+    "shiny/screen",
+  ]
+  pruneopts = "UT"
+  revision = "e8c3332aa8e5b8e6acb4707c3a7e5979052b20aa"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a112a203acae7f9ba1ee2ca00226d57ee0d04b6963930614adf270d5cb04597d"
   name = "golang.org/x/image"
   packages = [
     "font",
+    "math/f64",
     "math/fixed",
   ]
   pruneopts = "UT"
@@ -459,10 +478,20 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:169161fe62ef9f1425f7819ed9dfce71e8297f5f6032fc435ecff7e7787dab02"
+  digest = "1:009ebaa4112c688537f2fc4ccd8031856462b50aa3c83db45ba487fef30d2e89"
   name = "golang.org/x/mobile"
   packages = [
+    "app",
+    "app/internal/callfn",
+    "asset",
+    "event/key",
+    "event/lifecycle",
+    "event/mouse",
+    "event/paint",
+    "event/size",
+    "event/touch",
     "exp/audio/al",
+    "geom",
     "gl",
     "internal/mobileinit",
   ]
@@ -535,6 +564,7 @@
     "github.com/SkycoinProject/cx-chains/src/visor",
     "github.com/SkycoinProject/cx-chains/src/wallet",
     "github.com/SkycoinProject/gltext",
+    "github.com/SkycoinProject/skycoin/src/cipher",
     "github.com/SkycoinProject/skycoin/src/cipher/encoder",
     "github.com/SkycoinProject/skycoin/src/fiber",
     "github.com/SkycoinProject/skycoin/src/util/logging",
@@ -544,7 +574,14 @@
     "github.com/satori/go.uuid",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
+    "golang.org/x/mobile/app",
+    "golang.org/x/mobile/asset",
+    "golang.org/x/mobile/event/lifecycle",
+    "golang.org/x/mobile/event/paint",
+    "golang.org/x/mobile/event/size",
+    "golang.org/x/mobile/event/touch",
     "golang.org/x/mobile/exp/audio/al",
+    "golang.org/x/mobile/gl",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
