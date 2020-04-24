@@ -4,10 +4,11 @@ package cxcore
 
 import (
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
 	"os"
 	"runtime"
 	"runtime/pprof"
+
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)

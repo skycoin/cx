@@ -5,9 +5,10 @@ package cxcore
 import (
 	"bufio"
 	"encoding/json"
-	. "github.com/SkycoinProject/cx/cx"
 	"io"
 	"os"
+
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 const (

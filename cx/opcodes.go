@@ -2,7 +2,6 @@ package cxcore
 
 import (
 	"fmt"
-	//"sort"
 )
 
 // CorePackages ...
@@ -560,20 +559,14 @@ func Param(typCode int) *CXArgument {
 	return arg
 }
 
-const (
-	PARAM_DEFAULT = iota
-	PARAM_SLICE
-	PARAM_STRUCT
-)
-
 // ParamData ...
 type ParamData struct {
-	typCode int           // The type code of the parameter.
-	paramType int         // Type of the parameter (struct, slice, etc.).
-	strctName string      // Name of the struct in case we're handling a struct instance.
-	pkg     *CXPackage    // To what package does this param belongs to.
-	inputs  []*CXArgument // Input parameters to a TYPE_FUNC parameter.
-	outputs []*CXArgument // Output parameters to a TYPE_FUNC parameter.
+	typCode   int           // The type code of the parameter.
+	paramType int           // Type of the parameter (struct, slice, etc.).
+	strctName string        // Name of the struct in case we're handling a struct instance.
+	pkg       *CXPackage    // To what package does this param belongs to.
+	inputs    []*CXArgument // Input parameters to a TYPE_FUNC parameter.
+	outputs   []*CXArgument // Output parameters to a TYPE_FUNC parameter.
 }
 
 // ParamEx Helper function for creating parameters for standard library operators.

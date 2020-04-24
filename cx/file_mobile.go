@@ -4,9 +4,10 @@ package cxcore
 
 import (
 	"fmt"
-	"golang.org/x/mobile/asset"
 	"io"
 	"os"
+
+	"golang.org/x/mobile/asset"
 )
 
 func CopyAssetsToFilesDir() bool {

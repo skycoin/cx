@@ -5,7 +5,7 @@ package cxcore
 import (
 	"regexp"
 
-	"github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/jinzhu/copier"
 )
 

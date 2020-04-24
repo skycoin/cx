@@ -2,10 +2,11 @@ package cxcore
 
 import (
 	"fmt"
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program
