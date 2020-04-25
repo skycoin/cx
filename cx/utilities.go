@@ -651,8 +651,8 @@ func GetSliceData(offset int32, sizeofElement int) []byte {
 	return nil
 }
 
-// sliceResize does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
-func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
+// SliceResizeEx does the logic required by `SliceResize`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func SliceResizeEx(outputSliceOffset int32, count int32, sizeofElement int) int {
 	if count < 0 {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
 	}
@@ -689,15 +689,15 @@ func sliceResize(outputSliceOffset int32, count int32, sizeofElement int) int {
 func SliceResize(fp int, out *CXArgument, inp *CXArgument, count int32, sizeofElement int) int {
 	outputSliceOffset := GetSliceOffset(fp, out)
 
-	outputSliceOffset = int32(sliceResize(outputSliceOffset, count, sizeofElement))
+	outputSliceOffset = int32(SliceResizeEx(outputSliceOffset, count, sizeofElement))
 
 	SliceCopy(fp, outputSliceOffset, inp, count, sizeofElement)
 
 	return int(outputSliceOffset)
 }
 
-// sliceCopy does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
-func sliceCopy(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
+// SliceCopyEx does the logic required by `SliceCopy`. It is separated because some other functions might have access to the offsets of the slices, but not the `CXArgument`s.
+func SliceCopyEx(outputSliceOffset int32, inputSliceOffset int32, count int32, sizeofElement int) {
 	if count < 0 {
 		panic(CX_RUNTIME_SLICE_INDEX_OUT_OF_RANGE) // TODO : should use uint32
 	}
@@ -720,7 +720,7 @@ func sliceCopy(outputSliceOffset int32, inputSliceOffset int32, count int32, siz
 // SliceCopy copies the contents from the slice located at `inputSliceOffset` to the slice located at `outputSliceOffset`.
 func SliceCopy(fp int, outputSliceOffset int32, inp *CXArgument, count int32, sizeofElement int) {
 	inputSliceOffset := GetSliceOffset(fp, inp)
-	sliceCopy(outputSliceOffset, inputSliceOffset, count, sizeofElement)
+	SliceCopyEx(outputSliceOffset, inputSliceOffset, count, sizeofElement)
 }
 
 // SliceAppendResize prepares a slice to be able to store a new object of length `sizeofElement`. It checks if the slice needs to be relocated in memory, and if it is needed it relocates it and a new `outputSliceOffset` is calculated for the new slice.
@@ -806,10 +806,10 @@ func WriteToSlice(off int, inp []byte) int {
 	// We first check if a resize is needed. If a resize occurred
 	// the address of the new slice will be stored in `newOff` and will
 	// be different to `off`.
-	newOff := sliceResize(int32(off), inputSliceLen+1, inpLen)
+	newOff := SliceResizeEx(int32(off), inputSliceLen+1, inpLen)
 
 	// Copy the data from the old slice at `off` to `newOff`.
-	sliceCopy(int32(newOff), int32(off), inputSliceLen+1, inpLen)
+	SliceCopyEx(int32(newOff), int32(off), inputSliceLen+1, inpLen)
 
 	// Write the new slice element `inp` to the slice located at `newOff`.
 	SliceAppendWrite(int32(newOff), inp, inputSliceLen)
@@ -841,8 +841,8 @@ func writeObj(obj []byte) int {
 	return heapOffset
 }
 
-// refactoring reuse in WriteObject and WriteObjectRetOff
-func newwriteObj(obj []byte) int {
+// NewWriteObj refactoring reuse in WriteObject and WriteObjectRetOff
+func NewWriteObj(obj []byte) int {
 	// 2dbug introduces this new version of `writeObj`. It is unknown to me
 	// (amherag) at the moment if it is safe to replace `writeObj` with
 	// this version. Leaving `writeObj` in quarentine.
@@ -861,12 +861,12 @@ func newwriteObj(obj []byte) int {
 
 // WriteObject ...
 func WriteObject(out1Offset int, obj []byte) {
-	WriteI32(out1Offset, int32(newwriteObj(obj)))
+	WriteI32(out1Offset, int32(NewWriteObj(obj)))
 }
 
 // WriteObjectRetOff ...
 func WriteObjectRetOff(obj []byte) int {
-	return newwriteObj(obj)
+	return NewWriteObj(obj)
 }
 
 // ErrorHeader ...
@@ -1258,14 +1258,14 @@ func ioReadDir(root string) ([]string, error) {
 //  - []sting		filenames
 func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
 	for _, arg := range args {
+
 		if len(arg) > 2 && arg[:2] == "++" {
 			cxArgs = append(cxArgs, arg)
 			continue
 		}
 
-		fi, err := os.Stat(arg)
+		fi, err := CXStatFile(arg)
 		_ = err
-
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
 			os.Exit(CX_COMPILATION_ERROR)
@@ -1289,7 +1289,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 			}
 
 			for _, path := range fileList {
-				file, err := os.Open(path)
+				file, err := CXOpenFile(path)
 
 				if err != nil {
 					println(fmt.Sprintf("%s: source file or library not found", arg))
@@ -1306,7 +1306,7 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 				}
 			}
 		case mode.IsRegular():
-			file, err := os.Open(arg)
+			file, err := CXOpenFile(arg)
 
 			if err != nil {
 				panic(err)

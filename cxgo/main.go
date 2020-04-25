@@ -20,8 +20,6 @@ import (
 
 	"regexp"
 
-	"flag"
-
 	"path/filepath"
 
 	"net"
@@ -35,6 +33,7 @@ import (
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
+	"errors"
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cli"
 	"github.com/SkycoinProject/cx-chains/src/coin"
@@ -44,14 +43,12 @@ import (
 	"github.com/SkycoinProject/cx-chains/src/util/logging"
 	"github.com/SkycoinProject/cx-chains/src/visor"
 	"github.com/SkycoinProject/cx-chains/src/wallet"
-
-	"errors"
 )
 
 const VERSION = "0.7.1"
 
 var (
-	log             = logging.MustGetLogger("newcoin")
+	logger          = logging.MustGetLogger("newcoin")
 	apiClient       = &http.Client{Timeout: 10 * time.Second}
 	genesisBlockURL = "http://127.0.0.1:%d/api/v1/block?seq=0"
 	profile         *os.File
@@ -83,9 +80,9 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 	// if it does, delete it
 	userHome := UserHome()
 	dbPath := filepath.Join(userHome, "."+coinname, "data.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		log.Infof("deleting %s", dbPath)
-		err = os.Remove(dbPath)
+	if _, err := CXStatFile(dbPath); err == nil {
+		logger.Infof("deleting %s", dbPath)
+		err = CXRemoveFile(dbPath)
 		if err != nil {
 			return err
 		}
@@ -104,7 +101,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 	configFile := "fiber.toml"
 	configFilepath := filepath.Join(configDir, configFile)
 	// check that the config file exists
-	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
+	if _, err := CXStatFile(configFilepath); os.IsNotExist(err) {
 		return err
 	}
 
@@ -112,12 +109,12 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 	if projectRoot == "" {
 		return ErrMissingProjectRoot
 	}
-	if _, err := os.Stat(projectRoot); os.IsNotExist(err) {
+	if _, err := CXStatFile(projectRoot); os.IsNotExist(err) {
 		return err
 	}
 
 	coinFile := filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname))
-	if _, err := os.Stat(coinFile); os.IsNotExist(err) {
+	if _, err := CXStatFile(coinFile); os.IsNotExist(err) {
 		return err
 	}
 
@@ -140,8 +137,8 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 
 		genesisSigRegex, err := regexp.Compile(`Genesis block signature=([0-9a-zA-Z]+)`)
 		if err != nil {
-			log.Error("error in regexp for genesis block signature")
-			log.Error(err)
+			logger.Error("error in regexp for genesis block signature")
+			logger.Error(err)
 			return
 		}
 
@@ -150,7 +147,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 		for scanner.Scan() {
 
 			m := scanner.Text()
-			log.Info("Scanner: " + m)
+			logger.Info("Scanner: " + m)
 			if genesisSigRegex.MatchString(m) {
 				genesisSigSubString := genesisSigRegex.FindStringSubmatch(m)
 				genesisSig = genesisSigSubString[1]
@@ -167,7 +164,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 		scanner := bufio.NewScanner(stderrIn)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
-			log.Error(scanner.Text())
+			logger.Error(scanner.Text())
 		}
 	}()
 
@@ -177,11 +174,11 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 
 	if genesisSig != "" && len(genesisBlock.Body.Transactions) != 0 {
 		genesisSignature = genesisSig
-		log.Infof("genesis sig: %s", genesisSig)
+		logger.Infof("genesis sig: %s", genesisSig)
 
 		// -- create new skycoin daemon to inject distribution transaction -- //
 		if err != nil {
-			log.Error("error getting fiber parameters")
+			logger.Error("error getting fiber parameters")
 			return err
 		}
 
@@ -194,7 +191,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 			skycoin.Config{
 				Node: nodeConfig,
 			},
-			log,
+			logger,
 		)
 
 		// parse config values
@@ -206,24 +203,24 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 		userHome := UserHome()
 		dbPath := filepath.Join(userHome, "."+coinname, "data.db")
 
-		// log.Infof("opening visor db: %s", dconf.Visor.DBPath)
-		log.Infof("opening visor db: %s", dbPath)
+		// logger.Infof("opening visor db: %s", dconf.Visor.DBPath)
+		logger.Infof("opening visor db: %s", dbPath)
 		db, err := visor.OpenDB(dbPath, false)
 		if err != nil {
-			log.Error("Error opening DB")
+			logger.Error("Error opening DB")
 			return err
 		}
 		defer db.Close()
 
 		vs, err := visor.New(vconf, db, nil)
 		if err != nil {
-			log.Error("Error with NewVisor")
+			logger.Error("Error with NewVisor")
 			return err
 		}
 
 		headSeq, _, err := vs.HeadBkSeq()
 		if err != nil {
-			log.Error("Error with HeadBkSeq")
+			logger.Error("Error with HeadBkSeq")
 			return err
 		} else if headSeq == 0 {
 			if len(genesisBlock.Body.Transactions) != 0 {
@@ -245,7 +242,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 				err = tx.Verify()
 
 				if err != nil {
-					log.Panic(err)
+					logger.Panic(err)
 				}
 
 				_, _, _, err := vs.InjectUserTransaction(tx)
@@ -253,13 +250,13 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 					panic(err)
 				}
 			} else {
-				log.Error("ERROR: len genesis block was zero")
+				logger.Error("ERROR: len genesis block was zero")
 			}
 		} else {
-			log.Error("ERROR: headSeq not zero")
+			logger.Error("ERROR: headSeq not zero")
 		}
 	} else {
-		log.Error("error getting genesis block")
+		logger.Error("error getting genesis block")
 	}
 	return err
 }
@@ -322,7 +319,7 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = os.Open(sourceFilename)
+		r, err = CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
 			return
@@ -334,7 +331,7 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.compileOutput
-		w, err = os.Create(tokenFilename)
+		w, err = CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
 			return
@@ -433,7 +430,7 @@ func optionRunNode(options cxCmdFlags) {
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			m := scanner.Text()
-			log.Info("Scanner: " + m)
+			logger.Info("Scanner: " + m)
 		}
 	}()
 
@@ -441,7 +438,7 @@ func optionRunNode(options cxCmdFlags) {
 		scanner := bufio.NewScanner(stderrIn)
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
-			log.Error(scanner.Text())
+			logger.Error(scanner.Text())
 		}
 	}()
 }
@@ -886,7 +883,10 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 		MarkAndCompact(PRGRM)
 		PRGRM.HeapSize = PRGRM.HeapPointer
 
-		s := Serialize(PRGRM, 1)
+		// We already removed the main package, so it's
+		// len(PRGRM.Packages) instead of len(PRGRM.Packages) - 1.
+		PRGRM.BCPackageCount = len(PRGRM.Packages)
+		s := Serialize(PRGRM, PRGRM.BCPackageCount)
 		s = ExtractBlockchainProgram(s, s)
 
 		configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
@@ -941,8 +941,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 		PRGRM.SelectProgram()
 		MarkAndCompact(PRGRM)
 
-		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
-		s := Serialize(PRGRM, 1)
+		s := Serialize(PRGRM, PRGRM.BCPackageCount)
 		txnCode := ExtractTransactionProgram(sPrgrm, s)
 
 		// All these HTTP requests need to be dropped in favor of calls to calls to functions
@@ -1027,14 +1026,12 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	}
 }
 
-func main() {
+func Run(args []string) {
 	runtime.LockOSThread()
 	runtime.GOMAXPROCS(2)
 
 	options := defaultCmdFlags()
-
-	registerFlags(&options)
-	flag.Parse()
+	parseFlags(&options, args)
 
 	// Checking if CXPATH is set, either by setting an environment variable
 	// or by setting the `--cxpath` flag.
@@ -1090,7 +1087,7 @@ func main() {
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := ParseArgsForCX(flag.Args(), true)
+	cxArgs, sourceCode, fileNames := ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
 	DebugLexer = options.debugLexer // in package parser
@@ -1100,6 +1097,7 @@ func main() {
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
+	//})
 }
 
 // mergeBlockchainHeap adds the heap `bcHeap` found in the program state of a CX
@@ -1421,7 +1419,7 @@ func initNewProject() {
 
 	fmt.Printf("Creating project %s%s/", SRCPATH, name)
 
-	os.MkdirAll(fmt.Sprintf("%s%s", SRCPATH, name[:len(name)-1]), 0751)
+	CXMkdirAll(fmt.Sprintf("%s%s", SRCPATH, name[:len(name)-1]), 0751)
 }
 
 // chainStatePrelude initializes the program structure `prgrm` with data from
@@ -1501,17 +1499,17 @@ func checkCXPathSet(options cxCmdFlags) {
 	SRCPATH = filepath.Join(CXPATH, "src/")
 
 	// Creating directories in case they do not exist.
-	if _, err := os.Stat(CXPATH); os.IsNotExist(err) {
-		os.MkdirAll(CXPATH, 0755)
+	if _, err := CXStatFile(CXPATH); os.IsNotExist(err) {
+		CXMkdirAll(CXPATH, 0755)
 	}
-	if _, err := os.Stat(BINPATH); os.IsNotExist(err) {
-		os.MkdirAll(BINPATH, 0755)
+	if _, err := CXStatFile(BINPATH); os.IsNotExist(err) {
+		CXMkdirAll(BINPATH, 0755)
 	}
-	if _, err := os.Stat(PKGPATH); os.IsNotExist(err) {
-		os.MkdirAll(PKGPATH, 0755)
+	if _, err := CXStatFile(PKGPATH); os.IsNotExist(err) {
+		CXMkdirAll(PKGPATH, 0755)
 	}
-	if _, err := os.Stat(SRCPATH); os.IsNotExist(err) {
-		os.MkdirAll(SRCPATH, 0755)
+	if _, err := CXStatFile(SRCPATH); os.IsNotExist(err) {
+		CXMkdirAll(SRCPATH, 0755)
 	}
 }
 

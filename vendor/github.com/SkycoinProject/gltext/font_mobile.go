@@ -1,4 +1,4 @@
-// +build opengles
+// +build mobile
 
 package gltext
 
@@ -36,7 +36,7 @@ func (f *Font) loadGLFont(img *image.RGBA) error {
 	glctx.BindTexture(gl.TEXTURE_2D, gl.Texture{f.texture})
 	glctx.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	glctx.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	glctx.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(ib.Dx()), int(ib.Dy()), /*0,*/
+	glctx.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(ib.Dx()), int(ib.Dy()), 0,
 		gl.RGBA, gl.UNSIGNED_BYTE, img.Pix)
 
 	for _, glyph := range f.config.Glyphs {

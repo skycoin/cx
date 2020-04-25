@@ -127,7 +127,7 @@ func opHTTPHandle(prgrm *CXProgram) {
 		copy(i1, PROGRAM.Memory[i1Off:i1Off+i1Size])
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
 
-		PROGRAM.ccallback(&tmpExpr, handlerFn.Name, handlerPkg.Name, [][]byte{i1, i2})
+		PROGRAM.Callback(&tmpExpr, handlerFn.Name, handlerPkg.Name, [][]byte{i1, i2})
 		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
@@ -148,7 +148,7 @@ func opHTTPListenAndServe(prgrm *CXProgram) {
 	server = &http.Server{Addr: url}
 
 	err := server.ListenAndServe()
-	writeString(fp, err.Error(), out1)
+	WriteString(fp, err.Error(), out1)
 }
 
 func opHTTPServe(prgrm *CXProgram) {
@@ -160,16 +160,18 @@ func opHTTPServe(prgrm *CXProgram) {
 
 	l, err := net.Listen("tcp", url)
 	if err != nil {
-		writeString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), out1)
 	}
 
 	err = http.Serve(l, nil)
 	if err != nil {
-		writeString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), out1)
 	}
 }
 
 func opHTTPNewRequest(prgrm *CXProgram) {
+	// TODO: This whole OP needs rewriting/finishing.
+	// Seems more a prototype.
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
@@ -182,7 +184,7 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	//above is an alternative for following 3 lines of code that fail due to URL
 	req, err := http.NewRequest(method, urlString, bytes.NewBuffer([]byte(body)))
 	if err != nil {
-		writeString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), out1)
 	}
 
 	var netClient = &http.Client{
@@ -190,10 +192,9 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	}
 	resp, err := netClient.Do(req)
 	if err != nil {
-		writeString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), out1)
 	}
 	resp1 := *resp // dereference to exclude pointer issue
-	fmt.Println(resp1)
 
 	// TODO issue with returning response,
 	// the line where resp is serialized (byts := encoder.Serialize(resp)) throws following error, adding response object content for context:
@@ -202,7 +203,10 @@ func opHTTPNewRequest(prgrm *CXProgram) {
 	// error: examples/http-serve-and-request-mine.cx:8, CX_RUNTIME_ERROR, invalid type int
 
 	out1Offset := GetFinalOffset(fp, out1)
-	byts := encoder.Serialize(resp1)
+
+	// TODO: Used `Response.Status` for now, to avoid getting an error.
+	// This will be rewritten as the whole operator is unfinished.
+	byts := encoder.Serialize(resp1.Status)
 	WriteObject(out1Offset, byts)
 }
 
@@ -294,22 +298,22 @@ func writeHTTPRequest(fp int, param *CXArgument, request *http.Request) {
 	WriteMemory(GetFinalOffset(fp, &req), urlOffByts)
 
 	req.Fields = accessMethod
-	writeString(fp, request.Method, &req)
+	WriteString(fp, request.Method, &req)
 
 	req.Fields = accessBody
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		panic(err)
 	}
-	writeString(fp, string(body), &req)
+	WriteString(fp, string(body), &req)
 	req.Fields = accessURLScheme
-	writeString(fp, request.URL.Scheme, &req)
+	WriteString(fp, request.URL.Scheme, &req)
 	req.Fields = accessURLHost
-	writeString(fp, request.URL.Host, &req)
+	WriteString(fp, request.URL.Host, &req)
 	req.Fields = accessURLPath
-	writeString(fp, request.URL.Path, &req)
+	WriteString(fp, request.URL.Path, &req)
 	req.Fields = accessURLRawPath
-	writeString(fp, request.URL.RawPath, &req)
+	WriteString(fp, request.URL.RawPath, &req)
 	req.Fields = accessURLForceQuery
 	WriteMemory(GetFinalOffset(fp, &req), FromBool(request.URL.ForceQuery))
 }
@@ -409,7 +413,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	}
 	response, err := netClient.Do(&request)
 	if err != nil {
-		writeString(fp, err.Error(), out2)
+		WriteString(fp, err.Error(), out2)
 		return
 	}
 
@@ -462,11 +466,11 @@ func opHTTPDo(prgrm *CXProgram) {
 	accessBody := []*CXArgument{bodyFld}
 
 	resp.Fields = accessStatus
-	writeString(fp, response.Status, &resp)
+	WriteString(fp, response.Status, &resp)
 	resp.Fields = accessStatusCode
 	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.StatusCode)))
 	resp.Fields = accessProto
-	writeString(fp, response.Proto, &resp)
+	WriteString(fp, response.Proto, &resp)
 	resp.Fields = accessProtoMajor
 	WriteMemory(GetFinalOffset(fp, &resp), FromI32(int32(response.ProtoMajor)))
 	resp.Fields = accessProtoMinor
@@ -478,7 +482,7 @@ func opHTTPDo(prgrm *CXProgram) {
 	if err != nil {
 		panic(err)
 	}
-	writeString(fp, string(body), &resp)
+	WriteString(fp, string(body), &resp)
 }
 
 func opDMSGDo(prgrm *CXProgram) {
@@ -490,6 +494,6 @@ func opDMSGDo(prgrm *CXProgram) {
 	byts1 := ReadMemory(GetFinalOffset(fp, inp1), inp1)
 	err := encoder.DeserializeRawExact(byts1, &req)
 	if err != nil {
-		writeString(fp, err.Error(), out1)
+		WriteString(fp, err.Error(), out1)
 	}
 }

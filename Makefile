@@ -1,17 +1,56 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full update-golden-files
-.PHONY: install-gfx-deps install-gfx-deps-Darwin install-gfx-deps-Linux install-deps install
+.PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
 
 PWD := $(shell pwd)
-# PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev
-# PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
-UNAME_S := $(shell uname -s)
-INSTALL_GFX_DEPS := install-gfx-deps-$(UNAME_S)
 
-GLOBAL_GOPATH := ${GOPATH}
-LOCAL_GOPATH  := ${HOME}/go
-CXPATH        := ${CXPATH}
+#PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
+PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev
+#PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
+PKG_NAMES_WINDOWS := mingw-w64-x86_64-openal
+
+UNAME_S := $(shell uname -s)
+
+ifneq (,$(findstring Linux, $(UNAME_S)))
+PLATFORM := LINUX
+SUBSYSTEM := LINUX
+PACKAGES := PGK_NAMES_LINUX
+DISPLAY  := :99.0
+endif
+
+ifneq (,$(findstring Darwin, $(UNAME_S)))
+PLATFORM := MACOS
+SUBSYSTEM := MACOS
+PACKAGES := PKG_NAMES_MACOS
+endif
+
+ifneq (,$(findstring MINGW, $(UNAME_S)))
+PLATFORM := WINDOWS
+SUBSYSTEM := MINGW
+PACKAGES := PKG_NAMES_WINDOWS
+endif
+
+#ifneq (,$(findstring CYGWIN, $(UNAME_S)))
+#PLATFORM := WINDOWS
+#SUBSYSTEM := CYGWIN
+#endif
+
+ifneq (,$(findstring MSYS, $(UNAME_S)))
+PLATFORM := WINDOWS
+SUBSYSTEM := MSYS
+PACKAGES := PKG_NAMES_WINDOWS
+endif
+
+ifeq ($(PLATFORM), WINDOWS)
+GOPATH := $(subst \,/,${GOPATH})
+HOME := $(subst \,/,${HOME})
+CXPATH := $(subst, \,/, ${CXPATH})
+endif
+
+INSTALL_GFX_DEPS := install-gfx-deps-$(SUBSYSTEM)
+
+GLOBAL_GOPATH := $(GOPATH)
+LOCAL_GOPATH  := $(HOME)/go
 
 ifdef GLOBAL_GOPATH
   GOPATH := $(GLOBAL_GOPATH)
@@ -22,11 +61,10 @@ endif
 ifdef CXPATH
 	CX_PATH := $(CXPATH)
 else
-	CX_PATH := ${HOME}/cx
+	CX_PATH := $(HOME)/cx
 endif
 
 ifeq ($(UNAME_S), Linux)
-  DISPLAY       := :99.0
 endif
 
 configure: ## Configure the system to build and run CX
@@ -46,27 +84,36 @@ build-parser: configure install-deps ## Generate lexer and parser for CX grammar
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
-	go build -tags base -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
+	go build -tags="base" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
-build-full: configure build-parser ## Build CX from sources with all build tags
-	go build -tags="base opengl" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
+build-full: install-full configure build-parser ## Build CX from sources with all build tags
+	go build -tags="base cxfx" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
 
-install-gfx-deps-Linux:
+build-android: install-full install-mobile configure build-parser
+#go get github.com/SkycoinProject/gltext
+	git clone https://github.com/SkycoinProject/gomobile $(GOPATH)/src/golang.org/x/mobile 2> /dev/null || true
+	cd $(GOPATH)/src/golang.org/x/mobile/; git pull origin master; go get ./cmd/gomobile
+	gomobile install -tags="base cxfx mobile android_gles31" -target=android $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/
+
+install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
 	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
-	export DISPLAY=$(DISPLAY)
-	sudo /usr/bin/Xvfb ${DISPLAY} 2>1 > /dev/null &
-	export GTK_VERSION="$(shell pkg-config --modversion gtk+-3.0 | tr . _| cut -d '_' -f 1-2)"
-	export Glib_VERSION="$(shell pkg-config --modversion glib-2.0)"
-	export Cairo_VERSION="$(shell pkg-config --modversion cairo)"
-	export Pango_VERSION="$(shell pkg-config --modversion pango)"
 
-install-gfx-deps-Darwin:
-	# echo 'Installing dependencies for $(UNAME_S)'
-	# brew install $(PKG_NAMES_MACOS)
+install-gfx-deps-MSYS:
+	@echo 'Installing dependencies for $(UNAME_S)'
+	pacman -Sy
+	pacman -S $(PKG_NAMES_WINDOWS)
+	if [ ! -a /mingw64/lib/libOpenAL32.a]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
+	if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
+
+install-gfx-deps-MINGW: install-gfx-deps-MSYS
+
+install-gfx-deps-MACOS:
+	@echo 'Installing dependencies for $(UNAME_S)'
+#brew install $(PKG_NAMES_MACOS)
 
 install-deps: configure
 	@echo "Installing go package dependencies"
@@ -74,21 +121,24 @@ install-deps: configure
 	go get github.com/cznic/goyacc
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
+	go get github.com/SkycoinProject/gltext
 	go get github.com/go-gl/gl/v3.2-compatibility/gl
-	go get github.com/go-gl/glfw/v3.2/glfw
-	go get github.com/go-gl/gltext
+	go get github.com/go-gl/glfw/v3.3/glfw
 	go get golang.org/x/mobile/exp/audio/al
 	go get github.com/mjibson/go-dsp/wav
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
-	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ${GOPATH}/src/github.com/SkycoinProject/cx/tests"'
+	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx $(GOPATH)/src/github.com/SkycoinProject/cx/tests"'
 	cx -v
+
+install-full: install-gfx-deps install-deps build-full configure-workspace
+
+install-mobile:
+	go get golang.org/x/mobile/gl
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
-	# For some reason this install method is not recommended, see https://github.com/golangci/golangci-lint#install
-	# However, they suggest `curl ... | bash` which we should not do
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.25.0
 
 lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
@@ -99,7 +149,7 @@ test: build ## Run CX test suite.
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 test-full: build ## Run CX test suite with all build tags
-	go test -race -tags="base opengl" github.com/SkycoinProject/cx/cxgo/
+	go test -race -tags="base cxfx" github.com/SkycoinProject/cx/cxgo/
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite

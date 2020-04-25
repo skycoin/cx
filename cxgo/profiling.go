@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	. "github.com/SkycoinProject/cx/cx"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -29,7 +30,7 @@ func StopProfile(name string) {
 
 func StartCPUProfile(name string) *os.File {
 	if DebugProfile {
-		f, err := os.Create(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+		f, err := CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create CPU profile: ", err)
 		}
@@ -55,7 +56,7 @@ func StopCPUProfile(f *os.File) {
 
 func DumpMEMProfile(name string) {
 	if DebugProfile {
-		f, err := os.Create(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
+		f, err := CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create MEM profile: ", err)
 		}

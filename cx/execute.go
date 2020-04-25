@@ -17,37 +17,6 @@ import (
 // 	//prgrm.ProgramSteps = nil
 // }
 
-func (cxt *CXProgram) ccallback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
-	if fn, err := cxt.GetFunction(functionName, packageName); err == nil {
-		line := cxt.CallStack[cxt.CallCounter].Line
-		previousCall := cxt.CallCounter
-		cxt.CallCounter++
-		newCall := &cxt.CallStack[cxt.CallCounter]
-		newCall.Operator = fn
-		newCall.Line = 0
-		newCall.FramePointer = cxt.StackPointer
-		cxt.StackPointer += newCall.Operator.Size
-		newFP := newCall.FramePointer
-
-		// wiping next mem frame (removing garbage)
-		for c := 0; c < expr.Operator.Size; c++ {
-			cxt.Memory[newFP+c] = 0
-		}
-
-		for i, inp := range inputs {
-			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
-		}
-
-		var nCalls = 0
-		if err := cxt.Run(true, &nCalls, previousCall); err != nil {
-			os.Exit(CX_INTERNAL_ERROR)
-		}
-
-		cxt.CallCounter = previousCall
-		cxt.CallStack[cxt.CallCounter].Line = line
-	}
-}
-
 // UnRun ...
 func (cxt *CXProgram) UnRun(nCalls int) {
 	if nCalls >= 0 || cxt.CallCounter < 0 {
@@ -413,4 +382,36 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		}
 	}
 	return nil
+}
+
+// Callback ...
+func (cxt *CXProgram) Callback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
+	if fn, err := cxt.GetFunction(functionName, packageName); err == nil {
+		line := cxt.CallStack[cxt.CallCounter].Line
+		previousCall := cxt.CallCounter
+		cxt.CallCounter++
+		newCall := &cxt.CallStack[cxt.CallCounter]
+		newCall.Operator = fn
+		newCall.Line = 0
+		newCall.FramePointer = cxt.StackPointer
+		cxt.StackPointer += newCall.Operator.Size
+		newFP := newCall.FramePointer
+
+		// wiping next mem frame (removing garbage)
+		for c := 0; c < expr.Operator.Size; c++ {
+			cxt.Memory[newFP+c] = 0
+		}
+
+		for i, inp := range inputs {
+			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+		}
+
+		var nCalls = 0
+		if err := cxt.Run(true, &nCalls, previousCall); err != nil {
+			os.Exit(CX_INTERNAL_ERROR)
+		}
+
+		cxt.CallCounter = previousCall
+		cxt.CallStack[cxt.CallCounter].Line = line
+	}
 }
