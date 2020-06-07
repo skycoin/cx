@@ -81,7 +81,9 @@ func (expr *CXExpression) RemoveInput() {
 func (expr *CXExpression) AddOutput(param *CXArgument) *CXExpression {
 	// param.Package = expr.Package
 	expr.Outputs = append(expr.Outputs, param)
-	param.Package = expr.Package
+	if param.Package == nil {
+		param.Package = expr.Package
+	}
 	return expr
 }
 
