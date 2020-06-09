@@ -1843,7 +1843,7 @@ PERIOD
 STRLIT Panic when trying to index (using a var) an array, member of a struct passed as a function argument
 RPAREN 
 SCOLON 
- IDENT runText
+ IDENT runTest
 LPAREN 
 STRLIT issue-new-27.cx
  COMMA 
