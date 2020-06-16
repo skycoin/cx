@@ -1845,6 +1845,17 @@ RPAREN
 SCOLON 
  IDENT runTest
 LPAREN 
+STRLIT issue-new-27.cx
+ COMMA 
+ IDENT cx
+PERIOD 
+ IDENT SUCCESS
+ COMMA 
+STRLIT Failed to use shorthand operator-assign (+=, etc.) for arithmetic statements
+RPAREN 
+SCOLON 
+ IDENT runTest
+LPAREN 
 STRLIT issue-28.cx
  COMMA 
  IDENT cx

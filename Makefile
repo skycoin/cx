@@ -156,7 +156,7 @@ update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
 
 check-golden-files: update-golden-files ## Ensure golden files are up to date
-	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Goden files not up to date' ; exit 2 ; fi
+	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Golden files not up to date' ; exit 2 ; fi
 
 check: check-golden-files test ## Perform self-tests
 

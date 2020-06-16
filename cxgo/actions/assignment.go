@@ -88,7 +88,12 @@ func ShortAssignment(expr *CXExpression, to []*CXExpression, from []*CXExpressio
 		expr.AddInput(sym)
 	}
 
-	return append(from, expr)
+	//must check if from expression is naked previously declared variable
+	if len(from) == 1 && from[0].Operator == nil && len(from[0].Outputs) > 0 && len(from[0].Inputs) == 0 {
+		return []*CXExpression{expr}
+	} else {
+		return append(from, expr)
+	}
 }
 
 // getOutputType tries to determine what's the argument that holds the type that should be
