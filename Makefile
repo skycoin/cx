@@ -106,8 +106,8 @@ install-gfx-deps-MSYS:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	pacman -Sy
 	pacman -S $(PKG_NAMES_WINDOWS)
-	ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a
-	ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a
+	if [ ! -a /mingw64/lib/libOpenAL32.a]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
+	if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
 
 install-gfx-deps-MINGW: install-gfx-deps-MSYS
 
@@ -138,9 +138,7 @@ install-mobile:
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
-	# For some reason this install method is not recommended, see https://github.com/golangci/golangci-lint#install
-	# However, they suggest `curl ... | bash` which we should not do
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.25.0
 
 lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
@@ -158,7 +156,7 @@ update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
 
 check-golden-files: update-golden-files ## Ensure golden files are up to date
-	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Goden files not up to date' ; exit 2 ; fi
+	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Golden files not up to date' ; exit 2 ; fi
 
 check: check-golden-files test ## Perform self-tests
 

@@ -48,11 +48,16 @@ const (
 	OP_START_CPU_PROFILE
 	OP_STOP_CPU_PROFILE
 
-	// http
-	// OP_HTTP_GET
-
 	// object explorer
 	OP_OBJ_QUERY
+
+	// regexp
+	OP_REGEXP_COMPILE
+	OP_REGEXP_MUST_COMPILE
+	OP_REGEXP_FIND
+
+	// cipher
+	OP_CIPHER_GENERATE_KEY_PAIR
 
 	END_OF_BASE_OPS
 )
@@ -97,4 +102,12 @@ func init() {
 	// profile
 	Op(OP_START_CPU_PROFILE, "StartCPUProfile", opStartProfile, In(ASTR, AI32), nil)
 	Op(OP_STOP_CPU_PROFILE, "StopCPUProfile", opStopProfile, In(ASTR), nil)
+
+	// regexp
+	Op(OP_REGEXP_COMPILE, "regexp.Compile", opRegexpCompile, In(ASTR), Out(Struct("regexp", "Regexp", "r"), ASTR))
+	Op(OP_REGEXP_MUST_COMPILE, "regexp.MustCompile", opRegexpMustCompile, In(ASTR), Out(Struct("regexp", "Regexp", "r")))
+	Op(OP_REGEXP_FIND, "regexp.Regexp.Find", opRegexpFind, In(Struct("regexp", "Regexp", "r"), ASTR), Out(ASTR))
+
+	// cipher
+	Op(OP_CIPHER_GENERATE_KEY_PAIR, "cipher.GenerateKeyPair", opCipherGenerateKeyPair, nil, Out(Struct("cipher", "PubKey", "pubKey"), Struct("cipher", "SecKey", "sec")))
 }

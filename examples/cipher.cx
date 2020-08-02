@@ -1,0 +1,31 @@
+package main
+import "cipher"
+
+func main() {
+	var pubKey cipher.PubKey
+	var secKey cipher.SecKey
+	pubKey, secKey = cipher.GenerateKeyPair()
+
+	// The length of a PubKey is 33 bytes (ui8).
+	i32.print(len(pubKey.PubKey))
+
+	// The length of a SecKey is 34 bytes (ui8).
+	i32.print(len(secKey.SecKey))
+
+	str.print("PubKey:")
+	
+	// Printing PubKey
+	for c := 0; c < len(pubKey.PubKey); c++ {
+		printf("%d ", pubKey.PubKey[c])
+	}
+	
+	str.print("\nSecKey:")
+
+	// Printing SecKey
+	for c := 0; c < len(secKey.SecKey); c++ {
+		printf("%d ", secKey.SecKey[c])
+	}
+	
+	// Printing newline.
+	str.print("")
+}

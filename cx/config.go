@@ -77,6 +77,12 @@ var BASIC_TYPES []string = []string{
 }
 
 const (
+	PARAM_DEFAULT = iota
+	PARAM_SLICE
+	PARAM_STRUCT
+)
+
+const (
 	CX_SUCCESS = iota
 	CX_COMPILATION_ERROR
 	CX_PANIC // 2

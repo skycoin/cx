@@ -1,4 +1,4 @@
-// +build opengl
+// +build !mobile
 
 package gltext
 

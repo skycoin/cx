@@ -2,13 +2,12 @@ package cxcore
 
 import (
 	"fmt"
-	//"sort"
 )
 
 // CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json",
+	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher",
 }
 
 // op codes
@@ -512,6 +511,39 @@ func dumpOpCodes(opCode int) {
 	fmt.Printf("opCode : %d\n", opCode)
 }*/
 
+// Pointer takes an already defined `CXArgument` and turns it into a pointer.
+func Pointer(arg *CXArgument) *CXArgument {
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_POINTER)
+	arg.IsPointer = true
+	arg.Size = TYPE_POINTER_SIZE
+	arg.TotalSize = TYPE_POINTER_SIZE
+
+	return arg
+}
+
+// Struct helper for creating a struct parameter. It creates a
+// `CXArgument` named `argName`, that represents a structure instane of
+// `strctName`, from package `pkgName`.
+func Struct(pkgName, strctName, argName string) *CXArgument {
+	pkg, err := PROGRAM.GetPackage(pkgName)
+	if err != nil {
+		panic(err)
+	}
+
+	strct, err := pkg.GetStruct(strctName)
+	if err != nil {
+		panic(err)
+	}
+
+	arg := MakeArgument(argName, "", -1).AddType(TypeNames[TYPE_CUSTOM])
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_STRUCT)
+	arg.Size = strct.Size
+	arg.TotalSize = strct.Size
+	arg.CustomType = strct
+
+	return arg
+}
+
 // Slice Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func Slice(typCode int) *CXArgument {
@@ -530,21 +562,25 @@ func Param(typCode int) *CXArgument {
 
 // ParamData ...
 type ParamData struct {
-	typCode int           // The type code of the parameter.
-	isSlice bool          // Is the parameter a slice.
-	pkg     *CXPackage    // To what package does this param belongs to.
-	inputs  []*CXArgument // Input parameters to a TYPE_FUNC parameter.
-	outputs []*CXArgument // Output parameters to a TYPE_FUNC parameter.
+	typCode   int           // The type code of the parameter.
+	paramType int           // Type of the parameter (struct, slice, etc.).
+	strctName string        // Name of the struct in case we're handling a struct instance.
+	pkg       *CXPackage    // To what package does this param belongs to.
+	inputs    []*CXArgument // Input parameters to a TYPE_FUNC parameter.
+	outputs   []*CXArgument // Output parameters to a TYPE_FUNC parameter.
 }
 
 // ParamEx Helper function for creating parameters for standard library operators.
 // The current standard library only uses basic types and slices. If more options are needed, modify this function
 func ParamEx(paramData ParamData) *CXArgument {
 	var arg *CXArgument
-	if paramData.isSlice {
-		arg = Slice(paramData.typCode)
-	} else {
+	switch paramData.paramType {
+	case PARAM_DEFAULT:
 		arg = Param(paramData.typCode)
+	case PARAM_SLICE:
+		arg = Slice(paramData.typCode)
+	case PARAM_STRUCT:
+		arg = Struct(paramData.pkg.Name, paramData.strctName, "")
 	}
 	arg.Inputs = paramData.inputs
 	arg.Outputs = paramData.outputs
@@ -1029,26 +1065,14 @@ func init() {
 
 	Op(OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
 	Op(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
-	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR), Out(ASTR))
+	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
-
-	httpRequestType, err := httpPkg.GetStruct("Request")
-	if err != nil {
-		panic(err)
-	}
-	requestParam := MakeArgument("Request", "", -1).AddType(TypeNames[TYPE_CUSTOM])
-	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_STRUCT)
-	requestParam.DeclarationSpecifiers = append(requestParam.DeclarationSpecifiers, DECL_POINTER)
-	requestParam.IsPointer = true
-	requestParam.Size = TYPE_POINTER_SIZE
-	requestParam.TotalSize = TYPE_POINTER_SIZE
-	requestParam.CustomType = httpRequestType
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
 			ASTR,
-			ParamEx(ParamData{typCode: TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), requestParam)})),
+			ParamEx(ParamData{typCode: TYPE_FUNC, pkg: httpPkg, inputs: In(MakeArgument("ResponseWriter", "", -1).AddType(TypeNames[TYPE_STR]), Pointer(Struct("http", "Request", "r")))})),
 		Out())
 
 	Op(OP_HTTP_CLOSE, "http.Close", opHTTPClose, nil, nil)

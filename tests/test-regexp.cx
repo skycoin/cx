@@ -1,0 +1,21 @@
+package main
+
+import "regexp"
+
+func main() {
+	var r regexp.Regexp
+	r = regexp.MustCompile("world")
+
+	var string str
+	var found str
+
+	// Regexp should find "world" in `string`.
+	string = "Hello, world!"
+	found = r.Find(string)
+	test(found, "world", "")
+
+	// Changing string. Regexp should not find anything.
+	string = "¡Hola, mundo!"
+	found = r.Find(string)
+	test(found, "", "")
+}

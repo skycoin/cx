@@ -622,7 +622,7 @@ func opAffOn(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
-		fmt.Println(fmt.Sprintf("%d - %s", i, aff))
+		fmt.Printf("%d - %s\n", i, aff)
 	}
 }
 
@@ -657,7 +657,7 @@ func opAffOf(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 
 	for i, aff := range affs {
-		fmt.Println(fmt.Sprintf("%d - %s", i, aff))
+		fmt.Printf("%d - %s\n", i, aff)
 	}
 }
 
