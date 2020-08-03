@@ -50,14 +50,22 @@ ignored = ["github.com/go-gl/*"]
   branch = "master"
   name = "github.com/theherk/viper"
 
+[[override]]
+  branch = "master"
+  name = "github.com/cpuguy83/go-md2man"
+
+#[[override]]
+#  version = "2.0.1"
+#  name = "github.com/russross/blackfriday"
+
 [prune]
   go-tests = true
   unused-packages = true
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/SkycoinProject/dmsg-http"
-
-[[constraint]]
-  branch = "mainnet-milestone1"
-  name = "github.com/skycoin/dmsg"
+#[[constraint]]
+#  branch = "master"
+#  name = "github.com/SkycoinProject/dmsg-http"
+#
+#[[constraint]]
+#  branch = "mainnet-milestone1"
+#  name = "github.com/skycoin/dmsg"
