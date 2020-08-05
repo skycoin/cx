@@ -21,6 +21,8 @@ const (
 	OP_GL_FREE_GIF
 	OP_GL_GIF_FRAME_TO_TEXTURE
 	OP_GL_UPLOAD_IMAGE_TO_TEXTURE
+	OP_CX_RELEASE_TEXTURE
+	OP_CX_TEXTURE_GET_PIXEL
 	OP_GL_APPEND_F32
 	OP_GL_APPEND_UI32
 	OP_GL_APPEND_UI16
@@ -249,7 +251,10 @@ func init() {
 	Op(OP_GL_NEW_GIF, "gl.NewGIF", opGlNewGIF, In(ASTR), Out(AI32, AI32, AI32, AI32))
 	Op(OP_GL_FREE_GIF, "gl.FreeGIF", opGlFreeGIF, In(ASTR), nil)
 	Op(OP_GL_GIF_FRAME_TO_TEXTURE, "gl.GIFFrameToTexture", opGlGIFFrameToTexture, In(ASTR, AI32, AI32), Out(AI32, AI32))
-	Op(OP_GL_UPLOAD_IMAGE_TO_TEXTURE, "gl.UploadImageToTexture", opGlUploadImageToTexture, In(ASTR, AI32, AI32), nil)
+	Op(OP_GL_UPLOAD_IMAGE_TO_TEXTURE, "gl.UploadImageToTexture", opGlUploadImageToTexture, In(ASTR, AI32, AI32, ABOOL), nil)
+	Op(OP_CX_RELEASE_TEXTURE, "gl.CxReleaseTexture", opCxReleaseTexture, In(ASTR), nil)
+	Op(OP_CX_TEXTURE_GET_PIXEL, "gl.CxTextureGetPixel", opCxTextureGetPixel, In(ASTR, AI32, AI32), Out(AF32, AF32, AF32, AF32))
+
 	Op(OP_GL_APPEND_F32, "gl.AppendF32", opGlAppend, In(Slice(TYPE_UI8), AF32), Out(Slice(TYPE_UI8)))
 	Op(OP_GL_APPEND_UI16, "gl.AppendUI16", opGlAppend, In(Slice(TYPE_UI8), AUI16), Out(Slice(TYPE_UI8)))
 	Op(OP_GL_APPEND_UI32, "gl.AppendUI32", opGlAppend, In(Slice(TYPE_UI8), AUI32), Out(Slice(TYPE_UI8)))
