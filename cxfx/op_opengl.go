@@ -116,7 +116,7 @@ func unpack(file *os.File, width int, line []byte) bool {
 }
 
 func unpack_(file *os.File, width int, line []byte) bool {
-	var rshift int
+	var rshift uint
 	var repeat [4]byte
 	for width > 0 {
 		file.Read(line[0:4])

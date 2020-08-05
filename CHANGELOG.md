@@ -9,6 +9,7 @@
 	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
 	- Increased opengl version from 2.1 to 3.2.
 	- Increased glfw version from 3.2 to 3.3.
+    - Added .hdr file loader.
 	- Added opengl bindings : glClearBufferI, glClearBufferUI, glClearBufferF, glBlendFuncSeparate, glDrawBuffers.
 	- Added glfw bindings : glfw.GetWindowContentScale, glfw.GetMonitorContentScale.
 	- Added glfw constants : glfw.CocoaRetinaFramebuffer, glfw.ScaleToMonitor.
@@ -25,7 +26,8 @@
   * Multidimensional array literals are now working properly.
   * Multidimensional slice literals are now working properly.
   * Added i8/16/ui8/ui16/ui32/ui64 types.
-* Libraries
+  * Added str.lastindex built-in function.
+Libraries
   * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
   * Add json cx library to ease json parsing in cx.
   * Add HTTP library.
