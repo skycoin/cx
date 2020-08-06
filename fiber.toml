@@ -1,13 +1,13 @@
 
 [node]
-  blockchain_pubkey_str = "02583e5ebbf85522474e0f17e681e62ca37910db6b8792763af4e97663c31a7984"
-  blockchain_seckey_str = ""
+  blockchain_pubkey_str = "0384adbe166cb45ca633d178c60c5c6564b0bd7a8c15d418cd84e7128bc47eacd2"
+  blockchain_seckey_str = "f69daa6594b58491b6a3ba90ea0b37d324157e05bd02fc7826da4c552bb838ca"
   create_block_burn_factor = 100
   create_block_max_transaction_size = 134217728
   default_connections = []
-  genesis_address_str = "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E"
+  genesis_address_str = "4dr1QxVcMeTsNCBWQTLCbXWYN7AXx4DsLc"
   genesis_coin_volume = 10000000000.0
-  genesis_signature_str = ""
+  genesis_signature_str = "dc12fea2426cef969cb56d04127da5e3a9d01643326efd3127e46115a6dbb97b6a1b43aaa5bde1270fe4433aa735bb31c61f3d6d0d0952d3e500726a206dc81201"
   genesis_timestamp = 1426562704
   max_block_size = 134217728
   max_block_transactions_size = 134217728
@@ -18,7 +18,7 @@
   web_interface_port = 6420
 
 [params]
-  distribution_addresses = ["TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX","2PBcLADETphmqWV7sujRZdh3UcabssgKAEB"]
+  distribution_addresses = ["TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX", "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB"]
   distribution_addresses_total = 2
   initial_unlocked_count = 2
   max_coin_supply = 100000000.0

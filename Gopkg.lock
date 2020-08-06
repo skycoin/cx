@@ -157,6 +157,14 @@
   version = "v1.4.2"
 
 [[projects]]
+  digest = "1:b117faf01abdbdadd7b8ceeae74cd1369c1b073fef41aee8b674c9d704a54c16"
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8a3748addc242fc560bd6d4ff28b0374c010b1b4"
+  version = "v1.4.2"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -337,6 +345,22 @@
   pruneopts = "UT"
   revision = "60c74ad9be0d874af0ab0daef6ab07c5c5911f0d"
   version = "v1.6.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:9ad8a373e47eafb4c7e40ce3eea4f62ac3485c9e690b5b02a970f1ef8f61b76a"
+  name = "github.com/skycoin/dmsg"
+  packages = ["httputil"]
+  pruneopts = "UT"
+  revision = "78ff5746d8a35ec463420948e613dbc0b9522e0c"
+
+[[projects]]
+  digest = "1:2c4ea1a04d982633900105954e4a49c0495e434595a1b3c3fffce35fdbc5fd51"
+  name = "github.com/skycoin/skycoin"
+  packages = ["src/util/logging"]
+  pruneopts = "UT"
+  revision = "ff754084df0912bc0d151529e2893ca86618fb3f"
+  version = "v0.26.0"
 
 [[projects]]
   digest = "1:88434e0bb3b3dbbae708c62511b04d005c0fda7a9d2bda40c29894f16bd6bb76"
@@ -593,6 +617,7 @@
     "github.com/jinzhu/copier",
     "github.com/mjibson/go-dsp/wav",
     "github.com/satori/go.uuid",
+    "github.com/skycoin/dmsg/httputil",
     "github.com/theherk/viper",
     "github.com/urfave/cli",
     "golang.org/x/mobile/app",

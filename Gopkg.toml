@@ -62,10 +62,6 @@ ignored = ["github.com/go-gl/*"]
   go-tests = true
   unused-packages = true
 
-#[[constraint]]
-#  branch = "master"
-#  name = "github.com/SkycoinProject/dmsg-http"
-#
-#[[constraint]]
-#  branch = "mainnet-milestone1"
-#  name = "github.com/skycoin/dmsg"
+[[constraint]]
+  branch = "master"
+  name = "github.com/skycoin/dmsg"

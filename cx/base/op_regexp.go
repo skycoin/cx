@@ -5,8 +5,9 @@ package cxcore
 import (
 	"regexp"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/jinzhu/copier"
+
+	cxcore "github.com/SkycoinProject/cx/cx"
 )
 
 var regexps map[string]*regexp.Regexp = make(map[string]*regexp.Regexp, 0)
