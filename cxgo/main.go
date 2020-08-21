@@ -1256,7 +1256,7 @@ func ServiceMode() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	mux.Handle("/program/", api2.NewAPI("/program", PROGRAM))
+	mux.Handle("/program/", api2.NewAPI("/program", PRGRM))
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte

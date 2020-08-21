@@ -1,13 +1,13 @@
 
 [node]
-  blockchain_pubkey_str = "0384adbe166cb45ca633d178c60c5c6564b0bd7a8c15d418cd84e7128bc47eacd2"
-  blockchain_seckey_str = "f69daa6594b58491b6a3ba90ea0b37d324157e05bd02fc7826da4c552bb838ca"
+  blockchain_pubkey_str = "037c7ca1e98fb4abe2e7c97132495c8fb525687b3833650d4a96c2dae69c3d01cb"
+  blockchain_seckey_str = ""
   create_block_burn_factor = 100
   create_block_max_transaction_size = 134217728
   default_connections = []
-  genesis_address_str = "4dr1QxVcMeTsNCBWQTLCbXWYN7AXx4DsLc"
+  genesis_address_str = "2gnKuyAyVuZAhCSTodAxTbRXboWb67aidBL"
   genesis_coin_volume = 10000000000.0
-  genesis_signature_str = "dc12fea2426cef969cb56d04127da5e3a9d01643326efd3127e46115a6dbb97b6a1b43aaa5bde1270fe4433aa735bb31c61f3d6d0d0952d3e500726a206dc81201"
+  genesis_signature_str = "d463b608f4d4990ce041474b8792112c8bbfb347d13c7d11912fd3cd17ef82ef6e1e778517afb8e44bff91c2ed37ae1cb106103def297869f272ddbb650373e701"
   genesis_timestamp = 1426562704
   max_block_size = 134217728
   max_block_transactions_size = 134217728

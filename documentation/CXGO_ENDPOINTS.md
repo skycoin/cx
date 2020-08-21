@@ -6,10 +6,10 @@
 # Query program meta data.
 $ curl http://localhost:5336/program/meta
 {
-  "used_heap_memory": 0,
-  "free_heap_memory": 0,
-  "stack_size": 0,
-  "call_stack_size": 0
+  "used_heap_memory": 4,
+  "free_heap_memory": 2097152,
+  "stack_size": 1048576,
+  "call_stack_size": 1000
 }
 
 # Query program packages.
