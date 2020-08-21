@@ -312,6 +312,16 @@ func printGlobals(pkg *CXPackage) {
 	}
 }
 
+// SignatureStringOfStruct returns the signature string of a struct.
+func SignatureStringOfStruct(s *CXStruct) string {
+	fields := ""
+	for _, f := range s.Fields {
+		fields += fmt.Sprintf(" %s %s;", f.Name, GetFormattedType(f))
+	}
+
+	return fmt.Sprintf("%s struct {%s }", s.Name, fields)
+}
+
 // printStructs is an auxiliary function for `printProgram`. It prints all the
 // structures defined in `pkg`.
 func printStructs(pkg *CXPackage) {
@@ -327,6 +337,17 @@ func printStructs(pkg *CXPackage) {
 				k, fld.Name, GetFormattedType(fld))
 		}
 	}
+}
+
+// SignatureStringOfFunction returns the signature string of a function.
+func SignatureStringOfFunction(pkg *CXPackage, f *CXFunction) string {
+	var ins bytes.Buffer
+	var outs bytes.Buffer
+	getFormattedParam(f.Inputs, pkg, &ins)
+	getFormattedParam(f.Outputs, pkg, &outs)
+
+	return fmt.Sprintf("func %s(%s) (%s)",
+		f.Name, ins.String(), outs.String())
 }
 
 // printFunctions is an auxiliary function for `printProgram`. It prints all the
