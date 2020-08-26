@@ -164,7 +164,7 @@ func verifyTxnSoftConstraints(txn coin.Transaction, headTime uint64, uxIn coin.U
 	if err != nil {
 		return ErrTxnExceedsMaxBlockSize
 	}
-	
+
 	if txnSize > verifyParams.MaxTransactionSize {
 		return ErrTxnExceedsMaxBlockSize
 	}

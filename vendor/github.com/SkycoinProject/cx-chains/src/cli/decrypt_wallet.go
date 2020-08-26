@@ -5,9 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/SkycoinProject/cx-chains/src/wallet"
-)
 
-import (
 	gcli "github.com/spf13/cobra"
 )
 

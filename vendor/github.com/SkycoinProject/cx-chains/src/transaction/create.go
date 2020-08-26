@@ -13,7 +13,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/SkycoinProject/cx/cx"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/SkycoinProject/cx-chains/src/coin"
@@ -312,12 +312,12 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 
 		// Telling the CX runtime to use the newly created program.
 		prgrm.SelectProgram()
-		
+
 		// All the heap objects need to be displaced `txnDataSize` bytes.
 		// We're adding the data segment of the transaction code, so all the
 		// heap objects in the program state need to be updated to their new addresses (old address + `txnDataSize`).
 		txnDataSize := len(prgrm.Memory[prgrm.StackSize:prgrm.HeapStartsAt]) - cxcore.GetSerializedDataSize(ux.Body.ProgramState)
-		
+
 		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 		// Increasing all the references by `txnDataSize`.
 		cxcore.DisplaceReferences(prgrm, txnDataSize, 1)

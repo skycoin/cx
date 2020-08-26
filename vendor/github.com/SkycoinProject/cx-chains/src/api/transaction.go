@@ -358,7 +358,7 @@ func programStateHandler(gateway Gatewayer) http.HandlerFunc {
 			wh.Error500(w, err.Error())
 			return
 		}
-		
+
 		wh.SendJSONOr500(logger, w, prgrmState)
 	}
 }
