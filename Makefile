@@ -5,7 +5,7 @@
 PWD := $(shell pwd)
 
 #PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev
+PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev
 #PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
 PKG_NAMES_WINDOWS := mingw-w64-x86_64-openal
 
@@ -145,11 +145,11 @@ lint: ## Run linters. Use make install-linters first.
 
 test: build ## Run CX test suite.
 	$(GO_OPTS) go test -race -tags base github.com/SkycoinProject/cx/cxgo/
-	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 test-full: build ## Run CX test suite with all build tags
 	$(GO_OPTS) go test -race -tags="base cxfx" github.com/SkycoinProject/cx/cxgo/
-	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
