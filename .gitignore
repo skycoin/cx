@@ -91,3 +91,4 @@ jira*
 *.orig
 .idea
 .directory
+/bin

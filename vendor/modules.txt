@@ -1,3 +1,5 @@
+# github.com/FiloSottile/vendorcheck v0.0.0-20160511012517-d6d54d1b5894
+## explicit
 # github.com/NYTimes/gziphandler v1.1.1
 github.com/NYTimes/gziphandler
 # github.com/SkycoinProject/cx-chains v0.24.2-0.20200412040944-7696b1dfd81c => ../cx-chains
@@ -49,6 +51,8 @@ github.com/SkycoinProject/cx-chains/src/wallet
 # github.com/SkycoinProject/gltext v0.0.0-20200425002731-afdd8ff94e14
 ## explicit
 github.com/SkycoinProject/gltext
+# github.com/SkycoinProject/nex v0.0.0-20191231010827-3bb2d0c49bc5
+## explicit
 # github.com/SkycoinProject/skycoin v0.27.0
 ## explicit
 github.com/SkycoinProject/skycoin/src/cipher
@@ -77,9 +81,15 @@ github.com/fsnotify/fsnotify
 # github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 ## explicit
 github.com/go-gl/gl/v3.2-compatibility/gl
-# github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4
+# github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
 ## explicit
 github.com/go-gl/glfw/v3.3/glfw
+github.com/go-gl/glfw/v3.3/glfw/glfw/deps
+github.com/go-gl/glfw/v3.3/glfw/glfw/deps/glad
+github.com/go-gl/glfw/v3.3/glfw/glfw/deps/mingw
+github.com/go-gl/glfw/v3.3/glfw/glfw/deps/vs2008
+github.com/go-gl/glfw/v3.3/glfw/glfw/include/GLFW
+github.com/go-gl/glfw/v3.3/glfw/glfw/src
 # github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 ## explicit
 github.com/golang/freetype
@@ -228,6 +238,8 @@ golang.org/x/sys/windows
 # golang.org/x/text v0.3.3
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
+# golang.org/x/tools v0.0.0-20200826040757-bc8aaaa29e06
+## explicit
 # google.golang.org/protobuf v1.25.0
 ## explicit
 google.golang.org/protobuf/encoding/prototext
@@ -263,4 +275,18 @@ google.golang.org/protobuf/types/known/timestamppb
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
+# modernc.org/golex v1.0.1
+## explicit
+# modernc.org/goyacc v1.0.0
+## explicit
+# modernc.org/mathutil v1.1.1
+## explicit
+# modernc.org/parser v1.0.0
+## explicit
+# modernc.org/sortutil v1.1.0
+## explicit
+# modernc.org/strutil v1.1.0
+## explicit
+# modernc.org/y v1.0.0
+## explicit
 # github.com/SkycoinProject/cx-chains => ../cx-chains

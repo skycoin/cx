@@ -58,6 +58,11 @@ else
   GOPATH := $(LOCAL_GOPATH)
 endif
 
+## Ensure $GOBIN is set.
+GOLANGCI_LINT_VERSION ?= latest
+GOBIN ?= $(PWD)/bin
+GO_OPTS ?= GOBIN=$(GOBIN)
+
 ifdef CXPATH
 	CX_PATH := $(CXPATH)
 else
@@ -67,35 +72,29 @@ endif
 ifeq ($(UNAME_S), Linux)
 endif
 
-configure: ## Configure the system to build and run CX
-	@if [ -z "$(GLOBAL_GOPATH)" ]; then echo "NOTE:\tGOPATH not set" ; export GOPATH="$(LOCAL_GOPATH)"; export PATH="$(LOCAL_GOPATH)/bin:${PATH}" ; fi
-	@echo "GOPATH=$(GOPATH)"
-	@mkdir -p $(GOPATH)/src/github.com/SkycoinProject
-	@if [ ! -e $(GOPATH)/src/github.com/SkycoinProject/cx ]; then mkdir -p $(GOPATH)/src/github.com/SkycoinProject ; ln -s $(PWD) $(GOPATH)/src/github.com/SkycoinProject/cx ; fi
-
 configure-workspace: ## Configure CX workspace environment
-	mkdir -p $(CX_PATH)/{,src,bin,pkg}
+	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
-build-parser: configure install-deps ## Generate lexer and parser for CX grammar
-	nex -e cxgo/cxgo0/cxgo0.nex
-	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	nex -e cxgo/parser/cxgo.nex
-	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
+build-parser: install-deps ## Generate lexer and parser for CX grammar
+	$(GOBIN)/nex -e cxgo/cxgo0/cxgo0.nex
+	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+	$(GOBIN)/nex -e cxgo/parser/cxgo.nex
+	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
-build: configure build-parser ## Build CX from sources
-	go build -tags="base" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
-	chmod +x $(GOPATH)/bin/cx
+build: build-parser ## Build CX from sources
+	$(GO_OPTS) go mod vendor
+	$(GO_OPTS) go build -tags="base" -i -o $(GOBIN)/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x $(GOBIN)/cx
 
-build-full: install-full configure build-parser ## Build CX from sources with all build tags
-	go build -tags="base cxfx" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
-	chmod +x $(GOPATH)/bin/cx
+build-full: install-full build-parser ## Build CX from sources with all build tags
+	$(GO_OPTS) go mod vendor
+	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x $(GOBIN)/cx
 
-build-android: install-full install-mobile configure build-parser
-#go get github.com/SkycoinProject/gltext
-	git clone https://github.com/SkycoinProject/gomobile $(GOPATH)/src/golang.org/x/mobile 2> /dev/null || true
-	cd $(GOPATH)/src/golang.org/x/mobile/; git pull origin master; go get ./cmd/gomobile
-	gomobile install -tags="base cxfx mobile android_gles31" -target=android $(GOPATH)/src/github.com/SkycoinProject/cx/cxgo/
+build-android: install-full install-mobile build-parser
+	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
+	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
 
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
@@ -115,41 +114,41 @@ install-gfx-deps-MACOS:
 	@echo 'Installing dependencies for $(UNAME_S)'
 #brew install $(PKG_NAMES_MACOS)
 
-install-deps: configure
+install-deps:
 	@echo "Installing go package dependencies"
-	go get github.com/SkycoinProject/nex
-	go get github.com/cznic/goyacc
+	$(GO_OPTS) go get -u github.com/SkycoinProject/nex
+	$(GO_OPTS) go get -u modernc.org/goyacc
 
-install-gfx-deps: configure $(INSTALL_GFX_DEPS)
-	go get github.com/SkycoinProject/gltext
-	go get github.com/go-gl/gl/v3.2-compatibility/gl
-	go get github.com/go-gl/glfw/v3.3/glfw
-	go get golang.org/x/mobile/exp/audio/al
-	go get github.com/mjibson/go-dsp/wav
+install-gfx-deps: $(INSTALL_GFX_DEPS)
+	# TODO evanlinjin: These are all dependencies. Do we need this here?
+#	$(GO_OPTS) go get github.com/SkycoinProject/gltext
+#	$(GO_OPTS) go get github.com/go-gl/gl/v3.2-compatibility/gl
+#	$(GO_OPTS) go get github.com/go-gl/glfw/v3.3/glfw
+#	$(GO_OPTS) go get golang.org/x/mobile/exp/audio/al
+#	$(GO_OPTS) go get github.com/mjibson/go-dsp/wav
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
-	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx $(GOPATH)/src/github.com/SkycoinProject/cx/tests"'
-	cx -v
+	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
+	$(GOBIN)/cx -v
 
 install-full: install-gfx-deps install-deps build-full configure-workspace
 
 install-mobile:
-	go get golang.org/x/mobile/gl
+	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
 
 install-linters: ## Install linters
-	go get -u github.com/FiloSottile/vendorcheck
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.25.0
+	curl -sSfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOBIN) $(GOLANGCI_LINT_VERSION)
+	$(GO_OPTS) go get -u golang.org/x/tools/cmd/goimports
 
 lint: ## Run linters. Use make install-linters first.
-	vendorcheck ./...
-	golangci-lint run -c .golangci.yml ./cx
+	$(GOBIN)/golangci-lint run -c .golangci.yml ./cx
 
 test: build ## Run CX test suite.
-	go test -race -tags base github.com/SkycoinProject/cx/cxgo/
+	$(GO_OPTS) go test -race -tags base github.com/SkycoinProject/cx/cxgo/
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 test-full: build ## Run CX test suite with all build tags
-	go test -race -tags="base cxfx" github.com/SkycoinProject/cx/cxgo/
+	$(GO_OPTS) go test -race -tags="base cxfx" github.com/SkycoinProject/cx/cxgo/
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 update-golden-files: build ## Update golden files used in CX test suite
