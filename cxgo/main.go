@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
 	"errors"
 	"fmt"
 	"io"
@@ -21,8 +20,6 @@ import (
 	"strings"
 	"time"
 
-	// "encoding/hex"
-
 	"github.com/theherk/viper"
 
 	. "github.com/SkycoinProject/cx/cx"
@@ -31,9 +28,8 @@ import (
 	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	. "github.com/SkycoinProject/cx/cxgo/parser"
 
-	"github.com/SkycoinProject/cx-chains/src/cipher"
-
 	"github.com/SkycoinProject/cx-chains/src/api"
+	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/SkycoinProject/cx-chains/src/cli"
 	"github.com/SkycoinProject/cx-chains/src/coin"
 	"github.com/SkycoinProject/cx-chains/src/fiber"
@@ -1060,10 +1056,7 @@ func Run(args []string) {
 		printVersion()
 		return
 	}
-	if options.newProject {
-		initNewProject()
-		return
-	}
+
 	if options.initialHeap != "" {
 		INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
 	}
@@ -1096,7 +1089,6 @@ func Run(args []string) {
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
-	//})
 }
 
 // mergeBlockchainHeap adds the heap `bcHeap` found in the program state of a CX

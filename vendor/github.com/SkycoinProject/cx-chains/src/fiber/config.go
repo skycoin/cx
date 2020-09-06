@@ -114,7 +114,9 @@ func NewConfig(configName, appDir string) (Config, error) {
 	configName = configName[:len(configName)-(len(fileType)+1)]
 	viper.SetConfigName(configName)
 
-	viper.AddConfigPath(appDir)
+	if appDir != "" {
+		viper.AddConfigPath(appDir)
+	}
 	viper.AddConfigPath(".")
 
 	// set defaults

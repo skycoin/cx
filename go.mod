@@ -3,10 +3,8 @@ module github.com/SkycoinProject/cx
 go 1.14
 
 require (
-	github.com/FiloSottile/vendorcheck v0.0.0-20160511012517-d6d54d1b5894 // indirect
 	github.com/SkycoinProject/cx-chains v0.24.2-0.20200412040944-7696b1dfd81c
 	github.com/SkycoinProject/gltext v0.0.0-20200425002731-afdd8ff94e14
-	github.com/SkycoinProject/nex v0.0.0-20191231010827-3bb2d0c49bc5 // indirect
 	github.com/SkycoinProject/skycoin v0.27.0
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
@@ -28,15 +26,7 @@ require (
 	golang.org/x/image v0.0.0-20200801110659-972c09e46d76 // indirect
 	golang.org/x/mobile v0.0.0-20200801112145-973feb4309de
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
-	golang.org/x/tools v0.0.0-20200826040757-bc8aaaa29e06 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	modernc.org/golex v1.0.1 // indirect
-	modernc.org/goyacc v1.0.0 // indirect
-	modernc.org/mathutil v1.1.1 // indirect
-	modernc.org/parser v1.0.0 // indirect
-	modernc.org/sortutil v1.1.0 // indirect
-	modernc.org/strutil v1.1.0 // indirect
-	modernc.org/y v1.0.0 // indirect
 )
 
 replace github.com/SkycoinProject/cx-chains => ../cx-chains
