@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -190,7 +191,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 		)
 
 		// parse config values
-		newcoin.ParseConfig()
+		newcoin.ParseConfig(flag.CommandLine)
 
 		// dconf := newcoin.ConfigureDaemon()
 		vconf := newcoin.ConfigureVisor()

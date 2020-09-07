@@ -5,6 +5,7 @@ package skycoin
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -596,8 +597,8 @@ func createCertFiles(certFile, keyFile string) error {
 }
 
 // ParseConfig prepare the config
-func (c *Coin) ParseConfig() error {
-	return c.config.postProcess()
+func (c *Coin) ParseConfig(fs *flag.FlagSet) error {
+	return c.config.postProcess(fs)
 }
 
 // InitTransaction creates the genesis transaction
