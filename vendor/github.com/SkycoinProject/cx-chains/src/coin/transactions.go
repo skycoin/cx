@@ -61,7 +61,7 @@ type Transaction struct {
 	In   []cipher.SHA256     `enc:",maxlen=65535"` // ouputs being spent
 	Out  []TransactionOutput `enc:",maxlen=65535"` // ouputs being created
 
-	MainExpressions []byte //serialized expressions to run using the program state
+	MainExpressions []byte // serialized expressions to run using the program state
 }
 
 // TransactionOutput hash output/name is function of Hash
@@ -70,7 +70,7 @@ type TransactionOutput struct {
 	Coins   uint64         // amount to be sent in coins
 	Hours   uint64         // amount to be sent in coin hours
 
-	ProgramState []byte //serialized program state
+	ProgramState []byte // serialized program state
 }
 
 // Verify attempts to determine if the transaction is well formed.

@@ -7,7 +7,7 @@ import (
 	. "github.com/SkycoinProject/cx/cx"
 )
 
-// DeclareGlobal() creates a global variable in the current package.
+// DeclareGlobal creates a global variable in the current package.
 //
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable. This function is a wrapper around DeclareGlobalInPackage()
@@ -16,17 +16,17 @@ import (
 // FIXME: This function should be merged with DeclareGlobalInPackage.
 //        Just use pkg=nil to indicate that CurrentPackage should be used.
 //
-func DeclareGlobal(declarator *CXArgument, declaration_specifiers *CXArgument,
+func DeclareGlobal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 	initializer []*CXExpression, doesInitialize bool) {
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
 		panic(err)
 	}
 
-	DeclareGlobalInPackage(pkg, declarator, declaration_specifiers, initializer, doesInitialize)
+	DeclareGlobalInPackage(pkg, declarator, declarationSpecifiers, initializer, doesInitialize)
 }
 
-// DeclareGlobalInPackage() creates a global variable in a specified package
+// DeclareGlobalInPackage creates a global variable in a specified package
 //
 // If `doesInitialize` is true, then `initializer` is used to initialize the
 // new variable.
@@ -279,13 +279,13 @@ func DeclareImport(name string, currentFile string, lineNo int) {
 //
 // Returns a list of expressions that contains the initialization, if any.
 //
-func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
+func DeclareLocal(declarator *CXArgument, declarationSpecifiers *CXArgument,
 	initializer []*CXExpression, doesInitialize bool) []*CXExpression {
 	if FoundCompileErrors {
 		return nil
 	}
 
-	declaration_specifiers.IsLocalDeclaration = true
+	declarationSpecifiers.IsLocalDeclaration = true
 
 	pkg, err := PRGRM.GetCurrentPackage()
 	if err != nil {
@@ -298,11 +298,11 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 	decl := MakeExpression(nil, declarator.FileName, declarator.FileLine)
 	decl.Package = pkg
 
-	declaration_specifiers.Name = declarator.Name
-	declaration_specifiers.FileLine = declarator.FileLine
-	declaration_specifiers.Package = pkg
-	declaration_specifiers.PreviouslyDeclared = true
-	decl.AddOutput(declaration_specifiers)
+	declarationSpecifiers.Name = declarator.Name
+	declarationSpecifiers.FileLine = declarator.FileLine
+	declarationSpecifiers.Package = pkg
+	declarationSpecifiers.PreviouslyDeclared = true
+	decl.AddOutput(declarationSpecifiers)
 
 	// Checking if something is supposed to be initialized
 	// and if `initializer` actually contains something.
@@ -321,9 +321,9 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 			// CX checks the output of an expression to determine if it's being passed
 			// by value or by reference, so we copy this property from the initializer's
 			// output, in case of something like var foo *i32 = &bar
-			declaration_specifiers.PassBy = initOut.PassBy
+			declarationSpecifiers.PassBy = initOut.PassBy
 
-			expr.AddOutput(declaration_specifiers)
+			expr.AddOutput(declarationSpecifiers)
 			expr.AddInput(initOut)
 
 			initializer[len(initializer)-1] = expr
@@ -336,9 +336,9 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 			// handling a dot notation initializer, and it needs to be replaced
 			// ELSE we simply add it using `AddOutput`
 			if len(expr.Outputs) > 0 {
-				expr.Outputs = []*CXArgument{declaration_specifiers}
+				expr.Outputs = []*CXArgument{declarationSpecifiers}
 			} else {
-				expr.AddOutput(declaration_specifiers)
+				expr.AddOutput(declarationSpecifiers)
 			}
 
 			return append([]*CXExpression{decl}, initializer...)
@@ -348,17 +348,17 @@ func DeclareLocal(declarator *CXArgument, declaration_specifiers *CXArgument,
 		expr := MakeExpression(nil, declarator.FileName, declarator.FileLine)
 		expr.Package = pkg
 
-		declaration_specifiers.Name = declarator.Name
-		declaration_specifiers.FileLine = declarator.FileLine
-		declaration_specifiers.Package = pkg
-		declaration_specifiers.PreviouslyDeclared = true
-		expr.AddOutput(declaration_specifiers)
+		declarationSpecifiers.Name = declarator.Name
+		declarationSpecifiers.FileLine = declarator.FileLine
+		declarationSpecifiers.Package = pkg
+		declarationSpecifiers.PreviouslyDeclared = true
+		expr.AddOutput(declarationSpecifiers)
 
 		return []*CXExpression{expr}
 	}
 }
 
-// DeclarationSpecifiers() is called to build a type of a variable or parameter.
+// DeclarationSpecifiers is called to build a type of a variable or parameter.
 //
 // It is called repeatedly while the type is parsed.
 //

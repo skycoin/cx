@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-
 	"time"
 
 	"github.com/sirupsen/logrus"

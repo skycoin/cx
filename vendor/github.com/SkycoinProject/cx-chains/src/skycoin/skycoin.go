@@ -51,7 +51,7 @@ type Coin struct {
 }
 
 // Run starts the node
-func (c *Coin) Run() error {
+func (c *Coin) Run(gwCh chan api.Gatewayer) error {
 	var db *dbutil.DB
 	var w *wallet.Service
 	var v *visor.Visor
@@ -69,7 +69,7 @@ func (c *Coin) Run() error {
 
 	logLevel, err := logging.LevelFromString(c.config.Node.LogLevel)
 	if err != nil {
-		err = fmt.Errorf("Invalid -log-level: %v", err)
+		err = fmt.Errorf("invalid -log-level: %v", err)
 		c.logger.Error(err)
 		return err
 	}
@@ -248,6 +248,12 @@ func (c *Coin) Run() error {
 	}
 
 	gw = api.NewGateway(d, v, w, s)
+	if gwCh != nil {
+		select {
+		case gwCh <- gw:
+		default:
+		}
+	}
 
 	if c.config.Node.WebInterface {
 		webInterface, err = c.createGUI(gw, host)

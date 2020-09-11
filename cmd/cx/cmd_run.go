@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/fiber"
 	"github.com/SkycoinProject/cx-chains/src/readable"
 	"github.com/SkycoinProject/cx-chains/src/skycoin"
@@ -65,7 +66,19 @@ func cmdRun(args []string) {
 		os.Exit(1)
 	}
 
-	if err := coin.Run(); err != nil {
+	gwCh := make(chan api.Gatewayer)
+	defer close(gwCh)
+
+	go func() {
+		gw, ok := <-gwCh
+		if !ok {
+			return
+		}
+
+		// TODO
+	}()
+
+	if err := coin.Run(gwCh); err != nil {
 		os.Exit(1)
 	}
 }
