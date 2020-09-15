@@ -11,11 +11,17 @@ var DataOffset int = STACK_SIZE
 
 var CurrentFile string
 var LineNo int
-var ReplTargetFn = ""
-var ReplTargetStrct = ""
-var ReplTargetMod = ""
+var ReplTargetFn string = ""
+var ReplTargetStrct string = ""
+var ReplTargetMod string = ""
 
 var SysInitExprs []*CXExpression
+
+// var dStack bool = false
+var InFn bool = false
+// var tag string = ""
+// var asmNL = "\n"
+// var fileName string
 
 // to decide what shorthand op to use
 const (

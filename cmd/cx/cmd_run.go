@@ -69,16 +69,23 @@ func cmdRun(args []string) {
 	gwCh := make(chan api.Gatewayer)
 	defer close(gwCh)
 
+	closeCh := make(chan struct{})
+	defer close(closeCh)
+
 	go func() {
 		gw, ok := <-gwCh
 		if !ok {
 			return
 		}
 
-		// TODO
+		serveGateway(gw, closeCh)
 	}()
 
 	if err := coin.Run(gwCh); err != nil {
 		os.Exit(1)
 	}
+}
+
+func serveGateway(gw api.Gatewayer, close chan struct{}) {
+	// TODO
 }
