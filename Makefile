@@ -167,6 +167,7 @@ install-deps: configure
 	@echo "Installing go package dependencies"
 	go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
+	go get github.com/ReewassSquared/cxdatum
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
 	go get github.com/SkycoinProject/gltext
