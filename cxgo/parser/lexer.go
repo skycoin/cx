@@ -9,20 +9,24 @@ import (
 
 var DebugLexer bool
 
-func (yylex CXLexer) Error(msg string) {
+func (yylex Lexer) Error(msg string) {
 	yylex.stop()
 	yylex.errorf(msg)
 }
 
-func (yylex *CXLexer) Lex(lval *yySymType) int {
+func (yylex *Lexer) Lex(lval *yySymType) int {
 	yylex.next()
 	lval.scancopy(yylex.tok)
 	LineNo = lval.line
 	return lval.yys
 }
 
-func NewLexer(rdr io.Reader) *CXLexer {
-	lx := &CXLexer{}
+func (yylex *Lexer) Stop() {
+	yylex.stop()
+}
+
+func NewLexer(rdr io.Reader) *Lexer {
+	lx := &Lexer{}
 	lx.init(rdr, func(l, c int, msg string) {
 		fmt.Printf("[%d:%d] %s\n", l, c, msg)
 	})

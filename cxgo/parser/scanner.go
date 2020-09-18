@@ -3,12 +3,15 @@ package parser
 import (
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
+
+	cxcore "github.com/SkycoinProject/cx/cx"
 )
 
-type CXLexer struct {
+type Lexer struct {
 	l, c    int    //line and column numbers
 	b, r, e int    //used for buffer mechanics
 	buf     []byte //buffer
@@ -17,42 +20,43 @@ type CXLexer struct {
 	chw     int  //width of character, in bytes
 	errh    func(l, c int, msg string)
 	ioerr   error
-	bsize   int  //buffer size
+	bsize   uint //buffer size
 	nlsemi  bool //whether or not newline is SCOLON
 	eof     bool //eof
+	crash   bool //used for crash behaviour
 
 	tok *yySymType //symbol read. soon to be depracated for fully new parser
 }
 
 const sentinel = utf8.RuneSelf
-const CXLexerBufferMin = 12
-const CXLexerBufferMax = 20
+const LexerBufferMin = 12
+const LexerBufferMax = 20
 const readCountMax = 10
 
 /* the following code is provided */
-func (s *CXLexer) init(r io.Reader, errh func(l, c int, msg string)) {
+func (s *Lexer) init(r io.Reader, errh func(l, c int, msg string)) {
 	s.scan = r
 	s.l, s.c, s.b, s.r, s.e = 0, 0, -1, 0, 0
-	s.buf = make([]byte, 1<<CXLexerBufferMin)
+	s.buf = make([]byte, 1<<LexerBufferMin)
 	s.buf[0] = sentinel
 	s.ch = ' '
 	s.errh = errh
 	s.chw = -1
-	s.bsize = CXLexerBufferMin
+	s.bsize = LexerBufferMin
 }
 
-func (s *CXLexer) start() { s.b = s.r - s.chw }
-func (s *CXLexer) stop()  { s.b = -1 }
-func (s *CXLexer) segment() []byte {
+func (s *Lexer) start() { s.b = s.r - s.chw }
+func (s *Lexer) stop()  { s.b = -1 }
+func (s *Lexer) segment() []byte {
 	return s.buf[s.b : s.r-s.chw]
 }
 
-func (s *CXLexer) errorf(msg string) {
+func (s *Lexer) errorf(msg string) {
 	s.errh(s.l+1, s.c+1, msg)
 	//panic("")
 }
 
-func (s *CXLexer) nextch() {
+func (s *Lexer) nextch() {
 redo:
 	s.c += int(s.chw)
 	if s.ch == '\n' {
@@ -102,7 +106,7 @@ redo:
 	}
 }
 
-func (s *CXLexer) fill() {
+func (s *Lexer) fill() {
 	b := s.r
 	if s.b >= 0 {
 		b = s.b
@@ -111,8 +115,8 @@ func (s *CXLexer) fill() {
 	content := s.buf[b:s.e]
 	if len(content)*2 > len(s.buf) {
 		s.bsize++
-		if s.bsize > CXLexerBufferMax {
-			s.bsize = CXLexerBufferMax
+		if s.bsize > LexerBufferMax {
+			s.bsize = LexerBufferMax
 		}
 		s.buf = make([]byte, 1<<s.bsize)
 		copy(s.buf, content)
@@ -139,10 +143,13 @@ func (s *CXLexer) fill() {
 	s.ioerr = io.ErrNoProgress
 }
 
-func (s *CXLexer) next() {
+func (s *Lexer) next() {
 	nlsemi := s.nlsemi
 	s.nlsemi = false
 	if s.eof {
+		if s.crash {
+			os.Exit(cxcore.CX_COMPILATION_ERROR)
+		}
 		s.tok.yys = -1
 		return
 	}
@@ -165,6 +172,9 @@ redonext:
 	case -1, 0:
 		s.eof = true
 		s.tok.yys = -1
+		if s.crash {
+			os.Exit(cxcore.CX_COMPILATION_ERROR)
+		}
 	case '\n':
 		s.nextch()
 		if nlsemi {
@@ -455,7 +465,7 @@ var keywordMap map[string]int = map[string]int{
 	"false":     BOOLEAN_LITERAL,
 }
 
-func (s *CXLexer) ident() {
+func (s *Lexer) ident() {
 	// accelerate common case (7bit ASCII)
 	for isLetter(s.ch) || isDecimal(s.ch) {
 		s.nextch()
@@ -531,7 +541,7 @@ func getTypeName(tok int) string {
 	}
 }
 
-func (s *CXLexer) atIdentChar(first bool) bool {
+func (s *Lexer) atIdentChar(first bool) bool {
 	switch {
 	case s.ch == -1 || s.ch == 0:
 		return false
@@ -553,7 +563,7 @@ func isLetter(ch rune) bool  { return 'a' <= lower(ch) && lower(ch) <= 'z' || ch
 func isDecimal(ch rune) bool { return '0' <= ch && ch <= '9' }
 func isHex(ch rune) bool     { return '0' <= ch && ch <= '9' || 'a' <= lower(ch) && lower(ch) <= 'f' }
 
-func (s *CXLexer) number(seenPoint bool) {
+func (s *Lexer) number(seenPoint bool) {
 	ok := true
 	base := 10        // number base
 	prefix := rune(0) // one of 0 (decimal), '0' (0-octal), 'x', 'o', or 'b'
@@ -760,7 +770,7 @@ func baseName(base int) string {
 	panic("invalid base")
 }
 
-func (s *CXLexer) fullComment() {
+func (s *Lexer) fullComment() {
 	for s.ch >= 0 {
 		for s.ch == '*' {
 			s.nextch()
@@ -774,14 +784,14 @@ func (s *CXLexer) fullComment() {
 	s.errorf("comment not terminated")
 }
 
-func (s *CXLexer) lineComment() {
+func (s *Lexer) lineComment() {
 	// don't consume '\n' - needed for nlsemi logic
 	for s.ch >= 0 && s.ch != '\n' {
 		s.nextch()
 	}
 }
 
-func (s *CXLexer) rawString() {
+func (s *Lexer) rawString() {
 	s.stop()
 	s.nextch()
 	s.start()
@@ -805,7 +815,7 @@ func (s *CXLexer) rawString() {
 	s.nlsemi = true
 }
 
-func (s *CXLexer) stdString() {
+func (s *Lexer) stdString() {
 	s.nextch()
 
 	for {
@@ -824,6 +834,7 @@ func (s *CXLexer) stdString() {
 			//TODO: ISSUE #152 (old #133a) THIS FIXES IT.
 			//s.errorf("newline in string")
 			//break
+			s.crash = true
 			s.nextch()
 		}
 		if s.ch < 0 {
@@ -842,7 +853,7 @@ func (s *CXLexer) stdString() {
 	s.nlsemi = true
 }
 
-func (s *CXLexer) escape(quote rune) bool {
+func (s *Lexer) escape(quote rune) bool {
 	var n int
 	var base, max uint32
 
