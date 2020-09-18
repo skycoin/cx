@@ -4,36 +4,34 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
+	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	// "encoding/hex"
 
-	"runtime"
-
-	"regexp"
-
-	"path/filepath"
-
-	"net"
-	"net/http"
+	"github.com/theherk/viper"
 
 	. "github.com/SkycoinProject/cx/cx"
 	. "github.com/SkycoinProject/cx/cxgo/actions"
+	api2 "github.com/SkycoinProject/cx/cxgo/api"
 	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	. "github.com/SkycoinProject/cx/cxgo/parser"
-	"github.com/theherk/viper"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
-	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
-	"errors"
 
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cli"
@@ -1258,6 +1256,7 @@ func ServiceMode() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
+	mux.Handle("/program/", api2.NewAPI("/program", PRGRM))
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
