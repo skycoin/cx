@@ -834,11 +834,7 @@ func (s *Lexer) stdString() {
 			//TODO: ISSUE #152 (old #133a) THIS FIXES IT.
 			//s.errorf("newline in string")
 			//break
-<<<<<<< HEAD
 			s.crash = true
-=======
-			os.Exit(cxcore.CX_COMPILATION_ERROR)
->>>>>>> 936b1235e5725bba8a926a5549e02627bae4dada
 			s.nextch()
 		}
 		if s.ch < 0 {
