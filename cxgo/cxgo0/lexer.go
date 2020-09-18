@@ -7,7 +7,7 @@ import (
 
 var CurrentFileName string
 
-func (yylex CXLexer) Error(e string) {
+func (yylex Lexer) Error(e string) {
 	if inREPL {
 		fmt.Printf("syntax error: %s\n", e)
 	} else {
@@ -17,15 +17,19 @@ func (yylex CXLexer) Error(e string) {
 	yylex.stop()
 }
 
-func (yylex *CXLexer) Lex(lval *yySymType) int {
+func (yylex *Lexer) Stop() {
+	yylex.stop()
+}
+
+func (yylex *Lexer) Lex(lval *yySymType) int {
 	yylex.next()
 	lval.scancopy(yylex.tok)
 	lineNo = lval.line
 	return lval.yys
 }
 
-func NewLexer(rdr io.Reader) *CXLexer {
-	lx := &CXLexer{}
+func NewLexer(rdr io.Reader) *Lexer {
+	lx := &Lexer{}
 	lx.init(rdr, func(l, c int, msg string) {
 		fmt.Printf("[%d:%d] %s\n", l, c, msg)
 	})
