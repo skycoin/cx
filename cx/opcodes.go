@@ -552,6 +552,7 @@ func Slice(typCode int) *CXArgument {
 	return arg
 }
 
+// Array ...
 func Array(typCode int, len int) *CXArgument {
 	arg := Param(typCode)
 	arg.IsArray = true
