@@ -94,82 +94,50 @@ build-full: install-full configure build-parser ## Build CX from sources with al
 clean-db:
 	rm -f $(GOPATH)/src/github.com/SkycoinProject/cx/cxdb.db
 
-build-client: configure build-parser clean-db
+build-cxstrat: configure build-parser clean-db
 	export GOOS=linux
-	mkdir -p ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat/cx
-	rm -f ~/Desktop/cxstrat/*.cx
+	mkdir -p releases/cxstrat
+	rm -f releases/cxstrat/cx
+	rm -f releases/cxstrat/*.cx
+	rm -f releases/cxstrat/tweetcoin
 	. ./cxd.sh
-	go build -tags="base cxstrat cxstratclient cxstratlnx" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxstrat/cx
-	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat.zip
-	rm -f ~/Desktop/cxstrat/cxdb.db
-	. ./iamretarded.sh
+	go build -tags="base cxstrat cxstratclient cxstratlnx" -i -o releases/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x releases/cxstrat/cx
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx releases/cxstrat
+	rm -f releases/cxstrat.zip
+	rm -f releases/cxstrat/cxdb.db
+	cp cxstrat/fiber/tweetcoin releases/cxstrat
+	chmod +x releases/cxstrat/tweetcoin
 
-build-client-test: configure build-parser clean-db
-	export GOOS=linux
-	mkdir -p ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat/cx
-	rm -f ~/Desktop/cxstrat/process.cx
-	rm -f ~/Desktop/cxstrat/main.cx
-	rm -f ~/Desktop/cxstrat/model.cx
-	go build -tags="base cxstrat cxstratclient cxstratlnx" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxstrat/cx
-	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat/cxdb.db
-
-build-client-win: configure build-parser clean-db
-	export GOOS=windows
-	export GOARCH=amd64
-	mkdir -p ~/Desktop/cxstrat-win
-	rm -f ~/Desktop/cxstrat-win/cx.exe
-	rm -f ~/Desktop/cxstrat-win/*.cx
+build-cxstrat-win: configure build-parser clean-db
+	mkdir -p releases/cxstrat-win
+	rm -f releases/cxstrat-win/cx.exe
+	rm -f releases/cxstrat-win/*.cx
 	. ./cxd.sh
-	GOOS=windows go build -tags="base cxstrat cxstratclient cxstratwin" -o ~/Desktop/cxstrat-win/cx.exe github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxstrat-win/cx.exe
-	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat-win
-	rm -f ~/Desktop/cxstrat-win.zip
-	rm -f ~/Desktop/cxstrat-win/cxdb.db
-	. ./iamretarded.sh
-	export GOOS=linux
+	GOOS=windows go build -tags="base cxstrat cxstratclient cxstratwin" -o releases/cxstrat-win/cx.exe github.com/SkycoinProject/cx/cxgo/
+	chmod +x releases/cxstrat-win/cx.exe
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx releases/cxstrat-win
+	rm -f releases/cxstrat-win.zip
+	rm -f releases/cxstrat-win/cxdb.db
+	cp cxstrat/fiber/tweetcoin.exe releases/cxstrat-win
+	chmod +x releases/cxstrat-win/tweetcoin.exe
 
-build-full-client: configure build-parser clean-db ## Build CX from sources with all build tags
-	export GOOS=linux
-	mkdir -p ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat/cx
-	rm -f ~/Desktop/cxstrat/*.cx
-	go build -tags="base cxstrat" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxstrat/cx
-	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
-	rm -f ~/Desktop/cxstrat.zip
-	rm -f ~/Desktop/cxstrat/cxdb.db
-	zip -r ~/Desktop/cxstrat.zip ~/Desktop/cxstrat
-
-
-build-full-client-win: configure build-parser clean-db ## Build CX from sources with all build tags
-	export GOOS=windows
-	mkdir -p ~/Desktop/cxtweet-win
-	rm -f ~/Desktop/cxtweet-win/cx.exe
-	rm -f ~/Desktop/cxtweet-win/*.cx
-	go build -tags="base cxtweet cxtweetclient cxtweetwin" -i -o ~/Desktop/cxtweet-win/cx.exe github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxtweet-win/cx.exe
-	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxtweet/cxtweeter/*.cx ~/Desktop/cxtweet-win
-	export GOOS=linux
-	rm -f ~/Desktop/cxtweet-win.zip
-	zip -r ~/Desktop/cxtweet-win.zip ~/Desktop/cxtweet-win
-
-build-full-public: configure build-parser clean-db ## Build CX from sources with all build tags
-	export GOOS=linux
-	mkdir -p ~/Desktop/cxstrat-pub
-	rm -f ~/Desktop/cxstrat-pub/cxpublic
-	rm -f ~/Desktop/cxstrat-pub/*.cx
+build-cxstrat-public: configure build-parser clean-db ## CX Stratus Explorer binaries
+	mkdir -p releases/cxstrat-pub
+	rm -f releases/cxstrat-pub/cxpublic
+	rm -f releases/cxstrat-pub/*.cx
 	. ./cxd.sh
-	go build -tags="base cxstrat cxstratpublic cxstratlnx" -i -o ~/Desktop/cxstrat-pub/cxpublic github.com/SkycoinProject/cx/cxgo/
-	chmod +x ~/Desktop/cxstrat-pub/cxpublic
-	cp $(GOPATH)/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat-pub
-	rm -f ~/Desktop/cxstrat-pub.zip
-	. ./iamretarded.sh
+	go build -tags="base cxstrat cxstratpublic cxstratlnx" -i -o releases/cxstrat-pub/cxpublic github.com/SkycoinProject/cx/cxgo/
+	chmod +x releases/cxstrat-pub/cxpublic
+	cp $(GOPATH)/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx releases/cxstrat-pub
+	rm -f releases/cxstrat-pub.zip
+	cp cxstrat/fiber/tweetcoin releases/cxstrat-pub
+	chmod +x releases/cxstrat-pub/tweetcoin
+	
+package-cxstrat: build-cxstrat build-cxstrat-win build-cxstrat-public
+	zip -r releases/cxstrat-win.zip releases/cxstrat-win
+	zip -r releases/cxstrat.zip releases/cxstrat
+	zip -r releases/cxstrat-pub.zip releases/cxstrat-pub
 
 build-android: install-full install-mobile configure build-parser
 #go get github.com/SkycoinProject/gltext
