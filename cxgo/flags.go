@@ -20,6 +20,7 @@ type cxCmdFlags struct {
 	initialHeap       string
 	maxHeap           string
 	stackSize         string
+	cxtweetMode       bool
 	blockchainMode    bool
 	publisherMode     bool
 	peerMode          bool
@@ -101,6 +102,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.Float64Var(&options.maxHeapFreeRatio, "--max-heap-free", options.maxHeapFreeRatio, "Maximum heap space percentage that should be free after calling the garbage collector. Value must be in the range of 0.0 and 1.0.")
 
 	commandLine.BoolVar(&options.blockchainMode, "blockchain", options.blockchainMode, "Start a CX blockchain program")
+	commandLine.BoolVar(&options.cxtweetMode, "cxtweet", options.cxtweetMode, "Run the very specific CX tweet application")
 	// commandLine.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
 	commandLine.BoolVar(&options.publisherMode, "publisher", options.publisherMode, "Start a CX blockchain program block publisher")
 	// commandLine.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")

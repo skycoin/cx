@@ -88,8 +88,88 @@ build: configure build-parser ## Build CX from sources
 	chmod +x $(GOPATH)/bin/cx
 
 build-full: install-full configure build-parser ## Build CX from sources with all build tags
-	go build -tags="base cxfx" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
+	go build -tags="base cxfx cxtweet" -i -o $(GOPATH)/bin/cx github.com/SkycoinProject/cx/cxgo/
 	chmod +x $(GOPATH)/bin/cx
+
+clean-db:
+	rm -f $(GOPATH)/src/github.com/SkycoinProject/cx/cxdb.db
+
+build-client: configure build-parser clean-db
+	export GOOS=linux
+	mkdir -p ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat/cx
+	rm -f ~/Desktop/cxstrat/*.cx
+	. ./cxd.sh
+	go build -tags="base cxstrat cxstratclient cxstratlnx" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxstrat/cx
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat.zip
+	rm -f ~/Desktop/cxstrat/cxdb.db
+	. ./iamretarded.sh
+
+build-client-test: configure build-parser clean-db
+	export GOOS=linux
+	mkdir -p ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat/cx
+	rm -f ~/Desktop/cxstrat/process.cx
+	rm -f ~/Desktop/cxstrat/main.cx
+	rm -f ~/Desktop/cxstrat/model.cx
+	go build -tags="base cxstrat cxstratclient cxstratlnx" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxstrat/cx
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat/cxdb.db
+
+build-client-win: configure build-parser clean-db
+	export GOOS=windows
+	export GOARCH=amd64
+	mkdir -p ~/Desktop/cxstrat-win
+	rm -f ~/Desktop/cxstrat-win/cx.exe
+	rm -f ~/Desktop/cxstrat-win/*.cx
+	. ./cxd.sh
+	GOOS=windows go build -tags="base cxstrat cxstratclient cxstratwin" -o ~/Desktop/cxstrat-win/cx.exe github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxstrat-win/cx.exe
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat-win
+	rm -f ~/Desktop/cxstrat-win.zip
+	rm -f ~/Desktop/cxstrat-win/cxdb.db
+	. ./iamretarded.sh
+	export GOOS=linux
+
+build-full-client: configure build-parser clean-db ## Build CX from sources with all build tags
+	export GOOS=linux
+	mkdir -p ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat/cx
+	rm -f ~/Desktop/cxstrat/*.cx
+	go build -tags="base cxstrat" -i -o ~/Desktop/cxstrat/cx github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxstrat/cx
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat
+	rm -f ~/Desktop/cxstrat.zip
+	rm -f ~/Desktop/cxstrat/cxdb.db
+	zip -r ~/Desktop/cxstrat.zip ~/Desktop/cxstrat
+
+
+build-full-client-win: configure build-parser clean-db ## Build CX from sources with all build tags
+	export GOOS=windows
+	mkdir -p ~/Desktop/cxtweet-win
+	rm -f ~/Desktop/cxtweet-win/cx.exe
+	rm -f ~/Desktop/cxtweet-win/*.cx
+	go build -tags="base cxtweet cxtweetclient cxtweetwin" -i -o ~/Desktop/cxtweet-win/cx.exe github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxtweet-win/cx.exe
+	cp ${GOPATH}/src/github.com/SkycoinProject/cx/cxtweet/cxtweeter/*.cx ~/Desktop/cxtweet-win
+	export GOOS=linux
+	rm -f ~/Desktop/cxtweet-win.zip
+	zip -r ~/Desktop/cxtweet-win.zip ~/Desktop/cxtweet-win
+
+build-full-public: configure build-parser clean-db ## Build CX from sources with all build tags
+	export GOOS=linux
+	mkdir -p ~/Desktop/cxstrat-pub
+	rm -f ~/Desktop/cxstrat-pub/cxpublic
+	rm -f ~/Desktop/cxstrat-pub/*.cx
+	. ./cxd.sh
+	go build -tags="base cxstrat cxstratpublic cxstratlnx" -i -o ~/Desktop/cxstrat-pub/cxpublic github.com/SkycoinProject/cx/cxgo/
+	chmod +x ~/Desktop/cxstrat-pub/cxpublic
+	cp $(GOPATH)/src/github.com/SkycoinProject/cx/cxstrat/datum/*.cx ~/Desktop/cxstrat-pub
+	rm -f ~/Desktop/cxstrat-pub.zip
+	. ./iamretarded.sh
 
 build-android: install-full install-mobile configure build-parser
 #go get github.com/SkycoinProject/gltext
@@ -156,7 +236,7 @@ update-golden-files: build ## Update golden files used in CX test suite
 	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
 
 check-golden-files: update-golden-files ## Ensure golden files are up to date
-	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Goden files not up to date' ; exit 2 ; fi
+	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Golden files not up to date' ; exit 2 ; fi
 
 check: check-golden-files test ## Perform self-tests
 

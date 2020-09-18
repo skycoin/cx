@@ -1078,7 +1078,7 @@ func mustDeserializeBool(b []byte) bool {
 		return true
 	default:
 		panic(encoder.ErrInvalidBool)
-		return false
+		//return false [2020 Jun 07 (ReewassSquared)]: does nothing
 	}
 }
 

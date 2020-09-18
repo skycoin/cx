@@ -8,7 +8,7 @@ AVOID EDITING THIS MANUALLY
 var (
 	// MainNetDistribution Skycoin mainnet coin distribution parameters
 	MainNetDistribution = Distribution{
-		MaxCoinSupply:        100000000,
+		MaxCoinSupply:        [100000000],
 		InitialUnlockedCount: 2,
 		UnlockAddressRate:    5,
 		UnlockTimeInterval:   31536000,

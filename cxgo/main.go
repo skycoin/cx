@@ -34,6 +34,7 @@ import (
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
 	"errors"
+
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cli"
 	"github.com/SkycoinProject/cx-chains/src/coin"

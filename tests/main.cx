@@ -255,6 +255,7 @@ func main ()() {
 	runTest("issue-25.cx", cx.SUCCESS, "Struct field crushed")
 	runTest("issue-26.cx", cx.SUCCESS, "Failed to modify value in an array")
 	runTest("issue-27.cx", cx.SUCCESS, "Panic when trying to index (using a var) an array, member of a struct passed as a function argument")
+	runTest("issue-new-27.cx", cx.SUCCESS, "Failed to use shorthand operator-assign (+=, etc.) for arithmetic statements")
 	runTest("issue-28.cx", cx.SUCCESS, "Can't call method from package")
 	runTest("issue-29.cx", cx.SUCCESS, "Can't call method if it has a parameter")
 	runTest("issue-30.cx", cx.SUCCESS, "Panic when using arithmetic to index an array field of a struct")

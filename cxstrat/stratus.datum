@@ -1,0 +1,545 @@
+datum Strat {
+  owner: wallet;
+  obj: hash;
+  txt: string;
+  pname: string;
+  likes: int;
+  restrats: int;
+  tags: array of wallet;
+  hashs: array of string;
+  hashidx: array of int;
+  rplto: hash;
+  follow: wallet;
+}
+
+datum Account {
+  name: string;
+  cname: string;
+  id: wallet;
+  bio: string;
+  pfp: string;
+  strats: array of hash;
+  likes: array of hash;
+  restrats: array of hash;
+  tags: array of hash;
+  followers: array of wallet;
+  following: array of wallet;
+  followcnt: int;
+  fllwngcnt: int;
+}
+
+datum Hashtag {
+  name: string;
+  tlikes: int;
+  trestrats: int;
+  strats: array of hash;
+}
+
+/*  */
+database AllStrats {
+  string: array of hash;
+}
+
+database Strats {
+  hash: Strat;
+}
+
+database Accounts {
+  wallet: Account;
+}
+
+database Hashtags {
+  string: Hashtag;
+}
+
+database Likes {
+  hash: array of wallet;
+}
+
+database Restrats {
+  hash: array of wallet;
+}
+
+database TheNames {
+  string: wallet;
+}
+
+database Wallets {
+  wallet: string;
+}
+
+database Replies {
+  hash: array of hash;
+}
+
+/* ingresses */
+ingress processStrat {
+  expect {
+    strato: Strat;
+  }
+  txid: $strato .obj;
+  owner: $strato .owner;
+  store @Strats key $txid value $strato;
+
+  update @AllStrats ["all"] append $txid;
+
+  accnt: @Accounts [$owner];
+
+  match $accnt .name {
+    "" {
+      /* debug "foobar"; */
+      update $accnt .name set $owner to string;
+      update $accnt .cname set $owner to string;
+      update $accnt .id set $owner;
+      update $accnt .pfp set "https://pbs.twimg.com/profile_images/914714384420659200/Fe9Tn_my_400x400.jpg";
+      store @Wallets key $owner value $owner to string;
+      store @TheNames key $owner to string value $owner;
+    }
+  }
+
+  update $accnt .strats append $txid;
+  /* holy sh*t I figured it out */
+  store @Accounts key $owner value $accnt;
+
+  for tag in $strato .tags {
+    update @Accounts [$tag] .tags append $txid;
+  }
+
+  for hashtg in $strato .hashs {
+    hashobj: @Hashtags [$hashtg];
+    match $hashobj .name {
+      "" {
+        update $hashobj .name set $hashtg;
+      }
+    }
+
+    update $hashobj .strats append $txid;
+    store @Hashtags key $hashtg value $hashobj;
+  }
+}
+
+ingress processLike {
+  expect {
+    owner: wallet;
+    txid: hash;
+    strat: array of byte;
+  }
+
+  ntxid: $strat [29:93] to string to hash;
+
+  update @Strats [$ntxid] .likes inc;
+  update @Accounts [$owner] .likes append $ntxid;
+  update @Likes [$ntxid] append $owner;
+  
+  nstrat: @Strats [$ntxid];
+  for hashtg in $nstrat .hashs {
+    update @Hashtags [$hashtg] .tlikes inc;
+  }
+}
+
+ingress processRestrat {
+  expect {
+    owner: wallet;
+    txid: hash;
+    strat: array of byte;
+  }
+
+  ntxid: $strat [29:93] to string to hash;
+
+  update @Strats [$ntxid] .restrats inc;
+  update @Accounts [$owner] .restrats append $ntxid;
+  update @Restrats [$ntxid] append $owner;
+  
+  nstrat: @Strats [$ntxid];
+  for hashtg in $nstrat .hashs {
+    update @Hashtags [$hashtg] .trestrats inc;
+  }
+}
+
+ingress processName {
+  expect {
+    owner: wallet;
+    txid: hash;
+    nname: string;
+  }
+
+  update @Accounts [$owner] .name set $nname;
+  /* debug $nname; */
+  /* debug $owner to string; */
+  store @TheNames key $nname value $owner;
+  update @Wallets [$owner] set $nname;
+}
+
+ingress processBio {
+    expect {
+    owner: wallet;
+    txid: hash;
+    strat: array of byte;
+  }
+
+  nbio: $strat [29:512] to string;
+
+  update @Accounts [$owner] .bio set $nbio;
+}
+
+ingress processPfp {
+  expect {
+    owner: wallet;
+    txid: hash;
+    strat: array of byte;
+  }
+
+  npfp: $strat [29:512] to string;
+
+  update @Accounts [$owner] .pfp set $npfp;
+}
+
+ingress processReply {
+  expect {
+    owner: wallet;
+    txid: hash;
+    strat: array of byte;
+    tags: array of wallet;
+    hashs: array of string;
+  }
+
+  ntxid: $strat [29:93] to string to hash;
+  ntxt: $strat [93:512] to string;
+  strato: new Strat;
+  update $strato .owner set $owner;
+  update $strato .obj set $txid;
+  update $strato .txt set $ntxt;
+  update $strato .tags set $tags;
+  update $strato .hashs set $hashs;
+  update $strato .rplto set $ntxid;
+
+  store @Strats key $txid value $strato;
+
+  update @Replies [$ntxid] append $txid;
+
+  accnt: @Accounts [$owner];
+
+  match $accnt .name {
+    "" {
+      update $accnt .name set $owner to string;
+      update $accnt .cname set $owner to string;
+      update $accnt .id set $owner;
+      update $accnt .pfp set "https://pbs.twimg.com/profile_images/914714384420659200/Fe9Tn_my_400x400.jpg";
+      store @Wallets key $owner value $owner to string;
+      store @TheNames key $owner to string value $owner;
+    }
+  }
+
+  update $accnt .strats append $txid;
+
+  store @Accounts key $owner value $accnt;
+
+  for tag in $strato .tags {
+    update @Accounts [$tag] .tags append $txid;
+  }
+
+  for hashtg in $strato .hashs {
+    hashobj: @Hashtags [$hashtg];
+    match $hashobj .name {
+      "" {
+        update $hashobj .name set $hashtg;
+      }
+    }
+
+    update $hashobj .strats append $txid;
+  }
+}
+
+ingress processNull {
+}
+
+ingress processFollow {
+  expect {
+    owner: wallet;
+    fllw:  wallet;
+  }
+
+  update @Accounts [$owner] .following append $fllw;
+  update @Accounts [$fllw] .followers append $owner;
+  update @Accounts [$owner] .fllwngcnt inc;
+  update @Accounts [$fllw] .followcnt inc;
+}
+
+ingress main {
+  expect {
+    obj: array of byte; /* is a serialized Strat */
+  }
+  strato: new Strat;
+  update $strato set $obj to Strat;
+  owner: $strato .owner;
+  txid:  $strato .obj;
+  strat: $strato .txt to array of byte;
+
+  match $strat [0:27] to string {
+    "<|::[]CXTWEET_LIKELIK[]::|>" {
+      processNull();
+      exit;
+    }
+    "<|::[]CXTWEET_RETWEET[]::|>" {
+      processNull();
+      exit;
+    }
+  }
+
+  /* debug $strat [0:29] to string; */
+
+  match $strat [0:29] to string {
+    "<|::[]CXSTRATUS_LIKELIK[]::|>" {
+      processLike($owner and $txid and $strat);
+      exit;
+    }
+    "<|::[]CXSTRATUS_RESTRAT[]::|>" {
+      processRestrat($owner and $txid and $strat);
+      exit;
+    }
+    "<|::[]CXSTRATUS_NAMENAM[]::|>" {
+      processName($owner and $txid and $strato .pname);
+      exit;
+    }
+    "<|::[]CXSTRATUS_BIOBIOB[]::|>" {
+      processBio($owner and $txid and $strat);
+      exit;
+    }
+    "<|::[]CXSTRATUS_PFPPFPP[]::|>" {
+      processPfp($owner and $txid and $strat);
+      exit;
+    }
+    "<|::[]CXSTRATUS_REPLYRE[]::|>" {
+      processReply($owner and $txid and $strat and $strato .tags and $strato .hashs);
+      exit;
+    }
+    "<|::[]CXSTRATUS_FOLLOWF[]::|>" {
+      processFollow($owner and $strato .follow);
+      exit;
+    }
+  }
+
+  processStrat($strato);
+}
+
+/* egresses */
+egress getStrat {
+  expect {
+    txid: hash;
+  }
+  return {
+    strato: Strat;
+  }
+  /* debug $txid to string; */
+  update $strato set @Strats [$txid];
+}
+
+egress getAccount {
+  expect {
+    owner: wallet;
+  }
+  return {
+    accnt: Account;
+  }
+  update $accnt set @Accounts [$owner];
+}
+
+egress getHashtag {
+  expect {
+    tag: string;
+  }
+  return {
+    hashtg: Hashtag;
+  }
+  update $hashtg set @Hashtags [$tag];
+}
+
+egress makeStrat {
+  expect {
+    strat: string;
+  }
+  return {
+    stratok: int;
+  }
+  !$strat to array of byte;
+  update $stratok set 0;
+}
+
+egress makeRestrat {
+  expect {
+    restrat: hash;
+  }
+  return {
+    restratok: int;
+  }
+  msgrestrat: "<|::[]CXSTRATUS_RESTRAT[]::|>" to array of byte to array [93] of byte;
+  update $msgrestrat [29:93] set $restrat to string to array of byte;
+
+  !$msgrestrat to array of byte;
+
+  update $restratok set 0;
+}
+
+egress getAllStrats {
+  expect {
+  }
+  return {
+    allstrats: array of hash;
+  }
+  update $allstrats set @AllStrats ["all"];
+}
+
+egress makeLike {
+  expect {
+    like: hash;
+  }
+  return {
+    likeok: int;
+  }
+  msglike: "<|::[]CXSTRATUS_LIKELIK[]::|>" to array of byte to array [93] of byte;
+  update $msglike [29:93] set $like to string to array of byte;
+
+  !$msglike to array of byte;
+
+  update $likeok set 0;
+}
+
+egress makeName {
+  expect {
+    name: string;
+  }
+  return {
+    nameok: int;
+  }
+  msgname: "<|::[]CXSTRATUS_NAMENAM[]::|>" to array of byte to array [61] of byte;
+  update $msgname [29:61] set $name to array of byte;
+
+  !$msgname to array of byte;
+
+  update $nameok set 0;
+}
+
+egress makeBio {
+  expect {
+    bio: string;
+  }
+  return {
+    biook: int;
+  }
+  msgbio: "<|::[]CXSTRATUS_BIOBIOB[]::|>" to array of byte to array [512] of byte;
+  update $msgbio [29:512] set $bio to array of byte;
+
+  !$msgbio to array of byte;
+
+  update $biook set 0;
+}
+
+egress makePfp {
+  expect {
+    pfp: string;
+  }
+  return {
+    pfpok: int;
+  }
+  msgpfp: "<|::[]CXSTRATUS_PFPPFPP[]::|>" to array of byte to array [512] of byte;
+  update $msgpfp [29:512] set $pfp to array of byte;
+
+  !$msgpfp to array of byte;
+
+  update $pfpok set 0;
+}
+
+egress makeReply {
+  expect {
+    reply: hash;
+    strat: string;
+  }
+  return {
+    replyok: int;
+  }
+  msgreply: "<|::[]CXSTRATUS_REPLYRE[]::|>" to array of byte to array [512] of byte;
+  update $msgreply [29:93] set $reply to string to array of byte;
+  update $msgreply [93:512] set $strat to array of byte;
+
+  !$msgreply to array of byte;
+
+  update $replyok set 0;
+}
+
+egress makeFollow {
+  expect {
+    owner: string;
+  }
+  return {
+    followok: int;
+  }
+  ntests: @Accounts [$owner] .following;
+  for ntest in $ntests {
+    lvarntest: $ntest to string;
+    match $owner {
+      $lvarntest {
+        update $followok set 2;
+        exit;
+      }
+    }
+  }
+
+  msgfollow: "<|::[]CXSTRATUS_FOLLOWF[]::|>" to array of byte to array [512] of byte;
+  update $msgfollow [29:512] set $owner to array of byte;
+  !$msgfollow to array of byte;
+
+  update $followok set 0;
+}
+
+egress getReplies {
+  expect {
+    txid: hash;
+  }
+  return {
+    replies: array of hash;
+  }
+  update $replies set @Replies [$txid];
+}
+
+egress getLikedBy {
+  expect {
+    txid: hash;
+  }
+  return {
+    likedby: array of wallet;
+  }
+  update $likedby set @Likes [$txid];
+}
+
+egress getRestratBy {
+  expect {
+    txid: hash;
+  }
+  return {
+    restratby: array of wallet;
+  }
+  update $restratby set @Restrats [$txid];
+}
+
+egress getName {
+  expect {
+    owner: wallet;
+  }
+  return {
+    name: string;
+  }
+  update $name set @Wallets [$owner];
+}
+
+egress getWallet {
+  expect {
+    nname: string;
+  }
+  return {
+    owner: wallet;
+  }
+  /* tmpsown: @TheNames [$nname]; */
+  /* debug $tmpsown to string; */
+
+  update $owner set @TheNames [$nname];
+}

@@ -1,0 +1,33 @@
+package main
+
+import "cxtweet"
+import "cxtweeter"
+
+func oldmain() {
+    var test str
+    var idx i32 = 0
+    test = "this string is a test"
+    var testbytes []ui8
+    testbytes = cxtweeter.serializeStr(test)
+    for i := 0; i < len(testbytes); i++ {
+        printf("%d ", testbytes[i])
+    }
+    printf("\n\n\n")
+    var magic str
+    magic = cxtweeter.deserializeStr(testbytes, &idx)
+    var magicbytes []ui8
+    magicbytes = cxtweet.str2bytes(magic)
+    for i := 0; i < len(magicbytes); i++ {
+        printf("%d ", magicbytes[i])
+    }
+    printf("\n\n\n")
+    str.print(magic)
+}
+
+func main() {
+    var clen i32
+    clen = cxtweet.chainlen()
+    for i := 0; i < len(clen); i++ {
+        out = 
+    }
+}

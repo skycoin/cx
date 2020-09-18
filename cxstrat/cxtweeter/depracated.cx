@@ -1,0 +1,153 @@
+package cxtweetapi
+
+import "cxtweet"
+import "cxtweeter"
+
+/**
+ * Gets tweet's txt by hash.
+ */
+func GetTweetTxtByHash(hsh [32]ui8) (out str) {
+    loadTweetHash(hsh)
+    out = tw.txt
+}
+
+/**
+ * Gets tweet's likes count by hash.
+ */
+func GetTweetLikesByHash(hsh [32]ui8) (out i32) {
+    loadTweetHash(hsh)
+    out = tw.likes
+}
+
+/**
+ * Gets tweet's retweets count by hash.
+ */
+func GetTweetRetweetsByHash(hsh [32]ui8) (out i32) {
+    loadTweetHash(hsh)
+    out = tw.retwt
+}
+
+/**
+ * Gets tweet's likes by hash. Returns array of strings of account names.
+ */
+func GetLikesByHash(hsh [32]ui8) (out []str) {
+    var serial []ui8
+    var actual [][25]ui8
+    var idx i32
+    
+    serial = cxtweet.shafetch(cxtweeter.dblikes, hsh)
+    if len(serial) == 0 {
+        return
+    }
+    actual = cxtweeter.deserializeWalSlice(serial, &idx)
+    for i := 0; i < len(actual); i++ {
+        var stmp_ str
+        var wal_ [25]ui8
+        wal_ = actual[i]
+        stmp_ = cxtweet.rdaddress(wal_)
+        out = append(out, stmp_)
+    }
+}
+
+/**
+ * Gets tweet's retweets by hash. Returns array of strings of account names.
+ */
+func GetRetweetsByHash(hsh [32]ui8) (out []str) {
+    var serial []ui8
+    var actual [][25]ui8
+    var idx i32
+    
+    serial = cxtweet.shafetch(cxtweeter.dbretweets, hsh)
+    if len(serial) == 0 {
+        return
+    }
+    actual = cxtweeter.deserializeWalSlice(serial, &idx)
+    for i := 0; i < len(actual); i++ {
+        var stmp_ str
+        var wal_ [25]ui8
+        wal_ = actual[i]
+        stmp_ = cxtweet.rdaddress(wal_)
+        out = append(out, stmp_)
+    }
+}
+
+func GetTweetTagsByHash(hsh [32]ui8) (out []str) {
+    loadTweetHash(hsh)
+    var wals_ [][25]ui8
+    var wal_  [25]ui8
+
+    wals_ = tw.tags
+    for i := 0; i < len(wals_); i++ {
+        wal_ = wals_[i]
+        var s str
+        s = cxtweet.rdaddress(wal_)
+        out = append(out, s)
+    }
+}
+
+func GetTweetHashsByHash(hsh [32]ui8) (out []str) {
+    loadTweetHash(hsh)
+    out = tw.hashs
+}
+
+func GetTweetOwnerByHash(hsh [32]ui8) (out str) {
+    loadTweetHash(hsh)
+    out = cxtweet.rdaddress(tw.owner)
+}
+
+func GetAccountNameByID(wal [25]ui8) (out str) {
+    loadAccountHash(wal)
+    out = cxtweet.rdaddress(wal)
+}
+
+func GetAccountTweetsByID(wal [25]ui8) (out []str) {
+    loadAccountHash(wal)
+    var twts [][32]ui8
+    var twt  [32]ui8
+    var stmp str
+    twts = ac.tweets
+    for i := 0; i < len(twts); i++ {
+        twt = twts[i]
+        stmp = GetTweetTxtByHash(twt)
+        out = append(out, stmp)
+    }
+}
+
+func GetAccountLikesByID(wal [25]ui8) (out []str) {
+    loadAccountHash(wal)
+    var twts [][32]ui8
+    var twt  [32]ui8
+    var stmp str
+    twts = ac.likes
+    for i := 0; i < len(twts); i++ {
+        twt = twts[i]
+        stmp = GetTweetTxtByHash(twt)
+        out = append(out, stmp)
+    }
+}
+
+func GetAccountRetweetsByID(wal [25]ui8) (out []str) {
+    loadAccountHash(wal)
+    var twts [][32]ui8
+    var twt  [32]ui8
+    var stmp str
+    twts = ac.retweets
+    for i := 0; i < len(twts); i++ {
+        twt = twts[i]
+        stmp = GetTweetTxtByHash(twt)
+        out = append(out, stmp)
+    }
+}
+
+func GetAccountTagsByID(wal [25]ui8) (out []str) {
+    loadAccountHash(wal)
+    var twts [][32]ui8
+    var twt  [32]ui8
+    var stmp str
+    twts = ac.tags
+    for i := 0; i < len(twts); i++ {
+        twt = twts[i]
+        stmp = GetTweetTxtByHash(twt)
+        out = append(out, stmp)
+    }
+}

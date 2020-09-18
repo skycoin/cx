@@ -42,6 +42,9 @@ type CXProgram struct {
 
 	// Used by the REPL and parser
 	CurrentPackage *CXPackage // Represents the currently active package in the REPL or when parsing a CX file.
+
+	//used by cxtweet
+	Exposed []byte
 }
 
 // CXCall ...

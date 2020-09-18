@@ -7,7 +7,7 @@ import (
 // CorePackages ...
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
-	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher",
+	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher", "cxdatum",
 }
 
 // op codes
@@ -549,6 +549,15 @@ func Slice(typCode int) *CXArgument {
 	arg := Param(typCode)
 	arg.IsSlice = true
 	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_SLICE)
+	return arg
+}
+
+func Array(typCode int, len int) *CXArgument {
+	arg := Param(typCode)
+	arg.IsArray = true
+	arg.TotalSize = len
+	arg.Lengths = []int{len}
+	arg.DeclarationSpecifiers = append(arg.DeclarationSpecifiers, DECL_ARRAY)
 	return arg
 }
 

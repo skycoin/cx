@@ -273,6 +273,13 @@ func checkSameNativeType(expr *CXExpression) error {
 	var typ int = expr.Inputs[0].Type
 	for _, inp := range expr.Inputs {
 		if inp.Type != typ {
+			/*for i := 0; i < len(expr.Inputs); i++ {
+				fmt.Printf("%s ", expr.Inputs[i].Name)
+			}
+			fmt.Println("")
+			for i := 0; i < len(expr.Outputs); i++ {
+				fmt.Printf("%s ", expr.Outputs[i].Name)
+			}*/
 			return errors.New("operands are not of the same type")
 		}
 		typ = inp.Type
@@ -679,6 +686,7 @@ func ProcessReferenceAssignment(expr *CXExpression) {
 			!hasDeclSpec(elt, DECL_POINTER) &&
 			elt.Type != TYPE_STR && !elt.IsSlice {
 			println(CompilationError(CurrentFile, LineNo), "invalid reference assignment", elt.Name)
+			panic("woot")
 		}
 	}
 
