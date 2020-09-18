@@ -141,7 +141,7 @@ var docform string = `
  * 1. turns all @account to @Hbj180...
  * 2. checks hashtags
  * 3. checks length (too long fills cache.err with ERRORCODE_STRATTOOLONG)
- * 4. if all is good, then do that shit!
+ * 4. if all is good, then do it!
  */
 func actionStrat(t string) {
 	var b []byte

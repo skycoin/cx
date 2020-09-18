@@ -1,0 +1,440 @@
+package cxtweeter
+
+import "cxtweet"
+
+/**
+ * model.cx - contains code which define the structure
+ * of cxtweeter objects.
+ */
+type Tweet struct {
+    owner [25]ui8
+    obj   [32]ui8
+    txt   str
+    likes i32
+    retwt i32
+    tags  []ui8
+    hashs []str
+}
+
+type Account struct {
+    name      str
+    id        [25]ui8
+    tweets    []ui8
+    likes     []ui8
+    retweets  []ui8
+    tags      []ui8
+}
+
+type Hashtag struct {
+    name   str
+    tlikes i32
+    trtwts i32
+    tweets []ui8
+}
+
+func deserializeI32(sl []ui8, idx_ *i32) (out i32) {
+    var idx i32 = *idx_
+    out = i32.bitshl(ui8.i32(sl[idx]), 24)
+    out = i32.bitor(out, i32.bitshl(ui8.i32(sl[i32.add(idx, 1)]), 16))
+    out = i32.bitor(out, i32.bitshl(ui8.i32(sl[i32.add(idx, 2)]), 8))
+    out = i32.bitor(out, ui8.i32(sl[i32.add(idx, 3)]))
+    (*idx_) = i32.add(idx, 4)
+    //printf("deserialized: %d, %d\n", *idx_, out)
+    //i32.print(*idx_)
+}
+
+func deserializeStr(sl []ui8, idx_ *i32) (out str) {
+    var idx i32 = *idx_
+    var slen i32
+    slen = deserializeI32(sl, &idx)
+    //printf("slen: ")
+    //i32.print(slen)
+    var strb []ui8 
+    for i := 0; i < slen; i++ {
+        strb = append(strb, sl[idx + i])
+        //printf("%d ", sl[idx + i])
+    }
+    //for i := 0; i < len(sl); i++ {
+    //    printf("%d ", sl[i])
+    //}
+    //printf("\n")
+    out = cxtweet.bytes2str(strb)
+    (*idx_) = idx + slen
+    //printf("deserialized: ")
+    //i32.print(*idx_)
+    //printf("this step is my dad: %s\n", out)
+}
+
+func deserializeStrSlice(sl []ui8, idx_ *i32) (out []str) {
+    var idx i32 = *idx_
+    var slen i32
+    var strt str
+    slen = deserializeI32(sl, &idx)
+    for j := 0; j < slen; j++ {
+        strt = deserializeStr(sl, &idx)
+        out = append(out, strt)
+    }
+    (*idx_) = idx
+    //printf("deserialized: ")
+    //i32.print(*idx_)
+    //printf("\n\n\n\n\n\n")
+    //for i := 0; i < len(out); i++ {
+    //    printf("\t\t\t%s\n", out[i])
+    //}
+}
+
+func deserializeWalSlice(sl []ui8, idx_ *i32) (out []ui8) {
+    var idx i32 = *idx_
+    var slen i32
+    slen = deserializeI32(sl, &idx)
+    var slenn i32
+    slenn = slen*25
+    for j := 0; j < slenn; j++ {
+        out = append(out, sl[j+idx])
+    }
+    
+    idx = idx + slenn
+    (*idx_) = idx
+    //printf("deserialized: ")
+    //i32.print(*idx_)
+}
+
+func deserializeShaSlice(sl []ui8, idx_ *i32) (out []ui8) {
+    var idx i32 = *idx_
+    var slen i32
+    slen = deserializeI32(sl, &idx)
+    var slenn i32
+    slenn = slen*32
+    for j := 0; j < slenn; j++ {
+        out = append(out, sl[j+idx])
+    }
+    (*idx_) = i32.add(idx, slenn)
+    printf("deserialized: ")
+    i32.print(*idx_)
+}
+
+func deserializeWal(sl []ui8, idx_ *i32) (out [25]ui8) {
+    var idx i32 = *idx_
+    for i := 0; i < 25; i++ {
+        out[i] = sl[i32.add(idx, i)]
+    }
+    (*idx_) = i32.add(idx, 25)
+    //printf("deserialized: ")
+    //i32.print(*idx_)
+}
+
+func deserializeSha(sl []ui8, idx_ *i32) (out [32]ui8) {
+    var idx i32 = *idx_
+    for i := 0; i < 32; i++ {
+        out[i] = sl[i32.add(idx, i)]
+    }
+    (*idx_) = i32.add(idx, 32)
+    //printf("deserialized: ")
+    //i32.print(*idx_)
+}
+
+func serializeI32(i i32) (out [4]ui8) {
+    i0 := i32.ui8(i32.bitshr(i, 24))
+    i1 := i32.ui8(i32.bitshr(i32.bitand(16711680, i), 16))
+    i2 := i32.ui8(i32.bitshr(i32.bitand(65280, i), 8))
+    i3 := i32.ui8(i32.bitand(255, i))
+    out = [4]ui8{i0, i1, i2, i3}
+    //printf("serialized: ")
+    //i32.print(i)
+}
+
+func serializeWalSlice(sl []ui8) (out []ui8) {
+    var len_ i32
+    len_ = len(sl)
+    len_ = i32.div(len_, 25)
+    var slen [4]ui8 
+    slen = serializeI32(len_)
+    for i := 0; i < 4; i++ {
+        out = append(out, slen[i])
+    }
+    for j := 0; j < len(sl); j++ {
+        out = append(out, sl[j])
+    }
+}
+
+func serializeWal(sl [25]ui8) (out []ui8) {
+    for i := 0; i < 25; i++ {
+        out = append(out, sl[i])
+    }
+}
+
+func serializeSha(sl [32]ui8) (out []ui8) {
+    for i := 0; i < 32; i++ {
+        out = append(out, sl[i])
+    }
+}
+
+func serializeShaSlice(sl []ui8) (out []ui8) {
+    var len_ i32
+    len_ = len(sl) 
+    len_ = i32.bitshr(len_, 5)
+    var slen [4]ui8 
+    slen = serializeI32(len_)
+    for i := 0; i < 4; i++ {
+        out = append(out, slen[i])
+    }
+    for j := 0; j < len(sl); j++ {
+        out = append(out, sl[j])
+    }
+}
+
+func serializeStr(s str) (out []ui8) {
+    var serstr []ui8 
+    serstr = cxtweet.str2bytes(s)
+    var serlen [4]ui8 = serializeI32(len(serstr))
+    for i := 0; i < 4; i++ {
+        out = append(out, serlen[i])
+    }
+    for i := 0; i < len(serstr); i++ {
+        out = append(out, serstr[i])
+    }
+    //printf("serialized str: ")
+    //i32.print(len(out))
+}
+
+func serializeStrSlice(sl []str) (out []ui8) {
+    //for i := 0; i < len(sl); i++ {
+    //    printf("not an iossue?::: %s\n", sl[i])
+    //    //str.print(sl[i])
+    //}
+    var slen [4]ui8 = serializeI32(len(sl))
+    for i := 0; i < 4; i++ {
+        out = append(out, slen[i])
+    }
+    for j := 0; j < len(sl); j++ {
+        var serstr []ui8 = serializeStr(sl[j])
+        for i := 0; i < len(serstr); i++ {
+            out = append(out, serstr[i])
+        }
+    }
+    //printf("serialized strslice: ")
+    //i32.print(len(out))
+}
+
+func serializeTweet(t Tweet) (out []ui8) {
+    for i := 0; i < 25; i++ {
+        out = append(out, t.owner[i])
+    }
+
+    for i := 0; i < 32; i++ {
+        out = append(out, t.obj[i])
+    }
+
+    var msgenc []ui8 = cxtweet.str2bytes(t.txt)
+    //first encode length
+    var serlen [4]ui8 = serializeI32(len(msgenc))
+    for i := 0; i < 4; i++ {
+        out = append(out, serlen[i])
+    }
+    for i := 0; i < len(msgenc); i++ {
+        out = append(out, msgenc[i])
+    }
+
+    var serlikes [4]ui8 
+    serlikes = serializeI32(t.likes)
+    for i := 0; i < 4; i++ {
+        out = append(out, serlikes[i])
+    }
+
+    var serretwt [4]ui8 
+    serretwt = serializeI32(t.retwt)
+    for i := 0; i < 4; i++ {
+        out = append(out, serretwt[i])
+    }
+
+    var sertags []ui8 
+    sertags = serializeWalSlice(t.tags)
+    for i := 0; i < len(sertags); i++ {
+        out = append(out, sertags[i])
+    }
+
+    var serhashs []ui8 
+    //printf("SERIALSERIALSERIALSERIALSERIALSWIRLSAIAIASLDAWE\n")
+    serhashs = serializeStrSlice(t.hashs)
+    for i := 0; i < len(serhashs); i++ {
+        out = append(out, serhashs[i])
+    }
+}
+
+func deserializeTweet(sl []ui8) (out Tweet) {
+    var idx i32 = 0
+
+    var owner_ [25]ui8
+    var obj_ [32]ui8
+    var txt_ str
+    var likes_ i32
+    var retwt_ i32
+    var tags_ []ui8
+    var hashs_ []str
+
+    owner_ = deserializeWal(sl, &idx)
+    obj_ = deserializeSha(sl, &idx)
+    txt_ = deserializeStr(sl, &idx)
+    likes_ = deserializeI32(sl, &idx)
+    retwt_ = deserializeI32(sl, &idx)
+    tags_ = deserializeWalSlice(sl, &idx)
+    //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+    hashs_ = deserializeStrSlice(sl, &idx)
+    //printf("\n\n\n\n\n\n")
+    //for i := 0; i < len(hashs_); i++ {
+    //    printf("#####\t\t\t%s\n", hashs_[i])
+    //}
+    out = Tweet{owner: owner_, obj: obj_, txt: txt_, likes: likes_, retwt: retwt_, tags: tags_, hashs: hashs_}
+}
+
+func serializeAccount(a Account) (out []ui8) {
+    out = serializeStr(a.name)
+
+    for i := 0; i < 25; i++ {
+        out = append(out, a.id[i])
+    }
+
+    var sertweets []ui8
+    var serlikes []ui8
+    var serretweets []ui8
+    var sertags []ui8
+    sertweets = serializeShaSlice(a.tweets)
+    serlikes = serializeShaSlice(a.likes)
+    serretweets = serializeShaSlice(a.retweets)
+    sertags = serializeShaSlice(a.tags)
+
+    for i := 0; i < len(sertweets); i++ {
+        out = append(out, sertweets[i])
+    }
+
+    for i := 0; i < len(serlikes); i++ {
+        out = append(out, serlikes[i])
+    }
+
+    for i := 0; i < len(serretweets); i++ {
+        out = append(out, serretweets[i])
+    }
+
+    for i := 0; i < len(sertags); i++ {
+        out = append(out, sertags[i])
+    }
+}
+
+func deserializeAccount(sl []ui8) (out Account) {
+    var idx i32 = 0
+    
+    var name_ str
+    var id_ [25]ui8
+    var tweets_ []ui8
+    var likes_ []ui8
+    var retweets_ []ui8
+    var tags_ []ui8
+
+    name_ = deserializeStr(sl, &idx)
+    id_ = deserializeWal(sl, &idx)
+    printf("account tweets:\n")
+    tweets_ = deserializeShaSlice(sl, &idx)
+    printf("account likes:\n")
+    likes_ = deserializeShaSlice(sl, &idx)
+    printf("account retweets:\n")
+    retweets_ = deserializeShaSlice(sl, &idx)
+    printf("account tags:\n")
+    tags_ = deserializeShaSlice(sl, &idx)
+
+    out = Account{name: name_, id: id_, tweets: tweets_, likes: likes_, retweets: retweets_, tags: tags_}
+}
+
+func serializeHashtag(h Hashtag) (out []ui8) {
+    //printf("serializeHashtag\n")
+    out = serializeStr(h.name)
+
+    var sertlikes [4]ui8
+    var sertrtwts [4]ui8
+    var sertweets []ui8
+    sertlikes = serializeI32(h.tlikes)
+    sertrtwts = serializeI32(h.trtwts)
+    sertweets = serializeShaSlice(h.tweets)
+
+    for i := 0; i < 4; i++ {
+        out = append(out, sertlikes[i])
+    }
+
+    for i := 0; i < 4; i++ {
+        out = append(out, sertrtwts[i])
+    }
+
+    for i := 0; i < len(sertweets); i++ {
+        out = append(out, sertweets[i])
+    }
+}
+
+func deserializeBlockstat(sl []ui8) (out []i32) {
+    var slen i32
+    var idx i32
+    idx = 0
+    var itmp i32
+    slen = len(sl) / 4
+    for i := 0; i < slen; i++ {
+        itmp = deserializeI32(sl, &idx)
+        out = append(out, itmp)
+    }
+}
+
+func serializeBlockstat(sl []i32) (out []ui8) {
+    var special [4]ui8
+    for i := 0; i < len(sl); i++ {
+        special = serializeI32(sl[i])
+        for j := 0; j < 4; j++ {
+            out = append(out, special[j])
+        }
+    }
+}
+
+func deserializeHashtag(sl []ui8) (out Hashtag) {
+    var idx i32 = 0
+    
+    var name_ str
+    var tlikes_ i32
+    var trtwts_ i32
+    var tweets_ []ui8
+
+    //printf("deserializeHashtag\n")
+
+    name_ = deserializeStr(sl, &idx)
+    tlikes_ = deserializeI32(sl, &idx)
+    trtwts_ = deserializeI32(sl, &idx)
+    printf("hashtag tweets:\n")
+    tweets_ = deserializeShaSlice(sl, &idx)
+
+    out = Hashtag{name: name_, tlikes: tlikes_, trtwts: trtwts_, tweets: tweets_}
+}
+
+func walSliceAppend(wsl []ui8, wal [25]ui8) (out []ui8) {
+    for i := 0; i < 25; i++ {
+        wsl = append(wsl, wal[i])
+    }
+    out = wsl
+}
+
+func shaSliceAppend(ssl []ui8, sha [32]ui8) (out []ui8) {
+    for i := 0; i < 32; i++ {
+        ssl = append(ssl, sha[i])
+    }
+    out = ssl
+}
+
+func shaSliceIndex(ssl []ui8, idx i32) (out [32]ui8) {
+    var cidx i32
+    for i := 0; i < 32; i++ {
+        cidx = 32 * idx + i
+        out[i] = ssl[cidx]
+    }
+}
+
+func walSliceIndex(wsl []ui8, idx i32) (out [25]ui8) {
+    var cidx i32
+    for i := 0; i < 25; i++ {
+        cidx = 25 * idx + i
+        out[i] = wsl[cidx]
+    }
+}

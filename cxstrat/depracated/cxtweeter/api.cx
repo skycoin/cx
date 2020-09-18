@@ -1,0 +1,127 @@
+package cxtweetapi
+
+import "cxtweet"
+import "cxtweeter"
+
+/* provides readable output forms */
+
+/* caches of the recently grabbed objects. Saves on lookup time. */
+var tw cxtweeter.Tweet
+var ac cxtweeter.Account
+var ht cxtweeter.Hashtag
+
+func GetFullTweetByHash(hsh [32]ui8) (out []ui8) {
+    out = cxtweet.shafetch(cxtweeter.dbtweet, hsh)
+    //var t Tweet
+    //t = cxtweeter.deserializeTweet(out)
+    //str.print(t.txt)
+}
+
+func GetFullAccountByID(wal [25]ui8) (out []ui8) {
+    out = cxtweet.walfetch(cxtweeter.dbaccount, wal)
+    if len(out) == 0 {
+        var accnt cxtweeter.Account
+        accnt = cxtweeter.createAccount(wal)
+        var saccnt []ui8
+        saccnt = cxtweeter.serializeAccount(accnt)
+        var ok bool
+        ok = cxtweet.walstore(cxtweeter.dbaccount, wal, saccnt)
+        out = saccnt
+    }
+}
+
+func GetFullHashtagByTag(tag str) (out []ui8) {
+    out = cxtweet.strfetch(cxtweeter.dbtag, tag)
+}
+
+func ProcessIncoming(seq i32, incoming []ui8) {
+    cxtweeter.gotTweet(seq, incoming)
+}
+
+func GetAllTweets() (out []ui8) {
+    out = cxtweet.strfetch(cxtweeter.dbtweet, "all")
+    if len(out) == 0 {
+        for i := 0; i < 4; i++ {
+            out = append(out, 0UB)
+        }
+    }
+}
+
+func PostTweet(twt []ui8) (out []ui8) {
+    var ok bool
+    ok = cxtweet.newtweet(twt)
+    if ok {
+        out = append(out, 0UB)
+    } else {
+        out = append(out, 1UB)
+    }
+}
+
+func PostLike(twt [32]ui8) (out []ui8) {
+    var ok bool
+    ok = cxtweet.newlike(twt)
+    if ok {
+        out = append(out, 0UB)
+    } else {
+        out = append(out, 1UB)
+    }
+}
+
+func PostRetweet(twt [32]ui8) (out []ui8) {
+    var ok bool
+    ok = cxtweet.newretweet(twt)
+    if ok {
+        out = append(out, 0UB)
+    } else {
+        out = append(out, 1UB)
+    }
+}
+
+func loadAccountHash(wal [25]ui8) {
+    var pv [25]ui8
+    pv = ac.id
+    for i := 0; i < 25; i++ {
+        if pv[i] != wal[i] {
+            var sa []ui8
+
+            sa = cxtweet.walfetch(cxtweeter.dbaccount, wal)
+            if len(sa) == 0 {
+                return
+            }
+            ac = cxtweeter.deserializeAccount(sa)
+            return
+        }
+    }
+}
+
+func loadTweetHash(hsh [32]ui8) {
+    var pv [32]ui8
+    pv = tw.obj
+    for i := 0; i < 32; i++ {
+        if pv[i] != hsh[i] {
+            var st []ui8
+
+            st = cxtweet.shafetch(cxtweeter.dbtweet, hsh)
+            if len(st) == 0 {
+                return
+            }
+            tw = cxtweeter.deserializeTweet(st)
+            return
+        }
+    }
+}
+
+func loadHashtagHash(tag str) {
+    var pv str
+    pv = ht.name
+    if pv != tag {
+        var sh []ui8
+
+        sh = cxtweet.strfetch(cxtweeter.dbtag, tag)
+        if len(sh) == 0 {
+            return
+        }
+        ht = cxtweeter.deserializeHashtag(sh)
+        return
+    }
+}
