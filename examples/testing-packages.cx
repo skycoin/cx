@@ -1,39 +1,85 @@
+
+/* ----------------------------------------------
+This example explains, how we can use different packages in our main package and 
+how the Global variables and structures can be used in the main package from the other imported packages. 
+*/
+
+
+//Package for adding 
+//
 package foo1
 
+// Defining global structure in the foo1 package 
+//Point is the name of the structure 
+//
 type Point struct {
+
+// x , y are the variables with file type i32
 	x i32
 	y i32
 }
 
+// This function is an example of adding variables
+//
 func double (n i32) (res i32) {
 	res = i32.add(n, n)
 }
 
+// Package for multiplication 
+//
 package foo2
 
+// This function allow a variable to multiply with 3
+//
 func triple (n i32) (res i32) {
 	res = i32.mul(n, 3)
 }
 
+
+
+
+
+// Main package 
+//
 package main
+
+// This is how to import various packages in the main package
 import "foo1"
 import "foo2"
 
+// main() is the starting function in the program. 
+//
 func main () {
-	var p Point
-	p = foo1.Point{x: 10, y: 20}
 
+// Point is the structure from foo1 package
+// we are defining a variable p of type Point
+//This is how we can define a variable from another package, by considering it as a type. 
+//
+	var p Point
+
+// we are assigning the values to the p variable
+// Tis is how we can assign the values to a variable of type structure from an other package
+// In foo1.Point{} foo1 is package and Point is the structure, by writing foo1.Point{} we can access Point from the foo1 and assign the values to x and y
+	p = foo1.Point{x: 10,y: 20}
+
+// p.x will allow to access the value in x
+// p.y will allow to access the values in y
+//simple print the i32 file type in the terminal
+//
 	i32.print(p.x)
 	i32.print(p.y)
 	
-          
-	var double i32
-	var triple i32
+  // Defining variables         
+	var double_return i32
+	var triple_return i32
 	
-	double = foo1.double(10)
-	triple = foo2.triple(10)
+// 	here we are using a function double() from package foo1 and triple() from package foo2
+//
+	double_return = foo1.double(10)
+	triple_return = foo2.triple(10)
 
-	i32.print(double)
-	i32.print(triple)
+// simple print the i32 file type in the terminal
+	i32.print(double_return)
+	i32.print(triple_return)
 }
 
