@@ -40,10 +40,11 @@ func test3 (points *[3]Point) (newPoints *[3]Point) {
 
 func main () { 
 
-	var cho *[3]Point // cho is local variable pointer of type array of global structure 
-
-	cho = makePoints () // function 
-   
+	var cho1 *[3]Point // cho is local variable pointer of type array of global structure 
+	var cho [3]Point
+	cho1 = makePoints () // function 
+   	
+   	&cho = cho1
 
 // print all the values 
 	i32.print(cho[0].x)
@@ -54,10 +55,11 @@ func main () {
 	i32.print(cho[2].y)
 
 	
-	var gall *[3]Point   // gall is local variable pointer of type array of global structure 
-
-    gall = test3 (cho)   // function 
+	var gall1 *[3]Point   // gall is local variable pointer of type array of global structure 
+	var gall [3]Point
+    	gall1 = test3 (cho1)   // function 
 	
+	&gall = gall1
 
 	// print all the values 
 	i32.print(gall[0].x)
