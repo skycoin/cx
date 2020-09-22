@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
@@ -1278,8 +1279,26 @@ func ioReadDir(root string) ([]string, error) {
 //  - []file pointers	open files
 //  - []sting		filenames
 func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	skip := false // flag for skipping arg
+
 	for _, arg := range args {
 
+		// skip arg if skip flag is specified
+		if skip {
+			skip = false
+			continue
+		}
+
+		// cli flags are either "--key=value" or "-key value"
+		// we have to skip both cases
+		if len(arg) > 1 && arg[0] == '-' {
+			if !strings.Contains(arg, "=") {
+				skip = true
+			}
+			continue
+		}
+
+		// cli cx flags are prefixed with "++"
 		if len(arg) > 2 && arg[:2] == "++" {
 			cxArgs = append(cxArgs, arg)
 			continue

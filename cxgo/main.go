@@ -1507,13 +1507,16 @@ func checkCXPathSet(options cxCmdFlags) {
 }
 
 func addInitFunction(PRGRM *cxcore.CXProgram) {
-	if main, err := PRGRM.GetPackage(cxcore.MAIN_PKG); err == nil {
-		initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
-		main.AddFunction(initFn)
+	mainPkg, err := PRGRM.GetPackage(cxcore.MAIN_PKG)
+	if err != nil {
+		panic(err)
+	}
 
-		actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
-		PRGRM.SelectFunction(cxcore.MAIN_FUNC)
-	} else {
+	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	mainPkg.AddFunction(initFn)
+
+	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
+	if _, err := PRGRM.SelectFunction(cxcore.MAIN_FUNC); err != nil {
 		panic(err)
 	}
 }
