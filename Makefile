@@ -78,9 +78,9 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: configure install-deps ## Generate lexer and parser for CX grammar
-	nex -e cxgo/cxgo0/cxgo0.nex
+	#nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	nex -e cxgo/parser/cxgo.nex
+	#nex -e cxgo/parser/cxgo.nex
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
@@ -117,7 +117,7 @@ install-gfx-deps-MACOS:
 
 install-deps: configure
 	@echo "Installing go package dependencies"
-	go get github.com/SkycoinProject/nex
+	#go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
