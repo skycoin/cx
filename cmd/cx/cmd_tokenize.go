@@ -21,7 +21,7 @@ func cmdTokenize(args []string) {
 	cmd.StringVar(&in, "i", in, "shorthand for 'input'")
 
 	// parse:
-	parseFlagSet(cmd, args)
+	parseFlagSet(cmd, args[1:])
 
 	inF, closeIn, err := openFile(in)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
-	"github.com/SkycoinProject/cx-chains/src/coin"
 
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
 )
@@ -48,7 +47,7 @@ func cmdNewChain(args []string) {
 	cmd.StringVar(&genKeysOut, "genesis-keys-output", genKeysOut, "`FILE` for genesis keys output")
 
 	// Parse flags.
-	parseFlagSet(cmd, args)
+	parseFlagSet(cmd, args[1:])
 	fillTemplate(&chainSpecOut, coinName, coinTicker)
 	fillTemplate(&chainKeysOut, coinName, coinTicker)
 	fillTemplate(&genKeysOut, coinName, coinTicker)
@@ -57,7 +56,8 @@ func cmdNewChain(args []string) {
 	if !replace {
 		for _, name := range []string{chainSpecOut, chainKeysOut, genKeysOut} {
 			if _, err := os.Stat(name); !os.IsNotExist(err) {
-				errPrintf("File '%s' already exists. Replace with '--replace' flag.", name)
+				errPrintf("File '%s' already exists. Replace with '--replace' flag.\n", name)
+				os.Exit(1)
 			}
 		}
 	}
@@ -75,16 +75,16 @@ func cmdNewChain(args []string) {
 	// Generate and write chain spec file.
 	cSpec, err := cxspec.New(coinName, coinTicker, chainSK, genAddr, nil)
 	if err != nil {
-		errPrintf("Failed to generate chain spec: %v", err)
+		errPrintf("Failed to generate chain spec: %v\n", err)
 		os.Exit(1)
 	}
 	cSpecB, err := json.MarshalIndent(cSpec, "", "\t")
 	if err != nil {
-		errPrintf("Failed to encode chain spec to json: %v", err)
+		errPrintf("Failed to encode chain spec to json: %v\n", err)
 		os.Exit(1)
 	}
 	if err := ioutil.WriteFile(chainSpecOut, cSpecB, filePerm); err != nil {
-		errPrintf("Failed to write chain spec to file '%s': %v", chainSpecOut, err)
+		errPrintf("Failed to write chain spec to file '%s': %v\n", chainSpecOut, err)
 		os.Exit(1)
 	}
 
@@ -92,11 +92,11 @@ func cmdNewChain(args []string) {
 	cKeys := cxspec.KeySpecFromSecKey(cxspec.ChainKey, chainSK, true, true)
 	cKeysB, err := json.MarshalIndent(cKeys, "", "\t")
 	if err != nil {
-		errPrintf("Failed to encode chain keys to json: %v", err)
+		errPrintf("Failed to encode chain keys to json: %v\n", err)
 		os.Exit(1)
 	}
 	if err := ioutil.WriteFile(chainKeysOut, cKeysB, filePerm); err != nil {
-		errPrintf("Failed to write chain keys to file '%s': %v", chainKeysOut, err)
+		errPrintf("Failed to write chain keys to file '%s': %v\n", chainKeysOut, err)
 		os.Exit(1)
 	}
 
@@ -104,23 +104,13 @@ func cmdNewChain(args []string) {
 	gKeys := cxspec.KeySpecFromSecKey(cxspec.GenesisKey, genSK, true, true)
 	gKeysB, err := json.MarshalIndent(gKeys, "", "\t")
 	if err != nil {
-		errPrintf("Failed to encode genesis keys to json: %v", err)
+		errPrintf("Failed to encode genesis keys to json: %v\n", err)
 		os.Exit(1)
 	}
 	if err := ioutil.WriteFile(genKeysOut, gKeysB, filePerm); err != nil {
-		errPrintf("Failed to write genesis keys to file '%s': %v", genKeysOut, err)
+		errPrintf("Failed to write genesis keys to file '%s': %v\n", genKeysOut, err)
 		os.Exit(1)
 	}
-}
-
-func GenerateChainSpec(addr cipher.Address, coins uint64, timestamp uint64, progState []byte) ([]byte, error) {
-	block, err := coin.NewGenesisBlock(addr, coins, timestamp, progState)
-	if err != nil {
-		return nil, err
-	}
-	block.Body.Hash()
-
-	return nil, nil
 }
 
 func fillTemplate(s *string, coinName, coinTicker string) {
