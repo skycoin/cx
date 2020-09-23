@@ -19,7 +19,6 @@ var SysInitExprs []*CXExpression
 
 // var dStack bool = false
 var InFn bool = false
-
 // var tag string = ""
 // var asmNL = "\n"
 // var fileName string
