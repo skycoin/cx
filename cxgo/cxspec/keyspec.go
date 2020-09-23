@@ -1,4 +1,4 @@
-package chainspec
+package cxspec
 
 import (
 	"fmt"

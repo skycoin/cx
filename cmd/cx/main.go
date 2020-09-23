@@ -25,6 +25,9 @@ func main() {
 	case "tokenize", "t":
 		cmdTokenize(os.Args[1:])
 
+	case "new", "n":
+		cmdNewChain(os.Args[1:])
+
 	default:
 		cmdRun(os.Args[1:])
 	}

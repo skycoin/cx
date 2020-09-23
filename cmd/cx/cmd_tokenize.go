@@ -33,6 +33,7 @@ func cmdTokenize(args []string) {
 	outF, closeOut, err := createFile(out)
 	if err != nil {
 		errPrintf("Failed to create output file '%s': %v\n", out, err)
+		os.Exit(1)
 	}
 	defer closeOut()
 
