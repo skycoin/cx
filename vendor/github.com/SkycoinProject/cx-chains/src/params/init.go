@@ -9,6 +9,11 @@ import (
 )
 
 func init() {
+	InitFromEnv()
+}
+
+// InitFromEnv loads and checks params from env.
+func InitFromEnv() {
 	loadUserBurnFactor()
 	loadUserMaxTransactionSize()
 	loadUserMaxDecimals()

@@ -2,6 +2,7 @@ package cxspec
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func DefaultNodeParams() NodeParams {
 		PeerListURL:             "https://127.0.0.1/peers.txt",
 		UserBurnFactor:          10,
 		UserMaxTransactionSize:  32 * 1024,
-		UserMaxDropletPrecision: 10,
+		UserMaxDropletPrecision: 3,
 	}
 }
 
@@ -110,7 +111,7 @@ type ChainSpec struct {
 
 	/* Distribution Params */
 	// TODO @evanlinjin: Figure out if these are needed for the time being.
-	// MaxCoinSupply             uint64   `json:"max_coin_supply"`              // Maximum coin supply.
+	MaxCoinSupply             uint64   `json:"max_coin_supply"`              // Maximum coin supply.
 	// InitialUnlockedCount      uint64   `json:"initial_unlocked_count"`       // Initial number of unlocked addresses.
 	// UnlockAddressRate         uint64   `json:"unlock_address_rate"`          // Number of addresses to unlock per time interval.
 	// UnlockAddressTimeInterval uint64   `json:"unlock_address_time_interval"` // Time interval (in seconds) in which addresses are unlocked. Once the InitialUnlockedCount is exhausted, UnlockAddressRate addresses will be unlocked per UnlockTimeInterval.
@@ -145,6 +146,8 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 		GenesisCoinVolume: 100e12,
 		GenesisProgState:  hex.EncodeToString(genesisProgState),
 		GenesisTimestamp:  uint64(time.Now().UTC().Unix()),
+
+		MaxCoinSupply: 1e8,
 	}
 
 	// Fill post-processed fields.
@@ -160,7 +163,8 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 	return spec, nil
 }
 
-func DefaultGenesisSpec(chainSK cipher.SecKey, genesisAddr cipher.Address, genesisProgState []byte) (*ChainSpec, error) {
+// DefaultGenesisSpec returns the default skycoin chain spec file.
+func DefaultGenesisSpec(genesisProgState []byte) (*ChainSpec, error) {
 	spec := &ChainSpec{
 		SpecEra:           Era,
 		ChainPubKey:       "", // ChainPubKey is generated at a later step via generateAndSignGenesisBlock
@@ -172,20 +176,17 @@ func DefaultGenesisSpec(chainSK cipher.SecKey, genesisAddr cipher.Address, genes
 		CoinHoursName:     "skycoin coin hours",
 		CoinHoursTicker:   "SCH",
 
-		GenesisAddr:       genesisAddr.String(),
-		GenesisSig:        "", // GenesisSig is generated at a later step via generateAndSignGenesisBlock
+		GenesisAddr:       "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E",
+		GenesisSig:        "a214e0361ff99d80d2f9d646b25f93b8d1d2deb9f7bae0ff908d2302193d8cc31b8388b7bd38c019304b932bfd570444dbe8561aa9d47da021fd31a70146defd01", // GenesisSig is generated at a later step via generateAndSignGenesisBlock
 		GenesisCoinVolume: 100e12,
 		GenesisProgState:  hex.EncodeToString(genesisProgState),
-		GenesisTimestamp:  uint64(time.Now().UTC().Unix()),
+		GenesisTimestamp:  uint64(1426562704),
+
+		MaxCoinSupply: 1e8,
 	}
 
 	// Fill post-processed fields.
-	if err := postProcess(spec, true); err != nil {
-		return nil, err
-	}
-
-	// Generate genesis signature.
-	if _, err := generateAndSignGenesisBlock(spec, chainSK); err != nil {
+	if err := postProcess(spec, false); err != nil {
 		return nil, err
 	}
 
@@ -234,6 +235,14 @@ func (cs *ChainSpec) Sign(sk cipher.SecKey) error {
 
 func (cs ChainSpec) ProcessedChainPubKey() cipher.PubKey {
 	return cs.chainPK
+}
+
+func (cs *ChainSpec) Print() {
+	b, err := json.MarshalIndent(cs, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(b))
 }
 
 // postProcess fills post-process fields of chain spec.

@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	if len(os.Args) < 2 || strings.HasPrefix(os.Args[1], "-") {
 		fmt.Println("A subcommand was expected.")
 		cmdHelp()
@@ -28,7 +27,7 @@ func main() {
 	case "newchain", "n":
 		cmdNewChain(os.Args[1:])
 
-	default:
+	case "run", "r":
 		cmdRun(os.Args[1:])
 	}
 }
