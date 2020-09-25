@@ -120,6 +120,9 @@ install-deps: configure
 	#go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
 
+install-test-lexer-deps: configure
+	go get github.com/SkycoinProject/nex
+
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
 	go get github.com/SkycoinProject/gltext
 	go get github.com/go-gl/gl/v3.2-compatibility/gl
@@ -143,6 +146,17 @@ install-linters: ## Install linters
 lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
 	golangci-lint run -c .golangci.yml ./cx
+
+token-fuzzer: build
+	go build -i -o ${GOPATH}/bin/cx-token-fuzzer ${GOPATH}/src/github.com/SkycoinProject/cx/development/token-fuzzer/main.go
+	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+
+test-lexer: token-fuzzer install-test-lexer-deps
+	cx-token-fuzzer -b 4 -c 100 -o ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	nex -e ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nex
+	go run ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/main.go ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nn.go
 
 test: build ## Run CX test suite.
 	go test -race -tags base github.com/SkycoinProject/cx/cxgo/
