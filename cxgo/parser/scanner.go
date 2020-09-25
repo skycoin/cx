@@ -12,18 +12,19 @@ import (
 )
 
 type Lexer struct {
-	l, c    int    //line and column numbers
-	b, r, e int    //used for buffer mechanics
-	buf     []byte //buffer
-	scan    io.Reader
-	ch      rune //most recently read character
-	chw     int  //width of character, in bytes
-	errh    func(l, c int, msg string)
-	ioerr   error
-	bsize   uint //buffer size
-	nlsemi  bool //whether or not newline is SCOLON
-	eof     bool //eof
-	crash   bool //used for crash behaviour
+	l, c      int    //line and column numbers
+	b, r, e   int    //used for buffer mechanics
+	buf       []byte //buffer
+	scan      io.Reader
+	ch        rune //most recently read character
+	chw       int  //width of character, in bytes
+	errh      func(l, c int, msg string)
+	ioerr     error
+	bsize     uint //buffer size
+	nlsemi    bool //whether or not newline is SCOLON
+	eof       bool //eof
+	crash     bool //used for crash behaviour
+	colbefore bool //used for colon keywords
 
 	tok *yySymType //symbol read. soon to be depracated for fully new parser
 }
@@ -54,6 +55,16 @@ func (s *Lexer) segment() []byte {
 func (s *Lexer) errorf(msg string) {
 	s.errh(s.l+1, s.c+1, msg)
 	//panic("")
+}
+
+func (s *Lexer) rewind() {
+	// ok to verify precondition - rewind is rarely called
+	if s.b < 0 {
+		panic("no active segment")
+	}
+	s.c -= s.r - s.b
+	s.r = s.b
+	s.nextch()
 }
 
 func (s *Lexer) nextch() {
@@ -221,6 +232,16 @@ redonext:
 			s.tok.yys = CASSIGN
 			s.tok.tok = ":="
 			break
+		} else if isLetter(s.ch) {
+			s.colbefore = true
+			s.ident() /* might be :ds */
+			if !s.colbefore {
+				s.rewind()
+				s.nextch()
+			} else {
+				s.colbefore = false
+				return
+			}
 		}
 		s.tok.yys = COLON
 	case '.':
@@ -502,6 +523,12 @@ func (s *Lexer) ident() {
 				}
 			}
 			return
+		} else {
+			if s.colbefore {
+				/* then it was actually COLON IDENTIFIER. */
+				s.colbefore = false
+				return
+			}
 		}
 	}
 

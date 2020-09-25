@@ -21,6 +21,12 @@ func (yylex *Lexer) Lex(lval *yySymType) int {
 	return lval.yys
 }
 
+func (yylex *Lexer) Next() int {
+	yylex.next()
+	//fmt.Println(tokenName(yylex.tok.yys))
+	return yylex.tok.yys
+}
+
 func (yylex *Lexer) Stop() {
 	yylex.stop()
 }
