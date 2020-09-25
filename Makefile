@@ -148,15 +148,15 @@ lint: ## Run linters. Use make install-linters first.
 	golangci-lint run -c .golangci.yml ./cx
 
 token-fuzzer: build
-	go build -i -o ${GOPATH}/bin/cx-token-fuzzer ${GOPATH}/src/github.com/SkycoinProject/cx/tests/token-fuzzer/main.go
+	go build -i -o ${GOPATH}/bin/cx-token-fuzzer ${GOPATH}/src/github.com/SkycoinProject/cx/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
 test-lexer: token-fuzzer install-test-lexer-deps
-	cx-token-fuzzer -b 4 -c 100 -o ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/test-toks.txt
-	nex -e ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/oldnex/cxgo.nex
-	go run ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/main.go ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/test-toks.txt
-	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/test-toks.txt
-	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/tests/test-lexer/oldnex/cxgo.nn.go
+	cx-token-fuzzer -b 4 -c 100 -o ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	nex -e ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nex
+	go run ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/main.go ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nn.go
 
 test: build ## Run CX test suite.
 	go test -race -tags base github.com/SkycoinProject/cx/cxgo/
