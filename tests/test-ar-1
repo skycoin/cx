@@ -1,1 +1,38 @@
 
+
+package main
+
+type Point struct {
+	x i32
+	y i32
+}
+
+func test1() (strpoint *[3]Point) {
+
+	var bar [3]Point
+
+	bar[0] = Point{x: 10, y: 20}
+	bar[1] = Point{x: 30, y: 40}
+	bar[2] = Point{x: 50, y: 60}
+
+	strpoint = &bar
+}
+
+
+
+func main () {
+
+	var cho *[3]Point
+
+	cho = test1()
+
+
+	i32.print(cho[0].x)
+	i32.print(cho[0].y)
+	i32.print(cho[1].x)
+	i32.print(cho[1].y)
+	i32.print(cho[2].x)
+	i32.print(cho[2].y)
+}
+
+
