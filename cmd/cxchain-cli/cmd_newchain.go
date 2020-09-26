@@ -3,77 +3,160 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
+	"github.com/SkycoinProject/skycoin/src/util/logging"
 
+	cxcore "github.com/SkycoinProject/cx/cx"
+	"github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxprof"
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
+	"github.com/SkycoinProject/cx/cxgo/parser"
 )
 
 const filePerm = 0644
 
-func cmdNewChain(args []string) {
+var log = logging.MustGetLogger("cxchain-cli")
+
+type newChainFlags struct {
+	replace    bool
+	unifyKeys  bool
+	coinName   string
+	coinTicker string
+
+	debugLexer   bool
+	debugProfile int
+
+	chainSpecOut string
+	chainKeysOut string
+	genKeysOut   string
+}
+
+func processNewChainFlags(args []string) newChainFlags {
+	// Specify default values.
+	f := newChainFlags{
+		replace:      false,
+		unifyKeys:    false,
+		coinName:     "skycoin",
+		coinTicker:   "SKY",
+
+		debugLexer:   false,
+		debugProfile: 0,
+
+		chainSpecOut: "./{coin}.chain_spec.json",
+		chainKeysOut: "./{coin}.chain_keys.json",
+		genKeysOut:   "./{coin}.genesis_keys.json",
+	}
+
 	cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
 
-	replace := false
-	cmd.BoolVar(&replace, "replace", replace, "whether to replace output file(s)")
-	cmd.BoolVar(&replace, "r", replace, "shorthand for 'replace'")
+	cmd.BoolVar(&f.replace, "replace", f.replace, "whether to replace output file(s)")
+	cmd.BoolVar(&f.replace, "r", f.replace, "shorthand for 'replace'")
+	cmd.BoolVar(&f.unifyKeys, "unify", f.unifyKeys, "whether to use the same keys for genesis and chain")
+	cmd.BoolVar(&f.unifyKeys, "u", f.unifyKeys, "shorthand for 'unify'")
+	cmd.StringVar(&f.coinName, "coin", f.coinName, "`NAME` for cx coin")
+	cmd.StringVar(&f.coinName, "c", f.coinName, "shorthand for 'coin'")
+	cmd.StringVar(&f.coinTicker, "ticker", f.coinTicker, "`SYMBOL` for cx coin ticker")
+	cmd.StringVar(&f.coinTicker, "t", f.coinTicker, "shorthand for 'ticker'")
 
-	unifyKeys := false
-	cmd.BoolVar(&unifyKeys, "unify", unifyKeys, "whether to use the same keys for genesis and chain")
-	cmd.BoolVar(&unifyKeys, "u", unifyKeys, "shorthand for 'unify'")
+	cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
+	cmd.IntVar(&f.debugProfile, "debug-profile", f.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with 'go get github.com/google/pprof' and 'pprof -http=:8080 file.pprof'")
 
-	coinName := "skycoin"
-	cmd.StringVar(&coinName, "coin", coinName, "`NAME` for cx coin")
-	cmd.StringVar(&coinName, "c", coinName, "shorthand for 'coin'")
-
-	coinTicker := "SKY"
-	cmd.StringVar(&coinTicker, "ticker", coinTicker, "`SYMBOL` for cx coin ticker")
-	cmd.StringVar(&coinTicker, "t", coinTicker, "shorthand for 'ticker'")
-
-	program := "STDIN"
-	cmd.StringVar(&program, "program", program, "`FILE` containing genesis program source")
-	cmd.StringVar(&program, "p", program, "shorthand for 'program'")
-
-	chainSpecOut := "./{coin}.chain_spec.json"
-	cmd.StringVar(&chainSpecOut, "chain-spec-output", chainSpecOut, "`FILE` for chain spec output")
-
-	chainKeysOut := "./{coin}.chain_keys.json"
-	cmd.StringVar(&chainKeysOut, "chain-keys-output", chainKeysOut, "`FILE` for chain keys output")
-
-	genKeysOut := "./{coin}.genesis_keys.json"
-	cmd.StringVar(&genKeysOut, "genesis-keys-output", genKeysOut, "`FILE` for genesis keys output")
+	cmd.StringVar(&f.chainSpecOut, "chain-spec-output", f.chainSpecOut, "`FILE` for chain spec output")
+	cmd.StringVar(&f.chainKeysOut, "chain-keys-output", f.chainKeysOut, "`FILE` for chain keys output")
+	cmd.StringVar(&f.genKeysOut, "genesis-keys-output", f.genKeysOut, "`FILE` for genesis keys output")
 
 	// Parse flags.
 	parseFlagSet(cmd, args[1:])
-	fillTemplate(&chainSpecOut, coinName, coinTicker)
-	fillTemplate(&chainKeysOut, coinName, coinTicker)
-	fillTemplate(&genKeysOut, coinName, coinTicker)
+	f.postProcess()
+	return f
+}
+
+func (f *newChainFlags) postProcess() {
+	replaceTokens := func(s *string, coinName, coinTicker string) {
+		*s = strings.ReplaceAll(*s, "{coin}", coinName)
+		*s = strings.ReplaceAll(*s, "{ticker}", coinTicker)
+	}
+
+	// Replace tokens in flag values with actual values.
+	replaceTokens(&f.chainSpecOut, f.coinName, f.coinTicker)
+	replaceTokens(&f.chainKeysOut, f.coinName, f.coinTicker)
+	replaceTokens(&f.genKeysOut, f.coinName, f.coinTicker)
 
 	// Check replace.
-	if !replace {
-		for _, name := range []string{chainSpecOut, chainKeysOut, genKeysOut} {
+	if !f.replace {
+		for _, name := range []string{f.chainSpecOut, f.chainKeysOut, f.genKeysOut} {
 			if _, err := os.Stat(name); !os.IsNotExist(err) {
 				errPrintf("File '%s' already exists. Replace with '--replace' flag.\n", name)
 				os.Exit(1)
 			}
 		}
 	}
+}
+
+func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bcHeap []byte, sPgm []byte) {
+	log := log.WithField("func", "parseProgram")
+
+	// Start profiling.
+	stopCPUProf, err := cxprof.StartCPUProfile("parseProgram", flags.debugProfile)
+	if err != nil {
+		log.WithError(err).Error("Failed to start CPU profiling.")
+	}
+	_, stopProf := cxprof.StartProfile(log)
+
+	// Stop profiling.
+	defer func() {
+		stopProf()
+		if err := cxprof.DumpMemProfile("parseProgram"); err != nil {
+			log.WithError(err).Error("Failed to dump MEM profile.")
+		}
+		if err := stopCPUProf(); err != nil {
+			log.WithError(err).Error("Failed to stop CPU profiling.")
+		}
+	}()
+
+	// Prepare core program state for 'actions.PRGRM'.
+	coreProgState, err := cxcore.GetProgram()
+	if err != nil {
+		log.WithError(err).Fatal("Failed to obtain prog. state of core packages.")
+	}
+	prog := cxcore.MakeProgram()
+	prog.Packages = coreProgState.Packages
+	actions.PRGRM = prog
+
+	// Parse source code...
+	// TODO @evanlinjin: Finish here!
+
+	return nil, nil
+}
+
+func cmdNewChain(args []string) {
+	flags := processNewChainFlags(args)
+
+	// Apply debug flags.
+	parser.DebugLexer = flags.debugLexer
+
+	// Parse for cx args for genesis program state.
+	cxArgs, cxSrcs, cxFilenames := cxcore.ParseArgsForCX(os.Args[1:], true)
+	fmt.Println(cxArgs, cxSrcs, cxFilenames) // TODO @evanlinjin: Finish this!
+
 
 	// Generate chain keys.
 	chainPK, chainSK := cipher.GenerateKeyPair()
 
 	// Generate genesis keys.
 	genPK, genSK := chainPK, chainSK
-	if !unifyKeys {
+	if !flags.unifyKeys {
 		genPK, genSK = cipher.GenerateKeyPair()
 	}
 	genAddr := cipher.AddressFromPubKey(genPK)
 
 	// Generate and write chain spec file.
-	cSpec, err := cxspec.New(coinName, coinTicker, chainSK, genAddr, nil)
+	cSpec, err := cxspec.New(flags.coinName, flags.coinTicker, chainSK, genAddr, nil)
 	if err != nil {
 		errPrintf("Failed to generate chain spec: %v\n", err)
 		os.Exit(1)
@@ -83,8 +166,8 @@ func cmdNewChain(args []string) {
 		errPrintf("Failed to encode chain spec to json: %v\n", err)
 		os.Exit(1)
 	}
-	if err := ioutil.WriteFile(chainSpecOut, cSpecB, filePerm); err != nil {
-		errPrintf("Failed to write chain spec to file '%s': %v\n", chainSpecOut, err)
+	if err := ioutil.WriteFile(flags.chainSpecOut, cSpecB, filePerm); err != nil {
+		errPrintf("Failed to write chain spec to file '%s': %v\n", flags.chainSpecOut, err)
 		os.Exit(1)
 	}
 
@@ -95,8 +178,8 @@ func cmdNewChain(args []string) {
 		errPrintf("Failed to encode chain keys to json: %v\n", err)
 		os.Exit(1)
 	}
-	if err := ioutil.WriteFile(chainKeysOut, cKeysB, filePerm); err != nil {
-		errPrintf("Failed to write chain keys to file '%s': %v\n", chainKeysOut, err)
+	if err := ioutil.WriteFile(flags.chainKeysOut, cKeysB, filePerm); err != nil {
+		errPrintf("Failed to write chain keys to file '%s': %v\n", flags.chainKeysOut, err)
 		os.Exit(1)
 	}
 
@@ -107,13 +190,8 @@ func cmdNewChain(args []string) {
 		errPrintf("Failed to encode genesis keys to json: %v\n", err)
 		os.Exit(1)
 	}
-	if err := ioutil.WriteFile(genKeysOut, gKeysB, filePerm); err != nil {
-		errPrintf("Failed to write genesis keys to file '%s': %v\n", genKeysOut, err)
+	if err := ioutil.WriteFile(flags.genKeysOut, gKeysB, filePerm); err != nil {
+		errPrintf("Failed to write genesis keys to file '%s': %v\n", flags.genKeysOut, err)
 		os.Exit(1)
 	}
-}
-
-func fillTemplate(s *string, coinName, coinTicker string) {
-	*s = strings.ReplaceAll(*s, "{coin}", coinName)
-	*s = strings.ReplaceAll(*s, "{ticker}", coinTicker)
 }

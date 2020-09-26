@@ -441,7 +441,7 @@ func optionRunNode(options cxCmdFlags) {
 
 // lexerStep0 performs a first pass for the CX parser. Globals, packages and
 // custom types are added to `cxgo0.PRGRM0`.
-func lexerStep0(sourceCodeCopy, fileNames []string) int {
+func lexerStep0(srcStrs, srcNames []string) int {
 	var prePkg *cxcore.CXPackage
 	parseErrors := 0
 
@@ -465,11 +465,11 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 
 	StartProfile("1. packages/structs")
 	// 1. Identify all the packages and structs
-	for ix, source := range sourceCodeCopy {
-		filename := fileNames[ix]
-		StartProfile(filename)
+	for srcI, srcStr := range srcStrs {
+		srcName := srcNames[srcI]
+		StartProfile(srcName)
 
-		reader := strings.NewReader(source)
+		reader := strings.NewReader(srcStr)
 		scanner := bufio.NewScanner(reader)
 		var commentedCode bool
 		var lineno = 0
@@ -526,7 +526,7 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 
 				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
 					if prePkg == nil {
-						println(cxcore.CompilationError(filename, lineno),
+						println(cxcore.CompilationError(srcName, lineno),
 							"No package defined")
 					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
 						// then it hasn't been added
@@ -536,16 +536,16 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 				}
 			}
 		}
-		StopProfile(filename)
-	} // for range sourceCodeCopy
+		StopProfile(srcName)
+	} // for range srcStrs
 	StopProfile("1. packages/structs")
 
 	StartProfile("2. globals")
 	// 2. Identify all global variables
 	//    We also identify packages again, so we know to what
 	//    package we're going to add the variable declaration to.
-	for i, source := range sourceCodeCopy {
-		StartProfile(fileNames[i])
+	for i, source := range srcStrs {
+		StartProfile(srcNames[i])
 		// inBlock needs to be 0 to guarantee that we're in the global scope
 		var inBlock int
 		var commentedCode bool
@@ -587,7 +587,7 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 					pkgName := match[len(match)-1]
 					// Checking if `pkgName` already exists and if it's not a standard library package.
 					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !cxcore.IsCorePackage(pkgName) {
-						// _, sourceCode, fileNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
+						// _, sourceCode, srcNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
 						_, sourceCode, fileNames := cxcore.ParseArgsForCX([]string{filepath.Join(cxcore.SRCPATH, pkgName)}, false)
 						ParseSourceCode(sourceCode, fileNames)
 					}
@@ -685,20 +685,20 @@ func lexerStep0(sourceCodeCopy, fileNames []string) int {
 				}
 			}
 		}
-		StopProfile(fileNames[i])
+		StopProfile(srcNames[i])
 	}
 	StopProfile("2. globals")
 
 	StartProfile("3. cxgo0")
 	// cxgo0.Parse(allSC)
-	for i, source := range sourceCodeCopy {
-		StartProfile(fileNames[i])
+	for i, source := range srcStrs {
+		StartProfile(srcNames[i])
 		source = source + "\n"
-		if len(fileNames) > 0 {
-			cxgo0.CurrentFileName = fileNames[i]
+		if len(srcNames) > 0 {
+			cxgo0.CurrentFileName = srcNames[i]
 		}
 		parseErrors += cxgo0.Parse(source)
-		StopProfile(fileNames[i])
+		StopProfile(srcNames[i])
 	}
 	StopProfile("3. cxgo0")
 	return parseErrors
@@ -796,18 +796,21 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: Do we need this? What is the 'leaps' command?
 	if options.ideMode {
 		IdeServiceMode()
 		ServiceMode()
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: We do not need a persistent mode?
 	if options.webPersistentMode {
 		go ServiceMode()
 		PersistentServiceMode()
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: This is a separate command now.
 	if options.tokenizeMode {
 		optionTokenize(options, fileNames)
 		return false, nil, nil

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 var workingDir string
@@ -42,7 +43,7 @@ func CXCreateFile(path string) (*os.File, error) {
 		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, path)
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s%s", workingDir, path))
+	file, err := os.Create(filepath.Join(workingDir, path))
 	if logFile && err != nil {
 		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, path, err)
 	}
