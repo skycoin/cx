@@ -13,6 +13,8 @@ import (
 
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
+	"github.com/SkycoinProject/cx/cxgo/cxflags"
+	"github.com/SkycoinProject/cx/cxgo/cxlexer"
 	"github.com/SkycoinProject/cx/cxgo/cxprof"
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
 	"github.com/SkycoinProject/cx/cxgo/parser"
@@ -34,10 +36,12 @@ type newChainFlags struct {
 	chainSpecOut string
 	chainKeysOut string
 	genKeysOut   string
+
+	*cxflags.MemoryFlags
 }
 
 func processNewChainFlags(args []string) newChainFlags {
-	// Specify default values.
+	// Specify default flag values.
 	f := newChainFlags{
 		replace:      false,
 		unifyKeys:    false,
@@ -50,6 +54,8 @@ func processNewChainFlags(args []string) newChainFlags {
 		chainSpecOut: "./{coin}.chain_spec.json",
 		chainKeysOut: "./{coin}.chain_keys.json",
 		genKeysOut:   "./{coin}.genesis_keys.json",
+
+		MemoryFlags: cxflags.DefaultMemoryFlags(),
 	}
 
 	cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
@@ -70,9 +76,18 @@ func processNewChainFlags(args []string) newChainFlags {
 	cmd.StringVar(&f.chainKeysOut, "chain-keys-output", f.chainKeysOut, "`FILE` for chain keys output")
 	cmd.StringVar(&f.genKeysOut, "genesis-keys-output", f.genKeysOut, "`FILE` for genesis keys output")
 
+	f.MemoryFlags.Register(cmd)
+
 	// Parse flags.
 	parseFlagSet(cmd, args[1:])
+
+	// Post process.
 	f.postProcess()
+	if err := f.MemoryFlags.PostProcess(); err != nil {
+		log.WithError(err).Fatal()
+	}
+
+	// Return.
 	return f
 }
 
@@ -98,7 +113,7 @@ func (f *newChainFlags) postProcess() {
 	}
 }
 
-func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bcHeap []byte, sPgm []byte) {
+func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bcHeap []byte, sPgm []byte, exitCode int) {
 	log := log.WithField("func", "parseProgram")
 
 	// Start profiling.
@@ -129,9 +144,40 @@ func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bc
 	actions.PRGRM = prog
 
 	// Parse source code...
-	// TODO @evanlinjin: Finish here!
+	if exitCode = cxlexer.ParseSourceCode(srcs, filenames); exitCode != 0 {
+		return nil, nil, exitCode
+	}
 
-	return nil, nil
+	// Add main function if not exist.
+	if _, err := prog.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+		mainPkg := cxcore.MakePackage(cxcore.MAIN_PKG)
+		prog.AddPackage(mainPkg)
+		mainFn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+		mainPkg.AddFunction(mainFn)
+	}
+
+	// Add *init function that initializes all global variables.
+	mainPkg, err := prog.GetPackage(cxcore.MAIN_PKG)
+	if err != nil {
+		log.WithError(err).Error("Failed to obtain main package.")
+		return nil, nil, -1
+	}
+	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	mainPkg.AddFunction(initFn)
+	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
+	if _, err := prog.SelectFunction(cxcore.MAIN_FUNC); err != nil {
+		log.WithError(err).Error("Failed to select main function.")
+		return nil, nil, -1
+	}
+
+	// Reset
+	actions.LineNo = 0
+
+	if cxcore.FoundCompileErrors {
+		return nil, nil, cxcore.CX_COMPILATION_ERROR
+	}
+
+	return nil, nil, 0
 }
 
 func cmdNewChain(args []string) {
