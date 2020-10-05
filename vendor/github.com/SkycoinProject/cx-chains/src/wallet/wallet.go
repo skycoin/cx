@@ -172,7 +172,7 @@ func newWallet(wltName string, opts Options, bg BalanceGetter) (*Wallet, error) 
 		coin = CoinTypeSkycoin
 	}
 
-	// coin should either be 'skycoin', 'bitcoin', or a cx coin
+	// coin should either be 'skycoin', 'bitcoin', or a cx coin 'cx_*'
 	if coin != CoinTypeSkycoin && coin != CoinTypeBitcoin && !IsCXCoin(coin) {
 		return nil, fmt.Errorf("invalid coin type %s", coin)
 	}

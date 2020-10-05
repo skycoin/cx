@@ -51,7 +51,7 @@ type Coin struct {
 }
 
 // Run starts the node
-func (c *Coin) Run(gwCh chan api.Gatewayer) error {
+func (c *Coin) Run(genesisProgState []byte, gwCh chan api.Gatewayer) error {
 	var db *dbutil.DB
 	var w *wallet.Service
 	var v *visor.Visor
@@ -267,7 +267,7 @@ func (c *Coin) Run(gwCh chan api.Gatewayer) error {
 		c.logger.Critical().Infof("Full address: %s", fullAddress)
 	}
 
-	if err := v.Init(); err != nil {
+	if err := v.Init(genesisProgState); err != nil {
 		c.logger.Error(err)
 		retErr = err
 		goto earlyShutdown

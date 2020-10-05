@@ -127,7 +127,7 @@ func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
 	stderrIn, _ := cmd.StderrPipe()
 	cmd.Start()
 
-	// fetch gensisSig and gensisBlock
+	// fetch genesisSig and genesisBlock
 	go func() {
 		defer cmd.Process.Kill()
 
@@ -405,8 +405,8 @@ func optionGenAddress(options cxCmdFlags) {
 }
 
 // optionRunNode checks if the user wants to run an `options.publisherMode` or
-// `options.peerMode` node for a CX chain. If it's the case, either a publisher or
-// a peer node
+// `options.peerMode` node for a CX chain. If it's the case, either a publisher
+// or a peer node
 func optionRunNode(options cxCmdFlags) {
 	var cmd *exec.Cmd
 	if options.publisherMode {
@@ -830,7 +830,7 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 
 	// setting project's working directory
 	if !options.replMode && len(sourceCode) > 0 {
-		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
+		cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	}
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
@@ -1326,16 +1326,14 @@ func PersistentServiceMode() {
 	}
 }
 
-func getWorkingDirectory(file string) string {
-	file = filepath.FromSlash(file)
-	var c int = len(file) - 1
-	for ; c > 0; c-- {
-		if file[c-1] == os.PathSeparator {
-			break
-		}
-	}
+func determineWorkDir(filename string) string {
+	filename = filepath.FromSlash(filename)
 
-	return file[:c]
+	i := strings.LastIndexByte(filename, os.PathSeparator)
+	if i == -1 {
+		i = 0
+	}
+	return filename[:i]
 }
 
 func printPrompt() {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
@@ -14,6 +15,7 @@ import (
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
 	"github.com/SkycoinProject/cx/cxgo/cxflags"
+	"github.com/SkycoinProject/cx/cxgo/cxgo0"
 	"github.com/SkycoinProject/cx/cxgo/cxlexer"
 	"github.com/SkycoinProject/cx/cxgo/cxprof"
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
@@ -113,7 +115,9 @@ func (f *newChainFlags) postProcess() {
 	}
 }
 
-func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bcHeap []byte, sPgm []byte, exitCode int) {
+// parseProgram does...
+// It returns the exit code.
+func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) int {
 	log := log.WithField("func", "parseProgram")
 
 	// Start profiling.
@@ -137,47 +141,109 @@ func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) (bc
 	// Prepare core program state for 'actions.PRGRM'.
 	coreProgState, err := cxcore.GetProgram()
 	if err != nil {
-		log.WithError(err).Fatal("Failed to obtain prog. state of core packages.")
+		log.WithError(err).Error("Failed to obtain prog. state of core packages.")
+		return 1
 	}
 	prog := cxcore.MakeProgram()
 	prog.Packages = coreProgState.Packages
 	actions.PRGRM = prog
 
-	// Parse source code...
-	if exitCode = cxlexer.ParseSourceCode(srcs, filenames); exitCode != 0 {
-		return nil, nil, exitCode
+	// Parse source code.
+	if exitCode := cxlexer.ParseSourceCode(srcs, filenames); exitCode != 0 {
+		return exitCode
+	}
+
+	// Set working directory.
+	if len(srcs) > 0 {
+		cxgo0.PRGRM0.Path = determineWorkDir(srcs[0].Name())
 	}
 
 	// Add main function if not exist.
-	if _, err := prog.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
-		mainPkg := cxcore.MakePackage(cxcore.MAIN_PKG)
-		prog.AddPackage(mainPkg)
-		mainFn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-		mainPkg.AddFunction(mainFn)
-	}
+	ensureCXMainFunc(prog)
 
 	// Add *init function that initializes all global variables.
-	mainPkg, err := prog.GetPackage(cxcore.MAIN_PKG)
-	if err != nil {
-		log.WithError(err).Error("Failed to obtain main package.")
-		return nil, nil, -1
-	}
-	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
-	mainPkg.AddFunction(initFn)
-	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
-	if _, err := prog.SelectFunction(cxcore.MAIN_FUNC); err != nil {
-		log.WithError(err).Error("Failed to select main function.")
-		return nil, nil, -1
+	if err := ensureCXInitFunc(prog); err != nil {
+		log.WithError(err).Error("Failed to setup *init CX function.")
+		return 1
 	}
 
 	// Reset
 	actions.LineNo = 0
 
 	if cxcore.FoundCompileErrors {
-		return nil, nil, cxcore.CX_COMPILATION_ERROR
+		return cxcore.CX_COMPILATION_ERROR
 	}
 
-	return nil, nil, 0
+	return 0
+}
+
+// ensureCXMainFunc ensures that the CX program contains a main function.
+func ensureCXMainFunc(prog *cxcore.CXProgram) {
+	if _, err := prog.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+		mainPkg := cxcore.MakePackage(cxcore.MAIN_PKG)
+		prog.AddPackage(mainPkg)
+		mainFn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+		mainPkg.AddFunction(mainFn)
+	}
+}
+
+// ensureCXInitFunc ensures that the CX program contains an *init function which
+// initiates all global variables.
+func ensureCXInitFunc(prog *cxcore.CXProgram) error {
+	mainPkg, err := prog.GetPackage(cxcore.MAIN_PKG)
+	if err != nil {
+		return fmt.Errorf("failed to obtain main package: %w", err)
+	}
+
+	initFn := cxcore.MakeFunction(cxcore.SYS_INIT_FUNC, actions.CurrentFile, actions.LineNo)
+	mainPkg.AddFunction(initFn)
+	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
+
+	if _, err := prog.SelectFunction(cxcore.MAIN_FUNC); err != nil {
+		return fmt.Errorf("failed to select main package: %w", err)
+	}
+
+	return nil
+}
+
+func determineWorkDir(filename string) string {
+	filename = filepath.FromSlash(filename)
+
+	i := strings.LastIndexByte(filename, os.PathSeparator)
+	if i == -1 {
+		return ""
+	}
+	return filename[:i]
+}
+
+func runProgram(cxArgs []string) ([]byte, error) {
+	log := log.WithField("func", "runProgram")
+
+	_, stopProf := cxprof.StartProfile(log)
+	defer stopProf()
+
+	/* Blockchain mode? */
+
+	// Initialize CX chain runtime?
+	if err := actions.PRGRM.RunCompiled(0, cxArgs); err != nil {
+		return nil, fmt.Errorf("failed to run compiled cx program: %w", err)
+	}
+
+	// Strip main package.
+	actions.PRGRM.RemovePackage(cxcore.MAIN_PKG)
+
+	// Remove garbage from heap.
+	// Only keep global variables as these are independent from function calls.
+	cxcore.MarkAndCompact(actions.PRGRM)
+	actions.PRGRM.HeapSize = actions.PRGRM.HeapPointer
+
+	// As we have removed the 'main' pkg, blockchain pkg count is len(prog.)
+	// instead of len(prog.)-1.
+	actions.PRGRM.BCPackageCount = len(actions.PRGRM.Packages)
+
+	progB := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+	progB = cxcore.ExtractBlockchainProgram(progB, progB)
+	return progB, nil
 }
 
 func cmdNewChain(args []string) {
@@ -188,8 +254,16 @@ func cmdNewChain(args []string) {
 
 	// Parse for cx args for genesis program state.
 	cxArgs, cxSrcs, cxFilenames := cxcore.ParseArgsForCX(os.Args[1:], true)
-	fmt.Println(cxArgs, cxSrcs, cxFilenames) // TODO @evanlinjin: Finish this!
 
+	// Parse and run program.
+	if code := parseProgram(&flags, cxFilenames, cxSrcs); code != 0 {
+		os.Exit(code)
+	}
+	genProgState, err := runProgram(cxArgs)
+	if err != nil {
+		errPrintf("Failed to run CX program: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Generate chain keys.
 	chainPK, chainSK := cipher.GenerateKeyPair()
@@ -202,7 +276,7 @@ func cmdNewChain(args []string) {
 	genAddr := cipher.AddressFromPubKey(genPK)
 
 	// Generate and write chain spec file.
-	cSpec, err := cxspec.New(flags.coinName, flags.coinTicker, chainSK, genAddr, nil)
+	cSpec, err := cxspec.New(flags.coinName, flags.coinTicker, chainSK, genAddr, genProgState)
 	if err != nil {
 		errPrintf("Failed to generate chain spec: %v\n", err)
 		os.Exit(1)

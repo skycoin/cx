@@ -121,7 +121,7 @@ func (vs *Visor) VisorConfig() Config {
 }
 
 // Init initializes starts the visor
-func (vs *Visor) Init() error {
+func (vs *Visor) Init(genesisProgState []byte) error {
 	logger.Info("Visor init")
 
 	if vs.db.IsReadOnly() {
@@ -129,7 +129,7 @@ func (vs *Visor) Init() error {
 	}
 
 	return vs.db.Update("visor init", func(tx *dbutil.Tx) error {
-		if err := vs.maybeCreateGenesisBlock(tx, []byte{}); err != nil {
+		if err := vs.maybeCreateGenesisBlock(tx, genesisProgState); err != nil {
 			return err
 		}
 

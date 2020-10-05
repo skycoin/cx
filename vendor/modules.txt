@@ -167,6 +167,7 @@ github.com/satori/go.uuid
 ## explicit
 github.com/shopspring/decimal
 # github.com/sirupsen/logrus v1.6.0
+## explicit
 github.com/sirupsen/logrus
 # github.com/skycoin/dmsg v0.0.0-20200803194104-78ff5746d8a3
 ## explicit

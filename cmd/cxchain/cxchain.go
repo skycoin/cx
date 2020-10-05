@@ -140,7 +140,7 @@ func main() {
 		serveGateway(gw, closeCh)
 	}()
 
-	if err := coin.Run(gwCh); err != nil {
+	if err := coin.Run(spec.RawGenesisProgState(), gwCh); err != nil {
 		os.Exit(1)
 	}
 }

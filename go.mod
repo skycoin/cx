@@ -18,6 +18,7 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/sirupsen/logrus v1.6.0
 	github.com/skycoin/dmsg v0.0.0-20200803194104-78ff5746d8a3
 	github.com/stretchr/testify v1.6.1
 	github.com/theherk/viper v0.0.0-20171202031228-e0502e82247d

@@ -1,4 +1,4 @@
-/* // */ package cxlexer
+package cxlexer
 
 import (
 	"bufio"

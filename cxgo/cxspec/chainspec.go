@@ -193,6 +193,14 @@ func DefaultGenesisSpec(genesisProgState []byte) (*ChainSpec, error) {
 	return spec, nil
 }
 
+func (cs *ChainSpec) RawGenesisProgState() []byte {
+	b, err := hex.DecodeString(cs.GenesisProgState)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
 // GenerateGenesisBlock generates a genesis block from the chain spec and verifies it.
 // It returns an error if anything fails.
 func (cs *ChainSpec) GenerateGenesisBlock() (*coin.Block, error) {
