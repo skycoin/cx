@@ -256,6 +256,7 @@ func runProgram(cxArgs []string) ([]byte, error) {
 
 	progB := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
 	progB = cxcore.ExtractBlockchainProgram(progB, progB)
+	log.WithField("size", len(progB)).Info("Obtained serialized program state.")
 	return progB, nil
 }
 

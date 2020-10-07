@@ -50,7 +50,9 @@ func parseSpecFilepathEnv() cxspec.ChainSpec {
 		log.WithError(err).Fatal("Failed to start node.")
 	}
 
-	spec.Print()
+	// TODO @evanlinjin: Need to fix genesis program state being atrociously massive.
+	// spec.Print()
+
 	cxspec.PopulateParamsModule(spec)
 
 	return spec
