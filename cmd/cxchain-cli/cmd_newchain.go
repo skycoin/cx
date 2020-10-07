@@ -20,13 +20,20 @@ import (
 	"github.com/SkycoinProject/cx/cxgo/cxprof"
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
 	"github.com/SkycoinProject/cx/cxgo/parser"
+	"github.com/SkycoinProject/cx/cxutil"
 )
 
 const filePerm = 0644
 
 var log = logging.MustGetLogger("cxchain-cli")
 
+func init() {
+	cxlexer.SetLogger(log)
+}
+
 type newChainFlags struct {
+	cmd *flag.FlagSet
+
 	replace    bool
 	unifyKeys  bool
 	coinName   string
@@ -45,6 +52,8 @@ type newChainFlags struct {
 func processNewChainFlags(args []string) newChainFlags {
 	// Specify default flag values.
 	f := newChainFlags{
+		cmd: flag.NewFlagSet(args[0], flag.ExitOnError),
+
 		replace:      false,
 		unifyKeys:    false,
 		coinName:     "skycoin",
@@ -60,28 +69,26 @@ func processNewChainFlags(args []string) newChainFlags {
 		MemoryFlags: cxflags.DefaultMemoryFlags(),
 	}
 
-	cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+	f.cmd.BoolVar(&f.replace, "replace", f.replace, "whether to replace output file(s)")
+	f.cmd.BoolVar(&f.replace, "r", f.replace, "shorthand for 'replace'")
+	f.cmd.BoolVar(&f.unifyKeys, "unify", f.unifyKeys, "whether to use the same keys for genesis and chain")
+	f.cmd.BoolVar(&f.unifyKeys, "u", f.unifyKeys, "shorthand for 'unify'")
+	f.cmd.StringVar(&f.coinName, "coin", f.coinName, "`NAME` for cx coin")
+	f.cmd.StringVar(&f.coinName, "c", f.coinName, "shorthand for 'coin'")
+	f.cmd.StringVar(&f.coinTicker, "ticker", f.coinTicker, "`SYMBOL` for cx coin ticker")
+	f.cmd.StringVar(&f.coinTicker, "t", f.coinTicker, "shorthand for 'ticker'")
 
-	cmd.BoolVar(&f.replace, "replace", f.replace, "whether to replace output file(s)")
-	cmd.BoolVar(&f.replace, "r", f.replace, "shorthand for 'replace'")
-	cmd.BoolVar(&f.unifyKeys, "unify", f.unifyKeys, "whether to use the same keys for genesis and chain")
-	cmd.BoolVar(&f.unifyKeys, "u", f.unifyKeys, "shorthand for 'unify'")
-	cmd.StringVar(&f.coinName, "coin", f.coinName, "`NAME` for cx coin")
-	cmd.StringVar(&f.coinName, "c", f.coinName, "shorthand for 'coin'")
-	cmd.StringVar(&f.coinTicker, "ticker", f.coinTicker, "`SYMBOL` for cx coin ticker")
-	cmd.StringVar(&f.coinTicker, "t", f.coinTicker, "shorthand for 'ticker'")
+	f.cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
+	f.cmd.IntVar(&f.debugProfile, "debug-profile", f.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with 'go get github.com/google/pprof' and 'pprof -http=:8080 file.pprof'")
 
-	cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
-	cmd.IntVar(&f.debugProfile, "debug-profile", f.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with 'go get github.com/google/pprof' and 'pprof -http=:8080 file.pprof'")
+	f.cmd.StringVar(&f.chainSpecOut, "chain-spec-output", f.chainSpecOut, "`FILE` for chain spec output")
+	f.cmd.StringVar(&f.chainKeysOut, "chain-keys-output", f.chainKeysOut, "`FILE` for chain keys output")
+	f.cmd.StringVar(&f.genKeysOut, "genesis-keys-output", f.genKeysOut, "`FILE` for genesis keys output")
 
-	cmd.StringVar(&f.chainSpecOut, "chain-spec-output", f.chainSpecOut, "`FILE` for chain spec output")
-	cmd.StringVar(&f.chainKeysOut, "chain-keys-output", f.chainKeysOut, "`FILE` for chain keys output")
-	cmd.StringVar(&f.genKeysOut, "genesis-keys-output", f.genKeysOut, "`FILE` for genesis keys output")
-
-	f.MemoryFlags.Register(cmd)
+	f.MemoryFlags.Register(f.cmd)
 
 	// Parse flags.
-	parseFlagSet(cmd, args[1:])
+	parseFlagSet(f.cmd, args[1:])
 
 	// Post process.
 	f.postProcess()
@@ -150,6 +157,7 @@ func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) int
 
 	// Parse source code.
 	if exitCode := cxlexer.ParseSourceCode(srcs, filenames); exitCode != 0 {
+		log.Error("Failed to parse source code.")
 		return exitCode
 	}
 
@@ -206,7 +214,12 @@ func ensureCXInitFunc(prog *cxcore.CXProgram) error {
 	return nil
 }
 
-func determineWorkDir(filename string) string {
+func determineWorkDir(filename string) (wkDir string) {
+	log := log.WithField("func", "determineWorkDir")
+	defer func() {
+		log.WithField("work_dir", wkDir).Info()
+	}()
+
 	filename = filepath.FromSlash(filename)
 
 	i := strings.LastIndexByte(filename, os.PathSeparator)
@@ -253,13 +266,18 @@ func cmdNewChain(args []string) {
 	parser.DebugLexer = flags.debugLexer
 
 	// Parse for cx args for genesis program state.
-	cxArgs, cxSrcs, cxFilenames := cxcore.ParseArgsForCX(os.Args[1:], true)
+	log.Info("Parsing for CX args...")
+	cxRes, err := cxutil.ExtractCXArgs(flags.cmd, true)
+	if err != nil {
+		log.WithError(err).Fatal("Failed to extract CX args.")
+	}
+	cxFilenames := cxutil.ListSourceNames(cxRes.CXSources, true)
 
 	// Parse and run program.
-	if code := parseProgram(&flags, cxFilenames, cxSrcs); code != 0 {
+	if code := parseProgram(&flags, cxFilenames, cxRes.CXSources); code != 0 {
 		os.Exit(code)
 	}
-	genProgState, err := runProgram(cxArgs)
+	genProgState, err := runProgram(cxRes.CXFlags)
 	if err != nil {
 		errPrintf("Failed to run CX program: %v\n", err)
 		os.Exit(1)

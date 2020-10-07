@@ -1305,7 +1305,6 @@ func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCod
 		}
 
 		fi, err := CXStatFile(arg)
-		_ = err
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
 			os.Exit(CX_COMPILATION_ERROR)

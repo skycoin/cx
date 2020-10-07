@@ -24,28 +24,32 @@ func CXLogFile(enable bool) {
 
 // CXOpenFile ...
 // TODO @evanlinjin: This should be in a module named 'util'.
-func CXOpenFile(path string) (*os.File, error) {
+func CXOpenFile(filename string) (*os.File, error) {
+	filename = filepath.Join(workingDir, filename)
+
 	if logFile {
-		fmt.Printf("Opening file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("CXOpenFile: Opening '%s'\n", filename)
 	}
 
-	file, err := os.Open(fmt.Sprintf("%s%s", workingDir, path))
+	file, err := os.Open(filename)
 	if logFile && err != nil {
-		fmt.Printf("Failed to open file : '%s', '%s', err '%v'\n", workingDir, path, err)
+		fmt.Printf("CXOpenFile: Failed to open '%s': %v\n", filename, err)
 	}
 	return file, err
 }
 
 // CXCreateFile ...
 // TODO @evanlinjin: This should be in a module named 'util'.
-func CXCreateFile(path string) (*os.File, error) {
+func CXCreateFile(filename string) (*os.File, error) {
+	filename = filepath.Join(workingDir, filename)
+
 	if logFile {
-		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, filename)
 	}
 
-	file, err := os.Create(filepath.Join(workingDir, path))
+	file, err := os.Create(filepath.Join(workingDir, filename))
 	if logFile && err != nil {
-		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, path, err)
+		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, filename, err)
 	}
 
 	return file, err

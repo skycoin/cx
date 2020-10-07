@@ -389,31 +389,31 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 	return 0
 }
 
-func identifyPackagesAndStructs(filename, srcStr string) {
-	if lg.l1 != nil {
-		_, stopL1x := cxprof.StartProfile(lg.l1.WithField("filename", filename))
-		defer stopL1x()
-	}
-
-	var (
-		row         = 0     // row number
-		isCommented = false // whether the current row is commented
-	)
-
-	s := bufio.NewScanner(strings.NewReader(srcStr))
-	for s.Scan() {
-		line := s.Bytes()
-		row++
-
-		cf := makeCommentLocator(line)
-
-		if skip := cf.skipLine(&isCommented, true); skip {
-			continue
-		}
-
-
-	}
-}
+// func identifyPackagesAndStructs(filename, srcStr string) {
+// 	if lg.l1 != nil {
+// 		_, stopL1x := cxprof.StartProfile(lg.l1.WithField("filename", filename))
+// 		defer stopL1x()
+// 	}
+//
+// 	var (
+// 		row         = 0     // row number
+// 		isCommented = false // whether the current row is commented
+// 	)
+//
+// 	s := bufio.NewScanner(strings.NewReader(srcStr))
+// 	for s.Scan() {
+// 		line := s.Bytes()
+// 		row++
+//
+// 		cf := makeCommentLocator(line)
+//
+// 		if skip := cf.skipLine(&isCommented, true); skip {
+// 			continue
+// 		}
+//
+//
+// 	}
+// }
 
 type commentLocator struct {
 	singleOpen []int // index of single-line comment

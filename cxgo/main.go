@@ -1404,18 +1404,6 @@ func repl() {
 	}
 }
 
-func initNewProject() {
-	var name string
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Name of the project: ")
-	name, _ = reader.ReadString('\n')
-
-	fmt.Printf("Creating project %s%s/", cxcore.SRCPATH, name)
-
-	cxcore.CXMkdirAll(fmt.Sprintf("%s%s", cxcore.SRCPATH, name[:len(name)-1]), 0751)
-}
-
 // chainStatePrelude initializes the program structure `prgrm` with data from
 // the program state stored on a CX chain.
 func chainStatePrelude(sPrgrm *[]byte, bcHeap *[]byte, prgrm *cxcore.CXProgram) {
@@ -1466,7 +1454,7 @@ func checkCXPathSet(options cxCmdFlags) {
 	if err != nil {
 		panic(err)
 	}
-	cxcore.COREPATH = filepath.Dir(ex)
+	cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
 
 	CXPATH := ""
 	if os.Getenv("CXPATH") != "" {
