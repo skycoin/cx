@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	cxcore "github.com/SkycoinProject/cx/cx"
 )
 
@@ -81,6 +83,16 @@ func (mf *MemoryFlags) PostProcess() error {
 	cxcore.MAX_HEAP_FREE_RATIO = float32(mf.maxHeapFreeRatio)
 
 	return nil
+}
+
+// LogMemFlags logs all memory-related flags.
+func LogMemFlags(log logrus.FieldLogger) {
+	log.WithField("INIT_HEAP_SIZE", cxcore.INIT_HEAP_SIZE).
+		WithField("MAX_HEAP_SIZE", cxcore.MAX_HEAP_SIZE).
+		WithField("STACK_SIZE", cxcore.STACK_SIZE).
+		WithField("MIN_HEAP_FREE_RATIO", cxcore.MIN_HEAP_FREE_RATIO).
+		WithField("MAX_HEAP_FREE_RATIO", cxcore.MAX_HEAP_FREE_RATIO).
+		Info("Memory flags.")
 }
 
 func checkRatio(r float64) error {

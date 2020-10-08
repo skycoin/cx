@@ -24,7 +24,7 @@ func StartProfile(log logrus.FieldLogger) (start time.Time, stop StopFunc) {
 	stop = func() time.Duration {
 		delta := time.Since(start)
 		if log != nil {
-			log.WithField("delta", delta).Debug("Stopped profile.")
+			log.WithField("elapsed", delta).Debug("Stopped profile.")
 		}
 		return delta
 	}

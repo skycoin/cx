@@ -96,6 +96,9 @@ func processNewChainFlags(args []string) newChainFlags {
 		log.WithError(err).Fatal()
 	}
 
+	// Log stuff.
+	cxflags.LogMemFlags(log)
+
 	// Return.
 	return f
 }
@@ -247,14 +250,18 @@ func runProgram(cxArgs []string) ([]byte, error) {
 
 	// Remove garbage from heap.
 	// Only keep global variables as these are independent from function calls.
+	fmt.Println("Old heap:", actions.PRGRM.HeapPointer)
 	cxcore.MarkAndCompact(actions.PRGRM)
 	actions.PRGRM.HeapSize = actions.PRGRM.HeapPointer
+	fmt.Println("New heap:", actions.PRGRM.HeapPointer)
 
 	// As we have removed the 'main' pkg, blockchain pkg count is len(prog.)
 	// instead of len(prog.)-1.
 	actions.PRGRM.BCPackageCount = len(actions.PRGRM.Packages)
 
 	progB := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+	fmt.Println("Serialized program state:", len(progB))
+
 	progB = cxcore.ExtractBlockchainProgram(progB, progB)
 	log.WithField("size", len(progB)).Info("Obtained serialized program state.")
 	return progB, nil
@@ -273,6 +280,7 @@ func cmdNewChain(args []string) {
 		log.WithError(err).Fatal("Failed to extract CX args.")
 	}
 	cxFilenames := cxutil.ListSourceNames(cxRes.CXSources, true)
+	fmt.Println("Filenames:", cxFilenames)
 
 	// Parse and run program.
 	if code := parseProgram(&flags, cxFilenames, cxRes.CXSources); code != 0 {

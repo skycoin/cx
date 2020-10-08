@@ -1450,11 +1450,11 @@ func initMainPkg(prgrm *cxcore.CXProgram) {
 func checkCXPathSet(options cxCmdFlags) {
 	// Determining the filepath of the directory where the user
 	// started the `cx` command.
-	ex, err := os.Executable()
+	_, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
-	cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
+	// cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
 
 	CXPATH := ""
 	if os.Getenv("CXPATH") != "" {
