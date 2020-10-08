@@ -16,7 +16,9 @@ Generate new chain spec.
 $ cxchain-cli newchain -hi=100 -ss=100 ./examples/blockchain/counter-bc.cx
 ```
 
-Run publisher node with generated chain spec. Obtain secret key from generated `{coin}.chain_keys.json` file.
+Run publisher node with generated chain spec.
+* Obtain secret key from generated `{coin}.chain_keys.json` file.
+*  
 ```bash
-$ CXCHAIN_SECRET_KEY={secret_key} cxchain
+$ CXCHAIN_SECRET_KEY={secret_key} cxchain -enable-all-api-sets
 ```

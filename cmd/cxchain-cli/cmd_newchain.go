@@ -158,6 +158,8 @@ func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) int
 	prog.Packages = coreProgState.Packages
 	actions.PRGRM = prog
 
+	// TODO @evanlinjin: We need some sort of prelude for transaction/broadcast mode.
+
 	// Parse source code.
 	if exitCode := cxlexer.ParseSourceCode(srcs, filenames); exitCode != 0 {
 		log.Error("Failed to parse source code.")
@@ -232,13 +234,13 @@ func determineWorkDir(filename string) (wkDir string) {
 	return filename[:i]
 }
 
-func runProgram(cxArgs []string) ([]byte, error) {
-	log := log.WithField("func", "runProgram")
+// initiateProgram initiates a blockchain program and returns the genesis
+// program state.
+func initiateProgram(cxArgs []string) ([]byte, error) {
+	log := log.WithField("func", "initiateProgram")
 
 	_, stopProf := cxprof.StartProfile(log)
 	defer stopProf()
-
-	/* Blockchain mode? */
 
 	// Initialize CX chain runtime?
 	if err := actions.PRGRM.RunCompiled(0, cxArgs); err != nil {
@@ -286,7 +288,7 @@ func cmdNewChain(args []string) {
 	if code := parseProgram(&flags, cxFilenames, cxRes.CXSources); code != 0 {
 		os.Exit(code)
 	}
-	genProgState, err := runProgram(cxRes.CXFlags)
+	genProgState, err := initiateProgram(cxRes.CXFlags)
 	if err != nil {
 		errPrintf("Failed to run CX program: %v\n", err)
 		os.Exit(1)

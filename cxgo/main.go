@@ -780,7 +780,9 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
 	profile := StartCPUProfile("parse")
 	defer StopCPUProfile(profile)
+
 	defer DumpMEMProfile("parse")
+
 	StartProfile("parse")
 	defer StopProfile("parse")
 
