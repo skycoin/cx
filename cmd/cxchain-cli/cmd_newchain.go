@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
-	"github.com/SkycoinProject/skycoin/src/util/logging"
 
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
@@ -24,12 +23,6 @@ import (
 )
 
 const filePerm = 0644
-
-var log = logging.MustGetLogger("cxchain-cli")
-
-func init() {
-	cxlexer.SetLogger(log)
-}
 
 type newChainFlags struct {
 	cmd *flag.FlagSet
@@ -96,6 +89,11 @@ func processNewChainFlags(args []string) newChainFlags {
 		log.WithError(err).Fatal()
 	}
 
+	// Set stuff.
+	if f.debugLexer {
+		cxlexer.SetLogger(log)
+	}
+
 	// Log stuff.
 	cxflags.LogMemFlags(log)
 
@@ -130,21 +128,27 @@ func (f *newChainFlags) postProcess() {
 func parseProgram(flags *newChainFlags, filenames []string, srcs []*os.File) int {
 	log := log.WithField("func", "parseProgram")
 
-	// Start profiling.
+	// Start CPU profiling.
 	stopCPUProf, err := cxprof.StartCPUProfile("parseProgram", flags.debugProfile)
 	if err != nil {
 		log.WithError(err).Error("Failed to start CPU profiling.")
 	}
-	_, stopProf := cxprof.StartProfile(log)
-
-	// Stop profiling.
 	defer func() {
-		stopProf()
-		if err := cxprof.DumpMemProfile("parseProgram"); err != nil {
-			log.WithError(err).Error("Failed to dump MEM profile.")
-		}
 		if err := stopCPUProf(); err != nil {
 			log.WithError(err).Error("Failed to stop CPU profiling.")
+		}
+	}()
+
+	// Start log profiling.
+	if flags.debugLexer {
+		_, stopProf := cxprof.StartProfile(log)
+		defer stopProf()
+	}
+
+	// Dump memory state.
+	defer func() {
+		if err := cxprof.DumpMemProfile("parseProgram"); err != nil {
+			log.WithError(err).Error("Failed to dump MEM profile.")
 		}
 	}()
 

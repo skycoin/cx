@@ -377,7 +377,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		}
 	}
 
-	_, stopL4 := cxprof.StartProfile(lg.l4)
+	if lg.l4 != nil {
+		_, stopL4 := cxprof.StartProfile(lg.l4)
+		defer stopL4()
+	}
 
 	// The last pass of parsing that generates the actual output.
 	for i, source := range sourceCodeCopy {
@@ -390,11 +393,16 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 		if len(fileNames) > 0 {
 			actions.CurrentFile = fileNames[i]
 		}
-		_, stopL4x := cxprof.StartProfile(lg.l4.WithField("src_file", actions.CurrentFile))
-		parseErrors += parser.Parse(parser.NewLexer(b))
-		stopL4x()
+
+		func() {
+			if lg.l4 != nil {
+				_, stopL4x := cxprof.StartProfile(lg.l4.WithField("src_file", actions.CurrentFile))
+				defer stopL4x()
+			}
+			parseErrors += parser.Parse(parser.NewLexer(b))
+		}()
 	}
-	stopL4()
+
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
 		return cxcore.CX_COMPILATION_ERROR

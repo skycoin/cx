@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/SkycoinProject/cx-chains/src/util/logging"
 )
+
+var log = logging.MustGetLogger("cxchain-cli")
 
 func main() {
 	if len(os.Args) < 2 || strings.HasPrefix(os.Args[1], "-") {
