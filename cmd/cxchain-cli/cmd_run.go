@@ -68,7 +68,7 @@ type runFlags struct {
 	addr   string // CX Chain node address.
 }
 
-func processRunFlags(args []string) runFlags {
+func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) {
 	spec := parseSpecFilepathEnv()
 	genSK := parseSecretKeyEnv()
 
@@ -95,7 +95,7 @@ func processRunFlags(args []string) runFlags {
 		MemoryFlags:  cxflags.DefaultMemoryFlags(),
 
 		inject:       false,
-		addr:         fmt.Sprintf("127.0.0.1:%d", spec.Node.WebInterfacePort),
+		addr:         fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort),
 	}
 
 	f.cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
@@ -115,11 +115,11 @@ func processRunFlags(args []string) runFlags {
 	cxflags.LogMemFlags(log)
 
 	// Return.
-	return f
+	return f, spec, genSK
 }
 
 func cmdRun(args []string) {
-	flags := processRunFlags(args)
+	flags, spec, _ := processRunFlags(args)
 
 	// TODO @evanlinjin: Implement this!
 	if flags.inject {
@@ -139,10 +139,19 @@ func cmdRun(args []string) {
 	log.WithField("filenames", cxFilenames).Info("Obtained CX sources.")
 
 	// Parse and run program.
-	progB, err := PrepareChainProg(cxFilenames, cxRes.CXSources, flags.addr, flags.debugLexer, flags.debugProfile);
+
+	progB, err := PrepareChainProg(
+		cxFilenames,
+		cxRes.CXSources,
+		flags.addr,
+		cipher.MustDecodeBase58Address(spec.GenesisAddr),
+		flags.debugLexer,
+		flags.debugProfile,
+	)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to prepare chain CX program.")
 	}
+
 	if _, err := RunChainProg(cxRes.CXFlags, progB); err != nil {
 		log.WithError(err).Fatal("Failed to run chain CX program.")
 	}

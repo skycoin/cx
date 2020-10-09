@@ -17,6 +17,7 @@ import (
 //	   verbose: [bool] include verbose transaction input data
 func programStateHandler(gateway Gatewayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("METHOD:", r.Method)
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			wh.Error405(w)
 			return

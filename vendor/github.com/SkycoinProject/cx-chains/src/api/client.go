@@ -591,13 +591,13 @@ func (c *Client) Balance(addrs []string) (*BalanceResponse, error) {
 func (c *Client) ProgramState(addrs []string) ([]byte, error) {
 	v := make(url.Values, 1)
 	v.Add("addrs", strings.Join(addrs, ","))
-	endpoint := "/api/v1/programState"
+	endpoint := "/api/v1/programState?" + v.Encode()
 
-	var progState []byte
-	if err := c.PostForm(endpoint, strings.NewReader(v.Encode()), &progState); err != nil {
+	var b []byte
+	if err := c.Get(endpoint, &b); err != nil {
 		return nil, err
 	}
-	return progState, nil
+	return b, nil
 }
 
 // UxOut makes a request to GET /api/v1/uxout?uxid=xxx
