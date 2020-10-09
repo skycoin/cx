@@ -31,6 +31,9 @@ func main() {
 	case "newchain", "n":
 		cmdNewChain(os.Args[1:])
 
+	case "run", "r":
+		cmdRun(os.Args[1:])
+
 	default:
 		fmt.Printf("Subcommand '%s' is not found.\n", c)
 		cmdHelp()

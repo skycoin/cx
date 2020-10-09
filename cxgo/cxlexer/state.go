@@ -1,49 +1,100 @@
 package cxlexer
 
 import (
+	"github.com/SkycoinProject/cx-chains/src/api"
+
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
 )
 
-// ChainStatePrelude initializes the program structure `prog` with data from
-// the program state stored on a CX chain.
-// This is used for transaction/broadcast mode.
-// TODO @evanlinjin: Fill this out.
-func ChainStatePrelude(prog *cxcore.CXProgram) (state, heap []byte) {
-	return nil, nil
+// InitProg initiates program contained in 'actions.PRGRM'.
+func InitProg() (*cxcore.CXProgram, error) {
+	coreProgState, err := cxcore.GetProgram()
+	if err != nil {
+		return nil, err
+	}
+	prog := cxcore.MakeProgram()
+	prog.Packages = coreProgState.Packages
+	actions.PRGRM = prog
+	return prog, nil
 }
 
-// MergeBlockchainHeap adds the heap `bcHeap` found in the program state of a CX
+
+// ProgBytes represents program bytes.
+type ProgBytes struct {
+	State []byte
+	Heap  []byte
+}
+
+// LoadProgFromChain initializes the program structure `prog` with data from
+// the program state stored on a CX chain.
+// This is used for transaction/broadcast mode.
+func LoadProgFromChain(prog *cxcore.CXProgram, addr string) (*ProgBytes, error) {
+	c := api.NewClient(addr)
+	progS, err := c.ProgramState([]string{addr})
+	if err != nil {
+		return nil, err
+	}
+
+	memOffset := cxcore.GetSerializedMemoryOffset(progS)
+	stackSize := cxcore.GetSerializedStackSize(progS)
+
+	// program state with only memory stack and heap
+	progSMem := progS[:memOffset]
+
+	// append new stack
+	progSMem = append(progSMem, make([]byte, stackSize)...)
+
+	// append data and heap segment
+	progSMem = append(progSMem, progS[memOffset:]...)
+
+	heap := progS[memOffset+cxcore.GetSerializedDataSize(progS):]
+
+	*prog = *cxcore.Deserialize(progSMem)
+	actions.PRGRM = prog
+	actions.DataOffset = prog.HeapStartsAt // Start adding data elements here.
+
+	return &ProgBytes{
+		State: progS,
+		Heap:  heap,
+	}, nil
+}
+
+// MergeChainHeap adds the heap `bcHeap` found in the program state of a CX
 // chain to the program to be run `PRGRM` and updates all the references to heap
 // objects found in the transaction code considering the data segment found in
 // the serialized program `sPrgrm`.
-func MergeBlockchainHeap(bcHeap, sPrgrm []byte) {
+func (pb *ProgBytes) MergeChainHeap() error {
 	// Setting the CX runtime to run `PRGRM`.
-	actions.PRGRM.SelectProgram()
+	if _, err := actions.PRGRM.SelectProgram(); err != nil {
+		return err
+	}
 
-	bcHeapLen := len(bcHeap)
+	bcHeapLen := len(pb.Heap)
 	remHeapSpace := len(actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt:])
 	fullDataSegSize := actions.PRGRM.HeapStartsAt - actions.PRGRM.StackSize
 	// Copying blockchain code heap.
 	if bcHeapLen > remHeapSpace {
 		// We don't have enough space. We're using the available bytes...
 		for c := 0; c < remHeapSpace; c++ {
-			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = bcHeap[c]
+			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = pb.Heap[c]
 		}
 		// ...and then we append the remaining bytes.
-		actions.PRGRM.Memory = append(actions.PRGRM.Memory, bcHeap[remHeapSpace:]...)
+		actions.PRGRM.Memory = append(actions.PRGRM.Memory, pb.Heap[remHeapSpace:]...)
 	} else {
 		// We have enough space and we simply write the bytes.
 		for c := 0; c < bcHeapLen; c++ {
-			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = bcHeap[c]
+			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = pb.Heap[c]
 		}
 	}
 	// Recalculating the heap size.
 	actions.PRGRM.HeapSize = len(actions.PRGRM.Memory) - actions.PRGRM.HeapStartsAt
-	txnDataLen := fullDataSegSize - cxcore.GetSerializedDataSize(sPrgrm)
+	txnDataLen := fullDataSegSize - cxcore.GetSerializedDataSize(pb.State)
 	// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 	// Displacing the references to heap objects by `txnDataLen`.
 	// This needs to be done as the addresses to the heap objects are displaced
 	// by the addition of the transaction code's data segment.
 	cxcore.DisplaceReferences(actions.PRGRM, txnDataLen, 1)
+
+	return nil
 }

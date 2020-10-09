@@ -20,5 +20,5 @@ Run publisher node with generated chain spec.
 * Obtain secret key from generated `{coin}.chain_keys.json` file.
 *  
 ```bash
-$ CXCHAIN_SECRET_KEY={secret_key} cxchain -enable-all-api-sets
+$ CXCHAIN_SK={secret_key} cxchain -enable-all-api-sets
 ```

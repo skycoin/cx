@@ -19,7 +19,7 @@ const (
 	defaultChainSpecFile = "./skycoin.chain_spec.json"
 
 	// ENV for the chain secret key (in hex).
-	secKeyEnv = "CXCHAIN_SECRET_KEY"
+	secKeyEnv = "CXCHAIN_SK"
 
 	// ENVs for config modes.
 	standaloneClientConfMode = "STANDALONE_CLIENT"
