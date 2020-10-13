@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -18,7 +19,7 @@ import (
 
 const filePerm = 0644
 
-type newChainFlags struct {
+type newFlags struct {
 	cmd *flag.FlagSet
 
 	replace    bool
@@ -36,9 +37,9 @@ type newChainFlags struct {
 	*cxflags.MemoryFlags
 }
 
-func processNewChainFlags(args []string) newChainFlags {
+func processNewFlags(args []string) newFlags {
 	// Specify default flag values.
-	f := newChainFlags{
+	f := newFlags{
 		cmd: flag.NewFlagSet(args[0], flag.ExitOnError),
 
 		replace:      false,
@@ -54,6 +55,10 @@ func processNewChainFlags(args []string) newChainFlags {
 		genKeysOut:   "./{coin}.genesis_keys.json",
 
 		MemoryFlags: cxflags.DefaultMemoryFlags(),
+	}
+	f.cmd.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...] [cx source files...]\n", os.Args[0], os.Args[1])
+		f.cmd.PrintDefaults()
 	}
 
 	f.cmd.BoolVar(&f.replace, "replace", f.replace, "whether to replace output file(s)")
@@ -95,7 +100,7 @@ func processNewChainFlags(args []string) newChainFlags {
 	return f
 }
 
-func (f *newChainFlags) postProcess() {
+func (f *newFlags) postProcess() {
 	replaceTokens := func(s *string, coinName, coinTicker string) {
 		*s = strings.ReplaceAll(*s, "{coin}", coinName)
 		*s = strings.ReplaceAll(*s, "{ticker}", coinTicker)
@@ -117,8 +122,8 @@ func (f *newChainFlags) postProcess() {
 	}
 }
 
-func cmdNewChain(args []string) {
-	flags := processNewChainFlags(args)
+func cmdNew(args []string) {
+	flags := processNewFlags(args)
 
 	// Apply debug flags.
 	parser.DebugLexer = flags.debugLexer

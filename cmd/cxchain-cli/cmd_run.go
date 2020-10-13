@@ -98,6 +98,11 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 		addr:         fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort),
 	}
 
+	f.cmd.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...] [cx source files...]\n", os.Args[0], os.Args[1])
+		f.cmd.PrintDefaults()
+	}
+
 	f.cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
 	f.cmd.IntVar(&f.debugProfile, "debug-profile", f.debugProfile, "enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with 'go get github.com/google/pprof' and 'pprof -http=:8080 file.pprof'")
 	f.MemoryFlags.Register(f.cmd)

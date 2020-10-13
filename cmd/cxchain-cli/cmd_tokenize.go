@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/SkycoinProject/cx/cxgo/parser"
@@ -9,6 +10,11 @@ import (
 
 func cmdTokenize(args []string) {
 	cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+
+	cmd.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...]\n", os.Args[0], os.Args[1])
+		cmd.PrintDefaults()
+	}
 
 	// flag: output, o
 	out := stdoutFile
