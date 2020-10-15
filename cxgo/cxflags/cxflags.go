@@ -24,13 +24,15 @@ type MemoryFlags struct {
 
 // DefaultMemoryFlags returns the default set of memory flags.
 func DefaultMemoryFlags() *MemoryFlags {
-	return &MemoryFlags{
-		initHeapSize:     strconv.Itoa(cxcore.INIT_HEAP_SIZE),
-		maxHeapSize:      strconv.Itoa(cxcore.MAX_HEAP_SIZE),
-		stackSize:        strconv.Itoa(cxcore.STACK_SIZE),
-		minHeapFreeRatio: float64(cxcore.MIN_HEAP_FREE_RATIO),
-		maxHeapFreeRatio: float64(cxcore.MAX_HEAP_FREE_RATIO),
-	}
+	// TODO @evanlinjin: Figure out why this does not work.
+	// return &MemoryFlags{
+	// 	initHeapSize:     strconv.Itoa(cxcore.INIT_HEAP_SIZE),
+	// 	maxHeapSize:      strconv.Itoa(cxcore.MAX_HEAP_SIZE),
+	// 	stackSize:        strconv.Itoa(cxcore.STACK_SIZE),
+	// 	minHeapFreeRatio: float64(cxcore.MIN_HEAP_FREE_RATIO),
+	// 	maxHeapFreeRatio: float64(cxcore.MAX_HEAP_FREE_RATIO),
+	// }
+	return new(MemoryFlags)
 }
 
 // Register registers the flags to a given flag set.
@@ -50,37 +52,47 @@ func (mf *MemoryFlags) PostProcess() error {
 	var err error
 
 	// Initial heap size.
-	cxcore.INIT_HEAP_SIZE, err = parseMemoryString(mf.initHeapSize)
-	if err != nil {
-		return fmt.Errorf("failed to parse flag 'heap-initial': %w", err)
+	if mf.initHeapSize != "" {
+		cxcore.INIT_HEAP_SIZE, err = parseMemoryString(mf.initHeapSize)
+		if err != nil {
+			return fmt.Errorf("failed to parse flag 'heap-initial': %w", err)
+		}
 	}
 
 	// Max heap size.
-	cxcore.MAX_HEAP_SIZE, err = parseMemoryString(mf.maxHeapSize)
-	if err != nil {
-		return fmt.Errorf("failed to parse flag 'heap-max': %w", err)
-	}
-	if cxcore.INIT_HEAP_SIZE > cxcore.MAX_HEAP_SIZE {
-		cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
+	if mf.maxHeapSize != "" {
+		cxcore.MAX_HEAP_SIZE, err = parseMemoryString(mf.maxHeapSize)
+		if err != nil {
+			return fmt.Errorf("failed to parse flag 'heap-max': %w", err)
+		}
+		if cxcore.INIT_HEAP_SIZE > cxcore.MAX_HEAP_SIZE {
+			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
+		}
 	}
 
 	// Stack size.
-	cxcore.STACK_SIZE, err = parseMemoryString(mf.stackSize)
-	if err != nil {
-		return fmt.Errorf("failed to parse flag 'stack-size': %w", err)
+	if mf.stackSize != "" {
+		cxcore.STACK_SIZE, err = parseMemoryString(mf.stackSize)
+		if err != nil {
+			return fmt.Errorf("failed to parse flag 'stack-size': %w", err)
+		}
 	}
 
 	// Min heap free ratio.
-	if err := checkRatio(mf.minHeapFreeRatio); err != nil {
-		return fmt.Errorf("failed to parse flag 'min-heap-free': %w", err)
+	if mf.minHeapFreeRatio > 0 {
+		if err := checkRatio(mf.minHeapFreeRatio); err != nil {
+			return fmt.Errorf("failed to parse flag 'min-heap-free': %w", err)
+		}
+		cxcore.MIN_HEAP_FREE_RATIO = float32(mf.minHeapFreeRatio)
 	}
-	cxcore.MIN_HEAP_FREE_RATIO = float32(mf.minHeapFreeRatio)
 
 	// Max heap free ratio.
-	if err := checkRatio(mf.maxHeapFreeRatio); err != nil {
-		return fmt.Errorf("failed to parse flag 'max-heap-free': %w", err)
+	if mf.maxHeapFreeRatio > 0 {
+		if err := checkRatio(mf.maxHeapFreeRatio); err != nil {
+			return fmt.Errorf("failed to parse flag 'max-heap-free': %w", err)
+		}
+		cxcore.MAX_HEAP_FREE_RATIO = float32(mf.maxHeapFreeRatio)
 	}
-	cxcore.MAX_HEAP_FREE_RATIO = float32(mf.maxHeapFreeRatio)
 
 	return nil
 }
