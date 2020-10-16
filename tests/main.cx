@@ -380,6 +380,7 @@ func main ()() {
 	runTestEx("issue-120-c-SP.cx", cx.COMPILATION_ERROR, "Invalid implicit cast when assigning the result of a math operator to a variable.", TEST_ISSUE, 0)
 	runTestEx("issue-121-SP.cx", cx.SUCCESS, "Compilation error when using unary negative operator on a function call", TEST_ISSUE, 0)
 	runTestEx("issue-131-SP.cx", cx.SUCCESS, "Panic when using arithmetic operations.", TEST_ISSUE, 0)
+	runTestEx("test-ar-1.cx", cx.SUCCESS, "Panic when using string to pointer array.", TEST_ISSUE, 0)
 	
 
     // We need to fix serialization and deserialization as user-callable functions
