@@ -31,7 +31,7 @@ func bubbleSort (nums []i32, size i32) (nums []i32){
 	var j i32
 	var temp i32
 	for i = 0; i <i32.sub(size, 1); i++{
-		for j = 0; j < i32.sub(i32.sub(size, i), 2); j++{
+		for j = 0; j < i32.sub(i32.sub(size, i), 1); j++{
 			if nums[j] > nums[i32.add(j, 1)]{
 				temp = nums[j]
 				nums[j] = nums[i32.add(j, 1)]
