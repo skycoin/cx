@@ -1,16 +1,26 @@
+// Main package 
+// This program shows how to convert time 
 package main 
 
+// This function converts minutes to seconds 
 func MinToSeconds(in f32) (out f32){
     out = in * 60.0
 }
 
+//This function convert Minutes to hours 
 func MinToHours(in f32) (out f32){
     out  = in / 60.0
 }
 
+
+
 func main () () {
+// Simple print Command 
     str.print("Convert Min to Seconds and Hours")
     str.print("Test with 8368 Min to Hours (first) and Seconds (second): ")
+
+// Print minutes to hours 
     f32.print(MinToHours(8368.0))
+// Print minutes to seconds
     f32.print(MinToSeconds(8368.0))
 }
