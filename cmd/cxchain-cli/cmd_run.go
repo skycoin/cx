@@ -64,8 +64,8 @@ type runFlags struct {
 	debugProfile int
 	*cxflags.MemoryFlags
 
-	inject bool   // Whether to inject transaction to cx chain.
-	addr   string // CX Chain node address.
+	inject   bool   // Whether to inject transaction to cx chain.
+	nodeAddr string // CX Chain node address.
 }
 
 func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) {
@@ -94,8 +94,8 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 		debugProfile: 0,
 		MemoryFlags:  cxflags.DefaultMemoryFlags(),
 
-		inject:       false,
-		addr:         fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort),
+		inject:   false,
+		nodeAddr: fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort),
 	}
 
 	f.cmd.Usage = func() {
@@ -110,8 +110,8 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 	f.cmd.BoolVar(&f.inject, "inject", f.inject, "whether to inject this as a transaction on the cx chain")
 	f.cmd.BoolVar(&f.inject, "i", f.inject, "shorthand for 'inject'")
 
-	f.cmd.StringVar(&f.addr, "addr", f.addr, "HTTP API `ADDRESS` of cxchain node")
-	f.cmd.StringVar(&f.addr, "a", f.addr, "shorthand for 'addr'")
+	f.cmd.StringVar(&f.nodeAddr, "node", f.nodeAddr, "HTTP API `ADDRESS` of cxchain node")
+	f.cmd.StringVar(&f.nodeAddr, "n", f.nodeAddr, "shorthand for 'node'")
 
 	// Parse flags.
 	parseFlagSet(f.cmd, args[1:])
@@ -148,7 +148,7 @@ func cmdRun(args []string) {
 	progB, err := PrepareChainProg(
 		cxFilenames,
 		cxRes.CXSources,
-		flags.addr,
+		flags.nodeAddr,
 		cipher.MustDecodeBase58Address(spec.GenesisAddr),
 		flags.debugLexer,
 		flags.debugProfile,

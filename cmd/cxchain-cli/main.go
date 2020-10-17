@@ -20,7 +20,7 @@ var (
 const cmdCount = 5
 
 var (
-	cmdMap = make(map[string]func(), cmdCount)
+	cmdMap  = make(map[string]func(), cmdCount)
 	cmdList = make([]string, 0, cmdCount)
 )
 
@@ -34,6 +34,7 @@ func init() {
 	add("tokenize", func() { cmdTokenize(os.Args[1:]) })
 	add("new", func() { cmdNew(os.Args[1:]) })
 	add("run", func() { cmdRun(os.Args[1:]) })
+	add("state", func() { cmdState(os.Args[1:]) })
 
 	sort.Strings(cmdList)
 }

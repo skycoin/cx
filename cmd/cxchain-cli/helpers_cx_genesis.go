@@ -7,13 +7,13 @@ import (
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
 	"github.com/SkycoinProject/cx/cxgo/cxlexer"
-	"github.com/SkycoinProject/cx/cxgo/cxprof"
 )
 
 // PrepareGenesisProg parses a genesis program (a new program).
 func PrepareGenesisProg(filenames []string, srcs []*os.File, debugLexer bool, debugProf int) error {
-	_, stopProf := initParseProf("PrepareGenesisProg", debugLexer, debugProf)
-	defer stopProf()
+	// TODO @evanlinjin: Enable profiling later.
+	// _, stopProf := StartPreparationProfiling("PrepareGenesisProg", debugLexer, debugProf)
+	// defer stopProf()
 
 	// Prepare core program state for 'actions.PRGRM'.
 	prog, err := cxlexer.InitProg()
@@ -31,10 +31,10 @@ func PrepareGenesisProg(filenames []string, srcs []*os.File, debugLexer bool, de
 // RunGenesisProg initiates a blockchain program and returns the genesis
 // program state.
 func RunGenesisProg(cxArgs []string) ([]byte, error) {
-	log := log.WithField("func", "RunGenesisProg")
-
-	_, stopProf := cxprof.StartProfile(log)
-	defer stopProf()
+	// TODO @evanlinjin: Enable profiling later.
+	// log := log.WithField("func", "RunGenesisProg")
+	// _, stopProf := cxprof.StartProfile(log)
+	// defer stopProf()
 
 	// Initialize CX chain runtime?
 	if err := actions.PRGRM.RunCompiled(0, cxArgs); err != nil {
