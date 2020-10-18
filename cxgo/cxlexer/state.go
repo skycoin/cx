@@ -1,9 +1,6 @@
 package cxlexer
 
 import (
-	"github.com/SkycoinProject/cx-chains/src/api"
-	"github.com/SkycoinProject/cx-chains/src/cipher"
-
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
 )
@@ -27,16 +24,10 @@ type ProgBytes struct {
 	Heap  []byte
 }
 
-// LoadProgFromChain initializes the program structure `prog` with data from
+// LoadProgFromBytes initializes the program structure `prog` with data from
 // the program state stored on a CX chain.
 // This is used for transaction/broadcast mode.
-func LoadProgFromChain(prog *cxcore.CXProgram, apiAddr string, addr cipher.Address) (*ProgBytes, error) {
-	c := api.NewClient(apiAddr)
-	progS, err := c.ProgramState([]string{addr.String()})
-	if err != nil {
-		return nil, err
-	}
-
+func LoadProgFromBytes(prog *cxcore.CXProgram, progS []byte) (*ProgBytes, error) {
 	memOffset := cxcore.GetSerializedMemoryOffset(progS)
 	stackSize := cxcore.GetSerializedStackSize(progS)
 

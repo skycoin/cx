@@ -1,15 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/SkycoinProject/cx-chains/src/coin"
-	"github.com/SkycoinProject/cx-chains/src/transaction"
-	"github.com/SkycoinProject/cx-chains/src/util/fee"
 
 	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
@@ -18,166 +15,179 @@ import (
 
 // PrepareChainProg parses a program on chain, and loads additional sources onto
 // the program state.
-func PrepareChainProg(filenames []string, srcs []*os.File, nodeAddr string, addr cipher.Address, debugLexer bool, debugProf int) (*cxlexer.ProgBytes, error) {
+func PrepareChainProg(filenames []string, srcs []*os.File, c *api.Client, addr cipher.Address, debugLexer bool, debugProf int) (*coin.UxOut, *cxlexer.ProgBytes, error) {
 	// TODO @evanlinjin: Enable profiling later.
 	// _, stopProf := StartPreparationProfiling("PrepareChainProg", debugLexer, debugProf)
 	// defer stopProf()
 
+	// Obtain chain state UX.
+	// TODO @evanlinjin: Implement retry logic.
+	ux, err := ObtainProgramStateUxOut(c, addr)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	// Prepare core program state for 'actions.PRGRM'.
 	prog, err := cxlexer.InitProg()
 	if err != nil {
-		return nil, fmt.Errorf("failed to init prog: %w", err)
+		return nil, nil, fmt.Errorf("failed to init prog: %w", err)
 	}
-	progB, err := cxlexer.LoadProgFromChain(prog, nodeAddr, addr)
+	progB, err := cxlexer.LoadProgFromBytes(prog, ux.Body.ProgramState)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load onto prog from chain: %w", err)
+		return nil, nil, fmt.Errorf("failed to load prog state: %w", err)
+	}
+
+	// Merge chain heap.
+	// If it's a CX chain transaction, we need to add the heap extracted
+	// from the retrieved CX chain program state.
+	if err := progB.MergeChainHeap(); err != nil {
+		return nil, nil, fmt.Errorf("failed to merge chain heap: %w", err)
 	}
 
 	// Compile sources.
 	if err := compileSources(prog, filenames, srcs); err != nil {
-		return nil, fmt.Errorf("failed to compile sources: %w", err)
+		return nil, nil, fmt.Errorf("failed to compile sources: %w", err)
 	}
-	return progB, nil
+	return &ux, progB, nil
 }
 
 // RunChainProg runs a on-chain program state combined with a main function expression.
-func RunChainProg(cxArgs []string, progB *cxlexer.ProgBytes) ([]byte, error) {
+func RunChainProg(cxArgs []string, progB *cxlexer.ProgBytes) error {
 	// TODO @evanlinjin: Enable profiling later.
 	// log := log.WithField("func", "RunChainProg")
 	// _, stopProf := cxprof.StartProfile(log)
 	// defer stopProf()
 
-	// If it's a CX chain transaction, we need to add the heap extracted
-	// from the retrieved CX chain program state.
-	if err := progB.MergeChainHeap(); err != nil {
-		return nil, err
-	}
-
 	// Run as normal CX program (for now).
 	if err := actions.PRGRM.RunCompiled(0, cxArgs); err != nil {
-		return nil, err
+		return err
 	}
 
 	if cxcore.AssertFailed() {
-		return nil, fmt.Errorf("assert failed: %v", cxcore.CX_ASSERT)
+		return fmt.Errorf("assert failed: %v", cxcore.CX_ASSERT)
 	}
 
-	return nil, nil
+	return nil
 }
 
-func ObtainProgramState(c *api.Client, addr cipher.Address) ([]byte, error) {
+func ObtainProgramStateUxOut(c *api.Client, addr cipher.Address) (coin.UxOut, error) {
 	utxoSum, err := c.OutputsForAddresses([]string{addr.String()})
 	if err != nil {
-		return nil, err
+		return coin.UxOut{}, err
 	}
 
 	// Obtain ux with program state.
 	uxArr, err := utxoSum.SpendableOutputs().ToUxArray()
 	if err != nil {
-		return nil, err
+		return coin.UxOut{}, err
 	}
-	j, _ := json.MarshalIndent(uxArr[0], "", "\t")
-	log.WithField("ux_len", len(uxArr)).Info(string(j))
 
-	var progState []byte
+	var uxPS coin.UxOut
 	for _, ux := range uxArr {
 		if len(ux.Body.ProgramState) > 0 {
-			progState = ux.Body.ProgramState
+			uxPS = ux
 			break
 		}
 	}
-	if progState == nil {
-		return nil, fmt.Errorf("failed to find output owned by '%s' that contains a program state", addr)
+	if uxPS.Body.ProgramState == nil {
+		return coin.UxOut{}, fmt.Errorf("failed to find output owned by '%s' that contains a program state", addr)
 	}
-	return progState, nil
+	return uxPS, nil
 }
 
-func BroadcastMainExp(nodeAddr string, genSK cipher.SecKey, pb *cxlexer.ProgBytes) error {
-	// Setting the CX runtime to run `PRGRM`.
-	if _, err := actions.PRGRM.SelectProgram(); err != nil {
-		return fmt.Errorf("failed to select program: %w", err)
-	}
-	cxcore.MarkAndCompact(actions.PRGRM)
-
-	mainB := cxcore.ExtractBlockchainProgram(
-		pb.State,
-		cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount))
-
-	genAddr, err := cipher.AddressFromSecKey(genSK)
-	if err != nil {
-		return err
-	}
-
-	c := api.NewClient(nodeAddr)
-
-	utxoSum, err := c.OutputsForAddresses([]string{genAddr.String()})
-	if err != nil {
-		return err
-	}
-
-	// Obtain ux with program state.
-	uxArr, err := utxoSum.SpendableOutputs().ToUxArray()
-	if err != nil {
-		return err
-	}
-	var progUxOut coin.UxOut // <-- UTXO with program state.
-	for _, ux := range uxArr {
-		if len(ux.Body.ProgramState) > 0 {
-			progUxOut = ux
-			break
+func BroadcastMainExp(c *api.Client, genSK cipher.SecKey, ux *coin.UxOut) error {
+	// Setup: extract main expression method.
+	extractMainExp := func(oldProgS []byte) ([]byte, error) {
+		if _, err := actions.PRGRM.SelectProgram(); err != nil {
+			return nil, err
 		}
-	}
-	if progUxOut.Body.ProgramState == nil {
-		return fmt.Errorf("failed to obtain UTXO from '%s' that contains a program state", genAddr)
+
+		cxcore.MarkAndCompact(actions.PRGRM)
+
+		s := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+		mainExp := cxcore.ExtractBlockchainProgram(oldProgS, s)
+
+		log.WithField("len", len(mainExp)).Info("Extracted main expression.")
+
+		return mainExp, nil
 	}
 
-	tx := new(coin.Transaction)
-	tx.MainExpressions = mainB
+	// Setup: determine new program state.
+	determineNewProgState := func(oldProgS, mainExp []byte) ([]byte, error) {
+		// Running the merged program.
+		if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
+			return nil, fmt.Errorf("failed to run prog: %w", err)
+		}
+		// Removing garbage from the heap. Only the global variables should be left
+		// as these are independent from function calls.
+		cxcore.MarkAndCompact(actions.PRGRM)
 
-	// TODO @evanlinjin: Inject transaction here!
-	injectOut, err := c.InjectTransaction(nil)
+		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
+		// Serializing the terminated program.
+		s := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+		// Extracting only the blockchain code. This is our new program state.
+		newProgS := cxcore.ExtractBlockchainProgram(oldProgS, s)
+
+		return newProgS, nil
+	}
+
+	// Setup: create cx transaction
+	createTx := func(newProgS, mainExp []byte) (*coin.Transaction, error) {
+		tx := new(coin.Transaction)
+		tx.MainExpressions = mainExp
+
+		if err := tx.PushInput(ux.Hash()); err != nil {
+			return nil, fmt.Errorf("failed to push input: %w", err)
+		}
+		if err := tx.PushOutput(ux.Body.Address, ux.Body.Coins, ux.Body.Hours/2, newProgS); err != nil {
+			return nil, err
+		}
+		if err := tx.UpdateHeader(); err != nil {
+			return nil, err
+		}
+		if err := tx.SignInput(genSK, 0); err != nil {
+			return nil, err
+		}
+		if err := tx.UpdateHeader(); err != nil {
+			return nil, err
+		}
+		return tx, nil
+	}
+
+	// Run.
+	mainExp, err := extractMainExp(ux.Body.ProgramState)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to extract main exp: %w", err)
+	}
+	newProgS, err := determineNewProgState(ux.Body.ProgramState, mainExp)
+	if err != nil {
+		return fmt.Errorf("failed to determine new prog state: %w", err)
+	}
+	tx, err := createTx(newProgS, mainExp)
+	if err != nil {
+		return fmt.Errorf("failed to create tx: %w", err)
+	}
+	injectOut, err := c.InjectTransaction(tx)
+	if err != nil {
+		return fmt.Errorf("failed to inject tx: %w", err)
 	}
 	log.WithField("inject_out", injectOut).Info("CX transaction injected.")
 
 	return nil
 }
 
-func CreateCXTransaction(genSK cipher.SecKey, uxArray coin.UxArray, headTime uint64, burnFactor uint32, progState, mainExp []byte) (*coin.Transaction, error) {
-	genAddr, err := cipher.AddressFromSecKey(genSK)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(genAddr.String())
-
-	tx := new(coin.Transaction)
-	tx.MainExpressions = mainExp
-
-	uxBalances, err := transaction.NewUxBalances(uxArray, headTime)
-	if err != nil {
-		return nil, err
-	}
-
-	uxBalancesMap := make(map[cipher.SHA256]transaction.UxBalance, len(uxBalances))
-	for i, b := range uxBalances {
-		if _, ok := uxBalancesMap[b.Hash]; ok {
-			return nil, fmt.Errorf("ux balance at index %d is a duplicate", i)
-		}
-		uxBalancesMap[b.Hash] = b
-	}
-
-	// sum balances
-	var outputCoins uint64
-	var outputHours uint64
-	for _, b := range uxBalances {
-		outputCoins += b.Coins
-		outputHours += b.Hours
-	}
-
-	// coin hours fee
-	outputHours -= fee.RequiredFee(outputHours, burnFactor)
-
-	// Calculate total coins and minimum hours to send
-	return nil, nil
-}
+// func CreateCXTransaction(ux coin.UxOut, mainExp, newProgState []byte) (*coin.Transaction, error) {
+// 	tx := new(coin.Transaction)
+// 	tx.MainExpressions = mainExp
+//
+// 	if err := tx.PushInput(ux.Hash()); err != nil {
+// 		return nil, fmt.Errorf("failed to push input: %w", err)
+// 	}
+// 	if err := tx.PushOutput(ux.Body.Address, ux.Body.Coins, ux.Body.Hours/2, newProgState); err != nil {
+// 		return nil, err
+// 	}
+// 	if err := tx.UpdateHeader(); err != nil {
+// 		return nil, err
+// 	}
+// 	return tx, nil
+// }

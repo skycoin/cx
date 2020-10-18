@@ -64,10 +64,10 @@ func cmdState(args []string) {
 
 	c := api.NewClient(flags.nodeAddr)
 
-	progState, err := ObtainProgramState(c, addr)
+	ux, err := ObtainProgramStateUxOut(c, addr)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to obtain program state.")
 	}
 
-	fmt.Println(hex.EncodeToString(progState))
+	fmt.Println(hex.EncodeToString(ux.Body.ProgramState))
 }

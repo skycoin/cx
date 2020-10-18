@@ -23,7 +23,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/theherk/viper v0.0.0-20171202031228-e0502e82247d
 	github.com/toqueteos/webbrowser v1.2.0 // indirect
-	github.com/urfave/cli v1.21.0
+	github.com/urfave/cli v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/image v0.0.0-20200801110659-972c09e46d76 // indirect

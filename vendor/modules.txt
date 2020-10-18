@@ -55,15 +55,10 @@ github.com/SkycoinProject/gltext
 ## explicit
 github.com/SkycoinProject/skycoin/src/cipher
 github.com/SkycoinProject/skycoin/src/cipher/base58
-github.com/SkycoinProject/skycoin/src/cipher/bip32
-github.com/SkycoinProject/skycoin/src/cipher/bip44
 github.com/SkycoinProject/skycoin/src/cipher/encoder
 github.com/SkycoinProject/skycoin/src/cipher/ripemd160
 github.com/SkycoinProject/skycoin/src/cipher/secp256k1-go
 github.com/SkycoinProject/skycoin/src/cipher/secp256k1-go/secp256k1-go2
-github.com/SkycoinProject/skycoin/src/fiber
-github.com/SkycoinProject/skycoin/src/util/logging
-github.com/SkycoinProject/skycoin/src/util/useragent
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
@@ -201,7 +196,6 @@ github.com/theherk/viper
 github.com/toqueteos/webbrowser
 # github.com/urfave/cli v1.21.0
 ## explicit
-github.com/urfave/cli
 # golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 ## explicit
 golang.org/x/crypto/ssh/terminal

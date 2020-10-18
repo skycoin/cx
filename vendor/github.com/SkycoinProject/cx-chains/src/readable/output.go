@@ -1,6 +1,7 @@
 package readable
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"sort"
@@ -26,6 +27,7 @@ type UnspentOutput struct {
 	Coins             string `json:"coins"`
 	Hours             uint64 `json:"hours"`
 	CalculatedHours   uint64 `json:"calculated_hours"`
+	ProgState         string `json:"prog_state"` // base64 encoded prog state
 }
 
 // NewUnspentOutput creates a readable output
@@ -34,6 +36,8 @@ func NewUnspentOutput(uxOut visor.UnspentOutput) (UnspentOutput, error) {
 	if err != nil {
 		return UnspentOutput{}, err
 	}
+
+	progS := base64.StdEncoding.EncodeToString(uxOut.Body.ProgramState)
 
 	return UnspentOutput{
 		Hash:              uxOut.Hash().Hex(),
@@ -44,6 +48,7 @@ func NewUnspentOutput(uxOut visor.UnspentOutput) (UnspentOutput, error) {
 		Coins:             coinStr,
 		Hours:             uxOut.Body.Hours,
 		CalculatedHours:   uxOut.CalculatedHours,
+		ProgState:         progS,
 	}, nil
 }
 
@@ -115,6 +120,11 @@ func (ros UnspentOutputs) ToUxArray() (coin.UxArray, error) {
 			return nil, err
 		}
 
+		progS, err := base64.StdEncoding.DecodeString(o.ProgState)
+		if err != nil {
+			return nil, err
+		}
+
 		uxs = append(uxs, coin.UxOut{
 			Head: coin.UxHead{
 				Time:  o.Time,
@@ -125,6 +135,7 @@ func (ros UnspentOutputs) ToUxArray() (coin.UxArray, error) {
 				Address:        addr,
 				Coins:          coins,
 				Hours:          o.Hours,
+				ProgramState:   progS,
 			},
 		})
 	}

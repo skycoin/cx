@@ -75,7 +75,7 @@ type Params struct {
 	To             []coin.TransactionOutput
 	ChangeAddress  *cipher.Address
 
-	MainExpressions []byte //serialized expressions to run using the program state
+	MainExpressions []byte // serialized expressions to run using the program state
 }
 
 // Validate validates Params

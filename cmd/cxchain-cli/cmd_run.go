@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 
 	"github.com/SkycoinProject/cx/cxgo/cxflags"
@@ -124,12 +125,7 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 }
 
 func cmdRun(args []string) {
-	flags, spec, _ := processRunFlags(args)
-
-	// TODO @evanlinjin: Implement this!
-	if flags.inject {
-		log.Fatal("Flag 'inject' is not implemented yet.")
-	}
+	flags, spec, genSK := processRunFlags(args)
 
 	// Apply debug flags.
 	parser.DebugLexer = flags.debugLexer
@@ -143,21 +139,27 @@ func cmdRun(args []string) {
 	cxFilenames := cxutil.ListSourceNames(cxRes.CXSources, true)
 	log.WithField("filenames", cxFilenames).Info("Obtained CX sources.")
 
-	// Parse and run program.
+	// Prepare API Client.
+	c := api.NewClient(flags.nodeAddr)
 
-	progB, err := PrepareChainProg(
-		cxFilenames,
-		cxRes.CXSources,
-		flags.nodeAddr,
-		cipher.MustDecodeBase58Address(spec.GenesisAddr),
-		flags.debugLexer,
-		flags.debugProfile,
-	)
+	// Prepare address.
+	addr := cipher.MustDecodeBase58Address(spec.GenesisAddr)
+
+	// Parse and run program.
+	ux, progB, err := PrepareChainProg(cxFilenames, cxRes.CXSources, c, addr, flags.debugLexer, flags.debugProfile,)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to prepare chain CX program.")
 	}
 
-	if _, err := RunChainProg(cxRes.CXFlags, progB); err != nil {
-		log.WithError(err).Fatal("Failed to run chain CX program.")
+	if flags.inject {
+		// Run: inject.
+		if err := BroadcastMainExp(c, genSK, ux); err != nil {
+			log.WithError(err).Fatal("Failed to broadcast transaction.")
+		}
+	} else {
+		// Run: without injection.
+		if err := RunChainProg(cxRes.CXFlags, progB); err != nil {
+			log.WithError(err).Fatal("Failed to run chain CX program.")
+		}
 	}
 }
