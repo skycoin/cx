@@ -24,8 +24,10 @@ $ CXCHAIN_SK={secret_key} cxchain -enable-all-api-sets
 
 Run client node with generated chain spec (use different data dir, and ports to publisher node).
 ```bash
-$ cxchain -enable-all-api-sets -data-dir "$HOME/.cxchain/skycoin2" -port 6002 -web-interface-port 6422 
+$ cxchain -enable-all-api-sets -data-dir "$HOME/.cxchain/skycoin_client" -port 6002 -web-interface-port 6422 
 ```
+
+> **TODO:** `cxchain-cli` subcommand for manual control of node connections.
 
 Run transaction against publisher node.
 ```bash
