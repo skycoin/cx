@@ -73,61 +73,72 @@ func cmdPeers(args []string) {
 		return cmd
 	}
 
-	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageSignature()).
-		Add("connect", func(args []string) {
-			cmd := modCmdPrelude(args, "addresses")
-			c := api.NewClient(nodeAddr)
+	// connectSubCmd contains the 'cxchain-cli peers connect' logic
+	connectSubCmd := func(args []string) {
+		cmd := modCmdPrelude(args, "addresses")
+		c := api.NewClient(nodeAddr)
 
-			for i, addr := range cmd.Args() {
-				log := log.WithField("addr", addr).WithField("i", i)
+		for i, addr := range cmd.Args() {
+			log := log.WithField("addr", addr).WithField("i", i)
 
-				out, err := c.NetworkConnection(addr)
-				if err != nil {
-					log.WithError(err).Error("Connection failed.")
-					continue
-				}
-				j, err := json.MarshalIndent(out, "", "\t")
-				if err != nil {
-					panic(err)
-				}
-				log.WithField("data", string(j)).Info("Connected.")
-			}
-		}).
-		Add("disconnect", func(args []string) {
-			cmd := modCmdPrelude(args, "conn_ids")
-			c := api.NewClient(nodeAddr)
-
-			for i, connIDStr := range cmd.Args() {
-				log := log.WithField("conn_id", connIDStr).WithField("i", i)
-
-				connID, err := strconv.ParseUint(connIDStr, 10, 64)
-				if err != nil {
-					log.WithError(err).Fatal("Failed to parse conn_id.")
-				}
-
-				if err := c.Disconnect(connID); err != nil {
-					log.WithError(err).Error("Failed to disconnect.")
-					continue
-				}
-
-				log.Info("Disconnected.")
-			}
-		}).
-		Add("list", func(args []string) {
-			_ = viewCmdPrelude(args)
-			c := api.NewClient(nodeAddr)
-
-			conns, err := c.NetworkConnections(nil)
+			out, err := c.NetworkConnection(addr)
 			if err != nil {
-				log.WithError(err).Fatal("Failed to obtain connections.")
+				log.WithError(err).Error("Connection failed.")
+				continue
 			}
-
-			j, err := json.MarshalIndent(conns, "", "\t")
+			j, err := json.MarshalIndent(out, "", "\t")
 			if err != nil {
 				panic(err)
 			}
-			log.WithField("data", string(j)).Info()
-		})
+			log.WithField("data", string(j)).Info("Connected.")
+		}
+	}
 
+	// disconnectSubCmd contains the 'cxchain-cli peers disconnect' logic
+	disconnectSubCmd := func(args []string) {
+		cmd := modCmdPrelude(args, "conn_ids")
+		c := api.NewClient(nodeAddr)
+
+		for i, connIDStr := range cmd.Args() {
+			log := log.WithField("conn_id", connIDStr).WithField("i", i)
+
+			connID, err := strconv.ParseUint(connIDStr, 10, 64)
+			if err != nil {
+				log.WithError(err).Fatal("Failed to parse conn_id.")
+			}
+
+			if err := c.Disconnect(connID); err != nil {
+				log.WithError(err).Error("Failed to disconnect.")
+				continue
+			}
+
+			log.Info("Disconnected.")
+		}
+	}
+
+	// listSubCmd contains the 'cxchain-cli peers list' logic
+	listSubCmd := func(args []string) {
+		_ = viewCmdPrelude(args)
+		c := api.NewClient(nodeAddr)
+
+		conns, err := c.NetworkConnections(nil)
+		if err != nil {
+			log.WithError(err).Fatal("Failed to obtain connections.")
+		}
+
+		j, err := json.MarshalIndent(conns, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+		log.WithField("data", string(j)).Info()
+	}
+
+	// cmdMap contains the map of subcommands.
+	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageSignature()).
+		Add("connect", connectSubCmd).
+		Add("disconnect", disconnectSubCmd).
+		Add("list", listSubCmd)
+
+	// Run and exit.
 	os.Exit(cmdMap.ParseAndRun(args[1:]))
 }
