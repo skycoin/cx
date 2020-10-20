@@ -13,26 +13,28 @@ import (
 )
 
 func cmdPeers(args []string) {
+	// spec is the chain spec obtained from ENV
 	spec := parseSpecFilepathEnv()
 
+	// rootCmd is the root command of the 'peers' subcommand
 	rootCmd := flag.NewFlagSet(args[0], flag.ExitOnError)
 
+	// nodeAddr holds the value parsed from the flags 'node' and 'n'
 	nodeAddr := fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort)
 	addNodeAddrFlag := func(cmd *flag.FlagSet) {
 		cmd.StringVar(&nodeAddr, "node", nodeAddr, "HTTP API `ADDRESS` of cxchain node")
 		cmd.StringVar(&nodeAddr, "n", nodeAddr, "shorthand for 'node'")
 	}
 
-	cmdPrelude := func(args []string, argsName string) *flag.FlagSet {
+	// modCmdPrelude is the prelude logic to 'modify' based commands
+	modCmdPrelude := func(args []string, argsName string) *flag.FlagSet {
 		cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
-
 		cmd.Usage = func() {
 			cxutil.CmdPrintf(cmd, "Usage:\n")
 			cxutil.CmdPrintf(cmd, "  %s %s [%s...]\n", os.Args[0], os.Args[1], argsName)
 			cxutil.CmdPrintf(cmd, "Flags:\n")
 			cmd.PrintDefaults()
 		}
-
 		addNodeAddrFlag(cmd)
 
 		if len(args) < 2 {
@@ -48,13 +50,32 @@ func cmdPeers(args []string) {
 			cmd.Usage()
 			os.Exit(1)
 		}
+		return cmd
+	}
 
+	// viewCmdPrelude is the prelude logic to 'view' based commands
+	viewCmdPrelude := func(args []string) *flag.FlagSet {
+		cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+		cmd.Usage = func() {
+			cxutil.CmdPrintf(cmd, "Usage:\n")
+			cxutil.CmdPrintf(cmd, "  %s %s\n", os.Args[0], os.Args[1])
+			cxutil.CmdPrintf(cmd, "Flags:\n")
+			cmd.PrintDefaults()
+		}
+		addNodeAddrFlag(cmd)
+
+		if err := cmd.Parse(args[1:]); err != nil {
+			cxutil.CmdPrintf(cmd, "Error:\n")
+			cxutil.CmdPrintf(cmd, "  %v\n", err)
+			cmd.Usage()
+			os.Exit(1)
+		}
 		return cmd
 	}
 
 	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageSignature()).
 		Add("connect", func(args []string) {
-			cmd := cmdPrelude(args, "addresses")
+			cmd := modCmdPrelude(args, "addresses")
 			c := api.NewClient(nodeAddr)
 
 			for i, addr := range cmd.Args() {
@@ -65,7 +86,6 @@ func cmdPeers(args []string) {
 					log.WithError(err).Error("Connection failed.")
 					continue
 				}
-
 				j, err := json.MarshalIndent(out, "", "\t")
 				if err != nil {
 					panic(err)
@@ -74,7 +94,7 @@ func cmdPeers(args []string) {
 			}
 		}).
 		Add("disconnect", func(args []string) {
-			cmd := cmdPrelude(args, "conn_ids")
+			cmd := modCmdPrelude(args, "conn_ids")
 			c := api.NewClient(nodeAddr)
 
 			for i, connIDStr := range cmd.Args() {
@@ -94,7 +114,19 @@ func cmdPeers(args []string) {
 			}
 		}).
 		Add("list", func(args []string) {
-			fmt.Println("TODO @evanlinjin: Not implemented.")
+			_ = viewCmdPrelude(args)
+			c := api.NewClient(nodeAddr)
+
+			conns, err := c.NetworkConnections(nil)
+			if err != nil {
+				log.WithError(err).Fatal("Failed to obtain connections.")
+			}
+
+			j, err := json.MarshalIndent(conns, "", "\t")
+			if err != nil {
+				panic(err)
+			}
+			log.WithField("data", string(j)).Info()
 		})
 
 	os.Exit(cmdMap.ParseAndRun(args[1:]))
