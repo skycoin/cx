@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"sort"
-	"strings"
 
 	"github.com/SkycoinProject/cx-chains/src/util/logging"
+
+	"github.com/SkycoinProject/cx/cxutil"
 )
 
 var log = logging.MustGetLogger("cxchain-cli")
@@ -17,50 +17,21 @@ var (
 	version = "0.0.0"
 )
 
-const cmdCount = 5
-
-var (
-	cmdMap  = make(map[string]func(), cmdCount)
-	cmdList = make([]string, 0, cmdCount)
-)
-
-func init() {
-	add := func(name string, fn func()) {
-		cmdMap[name] = fn
-		cmdList = append(cmdList, name)
-	}
-	add("version", cmdVersion)
-	add("help", cmdHelp)
-	add("tokenize", func() { cmdTokenize(os.Args[1:]) })
-	add("new", func() { cmdNew(os.Args[1:]) })
-	add("run", func() { cmdRun(os.Args[1:]) })
-	add("state", func() { cmdState(os.Args[1:]) })
-
-	sort.Strings(cmdList)
-}
+var cm = cxutil.NewCommandMap(flag.CommandLine, 6, cxutil.DefaultUsageSignature()).
+	Add("version", func(_ []string) { cmdVersion() }).
+	Add("help", func(_ []string) { flag.CommandLine.Usage() }).
+	Add("tokenize", cmdTokenize).
+	Add("new", cmdNew).
+	Add("run", cmdRun).
+	Add("state", cmdState).
+	Add("peers", cmdPeers)
 
 func cmdVersion() {
-	_, _ = fmt.Fprintf(os.Stderr, "%s %s\n", os.Args[0], version)
-}
-
-func cmdHelp() {
-	_, _ = fmt.Fprintf(os.Stderr, "usage: %s [%s] [args...]\n",
-		os.Args[0],
-		strings.Join(cmdList, "|"))
-	flag.CommandLine.PrintDefaults()
+	_, _ = fmt.Fprintf(flag.CommandLine.Output(), "%s %s\n", os.Args[0], version)
 }
 
 func main() {
-	flag.CommandLine.Usage = cmdHelp
-	flag.Parse()
-
-	subCmd, ok := cmdMap[os.Args[1]]
-	if !ok {
-		_, _ = fmt.Fprintf(os.Stderr, "subcommand '%s' does not exist\n", os.Args[1])
-		flag.CommandLine.Usage()
-		return
-	}
-	subCmd()
+	os.Exit(cm.ParseAndRun(os.Args[1:]))
 }
 
 func parseFlagSet(cmd *flag.FlagSet, args []string) {
