@@ -32,8 +32,6 @@ Connect client node to publisher node (client initiated).
 $ cxchain-cli peers connect -n "http://127.0.0.1:6422" "127.0.0.1:6421"
 ```
 
-> **TODO:** `cxchain-cli` subcommand for manual control of node connections.
-
 Run transaction against publisher node.
 ```bash
 $ cxchain-cli run ./examples/blockchain/counter-txn.cx

@@ -1,11 +1,9 @@
 # CX Chain Milestones.
 
-## v1.0
+## v1.0 (Initial release)
 - [ ] Simplify chain creation **(Due: 26/10/2020 Monday)**.
     - [x] Simplify cx chain creation to 2 commands.
-    - [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
-    - [ ] Allow 0-coin transactions (Switch cx transactions to be 0-coin transactions).
-    - [ ] Command for manual connection management.
+    - [x] Command for manual connection management.
     - [ ] Use base64 encoding for program state to save space.
     - [ ] CLI should provide ENV help menu.
     - [ ] Implement retry logic for obtaining chain program state. This will avoid failures with tx injection.
@@ -28,3 +26,8 @@
     - [ ] App nodes should expose an endpoint via dmsg.
     - [ ] Logic for other nodes to connect to app nodes.
     - [ ] To reference an app node: `{chain_pk}.{app_pk}`.
+
+## v1.1 (Backlogged changes)
+
+- [ ] Allow 0-coin transactions (Switch cx transactions to be 0-coin transactions).
+- [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
