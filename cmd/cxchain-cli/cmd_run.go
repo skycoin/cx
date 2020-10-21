@@ -89,7 +89,7 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 	}
 
 	f := runFlags{
-		cmd: flag.NewFlagSet(args[0], flag.ExitOnError),
+		cmd: flag.NewFlagSet("cxchain-cli run", flag.ExitOnError),
 
 		debugLexer:   false,
 		debugProfile: 0,
@@ -100,8 +100,8 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 	}
 
 	f.cmd.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...] [cx source files...]\n", os.Args[0], os.Args[1])
-		f.cmd.PrintDefaults()
+		usage := cxutil.DefaultUsageFormat("flags", "cx source files")
+		usage(f.cmd, nil)
 	}
 
 	f.cmd.BoolVar(&f.debugLexer, "debug-lexer", f.debugLexer, "enable lexer debugging by printing all scanner tokens")
@@ -115,7 +115,9 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 	f.cmd.StringVar(&f.nodeAddr, "n", f.nodeAddr, "shorthand for 'node'")
 
 	// Parse flags.
-	parseFlagSet(f.cmd, args[1:])
+	if err := f.cmd.Parse(args); err != nil {
+		os.Exit(1)
+	}
 
 	// Log stuff.
 	cxflags.LogMemFlags(log)

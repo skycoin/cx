@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -40,7 +39,7 @@ type newFlags struct {
 func processNewFlags(args []string) newFlags {
 	// Specify default flag values.
 	f := newFlags{
-		cmd: flag.NewFlagSet(args[0], flag.ExitOnError),
+		cmd: flag.NewFlagSet("cxchain-cli new", flag.ExitOnError),
 
 		replace:      false,
 		unifyKeys:    false,
@@ -57,8 +56,8 @@ func processNewFlags(args []string) newFlags {
 		MemoryFlags: cxflags.DefaultMemoryFlags(),
 	}
 	f.cmd.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...] [cx source files...]\n", os.Args[0], os.Args[1])
-		f.cmd.PrintDefaults()
+		usage := cxutil.DefaultUsageFormat("flags", "cx source files")
+		usage(f.cmd, nil)
 	}
 
 	f.cmd.BoolVar(&f.replace, "replace", f.replace, "whether to replace output file(s)")
@@ -80,7 +79,9 @@ func processNewFlags(args []string) newFlags {
 	f.MemoryFlags.Register(f.cmd)
 
 	// Parse flags.
-	parseFlagSet(f.cmd, args[1:])
+	if err := f.cmd.Parse(args); err != nil {
+		os.Exit(1)
+	}
 
 	// Post process.
 	f.postProcess()

@@ -10,6 +10,7 @@ import (
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 
 	"github.com/SkycoinProject/cx/cxgo/cxflags"
+	"github.com/SkycoinProject/cx/cxutil"
 )
 
 type stateFlags struct {
@@ -25,15 +26,15 @@ func processStateFlags(args []string) (stateFlags, cipher.Address) {
 	spec := parseSpecFilepathEnv()
 
 	f := stateFlags{
-		cmd:         flag.NewFlagSet(args[0], flag.ExitOnError),
+		cmd:         flag.NewFlagSet("cxchain-cli state", flag.ExitOnError),
 		MemoryFlags: cxflags.DefaultMemoryFlags(),
 		nodeAddr:    fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort),
 		appAddr:     cipher.MustDecodeBase58Address(spec.GenesisAddr).String(),
 	}
 
 	f.cmd.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...]\n", os.Args[0], os.Args[1])
-		f.cmd.PrintDefaults()
+		usage := cxutil.DefaultUsageFormat("flags")
+		usage(f.cmd, nil)
 		// TODO @evanlinjin: Print ENV help.
 	}
 
@@ -46,7 +47,9 @@ func processStateFlags(args []string) (stateFlags, cipher.Address) {
 	f.cmd.StringVar(&f.appAddr, "a", f.appAddr, "shorthand for 'app'")
 
 	// Parse flags.
-	parseFlagSet(f.cmd, args[1:])
+	if err := f.cmd.Parse(args); err != nil {
+		os.Exit(1)
+	}
 
 	addr, err := cipher.DecodeBase58Address(f.appAddr)
 	if err != nil {

@@ -17,7 +17,7 @@ func cmdPeers(args []string) {
 	spec := parseSpecFilepathEnv()
 
 	// rootCmd is the root command of the 'peers' subcommand
-	rootCmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+	rootCmd := flag.NewFlagSet("cxchain-cli peers", flag.ExitOnError)
 
 	// nodeAddr holds the value parsed from the flags 'node' and 'n'
 	nodeAddr := fmt.Sprintf("http://127.0.0.1:%d", spec.Node.WebInterfacePort)
@@ -27,26 +27,23 @@ func cmdPeers(args []string) {
 	}
 
 	// modCmdPrelude is the prelude logic to 'modify' based commands
-	modCmdPrelude := func(args []string, argsName string) *flag.FlagSet {
-		cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+	modCmdPrelude := func(name string, args []string, argsName string) *flag.FlagSet {
+		cmd := flag.NewFlagSet(name, flag.ExitOnError)
 		cmd.Usage = func() {
-			cxutil.CmdPrintf(cmd, "Usage:\n")
-			cxutil.CmdPrintf(cmd, "  %s %s [%s...]\n", os.Args[0], os.Args[1], argsName)
+			cxutil.CmdPrintf(cmd, "Usage:\n  %s [%s...]\n", name, argsName)
 			cxutil.CmdPrintf(cmd, "Flags:\n")
 			cmd.PrintDefaults()
 		}
 		addNodeAddrFlag(cmd)
 
-		if len(args) < 2 {
-			cxutil.CmdPrintf(cmd, "Error:\n")
-			cxutil.CmdPrintf(cmd, "  no %s specified\n", argsName)
+		if len(args) < 1 {
+			cxutil.CmdErrorf(cmd, fmt.Errorf("no %s specified", argsName))
 			cmd.Usage()
 			os.Exit(1)
 		}
 
-		if err := cmd.Parse(args[1:]); err != nil {
-			cxutil.CmdPrintf(cmd, "Error:\n")
-			cxutil.CmdPrintf(cmd, "  %v\n", err)
+		if err := cmd.Parse(args); err != nil {
+			cxutil.CmdErrorf(cmd, err)
 			cmd.Usage()
 			os.Exit(1)
 		}
@@ -54,19 +51,17 @@ func cmdPeers(args []string) {
 	}
 
 	// viewCmdPrelude is the prelude logic to 'view' based commands
-	viewCmdPrelude := func(args []string) *flag.FlagSet {
-		cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+	viewCmdPrelude := func(name string, args []string) *flag.FlagSet {
+		cmd := flag.NewFlagSet(name, flag.ExitOnError)
 		cmd.Usage = func() {
-			cxutil.CmdPrintf(cmd, "Usage:\n")
-			cxutil.CmdPrintf(cmd, "  %s %s\n", os.Args[0], os.Args[1])
+			cxutil.CmdPrintf(cmd, "Usage:\n  %s\n", name)
 			cxutil.CmdPrintf(cmd, "Flags:\n")
 			cmd.PrintDefaults()
 		}
 		addNodeAddrFlag(cmd)
 
 		if err := cmd.Parse(args[1:]); err != nil {
-			cxutil.CmdPrintf(cmd, "Error:\n")
-			cxutil.CmdPrintf(cmd, "  %v\n", err)
+			cxutil.CmdErrorf(cmd, err)
 			cmd.Usage()
 			os.Exit(1)
 		}
@@ -75,7 +70,7 @@ func cmdPeers(args []string) {
 
 	// connectSubCmd contains the 'cxchain-cli peers connect' logic
 	connectSubCmd := func(args []string) {
-		cmd := modCmdPrelude(args, "addresses")
+		cmd := modCmdPrelude("cxchain-cli peers connect", args, "addresses")
 		c := api.NewClient(nodeAddr)
 
 		for i, addr := range cmd.Args() {
@@ -96,7 +91,7 @@ func cmdPeers(args []string) {
 
 	// disconnectSubCmd contains the 'cxchain-cli peers disconnect' logic
 	disconnectSubCmd := func(args []string) {
-		cmd := modCmdPrelude(args, "conn_ids")
+		cmd := modCmdPrelude("cxchain-cli peers disconnect", args, "conn_ids")
 		c := api.NewClient(nodeAddr)
 
 		for i, connIDStr := range cmd.Args() {
@@ -118,7 +113,7 @@ func cmdPeers(args []string) {
 
 	// listSubCmd contains the 'cxchain-cli peers list' logic
 	listSubCmd := func(args []string) {
-		_ = viewCmdPrelude(args)
+		_ = viewCmdPrelude("cxchain-cli peers list", args)
 		c := api.NewClient(nodeAddr)
 
 		conns, err := c.NetworkConnections(nil)
@@ -134,11 +129,16 @@ func cmdPeers(args []string) {
 	}
 
 	// cmdMap contains the map of subcommands.
-	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageSignature()).
-		Add("connect", connectSubCmd).
-		Add("disconnect", disconnectSubCmd).
-		Add("list", listSubCmd)
+	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageFormat("args")).
+		AddSubcommand("connect", connectSubCmd).
+		AddSubcommand("disconnect", disconnectSubCmd).
+		AddSubcommand("list", listSubCmd)
 
-	// Run and exit.
-	os.Exit(cmdMap.ParseAndRun(args[1:]))
+	// // Run and exit.
+	// if len(args) < 1 {
+	// 	cxutil.CmdErrorf(rootCmd, fmt.Errorf("command '%s' expects an additonal subcommand", rootCmd.Name()))
+	// 	rootCmd.Usage()
+	// }
+
+	os.Exit(cmdMap.ParseAndRun(args))
 }

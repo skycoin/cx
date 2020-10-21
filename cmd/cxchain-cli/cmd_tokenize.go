@@ -2,18 +2,18 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/SkycoinProject/cx/cxgo/parser"
+	"github.com/SkycoinProject/cx/cxutil"
 )
 
 func cmdTokenize(args []string) {
-	cmd := flag.NewFlagSet(args[0], flag.ExitOnError)
+	cmd := flag.NewFlagSet("cxchain-cli tokenize", flag.ExitOnError)
 
 	cmd.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "usage: %s %s [args...]\n", os.Args[0], os.Args[1])
-		cmd.PrintDefaults()
+		usage := cxutil.DefaultUsageFormat("flags")
+		usage(cmd, nil)
 	}
 
 	// flag: output, o
@@ -27,7 +27,9 @@ func cmdTokenize(args []string) {
 	cmd.StringVar(&in, "i", in, "shorthand for 'input'")
 
 	// parse:
-	parseFlagSet(cmd, args[1:])
+	if err := cmd.Parse(args); err != nil {
+		os.Exit(1)
+	}
 
 	inF, closeIn, err := openFile(in)
 	if err != nil {

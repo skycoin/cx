@@ -1,4 +1,4 @@
-# CX Chain Milestones.
+# CX Chain Milestones
 
 ## v1.0 (Initial release)
 - [ ] Simplify chain creation **(Due: 26/10/2020 Monday)**.
@@ -31,3 +31,4 @@
 
 - [ ] Allow 0-coin transactions (Switch cx transactions to be 0-coin transactions).
 - [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
+

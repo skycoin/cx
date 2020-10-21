@@ -13,7 +13,7 @@ the concept of affordances.
 
 Generate new chain spec.
 ```bash
-$ cxchain-cli newchain -hi=100 -ss=100 ./examples/blockchain/counter-bc.cx
+$ cxchain-cli new ./examples/blockchain/counter-bc.cx
 ```
 
 Run publisher node with generated chain spec.
@@ -24,12 +24,12 @@ $ CXCHAIN_SK={secret_key} cxchain -enable-all-api-sets
 
 Run client node with generated chain spec (use different data dir, and ports to publisher node).
 ```bash
-$ cxchain -enable-all-api-sets -data-dir "$HOME/.cxchain/skycoin_client" -port 6002 -web-interface-port 6422 
+$ cxchain -enable-all-api-sets -data-dir "$HOME/.cxchain/skycoin_client" -port 6002 -web-interface-port 6422
 ```
 
 Connect client node to publisher node (client initiated).
 ```bash
-$ cxchain-cli peers connect -n "http://127.0.0.1:6422" "127.0.0.1:6421"
+$ cxchain-cli peers connect -n "http://127.0.0.1:6422" "127.0.0.1:6001"
 ```
 
 Run transaction against publisher node.
