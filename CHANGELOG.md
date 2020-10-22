@@ -17,6 +17,7 @@
 	- Added basic Regexp library.
 	- Added basic Cipher library.
 * Changes
+  * Updated affordances to play well with newer language features.
   * Removed cx-games as a module. It was just confusing as users would be
     redirected to an outdated version of the repo and the games are already
     mentioned in the README.
