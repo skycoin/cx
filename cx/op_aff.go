@@ -3,7 +3,6 @@ package cxcore
 import (
 	"fmt"
 	"strconv"
-
 	// "github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
@@ -157,7 +156,6 @@ func queryParam(fn *CXFunction, args []*CXArgument, exprLbl string, argOffsetB [
 		// argNameB := encoder.Serialize(arg.Name)
 		// argNameOffset := int32(WriteObjectRetOff(argNameB))
 		argNameOffset := WriteStringObj(arg.Name)
-		
 
 		argOffset := AllocateSeq(OBJECT_HEADER_SIZE + STR_SIZE + I32_SIZE + STR_SIZE)
 		WriteI32(argOffset+OBJECT_HEADER_SIZE, int32(argNameOffset))
