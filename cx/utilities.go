@@ -1370,3 +1370,28 @@ func IsPointer(sym *CXArgument) bool {
 	// }
 	return false
 }
+
+// WriteStringObj writes `str` to the heap as an object and returns its absolute offset.
+func WriteStringObj(str string) int {
+	strB := encoder.Serialize(str)
+	return NewWriteObj(strB)
+}
+
+// ReadStringFromOffset reads the string located at offset `off`.
+func ReadStringFromObject(off int32) string {
+	var plusOff int32
+	if int(off) > PROGRAM.HeapStartsAt {
+		// Found in heap segment.
+		plusOff += OBJECT_HEADER_SIZE
+	}
+
+	var size int32
+	size = mustDeserializeI32(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE])
+
+	str := ""
+	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
+	if err != nil {
+		panic(err)
+	}
+	return str
+}
