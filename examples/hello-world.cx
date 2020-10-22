@@ -1,5 +1,11 @@
+// Main package 
+// It is important to write it to run the main function
+//In CX programing we can create many pakages and also utilize existing packages 
+// 
 package main
 
+// This main function will print a string in the terminal
+// str.print("") prints the string 
 func main () {
  	str.print("Hello World!")
 }
