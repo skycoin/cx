@@ -8,6 +8,14 @@ import (
 	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
+// We are making copies of the current program.
+// Each of these copies will represent a solution to the problem.
+// Then we remove the main function to create a custom one.
+// This new version of `main` just contains a function call to the solution function.
+// We call it and assign its result to `out`.
+// Questions:
+// Are we creating a population of programs? Or are we simply mutating the current solution.
+
 // This method removes 1 or more expressions
 // Then adds the equivalent of removed expressions
 
@@ -171,22 +179,23 @@ func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numbe
 
 func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
 	var pkg *CXPackage
-	pkg, err := prgrm.GetPackage("main")
+	pkg, err := prgrm.GetPackage(MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
 	// Ensuring that main pkg exists.
-	_, err = prgrm.GetFunction("main", "main")
+	_, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
 	idx := -1
 	for i, fn := range pkg.Functions {
-		if fn.Name == "main" {
+		if fn.Name == MAIN_FN {
 			idx = i
 			break
 		}
 	}
+	// Removing main function.
 	pkg.Functions = append(pkg.Functions[:idx], pkg.Functions[idx+1:]...)
 
 	var solPkg *CXPackage
@@ -194,11 +203,11 @@ func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
 	if err != nil {
 		panic(err)
 	}
-	pkg, err = prgrm.GetPackage("main")
+	pkg, err = prgrm.GetPackage(MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
-	pkg.AddFunction(MakeFunction("main"))
+	pkg.AddFunction(MakeFunction(MAIN_FN))
 	var fn *CXFunction
 	fn, err = prgrm.GetCurrentFunction()
 	if err != nil {
@@ -226,7 +235,7 @@ func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
 
 func (prgrm *CXProgram) adaptInput (testValue float64) {
 	var fn *CXFunction
-	fn, err = prgrm.GetFunction("main", "main")
+	fn, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
@@ -261,15 +270,13 @@ func (prgrm *CXProgram) transferSolution (solutionName string, toCxt *CXProgram)
 }
 
 func (prgrm *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
-	prgrm.SelectFunction(solutionName)
-
 	// Initializing expressions
 	var fn *CXFunction
-	fn, err := prgrm.GetCurrentFunction()
+	fn, err := prgrm.SelectFunction(solutionName)
 	if err != nil {
 		panic(err)
 	}
-	//
+
 	preExistingExpressions := len(fn.Expressions)
 	// Checking if we need to add more expressions.
 	for i := 0; i < numberExprs - preExistingExpressions; i++ {
@@ -343,7 +350,6 @@ func (prgrm *CXProgram) Evolve (solutionName string, fnBag string, inputs, outpu
 		}
 	}
 
-	//
 	prgrmCopy := MakeContextCopy(prgrm, -1)
 
 	best := prgrmCopy
