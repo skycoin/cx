@@ -68,9 +68,9 @@ func cmdPeers(args []string) {
 		return cmd
 	}
 
-	// connectSubCmd contains the 'cxchain-cli peers connect' logic
-	connectSubCmd := func(args []string) {
-		cmd := modCmdPrelude("cxchain-cli peers connect", args, "addresses")
+	// connectionSubCmd contains the 'cxchain-cli peers connection' logic
+	connectionSubCmd := func(args []string) {
+		cmd := modCmdPrelude("cxchain-cli peers connection", args, "addresses")
 		c := api.NewClient(nodeAddr)
 
 		for i, addr := range cmd.Args() {
@@ -130,7 +130,7 @@ func cmdPeers(args []string) {
 
 	// cmdMap contains the map of subcommands.
 	cmdMap := cxutil.NewCommandMap(rootCmd, 3, cxutil.DefaultUsageFormat("args")).
-		AddSubcommand("connect", connectSubCmd).
+		AddSubcommand("connection", connectionSubCmd).
 		AddSubcommand("disconnect", disconnectSubCmd).
 		AddSubcommand("list", listSubCmd)
 

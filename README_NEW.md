@@ -27,11 +27,6 @@ Run client node with generated chain spec (use different data dir, and ports to 
 $ cxchain -enable-all-api-sets -data-dir "$HOME/.cxchain/skycoin_client" -port 6002 -web-interface-port 6422
 ```
 
-Connect client node to publisher node (client initiated).
-```bash
-$ cxchain-cli peers connect -n "http://127.0.0.1:6422" "127.0.0.1:6001"
-```
-
 Run transaction against publisher node.
 ```bash
 $ cxchain-cli run ./examples/blockchain/counter-txn.cx

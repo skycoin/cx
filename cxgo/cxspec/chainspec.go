@@ -62,20 +62,7 @@ func DefaultNodeParams() NodeParams {
 		Port:                    6001,
 		WebInterfacePort:        6421,
 		DefaultConnections:      []string{
-			"118.178.135.93:6001",
-			"47.88.33.156:6001",
-			"104.237.142.206:6001",
-			"176.58.126.224:6001",
-			"172.104.85.6:6001",
-			"139.162.7.132:6001",
-			"139.162.39.186:6001",
-			"45.33.111.142:6001",
-			"109.237.27.172:6001",
-			"172.104.41.14:6001",
-			"172.104.114.58:6001",
-			"172.104.71.211:6001",
-			"172.105.217.244:6001",
-			"139.162.98.190:6001",
+			"127.0.0.1:6001",
 		},
 		PeerListURL:             "https://127.0.0.1/peers.txt",
 		UserBurnFactor:          10,
@@ -157,36 +144,6 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 
 	// Generate genesis signature.
 	if _, err := generateAndSignGenesisBlock(spec, chainSK); err != nil {
-		return nil, err
-	}
-
-	return spec, nil
-}
-
-// DefaultGenesisSpec returns the default skycoin chain spec file.
-func DefaultGenesisSpec(genesisProgState []byte) (*ChainSpec, error) {
-	spec := &ChainSpec{
-		SpecEra:           Era,
-		ChainPubKey:       "", // ChainPubKey is generated at a later step via generateAndSignGenesisBlock
-		Protocol:          DefaultProtocolParams(),
-		Node:              DefaultNodeParams(),
-
-		CoinName:          "skycoin",
-		CoinTicker:        "SKY",
-		CoinHoursName:     "skycoin coin hours",
-		CoinHoursTicker:   "SCH",
-
-		GenesisAddr:       "23v7mT1uLpViNKZHh9aww4VChxizqKsNq4E",
-		GenesisSig:        "a214e0361ff99d80d2f9d646b25f93b8d1d2deb9f7bae0ff908d2302193d8cc31b8388b7bd38c019304b932bfd570444dbe8561aa9d47da021fd31a70146defd01", // GenesisSig is generated at a later step via generateAndSignGenesisBlock
-		GenesisCoinVolume: 100e12,
-		GenesisProgState:  hex.EncodeToString(genesisProgState),
-		GenesisTimestamp:  uint64(1426562704),
-
-		MaxCoinSupply: 1e8,
-	}
-
-	// Fill post-processed fields.
-	if err := postProcess(spec, false); err != nil {
 		return nil, err
 	}
 
