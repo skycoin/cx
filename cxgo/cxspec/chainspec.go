@@ -1,7 +1,7 @@
 package cxspec
 
 import (
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -14,6 +14,8 @@ import (
 const (
 	Era = "cx_alpha"
 )
+
+var progSEnc = base64.StdEncoding
 
 // ProtocolParams defines the coin's consensus parameters.
 type ProtocolParams struct {
@@ -131,7 +133,7 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 		GenesisAddr:       genesisAddr.String(),
 		GenesisSig:        "", // GenesisSig is generated at a later step via generateAndSignGenesisBlock
 		GenesisCoinVolume: 100e12,
-		GenesisProgState:  hex.EncodeToString(genesisProgState),
+		GenesisProgState:  progSEnc.EncodeToString(genesisProgState),
 		GenesisTimestamp:  uint64(time.Now().UTC().Unix()),
 
 		MaxCoinSupply: 1e8,
@@ -151,7 +153,7 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 }
 
 func (cs *ChainSpec) RawGenesisProgState() []byte {
-	b, err := hex.DecodeString(cs.GenesisProgState)
+	b, err := progSEnc.DecodeString(cs.GenesisProgState)
 	if err != nil {
 		panic(err)
 	}
@@ -231,7 +233,7 @@ func postProcess(cs *ChainSpec, allowEmpty bool) error {
 			return wrapErr("genesis_signature", err)
 		}
 	}
-	if cs.genProgState, err = hex.DecodeString(cs.GenesisProgState); err != nil {
+	if cs.genProgState, err = progSEnc.DecodeString(cs.GenesisProgState); err != nil {
 		return wrapErr("genesis_prog_state", err)
 	}
 	return nil

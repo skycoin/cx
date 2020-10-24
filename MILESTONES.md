@@ -31,4 +31,4 @@
 
 - [ ] Allow 0-coin transactions (Switch cx transactions to be 0-coin transactions).
 - [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
-
+- [ ] Rework `pex`, `daemon` and associated modules to be able to manually add/remove peers/connections.
