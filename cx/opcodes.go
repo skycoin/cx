@@ -8,6 +8,7 @@ import (
 var CorePackages = []string{
 	// temporary solution until we can implement these packages in pure CX I guess
 	"al", "gl", "glfw", "time", "http", "os", "explorer", "aff", "gltext", "cx", "json", "regexp", "cipher",
+	"evolve",
 }
 
 // op codes
@@ -450,6 +451,8 @@ const (
 	OP_HTTP_CLOSE
 
 	OP_DMSG_DO
+
+	OP_EVOLVE_EVOLVE
 
 	END_OF_CORE_OPS
 )
@@ -1066,6 +1069,8 @@ func init() {
 	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+
+	Op(OP_EVOLVE_EVOLVE, "evolve.Evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, F64), Out(ASTR))
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(

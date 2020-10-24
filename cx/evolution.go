@@ -19,16 +19,22 @@ import (
 // This method removes 1 or more expressions
 // Then adds the equivalent of removed expressions
 
+// BuildExpression takes `expr` and populates its inputs and outputs
+// with available variables.
 func (expr *CXExpression) BuildExpression (outNames []*CXArgument) *CXExpression {
 	numInps := len(expr.Operator.Inputs)
 	numOuts := len(expr.Operator.Outputs)
 
+	// We'll populate the expression's inputs with possible
+	// values found in its function.
 	for i := 0; i < numInps; i++ {
 		affs := FilterAffordances(expr.GetAffordances(nil), "Argument")
 		r := rand.Intn(len(affs))
 		affs[r].ApplyAffordance()
 	}
 
+	// We'll populate the expression's outputs with possible
+	// variables found in its function.
 	if len(outNames) == 0 {
 		for i := 0; i < numOuts; i++ {
 			affs := FilterAffordances(expr.GetAffordances(nil), "OutputName")
@@ -36,12 +42,15 @@ func (expr *CXExpression) BuildExpression (outNames []*CXArgument) *CXExpression
 			affs[r].ApplyAffordance()
 		}
 	} else {
+		// Instead of using affordances to populate the
+		// expression's outputs, we'll set them to be `outNames`.
 		expr.OutputNames = outNames
 	}
 
 	return expr
 }
 
+// MutateSolution ...
 func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numberExprs int) {
 	prgrm.SelectFunction(solutionName)
 	var fn *CXFunction
@@ -159,6 +168,7 @@ func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numbe
 		r := rand.Intn(len(affs))
 		affs[r].ApplyAffordance()
 
+		// Making sure last expression assigns to function's output.
 		if expr, err := fn.GetCurrentExpression(); err == nil {
 			if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
 				outNames := make([]*CXDefinition, len(fn.Outputs))
@@ -171,12 +181,16 @@ func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numbe
 				}
 				expr.BuildExpression(outNames)
 			} else {
+				// No expressions found. Create first.
 				expr.BuildExpression(nil)
 			}
 		}
 	}
 }
 
+// adaptPreEvolution removes the main function from the main
+// package. Then it creates a new main function that will contain a call
+// to the solution function.
 func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
 	var pkg *CXPackage
 	pkg, err := prgrm.GetPackage(MAIN_PKG)
@@ -233,6 +247,7 @@ func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
 	expr.AddArgument(MakeArgument(&tmpVal, "f64"))
 }
 
+// adaptInput creates an argument that is set to `testValue`.
 func (prgrm *CXProgram) adaptInput (testValue float64) {
 	var fn *CXFunction
 	fn, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
@@ -245,6 +260,10 @@ func (prgrm *CXProgram) adaptInput (testValue float64) {
 	fn.Expressions[0].Arguments[0] = arg
 }
 
+// transferSolution gets the function named `solutionName` from
+// `prgrm` to `toCxt`. This transfer occurrs on an expression basis,
+// meaning that each of the expressions in the solution function fonud in
+// `prgrm` gets replaced, and not the function as a whole.
 func (prgrm *CXProgram) transferSolution (solutionName string, toCxt *CXProgram) {
 	var fromPkg *CXPackage
 	fromPkg, err := prgrm.GetCurrentPackage()
@@ -269,7 +288,7 @@ func (prgrm *CXProgram) transferSolution (solutionName string, toCxt *CXProgram)
 	}
 }
 
-func (prgrm *CXProgram) Evolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
+func (prgrm *CXProgram) opEvolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
 	// Initializing expressions
 	var fn *CXFunction
 	fn, err := prgrm.SelectFunction(solutionName)
@@ -332,7 +351,7 @@ func (prgrm *CXProgram) Evolve (solutionName string, fnBag string, inputs, outpu
 			r := rand.Intn(len(affs))
 			affs[r].ApplyAffordance()
 
-			//making sure last expression assigns to output
+			// Making sure last expression assigns to function's output.
 			outNames := make([]*CXDefinition, len(fn.Outputs))
 			for i, out := range fn.Outputs {
 				outDef := MakeDefinition(
