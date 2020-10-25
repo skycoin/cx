@@ -1070,7 +1070,7 @@ func init() {
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
 
-	Op(OP_EVOLVE_EVOLVE, "evolve.Evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, F64), Out(ASTR))
+	Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AF64), nil)
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(

@@ -1,500 +1,510 @@
 package cxcore
 
 import (
-	"math/rand"
-	"fmt"
-	"regexp"
-	"bytes"
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	// "math/rand"
+	// "fmt"
+	// "regexp"
+	// "bytes"
+	// "github.com/SkycoinProject/skycoin/src/cipher/encoder"
 )
 
-// We are making copies of the current program.
-// Each of these copies will represent a solution to the problem.
-// Then we remove the main function to create a custom one.
-// This new version of `main` just contains a function call to the solution function.
-// We call it and assign its result to `out`.
-// Questions:
-// Are we creating a population of programs? Or are we simply mutating the current solution.
+// // We are making copies of the current program.
+// // Each of these copies will represent a solution to the problem.
+// // Then we remove the main function to create a custom one.
+// // This new version of `main` just contains a function call to the solution function.
+// // We call it and assign its result to `out`.
+// // Questions:
+// // Are we creating a population of programs? Or are we simply mutating the current solution.
 
-// This method removes 1 or more expressions
-// Then adds the equivalent of removed expressions
+// // This method removes 1 or more expressions
+// // Then adds the equivalent of removed expressions
 
-// BuildExpression takes `expr` and populates its inputs and outputs
-// with available variables.
-func (expr *CXExpression) BuildExpression (outNames []*CXArgument) *CXExpression {
-	numInps := len(expr.Operator.Inputs)
-	numOuts := len(expr.Operator.Outputs)
+// // BuildExpression takes `expr` and populates its inputs and outputs
+// // with available variables.
+// func (expr *CXExpression) BuildExpression (outNames []*CXArgument) *CXExpression {
+// 	numInps := len(expr.Operator.Inputs)
+// 	numOuts := len(expr.Operator.Outputs)
 
-	// We'll populate the expression's inputs with possible
-	// values found in its function.
-	for i := 0; i < numInps; i++ {
-		affs := FilterAffordances(expr.GetAffordances(nil), "Argument")
-		r := rand.Intn(len(affs))
-		affs[r].ApplyAffordance()
-	}
+// 	// We'll populate the expression's inputs with possible
+// 	// values found in its function.
+// 	for i := 0; i < numInps; i++ {
+// 		affs := FilterAffordances(expr.GetAffordances(nil), "Argument")
+// 		r := rand.Intn(len(affs))
+// 		affs[r].ApplyAffordance()
+// 	}
 
-	// We'll populate the expression's outputs with possible
-	// variables found in its function.
-	if len(outNames) == 0 {
-		for i := 0; i < numOuts; i++ {
-			affs := FilterAffordances(expr.GetAffordances(nil), "OutputName")
-			r := rand.Intn(len(affs))
-			affs[r].ApplyAffordance()
-		}
-	} else {
-		// Instead of using affordances to populate the
-		// expression's outputs, we'll set them to be `outNames`.
-		expr.OutputNames = outNames
-	}
+// 	// We'll populate the expression's outputs with possible
+// 	// variables found in its function.
+// 	if len(outNames) == 0 {
+// 		for i := 0; i < numOuts; i++ {
+// 			affs := FilterAffordances(expr.GetAffordances(nil), "OutputName")
+// 			r := rand.Intn(len(affs))
+// 			affs[r].ApplyAffordance()
+// 		}
+// 	} else {
+// 		// Instead of using affordances to populate the
+// 		// expression's outputs, we'll set them to be `outNames`.
+// 		expr.OutputNames = outNames
+// 	}
 
-	return expr
-}
+// 	return expr
+// }
 
-// MutateSolution ...
-func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numberExprs int) {
-	prgrm.SelectFunction(solutionName)
-	var fn *CXFunction
-	fn, err := prgrm.GetCurrentFunction()
-	if err != nil {
-		panic(err)
-	}
-	removeIndex := rand.Intn(len(fn.Expressions))
+// // MutateSolution ...
+// func (prgrm *CXProgram) MutateSolution (solutionName string, fnBag string, numberExprs int) {
+// 	prgrm.SelectFunction(solutionName)
+// 	var fn *CXFunction
+// 	fn, err := prgrm.GetCurrentFunction()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	removeIndex := rand.Intn(len(fn.Expressions))
 
-	removedVars := fn.Expressions[removeIndex].OutputNames
+// 	removedVars := fn.Expressions[removeIndex].OutputNames
 
-	indexesToRemove := make([]int, 0)
+// 	indexesToRemove := make([]int, 0)
 
-	for i, expr := range fn.Expressions {
-		for _, arg := range expr.Arguments {
-			if i == removeIndex {
-				indexesToRemove = append([]int{i}, indexesToRemove...)
-				break
-			}
+// 	for i, expr := range fn.Expressions {
+// 		for _, arg := range expr.Arguments {
+// 			if i == removeIndex {
+// 				indexesToRemove = append([]int{i}, indexesToRemove...)
+// 				break
+// 			}
 
-			argIdentRemoved := false
-			for _, removedVar := range removedVars {
-				var identName string
-				encoder.DeserializeRaw(*arg.Value, &identName)
-				if i > removeIndex && identName == removedVar.Name {
-					indexesToRemove = append([]int{i}, indexesToRemove...)
-					argIdentRemoved = true
-				}
-			}
-			if argIdentRemoved {
-				break
-			}
+// 			argIdentRemoved := false
+// 			for _, removedVar := range removedVars {
+// 				var identName string
+// 				encoder.DeserializeRaw(*arg.Value, &identName)
+// 				if i > removeIndex && identName == removedVar.Name {
+// 					indexesToRemove = append([]int{i}, indexesToRemove...)
+// 					argIdentRemoved = true
+// 				}
+// 			}
+// 			if argIdentRemoved {
+// 				break
+// 			}
 
-			for _, arg := range fn.Expressions[i].Arguments {
-				broke := false
-				for _, j := range indexesToRemove {
-					argIsOutput := false
-					for _, outName := range fn.Expressions[j].OutputNames {
-						var identName string
-						encoder.DeserializeRaw(*arg.Value, &identName)
-						if identName == outName.Name {
-							indexesToRemove = append([]int{i}, indexesToRemove...)
-							broke = true
-							argIsOutput = true
-						}
-					}
-					if argIsOutput {
-						break
-					}
-				}
-				if broke {
-					break
-				}
-			}
-		}
-	}
+// 			for _, arg := range fn.Expressions[i].Arguments {
+// 				broke := false
+// 				for _, j := range indexesToRemove {
+// 					argIsOutput := false
+// 					for _, outName := range fn.Expressions[j].OutputNames {
+// 						var identName string
+// 						encoder.DeserializeRaw(*arg.Value, &identName)
+// 						if identName == outName.Name {
+// 							indexesToRemove = append([]int{i}, indexesToRemove...)
+// 							broke = true
+// 							argIsOutput = true
+// 						}
+// 					}
+// 					if argIsOutput {
+// 						break
+// 					}
+// 				}
+// 				if broke {
+// 					break
+// 				}
+// 			}
+// 		}
+// 	}
 
-	indexesToRemove = removeDuplicatesInt(indexesToRemove)
+// 	indexesToRemove = removeDuplicatesInt(indexesToRemove)
 
-	for _, i := range indexesToRemove {
-		if i != len(fn.Expressions) {
-			fn.Expressions = append(fn.Expressions[:i], fn.Expressions[i+1:]...)
-		} else {
-			fn.Expressions = fn.Expressions[:i]
-		}
-	}
+// 	for _, i := range indexesToRemove {
+// 		if i != len(fn.Expressions) {
+// 			fn.Expressions = append(fn.Expressions[:i], fn.Expressions[i+1:]...)
+// 		} else {
+// 			fn.Expressions = fn.Expressions[:i]
+// 		}
+// 	}
 
-	// re-indexing expression line numbers
-	for i, expr := range fn.Expressions {
-		expr.Line = i
-	}
+// 	// re-indexing expression line numbers
+// 	for i, expr := range fn.Expressions {
+// 		expr.Line = i
+// 	}
 
-	hasOutputs := false
-	fnOutputs := fn.Outputs
-	for _, expr := range fn.Expressions {
-		exprOutNames := expr.OutputNames
+// 	hasOutputs := false
+// 	fnOutputs := fn.Outputs
+// 	for _, expr := range fn.Expressions {
+// 		exprOutNames := expr.OutputNames
 
-		if len(exprOutNames) != len(fnOutputs) {
-			break
-		}
+// 		if len(exprOutNames) != len(fnOutputs) {
+// 			break
+// 		}
 
-		sameOutputs := true
+// 		sameOutputs := true
 
-		for i, out := range fnOutputs {
-			if out.Name != exprOutNames[i].Name {
-				sameOutputs = false
-			}
-		}
+// 		for i, out := range fnOutputs {
+// 			if out.Name != exprOutNames[i].Name {
+// 				sameOutputs = false
+// 			}
+// 		}
 
-		if sameOutputs {
-			hasOutputs = true
-			break
-		}
-	}
+// 		if sameOutputs {
+// 			hasOutputs = true
+// 			break
+// 		}
+// 	}
 
-	lenFnExprs := len(fn.Expressions)
-	for i := 0; len(fn.Expressions) < numberExprs; i++ {
-		var affs []*CXAffordance
-		if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
+// 	lenFnExprs := len(fn.Expressions)
+// 	for i := 0; len(fn.Expressions) < numberExprs; i++ {
+// 		var affs []*CXAffordance
+// 		if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
 
-			var outs bytes.Buffer
-			for j, out := range fn.Outputs {
-				if j == len(fn.Outputs) - 1 {
-					outs.WriteString(concat(out.Typ))
-				} else {
-					outs.WriteString(concat(out.Typ, ", "))
-				}
-			}
+// 			var outs bytes.Buffer
+// 			for j, out := range fn.Outputs {
+// 				if j == len(fn.Outputs) - 1 {
+// 					outs.WriteString(concat(out.Typ))
+// 				} else {
+// 					outs.WriteString(concat(out.Typ, ", "))
+// 				}
+// 			}
 
-			affs = FilterAffordances(fn.GetAffordances(), "Expression", concat("\\(", regexp.QuoteMeta(outs.String()), "\\)$"), fnBag)
-		} else {
-			affs = FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
-		}
+// 			affs = FilterAffordances(fn.GetAffordances(), "Expression", concat("\\(", regexp.QuoteMeta(outs.String()), "\\)$"), fnBag)
+// 		} else {
+// 			affs = FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
+// 		}
 
-		r := rand.Intn(len(affs))
-		affs[r].ApplyAffordance()
+// 		r := rand.Intn(len(affs))
+// 		affs[r].ApplyAffordance()
 
-		// Making sure last expression assigns to function's output.
-		if expr, err := fn.GetCurrentExpression(); err == nil {
-			if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
-				outNames := make([]*CXDefinition, len(fn.Outputs))
-				for i, out := range fn.Outputs {
-					outDef := MakeDefinition(
-						out.Name,
-						MakeDefaultValue(out.Typ),
-						out.Typ)
-					outNames[i] = outDef
-				}
-				expr.BuildExpression(outNames)
-			} else {
-				// No expressions found. Create first.
-				expr.BuildExpression(nil)
-			}
-		}
-	}
-}
+// 		// Making sure last expression assigns to function's output.
+// 		if expr, err := fn.GetCurrentExpression(); err == nil {
+// 			if !hasOutputs && i == numberExprs - lenFnExprs - 1 {
+// 				outNames := make([]*CXDefinition, len(fn.Outputs))
+// 				for i, out := range fn.Outputs {
+// 					outDef := MakeDefinition(
+// 						out.Name,
+// 						MakeDefaultValue(out.Typ),
+// 						out.Typ)
+// 					outNames[i] = outDef
+// 				}
+// 				expr.BuildExpression(outNames)
+// 			} else {
+// 				// No expressions found. Create first.
+// 				expr.BuildExpression(nil)
+// 			}
+// 		}
+// 	}
+// }
 
-// adaptPreEvolution removes the main function from the main
-// package. Then it creates a new main function that will contain a call
-// to the solution function.
-func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
-	var pkg *CXPackage
-	pkg, err := prgrm.GetPackage(MAIN_PKG)
-	if err != nil {
-		panic(err)
-	}
-	// Ensuring that main pkg exists.
-	_, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
-	if err != nil {
-		panic(err)
-	}
-	idx := -1
-	for i, fn := range pkg.Functions {
-		if fn.Name == MAIN_FN {
-			idx = i
-			break
-		}
-	}
-	// Removing main function.
-	pkg.Functions = append(pkg.Functions[:idx], pkg.Functions[idx+1:]...)
+// // adaptPreEvolution removes the main function from the main
+// // package. Then it creates a new main function that will contain a call
+// // to the solution function.
+// func (prgrm *CXProgram) adaptPreEvolution (solutionName string) {
+// 	var pkg *CXPackage
+// 	pkg, err := prgrm.GetPackage(MAIN_PKG)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	// Ensuring that main pkg exists.
+// 	_, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	idx := -1
+// 	for i, fn := range pkg.Functions {
+// 		if fn.Name == MAIN_FN {
+// 			idx = i
+// 			break
+// 		}
+// 	}
+// 	// Removing main function.
+// 	pkg.Functions = append(pkg.Functions[:idx], pkg.Functions[idx+1:]...)
 
-	var solPkg *CXPackage
-	solPkg, err = prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-	pkg, err = prgrm.GetPackage(MAIN_PKG)
-	if err != nil {
-		panic(err)
-	}
-	pkg.AddFunction(MakeFunction(MAIN_FN))
-	var fn *CXFunction
-	fn, err = prgrm.GetCurrentFunction()
-	if err != nil {
-		panic(err)
-	}
+// 	var solPkg *CXPackage
+// 	solPkg, err = prgrm.GetCurrentPackage()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	pkg, err = prgrm.GetPackage(MAIN_PKG)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	pkg.AddFunction(MakeFunction(MAIN_FN))
+// 	var fn *CXFunction
+// 	fn, err = prgrm.GetCurrentFunction()
+// 	if err != nil {
+// 		panic(err)
+// 	}
 	
-	fn.AddOutput(MakeParameter("out", "f64"))
+// 	fn.AddOutput(MakeParameter("out", "f64"))
 
-	var sol *CXFunction
-	sol, err = prgrm.GetFunction(solutionName, solPkg.Name)
-	if err != nil {
-		panic(err)
-	}
+// 	var sol *CXFunction
+// 	sol, err = prgrm.GetFunction(solutionName, solPkg.Name)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 	
-	fn.AddExpression(MakeExpression(sol))
+// 	fn.AddExpression(MakeExpression(sol))
 
-	var expr *CXExpression
-	if err != nil {
-		panic(err)
-	}
-	expr.AddOutputName("out")
-	tmpVal := encoder.Serialize(float64(0))
-	expr.AddArgument(MakeArgument(&tmpVal, "f64"))
-}
+// 	var expr *CXExpression
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	expr.AddOutputName("out")
+// 	tmpVal := encoder.Serialize(float64(0))
+// 	expr.AddArgument(MakeArgument(&tmpVal, "f64"))
+// }
 
-// adaptInput creates an argument that is set to `testValue`.
-func (prgrm *CXProgram) adaptInput (testValue float64) {
-	var fn *CXFunction
-	fn, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
-	if err != nil {
-		panic(err)
-	}
-	val := encoder.Serialize(testValue)
-	arg := MakeArgument(&val, "f64")
+// // adaptInput creates an argument that is set to `testValue`.
+// func (prgrm *CXProgram) adaptInput (testValue float64) {
+// 	var fn *CXFunction
+// 	fn, err = prgrm.GetFunction(MAIN_FN, MAIN_PKG)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	val := encoder.Serialize(testValue)
+// 	arg := MakeArgument(&val, "f64")
 
-	fn.Expressions[0].Arguments[0] = arg
-}
+// 	fn.Expressions[0].Arguments[0] = arg
+// }
 
-// transferSolution gets the function named `solutionName` from
-// `prgrm` to `toCxt`. This transfer occurrs on an expression basis,
-// meaning that each of the expressions in the solution function fonud in
-// `prgrm` gets replaced, and not the function as a whole.
-func (prgrm *CXProgram) transferSolution (solutionName string, toCxt *CXProgram) {
-	var fromPkg *CXPackage
-	fromPkg, err := prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-	var fromFn *CXFunction
-	fromFn, err = prgrm.GetFunction(solutionName, fromPkg.Name)
-	if err != nil {
-		panic(err)
-	}
-	var toPkg *CXPackage
-	toPkg, err = toCxt.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
-	for _, fn := range toPkg.Functions {
-		if fn.Name == solutionName {
-			fn.Expressions = fromFn.Expressions
-			break
-		}
-	}
-}
+// // transferSolution gets the function named `solutionName` from
+// // `prgrm` to `toCxt`. This transfer occurrs on an expression basis,
+// // meaning that each of the expressions in the solution function fonud in
+// // `prgrm` gets replaced, and not the function as a whole.
+// func (prgrm *CXProgram) transferSolution (solutionName string, toCxt *CXProgram) {
+// 	var fromPkg *CXPackage
+// 	fromPkg, err := prgrm.GetCurrentPackage()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	var fromFn *CXFunction
+// 	fromFn, err = prgrm.GetFunction(solutionName, fromPkg.Name)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	var toPkg *CXPackage
+// 	toPkg, err = toCxt.GetCurrentPackage()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	for _, fn := range toPkg.Functions {
+// 		if fn.Name == solutionName {
+// 			fn.Expressions = fromFn.Expressions
+// 			break
+// 		}
+// 	}
+// }
 
-func (prgrm *CXProgram) opEvolve (solutionName string, fnBag string, inputs, outputs []float64, numberExprs, iterations int, epsilon float64, expr *CXExpression, call *CXCall) error {
-	// Initializing expressions
-	var fn *CXFunction
-	fn, err := prgrm.SelectFunction(solutionName)
-	if err != nil {
-		panic(err)
-	}
+func opEvolve (prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
 
-	preExistingExpressions := len(fn.Expressions)
-	// Checking if we need to add more expressions.
-	for i := 0; i < numberExprs - preExistingExpressions; i++ {
-		if i != numberExprs - preExistingExpressions - 1 {
-			affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
+	inp1, inp2, inp3, inp4, inp5, inp6, inp7 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5], expr.Inputs[6]
 
-			r := rand.Intn(len(affs))
-			affs[r].ApplyAffordance()
+	solution := GetInferActions(inp1, fp)
 
-			if expr, err := fn.GetCurrentExpression(); err == nil {
-				expr.BuildExpression(nil)
-			}
-		} else {
+	_, _, _, _, _, _, _  = inp1, inp2, inp3, inp4, inp5, inp6, inp7
 
-			fnOutTypNames := make([]string, 0)
-			for _, out := range fn.Outputs {
-				fnOutTypNames = append(fnOutTypNames, out.Typ)
-			}
+	Debug("solution", solution)
+	
+	// // Initializing expressions
+	// var fn *CXFunction
+	// fn, err := prgrm.SelectFunction(solutionName)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-			var possibleOps string
-			coreModule, _ := prgrm.GetPackage("core")
-			for _, op := range coreModule.Functions {
-				possibleOp := true
-				for i, out := range op.Outputs {
-					if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
-						possibleOp = false
-						break
-					}
-				}
+	// preExistingExpressions := len(fn.Expressions)
+	// // Checking if we need to add more expressions.
+	// // for i := 0; i < numberExprs - preExistingExpressions; i++ {
+	// // 	if i != numberExprs - preExistingExpressions - 1 {
+	// // 		affs := FilterAffordances(fn.GetAffordances(), "Expression", fnBag)
 
-				if possibleOp {
-					possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
-				}
-			}
-			for _, op := range fn.Package.Functions {
-				possibleOp := true
-				for i, out := range op.Outputs {
-					if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
-						possibleOp = false
-						break
-					}
-				}
+	// // 		r := rand.Intn(len(affs))
+	// // 		affs[r].ApplyAffordance()
 
-				if possibleOp {
-					possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
-				}
-			}
+	// // 		if expr, err := fn.GetCurrentExpression(); err == nil {
+	// // 			expr.BuildExpression(nil)
+	// // 		}
+	// // 	} else {
 
-			possibleOps = string([]byte(possibleOps)[:len(possibleOps)-1])
+	// // 		fnOutTypNames := make([]string, 0)
+	// // 		for _, out := range fn.Outputs {
+	// // 			fnOutTypNames = append(fnOutTypNames, out.Typ)
+	// // 		}
 
-			affs := FilterAffordances(fn.GetAffordances(), "Expression", possibleOps, fnBag)
+	// // 		var possibleOps string
+	// // 		coreModule, _ := prgrm.GetPackage("core")
+	// // 		for _, op := range coreModule.Functions {
+	// // 			possibleOp := true
+	// // 			for i, out := range op.Outputs {
+	// // 				if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
+	// // 					possibleOp = false
+	// // 					break
+	// // 				}
+	// // 			}
 
-			r := rand.Intn(len(affs))
-			affs[r].ApplyAffordance()
+	// // 			if possibleOp {
+	// // 				possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
+	// // 			}
+	// // 		}
+	// // 		for _, op := range fn.Package.Functions {
+	// // 			possibleOp := true
+	// // 			for i, out := range op.Outputs {
+	// // 				if len(op.Outputs) != len(fnOutTypNames) || out.Typ != fnOutTypNames[i] {
+	// // 					possibleOp = false
+	// // 					break
+	// // 				}
+	// // 			}
 
-			// Making sure last expression assigns to function's output.
-			outNames := make([]*CXDefinition, len(fn.Outputs))
-			for i, out := range fn.Outputs {
-				outDef := MakeDefinition(
-					out.Name,
-					MakeDefaultValue(out.Typ),
-					out.Typ)
-				outNames[i] = outDef
-			}
+	// // 			if possibleOp {
+	// // 				possibleOps = concat(possibleOps, concat(regexp.QuoteMeta(op.Name), "|"))
+	// // 			}
+	// // 		}
 
-			if expr, err := fn.GetCurrentExpression(); err == nil {
-				expr.BuildExpression(outNames)
-			} else {
-				fmt.Println(err)
-			}
-		}
-	}
+	// // 		possibleOps = string([]byte(possibleOps)[:len(possibleOps)-1])
 
-	prgrmCopy := MakeContextCopy(prgrm, -1)
+	// // 		affs := FilterAffordances(fn.GetAffordances(), "Expression", possibleOps, fnBag)
 
-	best := prgrmCopy
-	best.adaptPreEvolution(solutionName)
+	// // 		r := rand.Intn(len(affs))
+	// // 		affs[r].ApplyAffordance()
 
-	//best.PrintProgram(false)
+	// // 		// Making sure last expression assigns to function's output.
+	// // 		outNames := make([]*CXDefinition, len(fn.Outputs))
+	// // 		for i, out := range fn.Outputs {
+	// // 			outDef := MakeDefinition(
+	// // 				out.Name,
+	// // 				MakeDefaultValue(out.Typ),
+	// // 				out.Typ)
+	// // 			outNames[i] = outDef
+	// // 		}
 
-	var finalError float64
+	// // 		if expr, err := fn.GetCurrentExpression(); err == nil {
+	// // 			expr.BuildExpression(outNames)
+	// // 		} else {
+	// // 			fmt.Println(err)
+	// // 		}
+	// // 	}
+	// // }
 
-	var pkg *CXPackage
-	pkg, err = prgrm.GetCurrentPackage()
-	if err != nil {
-		panic(err)
-	}
+	// // prgrmCopy := MakeContextCopy(prgrm, -1)
 
-	//
+	// // best := prgrmCopy
+	// // best.adaptPreEvolution(solutionName)
 
-	fn, err = prgrm.GetFunction(solutionName, pkg.Name)
-	if err != nil {
-		panic(err)
-	}
+	// // //best.PrintProgram(false)
 
-	// 
-	if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
-		//fmt.Printf("Evolving function '%s'\n", solutionName)
-		for i := 0; i < iterations; i++ {
-			programs := make([]*CXProgram, 5) // it's always 5, because of the 1+4 strategy
-			errors := make([]float64, 5)
-			programs[0] = best // the best solution will always be at index 0
+	// // var finalError float64
 
-			for i := 1; i < 5; i++ {
-				programs[i] = MakeContextCopy(programs[0], 0)
-				// we need to mutate these 4
-				programs[i].MutateSolution(solutionName, fnBag, numberExprs)
-				//programs[i].PrintProgram(false)
-			}
+	// // var pkg *CXPackage
+	// // pkg, err = prgrm.GetCurrentPackage()
+	// // if err != nil {
+	// // 	panic(err)
+	// // }
 
-			// we need to evaluate all of them with each of the inputs and get the error
-			for i, program := range programs {
-				//fmt.Printf("Program:%d\n", i)
-				var error float64 = 0
-				for i, inp := range inputs {
-					program.adaptInput(inp)
-					//fmt.Println(program.Packages[0].Functions[0].Expressions[0].Arguments[0].Value)
+	// // //
 
-					//program.PrintProgram(false)
-					//fmt.Println(inp)
+	// // fn, err = prgrm.GetFunction(solutionName, pkg.Name)
+	// // if err != nil {
+	// // 	panic(err)
+	// // }
 
-					program.Reset()
-					program.Run(false, -1)
+	// // // 
+	// // if len(fn.Inputs) > 0 && len(fn.Outputs) > 0 {
+	// // 	//fmt.Printf("Evolving function '%s'\n", solutionName)
+	// // 	for i := 0; i < iterations; i++ {
+	// // 		programs := make([]*CXProgram, 5) // it's always 5, because of the 1+4 strategy
+	// // 		errors := make([]float64, 5)
+	// // 		programs[0] = best // the best solution will always be at index 0
 
-					// getting the simulated output
-					var result float64
-					// We'll always take the first value
-					// The algorithm shouldn't work with multiple value returns yet
+	// // 		for i := 1; i < 5; i++ {
+	// // 			programs[i] = MakeContextCopy(programs[0], 0)
+	// // 			// we need to mutate these 4
+	// // 			programs[i].MutateSolution(solutionName, fnBag, numberExprs)
+	// // 			//programs[i].PrintProgram(false)
+	// // 		}
 
-					if len(program.Outputs) < 1 {
-						continue
-					}
-					output := program.Outputs[0].Value
-					encoder.DeserializeRaw(*output, &result)
+	// // 		// we need to evaluate all of them with each of the inputs and get the error
+	// // 		for i, program := range programs {
+	// // 			//fmt.Printf("Program:%d\n", i)
+	// // 			var error float64 = 0
+	// // 			for i, inp := range inputs {
+	// // 				program.adaptInput(inp)
+	// // 				//fmt.Println(program.Packages[0].Functions[0].Expressions[0].Arguments[0].Value)
 
-					//fmt.Println(program.Outputs[0].Value)
+	// // 				//program.PrintProgram(false)
+	// // 				//fmt.Println(inp)
 
-					// I don't want to import Math, so I will hardcode abs
-					diff := float64(result - outputs[i])
+	// // 				program.Reset()
+	// // 				program.Run(false, -1)
 
-					// fmt.Println(result)
-					//fmt.Println(program.Outputs[0].Value)
-					// fmt.Println(outputs[i])
-					// fmt.Println()
+	// // 				// getting the simulated output
+	// // 				var result float64
+	// // 				// We'll always take the first value
+	// // 				// The algorithm shouldn't work with multiple value returns yet
 
-					if diff >= 0 {
-						error += diff
-					} else {
-						error += (diff * float64(-1))
-					}
-					//fmt.Println(error)
+	// // 				if len(program.Outputs) < 1 {
+	// // 					continue
+	// // 				}
+	// // 				output := program.Outputs[0].Value
+	// // 				encoder.DeserializeRaw(*output, &result)
 
-				}
+	// // 				//fmt.Println(program.Outputs[0].Value)
 
-				//fmt.Println(len(program.CallStack[len(program.CallStack) - 1].State))
-				//fmt.Println(error / float64(len(inputs)))
-				errors[i] = error / float64(len(inputs))
-			}
+	// // 				// I don't want to import Math, so I will hardcode abs
+	// // 				diff := float64(result - outputs[i])
 
-			//fmt.Println(errors)
+	// // 				// fmt.Println(result)
+	// // 				//fmt.Println(program.Outputs[0].Value)
+	// // 				// fmt.Println(outputs[i])
+	// // 				// fmt.Println()
 
-			// the program with the lowest error becomes the best
-			bestIndex := 0
-			for i, _ := range programs {
-				if errors[i] <= errors[bestIndex] && errors[i] >= 0 {
-					bestIndex = i
-				}
-			}
-			//fmt.Println(errors)
-			//fmt.Println(bestIndex)
+	// // 				if diff >= 0 {
+	// // 					error += diff
+	// // 				} else {
+	// // 					error += (diff * float64(-1))
+	// // 				}
+	// // 				//fmt.Println(error)
 
-			// print error each iteration
-			//fmt.Println(errors[bestIndex])
-			//fmt.Println(errors)
+	// // 			}
 
-			//best.PrintProgram(false)
-			best = programs[bestIndex]
-			//best.PrintProgram(false)
-			finalError = errors[bestIndex]
+	// // 			//fmt.Println(len(program.CallStack[len(program.CallStack) - 1].State))
+	// // 			//fmt.Println(error / float64(len(inputs)))
+	// // 			errors[i] = error / float64(len(inputs))
+	// // 		}
 
-			if errors[bestIndex] < epsilon {
-				break
-			}
-		}
-		//fmt.Printf("Finished evolving function '%s'\n", solutionName)
-	}
-	//
+	// // 		//fmt.Println(errors)
 
-	best.transferSolution(solutionName, prgrm)
+	// // 		// the program with the lowest error becomes the best
+	// // 		bestIndex := 0
+	// // 		for i, _ := range programs {
+	// // 			if errors[i] <= errors[bestIndex] && errors[i] >= 0 {
+	// // 				bestIndex = i
+	// // 			}
+	// // 		}
+	// // 		//fmt.Println(errors)
+	// // 		//fmt.Println(bestIndex)
 
-	sFinalError := encoder.Serialize(finalError)
+	// // 		// print error each iteration
+	// // 		//fmt.Println(errors[bestIndex])
+	// // 		//fmt.Println(errors)
 
-	for _, def := range call.State {
-		if def.Name == expr.OutputNames[0].Name {
-			def.Value = &sFinalError
-			return nil
-		}
-	}
+	// // 		//best.PrintProgram(false)
+	// // 		best = programs[bestIndex]
+	// // 		//best.PrintProgram(false)
+	// // 		finalError = errors[bestIndex]
 
-	call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sFinalError, "f64"))
-	return nil
+	// // 		if errors[bestIndex] < epsilon {
+	// // 			break
+	// // 		}
+	// // 	}
+	// // 	//fmt.Printf("Finished evolving function '%s'\n", solutionName)
+	// // }
+	// // //
+
+	// // best.transferSolution(solutionName, prgrm)
+
+	// // sFinalError := encoder.Serialize(finalError)
+
+	// // for _, def := range call.State {
+	// // 	if def.Name == expr.OutputNames[0].Name {
+	// // 		def.Value = &sFinalError
+	// // 		return nil
+	// // 	}
+	// // }
+
+	// // call.State = append(call.State, MakeDefinition(expr.OutputNames[0].Name, &sFinalError, "f64"))
 }
