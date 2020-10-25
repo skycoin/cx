@@ -14,7 +14,10 @@ import (
 
 func cmdPeers(args []string) {
 	// spec is the chain spec obtained from ENV
-	spec := parseSpecFilepathEnv()
+	if err := globals.specErr; err != nil {
+		log.WithError(err).Fatal()
+	}
+	spec := globals.spec
 
 	// rootCmd is the root command of the 'peers' subcommand
 	rootCmd := flag.NewFlagSet("cxchain-cli peers", flag.ExitOnError)
@@ -36,12 +39,6 @@ func cmdPeers(args []string) {
 		}
 		addNodeAddrFlag(cmd)
 
-		if len(args) < 1 {
-			cxutil.CmdErrorf(cmd, fmt.Errorf("no %s specified", argsName))
-			cmd.Usage()
-			os.Exit(1)
-		}
-
 		if err := cmd.Parse(args); err != nil {
 			cxutil.CmdErrorf(cmd, err)
 			cmd.Usage()
@@ -60,7 +57,7 @@ func cmdPeers(args []string) {
 		}
 		addNodeAddrFlag(cmd)
 
-		if err := cmd.Parse(args[1:]); err != nil {
+		if err := cmd.Parse(args); err != nil {
 			cxutil.CmdErrorf(cmd, err)
 			cmd.Usage()
 			os.Exit(1)

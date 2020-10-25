@@ -4,8 +4,8 @@
 - [ ] Simplify chain creation **(Due: 26/10/2020 Monday)**.
     - [x] Simplify cx chain creation to 2 commands.
     - [x] Command for manual connection management.
-    - [ ] Use base64 encoding for program state to save space.
-    - [ ] CLI should provide ENV help menu.
+    - [x] Use base64 encoding for program state to save space.
+    - [x] CLI should provide ENV help menu and global flag support.
     - [ ] Implement retry logic for obtaining chain program state. This will avoid failures with tx injection.
     - [ ] Documentation updates and README cleanups.
     - [ ] Remove legacy code.
@@ -32,3 +32,4 @@
 - [ ] Allow 0-coin transactions (Switch cx transactions to be 0-coin transactions).
 - [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
 - [ ] Rework `pex`, `daemon` and associated modules to be able to manually add/remove peers/connections.
+- [ ] Improve CLI interface further: add descriptions.

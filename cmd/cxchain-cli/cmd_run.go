@@ -14,49 +14,7 @@ import (
 	"github.com/SkycoinProject/cx/cxutil"
 )
 
-const (
-	// ENV for chain spec filepath.
-	specFileEnv          = "CXCHAIN_SPEC_FILEPATH"
-	defaultChainSpecFile = "./skycoin.chain_spec.json"
 
-	// ENV for genesis secret key.
-	genSKEnv = "CXCHAIN_GENESIS_SK"
-)
-
-// parseSpecFilepathEnv parses chain spec filename from CXCHAIN_SPEC_FILEPATH env.
-func parseSpecFilepathEnv() cxspec.ChainSpec {
-	specFilename, ok := os.LookupEnv(specFileEnv)
-	if !ok {
-		specFilename = defaultChainSpecFile
-	}
-
-	log.WithField("filename", specFilename).Info("Reading chain spec file...")
-
-	spec, err := cxspec.ReadSpecFile(specFilename)
-	if err != nil {
-		log.WithError(err).Fatal("Failed to start node.")
-	}
-
-	// TODO @evanlinjin: Need to fix genesis program state being atrociously massive.
-	// spec.Print()
-
-	cxspec.PopulateParamsModule(spec)
-
-	return spec
-}
-
-// parseSecretKeyEnv parses secret key from CXCHAIN_SECRET_KEY env.
-// The secret key can be null.
-func parseSecretKeyEnv() cipher.SecKey {
-	if skStr, ok := os.LookupEnv(genSKEnv); ok {
-		sk, err := cipher.SecKeyFromHex(skStr)
-		if err != nil {
-			log.WithError(err).WithField("ENV", genSKEnv).Fatal("Provided genesis secret key is invalid.")
-		}
-		return sk
-	}
-	return cipher.SecKey{} // return nil secret key
-}
 
 type runFlags struct {
 	cmd *flag.FlagSet
@@ -70,8 +28,15 @@ type runFlags struct {
 }
 
 func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) {
-	spec := parseSpecFilepathEnv()
-	genSK := parseSecretKeyEnv()
+	if err := globals.specErr; err != nil {
+		log.WithError(err).Fatal()
+	}
+	spec := globals.spec
+
+	if err := globals.genSKErr; err != nil {
+		log.WithError(err).Fatal()
+	}
+	genSK := globals.genSK
 
 	// Check genesis secret key.
 	if !genSK.Null() {

@@ -23,7 +23,10 @@ type stateFlags struct {
 }
 
 func processStateFlags(args []string) (stateFlags, cipher.Address) {
-	spec := parseSpecFilepathEnv()
+	if err := globals.specErr; err != nil {
+		log.WithError(err).Fatal()
+	}
+	spec := globals.spec
 
 	f := stateFlags{
 		cmd:         flag.NewFlagSet("cxchain-cli state", flag.ExitOnError),
