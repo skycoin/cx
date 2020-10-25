@@ -6,7 +6,7 @@
     - [x] Command for manual connection management.
     - [x] Use base64 encoding for program state to save space.
     - [x] CLI should provide ENV help menu and global flag support.
-    - [ ] Implement retry logic for obtaining chain program state. This will avoid failures with tx injection.
+    - [x] Implement retry logic for obtaining chain program state. This will avoid failures with tx injection.
     - [ ] Documentation updates and README cleanups.
     - [ ] Remove legacy code.
     - [ ] Fix merge conflicts.
