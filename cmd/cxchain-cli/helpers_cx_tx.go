@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cipher"
@@ -22,7 +25,7 @@ func PrepareChainProg(filenames []string, srcs []*os.File, c *api.Client, addr c
 
 	// Obtain chain state UX.
 	// TODO @evanlinjin: Implement retry logic.
-	ux, err := ObtainProgramStateUxOut(c, addr)
+	ux, err := RetryObtainProgramStateUxOut(c, addr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -93,6 +96,36 @@ func ObtainProgramStateUxOut(c *api.Client, addr cipher.Address) (coin.UxOut, er
 		return coin.UxOut{}, fmt.Errorf("failed to find output owned by '%s' that contains a program state", addr)
 	}
 	return uxPS, nil
+}
+
+func RetryObtainProgramStateUxOut(c *api.Client, addr cipher.Address) (uo coin.UxOut, err error) {
+	done := make(chan struct{})
+	ch := make(chan os.Signal)
+	signal.Notify(ch, []os.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT}...)
+
+	const tries = 10
+
+	go func() {
+		defer close(done)
+
+		for i := 0; i < tries; i++ {
+			uo, err = ObtainProgramStateUxOut(c, addr)
+			if err != nil {
+				select {
+				case <-time.After(time.Second):
+					continue
+
+				case sig := <-ch:
+					err = fmt.Errorf("stopped by OS signal: %v", sig)
+				}
+			}
+
+			return
+		}
+	}()
+
+	<-done
+	return uo, err
 }
 
 func BroadcastMainExp(c *api.Client, genSK cipher.SecKey, ux *coin.UxOut) error {

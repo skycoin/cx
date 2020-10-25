@@ -14,8 +14,6 @@ import (
 	"github.com/SkycoinProject/cx/cxutil"
 )
 
-
-
 type runFlags struct {
 	cmd *flag.FlagSet
 
@@ -32,10 +30,6 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 		log.WithError(err).Fatal()
 	}
 	spec := globals.spec
-
-	if err := globals.genSKErr; err != nil {
-		log.WithError(err).Fatal()
-	}
 	genSK := globals.genSK
 
 	// Check genesis secret key.
@@ -84,6 +78,13 @@ func processRunFlags(args []string) (runFlags, cxspec.ChainSpec, cipher.SecKey) 
 		os.Exit(1)
 	}
 
+	// Check stuff.
+	if f.inject && globals.genSKErr != nil {
+		log.WithError(globals.genSKErr).
+			WithField("ENV", genSKEnv).
+			Fatal("Genesis secret key should be provided to inject transaction.")
+	}
+
 	// Log stuff.
 	cxflags.LogMemFlags(log)
 
@@ -113,7 +114,7 @@ func cmdRun(args []string) {
 	addr := cipher.MustDecodeBase58Address(spec.GenesisAddr)
 
 	// Parse and run program.
-	ux, progB, err := PrepareChainProg(cxFilenames, cxRes.CXSources, c, addr, flags.debugLexer, flags.debugProfile,)
+	ux, progB, err := PrepareChainProg(cxFilenames, cxRes.CXSources, c, addr, flags.debugLexer, flags.debugProfile)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to prepare chain CX program.")
 	}

@@ -70,7 +70,7 @@ func cmdState(args []string) {
 
 	c := api.NewClient(flags.nodeAddr)
 
-	ux, err := ObtainProgramStateUxOut(c, addr)
+	ux, err := RetryObtainProgramStateUxOut(c, addr)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to obtain program state.")
 	}
