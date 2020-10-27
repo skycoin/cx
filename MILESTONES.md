@@ -1,14 +1,13 @@
 # CX Chain Milestones
 
 ## v1.0 (Initial release)
-- [ ] Simplify chain creation **(Due: 26/10/2020 Monday)**.
+- [x] Simplify chain creation **(Due: 26/10/2020 Monday)**.
     - [x] Simplify cx chain creation to 2 commands.
     - [x] Command for manual connection management.
     - [x] Use base64 encoding for program state to save space.
     - [x] CLI should provide ENV help menu and global flag support.
     - [x] Implement retry logic for obtaining chain program state. This will avoid failures with tx injection.
-    - [ ] Remove legacy code.
-    - [ ] Fix merge conflicts.
+    - [x] Fix merge conflicts.
     
 - [ ] Integration with CX Tracker **(Due: 02/11/2020 Monday)**.
     - [ ] Implement method to reference and register chain spec.
@@ -32,3 +31,4 @@
 - [ ] Fix `MainExpression` representation in transactions (allows for more secure transaction verification).
 - [ ] Rework `pex`, `daemon` and associated modules to be able to manually add/remove peers/connections.
 - [ ] Improve CLI interface further: add descriptions.
+- [ ] Remove legacy code. Need to do this later as some parts may still be needed.
