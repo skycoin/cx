@@ -5,7 +5,7 @@ sudo: required
 
 # Version of go to use
 go:
-  - "1.11.x"
+  - "1.15.x"
 
 # Placed source code under GOPATH
 go_import_path: github.com/SkycoinProject/cx
