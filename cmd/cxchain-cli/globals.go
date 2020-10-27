@@ -22,9 +22,9 @@ const (
 var ErrNoSKProvided = errors.New("no secret key provided")
 
 var globals = struct {
-	spec    cxspec.ChainSpec // chain spec struct obtained from file defined in `CXCHAIN_SPEC_FILE` ENV
-	specFilename string // chain spec filename
-	specErr error            // error when obtaining chain spec
+	spec         cxspec.ChainSpec // chain spec struct obtained from file defined in `CXCHAIN_SPEC_FILE` ENV
+	specFilename string           // chain spec filename
+	specErr      error            // error when obtaining chain spec
 
 	genSK    cipher.SecKey // genesis secret key obtained from SK defined in `CXCHAIN_GENESIS_SK` ENV
 	genSKErr error         // error when obtaining genesis secret key
@@ -55,7 +55,6 @@ func parseSpecFileEnv() (cxspec.ChainSpec, string, error) {
 	if !ok {
 		specFilename = defaultChainSpecFile
 	}
-
 
 	spec, err := cxspec.ReadSpecFile(specFilename)
 	if err != nil {

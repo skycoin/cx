@@ -21,14 +21,14 @@ import (
 // re contains all regular expressions used for lexing
 var re = struct {
 	// comments
-	comment      *regexp.Regexp
-	multiCommentOpen *regexp.Regexp
+	comment           *regexp.Regexp
+	multiCommentOpen  *regexp.Regexp
 	multiCommentClose *regexp.Regexp
 
 	// packages and structs
-	pkg *regexp.Regexp
+	pkg     *regexp.Regexp
 	pkgName *regexp.Regexp
-	str *regexp.Regexp
+	str     *regexp.Regexp
 	strName *regexp.Regexp
 
 	// globals
@@ -40,26 +40,26 @@ var re = struct {
 	bodyClose *regexp.Regexp
 
 	// imports
-	imp *regexp.Regexp
+	imp     *regexp.Regexp
 	impName *regexp.Regexp
 }{
 	comment:           regexp.MustCompile("//"),
 	multiCommentOpen:  regexp.MustCompile(`/\*`),
 	multiCommentClose: regexp.MustCompile(`\*/`),
 
-	pkg:               regexp.MustCompile("package"),
-	pkgName:           regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)"),
-	str:               regexp.MustCompile("type"),
-	strName:           regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s"),
+	pkg:     regexp.MustCompile("package"),
+	pkgName: regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)"),
+	str:     regexp.MustCompile("type"),
+	strName: regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s"),
 
-	gl:                regexp.MustCompile("var"),
-	glName:            regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)"),
+	gl:     regexp.MustCompile("var"),
+	glName: regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)"),
 
-	bodyOpen:          regexp.MustCompile("{"),
-	bodyClose:         regexp.MustCompile("}"),
+	bodyOpen:  regexp.MustCompile("{"),
+	bodyClose: regexp.MustCompile("}"),
 
-	imp:               regexp.MustCompile("import"),
-	impName:           regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\""),
+	imp:     regexp.MustCompile("import"),
+	impName: regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\""),
 }
 
 // lg contains loggers
@@ -134,9 +134,9 @@ func idPkgAndStructs(filename string, r io.Reader, prePkg **cxcore.CXPackage) {
 	}
 
 	var (
-		s = bufio.NewScanner(r)
+		s         = bufio.NewScanner(r)
 		inComment = false
-		lineN = 0
+		lineN     = 0
 	)
 
 	for s.Scan() {
@@ -402,7 +402,6 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) int {
 			parseErrors += parser.Parse(parser.NewLexer(b))
 		}()
 	}
-
 
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
 		return cxcore.CX_COMPILATION_ERROR

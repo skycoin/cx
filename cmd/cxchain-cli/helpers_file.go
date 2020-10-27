@@ -16,7 +16,7 @@ const (
 func openFile(filename string) (*os.File, func(), error) {
 	switch filename {
 	case stdinFile, "":
-		return os.Stdin, func(){}, nil
+		return os.Stdin, func() {}, nil
 	case stdoutFile:
 		return nil, nil, fmt.Errorf("cannot read from %s", filename)
 	default:
@@ -36,7 +36,7 @@ func openFile(filename string) (*os.File, func(), error) {
 func createFile(filename string) (*os.File, func(), error) {
 	switch filename {
 	case stdoutFile, "":
-		return os.Stdout, func(){}, nil
+		return os.Stdout, func() {}, nil
 	case stdinFile:
 		return nil, nil, fmt.Errorf("cannot write to %s", filename)
 	default:

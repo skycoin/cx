@@ -61,9 +61,9 @@ type NodeParams struct {
 // DefaultNodeParams returns the default values for NodeParams.
 func DefaultNodeParams() NodeParams {
 	return NodeParams{
-		Port:                    6001,
-		WebInterfacePort:        6421,
-		DefaultConnections:      []string{
+		Port:             6001,
+		WebInterfacePort: 6421,
+		DefaultConnections: []string{
 			"127.0.0.1:6001",
 		},
 		PeerListURL:             "https://127.0.0.1/peers.txt",
@@ -92,25 +92,25 @@ type ChainSpec struct {
 	CoinHoursTicker string `json:"coin_hours_ticker"` // Coin hours ticker (e.g SCH).
 
 	/* Genesis Params */
-	GenesisAddr       string `json:"genesis_address"`     // Genesis address (base58 representation).
-	GenesisSig        string `json:"genesis_signature"`   // Genesis signature (hex representation).
-	GenesisCoinVolume uint64 `json:"genesis_coin_volume"` // Genesis coin volume.
+	GenesisAddr       string `json:"genesis_address"`       // Genesis address (base58 representation).
+	GenesisSig        string `json:"genesis_signature"`     // Genesis signature (hex representation).
+	GenesisCoinVolume uint64 `json:"genesis_coin_volume"`   // Genesis coin volume.
 	GenesisProgState  string `json:"genesis_program_state"` // Initial program state on genesis addr (hex representation).
-	GenesisTimestamp  uint64 `json:"genesis_timestamp"`   // Timestamp of genesis block (in seconds, UTC time).
+	GenesisTimestamp  uint64 `json:"genesis_timestamp"`     // Timestamp of genesis block (in seconds, UTC time).
 
 	/* Distribution Params */
 	// TODO @evanlinjin: Figure out if these are needed for the time being.
-	MaxCoinSupply             uint64   `json:"max_coin_supply"`              // Maximum coin supply.
+	MaxCoinSupply uint64 `json:"max_coin_supply"` // Maximum coin supply.
 	// InitialUnlockedCount      uint64   `json:"initial_unlocked_count"`       // Initial number of unlocked addresses.
 	// UnlockAddressRate         uint64   `json:"unlock_address_rate"`          // Number of addresses to unlock per time interval.
 	// UnlockAddressTimeInterval uint64   `json:"unlock_address_time_interval"` // Time interval (in seconds) in which addresses are unlocked. Once the InitialUnlockedCount is exhausted, UnlockAddressRate addresses will be unlocked per UnlockTimeInterval.
 	// DistributionAddresses     []string `json:"distribution_addresses"`       // Addresses that receive coins.
 
 	/* post-processed params */
-	chainPK cipher.PubKey
-	genAddr cipher.Address
-	genSig        cipher.Sig
-	genProgState  []byte
+	chainPK      cipher.PubKey
+	genAddr      cipher.Address
+	genSig       cipher.Sig
+	genProgState []byte
 	// distAddresses []cipher.Address // TODO @evanlinjin: May not be needed.
 }
 
@@ -120,15 +120,15 @@ func New(coin, ticker string, chainSK cipher.SecKey, genesisAddr cipher.Address,
 	ticker = strings.ToUpper(strings.Replace(ticker, " ", "", -1))
 
 	spec := &ChainSpec{
-		SpecEra:           Era,
-		ChainPubKey:       "", // ChainPubKey is generated at a later step via generateAndSignGenesisBlock
-		Protocol:          DefaultProtocolParams(),
-		Node:              DefaultNodeParams(),
+		SpecEra:     Era,
+		ChainPubKey: "", // ChainPubKey is generated at a later step via generateAndSignGenesisBlock
+		Protocol:    DefaultProtocolParams(),
+		Node:        DefaultNodeParams(),
 
-		CoinName:          coin,
-		CoinTicker:        ticker,
-		CoinHoursName:     fmt.Sprintf("%s coin hours", coin),
-		CoinHoursTicker:   fmt.Sprintf("%sCH", ticker),
+		CoinName:        coin,
+		CoinTicker:      ticker,
+		CoinHoursName:   fmt.Sprintf("%s coin hours", coin),
+		CoinHoursTicker: fmt.Sprintf("%sCH", ticker),
 
 		GenesisAddr:       genesisAddr.String(),
 		GenesisSig:        "", // GenesisSig is generated at a later step via generateAndSignGenesisBlock

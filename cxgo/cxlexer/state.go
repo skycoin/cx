@@ -17,7 +17,6 @@ func InitProg() (*cxcore.CXProgram, error) {
 	return prog, nil
 }
 
-
 // ProgBytes represents program bytes.
 type ProgBytes struct {
 	State []byte

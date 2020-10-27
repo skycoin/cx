@@ -50,8 +50,8 @@ func PopulateNodeConfig(spec ChainSpec, conf *skycoin.NodeConfig) error {
 		MaxDropletPrecision: spec.Protocol.UnconfirmedMaxDropletPrecision,
 	}
 	conf.CreateBlockVerifyTxn = params.VerifyTxn{
-		BurnFactor: spec.Protocol.CreateBlockBurnFactor,
-		MaxTransactionSize: spec.Protocol.CreateBlockMaxTransactionSize,
+		BurnFactor:          spec.Protocol.CreateBlockBurnFactor,
+		MaxTransactionSize:  spec.Protocol.CreateBlockMaxTransactionSize,
 		MaxDropletPrecision: spec.Protocol.CreateBlockMaxDropletPrecision,
 	}
 	conf.MaxBlockTransactionsSize = spec.Protocol.MaxBlockTransactionSize
@@ -156,33 +156,33 @@ func BaseNodeConfig() skycoin.NodeConfig {
 		ResetCorruptDB:                    false,
 		UnconfirmedVerifyTxn:              params.VerifyTxn{}, // populate with cx spec
 		CreateBlockVerifyTxn:              params.VerifyTxn{}, // populate with cx spec
-		MaxBlockTransactionsSize:          0, // populate with cx spec
+		MaxBlockTransactionsSize:          0,                  // populate with cx spec
 		WalletDirectory:                   "",
 		WalletCryptoType:                  string(wallet.CryptoTypeScryptChacha20poly1305),
 		KVStorageDirectory:                "",
-		EnabledStorageTypes:               []kvstorage.Type{
+		EnabledStorageTypes: []kvstorage.Type{
 			kvstorage.TypeTxIDNotes,
 			kvstorage.TypeGeneral,
 		},
-		DisableDefaultPeers:               false,
-		CustomPeersFile:                   "",
-		RunBlockPublisher:                 false,
-		ProfileCPU:                        false,
-		ProfileCPUFile:                    "cpu.prof",
-		HTTPProf:                          false,
-		HTTPProfHost:                      "localhost:6060",
-		DBPath:                            "",
-		DBReadOnly:                        false,
-		LogToFile:                         false,
-		Version:                           false,
-		GenesisSignatureStr:               "", // populate with cx spec
-		GenesisAddressStr:                 "", // populate with cx spec
-		BlockchainPubkeyStr:               "", // populate with cx spec
-		BlockchainSeckeyStr:               "",
-		GenesisTimestamp:                  0, // populate with cx spec
-		GenesisCoinVolume:                 0, // populate with cx spec
-		DefaultConnections:                nil, // populate with cx spec
-		Fiber:                             readable.FiberConfig{}, // populate with cx spec
+		DisableDefaultPeers: false,
+		CustomPeersFile:     "",
+		RunBlockPublisher:   false,
+		ProfileCPU:          false,
+		ProfileCPUFile:      "cpu.prof",
+		HTTPProf:            false,
+		HTTPProfHost:        "localhost:6060",
+		DBPath:              "",
+		DBReadOnly:          false,
+		LogToFile:           false,
+		Version:             false,
+		GenesisSignatureStr: "", // populate with cx spec
+		GenesisAddressStr:   "", // populate with cx spec
+		BlockchainPubkeyStr: "", // populate with cx spec
+		BlockchainSeckeyStr: "",
+		GenesisTimestamp:    0,                      // populate with cx spec
+		GenesisCoinVolume:   0,                      // populate with cx spec
+		DefaultConnections:  nil,                    // populate with cx spec
+		Fiber:               readable.FiberConfig{}, // populate with cx spec
 	}
 
 	return conf

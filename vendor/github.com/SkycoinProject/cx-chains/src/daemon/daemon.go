@@ -274,6 +274,7 @@ func NewDaemonConfig() DaemonConfig {
 type daemoner interface {
 	Disconnect(addr string, r gnet.DisconnectReason) error
 	DaemonConfig() DaemonConfig
+
 	sendMessage(addr string, msg gnet.Message) error
 	broadcastMessage(msg gnet.Message) ([]uint64, error)
 	disconnectNow(addr string, r gnet.DisconnectReason) error

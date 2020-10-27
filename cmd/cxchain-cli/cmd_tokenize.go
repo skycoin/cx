@@ -22,7 +22,7 @@ func cmdTokenize(args []string) {
 	cmd.StringVar(&out, "o", out, "shorthand for 'output'")
 
 	// flag: input, i
-	in :=  stdinFile
+	in := stdinFile
 	cmd.StringVar(&in, "input", in, "`FILE` to use as compile input")
 	cmd.StringVar(&in, "i", in, "shorthand for 'input'")
 
@@ -47,4 +47,3 @@ func cmdTokenize(args []string) {
 
 	parser.Tokenize(inF, outF)
 }
-

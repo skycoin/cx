@@ -23,7 +23,7 @@ import (
 
 	"github.com/theherk/viper"
 
-	"github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/cx/cxgo/actions"
 	api2 "github.com/SkycoinProject/cx/cxgo/api"
 	"github.com/SkycoinProject/cx/cxgo/cxgo0"

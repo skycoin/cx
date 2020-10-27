@@ -16,8 +16,8 @@ const (
 type KeySpec struct {
 	SpecEra string `json:"spec_era"`
 	KeyType string `json:"key_type"` // Either "chain_key" or "genesis_key"
-	PubKey string `json:"pubkey"`
-	SecKey string `json:"seckey,omitempty"`
+	PubKey  string `json:"pubkey"`
+	SecKey  string `json:"seckey,omitempty"`
 	Address string `json:"address,omitempty"`
 }
 

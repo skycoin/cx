@@ -77,9 +77,9 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: install-deps ## Generate lexer and parser for CX grammar
-	$(GOBIN)/nex -e cxgo/cxgo0/cxgo0.nex
+	#$(GOBIN)/nex -e cxgo/cxgo0/cxgo0.nex
 	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	$(GOBIN)/nex -e cxgo/parser/cxgo.nex
+	#$(GOBIN)/nex -e cxgo/parser/cxgo.nex
 	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: build-parser ## Build CX from sources
@@ -119,19 +119,11 @@ install-deps:
 	$(GO_OPTS) go get -u github.com/SkycoinProject/nex
 	$(GO_OPTS) go get -u modernc.org/goyacc
 
-install-gfx-deps: $(INSTALL_GFX_DEPS)
-	# TODO evanlinjin: These are all dependencies. Do we need this here?
-#	$(GO_OPTS) go get github.com/SkycoinProject/gltext
-#	$(GO_OPTS) go get github.com/go-gl/gl/v3.2-compatibility/gl
-#	$(GO_OPTS) go get github.com/go-gl/glfw/v3.3/glfw
-#	$(GO_OPTS) go get golang.org/x/mobile/exp/audio/al
-#	$(GO_OPTS) go get github.com/mjibson/go-dsp/wav
-
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	$(GOBIN)/cx -v
 
-install-full: install-gfx-deps install-deps build-full configure-workspace
+install-full: install-deps build-full configure-workspace
 
 install-mobile:
 	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
@@ -142,6 +134,17 @@ install-linters: ## Install linters
 
 lint: ## Run linters. Use make install-linters first.
 	$(GOBIN)/golangci-lint run -c .golangci.yml ./cx
+
+token-fuzzer:
+	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
+	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+
+test-lexer: token-fuzzer
+	cx-token-fuzzer -b 4 -c 100 -o $(PWD)/benchmarks/test-lexer/test-toks.txt
+	nex -e $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nex
+	$(GO_OPTS) go run $(PWD)/benchmarks/test-lexer/main.go $(PWD)/benchmarks/test-lexer/test-toks.txt
+#	rm -f $(PWD)/benchmarks/test-lexer/test-toks.txt
+#	rm -f $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nn.go
 
 test: build ## Run CX test suite.
 	$(GO_OPTS) go test -race -tags base github.com/SkycoinProject/cx/cxgo/
@@ -161,8 +164,8 @@ check: check-golden-files test ## Perform self-tests
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/SkycoinProject/cx ./cx
-	goimports -w -local github.com/SkycoinProject/cx ./cxgo/actions
-	goimports -w -local github.com/SkycoinProject/cx ./cxgo/api
+	goimports -w -local github.com/SkycoinProject/cx ./cxgo
+	goimports -w -local github.com/SkycoinProject/cx ./cmd
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

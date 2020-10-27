@@ -41,10 +41,10 @@ func processNewFlags(args []string) newFlags {
 	f := newFlags{
 		cmd: flag.NewFlagSet("cxchain-cli new", flag.ExitOnError),
 
-		replace:      false,
-		unifyKeys:    false,
-		coinName:     "skycoin",
-		coinTicker:   "SKY",
+		replace:    false,
+		unifyKeys:  false,
+		coinName:   "skycoin",
+		coinTicker: "SKY",
 
 		debugLexer:   false,
 		debugProfile: 0,

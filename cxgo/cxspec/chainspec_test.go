@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/stretchr/testify/require"
+
+	"github.com/SkycoinProject/cx-chains/src/cipher"
 )
 
 func TestNew(t *testing.T) {
