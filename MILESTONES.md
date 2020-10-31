@@ -10,6 +10,7 @@
     - [x] Fix merge conflicts.
     
 - [ ] Integration with CX Tracker **(Due: 02/11/2020 Monday)**.
+    - [ ] Actually implement CX Tracker.
     - [ ] Implement method to reference and register chain spec.
         - [ ] Subcommand `cxchain-cli register-spec`.
     - [ ] Implement method to auto-register CX nodes.

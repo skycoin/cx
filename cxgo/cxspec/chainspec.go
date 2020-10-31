@@ -212,6 +212,15 @@ func (cs *ChainSpec) Print() {
 	fmt.Println(string(b))
 }
 
+// SpecHash returns the hashed spec object.
+func (cs *ChainSpec) SpecHash() cipher.SHA256 {
+	b, err := json.Marshal(cs)
+	if err != nil {
+		panic(err)
+	}
+	return cipher.SumSHA256(b)
+}
+
 // postProcess fills post-process fields of chain spec.
 // The 'allowEmpty'
 func postProcess(cs *ChainSpec, allowEmpty bool) error {
