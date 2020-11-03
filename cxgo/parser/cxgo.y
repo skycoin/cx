@@ -747,6 +747,10 @@ infer_action_arg:
                 {
 			$$ = strconv.Itoa(int($1))
                 }
+	|	type_specifier PERIOD IDENTIFIER
+		{
+			$$ = TypeNames[$1] + "." + $3
+		}
         ;
 
 infer_action:
