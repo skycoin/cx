@@ -303,6 +303,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		fn := call.Operator
 		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
+		
 		if expr.Operator == nil {
 			// then it's a declaration
 			// wiping this declaration's memory (removing garbage)

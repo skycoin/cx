@@ -1126,6 +1126,19 @@ func ReadSlice(fp int, inp *CXArgument, dataType int) interface{} {
 	return interface{}(nil)
 }
 
+// ReadSliceBytes ...
+func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
+	sliceOffset := GetSliceOffset(fp, inp)
+	if sliceOffset >= 0 && (dataType < 0 || inp.Type == dataType) {
+		slice := GetSliceData(sliceOffset, GetAssignmentElement(inp).Size)
+		return slice
+	} else {
+		panic(CX_RUNTIME_INVALID_ARGUMENT)
+	}
+
+	return nil
+}
+
 // ReadArray ...
 func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
 	offset := GetFinalOffset(fp, inp)

@@ -30,6 +30,7 @@ const HEAP_EXHAUSTED_ERROR = "heap exhausted"
 const MAIN_FUNC = "main"
 const SYS_INIT_FUNC = "*init"
 const MAIN_PKG = "main"
+const STDLIB_PKG = "stdlib"
 const OS_PKG = "os"
 const OS_ARGS = "Args"
 
