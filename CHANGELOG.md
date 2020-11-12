@@ -9,6 +9,7 @@
 	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
 	- Increased opengl version from 2.1 to 3.2.
 	- Increased glfw version from 3.2 to 3.3.
+    - Added opcodes for reading/writing from/to binary file.
     - Added .hdr file loader.
 	- Added opengl bindings : glClearBufferI, glClearBufferUI, glClearBufferF, glBlendFuncSeparate, glDrawBuffers.
 	- Added glfw bindings : glfw.GetWindowContentScale, glfw.GetMonitorContentScale.
