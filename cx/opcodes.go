@@ -1056,12 +1056,12 @@ func init() {
 	Op(OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ABOOL, ASTR), nil)
 	Op(OP_STRERROR, "strerror", opStrError, In(AI32), Out(ASTR))
 
-	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(AAFF), nil)
-	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(AAFF), Out(AAFF))
-	Op(OP_AFF_ON, "aff.on", opAffOn, In(AAFF, AAFF), nil)
-	Op(OP_AFF_OF, "aff.of", opAffOf, In(AAFF, AAFF), nil)
-	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(AAFF, AI32, AAFF), nil)
-	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(AAFF, AI32, AAFF), nil)
+	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(Slice(TYPE_AFF)), Out(Slice(TYPE_AFF)))
+	Op(OP_AFF_ON, "aff.on", opAffOn, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_OF, "aff.of", opAffOf, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
 
 	Op(OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
 	Op(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))

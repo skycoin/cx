@@ -150,6 +150,7 @@ func Assignment(to []*CXExpression, assignOp string, from []*CXExpression) []*CX
 			if outTypeArg.IsSlice {
 				// if from[idx].Operator.Outputs[0].IsSlice {
 				sym.Lengths = append([]int{0}, sym.Lengths...)
+				sym.DeclarationSpecifiers = append(sym.DeclarationSpecifiers, DECL_SLICE)
 			}
 
 			sym.IsSlice = outTypeArg.IsSlice

@@ -1,0 +1,975 @@
+<      {
+}
+/(\r\n|\r|\n)/ {
+	lval.line++
+	LineNo++
+	token := f(NEWLINE)
+	if token != NEWLINE {
+		return token
+	}
+}
+/(\t| )/ {
+	/* skip blanks and tabs */
+}
+/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|\/\/[^\n\r]*/ {
+	/* skip comments */
+	noLines := countNewLines([]byte(yylex.Text()))
+	lval.line += noLines
+        LineNo += noLines
+}
+/aff/                     { lval.tok = yylex.Text(); return f(AFF) }
+/bool/                    { lval.tok = yylex.Text(); return f(BOOL) }
+/break/                   { return f(BREAK) }
+/case/                    { return f(CASE) }
+/const/                   { return f(CONST) }
+/continue/                { return f(CONTINUE) }
+/default/                 { return f(DEFAULT) }
+/else/                    { return f(ELSE) }
+/enum/                    { return f(ENUM) }
+/f32/                     { lval.tok = yylex.Text(); return f(F32) }
+/f64/                     { lval.tok = yylex.Text(); return f(F64) }
+/for/                     { return f(FOR)}
+/goto/                    { return f(GOTO)}
+/i8/                      { lval.tok = yylex.Text(); return f(I8)}
+/i16/                     { lval.tok = yylex.Text(); return f(I16)}
+/i32/                     { lval.tok = yylex.Text(); return f(I32)}
+/i64/                     { lval.tok = yylex.Text(); return f(I64)}
+/if/                      { return f(IF)}
+/new/                     { return f(NEW)}
+/return/                  { return f(RETURN)}
+/str/                     { return f(STR)}
+/struct/                  { return f(STRUCT)}
+/switch/                  { return f(SWITCH)}
+/type/                    { return f(TYPE)}
+/ui8/                     { lval.tok = yylex.Text(); return f(UI8)}
+/ui16/                    { lval.tok = yylex.Text(); return f(UI16)}
+/ui32/                    { lval.tok = yylex.Text(); return f(UI32)}
+/ui64/                    { lval.tok = yylex.Text(); return f(UI64)}
+/union/                   { return f(UNION)      }
+/#/                       { return f(INFER)      }
+/&/                       { lval.tok = yylex.Text(); return f(REF_OP) }
+/\+/                      { lval.tok = yylex.Text(); return f(ADD_OP) }
+/-/                       { lval.tok = yylex.Text(); return f(SUB_OP) }
+/\*/                      { lval.tok = yylex.Text(); return f(MUL_OP) }
+/\//                      { lval.tok = yylex.Text(); return f(DIV_OP) }
+/%/                       { lval.tok = yylex.Text(); return f(MOD_OP) }
+/>/                       { lval.tok = yylex.Text(); return f(GT_OP) }
+/</                       { lval.tok = yylex.Text(); return f(LT_OP) }
+/>=/                      { lval.tok = yylex.Text(); return f(GTEQ_OP) }
+/<=/                      { lval.tok = yylex.Text(); return f(LTEQ_OP) }
+/>>=/                     { lval.tok = yylex.Text(); return f(RIGHT_ASSIGN)}
+/<<=/                     { lval.tok = yylex.Text(); return f(LEFT_ASSIGN)}
+/\+=/                     { lval.tok = yylex.Text(); return f(ADD_ASSIGN)}
+/-=/                      { lval.tok = yylex.Text(); return f(SUB_ASSIGN)}
+/\*=/                     { lval.tok = yylex.Text(); return f(MUL_ASSIGN)}
+/\/=/                     { lval.tok = yylex.Text(); return f(DIV_ASSIGN)}
+/%=/                      { lval.tok = yylex.Text(); return f(MOD_ASSIGN)}
+/&=/                      { lval.tok = yylex.Text(); return f(AND_ASSIGN)}
+/\^=/                     { lval.tok = yylex.Text(); return f(XOR_ASSIGN)}
+/\|=/                     { lval.tok = yylex.Text(); return f(OR_ASSIGN)}
+/>>/                      { return f(RIGHT_OP)}
+/<</                      { return f(LEFT_OP)}
+/\+\+/                    { return f(INC_OP)}
+/--/                      { return f(DEC_OP)}
+/&&/                      { return f(AND_OP)}
+/\|\|/                    { return f(OR_OP)}
+/<=/                      { return f(LE_OP)}
+/>=/                      { return f(GE_OP)}
+/==/                      { return f(EQ_OP)}
+/\|/                      { return f(BITOR_OP)}
+/&\^/                     { return f(BITCLEAR_OP)}
+/\^/                      { return f(BITXOR_OP)}
+/!=/                      { return f(NE_OP)}
+/;/                       { return f(SEMICOLON) }
+/:/                       { return f(COLON) }
+/!/                       { lval.tok = yylex.Text(); return f(NEG_OP) }
+/\[/                      { return f(LBRACK) }
+/\]/                      { return f(RBRACK) }
+/\(/                      { return f(LPAREN) }
+/\)/                      { return f(RPAREN) }
+/\{/                      { return f(LBRACE) }
+/\}/                      { return f(RBRACE) }
+/\./                      { return f(PERIOD) }
+/,/                       { return f(COMMA) }
+/=/                       { lval.tok = yylex.Text(); return f(ASSIGN) }
+/:=/                      { lval.tok = yylex.Text(); return f(CASSIGN) }
+/(:dl)|(:dLocals)/        { return f(DSTATE)     }
+/(:ds)|(:dStack)/         { return f(DSTACK)     }
+/(:dProgram)|(:dp)/       { return f(DPROGRAM)   }
+/:package/                { return f(SPACKAGE)   }
+/:struct/                 { return f(SSTRUCT)    }
+/:func/                   { return f(SFUNC)      }
+/:rem/                    { return f(REM)        }
+/:step/                   { return f(STEP)       }
+/:tStep/                  { return f(TSTEP)      }
+/:tstep/                  { return f(TSTEP)      }
+/:pStep/                  { return f(PSTEP)      }
+/:pstep/				  { return f(PSTEP)      }
+/:aff/                    { return f(CAFF)       }
+/package/                 { return f(PACKAGE)    }
+/type/                    { return f(TYPSTRUCT)  }
+/struct/                  { return f(STRUCT)     }
+/return/                  { return f(RETURN)     }
+/goto/                    { return f(GOTO)       }
+/if/                      { return f(IF)         }
+/for/                     { return f(FOR)        }
+/func/                    { return f(FUNC)       }
+/clauses/                 { return f(CLAUSES)    }
+/def/                     { return f(DEF)        }
+/field/                   { return f(FIELD)      }
+/import/                  { return f(IMPORT)     }
+/var/                     { return f(VAR)        }
+/"([^"\\]|\\.)*"/ { /* " */
+	str, err := strconv.Unquote(yylex.Text())
+	if err != nil {
+	        println(CompilationError(CurrentFileName, yylex.Line()), "illegal characters in string", yylex.Text())
+	}
+	lval.tok = str
+
+	noLines := countNewLines([]byte(lval.tok))
+	lval.line += noLines
+	LineNo += noLines
+	
+	return f(STRING_LITERAL)
+}
+/\`([^\`]*)\`/ { /* ` */
+	tokVal := yylex.Text()
+	tokVal = strings.TrimPrefix(tokVal, "`")
+	tokVal = strings.TrimSuffix(tokVal, "`")
+	lval.tok = tokVal
+	lval.line = lval.line + countNewLines([]byte(lval.tok))
+	return f(STRING_LITERAL)
+}
+/true/ {
+	lval.bool = true
+	return f(BOOLEAN_LITERAL)
+}
+/false/ {
+	lval.bool = false
+	return f(BOOLEAN_LITERAL)
+}
+/[0-9]+B/ {
+	result, err := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 8)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid i8 literal", yylex.Text())
+	}
+	lval.i8 = int8(result)
+	return f(BYTE_LITERAL)
+}
+/[0-9]+H/ {
+	result, err := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 16)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid i16 literal", yylex.Text())
+	}
+	lval.i16 = int16(result)
+	return f(SHORT_LITERAL)
+}
+/[0-9]+/ {
+	result, err := strconv.ParseInt(yylex.Text()[:len(yylex.Text())], 10, 32)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid i32 literal", yylex.Text())
+	}
+	lval.i32 = int32(result)
+	return f(INT_LITERAL)
+}
+/[0-9]+L/ {
+	result, err := strconv.ParseInt(yylex.Text()[:len(yylex.Text()) - 1], 10, 64)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid i64 literal", yylex.Text())
+	}
+	lval.i64 = result
+	return f(LONG_LITERAL)
+}
+/[0-9]+UB/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 2], 10, 8)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid ui8 literal", yylex.Text())
+	}
+	lval.ui8 = uint8(result)
+	return f(UNSIGNED_BYTE_LITERAL)
+}
+/[0-9]+UH/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 2], 10, 16)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid ui16 literal", yylex.Text())
+	}
+	lval.ui16 = uint16(result)
+	return f(UNSIGNED_SHORT_LITERAL)
+}
+/[0-9]+U/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 1], 10, 32)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid ui32 literal", yylex.Text())
+	}
+	lval.ui32 = uint32(result)
+	return f(UNSIGNED_INT_LITERAL)
+}
+/[0-9]+UL/ {
+	result, err := strconv.ParseUint(yylex.Text()[:len(yylex.Text()) - 2], 10, 64)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid ui64 literal", yylex.Text())
+	}
+	lval.ui64 = result
+	return f(UNSIGNED_LONG_LITERAL)
+}
+/([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?/ {
+	result, err := strconv.ParseFloat(yylex.Text(), 32)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid f32 literal", yylex.Text())
+	}
+	lval.f32 = float32(result)
+	return f(FLOAT_LITERAL)
+}
+/([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?D/ {
+	result, err := strconv.ParseFloat(yylex.Text()[:len(yylex.Text()) - 1], 64)
+	if err != nil {
+		println(CompilationError(CurrentFileName, yylex.Line()), "invalid f64 literal", yylex.Text())
+	}
+	lval.f64 = float64 (result)
+	return f(DOUBLE_LITERAL)
+}
+/[_a-zA-Z][_a-zA-Z0-9]*/ {
+	lval.tok = yylex.Text()
+	return f(IDENTIFIER)
+}
+>      {
+}
+//
+package oldnex
+
+import (
+       "fmt"
+       "strconv"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
+	. "github.com/SkycoinProject/cx/cx"
+)
+
+
+var insert      bool
+var DebugLexer bool = false
+var CurrentFileName string = "dummy.cx"
+
+func f (token int) int {
+	// Debug
+	if DebugLexer {
+		tokenName := tokenNames[token]
+		if tokenName == "" {
+			fmt.Println("Token: ", token)
+		} else {
+			fmt.Println("Token: ", tokenName)
+		}
+	}
+
+	if insert && token == NEWLINE {
+		insert = false
+		return SEMICOLON
+	} else {
+		switch token {
+			case IDENTIFIER,
+			
+			BOOL, STR,
+			I8, I16, I32, I64,
+			UI8, UI16, UI32, UI64,
+			F32, F64, AFF,
+			
+			BOOLEAN_LITERAL, STRING_LITERAL,
+			BYTE_LITERAL, SHORT_LITERAL, INT_LITERAL, LONG_LITERAL,
+			UNSIGNED_BYTE_LITERAL, UNSIGNED_SHORT_LITERAL, UNSIGNED_INT_LITERAL, UNSIGNED_LONG_LITERAL,
+			FLOAT_LITERAL, DOUBLE_LITERAL,
+
+			RETURN, BREAK, CONTINUE,
+			INC_OP, DEC_OP,
+			
+			RPAREN, RBRACE, RBRACK:
+			insert = true
+		default: insert = false
+		}
+		return token
+	}
+}
+
+func countNewLines (s []byte) int {
+	count := 0
+	for i := 0; i < len(s); i++ {
+		// if s[i] == '\r' && len(s) > i && s[i + 1] == '\n' {
+		// 	count++
+		// 	i++
+		// 	continue
+		// }
+		if s[i] == '\n' {
+			count++
+			continue
+		}
+	}
+	return count
+}
+
+func (yylex Lexer) Error (e string) {
+	// if InREPL {
+	// 	fmt.Printf("syntax error: %s\n", e)
+	// } else {
+	// 	fmt.Printf("%s:%d: syntax error: %s\n", currentFileName, yylex.Line() + 1, e)
+	// }
+	
+	yylex.Stop()
+}
+
+type yySymType struct {
+	yys     int
+	i       int
+	i8      int8
+	i16     int16
+	i32     int32
+	i64     int64
+	ui8     uint8
+	ui16    uint16
+	ui32    uint32
+	ui64    uint64
+	f32     float32
+	f64     float64
+	tok     string
+	bool    bool
+	string  string
+	stringA []string
+	ints    []int
+
+	line int
+
+	argument  *CXArgument
+	arguments []*CXArgument
+
+	expression  *CXExpression
+	expressions []*CXExpression
+
+	SelectStatement  SelectStatement
+	SelectStatements []SelectStatement
+
+	ReturnExpressions ReturnExpressions
+
+	arrayArguments [][]*CXExpression
+
+	function *CXFunction
+}
+
+var persist *yySymType
+
+func (yylex *Lexer) Next() int {
+	if persist == nil {
+		persist = &yySymType{}
+	}
+	rv := yylex.Lex(persist)
+	//fmt.Println(tokenName(rv))
+	return rv
+}
+
+
+const (
+	yyDefault              = 57495
+	yyEofCode              = 57344
+	ADDR                   = 57492
+	ADD_ASSIGN             = 57439
+	ADD_OP                 = 57399
+	AFF                    = 57487
+	AFFVAR                 = 57406
+	AND                    = 57397
+	AND_ASSIGN             = 57440
+	AND_OP                 = 57437
+	ASSIGN                 = 57379
+	BASICTYPE              = 57470
+	BITANDEQ               = 57425
+	BITCLEAR_OP            = 57416
+	BITOREQ                = 57427
+	BITOR_OP               = 57415
+	BITXOREQ               = 57426
+	BITXOR_OP              = 57414
+	BOOL                   = 57449
+	BOOLEAN_LITERAL        = 57346
+	BREAK                  = 57467
+	BYTE_LITERAL           = 57347
+	CAFF                   = 57488
+	CASE                   = 57464
+	CASSIGN                = 57380
+	CLAUSES                = 57478
+	COLON                  = 57389
+	COMMA                  = 57367
+	COMMENT                = 57369
+	CONST                  = 57463
+	CONTINUE               = 57468
+	DEC_OP                 = 57428
+	DEF                    = 57475
+	DEFAULT                = 57465
+	DIVEQ                  = 57420
+	DIV_ASSIGN             = 57444
+	DIV_OP                 = 57402
+	DOUBLE_LITERAL         = 57356
+	DPROGRAM               = 57485
+	DSTACK                 = 57484
+	DSTATE                 = 57486
+	ELSE                   = 57373
+	ENUM                   = 57462
+	EQUAL                  = 57388
+	EQUALWORD              = 57391
+	EQ_OP                  = 57435
+	EXP                    = 57412
+	EXPEQ                  = 57422
+	EXPR                   = 57476
+	F32                    = 57450
+	F64                    = 57451
+	FIELD                  = 57477
+	FLOAT_LITERAL          = 57355
+	FOR                    = 57374
+	FUNC                   = 57357
+	GE_OP                  = 57433
+	GOTO                   = 57383
+	GTEQ_OP                = 57386
+	GTHANEQ                = 57394
+	GTHANWORD              = 57392
+	GT_OP                  = 57384
+	I16                    = 57453
+	I32                    = 57454
+	I64                    = 57455
+	I8                     = 57452
+	IDENTIFIER             = 57365
+	IF                     = 57372
+	IMPORT                 = 57381
+	INC_OP                 = 57429
+	INFER                  = 57490
+	INT_LITERAL            = 57349
+	LBRACE                 = 57361
+	LBRACK                 = 57363
+	LEFTSHIFT              = 57410
+	LEFTSHIFTEQ            = 57423
+	LEFT_ASSIGN            = 57441
+	LEFT_OP                = 57431
+	LE_OP                  = 57434
+	LONG_LITERAL           = 57350
+	LPAREN                 = 57359
+	LTEQ_OP                = 57387
+	LTHANEQ                = 57395
+	LTHANWORD              = 57393
+	LT_OP                  = 57385
+	MINUSEQ                = 57418
+	MINUSMINUS             = 57408
+	MOD_ASSIGN             = 57442
+	MOD_OP                 = 57403
+	MULTEQ                 = 57419
+	MUL_ASSIGN             = 57443
+	MUL_OP                 = 57401
+	NEG_OP                 = 57405
+	NEW                    = 57390
+	NEWLINE                = 57378
+	NE_OP                  = 57436
+	NOT                    = 57413
+	OBJECT                 = 57479
+	OBJECTS                = 57480
+	OP                     = 57358
+	OR                     = 57398
+	OR_ASSIGN              = 57445
+	OR_OP                  = 57438
+	PACKAGE                = 57371
+	PERIOD                 = 57368
+	PLUSEQ                 = 57417
+	PLUSPLUS               = 57407
+	PSTEP                  = 57482
+	PTR_OP                 = 57430
+	RBRACE                 = 57362
+	RBRACK                 = 57364
+	REF_OP                 = 57404
+	REM                    = 57474
+	REMAINDER              = 57409
+	REMAINDEREQ            = 57421
+	RETURN                 = 57382
+	RIGHTSHIFT             = 57411
+	RIGHTSHIFTEQ           = 57424
+	RIGHT_ASSIGN           = 57446
+	RIGHT_OP               = 57432
+	RPAREN                 = 57360
+	SEMICOLON              = 57377
+	SFUNC                  = 57473
+	SHORT_LITERAL          = 57348
+	SPACKAGE               = 57471
+	SSTRUCT                = 57472
+	STEP                   = 57481
+	STR                    = 57456
+	STRING_LITERAL         = 57370
+	STRUCT                 = 57376
+	SUB_ASSIGN             = 57447
+	SUB_OP                 = 57400
+	SWITCH                 = 57466
+	TAG                    = 57489
+	TSTEP                  = 57483
+	TYPE                   = 57469
+	TYPSTRUCT              = 57375
+	UI16                   = 57458
+	UI32                   = 57459
+	UI64                   = 57460
+	UI8                    = 57457
+	UNEQUAL                = 57396
+	UNION                  = 57461
+	UNSIGNED_BYTE_LITERAL  = 57351
+	UNSIGNED_INT_LITERAL   = 57353
+	UNSIGNED_LONG_LITERAL  = 57354
+	UNSIGNED_SHORT_LITERAL = 57352
+	VALUE                  = 57491
+	VAR                    = 57366
+	XOR_ASSIGN             = 57448
+	yyErrCode              = 57345
+
+	yyMaxDepth = 200
+	yyTabOfs   = -239
+)
+
+var tokenNames = map[int]string {
+	BYTE_LITERAL: "BYTE_LITERAL",
+	BOOLEAN_LITERAL: "BOOLEAN_LITERAL",
+	INT_LITERAL: "INT_LITERAL",
+	LONG_LITERAL: "LONG_LITERAL",
+	FLOAT_LITERAL: "FLOAT_LITERAL",
+	DOUBLE_LITERAL: "DOUBLE_LITERAL",
+	FUNC: "FUNC",
+	OP: "OP",
+	LPAREN: "LPAREN",
+	RPAREN: "RPAREN",
+	LBRACE: "LBRACE",
+	RBRACE: "RBRACE",
+	LBRACK: "LBRACK",
+	RBRACK: "RBRACK",
+	IDENTIFIER: "IDENTIFIER",
+	VAR: "VAR",
+	COMMA: "COMMA",
+	PERIOD: "PERIOD",
+	COMMENT: "COMMENT",
+	STRING_LITERAL: "STRING_LITERAL",
+	PACKAGE: "PACKAGE",
+	IF: "IF",
+	ELSE: "ELSE",
+	FOR: "FOR",
+	TYPSTRUCT: "TYPSTRUCT",
+	STRUCT: "STRUCT",
+	SEMICOLON: "SEMICOLON",
+	NEWLINE: "NEWLINE",
+	ASSIGN: "ASSIGN",
+	CASSIGN: "CASSIGN",
+	IMPORT: "IMPORT",
+	RETURN: "RETURN",
+	GOTO: "GOTO",
+	GT_OP: "GT_OP",
+	LT_OP: "LT_OP",
+	GTEQ_OP: "GTEQ_OP",
+	LTEQ_OP: "LTEQ_OP",
+	EQUAL: "EQUAL",
+	COLON: "COLON",
+	NEW: "NEW",
+	EQUALWORD: "EQUALWORD",
+	GTHANWORD: "GTHANWORD",
+	LTHANWORD: "LTHANWORD",
+	GTHANEQ: "GTHANEQ",
+	LTHANEQ: "LTHANEQ",
+	UNEQUAL: "UNEQUAL",
+	AND: "AND",
+	OR: "OR",
+	ADD_OP: "ADD_OP",
+	SUB_OP: "SUB_OP",
+	MUL_OP: "MUL_OP",
+	DIV_OP: "DIV_OP",
+	MOD_OP: "MOD_OP",
+	REF_OP: "REF_OP",
+	NEG_OP: "NEG_OP",
+	AFFVAR: "AFFVAR",
+	PLUSPLUS: "PLUSPLUS",
+	MINUSMINUS: "MINUSMINUS",
+	REMAINDER: "REMAINDER",
+	LEFTSHIFT: "LEFTSHIFT",
+	RIGHTSHIFT: "RIGHTSHIFT",
+	EXP: "EXP",
+	NOT: "NOT",
+	BITXOR_OP: "BITXOR_OP",
+	BITOR_OP: "BITOR_OP",
+	BITCLEAR_OP: "BITCLEAR_OP",
+	PLUSEQ: "PLUSEQ",
+	MINUSEQ: "MINUSEQ",
+	MULTEQ: "MULTEQ",
+	DIVEQ: "DIVEQ",
+	REMAINDEREQ: "REMAINDEREQ",
+	EXPEQ: "EXPEQ",
+	LEFTSHIFTEQ: "LEFTSHIFTEQ",
+	RIGHTSHIFTEQ: "RIGHTSHIFTEQ",
+	BITANDEQ: "BITANDEQ",
+	BITXOREQ: "BITXOREQ",
+	BITOREQ: "BITOREQ",
+
+	DEC_OP: "DEC_OP",
+	INC_OP: "INC_OP",
+	PTR_OP: "PTR_OP",
+	LEFT_OP: "LEFT_OP",
+	RIGHT_OP: "RIGHT_OP",
+	GE_OP: "GE_OP",
+	LE_OP: "LE_OP",
+	EQ_OP: "EQ_OP",
+	NE_OP: "NE_OP",
+	AND_OP: "AND_OP",
+	OR_OP: "OR_OP",
+	ADD_ASSIGN: "ADD_ASSIGN",
+	AND_ASSIGN: "AND_ASSIGN",
+	LEFT_ASSIGN: "LEFT_ASSIGN",
+	MOD_ASSIGN: "MOD_ASSIGN",
+	MUL_ASSIGN: "MUL_ASSIGN",
+	DIV_ASSIGN: "DIV_ASSIGN",
+	OR_ASSIGN: "OR_ASSIGN",
+	RIGHT_ASSIGN: "RIGHT_ASSIGN",
+	SUB_ASSIGN: "SUB_ASSIGN",
+	XOR_ASSIGN: "XOR_ASSIGN",
+	BOOL: "BOOL",
+	F32: "F32",
+	F64: "F64",
+	I8: "I8",
+	I16: "I16",
+	I32: "I32",
+	I64: "I64",
+	STR: "STR",
+	UI8: "UI8",
+	UI16: "UI16",
+	UI32: "UI32",
+	UI64: "UI64",
+	UNION: "UNION",
+	ENUM: "ENUM",
+	CONST: "CONST",
+	CASE: "CASE",
+	DEFAULT: "DEFAULT",
+	SWITCH: "SWITCH",
+	BREAK: "BREAK",
+	CONTINUE: "CONTINUE",
+	TYPE: "TYPE",
+
+	/* Types */
+	BASICTYPE: "BASICTYPE",
+	/* Selectors */
+	SPACKAGE: "SPACKAGE",
+	SSTRUCT: "SSTRUCT",
+	SFUNC: "SFUNC",
+	/* Removers */
+	REM: "REM",
+	DEF: "DEF",
+	EXPR: "EXPR",
+	FIELD: "FIELD",
+	CLAUSES: "CLAUSES",
+	OBJECT: "OBJECT",
+	OBJECTS: "OBJECTS",
+	/* Stepping */
+	STEP: "STEP",
+	PSTEP: "PSTEP",
+	TSTEP: "TSTEP",
+	/* Debugging */
+	DSTACK: "DSTACK",
+	DPROGRAM: "DPROGRAM",
+	DSTATE: "DSTATE",
+	/* Affordances */
+	AFF: "AFF",
+	CAFF: "CAFF",
+	TAG: "TAG",
+	INFER: "INFER",
+	VALUE: "VALUE",
+	/* Pointers */
+	ADDR: "ADDR",
+}
+
+
+func tokenName(token int) string {
+	switch token {
+	case ADDR:
+		return "  ADDR"
+	case ADD_ASSIGN:
+		return "ADDSET"
+	case ADD_OP:
+		return " ADDOP"
+	case AFF:
+		return "   AFF"
+	case AFFVAR:
+		return "AFFVAR"
+	case AND:
+		return "   AND"
+	case AND_ASSIGN:
+		return "ANDSET"
+	case AND_OP:
+		return " ANDOP"
+	case ASSIGN:
+		return "  ASGN"
+	case BASICTYPE:
+		return " BASIC"
+	case BITANDEQ:
+		return "BANDEQ"
+	case BITCLEAR_OP:
+		return "BCLROP"
+	case BITOREQ:
+		return " BOREQ"
+	case BITOR_OP:
+		return " BOROP"
+	case BITXOREQ:
+		return "BXOREQ"
+	case BITXOR_OP:
+		return "BXOROP"
+	case BOOL:
+		return "  BOOL"
+	case BOOLEAN_LITERAL:
+		return "BOOLLT"
+	case BREAK:
+		return " BREAK"
+	case BYTE_LITERAL:
+		return "BYTELT"
+	case CAFF:
+		return "  CAFF"
+	case CASE:
+		return "  CASE"
+	case CASSIGN:
+		return "CASSGN"
+	case CLAUSES:
+		return "CLAUSE"
+	case COLON:
+		return " COLON"
+	case COMMA:
+		return " COMMA"
+	case COMMENT:
+		return "COMMNT"
+	case CONST:
+		return " CONST"
+	case CONTINUE:
+		return "CONTNU"
+	case DEC_OP:
+		return " DECOP"
+	case DEF:
+		return "   DEF"
+	case DEFAULT:
+		return "DFAULT"
+	case DIVEQ:
+		return " DIVEQ"
+	case DIV_ASSIGN:
+		return "DIVSET"
+	case DIV_OP:
+		return " DIVOP"
+	case DOUBLE_LITERAL:
+		return "DBLLIT"
+	case DPROGRAM:
+		return " DPROG"
+	case DSTACK:
+		return "DSTACK"
+	case DSTATE:
+		return "DSTATE"
+	case ELSE:
+		return "  ELSE"
+	case ENUM:
+		return "  ENUM"
+	case EQUAL:
+		return " EQUAL"
+	case EQUALWORD:
+		return "EQWORD"
+	case EQ_OP:
+		return "  EQOP"
+	case EXP:
+		return "   EXP"
+	case EXPEQ:
+		return " EXPEQ"
+	case EXPR:
+		return "  EXPR"
+	case F32:
+		return "   F32"
+	case F64:
+		return "   F64"
+	case FIELD:
+		return " FIELD"
+	case FLOAT_LITERAL:
+		return "FLOATL"
+	case FOR:
+		return "   FOR"
+	case FUNC:
+		return "  FUNC"
+	case GE_OP:
+		return "  GEOP"
+	case GOTO:
+		return "  GOTO"
+	case GTEQ_OP:
+		return "GTEQOP"
+	case GTHANEQ:
+		return "GTHNEQ"
+	case GTHANWORD:
+		return " GTHNW"
+	case GT_OP:
+		return "  GTOP"
+	case I16:
+		return "   I16"
+	case I32:
+		return "   I32"
+	case I64:
+		return "   I64"
+	case I8:
+		return "    I8"
+	case IDENTIFIER:
+		return " IDENT"
+	case IF:
+		return "    IF"
+	case IMPORT:
+		return "IMPORT"
+	case INC_OP:
+		return " INCOP"
+	case INFER:
+		return " INFER"
+	case INT_LITERAL:
+		return "INTLIT"
+	case LBRACE:
+		return "LBRACE"
+	case LBRACK:
+		return "LBRACK"
+	case LEFTSHIFT:
+		return "LSHIFT"
+	case LEFTSHIFTEQ:
+		return " LSHEQ"
+	case LEFT_ASSIGN:
+		return "  LSET"
+	case LEFT_OP:
+		return "LEFTOP"
+	case LE_OP:
+		return "  LEOP"
+	case LONG_LITERAL:
+		return "LONGLT"
+	case LPAREN:
+		return "LPAREN"
+	case LTEQ_OP:
+		return "LTEQOP"
+	case LTHANEQ:
+		return "LTHNEQ"
+	case LTHANWORD:
+		return "LTHANW"
+	case LT_OP:
+		return "  LTOP"
+	case MINUSEQ:
+		return "MNUSEQ"
+	case MINUSMINUS:
+		return "MINUS2"
+	case MOD_ASSIGN:
+		return "MODSET"
+	case MOD_OP:
+		return " MODOP"
+	case MULTEQ:
+		return "MULTEQ"
+	case MUL_ASSIGN:
+		return "MULSET"
+	case MUL_OP:
+		return " MULOP"
+	case NEG_OP:
+		return " NEGOP"
+	case NEW:
+		return "   NEW"
+	case NEWLINE:
+		return "NEWLIN"
+	case NE_OP:
+		return "  NEOP"
+	case NOT:
+		return "   NOT"
+	case OBJECT:
+		return "OBJECT"
+	case OBJECTS:
+		return "OBJCTS"
+	case OP:
+		return "    OP"
+	case OR:
+		return "    OR"
+	case OR_ASSIGN:
+		return " ORSET"
+	case OR_OP:
+		return "  OROP"
+	case PACKAGE:
+		return "PACKAG"
+	case PERIOD:
+		return "PERIOD"
+	case PLUSEQ:
+		return "PLUSEQ"
+	case PLUSPLUS:
+		return " PLUS2"
+	case PSTEP:
+		return " PSTEP"
+	case PTR_OP:
+		return " PTROP"
+	case RBRACE:
+		return "RBRACE"
+	case RBRACK:
+		return "RBRACK"
+	case REF_OP:
+		return " REFOP"
+	case REM:
+		return "   REM"
+	case REMAINDER:
+		return "REMNDR"
+	case REMAINDEREQ:
+		return "RMDREQ"
+	case RETURN:
+		return "RETURN"
+	case RIGHTSHIFT:
+		return "RSHIFT"
+	case RIGHTSHIFTEQ:
+		return " RSHEQ"
+	case RIGHT_ASSIGN:
+		return "  RSET"
+	case RIGHT_OP:
+		return "RGHTOP"
+	case RPAREN:
+		return "RPAREN"
+	case SEMICOLON:
+		return "SCOLON"
+	case SFUNC:
+		return " SFUNC"
+	case SHORT_LITERAL:
+		return "SHRTLT"
+	case SPACKAGE:
+		return "SPACKG"
+	case SSTRUCT:
+		return "SSTRCT"
+	case STEP:
+		return "  STEP"
+	case STR:
+		return "   STR"
+	case STRING_LITERAL:
+		return "STRLIT"
+	case STRUCT:
+		return "STRUCT"
+	case SUB_ASSIGN:
+		return "SUBSET"
+	case SUB_OP:
+		return " SUBOP"
+	case SWITCH:
+		return "SWITCH"
+	case TAG:
+		return "   TAG"
+	case TSTEP:
+		return " TSTEP"
+	case TYPE:
+		return "  TYPE"
+	case TYPSTRUCT:
+		return "TSTRCT"
+	case UI16:
+		return "  UI16"
+	case UI32:
+		return "  UI32"
+	case UI64:
+		return "  UI64"
+	case UI8:
+		return "   UI8"
+	case UNEQUAL:
+		return "  UNEQ"
+	case UNION:
+		return " UNION"
+	case UNSIGNED_BYTE_LITERAL:
+		return " UBLIT"
+	case UNSIGNED_INT_LITERAL:
+		return " UILIT"
+	case UNSIGNED_LONG_LITERAL:
+		return " ULLIT"
+	case UNSIGNED_SHORT_LITERAL:
+		return " USLIT"
+	case VALUE:
+		return " VALUE"
+	case VAR:
+		return "   VAR"
+	case XOR_ASSIGN:
+		return "XORSET"
+	}
+	return "UNK" + strconv.Itoa(token)
+}

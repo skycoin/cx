@@ -3,8 +3,9 @@
 package cxcore
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
 	"github.com/SkycoinProject/skycoin/src/cipher"
+
+	. "github.com/SkycoinProject/cx/cx"
 )
 
 func init() {

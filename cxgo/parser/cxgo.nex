@@ -104,6 +104,7 @@
 /:tStep/                  { return f(TSTEP)      }
 /:tstep/                  { return f(TSTEP)      }
 /:pStep/                  { return f(PSTEP)      }
+/:pstep/				  { return f(PSTEP)      }
 /:aff/                    { return f(CAFF)       }
 /package/                 { return f(PACKAGE)    }
 /type/                    { return f(TYPSTRUCT)  }

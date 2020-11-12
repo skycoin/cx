@@ -78,9 +78,9 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: configure install-deps ## Generate lexer and parser for CX grammar
-	nex -e cxgo/cxgo0/cxgo0.nex
+	#nex -e cxgo/cxgo0/cxgo0.nex
 	goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	nex -e cxgo/parser/cxgo.nex
+	#nex -e cxgo/parser/cxgo.nex
 	goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: configure build-parser ## Build CX from sources
@@ -117,8 +117,11 @@ install-gfx-deps-MACOS:
 
 install-deps: configure
 	@echo "Installing go package dependencies"
-	go get github.com/SkycoinProject/nex
+	#go get github.com/SkycoinProject/nex
 	go get github.com/cznic/goyacc
+
+install-test-lexer-deps: configure
+	go get github.com/SkycoinProject/nex
 
 install-gfx-deps: configure $(INSTALL_GFX_DEPS)
 	go get github.com/SkycoinProject/gltext
@@ -144,6 +147,17 @@ lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
 	golangci-lint run -c .golangci.yml ./cx
 
+token-fuzzer: build
+	go build -i -o ${GOPATH}/bin/cx-token-fuzzer ${GOPATH}/src/github.com/SkycoinProject/cx/development/token-fuzzer/main.go
+	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+
+test-lexer: token-fuzzer install-test-lexer-deps
+	cx-token-fuzzer -b 4 -c 100 -o ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	nex -e ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nex
+	go run ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/main.go ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/test-toks.txt
+	rm -f ${GOPATH}/src/github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex/cxgo.nn.go
+
 test: build ## Run CX test suite.
 	go test -race -tags base github.com/SkycoinProject/cx/cxgo/
 	cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
@@ -163,6 +177,7 @@ check: check-golden-files test ## Perform self-tests
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/SkycoinProject/cx ./cx
 	goimports -w -local github.com/SkycoinProject/cx ./cxgo/actions
+	goimports -w -local github.com/SkycoinProject/cx ./cxgo/api
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
