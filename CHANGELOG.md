@@ -9,12 +9,15 @@
 	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
 	- Increased opengl version from 2.1 to 3.2.
 	- Increased glfw version from 3.2 to 3.3.
+    - Added opcodes for reading/writing from/to binary file.
+    - Added .hdr file loader.
 	- Added opengl bindings : glClearBufferI, glClearBufferUI, glClearBufferF, glBlendFuncSeparate, glDrawBuffers.
 	- Added glfw bindings : glfw.GetWindowContentScale, glfw.GetMonitorContentScale.
 	- Added glfw constants : glfw.CocoaRetinaFramebuffer, glfw.ScaleToMonitor.
 	- Added opengl constants : GL_NONE, GL_RED, GL_RGBA16F, GL_HALF_FLOAT, GL_UNSIGNED_INT_24_8, GL_R8.
 	- Added opcodes for reading binary files : os.Seek, os.ReadUI16, os.ReadUI32, os.ReadF32, os.ReadUI16Slice, os.ReadUI32Slice, os.ReadF32Slice.
-	- Added basic Regexp library.
+    - Added TextureGetPixel function.
+    - Added basic Regexp library.
 	- Added basic Cipher library.
 * Changes
   * Updated affordances to play well with newer language features.
@@ -26,7 +29,8 @@
   * Multidimensional array literals are now working properly.
   * Multidimensional slice literals are now working properly.
   * Added i8/16/ui8/ui16/ui32/ui64 types.
-* Libraries
+  * Added str.lastindex built-in function.
+Libraries
   * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
   * Add json cx library to ease json parsing in cx.
   * Add HTTP library.

@@ -4,6 +4,7 @@ package cxfx
 
 import (
 	"bufio"
+	//"bytes"
 	"fmt"
 	. "github.com/SkycoinProject/cx/cx"
 	"image"
@@ -11,19 +12,27 @@ import (
 	"image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
+	"math"
+	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 )
 
+type Texture struct {
+	path   string
+	width  int32
+	height int32
+	level  uint32
+	pixels []float32
+}
+
 var gifs map[string]*gif.GIF = make(map[string]*gif.GIF, 0)
+var textures map[string]Texture = make(map[string]Texture, 0)
 
-func uploadTexture(file string, target uint32) {
-
-	imgFile, err := CXOpenFile(file)
-	if err != nil {
-		panic(fmt.Sprintf("texture %q not found on disk: %v\n", file, err))
-	}
-
-	img, _, err := image.Decode(imgFile)
+func decodeImg(file *os.File, cpuCopy bool) (data []byte, width int32, height int32, pixels []float32) {
+	img, _, err := image.Decode(file)
 	if err != nil {
 		panic(err)
 	}
@@ -34,17 +43,232 @@ func uploadTexture(file string, target uint32) {
 	}
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	data = rgba.Pix
+	width = int32(rgba.Rect.Size().X)
+	height = int32(rgba.Rect.Size().Y)
+	if cpuCopy {
+		pixels = make([]float32, width*height*4)
+		var x int32
+		var y int32
+		for y = 0; y < height; y++ {
+			yoffset := y * width * 4
+			for x = 0; x < width; x++ {
+				var xoffset = yoffset + x*4
+				color := rgba.At(int(x), int(y))
+				r, g, b, a := color.RGBA()
+				pixels[xoffset] = float32(r) / 65535.0
+				pixels[xoffset+1] = float32(g) / 65535.0
+				pixels[xoffset+2] = float32(b) / 65535.0
+				pixels[xoffset+3] = float32(a) / 65535.0
+			}
+		}
+	}
+	return
+}
 
-	cxglTexImage2D(
-		target,
-		0,
-		cxglRGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		cxglRGBA,
-		cxglUNSIGNED_BYTE,
-		rgba.Pix)
+const (
+	HDR_NONE = iota
+	HDR_32_RLE_RGBE
+	MINLEN = 8
+	MAXLEN = 0x7fff
+	R      = 0
+	G      = 1
+	B      = 2
+	E      = 3
+)
+
+func unpack(file *os.File, width int, line []byte) bool {
+	if width < MINLEN || width > MAXLEN {
+		return unpack_(file, width, line)
+	}
+
+	file.Read(line[:4])
+	if line[R] != 2 {
+		file.Seek(-4, io.SeekCurrent)
+		return unpack_(file, width, line)
+	}
+
+	if line[G] != 2 || (line[B]&128) != 0 {
+		return unpack_(file, width-1, line[4:])
+	}
+
+	var b [1]byte
+	for i := 0; i < 4; i++ {
+		for j := 0; j < width; {
+			file.Read(b[:])
+			var count int = int(b[0])
+			if count > 128 {
+				count &= 127
+				file.Read(b[:])
+				var value int = int(b[0])
+				for c := 0; c < count; c++ {
+					line[j+c+i] = byte(value)
+				}
+			} else {
+				for c := 0; c < count; c++ {
+					offset := j + c + i
+					file.Read(line[offset : offset+1])
+				}
+			}
+		}
+	}
+	return true
+}
+
+func unpack_(file *os.File, width int, line []byte) bool {
+	var rshift uint
+	var repeat [4]byte
+	for width > 0 {
+		file.Read(line[0:4])
+		if line[R] == 1 && line[G] == 1 && line[B] == 1 {
+			for i := line[E] << rshift; i > 0; i-- {
+				copy(line[0:4], repeat[:])
+				line = line[4:]
+				width--
+			}
+			rshift += 8
+		} else {
+			copy(repeat[:], line[0:4])
+			line = line[4:]
+			width--
+			rshift = 0
+		}
+	}
+	return true
+}
+
+func decodeHdr(file *os.File) (data []byte, iwidth int32, iheight int32) {
+	data = nil
+	iwidth = 0
+	iheight = 0
+
+	var format int
+	scanner := bufio.NewScanner(file)
+
+	var pos int64
+	scanLines := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		advance, token, err = bufio.ScanLines(data, atEOF)
+		pos += int64(advance)
+		return
+	}
+
+	scanner.Split(scanLines)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "#?RADIANCE" {
+		} else if strings.HasPrefix(line, "#") {
+		} else if strings.HasPrefix(line, "FORMAT=") {
+			var sformat string
+			if n, err := fmt.Sscanf(line, "FORMAT=%s\n", &sformat); n != 1 && err != nil {
+				fmt.Printf("Failed to scan format : err '%s'\n", err)
+				return
+			}
+			if sformat == "32-bit_rle_rgbe" {
+				format = HDR_32_RLE_RGBE
+			}
+		} else if len(line) == 0 {
+			break
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("Failed to scan : err %v\n", scanner.Err())
+	}
+
+	if format != HDR_32_RLE_RGBE {
+		fmt.Printf("Invalid format %d\n", format)
+		return
+	}
+
+	file.Seek(pos, 0)
+
+	var width int
+	var height int
+	if n, err := fmt.Fscanf(file, "-Y %d +X %d\n", &width, &height); n != 2 || err != nil {
+		fmt.Printf("Failed to scan width and height : err '%s'\n", err)
+		return
+	}
+
+	iwidth = int32(width)
+	iheight = int32(height)
+
+	//var colors []float32 = make([]float32, width*height*3)
+	var line []byte = make([]byte, width*4)
+	data = make([]byte, width*height*3*4)
+
+	for y := int(0); y < height; y++ {
+		if unpack(file, width, line) == false {
+			fmt.Printf("Failed to unpack line %d\n", y)
+			return
+		}
+
+		yoffset := y /*(height - y - 1)*/ * width * 3 * 4
+		for x := 0; x < width; x++ {
+			loffset := x * 4
+			exponent := math.Pow(2.0, float64(int(line[loffset+3])-128))
+			xoffset := yoffset + x*3*4
+			r := float32(exponent * float64(line[loffset]) / 256.0)
+			g := float32(exponent * float64(line[loffset+1]) / 256.0)
+			b := float32(exponent * float64(line[loffset+2]) / 256.0)
+
+			WriteMemF32(data, xoffset, r)
+			WriteMemF32(data, xoffset+4, g)
+			WriteMemF32(data, xoffset+8, b)
+		}
+	}
+	return
+}
+
+func uploadTexture(path string, target uint32, level uint32, cpuCopy bool) {
+	file, err := CXOpenFile(path)
+	defer file.Close()
+	if err != nil {
+		panic(fmt.Sprintf("texture %q not found on disk: %v\n", path, err))
+	}
+
+	ext := filepath.Ext(path)
+	var data []byte
+	var internalFormat int32
+	var inputFormat uint32
+	var inputType uint32
+	var width int32
+	var height int32
+	var pixels []float32
+	if ext == ".png" || ext == ".jpeg" || ext == ".jpg" {
+		internalFormat = cxglRGBA8
+		inputFormat = cxglRGBA
+		inputType = cxglUNSIGNED_BYTE
+		data, width, height, pixels = decodeImg(file, cpuCopy)
+		if cpuCopy {
+		}
+		if len(pixels) > 0 {
+			var texture Texture
+			texture.pixels = pixels
+			texture.width = width
+			texture.height = height
+			texture.path = path
+			texture.level = level
+			textures[path] = texture
+		}
+	} else if ext == ".hdr" {
+		internalFormat = cxglRGB16F
+		inputFormat = cxglRGB
+		inputType = cxglFLOAT
+		data, width, height = decodeHdr(file)
+	}
+
+	if len(data) > 0 {
+		cxglTexImage2D(
+			target,
+			int32(level),
+			internalFormat,
+			width,
+			height,
+			0,
+			inputFormat,
+			inputType,
+			data)
+	}
 }
 
 // gogl
@@ -61,7 +285,7 @@ func opGlNewTexture(prgrm *CXProgram) {
 	cxglTexParameteri(cxglTEXTURE_2D, cxglTEXTURE_WRAP_S, cxglCLAMP_TO_EDGE)
 	cxglTexParameteri(cxglTEXTURE_2D, cxglTEXTURE_WRAP_T, cxglCLAMP_TO_EDGE)
 
-	uploadTexture(ReadStr(fp, expr.Inputs[0]), cxglTEXTURE_2D)
+	uploadTexture(ReadStr(fp, expr.Inputs[0]), cxglTEXTURE_2D, 0, false)
 
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
 }
@@ -84,16 +308,50 @@ func opGlNewTextureCube(prgrm *CXProgram) {
 	var pattern string = ReadStr(fp, expr.Inputs[0])
 	var extension string = ReadStr(fp, expr.Inputs[1])
 	for i := 0; i < 6; i++ {
-		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(cxglTEXTURE_CUBE_MAP_POSITIVE_X+i))
+		uploadTexture(fmt.Sprintf("%s%s%s", pattern, faces[i], extension), uint32(cxglTEXTURE_CUBE_MAP_POSITIVE_X+i), 0, false)
 	}
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(texture))
+}
+
+func opCxReleaseTexture(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	textures[ReadStr(fp, expr.Inputs[0])] = Texture{}
+}
+
+func opCxTextureGetPixel(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	var r float32
+	var g float32
+	var b float32
+	var a float32
+
+	var x = ReadI32(fp, expr.Inputs[1])
+	var y = ReadI32(fp, expr.Inputs[2])
+
+	if texture, ok := textures[ReadStr(fp, expr.Inputs[0])]; ok {
+		var yoffset = y * texture.width * 4
+		var xoffset = yoffset + x*4
+		pixels := texture.pixels
+		r = pixels[xoffset]
+		g = pixels[xoffset+1]
+		b = pixels[xoffset+2]
+		a = pixels[xoffset+3]
+	}
+	WriteF32(GetFinalOffset(fp, expr.Outputs[0]), r)
+	WriteF32(GetFinalOffset(fp, expr.Outputs[1]), g)
+	WriteF32(GetFinalOffset(fp, expr.Outputs[2]), b)
+	WriteF32(GetFinalOffset(fp, expr.Outputs[3]), a)
 }
 
 func opGlUploadImageToTexture(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	uploadTexture(ReadStr(fp, expr.Inputs[0]), uint32(ReadI32(fp, expr.Inputs[1])))
+	uploadTexture(ReadStr(fp, expr.Inputs[0]), uint32(ReadI32(fp, expr.Inputs[1])), uint32(ReadI32(fp, expr.Inputs[2])), ReadBool(fp, expr.Inputs[3]))
 }
 
 func opGlNewGIF(prgrm *CXProgram) {

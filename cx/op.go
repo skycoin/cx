@@ -759,12 +759,10 @@ func WriteI16(offset int, v int16) {
 	PROGRAM.Memory[offset+1] = byte(v >> 8)
 }
 
-// WriteMemI32 ...
-func WriteMemI32(mem []byte, offset int, v int32) {
+// WriteMemI16 ...
+func WriteMemI16(mem []byte, offset int, v int16) {
 	mem[offset] = byte(v)
 	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
 }
 
 // WriteI32 ...
@@ -773,6 +771,14 @@ func WriteI32(offset int, v int32) {
 	PROGRAM.Memory[offset+1] = byte(v >> 8)
 	PROGRAM.Memory[offset+2] = byte(v >> 16)
 	PROGRAM.Memory[offset+3] = byte(v >> 24)
+}
+
+// WriteMemI32 ...
+func WriteMemI32(mem []byte, offset int, v int32) {
+	mem[offset] = byte(v)
+	mem[offset+1] = byte(v >> 8)
+	mem[offset+2] = byte(v >> 16)
+	mem[offset+3] = byte(v >> 24)
 }
 
 // WriteI64 ...
@@ -787,9 +793,26 @@ func WriteI64(offset int, v int64) {
 	PROGRAM.Memory[offset+7] = byte(v >> 56)
 }
 
+// WriteMemI64 ...
+func WriteMemI64(mem []byte, offset int, v int64) {
+	mem[offset] = byte(v)
+	mem[offset+1] = byte(v >> 8)
+	mem[offset+2] = byte(v >> 16)
+	mem[offset+3] = byte(v >> 24)
+	mem[offset+4] = byte(v >> 32)
+	mem[offset+5] = byte(v >> 40)
+	mem[offset+6] = byte(v >> 48)
+	mem[offset+7] = byte(v >> 56)
+}
+
 // WriteUI8 ...
 func WriteUI8(offset int, v uint8) {
 	PROGRAM.Memory[offset] = v
+}
+
+// WriteMemUI8 ...
+func WriteMemUI8(mem []byte, offset int, v uint8) {
+	mem[offset] = v
 }
 
 // WriteUI16 ...
@@ -832,6 +855,18 @@ func WriteUI64(offset int, v uint64) {
 	PROGRAM.Memory[offset+7] = byte(v >> 56)
 }
 
+// WriteMemUI64 ...
+func WriteMemUI64(mem []byte, offset int, v uint64) {
+	mem[offset] = byte(v)
+	mem[offset+1] = byte(v >> 8)
+	mem[offset+2] = byte(v >> 16)
+	mem[offset+3] = byte(v >> 24)
+	mem[offset+4] = byte(v >> 32)
+	mem[offset+5] = byte(v >> 40)
+	mem[offset+6] = byte(v >> 48)
+	mem[offset+7] = byte(v >> 56)
+}
+
 // WriteF32 ...
 func WriteF32(offset int, f float32) {
 	v := math.Float32bits(f)
@@ -861,6 +896,19 @@ func WriteF64(offset int, f float64) {
 	PROGRAM.Memory[offset+5] = byte(v >> 40)
 	PROGRAM.Memory[offset+6] = byte(v >> 48)
 	PROGRAM.Memory[offset+7] = byte(v >> 56)
+}
+
+// WriteMemF64 ...
+func WriteMemF64(mem []byte, offset int, f float64) {
+	v := math.Float64bits(f)
+	mem[offset] = byte(v)
+	mem[offset+1] = byte(v >> 8)
+	mem[offset+2] = byte(v >> 16)
+	mem[offset+3] = byte(v >> 24)
+	mem[offset+4] = byte(v >> 32)
+	mem[offset+5] = byte(v >> 40)
+	mem[offset+6] = byte(v >> 48)
+	mem[offset+7] = byte(v >> 56)
 }
 
 // FromStr ...
