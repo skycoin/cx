@@ -2,6 +2,7 @@ package cxcore
 
 import (
 	"fmt"
+	"strconv"
 	"math"
 	"math/rand"
 	"github.com/jinzhu/copier"
@@ -216,6 +217,12 @@ func getRandInp(fn *CXFunction) *CXArgument {
 		panic(err)
 	}
 	// Determining the offset where the expression should be writing to.
+	for c := 0; c < len(fn.Inputs); c++ {
+		arg.Offset += fn.Inputs[c].TotalSize
+	}
+	for c := 0; c < len(fn.Outputs); c++ {
+		arg.Offset += fn.Outputs[c].TotalSize
+	}
 	for c := 0; c < rndExprIdx; c++ {
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
@@ -223,6 +230,7 @@ func getRandInp(fn *CXFunction) *CXArgument {
 	}
 
 	arg.Package = fn.Package
+	arg.Name = strconv.Itoa(rndExprIdx)
 	return &arg
 }
 
@@ -235,6 +243,12 @@ func getRandOut(fn *CXFunction) *CXArgument {
 		panic(err)
 	}
 	// Determining the offset where the expression should be writing to.
+	for c := 0; c < len(fn.Inputs); c++ {
+		arg.Offset += fn.Inputs[c].TotalSize
+	}
+	for c := 0; c < len(fn.Outputs); c++ {
+		arg.Offset += fn.Outputs[c].TotalSize
+	}
 	for c := 0; c < rndExprIdx; c++ {
 		// TODO: We're only considering one output per operator.
 		/// Not because of practicality, but because multiple returns in CX are currently buggy anyway.
@@ -242,6 +256,7 @@ func getRandOut(fn *CXFunction) *CXArgument {
 	}
 
 	arg.Package = fn.Package
+	arg.Name = strconv.Itoa(rndExprIdx)
 	return &arg
 }
 
@@ -402,6 +417,8 @@ func evalInd(ind *CXProgram, fp int, inputs *CXArgument, outputs *CXArgument) fl
 	tmp = PROGRAM
 	PROGRAM = ind
 
+	// ind.PrintProgram()
+
 	// TODO: We're calculating the error in here.
 	/// Migrate to functions when we have other fitness functions.
 	var sum float64
@@ -506,14 +523,14 @@ func opEvolve(prgrm *CXProgram) {
 
 	// Crossover.
 	for c := 0; c < int(numIter); c++ {
-		// pop1Idx := getLowErrorIdx(errors, 0.7)
-		pop1Idx := rand.Intn(int(numPop))
-		// pop2Idx := getLowErrorIdx(errors, 0.7)
-		pop2Idx := rand.Intn(int(numPop))
-		// dead1Idx := getHighErrorIdx(errors, 0.7)
-		dead1Idx := rand.Intn(int(numPop))
-		// dead2Idx := getHighErrorIdx(errors, 0.7)
-		dead2Idx := rand.Intn(int(numPop))
+		pop1Idx := getLowErrorIdx(errors, 0.2)
+		// pop1Idx := rand.Intn(int(numPop))
+		pop2Idx := getLowErrorIdx(errors, 0.2)
+		// pop2Idx := rand.Intn(int(numPop))
+		dead1Idx := getHighErrorIdx(errors, 0.2)
+		// dead1Idx := rand.Intn(int(numPop))
+		dead2Idx := getHighErrorIdx(errors, 0.2)
+		// dead2Idx := rand.Intn(int(numPop))
 		// pop1 := pop[pop1Idx]
 		// pop2 := pop[pop2Idx]
 
@@ -536,7 +553,7 @@ func opEvolve(prgrm *CXProgram) {
 		}
 
 		child1, child2 := crossover(parent1, parent2)
-
+		
 		if rand.Float32() < 0.1 {
 			child1.mutateFn(fns)
 		}
