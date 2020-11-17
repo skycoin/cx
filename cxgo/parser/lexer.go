@@ -1,10 +1,10 @@
 package parser
 
 import (
-"fmt"
-"io"
+	"fmt"
+	"io"
 
-. "github.com/SkycoinProject/cx/cxgo/actions"
+	. "github.com/SkycoinProject/cx/cxgo/actions"
 )
 
 var DebugLexer bool
