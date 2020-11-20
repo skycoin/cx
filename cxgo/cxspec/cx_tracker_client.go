@@ -65,41 +65,10 @@ func (c *CXTrackerClient) AllSpecs(ctx context.Context) ([]SignedChainSpec, erro
 	return specs, nil
 }
 
-func (c *CXTrackerClient) SpecByPK(ctx context.Context, pk cipher.PubKey) (SignedChainSpec, error) {
+func (c *CXTrackerClient) SpecByGenesisHash(ctx context.Context, hash cipher.SHA256) (SignedChainSpec, error) {
 	log := c.log.WithField("func", "SpecByPK")
 
-	addr := fmt.Sprintf("%s/api/specs/pk:%s", c.addr, pk.Hex())
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
-	if err != nil {
-		return SignedChainSpec{}, err
-	}
-
-	resp, err := c.c.Do(req)
-	if err != nil {
-		return SignedChainSpec{}, err
-	}
-	defer closeRespBody(log, resp)
-
-	if err := checkRespCode(resp); err != nil {
-		return SignedChainSpec{}, err
-	}
-
-	var spec SignedChainSpec
-	if err := json.NewDecoder(resp.Body).Decode(&spec); err != nil {
-		return SignedChainSpec{}, err
-	}
-
-	if err := spec.Verify(); err != nil {
-		return SignedChainSpec{}, fmt.Errorf("failed to verify returned spec: %w", err)
-	}
-
-	return spec, nil
-}
-
-func (c *CXTrackerClient) SpecByTicker(ctx context.Context, ticker string) (SignedChainSpec, error) {
-	log := c.log.WithField("func", "SpecByTicker")
-
-	addr := fmt.Sprintf("%s/api/specs/ticker:%s", c.addr, strings.TrimSpace(strings.ToUpper(ticker)))
+	addr := fmt.Sprintf("%s/api/specs/%s", c.addr, hash.Hex())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
 		return SignedChainSpec{}, err
@@ -157,10 +126,10 @@ func (c *CXTrackerClient) PostSpec(ctx context.Context, spec SignedChainSpec) er
 	return checkRespCode(resp)
 }
 
-func (c *CXTrackerClient) DelSpec(ctx context.Context, pk cipher.PubKey) error {
+func (c *CXTrackerClient) DelSpec(ctx context.Context, hash cipher.SHA256) error {
 	log := c.log.WithField("func", "DelSpec")
 
-	addr := fmt.Sprintf("%s/api/spec/pk:%s", c.addr, pk.Hex())
+	addr := fmt.Sprintf("%s/api/spec/pk:%s", c.addr, hash.Hex())
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, addr, nil)
 	if err != nil {
 		return err
@@ -183,10 +152,6 @@ func closeRespBody(log logrus.FieldLogger, resp *http.Response) {
 	if err := resp.Body.Close(); err != nil {
 		log.WithError(err).Error("Failed to close HTTP response body.")
 	}
-}
-
-func httpStatusError(addr string, code int) error {
-	return fmt.Errorf("request to '%s' failed with code '%d %s'", addr, code, http.StatusText(code))
 }
 
 func checkRespCode(resp *http.Response) error {

@@ -200,6 +200,7 @@ func (cs *ChainSpec) Sign(sk cipher.SecKey) error {
 	return err
 }
 
+// ProcessedChainPubKey returns the processed chain public key.
 func (cs ChainSpec) ProcessedChainPubKey() cipher.PubKey {
 	return cs.chainPK
 }
