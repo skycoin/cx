@@ -198,6 +198,7 @@ func (r TransactionsWithStatus) Sort() {
 func NewTransactionsWithStatus(txns []visor.Transaction) (*TransactionsWithStatus, error) {
 	txnRlts := make([]readable.TransactionWithStatus, 0, len(txns))
 	for _, txn := range txns {
+		txn := txn
 		rTxn, err := readable.NewTransactionWithStatus(&txn)
 		if err != nil {
 			return nil, err
@@ -237,6 +238,7 @@ func NewTransactionsWithStatusVerbose(txns []visor.Transaction, inputs [][]visor
 
 	txnRlts := make([]readable.TransactionWithStatusVerbose, len(txns))
 	for i, txn := range txns {
+		txn := txn
 		rTxn, err := readable.NewTransactionWithStatusVerbose(&txn, inputs[i])
 		if err != nil {
 			return nil, err

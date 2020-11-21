@@ -18,7 +18,7 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0 // indirect
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/skycoin/dmsg v0.0.0-20200803194104-78ff5746d8a3
 	github.com/stretchr/testify v1.6.1
 	github.com/theherk/viper v0.0.0-20171202031228-e0502e82247d
@@ -28,7 +28,6 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/image v0.0.0-20200801110659-972c09e46d76 // indirect
 	golang.org/x/mobile v0.0.0-20200801112145-973feb4309de
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	modernc.org/golex v1.0.1 // indirect
 	modernc.org/goyacc v1.0.0 // indirect

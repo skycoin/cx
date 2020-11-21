@@ -399,7 +399,7 @@ func walletHandler(gateway Gatewayer) http.HandlerFunc {
 
 		wltID := r.FormValue("id")
 		if wltID == "" {
-			wh.Error400(w, fmt.Sprintf("missing wallet id"))
+			wh.Error400(w, "missing wallet id")
 			return
 		}
 
@@ -469,6 +469,7 @@ func walletTransactionsHandler(gateway Gatewayer) http.HandlerFunc {
 
 			vb := make([]readable.UnconfirmedTransactionVerbose, len(txns))
 			for i, txn := range txns {
+				txn := txn
 				v, err := readable.NewUnconfirmedTransactionVerbose(&txn, inputs[i])
 				if err != nil {
 					wh.Error500(w, err.Error())

@@ -20,6 +20,8 @@ func init() {
 // English is a slice of mnemonic words taken from the bip39 specification
 // https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt
 var English = strings.Split(strings.TrimSpace(english), "\n")
+
+//nolint:misspell
 var english = `abandon
 ability
 able

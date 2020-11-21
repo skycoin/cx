@@ -281,6 +281,7 @@ func NewSpentOutput(out *historydb.UxOut) SpentOutput {
 func NewSpentOutputs(outs []historydb.UxOut) []SpentOutput {
 	spents := make([]SpentOutput, len(outs))
 	for i, o := range outs {
+		o := o
 		spents[i] = NewSpentOutput(&o)
 	}
 	return spents

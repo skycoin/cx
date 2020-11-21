@@ -246,6 +246,7 @@ func NewUnconfirmedTransactionsVerbose(txns []visor.UnconfirmedTransaction, inpu
 
 	rTxns := make([]UnconfirmedTransactionVerbose, len(txns))
 	for i, txn := range txns {
+		txn := txn
 		rTxn, err := NewUnconfirmedTransactionVerbose(&txn, inputs[i])
 		if err != nil {
 			return nil, err
