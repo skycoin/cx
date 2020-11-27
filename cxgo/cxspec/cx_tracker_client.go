@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/sirupsen/logrus"
+
+	"github.com/SkycoinProject/cx-chains/src/cipher"
 )
 
 type CXTrackerClient struct {

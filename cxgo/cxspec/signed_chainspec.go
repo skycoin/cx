@@ -12,6 +12,36 @@ type SignedChainSpec struct {
 	Sig  string    `json:"sig"` // hex representation of signature
 }
 
+// MakeSignedChainSpec generates a signed spec from a ChainSpec and secret key.
+// Note that the secret key needs to be able to generate the ChainSpec's public
+// key to be valid.
+func MakeSignedChainSpec(spec ChainSpec, sk cipher.SecKey) (SignedChainSpec, error) {
+	if _, err := spec.GenerateGenesisBlock(); err != nil {
+		return SignedChainSpec{}, fmt.Errorf("chain spec failed to generate genesis block: %w", err)
+	}
+
+	pk, err := cipher.PubKeyFromSecKey(sk)
+	if err != nil {
+		return SignedChainSpec{}, err
+	}
+
+	if pk != spec.ProcessedChainPubKey() {
+		return SignedChainSpec{}, fmt.Errorf("provided sk does not generate chain pk '%s'", spec.ChainPubKey)
+	}
+
+	sig, err := cipher.SignHash(spec.SpecHash(), sk)
+	if err != nil {
+		return SignedChainSpec{}, err
+	}
+
+	signedSpec := SignedChainSpec{
+		Spec: spec,
+		Sig:  sig.Hex(),
+	}
+
+	return signedSpec, nil
+}
+
 // Verify checks the following:
 // - Spec is of right era, has valid chain pk, and generates valid genesis block.
 // - Signature is valid
