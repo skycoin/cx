@@ -129,7 +129,7 @@ func (c *CXTrackerClient) PostSpec(ctx context.Context, spec SignedChainSpec) er
 func (c *CXTrackerClient) DelSpec(ctx context.Context, hash cipher.SHA256) error {
 	log := c.log.WithField("func", "DelSpec")
 
-	addr := fmt.Sprintf("%s/api/spec/pk:%s", c.addr, hash.Hex())
+	addr := fmt.Sprintf("%s/api/specs/%s", c.addr, hash.Hex())
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, addr, nil)
 	if err != nil {
 		return err

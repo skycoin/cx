@@ -19,7 +19,8 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
-	github.com/skycoin/dmsg v0.0.0-20200803194104-78ff5746d8a3
+	github.com/skycoin/dmsg v0.0.0-20201116201014-3552eb174391
+	github.com/skycoin/skywire v0.2.3-0.20200803142942-0f8b9981f6f9 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/theherk/viper v0.0.0-20171202031228-e0502e82247d
 	github.com/toqueteos/webbrowser v1.2.0 // indirect
