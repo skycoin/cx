@@ -163,13 +163,29 @@ github.com/shopspring/decimal
 # github.com/sirupsen/logrus v1.7.0
 ## explicit
 github.com/sirupsen/logrus
-# github.com/skycoin/dmsg v0.0.0-20201116201014-3552eb174391
+# github.com/skycoin/dmsg v0.0.0-20201124135713-d832ca828200
 ## explicit
+github.com/skycoin/dmsg
+github.com/skycoin/dmsg/cipher
+github.com/skycoin/dmsg/disc
 github.com/skycoin/dmsg/httputil
+github.com/skycoin/dmsg/ioutil
+github.com/skycoin/dmsg/netutil
+github.com/skycoin/dmsg/noise
+github.com/skycoin/dmsg/servermetrics
+# github.com/skycoin/noise v0.0.0-20180327030543-2492fe189ae6
+github.com/skycoin/noise
 # github.com/skycoin/skycoin v0.26.0
+github.com/skycoin/skycoin/src/cipher
+github.com/skycoin/skycoin/src/cipher/base58
+github.com/skycoin/skycoin/src/cipher/ripemd160
+github.com/skycoin/skycoin/src/cipher/secp256k1-go
+github.com/skycoin/skycoin/src/cipher/secp256k1-go/secp256k1-go2
 github.com/skycoin/skycoin/src/util/logging
 # github.com/skycoin/skywire v0.2.3-0.20200803142942-0f8b9981f6f9
 ## explicit
+# github.com/skycoin/yamux v0.0.0-20200803175205-571ceb89da9f
+github.com/skycoin/yamux
 # github.com/spf13/afero v1.4.1
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -199,6 +215,13 @@ github.com/toqueteos/webbrowser
 ## explicit
 # golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 ## explicit
+golang.org/x/crypto/blake2b
+golang.org/x/crypto/blake2s
+golang.org/x/crypto/chacha20
+golang.org/x/crypto/chacha20poly1305
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/exp v0.0.0-20200513190911-00229845015e
 ## explicit
@@ -233,6 +256,7 @@ golang.org/x/mobile/internal/mobileinit
 # golang.org/x/net v0.0.0-20201021035429-f5854403a974
 golang.org/x/net/context
 # golang.org/x/sys v0.0.0-20201029080932-201ba4db2418
+golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
