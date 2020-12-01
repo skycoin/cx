@@ -63,7 +63,7 @@ func MakeSignedPeerEntry(entry PeerEntry, sk cipher.SecKey) (SignedPeerEntry, er
 
 	b, err := json.Marshal(entry)
 	if err != nil {
-		panic(err)
+		panic(err) // This should never happen.
 	}
 
 	sig, err := cipher.SignPayload(b, sk)
@@ -77,4 +77,18 @@ func MakeSignedPeerEntry(entry PeerEntry, sk cipher.SecKey) (SignedPeerEntry, er
 	}
 
 	return signedEntry, nil
+}
+
+// Verify checks the validity of the SignedPeerEntry.
+func (se *SignedPeerEntry) Verify() error {
+	if err := se.Entry.Check(); err != nil {
+		return err
+	}
+
+	b, err := json.Marshal(se.Entry)
+	if err != nil {
+		panic(err) // This should never happen.
+	}
+
+	return cipher.VerifyPubKeySignedPayload(se.Entry.PublicKey, se.Sig, b)
 }
