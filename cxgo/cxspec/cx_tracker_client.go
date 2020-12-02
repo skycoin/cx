@@ -145,6 +145,94 @@ func (c *CXTrackerClient) DelSpec(ctx context.Context, hash cipher.SHA256) error
 	return checkRespCode(resp)
 }
 
+func (c *CXTrackerClient) PeerEntryOfPK(ctx context.Context, pk cipher.PubKey) (SignedPeerEntry, error) {
+	log := c.log.WithField("func", "PeerEntryOfPK")
+
+	addr := fmt.Sprintf("%s/api/peers/%s", c.addr, pk.Hex())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return SignedPeerEntry{}, err
+	}
+
+	resp, err := c.c.Do(req)
+	if err != nil {
+		return SignedPeerEntry{}, err
+	}
+	defer closeRespBody(log, resp)
+
+	if err := checkRespCode(resp); err != nil {
+		return SignedPeerEntry{}, err
+	}
+
+	var entry SignedPeerEntry
+	if err := json.NewDecoder(resp.Body).Decode(&entry); err != nil {
+		return SignedPeerEntry{}, err
+	}
+
+	if err := entry.Verify(); err != nil {
+		return SignedPeerEntry{}, fmt.Errorf("failed to verify returned entry: %w", err)
+	}
+
+	return entry, nil
+}
+
+func (c *CXTrackerClient) PeersOfChainHash(ctx context.Context, hash cipher.SHA256) ([]CXChainAddresses, error) {
+	log := c.log.WithField("func", "PeersOfChainHash")
+
+	addr := fmt.Sprintf("%s/api/peers?chain=%s", c.addr, hash.Hex())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer closeRespBody(log, resp)
+
+	if err := checkRespCode(resp); err != nil {
+		return nil, err
+	}
+
+	var out []CXChainAddresses
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func (c *CXTrackerClient) UpdatePeerEntry(ctx context.Context, entry SignedPeerEntry) error {
+	log := c.log.WithField("func", "UpdatePeerEntry")
+
+	if err := entry.Verify(); err != nil {
+		return err
+	}
+
+	r, w := io.Pipe()
+	go func() {
+		if err := json.NewEncoder(w).Encode(entry); err != nil {
+			log.WithError(err).Error("Failed to encode entry to json: %w", err)
+		}
+		_ = w.Close() //nolint:errcheck
+	}()
+
+	addr := fmt.Sprintf("%s/api/peers", c.addr)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr, r)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer closeRespBody(log, resp)
+
+	return checkRespCode(resp)
+}
+
 /*
 	<<< HELPER FUNCTIONS >>>
 */
