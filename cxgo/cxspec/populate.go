@@ -89,6 +89,9 @@ func ReadSpecFile(filename string) (ChainSpec, error) {
 	if err := json.Unmarshal(b, &spec); err != nil {
 		return ChainSpec{}, fmt.Errorf("chain spec file '%s' is ill-formed: %w", filename, err)
 	}
+	if _, err := spec.GenerateGenesisBlock(); err != nil {
+		return ChainSpec{}, fmt.Errorf("chain spec file '%s' cannot generate genesis block: %w", filename, err)
+	}
 	return spec, nil
 }
 

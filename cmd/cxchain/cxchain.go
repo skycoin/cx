@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
+	"time"
+
+	"github.com/skycoin/dmsg"
+	cipher2 "github.com/skycoin/dmsg/cipher"
 
 	"github.com/SkycoinProject/cx-chains/src/api"
 	"github.com/SkycoinProject/cx-chains/src/cipher"
@@ -10,6 +15,7 @@ import (
 	"github.com/SkycoinProject/cx-chains/src/skycoin"
 	"github.com/SkycoinProject/cx-chains/src/util/logging"
 
+	"github.com/SkycoinProject/cx/cxgo/cxdmsg"
 	"github.com/SkycoinProject/cx/cxgo/cxspec"
 )
 
@@ -50,11 +56,7 @@ func parseSpecFilepathEnv() cxspec.ChainSpec {
 		log.WithError(err).Fatal("Failed to start node.")
 	}
 
-	// TODO @evanlinjin: Need to fix genesis program state being atrociously massive.
-	// spec.Print()
-
 	cxspec.PopulateParamsModule(spec)
-
 	return spec
 }
 
@@ -83,15 +85,64 @@ func ensureConfMode(conf *skycoin.NodeConfig) {
 	}
 }
 
-// serveGateway does what it is intended to do (in the near future).
-func serveGateway(gw api.Gatewayer, close chan struct{}) {
-	// TODO @evanlinjin: Actually implement this.
+var (
+	cxTrackerAddr = "127.0.0.1:9091" // cx tracker address
+	dmsgDiscAddr  = "127.0.0.1:9090" // dmsg discovery address
+	dmsgPort      = uint64(9090)     // dmsg listening port
+)
+
+func init() {
+	cmd := flag.CommandLine
+	cmd.StringVar(&cxTrackerAddr, "cx-tracker", cxTrackerAddr, "HTTP `ADDRESS` of cx tracker")
+	cmd.StringVar(&dmsgDiscAddr, "dmsg-disc", dmsgDiscAddr, "HTTP `ADDRESS` of dmsg discovery")
+	cmd.Uint64Var(&dmsgPort, "dmsg-port", dmsgPort, "dmsg `PORT` number to listen on")
+}
+
+func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.ChainSpec) {
+	log := logging.MustGetLogger("cx_tracker_client")
+
+	client := cxspec.NewCXTrackerClient(log, nil, cxTrackerAddr)
+	nodePK := cipher.MustPubKeyFromSecKey(nodeSK)
+
+	block, err := spec.GenerateGenesisBlock()
+	if err != nil {
+		panic(err) // should not happen
+	}
+	hash := block.HashHeader()
+
+	ticker := time.NewTicker(time.Second * 30)
+	defer ticker.Stop()
+
+	entry := cxspec.PeerEntry{
+		PublicKey: cipher2.PubKey(nodePK),
+		// LastSeen: now.Unix(),
+		CXChains: map[cipher2.SHA256]cxspec.CXChainAddresses{
+			cipher2.SHA256(hash): {
+				DmsgAddr: dmsg.Addr{PK: cipher2.PubKey(nodePK), Port: uint16(dmsgPort)},
+				TCPAddr:  nodeTCPAddr,
+			},
+		},
+	}
+
+	for now := range ticker.C {
+		entry.LastSeen = now.Unix()
+
+		signedEntry, err := cxspec.MakeSignedPeerEntry(entry, cipher2.SecKey(nodeSK))
+		if err != nil {
+			panic(err) // should not happen
+		}
+
+		if err := client.UpdatePeerEntry(context.Background(), signedEntry); err != nil {
+			log.WithError(err).Warn("Failed to update peer entry in cx tracker. Retrying...")
+		}
+	}
 }
 
 func main() {
 	// Parse chain spec file and secret key from envs.
 	spec := parseSpecFilepathEnv() // Chain spec file (mandatory).
-	chainSK := parseSecretKeyEnv() // Secret Key file (optional).
+	nodeSK := parseSecretKeyEnv()  // Secret Key file (mandatory).
+	nodePK := cipher.MustPubKeyFromSecKey(nodeSK)
 
 	// Node config: Init.
 	conf := cxspec.BaseNodeConfig()
@@ -102,9 +153,17 @@ func main() {
 		log.WithError(err).Fatal("Failed to parse from chain spec file.")
 	}
 
-	// Node config: If chain secret key is defined, node is block publisher.
-	if !chainSK.Null() {
-		conf.BlockchainSeckeyStr = chainSK.Hex()
+	// Node config: Check node secret key.
+	//	- Node secret key should be defined.
+	//	- If node secret key generates spec's chain pk, it is also the chain's publisher node.
+	if nodeSK.Null() {
+		log.Fatal("Node secret key is not defined.")
+	}
+	if err := nodeSK.Verify(); err != nil {
+		log.WithError(err).Fatal("Failed to verify provided node secret key.")
+	}
+	if cipher.MustPubKeyFromSecKey(nodeSK) == spec.ProcessedChainPubKey() {
+		conf.BlockchainSeckeyStr = nodeSK.Hex()
 		conf.RunBlockPublisher = true
 	}
 
@@ -131,16 +190,32 @@ func main() {
 	gwCh := make(chan api.Gatewayer)
 	defer close(gwCh)
 
-	closeCh := make(chan struct{})
-	defer close(closeCh)
-
+	// Run dmsg loop.
 	go func() {
 		gw, ok := <-gwCh
 		if !ok {
 			return
 		}
-		serveGateway(gw, closeCh)
+		cxdmsg.ServeDmsg(
+			context.Background(),
+			logging.MustGetLogger("dmsgC"),
+			&cxdmsg.Config{
+				PK:       cipher2.PubKey(nodePK),
+				SK:       cipher2.SecKey(nodeSK),
+				DiscAddr: dmsgDiscAddr,
+				DmsgPort: uint16(dmsgPort),
+			},
+			&cxdmsg.API{
+				Version:   version,
+				NodeConf:  conf,
+				ChainSpec: spec,
+				Gateway:   gw,
+			},
+		)
 	}()
+
+	// Run cx tracker loop.
+	go trackerUpdateLoop(nodeSK, conf.Address, spec)
 
 	if err := coin.Run(spec.RawGenesisProgState(), gwCh); err != nil {
 		os.Exit(1)
