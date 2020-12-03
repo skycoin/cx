@@ -34,14 +34,19 @@ func PopulateParamsModule(cs ChainSpec) {
 }
 
 // PopulateNodeConfig populates the node config with values from cx chain spec.
-func PopulateNodeConfig(spec ChainSpec, conf *skycoin.NodeConfig) error {
+func PopulateNodeConfig(trackerAddr string, spec ChainSpec, conf *skycoin.NodeConfig) error {
 	if spec.SpecEra != Era {
 		return fmt.Errorf("unsupported spec era '%s'", spec.SpecEra)
 	}
 
-	// conf := DefaultNodeConfig(defaultSpecFilename)
+	genesis, err := spec.GenerateGenesisBlock()
+	if err != nil {
+		return err
+	}
+	peerListURL := fmt.Sprintf("%s/peerlists/%s.txt", trackerAddr, genesis.HashHeader())
+
 	conf.CoinName = spec.CoinName
-	conf.PeerListURL = spec.Node.PeerListURL
+	conf.PeerListURL = peerListURL
 	conf.Port = spec.Node.Port
 	conf.WebInterfacePort = spec.Node.WebInterfacePort
 	conf.UnconfirmedVerifyTxn = params.VerifyTxn{

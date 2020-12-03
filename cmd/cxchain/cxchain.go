@@ -86,14 +86,14 @@ func ensureConfMode(conf *skycoin.NodeConfig) {
 }
 
 var (
-	cxTrackerAddr = "127.0.0.1:9091" // cx tracker address
-	dmsgDiscAddr  = "127.0.0.1:9090" // dmsg discovery address
-	dmsgPort      = uint64(9090)     // dmsg listening port
+	trackerAddr  = "127.0.0.1:9091"           // cx tracker address
+	dmsgDiscAddr = cxdmsg.DefaultDiscAddr     // dmsg discovery address
+	dmsgPort     = uint64(cxdmsg.DefaultPort) // dmsg listening port
 )
 
 func init() {
 	cmd := flag.CommandLine
-	cmd.StringVar(&cxTrackerAddr, "cx-tracker", cxTrackerAddr, "HTTP `ADDRESS` of cx tracker")
+	cmd.StringVar(&trackerAddr, "cx-tracker", trackerAddr, "HTTP `ADDRESS` of cx tracker")
 	cmd.StringVar(&dmsgDiscAddr, "dmsg-disc", dmsgDiscAddr, "HTTP `ADDRESS` of dmsg discovery")
 	cmd.Uint64Var(&dmsgPort, "dmsg-port", dmsgPort, "dmsg `PORT` number to listen on")
 }
@@ -101,7 +101,7 @@ func init() {
 func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.ChainSpec) {
 	log := logging.MustGetLogger("cx_tracker_client")
 
-	client := cxspec.NewCXTrackerClient(log, nil, cxTrackerAddr)
+	client := cxspec.NewCXTrackerClient(log, nil, trackerAddr)
 	nodePK := cipher.MustPubKeyFromSecKey(nodeSK)
 
 	block, err := spec.GenerateGenesisBlock()
@@ -149,7 +149,7 @@ func main() {
 	ensureConfMode(&conf)
 
 	// Node config: Populate node config based on chain spec content.
-	if err := cxspec.PopulateNodeConfig(spec, &conf); err != nil {
+	if err := cxspec.PopulateNodeConfig(trackerAddr, spec, &conf); err != nil {
 		log.WithError(err).Fatal("Failed to parse from chain spec file.")
 	}
 
@@ -190,12 +190,16 @@ func main() {
 	gwCh := make(chan api.Gatewayer)
 	defer close(gwCh)
 
-	// Run dmsg loop.
 	go func() {
 		gw, ok := <-gwCh
 		if !ok {
 			return
 		}
+
+		// Run cx tracker loop.
+		go trackerUpdateLoop(nodeSK, gw.DaemonConfig().Address, spec)
+
+		// Run dmsg loop.
 		cxdmsg.ServeDmsg(
 			context.Background(),
 			logging.MustGetLogger("dmsgC"),
@@ -213,9 +217,6 @@ func main() {
 			},
 		)
 	}()
-
-	// Run cx tracker loop.
-	go trackerUpdateLoop(nodeSK, conf.Address, spec)
 
 	if err := coin.Run(spec.RawGenesisProgState(), gwCh); err != nil {
 		os.Exit(1)

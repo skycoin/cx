@@ -10,6 +10,12 @@ import (
 	"github.com/skycoin/dmsg/disc"
 )
 
+// Default cx dmsg values.
+const (
+	DefaultDiscAddr = "127.0.0.1:9090"
+	DefaultPort     = uint16(9090)
+)
+
 type Config struct {
 	PK       cipher.PubKey
 	SK       cipher.SecKey

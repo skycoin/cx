@@ -50,7 +50,7 @@ type NodeParams struct {
 	Port               int      `json:"port"`                // Default port for wire protocol.
 	WebInterfacePort   int      `json:"web_interface_port"`  // Default port for web interface.
 	DefaultConnections []string `json:"default_connections"` // Default bootstrapping nodes (trusted).
-	PeerListURL        string   `json:"peer_list_url"`       // URL pointing to a list of 'ip:port' elements (non-trusted).
+	// PeerListURL        string   `json:"peer_list_url"`       // URL pointing to a list of 'ip:port' elements (non-trusted).
 
 	/* Parameters for user-generated transactions. */
 	UserBurnFactor          uint64 `json:"user_burn_factor"`           // Inverse fraction of coin hours that must be burned (used when creating transactions).
@@ -66,7 +66,7 @@ func DefaultNodeParams() NodeParams {
 		DefaultConnections: []string{
 			"127.0.0.1:6001",
 		},
-		PeerListURL:             "https://127.0.0.1/peers.txt",
+		// PeerListURL:             "https://127.0.0.1/peers.txt",
 		UserBurnFactor:          10,
 		UserMaxTransactionSize:  32 * 1024,
 		UserMaxDropletPrecision: 3,
