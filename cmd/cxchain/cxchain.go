@@ -115,7 +115,6 @@ func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.Cha
 
 	entry := cxspec.PeerEntry{
 		PublicKey: cipher2.PubKey(nodePK),
-		// LastSeen: now.Unix(),
 		CXChains: map[cipher2.SHA256]cxspec.CXChainAddresses{
 			cipher2.SHA256(hash): {
 				DmsgAddr: dmsg.Addr{PK: cipher2.PubKey(nodePK), Port: uint16(dmsgPort)},
@@ -124,8 +123,8 @@ func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.Cha
 		},
 	}
 
-	for now := range ticker.C {
-		entry.LastSeen = now.Unix()
+	update := func(now int64) {
+		entry.LastSeen = now
 
 		signedEntry, err := cxspec.MakeSignedPeerEntry(entry, cipher2.SecKey(nodeSK))
 		if err != nil {
@@ -135,6 +134,11 @@ func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.Cha
 		if err := client.UpdatePeerEntry(context.Background(), signedEntry); err != nil {
 			log.WithError(err).Warn("Failed to update peer entry in cx tracker. Retrying...")
 		}
+	}
+
+	update(time.Now().Unix())
+	for now := range ticker.C {
+		update(now.Unix())
 	}
 }
 
@@ -154,10 +158,12 @@ func main() {
 	}
 
 	// Node config: Check node secret key.
-	//	- Node secret key should be defined.
+	//	- If node secret key is null, randomly generate one.
 	//	- If node secret key generates spec's chain pk, it is also the chain's publisher node.
 	if nodeSK.Null() {
-		log.Fatal("Node secret key is not defined.")
+		nodePK, nodeSK = cipher.GenerateKeyPair()
+		log.WithField("node_pk", nodePK.Hex()).
+			Warn("Node secret key is not defined. Random key pair generated.")
 	}
 	if err := nodeSK.Verify(); err != nil {
 		log.WithError(err).Fatal("Failed to verify provided node secret key.")
