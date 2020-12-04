@@ -154,7 +154,7 @@ core language) associated to
 # CX Book
 
 You can find the book source code and its releases in its [CX book Github
-repository](https://github.com/SkycoinProject/cx-book).
+repository](https://github.com/Skycoin/cx-book).
 
 # CX Projects, Libraries and other Resources
 
