@@ -244,7 +244,6 @@ func truncateGivePeersMessage(m *GivePeersMessage, maxMsgLength uint64) {
 	// Measure the size of the peers, advancing the slice index until it reaches capacity
 	index := -1
 	for i, ip := range m.Peers {
-		ip := ip
 		x := encodeSizeIPAddr(&ip)
 		if size+x > maxMsgLength {
 			break
@@ -839,7 +838,6 @@ func truncateGiveBlocksMessage(m *GiveBlocksMessage, maxMsgLength uint64) {
 	// Measure the size of the blocks, advancing the slice index until it reaches capacity
 	index := -1
 	for i, b := range m.Blocks {
-		b := b
 		x := encodeSizeSignedBlock(&b)
 		if size+x > maxMsgLength {
 			break
@@ -1305,7 +1303,6 @@ func truncateGiveTxnsMessage(m *GiveTxnsMessage, maxMsgLength uint64) {
 	// Measure the size of the txns, advancing the slice index until it reaches capacity
 	index := -1
 	for i, txn := range m.Transactions {
-		txn := txn
 		x := encodeSizeTransaction(&txn)
 		if size+x > maxMsgLength {
 			break

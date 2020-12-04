@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"encoding/hex"
-
+	
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/SkycoinProject/cx-chains/src/util/logging"
 )
@@ -101,9 +101,6 @@ func ResolveCoinType(s string) (CoinType, error) {
 	case "btc", "bitcoin":
 		return CoinTypeBitcoin, nil
 	default:
-		if IsCXCoin(CoinType(s)) {
-			return CoinType(s), nil
-		}
 		return CoinType(""), ErrInvalidCoinType
 	}
 }
@@ -148,7 +145,7 @@ type Options struct {
 
 // Wallet is consisted of meta and entries.
 // Meta field records items that are not deterministic, like
-// filename, label, wallet type, secrets, etc.
+// filename, lable, wallet type, secrets, etc.
 // Entries field stores the address entries that are deterministically generated
 // from seed.
 // For wallet encryption
@@ -172,9 +169,10 @@ func newWallet(wltName string, opts Options, bg BalanceGetter) (*Wallet, error) 
 		coin = CoinTypeSkycoin
 	}
 
-	// coin should either be 'skycoin', 'bitcoin', or a cx coin 'cx_*'
-	if coin != CoinTypeSkycoin && coin != CoinTypeBitcoin && !IsCXCoin(coin) {
-		return nil, fmt.Errorf("invalid coin type %s", coin)
+	switch coin {
+	case CoinTypeSkycoin, CoinTypeBitcoin:
+	default:
+		return nil, fmt.Errorf("Invalid coin type %q", coin)
 	}
 
 	w := &Wallet{
@@ -202,8 +200,8 @@ func newWallet(wltName string, opts Options, bg BalanceGetter) (*Wallet, error) 
 		return nil, err
 	}
 
-	if coin == CoinTypeBitcoin && opts.ScanN > 0 {
-		return nil, errors.New("wallet address scanning is not supported for Bitcoin wallets")
+	if opts.ScanN != 0 && coin != CoinTypeSkycoin {
+		return nil, errors.New("Wallet address scanning is not supported for Bitcoin wallets")
 	}
 
 	if opts.ScanN > generateN {

@@ -247,21 +247,13 @@ func copyCorruptDB(dbPath string) (string, error) { // nolint: unused,megacheck
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		if err := in.Close(); err != nil {
-			logger.WithError(err).Warn("failed to close in file")
-		}
-	}()
+	defer in.Close()
 
 	out, err := os.Create(newDBPath)
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		if err := out.Close(); err != nil {
-			logger.WithError(err).Warn("failed to close out file")
-		}
-	}()
+	defer out.Close()
 	logger.Critical().Info(out.Name())
 
 	_, err = io.Copy(in, out)
@@ -298,11 +290,7 @@ func shaFileID(dbPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		if err := fi.Close(); err != nil {
-			logger.WithError(err).Info("failed to close sha file")
-		}
-	}()
+	defer fi.Close()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, fi); err != nil {

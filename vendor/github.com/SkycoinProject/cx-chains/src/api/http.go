@@ -250,7 +250,6 @@ func CreateHTTPS(host string, c Config, gateway Gatewayer, certFile, keyFile str
 	logger.Infof("Using %s for the certificate", certFile)
 	logger.Infof("Using %s for the key", keyFile)
 
-	//nolint:gosec
 	listener, err := tls.Listen("tcp", host, &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	})
@@ -570,7 +569,7 @@ func newServerMux(c muxConfig, gateway Gatewayer) *http.ServeMux {
 		http.MethodPost: []string{EndpointsRead},
 	})
 	webHandlerV1("/programState", programStateHandler(gateway), map[string][]string{
-		http.MethodGet: []string{EndpointsRead},
+		http.MethodGet:  []string{EndpointsRead},
 	})
 	webHandlerV1("/injectTransaction", injectTransactionHandler(gateway), map[string][]string{
 		http.MethodPost: []string{EndpointsTransaction, EndpointsWallet},

@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -121,7 +122,7 @@ func (vs *Visor) VisorConfig() Config {
 }
 
 // Init initializes starts the visor
-func (vs *Visor) Init(genesisProgState []byte) error {
+func (vs *Visor) Init() error {
 	logger.Info("Visor init")
 
 	if vs.db.IsReadOnly() {
@@ -129,7 +130,7 @@ func (vs *Visor) Init(genesisProgState []byte) error {
 	}
 
 	return vs.db.Update("visor init", func(tx *dbutil.Tx) error {
-		if err := vs.maybeCreateGenesisBlock(tx, genesisProgState); err != nil {
+		if err := vs.maybeCreateGenesisBlock(tx, []byte{}); err != nil {
 			return err
 		}
 
@@ -733,7 +734,6 @@ func (vs *Visor) getBlocksVerbose(tx *dbutil.Tx, getBlocks func(*dbutil.Tx) ([]c
 
 	inputs := make([][][]TransactionInput, len(blocks))
 	for i, b := range blocks {
-		b := b
 		blockInputs, err := vs.getBlockInputs(tx, &b)
 		if err != nil {
 			return nil, nil, err
@@ -1084,7 +1084,6 @@ func (vs *Visor) getTransactions(tx *dbutil.Tx, flts []TxFilter) ([]Transaction,
 
 	var retTxns []Transaction
 	for _, txn := range txns {
-		txn := txn
 		if f(&txn, otherFlts) {
 			retTxns = append(retTxns, txn)
 		}
@@ -1148,7 +1147,6 @@ func (vs *Visor) getProgramState(tx *dbutil.Tx, flts []TxFilter) ([]byte, error)
 
 	var retTxns []Transaction
 	for _, tx := range txns {
-		tx := tx
 		if f(&tx, otherFlts) {
 			retTxns = append(retTxns, tx)
 		}
@@ -2120,7 +2118,7 @@ func (vs *Visor) VerifyTxnVerbose(txn *coin.Transaction, signed TxnSignedFlag) (
 			// For confirmed transactions, use the previous block time to calculate hours and fees,
 			// except for the genesis block which has no previous block and has no inputs nor fees.
 			feeCalcTime = 0
-			if historyTxn.BlockSeq > 0 { //nolint:staticcheck
+			if historyTxn.BlockSeq > 0 {
 				if isTxnConfirmed {
 					prevBlock, err := vs.blockchain.GetSignedBlockBySeq(tx, historyTxn.BlockSeq-1)
 					if err != nil {

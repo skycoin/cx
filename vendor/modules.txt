@@ -1,6 +1,7 @@
 # github.com/NYTimes/gziphandler v1.1.1
+## explicit
 github.com/NYTimes/gziphandler
-# github.com/SkycoinProject/cx-chains v0.24.2-0.20200412040944-7696b1dfd81c => ../cx-chains
+# github.com/SkycoinProject/cx-chains v0.24.2-0.20200412040944-7696b1dfd81c
 ## explicit
 github.com/SkycoinProject/cx-chains/src/api
 github.com/SkycoinProject/cx-chains/src/cipher
@@ -62,16 +63,19 @@ github.com/SkycoinProject/skycoin/src/cipher/secp256k1-go/secp256k1-go2
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
+## explicit
 github.com/blang/semver
 # github.com/boltdb/bolt v1.3.1
+## explicit
 github.com/boltdb/bolt
-# github.com/cenkalti/backoff v1.1.0
+# github.com/cenkalti/backoff v2.2.1+incompatible
+## explicit
 github.com/cenkalti/backoff
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/fsnotify/fsnotify v1.4.9
+# github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/go-chi/chi v4.1.2+incompatible
 github.com/go-chi/chi
@@ -93,7 +97,7 @@ github.com/go-gl/glfw/v3.3/glfw/glfw/src
 github.com/golang/freetype
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
-# github.com/golang/protobuf v1.4.2
+# github.com/golang/protobuf v1.4.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -115,9 +119,9 @@ github.com/inconshreveable/mousetrap
 # github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 ## explicit
 github.com/jinzhu/copier
-# github.com/magiconair/properties v1.8.4
+# github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
-# github.com/mattn/go-colorable v0.1.8
+# github.com/mattn/go-colorable v0.1.6
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
@@ -126,12 +130,12 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 ## explicit
 github.com/mgutz/ansi
-# github.com/mitchellh/mapstructure v1.3.3
+# github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
 # github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
 ## explicit
 github.com/mjibson/go-dsp/wav
-# github.com/pelletier/go-toml v1.8.1
+# github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -186,18 +190,18 @@ github.com/skycoin/skycoin/src/util/logging
 ## explicit
 # github.com/skycoin/yamux v0.0.0-20200803175205-571ceb89da9f
 github.com/skycoin/yamux
-# github.com/spf13/afero v1.4.1
+# github.com/spf13/afero v1.1.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.3.1
+# github.com/spf13/cast v1.3.0
 github.com/spf13/cast
-# github.com/spf13/cobra v1.1.1
+# github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
-# github.com/spf13/jwalterweatherman v1.1.0
+# github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
-# github.com/spf13/pflag v1.0.5
+# github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
-# github.com/spf13/viper v1.7.1
+# github.com/spf13/viper v1.6.2
 github.com/spf13/viper
 # github.com/stretchr/testify v1.6.1
 ## explicit
@@ -253,14 +257,11 @@ golang.org/x/mobile/exp/audio/al
 golang.org/x/mobile/geom
 golang.org/x/mobile/gl
 golang.org/x/mobile/internal/mobileinit
-# golang.org/x/net v0.0.0-20201021035429-f5854403a974
-golang.org/x/net/context
-# golang.org/x/sys v0.0.0-20201029080932-201ba4db2418
+# golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 golang.org/x/sys/cpu
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.4
+# golang.org/x/text v0.3.2
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # google.golang.org/protobuf v1.25.0
@@ -294,11 +295,11 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# gopkg.in/ini.v1 v1.62.0
+# gopkg.in/ini.v1 v1.51.1
 gopkg.in/ini.v1
-# gopkg.in/yaml.v2 v2.3.0
+# gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
 # modernc.org/golex v1.0.1
 ## explicit
@@ -314,4 +315,3 @@ gopkg.in/yaml.v3
 ## explicit
 # modernc.org/y v1.0.0
 ## explicit
-# github.com/SkycoinProject/cx-chains => ../cx-chains

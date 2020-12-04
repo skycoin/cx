@@ -78,7 +78,7 @@ func addressTransactionsCmd() *cobra.Command {
 	return &cobra.Command{
 		Short: "Show detail for transaction associated with one or more specified addresses",
 		Use:   "addressTransactions [address list]",
-		Long: `Display transactions for specific addresses, separate multiple addresses with a space,
+		Long: `Display transactions for specific addresses, seperate multiple addresses with a space,
         example: addressTransactions addr1 addr2 addr3`,
 		DisableFlagsInUseLine: true,
 		SilenceUsage:          true,

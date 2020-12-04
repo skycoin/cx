@@ -60,7 +60,7 @@ var (
 	// instructions on how to include this log's output
 	logger = logging.MustGetLogger("pex")
 	// Default rng
-	rnum = rand.New(rand.NewSource(time.Now().Unix())) //nolint:gosec
+	rnum = rand.New(rand.NewSource(time.Now().Unix()))
 	// For removing inadvertent whitespace from addresses
 	whitespaceFilter = regexp.MustCompile(`\s`)
 )
@@ -392,11 +392,7 @@ func (px *Pex) loadCustom(fn string) error {
 		return err
 	}
 
-	defer func() {
-		if err := f.Close(); err != nil {
-			logger.WithError(err).WithField("func", "Pex.loadCustom").Warn()
-		}
-	}()
+	defer f.Close()
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -659,15 +655,11 @@ func (px *Pex) isFull() bool {
 // Returns the raw response body as a string.
 // TODO -- move to util, add backoff options
 func downloadText(url string) (string, error) {
-	resp, err := http.Get(url) //nolint:gosec
+	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			logger.WithError(err).WithField("func", "downloadText").Warn()
-		}
-	}()
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

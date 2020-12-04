@@ -260,7 +260,7 @@ func NewDaemonConfig() DaemonConfig {
 		BlockCreationInterval:        10,
 		UnconfirmedRefreshRate:       time.Minute,
 		UnconfirmedRemoveInvalidRate: time.Minute,
-		Mirror:                       rand.New(rand.NewSource(time.Now().UTC().UnixNano())).Uint32(), //nolint:gosec
+		Mirror:                       rand.New(rand.NewSource(time.Now().UTC().UnixNano())).Uint32(),
 		UnconfirmedVerifyTxn:         params.UserVerifyTxn,
 		MaxOutgoingMessageLength:     256 * 1024,
 		MaxIncomingMessageLength:     1024 * 1024,
@@ -274,7 +274,6 @@ func NewDaemonConfig() DaemonConfig {
 type daemoner interface {
 	Disconnect(addr string, r gnet.DisconnectReason) error
 	DaemonConfig() DaemonConfig
-
 	sendMessage(addr string, msg gnet.Message) error
 	broadcastMessage(msg gnet.Message) ([]uint64, error)
 	disconnectNow(addr string, r gnet.DisconnectReason) error
@@ -1645,7 +1644,6 @@ func (dm *Daemon) GetConnections(f func(c Connection) bool) ([]Connection, error
 	conns := make([]Connection, 0)
 
 	for _, c := range cs {
-		c := c
 		cc, err := dm.newConnection(&c)
 		if err != nil {
 			return nil, err

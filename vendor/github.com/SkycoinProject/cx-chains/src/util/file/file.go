@@ -109,11 +109,7 @@ func LoadJSON(filename string, thing interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			logger.WithError(err).Warn()
-		}
-	}()
+	defer file.Close()
 
 	dec := json.NewDecoder(file)
 	dec.UseNumber()
@@ -140,14 +136,10 @@ func SaveJSONSafe(filename string, thing interface{}, mode os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			logger.WithError(err).Warn()
-		}
-	}()
+	defer f.Close()
 	n, err := f.Write(b)
 	if n != len(b) && err != nil {
-		err = errors.New("failed to save complete file")
+		err = errors.New("Failed to save complete file")
 	}
 	if err != nil {
 		if removeErr := os.Remove(filename); removeErr != nil {

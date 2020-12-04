@@ -34,7 +34,7 @@ type Config struct {
 	// Where the block signatures are saved
 	BlockSigsFile string
 
-	// address for genesis
+	//address for genesis
 	GenesisAddress cipher.Address
 	// Genesis block sig
 	GenesisSignature cipher.Sig

@@ -199,11 +199,11 @@ func (r *CreatedTransaction) ToTransaction() (*coin.Transaction, error) {
 
 // CreatedTransactionOutput is a transaction output
 type CreatedTransactionOutput struct {
-	UxID         string `json:"uxid"`
-	Address      string `json:"address"`
-	Coins        string `json:"coins"`
-	Hours        string `json:"hours"`
-	ProgramState []byte `json:"prgrmState"`
+	UxID         string       `json:"uxid"`
+	Address      string       `json:"address"`
+	Coins        string       `json:"coins"`
+	Hours        string       `json:"hours"`
+	ProgramState []byte       `json:"prgrmState"`
 }
 
 // NewCreatedTransactionOutput creates CreatedTransactionOutput
@@ -214,10 +214,10 @@ func NewCreatedTransactionOutput(out coin.TransactionOutput, txid cipher.SHA256)
 	}
 
 	return &CreatedTransactionOutput{
-		UxID:         out.UxID(txid).Hex(),
-		Address:      out.Address.String(),
-		Coins:        coins,
-		Hours:        fmt.Sprint(out.Hours),
+		UxID:    out.UxID(txid).Hex(),
+		Address: out.Address.String(),
+		Coins:   coins,
+		Hours:   fmt.Sprint(out.Hours),
 		ProgramState: out.ProgramState,
 	}, nil
 }
@@ -282,10 +282,10 @@ type hoursSelection struct {
 
 // receiver specifies a spend destination
 type receiver struct {
-	Address      wh.Address `json:"address"`
-	Coins        wh.Coins   `json:"coins"`
-	Hours        *wh.Hours  `json:"hours,omitempty"`
-	ProgramState []byte     `json:"prgrmState"`
+	Address           wh.Address `json:"address"`
+	Coins             wh.Coins   `json:"coins"`
+	Hours             *wh.Hours  `json:"hours,omitempty"`
+	ProgramState      []byte     `json:"prgrmState"`
 }
 
 // Validate validates createTransactionRequest data
@@ -427,10 +427,10 @@ func (r createTransactionRequest) TransactionParams() transaction.Params {
 		}
 
 		to[i] = coin.TransactionOutput{
-			Address:      t.Address.Address,
-			Coins:        t.Coins.Value(),
-			Hours:        hours,
-			ProgramState: t.ProgramState,
+			Address:       t.Address.Address,
+			Coins:         t.Coins.Value(),
+			Hours:         hours,
+			ProgramState:  t.ProgramState,
 		}
 	}
 
@@ -445,8 +445,8 @@ func (r createTransactionRequest) TransactionParams() transaction.Params {
 			Mode:        r.HoursSelection.Mode,
 			ShareFactor: r.HoursSelection.ShareFactor,
 		},
-		ChangeAddress:   changeAddress,
-		To:              to,
+		ChangeAddress: changeAddress,
+		To:            to,
 		MainExpressions: r.MainExpressions,
 	}
 }

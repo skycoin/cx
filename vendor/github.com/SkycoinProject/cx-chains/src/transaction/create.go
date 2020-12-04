@@ -13,7 +13,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
+	"github.com/SkycoinProject/cx/cx"
 
 	"github.com/SkycoinProject/cx-chains/src/cipher"
 	"github.com/SkycoinProject/cx-chains/src/coin"
@@ -311,22 +311,18 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 		prgrm := cxcore.Deserialize(cxcore.MergeTransactionAndBlockchain(ux.Body.ProgramState, p.MainExpressions))
 
 		// Telling the CX runtime to use the newly created program.
-		if _, err := prgrm.SelectProgram(); err != nil {
-			return nil, nil, fmt.Errorf("failed to select program: %w", err)
-		}
-
+		prgrm.SelectProgram()
+		
 		// All the heap objects need to be displaced `txnDataSize` bytes.
 		// We're adding the data segment of the transaction code, so all the
 		// heap objects in the program state need to be updated to their new addresses (old address + `txnDataSize`).
 		txnDataSize := len(prgrm.Memory[prgrm.StackSize:prgrm.HeapStartsAt]) - cxcore.GetSerializedDataSize(ux.Body.ProgramState)
-
+		
 		// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 		// Increasing all the references by `txnDataSize`.
 		cxcore.DisplaceReferences(prgrm, txnDataSize, 1)
 		// Running the merged program.
-		if err := prgrm.RunCompiled(0, nil); err != nil {
-			return nil, nil, fmt.Errorf("failed to run compiled program: %s", err)
-		}
+		prgrm.RunCompiled(0, nil)
 		// Removing garbage from the heap. Only the global variables should be left
 		// as these are independent from function calls.
 		cxcore.MarkAndCompact(prgrm)
@@ -363,7 +359,7 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 	for i, h := range txn.In {
 		uxBalance, ok := uxbMap[h]
 		if !ok {
-			err := errors.New("created transaction's input is not in the UxBalanceSet, this should not occur")
+			err := errors.New("Created transaction's input is not in the UxBalanceSet, this should not occur")
 			logger.Critical().WithError(err).Error()
 			return nil, nil, err
 		}
@@ -372,7 +368,7 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 
 	if err := verifyCreatedUnignedInvariants(p, txn, inputs); err != nil {
 		logger.Critical().WithError(err).Error("CreateTransaction created transaction that violates invariants, aborting")
-		return nil, nil, fmt.Errorf("created transaction that violates invariants, this is a bug: %v", err)
+		return nil, nil, fmt.Errorf("Created transaction that violates invariants, this is a bug: %v", err)
 	}
 
 	return txn, inputs, nil
@@ -380,7 +376,7 @@ func create(p Params, auxs coin.AddressUxOuts, headTime uint64, callCount int, m
 
 func verifyCreatedUnignedInvariants(p Params, txn *coin.Transaction, inputs []UxBalance) error {
 	if !txn.IsFullyUnsigned() {
-		return errors.New("transaction is not fully unsigned")
+		return errors.New("Transaction is not fully unsigned")
 	}
 
 	if err := VerifyCreatedInvariants(p, txn, inputs); err != nil {
@@ -480,11 +476,11 @@ func VerifyCreatedInvariants(p Params, txn *coin.Transaction, inputs []UxBalance
 	}
 
 	if inputHours < outputHours {
-		return errors.New("total input hours is less than the output hours")
+		return errors.New("Total input hours is less than the output hours")
 	}
 
 	if inputHours-outputHours < fee.RequiredFee(inputHours, params.UserVerifyTxn.BurnFactor) {
-		return errors.New("transaction will not satisfy required fee")
+		return errors.New("Transaction will not satisy required fee")
 	}
 
 	return nil

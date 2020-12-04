@@ -12,10 +12,11 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -185,7 +186,7 @@ func resolveWalletPath(cfg Config, w string) (string, error) {
 
 	absW, err := filepath.Abs(w)
 	if err != nil {
-		return "", fmt.Errorf("invalid wallet path %s: %v", w, err)
+		return "", fmt.Errorf("Invalid wallet path %s: %v", w, err)
 	}
 
 	return absW, nil
@@ -203,7 +204,7 @@ func resolveDBPath(cfg Config, db string) (string, error) {
 
 	absDB, err := filepath.Abs(db)
 	if err != nil {
-		return "", fmt.Errorf("invalid data path %s: %v", db, err)
+		return "", fmt.Errorf("Invalid data path %s: %v", db, err)
 	}
 	return absDB, nil
 }

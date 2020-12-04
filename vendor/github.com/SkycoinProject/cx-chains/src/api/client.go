@@ -587,19 +587,6 @@ func (c *Client) Balance(addrs []string) (*BalanceResponse, error) {
 	return &b, nil
 }
 
-// ProgramState makes a request to POST /api/v1/programState?addrs=xxx
-func (c *Client) ProgramState(addrs []string) ([]byte, error) {
-	v := make(url.Values, 1)
-	v.Add("addrs", strings.Join(addrs, ","))
-	endpoint := "/api/v1/programState?" + v.Encode()
-
-	var b []byte
-	if err := c.Get(endpoint, &b); err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
 // UxOut makes a request to GET /api/v1/uxout?uxid=xxx
 func (c *Client) UxOut(uxID string) (*readable.SpentOutput, error) {
 	v := url.Values{}

@@ -114,9 +114,7 @@ func NewConfig(configName, appDir string) (Config, error) {
 	configName = configName[:len(configName)-(len(fileType)+1)]
 	viper.SetConfigName(configName)
 
-	if appDir != "" {
-		viper.AddConfigPath(appDir)
-	}
+	viper.AddConfigPath(appDir)
 	viper.AddConfigPath(".")
 
 	// set defaults
@@ -141,12 +139,12 @@ func setDefaults() {
 	viper.SetDefault("node.port", 6000)
 	viper.SetDefault("node.web_interface_port", 6420)
 	viper.SetDefault("node.unconfirmed_burn_factor", 10)
-	viper.SetDefault("node.unconfirmed_max_transaction_size", 5*1024*1024)
+	viper.SetDefault("node.unconfirmed_max_transaction_size", 5 * 1024 * 1024)
 	viper.SetDefault("node.unconfirmed_max_decimals", 3)
 	viper.SetDefault("node.create_block_burn_factor", 10)
-	viper.SetDefault("node.create_block_max_transaction_size", 5*1024*1024)
+	viper.SetDefault("node.create_block_max_transaction_size", 5 * 1024 * 1024)
 	viper.SetDefault("node.create_block_max_decimals", 3)
-	viper.SetDefault("node.max_block_transactions_size", 5*1024*1024)
+	viper.SetDefault("node.max_block_transactions_size", 5 * 1024 * 1024)
 	viper.SetDefault("node.display_name", "Skycoin")
 	viper.SetDefault("node.ticker", "SKY")
 	viper.SetDefault("node.coin_hours_display_name", "Coin Hours")
@@ -164,5 +162,5 @@ func setDefaults() {
 	viper.SetDefault("params.unlock_time_interval", 60*60*24*365)
 	viper.SetDefault("params.user_max_decimals", 3)
 	viper.SetDefault("params.user_burn_factor", 10)
-	viper.SetDefault("params.user_max_transaction_size", 128*1024*1024)
+	viper.SetDefault("params.user_max_transaction_size", 128 * 1024 * 1024)
 }

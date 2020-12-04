@@ -3,10 +3,14 @@ module github.com/SkycoinProject/cx
 go 1.14
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/SkycoinProject/cx-chains v0.24.2-0.20200412040944-7696b1dfd81c
 	github.com/SkycoinProject/gltext v0.0.0-20200425002731-afdd8ff94e14
 	github.com/SkycoinProject/nex v0.0.0-20191231010827-3bb2d0c49bc5 // indirect
 	github.com/SkycoinProject/skycoin v0.27.0
+	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/boltdb/bolt v1.3.1 // indirect
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -39,4 +43,4 @@ require (
 	modernc.org/y v1.0.0 // indirect
 )
 
-replace github.com/SkycoinProject/cx-chains => ../cx-chains
+//replace github.com/SkycoinProject/cx-chains => ../cx-chains

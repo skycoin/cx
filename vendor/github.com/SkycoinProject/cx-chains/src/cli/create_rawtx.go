@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -225,11 +224,7 @@ func openCSV(csvFile string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			log.Printf("openCSV: failed to close csvFile: %v", err)
-		}
-	}()
+	defer f.Close()
 
 	r := csv.NewReader(f)
 	return r.ReadAll()

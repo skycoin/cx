@@ -48,7 +48,6 @@ type ReadableEntries []ReadableEntry
 func (res ReadableEntries) toWalletEntries(coinType CoinType, isEncrypted bool) ([]Entry, error) {
 	entries := make([]Entry, len(res))
 	for i, re := range res {
-		re := re
 		e, err := newEntryFromReadable(coinType, &re)
 		if err != nil {
 			return []Entry{}, err
