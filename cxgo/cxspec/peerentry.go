@@ -17,9 +17,9 @@ type CXChainAddresses struct {
 
 // PeerEntry represents a peer entry in cx tracker.
 type PeerEntry struct {
-	PublicKey cipher.PubKey                      `json:"public_key"`
-	LastSeen  int64                              `json:"last_seen"`
-	CXChains  map[cipher.SHA256]CXChainAddresses `json:"cx_chains"`
+	PublicKey cipher.PubKey               `json:"public_key"`
+	LastSeen  int64                       `json:"last_seen"`
+	CXChains  map[string]CXChainAddresses `json:"cx_chains"`
 }
 
 // Check ensures all fields of PeerEntry conforms to all rules.
