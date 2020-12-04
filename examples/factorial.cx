@@ -1,23 +1,43 @@
+// Main Package
+// This program show us, how to calculate the factorial 
+// How to import different packages in the main package
+// This program also show us how to use recursive programing 
 package main
+
+// this is how we can import different packages in the main package 
 import "time"
 
+// This function calculate the factorial 
+// this program is a recursive. It recalls itself 
+//
 func factorial (num i64) (fact i64) {
+
+// declaration of variables 
+// fact is type i64, that why we have to use L with zero, 0L to make It type i64
 	fact = 0L
+
 	if i64.eq(num, 1L) {
 		fact = 1L
 	} else {
+		// This is the perfect example of recursive function usage
 		fact = i64.mul(num, factorial(i64.sub(num, 1L)))
 	}
 }
 
+
 func main () () {
+
+// Declaration of local variables. 
 	var start i64
 	var end i64
 
+// time.UnixNano() return the time of the moment
 	start = time.UnixNano()
+// recall the factorial function and print returned value. 
 	i64.print(factorial(20L))
 	end = time.UnixNano()
 
+// we can see the escaped time during the calculation of factorial by saving time before and after calculation.  Then subtract them both.  
 	str.print("Elapsed time in calculation:")
 	i64.print(i64.sub(end, start))
 }

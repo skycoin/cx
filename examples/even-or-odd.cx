@@ -1,8 +1,19 @@
+// Main package code 
+// This program will identify the even and odd integers
+
 package main
 
 func main () () {
+// initialization of variable
     var i i32
+
+// For loop
+// i32.lteq(x,y), this function is x<=y, answer is  true/false 
+//z= i32.add(x,y) will x and y, x+y=z 
+//z= i32.mod(x,y)is x%y=z. this function provide the mode of x with y
+// i32.eq(x,y), this function is x=y, answer is  true/false
     for i = 1; i32.lteq(i, 6); i = i32.add(i, 1){
+// if command 
         if i32.eq(i32.mod(i, 2), 0) {
             str.print("Even")
             i32.print(i)

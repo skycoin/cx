@@ -120,7 +120,7 @@ behind this is that a CX book is going to be published, which is targetted to a
 more beginner audience.  Thus, this README now has the purpose of quickly
 demonstrating the capabilities of the language, how to install it, etc. You can
 find the book source code and its releases in its [CX book Github
-repository](https://github.com/SkycoinProject/cx-book).
+repository](https://github.com/skycoin/cx-book).
 
 This tutorial/documentation is divided into four parts, which can
 broadly be described as *introduction*, *syntax*, *runtime* and
@@ -154,7 +154,7 @@ core language) associated to
 # CX Book
 
 You can find the book source code and its releases in its [CX book Github
-repository](https://github.com/SkycoinProject/cx-book).
+repository](https://github.com/Skycoin/cx-book).
 
 # CX Projects, Libraries and other Resources
 

@@ -1,15 +1,36 @@
+
+
+
+// Main Package
+// This program show us, how to calculate the Fibonacci series 
+// This program also show us how to use recursive programing 
+
 package main 
 
+// fib is the function which calculate the Fibonacci series
+// i32.lt(x,y),  Here x<y, the return true. 
 func fib (n i32) (out i32) {
-    if i32.lt(n, 2) {
-        out = i32.add(0, n)
-    } else {
-        out = i32.add(fib(i32.sub(n, 1)), fib(i32.sub(n, 2)))
+
+    if (i32.lt(n, 2)){
+        out = n
+    }else {
+        out = i32.add(fib(i32.sub(n, 1)), fib(i32.sub(n, 2))) // recursive method 
     }
 }
 
+
 func main () () {
-    str.print("Fibonacci")
-    i32.print(fib(6))
+// initialization of variables 
+var Fibonacci i32 
+var i i32 
+
+// assign the values for the Fibonacci series 
+Fibonacci = 1
+
+    str.print("Fibonacci series: ")
+
+for i=0; i32.lt(i, Fibonacci); i = i32.add(i, 1){
+    i32.print(fib(i))
+}
     
 }
