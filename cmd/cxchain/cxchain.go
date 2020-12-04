@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -225,7 +226,9 @@ func main() {
 		}
 
 		// Run cx tracker loop.
-		go trackerUpdateLoop(nodeSK, gw.DaemonConfig().Address, spec)
+		dConf := gw.DaemonConfig()
+		addr := fmt.Sprintf("%s:%d", dConf.Address, dConf.Port)
+		go trackerUpdateLoop(nodeSK, addr, spec)
 
 		// Run dmsg loop.
 		cxdmsg.ServeDmsg(
