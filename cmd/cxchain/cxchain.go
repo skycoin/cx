@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/skycoin/dmsg"
@@ -119,6 +120,12 @@ func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.Cha
 		}
 		for {
 			if err := client.PostSpec(context.Background(), signedSpec); err != nil {
+				// TODO @evanlinjin: This is a temporary solution for a bug in the cx tracker client.
+				// TODO @evanlinjin: We should have a proper error type of conflicts which we can check here.
+				if strings.Contains(err.Error(), "409 Conflict") {
+					break
+				}
+
 				log.WithError(err).Error("Failed to post spec, retrying again...")
 				time.Sleep(time.Second * 10)
 				continue
