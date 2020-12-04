@@ -12,7 +12,7 @@ import (
 
 // Default cx dmsg values.
 const (
-	DefaultDiscAddr = "127.0.0.1:9090"
+	DefaultDiscAddr = "dmsg.discovery.skywire.skycoin.com"
 	DefaultPort     = uint16(9090)
 )
 
