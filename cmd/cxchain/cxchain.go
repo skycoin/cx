@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"os"
 	"time"
@@ -86,7 +87,7 @@ func ensureConfMode(conf *skycoin.NodeConfig) {
 }
 
 var (
-	trackerAddr  = "127.0.0.1:9091"           // cx tracker address
+	trackerAddr  = "http://127.0.0.1:9091"           // cx tracker address
 	dmsgDiscAddr = cxdmsg.DefaultDiscAddr     // dmsg discovery address
 	dmsgPort     = uint64(cxdmsg.DefaultPort) // dmsg listening port
 )
@@ -110,35 +111,49 @@ func trackerUpdateLoop(nodeSK cipher.SecKey, nodeTCPAddr string, spec cxspec.Cha
 	}
 	hash := block.HashHeader()
 
+	// If publisher, ensure spec is registered.
+	if isPub := nodePK == spec.ProcessedChainPubKey(); isPub {
+		signedSpec, err := cxspec.MakeSignedChainSpec(spec, nodeSK)
+		if err != nil {
+			panic(err) // should not happen
+		}
+		for {
+			if err := client.PostSpec(context.Background(), signedSpec); err != nil {
+				log.WithError(err).Error("Failed to post spec, retrying again...")
+				time.Sleep(time.Second * 10)
+				continue
+			}
+			break
+		}
+	}
+
+	// Prepare ticker for cx tracker peer entry update loop.
 	ticker := time.NewTicker(time.Second * 30)
 	defer ticker.Stop()
 
+	// All peers need to update entry.
 	entry := cxspec.PeerEntry{
 		PublicKey: cipher2.PubKey(nodePK),
-		CXChains: map[cipher2.SHA256]cxspec.CXChainAddresses{
-			cipher2.SHA256(hash): {
+		CXChains: map[string]cxspec.CXChainAddresses{
+			hex.EncodeToString(hash[:]): {
 				DmsgAddr: dmsg.Addr{PK: cipher2.PubKey(nodePK), Port: uint16(dmsgPort)},
 				TCPAddr:  nodeTCPAddr,
 			},
 		},
 	}
-
-	update := func(now int64) {
+	updateEntry := func(now int64) {
 		entry.LastSeen = now
-
 		signedEntry, err := cxspec.MakeSignedPeerEntry(entry, cipher2.SecKey(nodeSK))
 		if err != nil {
 			panic(err) // should not happen
 		}
-
 		if err := client.UpdatePeerEntry(context.Background(), signedEntry); err != nil {
 			log.WithError(err).Warn("Failed to update peer entry in cx tracker. Retrying...")
 		}
 	}
-
-	update(time.Now().Unix())
+	updateEntry(time.Now().Unix())
 	for now := range ticker.C {
-		update(now.Unix())
+		updateEntry(now.Unix())
 	}
 }
 
@@ -146,7 +161,7 @@ func main() {
 	// Parse chain spec file and secret key from envs.
 	spec := parseSpecFilepathEnv() // Chain spec file (mandatory).
 	nodeSK := parseSecretKeyEnv()  // Secret Key file (mandatory).
-	nodePK := cipher.MustPubKeyFromSecKey(nodeSK)
+	var nodePK cipher.PubKey
 
 	// Node config: Init.
 	conf := cxspec.BaseNodeConfig()
@@ -168,7 +183,7 @@ func main() {
 	if err := nodeSK.Verify(); err != nil {
 		log.WithError(err).Fatal("Failed to verify provided node secret key.")
 	}
-	if cipher.MustPubKeyFromSecKey(nodeSK) == spec.ProcessedChainPubKey() {
+	if nodePK = cipher.MustPubKeyFromSecKey(nodeSK); nodePK == spec.ProcessedChainPubKey() {
 		conf.BlockchainSeckeyStr = nodeSK.Hex()
 		conf.RunBlockPublisher = true
 	}

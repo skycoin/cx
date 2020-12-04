@@ -12,7 +12,7 @@ import (
 
 // Default cx dmsg values.
 const (
-	DefaultDiscAddr = "dmsg.discovery.skywire.skycoin.com"
+	DefaultDiscAddr = "http://dmsg.discovery.skywire.skycoin.com"
 	DefaultPort     = uint16(9090)
 )
 
@@ -24,9 +24,9 @@ type Config struct {
 }
 
 func ServeDmsg(ctx context.Context, log logrus.FieldLogger, conf *Config, api *API) {
+	// Prepare and wait for dmsg client to be online.
 	dmsgC := dmsg.NewClient(conf.PK, conf.SK, disc.NewHTTP(conf.DiscAddr), nil)
 	go dmsgC.Serve(ctx)
-
 	select {
 	case <-ctx.Done():
 		return
