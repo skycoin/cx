@@ -88,7 +88,7 @@ func ensureConfMode(conf *skycoin.NodeConfig) {
 }
 
 var (
-	trackerAddr  = "http://127.0.0.1:9091"           // cx tracker address
+	trackerAddr  = "http://127.0.0.1:9091"    // cx tracker address
 	dmsgDiscAddr = cxdmsg.DefaultDiscAddr     // dmsg discovery address
 	dmsgPort     = uint64(cxdmsg.DefaultPort) // dmsg listening port
 )

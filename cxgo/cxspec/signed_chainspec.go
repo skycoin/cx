@@ -8,15 +8,17 @@ import (
 
 // SignedChainSpec contains a chain spec alongside a valid signature.
 type SignedChainSpec struct {
-	Spec ChainSpec `json:"spec"`
-	Sig  string    `json:"sig"` // hex representation of signature
+	Spec        ChainSpec `json:"spec"`
+	GenesisHash string    `json:"genesis_hash,omitempty"`
+	Sig         string    `json:"sig"` // hex representation of signature
 }
 
 // MakeSignedChainSpec generates a signed spec from a ChainSpec and secret key.
 // Note that the secret key needs to be able to generate the ChainSpec's public
 // key to be valid.
 func MakeSignedChainSpec(spec ChainSpec, sk cipher.SecKey) (SignedChainSpec, error) {
-	if _, err := spec.GenerateGenesisBlock(); err != nil {
+	genesis, err := spec.GenerateGenesisBlock()
+	if err != nil {
 		return SignedChainSpec{}, fmt.Errorf("chain spec failed to generate genesis block: %w", err)
 	}
 
@@ -35,8 +37,9 @@ func MakeSignedChainSpec(spec ChainSpec, sk cipher.SecKey) (SignedChainSpec, err
 	}
 
 	signedSpec := SignedChainSpec{
-		Spec: spec,
-		Sig:  sig.Hex(),
+		Spec:        spec,
+		GenesisHash: genesis.HashHeader().Hex(),
+		Sig:         sig.Hex(),
 	}
 
 	return signedSpec, nil
