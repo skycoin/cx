@@ -91,3 +91,8 @@ jira*
 *.orig
 .idea
 .directory
+/bin
+*.chain_keys.json
+*.chain_spec.json
+*.genesis_keys.json
+*.db
