@@ -5,7 +5,7 @@ package cxcore
 import (
 	"time"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 func makeTimestamp() int64 {

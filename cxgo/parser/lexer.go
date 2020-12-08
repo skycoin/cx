@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/SkycoinProject/cx/cxgo/actions"
+	. "github.com/skycoin/cx/cxgo/actions"
 )
 
 var DebugLexer bool

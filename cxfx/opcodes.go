@@ -5,8 +5,8 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
-	. "github.com/SkycoinProject/cx/cx/base"
+	. "github.com/skycoin/cx/cx"
+	. "github.com/skycoin/cx/cx/base"
 )
 
 const (

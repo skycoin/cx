@@ -3,8 +3,9 @@
 package main
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
 	"os"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 func main() {

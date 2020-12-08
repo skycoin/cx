@@ -4,11 +4,13 @@ package cxfx
 
 import (
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/gltext"
-	"golang.org/x/mobile/gl"
 	"reflect"
 	"unsafe"
+
+	"github.com/skycoin/gltext"
+	"golang.org/x/mobile/gl"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 func Ptr(data interface{}) (unsafe.Pointer, uintptr) {

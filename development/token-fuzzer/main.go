@@ -1,7 +1,7 @@
 package main
 
 import (
-	//. "github.com/SkycoinProject/cx/cxgo"
+	//. "github.com/skycoin/cx/cxgo"
 
 	"flag"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"os"
 	"strconv"
 
-	. "github.com/SkycoinProject/cx/cxgo/parser"
+	. "github.com/skycoin/cx/cxgo/parser"
 )
 
 var tbits int = 4

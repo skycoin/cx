@@ -15,8 +15,8 @@ import (
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
 
-	. "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/cx/cxfx"
+	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxfx"
 )
 
 func startCXVM() {

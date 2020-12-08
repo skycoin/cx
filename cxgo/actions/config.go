@@ -1,7 +1,7 @@
 package actions
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 /* [2020 Jun 07 (ReewassSquared)] we should add verbose compilation options */

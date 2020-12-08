@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 type StopFunc func() time.Duration

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // GetSize ...

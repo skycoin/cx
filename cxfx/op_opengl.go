@@ -6,7 +6,6 @@ import (
 	"bufio"
 	//"bytes"
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -18,6 +17,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 type Texture struct {

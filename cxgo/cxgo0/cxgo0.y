@@ -4,8 +4,8 @@
 		// "fmt"
 		"bytes"
 		// "os"
-		. "github.com/SkycoinProject/cx/cx"
-		. "github.com/SkycoinProject/cx/cxgo/actions"
+		. "github.com/skycoin/cx/cx"
+		. "github.com/skycoin/cx/cxgo/actions"
 	)
 
 	var PRGRM0 *CXProgram

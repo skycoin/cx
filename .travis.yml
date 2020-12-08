@@ -8,7 +8,7 @@ go:
   - "1.15.x"
 
 # Placed source code under GOPATH
-go_import_path: github.com/SkycoinProject/cx
+go_import_path: github.com/skycoin/cx
 
 # Define global variables
 env:
@@ -23,8 +23,8 @@ matrix:
 
 # Install necessaries go packages
 install:
-  - if [[ ! -d $GOPATH/src/github.com/SkycoinProject/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/SkycoinProject/cx; fi
-  - cd $GOPATH/src/github.com/SkycoinProject/cx
+  - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
+  - cd $GOPATH/src/github.com/skycoin/cx
   - make install
   - make install-gfx-deps
   - make install-linters

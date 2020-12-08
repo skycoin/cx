@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 // ReturnExpressions stores the `Size` of the return arguments represented by `Expressions`.

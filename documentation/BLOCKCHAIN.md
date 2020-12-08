@@ -1,6 +1,6 @@
 > This tutorial is valid for the CX `develop` branch
 > When a release is done, it should be copied to the CX wiki
->   https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial
+>   https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial
 
 
 Table of Contents
@@ -217,7 +217,7 @@ After you have a working CX, perform the following steps:
 * Update your CX repository:
 
 ```bash
-$ cd $GOPATH/src/github.com/SkycoinProject/cx
+$ cd $GOPATH/src/github.com/skycoin/cx
 $ git pull origin develop
 ```
 
