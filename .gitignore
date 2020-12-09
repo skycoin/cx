@@ -19,8 +19,6 @@ golang-grammar.y
 cxcoin/
 cx.nn.go
 cx.go
-cxgo.go
-cxgo0.go
 y.output
 test.pl
 main
