@@ -96,3 +96,7 @@ jira*
 *.chain_spec.json
 *.genesis_keys.json
 *.db
+
+## Generated source files by goyacc
+cxgo/cxgo0/cxgo0.go
+cxgo/parser/cxgo.go

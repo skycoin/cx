@@ -16,7 +16,7 @@ process.  Without it, there can be no quality output.
 ### Register Issues
 
 If you find a bug in CX, the least you should do is to go to
-[https://github.com/SkycoinProject/cx/issues] and register the bug.  But please try
+[https://github.com/skycoin/cx/issues] and register the bug.  But please try
 to make sure that you have found a bug that is not already registered by
 browsing the headings of the already existing bugs.
 
@@ -162,7 +162,7 @@ the "Tour of Go" ([https://tour.golang.org/welcome/1]).
 
 All public Skycoin code is on GitHub, so that's where you will find CX.  If
 you are reading this guide, you probably already know this, but here is the
-link anyway: [https://github.com/SkycoinProject/cx]
+link anyway: [https://github.com/skycoin/cx]
 
 Skycoin uses the standard GitHub workflow where you fork the main repository,
 work in your own copy and then create pull requests to get your code into the

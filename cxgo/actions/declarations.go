@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 // DeclareGlobal creates a global variable in the current package.

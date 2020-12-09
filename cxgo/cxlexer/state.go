@@ -1,8 +1,8 @@
 package cxlexer
 
 import (
-	cxcore "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/cx/cxgo/actions"
+	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
 )
 
 // InitProg initiates program contained in 'actions.PRGRM'.

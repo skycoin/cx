@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/SkycoinProject/cx/benchmarks/test-lexer/oldnex"
-	"github.com/SkycoinProject/cx/cxgo/parser"
+	"github.com/skycoin/cx/benchmarks/test-lexer/oldnex"
+	"github.com/skycoin/cx/cxgo/parser"
 )
 
 func main0(filename string) {

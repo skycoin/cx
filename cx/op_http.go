@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	"github.com/jinzhu/copier"
 )

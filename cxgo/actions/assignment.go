@@ -3,7 +3,7 @@ package actions
 import (
 	"os"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 // assignStructLiteralFields converts a struct literal to a series of struct field assignments.

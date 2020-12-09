@@ -3,7 +3,7 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 	/*"bufio"
 	  "github.com/amherag/skycoin/src/cipher/encoder"
 	  "github.com/mjibson/go-dsp/wav"

@@ -55,7 +55,7 @@ Libraries
   * Redesign of CX's garbage collector.
   * Changes to several functions that relied on allocating objects on the heap.
   * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
-  * Moved CX book sources to github.com/SkycoinProject/cx-book. The releases and any code updates will be pushed to that repository.
+  * Moved CX book sources to github.com/skycoin/cx-book. The releases and any code updates will be pushed to that repository.
     * The README file notifies the users about this change.
 * Libraries
   * ...
@@ -93,10 +93,10 @@ Libraries
 * Documentation
   * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial
-	[documentation/BLOCKCHAIN.md](https://github.com/SkycoinProject/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
 	will be used to reflect the state in the CX source code (`develop` branch)
   * The blockchain tutorial in the
-	[wiki](https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial) will
+	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
 	be used as a tutorial for the latest CX release. 
 * Miscellaneous
   * ...
@@ -228,7 +228,7 @@ Libraries
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
-* CX GUI helper moved to its own repository at https://github.com/SkycoinProject/cx-gui-helper
+* CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
 ### v0.5.18 [2018-11-27 Tue 21:33]
 * **Affordances**:

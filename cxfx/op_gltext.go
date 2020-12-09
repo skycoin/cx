@@ -3,10 +3,12 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
-	. "github.com/SkycoinProject/cx/cx/base"
-	"github.com/SkycoinProject/gltext"
 	"unicode/utf8"
+
+	"github.com/skycoin/gltext"
+
+	. "github.com/skycoin/cx/cx"
+	. "github.com/skycoin/cx/cx/base"
 )
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)

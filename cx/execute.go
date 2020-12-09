@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program

@@ -11,11 +11,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/cx/cxgo/actions"
-	"github.com/SkycoinProject/cx/cxgo/cxgo0"
-	"github.com/SkycoinProject/cx/cxgo/cxprof"
-	"github.com/SkycoinProject/cx/cxgo/parser"
+	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/cxprof"
+	"github.com/skycoin/cx/cxgo/parser"
 )
 
 // re contains all regular expressions used for lexing

@@ -12,9 +12,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	. "github.com/SkycoinProject/cx/cx"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	. "github.com/skycoin/cx/cx"
+
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 const (
@@ -61,7 +62,7 @@ func opOsReadAllText(prgrm *CXProgram) {
 	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
-func getFileHandle(file *os.File) (int32) {
+func getFileHandle(file *os.File) int32 {
 	handle := int32(-1)
 	freeCount := len(freeFiles)
 	if freeCount > 0 {
@@ -331,7 +332,7 @@ func opOsReadBOOL(prgrm *CXProgram) {
 	}
 
 	WriteBool(GetFinalOffset(fp, expr.Outputs[0]), value)
-	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)	
+	WriteBool(GetFinalOffset(fp, expr.Outputs[1]), success)
 }
 
 func opOsWriteStr(prgrm *CXProgram) {

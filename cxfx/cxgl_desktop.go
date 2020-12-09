@@ -3,9 +3,11 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
-	"github.com/go-gl/gl/v3.2-compatibility/gl"
 	"strings"
+
+	"github.com/go-gl/gl/v3.2-compatibility/gl"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 const (

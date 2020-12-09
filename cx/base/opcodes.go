@@ -3,7 +3,7 @@
 package cxcore
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 // op codes
@@ -120,11 +120,11 @@ func init() {
 	Op(OP_OS_READ_STR, "os.ReadStr", opOsReadStr, In(AI32), Out(ASTR, ABOOL))
 	Op(OP_OS_READ_F64, "os.ReadF64", opOsReadF64, In(AI32), Out(AF64, ABOOL))
 	Op(OP_OS_READ_F32, "os.ReadF32", opOsReadF32, In(AI32), Out(AF32, ABOOL))
-	Op(OP_OS_READ_UI64, "os.ReadUI64", opOsReadUI64, In(AI32), Out(AUI64, ABOOL))	
+	Op(OP_OS_READ_UI64, "os.ReadUI64", opOsReadUI64, In(AI32), Out(AUI64, ABOOL))
 	Op(OP_OS_READ_UI32, "os.ReadUI32", opOsReadUI32, In(AI32), Out(AUI32, ABOOL))
 	Op(OP_OS_READ_UI16, "os.ReadUI16", opOsReadUI16, In(AI32), Out(AUI16, ABOOL))
 	Op(OP_OS_READ_UI8, "os.ReadUI8", opOsReadUI8, In(AI32), Out(AUI8, ABOOL))
-	Op(OP_OS_READ_I64, "os.ReadI64", opOsReadI64, In(AI32), Out(AI64, ABOOL))	
+	Op(OP_OS_READ_I64, "os.ReadI64", opOsReadI64, In(AI32), Out(AI64, ABOOL))
 	Op(OP_OS_READ_I32, "os.ReadI32", opOsReadI32, In(AI32), Out(AI32, ABOOL))
 	Op(OP_OS_READ_I16, "os.ReadI16", opOsReadI16, In(AI32), Out(AI16, ABOOL))
 	Op(OP_OS_READ_I8, "os.ReadI8", opOsReadI8, In(AI32), Out(AI8, ABOOL))

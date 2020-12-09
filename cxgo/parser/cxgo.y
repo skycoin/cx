@@ -3,9 +3,9 @@
 	import (
 		// "fmt"
 		"strconv"
-		"github.com/SkycoinProject/skycoin/src/cipher/encoder"
-		. "github.com/SkycoinProject/cx/cx"
-		. "github.com/SkycoinProject/cx/cxgo/actions"
+		"github.com/skycoin/skycoin/src/cipher/encoder"
+		. "github.com/skycoin/cx/cx"
+		. "github.com/skycoin/cx/cxgo/actions"
 	)
 
 	// var PRGRM = MakeProgram(CALLSTACK_SIZE, STACK_SIZE, INIT_HEAP_SIZE)

@@ -241,7 +241,7 @@ import (
 	"fmt"
 	"strconv"
 	
-	"github.com/SkycoinProject/cx/cx"
+	"github.com/skycoin/cx/cx"
 )
 
 var CurrentFileName string
