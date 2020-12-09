@@ -98,5 +98,5 @@ jira*
 *.db
 
 ## Generated source files by goyacc
-cxgo/cxgo0/cxgo0.go
-cxgo/parser/cxgo.go
+#cxgo/cxgo0/cxgo0.go
+#cxgo/parser/cxgo.go
