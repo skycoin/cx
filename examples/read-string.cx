@@ -1,8 +1,21 @@
+//  Main Package is the one package which contain main function 
 package main
 
+// Main functions
 func main () {
+// Declaration of  a string variable 
+// to declare a variable “var”, ans “str” is the type of the variable
+//.. 
 	var name str
+
+// str.print() prints the given string on the terminal 
 	str.print("What's your name?")
+// read() functions reads the terminal 
+// here it is reading a string and storing it into the name
 	name = read()
+// printf() prints the value into the terminal
+// here, %s is to print the string. Which is stored in the variable name. 
+// str.print() is type specified print. 
+// here is the other way to print the string with printf()  
 	printf("Hello, %s!\n", name)
 }

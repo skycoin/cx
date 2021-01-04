@@ -1,11 +1,15 @@
-CX can run full directories. For example, if you are inside this directory in a terminal, run:
+CX can run full directories. For example, if you are inside the directory in a terminal, which have the main.cx then run:
 
 ```
-cx .
+cx main.cx
 ```
 
-If you are one level up in the directory hierarchy, run:
+But, If you are one level up in the directory hierarchy, then run:
 
 ```
-cx project-example/
-```
+cx project-example/main.cx
+
+
+This project-example will show you have you can organize a project folder. You can create different packages this folder and use them all in the package main. As shown in the examples 
+
+Here we created a math package and imported it into the main package 

@@ -1,3 +1,7 @@
+/*
+Here we will learn, who to comment during syntax writing. First, if we write anything after this symbol // will not be executed. Secondly / * … * / anything written in between this symbols will not be executed.  
+*/
+//  Main Package is the one package which contain main function 
 package main
 
 func main () (out i32) {
@@ -8,6 +12,7 @@ func main () (out i32) {
 	i32.print(out)
 
 	/*
+	this is how we can use a block to comment 
         Comment block
 	out := f32.sub(3.33, 1.11)
 	out := f32.sub(3.33, 1.11)
