@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/SkycoinProject/cx-chains/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"io/ioutil"
 	"os"
 	"time"

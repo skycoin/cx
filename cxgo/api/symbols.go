@@ -3,7 +3,7 @@ package api
 import (
 	"unicode"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 // ProgramMetaResp is a program meta data response.

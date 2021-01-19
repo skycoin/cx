@@ -3,8 +3,9 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
 	"github.com/go-gl/glfw/v3.3/glfw"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 var windows map[string]*glfw.Window = make(map[string]*glfw.Window, 0)

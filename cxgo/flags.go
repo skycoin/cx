@@ -9,7 +9,6 @@ import (
 type cxCmdFlags struct {
 	baseOutput        bool
 	compileOutput     string
-	newProject        bool
 	replMode          bool
 	webMode           bool
 	ideMode           bool
@@ -48,7 +47,6 @@ func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
 		baseOutput:        false,
 		compileOutput:     "",
-		newProject:        false,
 		replMode:          false,
 		webMode:           false,
 		ideMode:           false,
@@ -83,8 +81,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	commandLine.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
 	commandLine.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
-	commandLine.BoolVar(&options.newProject, "new", options.newProject, "Creates a new project located at $CXPATH/src")
-	commandLine.BoolVar(&options.newProject, "n", options.newProject, "alias for -new")
+
 	commandLine.BoolVar(&options.replMode, "repl", options.replMode, "Loads source files into memory and starts a read-eval-print loop")
 	commandLine.BoolVar(&options.replMode, "r", options.replMode, "alias for -repl")
 	commandLine.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")

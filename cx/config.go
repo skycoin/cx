@@ -19,11 +19,12 @@ const DBG_GOLANG_STACK_TRACE = true
 // global reference to our program
 var PROGRAM *CXProgram
 
-var CXPATH string = os.Getenv("CXPATH") + "/"
-var BINPATH string = CXPATH + "bin/"
-var PKGPATH string = CXPATH + "pkg/"
-var SRCPATH string = CXPATH + "src/"
-var COREPATH string
+var CXPATH = os.Getenv("CXPATH") + "/"
+var BINPATH = CXPATH + "bin/" // TODO @evanlinjin: Not used.
+var PKGPATH = CXPATH + "pkg/" // TODO @evanlinjin: Not used.
+var SRCPATH = CXPATH + "src/"
+
+// var COREPATH = ""
 
 const STACK_OVERFLOW_ERROR = "stack overflow"
 const HEAP_EXHAUSTED_ERROR = "heap exhausted"

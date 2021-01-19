@@ -2,4 +2,4 @@
 
 package main
 
-import _ "github.com/SkycoinProject/cx/cx/base"
+import _ "github.com/skycoin/cx/cx/base"

@@ -9,12 +9,15 @@
 	- If the directory supplied by the user to be used as CXPATH does not contain the following subdirectories: `src/`, `pkg/` and `bin/`, CX will create these subdirectories.
 	- Increased opengl version from 2.1 to 3.2.
 	- Increased glfw version from 3.2 to 3.3.
+    - Added opcodes for reading/writing from/to binary file.
+    - Added .hdr file loader.
 	- Added opengl bindings : glClearBufferI, glClearBufferUI, glClearBufferF, glBlendFuncSeparate, glDrawBuffers.
 	- Added glfw bindings : glfw.GetWindowContentScale, glfw.GetMonitorContentScale.
 	- Added glfw constants : glfw.CocoaRetinaFramebuffer, glfw.ScaleToMonitor.
 	- Added opengl constants : GL_NONE, GL_RED, GL_RGBA16F, GL_HALF_FLOAT, GL_UNSIGNED_INT_24_8, GL_R8.
 	- Added opcodes for reading binary files : os.Seek, os.ReadUI16, os.ReadUI32, os.ReadF32, os.ReadUI16Slice, os.ReadUI32Slice, os.ReadF32Slice.
-	- Added basic Regexp library.
+    - Added TextureGetPixel function.
+    - Added basic Regexp library.
 	- Added basic Cipher library.
 * Changes
   * Updated affordances to play well with newer language features.
@@ -26,7 +29,8 @@
   * Multidimensional array literals are now working properly.
   * Multidimensional slice literals are now working properly.
   * Added i8/16/ui8/ui16/ui32/ui64 types.
-* Libraries
+  * Added str.lastindex built-in function.
+Libraries
   * Add json bindings for reading json files: Open, Close, More, Next, Delim, Bool, Float64, Int64, Str.
   * Add json cx library to ease json parsing in cx.
   * Add HTTP library.
@@ -51,7 +55,7 @@
   * Redesign of CX's garbage collector.
   * Changes to several functions that relied on allocating objects on the heap.
   * In previous versions of CX the data segment was living inside the heap segment. Now the data segment is properly separated from the heap segment.
-  * Moved CX book sources to github.com/SkycoinProject/cx-book. The releases and any code updates will be pushed to that repository.
+  * Moved CX book sources to github.com/skycoin/cx-book. The releases and any code updates will be pushed to that repository.
     * The README file notifies the users about this change.
 * Libraries
   * ...
@@ -89,10 +93,10 @@
 * Documentation
   * New file `documentation/BLOCKCHAIN-OVERVIEW.md` which describes the processes and modules involved in CX chains.
   * The blockchain tutorial
-	[documentation/BLOCKCHAIN.md](https://github.com/SkycoinProject/cx/blob/develop/documentation/BLOCKCHAIN.md)
+	[documentation/BLOCKCHAIN.md](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md)
 	will be used to reflect the state in the CX source code (`develop` branch)
   * The blockchain tutorial in the
-	[wiki](https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial) will
+	[wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) will
 	be used as a tutorial for the latest CX release. 
 * Miscellaneous
   * ...
@@ -224,7 +228,7 @@
   * CONTRIBUTING.md: Information about how to contribute to CX
 * IDE (WiP)
   * Added a simple guide
-* CX GUI helper moved to its own repository at https://github.com/SkycoinProject/cx-gui-helper
+* CX GUI helper moved to its own repository at https://github.com/skycoin/cx-gui-helper
 
 ### v0.5.18 [2018-11-27 Tue 21:33]
 * **Affordances**:

@@ -1,17 +1,30 @@
+// Main Package
+// This function explains, how to send a string and return a string from main to other functions
+// it also explains, how can we send multiple i32 variables and return multiple i32 variables 
+//
 package main
 
+// This is simple print function, that prints a string. 
 func sayHi () () {
 	str.print("Hi")
 }
 
+// This function receive a string and print it. 
 func sayMyName (name str) () {
 	str.print(name)
 }
 
+// This function return a string
 func returnName () (name str) {
 	name = "Bart"
 }
 
+// This function is a perfect example of multiple i32 valriables receving and returning
+// i32.add(num1, num2), add num1 and num2, num1+num2
+// i32.sub(num1, num2), subtract num1 and num2, num1-num2
+// i32.add(num1, num2), Multiply num1 and num2, num1 X num2
+// i32.add(num1, num2), divide num1 and num2, num1/num2
+//
 func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
 	add = i32.add(num1, num2)
 	sub = i32.sub(num1, num2)
@@ -20,16 +33,18 @@ func multiReturn (num1 i32, num2 i32) (add i32, sub i32, mul i32, div i32) {
 }
 
 func main () (out i32) {
-
+// declearation of local variables 
 	var a i32
 	var s i32
 	var m i32
 	var d i32
 
+// recalling of defined functions
 	sayHi()
 	sayMyName("Homer")
 	str.print(returnName())
 	a , s, m, d = multiReturn(20, 20)
+// print the returned i32 variables 
 	i32.print(a)
 	i32.print(s)
 	i32.print(m)

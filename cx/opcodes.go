@@ -420,6 +420,7 @@ const (
 	OP_STR_CONCAT
 	OP_STR_SUBSTR
 	OP_STR_INDEX
+	OP_STR_LAST_INDEX
 	OP_STR_TRIM_SPACE
 	OP_STR_EQ
 
@@ -1042,6 +1043,7 @@ func init() {
 	Op(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR))
 	Op(OP_STR_SUBSTR, "str.substr", opStrSubstr, In(ASTR, AI32, AI32), Out(ASTR))
 	Op(OP_STR_INDEX, "str.index", opStrIndex, In(ASTR, ASTR), Out(AI32))
+	Op(OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ASTR, ASTR), Out(AI32))
 	Op(OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ASTR), Out(ASTR))
 
 	Op(OP_APPEND, "append", opAppend, In(Slice(TYPE_UNDEFINED), Slice(TYPE_UNDEFINED)), Out(Slice(TYPE_UNDEFINED)))

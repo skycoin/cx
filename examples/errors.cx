@@ -1,8 +1,16 @@
+// Main package code 
+// This program will show us that if there is an error in the calculation, how will CX will deal with it. 
+//
 package main
 
+// 
 func main () () {
+// initialization of variables
 	var foo i32 = 10
 	var bar f32 = 5.5
 	
+//z=  i32.div(x,y) divides x/y =z, here this function will send the value directly to print command 
+// Mathematically if we divide 1/0 = infinity. In programing it will give an error.
 	i32.print(i32.div(1, 0))
 }
+

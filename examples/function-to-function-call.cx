@@ -1,0 +1,65 @@
+// main package that will tell us 
+// how we ca use one function into another function
+// because CX support function into function call
+package main
+
+// This function will convert the Kilo meter into Meters 
+//
+func KMtoMT(in f32) (out f32) {
+    out = in * 1000.0
+}
+
+// This function will convert the Meter into Kilo Meters 
+//
+func MTtoKM(in f32) (out f32) {
+    out = in / 1000.0
+}
+
+// This function will convert the Meter into Kilo Foot
+//
+func MTtoFT(in f32) (out f32) {
+    out = in * 3.28
+}
+
+// This function will convert the Foot into Meters
+//
+func FTtoMT(in f32) (out f32) {
+    out = in / 3.28
+}
+
+// This function will convert the Yard into foot
+//
+func YDtoFT(in f32) (out f32) {
+    out = in * 3.0
+}
+
+// This function will convert the Foot into Yard
+//
+func FTtoYD(in f32) (out f32) {
+    out = in / 3.0
+}
+
+// This function will convert the Yard into Miles
+//
+func YDtoM(in f32) (out f32) {
+    out = in / 1760.0
+}
+
+// This function will convert the Miles into Yard
+//
+func MtoYD(in f32)(out f32) {
+    out = in * 1760.0
+}
+
+func main () () {
+    
+// simple string print command 
+    str.print("Mill to KM example")
+    str.print("Example 7.89 Mills is (in KM): ")
+
+// we want to convert Yards to Meters 
+//  we does not have a direct function to get it
+// we can call different functions into multiple functions 
+// in the end we can get the printout directly as shown below
+    f32.print( MTtoKM(FTtoMT(YDtoFT(MtoYD(7.89)))) )
+}

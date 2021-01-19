@@ -4,49 +4,59 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 var workingDir string
 var logFile bool
 
 // CXSetWorkingDir ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXSetWorkingDir(dir string) {
 	workingDir = dir
 }
 
 // CXLogFile ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXLogFile(enable bool) {
 	logFile = enable
 }
 
 // CXOpenFile ...
-func CXOpenFile(path string) (*os.File, error) {
+// TODO @evanlinjin: This should be in a module named 'util'.
+func CXOpenFile(filename string) (*os.File, error) {
+	filename = filepath.Join(workingDir, filename)
+
 	if logFile {
-		fmt.Printf("Opening file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("CXOpenFile: Opening '%s'\n", filename)
 	}
 
-	file, err := os.Open(fmt.Sprintf("%s%s", workingDir, path))
+	file, err := os.Open(filename)
 	if logFile && err != nil {
-		fmt.Printf("Failed to open file : '%s', '%s', err '%v'\n", workingDir, path, err)
+		fmt.Printf("CXOpenFile: Failed to open '%s': %v\n", filename, err)
 	}
 	return file, err
 }
 
 // CXCreateFile ...
-func CXCreateFile(path string) (*os.File, error) {
+// TODO @evanlinjin: This should be in a module named 'util'.
+func CXCreateFile(filename string) (*os.File, error) {
+	filename = filepath.Join(workingDir, filename)
+
 	if logFile {
-		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, path)
+		fmt.Printf("Creating file : '%s', '%s'\n", workingDir, filename)
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s%s", workingDir, path))
+	file, err := os.Create(filepath.Join(workingDir, filename))
 	if logFile && err != nil {
-		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, path, err)
+		fmt.Printf("Failed to create file : '%s', '%s', err '%v'\n", workingDir, filename, err)
 	}
 
 	return file, err
 }
 
 // CXRemoveFile ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXRemoveFile(path string) error {
 	if logFile {
 		fmt.Printf("Removing file : '%s', '%s'\n", workingDir, path)
@@ -62,6 +72,7 @@ func CXRemoveFile(path string) error {
 }
 
 // CXReadFile ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXReadFile(path string) ([]byte, error) {
 	if logFile {
 		fmt.Printf("Reading file : '%s', '%s'\n", workingDir, path)
@@ -77,6 +88,7 @@ func CXReadFile(path string) ([]byte, error) {
 }
 
 // CXStatFile ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXStatFile(path string) (os.FileInfo, error) {
 	if logFile {
 		fmt.Printf("Stating file : '%s', '%s'\n", workingDir, path)
@@ -92,6 +104,7 @@ func CXStatFile(path string) (os.FileInfo, error) {
 }
 
 // CXMkdirAll ...
+// TODO @evanlinjin: This should be in a module named 'util'.
 func CXMkdirAll(path string, perm os.FileMode) error {
 	if logFile {
 		fmt.Printf("Creating dir : '%s'\n", path)

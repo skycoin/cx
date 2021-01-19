@@ -120,7 +120,7 @@ behind this is that a CX book is going to be published, which is targetted to a
 more beginner audience.  Thus, this README now has the purpose of quickly
 demonstrating the capabilities of the language, how to install it, etc. You can
 find the book source code and its releases in its [CX book Github
-repository](https://github.com/SkycoinProject/cx-book).
+repository](https://github.com/skycoin/cx-book).
 
 This tutorial/documentation is divided into four parts, which can
 broadly be described as *introduction*, *syntax*, *runtime* and
@@ -136,7 +136,7 @@ with an example.
 
 
 
-Feel free to [create an issue](https://github.com/SkycoinProject/cx/issues)
+Feel free to [create an issue](https://github.com/skycoin/cx/issues)
 requesting a better explanation of a feature.
 
 ## Strict Type System
@@ -154,17 +154,17 @@ core language) associated to
 # CX Book
 
 You can find the book source code and its releases in its [CX book Github
-repository](https://github.com/SkycoinProject/cx-book).
+repository](https://github.com/Skycoin/cx-book).
 
 # CX Projects, Libraries and other Resources
 
 ## CX Chains:
 
-* https://github.com/SkycoinProject/cx-chains
+* https://github.com/skycoin/cx-chains
 
 ## CX Examples:
 
-* https://github.com/SkycoinProject/cx/tree/develop/examples
+* https://github.com/skycoin/cx/tree/develop/examples
 
 ## CX Libraries:
 
@@ -180,16 +180,16 @@ repository](https://github.com/SkycoinProject/cx-book).
 * https://github.com/galah4d/casino-cx [slot machine]
 * https://github.com/atang152/crappyBall-cx [flappy bird clone]
 * https://github.com/galah4d/pacman-3d [pacman 3D clone]
-* https://github.com/SkycoinProject/cx-games/tree/master/Snake-by-Lunier [snake clone]
-* https://github.com/SkycoinProject/cx-games/tree/master/SynthCat-Brick-Breaker-by-RedCurse [brick breaker clone]
-* https://github.com/SkycoinProject/cx-games/tree/master/Pac-Man-CX-by-Galah4d [pacman 2D clone]
-* https://github.com/SkycoinProject/cx-games/tree/master/Whacky-Stack [tetris clone]
-* https://github.com/SkycoinProject/cx-games/tree/master/ridge-blaster [dig-n-rig clone]
+* https://github.com/skycoin/cx-games/tree/master/Snake-by-Lunier [snake clone]
+* https://github.com/skycoin/cx-games/tree/master/SynthCat-Brick-Breaker-by-RedCurse [brick breaker clone]
+* https://github.com/skycoin/cx-games/tree/master/Pac-Man-CX-by-Galah4d [pacman 2D clone]
+* https://github.com/skycoin/cx-games/tree/master/Whacky-Stack [tetris clone]
+* https://github.com/skycoin/cx-games/tree/master/ridge-blaster [dig-n-rig clone]
 * https://github.com/taekwondouglas/space-invaders [space invaders clone dapp using CX chains]
 
 ## Miscellaneous:
 
-* https://github.com/SkycoinProject/cx-website [cx.skycoin.net]
+* https://github.com/skycoin/cx-website [cx.skycoin.net]
 
 # CX Roadmap
 
@@ -199,11 +199,11 @@ repository](https://github.com/SkycoinProject/cx-book).
 
 CX Chains are Skycoin's solution for the creation of blockchain-based
 programs. You can read more about them in the [CX
-wiki](https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial) for the latest release or in [`documentation/BLOCKCHAIN.md`](https://github.com/SkycoinProject/cx/blob/develop/documentation/BLOCKCHAIN.md) for the `develop` branch of CX (the bleeding edge version of CX).
+wiki](https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial) for the latest release or in [`documentation/BLOCKCHAIN.md`](https://github.com/skycoin/cx/blob/develop/documentation/BLOCKCHAIN.md) for the `develop` branch of CX (the bleeding edge version of CX).
 
 # Changelog
 
-Check out the latest additions and bug fixes in the [changelog](https://github.com/SkycoinProject/cx/blob/master/CHANGELOG.md).
+Check out the latest additions and bug fixes in the [changelog](https://github.com/skycoin/cx/blob/master/CHANGELOG.md).
 
 # Installation
 
@@ -211,7 +211,7 @@ Check out the latest additions and bug fixes in the [changelog](https://github.c
 
 This repository provides new binary releases of the language every
 week. Check this link and download the appropriate binary release for
-your platfrom: https://github.com/SkycoinProject/cx/releases
+your platfrom: https://github.com/skycoin/cx/releases
 
 More platforms will be added in the future.
 
@@ -253,7 +253,7 @@ source. If you're not familiarized with Go, Git, your OS's terminal or
 your OS's package manager (to name a few), we *strongly* recommend you
 to try out a binary release. If you find any bugs or problems with the
 binary release, submit an issue here:
-https://github.com/SkycoinProject/cx/issues, and we'll fix it for the next release.
+https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
 
 ### Installing Go
 
@@ -266,7 +266,7 @@ CX supports go1.10+.
 Download CX's repository using Go:
 
 ```
-go get github.com/SkycoinProject/cx/cx/...
+go get github.com/skycoin/cx/cx/...
 ```
 
 Navigate to CX's repository, and run:
@@ -323,7 +323,7 @@ this in your terminal:
 
 ```
 CX 0.5.13
-More information about CX is available at http://cx.skycoin.net/ and https://github.com/SkycoinProject/cx/
+More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
 :func main {...
 	*
 ```
@@ -407,7 +407,7 @@ the-program.cx`. Let's try to run some examples from the `examples`
 directory in this repository. In a terminal, type this:
 
 ```
-cd $GOPATH/src/github.com/SkycoinProject/cx/
+cd $GOPATH/src/github.com/skycoin/cx/
 cx examples/hello-world.cx
 ```
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	cxcore "github.com/SkycoinProject/cx/cx"
+	cxcore "github.com/skycoin/cx/cx"
 
 	"github.com/skycoin/dmsg/httputil"
 )

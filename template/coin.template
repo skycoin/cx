@@ -13,10 +13,10 @@ import (
 	_ "net/http/pprof"
 	"os"
 
-	"github.com/SkycoinProject/cx-chains/src/fiber"
-	"github.com/SkycoinProject/cx-chains/src/readable"
-	"github.com/SkycoinProject/cx-chains/src/skycoin"
-	"github.com/SkycoinProject/cx-chains/src/util/logging"
+	"github.com/skycoin/cx-chains/src/fiber"
+	"github.com/skycoin/cx-chains/src/readable"
+	"github.com/skycoin/cx-chains/src/skycoin"
+	"github.com/skycoin/cx-chains/src/util/logging"
 )
 
 var (

@@ -4,9 +4,10 @@ package cxfx
 
 import (
 	//"fmt"
-	. "github.com/SkycoinProject/cx/cx"
 	"sync"
 	"time"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 const (

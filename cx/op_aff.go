@@ -3,7 +3,7 @@ package cxcore
 import (
 	"fmt"
 	"strconv"
-	// "github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	// "github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 var onMessages = map[string]string{

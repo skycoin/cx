@@ -4,83 +4,57 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"os"
 	"time"
 
-	. "github.com/SkycoinProject/cx/cxgo/parser"
-	. "github.com/SkycoinProject/cx/tests/test-lexer/neximport"
+	"github.com/skycoin/cx/benchmarks/test-lexer/oldnex"
+	"github.com/skycoin/cx/cxgo/parser"
 )
 
-var filename string
-
-func main0() {
-	//lex := &Lexer{}
-
+func main0(filename string) {
+	// Obtain file bytes.
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("error: file IO error: " + err.Error())
 		os.Exit(1)
 	}
-	source := string(src)
-	b := bytes.NewBufferString(source)
-	fmt.Printf("Beginning timer for new Lexer...\n")
-	tm := time.Now()
-	lex := NewLexer(b)
-	ntok := 0
-	for lex.Next() > 0 {
-		ntok++
-	}
-	tel := time.Now().Sub(tm)
-	times := tel.Seconds()
-	rat := times
-	fmt.Printf("Time taken (SSSS.MiS.McS): %04d.", int(math.Floor(times)))
-	times -= math.Floor(times)
-	times *= 1000
-	fmt.Printf("%03d.", int(math.Floor(times)))
-	times -= math.Floor(times)
-	times *= 1000
-	fmt.Printf("%03d\n", int(math.Floor(times)))
-	fmt.Printf("Profile complete for new Lexer. NTOKS: %d\n\n", ntok)
 
-	src, err = ioutil.ReadFile(filename)
-	if err != nil {
-		fmt.Printf("error: file IO error: " + err.Error())
-		os.Exit(1)
+	// Benchmark new lexer.
+	fmt.Printf("Beginning timer for new Lexer...\n")
+	start1 := time.Now()
+
+	lex1 := parser.NewLexer(bytes.NewReader(src))
+	nTok1 := 0
+	for lex1.Next() > 0 {
+		nTok1++
 	}
-	source = string(src)
-	b = bytes.NewBufferString(source)
+
+	elapsed1 := time.Since(start1)
+	printElapsed(elapsed1)
+	fmt.Printf("Profile complete for new Lexer. nToks: %d\n\n", nTok1)
+
+	// Benchmark old lexer.
 	fmt.Printf("Beginning timer for old Lexer...\n")
-	tm = time.Now()
-	lex2 := NewLexer_(b)
-	ntok = 0
+	start2 := time.Now()
+
+	lex2 := oldnex.NewLexer(bytes.NewReader(src))
+	nTok2 := 0
 	for lex2.Next() > 0 {
-		ntok++
+		nTok2++
 	}
-	tel = time.Now().Sub(tm)
-	times2 := tel.Seconds()
-	rat2 := times2
-	fmt.Printf("Time taken (SSSS.MiS.McS): %04d.", int(math.Floor(times2)))
-	times2 -= math.Floor(times2)
-	times2 *= 1000
-	fmt.Printf("%03d.", int(math.Floor(times2)))
-	times2 -= math.Floor(times2)
-	times2 *= 1000
-	fmt.Printf("%03d\n", int(math.Floor(times2)))
-	fmt.Printf("Profile complete for old Lexer. NTOKS: %d\n\n", ntok)
-	times2 = rat2 - rat
-	fmt.Printf("Total time more than new lexer: %04d.", int(math.Floor(times2)))
-	times2 -= math.Floor(times2)
-	times2 *= 1000
-	fmt.Printf("%03d.", int(math.Floor(times2)))
-	times2 -= math.Floor(times2)
-	times2 *= 1000
-	fmt.Printf("%03d\n", int(math.Floor(times2)))
-	fmt.Printf("Ratio of old Lexer to new Lexer: %f\n", rat2/rat)
+
+	elapsed2 := time.Since(start2)
+	printElapsed(elapsed2)
+	fmt.Printf("Profile complete for old Lexer. nToks: %d\n\n", nTok1)
+
+	diff := elapsed2 - elapsed1
+	fmt.Print("Total time more than new lexer: ")
+	printElapsed(diff)
+	fmt.Printf("Ratio of old Lexer to new Lexer: %f\n", float64(elapsed2)/float64(elapsed1))
 	fmt.Printf("Total lexer profile/comparison complete.\n")
 }
 
-func main1() {
+func main1(filename string) {
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("error: file IO error: " + err.Error())
@@ -88,7 +62,7 @@ func main1() {
 	}
 	source := string(src)
 	b := bytes.NewBufferString(source)
-	lex1 := NewLexer(b)
+	lex1 := parser.NewLexer(b)
 
 	src2, err2 := ioutil.ReadFile(filename)
 	if err2 != nil {
@@ -97,7 +71,7 @@ func main1() {
 	}
 	source2 := string(src2)
 	b2 := bytes.NewBufferString(source2)
-	lex2 := NewLexer_(b2)
+	lex2 := oldnex.NewLexer(b2)
 
 	t1 := 65336
 	t2 := 65336
@@ -116,13 +90,28 @@ func main1() {
 }
 
 func main() {
-	filename = os.Args[1]
+	filename := os.Args[1]
 	fmt.Printf("\n\n\ninitializing...\n")
 	/* sleep because test-toks.txt might've not been fully written yet */
 	time.Sleep(time.Second * 3)
 	fmt.Printf("running similarity regression test.\n")
-	main1()
+	main1(filename)
 	fmt.Printf("running speed comparison/profile.\n")
-	main0()
+	main0(filename)
 	fmt.Printf("All tests complete.\n\n\n")
+}
+
+func printElapsed(elapsed time.Duration) {
+	u := elapsed.Microseconds()
+
+	us := u%1000
+	u /= 1000
+
+	ms := u%1000
+	u /= 1000
+
+	s := u%1000
+	u /= 1000
+
+	fmt.Printf("Elapsed (SSSS.MiS.McS): %04d.%03d.%03d\n", s, ms, us)
 }

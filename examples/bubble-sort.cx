@@ -1,6 +1,6 @@
 /*
 Author: Zach Bryant
-Purpose: This program's puropose is to demonstrate to myself and the Skycoin team that I know
+Purpose: This program's purpose is to demonstrate to myself and the Skycoin team that I know
 how to use the CX programming language.
 Date: 7/20/2018
 */
@@ -30,7 +30,7 @@ func bubbleSort (nums []i32, size i32) (nums []i32){
 	var i i32
 	var j i32
 	var temp i32
-	for i = 0; i < i32.sub(size, 1); i++{
+	for i = 0; i <i32.sub(size, 1); i++{
 		for j = 0; j < i32.sub(i32.sub(size, i), 1); j++{
 			if nums[j] > nums[i32.add(j, 1)]{
 				temp = nums[j]

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 func Stepping(steps int, delay int, withDelay bool) {
