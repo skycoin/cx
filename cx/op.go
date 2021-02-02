@@ -1180,11 +1180,9 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 	if sliceOffset >= 0 && (dataType < 0 || inp.Type == dataType) {
 		slice := GetSliceData(sliceOffset, GetAssignmentElement(inp).Size)
 		return slice
-	} else {
-		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
-	return nil
+	panic(CX_RUNTIME_INVALID_ARGUMENT)
 }
 
 // ReadArray ...
