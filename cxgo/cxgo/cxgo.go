@@ -19,6 +19,7 @@ import (
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
 // parses it into CX program structures for `PRGRM`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
+	cxcore.Debug("fileNames", fileNames, len(sourceCode))
 	cxgo0.PRGRM0 = actions.PRGRM
 
 	// Copy the contents of the file pointers containing the CX source
@@ -42,6 +43,7 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	actions.PRGRM.SelectProgram()
 
 	actions.PRGRM = cxgo0.PRGRM0
+
 	if cxcore.FoundCompileErrors || parseErrors > 0 {
 		profiling.CleanupAndExit(cxcore.CX_COMPILATION_ERROR)
 	}
@@ -349,8 +351,8 @@ func lexerStep0(srcStrs, srcNames []string) int {
 	return parseErrors
 }
 
-func AddInitFunction(PRGRM *cxcore.CXProgram) {
-	mainPkg, err := PRGRM.GetPackage(cxcore.MAIN_PKG)
+func AddInitFunction(prgrm *cxcore.CXProgram) {
+	mainPkg, err := prgrm.GetPackage(cxcore.MAIN_PKG)
 	if err != nil {
 		panic(err)
 	}
@@ -359,7 +361,7 @@ func AddInitFunction(PRGRM *cxcore.CXProgram) {
 	mainPkg.AddFunction(initFn)
 
 	actions.FunctionDeclaration(initFn, nil, nil, actions.SysInitExprs)
-	if _, err := PRGRM.SelectFunction(cxcore.MAIN_FUNC); err != nil {
+	if _, err := mainPkg.SelectFunction(cxcore.MAIN_FUNC); err != nil {
 		panic(err)
 	}
 }
