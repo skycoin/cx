@@ -103,7 +103,6 @@ func opHTTPHandle(prgrm *CXProgram) {
 
 	http.HandleFunc(ReadStr(fp, inp1), func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		tmpExpr := CXExpression{Operator: handlerFn}
 
 		callFP := fp + PROGRAM.CallStack[PROGRAM.CallCounter].Operator.Size
 
@@ -127,7 +126,7 @@ func opHTTPHandle(prgrm *CXProgram) {
 		copy(i1, PROGRAM.Memory[i1Off:i1Off+i1Size])
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
 
-		PROGRAM.Callback(&tmpExpr, handlerFn.Name, handlerPkg.Name, [][]byte{i1, i2})
+		PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
 		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
 	})
 }
