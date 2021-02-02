@@ -498,6 +498,7 @@ slice_literal_expression:
 infer_action_arg:
                 IDENTIFIER
         |       INT_LITERAL
+	|	type_specifier PERIOD IDENTIFIER
         ;
 
 infer_action:

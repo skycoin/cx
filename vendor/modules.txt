@@ -94,7 +94,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 # modernc.org/goyacc v1.0.0
 ## explicit
-# modernc.org/mathutil v1.1.1
+# modernc.org/mathutil v1.2.2
 ## explicit
 # modernc.org/sortutil v1.1.0
 ## explicit

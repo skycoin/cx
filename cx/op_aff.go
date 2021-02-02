@@ -909,20 +909,24 @@ func opAffRequest(prgrm *CXProgram) {
 			panic(err)
 		}
 	case "fn":
-		if fn, err := tgtPkg.GetFunction(elt); err == nil {
-			_ = fn
-			switch tgtElt {
-			case "arg":
-
-			case "expr":
-
-			case "pkg":
-
-			case "prgrm":
-
+		fn := Natives[OpCodes[elt]]
+		if fn == nil {
+			var err error
+			fn, err = tgtPkg.GetFunction(elt)
+			if err != nil {
+				panic(err)
 			}
-		} else {
-			panic(err)
+		}
+		_ = fn
+		switch tgtElt {
+		case "arg":
+
+		case "expr":
+
+		case "pkg":
+
+		case "prgrm":
+
 		}
 	case "strct":
 		switch tgtElt {

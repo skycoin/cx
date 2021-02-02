@@ -452,6 +452,8 @@ const (
 
 	OP_DMSG_DO
 
+	OP_EVOLVE_EVOLVE
+
 	END_OF_CORE_OPS
 )
 
@@ -473,6 +475,17 @@ var (
 func execNative(prgrm *CXProgram) {
 	//defer RuntimeError() // High runtime cost.
 	opcodeHandlers[prgrm.GetOpCode()](prgrm)
+}
+
+// RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
+// it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
+func RegisterPackage(pkgName string) {
+	CorePackages = append(CorePackages, pkgName)
+}
+
+// GetOpCodeCount returns an op code that is available for usage on the CX standard library.
+func GetOpCodeCount() int {
+	return len(opcodeHandlers)
 }
 
 // Op ...
@@ -1068,6 +1081,9 @@ func init() {
 	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+
+	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AI32, AF64), nil)
+	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(
