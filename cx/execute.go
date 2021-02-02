@@ -423,9 +423,7 @@ func (prgrm *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]b
 		// we don't modify the program memory.
 		mem := ReadMemory(GetFinalOffset(newFP, out), out)
 		cop := make([]byte, len(mem))
-		for i, b := range mem {
-			cop[i] = b
-		}
+		copy(cop, mem)
 		outputs = append(outputs, cop)
 	}
 	return outputs
