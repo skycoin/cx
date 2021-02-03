@@ -4,8 +4,9 @@ package main
 
 import (
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/cx/cxfx"
+	"log"
+	"strings"
+
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/asset"
 	"golang.org/x/mobile/event/lifecycle"
@@ -13,8 +14,9 @@ import (
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/gl"
-	"log"
-	"strings"
+
+	. "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxfx"
 )
 
 func startCXVM() {

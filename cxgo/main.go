@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	// "github.com/SkycoinProject/cx-chains/src/cipher/encoder"
 	"errors"
 	"fmt"
 	"io"
@@ -15,33 +14,19 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
-	// "encoding/hex"
+	cxcore "github.com/skycoin/cx/cx"
+	"github.com/skycoin/cx/cxgo/actions"
+	api2 "github.com/skycoin/cx/cxgo/api"
+	"github.com/skycoin/cx/cxgo/cxgo"
+	"github.com/skycoin/cx/cxgo/cxgo0"
+	"github.com/skycoin/cx/cxgo/parser"
 
-	"github.com/theherk/viper"
-
-	. "github.com/SkycoinProject/cx/cx"
-	. "github.com/SkycoinProject/cx/cxgo/actions"
-	api2 "github.com/SkycoinProject/cx/cxgo/api"
-	"github.com/SkycoinProject/cx/cxgo/cxgo0"
-	. "github.com/SkycoinProject/cx/cxgo/parser"
-
-	"github.com/SkycoinProject/cx-chains/src/cipher"
-
-	"github.com/SkycoinProject/cx-chains/src/api"
-	"github.com/SkycoinProject/cx-chains/src/cli"
-	"github.com/SkycoinProject/cx-chains/src/coin"
-	"github.com/SkycoinProject/cx-chains/src/fiber"
-	"github.com/SkycoinProject/cx-chains/src/readable"
-	"github.com/SkycoinProject/cx-chains/src/skycoin"
-	"github.com/SkycoinProject/cx-chains/src/util/logging"
-	"github.com/SkycoinProject/cx-chains/src/visor"
-	"github.com/SkycoinProject/cx-chains/src/wallet"
+	"github.com/skycoin/skycoin/src/util/logging"
 )
 
 const VERSION = "0.7.1"
@@ -72,193 +57,193 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
-	var err error
-
-	// check that data.db does not exist
-	// if it does, delete it
-	userHome := UserHome()
-	dbPath := filepath.Join(userHome, "."+coinname, "data.db")
-	if _, err := CXStatFile(dbPath); err == nil {
-		logger.Infof("deleting %s", dbPath)
-		err = CXRemoveFile(dbPath)
-		if err != nil {
-			return err
-		}
-	}
-
-	if seckey == "" {
-		return ErrMissingSecretKey
-	}
-
-	genesisSecKey, err := cipher.SecKeyFromHex(seckey)
-	if err != nil {
-		return err
-	}
-
-	configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
-	configFile := "fiber.toml"
-	configFilepath := filepath.Join(configDir, configFile)
-	// check that the config file exists
-	if _, err := CXStatFile(configFilepath); os.IsNotExist(err) {
-		return err
-	}
-
-	projectRoot := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx"
-	if projectRoot == "" {
-		return ErrMissingProjectRoot
-	}
-	if _, err := CXStatFile(projectRoot); os.IsNotExist(err) {
-		return err
-	}
-
-	coinFile := filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname))
-	if _, err := CXStatFile(coinFile); os.IsNotExist(err) {
-		return err
-	}
-
-	// get fiber params
-	params, err := fiber.NewConfig(configFile, configDir)
-
-	cmd := exec.Command("go", "run", filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname)), "-block-publisher=true", fmt.Sprintf("-blockchain-secret-key=%s", seckey),
-		"-disable-incoming", "-max-out-msg-len=134217929")
-
-	var genesisSig string
-	var genesisBlock readable.Block
-
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
-	cmd.Start()
-
-	// fetch gensisSig and gensisBlock
-	go func() {
-		defer cmd.Process.Kill()
-
-		genesisSigRegex, err := regexp.Compile(`Genesis block signature=([0-9a-zA-Z]+)`)
-		if err != nil {
-			logger.Error("error in regexp for genesis block signature")
-			logger.Error(err)
-			return
-		}
-
-		scanner := bufio.NewScanner(stdoutIn)
-		scanner.Split(bufio.ScanLines)
-		for scanner.Scan() {
-
-			m := scanner.Text()
-			logger.Info("Scanner: " + m)
-			if genesisSigRegex.MatchString(m) {
-				genesisSigSubString := genesisSigRegex.FindStringSubmatch(m)
-				genesisSig = genesisSigSubString[1]
-
-				// get genesis block
-				err = getJSON(fmt.Sprintf(genesisBlockURL, params.Node.WebInterfacePort), &genesisBlock)
-
-				return
-			}
-		}
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(stderrIn)
-		scanner.Split(bufio.ScanLines)
-		for scanner.Scan() {
-			logger.Error(scanner.Text())
-		}
-	}()
-
-	cmd.Wait()
-
-	// check that we were able to get genesisSig and genesisUxID
-
-	if genesisSig != "" && len(genesisBlock.Body.Transactions) != 0 {
-		genesisSignature = genesisSig
-		logger.Infof("genesis sig: %s", genesisSig)
-
-		// -- create new skycoin daemon to inject distribution transaction -- //
-		if err != nil {
-			logger.Error("error getting fiber parameters")
-			return err
-		}
-
-		// get node config
-		params.Node.DataDirectory = fmt.Sprintf("$HOME/.%s", coinname)
-		nodeConfig := skycoin.NewNodeConfig("", params.Node)
-
-		// create a new fiber coin instance
-		newcoin := skycoin.NewCoin(
-			skycoin.Config{
-				Node: nodeConfig,
-			},
-			logger,
-		)
-
-		// parse config values
-		newcoin.ParseConfig()
-
-		// dconf := newcoin.ConfigureDaemon()
-		vconf := newcoin.ConfigureVisor()
-
-		userHome := UserHome()
-		dbPath := filepath.Join(userHome, "."+coinname, "data.db")
-
-		// logger.Infof("opening visor db: %s", dconf.Visor.DBPath)
-		logger.Infof("opening visor db: %s", dbPath)
-		db, err := visor.OpenDB(dbPath, false)
-		if err != nil {
-			logger.Error("Error opening DB")
-			return err
-		}
-		defer db.Close()
-
-		vs, err := visor.New(vconf, db, nil)
-		if err != nil {
-			logger.Error("Error with NewVisor")
-			return err
-		}
-
-		headSeq, _, err := vs.HeadBkSeq()
-		if err != nil {
-			logger.Error("Error with HeadBkSeq")
-			return err
-		} else if headSeq == 0 {
-			if len(genesisBlock.Body.Transactions) != 0 {
-				var tx coin.Transaction
-
-				UxID := genesisBlock.Body.Transactions[0].Out[0].Hash
-				output := cipher.MustSHA256FromHex(UxID)
-				tx.PushInput(output)
-
-				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
-				tx.PushOutput(addr, uint64(1e10), 10000, initPrgrm)
-
-				seckeys := make([]cipher.SecKey, 1)
-				seckey := genesisSecKey.Hex()
-				seckeys[0] = cipher.MustSecKeyFromHex(seckey)
-				tx.SignInputs(seckeys)
-
-				tx.UpdateHeader()
-				err = tx.Verify()
-
-				if err != nil {
-					logger.Panic(err)
-				}
-
-				_, _, _, err := vs.InjectUserTransaction(tx)
-				if err != nil {
-					panic(err)
-				}
-			} else {
-				logger.Error("ERROR: len genesis block was zero")
-			}
-		} else {
-			logger.Error("ERROR: headSeq not zero")
-		}
-	} else {
-		logger.Error("error getting genesis block")
-	}
-	return err
-}
+// func initCXBlockchain(initPrgrm []byte, coinname, seckey string) error {
+// 	var err error
+//
+// 	// check that data.db does not exist
+// 	// if it does, delete it
+// 	userHome := actions.UserHome()
+// 	dbPath := filepath.Join(userHome, "."+coinname, "data.db")
+// 	if _, err := cxcore.CXStatFile(dbPath); err == nil {
+// 		logger.Infof("deleting %s", dbPath)
+// 		err = cxcore.CXRemoveFile(dbPath)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+//
+// 	if seckey == "" {
+// 		return ErrMissingSecretKey
+// 	}
+//
+// 	genesisSecKey, err := cipher.SecKeyFromHex(seckey)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+// 	configFile := "fiber.toml"
+// 	configFilepath := filepath.Join(configDir, configFile)
+// 	// check that the config file exists
+// 	if _, err := cxcore.CXStatFile(configFilepath); os.IsNotExist(err) {
+// 		return err
+// 	}
+//
+// 	projectRoot := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx"
+// 	if projectRoot == "" {
+// 		return ErrMissingProjectRoot
+// 	}
+// 	if _, err := cxcore.CXStatFile(projectRoot); os.IsNotExist(err) {
+// 		return err
+// 	}
+//
+// 	coinFile := filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname))
+// 	if _, err := cxcore.CXStatFile(coinFile); os.IsNotExist(err) {
+// 		return err
+// 	}
+//
+// 	// get fiber params
+// 	params, err := fiber.NewConfig(configFile, configDir)
+//
+// 	cmd := exec.Command("go", "run", filepath.Join(projectRoot, fmt.Sprintf("cmd/%[1]s/%[1]s.go", coinname)), "-block-publisher=true", fmt.Sprintf("-blockchain-secret-key=%s", seckey),
+// 		"-disable-incoming", "-max-out-msg-len=134217929")
+//
+// 	var genesisSig string
+// 	var genesisBlock readable.Block
+//
+// 	stdoutIn, _ := cmd.StdoutPipe()
+// 	stderrIn, _ := cmd.StderrPipe()
+// 	cmd.Start()
+//
+// 	// fetch genesisSig and genesisBlock
+// 	go func() {
+// 		defer cmd.Process.Kill()
+//
+// 		genesisSigRegex, err := regexp.Compile(`Genesis block signature=([0-9a-zA-Z]+)`)
+// 		if err != nil {
+// 			logger.Error("error in regexp for genesis block signature")
+// 			logger.Error(err)
+// 			return
+// 		}
+//
+// 		scanner := bufio.NewScanner(stdoutIn)
+// 		scanner.Split(bufio.ScanLines)
+// 		for scanner.Scan() {
+//
+// 			m := scanner.Text()
+// 			logger.Info("Scanner: " + m)
+// 			if genesisSigRegex.MatchString(m) {
+// 				genesisSigSubString := genesisSigRegex.FindStringSubmatch(m)
+// 				genesisSig = genesisSigSubString[1]
+//
+// 				// get genesis block
+// 				err = getJSON(fmt.Sprintf(genesisBlockURL, params.Node.WebInterfacePort), &genesisBlock)
+//
+// 				return
+// 			}
+// 		}
+// 	}()
+//
+// 	go func() {
+// 		scanner := bufio.NewScanner(stderrIn)
+// 		scanner.Split(bufio.ScanLines)
+// 		for scanner.Scan() {
+// 			logger.Error(scanner.Text())
+// 		}
+// 	}()
+//
+// 	cmd.Wait()
+//
+// 	// check that we were able to get genesisSig and genesisUxID
+//
+// 	if genesisSig != "" && len(genesisBlock.Body.Transactions) != 0 {
+// 		genesisSignature = genesisSig
+// 		logger.Infof("genesis sig: %s", genesisSig)
+//
+// 		// -- create new skycoin daemon to inject distribution transaction -- //
+// 		if err != nil {
+// 			logger.Error("error getting fiber parameters")
+// 			return err
+// 		}
+//
+// 		// get node config
+// 		params.Node.DataDirectory = fmt.Sprintf("$HOME/.%s", coinname)
+// 		nodeConfig := skycoin.NewNodeConfig("", params.Node)
+//
+// 		// create a new fiber coin instance
+// 		newcoin := skycoin.NewCoin(
+// 			skycoin.Config{
+// 				Node: nodeConfig,
+// 			},
+// 			logger,
+// 		)
+//
+// 		// parse config values
+// 		newcoin.ParseConfig(flag.CommandLine)
+//
+// 		// dconf := newcoin.ConfigureDaemon()
+// 		vconf := newcoin.ConfigureVisor()
+//
+// 		userHome := actions.UserHome()
+// 		dbPath := filepath.Join(userHome, "."+coinname, "data.db")
+//
+// 		// logger.Infof("opening visor db: %s", dconf.Visor.DBPath)
+// 		logger.Infof("opening visor db: %s", dbPath)
+// 		db, err := visor.OpenDB(dbPath, false)
+// 		if err != nil {
+// 			logger.Error("Error opening DB")
+// 			return err
+// 		}
+// 		defer db.Close()
+//
+// 		vs, err := visor.New(vconf, db, nil)
+// 		if err != nil {
+// 			logger.Error("Error with NewVisor")
+// 			return err
+// 		}
+//
+// 		headSeq, _, err := vs.HeadBkSeq()
+// 		if err != nil {
+// 			logger.Error("Error with HeadBkSeq")
+// 			return err
+// 		} else if headSeq == 0 {
+// 			if len(genesisBlock.Body.Transactions) != 0 {
+// 				var tx coin.Transaction
+//
+// 				UxID := genesisBlock.Body.Transactions[0].Out[0].Hash
+// 				output := cipher.MustSHA256FromHex(UxID)
+// 				tx.PushInput(output)
+//
+// 				addr := cipher.MustDecodeBase58Address("TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
+// 				tx.PushOutput(addr, uint64(1e10), 10000, initPrgrm)
+//
+// 				seckeys := make([]cipher.SecKey, 1)
+// 				seckey := genesisSecKey.Hex()
+// 				seckeys[0] = cipher.MustSecKeyFromHex(seckey)
+// 				tx.SignInputs(seckeys)
+//
+// 				tx.UpdateHeader()
+// 				err = tx.Verify()
+//
+// 				if err != nil {
+// 					logger.Panic(err)
+// 				}
+//
+// 				_, _, _, err := vs.InjectUserTransaction(tx)
+// 				if err != nil {
+// 					panic(err)
+// 				}
+// 			} else {
+// 				logger.Error("ERROR: len genesis block was zero")
+// 			}
+// 		} else {
+// 			logger.Error("ERROR: headSeq not zero")
+// 		}
+// 	} else {
+// 		logger.Error("error getting genesis block")
+// 	}
+// 	return err
+// }
 
 func runNode(mode string, options cxCmdFlags) *exec.Cmd {
 	switch mode {
@@ -318,7 +303,7 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		if len(fileNames) > 1 {
 			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
 		}
-		r, err = CXOpenFile(sourceFilename)
+		r, err = cxcore.CXOpenFile(sourceFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
 			return
@@ -330,7 +315,7 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		w = os.Stdout
 	} else {
 		tokenFilename := options.compileOutput
-		w, err = CXCreateFile(tokenFilename)
+		w, err = cxcore.CXCreateFile(tokenFilename)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
 			return
@@ -338,78 +323,78 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		defer w.Close()
 	}
 
-	Tokenize(r, w)
+	parser.Tokenize(r, w)
 }
 
 // optionGenWallet checks if the user wants to use CX to create a new wallet. If
 // this is the case, a wallet is generated for a peer node.
-func optionGenWallet(options cxCmdFlags) {
-	if options.walletSeed == "" {
-		fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
-		return
-	}
-	if options.walletId == "" {
-		// Although there is a default walletId.
-		// This error should only occur if the user intentionally provides an empty id.
-		fmt.Println("creating a wallet requires an id provided with --wallet-id")
-		return
-	}
-
-	wltOpts := wallet.Options{
-		Label: "cxcoin",
-		Seed:  options.walletSeed,
-	}
-
-	wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
-	if err != nil {
-		panic(err)
-	}
-	// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
-	err = wlt.Save("/tmp/6001/wallets/")
-	if err != nil {
-		panic(err)
-	}
-
-	wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
-	if err != nil {
-		panic(err)
-	}
-
-	// Printing JSON with wallet information
-	fmt.Println(string(wltJSON))
-}
+// func optionGenWallet(options cxCmdFlags) {
+// 	if options.walletSeed == "" {
+// 		fmt.Println("creating a wallet requires a seed provided with --wallet-seed")
+// 		return
+// 	}
+// 	if options.walletId == "" {
+// 		// Although there is a default walletId.
+// 		// This error should only occur if the user intentionally provides an empty id.
+// 		fmt.Println("creating a wallet requires an id provided with --wallet-id")
+// 		return
+// 	}
+//
+// 	wltOpts := wallet.Options{
+// 		Label: "cxcoin",
+// 		Seed:  options.walletSeed,
+// 	}
+//
+// 	wlt, err := cli.GenerateWallet(options.walletId, wltOpts, 1)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	// To Do: This needs to be changed or any CX chains will constantly be destroyed after each reboot.
+// 	err = wlt.Save("/tmp/6001/wallets/")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	wltJSON, err := json.MarshalIndent(wlt.Meta, "", "\t")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	// Printing JSON with wallet information
+// 	fmt.Println(string(wltJSON))
+// }
 
 // optionGenAddress checks if the user wants to use CX to generate a new wallet
 // address. If this is the case, CX prints the wallet information to standard
 // output.
-func optionGenAddress(options cxCmdFlags) {
-	// Create a random seed to create a temporary wallet.
-	seed := cli.MakeAlphanumericSeed()
-	wltOpts := wallet.Options{
-		Label: "cxcoin",
-		Seed:  seed,
-	}
-
-	// Generate temporary wallet.
-	wlt, err := cli.GenerateWallet(wallet.NewWalletFilename(), wltOpts, 1)
-	if err != nil {
-		panic(err)
-	}
-
-	rw := wallet.NewReadableWallet(wlt)
-
-	output, err := json.MarshalIndent(rw, "", "    ")
-	if err != nil {
-		panic(err)
-	}
-
-	// Print all the wallet data.
-	fmt.Println(string(output))
-}
+// func optionGenAddress(options cxCmdFlags) {
+// 	// Create a random seed to create a temporary wallet.
+// 	seed := cli.MakeAlphanumericSeed()
+// 	wltOpts := wallet.Options{
+// 		Label: "cxcoin",
+// 		Seed:  seed,
+// 	}
+//
+// 	// Generate temporary wallet.
+// 	wlt, err := cli.GenerateWallet(wallet.NewWalletFilename(), wltOpts, 1)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	rw := wallet.NewReadableWallet(wlt)
+//
+// 	output, err := json.MarshalIndent(rw, "", "    ")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	// Print all the wallet data.
+// 	fmt.Println(string(output))
+// }
 
 // optionRunNode checks if the user wants to run an `options.publisherMode` or
-// `options.peerMode` node for a CX chain. If it's the case, either a publisher or
-// a peer node
+// `options.peerMode` node for a CX chain. If it's the case, either a publisher
+// or a peer node
 func optionRunNode(options cxCmdFlags) {
 	var cmd *exec.Cmd
 	if options.publisherMode {
@@ -442,375 +427,47 @@ func optionRunNode(options cxCmdFlags) {
 	}()
 }
 
-// lexerStep0 performs a first pass for the CX parser. Globals, packages and
-// custom types are added to `cxgo0.PRGRM0`.
-func lexerStep0(sourceCodeCopy, fileNames []string) int {
-	var prePkg *CXPackage
-	parseErrors := 0
-
-	reMultiCommentOpen := regexp.MustCompile(`/\*`)
-	reMultiCommentClose := regexp.MustCompile(`\*/`)
-	reComment := regexp.MustCompile("//")
-
-	rePkg := regexp.MustCompile("package")
-	rePkgName := regexp.MustCompile("(^|[\\s])package\\s+([_a-zA-Z][_a-zA-Z0-9]*)")
-	reStrct := regexp.MustCompile("type")
-	reStrctName := regexp.MustCompile("(^|[\\s])type\\s+([_a-zA-Z][_a-zA-Z0-9]*)?\\s")
-
-	reGlbl := regexp.MustCompile("var")
-	reGlblName := regexp.MustCompile("(^|[\\s])var\\s([_a-zA-Z][_a-zA-Z0-9]*)")
-
-	reBodyOpen := regexp.MustCompile("{")
-	reBodyClose := regexp.MustCompile("}")
-
-	reImp := regexp.MustCompile("import")
-	reImpName := regexp.MustCompile("(^|[\\s])import\\s+\"([_a-zA-Z][_a-zA-Z0-9/-]*)\"")
-
-	StartProfile("1. packages/structs")
-	// 1. Identify all the packages and structs
-	for ix, source := range sourceCodeCopy {
-		filename := fileNames[ix]
-		StartProfile(filename)
-
-		reader := strings.NewReader(source)
-		scanner := bufio.NewScanner(reader)
-		var commentedCode bool
-		var lineno = 0
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			lineno++
-
-			// Identify whether we are in a comment or not.
-			commentLoc := reComment.FindIndex(line)
-			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-			if commentedCode {
-				continue
-			}
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				continue
-			}
-
-			// At this point we know that we are *not* in a comment
-
-			// 1a. Identify all the packages
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						newPkg := MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(newPkg)
-						prePkg = newPkg
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			// 1b. Identify all the structs
-			if loc := reStrct.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := reStrctName.FindStringSubmatch(string(line)); match != nil {
-					if prePkg == nil {
-						println(CompilationError(filename, lineno),
-							"No package defined")
-					} else if _, err := cxgo0.PRGRM0.GetStruct(match[len(match)-1], prePkg.Name); err != nil {
-						// then it hasn't been added
-						strct := MakeStruct(match[len(match)-1])
-						prePkg.AddStruct(strct)
-					}
-				}
-			}
-		}
-		StopProfile(filename)
-	} // for range sourceCodeCopy
-	StopProfile("1. packages/structs")
-
-	StartProfile("2. globals")
-	// 2. Identify all global variables
-	//    We also identify packages again, so we know to what
-	//    package we're going to add the variable declaration to.
-	for i, source := range sourceCodeCopy {
-		StartProfile(fileNames[i])
-		// inBlock needs to be 0 to guarantee that we're in the global scope
-		var inBlock int
-		var commentedCode bool
-
-		scanner := bufio.NewScanner(strings.NewReader(source))
-		for scanner.Scan() {
-			line := scanner.Bytes()
-
-			// we need to ignore function bodies
-			// it'll also ignore struct declaration's bodies, but this doesn't matter
-			commentLoc := reComment.FindIndex(line)
-
-			multiCommentOpenLoc := reMultiCommentOpen.FindIndex(line)
-			multiCommentCloseLoc := reMultiCommentClose.FindIndex(line)
-
-			if commentedCode && multiCommentCloseLoc != nil {
-				commentedCode = false
-			}
-
-			if commentedCode {
-				continue
-			}
-
-			if multiCommentOpenLoc != nil && !commentedCode && multiCommentCloseLoc == nil {
-				commentedCode = true
-				// continue
-			}
-
-			// Identify all the package imports.
-			if loc := reImp.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := reImpName.FindStringSubmatch(string(line)); match != nil {
-					pkgName := match[len(match)-1]
-					// Checking if `pkgName` already exists and if it's not a standard library package.
-					if _, err := cxgo0.PRGRM0.GetPackage(pkgName); err != nil && !IsCorePackage(pkgName) {
-						// _, sourceCode, fileNames := ParseArgsForCX([]string{fmt.Sprintf("%s%s", SRCPATH, pkgName)}, false)
-						_, sourceCode, fileNames := ParseArgsForCX([]string{filepath.Join(SRCPATH, pkgName)}, false)
-						ParseSourceCode(sourceCode, fileNames)
-					}
-				}
-			}
-
-			// we search for packages at the same time, so we can know to what package to add the global
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						prePkg = MakePackage(match[len(match)-1])
-						cxgo0.PRGRM0.AddPackage(prePkg)
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			if locs := reBodyOpen.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						// then it's outside of a */, e.g. `*/ }`
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented opening bracket
-							inBlock++
-						}
-					}
-				}
-			}
-
-			if locs := reBodyClose.FindAllIndex(line, -1); locs != nil {
-				for _, loc := range locs {
-					if !(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-						if (commentLoc == nil && multiCommentOpenLoc == nil && multiCommentCloseLoc == nil) ||
-							(commentLoc != nil && commentLoc[0] > loc[0]) ||
-							(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] > loc[0]) ||
-							(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] < loc[0]) {
-							// then we have an uncommented closing bracket
-							inBlock--
-						}
-					}
-				}
-			}
-
-			// we could have this situation: {var local i32}
-			// but we don't care about this, as the later passes will throw an error as it's invalid syntax
-
-			if loc := rePkg.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) {
-					// then it's commented out
-					continue
-				}
-
-				if match := rePkgName.FindStringSubmatch(string(line)); match != nil {
-					if pkg, err := cxgo0.PRGRM0.GetPackage(match[len(match)-1]); err != nil {
-						// it should be already present
-						panic(err)
-					} else {
-						prePkg = pkg
-					}
-				}
-			}
-
-			// finally, if we read a "var" and we're in global scope, we add the global without any type
-			// the type will be determined later on
-			if loc := reGlbl.FindIndex(line); loc != nil {
-				if (commentLoc != nil && commentLoc[0] < loc[0]) ||
-					(multiCommentOpenLoc != nil && multiCommentOpenLoc[0] < loc[0]) ||
-					(multiCommentCloseLoc != nil && multiCommentCloseLoc[0] > loc[0]) || inBlock != 0 {
-					// then it's commented out or inside a block
-					continue
-				}
-
-				if match := reGlblName.FindStringSubmatch(string(line)); match != nil {
-					if _, err := prePkg.GetGlobal(match[len(match)-1]); err != nil {
-						// then it hasn't been added
-						arg := MakeArgument(match[len(match)-1], "", 0)
-						arg.Offset = -1
-						arg.Package = prePkg
-						prePkg.AddGlobal(arg)
-					}
-				}
-			}
-		}
-		StopProfile(fileNames[i])
-	}
-	StopProfile("2. globals")
-
-	StartProfile("3. cxgo0")
-	// cxgo0.Parse(allSC)
-	for i, source := range sourceCodeCopy {
-		StartProfile(fileNames[i])
-		source = source + "\n"
-		if len(fileNames) > 0 {
-			cxgo0.CurrentFileName = fileNames[i]
-		}
-		parseErrors += cxgo0.Parse(source)
-		StopProfile(fileNames[i])
-	}
-	StopProfile("3. cxgo0")
-	return parseErrors
-}
-
 func cleanupAndExit(exitCode int) {
 	StopCPUProfile(profile)
 	os.Exit(exitCode)
 }
 
-// ParseSourceCode takes a group of files representing CX `sourceCode` and
-// parses it into CX program structures for `PRGRM`.
-func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
-	cxgo0.PRGRM0 = PRGRM
-
-	// Copy the contents of the file pointers containing the CX source
-	// code into sourceCodeCopy
-	sourceCodeCopy := make([]string, len(sourceCode))
-	for i, source := range sourceCode {
-		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
-		sourceCodeCopy[i] = string(tmp.Bytes())
-	}
-
-	// We need to traverse the elements by hierarchy first add all the
-	// packages and structs at the same time then add globals, as these
-	// can be of a custom type (and it could be imported) the signatures
-	// of functions and methods are added in the cxgo0.y pass
-	parseErrors := 0
-	if len(sourceCode) > 0 {
-		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
-	}
-
-	PRGRM.SelectProgram()
-
-	PRGRM = cxgo0.PRGRM0
-	if FoundCompileErrors || parseErrors > 0 {
-		cleanupAndExit(CX_COMPILATION_ERROR)
-	}
-
-	// Adding global variables `OS_ARGS` to the `os` (operating system)
-	// package.
-	if osPkg, err := PRGRM.GetPackage(OS_PKG); err == nil {
-		if _, err := osPkg.GetGlobal(OS_ARGS); err != nil {
-			arg0 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_UNDEFINED])
-			arg0.Package = osPkg
-
-			arg1 := MakeArgument(OS_ARGS, "", -1).AddType(TypeNames[TYPE_STR])
-			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_BASIC)
-			arg1 = DeclarationSpecifiers(arg1, []int{0}, DECL_SLICE)
-
-			DeclareGlobalInPackage(osPkg, arg0, arg1, nil, false)
-		}
-	}
-
-	StartProfile("4. parse")
-	// The last pass of parsing that generates the actual output.
-	for i, source := range sourceCodeCopy {
-		// Because of an unkown reason, sometimes some CX programs
-		// throw an error related to a premature EOF (particularly in Windows).
-		// Adding a newline character solves this.
-		source = source + "\n"
-		LineNo = 1
-		b := bytes.NewBufferString(source)
-		if len(fileNames) > 0 {
-			CurrentFile = fileNames[i]
-		}
-		StartProfile(CurrentFile)
-		parseErrors += Parse(NewLexer(b))
-		StopProfile(CurrentFile)
-	}
-	StopProfile("4. parse")
-
-	if FoundCompileErrors || parseErrors > 0 {
-		cleanupAndExit(CX_COMPILATION_ERROR)
-	}
-}
-
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
 	profile := StartCPUProfile("parse")
 	defer StopCPUProfile(profile)
+
 	defer DumpMEMProfile("parse")
+
 	StartProfile("parse")
 	defer StopProfile("parse")
 
-	PRGRM = MakeProgram()
-	corePkgsPrgrm, err := GetProgram()
+	actions.PRGRM = cxcore.MakeProgram()
+	corePkgsPrgrm, err := cxcore.GetProgram()
 	if err != nil {
 		panic(err)
 	}
-	PRGRM.Packages = corePkgsPrgrm.Packages
+	actions.PRGRM.Packages = corePkgsPrgrm.Packages
 
 	if options.webMode {
 		ServiceMode()
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: Do we need this? What is the 'leaps' command?
 	if options.ideMode {
 		IdeServiceMode()
 		ServiceMode()
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: We do not need a persistent mode?
 	if options.webPersistentMode {
 		go ServiceMode()
 		PersistentServiceMode()
 		return false, nil, nil
 	}
 
+	// TODO @evanlinjin: This is a separate command now.
 	if options.tokenizeMode {
 		optionTokenize(options, fileNames)
 		return false, nil, nil
@@ -822,31 +479,31 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	// so we can then add it after the transaction code's data segment.
 	var bcHeap []byte
 	if options.transactionMode || options.broadcastMode {
-		chainStatePrelude(&sPrgrm, &bcHeap, PRGRM)
+		chainStatePrelude(&sPrgrm, &bcHeap, actions.PRGRM) // TODO: refactor injection logic
 	}
 
 	// Parsing all the source code files sent as CLI arguments to CX.
-	ParseSourceCode(sourceCode, fileNames)
+	cxgo.ParseSourceCode(sourceCode, fileNames)
 
 	// setting project's working directory
 	if !options.replMode && len(sourceCode) > 0 {
-		cxgo0.PRGRM0.Path = getWorkingDirectory(sourceCode[0].Name())
+		cxgo0.PRGRM0.Path = determineWorkDir(sourceCode[0].Name())
 	}
 
 	// Checking if a main package exists. If not, create and add it to `PRGRM`.
-	if _, err := PRGRM.GetFunction(MAIN_FUNC, MAIN_PKG); err != nil {
-		initMainPkg(PRGRM)
+	if _, err := actions.PRGRM.GetFunction(cxcore.MAIN_FUNC, cxcore.MAIN_PKG); err != nil {
+		initMainPkg(actions.PRGRM)
 	}
 	// Setting what function to start in if using the REPL.
-	ReplTargetFn = MAIN_FUNC
+	actions.ReplTargetFn = cxcore.MAIN_FUNC
 
 	// Adding *init function that initializes all the global variables.
-	addInitFunction(PRGRM)
+	cxgo.AddInitFunction(actions.PRGRM)
 
-	LineNo = 0
+	actions.LineNo = 0
 
-	if FoundCompileErrors {
-		cleanupAndExit(CX_COMPILATION_ERROR)
+	if cxcore.FoundCompileErrors {
+		cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
 	}
 
 	return true, bcHeap, sPrgrm
@@ -857,7 +514,7 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	defer StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		PRGRM.SelectProgram()
+		actions.PRGRM.SelectProgram()
 		repl()
 		return
 	}
@@ -865,162 +522,176 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	// If it's a CX chain transaction, we need to add the heap extracted
 	// from the retrieved CX chain program state.
 	if options.transactionMode || options.broadcastMode {
-		mergeBlockchainHeap(bcHeap, sPrgrm)
+		mergeBlockchainHeap(bcHeap, sPrgrm) // TODO: refactor injection logic
 	}
 
 	if options.blockchainMode {
-		// Initializing the CX chain.
-		err := PRGRM.RunCompiled(0, cxArgs)
-		if err != nil {
-			panic(err)
-		}
 
-		PRGRM.RemovePackage(MAIN_FUNC)
+		// TODO @evanlinjin: Consider removing this section completely.
+		//  Broadcast mode is disabled here. These features has been moved to
+		//  the 'github.com/skycoin/cx-chains' repo.
 
-		// Removing garbage from the heap. Only the global variables should be left
-		// as these are independent from function calls.
-		MarkAndCompact(PRGRM)
-		PRGRM.HeapSize = PRGRM.HeapPointer
+		panic("blockchainMode is moved to the github.com/skycoin/cx-chains repo")
 
-		// We already removed the main package, so it's
-		// len(PRGRM.Packages) instead of len(PRGRM.Packages) - 1.
-		PRGRM.BCPackageCount = len(PRGRM.Packages)
-		s := Serialize(PRGRM, PRGRM.BCPackageCount)
-		s = ExtractBlockchainProgram(s, s)
-
-		configDir := os.Getenv("GOPATH") + "/src/github.com/SkycoinProject/cx/"
-		configFile := "fiber"
-
-		cmd := exec.Command("go", "install", "./cmd/newcoin/...")
-		cmd.Start()
-		cmd.Wait()
-
-		cmd = exec.Command("newcoin", "createcoin",
-			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
-			"--config-file="+configFile+".toml",
-			"--config-dir="+configDir,
-		)
-		cmd.Start()
-		cmd.Wait()
-
-		cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
-		cmd.Start()
-		cmd.Wait()
-
-		err = initCXBlockchain(s, options.programName, options.secKey)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("\ngenesis signature:", genesisSignature)
-
-		viper.SetConfigName(configFile) // name of config file (without extension)
-		viper.AddConfigPath(".")        // optionally look for config in the working directory
-		err = viper.ReadInConfig()      // Find and read the config file
-		if err != nil {                 // Handle errors reading the config file
-			panic(err)
-		}
-
-		viper.Set("node.genesis_signature_str", genesisSignature)
-		viper.WriteConfig()
-
-		cmd = exec.Command("newcoin", "createcoin",
-			fmt.Sprintf("--coin=%s", options.programName),
-			fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/SkycoinProject/cx/template"),
-			"--config-file="+configFile+".toml",
-			"--config-dir="+configDir,
-		)
-		cmd.Start()
-		cmd.Wait()
-		cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
-		cmd.Start()
-		cmd.Wait()
+		// // Initializing the CX chain.
+		// err := actions.PRGRM.RunCompiled(0, cxArgs)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// actions.PRGRM.RemovePackage(cxcore.MAIN_FUNC)
+		//
+		// // Removing garbage from the heap. Only the global variables should be left
+		// // as these are independent from function calls.
+		// cxcore.MarkAndCompact(actions.PRGRM)
+		// actions.PRGRM.HeapSize = actions.PRGRM.HeapPointer
+		//
+		// // We already removed the main package, so it's
+		// // len(PRGRM.Packages) instead of len(PRGRM.Packages) - 1.
+		// actions.PRGRM.BCPackageCount = len(actions.PRGRM.Packages)
+		// s := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+		// s = cxcore.ExtractBlockchainProgram(s, s)
+		//
+		// configDir := os.Getenv("GOPATH") + "/src/github.com/skycoin/cx/"
+		// configFile := "fiber"
+		//
+		// cmd := exec.Command("go", "install", "./cmd/newcoin/...")
+		// cmd.Start()
+		// cmd.Wait()
+		//
+		// cmd = exec.Command("newcoin", "createcoin",
+		// 	fmt.Sprintf("--coin=%s", options.programName),
+		// 	fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+		// 	"--config-file="+configFile+".toml",
+		// 	"--config-dir="+configDir,
+		// )
+		// cmd.Start()
+		// cmd.Wait()
+		//
+		// cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+		// cmd.Start()
+		// cmd.Wait()
+		//
+		// err = initCXBlockchain(s, options.programName, options.secKey)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// fmt.Println("\ngenesis signature:", genesisSignature)
+		//
+		// viper.SetConfigName(configFile) // name of config file (without extension)
+		// viper.AddConfigPath(".")        // optionally look for config in the working directory
+		// err = viper.ReadInConfig()      // Find and read the config file
+		// if err != nil {                 // Handle errors reading the config file
+		// 	panic(err)
+		// }
+		//
+		// viper.Set("node.genesis_signature_str", genesisSignature)
+		// viper.WriteConfig()
+		//
+		// cmd = exec.Command("newcoin", "createcoin",
+		// 	fmt.Sprintf("--coin=%s", options.programName),
+		// 	fmt.Sprintf("--template-dir=%s%s", os.Getenv("GOPATH"), "/src/github.com/skycoin/cx/template"),
+		// 	"--config-file="+configFile+".toml",
+		// 	"--config-dir="+configDir,
+		// )
+		// cmd.Start()
+		// cmd.Wait()
+		// cmd = exec.Command("go", "install", "./cmd/cxcoin/...")
+		// cmd.Start()
+		// cmd.Wait()
 	} else if options.broadcastMode {
-		// Setting the CX runtime to run `PRGRM`.
-		PRGRM.SelectProgram()
-		MarkAndCompact(PRGRM)
 
-		s := Serialize(PRGRM, PRGRM.BCPackageCount)
-		txnCode := ExtractTransactionProgram(sPrgrm, s)
+		// TODO @evanlinjin: Consider removing this section completely.
+		//  Broadcast mode is disabled here. These features has been moved to
+		//  the 'github.com/skycoin/cx-chains' repo.
 
-		// All these HTTP requests need to be dropped in favor of calls to calls to functions
-		// from the `cli` or `api` Skycoin packages
-		addr := fmt.Sprintf("http://127.0.0.1:%d", options.port+420)
-		skycoinClient := api.NewClient(addr)
-		csrfToken, err := skycoinClient.CSRF()
-		if err != nil {
-			panic(err)
-		}
+		panic("broadcastMode is moved to the github.com/skycoin/cx-chains repo")
 
-		url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port+420)
-
-		var dataMap map[string]interface{}
-		dataMap = make(map[string]interface{}, 0)
-		dataMap["mainExprs"] = txnCode
-		dataMap["hours_selection"] = map[string]string{"type": "manual"}
-		// dataMap["wallet_id"] = map[string]string{"id": options.walletId}
-		dataMap["wallet_id"] = string(options.walletId)
-		dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
-
-		jsonStr, err := json.Marshal(dataMap)
-		if err != nil {
-			panic(err)
-		}
-
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		req.Header.Set("X-CSRF-Token", csrfToken)
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			panic(err)
-		}
-
-		var respBody map[string]interface{}
-		if err := json.Unmarshal(body, &respBody); err != nil {
-			// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
-			fmt.Println(string(body))
-			return
-		}
-
-		url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port+420)
-		dataMap = make(map[string]interface{}, 0)
-		dataMap["rawtx"] = respBody["encoded_transaction"]
-
-		jsonStr, err = json.Marshal(dataMap)
-		if err != nil {
-			panic(err)
-		}
-
-		req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		req.Header.Set("X-CSRF-Token", csrfToken)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err = client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			panic(err)
-		}
+		// // Setting the CX runtime to run `PRGRM`.
+		// actions.PRGRM.SelectProgram()
+		// cxcore.MarkAndCompact(actions.PRGRM)
+		//
+		// s := cxcore.Serialize(actions.PRGRM, actions.PRGRM.BCPackageCount)
+		// txnCode := cxcore.ExtractTransactionProgram(sPrgrm, s)
+		//
+		// // All these HTTP requests need to be dropped in favor of calls to calls to functions
+		// // from the `cli` or `api` Skycoin packages
+		// addr := fmt.Sprintf("http://127.0.0.1:%d", options.port+420)
+		// skycoinClient := api.NewClient(addr)
+		// csrfToken, err := skycoinClient.CSRF()
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// url := fmt.Sprintf("http://127.0.0.1:%d/api/v1/wallet/transaction", options.port+420)
+		//
+		// var dataMap map[string]interface{}
+		// dataMap = make(map[string]interface{}, 0)
+		// dataMap["mainExprs"] = txnCode
+		// dataMap["hours_selection"] = map[string]string{"type": "manual"}
+		// // dataMap["wallet_id"] = map[string]string{"id": options.walletId}
+		// dataMap["wallet_id"] = string(options.walletId)
+		// dataMap["to"] = []interface{}{map[string]string{"address": "2PBcLADETphmqWV7sujRZdh3UcabssgKAEB", "coins": "1", "hours": "0"}}
+		//
+		// jsonStr, err := json.Marshal(dataMap)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		// req.Header.Set("X-CSRF-Token", csrfToken)
+		// req.Header.Set("Content-Type", "application/json")
+		//
+		// client := &http.Client{}
+		// resp, err := client.Do(req)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// defer resp.Body.Close()
+		// body, err := ioutil.ReadAll(resp.Body)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// var respBody map[string]interface{}
+		// if err := json.Unmarshal(body, &respBody); err != nil {
+		// 	// Printing the body instead of `err`. Body has the error generated in the Skycoin API.
+		// 	fmt.Println(string(body))
+		// 	return
+		// }
+		//
+		// url = fmt.Sprintf("http://127.0.0.1:%d/api/v1/injectTransaction", options.port+420)
+		// dataMap = make(map[string]interface{}, 0)
+		// dataMap["rawtx"] = respBody["encoded_transaction"]
+		//
+		// jsonStr, err = json.Marshal(dataMap)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// req, err = http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		// req.Header.Set("X-CSRF-Token", csrfToken)
+		// req.Header.Set("Content-Type", "application/json")
+		//
+		// resp, err = client.Do(req)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// body, err = ioutil.ReadAll(resp.Body)
+		// if err != nil {
+		// 	panic(err)
+		// }
 	} else {
 		// Normal run of a CX program.
-		err := PRGRM.RunCompiled(0, cxArgs)
+		err := actions.PRGRM.RunCompiled(0, cxArgs)
 		if err != nil {
 			panic(err)
 		}
 
-		if AssertFailed() {
-			os.Exit(CX_ASSERT)
+		if cxcore.AssertFailed() {
+			os.Exit(cxcore.CX_ASSERT)
 		}
 	}
 }
@@ -1042,12 +713,14 @@ func Run(args []string) {
 	}
 	// Does the user want to generate a new wallet address?
 	if options.genAddress {
-		optionGenAddress(options)
+		panic("genAddress features is now moved to github.com/skycoin/cx-chains repo")
+		// optionGenAddress(options)
 		return
 	}
 	// Does the user want to generate a new wallet address?
 	if options.walletMode {
-		optionGenWallet(options)
+		panic("genWallet features is now moved to github.com/skycoin/cx-chains repo")
+		// optionGenWallet(options)
 		return
 	}
 	// Does the user want to print the command-line help?
@@ -1060,43 +733,39 @@ func Run(args []string) {
 		printVersion()
 		return
 	}
-	if options.newProject {
-		initNewProject()
-		return
-	}
+
 	if options.initialHeap != "" {
-		INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+		cxcore.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
 	}
 	if options.maxHeap != "" {
-		MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if MAX_HEAP_SIZE < INIT_HEAP_SIZE {
+		cxcore.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+		if cxcore.MAX_HEAP_SIZE < cxcore.INIT_HEAP_SIZE {
 			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			INIT_HEAP_SIZE = MAX_HEAP_SIZE
+			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
 		}
 	}
 	if options.stackSize != "" {
-		STACK_SIZE = parseMemoryString(options.stackSize)
-		DataOffset = STACK_SIZE
+		cxcore.STACK_SIZE = parseMemoryString(options.stackSize)
+		actions.DataOffset = cxcore.STACK_SIZE
 	}
 	if options.minHeapFreeRatio != float64(0) {
-		MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+		cxcore.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
 	}
 	if options.maxHeapFreeRatio != float64(0) {
-		MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+		cxcore.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
 	}
 
 	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := ParseArgsForCX(commandLine.Args(), true)
+	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
 
 	// Propagate some options out to other packages.
-	DebugLexer = options.debugLexer // in package parser
+	parser.DebugLexer = options.debugLexer // in package parser
 	DebugProfileRate = options.debugProfile
 	DebugProfile = DebugProfileRate > 0
 
 	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
 		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
-	//})
 }
 
 // mergeBlockchainHeap adds the heap `bcHeap` found in the program state of a CX
@@ -1105,33 +774,33 @@ func Run(args []string) {
 // the serialized program `sPrgrm`.
 func mergeBlockchainHeap(bcHeap, sPrgrm []byte) {
 	// Setting the CX runtime to run `PRGRM`.
-	PRGRM.SelectProgram()
+	actions.PRGRM.SelectProgram()
 
 	bcHeapLen := len(bcHeap)
-	remHeapSpace := len(PRGRM.Memory[PRGRM.HeapStartsAt:])
-	fullDataSegSize := PRGRM.HeapStartsAt - PRGRM.StackSize
+	remHeapSpace := len(actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt:])
+	fullDataSegSize := actions.PRGRM.HeapStartsAt - actions.PRGRM.StackSize
 	// Copying blockchain code heap.
 	if bcHeapLen > remHeapSpace {
 		// We don't have enough space. We're using the available bytes...
 		for c := 0; c < remHeapSpace; c++ {
-			PRGRM.Memory[PRGRM.HeapStartsAt+c] = bcHeap[c]
+			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = bcHeap[c]
 		}
 		// ...and then we append the remaining bytes.
-		PRGRM.Memory = append(PRGRM.Memory, bcHeap[remHeapSpace:]...)
+		actions.PRGRM.Memory = append(actions.PRGRM.Memory, bcHeap[remHeapSpace:]...)
 	} else {
 		// We have enough space and we simply write the bytes.
 		for c := 0; c < bcHeapLen; c++ {
-			PRGRM.Memory[PRGRM.HeapStartsAt+c] = bcHeap[c]
+			actions.PRGRM.Memory[actions.PRGRM.HeapStartsAt+c] = bcHeap[c]
 		}
 	}
 	// Recalculating the heap size.
-	PRGRM.HeapSize = len(PRGRM.Memory) - PRGRM.HeapStartsAt
-	txnDataLen := fullDataSegSize - GetSerializedDataSize(sPrgrm)
+	actions.PRGRM.HeapSize = len(actions.PRGRM.Memory) - actions.PRGRM.HeapStartsAt
+	txnDataLen := fullDataSegSize - cxcore.GetSerializedDataSize(sPrgrm)
 	// TODO: CX chains only work with one package at the moment (in the blockchain code). That is what that "1" is for.
 	// Displacing the references to heap objects by `txnDataLen`.
 	// This needs to be done as the addresses to the heap objects are displaced
 	// by the addition of the transaction code's data segment.
-	DisplaceReferences(PRGRM, txnDataLen, 1)
+	cxcore.DisplaceReferences(actions.PRGRM, txnDataLen, 1)
 }
 
 // Used for the -heap-initial, -heap-max and -stack-size flags.
@@ -1175,7 +844,7 @@ func parseMemoryString(s string) int {
 }
 
 func unsafeEval(code string) (out string) {
-	var lexer *Lexer
+	var lexer *parser.Lexer
 	defer func() {
 		if r := recover(); r != nil {
 			out = fmt.Sprintf("%v", r)
@@ -1188,23 +857,23 @@ func unsafeEval(code string) (out string) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	LineNo = 0
+	actions.LineNo = 0
 
-	PRGRM = MakeProgram()
-	cxgo0.PRGRM0 = PRGRM
+	actions.PRGRM = cxcore.MakeProgram()
+	cxgo0.PRGRM0 = actions.PRGRM
 
 	cxgo0.Parse(code)
 
-	PRGRM = cxgo0.PRGRM0
+	actions.PRGRM = cxgo0.PRGRM0
 
-	lexer = NewLexer(bytes.NewBufferString(code))
-	Parse(lexer)
+	lexer = parser.NewLexer(bytes.NewBufferString(code))
+	parser.Parse(lexer)
 	//yyParse(lexer)
 
-	addInitFunction(PRGRM)
+	cxgo.AddInitFunction(actions.PRGRM)
 
-	if err := PRGRM.RunCompiled(0, nil); err != nil {
-		PRGRM = MakeProgram()
+	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
+		actions.PRGRM = cxcore.MakeProgram()
 		return fmt.Sprintf("%s", err)
 	}
 
@@ -1219,7 +888,7 @@ func unsafeEval(code string) (out string) {
 	os.Stdout = old // restoring the real stdout
 	out = <-outC
 
-	PRGRM = MakeProgram()
+	actions.PRGRM = cxcore.MakeProgram()
 	return out
 }
 
@@ -1241,7 +910,7 @@ func Eval(code string) string {
 	case <-ch:
 		return result
 	case <-timer.C:
-		PRGRM = MakeProgram()
+		actions.PRGRM = cxcore.MakeProgram()
 		return "Timed out."
 	}
 }
@@ -1256,7 +925,7 @@ func ServiceMode() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	mux.Handle("/program/", api2.NewAPI("/program", PRGRM))
+	mux.Handle("/program/", api2.NewAPI("/program", actions.PRGRM))
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
@@ -1288,7 +957,7 @@ func IdeServiceMode() {
 	ideHost := "localhost:5335"
 
 	// Working directory for ide
-	sharedPath := fmt.Sprintf("%s/src/github.com/SkycoinProject/cx", os.Getenv("GOPATH"))
+	sharedPath := fmt.Sprintf("%s/src/github.com/skycoin/cx", os.Getenv("GOPATH"))
 
 	// Start Leaps
 	// cmd = `leaps -address localhost:5335 $GOPATH/src/skycoin/cx`
@@ -1330,27 +999,25 @@ func PersistentServiceMode() {
 	}
 }
 
-func getWorkingDirectory(file string) string {
-	file = filepath.FromSlash(file)
-	var c int = len(file) - 1
-	for ; c > 0; c-- {
-		if file[c-1] == os.PathSeparator {
-			break
-		}
-	}
+func determineWorkDir(filename string) string {
+	filename = filepath.FromSlash(filename)
 
-	return file[:c]
+	i := strings.LastIndexByte(filename, os.PathSeparator)
+	if i == -1 {
+		i = 0
+	}
+	return filename[:i]
 }
 
 func printPrompt() {
-	if ReplTargetMod != "" {
-		fmt.Println(fmt.Sprintf(":package %s ...", ReplTargetMod))
+	if actions.ReplTargetMod != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
 		fmt.Printf("* ")
-	} else if ReplTargetFn != "" {
-		fmt.Println(fmt.Sprintf(":func %s {...", ReplTargetFn))
+	} else if actions.ReplTargetFn != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
 		fmt.Printf("\t* ")
-	} else if ReplTargetStrct != "" {
-		fmt.Println(fmt.Sprintf(":struct %s {...", ReplTargetStrct))
+	} else if actions.ReplTargetStrct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
 		fmt.Printf("\t* ")
 	} else {
 		fmt.Printf("* ")
@@ -1359,9 +1026,9 @@ func printPrompt() {
 
 func repl() {
 	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/SkycoinProject/cx/")
+	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/skycoin/cx/")
 
-	InREPL = true
+	cxcore.InREPL = true
 
 	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
 	fi := bufio.NewReader(os.Stdin)
@@ -1374,33 +1041,33 @@ func repl() {
 		printPrompt()
 
 		if inp, ok = readline(fi); ok {
-			if ReplTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {\n%s\n}\n", ReplTargetFn, inp)
+			if actions.ReplTargetFn != "" {
+				inp = fmt.Sprintf(":func %s {\n%s\n}\n", actions.ReplTargetFn, inp)
 			}
-			if ReplTargetMod != "" {
+			if actions.ReplTargetMod != "" {
 				inp = fmt.Sprintf("%s", inp)
 			}
-			if ReplTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", ReplTargetStrct, inp)
+			if actions.ReplTargetStrct != "" {
+				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", actions.ReplTargetStrct, inp)
 			}
 
 			b := bytes.NewBufferString(inp)
 
-			Parse(NewLexer(b))
+			parser.Parse(parser.NewLexer(b))
 			//yyParse(NewLexer(b))
 		} else {
-			if ReplTargetFn != "" {
-				ReplTargetFn = ""
+			if actions.ReplTargetFn != "" {
+				actions.ReplTargetFn = ""
 				continue
 			}
 
-			if ReplTargetStrct != "" {
-				ReplTargetStrct = ""
+			if actions.ReplTargetStrct != "" {
+				actions.ReplTargetStrct = ""
 				continue
 			}
 
-			if ReplTargetMod != "" {
-				ReplTargetMod = ""
+			if actions.ReplTargetMod != "" {
+				actions.ReplTargetMod = ""
 				continue
 			}
 
@@ -1410,21 +1077,9 @@ func repl() {
 	}
 }
 
-func initNewProject() {
-	var name string
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Name of the project: ")
-	name, _ = reader.ReadString('\n')
-
-	fmt.Printf("Creating project %s%s/", SRCPATH, name)
-
-	CXMkdirAll(fmt.Sprintf("%s%s", SRCPATH, name[:len(name)-1]), 0751)
-}
-
 // chainStatePrelude initializes the program structure `prgrm` with data from
 // the program state stored on a CX chain.
-func chainStatePrelude(sPrgrm *[]byte, bcHeap *[]byte, prgrm *CXProgram) {
+func chainStatePrelude(sPrgrm *[]byte, bcHeap *[]byte, prgrm *cxcore.CXProgram) {
 	resp, err := http.Get("http://127.0.0.1:6420/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
 	if err != nil {
 		fmt.Println(err)
@@ -1438,27 +1093,27 @@ func chainStatePrelude(sPrgrm *[]byte, bcHeap *[]byte, prgrm *CXProgram) {
 		return
 	}
 
-	memOff := GetSerializedMemoryOffset(*sPrgrm)
-	stackSize := GetSerializedStackSize(*sPrgrm)
+	memOff := cxcore.GetSerializedMemoryOffset(*sPrgrm)
+	stackSize := cxcore.GetSerializedStackSize(*sPrgrm)
 	// sPrgrm with Stack and Heap
 	sPrgrmSH := (*sPrgrm)[:memOff]
 	// Appending new stack
 	sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
 	// Appending data and heap segment
 	sPrgrmSH = append(sPrgrmSH, (*sPrgrm)[memOff:]...)
-	*bcHeap = (*sPrgrm)[memOff+GetSerializedDataSize(*sPrgrm):]
+	*bcHeap = (*sPrgrm)[memOff+cxcore.GetSerializedDataSize(*sPrgrm):]
 
-	*prgrm = *Deserialize(sPrgrmSH)
+	*prgrm = *cxcore.Deserialize(sPrgrmSH)
 	// We need to start adding new data elements after the CX chain
 	// program state's data segment
-	DataOffset = prgrm.HeapStartsAt
+	actions.DataOffset = prgrm.HeapStartsAt
 }
 
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *CXProgram) {
-	mod := MakePackage(MAIN_PKG)
+func initMainPkg(prgrm *cxcore.CXProgram) {
+	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
 	prgrm.AddPackage(mod)
-	fn := MakeFunction(MAIN_FUNC, CurrentFile, LineNo)
+	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
 	mod.AddFunction(fn)
 }
 
@@ -1468,11 +1123,11 @@ func initMainPkg(prgrm *CXProgram) {
 func checkCXPathSet(options cxCmdFlags) {
 	// Determining the filepath of the directory where the user
 	// started the `cx` command.
-	ex, err := os.Executable()
+	_, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
-	COREPATH = filepath.Dir(ex)
+	// cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
 
 	CXPATH := ""
 	if os.Getenv("CXPATH") != "" {
@@ -1494,34 +1149,22 @@ func checkCXPathSet(options cxCmdFlags) {
 		CXPATH = usr.HomeDir + "/cx/"
 	}
 
-	BINPATH = filepath.Join(CXPATH, "bin/")
-	PKGPATH = filepath.Join(CXPATH, "pkg/")
-	SRCPATH = filepath.Join(CXPATH, "src/")
+	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
+	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
+	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
 
 	// Creating directories in case they do not exist.
-	if _, err := CXStatFile(CXPATH); os.IsNotExist(err) {
-		CXMkdirAll(CXPATH, 0755)
+	if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(CXPATH, 0755)
 	}
-	if _, err := CXStatFile(BINPATH); os.IsNotExist(err) {
-		CXMkdirAll(BINPATH, 0755)
+	if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
 	}
-	if _, err := CXStatFile(PKGPATH); os.IsNotExist(err) {
-		CXMkdirAll(PKGPATH, 0755)
+	if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
 	}
-	if _, err := CXStatFile(SRCPATH); os.IsNotExist(err) {
-		CXMkdirAll(SRCPATH, 0755)
-	}
-}
-
-func addInitFunction(PRGRM *CXProgram) {
-	if main, err := PRGRM.GetPackage(MAIN_PKG); err == nil {
-		initFn := MakeFunction(SYS_INIT_FUNC, CurrentFile, LineNo)
-		main.AddFunction(initFn)
-
-		FunctionDeclaration(initFn, nil, nil, SysInitExprs)
-		PRGRM.SelectFunction(MAIN_FUNC)
-	} else {
-		panic(err)
+	if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
 	}
 }
 

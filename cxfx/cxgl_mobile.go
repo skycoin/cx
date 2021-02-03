@@ -4,11 +4,13 @@ package cxfx
 
 import (
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
-	"github.com/SkycoinProject/gltext"
-	"golang.org/x/mobile/gl"
 	"reflect"
 	"unsafe"
+
+	"github.com/skycoin/gltext"
+	"golang.org/x/mobile/gl"
+
+	. "github.com/skycoin/cx/cx"
 )
 
 func Ptr(data interface{}) (unsafe.Pointer, uintptr) {
@@ -77,7 +79,10 @@ func EnumSlice(i interface{}) []gl.Enum {
 const (
 	cxglCLAMP_TO_EDGE               = gl.CLAMP_TO_EDGE
 	cxglNEAREST                     = gl.NEAREST
+	cxglRGB                         = gl.RGB
 	cxglRGBA                        = gl.RGBA
+	cxglRGBA8                       = gl.RGBA8
+	cxglRGB16F                      = gl.RGB16F
 	cxglTEXTURE_2D                  = gl.TEXTURE_2D
 	cxglTEXTURE_CUBE_MAP            = gl.TEXTURE_CUBE_MAP
 	cxglTEXTURE_CUBE_MAP_POSITIVE_X = gl.TEXTURE_CUBE_MAP_POSITIVE_X
@@ -87,6 +92,7 @@ const (
 	cxglTEXTURE_WRAP_S              = gl.TEXTURE_WRAP_S
 	cxglTEXTURE_WRAP_T              = gl.TEXTURE_WRAP_T
 	cxglUNSIGNED_BYTE               = gl.UNSIGNED_BYTE
+	cxglFLOAT                       = gl.FLOAT
 )
 
 // gogl

@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 var openProfiles map[string]*os.File = make(map[string]*os.File, 0)

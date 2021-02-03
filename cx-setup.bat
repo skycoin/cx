@@ -83,7 +83,7 @@ call :echoWithColor yellow "     Ensuring that we have local repositories....."
 call :getRepo go-gl\gl\v2.1\gl
 call :getRepo go-gl\glfw\v3.2\glfw
 call :getRepo go-gl\gltext
-call :getRepo SkycoinProject\nex
+rem call :getRepo SkycoinProject\nex
 call :getRepo cznic\goyacc
 call :getRepo skycoin\skycoin
 
@@ -196,7 +196,7 @@ exit /b
 
 
 :cloneOrPullLatest
-  rem git clone https://github.com/SkycoinProject/cx.git %GOPATH%\src\github.com\skycoin\cx
+  rem git clone https://github.com/skycoin/cx.git %GOPATH%\src\github.com\skycoin\cx
   set CLONE_CMD=git clone https://github.com/%1/%2.git %GH_PATH%\%1\%2
 
   if exist %GH_PATH%\%1\%2\ (
@@ -229,20 +229,20 @@ exit /b
 
 
 :buildCX
-  %BIN_PATH%\nex -e %CXGO_PATH%\cxgo0\cxgo0.nex
-  call :showResults "nex    cxgo0" "1st pass -" "ERROR in 1st pass -"
+  rem %BIN_PATH%\nex -e %CXGO_PATH%\cxgo0\cxgo0.nex
+  rem call :showResults "nex    cxgo0" "1st pass -" "ERROR in 1st pass -"
 
   %BIN_PATH%\goyacc -o %CXGO_PATH%\cxgo0\cxgo0.go %CXGO_PATH%\cxgo0\cxgo0.y
   call :showResults "goyacc cxgo0" "1st pass -" "ERROR in 1st pass -"
 
-  %BIN_PATH%\nex -e %CXGO_PATH%\parser\cxgo.nex
-  call :showResults "nex    cxgo" "2nd pass -" "ERROR in 2nd pass -"
+  rem %BIN_PATH%\nex -e %CXGO_PATH%\parser\cxgo.nex
+  rem call :showResults "nex    cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
   %BIN_PATH%\goyacc -o %CXGO_PATH%\parser\cxgo.go %CXGO_PATH%\parser\cxgo.y
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
-  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/SkycoinProject/cx/cxgo/
+  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
   call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 

@@ -419,6 +419,7 @@ const (
 	OP_STR_CONCAT
 	OP_STR_SUBSTR
 	OP_STR_INDEX
+	OP_STR_LAST_INDEX
 	OP_STR_TRIM_SPACE
 	OP_STR_EQ
 
@@ -451,6 +452,8 @@ const (
 
 	OP_DMSG_DO
 
+	OP_EVOLVE_EVOLVE
+
 	END_OF_CORE_OPS
 )
 
@@ -472,6 +475,17 @@ var (
 func execNative(prgrm *CXProgram) {
 	//defer RuntimeError() // High runtime cost.
 	opcodeHandlers[prgrm.GetOpCode()](prgrm)
+}
+
+// RegisterPackage registers a package on the CX standard library. This does not create a `CXPackage` structure,
+// it only tells the CX runtime that `pkgName` will exist by the time a CX program is run.
+func RegisterPackage(pkgName string) {
+	CorePackages = append(CorePackages, pkgName)
+}
+
+// GetOpCodeCount returns an op code that is available for usage on the CX standard library.
+func GetOpCodeCount() int {
+	return len(opcodeHandlers)
 }
 
 // Op ...
@@ -1039,6 +1053,7 @@ func init() {
 	Op(OP_STR_CONCAT, "str.concat", opStrConcat, In(ASTR, ASTR), Out(ASTR))
 	Op(OP_STR_SUBSTR, "str.substr", opStrSubstr, In(ASTR, AI32, AI32), Out(ASTR))
 	Op(OP_STR_INDEX, "str.index", opStrIndex, In(ASTR, ASTR), Out(AI32))
+	Op(OP_STR_LAST_INDEX, "str.lastindex", opStrLastIndex, In(ASTR, ASTR), Out(AI32))
 	Op(OP_STR_TRIM_SPACE, "str.trimspace", opStrTrimSpace, In(ASTR), Out(ASTR))
 
 	Op(OP_APPEND, "append", opAppend, In(Slice(TYPE_UNDEFINED), Slice(TYPE_UNDEFINED)), Out(Slice(TYPE_UNDEFINED)))
@@ -1054,18 +1069,21 @@ func init() {
 	Op(OP_PANIC_IF_NOT, "panicIfNot", opPanicIfNot, In(ABOOL, ASTR), nil)
 	Op(OP_STRERROR, "strerror", opStrError, In(AI32), Out(ASTR))
 
-	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(AAFF), nil)
-	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(AAFF), Out(AAFF))
-	Op(OP_AFF_ON, "aff.on", opAffOn, In(AAFF, AAFF), nil)
-	Op(OP_AFF_OF, "aff.of", opAffOf, In(AAFF, AAFF), nil)
-	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(AAFF, AI32, AAFF), nil)
-	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(AAFF, AI32, AAFF), nil)
+	Op(OP_AFF_PRINT, "aff.print", opAffPrint, In(Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_QUERY, "aff.query", opAffQuery, In(Slice(TYPE_AFF)), Out(Slice(TYPE_AFF)))
+	Op(OP_AFF_ON, "aff.on", opAffOn, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_OF, "aff.of", opAffOf, In(Slice(TYPE_AFF), Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_INFORM, "aff.inform", opAffInform, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
+	Op(OP_AFF_REQUEST, "aff.request", opAffRequest, In(Slice(TYPE_AFF), AI32, Slice(TYPE_AFF)), nil)
 
 	Op(OP_HTTP_SERVE, "http.Serve", opHTTPServe, In(ASTR), Out(ASTR))
 	Op(OP_HTTP_LISTEN_AND_SERVE, "http.ListenAndServe", opHTTPListenAndServe, In(ASTR), Out(ASTR))
 	Op(OP_HTTP_NEW_REQUEST, "http.NewRequest", opHTTPNewRequest, In(ASTR, ASTR, ASTR), Out(ASTR))
 	Op(OP_HTTP_DO, "http.Do", opHTTPDo, In(AUND), Out(AUND, ASTR))
 	Op(OP_DMSG_DO, "http.DmsgDo", opDMSGDo, In(AUND), Out(ASTR))
+
+	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_F64), Slice(TYPE_F64), AI32, AI32, AI32, AF64), nil)
+	// Op(OP_EVOLVE_EVOLVE, "evolve.evolve", opEvolve, In(Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), Slice(TYPE_AFF), AI32, AI32, AI32, AF64), nil)
 
 	Op(OP_HTTP_HANDLE, "http.Handle", opHTTPHandle,
 		In(

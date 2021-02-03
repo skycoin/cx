@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 func opStrToI8(prgrm *CXProgram) {
@@ -214,6 +214,13 @@ func opStrIndex(prgrm *CXProgram) {
 	str := ReadStr(fp, expr.Inputs[0])
 	substr := ReadStr(fp, expr.Inputs[1])
 	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(strings.Index(str, substr)))
+}
+
+func opStrLastIndex(prgrm *CXProgram) {
+	expr := prgrm.GetExpr()
+	fp := prgrm.GetFramePointer()
+
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(strings.LastIndex(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))))
 }
 
 func opStrTrimSpace(prgrm *CXProgram) {

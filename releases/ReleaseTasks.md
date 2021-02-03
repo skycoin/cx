@@ -40,7 +40,7 @@ be released.
 ## Uploading the binary packages
 
  * Create a new release at [the Github release
-   page](http://github.com/SkycoinProject/cx/releases). Do this by pressing the
+   page](http://github.com/skycoin/cx/releases). Do this by pressing the
    "Draft a new release" button.
  * Build the binaries for Linux, Mac and Windows. Upload these to the release draft page.
 
@@ -54,7 +54,7 @@ The steps followed in this setup are as follow.
 
 * Navigate to CX's git repository:
 ```bash
-cd $GOPATH/src/github.com/SkycoinProject/cx
+cd $GOPATH/src/github.com/skycoin/cx
 ```
 * Fetch the origin remote, set the git repo to be on the `develop` branch and reset the branch to point to `origin/develop`.
 ```bash
@@ -83,7 +83,7 @@ The steps are similar to the steps for the Linux virtual machine. The exceptions
 
 * Navigate to CX's git repository:
 ```bash
-cd $GOPATH/src/github.com/SkycoinProject/cx
+cd $GOPATH/src/github.com/skycoin/cx
 ```
 * Fetch the origin remote, set the git repo to be on the `develop` branch and reset the branch to point to `origin/develop`.
 ```bash
@@ -137,7 +137,7 @@ go build -tags="base opengl" -i -o %GOPATH%\bin\cx.exe github.com\skycoin\cx\cxg
 
  * Take the file `documentation/BLOCKCHAIN.md`which contains the user-targeted
    documentation on how to run CX programs on the blockchain.  This should be
-   uploaded to https://github.com/SkycoinProject/cx/wiki/CX-Chains-Tutorial.
+   uploaded to https://github.com/skycoin/cx/wiki/CX-Chains-Tutorial.
 
    NOTE: Before uploading, remove the comment in the beginning about copying to the wiki.
 

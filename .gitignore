@@ -19,8 +19,6 @@ golang-grammar.y
 cxcoin/
 cx.nn.go
 cx.go
-cxgo.go
-cxgo0.go
 y.output
 test.pl
 main
@@ -91,3 +89,12 @@ jira*
 *.orig
 .idea
 .directory
+/bin
+*.chain_keys.json
+*.chain_spec.json
+*.genesis_keys.json
+*.db
+
+## Generated source files by goyacc
+#cxgo/cxgo0/cxgo0.go
+#cxgo/parser/cxgo.go

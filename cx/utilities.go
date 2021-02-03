@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // Debug ...
@@ -441,9 +442,9 @@ func printPackages(prgrm *CXProgram) {
 	// ignore the increments from core or stdlib packages.
 	var i int
 	for _, pkg := range prgrm.Packages {
-		// if IsCorePackage(pkg.Name) {
-		// 	continue
-		// }
+		if IsCorePackage(pkg.Name) {
+			continue
+		}
 
 		fmt.Printf("%d.- Package: %s\n", i, pkg.Name)
 
@@ -1278,15 +1279,32 @@ func ioReadDir(root string) ([]string, error) {
 //  - []file pointers	open files
 //  - []sting		filenames
 func ParseArgsForCX(args []string, alsoSubdirs bool) (cxArgs []string, sourceCode []*os.File, fileNames []string) {
+	skip := false // flag for skipping arg
+
 	for _, arg := range args {
 
+		// skip arg if skip flag is specified
+		if skip {
+			skip = false
+			continue
+		}
+
+		// cli flags are either "--key=value" or "-key value"
+		// we have to skip both cases
+		if len(arg) > 1 && arg[0] == '-' {
+			if !strings.Contains(arg, "=") {
+				skip = true
+			}
+			continue
+		}
+
+		// cli cx flags are prefixed with "++"
 		if len(arg) > 2 && arg[:2] == "++" {
 			cxArgs = append(cxArgs, arg)
 			continue
 		}
 
 		fi, err := CXStatFile(arg)
-		_ = err
 		if err != nil {
 			println(fmt.Sprintf("%s: source file or library not found", arg))
 			os.Exit(CX_COMPILATION_ERROR)
@@ -1369,4 +1387,28 @@ func IsPointer(sym *CXArgument) bool {
 	// 	return isPointer(sym.Fields[len(sym.Fields)-1])
 	// }
 	return false
+}
+
+// WriteStringObj writes `str` to the heap as an object and returns its absolute offset.
+func WriteStringObj(str string) int {
+	strB := encoder.Serialize(str)
+	return NewWriteObj(strB)
+}
+
+// ReadStringFromObject reads the string located at offset `off`.
+func ReadStringFromObject(off int32) string {
+	var plusOff int32
+	if int(off) > PROGRAM.HeapStartsAt {
+		// Found in heap segment.
+		plusOff += OBJECT_HEADER_SIZE
+	}
+
+	size := mustDeserializeI32(PROGRAM.Memory[off+plusOff : off+plusOff+STR_HEADER_SIZE])
+
+	str := ""
+	_, err := encoder.DeserializeRaw(PROGRAM.Memory[off+plusOff:off+plusOff+STR_HEADER_SIZE+size], &str)
+	if err != nil {
+		panic(err)
+	}
+	return str
 }

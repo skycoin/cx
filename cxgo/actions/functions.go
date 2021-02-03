@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 
 	"github.com/jinzhu/copier"
 )

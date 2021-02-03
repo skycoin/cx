@@ -3,7 +3,7 @@
 package cxfx
 
 import (
-	. "github.com/SkycoinProject/cx/cx"
+	. "github.com/skycoin/cx/cx"
 )
 
 type Func_i32_i32 func(a int32, b int32)

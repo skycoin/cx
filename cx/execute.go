@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/SkycoinProject/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 // It "un-runs" a program
@@ -18,12 +18,12 @@ import (
 // }
 
 // UnRun ...
-func (cxt *CXProgram) UnRun(nCalls int) {
-	if nCalls >= 0 || cxt.CallCounter < 0 {
+func (prgrm *CXProgram) UnRun(nCalls int) {
+	if nCalls >= 0 || prgrm.CallCounter < 0 {
 		return
 	}
 
-	call := &cxt.CallStack[cxt.CallCounter]
+	call := &prgrm.CallStack[prgrm.CallCounter]
 
 	for c := nCalls; c < 0; c++ {
 		if call.Line >= c {
@@ -32,26 +32,26 @@ func (cxt *CXProgram) UnRun(nCalls int) {
 			c -= c
 		} else {
 
-			if cxt.CallCounter == 0 {
+			if prgrm.CallCounter == 0 {
 				call.Line = 0
 				return
 			}
 			c += call.Line
 			call.Line = 0
-			cxt.CallCounter--
-			call = &cxt.CallStack[cxt.CallCounter]
+			prgrm.CallCounter--
+			call = &prgrm.CallStack[prgrm.CallCounter]
 		}
 	}
 }
 
 // ToCall ...
-func (cxt *CXProgram) ToCall() *CXExpression {
-	for c := cxt.CallCounter - 1; c >= 0; c-- {
-		if cxt.CallStack[c].Line+1 >= len(cxt.CallStack[c].Operator.Expressions) {
+func (prgrm *CXProgram) ToCall() *CXExpression {
+	for c := prgrm.CallCounter - 1; c >= 0; c-- {
+		if prgrm.CallStack[c].Line+1 >= len(prgrm.CallStack[c].Operator.Expressions) {
 			// then it'll also return from this function call; continue
 			continue
 		}
-		return cxt.CallStack[c].Operator.Expressions[cxt.CallStack[c].Line+1]
+		return prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[c].Line+1]
 		// prgrm.CallStack[c].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
 	}
 	// error
@@ -60,15 +60,15 @@ func (cxt *CXProgram) ToCall() *CXExpression {
 }
 
 // Run ...
-func (cxt *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
+func (prgrm *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 	defer RuntimeError()
 	var err error
 
-	for !cxt.Terminated && (untilEnd || *nCalls != 0) && cxt.CallCounter > untilCall {
-		call := &cxt.CallStack[cxt.CallCounter]
+	for !prgrm.Terminated && (untilEnd || *nCalls != 0) && prgrm.CallCounter > untilCall {
+		call := &prgrm.CallStack[prgrm.CallCounter]
 
 		// checking if enough memory in stack
-		if cxt.StackPointer > STACK_SIZE {
+		if prgrm.StackPointer > STACK_SIZE {
 			panic(STACK_OVERFLOW_ERROR)
 		}
 
@@ -77,18 +77,18 @@ func (cxt *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 			var toCallName string
 			var toCall *CXExpression
 
-			if call.Line >= call.Operator.Length && cxt.CallCounter == 0 {
-				cxt.Terminated = true
-				cxt.CallStack[0].Operator = nil
-				cxt.CallCounter = 0
+			if call.Line >= call.Operator.Length && prgrm.CallCounter == 0 {
+				prgrm.Terminated = true
+				prgrm.CallStack[0].Operator = nil
+				prgrm.CallCounter = 0
 				fmt.Println("in:terminated")
 				return err
 			}
 
-			if call.Line >= call.Operator.Length && cxt.CallCounter != 0 {
-				toCall = cxt.ToCall()
+			if call.Line >= call.Operator.Length && prgrm.CallCounter != 0 {
+				toCall = prgrm.ToCall()
 				// toCall = prgrm.CallStack[prgrm.CallCounter-1].Operator.Expressions[prgrm.CallStack[prgrm.CallCounter-1].Line + 1]
-				inName = cxt.CallStack[cxt.CallCounter-1].Operator.Name
+				inName = prgrm.CallStack[prgrm.CallCounter-1].Operator.Name
 			} else {
 				toCall = call.Operator.Expressions[call.Line]
 				inName = call.Operator.Name
@@ -104,9 +104,9 @@ func (cxt *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 					toCallName = toCall.Operator.Package.Name + "." + toCall.Operator.Name
 				} else {
 					// then it's the end of the program got from nested function calls
-					cxt.Terminated = true
-					cxt.CallStack[0].Operator = nil
-					cxt.CallCounter = 0
+					prgrm.Terminated = true
+					prgrm.CallStack[0].Operator = nil
+					prgrm.CallCounter = 0
 					fmt.Println("in:terminated")
 					return err
 				}
@@ -116,7 +116,7 @@ func (cxt *CXProgram) Run(untilEnd bool, nCalls *int, untilCall int) error {
 			*nCalls--
 		}
 
-		err = call.ccall(cxt)
+		err = call.ccall(prgrm)
 		if err != nil {
 			return err
 		}
@@ -142,55 +142,55 @@ func minHeapSize() int {
 	return minHeapSize
 }
 
-// EnsureHeap ensures that `cxt` has `minHeapSize()`
+// EnsureHeap ensures that `prgrm` has `minHeapSize()`
 // bytes allocated after the data segment.
-func (cxt *CXProgram) EnsureHeap() {
-	currHeapSize := len(cxt.Memory) - cxt.HeapStartsAt
+func (prgrm *CXProgram) EnsureHeap() {
+	currHeapSize := len(prgrm.Memory) - prgrm.HeapStartsAt
 	minHeapSize := minHeapSize()
 	if currHeapSize < minHeapSize {
-		cxt.Memory = append(cxt.Memory, make([]byte, minHeapSize-currHeapSize)...)
+		prgrm.Memory = append(prgrm.Memory, make([]byte, minHeapSize-currHeapSize)...)
 	}
 }
 
 // RunCompiled ...
-func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
-	_, err := cxt.SelectProgram()
+func (prgrm *CXProgram) RunCompiled(nCalls int, args []string) error {
+	_, err := prgrm.SelectProgram()
 	if err != nil {
 		panic(err)
 	}
-	cxt.EnsureHeap()
+	prgrm.EnsureHeap()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	var untilEnd bool
 	if nCalls == 0 {
 		untilEnd = true
 	}
-	mod, err := cxt.SelectPackage(MAIN_PKG)
+	mod, err := prgrm.SelectPackage(MAIN_PKG)
 	if err == nil {
 		// initializing program resources
 		// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
 
-		if cxt.CallStack[0].Operator == nil {
+		if prgrm.CallStack[0].Operator == nil {
 			// then the program is just starting and we need to run the SYS_INIT_FUNC
 			if fn, err := mod.SelectFunction(SYS_INIT_FUNC); err == nil {
 				// *init function
 				mainCall := MakeCall(fn)
-				cxt.CallStack[0] = mainCall
-				cxt.StackPointer = fn.Size
+				prgrm.CallStack[0] = mainCall
+				prgrm.StackPointer = fn.Size
 
 				var err error
 
-				for !cxt.Terminated {
-					call := &cxt.CallStack[cxt.CallCounter]
-					err = call.ccall(cxt)
+				for !prgrm.Terminated {
+					call := &prgrm.CallStack[prgrm.CallCounter]
+					err = call.ccall(prgrm)
 					if err != nil {
 						return err
 					}
 				}
 				// we reset call state
-				cxt.Terminated = false
-				cxt.CallCounter = 0
-				cxt.CallStack[0].Operator = nil
+				prgrm.Terminated = false
+				prgrm.CallCounter = 0
+				prgrm.CallStack[0].Operator = nil
 			} else {
 				return err
 			}
@@ -201,15 +201,15 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 				return nil
 			}
 
-			if cxt.CallStack[0].Operator == nil {
+			if prgrm.CallStack[0].Operator == nil {
 				// main function
 				mainCall := MakeCall(fn)
-				mainCall.FramePointer = cxt.StackPointer
+				mainCall.FramePointer = prgrm.StackPointer
 				// initializing program resources
-				cxt.CallStack[0] = mainCall
+				prgrm.CallStack[0] = mainCall
 
 				// prgrm.Stacks = append(prgrm.Stacks, MakeStack(1024))
-				cxt.StackPointer += fn.Size
+				prgrm.StackPointer += fn.Size
 
 				// feeding os.Args
 				if osPkg, err := PROGRAM.SelectPackage(OS_PKG); err == nil {
@@ -232,22 +232,22 @@ func (cxt *CXProgram) RunCompiled(nCalls int, args []string) error {
 						WriteI32(GetFinalOffset(0, osGbl), int32(argsOffset))
 					}
 				}
-				cxt.Terminated = false
+				prgrm.Terminated = false
 			}
 
-			if err = cxt.Run(untilEnd, &nCalls, -1); err != nil {
+			if err = prgrm.Run(untilEnd, &nCalls, -1); err != nil {
 				return err
 			}
 
-			if cxt.Terminated {
-				cxt.Terminated = false
-				cxt.CallCounter = 0
-				cxt.CallStack[0].Operator = nil
+			if prgrm.Terminated {
+				prgrm.Terminated = false
+				prgrm.CallCounter = 0
+				prgrm.CallStack[0].Operator = nil
 			}
 
 			// debugging memory
-			// if len(cxt.Memory) < 2000 {
-			// 	fmt.Println("prgrm.Memory", cxt.Memory)
+			// if len(prgrm.Memory) < 2000 {
+			// 	fmt.Println("prgrm.Memory", prgrm.Memory)
 			// }
 
 			return err
@@ -280,8 +280,12 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 
 			expr := returnOp.Expressions[returnLine]
 
-			// lenOuts := len(expr.Outputs)
+			lenOuts := len(expr.Outputs)
 			for i, out := range call.Operator.Outputs {
+				// Continuing if there is no receiving variable available.
+				if i >= lenOuts {
+					continue
+				}
 				WriteMemory(
 					GetFinalOffset(returnFP, expr.Outputs[i]),
 					ReadMemory(
@@ -303,6 +307,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		fn := call.Operator
 		expr := fn.Expressions[call.Line]
 		// if it's a native, then we just process the arguments with execNative
+
 		if expr.Operator == nil {
 			// then it's a declaration
 			// wiping this declaration's memory (removing garbage)
@@ -385,33 +390,41 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 }
 
 // Callback ...
-func (cxt *CXProgram) Callback(expr *CXExpression, functionName string, packageName string, inputs [][]byte) {
-	if fn, err := cxt.GetFunction(functionName, packageName); err == nil {
-		line := cxt.CallStack[cxt.CallCounter].Line
-		previousCall := cxt.CallCounter
-		cxt.CallCounter++
-		newCall := &cxt.CallStack[cxt.CallCounter]
-		newCall.Operator = fn
-		newCall.Line = 0
-		newCall.FramePointer = cxt.StackPointer
-		cxt.StackPointer += newCall.Operator.Size
-		newFP := newCall.FramePointer
+func (prgrm *CXProgram) Callback(fn *CXFunction, inputs [][]byte) (outputs [][]byte) {
+	line := prgrm.CallStack[prgrm.CallCounter].Line
+	previousCall := prgrm.CallCounter
+	prgrm.CallCounter++
+	newCall := &prgrm.CallStack[prgrm.CallCounter]
+	newCall.Operator = fn
+	newCall.Line = 0
+	newCall.FramePointer = prgrm.StackPointer
+	prgrm.StackPointer += newCall.Operator.Size
+	newFP := newCall.FramePointer
 
-		// wiping next mem frame (removing garbage)
-		for c := 0; c < expr.Operator.Size; c++ {
-			cxt.Memory[newFP+c] = 0
-		}
-
-		for i, inp := range inputs {
-			WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
-		}
-
-		var nCalls = 0
-		if err := cxt.Run(true, &nCalls, previousCall); err != nil {
-			os.Exit(CX_INTERNAL_ERROR)
-		}
-
-		cxt.CallCounter = previousCall
-		cxt.CallStack[cxt.CallCounter].Line = line
+	// wiping next mem frame (removing garbage)
+	for c := 0; c < fn.Size; c++ {
+		prgrm.Memory[newFP+c] = 0
 	}
+
+	for i, inp := range inputs {
+		WriteMemory(GetFinalOffset(newFP, newCall.Operator.Inputs[i]), inp)
+	}
+
+	var nCalls = 0
+	if err := prgrm.Run(true, &nCalls, previousCall); err != nil {
+		os.Exit(CX_INTERNAL_ERROR)
+	}
+
+	prgrm.CallCounter = previousCall
+	prgrm.CallStack[prgrm.CallCounter].Line = line
+
+	for _, out := range fn.Outputs {
+		// Making a copy of the bytes, so if we modify the bytes being held by `outputs`
+		// we don't modify the program memory.
+		mem := ReadMemory(GetFinalOffset(newFP, out), out)
+		cop := make([]byte, len(mem))
+		copy(cop, mem)
+		outputs = append(outputs, cop)
+	}
+	return outputs
 }

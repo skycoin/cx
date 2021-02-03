@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	. "github.com/SkycoinProject/cx/cx"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	cxcore "github.com/skycoin/cx/cx"
 )
 
 var DebugProfile bool
 var DebugProfileRate int
 
-var profiles map[string]int64 = map[string]int64{}
+var profiles = make(map[string]int64)
 
 func StartProfile(name string) {
 	if DebugProfile {
@@ -24,13 +25,13 @@ func StopProfile(name string) {
 	if DebugProfile {
 		t := time.Now().UnixNano()
 		deltaTime := t - profiles[name]
-		fmt.Printf("%s : %dms\n", name, deltaTime/(int64(time.Millisecond)/int64(time.Nanosecond)))
+		fmt.Printf("%s : %dms\n", name, deltaTime/(int64(time.Millisecond)))
 	}
 }
 
 func StartCPUProfile(name string) *os.File {
 	if DebugProfile {
-		f, err := CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
+		f, err := cxcore.CXCreateFile(fmt.Sprintf("%s_%s_cpu.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create CPU profile: ", err)
 		}
@@ -56,7 +57,7 @@ func StopCPUProfile(f *os.File) {
 
 func DumpMEMProfile(name string) {
 	if DebugProfile {
-		f, err := CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
+		f, err := cxcore.CXCreateFile(fmt.Sprintf("%s_%s_mem.pprof", os.Args[0], name))
 		if err != nil {
 			fmt.Println("Failed to create MEM profile: ", err)
 		}

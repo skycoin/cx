@@ -21,7 +21,7 @@ type Person struct {
 }
 
 func predStrct (strct aff.Structure) (res bool) {
-	if strct.Name == "Point" || strct.Name == "Line" {
+	if strct.Name == "Line" {
 		res = true
 	}
 }
@@ -43,10 +43,9 @@ targetExpr:
 
 	elts := aff.query(fltrs)
 
-	aff.of(elts, tgt)
-	
-	aff.request(elts, 0, tgt)
+	aff.print(elts)
 
-	// Use the new field through affordances
-	// Ah, let's just print an instance of Point, duh
+	aff.of(elts, tgt)
+
+	aff.request(elts, 0, tgt)
 }
