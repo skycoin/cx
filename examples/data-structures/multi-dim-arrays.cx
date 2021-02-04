@@ -1,7 +1,14 @@
+// Main Package 
+// This package will explain us, how multidimensional arrays works   
+
 package main
 
-func main (num i32) (out i32) {
+//main function 
+func main (){
+// initialization of three-dimensional array 
 	var m [3][3][4]i32
+// assigning the values to array by index
 	m[0][2][1] = 50
+//print the values from the array
 	i32.print(m[0][2][1])
 }

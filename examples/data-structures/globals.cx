@@ -1,15 +1,27 @@
+// Main Package 
+// This package will explain us, how global variable works  
 package main;
 
+// initialization of global variables and assigning the vales to them
 var global1 i32 = 5
 var global2 f32 = 3.14159
 
+// a function which prints the vales of global variables 
 func printGlobals () () {
 	i32.print(global1)
 	f32.print(global2)
 }
 
+// Main function 
 func main () (out i32) {
+// call the function to print the values of the global variables 
 	printGlobals()
-	f32.print(global2)
-	i32.print(global1)
+// assigning new values to global variables
+
+global1= 10
+global2=10.5
+
+// call the function to print the values of the global variables 
+	printGlobals()
+	
 }
