@@ -193,7 +193,7 @@ repository](https://github.com/Skycoin/cx-book).
 
 # CX Roadmap
 
-![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
+<!--![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)-->
 
 # CX Chains (CX + Skycoin Blockchain)
 
@@ -2280,7 +2280,7 @@ expression depending on the command.
 
 ## Affordances
 
-![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/affordances.png)
+![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/documentation/images/affordances.png)
 
 
 
