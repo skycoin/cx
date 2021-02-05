@@ -23,7 +23,7 @@ Table of Contents
       * [CX Libraries:](#cx-libraries)
       * [CX Video Games:](#cx-video-games)
       * [Miscellaneous:](#miscellaneous)
-   * [CX Roadmap](#cx-roadmap)
+   <!--* [CX Roadmap](#cx-roadmap) -->
    * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Changelog](#changelog)
    * [Installation](#installation)
@@ -191,9 +191,9 @@ repository](https://github.com/Skycoin/cx-book).
 
 * https://github.com/skycoin/cx-website [cx.skycoin.net]
 
-# CX Roadmap
+<!--# CX Roadmap
 
-<!--![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)-->
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)-->
 
 # CX Chains (CX + Skycoin Blockchain)
 
