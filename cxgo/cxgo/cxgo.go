@@ -19,7 +19,6 @@ import (
 // ParseSourceCode takes a group of files representing CX `sourceCode` and
 // parses it into CX program structures for `PRGRM`.
 func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
-	cxcore.Debug("fileNames", fileNames, len(sourceCode))
 	cxgo0.PRGRM0 = actions.PRGRM
 
 	// Copy the contents of the file pointers containing the CX source
