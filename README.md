@@ -269,9 +269,15 @@ Download CX's repository using Go:
 go get github.com/skycoin/cx/cx/...
 ```
 
-Navigate to CX's repository, and run:
 
 ```
+Navigate to CX's repository via,
+$cd $GOPATH/src/github.com/skycoin/cx
+```
+
+
+```
+and run:
 make install
 ```
 
