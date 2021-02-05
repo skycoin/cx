@@ -35,10 +35,10 @@ Table of Contents
          * [Compiling CX on Windows](#compiling-cx-on-windows)
       * [Updating CX](#updating-cx)
    * [Running CX](#running-cx)
-      * [CX REPL](#cx-repl)
+      * [Hello World](#hello-world)
+      * [Basic Options](#other-options) 
          * [Running CX Programs](#running-cx-programs)
-         * [Other Options](#other-options)
-         * [Hello World](#hello-world)
+      * [REPL tutorial](#cx-repl)               
    * [Syntax](#syntax)
       * [Comments](#comments)
       * [Declarations](#declarations)
@@ -344,7 +344,37 @@ function accepts arrays of any type as its argument, instead of having
 is used to construct a string using a format string and a series of
 arguments of any type.
 
-## CX REPL
+## Basic Options
+
+If you write `cx --help` or `cx -h`, you should see a text describing
+CX's usage, options and more. `cx --version` provides the detail about the current cx version installed on the machine.
+
+Some interesting options are:
+
+* `--base` which generates a CX program's assembly code (in Go)
+* `--compile` which generates an executable file
+* `--repl` which loads the program and makes CX run in REPL mode
+(useful for debugging a program)
+* `--web` which starts CX as a RESTful web service (you can send code
+  to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
+
+
+### Running CX Programs
+
+To run a CX program, you have to type, for example, `cx
+the-program.cx`. Let's try to run some examples from the `examples`
+directory in this repository. In a terminal, type this:
+
+```
+cd $GOPATH/src/github.com/skycoin/cx/
+cx examples/hello-world.cx
+```
+
+This should print `Hello World!` in the terminal. Now try running `cx
+examples/opengl/game.cx`.
+
+
+## REPL tutorial
 
 Once CX has been successfully installed, running `cx` should print
 this in your terminal:
@@ -427,36 +457,6 @@ the arguments 10 and 20:
 	* i32.print(sum(10, 20))
 30
 ```
-
-### Running CX Programs
-
-To run a CX program, you have to type, for example, `cx
-the-program.cx`. Let's try to run some examples from the `examples`
-directory in this repository. In a terminal, type this:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx/
-cx examples/hello-world.cx
-```
-
-This should print `Hello World!` in the terminal. Now try running `cx
-examples/opengl/game.cx`.
-
-### Other Options
-
-If you write `cx --help` or `cx -h`, you should see a text describing
-CX's usage, options and more.
-
-Some interesting options are:
-
-* `--base` which generates a CX program's assembly code (in Go)
-* `--compile` which generates an executable file
-* `--repl` which loads the program and makes CX run in REPL mode
-(useful for debugging a program)
-* `--web` which starts CX as a RESTful web service (you can send code
-  to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
-
-
 
 # Syntax
 
