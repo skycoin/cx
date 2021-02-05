@@ -23,7 +23,7 @@ Table of Contents
       * [CX Libraries:](#cx-libraries)
       * [CX Video Games:](#cx-video-games)
       * [Miscellaneous:](#miscellaneous)
-   * [CX Roadmap](#cx-roadmap)
+   <!--* [CX Roadmap](#cx-roadmap) -->
    * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Changelog](#changelog)
    * [Installation](#installation)
@@ -35,10 +35,10 @@ Table of Contents
          * [Compiling CX on Windows](#compiling-cx-on-windows)
       * [Updating CX](#updating-cx)
    * [Running CX](#running-cx)
-      * [CX REPL](#cx-repl)
+      * [Hello World](#hello-world)
+      * [Basic Options](#other-options) 
          * [Running CX Programs](#running-cx-programs)
-         * [Other Options](#other-options)
-         * [Hello World](#hello-world)
+      * [REPL tutorial](#cx-repl)               
    * [Syntax](#syntax)
       * [Comments](#comments)
       * [Declarations](#declarations)
@@ -191,9 +191,9 @@ repository](https://github.com/Skycoin/cx-book).
 
 * https://github.com/skycoin/cx-website [cx.skycoin.net]
 
-# CX Roadmap
+<!--# CX Roadmap
 
-![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)
+![CX Roadmap](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/cx-roadmap.jpg)-->
 
 # CX Chains (CX + Skycoin Blockchain)
 
@@ -316,7 +316,65 @@ cx-setup.bat
 ```
 
 # Running CX
-## CX REPL
+## Hello World
+
+Do you want to know how CX looks? This is how you print "Hello, World!"
+in a terminal:
+
+```
+package main
+
+func main () {
+    str.print("Hello, World!")
+}
+```
+
+Every CX program must have at least a *main* package, and a *main*
+function. As mentioned before, CX has a strict type system,
+where functions can only be associated with a single type
+signature. As a consequence,
+if we want to print a string, as in the example above, we have to call
+*str*'s print function, where *str* is a package containing string
+related functions.
+
+However, there are some exceptions, mainly to functions where it makes
+sense to have a generalized type signature. For example, the `len`
+function accepts arrays of any type as its argument, instead of having
+`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
+is used to construct a string using a format string and a series of
+arguments of any type.
+
+## Basic Options
+
+If you write `cx --help` or `cx -h`, you should see a text describing
+CX's usage, options and more. `cx --version` provides the detail about the current cx version installed on the machine.
+
+Some interesting options are:
+
+* `--base` which generates a CX program's assembly code (in Go)
+* `--compile` which generates an executable file
+* `--repl` which loads the program and makes CX run in REPL mode
+(useful for debugging a program)
+* `--web` which starts CX as a RESTful web service (you can send code
+  to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
+
+
+### Running CX Programs
+
+To run a CX program, you have to type, for example, `cx
+the-program.cx`. Let's try to run some examples from the `examples`
+directory in this repository. In a terminal, type this:
+
+```
+cd $GOPATH/src/github.com/skycoin/cx/
+cx examples/hello-world.cx
+```
+
+This should print `Hello World!` in the terminal. Now try running `cx
+examples/opengl/game.cx`.
+
+
+## REPL tutorial
 
 Once CX has been successfully installed, running `cx` should print
 this in your terminal:
@@ -399,63 +457,6 @@ the arguments 10 and 20:
 	* i32.print(sum(10, 20))
 30
 ```
-
-### Running CX Programs
-
-To run a CX program, you have to type, for example, `cx
-the-program.cx`. Let's try to run some examples from the `examples`
-directory in this repository. In a terminal, type this:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx/
-cx examples/hello-world.cx
-```
-
-This should print `Hello World!` in the terminal. Now try running `cx
-examples/opengl/game.cx`.
-
-### Other Options
-
-If you write `cx --help` or `cx -h`, you should see a text describing
-CX's usage, options and more.
-
-Some interesting options are:
-
-* `--base` which generates a CX program's assembly code (in Go)
-* `--compile` which generates an executable file
-* `--repl` which loads the program and makes CX run in REPL mode
-(useful for debugging a program)
-* `--web` which starts CX as a RESTful web service (you can send code
-  to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
-
-### Hello World
-
-Do you want to know how CX looks? This is how you print "Hello, World!"
-in a terminal:
-
-```
-package main
-
-func main () {
-    str.print("Hello, World!")
-}
-```
-
-Every CX program must have at least a *main* package, and a *main*
-function. As mentioned before, CX has a strict type system,
-where functions can only be associated with a single type
-signature. As a consequence,
-if we want to print a string, as in the example above, we have to call
-*str*'s print function, where *str* is a package containing string
-related functions.
-
-However, there are some exceptions, mainly to functions where it makes
-sense to have a generalized type signature. For example, the `len`
-function accepts arrays of any type as its argument, instead of having
-`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
-is used to construct a string using a format string and a series of
-arguments of any type.
-
 
 # Syntax
 
@@ -2280,7 +2281,7 @@ expression depending on the command.
 
 ## Affordances
 
-![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/readme-images/affordances.png)
+![CX Affordances](https://raw.githubusercontent.com/skycoin/cx/master/documentation/images/affordances.png)
 
 
 
