@@ -22,13 +22,11 @@ Table of Contents
       * [CX Examples:](#cx-examples)
       * [CX Libraries:](#cx-libraries)
       * [CX Video Games:](#cx-video-games)
-      * [Miscellaneous:](#miscellaneous)
-   <!--* [CX Roadmap](#cx-roadmap) -->
+      * [Miscellaneous:](#miscellaneous) <!--* [CX Roadmap](#cx-roadmap) -->
    * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Changelog](#changelog)
    * [Installation](#installation)
-      * [Binary Releases](#binary-releases)
-        <!-- * [MacOS Homebrew Install](#macos-homebrew-install) -->
+      * [Binary Releases](#binary-releases)   <!-- * [MacOS Homebrew Install](#macos-homebrew-install) -->
       * [Compiling from Source](#compiling-from-source)
          * [Installing Go](#installing-go)
          * [Compiling CX on *nix](#compiling-cx-on-nix)
@@ -97,7 +95,7 @@ Table of Contents
       * [`gl` Package Functions](#gl-package-functions)
       * [`glfw` Package Functions](#glfw-package-functions)
       * [`gltext` Package Functions](#gltext-package-functions)
-
+      
 # CX Programming Language
 
 CX is a general purpose, interpreted and compiled programming
