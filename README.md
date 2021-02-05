@@ -316,6 +316,34 @@ cx-setup.bat
 ```
 
 # Running CX
+## Hello World
+
+Do you want to know how CX looks? This is how you print "Hello, World!"
+in a terminal:
+
+```
+package main
+
+func main () {
+    str.print("Hello, World!")
+}
+```
+
+Every CX program must have at least a *main* package, and a *main*
+function. As mentioned before, CX has a strict type system,
+where functions can only be associated with a single type
+signature. As a consequence,
+if we want to print a string, as in the example above, we have to call
+*str*'s print function, where *str* is a package containing string
+related functions.
+
+However, there are some exceptions, mainly to functions where it makes
+sense to have a generalized type signature. For example, the `len`
+function accepts arrays of any type as its argument, instead of having
+`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
+is used to construct a string using a format string and a series of
+arguments of any type.
+
 ## CX REPL
 
 Once CX has been successfully installed, running `cx` should print
@@ -428,33 +456,6 @@ Some interesting options are:
 * `--web` which starts CX as a RESTful web service (you can send code
   to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
 
-### Hello World
-
-Do you want to know how CX looks? This is how you print "Hello, World!"
-in a terminal:
-
-```
-package main
-
-func main () {
-    str.print("Hello, World!")
-}
-```
-
-Every CX program must have at least a *main* package, and a *main*
-function. As mentioned before, CX has a strict type system,
-where functions can only be associated with a single type
-signature. As a consequence,
-if we want to print a string, as in the example above, we have to call
-*str*'s print function, where *str* is a package containing string
-related functions.
-
-However, there are some exceptions, mainly to functions where it makes
-sense to have a generalized type signature. For example, the `len`
-function accepts arrays of any type as its argument, instead of having
-`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
-is used to construct a string using a format string and a series of
-arguments of any type.
 
 
 # Syntax
