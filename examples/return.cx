@@ -1,21 +1,30 @@
+//  Main Package is the one package which contain main function 
 package main
 
+// foo is a function which return two values, one is i32 integer and second string 
+// 
 func foo () (out1 i32, out2 str) {
+// assigning the values to variables 
 	out1 = 5
 	out2 = "five"
-	
+	// it return the variables 
 	return
 	
+// these are new values after return, as we can see the terminal, we will not able to see them because we are assigning them after return call
 	out1 = 10
 	out2 = "ten"
 }
 
+// Main function
 func main () {
+// initializations of variables  
 	var num i32
 	var text str
 	
+// call the foo functions and store the return values in the variables 
 	num, text = foo()
 
+// to print the values on the terminal 
 	i32.print(num)
 	str.print(text)
 }
