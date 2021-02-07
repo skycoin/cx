@@ -29,16 +29,16 @@ There are a number of major improvement over 0.6.0:
    clause. From CX 0.6.1 the CX language will enforce strict lexical scoping.
 
  * `if/elseif` and `if/elseif/else` constructs now work correctly.
- 
+
  * The `+` operator can now be used to concatenate strings:
- 
+
     ```
     var conc str
     conc = "Hello " + "world!"
     ```
- 
+
  * Expressions can now be used when initializing slice/array literals:
- 
+
    ```
    var slc []i32
    slc = []i32{i32.add(1, 2), foo()}
@@ -77,12 +77,12 @@ There are a number of major improvement over 0.6.0:
    The CX book is being updated, but this is not part of this release.  The
    book version 0.6 will have its own release at a later time.  If you want to
    look at the work in progress, you can find a snapshot of it in the `book/`
-   subdirectory. 
+   subdirectory.
 
 ## About CX
 
 CX is the programming language for smart contracts on the
-[Skycoin](https://www.skycoin.net/) blockchain. CX is a general purpose,
+[Skycoin](https://www.skycoin.com/) blockchain. CX is a general purpose,
 interpreted and compiled programming language, with a very strict type system
 and a syntax similar to Golang's. CX provides a new programming paradigm based
 on the concept of affordances.

@@ -71,7 +71,7 @@ There are no library improvements in CX 0.7.0
 ## About CX
 
 CX is the blockchain programming language for use on the
-[Skycoin](https://www.skycoin.net/) blockchain and associated Fiber
+[Skycoin](https://www.skycoin.com/) blockchain and associated Fiber
 blockchains. CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax similar to Golang's. CX
 provides a new programming paradigm based on the concept of affordances.

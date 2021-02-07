@@ -105,6 +105,6 @@ of CX 0.5, but are now officially supported.  These are:
 
 ## About CX
 
-CX is the programming language for smart contracts on the [Skycoin](https://www.skycoin.net/) blockchain. CX is a general purpose, interpreted and compiled programming language, with a very strict type system and a syntax similar to Golang's. CX provides a new programming paradigm based on the concept of affordances.
+CX is the programming language for smart contracts on the [Skycoin](https://www.skycoin.com/) blockchain. CX is a general purpose, interpreted and compiled programming language, with a very strict type system and a syntax similar to Golang's. CX provides a new programming paradigm based on the concept of affordances.
 
 
