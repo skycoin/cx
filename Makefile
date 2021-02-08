@@ -83,17 +83,17 @@ build-parser: install-deps ## Generate lexer and parser for CX grammar
 	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
-build: build-parser ## Build CX from sources
-	$(GO_OPTS) go mod vendor
+build:  ## Build CX from sources
+	# $(GO_OPTS) go mod vendor
 	$(GO_OPTS) go build -tags="base" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-full: install-full build-parser ## Build CX from sources with all build tags
-	$(GO_OPTS) go mod vendor
+build-full: install-full  ## Build CX from sources with all build tags
+	# $(GO_OPTS) go mod vendor
 	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-android: install-full install-mobile build-parser
+build-android: install-full install-mobile 
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
 	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
 
