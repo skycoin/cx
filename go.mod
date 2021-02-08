@@ -3,7 +3,6 @@ module github.com/skycoin/cx
 go 1.14
 
 require (
-	github.com/SkycoinProject/nex v0.0.0-20191231010827-3bb2d0c49bc5 // indirect
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -20,9 +19,4 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/image v0.0.0-20200801110659-972c09e46d76 // indirect
 	golang.org/x/mobile v0.0.0-20200801112145-973feb4309de
-	modernc.org/goyacc v1.0.0 // indirect
-	modernc.org/mathutil v1.2.2 // indirect
-	modernc.org/sortutil v1.1.0 // indirect
-	modernc.org/strutil v1.1.0 // indirect
-	modernc.org/y v1.0.1 // indirect
 )
