@@ -723,6 +723,13 @@ func Run(args []string) {
 		// optionGenWallet(options)
 		return
 	}
+
+	if checkhelp(args) {
+		commandLine.PrintDefaults()
+		return
+
+	}
+
 	// Does the user want to print the command-line help?
 	if options.printHelp {
 		printHelp()

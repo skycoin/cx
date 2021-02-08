@@ -10,5 +10,8 @@ import (
 
 func main() {
 	CXLogFile(true)
-	Run(os.Args[1:])
+	if os.Args != nil && len(os.Args) > 1 {
+		Run(os.Args[1:])
+	}
+
 }

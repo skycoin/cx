@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type cxCmdFlags struct {
@@ -119,7 +120,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	//commandLine.BoolVar(&options.transactionMode, "transaction", options.transactionMode, "Test a CX blockchain transaction")
 	//commandLine.StringVar(&options.walletSeed, "wallet-seed", options.walletSeed, "Seed to use for a new wallet")
 	//commandLine.StringVar(&options.walletId, "wallet-id", options.walletId, "Wallet ID to use for signing transactions")
-	
+
 	// Debug flags
 	commandLine.BoolVar(&options.debugLexer, "debug-lexer", options.debugLexer, "Debug the lexer by printing all scanner tokens")
 	commandLine.BoolVar(&options.debugLexer, "Dl", options.debugLexer, "alias for -debug-lexer")
@@ -127,6 +128,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.IntVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 
 	commandLine.Parse(args)
+
 }
 
 func printHelp() {
@@ -145,4 +147,12 @@ Notes:
 
 func printVersion() {
 	fmt.Println("CX version", VERSION)
+}
+
+func checkhelp(args []string) bool {
+
+	if strings.Contains(args[0], "help") {
+		return true
+	}
+	return false
 }
