@@ -19,4 +19,9 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/image v0.0.0-20200801110659-972c09e46d76 // indirect
 	golang.org/x/mobile v0.0.0-20200801112145-973feb4309de
+	modernc.org/goyacc v1.0.0 // indirect
+	modernc.org/mathutil v1.2.2 // indirect
+	modernc.org/sortutil v1.1.0 // indirect
+	modernc.org/strutil v1.1.0 // indirect
+	modernc.org/y v1.0.1 // indirect
 )
