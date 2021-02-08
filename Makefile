@@ -80,9 +80,7 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: install-deps ## Generate lexer and parser for CX grammar
-	#$(GOBIN)/nex -e cxgo/cxgo0/cxgo0.nex
 	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	#$(GOBIN)/nex -e cxgo/parser/cxgo.nex
 	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build: build-parser ## Build CX from sources
@@ -119,7 +117,6 @@ install-gfx-deps-MACOS:
 
 install-deps:
 	@echo "Installing go package dependencies"
-	$(GO_OPTS) go get -u github.com/SkycoinProject/nex
 	$(GO_OPTS) go get -u modernc.org/goyacc
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
@@ -144,13 +141,6 @@ lint: ## Run linters. Use make install-linters first.
 token-fuzzer:
 	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
-
-test-lexer: token-fuzzer
-	cx-token-fuzzer -b 4 -c 100 -o $(PWD)/benchmarks/test-lexer/test-toks.txt
-	nex -e $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nex
-	$(GO_OPTS) go run $(PWD)/benchmarks/test-lexer/main.go $(PWD)/benchmarks/test-lexer/test-toks.txt
-#	rm -f $(PWD)/benchmarks/test-lexer/test-toks.txt
-#	rm -f $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nn.go
 
 test: build ## Run CX test suite.
 	$(GO_OPTS) go test -race -tags base github.com/skycoin/cx/cxgo/
