@@ -36,9 +36,9 @@ Table of Contents
       * [Updating CX](#updating-cx)
    * [Running CX](#running-cx)
       * [Hello World](#hello-world)
-      * [Basic Options](#other-options) 
+      * [Basic Options](#other-options)
          * [Running CX Programs](#running-cx-programs)
-      * [REPL tutorial](#cx-repl)               
+      * [REPL tutorial](#cx-repl)
    * [Syntax](#syntax)
       * [Comments](#comments)
       * [Declarations](#declarations)
@@ -189,7 +189,7 @@ repository](https://github.com/Skycoin/cx-book).
 
 ## Miscellaneous:
 
-* https://github.com/skycoin/cx-website [cx.skycoin.net]
+* https://github.com/skycoin/cx-website [cx.skycoin.com]
 
 <!--# CX Roadmap
 
@@ -387,7 +387,7 @@ this in your terminal:
 
 ```
 CX 0.5.13
-More information about CX is available at http://cx.skycoin.net/ and https://github.com/skycoin/cx/
+More information about CX is available at http://cx.skycoin.com/ and https://github.com/skycoin/cx/
 :func main {...
 	*
 ```
