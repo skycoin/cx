@@ -5,11 +5,11 @@ package main
 import (
 	"os"
 
-	. "github.com/skycoin/cx/cx"
+	cx "github.com/skycoin/cx/cx"
 )
 
 func main() {
-	CXLogFile(true)
+	cx.CXLogFile(true)
 	if os.Args != nil && len(os.Args) > 1 {
 		Run(os.Args[1:])
 	}
