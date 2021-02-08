@@ -79,7 +79,7 @@ func (cb *CXCallback) InitEx(prgrm *CXProgram) {
 }
 
 func (cb *CXCallback) Call(inputs [][]byte) {
-	cb.prgrm.Callback(cb.expr, cb.functionName, cb.packageName, inputs)
+	cb.prgrm.Callback(cb.expr.Operator, inputs)
 }
 
 var appKeyboardCallback CXCallback

@@ -16,14 +16,15 @@ func opGlfwFuncI32I32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	packageName := ReadStr(fp, inp1)
-	functionName := ReadStr(fp, inp2)
+	// inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
+	out1 := expr.Outputs[0]
+	// packageName := ReadStr(fp, inp1)
+	// functionName := ReadStr(fp, inp2)
 	callback := func(a int32, b int32) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = FromI32(a)
 		inps[1] = FromI32(b)
-		PROGRAM.Callback(expr, functionName, packageName, inps)
+		PROGRAM.Callback(expr.Operator, inps)
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)
