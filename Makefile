@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full update-golden-files
 .PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
+.PHONY: vendor
 
 PWD := $(shell pwd)
 
@@ -163,6 +164,8 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
+update-vendor: ## Update go vendor
+	$(GO_OPTS) go mod vendor
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
