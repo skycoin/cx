@@ -1,14 +1,13 @@
 # Compiler Development
 
-<li>Goyacc is a version of yacc generating Go programs. <li>
+Goyacc is a version of yacc generating Go programs.
 
-<li>
+<br />
+
 Installation
-</li>
-<li>
+<br />
 $ go get modernc.org/goyacc
-</li>
-<li>
+<br />
 Documentation: godoc.org/modernc.org/goyacc
-<li>
+<br />
 
