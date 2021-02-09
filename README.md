@@ -26,7 +26,7 @@ Table of Contents
    <!--* [CX Roadmap](#cx-roadmap) -->
    * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Changelog](#changelog)
-   * [Compiler Development](#CompilerDevelopment)
+   * [Compiler Development](CompilerDevelopment.md)
    * [Installation](#installation)
       * [Binary Releases](#binary-releases)
          * [MacOS Homebrew Install](#macos-homebrew-install)
