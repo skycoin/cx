@@ -1,3 +1,5 @@
+// https://github.com/skycoin/cx/issues/208
+
 package main
 import "glfw"
 import "gl"

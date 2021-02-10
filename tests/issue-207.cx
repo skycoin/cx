@@ -1,3 +1,5 @@
+// https://github.com/skycoin/cx/issues/207 
+
 package main
 func main() () {
 	{
