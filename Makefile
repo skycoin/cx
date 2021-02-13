@@ -85,12 +85,10 @@ build-parser: install-deps ## Generate lexer and parser for CX grammar
 	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
 build:  ## Build CX from sources
-	# $(GO_OPTS) go mod vendor
 	$(GO_OPTS) go build -tags="base" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
 build-full: install-full  ## Build CX from sources with all build tags
-	# $(GO_OPTS) go mod vendor
 	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
