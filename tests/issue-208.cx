@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/208
+
+package main
+import "glfw"
+import "gl"
+func main() {
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.CreateWindow("test_15", 800, 600, "test_15")
+	glfw.MakeContextCurrent("test_15")
+
+	gl.Init()
+
+	var vbo i32
+	gl.GenBuffers(1, vbo)
+}

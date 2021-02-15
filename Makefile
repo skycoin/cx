@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full update-golden-files
 .PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
+.PHONY: vendor
 
 PWD := $(shell pwd)
 
@@ -80,22 +81,18 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 build-parser: install-deps ## Generate lexer and parser for CX grammar
-	#$(GOBIN)/nex -e cxgo/cxgo0/cxgo0.nex
 	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	#$(GOBIN)/nex -e cxgo/parser/cxgo.nex
 	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
-build: build-parser ## Build CX from sources
-	$(GO_OPTS) go mod vendor
+build:  ## Build CX from sources
 	$(GO_OPTS) go build -tags="base" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-full: install-full build-parser ## Build CX from sources with all build tags
-	$(GO_OPTS) go mod vendor
+build-full: install-full  ## Build CX from sources with all build tags
 	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-android: install-full install-mobile build-parser
+build-android: install-full install-mobile 
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
 	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
 
@@ -119,7 +116,6 @@ install-gfx-deps-MACOS:
 
 install-deps:
 	@echo "Installing go package dependencies"
-	$(GO_OPTS) go get -u github.com/SkycoinProject/nex
 	$(GO_OPTS) go get -u modernc.org/goyacc
 
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
@@ -145,13 +141,6 @@ token-fuzzer:
 	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
-test-lexer: token-fuzzer
-	cx-token-fuzzer -b 4 -c 100 -o $(PWD)/benchmarks/test-lexer/test-toks.txt
-	nex -e $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nex
-	$(GO_OPTS) go run $(PWD)/benchmarks/test-lexer/main.go $(PWD)/benchmarks/test-lexer/test-toks.txt
-#	rm -f $(PWD)/benchmarks/test-lexer/test-toks.txt
-#	rm -f $(PWD)/benchmarks/test-lexer/oldnex/cxgo.nn.go
-
 test: build ## Run CX test suite.
 	$(GO_OPTS) go test -race -tags base github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
@@ -173,6 +162,8 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
+update-vendor: ## Update go vendor
+	$(GO_OPTS) go mod vendor
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

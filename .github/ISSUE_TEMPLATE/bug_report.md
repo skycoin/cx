@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Linux, Windows]
- - Browser (if related to cx.skycoin.net) [e.g. Chrome, Safari]
+ - Browser (if related to cx.skycoin.com) [e.g. Chrome, Safari]
  - CX Version [e.g. 0.5.18]
 
 
