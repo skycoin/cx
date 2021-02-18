@@ -1,8 +1,19 @@
+// https://github.com/skycoin/cx/issues/284
+
 package main
 
+type SA struct {
+	i i32
+}
+
+type SB struct {
+	f f32
+}
+
 func main()() {
-	var s0 str = "left"
-	var s1 str = "right"
-	var s str = s0 + s1
-	test(s, "left" + "right", "")
+	var sa SA
+	var sb SB
+
+	var j i32 = sa + sb
+	panic(false, true, "must not compile")
 }

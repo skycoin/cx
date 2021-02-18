@@ -1,0 +1,22 @@
+// https://github.com/skycoin/cx/issues/267
+
+package main
+
+type issue267struct struct {
+	suit i32
+	rank i32
+}
+
+func (c *issue267struct) issue267method (suit i32, rank i32) {
+	c.suit = suit
+	c.rank = rank
+}
+
+func main () {
+	var card issue267struct
+
+	card.issue267method(7, 11)
+
+	test(card.suit, 7, "")
+	test(card.rank, 11, "")
+}

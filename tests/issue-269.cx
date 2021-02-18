@@ -1,0 +1,12 @@
+// https://github.com/skycoin/cx/issues/269
+
+package main
+
+func main () {
+	var foo i32
+	var foo i32
+	var foo i32
+	foo := 5
+
+	i32.print(foo)
+}

@@ -1,0 +1,9 @@
+// https://github.com/skycoin/cx/issues/310
+
+packagem main
+
+type too struct {
+}
+
+func main ()() {
+}

@@ -1,8 +1,0 @@
-package main
-import "issue18"
-func main () {
-	test(issue18.string, "test", "")
-}
-
-package issue18
-var string str = "test"

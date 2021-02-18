@@ -1,0 +1,12 @@
+// https://github.com/skycoin/cx/issues/232
+
+package main
+
+func main()() {
+	for true {
+		var s []i32
+		s = append(s, 10)
+		printf("len %d\n", len(s))
+		panic(len(s), 1, "error when initializing slice")
+	}
+}

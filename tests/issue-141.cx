@@ -1,8 +1,0 @@
-package main
-
-func main () {
-	var foo i32
-	foo = 5 -3
-
-	i32.print(foo)
-}

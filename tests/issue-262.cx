@@ -1,0 +1,9 @@
+// https://github.com/skycoin/cx/issues/262
+
+package main
+
+func main() {
+	var i i32 = 0
+	i++
+	test(i, 1, "")
+}

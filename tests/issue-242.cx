@@ -1,0 +1,27 @@
+// https://github.com/skycoin/cx/issues/242
+
+package main
+
+type v4 struct {
+	x f32
+	y f32
+	z f32
+	w f32
+}
+
+func make_v4(x f32, y f32, z f32, w f32) (out v4) {
+	out.x = x
+	out.y = y
+	out.z = z
+	out.w = w
+}
+
+func alpha(color v4, a f32) (out v4) {
+	out = make_v4(color.x, color.y, color.z, color.w * a)
+}
+
+func main ()() {
+	var v v4 = alpha(make_v4(1.333, 2.0, 3.0, 4.0), 0.5)
+	printf("%f, %f, %f, %f\n", v.x, v.y, v.z, v.w)
+	test(v.w, 2.0, "v.w is somehow stomped by v.x")
+}

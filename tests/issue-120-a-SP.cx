@@ -1,5 +1,0 @@
-package main
-
-func main()() {
-    var a i8 = 1 + 1
-}

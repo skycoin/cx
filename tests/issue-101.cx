@@ -1,4 +1,0 @@
-package main
-func main()() {
-	var b bool = 33 == false
-}

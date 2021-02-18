@@ -1,8 +1,0 @@
-package main
-
-func main() {
-    cat(1)
-}
-
-func cat() {
-}

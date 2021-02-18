@@ -1,9 +1,11 @@
+// https://github.com/skycoin/cx/issues/288
+
 package main
 
+func foo()() {
+}
+
 func main()() {
-	if 1.0 {
-	}
-	var f f32 = 1.0
-	if f {
-	}
+	var i i32
+	i = foo()
 }

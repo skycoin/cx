@@ -1,0 +1,8 @@
+// https://github.com/skycoin/cx/issues/238
+
+package main
+
+func main()() {
+	var i i32 = 4 + * f32.i32(5.0)
+	i32.print(i)
+}

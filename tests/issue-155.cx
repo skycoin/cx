@@ -1,9 +1,0 @@
-package main
-
-func foo()() {
-}
-
-func main()() {
-	var i i32
-	i = foo()
-}

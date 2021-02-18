@@ -1,0 +1,18 @@
+// https://github.com/skycoin/cx/issues/224
+
+package main
+
+func foob()(ret bool) {
+	ret = true
+}
+
+func fooi()(ret i32) {
+	ret = 5
+}
+
+func main()() {
+	var b bool = foob() == true
+	var i i32 = fooi() + 5
+	if fooi() < 6 {}
+	if foob() == true {}
+}

@@ -1,0 +1,8 @@
+// https://github.com/skycoin/cx/issues/245
+
+package main
+import "test_245a"
+
+func main ()(){
+	printf("test_245a.i : %d\n", i)
+}

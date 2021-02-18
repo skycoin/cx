@@ -1,0 +1,18 @@
+// https://github.com/skycoin/cx/issues/220
+
+package main
+
+type issue27Type struct {
+	ai [5]i32
+}
+
+func issue27Func(too issue27Type) {
+	var index i32 = 3
+	too.ai[index] = 4
+	test(too.ai[index], 4, "")
+}
+
+func main()() {
+	var too issue27Type
+	issue27Func(too)
+}

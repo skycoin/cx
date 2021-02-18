@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/53
+
+package main
+
+type Too struct {
+	sb []i8
+	i i32
+}
+
+func main()() {
+	var t Too
+	t.i = 6
+	t.sb = append(t.sb, i32.i8(4))
+	test(t.i, 6, "")
+}
+

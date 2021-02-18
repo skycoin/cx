@@ -1,0 +1,12 @@
+// https://github.com/skycoin/cx/issues/236
+
+package main
+
+import "issue236a"
+
+var test i32 = 44
+func main()() {
+
+	test(issue236a.test, 666, "internal error")
+	test(test, 44, "internal error")
+}

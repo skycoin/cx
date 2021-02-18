@@ -1,6 +1,17 @@
+// https://github.com/skycoin/cx/issues/62
+
 package main
 
+func fooA() {
+	printf("fooA\n")
+}
+func fooB()() {
+	printf("fooB\n")
+}
+
 func main()() {
-	var i i32 = 50
-	printf("*i == %d\n", *i)
+	var i i32
+	fooA(&i),
+	fooB()
+	panic(true, false, "must not compile")
 }

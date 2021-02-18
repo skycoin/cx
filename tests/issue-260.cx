@@ -1,0 +1,6 @@
+// https://github.com/skycoin/cx/issues/260
+
+package main
+func main()(){
+	i = 0
+}

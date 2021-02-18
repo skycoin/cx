@@ -1,0 +1,18 @@
+// https://github.com/skycoin/cx/issues/259
+
+package main
+
+type v3 struct {
+	x f32
+	y f32
+	z f32
+}
+
+func main()() {
+	var v v3
+	v = v3{ x:1.0, y:2.0, z:3.0}
+	test(v.x, 1.0, "")
+	test(v.y, 2.0, "")
+	test(v.z, 3.0, "")
+	v = &v3{ x:1.0, y:2.0, z:3.0}
+}

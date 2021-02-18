@@ -1,0 +1,22 @@
+// https://github.com/skycoin/cx/issues/216
+
+package main
+import "glfw"
+import "gl"
+
+func main()() {
+	var test str
+	test = "test_216"
+	printf("%s\n", test)
+
+	glfw.Init()
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.CreateWindow(test, 800, 600, test)
+	glfw.MakeContextCurrent(test)
+
+	gl.Init()
+
+	var vbo i32
+	vbo = gl.GenBuffers(1, vbo)
+	gl.BindBuffer(vbo) // panic when calling BindBuffer without first argument
+}

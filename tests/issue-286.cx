@@ -1,9 +1,8 @@
+// https://github.com/skycoin/cx/issues/286
+
 package main
-
-type too struct {
-	input i32
-	output i32
-}
-
-func main()() {
+func main()(){
+	var si []i32
+	si = []i32{}
+	test(len(si), 0, "")
 }

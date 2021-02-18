@@ -1,0 +1,9 @@
+// https://github.com/skycoin/cx/issues/215
+
+package main
+import "issue215a"
+
+func main () {
+	// If this fails, it will throw a compile-time error
+	var structure issue215a.Structure
+}

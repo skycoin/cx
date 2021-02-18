@@ -1,6 +1,6 @@
-package main
+// https://github.com/skycoin/cx/issues/271
 
-main() {
-	var a f32 = 1.0E+4 // Remove the "E+4" and it will work
-	f32.print(a)
+package main
+func main()() {
+	var b bool = 33 == false
 }

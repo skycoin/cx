@@ -1,0 +1,27 @@
+// https://github.com/skycoin/cx/issues/227
+
+package main
+
+type issue227type1 struct {
+	integer i32
+}
+
+type issue227type2 struct {
+	structures []issue227type1
+}
+
+func main () {
+	var outerStruct issue227type2
+	var structures []issue227type1
+	var structure issue227type1
+	structure.integer = 123
+	structures = append(structures, structure)
+	outerStruct.structures = structures
+
+	test(outerStruct.structures[0].integer, 123, "")
+
+	var testStructure issue227type1
+
+	testStructure = outerStruct.structures[0]
+	test(testStructure.integer, 123, "")
+}

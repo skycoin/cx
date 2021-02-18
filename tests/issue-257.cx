@@ -1,0 +1,21 @@
+// https://github.com/skycoin/cx/issues/257
+
+package main
+
+type Ball struct {
+	x f32
+	y f32
+	vx f32
+	vy f32
+	gravity f32
+	radius f32
+}
+
+var velocity f32 = 0.5
+
+var ball Ball
+
+func main()() {
+	// Mixed types. Must throw "operands are not of the same type".
+	ball.vx = 0 - velocity
+}

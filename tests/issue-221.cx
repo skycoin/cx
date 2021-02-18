@@ -1,0 +1,24 @@
+// https://github.com/skycoin/cx/issues/221
+
+package issue28
+
+type Structure struct {
+	string str
+}
+
+func (structure Structure) function () (out str) {
+	out = structure.string
+}
+
+package main
+import "issue28"
+
+func main () {
+	var structure issue28.Structure
+	structure.string = "abc"
+	test(structure.string, "abc", "")
+
+	var out str
+	out = structure.function()
+	test(out, "abc", "")
+}

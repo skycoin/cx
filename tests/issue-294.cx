@@ -1,0 +1,23 @@
+// https://github.com/skycoin/cx/issues/294
+
+package main
+
+type test struct {
+	sia []i32
+	sib []i32
+	sic []i32
+}
+
+func foo(i i32) {
+	test(i, 33, "")
+}
+
+func main()() {
+	var si []i32
+	si = append(si, 33)
+	test(si[0], 33, "")
+
+	var t test
+	t.sia = si
+	test(t.sia[0], 33, "")
+}

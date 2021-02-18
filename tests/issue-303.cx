@@ -1,0 +1,10 @@
+// https://github.com/skycoin/cx/issues/303
+
+package main
+
+func main()() {
+	var s0 str = "left"
+	var s1 str = "right"
+	var s str = s0 + s1
+	test(s, "left" + "right", "")
+}

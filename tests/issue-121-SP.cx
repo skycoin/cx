@@ -1,9 +1,0 @@
-package main
-
-func foo()(out i32) {
-    out = 4
-}
-
-func main()() {
-    var a i32 = -foo()
-}

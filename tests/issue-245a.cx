@@ -1,0 +1,4 @@
+// https://github.com/skycoin/cx/issues/245
+
+package test_245a
+var i i32 = 50

@@ -1,0 +1,20 @@
+// https://github.com/skycoin/cx/issues/252
+
+package main
+import "glfw"
+
+func clickMouseEvents(window str, key i32, action i32, mods i32) () {
+	if i32.eq(key, glfw.MouseButtonLeft) {
+		if action == glfw.Press {
+			printf("clicked")
+			var xxx f64
+			var yyy f64
+			xxx, yyy = glfw.GetCursorPos(window)
+			f64.print(xxx)
+		}
+	}
+}
+
+func main () {
+	clickMouseEvents("something", 10, 10, 10)
+}

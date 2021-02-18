@@ -1,13 +1,10 @@
+// https://github.com/skycoin/cx/issues/289
+
+package issue
+func foo() () {
+}
+
 package main
-
-func foo(i i32){
-}
-
-func foo(i i32){
-}
-
 func main()() {
-	foo(0)
+	issue.foo()
 }
-
-

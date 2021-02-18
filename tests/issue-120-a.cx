@@ -1,0 +1,7 @@
+// https://github.com/skycoin/cx/issues/120
+
+package main
+
+func main()() {
+    var a i8 = 1 + 1
+}
