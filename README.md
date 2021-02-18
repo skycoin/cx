@@ -22,14 +22,12 @@ Table of Contents
       * [CX Examples:](#cx-examples)
       * [CX Libraries:](#cx-libraries)
       * [CX Video Games:](#cx-video-games)
-      * [Miscellaneous:](#miscellaneous)
-   <!--* [CX Roadmap](#cx-roadmap) -->
+      * [Miscellaneous:](#miscellaneous) <!--* [CX Roadmap](#cx-roadmap) -->
    * [CX Chains (CX   Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Changelog](#changelog)
    * [Compiler Development](CompilerDevelopment.md)
    * [Installation](#installation)
-      * [Binary Releases](#binary-releases)
-         * [MacOS Homebrew Install](#macos-homebrew-install)
+      * [Binary Releases](#binary-releases)   <!-- * [MacOS Homebrew Install](#macos-homebrew-install) -->
       * [Compiling from Source](#compiling-from-source)
          * [Installing Go](#installing-go)
          * [Compiling CX on *nix](#compiling-cx-on-nix)
@@ -98,7 +96,7 @@ Table of Contents
       * [`gl` Package Functions](#gl-package-functions)
       * [`glfw` Package Functions](#glfw-package-functions)
       * [`gltext` Package Functions](#gltext-package-functions)
-
+      
 # CX Programming Language
 
 CX is a general purpose, interpreted and compiled programming
@@ -229,7 +227,7 @@ globally accessible when using the terminal.
 If you don't want to have it globally accessible, you can always try
 out CX locally, inside the directory where you have the binary file.
 
-### MacOS Homebrew Install
+<!-- ### MacOS Homebrew Install
 
 The simplest way to install CX on MacOS is to use the Homebrew package manager to install the prebuilt binary release. If you do not already have Homebrew installed, please visit the [Homebrew website](https://brew.sh/) for installation instructions.
 
@@ -243,9 +241,9 @@ brew install skycoin-cx
 To update use the following command:
 
 ```sh
-brew update skycoin-cx
+brew update skycoin-cx 
 ```
-
+-->
 ## Compiling from Source
 
 If a binary release is not currently available for your platfrom or if
