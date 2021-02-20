@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: build-parser build build-full test test-full update-golden-files
+.PHONY: build-parser build build-full test test-full
 .PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
 .PHONY: vendor
 
@@ -149,13 +149,7 @@ test-full: build ## Run CX test suite with all build tags
 	$(GO_OPTS) go test -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
-update-golden-files: build ## Update golden files used in CX test suite
-	ls -1 tests/ | grep '.cx$$' | while read -r NAME; do echo "Processing $$NAME"; cx -t -co tests/testdata/tokens/$${NAME}.txt tests/$$NAME || true ; done
-
-check-golden-files: update-golden-files ## Ensure golden files are up to date
-	if [ "$(shell git diff tests/testdata | wc -l | tr -d ' ')" != "0" ] ; then echo 'Changes detected. Golden files not up to date' ; exit 2 ; fi
-
-check: check-golden-files test ## Perform self-tests
+check: test ## Perform self-tests
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/cx ./cx
