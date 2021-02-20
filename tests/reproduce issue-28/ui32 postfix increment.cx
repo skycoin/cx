@@ -1,0 +1,15 @@
+package main
+
+
+
+
+func main() {
+
+	var b ui32
+
+    b = 1
+
+    b++
+
+	test(b ,2, "")
+}
