@@ -1,8 +1,32 @@
+// https://github.com/skycoin/cx/issues/279
+
 package main
 
-func main()() {
-	var i i32 = 4
-	var s str = sprintf("%d", i++)
-	printf("'%s'\n", s)
-	test(s, "4", "")
+func testout()(width i32, height i32) {
+	width = 20
+	height = 40
 }
+
+func main()() {
+	// case 1
+	var attributes [3]i32
+	var stride i32 = 0 + attributes[0]
+
+	// case 2
+	var width i32 = 33
+	var height i32 = 66
+	width, height = testout()
+	var w f32 = i32.f32(width)
+	var h f32 = i32.f32(height)
+	test(width, 20, "")
+	test(height, 40, "")
+}
+
+/* workaround
+func main()() {
+	// case 1
+	var attributes [3]i32
+	var itmp i32 = attributes[0]
+	var stride i32 = 0 + itmp
+}
+*/

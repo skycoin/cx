@@ -1,9 +1,23 @@
+// https://github.com/skycoin/cx/issues/287
+
 package main
 
-func foo()() {
-	printf("foo\n")
+func fooa(slice *[]i32) (out []i32){
+	out = append(*slice, 1)
+}
+
+func foob(slice *[]i32) () {
+	*slice = append(*slice, 1)
 }
 
 func main()() {
-	foo() ()
+	var si []i32
+	si = append(si, 1)
+	si = fooa(&si)
+	test(len(si), 2, "")
+
+	var sk []i32
+	sk = append(sk, 1)
+	foob(&sk)
+	test(len(sk), 2, "")
 }

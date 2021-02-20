@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/295
+
+package main
+
+func main()(){
+	var sa []i32
+	sa = 33
+
+	var sb []str
+	sb = "33"
+}

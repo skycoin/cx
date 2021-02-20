@@ -1,18 +1,10 @@
+// https://github.com/skycoin/cx/issues/214
+
 package main
-
-type test struct {
-	i i32
+import "issue18"
+func main () {
+	test(issue18.string, "test", "")
 }
 
-func foo(pi *i32) (i i32) {
-	i = *pi
-}
-
-func main()() {
-	var i i32 = 44
-	test(foo(&i), 44, "")
-
-	var t test
-	t.i = 55
-	test(foo(&t.i), 55, "")
-}
+package issue18
+var string str = "test"

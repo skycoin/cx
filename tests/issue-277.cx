@@ -1,0 +1,22 @@
+// https://github.com/skycoin/cx/issues/277
+
+package main
+import "issue_277b"
+
+func main()() {
+	var i i32 = issue_277b.foo()
+	test(i, 7, "")
+}
+
+package issue_277a
+func foo()(out i32) {
+	out = 4
+}
+
+package issue_277b
+import "issue_277a"
+func foo()(out i32) {
+	var i i32 = issue_277a.foo()
+	out = i + 3
+}
+

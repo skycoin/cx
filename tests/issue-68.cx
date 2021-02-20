@@ -1,11 +1,10 @@
+// https://github.com/skycoin/cx/issues/68
+
 package main
 
-func main() () {
-	var string str
-
-	{
-		var string str
-		string = "test"
-		printf("%s\n", string)
-	}
+func main()() {
+	var i i32 = 4
+	var s str = sprintf("%d", i++)
+	printf("'%s'\n", s)
+	test(s, "4", "")
 }

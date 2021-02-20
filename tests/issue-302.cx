@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/302
+
+package main
+
+type test struct {
+	x i32
+}
+
+func main()() {
+	var ts []test
+	var test test
+	ts = append(ts, test)
+	ts = append(ts, test)
+
+	i32.print(len(ts))
+}

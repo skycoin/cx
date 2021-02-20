@@ -1,0 +1,14 @@
+// https://github.com/skycoin/cx/issues/256
+
+package main
+func main()() {
+	var f f32 = 10.0
+	f = -f
+	printf("f : %f\n", f)
+	test(f, -10.0, "")
+
+	var i i32 = 10
+	i = -i
+	printf("i : %d\n", i)
+	test(i, -10, "")
+}

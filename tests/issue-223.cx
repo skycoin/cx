@@ -1,0 +1,13 @@
+// https://github.com/skycoin/cx/issues/223
+
+package main
+
+type issue30Type struct {
+	ai [5]i32
+}
+
+func main()(){
+	var too issue30Type
+	too.ai[3 + 0] = 444
+	test(too.ai[3], 444, "")
+}

@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/261
+
+package main
+func main()() {
+	{
+	}
+
+	var b bool = true
+	if b {
+	} else {
+	//
+	}
+
+	if b {
+	}
+}

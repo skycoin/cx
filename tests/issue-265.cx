@@ -1,0 +1,36 @@
+// https://github.com/skycoin/cx/issues/265
+
+package main
+
+type Card struct {
+	suit i32
+	rank i32
+}
+
+func (c1 Card) lt(c2 Card)(result bool) {
+	result = false
+
+	if c1.rank < c2.rank {
+		result = true
+	} else if bool.and(i32.eq(c1.rank, c2.rank), i32.lt(c1.suit, c2.suit)) {
+		result = true
+	}
+
+	return
+}
+
+type PokerHand struct {
+	cards [5]Card
+	size i32 // The hand need not be filled yet
+}
+
+func (ph PokerHand) bug()() {
+	if ph.cards[1].lt(ph.cards[2]) {
+		str.print("Hi ho Silver")
+	}
+}
+
+func main() {
+	var hand PokerHand
+	hand.bug()
+}

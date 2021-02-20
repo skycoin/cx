@@ -1,16 +1,27 @@
+// https://github.com/skycoin/cx/issues/27
+
 package main
 
-type issue27Type struct {
-	ai [5]i32
-}
-
-func issue27Func(too issue27Type) {
-	var index i32 = 3
-	too.ai[index] = 4
-	test(too.ai[index], 4, "")
-}
-
 func main()() {
-	var too issue27Type
-	issue27Func(too)
+    var i i32 = 2
+    var j i32 = 3
+
+    j += i
+    test(j, 5, "j += i")
+
+    i -= j
+    test(i, -3, "i -= j")
+
+    j += 1 + i
+    test(j, 3, "j += 1 + i")
+
+    j += i + 1
+    test(j, 1, "j += i + 1")
+
+    j += 2
+    test(j, 3, "j += 2")
+
+    j /= i
+    test(j, -1, "j /= i")
+    test(i, -3, "inconsistent i")
 }

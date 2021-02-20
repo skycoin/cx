@@ -1,10 +1,11 @@
+// https://github.com/skycoin/cx/issues/63
+
 package main
 
+func foo()() {
+	printf("foo\n")
+}
+
 func main()() {
-	var i i32 = 777
-	var pi *i32 = &i
-	printf("this should print address of i (&i) but prints 777 : pi == %d\n", pi)
-	*pi = 888
-	printf("this should print 888 but prints 777 : i == %d\n", i)
-	test(i, 888, "internal error")
+	foo() ()
 }

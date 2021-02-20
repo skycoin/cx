@@ -1,0 +1,7 @@
+// https://github.com/skycoin/cx/issues/276
+
+package main
+import "gui"
+func main()() {
+	test(gui.skin_test(gui.g_modalSkin), -1, "not ok")
+}

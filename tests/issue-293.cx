@@ -1,11 +1,22 @@
+// https://github.com/skycoin/cx/issues/293
+
 package main
 
-func main()() {
-	var s []i32
-	var INIT_HEAP_SIZE i32 = 32 * (1 << 20) // TODO : should be tested against real cx/config.go::INIT_HEAP_SIZE
-	for i := 0; i < INIT_HEAP_SIZE; i++ {
-		s = append(s, 1)
-	}
-	test(len(s), INIT_HEAP_SIZE, "")
+type event struct {
+	index i32
 }
 
+var events []event
+
+func foo(e *event) {
+	test((*e).index, 33, "")
+}
+
+func main()(){
+	var e event
+	e.index = 33
+	events = append(events, e)
+	//var ee event = events[0]
+	//foo(&ee) // <- this works
+	foo(&events[0])
+}

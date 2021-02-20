@@ -1,14 +1,10 @@
+// https://github.com/skycoin/cx/issues/39
+
 package main
 
-func main () {
-	var foo [1]i32
+func main() {
+    cat(1)
+}
 
-	var bar f32
-
-	foo[0] = 3
-
-	num := foo[0]
-
-	test(bar, 0.0, "")
-	test(foo[0], 3, "")
+func cat() {
 }

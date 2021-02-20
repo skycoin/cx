@@ -1,0 +1,39 @@
+// https://github.com/skycoin/cx/issues/297
+
+package main
+
+func foo () {
+	// With --heap-max 100 this shouldn't be problem
+	// if the GC is indeed collecting dead objects.
+	var foo []i32
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	// foo = append(foo, 1)
+	// foo = append(foo, 1)
+	// foo = append(foo, 1)
+}
+
+func main () {
+	var foo []i32
+	// First we call, so we fill heap with trash.
+	// The garbage collector should take care of it
+	// and a CX_RUNTIME_HEAP_EXHAUSTED_ERROR should not be thrown.
+	for c := 0; c < 100; c++ {
+		foo()
+	}
+
+	// Now let's trigger CX_RUNTIME_HEAP_EXHAUSTED_ERROR.
+	// The garbage collector won't be allowed to collect `foo`
+	// as it is still being used.
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+	foo = append(foo, 1)
+}

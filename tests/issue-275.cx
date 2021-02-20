@@ -1,0 +1,6 @@
+// https://github.com/skycoin/cx/issues/275
+
+package main
+func main()() {
+	var ai []i32 = []i32{0, 1, 2, 3, 4}
+}

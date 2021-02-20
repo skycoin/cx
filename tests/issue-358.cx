@@ -1,8 +1,0 @@
-package main
-
-var i i32 = 55
-
-func main()() {
-	var i i32 = 44
-	panic(true, false, "must not compile")
-}

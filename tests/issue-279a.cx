@@ -1,0 +1,26 @@
+// https://github.com/skycoin/cx/issues/279
+
+package main
+
+type test_s struct {
+	f f32
+}
+
+func test_()(out test_s) {
+	out.f = 0.0
+}
+
+func main()() {
+	{
+		var s test_s = test_()
+		var i i32 = 0
+		var t test_s
+		var j i32
+	}
+	{
+		var s test_s = test_()
+		var i i32 = 0
+		var t test_s
+		var j i32
+	}
+}

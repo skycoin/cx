@@ -1,0 +1,30 @@
+// https://github.com/skycoin/cx/issues/222
+
+package main
+
+type issue29Structure struct {
+	string str
+}
+
+type issue29Point struct {
+	x i32
+	y i32
+}
+
+func (structure issue29Point) function() {
+	// just true, because it successfully entered
+	//issues = append(issues, true)
+}
+
+func (structure issue29Structure) function(inputString str, extra str) {
+	test(inputString, "abc", "")
+	test(extra, "def", "")
+}
+
+func main () {
+	var structure issue29Structure
+	structure.function("abc", "def")
+
+	var point issue29Point
+	point.function()
+}

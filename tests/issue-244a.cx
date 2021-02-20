@@ -1,0 +1,14 @@
+// https://github.com/skycoin/cx/issues/244
+
+package main
+type AA struct {
+	i i32
+}
+
+func retAA() (out AA) {
+	out.i = 50
+}
+
+func main ()() {
+	var ii i32 = retAA().i
+}

@@ -1,0 +1,4 @@
+// https://github.com/skycoin/cx/issues/236
+
+package issue236a
+var test i32 = 666
