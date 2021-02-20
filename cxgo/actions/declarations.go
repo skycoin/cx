@@ -88,7 +88,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				*glbl = *declaration_specifiers
 
 				if initializer[len(initializer)-1].IsStructLiteral {
-					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{glbl}}}, initializer)
+					initializer = StructLiteralAssignment([]*CXExpression{{Outputs: []*CXArgument{glbl}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil
 					initializer[len(initializer)-1].AddOutput(glbl)
@@ -146,7 +146,7 @@ func DeclareGlobalInPackage(pkg *CXPackage,
 				declaration_specifiers.Package = pkg
 
 				if initializer[len(initializer)-1].IsStructLiteral {
-					initializer = StructLiteralAssignment([]*CXExpression{&CXExpression{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
+					initializer = StructLiteralAssignment([]*CXExpression{{Outputs: []*CXArgument{declaration_specifiers}}}, initializer)
 				} else {
 					initializer[len(initializer)-1].Outputs = nil
 					initializer[len(initializer)-1].AddOutput(declaration_specifiers)

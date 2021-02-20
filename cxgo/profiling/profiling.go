@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	// profile         *os.File
+// profile         *os.File
 )
 
 var DebugProfile bool

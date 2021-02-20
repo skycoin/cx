@@ -12,8 +12,8 @@ top-to-bottom). This allows for correct display of text for various languages.
 This package supports the full set of unicode characters, provided the loaded
 font does as well.
 
-This packages uses freetype-go (code.google.com/p/freetype-go) which is licensed 
-under GPLv2 e FTL licenses. You can choose which one is a better fit for your 
+This packages uses freetype-go (code.google.com/p/freetype-go) which is licensed
+under GPLv2 e FTL licenses. You can choose which one is a better fit for your
 use case but FTL requires you to give some form of credit to Freetype.org
 
 You can read the GPLv2 (https://code.google.com/p/freetype-go/source/browse/licenses/gpl.txt)

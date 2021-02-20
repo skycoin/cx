@@ -97,7 +97,7 @@ func opGlInit(_ *CXProgram) {
 }
 
 func opGlDestroy(_ *CXProgram) {
-	for k, _ := range cSources {
+	for k := range cSources {
 		freeCString(k)
 	}
 }

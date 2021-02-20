@@ -614,7 +614,7 @@ func CheckTypes(expr *CXExpression) {
 	}
 
 	if expr.Operator != nil && expr.Operator.IsNative && expr.Operator.OpCode == OP_IDENTITY {
-		for i, _ := range expr.Inputs {
+		for i := range expr.Inputs {
 			var expectedType string
 			var receivedType string
 			if GetAssignmentElement(expr.Outputs[i]).CustomType != nil {

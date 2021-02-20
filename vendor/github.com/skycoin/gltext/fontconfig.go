@@ -26,7 +26,7 @@ const (
 // It can be loaded from, or saved to a JSON encoded file,
 // which should come with any bitmap font image.
 type FontConfig struct {
-	// The direction determines the orientation of rendered strings and should 
+	// The direction determines the orientation of rendered strings and should
 	// hold any of the pre-defined Direction constants.
 	Dir Direction `json:"direction"`
 
