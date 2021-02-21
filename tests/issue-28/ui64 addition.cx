@@ -1,0 +1,15 @@
+package main
+
+func main() {
+
+	var b ui64 = 100
+
+    var a ui64 = 101
+
+
+    var sum ui64 = 202
+
+    b+= a
+
+	test(sum,202, "")
+}

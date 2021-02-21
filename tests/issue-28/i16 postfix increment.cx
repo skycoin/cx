@@ -1,0 +1,15 @@
+package main
+
+
+
+
+func main() {
+
+	var b i16
+
+    b = 1
+
+    b++
+
+	test(b ,2, "")
+}

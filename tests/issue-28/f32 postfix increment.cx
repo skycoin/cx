@@ -1,0 +1,15 @@
+package main
+
+
+
+
+func main(){
+
+	var b f32
+
+    b = 3.14
+
+    b++
+
+	test(b ,4.14, "")
+}

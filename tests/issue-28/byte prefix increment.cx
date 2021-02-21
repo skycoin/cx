@@ -1,0 +1,13 @@
+package main
+
+
+
+
+func main() {
+
+	var b byte
+
+    byte.print(b)
+
+	//test(b ,2, "")
+}

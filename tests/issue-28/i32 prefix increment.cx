@@ -1,0 +1,15 @@
+package main
+
+
+
+
+func main(){
+
+	var b i32
+
+    b = 100
+
+    b+=2
+
+	test(b ,102, "")
+}
