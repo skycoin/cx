@@ -12,6 +12,8 @@ PKG_NAMES_WINDOWS := mingw-w64-x86_64-openal
 
 UNAME_S := $(shell uname -s)
 
+CXVERSION := $(shell $(PWD)/bin/cx --version 2> /dev/null)
+
 ifneq (,$(findstring Linux, $(UNAME_S)))
 PLATFORM := LINUX
 SUBSYSTEM := LINUX
@@ -142,11 +144,12 @@ token-fuzzer:
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
 test: #build ## Run CX test suite.
-    ifndef $(shell ./bin/cx --version 2> /dev/null)
-      $(error "No cx installed in $(PWD)/bin, consider running make install first")
-    endif
+ifndef CXVERSION
+	@echo "cx not found in $(PWD)/bin, please run make install first"
+else	
 	$(GO_OPTS) go test -race -tags base github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+endif
 
 test-full: build ## Run CX test suite with all build tags
 	$(GO_OPTS) go test -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
