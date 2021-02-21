@@ -1,0 +1,8 @@
+// https://github.com/skycoin/cx/issues/235
+
+package main
+
+func main()() {
+	nthsnthnsth
+	if (assert(true, false, "must not compile")) {}
+}

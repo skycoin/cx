@@ -1,14 +1,14 @@
+// https://github.com/skycoin/cx/issues/292
+
+package issue
+func test(i i32)() {
+	printf("i : %d\n", i)
+}
+
 package main
-
-type too struct {
-	sf []f32
-}
-
-func foo()(sf []f32) {
-}
-
+//import "issue"
 func main()() {
-	var t too
-	t.sf = foo()
+	var issue i32 = 33
+	issue.test(issue)
 }
 

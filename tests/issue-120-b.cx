@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/120
+
+package main
+
+func foo()(out i32) {
+    out = 4
+}
+
+func main()() {
+    var b i8 = 0-foo()
+}

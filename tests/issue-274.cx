@@ -1,0 +1,10 @@
+// https://github.com/skycoin/cx/issues/274
+
+package main
+
+var array [8]i32
+var count i32 = 4
+
+func main() {
+	var i i32 = array[count - 1]
+}

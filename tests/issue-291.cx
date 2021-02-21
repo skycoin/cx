@@ -1,0 +1,12 @@
+// https://github.com/skycoin/cx/issues/291
+
+package main
+
+func main()() {
+	var string str
+	string = "boo:foo"
+	string = str.substr(string, 4, len(string))
+	var s []str
+	s = append(s, string)
+	test(s[0], "foo", "")
+}

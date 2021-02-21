@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/239
+
+package main
+
+type AA struct {
+	i i32
+	i i32
+}
+func main()() {
+	var a AA
+}

@@ -1,6 +1,0 @@
-package main
-func main()(){
-	var si []i32
-	si = []i32{}
-	test(len(si), 0, "")
-}

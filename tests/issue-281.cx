@@ -1,17 +1,13 @@
+// https://github.com/skycoin/cx/issues/281
+
 package main
 
-type too struct {
-	b bool
+func foo()(out bool) {
+	out = true
 }
 
-func main()()  {
-	var t0 too // comment these 2 lines and the error disappears
-	t0.b = true // comment these 2 lines and the error disappears
-	var t1 too
-	t1.b = false
-	var sb str = sprintf("%v", t1.b)
-	printf("'%s'\n", sb)
-	test(sb, "false", "")
+func main()() {
+	b := foo()
+
+	bool.print(b)
 }
-
-

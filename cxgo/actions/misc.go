@@ -7,6 +7,10 @@ import (
 	. "github.com/skycoin/cx/cx"
 )
 
+func SelectProgram(prgrm *CXProgram) {
+	PRGRM = prgrm
+}
+
 func SetCorrectArithmeticOp(expr *CXExpression) {
 	if expr.Operator == nil || len(expr.Outputs) < 1 {
 		return

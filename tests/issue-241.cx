@@ -1,0 +1,14 @@
+// https://github.com/skycoin/cx/issues/241
+
+package main
+
+func main ()() {
+	var t i32 = 3
+	var TEST i32 = 3
+
+	if t == 3 {
+	}
+	if t == TEST {
+		//printf("TEST %d\n", TEST)
+	}
+}

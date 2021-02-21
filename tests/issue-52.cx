@@ -1,8 +1,0 @@
-package main
-
-// Invalid implicit cast
-func main()() {
-	var f f32 = 2.0 + 10
-	printf("f %f\n", f)
-	test(f > 2.0, true, "")
-}

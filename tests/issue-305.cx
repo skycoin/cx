@@ -1,0 +1,11 @@
+// https://github.com/skycoin/cx/issues/305
+
+package main
+
+type too struct {
+	input i32
+	output i32
+}
+
+func main()() {
+}

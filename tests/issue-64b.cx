@@ -1,0 +1,12 @@
+// https://github.com/skycoin/cx/issues/64
+
+package main
+
+func main()() {
+	var b bool = true
+	var i i32 = 3
+	for b {
+		a := 1 + 2
+		//printf("true\n")
+	}
+}

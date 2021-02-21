@@ -1,5 +1,0 @@
-package main
-func main() () {
-	var i i32 = 0
-	var i i32 = 0
-}

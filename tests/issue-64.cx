@@ -1,0 +1,10 @@
+// https://github.com/skycoin/cx/issues/64
+
+package main
+
+func main()() {
+	var b bool = true
+	for b {
+		printf("true\n")
+	}
+}

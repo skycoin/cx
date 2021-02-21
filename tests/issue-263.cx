@@ -1,0 +1,35 @@
+// https://github.com/skycoin/cx/issues/263
+
+package main
+
+type issue263struct struct {
+	suit i32
+	rank i32
+}
+
+func (c issue263struct) issue263method1 (suit i32, rank i32) {
+	c.suit = suit
+	c.rank = rank
+}
+
+func (c *issue263struct) issue263method2 (suit i32, rank i32) {
+	(*c).suit = suit
+	(*c).rank = rank
+}
+
+func main () {
+	var card issue263struct
+
+	test(card.suit, 0, "")
+	test(card.rank, 0, "")
+
+	card.issue263method1(7, 11)
+
+	test(card.suit, 0, "")
+	test(card.rank, 0, "")
+
+	card.issue263method2(7, 11)
+
+	test(card.suit, 7, "")
+	test(card.rank, 11, "")
+}

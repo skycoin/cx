@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/309
+
+package main
+
+type too struct {
+	sf []f32
+}
+
+func foo()(sf []f32) {
+}
+
+func main()() {
+	var t too
+	t.sf = foo()
+}
+

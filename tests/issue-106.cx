@@ -1,5 +1,0 @@
-package main
-import "gui"
-func main()() {
-	test(gui.skin_test(gui.g_modalSkin), -1, "not ok")
-}

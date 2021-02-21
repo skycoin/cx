@@ -1,25 +1,38 @@
+// https://github.com/skycoin/cx/issues/48
+
 package main
 
-type issue48type1 struct {
-	id str
-	values [20]issue48type2
+var count i32
+func True(i i32) (out bool) {
+	out = true
+	count = i
 }
 
-type issue48type2 struct {
-	id str
-	values [20]issue48type1
+func False(i i32) (out bool) {
+	out = false
+	count = i
 }
 
-func main () {
-	var a issue48type1
-	var b issue48type2
+func foo(b0 bool, b1 bool, b2 bool) {
+}
 
-	a.id = "type1"
-	b.id = "type2"
+func main()() {
+	var b bool
 
-	a.values[0] = b
-	b.values[0] = a
+	b = True(4) || True(5)
+	test(count, 4, "a")
 
-	test(a.values[0].id, "type2", "")
-	test(b.values[0].id, "type1", "")
+	if True(6) == true || True(7) == true {
+	}
+	test(count, 6, "b")
+
+	b = False(8) && True(9)
+	test(count, 8, "c")
+
+	if False(10) == true && True(11) == true {
+	}
+	test(count, 10, "d")
+
+	foo(True(12), True(13), True(14))
+	test(count, 14, "e")
 }

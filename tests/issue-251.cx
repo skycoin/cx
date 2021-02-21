@@ -1,0 +1,13 @@
+// https://github.com/skycoin/cx/issues/251
+
+package main
+
+func main() () {
+	var string str
+
+	{
+		var string str
+		string = "test"
+		printf("%s\n", string)
+	}
+}

@@ -1,0 +1,15 @@
+// https://github.com/skycoin/cx/issues/308
+
+package main
+
+func foo(i i32){
+}
+
+func foo(i i32){
+}
+
+func main()() {
+	foo(0)
+}
+
+

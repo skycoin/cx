@@ -1,0 +1,23 @@
+// https://github.com/skycoin/cx/issues/219
+
+package main
+
+func main()() {
+	var ai[5]i32
+
+	ai = [5]i32 { 0, 1, 2, 3, 4 }
+	printf("ai[3] : %d\n", ai[3])
+	test(ai[3], 3, "")
+
+	ai[3] = 10 + 20
+	printf("ai[3] : %d\n", ai[3])
+	test(ai[3], 30, "")
+
+	ai[3 + 0] = 300
+	printf("ai[3] : %d\n", ai[3])
+	test(ai[3], 300, "")
+
+	ai[3 + 0] = 1000 + 2000
+	printf("ai[3] : %d\n", ai[3])
+	test(ai[3], 3000, "")
+}

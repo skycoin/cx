@@ -1,0 +1,17 @@
+// https://github.com/skycoin/cx/issues/297
+
+package main
+
+func recur (n i32) {
+	var padding [2]i32
+	padding = [2]i32{1, 2}
+	
+	i32.print(n)
+	if n > 0 {
+		recur(n - 1)
+	}
+}
+
+func main () {
+	recur(10)
+}

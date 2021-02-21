@@ -1,0 +1,43 @@
+// https://github.com/skycoin/cx/issues/258
+
+package main
+
+type Item struct {
+	w i32
+	x i32
+	y i32
+	z i32
+}
+
+func moveMaybeTeleportByValue (box Item) (box Item) {
+	var padding i32 = 123
+	box.w = 7
+	box.x = 11
+	box.y = 13
+	box.z = 17
+}
+
+func moveMaybeTeleportByReference (box *Item) {
+	var padding i32 = 123
+	(*box).w = 77
+	(*box).x = 101
+	(*box).y = 103
+	(*box).z = 107
+}
+
+func main () {
+	var box Item
+
+	box = moveMaybeTeleportByValue(box)
+	test(box.w, 7, "pass by value failed")
+	test(box.x, 11, "pass by value failed")
+	test(box.y, 13, "pass by value failed")
+	test(box.z, 17, "pass by value failed")
+
+	// first case mentioned in issue #77
+	moveMaybeTeleportByReference(&box)
+	test(box.w, 77, "pass by reference failed")
+	test(box.x, 101, "pass by reference failed")
+	test(box.y, 103, "pass by reference failed")
+	test(box.z, 107, "pass by reference failed")
+}

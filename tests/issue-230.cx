@@ -1,0 +1,16 @@
+// https://github.com/skycoin/cx/issues/230
+
+package main
+
+func main () {
+	var foo [1]i32
+
+	var bar f32
+
+	foo[0] = 3
+
+	num := foo[0]
+
+	test(bar, 0.0, "")
+	test(foo[0], 3, "")
+}

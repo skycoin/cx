@@ -1,9 +1,0 @@
-package main
-type A struct {
-	i i32
-}
-func main()() {
-	var a A
-	a.i = 42
-	printf("a.i %d\n", a.i)
-}

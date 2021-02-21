@@ -1,13 +1,17 @@
+// https://github.com/skycoin/cx/issues/218
+
 package main
-type AA struct {
+
+type issue218Type struct {
 	i i32
+	ai [5]i32
 }
 
-func retAA() (out AA) {
-	out.i = 50
-}
-
-func main ()() {
-	var num i32
-	num = retAA()
+func main()(error i32) {
+	var too issue218Type
+	too.i = 3
+	printf("too.i %d\n", too.i)
+	too.ai = [5]i32{ 666, 1, 2, 3, 4 }
+	printf("too.i %d\n", too.i)
+	test(too.i, 3, "field overwritten by array")
 }

@@ -1,22 +1,9 @@
+// https://github.com/skycoin/cx/issues/131
+
 package main
 
-type issue131type1 struct {
-	name str
-	isTrue bool
-	x i32
-	y i32
+func main()() {
+    var f f32 = 1.0 + 1.0 * 1.0
+    test(f, 2.0, "f != 2.0")
 }
 
-func main () {
-	var check i32
-	p1 := issue131type1{
-		x: 10,
-		y: 11,
-		isTrue: true,
-		name: "Pointy"}
-
-	test(p1.x, 10, "")
-	test(p1.y, 11, "")
-	test(p1.isTrue, true, "")
-	test(p1.name, "Pointy", "")
-}

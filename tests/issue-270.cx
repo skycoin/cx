@@ -1,0 +1,32 @@
+// https://github.com/skycoin/cx/issues/270
+
+package graphical2d
+
+type ProgressBar struct {
+  value     f32
+  max_value f32
+}
+
+func newProgressBar(max_value f32) (progress_bar ProgressBar) {
+	progress_bar = ProgressBar{
+	value: 1.0,
+	max_value: max_value}
+}
+
+func (progress_bar ProgressBar) getValue() (value f32) {
+	value = progress_bar.value;
+	return value;
+}
+
+
+package main
+
+import "graphical2d"
+
+func main() {
+	var pb ProgressBar
+	pb = graphical2d.newProgressBar(100.0);
+
+	a := pb.getValue()
+	f32.print(a)
+}

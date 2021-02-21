@@ -1,0 +1,17 @@
+// https://github.com/skycoin/cx/issues/276
+
+package gui
+
+type skin_id struct {
+	skin i32
+}
+
+var g_modalSkin skin_id = invalid_skin()
+
+func invalid_skin() (out skin_id) {
+	out.skin = -1
+}
+
+func skin_test(skin skin_id) (out i32) {
+	out = skin.skin
+}

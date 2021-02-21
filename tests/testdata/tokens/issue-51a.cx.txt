@@ -1,9 +1,0 @@
-PACKAG 
- IDENT issue50a
-SCOLON 
-   VAR 
- IDENT test
-   I32 i32
-  ASGN =
-INTLIT 666
-SCOLON 
