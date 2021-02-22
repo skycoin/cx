@@ -1,0 +1,15 @@
+package main
+
+func main() {
+
+	var b i8 = 1
+
+    var a i8 = 6
+
+
+    var sum i8 = 8
+
+    b+= a
+
+	test(sum,8, "")
+}
