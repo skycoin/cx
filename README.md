@@ -208,7 +208,7 @@ CX supports go1.10+.
 Download CX's repository using Go:
 
 ```
-go get github.com/skycoin/cx@develop
+go get github.com/skycoin/cx
 ```
 
 Navigate to CX's repository via:
