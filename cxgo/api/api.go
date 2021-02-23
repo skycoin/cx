@@ -7,7 +7,7 @@ import (
 
 	cxcore "github.com/skycoin/cx/cx"
 
-	"github.com/skycoin/dmsg/httputil"
+	"net/http/httputil"
 )
 
 // API represents an HTTP API.
