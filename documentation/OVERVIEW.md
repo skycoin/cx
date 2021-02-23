@@ -13,7 +13,6 @@ The informational files are:
 
 * **README.md** is an overall introduction and description of the CX project.
 * **CHANGELOG.md** lists changes between different versions of CX.
-* **CONTRIBUTING.md** lists various ways that you can contribute to CX
 * **OVERVIEW.md** This file
 
 The tools and installation scripts are:
@@ -48,14 +47,7 @@ such as Go and Python.
 * **documentation/** contains documentation about the internals
                      of the CX codebase. This file (OVERVIEW.md) is in that
                      directory.
-* **book/** This directory contains a full CX tutorial book written in the
-            LaTeX typesetting system.  Please note that the contents of the
-            book is created on a site called Overleaf, which provides a good
-            authoring environment for LaTeX files.  Only occasionally are
-            snapshots taken from Overleaf and stored into git as a backup.
-            If you want to help out with the book, please ask the team for
-            access to Overleaf.
-* **README-images/** stores images used in the `README.md` file.
+* **ocumentation-images/** stores images used in the `README.md` file.
 
 ### Tools
 
@@ -71,7 +63,7 @@ such as Go and Python.
 
 * **examples/** contains many small and smallish exemples of how to write CX
 programs.
-* **cx-games/** contains a number of games written in CX. These games can be
+* **github.com/skycoin/cx-games/** contains a number of games written in CX. These games can be
 used for testing CX or as templates for other CX programs.
 
 ## Parser Workflow

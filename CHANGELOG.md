@@ -1,6 +1,10 @@
 # Changelog
 
-### v0.7.2 (NOT YET RELEASED)
+### v0.7.3
+* Additions
+  * Preperation for CX 1.0 Milestone
+
+### v0.7.2
 * Additions
   * CX package manager:
     - Added a flag for setting a CX workspace. This flag overrides the environment variable .
