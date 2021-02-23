@@ -1,0 +1,23 @@
+package main
+
+
+
+func testIncrement() {
+
+	var b ui32 = 100
+    var a ui32 = 101
+    b+= a
+    test(b,202, "i32 Increment failed")
+  }
+
+
+
+
+func main() {
+
+   testIncrement()  
+}
+
+
+
+

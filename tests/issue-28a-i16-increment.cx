@@ -1,0 +1,23 @@
+package main
+
+
+
+func testIncrement() {
+
+	var b i16 = 100
+    var a i16 = 101
+    b+= a
+    test(b,202, "i16 Increment failed")
+  }
+
+
+
+
+func main() {
+
+   testIncrement()  
+}
+
+
+
+
