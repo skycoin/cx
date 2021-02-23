@@ -19,13 +19,11 @@ matrix:
 
 # Install necessaries go packages
 install:
-  - go mod vendor
   - make install
   - make install-gfx-deps
   - make install-linters
 
 # Build, test & run cx test
-# Block PR if golden files not up to date
 script:
   - make build-full
   - make test

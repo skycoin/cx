@@ -164,6 +164,8 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 
 update-vendor: ## Update go vendor
 	$(GO_OPTS) go mod vendor
+	$(GO_OPTS) go mod verify
+	$(GO_OPTS) go mod tidy
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
