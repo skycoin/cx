@@ -208,7 +208,7 @@ CX supports go1.10+.
 Download CX's repository using Go:
 
 ```
-go get github.com/skycoin/cx@develop
+go get github.com/skycoin/cx
 ```
 
 Navigate to CX's repository via:
@@ -237,6 +237,7 @@ make test-full
 
 ### Compiling CX on Windows
 
+Requires installation of GIT from https://git-scm.com/downloads prior to compile.
 An installation script is also provided for Windows named `cx-setup.bat`. You can compile CX on Windows by running:
 
 ```

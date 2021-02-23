@@ -37,15 +37,12 @@ install:
   - go get github.com/go-gl/gl/v2.1/gl
   - go get github.com/go-gl/glfw/v3.2/glfw
   - go get github.com/go-gl/gltext
-  - go get github.com/blynn/nex
   - go get github.com/cznic/goyacc
   # - go get -v ./...
 
 # scripts to run before build
 before_build:
-  - nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.nex
   - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo0\cxgo0.y
-  - nex -e %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.nex
   - goyacc -o %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.go %GOPATH%\src\github.com\skycoin\cx\cxgo\cxgo.y
 
 # use custom build_script

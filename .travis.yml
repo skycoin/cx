@@ -1,14 +1,10 @@
 # Travis build configuration
 # https://docs.travis-ci.com/user/customizing-the-build/
 language: go
-sudo: required
 
 # Version of go to use
 go:
-  - "1.15.x"
-
-# Placed source code under GOPATH
-go_import_path: github.com/skycoin/cx
+  - "1.14.x"
 
 # Define global variables
 env:
@@ -23,16 +19,12 @@ matrix:
 
 # Install necessaries go packages
 install:
-  - if [[ ! -d $GOPATH/src/github.com/skycoin/cx ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/cx; fi
-  - cd $GOPATH/src/github.com/skycoin/cx
   - make install
   - make install-gfx-deps
   - make install-linters
 
 # Build, test & run cx test
-# Block PR if golden files not up to date
 script:
-  - if [[ $TRAVIS_PULL_REQUEST != "false" ]] ; then make check-golden-files ; fi
   - make build-full
   - make test
   - make test-full

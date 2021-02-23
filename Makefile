@@ -61,9 +61,10 @@ else
   GOPATH := $(LOCAL_GOPATH)
 endif
 
+
 ## Ensure $GOBIN is set.
 GOLANGCI_LINT_VERSION ?= latest
-GOBIN = $(PWD)/bin
+
 GO_OPTS ?= GOBIN=$(GOBIN)
 
 ifdef CXPATH
@@ -124,7 +125,7 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	$(GOBIN)/cx -v
 
-install-full: install-deps build-full configure-workspace
+install-full: install-deps configure-workspace
 
 install-mobile:
 	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
@@ -164,6 +165,8 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 
 update-vendor: ## Update go vendor
 	$(GO_OPTS) go mod vendor
+	$(GO_OPTS) go mod verify
+	$(GO_OPTS) go mod tidy
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
