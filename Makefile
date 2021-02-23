@@ -61,9 +61,10 @@ else
   GOPATH := $(LOCAL_GOPATH)
 endif
 
+
 ## Ensure $GOBIN is set.
 GOLANGCI_LINT_VERSION ?= latest
-GOBIN = $(PWD)/bin
+
 GO_OPTS ?= GOBIN=$(GOBIN)
 
 ifdef CXPATH
