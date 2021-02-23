@@ -61,10 +61,11 @@ else
   GOPATH := $(LOCAL_GOPATH)
 endif
 
+
 ## Ensure $GOBIN is set.
 GOLANGCI_LINT_VERSION ?= latest
-GOBIN = $(PWD)/bin
-GO_OPTS ?= GOBIN=$(GOBIN)
+
+GO_OPTS ?= GOBIN = $(PWD)/bin
 
 ifdef CXPATH
 	CX_PATH := $(CXPATH)
@@ -144,6 +145,7 @@ token-fuzzer:
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
 test: #build ## Run CX test suite.
+	@echo "GO_OPTS location: $(CX_PATH) GOBIN location: $(GOBIN)"
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else	
