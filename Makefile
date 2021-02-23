@@ -145,7 +145,6 @@ token-fuzzer:
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
 test: #build ## Run CX test suite.
-	@echo "GO_OPTS location: $(CX_PATH) GOBIN location: $(GOBIN)"
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else	
