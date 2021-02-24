@@ -53,46 +53,8 @@ of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
 purpose programming.
 
-In the following sections, the reader can find a short tutorial on how to use
-the main features of the language. In previous versions of this README file, the
-tutorial was written in a *book-ish* style and was targetted to a beginner
-audience. We're going to be making a transition from that style to a more
-technical style, without falling into a pure documentation style. The reason
-behind this is that a CX book is going to be published, which is targetted to a
-more beginner audience.  Thus, this README now has the purpose of quickly
-demonstrating the capabilities of the language, how to install it, etc. You can
-find the book source code and its releases in its [CX book Github
-repository](https://github.com/skycoin/cx-book).
-
-This tutorial/documentation is divided into four parts, which can
-broadly be described as *introduction*, *syntax*, *runtime* and
-*native functions*. The first section presents general information
-about the language, such as how to install it, the development
-roadmap, etc. The second and third sections are more *tutorial-ish*,
-where the reader can find information about the core language,
-i.e. how your program needs to look so it's considered a valid CX
-program (*syntax*), and how your CX program is going to be executing
-(*runtime*). The last section follows a more documentation style,
-where each of the native functions of the language is presented, along
-with an example.
-
-
-
 Feel free to [create an issue](https://github.com/skycoin/cx/issues)
 requesting a better explanation of a feature.
-
-## Strict Type System
-[[Back to the Table of Contents] ↑](#table-of-contents)
-
-As mentioned in the description of the language, CX has a strict
-type system. Most of the native functions in CX are associated to a
-single type signature. For example, `str.print` seen in the "Hello,
-World!" program only accepts strings as its input argument. There are
-versions of `print` for each of the primitive types, such as
-`i32.print`, `f32.print`, etc. The purpose of this is to
-
-There are native functions in CX (the functions in the
-core language) associated to
 
 # CX Projects, Libraries and other Resources
 [[Back to the Table of Contents] ↑](#table-of-contents)
@@ -151,24 +113,7 @@ Check out the latest additions and bug fixes in the [changelog](CHANGELOG.md).
 
 ## Binary Releases
 
-This repository provides new binary releases of the language every
-week. Check this link and download the appropriate binary release for
-your platfrom: https://github.com/skycoin/cx/releases
-
-More platforms will be added in the future.
-
-CX has been successfully installed and tested in recent versions of
-Linux (Ubuntu), MacOS X and Windows. Nevertheless, if you run into any
-problems, please create an issue and we'll try to solve the problem as
-soon as possible.
-
-Once you have downloaded and de-compressed the binary release file,
-you should place it somewhere in your operating system's $PATH
-environment variable (or similar). The purpose of this is to have cx
-globally accessible when using the terminal.
-
-If you don't want to have it globally accessible, you can always try
-out CX locally, inside the directory where you have the binary file.
+This repository provides binary releases of the language. Check this link and download the appropriate binary release for your platfrom: https://github.com/skycoin/cx/releases
 
 <!-- ### MacOS Homebrew Install
 
