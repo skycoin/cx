@@ -7,7 +7,7 @@ import (
 
 	cxcore "github.com/skycoin/cx/cx"
 
-	"net/http/httputil"
+	//"net/http/httputil"
 )
 
 // API represents an HTTP API.
@@ -41,7 +41,8 @@ func (a *API) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func ProgramMeta(pg *cxcore.CXProgram) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := extractProgramMeta(pg)
-		httputil.WriteJSON(w, req, http.StatusOK, resp)
+		//httputil.WriteJSON(w, req, http.StatusOK, resp)
+		WriteJSON(w, req, http.StatusOK, resp)
 	}
 }
 
@@ -53,7 +54,8 @@ func PackagesOfProgram(pg *cxcore.CXProgram) http.HandlerFunc {
 			pkgNames = append(pkgNames, pkg.Name)
 		}
 
-		httputil.WriteJSON(w, req, http.StatusOK, pkgNames)
+		//httputil.WriteJSON(w, req, http.StatusOK, pkgNames)
+		WriteJSON(w, req, http.StatusOK, pkgNames)
 	}
 }
 
@@ -66,11 +68,13 @@ func ExportedSymbolsOfPackage(pg *cxcore.CXProgram, pkgName string) http.Handler
 			}
 
 			resp := extractExportedSymbols(pkg)
-			httputil.WriteJSON(w, req, http.StatusOK, resp)
+			//httputil.WriteJSON(w, req, http.StatusOK, resp)
+			WriteJSON(w, req, http.StatusOK, resp)
 			return
 		}
 
 		err := fmt.Errorf("package '%s' is not found in program '%s'", pkgName, pg.Path)
-		httputil.WriteJSON(w, req, http.StatusNotFound, err)
+		//httputil.WriteJSON(w, req, http.StatusNotFound, err)
+		WriteJSON(w, req, http.StatusNotFound, err)
 	}
 }

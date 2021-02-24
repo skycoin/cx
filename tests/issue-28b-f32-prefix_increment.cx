@@ -1,0 +1,26 @@
+package main
+
+
+
+func testPrefixIncrement() {
+
+	var b f32
+
+    b = 3.14
+
+    b+=1.0
+
+	test(b ,4.14, "f32 Prefix Increment failed")
+}
+
+
+
+
+func main() {
+
+   testPrefixIncrement()  
+}
+
+
+
+

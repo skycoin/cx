@@ -1,0 +1,26 @@
+package main
+
+
+
+func testPostfixIncrement() {
+
+	var b i16
+
+    b = 1
+
+    b++
+
+	test(b ,2, "i16 postfix Increment failed")
+}
+
+
+
+
+func main() {
+
+   testPostfixIncrement()  
+}
+
+
+
+

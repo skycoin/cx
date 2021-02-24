@@ -53,46 +53,8 @@ of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
 purpose programming.
 
-In the following sections, the reader can find a short tutorial on how to use
-the main features of the language. In previous versions of this README file, the
-tutorial was written in a *book-ish* style and was targetted to a beginner
-audience. We're going to be making a transition from that style to a more
-technical style, without falling into a pure documentation style. The reason
-behind this is that a CX book is going to be published, which is targetted to a
-more beginner audience.  Thus, this README now has the purpose of quickly
-demonstrating the capabilities of the language, how to install it, etc. You can
-find the book source code and its releases in its [CX book Github
-repository](https://github.com/skycoin/cx-book).
-
-This tutorial/documentation is divided into four parts, which can
-broadly be described as *introduction*, *syntax*, *runtime* and
-*native functions*. The first section presents general information
-about the language, such as how to install it, the development
-roadmap, etc. The second and third sections are more *tutorial-ish*,
-where the reader can find information about the core language,
-i.e. how your program needs to look so it's considered a valid CX
-program (*syntax*), and how your CX program is going to be executing
-(*runtime*). The last section follows a more documentation style,
-where each of the native functions of the language is presented, along
-with an example.
-
-
-
 Feel free to [create an issue](https://github.com/skycoin/cx/issues)
 requesting a better explanation of a feature.
-
-## Strict Type System
-[[Back to the Table of Contents] ↑](#table-of-contents)
-
-As mentioned in the description of the language, CX has a strict
-type system. Most of the native functions in CX are associated to a
-single type signature. For example, `str.print` seen in the "Hello,
-World!" program only accepts strings as its input argument. There are
-versions of `print` for each of the primitive types, such as
-`i32.print`, `f32.print`, etc. The purpose of this is to
-
-There are native functions in CX (the functions in the
-core language) associated to
 
 # CX Projects, Libraries and other Resources
 [[Back to the Table of Contents] ↑](#table-of-contents)
@@ -151,24 +113,7 @@ Check out the latest additions and bug fixes in the [changelog](CHANGELOG.md).
 
 ## Binary Releases
 
-This repository provides new binary releases of the language every
-week. Check this link and download the appropriate binary release for
-your platfrom: https://github.com/skycoin/cx/releases
-
-More platforms will be added in the future.
-
-CX has been successfully installed and tested in recent versions of
-Linux (Ubuntu), MacOS X and Windows. Nevertheless, if you run into any
-problems, please create an issue and we'll try to solve the problem as
-soon as possible.
-
-Once you have downloaded and de-compressed the binary release file,
-you should place it somewhere in your operating system's $PATH
-environment variable (or similar). The purpose of this is to have cx
-globally accessible when using the terminal.
-
-If you don't want to have it globally accessible, you can always try
-out CX locally, inside the directory where you have the binary file.
+This repository provides binary releases of the language. Check this link and download the appropriate binary release for your platfrom: https://github.com/skycoin/cx/releases
 
 <!-- ### MacOS Homebrew Install
 
@@ -199,9 +144,9 @@ https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
 
 ### Installing Go
 
-CX supports go1.10+.
+CX supports go1.15+.
 
-[Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
+[Go 1.15+ installation/setup](https://github.com/skycoin/cx/blob/develop/GO-INSTALLATION.md)
 
 ### Compiling CX on \*nix
 
@@ -221,6 +166,12 @@ Build CX's binary and install by running:
 
 ```
 make install
+```
+
+`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+
+```
+export PATH=$PATH:$HOME/cx/bin
 ```
 
 You should test your installation by running:
@@ -270,6 +221,8 @@ cx-setup.bat
 Do you want to know how CX looks? This is how you print "Hello, World!"
 in a terminal:
 
+Create a `hello-world.cx` file, put these contents in the file:
+
 ```
 package main
 
@@ -278,49 +231,19 @@ func main () {
 }
 ```
 
-Every CX program must have at least a *main* package, and a *main*
-function. As mentioned before, CX has a strict type system,
-where functions can only be associated with a single type
-signature. As a consequence,
-if we want to print a string, as in the example above, we have to call
-*str*'s print function, where *str* is a package containing string
-related functions.
-
-However, there are some exceptions, mainly to functions where it makes
-sense to have a generalized type signature. For example, the `len`
-function accepts arrays of any type as its argument, instead of having
-`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
-is used to construct a string using a format string and a series of
-arguments of any type.
+Then run `cx hello-world.cx`. You can also run the examples found in the `examples` directory.
 
 ## Basic Options
 
-If you write `cx --help` or `cx -h`, you should see a text describing
+If you type `cx --help` or `cx -h`, you should see a text describing
 CX's usage, options and more. `cx --version` provides the detail about the current cx version installed on the machine.
 
 Some interesting options are:
 
-* `--base` which generates a CX program's assembly code (in Go)
-* `--compile` which generates an executable file
 * `--repl` which loads the program and makes CX run in REPL mode
 (useful for debugging a program)
 * `--web` which starts CX as a RESTful web service (you can send code
   to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
-
-
-### Running CX Programs
-
-To run a CX program, you have to type, for example, `cx
-the-program.cx`. Let's try to run some examples from the `examples`
-directory in this repository. In a terminal, type this:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx/
-cx examples/hello-world.cx
-```
-
-This should print `Hello World!` in the terminal. Now try running `cx
-examples/opengl/game.cx`.
 
 
 ## REPL tutorial

@@ -1,0 +1,14 @@
+package main
+
+type TestStruct struct {
+Value int32
+}
+
+func main() {
+    var texts []TestStruct
+ 
+    texts = []TestStruct{TestStruct{Value: 1}}
+ 
+ 
+    test(len(texts),1, "")
+}
