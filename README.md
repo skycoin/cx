@@ -199,9 +199,9 @@ https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
 
 ### Installing Go
 
-CX supports go1.10+.
+CX supports go1.15+.
 
-[Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
+[Go 1.15+ installation/setup](https://github.com/skycoin/cx/blob/develop/GO-INSTALLATION.md)
 
 ### Compiling CX on \*nix
 
@@ -221,6 +221,12 @@ Build CX's binary and install by running:
 
 ```
 make install
+```
+
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+
+```
+export PATH=$PATH:$HOME/cx/bin
 ```
 
 You should test your installation by running:
