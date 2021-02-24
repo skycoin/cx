@@ -1,0 +1,23 @@
+package main
+
+
+
+func testDecrement() {
+
+	var b ui16 = 202
+    var a ui16 = 101
+    b-= a
+    test(b,101, "ui16 Decrement failed")
+  }
+
+
+
+
+func main() {
+
+   testDecrement()  
+}
+
+
+
+

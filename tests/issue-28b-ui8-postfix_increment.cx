@@ -1,0 +1,26 @@
+package main
+
+
+
+func testPostfixIncrement() {
+
+	var b ui8
+
+    b = 1
+
+    b++
+
+	test(b ,2, "ui8 postfix Increment failed")
+}
+
+
+
+
+func main() {
+
+   testPostfixIncrement()  
+}
+
+
+
+

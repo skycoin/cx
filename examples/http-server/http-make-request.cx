@@ -1,0 +1,38 @@
+package main
+import "http"
+import "os"
+
+type coco struct {
+	names [][]str
+}
+
+func main() {
+
+	var url http.URL
+	url.Scheme = "http"
+	url.Host = "google.com"
+	url.Path = "/"
+	url.RawPath = "/"
+	url.ForceQuery = true
+
+	var req http.Request
+	req.Method = "GET"
+	req.URL = &url
+
+
+	var contentType []str
+	contentType = []str{"Content-Type", "application/json"}
+	var accept []str
+	accept = []str{"Accept", "text/html"}
+	req.Header = append(req.Header, contentType)
+	req.Header = append(req.Header, accept)
+
+	var resp http.Response
+	var err str
+	resp, err = http.Do(req)
+
+	str.print(resp.Status)
+	i32.print(resp.StatusCode)
+	str.print(resp.Body)
+	
+}

@@ -1,0 +1,17 @@
+package main
+
+type TextInfo struct {
+Text str
+Font str
+Size f32
+Wid f32 // caches string measure queries
+Hei f32
+}
+
+func main() {
+var texts []TextInfo
+texts = []TextInfo{TextInfo{Text:"hmm"}}
+printf("len %d \n", len(texts))
+texts = []TextInfo{TextInfo{Text:"hmmm"}}
+printf("len %d \n", len(texts))
+}
