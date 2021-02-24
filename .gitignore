@@ -1,53 +1,17 @@
-_
-_ast.go
 .DS_Store
-ex.gsp
 .#*
 *.nn.go
-ansi-c-yacc-grammar.y
-ansi_c-lex.l
-golang-empty-grammar.y
-golang-grammar.y
 cx.nn.go
 y.output
-main
-y.output
-cx0.go
-.leaps_cot.json
 *~
 *#
-jira*
-*.swp
-*.swo
-*.orig
-
-
-## Why is this on git ignore???
-
-cx.go
-
-## Questionable Files, that could be removed
-nexyacc
-.idea
-.directory
-mersenne-twister.go
-mersenne-twister.txt
-tasks.org
-test.pl
 
 ## Temp files
 out.*
-*.o
-o
-o.go
 cpu.prof
 mem.prof
 *.pprof
 *.nn.go
 
-## Definately Should not be committed to github
+## Binaries.
 /bin
-
-## Generated source files by goyacc
-#cxgo/cxgo0/cxgo0.go
-#cxgo/parser/cxgo.go
