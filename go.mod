@@ -16,4 +16,9 @@ require (
 	github.com/skycoin/skycoin v0.27.1
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	modernc.org/goyacc v1.0.0 // indirect
+	modernc.org/mathutil v1.2.2 // indirect
+	modernc.org/sortutil v1.1.0 // indirect
+	modernc.org/strutil v1.1.0 // indirect
+	modernc.org/y v1.0.1 // indirect
 )
