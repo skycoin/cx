@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build (!darwin || ios || !cgo) && (!linux || android || !cgo) && (!openbsd || !cgo) && !windows
-// +build !darwin ios !cgo
-// +build !linux android !cgo
-// +build !openbsd !cgo
+// +build !darwin !386,!amd64 ios
+// +build !linux android
 // +build !windows
+// +build !openbsd
 
 package gldriver
 
@@ -20,14 +19,13 @@ import (
 const useLifecycler = true
 const handleSizeEventsAtChannelReceive = true
 
-var errUnsupported = fmt.Errorf("gldriver: unsupported GOOS/GOARCH %s/%s or cgo not enabled", runtime.GOOS, runtime.GOARCH)
-
-func newWindow(opts *screen.NewWindowOptions) (uintptr, error) { return 0, errUnsupported }
+func newWindow(opts *screen.NewWindowOptions) (uintptr, error) { return 0, nil }
 
 func initWindow(id *windowImpl) {}
 func showWindow(id *windowImpl) {}
 func closeWindow(id uintptr)    {}
 func drawLoop(w *windowImpl)    {}
 
-func surfaceCreate() error             { return errUnsupported }
-func main(f func(screen.Screen)) error { return errUnsupported }
+func main(f func(screen.Screen)) error {
+	return fmt.Errorf("gldriver: unsupported GOOS/GOARCH %s/%s", runtime.GOOS, runtime.GOARCH)
+}

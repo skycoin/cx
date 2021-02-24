@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build darwin
+// +build 386 amd64
 // +build !ios
 
 #include "_cgo_export.h"
@@ -33,6 +34,7 @@ enum
 void makeCurrentContext(uintptr_t context) {
 	NSOpenGLContext* ctx = (NSOpenGLContext*)context;
 	[ctx makeCurrentContext];
+	[ctx update];
 }
 
 void flushContext(uintptr_t context) {

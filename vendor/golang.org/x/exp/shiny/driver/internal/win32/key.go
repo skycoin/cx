@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build windows
 // +build windows
 
 package win32
@@ -333,14 +332,14 @@ func sendKeyEvent(hwnd syscall.Handle, uMsg uint32, wParam, lParam uintptr) (lRe
 		Modifiers: keyModifiers(),
 	}
 	switch uMsg {
-	case _WM_KEYDOWN, _WM_SYSKEYDOWN:
+	case _WM_KEYDOWN:
 		const prevMask = 1 << 30
 		if repeat := lParam&prevMask == prevMask; repeat {
 			e.Direction = key.DirNone
 		} else {
 			e.Direction = key.DirPress
 		}
-	case _WM_KEYUP, _WM_SYSKEYUP:
+	case _WM_KEYUP:
 		e.Direction = key.DirRelease
 	default:
 		panic(fmt.Sprintf("win32: unexpected key message: %d", uMsg))
