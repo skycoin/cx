@@ -127,15 +127,8 @@ install-full: install-deps configure-workspace
 install-mobile:
 	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
 
-install-linters: ## Install linters
-	curl -sSfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOBIN) $(GOLANGCI_LINT_VERSION)
-	$(GO_OPTS) go get -u golang.org/x/tools/cmd/goimports
-
 clean: ## Removes binaries. 
 	rm -r $(GOBIN)/cx
-
-lint: ## Run linters. Use make install-linters first.
-	$(GOBIN)/golangci-lint run -c .golangci.yml ./cx
 
 token-fuzzer:
 	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
