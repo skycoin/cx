@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/mathutil"
-	yparser "github.com/skycoin/cx/yacc/parser/yacc"
-	"github.com/skycoin/cx/yacc/strutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
+	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
+	"github.com/skycoin/cx/goyacc/strutil"
 )
 
 const (
