@@ -199,9 +199,9 @@ https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
 
 ### Installing Go
 
-CX supports go1.10+.
+CX supports go1.15+.
 
-[Go 1.10+ installation/setup](https://github.com/skycoin/skycoin/blob/develop/INSTALLATION.md)
+[Go 1.15+ installation/setup](https://github.com/skycoin/cx/blob/develop/GO-INSTALLATION.md)
 
 ### Compiling CX on \*nix
 
@@ -221,6 +221,12 @@ Build CX's binary and install by running:
 
 ```
 make install
+```
+
+`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+
+```
+export PATH=$PATH:$HOME/cx/bin
 ```
 
 You should test your installation by running:
@@ -270,6 +276,8 @@ cx-setup.bat
 Do you want to know how CX looks? This is how you print "Hello, World!"
 in a terminal:
 
+Create a `hello-world.cx` file, put these contents in the file:
+
 ```
 package main
 
@@ -278,49 +286,19 @@ func main () {
 }
 ```
 
-Every CX program must have at least a *main* package, and a *main*
-function. As mentioned before, CX has a strict type system,
-where functions can only be associated with a single type
-signature. As a consequence,
-if we want to print a string, as in the example above, we have to call
-*str*'s print function, where *str* is a package containing string
-related functions.
-
-However, there are some exceptions, mainly to functions where it makes
-sense to have a generalized type signature. For example, the `len`
-function accepts arrays of any type as its argument, instead of having
-`[]i32.len()` or `[][]str.len()`. Another example is `sprintf`, which
-is used to construct a string using a format string and a series of
-arguments of any type.
+Then run `cx hello-world.cx`. You can also run the examples found in the `examples` directory.
 
 ## Basic Options
 
-If you write `cx --help` or `cx -h`, you should see a text describing
+If you type `cx --help` or `cx -h`, you should see a text describing
 CX's usage, options and more. `cx --version` provides the detail about the current cx version installed on the machine.
 
 Some interesting options are:
 
-* `--base` which generates a CX program's assembly code (in Go)
-* `--compile` which generates an executable file
 * `--repl` which loads the program and makes CX run in REPL mode
 (useful for debugging a program)
 * `--web` which starts CX as a RESTful web service (you can send code
   to be evaluated to this endpoint: http://127.0.0.1:5336/eval)
-
-
-### Running CX Programs
-
-To run a CX program, you have to type, for example, `cx
-the-program.cx`. Let's try to run some examples from the `examples`
-directory in this repository. In a terminal, type this:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx/
-cx examples/hello-world.cx
-```
-
-This should print `Hello World!` in the terminal. Now try running `cx
-examples/opengl/game.cx`.
 
 
 ## REPL tutorial
