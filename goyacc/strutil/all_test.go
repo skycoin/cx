@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"github.com/skycoin/cx/goyacc/mathutil"
+	"math/rand"
 	"os"
 	"path"
 	"runtime"
@@ -50,14 +50,10 @@ func init() {
 
 func TestBase64(t *testing.T) {
 	const max = 768
-	r, err := mathutil.NewFC32(math.MinInt32, math.MaxInt32, true)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	bin := []byte{}
 	for i := 0; i < max; i++ {
-		bin = append(bin, byte(r.Next()))
+		bin = append(bin, byte(rand.Intn(math.MaxInt32-math.MinInt32)+math.MinInt32))
 		cmp, err := Base64Decode(Base64Encode(bin))
 		if err != nil {
 			t.Fatal(err)
@@ -71,14 +67,10 @@ func TestBase64(t *testing.T) {
 
 func TestBase32Ext(t *testing.T) {
 	const max = 640
-	r, err := mathutil.NewFC32(math.MinInt32, math.MaxInt32, true)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	bin := []byte{}
 	for i := 0; i < max; i++ {
-		bin = append(bin, byte(r.Next()))
+		bin = append(bin, byte(rand.Intn(math.MaxInt32-math.MinInt32)+math.MinInt32))
 		cmp, err := Base32ExtDecode(Base32ExtEncode(bin))
 		if err != nil {
 			t.Fatal(err)
