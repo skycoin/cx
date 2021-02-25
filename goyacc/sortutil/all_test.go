@@ -13,8 +13,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 func dbg(s string, va ...interface{}) {
@@ -376,7 +374,7 @@ func TestDedup(t *testing.T) {
 
 	for c := 1; c <= 7; c++ {
 		in := make([]int, c)
-		lim := int(mathutil.ModPowUint32(uint32(c), uint32(c), math.MaxUint32))
+		lim := int(math.Mod(math.Pow(float64(c), float64(c)), math.MaxUint32))
 		for n := 0; n < lim; n++ {
 			m := n
 			for i := range in {
@@ -435,7 +433,7 @@ func TestTopologicalSort(t *testing.T) {
 	for i := range perm {
 		perm[i] = i
 	}
-	mathutil.PermutationFirst(perm)
+	sort.Sort(perm)
 	for {
 		var graph []TopologicalSortNode
 		for _, v := range perm {
@@ -457,7 +455,7 @@ func TestTopologicalSort(t *testing.T) {
 		}
 
 		t.Logf("perm %v, sort %q", perm, dumpGraph(ts))
-		if !mathutil.PermutationNext(perm) {
+		if !PermutationNext(perm) {
 			return
 		}
 	}
@@ -469,4 +467,29 @@ func dumpGraph(graph []TopologicalSortNode) string {
 		a = append(a, v.(*topologicalSortNode).name)
 	}
 	return strings.Join(a, ", ")
+}
+
+// PermutationNext generates the next permutation of data if possible and
+// return true.  Return false if there is no more permutation left.  Based on
+// the algorithm described here:
+// http://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
+func PermutationNext(data sort.Interface) bool {
+	var k, l int
+	for k = data.Len() - 2; ; k-- { // 1.
+		if k < 0 {
+			return false
+		}
+
+		if data.Less(k, k+1) {
+			break
+		}
+	}
+	for l = data.Len() - 1; !data.Less(k, l); l-- { // 2.
+	}
+	data.Swap(k, l)                             // 3.
+	for i, j := k+1, data.Len()-1; i < j; i++ { // 4.
+		data.Swap(i, j)
+		j--
+	}
+	return true
 }
