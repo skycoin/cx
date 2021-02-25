@@ -7,7 +7,7 @@ package mathutil // import "github.com/skycoin/cx/goyacc/mathutil"
 import (
 	"math/big"
 
-	"github.com/skycoin/cx/goyacc/bigfft"
+	"github.com/skycoin/cx/goyacc/biggfft"
 )
 
 type float struct {

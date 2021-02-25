@@ -25,7 +25,7 @@ import (
 	"math/big"
 
 	"github.com/skycoin/cx/goyacc/mathutil"
-	"github.com/skycoin/cx/goyacc/bigfft"
+	"github.com/skycoin/cx/goyacc/biggfft"
 )
 
 var (

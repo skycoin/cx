@@ -14,6 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.8.0
 	github.com/skycoin/gltext v0.0.0-20200425002731-afdd8ff94e14
 	github.com/skycoin/skycoin v0.27.1
+	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	modernc.org/goyacc v1.0.0 // indirect
