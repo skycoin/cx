@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package strutil collects utils supplemental to the standard strings package.
-package strutil // import "github.com/skycoin/cx/yacc/strutil"
+package strutil // import "github.com/skycoin/cx/goyacc/strutil"
 
 import (
 	"bytes"

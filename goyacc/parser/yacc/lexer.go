@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package parser // import "github.com/skycoin/cx/yacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/goyacc/parser/yacc"
 
 import (
 	"bytes"
@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/golex/lex"
-	"github.com/skycoin/cx/yacc/strutil"
+	"github.com/skycoin/cx/goyacc/golex/lex"
+	"github.com/skycoin/cx/goyacc/strutil"
 )
 
 // Node represents an AST node.

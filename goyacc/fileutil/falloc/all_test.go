@@ -4,7 +4,7 @@
 
 // blame: jnml, labs.nic.cz
 
-package falloc // import "github.com/skycoin/cx/yacc/fileutil/falloc"
+package falloc // import "github.com/skycoin/cx/goyacc/fileutil/falloc"
 
 import (
 	"bytes"
@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skycoin/cx/yacc/fileutil"
-	"github.com/skycoin/cx/yacc/fileutil/storage"
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/fileutil"
+	"github.com/skycoin/cx/goyacc/fileutil/storage"
+	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 var (

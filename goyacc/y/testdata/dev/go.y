@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/strutil"
+	"github.com/skycoin/cx/goyacc/strutil"
 )
 
 %}

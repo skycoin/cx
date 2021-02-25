@@ -5,7 +5,7 @@
 // blame: jnml, labs.nic.cz
 
 // WIP: Package storage defines and implements storage providers and store accessors.
-package storage // import "github.com/skycoin/cx/yacc/fileutil/storage"
+package storage // import "github.com/skycoin/cx/goyacc/fileutil/storage"
 
 import (
 	"os"

@@ -12,11 +12,11 @@ The main incompletness is support for only one kind of FTL, though this table ki
 
 */
 
-package falloc // import "github.com/skycoin/cx/yacc/fileutil/falloc"
+package falloc // import "github.com/skycoin/cx/goyacc/fileutil/falloc"
 
 import (
 	"bytes"
-	"github.com/skycoin/cx/yacc/fileutil/storage"
+	"github.com/skycoin/cx/goyacc/fileutil/storage"
 	"sync"
 )
 

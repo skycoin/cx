@@ -12,7 +12,7 @@
 //
 //   [1]: http://modernc.org/ebnf2y
 
-package parser // import "github.com/skycoin/cx/yacc/parser/nquads"
+package parser // import "github.com/skycoin/cx/goyacc/parser/nquads"
 
 import __yyfmt__ "fmt"
 

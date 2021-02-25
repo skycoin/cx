@@ -244,7 +244,7 @@ FLTT describes the type of the Free List Table. Currently defined values:
 FLTT == 0: Free List Table is fixed at atom address 2. It has a fixed size for 3856 entries
 for free list of size 1..3855 atoms and the last is for the list of free block >= 3856 atoms.
 */
-package falloc // import "github.com/skycoin/cx/yacc/fileutil/falloc"
+package falloc // import "github.com/skycoin/cx/goyacc/fileutil/falloc"
 
 const (
 	INVALID_HANDLE = Handle(-1)

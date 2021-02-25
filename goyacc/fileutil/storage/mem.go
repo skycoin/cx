@@ -4,7 +4,7 @@
 
 // blame: jnml, labs.nic.cz
 
-package storage // import "github.com/skycoin/cx/yacc/fileutil/storage"
+package storage // import "github.com/skycoin/cx/goyacc/fileutil/storage"
 
 import (
 	"errors"

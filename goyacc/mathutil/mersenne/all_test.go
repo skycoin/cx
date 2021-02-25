@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package mersenne // import "github.com/skycoin/cx/yacc/mathutil/mersenne"
+package mersenne // import "github.com/skycoin/cx/goyacc/mathutil/mersenne"
 
 import (
 	"math"
@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 func r32() *mathutil.FC32 {

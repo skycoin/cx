@@ -7,7 +7,7 @@
 // +build !openbsd
 // +build !plan9
 
-package fileutil // import "github.com/skycoin/cx/yacc/fileutil"
+package fileutil // import "github.com/skycoin/cx/goyacc/fileutil"
 
 import (
 	"io"

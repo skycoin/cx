@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package sortutil // import "github.com/skycoin/cx/yacc/sortutil"
+package sortutil // import "github.com/skycoin/cx/goyacc/sortutil"
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 func dbg(s string, va ...interface{}) {

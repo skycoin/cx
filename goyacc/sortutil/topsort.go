@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package sortutil // import "github.com/skycoin/cx/yacc/sortutil"
+package sortutil // import "github.com/skycoin/cx/goyacc/sortutil"
 
 // TopologicalSortNode represents a node of a graph for TopologicalSort.
 // Implementations of TopologicalSortNode must be comparable.

@@ -73,7 +73,7 @@
 //
 // 	func Uint64ToBigInt(n uint64) *big.Int
 // 	func Uint64FromBigInt(n *big.Int) (uint64, bool)
-package mathutil // import "github.com/skycoin/cx/yacc/mathutil"
+package mathutil // import "github.com/skycoin/cx/goyacc/mathutil"
 
 import (
 	"math"

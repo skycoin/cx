@@ -5,7 +5,7 @@
 // CAUTION: If this file is a Go source file (*.go), it was generated
 // automatically by '$ golex' from a *.l file - DO NOT EDIT in that case!
 
-package scanner // import "github.com/skycoin/cx/yacc/scanner/nquads"
+package scanner // import "github.com/skycoin/cx/goyacc/scanner/nquads"
 
 import (
 	"strconv"

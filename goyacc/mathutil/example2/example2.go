@@ -10,7 +10,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 	"image"
 	"image/png"
 	"io/ioutil"

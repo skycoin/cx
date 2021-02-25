@@ -39,7 +39,7 @@
 //
 //		goto yyAction
 //	}
-package lex_test // import "github.com/skycoin/cx/yacc/golex/lex"
+package lex_test // import "github.com/skycoin/cx/goyacc/golex/lex"
 
 import (
 	"bytes"
@@ -47,7 +47,7 @@ import (
 	"go/token"
 	"unicode"
 
-	"github.com/skycoin/cx/yacc/golex/lex"
+	"github.com/skycoin/cx/goyacc/golex/lex"
 )
 
 // Allocate Character classes anywhere in [0x80, 0xFF].

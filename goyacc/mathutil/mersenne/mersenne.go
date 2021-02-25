@@ -18,14 +18,14 @@ Links
 Referenced from above:
  [1] http://en.wikipedia.org/wiki/Mersenne_number
 */
-package mersenne // import "github.com/skycoin/cx/yacc/mathutil/mersenne"
+package mersenne // import "github.com/skycoin/cx/goyacc/mathutil/mersenne"
 
 import (
 	"math"
 	"math/big"
 
-	"github.com/skycoin/cx/yacc/mathutil"
-	"github.com/skycoin/cx/yacc/bigfft"
+	"github.com/skycoin/cx/goyacc/mathutil"
+	"github.com/skycoin/cx/goyacc/bigfft"
 )
 
 var (

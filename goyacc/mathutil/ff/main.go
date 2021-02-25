@@ -15,7 +15,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 const (

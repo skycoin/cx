@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package strutil // import "github.com/skycoin/cx/yacc/strutil"
+package strutil // import "github.com/skycoin/cx/goyacc/strutil"
 
 import (
 	"bytes"
 	"fmt"
 	"math"
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 	"os"
 	"path"
 	"runtime"

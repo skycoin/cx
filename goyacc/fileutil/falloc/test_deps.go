@@ -4,12 +4,12 @@
 
 // blame: jnml, labs.nic.cz
 
-package falloc // import "github.com/skycoin/cx/yacc/fileutil/falloc"
+package falloc // import "github.com/skycoin/cx/goyacc/fileutil/falloc"
 
 // Pull test dependencies too.
 // Enables easy 'go test X' after 'go get X'
 import (
-	_ "github.com/skycoin/cx/yacc/fileutil"
-	_ "github.com/skycoin/cx/yacc/fileutil/storage"
-	_ "github.com/skycoin/cx/yacc/mathutil"
+	_ "github.com/skycoin/cx/goyacc/fileutil"
+	_ "github.com/skycoin/cx/goyacc/fileutil/storage"
+	_ "github.com/skycoin/cx/goyacc/mathutil"
 )

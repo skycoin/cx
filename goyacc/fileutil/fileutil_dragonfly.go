@@ -5,7 +5,7 @@
 // +build !arm
 // +build !arm64
 
-package fileutil // import "github.com/skycoin/cx/yacc/fileutil"
+package fileutil // import "github.com/skycoin/cx/goyacc/fileutil"
 
 import (
 	"io"

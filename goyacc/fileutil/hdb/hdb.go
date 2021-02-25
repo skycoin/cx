@@ -26,11 +26,11 @@ Conceptual analogy:
 
 	Delete	    free() the "memory" "pointed to" by handle.
 */
-package hdb // import "github.com/skycoin/cx/yacc/fileutil/hdb"
+package hdb // import "github.com/skycoin/cx/goyacc/fileutil/hdb"
 
 import (
-	"github.com/skycoin/cx/yacc/fileutil/falloc"
-	"github.com/skycoin/cx/yacc/fileutil/storage"
+	"github.com/skycoin/cx/goyacc/fileutil/falloc"
+	"github.com/skycoin/cx/goyacc/fileutil/storage"
 )
 
 type Store struct {

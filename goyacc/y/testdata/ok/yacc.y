@@ -23,8 +23,8 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/scanner/yacc"
-	"github.com/skycoin/cx/yacc/strutil"
+	"github.com/skycoin/cx/goyacc/scanner/yacc"
+	"github.com/skycoin/cx/goyacc/strutil"
 )
 
 %}
@@ -420,7 +420,7 @@ type Prec struct {
 type Act struct{
 	token.Pos
 	Src string
-	Tok scanner.Token       // github.com/skycoin/cx/yacc/scanner/yacc.DLR_* or zero
+	Tok scanner.Token       // github.com/skycoin/cx/goyacc/scanner/yacc.DLR_* or zero
 	Tag string              // DLR_TAG_*
 	Num int                 // DLR_NUM, DLR_TAG_NUM
 }

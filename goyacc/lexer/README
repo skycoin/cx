@@ -2,7 +2,7 @@ This is a goinstall-able mirror of modified code already published at:
 http://git.nic.cz/redmine/projects/golexer/repository
 
 Online godoc documentation for this package available at:
-http://godoc.org/github.com/skycoin/cx/yacc/lexer
+http://godoc.org/github.com/skycoin/cx/goyacc/lexer
 
 Installation:
-$ go get github.com/skycoin/cx/yacc/lexer
+$ go get github.com/skycoin/cx/goyacc/lexer
