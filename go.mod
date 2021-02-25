@@ -16,5 +16,8 @@ require (
 	github.com/skycoin/skycoin v0.27.1
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
+	golang.org/x/mod v0.4.1 // indirect
+	golang.org/x/sys v0.0.0-20210225080010-8e9945a5478f // indirect
+	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
