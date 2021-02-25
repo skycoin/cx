@@ -10,10 +10,7 @@ similar to Golang's. CX provides a new programming paradigm based on
 the concept of affordances.
 
 ## Table of Contents
-=================
 
-   * [CX Programming Language](#cx-programming-language)
-   * [Table of Contents](#table-of-contents)
    * [CX Programming Language](#cx-programming-language-1)
    * [CX Chains (CX Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
    * [Compiler Development](CompilerDevelopment.md)
@@ -25,7 +22,7 @@ the concept of affordances.
          * [Compiling CX on Windows](#compiling-cx-on-windows)
       * [Updating CX](#updating-cx)
       
-# CX Programming Language
+## CX Programming Language
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
@@ -38,23 +35,13 @@ of providing an additional security layer for decentralized,
 blockchain-based applications, but can also be used for general
 purpose programming. 
 
-# Installation
+## Installation
 
 CX requires a Golang version of `1.15` or higher. 
 
-## Binary Releases
+### Binary Releases
 
-This repository provides binary releases of the language. Check this link and download the appropriate binary release for your platfrom: https://github.com/skycoin/cx/releases
-
-## Compiling from Source
-
-If a binary release is not currently available for your platfrom or if
-you want to have a nightly build of CX, you'll have to compile from
-source. If you're not familiarized with Go, Git, your OS's terminal or
-your OS's package manager (to name a few), we *strongly* recommend you
-to try out a binary release. If you find any bugs or problems with the
-binary release, submit an issue here:
-https://github.com/skycoin/cx/issues, and we'll fix it for the next release.
+You can find binary releases for most major systems on the [release page](https://github.com/skycoin/cx/releases). 
 
 ### Compiling on Linux
 
@@ -134,14 +121,14 @@ make test-full
 
 ### Compiling CX on Windows
 
-Requires installation of GIT from https://git-scm.com/downloads prior to compile.
-An installation script is also provided for Windows named `cx-setup.bat`. You can compile CX on Windows by running:
+Compiling CX on Windows requires a recent version of Git to be installed. 
+You can compile CX by running: 
 
 ```
 cx-setup.bat
 ```
 
-You should test your installation by running:
+Test your installation by running:
 
 ```
 cx tests\main.cx ++wdir=tests ++disable-tests=issue
