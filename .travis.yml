@@ -4,7 +4,7 @@ language: go
 
 # Version of go to use
 go:
-  - "1.14.x"
+  - "1.15.x"
 
 # Define global variables
 env:
