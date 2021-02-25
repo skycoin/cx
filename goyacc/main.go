@@ -136,12 +136,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/parser/yacc"
-	"github.com/skycoin/cx/yacc/y"
+	"github.com/skycoin/cx/goyacc/parser/yacc"
+	"github.com/skycoin/cx/goyacc/y"
 
-	"github.com/skycoin/cx/yacc/mathutil"
-	"github.com/kycoin/cx/yacc/sortutil"
-	"github.com/kycoin/cx/yacc/strutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
+	"github.com/skycoin/cx/goyacc/sortutil"
+	"github.com/skycoin/cx/goyacc/strutil"
 )
 
 var (
