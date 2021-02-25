@@ -38,7 +38,7 @@ the concept of affordances.
          * [Running CX Programs](#running-cx-programs)
       * [REPL tutorial](#cx-repl)
    * [Learning CX](#learning-cx)
-      
+
 # CX Programming Language
 [[Back to the Table of Contents] ↑](#table-of-contents)
 
