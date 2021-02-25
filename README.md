@@ -45,6 +45,14 @@ You can find binary releases for most major systems on the [release page](https:
 
 ### Compiling on Linux
 
+If you are using a `apt` compatible system, install the dependencies with"
+
+```
+sudo apt-get update -qq
+
+sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev --no-install-recommends
+```
+
 Download CX's repository using Go:
 
 ```

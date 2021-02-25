@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full
-.PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
+.PHONY: install-gfx-deps install-gfx-deps-MSYS install-gfx-deps-MINGW install-deps install install-full
 .PHONY: vendor
 
 PWD := $(shell pwd)
@@ -50,8 +50,6 @@ HOME := $(subst \,/,${HOME})
 CXPATH := $(subst, \,/, ${CXPATH})
 endif
 
-INSTALL_GFX_DEPS := install-gfx-deps-$(SUBSYSTEM)
-
 GLOBAL_GOPATH := $(GOPATH)
 LOCAL_GOPATH  := $(HOME)/go
 
@@ -96,11 +94,6 @@ build-android: install-full install-mobile
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
 	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
 
-install-gfx-deps-LINUX:
-	@echo 'Installing dependencies for $(UNAME_S)'
-	sudo apt-get update -qq
-	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
-
 install-gfx-deps-MSYS:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	pacman -Sy
@@ -109,10 +102,6 @@ install-gfx-deps-MSYS:
 	if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
 
 install-gfx-deps-MINGW: install-gfx-deps-MSYS
-
-install-gfx-deps-MACOS:
-	@echo 'Installing dependencies for $(UNAME_S)'
-#brew install $(PKG_NAMES_MACOS)
 
 install-deps:
 	@echo "Installing go package dependencies"
