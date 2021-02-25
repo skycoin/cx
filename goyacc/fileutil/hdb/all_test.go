@@ -4,7 +4,7 @@
 
 // blame: jnml, labs.nic.cz
 
-package hdb // import "github.com/skycoin/cx/yacc/fileutil/hdb"
+package hdb // import "github.com/skycoin/cx/goyacc/fileutil/hdb"
 
 import (
 	"testing"

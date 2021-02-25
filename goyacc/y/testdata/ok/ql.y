@@ -19,7 +19,7 @@ package ql
 import (
 	"fmt"
 
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 )
 
 %}

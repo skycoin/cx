@@ -17,10 +17,4 @@ require (
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	modernc.org/goyacc v1.0.0 // indirect
-	modernc.org/mathutil v1.2.2 // indirect
-	modernc.org/scanner v1.0.0 // indirect
-	modernc.org/sortutil v1.1.0 // indirect
-	modernc.org/strutil v1.1.0 // indirect
-	modernc.org/y v1.0.1 // indirect
 )

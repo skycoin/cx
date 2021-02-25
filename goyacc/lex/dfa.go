@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package lex // import "github.com/skycoin/cx/yacc/lex"
+package lex // import "github.com/skycoin/cx/goyacc/lex"
 
 import (
 	"fmt"
-	"github.com/skycoin/cx/yacc/lexer"
+	"github.com/skycoin/cx/goyacc/lexer"
 	"sort"
 	"unicode"
 )

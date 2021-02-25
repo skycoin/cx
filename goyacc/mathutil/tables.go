@@ -4,7 +4,7 @@
 
 // "Static" data
 
-package mathutil // import "github.com/skycoin/cx/yacc/mathutil"
+package mathutil // import "github.com/skycoin/cx/goyacc/mathutil"
 
 var (
 	// Set bits count in a byte

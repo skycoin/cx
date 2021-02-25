@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package fileutil collects some file utility functions.
-package fileutil // import "github.com/skycoin/cx/yacc/fileutil"
+package fileutil // import "github.com/skycoin/cx/goyacc/fileutil"
 
 import (
 	"fmt"

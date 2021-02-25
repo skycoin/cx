@@ -6,10 +6,10 @@
 
 // CAUTION: Generated file (unless this is y.l) - DO NOT EDIT!
 
-package parser // import "github.com/skycoin/cx/yacc/parser/yacc"
+package parser // import "github.com/skycoin/cx/goyacc/parser/yacc"
 
 import (
-	"github.com/skycoin/cx/yacc/golex/lex"
+	"github.com/skycoin/cx/goyacc/golex/lex"
 )
 
 func (l *lexer) scan() lex.Char {

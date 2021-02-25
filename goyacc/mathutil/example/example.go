@@ -11,7 +11,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/skycoin/cx/yacc/mathutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
 	"log"
 	"math"
 	"os"

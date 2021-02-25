@@ -4,7 +4,7 @@
 
 // blame: jnml, labs.nic.cz
 
-package falloc // import "github.com/skycoin/cx/yacc/fileutil/falloc"
+package falloc // import "github.com/skycoin/cx/goyacc/fileutil/falloc"
 
 import "fmt"
 

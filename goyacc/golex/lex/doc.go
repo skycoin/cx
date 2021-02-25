@@ -37,4 +37,4 @@
 //  [3]: https://modernc.org/golex/blob/master/lex/example.l
 //  [4]: http://golang.org/pkg/io/#RuneReader
 //  [5]: https://modernc.org/golex/blob/master/lex/dfa
-package lex // import "github.com/skycoin/cx/yacc/golex/lex"
+package lex // import "github.com/skycoin/cx/goyacc/golex/lex"

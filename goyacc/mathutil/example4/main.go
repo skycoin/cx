@@ -19,8 +19,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/skycoin/cx/yacc/mathutil"
-	"github.com/skycoin/cx/yacc/sortutil"
+	"github.com/skycoin/cx/goyacc/mathutil"
+	"github.com/skycoin/cx/goyacc/sortutil"
 )
 
 func main() {

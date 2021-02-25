@@ -10,7 +10,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/skycoin/cx/yacc/golex/lex"
+	"github.com/skycoin/cx/goyacc/golex/lex"
 )
 
 func (l *lexer) scanGo() lex.Char {

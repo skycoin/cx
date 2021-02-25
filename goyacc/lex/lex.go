@@ -73,7 +73,7 @@
 //	- Anything special after '(?'.
 //	- Matching <<EOF>>. Still \0 is OK in a pattern.
 //	- And probably more.
-package lex // import "github.com/skycoin/cx/yacc/lex"
+package lex // import "github.com/skycoin/cx/goyacc/lex"
 
 import (
 	"bytes"
@@ -81,11 +81,11 @@ import (
 	"fmt"
 	"go/token"
 	"io"
-	"github.com/skycoin/cx/yacc/lexer"
+	"github.com/skycoin/cx/goyacc/lexer"
 	"sort"
 	"strings"
 
-	"github.com/skycoin/cx/yacc/fileutil"
+	"github.com/skycoin/cx/goyacc/fileutil"
 )
 
 type rule struct {

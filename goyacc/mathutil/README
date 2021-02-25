@@ -3,8 +3,8 @@ http://git.nic.cz/redmine/projects/gornd/repository
 
 Packages in this repository:
 
-Install: $ go get github.com/skycoin/cx/yacc/mathutil
-Godocs:  http://godoc.org/github.com/skycoin/cx/yacc/mathutil
+Install: $ go get github.com/skycoin/cx/goyacc/mathutil
+Godocs:  http://godoc.org/github.com/skycoin/cx/goyacc/mathutil
 
-Install: $ go get github.com/skycoin/cx/yacc/mathutil/mersenne
-Godocs:  http://godoc.org/github.com/skycoin/cx/yacc/mathutil/mersenne
+Install: $ go get github.com/skycoin/cx/goyacc/mathutil/mersenne
+Godocs:  http://godoc.org/github.com/skycoin/cx/goyacc/mathutil/mersenne

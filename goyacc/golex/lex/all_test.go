@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package lex // import "github.com/skycoin/cx/yacc/golex/lex"
+package lex // import "github.com/skycoin/cx/goyacc/golex/lex"
 
 import (
 	"fmt"
