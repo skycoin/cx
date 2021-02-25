@@ -188,7 +188,13 @@ make test-full
 
 ### Compiling CX on Windows
 
-Requires installation of GIT from https://git-scm.com/downloads prior to compile.
+Requires installation of GIT from https://git-scm.com/downloads prior to compile. 
+Setup GOPATH for cx:
+
+```
+set GOPATH=%userprofile%/cx
+```
+
 An installation script is also provided for Windows named `cx-setup.bat`. You can compile CX on Windows by running:
 
 ```
