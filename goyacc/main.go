@@ -131,15 +131,17 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/bits"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/parser/yacc"
+	"github.com/pkg/math"
+
+	parser "github.com/skycoin/cx/goyacc/parser/yacc"
 	"github.com/skycoin/cx/goyacc/y"
 
-	"github.com/skycoin/cx/goyacc/mathutil"
 	"github.com/skycoin/cx/goyacc/sortutil"
 	"github.com/skycoin/cx/goyacc/strutil"
 )
@@ -329,7 +331,7 @@ func main1(in string) (err error) {
 			if k == 'r' {
 				arg = -arg
 			}
-			minArg, maxArg = mathutil.Min(minArg, arg), mathutil.Max(maxArg, arg)
+			minArg, maxArg = math.Min(minArg, arg), math.Max(maxArg, arg)
 		}
 	}
 	su := make(symsUsed, 0, len(msu))
@@ -362,7 +364,7 @@ type %[1]sXError struct {
 	for sym := range msu {
 		nm := sym.Name
 		if nm == "$default" || nm == "$end" || sym.IsTerminal && nm[0] != '\'' && sym.Value > 0 {
-			maxTokName = mathutil.Max(maxTokName, len(nm))
+			maxTokName = math.Max(maxTokName, len(nm))
 			a = append(a, nm)
 		}
 		nsyms[nm] = sym
@@ -470,7 +472,7 @@ type %[1]sXError struct {
 
 	// Parse table
 	tbits := 32
-	switch n := mathutil.BitLen(maxArg - minArg + 1); {
+	switch n := bits.Len(uint(maxArg - minArg + 1)); {
 	case n < 8:
 		tbits = 8
 	case n < 16:
@@ -489,7 +491,7 @@ type %[1]sXError struct {
 				panic("internal error 001")
 			}
 
-			max = mathutil.Max(max, xsym)
+			max = math.Max(max, xsym)
 			kind, arg := act.Kind()
 			switch kind {
 			case 'a':
