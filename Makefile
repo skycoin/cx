@@ -1,14 +1,9 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full
-.PHONY: install-gfx-deps install-gfx-deps-MSYS install-gfx-deps-MINGW install-deps install install-full
+.PHONY: install-gfx-deps install-deps install install-full
 .PHONY: vendor
 
 PWD := $(shell pwd)
-
-#PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev
-#PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
-PKG_NAMES_WINDOWS := mingw-w64-x86_64-openal
 
 UNAME_S := $(shell uname -s)
 
@@ -32,11 +27,6 @@ PLATFORM := WINDOWS
 SUBSYSTEM := MINGW
 PACKAGES := PKG_NAMES_WINDOWS
 endif
-
-#ifneq (,$(findstring CYGWIN, $(UNAME_S)))
-#PLATFORM := WINDOWS
-#SUBSYSTEM := CYGWIN
-#endif
 
 ifneq (,$(findstring MSYS, $(UNAME_S)))
 PLATFORM := WINDOWS
@@ -93,15 +83,6 @@ build-full: install-full  ## Build CX from sources with all build tags
 build-android: install-full install-mobile 
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
 	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
-
-install-gfx-deps-MSYS:
-	@echo 'Installing dependencies for $(UNAME_S)'
-	pacman -Sy
-	pacman -S $(PKG_NAMES_WINDOWS)
-	if [ ! -a /mingw64/lib/libOpenAL32.a]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
-	if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
-
-install-gfx-deps-MINGW: install-gfx-deps-MSYS
 
 install-deps:
 	@echo "Installing go package dependencies"
