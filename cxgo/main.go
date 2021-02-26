@@ -544,15 +544,6 @@ func repl() {
 	}
 }
 
-
-// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *cxcore.CXProgram) {
-	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
-	prgrm.AddPackage(mod)
-	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(fn)
-}
-
 // checkCXPathSet checks if the user has set the environment variable
 // `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
 // $HOME/cx/pkg and $HOME/cx/src
