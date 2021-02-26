@@ -30,6 +30,77 @@ import (
 	"github.com/skycoin/skycoin/src/util/logging"
 )
 
+func unsafeEval(code string) (out string) {
+	var lexer *parser.Lexer
+	defer func() {
+		if r := recover(); r != nil {
+			out = fmt.Sprintf("%v", r)
+			lexer.Stop()
+		}
+	}()
+
+	// storing strings sent to standard output
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	actions.LineNo = 0
+
+	actions.PRGRM = cxcore.MakeProgram()
+	cxgo0.PRGRM0 = actions.PRGRM
+
+	cxgo0.Parse(code)
+
+	actions.PRGRM = cxgo0.PRGRM0
+
+	lexer = parser.NewLexer(bytes.NewBufferString(code))
+	parser.Parse(lexer)
+	//yyParse(lexer)
+
+	cxgo.AddInitFunction(actions.PRGRM)
+
+	if err := actions.PRGRM.RunCompiled(0, nil); err != nil {
+		actions.PRGRM = cxcore.MakeProgram()
+		return fmt.Sprintf("%s", err)
+	}
+
+	outC := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	w.Close()
+	os.Stdout = old // restoring the real stdout
+	out = <-outC
+
+	actions.PRGRM = cxcore.MakeProgram()
+	return out
+}
+
+func Eval(code string) string {
+	runtime.GOMAXPROCS(2)
+	ch := make(chan string, 1)
+
+	var result string
+
+	go func() {
+		result = unsafeEval(code)
+		ch <- result
+	}()
+
+	timer := time.NewTimer(20 * time.Second)
+	defer timer.Stop()
+
+	select {
+	case <-ch:
+		return result
+	case <-timer.C:
+		actions.PRGRM = cxcore.MakeProgram()
+		return "Timed out."
+	}
+}
 
 func Repl() {
 	fmt.Println("CX", VERSION)
