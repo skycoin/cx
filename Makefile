@@ -76,25 +76,37 @@ endif
 ifeq ($(UNAME_S), Linux)
 endif
 
-configure-workspace: ## Configure CX workspace environment
-	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
-	@echo "NOTE:\tCX workspace at $(CX_PATH)"
-
-build-parser: install-deps ## Generate lexer and parser for CX grammar
-	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
-	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
-
 build:  ## Build CX from sources
 	$(GO_OPTS) go build -tags="base" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
+
+clean: ## Removes binaries.
+	rm -r $(GOBIN)/cx
 
 build-full: install-full  ## Build CX from sources with all build tags
 	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-android: install-full install-mobile 
+build-android: install-full install-mobile
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
 	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
+
+token-fuzzer:
+	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
+	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+
+build-parser: install-deps ## Generate lexer and parser for CX grammar
+	$(GOBIN)/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
+	$(GOBIN)/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
+
+install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
+	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
+	$(GOBIN)/cx -v
+
+install-full: install-deps configure-workspace
+
+install-mobile:
+	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
 
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
@@ -118,26 +130,10 @@ install-deps:
 	@echo "Installing go package dependencies"
 	$(GO_OPTS) go get -u modernc.org/goyacc
 
-install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
-	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
-	$(GOBIN)/cx -v
-
-install-full: install-deps configure-workspace
-
-install-mobile:
-	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
-
-clean: ## Removes binaries. 
-	rm -r $(GOBIN)/cx
-
-token-fuzzer:
-	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ${GOPATH}/bin/cx-token-fuzzer
-
-test: #build ## Run CX test suite.
+test:  ## Run CX test suite.
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
-else	
+else
 	$(GO_OPTS) go test -race -tags base github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 endif
@@ -146,7 +142,9 @@ test-full: build ## Run CX test suite with all build tags
 	$(GO_OPTS) go test -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
-check: test ## Perform self-tests
+configure-workspace: ## Configure CX workspace environment
+	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
+	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/cx ./cx
