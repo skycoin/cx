@@ -21,6 +21,7 @@ the concept of affordances.
          * [Compiling CX on *nix](#compiling-cx-on-nix)
          * [Compiling CX on Windows](#compiling-cx-on-windows)
       * [Updating CX](#updating-cx)
+   * [Resources and libraries](#resources-and-libraries)
       
 ## CX Programming Language
 
@@ -168,3 +169,9 @@ Or on Windows:
 ```
 cx-setup.bat
 ```
+
+## Resources and libraries
+
+If you are interested in learning more about CX, please refer to the [resources documentation](docs/cx-resources.md). 
+
+If you want to get started with some basic example programs and tutorials check out the [tutorials section](docs/cx-tutorials.md). 
