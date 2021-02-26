@@ -1,14 +1,9 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full
-.PHONY: install-gfx-deps install-gfx-deps-LINUX install-gfx-deps-MSYS install-gfx-deps-MINGW install-gfx-deps-MACOS install-deps install install-full
-.PHONY: vendor
+.PHONY: install-deps install install-full
+.PHONY: dep
 
 PWD := $(shell pwd)
-
-#PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev gir1.2-gtk-3.0 libgtk2.0-dev libperl-dev libcairo2-dev libpango1.0-dev libgtk-3-dev gtk+3.0 libglib2.0-dev
-PKG_NAMES_LINUX := glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev
-#PKG_NAMES_MACOS := gtk gtk-mac-integration gtk+3 glade
-PKG_NAMES_WINDOWS := mingw-w64-x86_64-openal
 
 UNAME_S := $(shell uname -s)
 
@@ -33,11 +28,6 @@ SUBSYSTEM := MINGW
 PACKAGES := PKG_NAMES_WINDOWS
 endif
 
-#ifneq (,$(findstring CYGWIN, $(UNAME_S)))
-#PLATFORM := WINDOWS
-#SUBSYSTEM := CYGWIN
-#endif
-
 ifneq (,$(findstring MSYS, $(UNAME_S)))
 PLATFORM := WINDOWS
 SUBSYSTEM := MSYS
@@ -49,8 +39,6 @@ GOPATH := $(subst \,/,${GOPATH})
 HOME := $(subst \,/,${HOME})
 CXPATH := $(subst, \,/, ${CXPATH})
 endif
-
-INSTALL_GFX_DEPS := install-gfx-deps-$(SUBSYSTEM)
 
 GLOBAL_GOPATH := $(GOPATH)
 LOCAL_GOPATH  := $(HOME)/go
@@ -105,27 +93,6 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 
 install-full: install-deps configure-workspace
 
-install-mobile:
-	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
-
-install-gfx-deps-LINUX:
-	@echo 'Installing dependencies for $(UNAME_S)'
-	sudo apt-get update -qq
-	sudo apt-get install -y $(PKG_NAMES_LINUX) --no-install-recommends
-
-install-gfx-deps-MSYS:
-	@echo 'Installing dependencies for $(UNAME_S)'
-	pacman -Sy
-	pacman -S $(PKG_NAMES_WINDOWS)
-	if [ ! -a /mingw64/lib/libOpenAL32.a]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
-	if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
-
-install-gfx-deps-MINGW: install-gfx-deps-MSYS
-
-install-gfx-deps-MACOS:
-	@echo 'Installing dependencies for $(UNAME_S)'
-#brew install $(PKG_NAMES_MACOS)
-
 install-deps:
 	@echo "Installing go package dependencies"
 	$(GO_OPTS) go get -u modernc.org/goyacc
@@ -151,7 +118,7 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
-update-vendor: ## Update go vendor
+dep: ## Update go vendor
 	$(GO_OPTS) go mod vendor
 	$(GO_OPTS) go mod verify
 	$(GO_OPTS) go mod tidy
