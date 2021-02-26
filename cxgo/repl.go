@@ -83,3 +83,18 @@ func Repl() {
 		}
 	}
 }
+
+func printPrompt() {
+	if actions.ReplTargetMod != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
+		fmt.Printf("* ")
+	} else if actions.ReplTargetFn != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
+		fmt.Printf("\t* ")
+	} else if actions.ReplTargetStrct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
+		fmt.Printf("\t* ")
+	} else {
+		fmt.Printf("* ")
+	}
+}

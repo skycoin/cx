@@ -26,15 +26,19 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
 
-	"github.com/skycoin/skycoin/src/util/logging"
 )
 
 const VERSION = "0.7.1"
 
-var (
-	logger          = logging.MustGetLogger("CX")
 
-)
+func main() {
+	cx.CXLogFile(true)
+	if os.Args != nil && len(os.Args) > 1 {
+		Run(os.Args[1:])
+	}
+
+}
+
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
 func optionTokenize(options cxCmdFlags, fileNames []string) {
@@ -386,21 +390,6 @@ func determineWorkDir(filename string) string {
 		i = 0
 	}
 	return filename[:i]
-}
-
-func printPrompt() {
-	if actions.ReplTargetMod != "" {
-		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
-		fmt.Printf("* ")
-	} else if actions.ReplTargetFn != "" {
-		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
-		fmt.Printf("\t* ")
-	} else if actions.ReplTargetStrct != "" {
-		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
-		fmt.Printf("\t* ")
-	} else {
-		fmt.Printf("* ")
-	}
 }
 
 
