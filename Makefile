@@ -92,10 +92,6 @@ build-full: install-full  ## Build CX from sources with all build tags
 	$(GO_OPTS) go build -tags="base cxfx" -i -o $(GOBIN)/cx github.com/skycoin/cx/cxgo/
 	chmod +x $(GOBIN)/cx
 
-build-android: install-full install-mobile 
-	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
-	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
-
 install-gfx-deps-LINUX:
 	@echo 'Installing dependencies for $(UNAME_S)'
 	sudo apt-get update -qq
@@ -114,18 +110,11 @@ install-gfx-deps-MACOS:
 	@echo 'Installing dependencies for $(UNAME_S)'
 #brew install $(PKG_NAMES_MACOS)
 
-install-deps:
-	@echo "Installing go package dependencies"
-	$(GO_OPTS) go get -u modernc.org/goyacc
-
 install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	$(GOBIN)/cx -v
 
 install-full: install-deps configure-workspace
-
-install-mobile:
-	$(GO_OPTS) go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
 
 clean: ## Removes binaries. 
 	rm -r $(GOBIN)/cx
