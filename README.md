@@ -175,3 +175,5 @@ cx-setup.bat
 If you are interested in learning more about CX, please refer to the [resources documentation](docs/cx-resources.md). 
 
 If you want to get started with some basic example programs and tutorials check out the [tutorials section](docs/cx-tutorials.md). 
+
+The docs also provide a high level [overview](docs/overview.md) over the language. 
