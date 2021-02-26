@@ -3,7 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/build"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -16,6 +19,7 @@ type cxCmdFlags struct {
 	webPersistentMode bool
 	printHelp         bool
 	printVersion      bool
+	printEnv          bool
 	tokenizeMode      bool
 	initialHeap       string
 	maxHeap           string
@@ -53,6 +57,7 @@ func defaultCmdFlags() cxCmdFlags {
 		ideMode:           false,
 		webPersistentMode: false,
 		printHelp:         false,
+		printEnv:          false,
 		printVersion:      false,
 		blockchainMode:    false,
 		transactionMode:   false,
@@ -79,6 +84,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 
 	commandLine.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	commandLine.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
+	commandLine.BoolVar(&options.printEnv, "env", options.printEnv, "Print CX environment information")
 	commandLine.BoolVar(&options.tokenizeMode, "tokenize", options.tokenizeMode, "generate a 'out.cx.txt' text file with parsed tokens")
 	commandLine.BoolVar(&options.tokenizeMode, "t", options.tokenizeMode, "alias for -tokenize")
 	commandLine.StringVar(&options.compileOutput, "co", options.compileOutput, "alias for -compile-output")
@@ -149,10 +155,21 @@ func printVersion() {
 	fmt.Println("CX version", VERSION)
 }
 
-func checkhelp(args []string) bool {
-
+func checkHelp(args []string) bool {
 	if strings.Contains(args[0], "help") {
 		return true
 	}
 	return false
+}
+
+func printEnv() {
+	ex, _ := os.Executable()
+
+	fmt.Println("GOROOT: ", runtime.GOROOT())
+	fmt.Println("GOPATH: ", build.Default.GOPATH)
+	fmt.Println("GOBIN: ", os.Getenv("GOBIN"))
+	fmt.Println("GO version: ", runtime.Version())
+	fmt.Println("Operating system: ", runtime.GOOS)
+	fmt.Println("CX version: ", VERSION)
+	fmt.Println("CX binary location: ", filepath.Dir(ex))
 }

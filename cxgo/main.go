@@ -724,7 +724,7 @@ func Run(args []string) {
 		return
 	}
 
-	if checkhelp(args) {
+	if checkHelp(args) {
 		commandLine.PrintDefaults()
 		return
 
@@ -735,9 +735,16 @@ func Run(args []string) {
 		printHelp()
 		return
 	}
+
 	// Does the user want to print CX's version?
 	if options.printVersion {
 		printVersion()
+		return
+	}
+
+	// User wants to print CX env
+	if options.printEnv {
+		printEnv()
 		return
 	}
 
