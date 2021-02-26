@@ -32,7 +32,7 @@ const VERSION = "0.7.1"
 
 
 func main() {
-	cx.CXLogFile(true)
+	//cx.CXLogFile(true)
 	if os.Args != nil && len(os.Args) > 1 {
 		Run(os.Args[1:])
 	}
@@ -76,10 +76,7 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 	parser.Tokenize(r, w)
 }
 
-func cleanupAndExit(exitCode int) {
-	StopCPUProfile(profile)
-	os.Exit(exitCode)
-}
+
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
 	profile := StartCPUProfile("parse")
@@ -116,20 +113,11 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 		return false, nil, nil
 	}
 
-	// TODO @evanlinjin: This is a separate command now.
-	if options.tokenizeMode {
-		optionTokenize(options, fileNames)
-		return false, nil, nil
-	}
-
 	// var bcPrgrm *CXProgram
 	var sPrgrm []byte
 	// In case of a CX chain, we need to temporarily store the blockchain code heap elsewhere,
 	// so we can then add it after the transaction code's data segment.
 	var bcHeap []byte
-	if options.transactionMode || options.broadcastMode {
-		chainStatePrelude(&sPrgrm, &bcHeap, actions.PRGRM) // TODO: refactor injection logic
-	}
 
 	// Parsing all the source code files sent as CLI arguments to CX.
 	cxgo.ParseSourceCode(sourceCode, fileNames)
@@ -152,7 +140,11 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	actions.LineNo = 0
 
 	if cxcore.FoundCompileErrors {
-		cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+		//cleanupAndExit(cxcore.CX_COMPILATION_ERROR)
+		StopCPUProfile(profile)
+		exitCode := cxcore.CX_COMPILATION_ERROR
+		os.Exit(exitCode)
+
 	}
 
 	return true, bcHeap, sPrgrm
