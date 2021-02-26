@@ -36,16 +36,6 @@ var (
 
 )
 
-func getJSON(url string, target interface{}) error {
-	r, err := apiClient.Get(url)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
-
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
 func optionTokenize(options cxCmdFlags, fileNames []string) {
 	var r *os.File
@@ -386,6 +376,88 @@ type SourceCode struct {
 	Code string
 }
 
+
+
+func determineWorkDir(filename string) string {
+	filename = filepath.FromSlash(filename)
+
+	i := strings.LastIndexByte(filename, os.PathSeparator)
+	if i == -1 {
+		i = 0
+	}
+	return filename[:i]
+}
+
+func printPrompt() {
+	if actions.ReplTargetMod != "" {
+		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
+		fmt.Printf("* ")
+	} else if actions.ReplTargetFn != "" {
+		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
+		fmt.Printf("\t* ")
+	} else if actions.ReplTargetStrct != "" {
+		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
+		fmt.Printf("\t* ")
+	} else {
+		fmt.Printf("* ")
+	}
+}
+
+
+// checkCXPathSet checks if the user has set the environment variable
+// `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
+// $HOME/cx/pkg and $HOME/cx/src
+func checkCXPathSet(options cxCmdFlags) {
+	// Determining the filepath of the directory where the user
+	// started the `cx` command.
+	_, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	// cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
+
+	CXPATH := ""
+	if os.Getenv("CXPATH") != "" {
+		CXPATH = os.Getenv("CXPATH")
+	}
+	// `options.cxpath` overrides `os.Getenv("CXPATH")`
+	if options.cxpath != "" {
+		CXPATH, err = filepath.Abs(options.cxpath)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if os.Getenv("CXPATH") == "" && options.cxpath == "" {
+		usr, err := user.Current()
+		if err != nil {
+			panic(err)
+		}
+
+		CXPATH = usr.HomeDir + "/cx/"
+	}
+
+	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
+	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
+	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
+
+	// Creating directories in case they do not exist.
+	if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(CXPATH, 0755)
+	}
+	if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
+	}
+	if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
+	}
+	if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
+		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
+	}
+}
+
+
+//web interactive mode
+
 func ServiceMode() {
 	host := ":5336"
 
@@ -463,135 +535,6 @@ func PersistentServiceMode() {
 				}
 			}
 		}
-	}
-}
-
-func determineWorkDir(filename string) string {
-	filename = filepath.FromSlash(filename)
-
-	i := strings.LastIndexByte(filename, os.PathSeparator)
-	if i == -1 {
-		i = 0
-	}
-	return filename[:i]
-}
-
-func printPrompt() {
-	if actions.ReplTargetMod != "" {
-		fmt.Println(fmt.Sprintf(":package %s ...", actions.ReplTargetMod))
-		fmt.Printf("* ")
-	} else if actions.ReplTargetFn != "" {
-		fmt.Println(fmt.Sprintf(":func %s {...", actions.ReplTargetFn))
-		fmt.Printf("\t* ")
-	} else if actions.ReplTargetStrct != "" {
-		fmt.Println(fmt.Sprintf(":struct %s {...", actions.ReplTargetStrct))
-		fmt.Printf("\t* ")
-	} else {
-		fmt.Printf("* ")
-	}
-}
-
-func repl() {
-	fmt.Println("CX", VERSION)
-	fmt.Println("More information about CX is available at http://cx.skycoin.com/ and https://github.com/skycoin/cx/")
-
-	cxcore.InREPL = true
-
-	// fi := bufio.NewReader(os.NewFile(0, "stdin"))
-	fi := bufio.NewReader(os.Stdin)
-	// scanner := bufio.NewScanner(os.Stdin)
-
-	for {
-		var inp string
-		var ok bool
-
-		printPrompt()
-
-		if inp, ok = readline(fi); ok {
-			if actions.ReplTargetFn != "" {
-				inp = fmt.Sprintf(":func %s {\n%s\n}\n", actions.ReplTargetFn, inp)
-			}
-			if actions.ReplTargetMod != "" {
-				inp = fmt.Sprintf("%s", inp)
-			}
-			if actions.ReplTargetStrct != "" {
-				inp = fmt.Sprintf(":struct %s {\n%s\n}\n", actions.ReplTargetStrct, inp)
-			}
-
-			b := bytes.NewBufferString(inp)
-
-			parser.Parse(parser.NewLexer(b))
-			//yyParse(NewLexer(b))
-		} else {
-			if actions.ReplTargetFn != "" {
-				actions.ReplTargetFn = ""
-				continue
-			}
-
-			if actions.ReplTargetStrct != "" {
-				actions.ReplTargetStrct = ""
-				continue
-			}
-
-			if actions.ReplTargetMod != "" {
-				actions.ReplTargetMod = ""
-				continue
-			}
-
-			fmt.Printf("\nBye!\n")
-			break
-		}
-	}
-}
-
-// checkCXPathSet checks if the user has set the environment variable
-// `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
-// $HOME/cx/pkg and $HOME/cx/src
-func checkCXPathSet(options cxCmdFlags) {
-	// Determining the filepath of the directory where the user
-	// started the `cx` command.
-	_, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	// cxcore.COREPATH = filepath.Dir(ex) // TODO @evanlinjin: Not used.
-
-	CXPATH := ""
-	if os.Getenv("CXPATH") != "" {
-		CXPATH = os.Getenv("CXPATH")
-	}
-	// `options.cxpath` overrides `os.Getenv("CXPATH")`
-	if options.cxpath != "" {
-		CXPATH, err = filepath.Abs(options.cxpath)
-		if err != nil {
-			panic(err)
-		}
-	}
-	if os.Getenv("CXPATH") == "" && options.cxpath == "" {
-		usr, err := user.Current()
-		if err != nil {
-			panic(err)
-		}
-
-		CXPATH = usr.HomeDir + "/cx/"
-	}
-
-	cxcore.BINPATH = filepath.Join(CXPATH, "bin/")
-	cxcore.PKGPATH = filepath.Join(CXPATH, "pkg/")
-	cxcore.SRCPATH = filepath.Join(CXPATH, "src/")
-
-	// Creating directories in case they do not exist.
-	if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(CXPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
-	}
-	if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
 	}
 }
 
