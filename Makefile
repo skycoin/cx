@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full
-.PHONY: install-gfx-deps install-deps install install-full
-.PHONY: vendor
+.PHONY: install-deps install install-full
+.PHONY: dep
 
 PWD := $(shell pwd)
 
@@ -123,7 +123,7 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
-update-vendor: ## Update go vendor
+dep: ## Update go vendor
 	$(GO_OPTS) go mod vendor
 	$(GO_OPTS) go mod verify
 	$(GO_OPTS) go mod tidy
