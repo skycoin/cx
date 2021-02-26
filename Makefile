@@ -126,7 +126,7 @@ install-mobile:
 	go get golang.org/x/mobile/gl # TODO @evanlinjin: This is a library. needed?
 
 clean: ## Removes binaries. 
-	rm -r ./bin/*
+	rm -rf ./bin
 
 token-fuzzer:
 	go build $(GO_OPTS) -i -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
