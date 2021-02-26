@@ -544,37 +544,6 @@ func repl() {
 	}
 }
 
-// chainStatePrelude initializes the program structure `prgrm` with data from
-// the program state stored on a CX chain.
-func chainStatePrelude(sPrgrm *[]byte, bcHeap *[]byte, prgrm *cxcore.CXProgram) {
-	resp, err := http.Get("http://127.0.0.1:6420/api/v1/programState?addrs=TkyD4wD64UE6M5BkNQA17zaf7Xcg4AufwX")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err := json.Unmarshal(body, &sPrgrm); err != nil {
-		fmt.Println(string(body))
-		return
-	}
-
-	memOff := cxcore.GetSerializedMemoryOffset(*sPrgrm)
-	stackSize := cxcore.GetSerializedStackSize(*sPrgrm)
-	// sPrgrm with Stack and Heap
-	sPrgrmSH := (*sPrgrm)[:memOff]
-	// Appending new stack
-	sPrgrmSH = append(sPrgrmSH, make([]byte, stackSize)...)
-	// Appending data and heap segment
-	sPrgrmSH = append(sPrgrmSH, (*sPrgrm)[memOff:]...)
-	*bcHeap = (*sPrgrm)[memOff+cxcore.GetSerializedDataSize(*sPrgrm):]
-
-	*prgrm = *cxcore.Deserialize(sPrgrmSH)
-	// We need to start adding new data elements after the CX chain
-	// program state's data segment
-	actions.DataOffset = prgrm.HeapStartsAt
-}
 
 // initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
 func initMainPkg(prgrm *cxcore.CXProgram) {
