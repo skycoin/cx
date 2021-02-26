@@ -134,7 +134,7 @@ token-fuzzer:
 	$(GO_OPTS) go build -i -o $(GOBIN)/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
-test: ## Run CX test suite.
+test: #build ## Run CX test suite.
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else	
@@ -142,7 +142,7 @@ else
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 endif
 
-test-full: ## Run CX test suite with all build tags
+test-full: build ## Run CX test suite with all build tags
 	$(GO_OPTS) go test -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
 	$(GOBIN)/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
