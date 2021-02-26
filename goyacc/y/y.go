@@ -17,8 +17,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/util"
-
 	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
 	"github.com/skycoin/cx/goyacc/util"
 )
