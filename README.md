@@ -60,6 +60,14 @@ Download CX's repository using Go:
 go get github.com/skycoin/cx
 ```
 
+Get required Go dependencies with:
+
+```
+go get -u golang.org/x/mobile/cmd/gomobile
+go get -u modernc.org/goyacc
+go get golang.org/x/mobile/gl 
+```
+
 Navigate to CX's repository via:
 
 ```
