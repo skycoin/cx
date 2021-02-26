@@ -1,44 +1,29 @@
 package main
 
 import (
-	//"bufio"
-	//"bytes"
-	//"encoding/json"
-	//"errors"
-	//"io"
-	//"io/ioutil"
-	//"net"
-	//"net/http"
-	//"os/exec"
-	//"strconv"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
-	//"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	//api2 "github.com/skycoin/cx/cxgo/api"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
-
 )
 
 const VERSION = "0.7.1"
-
 
 func main() {
 	//cx.CXLogFile(true)
 	if os.Args != nil && len(os.Args) > 1 {
 		Run(os.Args[1:])
 	}
-
 }
-
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
 func optionTokenize(options cxCmdFlags, fileNames []string) {
@@ -287,12 +272,9 @@ func parseMemoryString(s string) int {
 	}
 }
 
-
 type SourceCode struct {
 	Code string //Unused?
 }
-
-
 
 func determineWorkDir(filename string) string {
 	filename = filepath.FromSlash(filename)
@@ -303,7 +285,6 @@ func determineWorkDir(filename string) string {
 	}
 	return filename[:i]
 }
-
 
 // checkCXPathSet checks if the user has set the environment variable
 // `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
@@ -355,5 +336,3 @@ func checkCXPathSet(options cxCmdFlags) {
 		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
 	}
 }
-
-
