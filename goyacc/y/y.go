@@ -20,7 +20,7 @@ import (
 	"github.com/skycoin/cx/goyacc/util"
 
 	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
-	"github.com/skycoin/cx/goyacc/strutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 const (
@@ -1376,7 +1376,7 @@ func (y *y) reductions() {
 }
 
 func (y *y) report(w io.Writer) {
-	f := strutil.IndentFormatter(w, "  ")
+	f := util.IndentFormatter(w, "  ")
 	if y.opts.debugSyms {
 		var a []string
 		max := 0

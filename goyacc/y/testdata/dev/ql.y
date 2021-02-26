@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/strutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 %}
@@ -1529,7 +1529,7 @@ func _dump() {
 	s = strings.Replace(s, "}", "%u\n}", -1)
 	s = strings.Replace(s, ", ", ",\n", -1)
 	var buf bytes.Buffer
-	strutil.IndentFormatter(&buf, ". ").Format(s)
+	util.IndentFormatter(&buf, ". ").Format(s)
 	buf.WriteString("\n")
 	a := strings.Split(buf.String(), "\n")
 	for _, v := range a {
