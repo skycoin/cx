@@ -13,7 +13,7 @@ import (
 	//"strconv"
 	"fmt"
 	"os"
-	//"os/user"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -76,7 +76,13 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 	parser.Tokenize(r, w)
 }
 
-
+// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
+func initMainPkg(prgrm *cxcore.CXProgram) {
+	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
+	prgrm.AddPackage(mod)
+	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	mod.AddFunction(fn)
+}
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
 	profile := StartCPUProfile("parse")
@@ -241,10 +247,49 @@ func Run(args []string) {
 	}
 }
 
+// Used for the -heap-initial, -heap-max and -stack-size flags.
+// This function parses, for example, "1M" to 1048576 (the corresponding number of bytes)
+// Possible suffixes are: G or g (gigabytes), M or m (megabytes), K or k (kilobytes)
+func parseMemoryString(s string) int {
+	suffix := s[len(s)-1]
+	_, notSuffix := strconv.ParseFloat(string(suffix), 64)
+
+	if notSuffix == nil {
+		// then we don't have a suffix
+		num, err := strconv.ParseInt(s, 10, 64)
+
+		if err != nil {
+			// malformed size
+			return -1
+		}
+
+		return int(num)
+	} else {
+		// then we have a suffix
+		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
+
+		if err != nil {
+			// malformed size
+			return -1
+		}
+
+		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
+		switch suffix {
+		case 'G', 'g':
+			return int(num * 1073741824)
+		case 'M', 'm':
+			return int(num * 1048576)
+		case 'K', 'k':
+			return int(num * 1024)
+		default:
+			return -1
+		}
+	}
+}
 
 
 type SourceCode struct {
-	Code string
+	Code string //Unused?
 }
 
 
