@@ -1,3 +1,5 @@
+export GO111MODULE=on
+
 .DEFAULT_GOAL := help
 .PHONY: build-parser build build-full test test-full
 .PHONY: install-deps install install-full
