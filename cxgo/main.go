@@ -156,32 +156,20 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 
 	if options.replMode || len(sourceCode) == 0 {
 		actions.PRGRM.SelectProgram()
-		repl()
+		Repl()
 		return
 	}
 
-	// If it's a CX chain transaction, we need to add the heap extracted
-	// from the retrieved CX chain program state.
-	if options.transactionMode || options.broadcastMode {
-		mergeBlockchainHeap(bcHeap, sPrgrm) // TODO: refactor injection logic
+	// Normal run of a CX program.
+	err := actions.PRGRM.RunCompiled(0, cxArgs)
+	if err != nil {
+		panic(err)
 	}
 
-	if options.blockchainMode {
-		panic("blockchainMode is moved to the github.com/skycoin/cx-chains repo")
-	} else if options.broadcastMode {
-		panic("broadcastMode is moved to the github.com/skycoin/cx-chains repo")
-
-	} else {
-		// Normal run of a CX program.
-		err := actions.PRGRM.RunCompiled(0, cxArgs)
-		if err != nil {
-			panic(err)
-		}
-
-		if cxcore.AssertFailed() {
-			os.Exit(cxcore.CX_ASSERT)
-		}
+	if cxcore.AssertFailed() {
+		os.Exit(cxcore.CX_ASSERT)
 	}
+
 }
 
 func Run(args []string) {
