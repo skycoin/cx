@@ -137,7 +137,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/math"
+	"github.com/skycoin/cx/goyacc/util"
 
 	parser "github.com/skycoin/cx/goyacc/parser/yacc"
 	"github.com/skycoin/cx/goyacc/y"
@@ -331,7 +331,7 @@ func main1(in string) (err error) {
 			if k == 'r' {
 				arg = -arg
 			}
-			minArg, maxArg = math.Min(minArg, arg), math.Max(maxArg, arg)
+			minArg, maxArg = util.Min(minArg, arg), util.Max(maxArg, arg)
 		}
 	}
 	su := make(symsUsed, 0, len(msu))
@@ -364,7 +364,7 @@ type %[1]sXError struct {
 	for sym := range msu {
 		nm := sym.Name
 		if nm == "$default" || nm == "$end" || sym.IsTerminal && nm[0] != '\'' && sym.Value > 0 {
-			maxTokName = math.Max(maxTokName, len(nm))
+			maxTokName = util.Max(maxTokName, len(nm))
 			a = append(a, nm)
 		}
 		nsyms[nm] = sym
@@ -491,7 +491,7 @@ type %[1]sXError struct {
 				panic("internal error 001")
 			}
 
-			max = math.Max(max, xsym)
+			max = util.Max(max, xsym)
 			kind, arg := act.Kind()
 			switch kind {
 			case 'a':
