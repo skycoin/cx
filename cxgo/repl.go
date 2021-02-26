@@ -1,33 +1,21 @@
 package main
+
 //put the repo command stuff here
 
 import (
 	"bufio"
 	"bytes"
-	//"encoding/json"
-	//"errors"
 	"fmt"
 	"io"
-	//"io/ioutil"
-	//"net"
-	//"net/http"
 	"os"
-	//"os/exec"
-	//"os/user"
-	//"path/filepath"
 	"runtime"
-	//"strconv"
-	//"strings"
 	"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	//api2 "github.com/skycoin/cx/cxgo/api"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
-
-	//"github.com/skycoin/skycoin/src/util/logging"
 )
 
 func unsafeEval(code string) (out string) {
