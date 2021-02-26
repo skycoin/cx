@@ -1,7 +1,7 @@
 ![cx logo](https://user-images.githubusercontent.com/26845312/32426758-2a4bbb00-c282-11e7-858e-a1eaf3ea92f3.png)
 
 # CX Programming Language
-
+ 
 [![Build Status](https://travis-ci.com/skycoin/cx.svg?branch=develop)](https://travis-ci.com/skycoin/cx) [![Build status](https://ci.appveyor.com/api/projects/status/y04pofhhfmpw8vef/branch/master?svg=true)](https://ci.appveyor.com/project/skycoin/cx/branch/master)
 
 CX is a general purpose, interpreted and compiled programming
@@ -38,7 +38,7 @@ the concept of affordances.
          * [Running CX Programs](#running-cx-programs)
       * [REPL tutorial](#cx-repl)
    * [Learning CX](#learning-cx)
-      
+
 # CX Programming Language
 [[Back to the Table of Contents] ↑](#table-of-contents)
 
