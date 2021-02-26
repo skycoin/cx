@@ -618,8 +618,3 @@ func readline(fi *bufio.Reader) (string, bool) {
 	return s, true
 }
 
-func isJSON(str string) bool {
-	var js map[string]interface{}
-	err := json.Unmarshal([]byte(str), &js)
-	return err == nil
-}
