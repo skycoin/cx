@@ -209,7 +209,10 @@ func DeclarePackage(ident string) {
 		PRGRM.AddPackage(pkg)
 	}
 
-	PRGRM.SelectPackage(ident)
+	_, err := PRGRM.SelectPackage(ident)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // DeclareImport()

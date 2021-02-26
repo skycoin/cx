@@ -461,7 +461,9 @@ func AddPointer(fn *CXFunction, sym *CXArgument) {
 	if IsPointer(sym) && !isPointerAdded(fn, sym) {
 		if len(sym.Fields) > 0 {
 			tmp := CXArgument{}
-			copier.Copy(&tmp, sym)
+			if err := copier.Copy(&tmp, sym); err != nil {
+				panic(err)
+			}
 			tmp.Fields = nil
 			fn.ListOfPointers = append(fn.ListOfPointers, &tmp)
 		} else {

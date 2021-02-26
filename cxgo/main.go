@@ -1,44 +1,29 @@
 package main
 
 import (
-	//"bufio"
-	//"bytes"
-	//"encoding/json"
-	//"errors"
-	//"io"
-	//"io/ioutil"
-	//"net"
-	//"net/http"
-	//"os/exec"
-	//"strconv"
 	"fmt"
 	"os"
-	//"os/user"
+	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
-	//"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
-	//api2 "github.com/skycoin/cx/cxgo/api"
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
-
 )
 
 const VERSION = "0.7.1"
-
 
 func main() {
 	//cx.CXLogFile(true)
 	if os.Args != nil && len(os.Args) > 1 {
 		Run(os.Args[1:])
 	}
-
 }
-
 
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
 func optionTokenize(options cxCmdFlags, fileNames []string) {
@@ -51,11 +36,17 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 	} else {
 		sourceFilename := fileNames[0]
 		if len(fileNames) > 1 {
-			fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
+			_, err := fmt.Fprintln(os.Stderr, "Multiple source files detected. Ignoring all except", sourceFilename)
+			if err != nil {
+				panic(err)
+			}
 		}
 		r, err = cxcore.CXOpenFile(sourceFilename)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
+			_, err := fmt.Fprintln(os.Stderr, "Error reading:", sourceFilename, err)
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		defer r.Close()
@@ -67,7 +58,10 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 		tokenFilename := options.compileOutput
 		w, err = cxcore.CXCreateFile(tokenFilename)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
+			_, err := fmt.Fprintln(os.Stderr, "Error writing:", tokenFilename, err)
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		defer w.Close()
@@ -76,7 +70,13 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 	parser.Tokenize(r, w)
 }
 
-
+// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
+func initMainPkg(prgrm *cxcore.CXProgram) {
+	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
+	prgrm.AddPackage(mod)
+	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	mod.AddFunction(fn)
+}
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
 	profile := StartCPUProfile("parse")
@@ -155,7 +155,10 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 	defer StopProfile("run")
 
 	if options.replMode || len(sourceCode) == 0 {
-		actions.PRGRM.SelectProgram()
+		_, err := actions.PRGRM.SelectProgram()
+		if err != nil {
+			panic(err)
+		}
 		Repl()
 		return
 	}
@@ -241,13 +244,49 @@ func Run(args []string) {
 	}
 }
 
+// Used for the -heap-initial, -heap-max and -stack-size flags.
+// This function parses, for example, "1M" to 1048576 (the corresponding number of bytes)
+// Possible suffixes are: G or g (gigabytes), M or m (megabytes), K or k (kilobytes)
+func parseMemoryString(s string) int {
+	suffix := s[len(s)-1]
+	_, notSuffix := strconv.ParseFloat(string(suffix), 64)
 
+	if notSuffix == nil {
+		// then we don't have a suffix
+		num, err := strconv.ParseInt(s, 10, 64)
 
-type SourceCode struct {
-	Code string
+		if err != nil {
+			// malformed size
+			return -1
+		}
+
+		return int(num)
+	} else {
+		// then we have a suffix
+		num, err := strconv.ParseFloat(s[:len(s)-1], 64)
+
+		if err != nil {
+			// malformed size
+			return -1
+		}
+
+		// The user can use suffixes to give as input gigabytes, megabytes or kilobytes.
+		switch suffix {
+		case 'G', 'g':
+			return int(num * 1073741824)
+		case 'M', 'm':
+			return int(num * 1048576)
+		case 'K', 'k':
+			return int(num * 1024)
+		default:
+			return -1
+		}
+	}
 }
 
-
+type SourceCode struct {
+	Code string //Unused?
+}
 
 func determineWorkDir(filename string) string {
 	filename = filepath.FromSlash(filename)
@@ -258,7 +297,6 @@ func determineWorkDir(filename string) string {
 	}
 	return filename[:i]
 }
-
 
 // checkCXPathSet checks if the user has set the environment variable
 // `CXPATH`. If not, CX creates a workspace at $HOME/cx, along with $HOME/cx/bin,
@@ -310,5 +348,3 @@ func checkCXPathSet(options cxCmdFlags) {
 		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
 	}
 }
-
-

@@ -39,7 +39,9 @@ func Stepping(steps int, delay int, withDelay bool) {
 				// PRGRM.UnRun(int(nCalls))
 				PRGRM.UnRun(steps)
 			} else {
-				PRGRM.RunCompiled(steps, nil)
+				if err := PRGRM.RunCompiled(steps, nil); err != nil {
+					panic(err)
+				}
 				// err := PRGRM.RunInterpreted(dStack, int(steps))
 				// if err != nil {
 				// 	fmt.Println(err)

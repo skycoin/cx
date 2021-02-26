@@ -133,7 +133,9 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	commandLine.IntVar(&options.debugProfile, "debug-profile", options.debugProfile, "Enable CPU+MEM profiling and set CPU profiling rate. Visualize .pprof files with \"go get github.com/google/pprof\" and \"pprof -http=:8080 file.pprof\"")
 	commandLine.IntVar(&options.debugProfile, "Dp", options.debugProfile, "alias for -debug-profile")
 
-	commandLine.Parse(args)
+	if err := commandLine.Parse(args); err != nil {
+		panic(err)
+	}
 
 }
 

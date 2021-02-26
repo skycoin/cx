@@ -127,14 +127,19 @@ func opHTTPHandle(prgrm *CXProgram) {
 		copy(i2, PROGRAM.Memory[i2Off:i2Off+i2Size])
 
 		PROGRAM.Callback(handlerFn, [][]byte{i1, i2})
-		fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
+		_, err := fmt.Fprint(w, ReadStr(callFP, handlerFn.Inputs[0]))
+		if err != nil {
+			panic(err)
+		}
 	})
 }
 
 var server *http.Server
 
 func opHTTPClose(prgrm *CXProgram) {
-	server.Close()
+	if err := server.Close(); err != nil {
+		panic(err)
+	}
 }
 
 func opHTTPListenAndServe(prgrm *CXProgram) {

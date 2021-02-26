@@ -26,7 +26,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 	sourceCodeCopy := make([]string, len(sourceCode))
 	for i, source := range sourceCode {
 		tmp := bytes.NewBuffer(nil)
-		io.Copy(tmp, source)
+		_, err := io.Copy(tmp, source)
+		if err != nil {
+			panic(err)
+		}
 		sourceCodeCopy[i] = string(tmp.Bytes())
 	}
 
@@ -39,7 +42,10 @@ func ParseSourceCode(sourceCode []*os.File, fileNames []string) {
 		parseErrors = lexerStep0(sourceCodeCopy, fileNames)
 	}
 
-	actions.PRGRM.SelectProgram()
+	_, err := actions.PRGRM.SelectProgram()
+	if err != nil {
+		panic(err)
+	}
 
 	actions.PRGRM = cxgo0.PRGRM0
 

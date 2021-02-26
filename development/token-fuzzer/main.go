@@ -249,7 +249,10 @@ func main() {
 	commandLine.StringVar(&outfile, "o", outfile, "file to output to")
 	commandLine.IntVar(&tbits, "b", tbits, "how to chunk the generator")
 	commandLine.IntVar(&tchunks, "c", tchunks, "how many chunks to perform")
-	commandLine.Parse(os.Args[1:])
+	if err := commandLine.Parse(os.Args[1:]); err != nil {
+		panic(err)
+	}
+
 	if tbits > 8 || tbits < 0 {
 		fmt.Printf("invalid tbits: %d\n", tbits)
 		os.Exit(-1)
@@ -283,6 +286,9 @@ func main() {
 	for i := 0; i <= sidx; i++ {
 		src2 += src[i]
 	}
-	ioutil.WriteFile(outfile, []byte(src2), 0644)
+	if err :=  ioutil.WriteFile(outfile, []byte(src2), 0644); err != nil {
+		panic(err)
+	}
+
 	fmt.Printf("Completed. Total size: %d bytes.\n", len(src2))
 }

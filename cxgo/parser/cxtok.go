@@ -12,7 +12,10 @@ func Tokenize(r io.Reader, w io.Writer) {
 	lex := NewLexer(r)
 	token := lex.Lex(&sym)
 	for token > 0 {
-		fmt.Fprintln(w, tokenName(token), tokenValue(token, &sym))
+		_, err := fmt.Fprintln(w, tokenName(token), tokenValue(token, &sym))
+		if err != nil {
+			panic(err)
+		}
 		token = lex.Lex(&sym)
 	}
 }
