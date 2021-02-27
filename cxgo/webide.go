@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	"bufio"
 	"bytes"
 	"encoding/json"
@@ -126,4 +126,3 @@ func readline(fi *bufio.Reader) (string, bool) {
 
 	return s, true
 }
-

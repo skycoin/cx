@@ -356,3 +356,4 @@ func checkCXPathSet(options cxCmdFlags) {
 		}
 	}
 }
+

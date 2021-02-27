@@ -154,9 +154,9 @@ pacman -Sy
 
 pacman -S mingw-w64-x86_64-openal
 
-if [ ! -a /mingw64/lib/libOpenAL32.a]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
+if [ ! -a /mingw64/lib/libOpenAL32.a ]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
 
-if [ ! -a /mingw64/lib/libOpenAL32.dll.a]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
+if [ ! -a /mingw64/lib/libOpenAL32.dll.a ]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
 ```
 
 You can compile CX by running: 
