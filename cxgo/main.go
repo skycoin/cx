@@ -336,15 +336,23 @@ func checkCXPathSet(options cxCmdFlags) {
 
 	// Creating directories in case they do not exist.
 	if _, err := cxcore.CXStatFile(CXPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(CXPATH, 0755)
+		if err := cxcore.CXMkdirAll(CXPATH, 0755); err != nil {
+			panic(err)
+		}
 	}
 	if _, err := cxcore.CXStatFile(cxcore.BINPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.BINPATH, 0755)
+		if err := cxcore.CXMkdirAll(cxcore.BINPATH, 0755); err != nil {
+			panic(err)
+		}
 	}
 	if _, err := cxcore.CXStatFile(cxcore.PKGPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.PKGPATH, 0755)
+		if err := cxcore.CXMkdirAll(cxcore.PKGPATH, 0755); err != nil {
+			panic(err)
+		}
 	}
 	if _, err := cxcore.CXStatFile(cxcore.SRCPATH); os.IsNotExist(err) {
-		cxcore.CXMkdirAll(cxcore.SRCPATH, 0755)
+		if err := cxcore.CXMkdirAll(cxcore.SRCPATH, 0755); err != nil {
+			panic(err)
+		}
 	}
 }
