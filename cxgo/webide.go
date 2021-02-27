@@ -1,6 +1,20 @@
 package main
 
-import()
+import(
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/api"
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"os"
+	"os/exec"
+	"strings"
+)
 
 //web interactive mode
 
@@ -10,7 +24,7 @@ func ServiceMode() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
-	mux.Handle("/program/", api2.NewAPI("/program", actions.PRGRM))
+	mux.Handle("/program/", api.NewAPI("/program", actions.PRGRM))
 	mux.HandleFunc("/eval", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var b []byte
@@ -82,6 +96,12 @@ func PersistentServiceMode() {
 			}
 		}
 	}
+}
+
+func isJSON(str string) bool {
+	var js map[string]interface{}
+	err := json.Unmarshal([]byte(str), &js)
+	return err == nil
 }
 
 // ----------------------------------------------------------------
