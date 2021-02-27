@@ -77,7 +77,7 @@ build-full: install-full  ## Build CX from sources with all build tags
 
 build-android: install-full install-mobile
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
-	go get $(GO_OPTS) -u golang.org/x/mobile/cmd/gomobile
+	$(GO_OPTS) go get -u golang.org/x/mobile/cmd/gomobile
 
 token-fuzzer:
 	go build $(GO_OPTS) -i -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
@@ -95,19 +95,19 @@ install-full: install-deps configure-workspace
 
 install-deps:
 	@echo "Installing go package dependencies"
-	go get $(GO_OPTS) -u modernc.org/goyacc
+	$(GO_OPTS) go get -u modernc.org/goyacc
 
 test:  ## Run CX test suite.
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 endif
 
 test-full: build ## Run CX test suite with all build tags
 	go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
@@ -119,9 +119,9 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
 dep: ## Update go vendor
-	go mod $(GO_OPTS) vendor
-	go mod $(GO_OPTS) verify
-	go mod $(GO_OPTS) tidy
+	$(GO_OPTS) go mod vendor
+	$(GO_OPTS) go mod verify
+	$(GO_OPTS) go mod tidy
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
