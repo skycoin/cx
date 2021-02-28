@@ -20,7 +20,6 @@ matrix:
 # Install necessaries go packages
 install:
   - go get -u modernc.org/goyacc
-  - go get golang.org/x/mobile/gl 
 
 # Build, test & run cx test
 script:
