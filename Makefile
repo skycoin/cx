@@ -65,22 +65,18 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	go build $(GO_OPTS) -tags="base" -i -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base" -o ./bin/cx github.com/skycoin/cx/cxgo/
 	chmod +x ./bin/cx
 
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
 build-full: install-full  ## Build CX from sources with all build tags
-	go build $(GO_OPTS) -tags="base cxfx" -i -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cxgo/
 	chmod +x ./bin/cx
 
-build-android: install-full install-mobile
-	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
-	go get $(GO_OPTS) -u golang.org/x/mobile/cmd/gomobile
-
 token-fuzzer:
-	go build $(GO_OPTS) -i -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
+	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
 build-parser: install-deps ## Generate lexer and parser for CX grammar
@@ -91,22 +87,18 @@ install: install-deps build configure-workspace ## Install CX from sources. Buil
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	./bin/cx -v
 
-install-full: install-deps configure-workspace
-
-install-deps:
-	@echo "Installing go package dependencies"
-	go get $(GO_OPTS) -u modernc.org/goyacc
+install-full: configure-workspace
 
 test:  ## Run CX test suite.
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
-	go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
+	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
 	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 endif
 
 test-full: build ## Run CX test suite with all build tags
-	go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
+	# go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
 	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 configure-workspace: ## Configure CX workspace environment
