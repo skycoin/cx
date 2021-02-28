@@ -79,7 +79,7 @@ build-parser: ## Generate lexer and parser for CX grammar
 	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
-install: build configure-workspace ## Install CX from sources. Build dependencies
+install: configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	./bin/cx -v
 
