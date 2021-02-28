@@ -12,6 +12,9 @@ const (
 	IntBits = 1 << (^uint(0)>>32&1 + ^uint(0)>>16&1 + ^uint(0)>>8&1 + 3)
 )
 
+// IsEOF reports whether err is an EOF condition.
+func IsEOF(err error) bool { return err == io.EOF }
+
 //Max returns the bigger of a and b
 func Max(a, b int) int {
 	if a > b {
