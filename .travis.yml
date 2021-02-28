@@ -17,10 +17,6 @@ matrix:
       dist: xenial
     - os: osx
 
-# Install necessaries go packages
-install:
-  - go get -u modernc.org/goyacc
-
 # Build, test & run cx test
 script:
   - make build
