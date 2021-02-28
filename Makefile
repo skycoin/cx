@@ -106,6 +106,7 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
+	goimports -w -local github.com/skycoin/cx ./cmd
 	goimports -w -local github.com/skycoin/cx ./cx
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo

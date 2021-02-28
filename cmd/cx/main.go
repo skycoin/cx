@@ -25,6 +25,82 @@ func main() {
 	}
 }
 
+func Run(args []string) {
+	runtime.LockOSThread()
+	runtime.GOMAXPROCS(2)
+
+	options := defaultCmdFlags()
+	parseFlags(&options, args)
+
+	// Checking if CXPATH is set, either by setting an environment variable
+	// or by setting the `--cxpath` flag.
+	checkCXPathSet(options)
+
+	if checkHelp(args) {
+		commandLine.PrintDefaults()
+		return
+	}
+
+	// Does the user want to print the command-line help?
+	if options.printHelp {
+		printHelp()
+		return
+	}
+
+	// Does the user want to print CX's version?
+	if options.printVersion {
+		printVersion()
+		return
+	}
+
+	// User wants to print CX env
+	if options.printEnv {
+		printEnv()
+		return
+	}
+
+	if options.initialHeap != "" {
+		cxcore.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
+	}
+	if options.maxHeap != "" {
+		cxcore.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
+		if cxcore.MAX_HEAP_SIZE < cxcore.INIT_HEAP_SIZE {
+			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
+			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
+		}
+	}
+	if options.stackSize != "" {
+		cxcore.STACK_SIZE = parseMemoryString(options.stackSize)
+		actions.DataOffset = cxcore.STACK_SIZE
+	}
+	if options.minHeapFreeRatio != float64(0) {
+		cxcore.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
+	}
+	if options.maxHeapFreeRatio != float64(0) {
+		cxcore.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
+	}
+
+	// options, file pointers, filenames
+	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
+
+	// Propagate some options out to other packages.
+	parser.DebugLexer = options.debugLexer // in package parser
+	DebugProfileRate = options.debugProfile
+	DebugProfile = DebugProfileRate > 0
+
+	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
+		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
+	}
+}
+
+// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
+func initMainPkg(prgrm *cxcore.CXProgram) {
+	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
+	prgrm.AddPackage(mod)
+	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
+	mod.AddFunction(fn)
+}
+
 // optionTokenize checks if the user wants to use CX to generate the lexer tokens
 func optionTokenize(options cxCmdFlags, fileNames []string) {
 	var r *os.File
@@ -59,14 +135,6 @@ func optionTokenize(options cxCmdFlags, fileNames []string) {
 	}
 
 	parser.Tokenize(r, w)
-}
-
-// initMainPkg adds a `main` package with an empty `main` function to `prgrm`.
-func initMainPkg(prgrm *cxcore.CXProgram) {
-	mod := cxcore.MakePackage(cxcore.MAIN_PKG)
-	prgrm.AddPackage(mod)
-	fn := cxcore.MakeFunction(cxcore.MAIN_FUNC, actions.CurrentFile, actions.LineNo)
-	mod.AddFunction(fn)
 }
 
 func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File) (bool, []byte, []byte) {
@@ -159,76 +227,6 @@ func runProgram(options cxCmdFlags, cxArgs []string, sourceCode []*os.File, bcHe
 
 	if cxcore.AssertFailed() {
 		os.Exit(cxcore.CX_ASSERT)
-	}
-
-}
-
-func Run(args []string) {
-	runtime.LockOSThread()
-	runtime.GOMAXPROCS(2)
-
-	options := defaultCmdFlags()
-	parseFlags(&options, args)
-
-	// Checking if CXPATH is set, either by setting an environment variable
-	// or by setting the `--cxpath` flag.
-	checkCXPathSet(options)
-
-	if checkHelp(args) {
-		commandLine.PrintDefaults()
-		return
-
-	}
-
-	// Does the user want to print the command-line help?
-	if options.printHelp {
-		printHelp()
-		return
-	}
-
-	// Does the user want to print CX's version?
-	if options.printVersion {
-		printVersion()
-		return
-	}
-
-	// User wants to print CX env
-	if options.printEnv {
-		printEnv()
-		return
-	}
-
-	if options.initialHeap != "" {
-		cxcore.INIT_HEAP_SIZE = parseMemoryString(options.initialHeap)
-	}
-	if options.maxHeap != "" {
-		cxcore.MAX_HEAP_SIZE = parseMemoryString(options.maxHeap)
-		if cxcore.MAX_HEAP_SIZE < cxcore.INIT_HEAP_SIZE {
-			// Then MAX_HEAP_SIZE overrides INIT_HEAP_SIZE's value.
-			cxcore.INIT_HEAP_SIZE = cxcore.MAX_HEAP_SIZE
-		}
-	}
-	if options.stackSize != "" {
-		cxcore.STACK_SIZE = parseMemoryString(options.stackSize)
-		actions.DataOffset = cxcore.STACK_SIZE
-	}
-	if options.minHeapFreeRatio != float64(0) {
-		cxcore.MIN_HEAP_FREE_RATIO = float32(options.minHeapFreeRatio)
-	}
-	if options.maxHeapFreeRatio != float64(0) {
-		cxcore.MAX_HEAP_FREE_RATIO = float32(options.maxHeapFreeRatio)
-	}
-
-	// options, file pointers, filenames
-	cxArgs, sourceCode, fileNames := cxcore.ParseArgsForCX(commandLine.Args(), true)
-
-	// Propagate some options out to other packages.
-	parser.DebugLexer = options.debugLexer // in package parser
-	DebugProfileRate = options.debugProfile
-	DebugProfile = DebugProfileRate > 0
-
-	if run, bcHeap, sPrgrm := parseProgram(options, fileNames, sourceCode); run {
-		runProgram(options, cxArgs, sourceCode, bcHeap, sPrgrm)
 	}
 }
 

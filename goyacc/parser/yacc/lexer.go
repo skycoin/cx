@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/cx/goyacc/golex/lex"
-	"github.com/skycoin/cx/goyacc/strutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 // Node represents an AST node.
@@ -515,7 +515,7 @@ func prettyPrint(w io.Writer, v interface{}) {
 		return
 	}
 
-	f := strutil.IndentFormatter(w, "· ")
+	f := util.IndentFormatter(w, "· ")
 
 	defer func() {
 		if e := recover(); e != nil {
@@ -526,7 +526,7 @@ func prettyPrint(w io.Writer, v interface{}) {
 	prettyPrint0(nil, f, "", "", v)
 }
 
-func prettyPrint0(protect map[interface{}]struct{}, sf strutil.Formatter, prefix, suffix string, v interface{}) {
+func prettyPrint0(protect map[interface{}]struct{}, sf util.Formatter, prefix, suffix string, v interface{}) {
 	if v == nil {
 		return
 	}
@@ -607,7 +607,7 @@ func prettyPrint0(protect map[interface{}]struct{}, sf strutil.Formatter, prefix
 		}
 
 		var buf bytes.Buffer
-		nf := strutil.IndentFormatter(&buf, "· ")
+		nf := util.IndentFormatter(&buf, "· ")
 		var skeys []string
 		for i, k := range keys {
 			prettyPrint0(protect, nf, "", "", k.Interface())

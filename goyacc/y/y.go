@@ -17,13 +17,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/mathutil"
 	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
-	"github.com/skycoin/cx/goyacc/strutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 const (
-	intBits  = mathutil.IntBits
+	intBits  = util.IntBits
 	bitShift = intBits>>6 + 5
 	bitMask  = intBits - 1
 )
@@ -1375,12 +1374,12 @@ func (y *y) reductions() {
 }
 
 func (y *y) report(w io.Writer) {
-	f := strutil.IndentFormatter(w, "  ")
+	f := util.IndentFormatter(w, "  ")
 	if y.opts.debugSyms {
 		var a []string
 		max := 0
 		for _, v := range y.syms {
-			max = mathutil.Max(max, len(v.Name))
+			max = util.Max(max, len(v.Name))
 		}
 		for _, v := range y.syms {
 			a = append(a, fmt.Sprintf("%[2]*[1]s val %6[3]d, id %3[5]d, type %[4]q",
@@ -1457,7 +1456,7 @@ func (y *y) report(w io.Writer) {
 		a := []string{}
 		var w int
 		for sym := range state.actions {
-			w = mathutil.Max(w, len(sym.Name))
+			w = util.Max(w, len(sym.Name))
 			a = append(a, sym.Name)
 		}
 		sort.Strings(a)
@@ -1482,7 +1481,7 @@ func (y *y) report(w io.Writer) {
 		a = a[:0]
 		w = 0
 		for sym := range state.gotos {
-			w = mathutil.Max(w, len(sym.Name))
+			w = util.Max(w, len(sym.Name))
 			a = append(a, sym.Name)
 		}
 		sort.Strings(a)
