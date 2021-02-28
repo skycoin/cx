@@ -19,16 +19,13 @@ matrix:
 
 # Install necessaries go packages
 install:
-  - make install
-  - make install-gfx-deps
-  - make install-linters
+  - go get -u modernc.org/goyacc
+  - go get golang.org/x/mobile/gl 
 
 # Build, test & run cx test
 script:
-  - make build-full
-  - make test
-  - make test-full
-  - make lint
+  - make build
+  - make install
 
 # Notifications to Telegram channel
 notifications:
