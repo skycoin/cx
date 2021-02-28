@@ -21,6 +21,7 @@ matrix:
 script:
   - make build
   - make install
+  - make test
 
 # Notifications to Telegram channel
 notifications:
