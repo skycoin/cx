@@ -168,7 +168,7 @@ cx-setup.bat
 Test your installation by running:
 
 ```
-cx tests\main.cx ++wdir=tests ++disable-tests=issue
+cx lib/args.cx tests/main.cx ++wdir=tests ++disable-tests=issue
 ```
 
 ## Updating CX
