@@ -1,8 +1,8 @@
 export GO111MODULE=on
 
 .DEFAULT_GOAL := help
-.PHONY: build-parser build build-full test test-full
-.PHONY: install-deps install install-full
+.PHONY: build-parser build test
+.PHONY: install
 .PHONY: dep
 
 PWD := $(shell pwd)
@@ -71,7 +71,7 @@ build:  ## Build CX from sources
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
-build-full: install-full  ## Build CX from sources with all build tags
+build-full: full  ## Build CX from sources with all build tags
 	go build $(GO_OPTS) -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
@@ -79,15 +79,13 @@ token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
 
-build-parser: install-deps ## Generate lexer and parser for CX grammar
+build-parser: ## Generate lexer and parser for CX grammar
 	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
 	./bin/goyacc -o cxgo/parser/cxgo.go cxgo/parser/cxgo.y
 
-install: install-deps build configure-workspace ## Install CX from sources. Build dependencies
+install: build configure-workspace ## Install CX from sources. Build dependencies
 	@echo 'NOTE:\tWe recommend you to test your CX installation by running "cx ./tests"'
 	./bin/cx -v
-
-install-full: configure-workspace
 
 test:  ## Run CX test suite.
 ifndef CXVERSION
@@ -96,10 +94,6 @@ else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
 	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 endif
-
-test-full: build ## Run CX test suite with all build tags
-	# go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
