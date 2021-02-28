@@ -65,19 +65,19 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	go build $(GO_OPTS) -tags="base" -i -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base" -i -o ./bin/cx github.com/skycoin/cx/cmd/cx/
 	chmod +x ./bin/cx
 
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
 build-full: install-full  ## Build CX from sources with all build tags
-	go build $(GO_OPTS) -tags="base cxfx" -i -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base cxfx" -i -o ./bin/cx github.com/skycoin/cx/cmd/cx/
 	chmod +x ./bin/cx
 
 build-android: install-full install-mobile
 	# TODO @evanlinjin: We should switch this to use 'github.com/SkycoinProject/gomobile' once it can build.
-	go get $(GO_OPTS) -u golang.org/x/mobile/cmd/gomobile
+	go get $(GO_OPTS) -u golang.org/x/mobile/cmd/cx/cmd/mobile/
 
 token-fuzzer:
 	go build $(GO_OPTS) -i -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
@@ -101,12 +101,12 @@ test:  ## Run CX test suite.
 ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
-	go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
+	go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cmd/cx
 	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 endif
 
 test-full: build ## Run CX test suite with all build tags
-	go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
+	go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cmd/cx
 	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
 
 configure-workspace: ## Configure CX workspace environment
@@ -114,6 +114,7 @@ configure-workspace: ## Configure CX workspace environment
 	@echo "NOTE:\tCX workspace at $(CX_PATH)"
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
+	goimports -w -local github.com/skycoin/cx ./cmd
 	goimports -w -local github.com/skycoin/cx ./cx
 	goimports -w -local github.com/skycoin/cx ./cxfx
 	goimports -w -local github.com/skycoin/cx ./cxgo
