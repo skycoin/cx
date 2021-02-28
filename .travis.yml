@@ -17,18 +17,11 @@ matrix:
       dist: xenial
     - os: osx
 
-# Install necessaries go packages
-install:
-  - make install
-  - make install-gfx-deps
-  - make install-linters
-
 # Build, test & run cx test
 script:
-  - make build-full
+  - make build
+  - make install
   - make test
-  - make test-full
-  - make lint
 
 # Notifications to Telegram channel
 notifications:
