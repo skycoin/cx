@@ -65,14 +65,14 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	go build $(GO_OPTS) -tags="base" -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
 build-full: install-full  ## Build CX from sources with all build tags
-	go build $(GO_OPTS) -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cxgo/
+	go build $(GO_OPTS) -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 token-fuzzer:
@@ -94,12 +94,12 @@ ifndef CXVERSION
 	@echo "cx not found in $(PWD)/bin, please run make install first"
 else
 	# go test $(GO_OPTS) -race -tags base github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 endif
 
 test-full: build ## Run CX test suite with all build tags
 	# go test $(GO_OPTS) -race -tags="base cxfx" github.com/skycoin/cx/cxgo/
-	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue
+	./bin/cx ./lib/args.cx ./tests/main.cx ++wdir=./tests ++disable-tests=gui,issue ++cxpath=$(PWD)/bin/cx
 
 configure-workspace: ## Configure CX workspace environment
 	mkdir -p $(CX_PATH)/src $(CX_PATH)/bin $(CX_PATH)/pkg
