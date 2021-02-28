@@ -71,10 +71,6 @@ build:  ## Build CX from sources
 clean: ## Removes binaries.
 	rm -r ./bin/cx
 
-build-full: full  ## Build CX from sources with all build tags
-	go build $(GO_OPTS) -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
-	chmod +x ./bin/cx
-
 token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
 	chmod +x ${GOPATH}/bin/cx-token-fuzzer
