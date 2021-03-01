@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"io"
+	"sort"
 )
 
 const (
@@ -157,4 +158,37 @@ func (f *indentFormatter) format(flat bool, format string, args ...interface{}) 
 
 func (f *indentFormatter) Format(format string, args ...interface{}) (n int, errno error) {
 	return f.format(false, format, args...)
+}
+
+// Dedupe returns n, the number of distinct elements in data. The resulting
+// elements are sorted in elements [0, n) or data[:n] for a slice.
+func Dedupe(data sort.Interface) (n int) {
+	if n = data.Len(); n < 2 {
+		return n
+	}
+
+	sort.Sort(data)
+	a, b := 0, 1
+	for b < n {
+		if data.Less(a, b) {
+			a++
+			if a != b {
+				data.Swap(a, b)
+			}
+		}
+		b++
+	}
+	return a + 1
+}
+
+// Uint64Slice attaches the methods of sort.Interface to []uint64, sorting in increasing order.
+type Uint64Slice []uint64
+
+func (s Uint64Slice) Len() int           { return len(s) }
+func (s Uint64Slice) Less(i, j int) bool { return s[i] < s[j] }
+func (s Uint64Slice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+// Sort is a convenience method.
+func (s Uint64Slice) Sort() {
+	sort.Sort(s)
 }
