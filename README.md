@@ -84,10 +84,10 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
-make install
+make build && make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
@@ -97,12 +97,6 @@ You should test your installation by running:
 
 ```
 make test
-```
-
-If you intend to develop games with CX, then run:
-
-```
-make test-full
 ```
 
 ### Compiling on MacOS
@@ -122,10 +116,10 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
-make install
+make build && make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
@@ -135,12 +129,6 @@ You should test your installation by running:
 
 ```
 make test
-```
-
-If you intend to develop games with CX, then run:
-
-```
-make test-full
 ```
 
 ### Compiling CX on Windows
