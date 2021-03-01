@@ -25,12 +25,8 @@ github.com/magefile/mage/mg
 github.com/magefile/mage/sh
 # github.com/mattn/go-colorable v0.1.8
 ## explicit
-github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.12
-github.com/mattn/go-isatty
 # github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 ## explicit
-github.com/mgutz/ansi
 # github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12
 ## explicit
 github.com/mjibson/go-dsp/wav
@@ -51,9 +47,6 @@ github.com/skycoin/skycoin/src/cipher/encoder
 github.com/skycoin/skycoin/src/cipher/ripemd160
 github.com/skycoin/skycoin/src/cipher/secp256k1-go
 github.com/skycoin/skycoin/src/cipher/secp256k1-go/secp256k1-go2
-github.com/skycoin/skycoin/src/util/logging
-# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-golang.org/x/crypto/ssh/terminal
 # golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56
 ## explicit
 golang.org/x/exp/ebnf
