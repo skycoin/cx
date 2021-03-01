@@ -15,6 +15,8 @@ github.com/go-gl/glfw/v3.3/glfw/glfw/src
 github.com/golang/freetype
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
+# github.com/hhatto/gocloc v0.4.1
+## explicit
 # github.com/jinzhu/copier v0.2.4
 ## explicit
 github.com/jinzhu/copier
@@ -53,6 +55,8 @@ github.com/skycoin/skycoin/src/util/logging
 # golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56
+## explicit
+golang.org/x/exp/ebnf
 golang.org/x/exp/shiny/driver/gldriver
 golang.org/x/exp/shiny/driver/internal/drawer
 golang.org/x/exp/shiny/driver/internal/errscreen
@@ -84,14 +88,4 @@ golang.org/x/mobile/internal/mobileinit
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
-## explicit
-# modernc.org/goyacc v1.0.0
-## explicit
-# modernc.org/mathutil v1.2.2
-## explicit
-# modernc.org/sortutil v1.1.0
-## explicit
-# modernc.org/strutil v1.1.0
-## explicit
-# modernc.org/y v1.0.1
 ## explicit
