@@ -152,7 +152,7 @@ Notes:
 }
 
 func printVersion() {
-	fmt.Println("CX version", VERSION)
+	fmt.Printf("CX version %v %v/%v\n", VERSION, runtime.GOOS, runtime.GOARCH)
 }
 
 func checkHelp(args []string) bool {
