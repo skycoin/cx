@@ -73,7 +73,7 @@ clean: ## Removes binaries.
 
 token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+	chmod +x ./bin/cx-token-fuzzer
 
 build-parser: ## Generate lexer and parser for CX grammar
 	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
