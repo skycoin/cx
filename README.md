@@ -84,7 +84,11 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
-make build && make install
+// Build CX binary
+make build
+
+// 
+make install
 ```
 
 Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
