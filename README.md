@@ -133,9 +133,27 @@ make test
 
 ### Compiling CX on Windows
 
-Compiling CX on Windows requires a recent version of Git to be installed. 
+Compiling CX on Windows requires a recent version of Git to be installed.   
+Pacman also is required for installation.
+Pacman is a utility which manages software packages.   
+It uses simple compressed files as a package format, and maintains a text-based package database.
 
-Before compiling CX, install dependencies with `pacman` (download MSYS2):
+How to install pacman?      
+
+Go to MSYS2 [official site](https://www.msys2.org) and click to download link.  
+Run the installer, when done tick **Run MSYS2 now**     
+Update the package database and base packages.      
+```
+pacman -Syu
+```
+Run "MSYS2 MSYS" from Start menu. Update the rest of the base packages.
+```
+pacman -Su
+```
+Done
+
+
+Before compiling CX, install dependencies with `pacman`:
 
 ```
 pacman -Sy
