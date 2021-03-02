@@ -126,13 +126,31 @@ make test
 
 ### Compiling on Windows
 
-Compiling CX on Windows requires a recent version of Git to be installed. 
+Compiling CX on Windows requires Git and Pacman to be installed.    
 
-Before compiling CX, install dependencies with `pacman` (download MSYS2):
+Pacman is a utility which manages software packages.   
+
+To install pacman, download here [https://www.msys2.org](https://www.msys2.org).  
+
+Run the installer.
+
+When the installation is complete, click``` Run MSYS2 now ```.     
+
+If MSYS2 has already been installed, run it through the start menu.
+
+Update the package database and base packages with:
 
 ```
-pacman -Sy
+pacman -Syu
+```
 
+Install git using pacman:     
+
+```
+pacman -Syu git
+```
+Before compiling CX, install dependencies with `pacman`:
+```
 pacman -S mingw-w64-x86_64-openal
 
 if [ ! -a /mingw64/lib/libOpenAL32.a ]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
