@@ -81,6 +81,7 @@ func testNegativeLiteralIncrement(){
 func testVariableLiteralIncrement(){
 
     var b i8
+    var a i8
 
     b = 5
 
@@ -92,11 +93,11 @@ func testVariableLiteralIncrement(){
 }
 
 
- func testArithmeticOperatorsAddition(){
+ func testArithmeticOperatorAddition(){
 
     var a i8
 
-    var a i8
+    var b i8
     
     var c i8
     
@@ -115,7 +116,7 @@ func testVariableLiteralIncrement(){
 
     var a i8
 
-    var a i8
+    var b i8
     
     var c i8
     
@@ -129,11 +130,11 @@ func testVariableLiteralIncrement(){
 	test(c ,5, "test i8 Arithmetic Operator Substraction (c = a - b) failed")   
 }
 
- func testArithmeticOperatorsMultiplication(){
+ func testArithmeticOperatorMultiplication(){
 
     var a i8
 
-    var a i8
+    var b i8
     
     var c i8
     
@@ -152,7 +153,7 @@ func testVariableLiteralIncrement(){
 
     var a i8
 
-    var a i8
+    var b i8
     
     var c i8
     
@@ -167,7 +168,7 @@ func testVariableLiteralIncrement(){
 }
 
 
-func testMultiplicationAssignmentOperator{
+func testMultiplicationAssignmentOperator(){
 
     var b i8 = 10
     var a i8 = 10
@@ -176,7 +177,7 @@ func testMultiplicationAssignmentOperator{
 }
 
 
-func testDivisionAssignmentOperator{
+func testDivisionAssignmentOperator(){
 
     var b i8 = 100
     var a i8 = 10
@@ -184,7 +185,7 @@ func testDivisionAssignmentOperator{
     test(b,10, "test i8 Division Assignment Operators(b/= a) failed")
 }
 
-func testRightShiftAssignmentOperator()
+func testRightShiftAssignmentOperator(){
 
 
     var b i8 = 2
@@ -195,7 +196,7 @@ func testRightShiftAssignmentOperator()
 }	
 
 
-func testLeftShiftAssignmentOperator()
+func testLeftShiftAssignmentOperator(){
 
 
     var b i8 = 2
@@ -205,7 +206,7 @@ func testLeftShiftAssignmentOperator()
 
 }
 
-func testModulusAssignmentOperator{
+func testModulusAssignmentOperator(){
 
     var b i8 = 10
     var a i8 = 102
@@ -217,7 +218,7 @@ func testModulusAssignmentOperator{
 
 
 
-func testAndAssignmentOperator{
+func testAndAssignmentOperator(){
 
      var b i8 = 10
     var a i8 = 102
@@ -225,7 +226,7 @@ func testAndAssignmentOperator{
     test(a,2, "test i8 AND Assignment Operator (  a &= b ) failed")
 }
 
-func testOrAssignmentOperator{
+func testOrAssignmentOperator(){
 
      var b i8 = 10
     var a i8 = 102
@@ -235,7 +236,7 @@ func testOrAssignmentOperator{
 
 
 
-func testXorAssignmentOperator{
+func testXorAssignmentOperator(){
 
      var b i8 = 10
     var a i8 = 102
@@ -274,7 +275,7 @@ func TestModulusBitManipulationOperator(){
     test(c,10, "test i8 Modulus Bit Manipulation Operator (c = b % a) failed")
 }
 
-func TestAndBitManipulationOperators(){
+func TestAndBitManipulationOperator(){
 
     var b i8 = 111
     var a i8 = 101
@@ -285,7 +286,7 @@ func TestAndBitManipulationOperators(){
 }
 
 
-func TestOrBitManipulationOperators(){
+func TestOrBitManipulationOperator(){
 
     var b i8 = 111
     var a i8 = 101
@@ -330,9 +331,9 @@ func main() {
     TestRightBitManipulationOperator()
     TestLeftBitManipulationOperator()
     TestModulusBitManipulationOperator()
-    TestAndBitManipulationOperators()
-    TestOrBitManipulationOperators()
-    TestXorBitManipulationOperators()
+    TestAndBitManipulationOperator()
+    TestOrBitManipulationOperator()
+    TestXorBitManipulationOperator()
 }
 
 

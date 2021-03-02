@@ -4,83 +4,83 @@ package main
 
 func testSubtractionAssignmentOperator() {
 
-	var b ui8 = 202.0
-    var a ui8 = 101.0
+	var b f32 = 202.0
+    var a f32 = 101.0
     b-= a
-    test(b,101.0, "test ui8 subtraction assignment operator (b-= a) failed")
+    test(b,101, "test f32 subtraction assignment operator (b-= a) failed")
   }
 
 
 func testAdditionAssignmentOperator() {
 
-	var b ui8 = 100.0
-    var a ui8 = 101.0
+	var b f32 = 100.0
+    var a f32 = 101.0
     b+= a
-    test(b,202.0, "test ui8 Addition Assignment Operator ( b+= a) failed")
+    test(b,202.0, "test f32 Addition Assignment Operator ( b+= a) failed")
   }
 
 
   func testPrefixIncrement() {
 
-	var b ui8
+	var b f32
 
     b = 1.0
-
     b+=1
 
-	test(b ,2.0, "test ui8 Prefix Increment (b+=1)failed")
+	test(b ,2.0, "test f32 Prefix Increment (b+=1)failed")
 }
 
 func testIncrementOperator() {
 
-	var b ui8
+	var b f32
 
-    b = 1
+    b = 1.0
 
     b++
 
-	test(b ,2.0, "test ui8 Increment Operator (b++)failed")
+	test(b ,2.0, "test f32 Increment Operator (b++)failed")
 }
 
 func testDecrementOperator() {
 
-	var b ui8
+	var b f32
 
     b = 2.0
 
     b--
 
-	test(b ,1.0, "test ui8 Decrement Operator (b--) failed")
+	test(b ,1, "test f32 Decrement Operator (b--) failed")
 }
 
 
 func testPositiveLiteralIncrement(){
 
-    var b ui8
+    var b f32
 
     b = 2.0
 
     b += 3.0
 
-	test(b ,5.0, "test ui8 Positive Literal Increment (b += 3) failed")   
+	test(b ,5.0, "test f32 Positive Literal Increment (b += 3) failed")   
 }
 
 
 func testNegativeLiteralIncrement(){
 
-    var b ui8
+    var b f32
 
-    b = 5.0
+    b = 5
 
-    b += -3.0
+    b += -3
 
-	test(b ,2, "test ui8  Negative Literal Increment(b += -3) failed")   
+	test(b ,2, "test f32  Negative Literal Increment(b += -3) failed")   
 }
 
 
 func testVariableLiteralIncrement(){
 
-    var b ui8
+    var b f32
+    var a f32
 
     b = 5.0
 
@@ -88,17 +88,17 @@ func testVariableLiteralIncrement(){
 
     b +=a
 
-	test(b ,6.0, "test ui8  Variable Literal Increment (b +=a) failed")   
+	test(b ,6.0, "test f32  Variable Literal Increment (b +=a) failed")   
 }
 
 
- func testArithmeticOperatorsAddition(){
+ func testArithmeticOperatorAddition(){
 
-    var a ui8
+    var a f32
 
-    var a ui8
+    var b f32
     
-    var c ui8
+    var c f32
     
     
     a = 5.0
@@ -107,17 +107,17 @@ func testVariableLiteralIncrement(){
 
     c = a + b
 
-	test(c ,10.0, "test ui8 Arithmetic Operator Addition (c = a + b) failed")   
+	test(c ,10.0, "test f32 Arithmetic Operator Addition (c = a + b) failed")   
 }
 
 
  func testArithmeticOperatorSubstraction(){
 
-    var a ui8
+    var a f32
 
-    var a ui8
+    var b f32
     
-    var c ui8
+    var c f32
     
     
     a = 10.0
@@ -126,16 +126,16 @@ func testVariableLiteralIncrement(){
 
     c = a - b
 
-	test(c ,5, "test ui8 Arithmetic Operator Substraction (c = a - b) failed")   
+	test(c ,5.0, "test f32 Arithmetic Operator Substraction (c = a - b) failed")   
 }
 
- func testArithmeticOperatorsMultiplication(){
+ func testArithmeticOperatorMultiplication(){
 
-    var a ui8
+    var a f32
 
-    var a ui8
+    var b f32
     
-    var c ui8
+    var c f32
     
     
     a = 5.0
@@ -144,17 +144,17 @@ func testVariableLiteralIncrement(){
 
     c = a * b
 
-	test(c ,25, "test ui8 Arithmetic Operators Multiplication (c = a * b) failed")   
+	test(c ,25.0, "test f32 Arithmetic Operators Multiplication (c = a * b) failed")   
 }
 
 
  func testArithmeticOperatorDivision(){
 
-    var a ui8
+    var a f32
 
-    var a ui8
+    var b f32
     
-    var c ui8
+    var c f32
     
     
     a = 50.0
@@ -163,146 +163,146 @@ func testVariableLiteralIncrement(){
 
     c = a / b
 
-	test(c ,10, "test ui8 Arithmetic Operators Division (c = a / b) failed")   
+	test(c ,10.0, "test f32 Arithmetic Operators Division (c = a / b) failed")   
 }
 
 
-func testMultiplicationAssignmentOperator{
+func testMultiplicationAssignmentOperator(){
 
-    var b ui8 = 10.0
-    var a ui8 = 10.0
+    var b f32 = 10.0
+    var a f32 = 10.0
     b*= a
-    test(b,100, "test ui8 Multiplication Assignment Operators( b*= a) failed")
+    test(b,100.0, "test f32 Multiplication Assignment Operators( b*= a) failed")
 }
 
 
-func testDivisionAssignmentOperator{
+func testDivisionAssignmentOperator(){
 
-    var b ui8 = 100.0
-    var a ui8 = 10.0
+    var b f32 = 100.0
+    var a f32 = 10.0
     b/= a
-    test(b,10.0, "test ui8 Division Assignment Operators(b/= a) failed")
+    test(b,10.0, "test f32 Division Assignment Operators(b/= a) failed")
 }
 
-func testRightShiftAssignmentOperator()
+func testRightShiftAssignmentOperator(){
 
 
-    var b ui8 = 2.0
-    var a ui8 = 100.0
+    var b f32 = 2
+    var a f32 = 100.0
     a >>= b  
-    test(a,25.0, "test ui8 Right Shift Assignment Operator (a >>= b  ) failed")
+    test(a,25.0, "test f32 Right Shift Assignment Operator (a >>= b  ) failed")
 
 }	
 
 
-func testLeftShiftAssignmentOperator()
+func testLeftShiftAssignmentOperator(){
 
 
-    var b ui8 = 2.0
-    var a ui8 = 100.0
+    var b f32 = 2.0
+    var a f32 = 100.0
     a <<= b  
-    test(a,400.0, "test ui8 Left Shift Assignment Operator ( a <<= b ) failed")
+    test(a,400.0, "test f32 Left Shift Assignment Operator ( a <<= b ) failed")
 
 }
 
-func testModulusAssignmentOperator{
+func testModulusAssignmentOperator(){
 
-    var b ui8 = 10.0
-    var a ui8 = 102.0
+    var b f32 = 10.0
+    var a f32 = 102.0
     a %= b
-    test(a,2.0, "test ui8 Modulus Assignment Operator (  a %= b ) failed")
+    test(a,2.0, "test f32 Modulus Assignment Operator (  a %= b ) failed")
 
 }
 
 
 
 
-func testAndAssignmentOperator{
+func testAndAssignmentOperator(){
 
-     var b ui8 = 10.0
-    var a ui8 = 102.0
+     var b f32 = 10.0
+    var a f32 = 102.0
     a &= b
-    test(a,2.0, "test ui8 AND Assignment Operator (  a &= b ) failed")
+    test(a,2.0, "test f32 AND Assignment Operator (  a &= b ) failed")
 }
 
-func testOrAssignmentOperator{
+func testOrAssignmentOperator(){
 
-     var b ui8 = 10.0
-    var a ui8 = 102.0
+     var b f32 = 10.0
+    var a f32 = 102.0
     a  |= b
-    test(a,110.0, "test ui8 OR Assignment Operator ( a  |= b ) failed")
+    test(a,110.0, "test f32 OR Assignment Operator ( a  |= b ) failed")
 }
 
 
 
-func testXorAssignmentOperator{
+func testXorAssignmentOperator(){
 
-     var b ui8 = 10.0
-    var a ui8 = 102.0
+     var b f32 = 10.0
+    var a f32 = 102.0
     a  ^=  b
-    test(a,108.0, "test ui8 XOR Assignment Operator ( a  ^=  b ) failed")
+    test(a,108.0, "test f32 XOR Assignment Operator ( a  ^=  b ) failed")
 }
 
 func TestRightBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b >> a
-    test(c,0, "test ui8 Right Bit Manipulation Operator ( c = b >> a) failed")
+    test(c,0.0, "test f32 Right Bit Manipulation Operator ( c = b >> a) failed")
 }
 
 
 func TestLeftBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b << a
    
-    test(c,0, "test ui8 Left Bit Manipulation Operator ( c = b << a) failed")
+    test(c,0.0, "test f32 Left Bit Manipulation Operator ( c = b << a) failed")
 }
 
 
 func TestModulusBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b % a
    
-    test(c,10, "test ui8 Modulus Bit Manipulation Operator (c = b % a) failed")
+    test(c,10.0, "test f32 Modulus Bit Manipulation Operator (c = b % a) failed")
 }
 
-func TestAndBitManipulationOperators(){
+func TestAndBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b & a
    
-    test(c,101, "test ui8 AND Bit Manipulation Operator (c = b & a) failed")
+    test(c,101.0, "test f32 AND Bit Manipulation Operator (c = b & a) failed")
 }
 
 
-func TestOrBitManipulationOperators(){
+func TestOrBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b | a
    
-    test(c,111.0, "test ui8 OR Bit Manipulation Operator (c = b | a) failed")
+    test(c,111.0, "test f32 OR Bit Manipulation Operator (c = b | a) failed")
 }
 
 func TestXorBitManipulationOperator(){
 
-    var b ui8 = 111.0
-    var a ui8 = 101.0
-    var c ui8 
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
     c = b ^ a
    
-    test(c,10.0, "test ui8 XOR Bit Manipulation Operator (c = b ^ a) failed")
+    test(c,10.0, "test f32 XOR Bit Manipulation Operator (c = b ^ a) failed")
 }
 
 func main() {
@@ -330,9 +330,9 @@ func main() {
     TestRightBitManipulationOperator()
     TestLeftBitManipulationOperator()
     TestModulusBitManipulationOperator()
-    TestAndBitManipulationOperators()
-    TestOrBitManipulationOperators()
-    TestXorBitManipulationOperators()
+    TestAndBitManipulationOperator()
+    TestOrBitManipulationOperator()
+    TestXorBitManipulationOperator()
 }
 
 

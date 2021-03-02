@@ -7,7 +7,7 @@ func testSubtractionAssignmentOperator() {
 	var b f64 = 202.0
     var a f64 = 101.0
     b-= a
-    test(b,101.0, "test f64 subtraction assignment operator (b-= a) failed")
+    test(b,101, "test f64 subtraction assignment operator (b-= a) failed")
   }
 
 
@@ -25,7 +25,6 @@ func testAdditionAssignmentOperator() {
 	var b f64
 
     b = 1.0
-
     b+=1
 
 	test(b ,2.0, "test f64 Prefix Increment (b+=1)failed")
@@ -35,7 +34,7 @@ func testIncrementOperator() {
 
 	var b f64
 
-    b = 1
+    b = 1.0
 
     b++
 
@@ -50,7 +49,7 @@ func testDecrementOperator() {
 
     b--
 
-	test(b ,1.0, "test f64 Decrement Operator (b--) failed")
+	test(b ,1, "test f64 Decrement Operator (b--) failed")
 }
 
 
@@ -70,9 +69,9 @@ func testNegativeLiteralIncrement(){
 
     var b f64
 
-    b = 5.0
+    b = 5
 
-    b += -3.0
+    b += -3
 
 	test(b ,2, "test f64  Negative Literal Increment(b += -3) failed")   
 }
@@ -81,6 +80,7 @@ func testNegativeLiteralIncrement(){
 func testVariableLiteralIncrement(){
 
     var b f64
+    var a f64
 
     b = 5.0
 
@@ -92,11 +92,11 @@ func testVariableLiteralIncrement(){
 }
 
 
- func testArithmeticOperatorsAddition(){
+ func testArithmeticOperatorAddition(){
 
     var a f64
 
-    var a f64
+    var b f64
     
     var c f64
     
@@ -115,7 +115,7 @@ func testVariableLiteralIncrement(){
 
     var a f64
 
-    var a f64
+    var b f64
     
     var c f64
     
@@ -126,14 +126,14 @@ func testVariableLiteralIncrement(){
 
     c = a - b
 
-	test(c ,5, "test f64 Arithmetic Operator Substraction (c = a - b) failed")   
+	test(c ,5.0, "test f64 Arithmetic Operator Substraction (c = a - b) failed")   
 }
 
- func testArithmeticOperatorsMultiplication(){
+ func testArithmeticOperatorMultiplication(){
 
     var a f64
 
-    var a f64
+    var b f64
     
     var c f64
     
@@ -144,7 +144,7 @@ func testVariableLiteralIncrement(){
 
     c = a * b
 
-	test(c ,25, "test f64 Arithmetic Operators Multiplication (c = a * b) failed")   
+	test(c ,25.0, "test f64 Arithmetic Operators Multiplication (c = a * b) failed")   
 }
 
 
@@ -152,7 +152,7 @@ func testVariableLiteralIncrement(){
 
     var a f64
 
-    var a f64
+    var b f64
     
     var c f64
     
@@ -163,20 +163,20 @@ func testVariableLiteralIncrement(){
 
     c = a / b
 
-	test(c ,10, "test f64 Arithmetic Operators Division (c = a / b) failed")   
+	test(c ,10.0, "test f64 Arithmetic Operators Division (c = a / b) failed")   
 }
 
 
-func testMultiplicationAssignmentOperator{
+func testMultiplicationAssignmentOperator(){
 
     var b f64 = 10.0
     var a f64 = 10.0
     b*= a
-    test(b,100, "test f64 Multiplication Assignment Operators( b*= a) failed")
+    test(b,100.0, "test f64 Multiplication Assignment Operators( b*= a) failed")
 }
 
 
-func testDivisionAssignmentOperator{
+func testDivisionAssignmentOperator(){
 
     var b f64 = 100.0
     var a f64 = 10.0
@@ -184,10 +184,10 @@ func testDivisionAssignmentOperator{
     test(b,10.0, "test f64 Division Assignment Operators(b/= a) failed")
 }
 
-func testRightShiftAssignmentOperator()
+func testRightShiftAssignmentOperator(){
 
 
-    var b f64 = 2.0
+    var b f64 = 2
     var a f64 = 100.0
     a >>= b  
     test(a,25.0, "test f64 Right Shift Assignment Operator (a >>= b  ) failed")
@@ -195,7 +195,7 @@ func testRightShiftAssignmentOperator()
 }	
 
 
-func testLeftShiftAssignmentOperator()
+func testLeftShiftAssignmentOperator(){
 
 
     var b f64 = 2.0
@@ -205,7 +205,7 @@ func testLeftShiftAssignmentOperator()
 
 }
 
-func testModulusAssignmentOperator{
+func testModulusAssignmentOperator(){
 
     var b f64 = 10.0
     var a f64 = 102.0
@@ -217,7 +217,7 @@ func testModulusAssignmentOperator{
 
 
 
-func testAndAssignmentOperator{
+func testAndAssignmentOperator(){
 
      var b f64 = 10.0
     var a f64 = 102.0
@@ -225,7 +225,7 @@ func testAndAssignmentOperator{
     test(a,2.0, "test f64 AND Assignment Operator (  a &= b ) failed")
 }
 
-func testOrAssignmentOperator{
+func testOrAssignmentOperator(){
 
      var b f64 = 10.0
     var a f64 = 102.0
@@ -235,7 +235,7 @@ func testOrAssignmentOperator{
 
 
 
-func testXorAssignmentOperator{
+func testXorAssignmentOperator(){
 
      var b f64 = 10.0
     var a f64 = 102.0
@@ -249,7 +249,7 @@ func TestRightBitManipulationOperator(){
     var a f64 = 101.0
     var c f64 
     c = b >> a
-    test(c,0, "test f64 Right Bit Manipulation Operator ( c = b >> a) failed")
+    test(c,0.0, "test f64 Right Bit Manipulation Operator ( c = b >> a) failed")
 }
 
 
@@ -260,7 +260,7 @@ func TestLeftBitManipulationOperator(){
     var c f64 
     c = b << a
    
-    test(c,0, "test f64 Left Bit Manipulation Operator ( c = b << a) failed")
+    test(c,0.0, "test f64 Left Bit Manipulation Operator ( c = b << a) failed")
 }
 
 
@@ -271,21 +271,21 @@ func TestModulusBitManipulationOperator(){
     var c f64 
     c = b % a
    
-    test(c,10, "test f64 Modulus Bit Manipulation Operator (c = b % a) failed")
+    test(c,10.0, "test f64 Modulus Bit Manipulation Operator (c = b % a) failed")
 }
 
-func TestAndBitManipulationOperators(){
+func TestAndBitManipulationOperator(){
 
     var b f64 = 111.0
     var a f64 = 101.0
     var c f64 
     c = b & a
    
-    test(c,101, "test f64 AND Bit Manipulation Operator (c = b & a) failed")
+    test(c,101.0, "test f64 AND Bit Manipulation Operator (c = b & a) failed")
 }
 
 
-func TestOrBitManipulationOperators(){
+func TestOrBitManipulationOperator(){
 
     var b f64 = 111.0
     var a f64 = 101.0
@@ -330,9 +330,9 @@ func main() {
     TestRightBitManipulationOperator()
     TestLeftBitManipulationOperator()
     TestModulusBitManipulationOperator()
-    TestAndBitManipulationOperators()
-    TestOrBitManipulationOperators()
-    TestXorBitManipulationOperators()
+    TestAndBitManipulationOperator()
+    TestOrBitManipulationOperator()
+    TestXorBitManipulationOperator()
 }
 
 
