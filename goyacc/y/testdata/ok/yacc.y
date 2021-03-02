@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/skycoin/cx/goyacc/scanner/yacc"
-	"github.com/skycoin/cx/goyacc/strutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 %}
@@ -576,7 +576,7 @@ func Parse(fset *token.FileSet, fname string, src []byte) (s *AST, err error) {
 
 func str(fset *token.FileSet, v interface{}) string {
 	var buf bytes.Buffer
-	f := strutil.IndentFormatter(&buf, "· ")
+	f := util.IndentFormatter(&buf, "· ")
 	g := func(interface{}){}
 	g = func(v interface{}){
 		switch x := v.(type) {

@@ -40,7 +40,7 @@ import (
 	"strings"
 
 	yparser "github.com/skycoin/cx/goyacc/parser/yacc"
-	"github.com/skycoin/cx/goyacc/sortutil"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 // Values of {AssocDef,Rule,Sym}.Associativity
@@ -471,7 +471,7 @@ func (p *Parser) Reductions() map[int][]int {
 		}
 	}
 	for k, v := range m {
-		m[k] = v[:sortutil.Dedupe(sort.IntSlice(v))]
+		m[k] = v[:util.Dedupe(sort.IntSlice(v))]
 	}
 	return m
 }

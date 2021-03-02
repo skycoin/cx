@@ -19,7 +19,7 @@ package ql
 import (
 	"fmt"
 
-	"github.com/skycoin/cx/goyacc/mathutil"
+	"github.com/pkg/math"
 )
 
 %}
@@ -557,7 +557,7 @@ Operand:
 		n := $1.(int)
 		$$ = parameter{n}
 		l := yylex.(*lexer)
-		l.params = mathutil.Max(l.params, n)
+		l.params = math.Max(l.params, n)
 		if n == 0 {
 			l.err("parameter number must be non zero")
 			return 1
