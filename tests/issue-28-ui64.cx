@@ -16,11 +16,11 @@ func testAdditionAssignmentOperator() {
 	var b ui64 = 100
     var a ui64 = 101
     b+= a
-    test(b,202, "test ui64 Addition Assignment Operator ( b+= a) failed")
+    test(b,201, "test ui64 Addition Assignment Operator ( b+= a) failed")
   }
 
 
-  func testPrefixIncrement() {
+  func testAdditionIncrement() {
 
 	var b ui64
 
@@ -28,7 +28,7 @@ func testAdditionAssignmentOperator() {
 
     b+=1
 
-	test(b ,2, "test ui64 Prefix Increment (b+=1)failed")
+	test(b ,2, "test ui64 Addition Increment (b+=1)failed")
 }
 
 func testIncrementOperator() {
@@ -310,7 +310,7 @@ func main() {
 
     testAdditionAssignmentOperator()
     testSubtractionAssignmentOperator()
-    testPrefixIncrement()
+    testAdditionIncrement()
     testIncrementOperator()
     testDecrementOperator()
     testPositiveLiteralIncrement()
