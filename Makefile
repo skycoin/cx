@@ -73,7 +73,7 @@ clean: ## Removes binaries.
 
 token-fuzzer:
 	go build $(GO_OPTS) -o ./bin/cx-token-fuzzer $(PWD)/development/token-fuzzer/main.go
-	chmod +x ${GOPATH}/bin/cx-token-fuzzer
+	chmod +x ./bin/cx-token-fuzzer
 
 build-parser: ## Generate lexer and parser for CX grammar
 	./bin/goyacc -o cxgo/cxgo0/cxgo0.go cxgo/cxgo0/cxgo0.y
@@ -102,9 +102,9 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 	goimports -w -local github.com/skycoin/cx ./cxgo
 
 dep: ## Update go vendor
-	go mod $(GO_OPTS) vendor
-	go mod $(GO_OPTS) verify
-	go mod $(GO_OPTS) tidy
+	go mod vendor
+	go mod verify
+	go mod tidy
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

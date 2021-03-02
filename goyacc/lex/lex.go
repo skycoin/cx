@@ -81,11 +81,11 @@ import (
 	"fmt"
 	"go/token"
 	"io"
-	"github.com/skycoin/cx/goyacc/lexer"
 	"sort"
 	"strings"
 
-	"github.com/skycoin/cx/goyacc/fileutil"
+	"github.com/skycoin/cx/goyacc/lexer"
+	"github.com/skycoin/cx/goyacc/util"
 )
 
 type rule struct {
@@ -302,7 +302,7 @@ loop:
 		switch {
 		case err == nil:
 			in = append(in, r)
-		case fileutil.IsEOF(err):
+		case util.IsEOF(err):
 			break loop
 		default:
 			return nil, err

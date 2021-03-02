@@ -12,25 +12,16 @@ the concept of affordances.
 ## Table of Contents
 
    * [CX Programming Language](#cx-programming-language-1)
-   * [CX Chains (CX Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
-   * [Compiler Development](CompilerDevelopment.md)
    * [Installation](#installation)
       * [Binary Releases](#binary-releases)  
       * [Compiling from Source](#compiling-from-source)
-         * [Installing Go](#installing-go)
-         * [Compiling CX on *nix](#compiling-cx-on-nix)
-         * [Compiling CX on Windows](#compiling-cx-on-windows)
+         * [Compiling CX on Linux](#compiling-on-linux)
+         * [Compiling CX on MacOS](#compiling-on-macos)
+         * [Compiling CX on Windows](#compiling-on-windows)
       * [Updating CX](#updating-cx)
    * [Resources and libraries](#resources-and-libraries)
-   * [Running CX](#running-cx)
-      * [Hello World](#hello-world)
-      * [Basic Options](#other-options)
-         * [Running CX Programs](#running-cx-programs)
-      * [REPL tutorial](#cx-repl)
-   * [Learning CX](#learning-cx)
 
 # CX Programming Language
-[[Back to the Table of Contents] ↑](#table-of-contents)
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
@@ -84,10 +75,11 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
+make build
 make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
@@ -97,12 +89,6 @@ You should test your installation by running:
 
 ```
 make test
-```
-
-If you intend to develop games with CX, then run:
-
-```
-make test-full
 ```
 
 ### Compiling on MacOS
@@ -122,10 +108,11 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
+make build
 make install
 ```
 
-`make install` builds a CX binary and installs it into `$HOME/cx/bin`. Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
+Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
 
 ```
 export PATH=$PATH:$HOME/cx/bin
@@ -137,17 +124,11 @@ You should test your installation by running:
 make test
 ```
 
-If you intend to develop games with CX, then run:
-
-```
-make test-full
-```
-
-### Compiling CX on Windows
+### Compiling on Windows
 
 Compiling CX on Windows requires a recent version of Git to be installed. 
 
-Before compiling CX, install dependencies with `pacman`:
+Before compiling CX, install dependencies with `pacman` (download MSYS2):
 
 ```
 pacman -Sy
@@ -157,6 +138,8 @@ pacman -S mingw-w64-x86_64-openal
 if [ ! -a /mingw64/lib/libOpenAL32.a ]; then ln -s /mingw64/lib/libopenal.a /mingw64/lib/libOpenAL32.a; fi
 
 if [ ! -a /mingw64/lib/libOpenAL32.dll.a ]; then ln -s /mingw64/lib/libopenal.dll.a /mingw64/lib/libOpenAL32.dll.a; fi
+
+pacman -S --needed base-devel mingw-w64-x86_64-toolchain
 ```
 
 You can compile CX by running: 

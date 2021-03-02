@@ -1,2 +1,0 @@
-Install: $ go get github.com/skycoin/cx/goyacc/mathutil/mersenne
-Godocs:  http://gopkgdoc.appspot.com/pkg/github.com/skycoin/cx/goyacc/mathutil/mersenne
