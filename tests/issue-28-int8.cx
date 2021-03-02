@@ -15,8 +15,10 @@ func testAdditionAssignmentOperator() {
 
 	var b i8 = 100
     var a i8 = 101
+    var c i8 = 201
     b+= a
-    test(b,201, "test i8 Addition Assignment Operator ( b+= a) failed")
+    
+    test(b,c, "test i8 Addition Assignment Operator ( b+= a) failed")
   }
 
 
