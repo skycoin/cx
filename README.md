@@ -138,13 +138,7 @@ When the installation is complete, click``` Run MSYS2 now ```.
 
 If MSYS2 has already been installed, run it through the start menu.
 
-Update the package database and base packages with:
-
-```
-pacman -Syu
-```
-
-Install git using pacman:     
+Update the package database, base packages and install git:
 
 ```
 pacman -Syu git
