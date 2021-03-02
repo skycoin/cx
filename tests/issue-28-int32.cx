@@ -15,8 +15,17 @@ func testAdditionAssignmentOperator() {
 
 	var b i32 = 100
     var a i32 = 101
+    var c i32 = 201
+    
     b+= a
-    test(b,201, "test i32 Addition Assignment Operator ( b+= a) failed")
+
+    i32.print(b)
+
+    if b ==c{
+         i32.print(b)
+     
+    } 
+    test(b,c, "test i32 Addition Assignment Operator ( b+= a) failed")
   }
 
 
