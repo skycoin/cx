@@ -17,7 +17,7 @@ the concept of affordances.
       * [Compiling from Source](#compiling-from-source)
          * [Compiling CX on Linux](#compiling-on-linux)
          * [Compiling CX on MacOS](#compiling-on-macos)
-         * [Compiling CX on Windows](#compiling-cx-on-windows)
+         * [Compiling CX on Windows](#compiling-on-windows)
       * [Updating CX](#updating-cx)
    * [Resources and libraries](#resources-and-libraries)
 
@@ -124,7 +124,7 @@ You should test your installation by running:
 make test
 ```
 
-### Compiling CX on Windows
+### Compiling on Windows
 
 Compiling CX on Windows requires a recent version of Git to be installed. 
 
