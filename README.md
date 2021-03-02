@@ -12,25 +12,16 @@ the concept of affordances.
 ## Table of Contents
 
    * [CX Programming Language](#cx-programming-language-1)
-   * [CX Chains (CX Skycoin Blockchain)](#cx-chains-cx--skycoin-blockchain)
-   * [Compiler Development](CompilerDevelopment.md)
    * [Installation](#installation)
       * [Binary Releases](#binary-releases)  
       * [Compiling from Source](#compiling-from-source)
-         * [Installing Go](#installing-go)
-         * [Compiling CX on *nix](#compiling-cx-on-nix)
+         * [Compiling CX on Linux](#compiling-on-linux)
+         * [Compiling CX on MacOS](#compiling-on-macos)
          * [Compiling CX on Windows](#compiling-cx-on-windows)
       * [Updating CX](#updating-cx)
    * [Resources and libraries](#resources-and-libraries)
-   * [Running CX](#running-cx)
-      * [Hello World](#hello-world)
-      * [Basic Options](#other-options)
-         * [Running CX Programs](#running-cx-programs)
-      * [REPL tutorial](#cx-repl)
-   * [Learning CX](#learning-cx)
 
 # CX Programming Language
-[[Back to the Table of Contents] ↑](#table-of-contents)
 
 CX is a general purpose, interpreted and compiled programming
 language, with a very strict type system and a syntax
@@ -84,7 +75,8 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
-make build && make install
+make build
+make install
 ```
 
 Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
@@ -116,7 +108,8 @@ cd $GOPATH/src/github.com/skycoin/cx
 Build CX's binary and install by running:
 
 ```
-make build && make install
+make build
+make install
 ```
 
 Add the CX binary path to your operating system's `$PATH`. For example, in Linux:
