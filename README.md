@@ -99,6 +99,12 @@ make test
 
 If you have not setup Golang on your machine, follow this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-go-and-set-up-a-local-programming-environment-on-macos) to install and setup Go. 
 
+If you do not have `git` installed, do so with:
+
+```
+brew install git
+```
+
 Download CX's repository using Go:
 
 ```
