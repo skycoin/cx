@@ -49,8 +49,10 @@ If you are using a `apt` compatible system, install the dependencies with"
 ```
 sudo apt-get update -qq
 
-sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev --no-install-recommends
+sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make --no-install-recommends
 ```
+
+If you have not setup Golang on your machine, follow this [guide](https://www.tecmint.com/install-go-in-ubuntu/) to install and setup Go. 
 
 Download CX's repository using Go:
 
@@ -66,11 +68,7 @@ go get -u modernc.org/goyacc
 go get golang.org/x/mobile/gl 
 ```
 
-Navigate to CX's repository via:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx
-```
+Navigate to CX's repository.
 
 Build CX's binary and install by running:
 
@@ -85,6 +83,12 @@ Add the CX binary path to your operating system's `$PATH`. For example, in Linux
 export PATH=$PATH:$HOME/cx/bin
 ```
 
+Afterwards, add Golang binaries to your `$PATH`. For example, in Linux:
+
+```
+export PATH=$PATH:$HOME/go/bin
+```
+
 You should test your installation by running:
 
 ```
@@ -93,17 +97,15 @@ make test
 
 ### Compiling on MacOS
 
+If you have not setup Golang on your machine, follow this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-go-and-set-up-a-local-programming-environment-on-macos) to install and setup Go. 
+
 Download CX's repository using Go:
 
 ```
 go get github.com/skycoin/cx
 ```
 
-Navigate to CX's repository via:
-
-```
-cd $GOPATH/src/github.com/skycoin/cx
-```
+Navigate to CX's repository.
 
 Build CX's binary and install by running:
 
