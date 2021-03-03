@@ -1,0 +1,320 @@
+package main
+
+
+func main() {
+
+      testAdditionAssignmentOperator()
+    testSubtractionAssignmentOperator()
+    testAdditionIncrement()
+    testPositiveLiteralIncrement()
+    testNegativeLiteralIncrement()
+    testVariableLiteralIncrement() 
+    testArithmeticOperatorAddition()
+    testArithmeticOperatorSubstraction() 
+    testArithmeticOperatorMultiplication()
+    testArithmeticOperatorDivision()
+    testMultiplicationAssignmentOperator()
+    testDivisionAssignmentOperator()
+    testRightShiftAssignmentOperator()
+    testLeftShiftAssignmentOperator()
+    testModulusAssignmentOperator()
+    testAndAssignmentOperator()
+    testOrAssignmentOperator()
+    testXorAssignmentOperator()
+    TestRightBitManipulationOperator()
+    TestLeftBitManipulationOperator()
+    TestModulusBitManipulationOperator()
+    TestAndBitManipulationOperator()
+    TestOrBitManipulationOperator()
+    TestXorBitManipulationOperator()
+}
+
+
+
+
+
+
+func testAdditionAssignmentOperator() {
+
+	var b i16 = 100H
+    var a i16 = 101H
+   
+    b+= a
+    
+    
+   test(b,201H, "test i16 Addition Assignment Operator ( b+= a) failed")
+ 
+ }
+
+
+func testSubtractionAssignmentOperator() {
+
+	var b i16 = 100H
+    var a i16 = 10H
+    b-= a
+    test(b,90H, "test i16 subtraction assignment operator (b-= a) failed")   
+}
+
+
+ func testAdditionIncrement() {
+
+	var b i16 = 1H
+ 
+    b+=1H
+
+	test(b ,2H, "test i16 Addition Increment (b+=1)failed")
+
+}
+
+
+
+func testPositiveLiteralIncrement(){
+
+    var b i16 = 2H
+
+ 
+    b += 3H
+
+	test(b ,5H, "test i16 Positive Literal Increment (b += 3) failed")   
+}
+
+
+func testNegativeLiteralIncrement(){
+
+    var b i16
+
+    b = 5H
+
+    b += -3H
+
+	test(b ,2H, "test i16  Negative Literal Increment(b += -3) failed")   
+}
+
+func testVariableLiteralIncrement(){
+
+    var b i16
+    var a i16
+
+    b = 5H
+
+    a = 1H
+
+    b +=a
+
+	test(b ,6H, "test i16  Variable Literal Increment (b +=a) failed")   
+}
+
+ func testArithmeticOperatorAddition(){
+
+    var a i16
+
+    var b i16
+    
+    var c i16
+    
+    
+    a = 5H
+
+    b = 5H
+
+    c = a + b
+
+	test(c ,10H, "test i16 Arithmetic Operator Addition (c = a + b) failed")   
+}
+
+
+func testArithmeticOperatorSubstraction(){
+
+    var a i16
+
+    var b i16
+    
+    var c i16
+    
+    
+    a = 10H
+
+    b = 5H
+
+    c = a - b
+
+	test(c ,5H, "test i16 Arithmetic Operator Substraction (c = a - b) failed")   
+}
+
+
+ func testArithmeticOperatorMultiplication(){
+
+    var a i16
+
+    var b i16
+    
+    var c i16
+    
+    
+    a = 5H
+
+    b = 5H
+
+    c = a * b
+
+	test(c ,25H, "test i16 Arithmetic Operators Multiplication (c = a * b) failed")   
+}
+
+ func testArithmeticOperatorDivision(){
+
+    var a i16
+
+    var b i16
+    
+    var c i16
+    
+    
+    a = 50H
+
+    b = 5H
+
+    c = a / b
+
+	test(c ,10H, "test i16 Arithmetic Operators Division (c = a / b) failed")   
+}
+
+
+
+func testMultiplicationAssignmentOperator(){
+
+    var b i16 = 10H
+    var a i16 = 10H
+    b*= a
+    test(b,100H, "test i16 Multiplication Assignment Operators( b*= a) failed")
+}
+
+
+func testDivisionAssignmentOperator(){
+
+    var b i16 = 100H
+    var a i16 = 10H
+    b/= a
+    test(b,10H, "test i16 Division Assignment Operators(b/= a) failed")
+}
+
+
+func testRightShiftAssignmentOperator(){
+
+
+    var b i16 = 2H
+    var a i16 = 100H
+    a >>= b  
+    test(a,25H, "test i16 Right Shift Assignment Operator (a >>= b  ) failed")
+
+}	
+
+
+func testLeftShiftAssignmentOperator(){
+
+
+    var b i16 = 2H
+    var a i16 = 10H
+    a <<= b  
+    test(a,40H, "test i16 Left Shift Assignment Operator ( a <<= b ) failed")
+
+}
+
+func testModulusAssignmentOperator(){
+
+    var b i16 = 10H
+    var a i16 = 102H
+    a %= b
+    test(a,2H, "test i16 Modulus Assignment Operator (  a %= b ) failed")
+
+}
+
+
+
+func testAndAssignmentOperator(){
+
+     var b i16 = 10H
+    var a i16 = 102H
+    a &= b
+    test(a,2H, "test i16 AND Assignment Operator (  a &= b ) failed")
+}
+
+func testOrAssignmentOperator(){
+
+     var b i16 = 10H
+    var a i16 = 102H
+    a  |= b
+    test(a,110H, "test i16 OR Assignment Operator ( a  |= b ) failed")
+}
+
+
+func testXorAssignmentOperator(){
+
+     var b i16 = 10H
+    var a i16 = 102H
+    a  ^=  b
+    test(a,108H, "test i16 XOR Assignment Operator ( a  ^=  b ) failed")
+}
+
+func TestRightBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 111H
+    var c i16 
+    c = b >> a
+
+ 
+    test(c,0H, "test i16 Right Bit Manipulation Operator ( c = b >> a) failed")
+}
+
+
+func TestLeftBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 101H
+    var c i16 
+    c = b << a
+   
+    test(c,0H, "test i16 Left Bit Manipulation Operator ( c = b << a) failed")
+}
+
+
+func TestModulusBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 101H
+    var c i16 
+    c = b % a
+   
+    test(c,10H, "test i16 Modulus Bit Manipulation Operator (c = b % a) failed")
+}
+
+func TestAndBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 101H
+    var c i16 
+    c = b & a
+   
+    test(c,101H, "test i16 AND Bit Manipulation Operator (c = b & a) failed")
+}
+
+
+func TestOrBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 101H
+    var c i16 
+    c = b | a
+   
+    test(c,111H, "test i16 OR Bit Manipulation Operator (c = b | a) failed")
+}
+
+func TestXorBitManipulationOperator(){
+
+    var b i16 = 111H
+    var a i16 = 101H
+    var c i16 = 10H
+    c = b ^ a
+   
+    test(c,10H, "test i16 XOR Bit Manipulation Operator (c = b ^ a) failed")
+}

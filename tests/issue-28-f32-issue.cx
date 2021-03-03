@@ -1,0 +1,87 @@
+package main
+
+
+
+func testAndAssignmentOperator(){
+
+     var b f32 = 10.0
+    var a f32 = 102.0
+    
+    a &= b
+ 
+    f32.print(a)
+ 
+    test(a,i32.f32(0), "test f32 AND Assignment Operator (  a &= b ) failed")
+}
+
+func testOrAssignmentOperator(){
+
+     var b f32 = 10.0
+    var a f32 = 102.0
+    a  |= b
+
+   test(a,i32.f32(101), "test f32 OR Assignment Operator ( a  |= b ) failed")
+}
+
+func TestXorBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
+    c = b ^ a
+   
+    test(c,10.0, "test f32 XOR Bit Manipulation Operator (c = b ^ a) failed")
+}
+
+func TestRightBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 111.0
+    var c f32 
+    c = b >> a
+
+     f32.print(a)
+
+ 
+    test(c,0.0, "test f32 Right Bit Manipulation Operator ( c = b >> a) failed")
+}
+
+func TestLeftBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
+    c = b << a
+   
+    test(c,0.0, "test f32 Left Bit Manipulation Operator ( c = b << a) failed")
+}
+
+func TestAndBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
+    c = b & a
+   
+    test(c,101.0, "test f32 AND Bit Manipulation Operator (c = b & a) failed")
+}
+
+func TestOrBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
+    c = b | a
+   
+    test(c,111.0, "test f32 OR Bit Manipulation Operator (c = b | a) failed")
+}
+
+func TestOrBitManipulationOperator(){
+
+    var b f32 = 111.0
+    var a f32 = 101.0
+    var c f32 
+    c = b | a
+   
+    test(c,111.0, "test f32 OR Bit Manipulation Operator (c = b | a) failed")
+}

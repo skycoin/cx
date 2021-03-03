@@ -1,0 +1,34 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+}
+
+
+//error message 
+//error: tests/issue-28-i8-issue.cx:17 function 'ui8.add' expected input argument of type 'i8'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b ui8 = 1UB
+
+    b++
+
+	test(b ,2UH, "test ui8 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b ui8 = 1UB
+
+    b++
+
+	test(b ,2UH, "test ui8 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-ui8-issue.cx:26 function 'ui8.add' expected input argument of type 'i8'; 'i32' was provided

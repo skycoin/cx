@@ -1,0 +1,34 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+}
+
+
+//error message 
+//error: tests/issue-28-f64-issue.cx:17 function 'f64.add' expected input argument of type 'f64'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b f64 = 1.0L
+
+    b++
+
+	test(b ,2.0L, "test f64 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b f64 = 1.0L
+
+    b++
+
+	test(b ,2.0L, "test f64 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-f64-issue.cx:26 function 'f64.add' expected input argument of type 'f64'; 'i32' was provided
