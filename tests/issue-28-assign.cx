@@ -1,0 +1,31 @@
+package main
+
+
+
+func main() {
+
+    str.print("main")
+
+    
+    var b i8 
+    var a i8
+
+    b = 1
+
+    a = 1
+
+    i8.print(b)
+
+    if a == b{
+
+        i8.print("==")
+    }
+
+    b+= a
+
+    i8.print(b)
+
+    test(b,20, "test i8 subtraction assignment operator (b-= a) failed")
+   
+}
+
