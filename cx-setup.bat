@@ -235,8 +235,8 @@ exit /b
   call :showResults "goyacc cxgo" "2nd pass -" "ERROR in 2nd pass -"
 
 
-  go build -tags="base opengl" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cxgo/
-  call :showResults skycoin\CX\CXGO "            Built CX.EXE from:" "ERROR building CX.EXE from:"
+  go build -tags="base cxfx" -i -o %BIN_PATH%/cx.exe github.com/skycoin/cx/cmd/cx
+  call :showResults skycoin\CX\CMD\CX "            Built CX.EXE from:" "ERROR building CX.EXE from:"
 exit /b
 
 
