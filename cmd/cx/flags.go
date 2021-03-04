@@ -14,9 +14,7 @@ type cxCmdFlags struct {
 	baseOutput        bool
 	compileOutput     string
 	replMode          bool
-	webMode           bool
-	ideMode           bool
-	webPersistentMode bool
+	cxPlayground      bool
 	printHelp         bool
 	printVersion      bool
 	printEnv          bool
@@ -53,9 +51,7 @@ func defaultCmdFlags() cxCmdFlags {
 		baseOutput:        false,
 		compileOutput:     "",
 		replMode:          false,
-		webMode:           false,
-		ideMode:           false,
-		webPersistentMode: false,
+		cxPlayground:           false,
 		printHelp:         false,
 		printEnv:          false,
 		printVersion:      false,
@@ -91,10 +87,7 @@ func parseFlags(options *cxCmdFlags, args []string) {
 
 	commandLine.BoolVar(&options.replMode, "repl", options.replMode, "Loads source files into memory and starts a read-eval-print loop")
 	commandLine.BoolVar(&options.replMode, "r", options.replMode, "alias for -repl")
-	commandLine.BoolVar(&options.webMode, "web", options.webMode, "Start CX as a web service.")
-	commandLine.BoolVar(&options.webMode, "w", options.webMode, "alias for -web")
-	commandLine.BoolVar(&options.ideMode, "ide", options.ideMode, "Start CX as a web service, and Leaps service start also.")
-	commandLine.BoolVar(&options.webPersistentMode, "pw", options.webPersistentMode, "Start CX as a web service with a persistent web REPL session")
+	commandLine.BoolVar(&options.cxPlayground, "cx-playground", options.cxPlayground, "Start CX playground web service.")
 	commandLine.StringVar(&options.initialHeap, "heap-initial", options.initialHeap, "Set the initial heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed.")
 	commandLine.StringVar(&options.initialHeap, "hi", options.initialHeap, "alias for -initial-heap")
 	commandLine.StringVar(&options.maxHeap, "heap-max", options.maxHeap, "Set the max heap for the CX virtual machine. The value is in bytes, but the suffixes 'G', 'M' or 'K' can be used to express gigabytes, megabytes or kilobytes, respectively. Lowercase suffixes are allowed. Note that this parameter overrides --heap-initial if --heap-max is equal to a lesser value than --heap-max's.")
