@@ -108,7 +108,7 @@ if %ERRORLEVEL% neq 0 (
 
 
 rem run CX tests
-%BIN_PATH%\cx.exe %SKYCOIN_PATH%\cx\tests\main.cx ++wdir=tests\ ++disable-tests=gui,issue
+%BIN_PATH%\cx.exe cx %SKYCOIN_PATH%\cx\lib\args.cx %SKYCOIN_PATH%\cx\tests\main.cx ++wdir=tests\ ++disable-tests=gui,issue
 call :showResults cx\tests "Tested" "ERROR while testing"
 
 call :echoWithColor yellow "You can re-run CX tests with:"
