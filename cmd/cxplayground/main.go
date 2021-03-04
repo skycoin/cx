@@ -1,16 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
-	"time"
-	"runtime"
 	"os"
-	"bytes"
-	"io"
+	"runtime"
+	"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
