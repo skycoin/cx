@@ -1,87 +1,53 @@
 package main
 
 
+func main() {
 
-func testAndAssignmentOperator(){
-
-     var b f32 = 10.0
-    var a f32 = 102.0
-    
-    a &= b
- 
-    f32.print(a)
- 
-    test(a,i32.f32(0), "test f32 AND Assignment Operator (  a &= b ) failed")
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
 }
 
-func testOrAssignmentOperator(){
 
-     var b f32 = 10.0
-    var a f32 = 102.0
-    a  |= b
+//error: tests/issue-28-f32-issue.cx:16 function 'f32.sub' expected input argument of type 'f32'; 'i32' was provided
+func testDecrementOperatortypeI() {
 
-   test(a,i32.f32(101), "test f32 OR Assignment Operator ( a  |= b ) failed")
+	var b f32 = 2B
+
+    b--
+
+	test(b ,1B, "test f32 Increment Operator (b--)failed")
 }
 
-func TestXorBitManipulationOperator(){
+//error: tests/issue-28-f32-issue.cx:16 function 'f32.sub' expected input argument of type 'f32'; 'i32' was provided
+func testDecrementOperatortypeII() {
 
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32 
-    c = b ^ a
-   
-    test(c,10.0, "test f32 XOR Bit Manipulation Operator (c = b ^ a) failed")
+	var b f32 = i32.f32(2B)
+
+    b--
+
+	test(b ,1B, "test f32 Increment Operator (b--)failed")
 }
 
-func TestRightBitManipulationOperator(){
+//error message 
+//error: tests/issue-28-f32-issue.cx:17 function 'f32.add' expected input argument of type 'f32'; 'i32' was provided
 
-    var b f32 = 111.0
-    var a f32 = 111.0
-    var c f32 
-    c = b >> a
+func testIncrementOperatortypeII() {
 
-     f32.print(a)
+	var b f32 = 1.0L
 
- 
-    test(c,0.0, "test f32 Right Bit Manipulation Operator ( c = b >> a) failed")
+    b++
+
+	test(b ,2.0L, "test f32 Increment Operator (b++)failed")
 }
 
-func TestLeftBitManipulationOperator(){
+func testIncrementOperatortypeI() {
 
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32 
-    c = b << a
-   
-    test(c,0.0, "test f32 Left Bit Manipulation Operator ( c = b << a) failed")
+	var b f32 = 1.0L
+    b++
+
+	test(b ,2.0L, "test f32 Increment Operator (b++)failed")
 }
 
-func TestAndBitManipulationOperator(){
 
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32 
-    c = b & a
-   
-    test(c,101.0, "test f32 AND Bit Manipulation Operator (c = b & a) failed")
-}
-
-func TestOrBitManipulationOperator(){
-
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32 
-    c = b | a
-   
-    test(c,111.0, "test f32 OR Bit Manipulation Operator (c = b | a) failed")
-}
-
-func TestOrBitManipulationOperator(){
-
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32 
-    c = b | a
-   
-    test(c,111.0, "test f32 OR Bit Manipulation Operator (c = b | a) failed")
-}
+//error message 
+//error: tests/issue-28-f32-issue.cx:26 function 'f32.add' expected input argument of type 'f32'; 'i32' was provided

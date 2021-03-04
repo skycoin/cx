@@ -167,50 +167,6 @@ func testDivisionAssignmentOperator(){
 }
 
 
-
-func testModulusAssignmentOperator(){
-
-    var b f32 = 10.0
-    var a f32 = 102.0
-    a %= b
-    test(a,2.0, "test f32 Modulus Assignment Operator (  a %= b ) failed")
-
-}
-
-
-
-func testXorAssignmentOperator(){
-
-     var b f32 = 10.0
-    var a f32 = 102.0
-    a  ^=  b
-    test(a,101.0, "test f32 XOR Assignment Operator ( a  ^=  b ) failed")
-}
-
-
-
-
-
-
-
-
-func TestModulusBitManipulationOperator(){
-
-    var b f32 = 111.0
-    var a f32 = 101.0
-    var c f32
-    c = b % a
-   
-    test(c,10.0, "test f32 Modulus Bit Manipulation Operator (c = b % a) failed")
-}
-
-
-
-
-
-
-
-
 func main() {
 
     testAdditionAssignmentOperator()
@@ -225,7 +181,5 @@ func main() {
     testArithmeticOperatorDivision()
     testMultiplicationAssignmentOperator()
     testDivisionAssignmentOperator()
-    testModulusAssignmentOperator()
-    TestModulusBitManipulationOperator()
     
 }

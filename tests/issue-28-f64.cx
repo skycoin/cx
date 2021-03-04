@@ -165,126 +165,7 @@ func testDivisionAssignmentOperator(){
 }
 
 
-func testRightShiftAssignmentOperator(){
 
-
-    var b i64 = 2L
-    var a i64 = 100L
-    a >>= b  
-    test(a,25L, "test i64 Right Shift Assignment Operator (a >>= b  ) failed")
-
-}	
-
-
-func testLeftShiftAssignmentOperator(){
-
-
-    var b i64 = 2L
-    var a i64 = 10L
-    a <<= b  
-    test(a,40L, "test i64 Left Shift Assignment Operator ( a <<= b ) failed")
-
-}
-
-func testModulusAssignmentOperator(){
-
-    var b i64 = 10L
-    var a i64 = 102L
-    a %= b
-    test(a,2L, "test i64 Modulus Assignment Operator (  a %= b ) failed")
-
-}
-
-
-
-func testAndAssignmentOperator(){
-
-     var b i64 = 10L
-    var a i64 = 102L
-    a &= b
-    test(a,2L, "test i64 AND Assignment Operator (  a &= b ) failed")
-}
-
-func testOrAssignmentOperator(){
-
-     var b i64 = 10L
-    var a i64 = 102L
-    a  |= b
-    test(a,110L, "test i64 OR Assignment Operator ( a  |= b ) failed")
-}
-
-
-func testXorAssignmentOperator(){
-
-     var b i64 = 10L
-    var a i64 = 102L
-    a  ^=  b
-    test(a,108L, "test i64 XOR Assignment Operator ( a  ^=  b ) failed")
-}
-
-func TestRightBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 111L
-    var c i64 
-    c = b >> a
-
- 
-    test(c,0L, "test i64 Right Bit Manipulation Operator ( c = b >> a) failed")
-}
-
-
-func TestLeftBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 101L
-    var c i64 
-    c = b << a
-   
-    test(c,0L, "test i64 Left Bit Manipulation Operator ( c = b << a) failed")
-}
-
-
-func TestModulusBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 101L
-    var c i64 
-    c = b % a
-   
-    test(c,10L, "test i64 Modulus Bit Manipulation Operator (c = b % a) failed")
-}
-
-func TestAndBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 101L
-    var c i64 
-    c = b & a
-   
-    test(c,101L, "test i64 AND Bit Manipulation Operator (c = b & a) failed")
-}
-
-
-func TestOrBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 101L
-    var c i64 
-    c = b | a
-   
-    test(c,111L, "test i64 OR Bit Manipulation Operator (c = b | a) failed")
-}
-
-func TestXorBitManipulationOperator(){
-
-    var b i64 = 111L
-    var a i64 = 101L
-    var c i64 = 10L
-    c = b ^ a
-   
-    test(c,10L, "test i64 XOR Bit Manipulation Operator (c = b ^ a) failed")
-}
 
 func main() {
 
@@ -299,19 +180,7 @@ func main() {
     testArithmeticOperatorMultiplication()
     testArithmeticOperatorDivision()
     testMultiplicationAssignmentOperator()
-    testDivisionAssignmentOperator()
-    testRightShiftAssignmentOperator()
-    testLeftShiftAssignmentOperator()
-    testModulusAssignmentOperator()
-    testAndAssignmentOperator()
-    testOrAssignmentOperator()
-    testXorAssignmentOperator()
-    TestRightBitManipulationOperator()
-    TestLeftBitManipulationOperator()
-    TestModulusBitManipulationOperator()
-    TestAndBitManipulationOperator()
-    TestOrBitManipulationOperator()
-    TestXorBitManipulationOperator() 
+    testDivisionAssignmentOperator()  
 }
 
 
