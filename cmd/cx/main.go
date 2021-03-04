@@ -153,11 +153,6 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	}
 	actions.PRGRM.Packages = corePkgsPrgrm.Packages
 
-	if options.cxPlayground {
-		cxPlayground()
-		return false, nil, nil
-	}
-
 	// var bcPrgrm *CXProgram
 	var sPrgrm []byte
 	// In case of a CX chain, we need to temporarily store the blockchain code heap elsewhere,
