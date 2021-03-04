@@ -179,10 +179,6 @@ func ReadMemory(offset int, arg *CXArgument) []byte {
 	return PROGRAM.Memory[offset : offset+size]
 }
 
-
-
-
-
 // ResizeMemory ...
 func ResizeMemory(prgrm *CXProgram, newMemSize int, isExpand bool) {
 	// We can't expand memory to a value greater than `memLimit`.

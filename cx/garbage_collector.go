@@ -465,5 +465,3 @@ func updatePointers(prgrm *CXProgram, oldAddr, newAddr int32) {
 		fp += op.Size
 	}
 }
-
-

@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	cxcore "github.com/skycoin/cx/cx"
@@ -156,4 +157,27 @@ func printPrompt() {
 	} else {
 		fmt.Printf("* ")
 	}
+}
+
+// ----------------------------------------------------------------
+//                     Utility functions
+
+func readline(fi *bufio.Reader) (string, bool) {
+	s, err := fi.ReadString('\n')
+
+	s = strings.Replace(s, "\n", "", -1)
+	s = strings.Replace(s, "\r", "", -1)
+
+	for _, ch := range s {
+		if ch == rune(4) {
+			err = io.EOF
+			break
+		}
+	}
+
+	if err != nil {
+		return "", false
+	}
+
+	return s, true
 }

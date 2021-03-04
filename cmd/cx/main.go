@@ -153,22 +153,8 @@ func parseProgram(options cxCmdFlags, fileNames []string, sourceCode []*os.File)
 	}
 	actions.PRGRM.Packages = corePkgsPrgrm.Packages
 
-	if options.webMode {
-		ServiceMode()
-		return false, nil, nil
-	}
-
-	// TODO @evanlinjin: Do we need this? What is the 'leaps' command?
-	if options.ideMode {
-		WebIdeServiceMode()
-		ServiceMode()
-		return false, nil, nil
-	}
-
-	// TODO @evanlinjin: We do not need a persistent mode?
-	if options.webPersistentMode {
-		go ServiceMode()
-		PersistentServiceMode()
+	if options.cxPlayground {
+		cxPlayground()
 		return false, nil, nil
 	}
 
