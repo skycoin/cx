@@ -11,35 +11,35 @@ import (
 )
 
 type cxCmdFlags struct {
-	baseOutput        bool
-	compileOutput     string
-	replMode          bool
-	cxPlayground      bool
-	printHelp         bool
-	printVersion      bool
-	printEnv          bool
-	tokenizeMode      bool
-	initialHeap       string
-	maxHeap           string
-	stackSize         string
-	blockchainMode    bool
-	publisherMode     bool
-	peerMode          bool
-	transactionMode   bool
-	broadcastMode     bool
-	walletMode        bool
-	genAddress        bool
-	port              int
-	walletId          string
-	walletSeed        string
-	programName       string
-	secKey            string
-	pubKey            string
-	genesisAddress    string
-	genesisSignature  string
-	minHeapFreeRatio  float64
-	maxHeapFreeRatio  float64
-	cxpath            string
+	baseOutput       bool
+	compileOutput    string
+	replMode         bool
+	cxPlayground     bool
+	printHelp        bool
+	printVersion     bool
+	printEnv         bool
+	tokenizeMode     bool
+	initialHeap      string
+	maxHeap          string
+	stackSize        string
+	blockchainMode   bool
+	publisherMode    bool
+	peerMode         bool
+	transactionMode  bool
+	broadcastMode    bool
+	walletMode       bool
+	genAddress       bool
+	port             int
+	walletId         string
+	walletSeed       string
+	programName      string
+	secKey           string
+	pubKey           string
+	genesisAddress   string
+	genesisSignature string
+	minHeapFreeRatio float64
+	maxHeapFreeRatio float64
+	cxpath           string
 
 	// Debug flags for the CX developers
 	debugLexer   bool
@@ -48,23 +48,23 @@ type cxCmdFlags struct {
 
 func defaultCmdFlags() cxCmdFlags {
 	return cxCmdFlags{
-		baseOutput:        false,
-		compileOutput:     "",
-		replMode:          false,
-		cxPlayground:           false,
-		printHelp:         false,
-		printEnv:          false,
-		printVersion:      false,
-		blockchainMode:    false,
-		transactionMode:   false,
-		broadcastMode:     false,
-		port:              6001,
-		programName:       "cxcoin",
-		walletId:          "cxcoin_cli.wlt",
-		secKey:            "",
-		pubKey:            "",
-		genesisAddress:    "",
-		genesisSignature:  "",
+		baseOutput:       false,
+		compileOutput:    "",
+		replMode:         false,
+		cxPlayground:     false,
+		printHelp:        false,
+		printEnv:         false,
+		printVersion:     false,
+		blockchainMode:   false,
+		transactionMode:  false,
+		broadcastMode:    false,
+		port:             6001,
+		programName:      "cxcoin",
+		walletId:         "cxcoin_cli.wlt",
+		secKey:           "",
+		pubKey:           "",
+		genesisAddress:   "",
+		genesisSignature: "",
 
 		debugLexer:   false,
 		debugProfile: 0,

@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/skycoin/cx/cxgo/actions"
-	"github.com/skycoin/cx/cxgo/api"
 	"io/ioutil"
 	"net"
 	"net/http"
+
+	"github.com/skycoin/cx/cxgo/actions"
+	"github.com/skycoin/cx/cxgo/api"
 )
 
 func cxPlayground() {

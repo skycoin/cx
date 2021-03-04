@@ -9,8 +9,8 @@ import (
 	"io"
 	"os"
 	"runtime"
-	"time"
 	"strings"
+	"time"
 
 	cxcore "github.com/skycoin/cx/cx"
 	"github.com/skycoin/cx/cxgo/actions"
