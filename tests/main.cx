@@ -390,6 +390,19 @@ func main ()() {
 	// runTestEx("issue-311.cx", cx.SUCCESS, "`CurrentFunction` and `CurrentStruct` are causing errors in programs with more than 1 package.", TEST_ISSUE, 0)
 	// runTestEx("issue-312.cx", cx.SUCCESS, "Deserialization is not setting correctly the sizes for the CallStack, HeapStartsAt and StackSize fields of the CXProgram structure.", TEST_ISSUE, 0)
 
+
+	runTest("issue-28-f32.cx", cx.SUCCESS, "f32")
+	runTest("issue-28-f64.cx", cx.SUCCESS, "f64")
+	runTest("issue-28-i8.cx", cx.SUCCESS, "i8")
+	runTest("issue-28-i6.cx", cx.SUCCESS, "i16")
+	runTest("issue-28-i2.cx", cx.SUCCESS, "i32")
+	runTest("issue-28-int64.cx", cx.SUCCESS, "i64")
+	runTest("issue-28-u8.cx", cx.SUCCESS, "ui8")
+	runTest("issue-28-ui16.cx", cx.SUCCESS, "ui16")
+	runTest("issue-28-ui32.cx", cx.SUCCESS, "ui32")
+	runTest("issue-28-ui64.cx", cx.SUCCESS, "ui64")
+
+
 	var end i64
 	end = time.UnixMilli()
 

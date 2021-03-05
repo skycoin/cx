@@ -16,19 +16,19 @@ func opGlfwFuncI32I32(prgrm *CXProgram) {
 	expr := prgrm.GetExpr()
 	fp := prgrm.GetFramePointer()
 
-	// inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
-	out1 := expr.Outputs[0]
-	// packageName := ReadStr(fp, inp1)
-	// functionName := ReadStr(fp, inp2)
+	packageName := ReadStr(fp, expr.Inputs[0])
+	functionName := ReadStr(fp, expr.Inputs[1])
 	callback := func(a int32, b int32) {
 		var inps [][]byte = make([][]byte, 2)
 		inps[0] = FromI32(a)
 		inps[1] = FromI32(b)
-		PROGRAM.Callback(expr.Operator, inps)
+		if fn, err := prgrm.GetFunction(functionName, packageName); err == nil {
+			PROGRAM.Callback(fn, inps)
+		}
 	}
 
 	Functions_i32_i32 = append(Functions_i32_i32, callback)
-	WriteI32(GetFinalOffset(fp, out1), int32(len(Functions_i32_i32)-1))
+	WriteI32(GetFinalOffset(fp, expr.Outputs[0]), int32(len(Functions_i32_i32)-1))
 }
 
 func opGlfwCallI32I32(prgrm *CXProgram) {

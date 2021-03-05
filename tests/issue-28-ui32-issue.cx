@@ -1,0 +1,57 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+  testDecrementOperatortypeI()
+    testDecrementOperatortypeII()
+}
+
+
+//error: tests/issue-28-ui32-issue.cx:16 function 'ui32.sub' expected input argument of type 'ui32'; 'i32' was provided
+func testDecrementOperatortypeI() {
+
+	var b ui32 = 2B
+
+    b--
+
+	test(b ,1B, "test ui32 Increment Operator (b--)failed")
+}
+
+//error: tests/issue-28-ui32-issue.cx:16 function 'ui32.sub' expected input argument of type 'ui32'; 'i32' was provided
+func testDecrementOperatortypeII() {
+
+	var b ui32 = i32.ui32(2B)
+
+    b--
+
+	test(b ,1B, "test ui32 Increment Operator (b--)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-ui32-issue.cx:17 function 'ui32.add' expected input argument of type 'ui32'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b ui32 = i32.ui32(1U)
+
+    b++
+
+	test(b ,2U, "test ui32 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b ui32 = 1U
+
+    b++
+
+	test(b ,2U, "test ui32 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-ui32-issue.cx:26 function 'ui32.add' expected input argument of type 'ui32'; 'i32' was provided
