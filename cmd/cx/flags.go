@@ -71,10 +71,22 @@ func defaultCmdFlags() cxCmdFlags {
 
 var commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
+func appendDash(args []string) {
+
+	for k, v := range args {
+		switch v {
+		case "version":
+			args[k] = "-version"
+		}
+	}
+}
+
 func parseFlags(options *cxCmdFlags, args []string) {
 	if len(args) <= 0 {
 		options.replMode = true
 	}
+
+	appendDash(args)
 
 	commandLine.BoolVar(&options.printVersion, "version", options.printVersion, "Print CX version")
 	commandLine.BoolVar(&options.printVersion, "v", options.printVersion, "alias for -version")
