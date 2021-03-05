@@ -1,7 +1,0 @@
-package main
-import "http"
-
-func main() () {
-    err := http.NewRequest("GET", "http://127.0.0.1:9079", "")
-    printf("Error while making the request %v", err)
-}

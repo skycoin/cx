@@ -19,12 +19,6 @@ func testAdditionAssignmentOperator() {
     
     b+= a
 
-    i32.print(b)
-
-    if b ==c{
-         i32.print(b)
-     
-    } 
     test(b,c, "test i32 Addition Assignment Operator ( b+= a) failed")
   }
 

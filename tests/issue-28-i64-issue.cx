@@ -1,0 +1,56 @@
+package main
+
+
+func main() {
+
+    testIncrementOperatortypeII()
+    testIncrementOperatortypeI()
+      testDecrementOperatortypeI()
+    testDecrementOperatortypeII()
+}
+
+
+//error: tests/issue-28-i8-issue.cx:16 function 'i8.sub' expected input argument of type 'i8'; 'i32' was provided
+func testDecrementOperatortypeI() {
+
+	var b i8 = 2B
+
+    b--
+
+	test(b ,1B, "test i8 Increment Operator (b--)failed")
+}
+
+//error: tests/issue-28-i8-issue.cx:16 function 'i8.sub' expected input argument of type 'i8'; 'i32' was provided
+func testDecrementOperatortypeII() {
+
+	var b i8 = i32.i8(2B)
+
+    b--
+
+	test(b ,1B, "test i8 Increment Operator (b--)failed")
+}
+
+//error message 
+//error: tests/issue-28-i8-issue.cx:17 function 'i64.add' expected input argument of type 'i8'; 'i32' was provided
+
+func testIncrementOperatortypeII() {
+
+	var b i64 = i32.i64(1L)
+
+    b++
+
+	test(b ,2L, "test i64 Increment Operator (b++)failed")
+}
+
+func testIncrementOperatortypeI() {
+
+	var b i64 = 1L
+
+    b++
+
+	test(b ,2L, "test i64 Increment Operator (b++)failed")
+}
+
+
+//error message 
+//error: tests/issue-28-i64-issue.cx:26 function 'i64.add' expected input argument of type 'i8'; 'i32' was provided
