@@ -15,7 +15,6 @@ matrix:
   include:
     - os: linux
       dist: xenial
-    - os: osx
 
 # Build, test & run cx test
 script:
