@@ -19,6 +19,8 @@ import (
 	"github.com/skycoin/cx/cxgo/cxgo"
 	"github.com/skycoin/cx/cxgo/cxgo0"
 	"github.com/skycoin/cx/cxgo/parser"
+
+	"github.com/skycoin/cx/cmd/cxplayground/playground"
 )
 
 type SourceCode struct {
@@ -29,6 +31,16 @@ func main() {
 	host := ":5336"
 
 	mux := http.NewServeMux()
+
+	workingDir, _ := os.Getwd()
+	if err := playground.InitPlayground(workingDir); err != nil {
+		// error captured while initiating the playground examples, should be handled in the future
+		fmt.Println("Fail to initiating palyground examples")
+	}
+
+	mux.HandleFunc("/playground", playground.GetPlayground)
+	mux.HandleFunc("/playground/examples", playground.GetExampleFileList)
+	mux.HandleFunc("/playground/examples/code", playground.GetExampleFileContent)
 
 	mux.Handle("/", http.FileServer(http.Dir("./dist")))
 	mux.Handle("/program/", api.NewAPI("/program", actions.PRGRM))
