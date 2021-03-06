@@ -52,12 +52,15 @@ func main () () {
 
     var ball Ball
     ball = Ball{
-        radius: 0.05,
+        radius: 0.1,
         x: 0.0,
         y: 0.0,
-        vx: 0.01,
-        vy: 0.01,
+        vx: 0.0005,
+        vy: 0.0005,
         gravity: 0.01}
+
+    var temp f32
+    temp = 0.0
 
     for bool.not(glfw.ShouldClose("window")) {
         gl.Clear(gl.COLOR_BUFFER_BIT)
@@ -68,14 +71,33 @@ func main () () {
         gl.LoadIdentity()
         gl.MatrixMode(gl.MODELVIEW)
 
-        if f32.lteq(f32.add(ball.y, ball.radius), -1.0) {
-            ball.vy = f32.abs(ball.vy)
-        } else {
-            ball.vy = f32.sub(ball.vy, ball.gravity)
+        if f32.eq (temp, 0.0){
+            if f32.lteq(f32.add(ball.y, ball.gravity), 1.0) {
+                ball.vy = f32.abs(ball.vy)
+                ball.vx = f32.abs(ball.vx)
+            } else {
+                temp = 1.0
+            }
         }
 
-        ball.x = f32.add(ball.x, ball.vx)
-        ball.y = f32.add(ball.y, ball.vy)
+        if eq(temp, 1.0){
+            if f32.gteq(f32.sub(ball.y, ball.gravity), -1.0){
+                ball.vy = f32.abs(ball.vy)
+                ball.vx = f32.abs(ball.vx)
+            } else {
+                temp = 0.0
+            }
+        } 
+
+        if f32.eq (temp, 0.0){
+            ball.x = f32.add(ball.x, ball.vx)
+            ball.y = f32.add(ball.y, ball.vy)
+        }
+
+        if f32.eq (temp, 1.0){
+            ball.x = f32.sub(ball.x, ball.vx)
+            ball.y = f32.sub(ball.y, ball.vy)
+        }
 
         drawBall(ball)
         
