@@ -12,7 +12,7 @@ env:
 
 before_install:
   - sudo apt-get update 
-  - sudo apt-get -y install lade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make
+  - sudo apt-get -y install glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make
 
 # Use a matrix to define SO and possible future changes
 matrix:
