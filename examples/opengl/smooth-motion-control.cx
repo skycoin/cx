@@ -191,7 +191,7 @@ func getVelocityChangesOnEdgeCollision (pos f32, vel f32, rad f32, negEdge f64, 
 	} else
 	if f32.gteq(f32.add(pos, rad), f64.f32(posEdge)) { 
 		// hit pos edge 
-		out = 0 - f32.abs(vel)
+		out = 0.0 - f32.abs(vel)
 	}
 }
 
