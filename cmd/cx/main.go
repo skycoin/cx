@@ -36,12 +36,16 @@ func Run(args []string) {
 	// or by setting the `--cxpath` flag.
 	checkCXPathSet(options)
 
+	//checkHelp check command line argumenets
+	//$ cx help
 	if checkHelp(args) {
 		commandLine.PrintDefaults()
 		return
 	}
 
 	// Does the user want to print the command-line help?
+	//options.printHelp works when flags are provided.
+	//$ cx version --vesion
 	if options.printHelp {
 		printHelp()
 		return
@@ -53,8 +57,22 @@ func Run(args []string) {
 		return
 	}
 
+	//checkversion check command line argumenets
+	//$ cx version
+	if checkversion(args) {
+		printVersion()
+		return
+	}
+
 	// User wants to print CX env
 	if options.printEnv {
+		printEnv()
+		return
+	}
+
+	//checkenv check command line argumenets
+	//$ cx env
+	if checkenv(args) {
 		printEnv()
 		return
 	}
