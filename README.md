@@ -47,9 +47,9 @@ You can find binary releases for most major systems on the [release page](https:
 If you are using a `apt` compatible system, install the dependencies with"
 
 ```
-sudo apt-get update -qq
+sudo apt-get update
 
-sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make --no-install-recommends
+sudo apt-get install -y glade xvfb libxinerama-dev libxcursor-dev libxrandr-dev libgl1-mesa-dev libxi-dev libperl-dev libcairo2-dev libpango1.0-dev libglib2.0-dev libopenal-dev libxxf86vm-dev make
 ```
 
 If you have not setup Golang on your machine, follow this [guide](https://www.tecmint.com/install-go-in-ubuntu/) to install and setup Go. 

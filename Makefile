@@ -1,7 +1,7 @@
 export GO111MODULE=on
 
 .DEFAULT_GOAL := help
-.PHONY: build-parser build test build-full
+.PHONY: build-parser build test build-core
 .PHONY: install
 .PHONY: dep
 
@@ -65,11 +65,11 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 build:  ## Build CX from sources
-	go build $(GO_OPTS) -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+	$(GO_OPTS) go build -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
-build-full: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
-	$(GO_OPTS) go build -tags="base cxfx" -o ./bin/cx github.com/skycoin/cx/cmd/cx
+build-core: ## Build CX with CXFX support. Done via satisfying 'cxfx' build tag.
+	$(GO_OPTS) go build -tags="base" -o ./bin/cx github.com/skycoin/cx/cmd/cx
 	chmod +x ./bin/cx
 
 build-parser: ## Generate lexer and parser for CX grammar
