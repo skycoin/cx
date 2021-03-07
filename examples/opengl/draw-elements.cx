@@ -182,14 +182,20 @@ func startGame (mw Window) () {
 		y: c1.y}
 
 	var b1 Block
-	var b2 Block
-	var b3 Block
-	var b4 Block
+	//var b2 Block
+	//var b3 Block
+	//var b4 Block
 
+	/* This is causing compile error
 	b1 = Block{
 		x: f32.sub(0.05, 0.1),
 		y: f32.sub(-0.7, 0.05)}
-	
+	*/
+
+	// alternative
+	b1.x = f32.sub(0.05, 0.1)
+	b1.y = f32.sub(-0.7, 0.05)
+
 	var w1 Wall
 	var w2 Wall
 
