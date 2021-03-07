@@ -43,7 +43,7 @@ func GetDerefSize(arg *CXArgument) int {
 }
 
 // CalculateDereferences ...
-func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) {
+func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
 	var baseOffset int
 	var sizeofElement int
@@ -103,12 +103,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int, dbg bool) 
 			offset = mustDeserializeI32(byts)
 			*finalOffset = int(offset)
 		}
-		if dbg {
-			fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
-		}
-	}
-	if dbg {
-		fmt.Println("\tupdate", arg.Name, arg.DereferenceOperations, *finalOffset, PROGRAM.Memory[*finalOffset:*finalOffset+10])
+
 	}
 
 	// if *finalOffset >= PROGRAM.HeapStartsAt {
@@ -136,6 +131,8 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 }
 
 // GetFinalOffset ...
+// Get byte position to write operand result back to?
+// Note: CXArgument is bloated, should pass in required though something else
 func GetFinalOffset(fp int, arg *CXArgument) int {
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
@@ -144,19 +141,11 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	// elt = arg
 
-	//var dbg bool
-	//if arg.Name != "" {
-	//	dbg = false
-	//}
-
+	//Todo: find way to eliminate this check
 	if finalOffset < PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
-
-	//if dbg {
-	//	fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
-	//}
 
 	// elt = arg
 	//TODO: Eliminate all op codes with more than one return type
@@ -167,10 +156,6 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		finalOffset += fld.Offset
 		CalculateDereferences(fld, &finalOffset, fp, dbg)
 	}
-
-	//if dbg {
-	//	fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
-	//}
 
 	return finalOffset
 }
