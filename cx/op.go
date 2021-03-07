@@ -173,6 +173,7 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 // ReadMemory ...
 //TODO: Avoid all read memory commands for fixed width types (i32,f32,etc)
+//TODO: Make "ReadMemoryI32", "ReadMemoryI16", etc
 func ReadMemory(offset int, arg *CXArgument) []byte {
 	size := GetSize(arg)
 	return PROGRAM.Memory[offset : offset+size]
@@ -278,21 +279,29 @@ func FromBool(in bool) []byte {
 
 // FromI8 ...
 func FromI8(in int8) []byte {
+	//Serialize Atomic uses switch! Use serialize int8 directly
+	//copy code over
 	return encoder.SerializeAtomic(in)
 }
 
 // FromI16 ...
 func FromI16(in int16) []byte {
+	//Serialize Atomic uses switch! Use serialize int16 directly
+	//copy code over
 	return encoder.SerializeAtomic(in)
 }
 
 // FromI32 ...
 func FromI32(in int32) []byte {
+	//Serialize Atomic uses switch! Use serialize int32 directly
+	//copy code over
 	return encoder.SerializeAtomic(in)
 }
 
 // FromI64 ...
 func FromI64(in int64) []byte {
+	//Serialize Atomic uses switch! Use serialize int64 directly
+	//copy code over
 	return encoder.SerializeAtomic(in)
 }
 
