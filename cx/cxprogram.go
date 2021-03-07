@@ -258,6 +258,7 @@ func (prgrm *CXProgram) GetExpr() *CXExpression {
 }
 
 // GetCall returns the current CXCall
+//TODO: What does this do?
 func (prgrm *CXProgram) GetCall() *CXCall {
 	return &prgrm.CallStack[prgrm.CallCounter]
 }
