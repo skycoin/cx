@@ -144,21 +144,23 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 
 	// elt = arg
 
-	var dbg bool
-	if arg.Name != "" {
-		dbg = false
-	}
+	//var dbg bool
+	//if arg.Name != "" {
+	//	dbg = false
+	//}
 
 	if finalOffset < PROGRAM.StackSize {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
 
-	if dbg {
-		fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
-	}
+	//if dbg {
+	//	fmt.Println("(start", arg.Name, fmt.Sprintf("%s:%d", arg.FileName, arg.FileLine), arg.DereferenceOperations, finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10])
+	//}
 
 	// elt = arg
+	//TODO: Eliminate all op codes with more than one return type
+	//TODO: Eliminate this loop
 	CalculateDereferences(arg, &finalOffset, fp, dbg)
 	for _, fld := range arg.Fields {
 		// elt = fld
@@ -166,9 +168,9 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 		CalculateDereferences(fld, &finalOffset, fp, dbg)
 	}
 
-	if dbg {
-		fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
-	}
+	//if dbg {
+	//	fmt.Println("\t\tresult", finalOffset, PROGRAM.Memory[finalOffset:finalOffset+10], "...)")
+	//}
 
 	return finalOffset
 }
