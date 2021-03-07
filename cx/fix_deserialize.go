@@ -5,6 +5,8 @@ import(
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+//TODO: replace with unsafe
+
 func mustDeserializeBool(b []byte) bool {
 	switch b[0] {
 	case 0:
