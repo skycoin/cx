@@ -21,21 +21,21 @@ type cxCmdFlags struct {
 	initialHeap      string
 	maxHeap          string
 	stackSize        string
-	blockchainMode   bool
-	publisherMode    bool
-	peerMode         bool
-	transactionMode  bool
-	broadcastMode    bool
-	walletMode       bool
-	genAddress       bool
-	port             int
-	walletId         string
-	walletSeed       string
-	programName      string
-	secKey           string
-	pubKey           string
-	genesisAddress   string
-	genesisSignature string
+	//blockchainMode   bool
+	//publisherMode    bool
+	//peerMode         bool
+	//transactionMode  bool
+	//broadcastMode    bool
+	//walletMode       bool
+	//genAddress       bool
+	//port             int
+	//walletId         string
+	//walletSeed       string
+	//programName      string
+	//secKey           string
+	//pubKey           string
+	//genesisAddress   string
+	//genesisSignature string
 	minHeapFreeRatio float64
 	maxHeapFreeRatio float64
 	cxpath           string
@@ -53,16 +53,16 @@ func defaultCmdFlags() cxCmdFlags {
 		printHelp:        false,
 		printEnv:         false,
 		printVersion:     false,
-		blockchainMode:   false,
-		transactionMode:  false,
-		broadcastMode:    false,
-		port:             6001,
-		programName:      "cxcoin",
-		walletId:         "cxcoin_cli.wlt",
-		secKey:           "",
-		pubKey:           "",
-		genesisAddress:   "",
-		genesisSignature: "",
+		//blockchainMode:   false,
+		//transactionMode:  false,
+		//broadcastMode:    false,
+		//port:             6001,
+		//programName:      "cxcoin",
+		//walletId:         "cxcoin_cli.wlt",
+		//secKey:           "",
+		//pubKey:           "",
+		//genesisAddress:   "",
+		//genesisSignature: "",
 
 		debugLexer:   false,
 		debugProfile: 0,
@@ -109,8 +109,8 @@ func parseFlags(options *cxCmdFlags, args []string) {
 	// commandLine.BoolVar(&options.blockchainMode, "bc", options.blockchainMode, "alias for -blockchain")
 	// commandLine.BoolVar(&options.publisherMode, "pb", options.publisherMode, "alias for -publisher")
 	// commandLine.BoolVar(&options.transactionMode, "txn", options.transactionMode, "alias for -transaction")
-	commandLine.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
-	commandLine.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
+	//commandLine.BoolVar(&options.broadcastMode, "broadcast", options.broadcastMode, "Broadcast a CX blockchain transaction")
+	//commandLine.BoolVar(&options.walletMode, "create-wallet", options.walletMode, "Create a wallet from a seed")
 	commandLine.StringVar(&options.cxpath, "cxpath", options.cxpath, "Used for dynamically setting the value of the environment variable CXPATH")
 
 	//deprecated

@@ -648,6 +648,7 @@ func initSerialization(prgrm *CXProgram, s *sAll) {
 }
 
 // SplitSerialize ...
+// WHAT DOES THIS DO? WHY ARE THERE NO COMMENTS?
 func splitSerialize(prgrm *CXProgram, s *sAll, fnCounter, strctCounter *int32, from, to int) {
 	// indexing packages and serializing their names
 	for _, pkg := range prgrm.Packages[from:to] {
