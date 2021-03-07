@@ -818,10 +818,7 @@ func Serialize(prgrm *CXProgram, split int) (byts []byte) {
 	return byts
 }
 
-func opSerialize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opSerialize(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	out1Offset := GetFinalOffset(fp, out1)
 
@@ -836,10 +833,7 @@ func opSerialize(prgrm *CXProgram) {
 	WriteI32(out1Offset, int32(slcOff))
 }
 
-func opDeserialize(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opDeserialize(expr *CXExpression, fp int) {
 	inp := expr.Inputs[0]
 
 	inpOffset := GetFinalOffset(fp, inp)

@@ -37,9 +37,7 @@ func init() {
 }
 
 // opCipherGenerateKeyPair generates a PubKey and a SecKey.
-func opCipherGenerateKeyPair(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func opCipherGenerateKeyPair(expr *CXExpression, fp int) {
 	out1, out2 := expr.Outputs[0], expr.Outputs[1]
 
 	pubKey, secKey := cipher.GenerateKeyPair()
