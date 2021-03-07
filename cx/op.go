@@ -144,6 +144,20 @@ func GetStrOffset(fp int, arg *CXArgument) int {
 // GetFinalOffset ...
 // Get byte position to write operand result back to?
 // Note: CXArgument is bloated, should pass in required though something else
+
+//TODO:
+//CalculateDeference
+// ->
+//CalculateDeferenceInt8,
+//CalculateDeferenceInt16,
+//CalculateDeferenceInt32, etc
+//CalculateDeferenceInt64, etc (FIXED)
+//CalculateDeferenceSlice
+//CalculateDeferenceArray
+//CalculateDeferencePointer
+//Then use them for all fixed types
+//InlineCalculateDeferences
+
 func GetFinalOffset(fp int, arg *CXArgument) int {
 	// defer RuntimeError(PROGRAM)
 	// var elt *CXArgument
