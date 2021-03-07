@@ -1,9 +1,10 @@
-fix_from.go
-
 package cxcore
 
 import(
-	//"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+	//"fmt"
+	"math"
+	"log"
 )
 
 //TODO:

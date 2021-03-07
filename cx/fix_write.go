@@ -1,6 +1,8 @@
 package cxcore
 
-import()
+import(
+	"math"
+)
 
 // WriteMemory ...
 func WriteMemory(offset int, byts []byte) {
