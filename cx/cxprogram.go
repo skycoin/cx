@@ -37,7 +37,6 @@ type CXProgram struct {
 	CallCounter    int           // What function call is the currently being executed in the CallStack
 	HeapPointer    int           // At what offset a CX program can insert a new object to the heap
 	Terminated     bool          // Utility field for the runtime. Indicates if a CX program has already finished or not.
-	BCPackageCount int           // In case of a CX chain, how many packages of this program are part of blockchain code.
 	Version        string        // CX version used to build this CX program.
 
 	// Used by the REPL and parser
