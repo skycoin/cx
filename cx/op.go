@@ -43,6 +43,17 @@ func GetDerefSize(arg *CXArgument) int {
 }
 
 // CalculateDereferences ...
+//Todo: This function needs comments? What does it do?
+//Todo: Can this function be specialized?
+//CalculateDeference
+// ->
+//CalculateDeferenceSlice
+//CalculateDeferenceArray
+//CalculateDeferencePointer
+//CalculateDeferenceInt32, etc (FIXED)
+//TODO: Why are we calling this function for fixed data types in flow path
+//TODO: For int32, f32, etc, this function should not be called at all
+//reduce loops and switches in op code execution flow path
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
 	var baseOffset int
@@ -150,17 +161,18 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	// elt = arg
 	//TODO: Eliminate all op codes with more than one return type
 	//TODO: Eliminate this loop
-	CalculateDereferences(arg, &finalOffset, fp, dbg)
+	CalculateDereferences(arg, &finalOffset, fp)
 	for _, fld := range arg.Fields {
 		// elt = fld
 		finalOffset += fld.Offset
-		CalculateDereferences(fld, &finalOffset, fp, dbg)
+		CalculateDereferences(fld, &finalOffset, fp)
 	}
 
 	return finalOffset
 }
 
 // ReadMemory ...
+//TODO: Avoid all read memory commands for fixed width types (i32,f32,etc)
 func ReadMemory(offset int, arg *CXArgument) []byte {
 	size := GetSize(arg)
 	return PROGRAM.Memory[offset : offset+size]
@@ -248,191 +260,7 @@ func AllocateSeq(size int) (offset int) {
 	return addr + PROGRAM.HeapStartsAt
 }
 
-// WriteMemory ...
-func WriteMemory(offset int, byts []byte) {
-	for c := 0; c < len(byts); c++ {
-		PROGRAM.Memory[offset+c] = byts[c]
-	}
-}
 
-// Utilities
-
-// WriteBool ...
-func WriteBool(offset int, b bool) {
-	v := byte(0)
-	if b {
-		v = 1
-	}
-	PROGRAM.Memory[offset] = v
-}
-
-// WriteI8 ...
-func WriteI8(offset int, v int8) {
-	PROGRAM.Memory[offset] = byte(v)
-}
-
-// WriteMemI8 ...
-func WriteMemI8(mem []byte, offset int, v int8) {
-	mem[offset] = byte(v)
-}
-
-// WriteI16 ...
-func WriteI16(offset int, v int16) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-}
-
-// WriteMemI16 ...
-func WriteMemI16(mem []byte, offset int, v int16) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-}
-
-// WriteI32 ...
-func WriteI32(offset int, v int32) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-}
-
-// WriteMemI32 ...
-func WriteMemI32(mem []byte, offset int, v int32) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-}
-
-// WriteI64 ...
-func WriteI64(offset int, v int64) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-	PROGRAM.Memory[offset+4] = byte(v >> 32)
-	PROGRAM.Memory[offset+5] = byte(v >> 40)
-	PROGRAM.Memory[offset+6] = byte(v >> 48)
-	PROGRAM.Memory[offset+7] = byte(v >> 56)
-}
-
-// WriteMemI64 ...
-func WriteMemI64(mem []byte, offset int, v int64) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-	mem[offset+4] = byte(v >> 32)
-	mem[offset+5] = byte(v >> 40)
-	mem[offset+6] = byte(v >> 48)
-	mem[offset+7] = byte(v >> 56)
-}
-
-// WriteUI8 ...
-func WriteUI8(offset int, v uint8) {
-	PROGRAM.Memory[offset] = v
-}
-
-// WriteMemUI8 ...
-func WriteMemUI8(mem []byte, offset int, v uint8) {
-	mem[offset] = v
-}
-
-// WriteUI16 ...
-func WriteUI16(offset int, v uint16) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-}
-
-// WriteMemUI16 ...
-func WriteMemUI16(mem []byte, offset int, v uint16) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-}
-
-// WriteUI32 ...
-func WriteUI32(offset int, v uint32) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-}
-
-// WriteMemUI32 ...
-func WriteMemUI32(mem []byte, offset int, v uint32) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-}
-
-// WriteUI64 ...
-func WriteUI64(offset int, v uint64) {
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-	PROGRAM.Memory[offset+4] = byte(v >> 32)
-	PROGRAM.Memory[offset+5] = byte(v >> 40)
-	PROGRAM.Memory[offset+6] = byte(v >> 48)
-	PROGRAM.Memory[offset+7] = byte(v >> 56)
-}
-
-// WriteMemUI64 ...
-func WriteMemUI64(mem []byte, offset int, v uint64) {
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-	mem[offset+4] = byte(v >> 32)
-	mem[offset+5] = byte(v >> 40)
-	mem[offset+6] = byte(v >> 48)
-	mem[offset+7] = byte(v >> 56)
-}
-
-// WriteF32 ...
-func WriteF32(offset int, f float32) {
-	v := math.Float32bits(f)
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-}
-
-// WriteMemF32 ...
-func WriteMemF32(mem []byte, offset int, f float32) {
-	v := math.Float32bits(f)
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-}
-
-// WriteF64 ...
-func WriteF64(offset int, f float64) {
-	v := math.Float64bits(f)
-	PROGRAM.Memory[offset] = byte(v)
-	PROGRAM.Memory[offset+1] = byte(v >> 8)
-	PROGRAM.Memory[offset+2] = byte(v >> 16)
-	PROGRAM.Memory[offset+3] = byte(v >> 24)
-	PROGRAM.Memory[offset+4] = byte(v >> 32)
-	PROGRAM.Memory[offset+5] = byte(v >> 40)
-	PROGRAM.Memory[offset+6] = byte(v >> 48)
-	PROGRAM.Memory[offset+7] = byte(v >> 56)
-}
-
-// WriteMemF64 ...
-func WriteMemF64(mem []byte, offset int, f float64) {
-	v := math.Float64bits(f)
-	mem[offset] = byte(v)
-	mem[offset+1] = byte(v >> 8)
-	mem[offset+2] = byte(v >> 16)
-	mem[offset+3] = byte(v >> 24)
-	mem[offset+4] = byte(v >> 32)
-	mem[offset+5] = byte(v >> 40)
-	mem[offset+6] = byte(v >> 48)
-	mem[offset+7] = byte(v >> 56)
-}
 
 // FromStr ...
 func FromStr(in string) []byte {
