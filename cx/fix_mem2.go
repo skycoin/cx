@@ -5,6 +5,22 @@ import ()
 //NOTE: Temp file for resolving CalculateDereferences issue
 //TODO: What should this function be called?
 
+//func GetFinalOffset(fp int, arg *CXArgument) int {
+//- "CalculateDereferences" .
+// is only called by GetFinal Offset!
+
+/*
+grep -rn "CalculateDereferences" .
+
+./cx/fix_mem3.go:37:	CalculateDereferences(arg, &finalOffset, fp)
+./cx/fix_mem3.go:41:		CalculateDereferences(fld, &finalOffset, fp)
+^^^ IS only called twice and in two places?
+
+./cx/fix_mem2.go:5://NOTE: Temp file for resolving CalculateDereferences issue
+./cx/fix_mem2.go:8:// CalculateDereferences ...
+./cx/fix_mem2.go:20:func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
+*/
+
 // CalculateDereferences ...
 //Todo: This function needs comments? What does it do?
 //Todo: Can this function be specialized?
@@ -17,6 +33,9 @@ import ()
 //TODO: Why are we calling this function for fixed data types in flow path
 //TODO: For int32, f32, etc, this function should not be called at all
 //reduce loops and switches in op code execution flow path
+
+
+
 func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	var isPointer bool
 	var baseOffset int
