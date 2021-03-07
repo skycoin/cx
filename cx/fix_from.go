@@ -99,7 +99,8 @@ func FromI16(in int16) []byte {
 	//Serialize Atomic uses switch! Use serialize int16 directly
 	//copy code over
 	var b [2]byte
-	lePutUint16(b[:2], uint16(in))
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
 	return b[:2]
 }
 
@@ -108,7 +109,10 @@ func FromI32(in int32) []byte {
 	//Serialize Atomic uses switch! Use serialize int32 directly
 	//copy code over
 	var b [4]byte
-	lePutUint32(b[:4], uint32(in))
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
+	b[2] = byte(in >> 16)
+	b[3] = byte(in >> 24)
 	return b[:4]
 }
 
@@ -117,7 +121,14 @@ func FromI64(in int64) []byte {
 	//Serialize Atomic uses switch! Use serialize int64 directly
 	//copy code over
 	var b [8]byte
-	lePutUint64(b[:8], uint64(in))
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
+	b[2] = byte(in >> 16)
+	b[3] = byte(in >> 24)
+	b[4] = byte(in >> 32)
+	b[5] = byte(in >> 40)
+	b[6] = byte(in >> 48)
+	b[7] = byte(in >> 56)
 	return b[:8]
 }
 
@@ -131,21 +142,32 @@ func FromUI8(in uint8) []byte {
 // FromUI16 ...
 func FromUI16(in uint16) []byte {
 	var b [2]byte
-	lePutUint16(b[:2], in)
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
 	return b[:2]
 }
 
 // FromUI32 ...
 func FromUI32(in uint32) []byte {
 	var b [4]byte
-	lePutUint32(b[:4], in)
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
+	b[2] = byte(in >> 16)
+	b[3] = byte(in >> 24)
 	return b[:4]
 }
 
 // FromUI64 ...
 func FromUI64(in uint64) []byte {
 	var b [8]byte
-	lePutUint64(b[:8], in)
+	b[0] = byte(in)
+	b[1] = byte(in >> 8)
+	b[2] = byte(in >> 16)
+	b[3] = byte(in >> 24)
+	b[4] = byte(in >> 32)
+	b[5] = byte(in >> 40)
+	b[6] = byte(in >> 48)
+	b[7] = byte(in >> 56)
 	return b[:8]
 }
 
