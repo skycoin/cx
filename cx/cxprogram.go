@@ -249,15 +249,17 @@ func (prgrm *CXProgram) GetFunction(fnName string, pkgName string) (*CXFunction,
 
 }
 
+// GetExpr returns the current CXExpression
+func (prgrm *CXProgram) GetExpr() *CXExpression {
+	//call := prgrm.GetCall()
+	//return call.Operator.Expressions[call.Line]
+	call := &prgrm.CallStack[prgrm.CallCounter]
+	return call.Operator.Expressions[call.Line]
+}
+
 // GetCall returns the current CXCall
 func (prgrm *CXProgram) GetCall() *CXCall {
 	return &prgrm.CallStack[prgrm.CallCounter]
-}
-
-// GetExpr returns the current CXExpression
-func (prgrm *CXProgram) GetExpr() *CXExpression {
-	call := prgrm.GetCall()
-	return call.Operator.Expressions[call.Line]
 }
 
 // GetOpCode returns the current OpCode
