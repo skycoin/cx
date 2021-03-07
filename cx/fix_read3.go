@@ -2,6 +2,18 @@ package cxcore
 
 import()
 
+//Why do these functions need CXArgument as imput!?
+
+func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
+	elt := GetAssignmentElement(inp)
+	if elt.IsSlice {
+		return ReadSlice(fp, inp, dataType)
+	} else if elt.IsArray {
+		return ReadArray(fp, inp, dataType)
+	} else {
+		return ReadObject(fp, inp, dataType)
+	}
+}
 
 func readData(inp *CXArgument, bytes []byte) interface{} {
 	switch inp.Type {

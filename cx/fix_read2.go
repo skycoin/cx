@@ -3,16 +3,6 @@ package cxcore
 import()
 
 // ReadData ...
-func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
-	elt := GetAssignmentElement(inp)
-	if elt.IsSlice {
-		return ReadSlice(fp, inp, dataType)
-	} else if elt.IsArray {
-		return ReadArray(fp, inp, dataType)
-	} else {
-		return ReadObject(fp, inp, dataType)
-	}
-}
 
 func readDataI8(bytes []byte) (out []int8) {
 	count := len(bytes)
