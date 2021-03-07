@@ -92,27 +92,21 @@ func readUI32Ptr(fp int, inp *CXArgument) *uint32 {
 }
 
 // gogl
-func opGlInit(_ *CXProgram) {
+func opGlInit(expr *CXExpression, fp int) {
 	gl.Init()
 }
 
-func opGlDestroy(_ *CXProgram) {
+func opGlDestroy(expr *CXExpression, fp int) {
 	for k, _ := range cSources {
 		freeCString(k)
 	}
 }
 
-func opGlStrs(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlStrs(expr *CXExpression, fp int) {
 	getCString(ReadStr(fp, expr.Inputs[0]), ReadStr(fp, expr.Inputs[1]))
 }
 
-func opGlFree(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlFree(expr *CXExpression, fp int) {
 	freeCString(ReadStr(fp, expr.Inputs[0]))
 }
 
@@ -559,151 +553,103 @@ func cxglGenVertexArrays(n int32, arrays *uint32) {
 }
 
 // gl_0_0
-func opGlMatrixMode(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlMatrixMode(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.MatrixMode(uint32(ReadI32(fp, inp1)))
 }
 
-func opGlRotatef(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlRotatef(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 	gl.Rotatef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3), ReadF32(fp, inp4))
 }
 
-func opGlTranslatef(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlTranslatef(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.Translatef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func opGlLoadIdentity(_ *CXProgram) {
+func opGlLoadIdentity(expr *CXExpression, fp int) {
 	gl.LoadIdentity()
 }
 
-func opGlPushMatrix(_ *CXProgram) {
+func opGlPushMatrix(expr *CXExpression, fp int) {
 	gl.PushMatrix()
 }
 
-func opGlPopMatrix(_ *CXProgram) {
+func opGlPopMatrix(expr *CXExpression, fp int) {
 	gl.PopMatrix()
 }
 
-func opGlEnableClientState(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlEnableClientState(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.EnableClientState(uint32(ReadI32(fp, inp1)))
 }
 
-func opGlColor3f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlColor3f(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.Color3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func opGlColor4f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlColor4f(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 	gl.Color4f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3), ReadF32(fp, inp4))
 }
 
-func opGlBegin(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlBegin(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	gl.Begin(uint32(ReadI32(fp, inp1)))
 }
 
-func opGlEnd(_ *CXProgram) {
+func opGlEnd(expr *CXExpression, fp int) {
 	gl.End()
 }
 
-func opGlNormal3f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlNormal3f(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.Normal3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func opGlVertex2f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlVertex2f(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.Vertex2f(ReadF32(fp, inp1), ReadF32(fp, inp2))
 }
 
-func opGlVertex3f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlVertex3f(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.Vertex3f(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func opGlLightfv(_ *CXProgram) {
+func opGlLightfv(expr *CXExpression, fp int) {
 	// pointers
 	panic("gl.Lightfv")
 }
 
-func opGlFrustum(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlFrustum(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
 	gl.Frustum(ReadF64(fp, inp1), ReadF64(fp, inp2), ReadF64(fp, inp3), ReadF64(fp, inp4), ReadF64(fp, inp5), ReadF64(fp, inp6))
 }
 
-func opGlTexEnvi(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlTexEnvi(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.TexEnvi(uint32(ReadI32(fp, inp1)), uint32(ReadI32(fp, inp2)), ReadI32(fp, inp3))
 }
 
-func opGlOrtho(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlOrtho(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
 	gl.Ortho(ReadF64(fp, inp1), ReadF64(fp, inp2), ReadF64(fp, inp3), ReadF64(fp, inp4), ReadF64(fp, inp5), ReadF64(fp, inp6))
 }
 
-func opGlScalef(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlScalef(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	gl.Scalef(ReadF32(fp, inp1), ReadF32(fp, inp2), ReadF32(fp, inp3))
 }
 
-func opGlTexCoord2d(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlTexCoord2d(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.TexCoord2d(ReadF64(fp, inp1), ReadF64(fp, inp2))
 }
 
-func opGlTexCoord2f(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGlTexCoord2f(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	gl.TexCoord2f(ReadF32(fp, inp1), ReadF32(fp, inp2))
 }
