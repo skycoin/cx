@@ -76,12 +76,12 @@ func opAlCloseDevice(expr *CXExpression, fp int) {
 }
 
 func opAlDeleteBuffers(expr *CXExpression, fp int) {
-	buffers := toBuffers(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	buffers := toBuffers(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.DeleteBuffers(buffers...)
 }
 
 func opAlDeleteSources(expr *CXExpression, fp int) {
-	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	sources := toSources(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.DeleteSources(sources...)
 }
 
@@ -107,12 +107,12 @@ func opAlOpenDevice(expr *CXExpression, fp int) {
 }
 
 func opAlPauseSources(expr *CXExpression, fp int) {
-	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	sources := toSources(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.PauseSources(sources...)
 }
 
 func opAlPlaySources(expr *CXExpression, fp int) {
-	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	sources := toSources(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.PlaySources(sources...)
 }
 
@@ -122,12 +122,12 @@ func opAlRenderer(expr *CXExpression, fp int) {
 }
 
 func opAlRewindSources(expr *CXExpression, fp int) {
-	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	sources := toSources(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.RewindSources(sources...)
 }
 
 func opAlStopSources(expr *CXExpression, fp int) {
-	sources := toSources(ReadData(fp, expr.Inputs[0], TYPE_I32))
+	sources := toSources(ReadData_i32(fp, expr.Inputs[0], TYPE_I32))
 	al.StopSources(sources...)
 }
 
@@ -157,7 +157,7 @@ func opAlGenBuffers(expr *CXExpression, fp int) {
 func opAlBufferData(expr *CXExpression, fp int) {
 	buffer := al.Buffer(ReadI32(fp, expr.Inputs[0]))
 	format := ReadI32(fp, expr.Inputs[1])
-	data := toBytes(ReadData(fp, expr.Inputs[2], TYPE_UI8))
+	data := toBytes(ReadData_ui8(fp, expr.Inputs[2], TYPE_UI8))
 	frequency := ReadI32(fp, expr.Inputs[3])
 	buffer.BufferData(uint32(format), data, frequency)
 }
@@ -187,7 +187,7 @@ func opAlSourceBuffersQueued(expr *CXExpression, fp int) {
 
 func opAlSourceQueueBuffers(expr *CXExpression, fp int) {
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
-	buffers := toBuffers(ReadData(fp, expr.Inputs[1], TYPE_I32))
+	buffers := toBuffers(ReadData_i32(fp, expr.Inputs[1], TYPE_I32))
 	source.QueueBuffers(buffers...)
 }
 
@@ -198,6 +198,6 @@ func opAlSourceState(expr *CXExpression, fp int) {
 
 func opAlSourceUnqueueBuffers(expr *CXExpression, fp int) {
 	source := al.Source(ReadI32(fp, expr.Inputs[0]))
-	buffers := toBuffers(ReadData(fp, expr.Inputs[1], TYPE_I32))
+	buffers := toBuffers(ReadData_i32(fp, expr.Inputs[1], TYPE_I32))
 	source.UnqueueBuffers(buffers...)
 }

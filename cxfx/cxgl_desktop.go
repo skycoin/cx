@@ -75,8 +75,10 @@ func ito_pf32(i interface{}) *float32 {
 	return to_pf32(ito_pui8(i))
 }
 
+// TODO: change to ReadData_i64
 func readPtr(fp int, inp *CXArgument, dataType int) *uint8 {
-	return (*uint8)(gl.Ptr(ReadData(fp, inp, dataType)))
+	// return (*uint8)(gl.Ptr(ReadData(fp, inp, dataType)))
+	return (*uint8)(gl.Ptr(ReadData_i32(fp, inp, dataType)))
 }
 
 func readF32Ptr(fp int, inp *CXArgument) *float32 {
