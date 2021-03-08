@@ -26,9 +26,7 @@ func init() {
 // regexpCompile is a helper function for `opRegexpMustCompile` and
 // `opRegexpCompile`. `regexpCompile` compiles a `regexp.Regexp` structure
 // and adds it to global `regexps`. It also writes CX structure `regexp.Regexp`.
-func regexpCompile(prgrm *cxcore.CXProgram) error {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func regexpCompile(expr *cxcore.CXExpression, fp int) error {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	// Extracting regular expression to work with, contained in `inp1`.
@@ -76,8 +74,8 @@ func regexpCompile(prgrm *cxcore.CXProgram) error {
 }
 
 // opRegexpMustCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpMustCompile(prgrm *cxcore.CXProgram) {
-	err := regexpCompile(prgrm)
+func opRegexpMustCompile(expr *cxcore.CXExpression, fp int) {
+	err := regexpCompile(expr, fp)
 
 	if err != nil {
 		println(err.Error())
@@ -87,14 +85,12 @@ func opRegexpMustCompile(prgrm *cxcore.CXProgram) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpCompile(prgrm *cxcore.CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func opRegexpCompile(expr *cxcore.CXExpression, fp int) {
 	// We're only interested in `out2`, which represents the
 	// returned error.
 	out2 := expr.Outputs[1]
 
-	err := regexpCompile(prgrm)
+	err := regexpCompile(expr, fp)
 
 	// Writing error message to `out2`.
 	if err != nil {
@@ -103,9 +99,7 @@ func opRegexpCompile(prgrm *cxcore.CXProgram) {
 }
 
 // opRegexpCompile is a wrapper for golang's `regexp`'s `MustCompile`.
-func opRegexpFind(prgrm *cxcore.CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
+func opRegexpFind(expr *cxcore.CXExpression, fp int) {
 	inp1, inp2, out1 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0]
 
 	// Output structure `Regexp`.

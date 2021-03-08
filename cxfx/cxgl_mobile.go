@@ -104,19 +104,19 @@ func SetGLContext(ctx gl.Context) {
 }
 
 // gogl
-func opGlInit(_ *CXProgram) {
+func opGlInit(expr *CXExpression, fp int) {
 	//panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlDestroy(_ *CXProgram) {
+func opGlDestroy(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlStrs(prgrm *CXProgram) {
+func opGlStrs(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlFree(prgrm *CXProgram) {
+func opGlFree(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
@@ -582,86 +582,86 @@ func cxglGenVertexArrays(n int32, arrays *uint32) {
 }
 
 // gl_0_0
-func opGlMatrixMode(prgrm *CXProgram) {
+func opGlMatrixMode(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlRotatef(prgrm *CXProgram) {
+func opGlRotatef(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTranslatef(prgrm *CXProgram) {
+func opGlTranslatef(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlLoadIdentity(_ *CXProgram) {
+func opGlLoadIdentity(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlPushMatrix(_ *CXProgram) {
+func opGlPushMatrix(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlPopMatrix(_ *CXProgram) {
+func opGlPopMatrix(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlEnableClientState(prgrm *CXProgram) {
+func opGlEnableClientState(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlColor3f(prgrm *CXProgram) {
+func opGlColor3f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlColor4f(prgrm *CXProgram) {
+func opGlColor4f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlBegin(prgrm *CXProgram) {
+func opGlBegin(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlEnd(_ *CXProgram) {
+func opGlEnd(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlNormal3f(prgrm *CXProgram) {
+func opGlNormal3f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlVertex2f(prgrm *CXProgram) {
+func opGlVertex2f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlVertex3f(prgrm *CXProgram) {
+func opGlVertex3f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlLightfv(_ *CXProgram) {
+func opGlLightfv(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlFrustum(prgrm *CXProgram) {
+func opGlFrustum(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexEnvi(prgrm *CXProgram) {
+func opGlTexEnvi(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlOrtho(prgrm *CXProgram) {
+func opGlOrtho(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlScalef(prgrm *CXProgram) {
+func opGlScalef(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexCoord2d(prgrm *CXProgram) {
+func opGlTexCoord2d(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }
 
-func opGlTexCoord2f(prgrm *CXProgram) {
+func opGlTexCoord2f(expr *CXExpression, fp int) {
 	panic(CX_RUNTIME_NOT_IMPLEMENTED)
 }

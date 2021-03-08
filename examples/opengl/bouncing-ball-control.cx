@@ -113,7 +113,7 @@ func main () {
 
 		//Bounce off top edge 
 		if f32.gteq(f32.add(ball.y, ball.radius), 1.0) {
-			ball.vy = 0 - f32.abs(ball.vy)
+			ball.vy = 0.0 - f32.abs(ball.vy)
 		}
 
 		//Bounce off left edge

@@ -50,10 +50,7 @@ func GetInferActions(inp *CXArgument, fp int) []string {
 	return result
 }
 
-func opAffPrint(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffPrint(expr *CXExpression, fp int) {
 	inp1 := expr.Inputs[0]
 	fmt.Println(GetInferActions(inp1, fp))
 	// for _, aff := range GetInferActions(inp1, fp) {
@@ -608,10 +605,7 @@ func getAffordances(inp1 *CXArgument, fp int,
 	}
 }
 
-func opAffOn(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOn(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -647,10 +641,7 @@ func opAffOn(prgrm *CXProgram) {
 	}
 }
 
-func opAffOf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffOf(expr *CXExpression, fp int) {
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -748,10 +739,7 @@ func readArgAff(aff string, tgtFn *CXFunction) *CXArgument {
 
 }
 
-func opAffInform(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffInform(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -850,10 +838,7 @@ func opAffInform(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffRequest(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffRequest(expr *CXExpression, fp int) {
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 
 	prevPkg := PROGRAM.CurrentPackage
@@ -972,10 +957,7 @@ func opAffRequest(prgrm *CXProgram) {
 	PROGRAM.CurrentPackage.CurrentFunction.CurrentExpression = prevExpr
 }
 
-func opAffQuery(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opAffQuery(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 
 	out1Offset := GetFinalOffset(fp, out1)

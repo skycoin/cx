@@ -13,10 +13,7 @@ import (
 
 var fonts map[string]*gltext.Font = make(map[string]*gltext.Font, 0)
 
-func loadTrueType(prgrm *CXProgram, fixedPipeline bool) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func loadTrueType(expr *CXExpression, fp int, fixedPipeline bool) {
 	inp1, inp2, inp3, inp4, inp5, inp6 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3], expr.Inputs[4], expr.Inputs[5]
 	if file := ValidFile(ReadI32(fp, inp1)); file != nil {
 		if theFont, err := gltext.LoadTruetype(file, ReadI32(fp, inp3), rune(ReadI32(fp, inp4)), rune(ReadI32(fp, inp5)), gltext.Direction(ReadI32(fp, inp6)), fixedPipeline); err == nil {
@@ -25,18 +22,15 @@ func loadTrueType(prgrm *CXProgram, fixedPipeline bool) {
 	}
 }
 
-func opGltextLoadTrueType(prgrm *CXProgram) {
-	loadTrueType(prgrm, true)
+func opGltextLoadTrueType(expr *CXExpression, fp int) {
+	loadTrueType(expr, fp, true)
 }
 
-func opGltextLoadTrueTypeCore(prgrm *CXProgram) {
-	loadTrueType(prgrm, false)
+func opGltextLoadTrueTypeCore(expr *CXExpression, fp int) {
+	loadTrueType(expr, fp, false)
 }
 
-func opGltextPrintf(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextPrintf(expr *CXExpression, fp int) {
 	inp1, inp2, inp3, inp4 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2], expr.Inputs[3]
 
 	if err := fonts[ReadStr(fp, inp1)].Printf(ReadF32(fp, inp2), ReadF32(fp, inp3), ReadStr(fp, inp4)); err != nil {
@@ -44,10 +38,7 @@ func opGltextPrintf(prgrm *CXProgram) {
 	}
 }
 
-func opGltextMetrics(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextMetrics(expr *CXExpression, fp int) {
 	inp1, inp2, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1]
 
 	width, height := fonts[ReadStr(fp, inp1)].Metrics(ReadStr(fp, inp2))
@@ -56,18 +47,12 @@ func opGltextMetrics(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, out2), int32(height))
 }
 
-func opGltextTexture(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextTexture(expr *CXExpression, fp int) {
 	inp1, out1 := expr.Inputs[0], expr.Outputs[0]
 	WriteI32(GetFinalOffset(fp, out1), int32(fonts[ReadStr(fp, inp1)].Texture()))
 }
 
-func opGltextNextGlyph(prgrm *CXProgram) { // refactor
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextNextGlyph(expr *CXExpression, fp int) { // refactor
 	inp1, inp2, inp3 := expr.Inputs[0], expr.Inputs[1], expr.Inputs[2]
 	out1, out2, out3, out4, out5, out6, out7 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4], expr.Outputs[5], expr.Outputs[6]
 	font := fonts[ReadStr(fp, inp1)]
@@ -99,10 +84,7 @@ func opGltextNextGlyph(prgrm *CXProgram) { // refactor
 	WriteI32(GetFinalOffset(fp, out7), int32(advance))
 }
 
-func opGltextGlyphBounds(prgrm *CXProgram) {
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextGlyphBounds(expr *CXExpression, fp int) {
 	inp1, out1, out2 := expr.Inputs[0], expr.Outputs[0], expr.Outputs[1]
 	font := fonts[ReadStr(fp, inp1)]
 	var maxGlyphWidth, maxGlyphHeight int = font.GlyphBounds()
@@ -110,10 +92,7 @@ func opGltextGlyphBounds(prgrm *CXProgram) {
 	WriteI32(GetFinalOffset(fp, out2), int32(maxGlyphHeight))
 }
 
-func opGltextGlyphMetrics(prgrm *CXProgram) { // refactor
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextGlyphMetrics(expr *CXExpression, fp int) { // refactor
 	inp1, inp2, out1, out2 := expr.Inputs[0], expr.Inputs[1], expr.Outputs[0], expr.Outputs[1]
 
 	width, height := fonts[ReadStr(fp, inp1)].GlyphMetrics(uint32(ReadI32(fp, inp2)))
@@ -122,10 +101,7 @@ func opGltextGlyphMetrics(prgrm *CXProgram) { // refactor
 	WriteI32(GetFinalOffset(fp, out2), int32(height))
 }
 
-func opGltextGlyphInfo(prgrm *CXProgram) { // refactor
-	expr := prgrm.GetExpr()
-	fp := prgrm.GetFramePointer()
-
+func opGltextGlyphInfo(expr *CXExpression, fp int) { // refactor
 	inp1, inp2 := expr.Inputs[0], expr.Inputs[1]
 	out1, out2, out3, out4, out5 := expr.Outputs[0], expr.Outputs[1], expr.Outputs[2], expr.Outputs[3], expr.Outputs[4]
 	font := fonts[ReadStr(fp, inp1)]
