@@ -39,7 +39,7 @@ label, a {
   width: 65%;
   border-radius: 3px;
 }
-#editorid-export {
+#editorid_export {
   font-size: 0.9em;
   font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
   position: absolute;

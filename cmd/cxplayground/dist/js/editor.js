@@ -6,6 +6,15 @@ editor.getSession().setMode(mode);
 editor.renderer.setShowGutter(true);
 editor.getSession().setTabSize(4);
 editor.session.setUseSoftTabs(true);
+// ount
+var editorid_export = ace.edit('editorid_export');
+editorid_export.setTheme(theme);
+editorid_export.getSession().setMode(mode);
+editorid_export.renderer.setShowGutter(true);
+editorid_export.getSession().setTabSize(4);
+editorid_export.session.setUseSoftTabs(true);
+editorid_export.setReadOnly(true);
+editorid_export.resize()
 
 $('#ace-mode').on('change', function () {
     editor.getSession().setMode('ace/mode/' + $(this).val().toLowerCase());
@@ -54,14 +63,16 @@ $().ready(function () {
             data: JSON.stringify(data),
             cache: false,
             success: function (message) {
-                $("#editorid-export").text(function (i, origText) {
-                    return message;
-                });
+                editorid_export.getSession().setValue(message)
+                // $("#editorid_export").text(function (i, origText) {
+                //     return message;
+                // });
             },
             error: function (message) {
-                $("#editorid-export").text(function (i, origText) {
-                    return message;
-                });
+                editorid_export.getSession().setValue(message)
+                // $("#editorid_export").text(function (i, origText) {
+                //     return message;
+                // });
             }
         });
     });
