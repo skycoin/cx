@@ -53,6 +53,8 @@ var ENABLE_MIRACLE_BUG bool = false
 
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
 
+	//return GetFinalOffset(fp, arg)
+
 	if ENABLE_MIRACLE_BUG == false {
 		return GetFinalOffset(fp, arg)
 	}
@@ -151,9 +153,10 @@ func GetOffset_f64(fp int, arg *CXArgument) int {
 }
 
 // GetOffset_bool ...
+//NOTE: BOOL is not ready for migration yet
 func GetOffset_bool(fp int, arg *CXArgument) int {
-	//return GetFinalOffset(fp, arg)
-	return GetOffsetAtomic(fp, arg)
+	return GetFinalOffset(fp, arg)
+	//return GetOffsetAtomic(fp, arg)
 }
 
 // GetOffset_str ...
