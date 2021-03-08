@@ -1,7 +1,5 @@
 package cxcore
 
-import ()
-
 //NOTE: Temp file for resolving GetFinalOffset issue
 //TODO: What should this function be called?
 
@@ -42,4 +40,64 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	return finalOffset
+}
+
+// GetOffset_i8 ...
+func GetOffset_i8(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_i16 ...
+func GetOffset_i16(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_i32 ...
+func GetOffset_i32(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_i64 ...
+func GetOffset_i64(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_ui8 ...
+func GetOffset_ui8(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_ui16 ...
+func GetOffset_ui16(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_ui32 ...
+func GetOffset_ui32(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_ui64 ...
+func GetOffset_ui64(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_f32 ...
+func GetOffset_f32(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_f64 ...
+func GetOffset_f64(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_bool ...
+func GetOffset_bool(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffset_str ...
+func GetOffset_str(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
 }
