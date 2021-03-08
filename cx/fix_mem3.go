@@ -1,5 +1,8 @@
 package cxcore
 
+import (
+	"log"
+)
 //NOTE: Temp file for resolving GetFinalOffset issue
 //TODO: What should this function be called?
 
@@ -60,6 +63,30 @@ func GetOffsetAtomic(fp int, arg *CXArgument) int {
 		// Then it's in the stack, not in data or heap and we need to consider the frame pointer.
 		finalOffset += fp
 	}
+
+
+	offset1 := finalOffset //save value
+	CalculateDereferences(arg, &offset1, fp)
+
+	if offset1 != finalOffset {
+		log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset1 != finalOffset, offset1= %d, finalOffset= %d \n", offset1, finalOffset)
+	}
+
+	offset2 := finalOffset //save value
+	CalculateDereferences(arg, &offset2, fp)
+
+	if offset2 != finalOffset {
+		log.Panicf("fix_mem3.go, GetOffsetAtomic(), offfset2 != finalOffset, offset2= %d, finalOffset= %d \n", offset2, finalOffset)
+	}
+
+	for _, fld := range arg.Fields {
+		log.Panic("fix_mem4.go, GetOffsetAtomic(): arg.Fields condition for atomic types\n")
+		finalOffset += fld.Offset
+		CalculateDereferences(fld, &finalOffset, fp)
+	}
+
+
+
 	return finalOffset
 
 }
