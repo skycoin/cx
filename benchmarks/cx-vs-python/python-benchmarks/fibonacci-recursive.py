@@ -7,9 +7,9 @@ def fib(n):
 
 def test():
     start = time.time()
-    print fib(30)
+    print(fib(30))
     end = time.time()
     print (end - start)
 
-print "Fib Recursive time elapsed (in seconds):"
+print("Fib Recursive time elapsed (in seconds):")
 test()
