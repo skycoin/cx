@@ -6,6 +6,8 @@ editor.getSession().setMode(mode);
 editor.renderer.setShowGutter(true);
 editor.getSession().setTabSize(4);
 editor.session.setUseSoftTabs(true);
+editor.getSession().setUseWrapMode(true);
+
 // ount
 var editorid_export = ace.edit('editorid_export');
 editorid_export.setTheme(theme);
@@ -15,6 +17,8 @@ editorid_export.getSession().setTabSize(4);
 editorid_export.session.setUseSoftTabs(true);
 editorid_export.setReadOnly(true);
 editorid_export.resize()
+editorid_export.getSession().setUseWrapMode(true);
+editorid_export.setShowPrintMargin(false);
 
 $('#ace-mode').on('change', function () {
     editor.getSession().setMode('ace/mode/' + $(this).val().toLowerCase());
