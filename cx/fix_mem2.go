@@ -34,7 +34,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			offset = mustDeserializeI32(byts)
+			offset = Deserialize_i32(byts)
 
 			*finalOffset = int(offset)
 
@@ -72,7 +72,7 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 
 			byts = PROGRAM.Memory[*finalOffset : *finalOffset+TYPE_POINTER_SIZE]
 
-			offset = mustDeserializeI32(byts)
+			offset = Deserialize_i32(byts)
 			*finalOffset = int(offset)
 		}
 
