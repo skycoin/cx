@@ -1,7 +1,5 @@
 package cxcore
 
-import ()
-
 //NOTE: Temp file for resolving GetFinalOffset issue
 //TODO: What should this function be called?
 
@@ -42,4 +40,24 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	}
 
 	return finalOffset
+}
+
+// GetOffsetI8 ...
+func GetOffsetI8(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetI16 ...
+func GetOffsetI16(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetI32 ...
+func GetOffsetI32(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
+}
+
+// GetOffsetI64 ...
+func GetOffsetI64(fp int, arg *CXArgument) int {
+	return GetFinalOffset(fp, arg)
 }
