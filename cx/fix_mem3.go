@@ -44,9 +44,15 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	return finalOffset
 }
 
+
+//OMFG. set ENABLE_MIRACLE_BUG to true and do `make build; make test`
+var ENABLE_MIRACLE_BUG bool = false
+
 func GetOffsetAtomic(fp int, arg *CXArgument) int {
-	//OMFG. comment this out this line and run `make build; make test`
-	return GetFinalOffset(fp, arg)
+
+	if ENABLE_MIRACLE_BUG == false {
+		return GetFinalOffset(fp, arg)
+	}
 
 	finalOffset := arg.Offset
 	//Todo: find way to eliminate this check
