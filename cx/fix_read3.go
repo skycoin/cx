@@ -1,7 +1,5 @@
 package cxcore
 
-import()
-
 //Why do these functions need CXArgument as imput!?
 
 func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
@@ -13,6 +11,56 @@ func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 	} else {
 		return ReadObject(fp, inp, dataType)
 	}
+}
+
+// ReadData_i8 ...
+func ReadData_i8(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i16 ...
+func ReadData_i16(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i32 ...
+func ReadData_i32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i64 ...
+func ReadData_i64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui8 ...
+func ReadData_ui8(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui16 ...
+func ReadData_ui16(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui32 ...
+func ReadData_ui32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui64 ...
+func ReadData_ui64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_f32 ...
+func ReadData_f32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_f64 ...
+func ReadData_f64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
 }
 
 //Note: Only called once and only by ReadData
