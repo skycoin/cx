@@ -306,6 +306,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 		*/
 		fn := call.Operator
 		expr := fn.Expressions[call.Line]
+
 		// if it's a native, then we just process the arguments with execNative
 
 		if expr.Operator == nil {
@@ -319,7 +320,7 @@ func (call *CXCall) ccall(prgrm *CXProgram) error {
 			}
 			call.Line++
 		} else if expr.Operator.IsNative {
-			execNative(prgrm)
+		        opcodeHandlers[expr.Operator.OpCode](expr, call.FramePointer)
 			call.Line++
 		} else {
 			/*

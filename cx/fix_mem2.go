@@ -1,27 +1,9 @@
 package cxcore
 
-import ()
-
 //NOTE: Temp file for resolving CalculateDereferences issue
 //TODO: What should this function be called?
 
-//func GetFinalOffset(fp int, arg *CXArgument) int {
-//- "CalculateDereferences" .
-// is only called by GetFinal Offset!
 
-/*
-grep -rn "CalculateDereferences" .
-
-./cx/fix_mem3.go:37:	CalculateDereferences(arg, &finalOffset, fp)
-./cx/fix_mem3.go:41:		CalculateDereferences(fld, &finalOffset, fp)
-^^^ IS only called twice and in two places?
-
-./cx/fix_mem2.go:5://NOTE: Temp file for resolving CalculateDereferences issue
-./cx/fix_mem2.go:8:// CalculateDereferences ...
-./cx/fix_mem2.go:20:func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
-*/
-
-// CalculateDereferences ...
 //Todo: This function needs comments? What does it do?
 //Todo: Can this function be specialized?
 //CalculateDeference
@@ -111,3 +93,64 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 		}
 	}
 }
+
+// CalculateDereferences_i8 ...
+func CalculateDereferences_i8(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_i16 ...
+func CalculateDereferences_i16(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_i32 ...
+func CalculateDereferences_i32(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_i64 ...
+func CalculateDereferences_i64(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_ui8 ...
+func CalculateDereferences_ui8(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_ui16 ...
+func CalculateDereferences_ui16(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_ui32 ...
+func CalculateDereferences_ui32(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_ui64 ...
+func CalculateDereferences_ui64(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_f32 ...
+func CalculateDereferences_f32(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_f64 ...
+func CalculateDereferences_f64(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_str ...
+func CalculateDereferences_str(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+
+// CalculateDereferences_bool ...
+func CalculateDereferences_bool(arg *CXArgument, finalOffset *int, fp int) {
+	CalculateDereferences(arg, finalOffset, fp)
+}
+

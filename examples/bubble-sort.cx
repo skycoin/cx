@@ -8,12 +8,25 @@ Date: 7/20/2018
 package main 
 
 //this function will also print strings
-func explanation () (){
+func explanation (){
 	str.print("")
 	str.print("This program will first generate a random number between 5 & 15 that will be the size of an i32 array.")
 	str.print("Next, an i32 array will be generated and filled with random numbers ranging from 1-100.")
 	str.print("Finally, the i32 array will then be sorted using the bubble sort method and printed out.")
 	str.print("")
+}
+
+//this function will generate an i32 array filled with random numbers between 1 and 100 given the size of the array
+func generateRandArray(size i32) (randArray []i32){
+	var c i32
+	var a i32
+	for a = 1; a <= size; a++{
+			randArray = append(randArray, a)
+		} 
+	for c = 0; c < size; c++{
+		randArray[c] = i32.rand(1, 100)
+	}
+	return randArray
 }
 
 //this function will print any i32 array given the size
@@ -35,21 +48,13 @@ func bubbleSort (nums []i32, size i32) (nums []i32){
 			if nums[j] > nums[i32.add(j, 1)]{
 				temp = nums[j]
 				nums[j] = nums[i32.add(j, 1)]
-				nums[i32.add(j, 1)] = temp
+				var pt i32
+				pt = i32.add(j, 1)
+				nums[pt] = temp
 			}
 		}
 	}
 	return nums
-}
-
-//this function will generate an i32 array filled with random numbers between 1 and 100 given the size of the array
-func generateRandArray(size i32) (randArray []i32){
-	var c i32
-	var randArray []i32
-	for c = 0; c < size; c++{
-		randArray[c] = i32.rand(1, 100)
-	}
-	return randArray
 }
 
 func main() (){
@@ -74,4 +79,5 @@ func main() (){
 	
 	//print the array with printArray()
 	printArray(nums, rand)
+	
 }

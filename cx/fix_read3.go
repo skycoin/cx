@@ -1,7 +1,5 @@
 package cxcore
 
-import()
-
 //Why do these functions need CXArgument as imput!?
 
 func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
@@ -15,7 +13,66 @@ func ReadData(fp int, inp *CXArgument, dataType int) interface{} {
 	}
 }
 
-func readData(inp *CXArgument, bytes []byte) interface{} {
+// ReadData_i8 ...
+func ReadData_i8(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i16 ...
+func ReadData_i16(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i32 ...
+func ReadData_i32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_i64 ...
+func ReadData_i64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui8 ...
+func ReadData_ui8(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui16 ...
+func ReadData_ui16(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui32 ...
+func ReadData_ui32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_ui64 ...
+func ReadData_ui64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_f32 ...
+func ReadData_f32(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+// ReadData_f64 ...
+func ReadData_f64(fp int, inp *CXArgument, dataType int) interface{} {
+	return ReadData(fp, inp, dataType)
+}
+
+//Note: Only called once and only by ReadData
+// ReadObject ...
+func ReadObject(fp int, inp *CXArgument, dataType int) interface{} {
+	offset := GetFinalOffset(fp, inp)
+	array := ReadMemory(offset, inp)
+	return readAtomic(inp, array)
+}
+
+//Note: I modified this to crash if invalid type was used
+func readAtomic(inp *CXArgument, bytes []byte) interface{} {
 	switch inp.Type {
 	case TYPE_I8:
 		data := readDataI8(bytes)
@@ -73,7 +130,8 @@ func readData(inp *CXArgument, bytes []byte) interface{} {
 			return interface{}(data)
 		}
 	}
-
+	//should this crash if it gets here?
+	panic(CX_RUNTIME_INVALID_ARGUMENT) //Note: modified this so it crashes if it gets here for some reason
 	return interface{}(nil)
 }
 
@@ -83,13 +141,23 @@ func ReadSlice(fp int, inp *CXArgument, dataType int) interface{} {
 	if sliceOffset >= 0 && (dataType < 0 || inp.Type == dataType) {
 		slice := GetSliceData(sliceOffset, GetAssignmentElement(inp).Size)
 		if slice != nil {
-			return readData(inp, slice)
+			return readAtomic(inp, slice) //readData
 		}
 	} else {
 		panic(CX_RUNTIME_INVALID_ARGUMENT)
 	}
 
 	return interface{}(nil)
+}
+
+// ReadArray ...
+func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
+	offset := GetFinalOffset(fp, inp)
+	if dataType < 0 || inp.Type == dataType {
+		array := ReadMemory(offset, inp)
+		return readAtomic(inp, array) //readData
+	}
+	panic(CX_RUNTIME_INVALID_ARGUMENT)
 }
 
 // ReadSliceBytes ...
@@ -101,23 +169,6 @@ func ReadSliceBytes(fp int, inp *CXArgument, dataType int) []byte {
 	}
 
 	panic(CX_RUNTIME_INVALID_ARGUMENT)
-}
-
-// ReadArray ...
-func ReadArray(fp int, inp *CXArgument, dataType int) interface{} {
-	offset := GetFinalOffset(fp, inp)
-	if dataType < 0 || inp.Type == dataType {
-		array := ReadMemory(offset, inp)
-		return readData(inp, array)
-	}
-	panic(CX_RUNTIME_INVALID_ARGUMENT)
-}
-
-// ReadObject ...
-func ReadObject(fp int, inp *CXArgument, dataType int) interface{} {
-	offset := GetFinalOffset(fp, inp)
-	array := ReadMemory(offset, inp)
-	return readData(inp, array)
 }
 
 // second section
