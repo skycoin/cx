@@ -91,9 +91,6 @@ func CalculateDereferences(arg *CXArgument, finalOffset *int, fp int) {
 	}
 }
 
-// TODO: str, bool
-// TODO: f32, f64
-
 // CalculateDereferences_i8 ...
 func CalculateDereferences_i8(arg *CXArgument, finalOffset *int, fp int) {
 	CalculateDereferences(arg, finalOffset, fp)
