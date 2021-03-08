@@ -18,7 +18,7 @@ func readDataUI8(bytes []byte) (out []uint8) {
 	if count > 0 {
 		out = make([]uint8, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeUI8(bytes[i:])
+			out[i] = Deserialize_ui8(bytes[i:])
 		}
 	}
 	return
@@ -40,7 +40,7 @@ func readDataUI16(bytes []byte) (out []uint16) {
 	if count > 0 {
 		out = make([]uint16, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeUI16(bytes[i*2:])
+			out[i] = Deserialize_ui16(bytes[i*2:])
 		}
 	}
 	return
@@ -62,7 +62,7 @@ func readDataUI32(bytes []byte) (out []uint32) {
 	if count > 0 {
 		out = make([]uint32, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeUI32(bytes[i*4:])
+			out[i] = Deserialize_ui32(bytes[i*4:])
 		}
 	}
 	return
@@ -84,7 +84,7 @@ func readDataUI64(bytes []byte) (out []uint64) {
 	if count > 0 {
 		out = make([]uint64, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeUI64(bytes[i*8:])
+			out[i] = Deserialize_ui64(bytes[i*8:])
 		}
 	}
 	return

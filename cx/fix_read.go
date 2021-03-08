@@ -28,22 +28,22 @@ func ReadI64(fp int, inp *CXArgument) int64 {
 
 // ReadUI8 ...
 func ReadUI8(fp int, inp *CXArgument) uint8 {
-	return DeserializeUI8(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_ui8(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
 // ReadUI16 ...
 func ReadUI16(fp int, inp *CXArgument) uint16 {
-	return DeserializeUI16(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_ui16(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
 // ReadUI32 ...
 func ReadUI32(fp int, inp *CXArgument) uint32 {
-	return DeserializeUI32(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_ui32(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
 // ReadUI64 ...
 func ReadUI64(fp int, inp *CXArgument) uint64 {
-	return DeserializeUI64(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_ui64(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
 // ReadF32 ...
