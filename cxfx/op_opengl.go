@@ -643,7 +643,7 @@ func opGlBufferSubData(expr *CXExpression, fp int) {
 func opGlDrawBuffers(expr *CXExpression, fp int) {
 	cxglDrawBuffers(
 		ReadI32(fp, expr.Inputs[0]),
-		ReadData(fp, expr.Inputs[1], TYPE_UI32))
+		ReadData_ui32(fp, expr.Inputs[1], TYPE_UI32))
 }
 
 func opGlStencilOpSeparate(expr *CXExpression, fp int) {
@@ -835,56 +835,56 @@ func opGlUniform1fv(expr *CXExpression, fp int) {
 	cxglUniform1fv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[2], TYPE_F32))
 }
 
 func opGlUniform2fv(expr *CXExpression, fp int) {
 	cxglUniform2fv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[2], TYPE_F32))
 }
 
 func opGlUniform3fv(expr *CXExpression, fp int) {
 	cxglUniform3fv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[2], TYPE_F32))
 }
 
 func opGlUniform4fv(expr *CXExpression, fp int) {
 	cxglUniform4fv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[2], TYPE_F32))
 }
 
 func opGlUniform1iv(expr *CXExpression, fp int) {
 	cxglUniform1iv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_I32))
+		ReadData_i32(fp, expr.Inputs[2], TYPE_I32))
 }
 
 func opGlUniform2iv(expr *CXExpression, fp int) {
 	cxglUniform2iv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_I32))
+		ReadData_i32(fp, expr.Inputs[2], TYPE_I32))
 }
 
 func opGlUniform3iv(expr *CXExpression, fp int) {
 	cxglUniform3iv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_I32))
+		ReadData_i32(fp, expr.Inputs[2], TYPE_I32))
 }
 
 func opGlUniform4iv(expr *CXExpression, fp int) {
 	cxglUniform4iv(
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
-		ReadData(fp, expr.Inputs[2], TYPE_I32))
+		ReadData_i32(fp, expr.Inputs[2], TYPE_I32))
 }
 
 func opGlUniformMatrix2fv(expr *CXExpression, fp int) {
@@ -892,7 +892,7 @@ func opGlUniformMatrix2fv(expr *CXExpression, fp int) {
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
 		ReadBool(fp, expr.Inputs[2]),
-		ReadData(fp, expr.Inputs[3], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[3], TYPE_F32))
 }
 
 func opGlUniformMatrix3fv(expr *CXExpression, fp int) {
@@ -900,7 +900,7 @@ func opGlUniformMatrix3fv(expr *CXExpression, fp int) {
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
 		ReadBool(fp, expr.Inputs[2]),
-		ReadData(fp, expr.Inputs[3], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[3], TYPE_F32))
 }
 
 func opGlUniformMatrix4fv(expr *CXExpression, fp int) {
@@ -908,7 +908,7 @@ func opGlUniformMatrix4fv(expr *CXExpression, fp int) {
 		ReadI32(fp, expr.Inputs[0]),
 		ReadI32(fp, expr.Inputs[1]),
 		ReadBool(fp, expr.Inputs[2]),
-		ReadData(fp, expr.Inputs[3], TYPE_F32))
+		ReadData_f32(fp, expr.Inputs[3], TYPE_F32))
 }
 
 func opGlUniformV4F(expr *CXExpression, fp int) {
