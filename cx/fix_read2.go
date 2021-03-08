@@ -95,7 +95,7 @@ func readDataF32(bytes []byte) (out []float32) {
 	if count > 0 {
 		out = make([]float32, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeF32(bytes[i*4:])
+			out[i] = Deserialize_f32(bytes[i*4:])
 		}
 	}
 	return
@@ -106,7 +106,7 @@ func readDataF64(bytes []byte) (out []float64) {
 	if count > 0 {
 		out = make([]float64, count)
 		for i := 0; i < count; i++ {
-			out[i] = DeserializeF64(bytes[i*8:])
+			out[i] = Deserialize_f64(bytes[i*8:])
 		}
 	}
 	return

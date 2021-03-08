@@ -48,10 +48,10 @@ func ReadUI64(fp int, inp *CXArgument) uint64 {
 
 // ReadF32 ...
 func ReadF32(fp int, inp *CXArgument) float32 {
-	return DeserializeF32(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_f32(ReadMemory(GetFinalOffset(fp, inp), inp))
 }
 
 // ReadF64 ...
 func ReadF64(fp int, inp *CXArgument) float64 {
-	return DeserializeF64(ReadMemory(GetFinalOffset(fp, inp), inp))
+	return Deserialize_f64(ReadMemory(GetFinalOffset(fp, inp), inp))
 }

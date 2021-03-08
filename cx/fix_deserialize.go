@@ -54,11 +54,11 @@ func Deserialize_ui64(b []byte) uint64 {
 		uint64(b[4])<<32 | uint64(b[5])<<40 | uint64(b[6])<<48 | uint64(b[7])<<56
 }
 
-func DeserializeF32(b []byte) float32 {
+func Deserialize_f32(b []byte) float32 {
 	return math.Float32frombits(Deserialize_ui32(b))
 }
 
-func DeserializeF64(b []byte) float64 {
+func Deserialize_f64(b []byte) float64 {
 	return math.Float64frombits(Deserialize_ui64(b))
 }
 

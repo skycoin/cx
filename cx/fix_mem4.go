@@ -22,8 +22,8 @@ package cxcore
 ./cx/fix_read.go:36:	return Deserialize_ui16(ReadMemory(GetFinalOffset(fp, inp), inp))
 ./cx/fix_read.go:41:	return Deserialize_ui32(ReadMemory(GetFinalOffset(fp, inp), inp))
 ./cx/fix_read.go:46:	return Deserialize_ui64(ReadMemory(GetFinalOffset(fp, inp), inp))
-./cx/fix_read.go:51:	return DeserializeF32(ReadMemory(GetFinalOffset(fp, inp), inp))
-./cx/fix_read.go:56:	return DeserializeF64(ReadMemory(GetFinalOffset(fp, inp), inp))
+./cx/fix_read.go:51:	return Deserialize_f32(ReadMemory(GetFinalOffset(fp, inp), inp))
+./cx/fix_read.go:56:	return Deserialize_f64(ReadMemory(GetFinalOffset(fp, inp), inp))
 ./cx/op_misc.go:9:	byts := ReadMemory(inpOffset, arg)
 ./cx/op_misc.go:41:			WriteMemory(out1Offset, ReadMemory(inp1Offset, inp1))
 ./cx/op.go:183:// ReadMemory ...
