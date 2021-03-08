@@ -42,52 +42,52 @@ func GetFinalOffset(fp int, arg *CXArgument) int {
 	return finalOffset
 }
 
-// GetOffsetI8 ...
-func GetOffsetI8(fp int, arg *CXArgument) int {
+// GetOffset_i8 ...
+func GetOffset_i8(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetI16 ...
-func GetOffsetI16(fp int, arg *CXArgument) int {
+// GetOffset_i16 ...
+func GetOffset_i16(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetI32 ...
-func GetOffsetI32(fp int, arg *CXArgument) int {
+// GetOffset_i32 ...
+func GetOffset_i32(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetI64 ...
-func GetOffsetI64(fp int, arg *CXArgument) int {
+// GetOffset_i64 ...
+func GetOffset_i64(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetUI8 ...
-func GetOffsetUI8(fp int, arg *CXArgument) int {
+// GetOffset_ui8 ...
+func GetOffset_ui8(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetUI16 ...
-func GetOffsetUI16(fp int, arg *CXArgument) int {
+// GetOffset_ui16 ...
+func GetOffset_ui16(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetUI32 ...
-func GetOffsetUI32(fp int, arg *CXArgument) int {
+// GetOffset_ui32 ...
+func GetOffset_ui32(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetUI64 ...
-func GetOffsetUI64(fp int, arg *CXArgument) int {
+// GetOffset_ui64 ...
+func GetOffset_ui64(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetBool ...
-func GetOffsetBool(fp int, arg *CXArgument) int {
+// GetOffset_bool ...
+func GetOffset_bool(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
 
-// GetOffsetStr ...
-func GetOffsetStr(fp int, arg *CXArgument) int {
+// GetOffset_str ...
+func GetOffset_str(fp int, arg *CXArgument) int {
 	return GetFinalOffset(fp, arg)
 }
