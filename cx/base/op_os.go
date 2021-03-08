@@ -632,7 +632,7 @@ func opOsReadI8Slice(expr *CXExpression, fp int) {
 func opOsWriteF64Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_F64); data != nil {
+		if data := ReadData_f64(fp, expr.Inputs[1], TYPE_F64); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -644,7 +644,7 @@ func opOsWriteF64Slice(expr *CXExpression, fp int) {
 func opOsWriteF32Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_F32); data != nil {
+		if data := ReadData_f32(fp, expr.Inputs[1], TYPE_F32); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -656,7 +656,7 @@ func opOsWriteF32Slice(expr *CXExpression, fp int) {
 func opOsWriteUI64Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_UI64); data != nil {
+		if data := ReadData_ui64(fp, expr.Inputs[1], TYPE_UI64); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -668,7 +668,7 @@ func opOsWriteUI64Slice(expr *CXExpression, fp int) {
 func opOsWriteUI32Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_UI32); data != nil {
+		if data := ReadData_ui32(fp, expr.Inputs[1], TYPE_UI32); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -680,7 +680,7 @@ func opOsWriteUI32Slice(expr *CXExpression, fp int) {
 func opOsWriteUI16Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_UI16); data != nil {
+		if data := ReadData_ui16(fp, expr.Inputs[1], TYPE_UI16); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -692,7 +692,7 @@ func opOsWriteUI16Slice(expr *CXExpression, fp int) {
 func opOsWriteUI8Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_UI8); data != nil {
+		if data := ReadData_ui8(fp, expr.Inputs[1], TYPE_UI8); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -704,7 +704,7 @@ func opOsWriteUI8Slice(expr *CXExpression, fp int) {
 func opOsWriteI64Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_I64); data != nil {
+		if data := ReadData_i64(fp, expr.Inputs[1], TYPE_I64); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -716,7 +716,7 @@ func opOsWriteI64Slice(expr *CXExpression, fp int) {
 func opOsWriteI32Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_I32); data != nil {
+		if data := ReadData_i32(fp, expr.Inputs[1], TYPE_I32); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -728,7 +728,7 @@ func opOsWriteI32Slice(expr *CXExpression, fp int) {
 func opOsWriteI16Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_I16); data != nil {
+		if data := ReadData_i16(fp, expr.Inputs[1], TYPE_I16); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
@@ -740,7 +740,7 @@ func opOsWriteI16Slice(expr *CXExpression, fp int) {
 func opOsWriteI8Slice(expr *CXExpression, fp int) {
 	success := false
 	if file := validFileFromExpr(expr, fp); file != nil {
-		if data := ReadData(fp, expr.Inputs[1], TYPE_I8); data != nil {
+		if data := ReadData_i8(fp, expr.Inputs[1], TYPE_I8); data != nil {
 			if err := binary.Write(file, binary.LittleEndian, data); err == nil {
 				success = true
 			}
