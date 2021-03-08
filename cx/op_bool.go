@@ -10,25 +10,25 @@ func opBoolPrint(expr *CXExpression, fp int) {
 
 func opBoolEqual(expr *CXExpression, fp int) {
 	outV0 := ReadBool(fp, expr.Inputs[0]) == ReadBool(fp, expr.Inputs[1])
-	WriteBool(GetOffsetBool(fp, expr.Outputs[0]), outV0)
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 func opBoolUnequal(expr *CXExpression, fp int) {
 	outV0 := ReadBool(fp, expr.Inputs[0]) != ReadBool(fp, expr.Inputs[1])
-	WriteBool(GetOffsetBool(fp, expr.Outputs[0]), outV0)
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 func opBoolNot(expr *CXExpression, fp int) {
 	outV0 := !ReadBool(fp, expr.Inputs[0])
-	WriteBool(GetOffsetBool(fp, expr.Outputs[0]), outV0)
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 func opBoolAnd(expr *CXExpression, fp int) {
 	outV0 := ReadBool(fp, expr.Inputs[0]) && ReadBool(fp, expr.Inputs[1])
-	WriteBool(GetOffsetBool(fp, expr.Outputs[0]), outV0)
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
 
 func opBoolOr(expr *CXExpression, fp int) {
 	outV0 := ReadBool(fp, expr.Inputs[0]) || ReadBool(fp, expr.Inputs[1])
-	WriteBool(GetOffsetBool(fp, expr.Outputs[0]), outV0)
+	WriteBool(GetOffset_bool(fp, expr.Outputs[0]), outV0)
 }
